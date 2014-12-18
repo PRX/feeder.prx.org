@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141212212757) do
+ActiveRecord::Schema.define(version: 20141218173519) do
 
   create_table "episodes", force: true do |t|
     t.datetime "created_at"
@@ -20,7 +20,6 @@ ActiveRecord::Schema.define(version: 20141212212757) do
     t.string   "title"
     t.text     "description"
     t.string   "link"
-    t.string   "author"
     t.date     "pub_date"
     t.string   "categories"
     t.string   "audio_file"
@@ -30,6 +29,10 @@ ActiveRecord::Schema.define(version: 20141212212757) do
     t.boolean  "explicit"
     t.integer  "duration"
     t.string   "keywords"
+    t.string   "author_name"
+    t.string   "author_email"
+    t.integer  "audio_file_size"
+    t.string   "audio_file_type"
   end
 
   create_table "images", force: true do |t|
@@ -45,6 +48,14 @@ ActiveRecord::Schema.define(version: 20141212212757) do
     t.string   "imageable_type"
   end
 
+  create_table "itunes_categories", force: true do |t|
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "podcast_id"
+    t.string   "name",          null: false
+    t.string   "subcategories"
+  end
+
   create_table "podcasts", force: true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -53,8 +64,8 @@ ActiveRecord::Schema.define(version: 20141212212757) do
     t.text     "description"
     t.string   "language"
     t.string   "managing_editor"
-    t.date     "pub_date"
-    t.date     "last_build_date"
+    t.datetime "pub_date"
+    t.datetime "last_build_date"
     t.string   "categories"
     t.boolean  "explicit"
     t.string   "subtitle"
@@ -62,7 +73,11 @@ ActiveRecord::Schema.define(version: 20141212212757) do
     t.string   "keywords"
     t.string   "update_period"
     t.integer  "update_value"
-    t.date     "update_base"
+    t.datetime "update_base"
+    t.string   "copyright"
+    t.string   "author"
+    t.string   "owner_name"
+    t.string   "owner_email"
   end
 
 end

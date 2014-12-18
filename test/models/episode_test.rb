@@ -23,7 +23,8 @@ describe Episode do
   end
 
   it 'must have an author' do
-    build_stubbed(:episode, author: nil).wont_be(:valid?)
+    build_stubbed(:episode, author_name: nil).wont_be(:valid?)
+    build_stubbed(:episode, author_email: nil).wont_be(:valid?)
   end
 
   it 'must have a duration' do
@@ -48,5 +49,9 @@ describe Episode do
 
   it 'can have categories' do
     build_stubbed(:episode, categories: nil).must_be(:valid?)
+  end
+
+  it 'can have an image' do
+    build_stubbed(:episode).image.wont_be(:nil?)
   end
 end

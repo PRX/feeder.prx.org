@@ -3,14 +3,6 @@ source 'https://rubygems.org'
 gem 'rails', '4.1.5'
 gem 'mysql2'
 
-## View
-# json handling
-gem 'oj'
-gem 'oj_mimic_json'
-
-gem 'dalli'
-gem 'actionpack-action_caching'
-
 ## Deployment
 # configuration
 gem 'dotenv-rails'
@@ -32,10 +24,12 @@ group :test do
   gem "codeclimate-test-reporter", require: false
   gem 'simplecov', '~> 0.7.1', require: false
   gem 'coveralls', require: false
+  gem 'test_xml', require: false
 end
 
 group :development, :test do
   gem 'pry-rails'
+  gem 'spring'
 end
 
 group :development do
@@ -44,5 +38,4 @@ group :development do
   gem 'guard'
   gem 'guard-minitest'
   gem 'guard-bundler'
-  gem 'spring'
 end

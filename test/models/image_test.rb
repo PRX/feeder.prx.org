@@ -33,10 +33,5 @@ describe Image do
       image = build_stubbed(:image, title: nil)
       image.wont_be(:valid?)
     end
-
-    it 'must have an imageable' do
-      image = build_stubbed(:image, imageable: nil)
-      image.wont_be(:valid?)
-    end
   end
 end

@@ -4,5 +4,4 @@ class Image < ActiveRecord::Base
   validates :url, presence: true
   validates :link, presence: true
   validates :title, presence: true
-  validates :imageable, presence: true
 end
