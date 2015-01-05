@@ -1,0 +1,24 @@
+{
+    "_links": {
+        "curies": [
+            {
+                "href": "http://meta.prx.org/relation/{rel}",
+                "name": "prx",
+                "templated": true
+            }
+        ],
+        "enclosure": {
+            "href": "/pub/472875466d225aca0480000fea4b5fc2/0/web/audio_file/451642/broadcast/Moth1301GarrisonFinal.mp3",
+            "type": "audio/mpeg"
+        },
+        "self": {
+            "href": "/api/v1/audio_files/451642",
+            "profile": "http://meta.prx.org/model/audio-file"
+        }
+    },
+    "duration": 3179,
+    "filename": "Moth1301GarrisonFinal.mp2",
+    "id": 451642,
+    "label": "Moth 1301 Single File",
+    "size": 101617830
+}

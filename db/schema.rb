@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141218173519) do
+ActiveRecord::Schema.define(version: 20141222182251) do
 
   create_table "episodes", force: true do |t|
     t.datetime "created_at"
@@ -33,7 +33,10 @@ ActiveRecord::Schema.define(version: 20141218173519) do
     t.string   "author_email"
     t.integer  "audio_file_size"
     t.string   "audio_file_type"
+    t.integer  "prx_id"
   end
+
+  add_index "episodes", ["prx_id"], name: "index_episodes_on_prx_id", using: :btree
 
   create_table "images", force: true do |t|
     t.datetime "created_at"

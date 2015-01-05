@@ -1,0 +1,180 @@
+{
+    "_embedded": {
+        "prx:account": {
+            "_embedded": {
+                "prx:address": {
+                    "_links": {
+                        "self": {
+                            "href": "/api/v1/addresses/136184",
+                            "profile": "http://meta.prx.org/model/address"
+                        }
+                    },
+                    "city": "New York",
+                    "country": "United States",
+                    "id": 136184,
+                    "postalCode": "10018",
+                    "state": "New York",
+                    "street1": "481 Broadway, Third Floor"
+                }
+            },
+            "_links": {
+                "prx:address": {
+                    "href": "/api/v1/addresses/136184"
+                },
+                "prx:opener": {
+                    "href": "/api/v1/users/35533",
+                    "title": "themoth"
+                },
+                "prx:stories": {
+                    "href": "/api/v1/accounts/45139/stories"
+                },
+                "self": {
+                    "href": "/api/v1/accounts/45139",
+                    "profile": "http://meta.prx.org/model/account/group/min"
+                }
+            },
+            "id": 45139,
+            "name": "The Moth",
+            "path": "Moth",
+            "shortName": "The Moth",
+            "type": "GroupAccount"
+        },
+        "prx:image": {
+            "_links": {
+                "enclosure": {
+                    "href": "/pub/e56ce22b1bce78de79993ebcccf76611/0/web/series_image/8696/medium/WEEKLY_LOGO.jpg",
+                    "type": "image/jpeg"
+                },
+                "self": {
+                    "href": "/api/v1/series_images/8696",
+                    "profile": "http://meta.prx.org/model/image/series"
+                }
+            },
+            "caption": "",
+            "credit": "",
+            "filename": "WEEKLY_LOGO.jpg",
+            "id": 8696,
+            "size": 59904
+        },
+        "prx:stories": {
+            "_embedded": {
+                "prx:items": [
+                    {
+                        "_embedded": {
+                            "prx:audio": [
+                                {
+                                    "_links": {
+                                        "enclosure": {
+                                            "href": "/pub/472875466d225aca0480000fea4b5fc2/0/web/audio_file/451642/broadcast/Moth1301GarrisonFinal.mp3",
+                                            "type": "audio/mpeg"
+                                        },
+                                        "self": {
+                                            "href": "/api/v1/audio_files/451642",
+                                            "profile": "http://meta.prx.org/model/audio-file"
+                                        }
+                                    },
+                                    "duration": 3179,
+                                    "filename": "Moth1301GarrisonFinal.mp2",
+                                    "id": 451642,
+                                    "label": "Moth 1301 Single File",
+                                    "size": 101617830
+                                }
+                            ],
+                            "prx:image": {
+                                "_links": {
+                                    "enclosure": {
+                                        "href": "/pub/f8b82b49a679ab9a621791bc9b752ff2/0/web/story_image/203874/medium/Moth_ElnaBaker_1301.jpg",
+                                        "type": "image/jpeg"
+                                    },
+                                    "self": {
+                                        "href": "/api/v1/story_images/203874",
+                                        "profile": "http://meta.prx.org/model/image/story"
+                                    }
+                                },
+                                "caption": "Elna Baker",
+                                "credit": "Elna Baker",
+                                "filename": "Moth_ElnaBaker_1301.jpg",
+                                "id": 203874,
+                                "size": 33080
+                            }
+                        },
+                        "_links": {
+                            "prx:account": {
+                                "href": "/api/v1/accounts/45139",
+                                "profile": "http://meta.prx.org/model/account/group/min",
+                                "title": "The Moth"
+                            },
+                            "prx:audio": [
+                                {
+                                    "href": "/api/v1/audio_files/451642",
+                                    "title": "Moth 1301 Single File"
+                                }
+                            ],
+                            "prx:image": {
+                                "href": "/api/v1/story_images/203874"
+                            },
+                            "prx:series": {
+                                "href": "/api/v1/series/32832",
+                                "title": "Moth Weekly Episodes for 2013"
+                            },
+                            "self": {
+                                "href": "/api/v1/stories/87683",
+                                "profile": "http://meta.prx.org/model/story/min"
+                            }
+                        },
+                        "duration": 3179,
+                        "id": 87683,
+                        "points": 270,
+                        "producedOn": "2012-11-01",
+                        "publishedAt": "2012-12-20T18:57:45.000Z",
+                        "shortDescription": "A special live edition of The Moth at Town Hall in NYC with Garrison Keillor, with additional hosting by Jay Allison. World renowned conservationist and field biologist Alan Rabinowitz (\"Man and Beast\", MRH episode 902) makes a life-changing friendship while studying the Taron tribe of the Himilayas; a woman describes how her father\u2019s risky entrepreneurial endeavors kept her close-knit Southern family in flux; and a woman raised as a Mormon is terrified that her parents will disown her when she confesses that she has left the faith.\u00a0\n\n\n\u00a0\n",
+                        "title": "The Moth Radio Hour"
+                    }
+                ]
+            },
+            "_links": {
+                "first": {
+                    "href": "/api/v1/series/32832/stories"
+                },
+                "last": {
+                    "href": "/api/v1/series/32832/stories?page=1"
+                },
+                "self": {
+                    "href": "/api/v1/series/32832/stories",
+                    "profile": "http://meta.prx.org/model/collection/story"
+                }
+            },
+            "count": 1,
+            "total": 1
+        }
+    },
+    "_links": {
+        "curies": [
+            {
+                "href": "http://meta.prx.org/relation/{rel}",
+                "name": "prx",
+                "templated": true
+            }
+        ],
+        "prx:account": {
+            "href": "/api/v1/accounts/45139",
+            "profile": "http://meta.prx.org/model/account/group",
+            "title": "The Moth"
+        },
+        "prx:image": {
+            "href": "/api/v1/series_images/8696"
+        },
+        "prx:stories": {
+            "href": "/api/v1/series/32832/stories"
+        },
+        "self": {
+            "href": "/api/v1/series/32832",
+            "profile": "http://meta.prx.org/model/series"
+        }
+    },
+    "description": "Brought to you by PRX and Jay Allison of Atlantic Public Media. Learn more about The Moth, the series and live events at prx.org/themoth. Please confirm carriage of The Moth Radio Hour by contacting Deb Blakeley at blakeley.deb@gmail.com.",
+    "id": 32832,
+    "shortDescription": "The Moth Radio Hour features true stories told live on stage without scripts, notes, props, or accompaniment. Each Moth Radio Hour mixes humorous, heartbreaking, and poignant tales that captivate, surprise, and delight audiences with their honesty, bravery and humor.",
+    "storyCount": 1,
+    "title": "Moth Weekly Episodes for 2013"
+}

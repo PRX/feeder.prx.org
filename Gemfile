@@ -3,6 +3,8 @@ source 'https://rubygems.org'
 gem 'rails', '4.1.5'
 gem 'mysql2'
 
+gem 'hyperresource'
+
 ## Deployment
 # configuration
 gem 'dotenv-rails'
@@ -24,7 +26,8 @@ group :test do
   gem "codeclimate-test-reporter", require: false
   gem 'simplecov', '~> 0.7.1', require: false
   gem 'coveralls', require: false
-  gem 'test_xml', require: false
+  gem 'nokogiri'
+  gem 'webmock'
 end
 
 group :development, :test do

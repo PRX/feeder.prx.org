@@ -1,4 +1,10 @@
-ENV["RAILS_ENV"] = "test"
+Dotenv.load
+
+def use_webmock?
+  ENV['USE_WEBMOCK'].nil? || (ENV['USE_WEBMOCK'] == 'true')
+end
+
+ENV["RAILS_ENV"] ||= "test"
 
 require 'simplecov' if !ENV['GUARD'] || ENV['GUARD_COVERAGE']
 
@@ -19,12 +25,19 @@ require 'factory_girl'
 require 'minitest/reporters'
 require 'minitest/autorun'
 require 'minitest/spec'
+require 'webmock/minitest'
 require 'minitest/pride'
+
+WebMock.allow_net_connect! unless use_webmock?
 
 class ActiveSupport::TestCase
   include FactoryGirl::Syntax::Methods
 end
 
-class MiniTest::Spec
-  include FactoryGirl::Syntax::Methods
+def json_file(name)
+  test_file("/fixtures/#{name}.json")
+end
+
+def test_file(path)
+  File.read( File.dirname(__FILE__) + path)
 end

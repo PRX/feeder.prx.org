@@ -1,0 +1,69 @@
+{
+    "_links": {
+        "curies": [
+            {
+                "href": "http://meta.prx.org/relation/{rel}",
+                "name": "prx",
+                "templated": true
+            }
+        ],
+        "prx:account": [
+            {
+                "href": "/api/v1/accounts/{id}{?zoom}",
+                "profile": "http://meta.prx.org/model/account",
+                "templated": true,
+                "title": "Get a single account"
+            }
+        ],
+        "prx:accounts": [
+            {
+                "href": "/api/v1/accounts{?page,zoom}",
+                "profile": "http://meta.prx.org/model/collection/account",
+                "templated": true,
+                "title": "Get a paged collection of accounts"
+            }
+        ],
+        "prx:picks": [
+            {
+                "href": "/api/v1/picks{?page,zoom}",
+                "profile": "http://meta.prx.org/model/collection/pick",
+                "templated": true,
+                "title": "Get a paged collection of the most recent picks"
+            }
+        ],
+        "prx:series": [
+            {
+                "href": "/api/v1/series/{id}{?zoom}",
+                "profile": "http://meta.prx.org/model/series",
+                "templated": true,
+                "title": "Get a single series"
+            },
+            {
+                "href": "/api/v1/series{?page,zoom}",
+                "profile": "http://meta.prx.org/model/collection/series",
+                "templated": true,
+                "title": "Get a paged collection of series"
+            }
+        ],
+        "prx:stories": [
+            {
+                "href": "/api/v1/stories{?page,zoom}",
+                "profile": "http://meta.prx.org/model/collection/story",
+                "templated": true,
+                "title": "Get a paged collection of stories"
+            }
+        ],
+        "prx:story": [
+            {
+                "href": "/api/v1/stories/{id}{?zoom}",
+                "profile": "http://meta.prx.org/model/story",
+                "templated": true,
+                "title": "Get a single story"
+            }
+        ],
+        "self": {
+            "href": "/api/v1"
+        }
+    },
+    "version": "v1"
+}

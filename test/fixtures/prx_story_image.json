@@ -1,0 +1,24 @@
+{
+    "_links": {
+        "curies": [
+            {
+                "href": "http://meta.prx.org/relation/{rel}",
+                "name": "prx",
+                "templated": true
+            }
+        ],
+        "enclosure": {
+            "href": "/pub/f8b82b49a679ab9a621791bc9b752ff2/0/web/story_image/203874/medium/Moth_ElnaBaker_1301.jpg",
+            "type": "image/jpeg"
+        },
+        "self": {
+            "href": "/api/v1/story_images/203874",
+            "profile": "http://meta.prx.org/model/image/story"
+        }
+    },
+    "caption": "Elna Baker",
+    "credit": "Elna Baker",
+    "filename": "Moth_ElnaBaker_1301.jpg",
+    "id": 203874,
+    "size": 33080
+}
