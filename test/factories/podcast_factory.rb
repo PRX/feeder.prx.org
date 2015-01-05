@@ -1,5 +1,6 @@
 FactoryGirl.define do
   factory :podcast do
+    sequence :prx_id
     link 'http://www.maximumfun.org/jjgo'
     title 'Jordan, Jesse GO!'
     description 'A goofy fun-time laughcast with doofuses'
