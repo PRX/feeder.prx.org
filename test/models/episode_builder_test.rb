@@ -2,22 +2,7 @@ require 'test_helper'
 
 describe EpisodeBuilder do
   before :all do
-    if use_webmock?
-      stub_request(:get, 'https://hal.prx.org/api/v1').
-        to_return(status: 200, body: json_file(:prx_root), headers: {})
-
-      stub_request(:get, 'https://hal.prx.org/api/v1/stories/87683').
-        to_return(status: 200, body: json_file(:prx_story), headers: {})
-
-      stub_request(:get, 'https://hal.prx.org/api/v1/accounts/45139').
-        to_return(status: 200, body: json_file(:prx_account), headers: {})
-
-      stub_request(:get, 'https://hal.prx.org/api/v1/audio_files/451642').
-        to_return(status: 200, body: json_file(:prx_audio_file), headers: {})
-
-      stub_request(:get, "https://hal.prx.org/api/v1/story_images/203874").
-        to_return(status: 200, body: json_file(:prx_story_image), headers: {})
-    end
+    stub_requests_to_prx_cms
 
     @ep = EpisodeBuilder.from_prx_story(prx_id: 87683)
   end
