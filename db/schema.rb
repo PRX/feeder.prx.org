@@ -11,28 +11,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150105211403) do
+ActiveRecord::Schema.define(version: 20150106173954) do
 
   create_table "episodes", force: true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "podcast_id"
-    t.string   "title"
-    t.text     "description"
-    t.string   "link"
-    t.date     "pub_date"
-    t.string   "categories"
-    t.string   "audio_file"
-    t.string   "comments"
-    t.string   "subtitle"
-    t.text     "summary"
-    t.boolean  "explicit"
-    t.integer  "duration"
-    t.string   "keywords"
-    t.string   "author_name"
-    t.string   "author_email"
-    t.integer  "audio_file_size"
-    t.string   "audio_file_type"
     t.integer  "prx_id"
     t.text     "overrides"
   end
