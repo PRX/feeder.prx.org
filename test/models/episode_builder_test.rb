@@ -28,8 +28,10 @@ describe EpisodeBuilder do
 
   describe 'with overrides' do
     it 'includes overrides' do
+      overrides = { title: 'Virginity & Fidelity' }.to_json
+
       @ep = EpisodeBuilder.from_prx_story(prx_id: 87683,
-                                          overrides: { title: 'Virginity & Fidelity' })
+                                          overrides: overrides)
 
       @ep[:title].must_equal "Virginity & Fidelity"
       @ep[:author_name].must_equal "The Moth"

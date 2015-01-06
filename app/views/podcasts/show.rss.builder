@@ -62,24 +62,29 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
 
     @episodes.each do |ep|
       xml.item do
-        xml.title ep.title
-        xml.description ep.description
-        xml.link ep.link
-        xml.author "#{ep.author_email} (#{ep.author_name})"
-        xml.pubDate ep.pub_date
+        xml.title ep[:title]
+        xml.description ep[:description]
+        xml.link ep[:link]
+        xml.author "#{ep[:author_email]} (#{ep[:author_name]})"
+        xml.pubDate ep[:pub_date]
         xml.source url: podcast_path(@podcast)
 
-        if ep.categories
-          ep.categories.split(', ').each { |c| xml.category c }
+        unless ep[:categories].empty?
+          ep[:categories].split(', ').each { |c| xml.category c }
         end
 
-        xml.itunes :author, ep.author_name
-        xml.itunes :subtitle, ep.subtitle
-        xml.itunes :summary, ep.summary
-        xml.itunes :explicit, ep.explicit ? 'yes' : 'no'
-        xml.itunes :duration, ep.duration
-        xml.itunes :keywords, ep.categories
-        xml.itunes :image, href: ep.image.url
+        xml.guid ep[:link]
+        xml.enclosure url: ep[:audio_file],
+                      length: ep[:duration],
+                      type: ep[:audio_file_type]
+
+        xml.itunes :author, ep[:author_name]
+        xml.itunes :subtitle, ep[:subtitle]
+        xml.itunes :summary, ep[:summary]
+        xml.itunes :explicit, ep[:explicit]
+        xml.itunes :duration, ep[:duration]
+        xml.itunes :keywords, ep[:categories]
+        xml.itunes :image, href: ep[:image]
       end
     end
   end

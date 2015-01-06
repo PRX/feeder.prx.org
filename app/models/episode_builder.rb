@@ -1,7 +1,7 @@
 class EpisodeBuilder
   def initialize(opts = {})
     @prx_id = opts[:prx_id]
-    @overrides = opts[:overrides] || {}
+    @overrides = JSON.parse(opts[:overrides] || '{}').symbolize_keys!
   end
 
   def api

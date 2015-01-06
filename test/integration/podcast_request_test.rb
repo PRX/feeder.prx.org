@@ -2,6 +2,10 @@ require 'test_helper'
 require 'nokogiri'
 
 describe 'RSS feed Integration Test' do
+  before :all do
+    stub_requests_to_prx_cms
+  end
+
   before :each do
     @podcast = create(:podcast, :with_images)
     @channel_image = @podcast.channel_image
@@ -52,7 +56,8 @@ describe 'RSS feed Integration Test' do
 
   it 'displays correct episode info' do
     @feed.css('item').each_with_index do |node, i|
-      node.css('title').text.must_equal @episodes[i].title
+      title = JSON.parse(@episodes[i].overrides)['title']
+      node.css('title').text.must_equal title
     end
   end
 end
