@@ -39,8 +39,11 @@ class EpisodeBuilder
 
     {
       title: @story.title,
-      description: @story.description,
-      author_name: @story.account.body["name"],
+      description: {
+        rich: @story.description,
+        plain: Sanitize.fragment(@story.description).strip
+      },
+      author_name: author["name"],
       link: @hal_root + 'stories/' + @story.id.to_s,
       audio_file: audio_file[:location],
       audio_file_type: audio_file[:type],

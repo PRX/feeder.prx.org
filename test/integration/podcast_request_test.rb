@@ -54,10 +54,17 @@ describe 'RSS feed Integration Test' do
     cat_node.element_children[1].attributes['text'].value.must_equal subcats[1]
   end
 
-  it 'displays correct episode info' do
+  it 'displays correct episode titles' do
     @feed.css('item').each_with_index do |node, i|
       title = JSON.parse(@episodes[i].overrides)['title']
       node.css('title').text.must_equal title
     end
+  end
+
+  it 'displays plaintext and richtext descriptions' do
+    node = @feed.css('item')[0]
+
+    node.css('description').text[0..3].must_equal 'Tina'
+    node.css('content|encoded').text[0..4].must_equal '<div>'
   end
 end

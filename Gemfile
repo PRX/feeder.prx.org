@@ -19,6 +19,9 @@ gem 'rake'
 gem 'newrelic_rpm'
 gem 'capistrano-newrelic'
 
+# sanitizing descriptions
+gem 'sanitize'
+
 group :test do
   gem 'minitest-spec-rails'
   gem 'minitest-reporters', require: false

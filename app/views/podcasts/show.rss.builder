@@ -30,7 +30,7 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
 
     xml.docs 'http://blogs.law.harvard.edu/tech/rss'
     xml.atom :link, podcast_path(@podcast)
-    xml.generator 'PRXCast v0.0'
+    xml.generator 'feeder.prx.org v0.0'
     xml.ttl 60
 
     xml.itunes :author, @podcast.author
@@ -63,7 +63,7 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
     @episodes.each do |ep|
       xml.item do
         xml.title ep[:title]
-        xml.description ep[:description]
+        xml.description ep[:description][:plain]
         xml.link ep[:link]
         xml.author "#{ep[:author_email]} (#{ep[:author_name]})"
         xml.pubDate ep[:pub_date]
@@ -77,6 +77,7 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
         xml.enclosure url: ep[:audio_file],
                       length: ep[:duration],
                       type: ep[:audio_file_type]
+        xml.content :encoded, ep[:description][:rich]
 
         xml.itunes :author, ep[:author_name]
         xml.itunes :subtitle, ep[:subtitle]
