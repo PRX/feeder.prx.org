@@ -8,8 +8,8 @@ FactoryGirl.define do
     language 'en-us'
     managing_editor 'Jesse Thorn'
     author 'Jesse Thorn'
-    pub_date 1.day.ago
-    last_build_date Time.now
+    pub_date Date.parse("Jan 11, 2015")
+    last_build_date Date.parse("Jan 12, 2015")
     categories 'Humor, Entertainment'
     explicit true
     subtitle 'Goofy laughsters'

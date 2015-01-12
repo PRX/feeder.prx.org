@@ -19,11 +19,13 @@ describe Podcast do
     podcast.must_respond_to(:itunes_categories)
   end
 
-  it 'must have a copyright' do
-    podcast.copyright = '2014'
-    podcast.wont_be :valid?
+  it 'updates last build date after update' do
+    now = DateTime.parse('Jan 13, 2015')
 
-    podcast.copyright = "Copyright © 2014 #{podcast.title}. All rights reserved."
-    podcast.must_be :valid?
+    Time.stub(:now, now) do
+      podcast.update_attributes(managing_editor: 'Brian Fernandez')
+    end
+
+    podcast.last_build_date.must_equal now
   end
 end

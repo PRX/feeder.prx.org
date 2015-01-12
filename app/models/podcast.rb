@@ -5,6 +5,7 @@ class Podcast < ActiveRecord::Base
   has_many :episodes
   has_many :itunes_categories
 
-  validates :copyright, presence: true,
-                        format: { with: /\ACopyright/}
+  after_update do
+    DateUpdater.last_build_date(self)
+  end
 end

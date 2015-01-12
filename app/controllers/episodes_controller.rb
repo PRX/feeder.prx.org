@@ -6,6 +6,7 @@ class EpisodesController < ApplicationController
                            overrides: episode_params[:overrides].to_json)
 
     if @episode.save
+      DateUpdater.both_dates(podcast)
       render json: @episode
     else
       render json: @episode.errors
