@@ -34,6 +34,10 @@ class EpisodeBuilder
     new(opts).from_prx_story
   end
 
+  def link
+    ENV['PRX_ROOT'] + @story.id.to_s
+  end
+
   def from_prx_story
     get_story
 
@@ -44,7 +48,7 @@ class EpisodeBuilder
         plain: Sanitize.fragment(@story.description).strip
       },
       author_name: author["name"],
-      link: @hal_root + 'stories/' + @story.id.to_s,
+      link: link,
       audio_file: audio_file[:location],
       audio_file_type: audio_file[:type],
       length: @story.duration,
