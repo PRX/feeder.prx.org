@@ -2,11 +2,9 @@ require 'test_helper'
 require 'nokogiri'
 
 describe 'RSS feed Integration Test' do
-  before :all do
+  before do
     stub_requests_to_prx_cms
-  end
 
-  before :each do
     @podcast = create(:podcast, :with_images)
     @channel_image = @podcast.channel_image
     @itunes_image = @podcast.itunes_image

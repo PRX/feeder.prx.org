@@ -1,7 +1,7 @@
 require 'test_helper'
 
 describe EpisodeBuilder do
-  before :all do
+  before do
     stub_requests_to_prx_cms
 
     @ep = EpisodeBuilder.from_prx_story(prx_id: 87683)
