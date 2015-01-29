@@ -20,12 +20,12 @@ describe Podcast do
   end
 
   it 'updates last build date after update' do
-    now = DateTime.parse('Jan 13, 2015')
+    Timecop.freeze
 
-    Time.stub(:now, now) do
-      podcast.update_attributes(managing_editor: 'Brian Fernandez')
-    end
+    podcast.update_attributes(managing_editor: 'Brian Fernandez')
 
-    podcast.last_build_date.must_equal now
+    podcast.last_build_date.must_equal Time.now
+
+    Timecop.return
   end
 end

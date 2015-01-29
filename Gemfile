@@ -31,6 +31,7 @@ group :test do
   gem 'coveralls', require: false
   gem 'nokogiri'
   gem 'webmock'
+  gem 'timecop'
 end
 
 group :development, :test do
