@@ -1,15 +1,28 @@
 class EpisodesController < ApplicationController
   def create
     podcast = Podcast.find_by(podcast_params)
-    @episode = Episode.new(prx_id: episode_params[:prx_id],
+    episode = Episode.new(prx_id: episode_params[:prx_id],
                            podcast_id: podcast.id,
                            overrides: episode_params[:overrides].to_json)
 
-    if @episode.save
+    if episode.save
       DateUpdater.both_dates(podcast)
-      render json: @episode
+      render json: episode
     else
-      render json: @episode.errors
+      render json: episode.errors
+    end
+  end
+
+  def update
+    episode = Episode.find(params[:id])
+
+    episode.overrides = episode_params[:overrides].to_json
+
+    if episode.save
+      DateUpdater.both_dates(episode.podcast)
+      render nothing: true
+    else
+      render json: episode.errors
     end
   end
 
