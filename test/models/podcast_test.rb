@@ -28,17 +28,4 @@ describe Podcast do
 
     Timecop.return
   end
-
-  it 'must soft delete' do
-    podcast.destroy
-
-    Podcast.only_deleted.must_include podcast
-    Podcast.all.wont_include podcast
-  end
-
-  it 'must really delete' do
-    podcast.destroy!
-
-    Podcast.with_deleted.wont_include podcast
-  end
 end

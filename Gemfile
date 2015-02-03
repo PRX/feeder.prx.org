@@ -22,6 +22,8 @@ gem 'capistrano-newrelic'
 # sanitizing descriptions
 gem 'sanitize'
 
+gem 'paranoia'
+
 group :test do
   gem 'minitest-spec-rails'
   gem 'minitest-reporters', require: false

@@ -131,6 +131,8 @@ GEM
       mini_portile (= 0.6.0)
     nokogumbo (1.2.0)
       nokogiri
+    paranoia (2.1.0)
+      activerecord (~> 4.0)
     polyglot (0.3.5)
     pry (0.10.1)
       coderay (~> 1.1.0)
@@ -230,6 +232,7 @@ DEPENDENCIES
   mysql2
   newrelic_rpm
   nokogiri
+  paranoia
   pry-rails
   quiet_assets
   rails (= 4.1.5)
