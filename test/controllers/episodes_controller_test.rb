@@ -3,7 +3,6 @@ require 'test_helper'
 describe EpisodesController do
   before do
     Timecop.freeze(Time.local(2015, 1, 13))
-
     @podcast = create(:podcast)
 
     post(:create, {
