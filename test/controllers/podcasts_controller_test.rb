@@ -3,7 +3,7 @@ require 'test_helper'
 describe PodcastsController do
   before do
     stub_requests_to_prx_cms
-    @podcast = create(:podcast, :with_images, last_build_date: Time.now)
+    @podcast = create(:podcast, last_build_date: Time.now)
   end
 
   it 'returns a fresh version of the podcast when it has been updated' do

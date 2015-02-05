@@ -26,10 +26,6 @@ class EpisodeBuilder
     }
   end
 
-  def image
-    @story.image.links["self"].base_href
-  end
-
   def self.from_prx_story(opts = {})
     new(opts).from_prx_story
   end
@@ -56,8 +52,7 @@ class EpisodeBuilder
       explicit: @story.contentAdvisory ? 'yes' : 'no',
       keywords: @story.tags.join(', '),
       categories: @story.tags.join(', '),
-      itunes_categories: @story.tags.join(', '),
-      image: image
+      itunes_categories: @story.tags.join(', ')
     }.merge(@overrides)
   end
 end

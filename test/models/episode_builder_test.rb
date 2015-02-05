@@ -20,10 +20,6 @@ describe EpisodeBuilder do
     it 'gets author info' do
       @ep[:author_name].must_equal "The Moth"
     end
-
-    it 'gets image info' do
-      @ep[:image].must_equal "/api/v1/story_images/203874"
-    end
   end
 
   describe 'with overrides' do

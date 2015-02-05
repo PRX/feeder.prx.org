@@ -20,12 +20,10 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
     end
 
     xml.image do
-      xml.url @podcast.channel_image.url
-      xml.title @podcast.channel_image.title
-      xml.link @podcast.channel_image.link
-      xml.width @podcast.channel_image.width
-      xml.height @podcast.channel_image.height
-      xml.description @podcast.channel_image.description
+      xml.url @podcast.feed_image.url
+      xml.title @podcast.feed_image.title
+      xml.link @podcast.feed_image.link
+      xml.description @podcast.feed_image.description
     end
 
     xml.docs 'http://blogs.law.harvard.edu/tech/rss'
@@ -85,7 +83,6 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
         xml.itunes :explicit, ep[:explicit]
         xml.itunes :duration, ep[:duration]
         xml.itunes :keywords, ep[:categories]
-        xml.itunes :image, href: ep[:image]
       end
     end
   end

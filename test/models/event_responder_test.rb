@@ -4,7 +4,7 @@ describe EventResponder do
   before do
     Timecop.freeze(Time.local(2015, 2, 2))
 
-    @podcast = create(:podcast, :with_images)
+    @podcast = create(:podcast)
     @episode = create(:episode, podcast: @podcast)
   end
 

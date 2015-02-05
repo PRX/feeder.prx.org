@@ -5,8 +5,8 @@ describe 'RSS feed Integration Test' do
   before do
     stub_requests_to_prx_cms
 
-    @podcast = create(:podcast, :with_images)
-    @channel_image = @podcast.channel_image
+    @podcast = create(:podcast)
+    @channel_image = @podcast.feed_image
     @itunes_image = @podcast.itunes_image
     @episodes = create_list(:episode, 2, podcast: @podcast)
     @category = create(:itunes_category, podcast: @podcast)

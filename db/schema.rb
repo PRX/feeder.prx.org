@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150203013418) do
+ActiveRecord::Schema.define(version: 20150205175613) do
 
   create_table "episodes", force: true do |t|
     t.datetime "created_at"
@@ -24,18 +24,17 @@ ActiveRecord::Schema.define(version: 20150203013418) do
 
   add_index "episodes", ["prx_id"], name: "index_episodes_on_prx_id", using: :btree
 
-  create_table "images", force: true do |t|
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "title",          null: false
-    t.string   "url",            null: false
-    t.string   "link",           null: false
-    t.integer  "height"
-    t.integer  "width"
-    t.text     "description"
-    t.integer  "imageable_id"
-    t.string   "imageable_type"
+  create_table "feed_images", force: true do |t|
+    t.string  "url"
+    t.string  "link"
+    t.string  "description"
+    t.integer "height"
+    t.integer "width"
+    t.integer "podcast_id"
+    t.string  "title"
   end
+
+  add_index "feed_images", ["podcast_id"], name: "index_feed_images_on_podcast_id", using: :btree
 
   create_table "itunes_categories", force: true do |t|
     t.datetime "created_at"
@@ -44,6 +43,13 @@ ActiveRecord::Schema.define(version: 20150203013418) do
     t.string   "name",          null: false
     t.string   "subcategories"
   end
+
+  create_table "itunes_images", force: true do |t|
+    t.string  "url"
+    t.integer "podcast_id"
+  end
+
+  add_index "itunes_images", ["podcast_id"], name: "index_itunes_images_on_podcast_id", using: :btree
 
   create_table "podcasts", force: true do |t|
     t.datetime "created_at"

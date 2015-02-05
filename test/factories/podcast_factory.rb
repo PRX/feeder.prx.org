@@ -19,9 +19,7 @@ FactoryGirl.define do
     update_value 1
     update_base 1.year.ago
 
-    trait :with_images do
-      association :itunes_image, factory: :image
-      association :channel_image, factory: :image
-    end
+    itunes_image
+    feed_image
   end
 end

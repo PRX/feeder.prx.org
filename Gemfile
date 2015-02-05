@@ -23,10 +23,12 @@ gem 'capistrano-newrelic'
 gem 'sanitize'
 
 gem 'paranoia'
+gem 'fastimage'
 
 group :test do
   gem 'minitest-spec-rails'
   gem 'minitest-reporters', require: false
+  gem 'minitest-focus'
   gem 'factory_girl_rails'
   gem "codeclimate-test-reporter", require: false
   gem 'simplecov', '~> 0.7.1', require: false
