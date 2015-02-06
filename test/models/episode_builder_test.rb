@@ -12,9 +12,15 @@ describe EpisodeBuilder do
       @ep[:title].must_equal "Virginity, Fidelity, and Fertility"
     end
 
-    it 'gets audio file info' do
-      @ep[:audio_file].must_equal "/pub/472875466d225aca0480000fea4b5fc2/0/web/audio_file/451642/broadcast/Moth1301GarrisonFinal.mp3"
+    it 'gets audio file type' do
       @ep[:audio_file_type].must_equal "audio/mpeg"
+    end
+
+    it 'appends podtrac redirect to audio file link' do
+      link = "/pub/472875466d225aca0480000fea4b5fc2/0/web/audio_file/451642/broadcast/Moth1301GarrisonFinal.mp3"
+      prefix = EpisodeBuilder::AUDIO_FILE_PREFIX
+
+      @ep[:audio_file].must_equal prefix + link
     end
 
     it 'gets author info' do

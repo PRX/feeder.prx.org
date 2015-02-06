@@ -1,4 +1,6 @@
 class EpisodeBuilder
+  AUDIO_FILE_PREFIX = "http://www.podtrac.com/pts/redirect.mp3/"
+
   def initialize(opts = {})
     @prx_id = opts[:prx_id]
     @overrides = JSON.parse(opts[:overrides] || '{}').symbolize_keys!
@@ -21,7 +23,7 @@ class EpisodeBuilder
     audio = @story.audio[0].body["_links"]["enclosure"]
 
     {
-      location: audio["href"].to_s,
+      location: AUDIO_FILE_PREFIX + audio["href"].to_s,
       type: audio["type"]
     }
   end
