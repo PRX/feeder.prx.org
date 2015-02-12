@@ -1,5 +1,5 @@
 class EpisodeBuilder
-  AUDIO_FILE_PREFIX = "http://www.podtrac.com/pts/redirect.mp3/"
+  AUDIO_FILE_PREFIX = ENV["AUDIO_FILE_PREFIX"]
 
   def initialize(opts = {})
     @prx_id = opts[:prx_id]
