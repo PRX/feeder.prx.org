@@ -1,9 +1,11 @@
 class EpisodesController < ApplicationController
   def create
     podcast = Podcast.find_by(podcast_params)
-    episode = Episode.new(prx_id: episode_params[:prx_id],
-                           podcast_id: podcast.id,
-                           overrides: episode_params[:overrides].to_json)
+    episode = Episode.with_deleted.find_or_initialize_by(prx_id: episode_params[:prx_id],
+                                                         podcast_id: podcast.id)
+
+    episode.overrides = episode_params[:overrides].to_json
+    episode.deleted_at = nil
 
     if episode.save
       DateUpdater.both_dates(podcast)
