@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "title": "Episode",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "link": {
+      "description": "A URL for an HTML webpage specifically for this episode",
+      "type": "string",
+      "format": "uri"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "itunes_categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": ["Arts", "Business", "Comedy", "Education", "Games &amp; Hobbies", "Government &amp; Organizations", "Health", "Kids &amp; Family", "Music", "News &amp; Politics", "Religion &amp; Spirituality", "Science &amp; Medicine", "Society &amp; Culture", "Sports &amp; Recreation", "Technology", "TV &amp; Film"]
+          },
+          "subcategories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Design", "Fashion &amp; Beauty", "Food", "Literature", "Performing Arts", "Visual Arts", "Business News", "Careers", "Investing", "Management &amp; Marketing", "Shopping", "Automotive", "Aviation", "Hobbies", "Other Games", "Video Games", "Educational Technology", "Higher Education", "K-12", "Language Courses", "Training", "Local", "National", "Non-Profit", "Regional", "Alternative Health", "Fitness &amp; Nutrition", "Self-Help", "Sexuality", "Buddhism", "Christianity", "Hinduism", "Islam", "Judaism", "Other", "Spirituality", "Medicine", "Natural Sciences", "Social Sciences", "History", "Personal Journals", "Philosophy", "Places &amp; Travel", "Amateur", "College &amp; High School", "Outdoor", "Professional", "Gadgets", "Podcasting", "Software How-To", "Tech News"]
+            }
+          },
+          "required": ["name"]
+        }
+      }
+    },
+    "enclosure": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "length": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": ["url", "length", "type"]
+    },
+    "comments_link": {
+      "type": "string",
+      "format": "uri"
+    },
+    "author": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        }
+      },
+      "required": ["name", "email"]
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "image": {
+      "type": "string",
+      "format": "uri"
+    },
+    "explicit": {
+      "type": "string",
+      "enum": ["yes", "no"]
+    }
+  },
+  "required": ["title", "enclosure"]
+}
