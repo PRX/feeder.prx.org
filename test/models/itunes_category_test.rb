@@ -3,11 +3,11 @@ require 'test_helper'
 describe ItunesCategory do
   let(:cat) { build_stubbed(:itunes_category) }
 
-  it 'can have subcategories' do
+  it 'is valid when all attributes are valid' do
     cat.must_be(:valid?)
   end
 
-  it 'must belong to the list' do
+  it 'must have a name on the list' do
     cat.name = 'Space'
     cat.wont_be(:valid?)
   end
@@ -15,6 +15,12 @@ describe ItunesCategory do
   it 'must have subcategories on list' do
     cat.subcategories = 'Aviation, Space'
     cat.wont_be(:valid?)
+  end
+
+  it 'must have subcategories that correspond to category' do
+    cat.subcategories = 'Aviation, Literature'
+    cat.wont_be(:valid?)
+    cat.errors[:subcategories].must_include "Literature is not a valid subcategory"
   end
 
   it 'must belong to a podcast' do
