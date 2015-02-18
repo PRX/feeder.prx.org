@@ -75,14 +75,18 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
         xml.enclosure url: ep[:audio_file],
                       length: ep[:duration],
                       type: ep[:audio_file_type]
+        xml.comments ep[:comments_link]
         xml.content :encoded, ep[:description][:rich]
+
+        xml.dc :created, ep[:created]
+        xml.dc :modified, ep[:modified]
 
         xml.itunes :author, ep[:author_name]
         xml.itunes :subtitle, ep[:subtitle]
         xml.itunes :summary, ep[:summary]
         xml.itunes :explicit, ep[:explicit]
         xml.itunes :duration, ep[:duration]
-        xml.itunes :keywords, ep[:categories]
+        xml.itunes :keywords, ep[:keywords]
       end
     end
   end

@@ -2,6 +2,7 @@ class EpisodeBuilder
   AUDIO_FILE_PREFIX = ENV["AUDIO_FILE_PREFIX"]
 
   def initialize(e)
+    @ep = e
     @prx_id = e.prx_id
     @overrides = JSON.parse(e.overrides || '{}').symbolize_keys!
   end
@@ -54,7 +55,8 @@ class EpisodeBuilder
       explicit: @story.contentAdvisory ? 'yes' : 'no',
       keywords: @story.tags.join(', '),
       categories: @story.tags.join(', '),
-      itunes_categories: @story.tags.join(', ')
+      created: @ep.created_at.strftime('%a, %d %b %Y %H:%M:%S %Z'),
+      modified: @ep.updated_at.strftime('%a, %d %b %Y %H:%M:%S %Z')
     }.merge(@overrides)
   end
 end

@@ -26,26 +26,6 @@
         "type": "string"
       }
     },
-    "itunes_categories": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "enum": ["Arts", "Business", "Comedy", "Education", "Games &amp; Hobbies", "Government &amp; Organizations", "Health", "Kids &amp; Family", "Music", "News &amp; Politics", "Religion &amp; Spirituality", "Science &amp; Medicine", "Society &amp; Culture", "Sports &amp; Recreation", "Technology", "TV &amp; Film"]
-          },
-          "subcategories": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": ["Design", "Fashion &amp; Beauty", "Food", "Literature", "Performing Arts", "Visual Arts", "Business News", "Careers", "Investing", "Management &amp; Marketing", "Shopping", "Automotive", "Aviation", "Hobbies", "Other Games", "Video Games", "Educational Technology", "Higher Education", "K-12", "Language Courses", "Training", "Local", "National", "Non-Profit", "Regional", "Alternative Health", "Fitness &amp; Nutrition", "Self-Help", "Sexuality", "Buddhism", "Christianity", "Hinduism", "Islam", "Judaism", "Other", "Spirituality", "Medicine", "Natural Sciences", "Social Sciences", "History", "Personal Journals", "Philosophy", "Places &amp; Travel", "Amateur", "College &amp; High School", "Outdoor", "Professional", "Gadgets", "Podcasting", "Software How-To", "Tech News"]
-            }
-          },
-          "required": ["name"]
-        }
-      }
-    },
     "enclosure": {
       "type": "object",
       "properties": {
