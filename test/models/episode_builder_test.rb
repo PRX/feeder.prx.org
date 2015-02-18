@@ -3,8 +3,9 @@ require 'test_helper'
 describe EpisodeBuilder do
   before do
     stub_requests_to_prx_cms
+    @record = build_stubbed(:episode, prx_id: 87683, overrides: nil)
 
-    @ep = EpisodeBuilder.from_prx_story(prx_id: 87683)
+    @ep = EpisodeBuilder.from_prx_story(@record)
   end
 
   describe 'without overrides' do
@@ -30,10 +31,9 @@ describe EpisodeBuilder do
 
   describe 'with overrides' do
     it 'includes overrides' do
-      overrides = { title: 'Virginity & Fidelity' }.to_json
+      @record.overrides = { title: 'Virginity & Fidelity' }.to_json
 
-      @ep = EpisodeBuilder.from_prx_story(prx_id: 87683,
-                                          overrides: overrides)
+      @ep = EpisodeBuilder.from_prx_story(@record)
 
       @ep[:title].must_equal "Virginity & Fidelity"
       @ep[:author_name].must_equal "The Moth"

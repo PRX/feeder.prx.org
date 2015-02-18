@@ -1,9 +1,9 @@
 class EpisodeBuilder
   AUDIO_FILE_PREFIX = ENV["AUDIO_FILE_PREFIX"]
 
-  def initialize(opts = {})
-    @prx_id = opts[:prx_id]
-    @overrides = JSON.parse(opts[:overrides] || '{}').symbolize_keys!
+  def initialize(e)
+    @prx_id = e.prx_id
+    @overrides = JSON.parse(e.overrides || '{}').symbolize_keys!
   end
 
   def api

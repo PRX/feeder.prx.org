@@ -7,8 +7,7 @@ class PodcastsController < ApplicationController
       episodes = @podcast.episodes.order('created_at desc')
 
       @episodes = episodes.map do |e|
-        EpisodeBuilder.from_prx_story(prx_id: e.prx_id,
-                                      overrides: e.overrides)
+        EpisodeBuilder.from_prx_story(e)
       end
     end
   end
