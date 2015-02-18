@@ -22,9 +22,11 @@ class EpisodeBuilder
 
   def audio_file
     audio = @story.audio[0].body["_links"]["enclosure"]
+    link = audio["href"].to_s
+    extension = link.split('.').pop
 
     {
-      location: AUDIO_FILE_PREFIX + audio["href"].to_s,
+      location: AUDIO_FILE_PREFIX + extension + link,
       type: audio["type"]
     }
   end
