@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'rails', '4.2.1'
-gem 'mysql2'
+gem 'pg'
 
 gem 'hyperresource'
 
@@ -30,8 +30,7 @@ group :test do
   gem 'minitest-reporters', require: false
   gem 'minitest-focus'
   gem 'factory_girl_rails'
-  gem "codeclimate-test-reporter", require: false
-  gem 'simplecov', '~> 0.7.1', require: false
+  gem 'simplecov', require: false
   gem 'coveralls', require: false
   gem 'nokogiri'
   gem 'webmock'
