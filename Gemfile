@@ -27,8 +27,6 @@ gem 'fastimage'
 
 group :test do
   gem 'minitest-spec-rails'
-  gem 'minitest-reporters', require: false
-  gem 'minitest-focus'
   gem 'factory_girl_rails'
   gem 'simplecov', require: false
   gem 'coveralls', require: false

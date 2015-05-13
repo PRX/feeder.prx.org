@@ -14,17 +14,14 @@ def use_webmock?
   ENV['USE_WEBMOCK'].nil? || (ENV['USE_WEBMOCK'] == 'true')
 end
 
-
 require File.expand_path("../../config/environment", __FILE__)
 
 require 'rails/test_help'
 require 'factory_girl'
-require 'minitest/reporters'
 require 'minitest/autorun'
-require 'minitest/focus'
 require 'minitest/spec'
-require 'webmock/minitest'
 require 'minitest/pride'
+require 'webmock/minitest'
 
 WebMock.allow_net_connect! unless use_webmock?
 
