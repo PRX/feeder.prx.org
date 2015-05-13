@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '4.1.5'
+gem 'rails', '4.2.1'
 gem 'mysql2'
 
 gem 'hyperresource'
@@ -10,7 +10,7 @@ gem 'hyperresource'
 gem 'dotenv-rails'
 
 # scripting
-gem 'capistrano', '~> 3.2.0'
+gem 'capistrano', '~> 3.4.0'
 gem 'capistrano-rails', '~> 1.1.0'
 gem 'highline'
 gem 'rake'
@@ -49,4 +49,5 @@ group :development do
   gem 'guard'
   gem 'guard-minitest'
   gem 'guard-bundler'
+  gem 'web-console', '~> 2.0'
 end
