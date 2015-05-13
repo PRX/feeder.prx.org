@@ -1,0 +1,4 @@
+CMS_ROOT=https://cms.prx.org/api/v1
+PRX_ROOT=https://beta.prx.org/stories/
+USE_WEBMOCK=true
+AUDIO_FILE_PREFIX=http://www.podtrac.com/pts/redirect.
