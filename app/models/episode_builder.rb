@@ -1,42 +1,13 @@
 class EpisodeBuilder
-  AUDIO_FILE_PREFIX = ENV["AUDIO_FILE_PREFIX"]
-
-  def initialize(e)
-    @ep = e
-    @prx_id = e.prx_id
-    @overrides = JSON.parse(e.overrides || '{}').symbolize_keys!
-  end
-
-  def api
-    @hal_root = ENV['HAL_ROOT']
-    HyperResource.new(root: @hal_root)
-  end
-
-  def get_story
-    @story = api.get.links.story[0].where(id: @prx_id)
-  end
-
-  def author
-    @story.account.body
-  end
-
-  def audio_file
-    audio = @story.audio[0].body["_links"]["enclosure"]
-    link = audio["href"].to_s
-    extension = link.split('.').pop
-
-    {
-      location: AUDIO_FILE_PREFIX + extension + link,
-      type: audio["type"]
-    }
-  end
 
   def self.from_prx_story(opts = {})
     new(opts).from_prx_story
   end
 
-  def link
-    ENV['PRX_ROOT'] + @story.id.to_s
+  def initialize(e)
+    @ep = e
+    @prx_id = e.prx_id
+    @overrides = JSON.parse(e.overrides || '{}').symbolize_keys!
   end
 
   def from_prx_story
@@ -60,5 +31,44 @@ class EpisodeBuilder
       created: @ep.created_at.strftime('%a, %d %b %Y %H:%M:%S %Z'),
       modified: @ep.updated_at.strftime('%a, %d %b %Y %H:%M:%S %Z')
     }.merge(@overrides)
+  end
+
+  def audio_file
+    audio = @story.audio[0].body["_links"]["enclosure"]
+    link = audio["href"].to_s
+    extension = link.split('.').pop
+
+    {
+      location: prefix + extension + link,
+      type: audio["type"]
+    }
+  end
+
+  def author
+    @story.account.body
+  end
+
+  def get_story
+    @story = api.get.links.story[0].where(id: @prx_id)
+  end
+
+  def api
+    HyperResource.new(root: cms_root)
+  end
+
+  def link
+    "#{prx_root}#{@story.id}"
+  end
+
+  def cms_root
+    ENV['CMS_ROOT'] || 'https://cms.prx.org/api/vi/'
+  end
+
+  def prx_root
+    ENV['PRX_ROOT'] || 'https://beta.prx.org/stories/'
+  end
+
+  def prefix
+    ENV['AUDIO_FILE_PREFIX'] || ''
   end
 end

@@ -8,7 +8,7 @@ describe 'RSS feed Integration Test' do
     @podcast = create(:podcast)
     @channel_image = @podcast.feed_image
     @itunes_image = @podcast.itunes_image
-    @episodes = create_list(:episode, 2, podcast: @podcast)
+    @episodes = create_list(:episode, 2, podcast: @podcast).reverse
     @category = create(:itunes_category, podcast: @podcast)
 
     get "/podcasts/#{@podcast.id}"

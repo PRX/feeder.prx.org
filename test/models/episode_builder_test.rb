@@ -20,7 +20,7 @@ describe EpisodeBuilder do
 
     it 'appends podtrac redirect to audio file link' do
       link = "/pub/472875466d225aca0480000fea4b5fc2/0/web/audio_file/451642/broadcast/Moth1301GarrisonFinal.mp3"
-      prefix = EpisodeBuilder::AUDIO_FILE_PREFIX + "mp3"
+      prefix = EpisodeBuilder.new(@record).prefix + "mp3"
 
       @ep[:audio_file].must_equal prefix + link
     end

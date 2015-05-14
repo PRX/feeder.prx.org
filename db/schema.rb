@@ -13,7 +13,10 @@
 
 ActiveRecord::Schema.define(version: 20150205175613) do
 
-  create_table "episodes", force: true do |t|
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "episodes", force: :cascade do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "podcast_id"
@@ -24,7 +27,7 @@ ActiveRecord::Schema.define(version: 20150205175613) do
 
   add_index "episodes", ["prx_id"], name: "index_episodes_on_prx_id", using: :btree
 
-  create_table "feed_images", force: true do |t|
+  create_table "feed_images", force: :cascade do |t|
     t.string  "url"
     t.string  "link"
     t.string  "description"
@@ -36,7 +39,7 @@ ActiveRecord::Schema.define(version: 20150205175613) do
 
   add_index "feed_images", ["podcast_id"], name: "index_feed_images_on_podcast_id", using: :btree
 
-  create_table "itunes_categories", force: true do |t|
+  create_table "itunes_categories", force: :cascade do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "podcast_id"
@@ -44,14 +47,14 @@ ActiveRecord::Schema.define(version: 20150205175613) do
     t.string   "subcategories"
   end
 
-  create_table "itunes_images", force: true do |t|
+  create_table "itunes_images", force: :cascade do |t|
     t.string  "url"
     t.integer "podcast_id"
   end
 
   add_index "itunes_images", ["podcast_id"], name: "index_itunes_images_on_podcast_id", using: :btree
 
-  create_table "podcasts", force: true do |t|
+  create_table "podcasts", force: :cascade do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "title",           null: false
