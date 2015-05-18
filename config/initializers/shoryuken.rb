@@ -1,8 +1,9 @@
+require 'logger'
 require 'shoryuken'
 require 'shoryuken/extensions/active_job_adapter'
 
 Shoryuken.default_worker_options =  {
-  'queue'                   => 'feeder_default',
+  'queue'                   => (ENV['RAILS_ENV'] || 'development') + '_feeder_default',
   'auto_delete'             => true,
   'auto_visibility_timeout' => true,
   'batch'                   => false,
