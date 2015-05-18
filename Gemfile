@@ -27,7 +27,7 @@ gem 'fastimage'
 
 ## Messaging
 gem 'shoryuken'
-gem 'announce', path: '/Users/andrew/dev/projects/announce'
+gem 'announce'
 
 group :test do
   gem 'minitest-spec-rails'
