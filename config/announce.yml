@@ -1,7 +1,6 @@
-# Configuration file that defines the settings for pub/sub of events
 app_name: feeder
 
 subscribe:
   story:
-    - published
-    - updated
+    - update
+    - delete
