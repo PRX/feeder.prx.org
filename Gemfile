@@ -25,6 +25,10 @@ gem 'sanitize'
 gem 'paranoia'
 gem 'fastimage'
 
+## Messaging
+gem 'shoryuken'
+gem 'announce'
+
 group :test do
   gem 'minitest-spec-rails'
   gem 'factory_girl_rails'
