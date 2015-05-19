@@ -1,4 +1,7 @@
+require 'prx_access'
+
 class EpisodeBuilder
+  include PrxAccess
 
   def self.from_prx_story(opts = {})
     new(opts).from_prx_story
@@ -19,7 +22,7 @@ class EpisodeBuilder
         rich: @story.description,
         plain: Sanitize.fragment(@story.description).strip
       },
-      author_name: author["name"],
+      author_name: author['name'],
       link: link,
       audio_file: audio_file[:location],
       audio_file_type: audio_file[:type],
@@ -34,13 +37,13 @@ class EpisodeBuilder
   end
 
   def audio_file
-    audio = @story.audio[0].body["_links"]["enclosure"]
-    link = audio["href"].to_s
+    audio = @story.audio[0].body['_links']['enclosure']
+    link = audio['href'].to_s
     extension = link.split('.').pop
 
     {
       location: prefix + extension + link,
-      type: audio["type"]
+      type: audio['type']
     }
   end
 
@@ -52,20 +55,8 @@ class EpisodeBuilder
     @story = api.get.links.story[0].where(id: @prx_id)
   end
 
-  def api
-    HyperResource.new(root: cms_root)
-  end
-
   def link
     "#{prx_root}#{@story.id}"
-  end
-
-  def cms_root
-    ENV['CMS_ROOT'] || 'https://cms.prx.org/api/vi/'
-  end
-
-  def prx_root
-    ENV['PRX_ROOT'] || 'https://beta.prx.org/stories/'
   end
 
   def prefix
