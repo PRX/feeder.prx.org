@@ -31,6 +31,11 @@ describe StoryUpdateJob do
     }
   }}
 
+  it 'creates a story resource' do
+    story = job.story_resource(JSON.parse(body))
+    story.must_be_instance_of HyperResource
+  end
+
   it 'can create an episode' do
     lbd = podcast.last_build_date
     job.receive_story_update(JSON.parse(body))
