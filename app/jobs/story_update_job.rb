@@ -7,7 +7,7 @@ class StoryUpdateJob < ActiveJob::Base
 
   queue_as :feeder_default
 
-  subscribe_to :story, [:update, :delete]
+  subscribe_to :story, [:update, :delete, :publish, :unpublish]
 
   attr_accessor :episode, :podcast, :story
 
