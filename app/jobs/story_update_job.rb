@@ -24,20 +24,21 @@ class StoryUpdateJob < ActiveJob::Base
   end
 
   def load_resources(data)
-    @story = story_resource(data)
+    @body = JSON.parse(data)
+    @story = story_resource(@body)
     @episode = Episode.with_deleted.where(prx_id: @story.attributes.id).first if @story
     @podcast = @episode.podcast if @episode
   end
 
-  def story_resource(data)
-    href = data['_links']['self']['href']
+  def story_resource(body)
+    href = body['_links']['self']['href']
     resource = api
     link = HyperResource::Link.new(resource, href: href)
-    HyperResource.new_from(body: data, resource: resource, link: link)
+    HyperResource.new_from(body: body, resource: resource, link: link)
   end
 
   def create_episode
-    return unless story.series
+    return unless story.try(:series)
     if @podcast = Podcast.where(prx_id: series_id_for(story)).first
       @episode = Episode.create!(podcast: @podcast, prx_id: story.attributes.id)
     end
