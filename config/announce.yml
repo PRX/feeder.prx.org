@@ -4,3 +4,5 @@ subscribe:
   story:
     - update
     - delete
+    - publish
+    - unpublish

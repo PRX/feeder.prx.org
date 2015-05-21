@@ -17,11 +17,15 @@ class StoryUpdateJob < ActiveJob::Base
     DateUpdater.both_dates(podcast) if podcast
   end
 
+  alias receive_story_publish receive_story_update
+
   def receive_story_delete(data)
     load_resources(data)
     episode.try(:destroy)
     DateUpdater.both_dates(podcast) if podcast
   end
+
+  alias receive_story_unpublish receive_story_delete
 
   def load_resources(data)
     @body = JSON.parse(data)
