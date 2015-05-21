@@ -37,7 +37,7 @@ GEM
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
     addressable (2.3.8)
-    announce (0.2.0)
+    announce (0.2.1)
     arel (6.0.0)
     aws-sdk-core (2.0.42)
       builder (~> 3.0)
