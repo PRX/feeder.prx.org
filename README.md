@@ -1,26 +1,22 @@
-Feeder
-===============
+# Feeder
 [![License](https://img.shields.io/badge/license-AGPL-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
-[![Build Status](https://travis-ci.org/PRX/feeder.prx.org.svg?branch=master)](https://travis-ci.org/PRX/feeder.prx.org)
+[![Build Status](https://travis-ci.org/PRX/feeder.prx.org.svg)](https://travis-ci.org/PRX/feeder.prx.org)
 [![Code Climate](https://codeclimate.com/github/PRX/feeder.prx.org/badges/gpa.svg)](https://codeclimate.com/github/PRX/feeder.prx.org)
 [![Coverage Status](https://coveralls.io/repos/PRX/feeder.prx.org/badge.svg)](https://coveralls.io/r/PRX/feeder.prx.org)
 [![Dependency Status](https://gemnasium.com/PRX/feeder.prx.org.svg)](https://gemnasium.com/PRX/feeder.prx.org)
 
-Description
------------
+## Description
 This Rails app provides the Feeder service.
 
 It generates RSS feeds based on stories and their podcast specific data.
 
 It follows the [standards for PRX services](https://github.com/PRX/meta.prx.org/wiki/Project-Standards#services).
 
-Integrations & Dependencies
----------------------------
+## Integrations & Dependencies
 - postgres - main database
 - cms.prx.org - get data about episodes
 
-Installation
-------------
+## Installation
 These instructions are written assuming Mac OS X install.
 
 ### Basics
@@ -78,14 +74,10 @@ powder link
 
 # see the development status page
 open http://feeder.prx.dev
-
 ```
 
-License
--------
+## License
 [AGPL License](https://www.gnu.org/licenses/agpl-3.0.html)
 
-
-Contributing
-------------
+## Contributing
 Completing a Contributor License Agreement (CLA) is required for PRs to be accepted.

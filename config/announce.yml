@@ -1,0 +1,8 @@
+app_name: feeder
+
+subscribe:
+  story:
+    - update
+    - delete
+    - publish
+    - unpublish

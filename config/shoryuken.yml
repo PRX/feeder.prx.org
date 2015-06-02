@@ -1,0 +1,7 @@
+aws:
+  access_key_id:     <%= ENV['AWS_ACCESS_KEY_ID'] %>
+  secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+  region:            <%= ENV['AWS_REGION'] %>
+  account_id:        <%= ENV['AWS_ACCOUNT_ID'] %>
+concurrency:         25 # The number of allocated threads to process messages. Default 25
+delay:               30 # The delay in seconds to pause a queue when it's empty. Default 0
