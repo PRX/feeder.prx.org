@@ -28,9 +28,9 @@ class StoryUpdateJob < ActiveJob::Base
   alias receive_story_unpublish receive_story_delete
 
   def load_resources(data)
-    @body = JSON.parse(data)
+    @body = data.is_a?(String) ? JSON.parse(data) : data
     @story = story_resource(@body)
-    @episode = Episode.with_deleted.where(prx_id: @story.attributes.id).first if @story
+    @episode = Episode.with_deleted.where(prx_id: @story.attributes.id).first
     @podcast = @episode.podcast if @episode
   end
 
