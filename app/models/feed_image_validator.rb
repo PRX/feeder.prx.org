@@ -26,8 +26,8 @@ class FeedImageValidator < ActiveModel::Validator
   def validate_type(record)
     type = FastImage.type(record.url)
 
-    unless [:jpg, :png, :gif].include?(type)
-      record.errors[:type] = "Image must be a jpg, gif, or png"
+    unless [:jpeg, :png, :gif].include?(type)
+      record.errors[:type] = "Image must be a jpeg, gif, or png"
     end
   end
 end
