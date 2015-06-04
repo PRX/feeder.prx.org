@@ -7,7 +7,7 @@ class StoryUpdateJob < ActiveJob::Base
 
   queue_as :feeder_default
 
-  subscribe_to :story, [:update, :delete, :publish, :unpublish]
+  subscribe_to :story, [:create, :update, :delete, :publish, :unpublish]
 
   attr_accessor :episode, :podcast, :story
 
@@ -17,6 +17,7 @@ class StoryUpdateJob < ActiveJob::Base
     DateUpdater.both_dates(podcast) if podcast
   end
 
+  alias receive_story_create receive_story_update
   alias receive_story_publish receive_story_update
 
   def receive_story_delete(data)
