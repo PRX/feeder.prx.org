@@ -24,6 +24,8 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
       xml.title @podcast.feed_image.title
       xml.link @podcast.feed_image.link
       xml.description @podcast.feed_image.description
+      xml.height @podcast.feed_image.height
+      xml.width @podcast.feed_image.width
     end
 
     xml.docs 'http://blogs.law.harvard.edu/tech/rss'

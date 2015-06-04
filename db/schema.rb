@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150205175613) do
+ActiveRecord::Schema.define(version: 20150604184449) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -35,6 +35,8 @@ ActiveRecord::Schema.define(version: 20150205175613) do
     t.integer "width"
     t.integer "podcast_id"
     t.string  "title"
+    t.string  "format"
+    t.integer "size"
   end
 
   add_index "feed_images", ["podcast_id"], name: "index_feed_images_on_podcast_id", using: :btree
@@ -50,6 +52,10 @@ ActiveRecord::Schema.define(version: 20150205175613) do
   create_table "itunes_images", force: :cascade do |t|
     t.string  "url"
     t.integer "podcast_id"
+    t.string  "format"
+    t.integer "width"
+    t.integer "height"
+    t.integer "size"
   end
 
   add_index "itunes_images", ["podcast_id"], name: "index_itunes_images_on_podcast_id", using: :btree
