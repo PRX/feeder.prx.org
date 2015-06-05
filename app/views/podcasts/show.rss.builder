@@ -1,37 +1,43 @@
 xml.instruct! :xml, version: '1.0'
-xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
-        'xmlns:itunes'=>'http://www.itunes.com/dtds/podcast-1.0.dtd',
-        'xmlns:media'=>'http://search.yahoo.com/mrss/',
-        'xmlns:sy'=>'http://purl.org/rss/1.0/modules/syndication/',
-        'xmlns:dc'=>'http://purl.org/dc/elements/1.1/',
-        'xmlns:atom'=>'http://www.w3.org/2005/Atom',
-        version: '2.0' do
+xml.rss 'xmlns:atom10' => 'http://www.w3.org/2005/Atom',
+        'xmlns:media' => 'http://search.yahoo.com/mrss/',
+        'xmlns:itunes' => 'http://www.itunes.com/dtds/podcast-1.0.dtd',
+        'xmlns:sy' => 'http://purl.org/rss/1.0/modules/syndication/',
+        'xmlns:content' => 'http://purl.org/rss/1.0/modules/content/',
+        'xmlns:dc' => 'http://purl.org/dc/elements/1.1/',
+        'version' => '2.0' do
   xml.channel do
-    xml.link @podcast.link
     xml.title @podcast.title
+    xml.link @podcast.link
     xml.description @podcast.description
     xml.language @podcast.language
     xml.copyright @podcast.copyright
     xml.managingEditor @podcast.managing_editor
-    xml.pubDate @podcast.pub_date.strftime('%a, %d %b %Y %H:%M:%S %Z')
-    xml.lastBuildDate @podcast.last_build_date.strftime('%a, %d %b %Y %H:%M:%S %Z')
+    xml.webMaster @podcast.web_master
+    xml.pubDate @podcast.pub_date.rfc2822
+    xml.lastBuildDate @podcast.last_build_date.rfc2822
     @podcast.categories.split(',').each do |category|
       xml.category category
     end
-
+    xml.generator @podcast.generator
+    xml.docs 'http://blogs.law.harvard.edu/tech/rss'
+    xml.ttl 60
     xml.image do
       xml.url @podcast.feed_image.url
       xml.title @podcast.feed_image.title
       xml.link @podcast.feed_image.link
-      xml.description @podcast.feed_image.description
-      xml.height @podcast.feed_image.height
       xml.width @podcast.feed_image.width
+      xml.height @podcast.feed_image.height
+      xml.description @podcast.feed_image.description
     end
 
-    xml.docs 'http://blogs.law.harvard.edu/tech/rss'
-    xml.atom :link, podcast_path(@podcast)
-    xml.generator 'feeder.prx.org v0.0'
-    xml.ttl 60
+    xml.atom10 :link, href: @podcast.url, rel: 'self', type: 'application/rss+xml'
+
+    xml.media :copyright, @podcast.copyright
+    xml.media :thumbnail, url: @podcast.feed_image.url
+    xml.media :keywords, @podcast.keywords
+
+    xml.media :category, @categories.first.try(:name), scheme: 'http://www.itunes.com/dtds/podcast-1.0.dtd'
 
     xml.itunes :author, @podcast.author
     xml.itunes :explicit, @podcast.explicit ? 'yes' : 'no'
@@ -40,9 +46,9 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
       xml.itunes :name, @podcast.owner_name
     end
     xml.itunes :subtitle, @podcast.subtitle
-    xml.itunes :summary, @podcast.summary
+    xml.itunes(:summary) { xml.cdata!(@podcast.summary) }
 
-    @categories.each do |cat|
+    @categories[0,3].each do |cat|
       if cat.subcategories.nil?
         xml.itunes :category, text: cat.name
       else
@@ -58,16 +64,17 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
     xml.itunes :keywords, @podcast.keywords
 
     xml.sy :updatePeriod, @podcast.update_period
-    xml.sy :updateBase, @podcast.update_base
+    xml.sy :updateFrequency, @podcast.update_value
+    xml.sy :updateBase, @podcast.update_base if @podcast.update_base
 
     @episodes.each do |ep|
       xml.item do
         xml.title ep[:title]
-        xml.description ep[:description][:plain]
+        xml.description { xml.cdata!(ep[:description][:plain]) }
         xml.link ep[:link]
         xml.author "#{ep[:author_email]} (#{ep[:author_name]})"
         xml.pubDate ep[:pub_date]
-        xml.source url: podcast_path(@podcast)
+        xml.source url: @podcast.url
 
         unless ep[:categories].empty?
           ep[:categories].split(', ').each { |c| xml.category c }
@@ -77,11 +84,10 @@ xml.rss 'xmlns:content'=>'http://purl.org/rss/1.0/modules/content/',
         xml.enclosure url: ep[:audio_file],
                       length: ep[:duration],
                       type: ep[:audio_file_type]
-        xml.comments ep[:comments_link]
-        xml.content :encoded, ep[:description][:rich]
+        xml.content(:encoded) { xml.cdata!(ep[:description][:rich]) }
 
-        xml.dc :created, ep[:created]
-        xml.dc :modified, ep[:modified]
+        xml.dc :created, ep[:created].rfc2822
+        xml.dc :modified, ep[:modified].rfc2822
 
         xml.itunes :author, ep[:author_name]
         xml.itunes :subtitle, ep[:subtitle]
