@@ -19,10 +19,6 @@ class ITunesCategoryValidator < ActiveModel::Validator
   }
 
   def validate(record)
-    unless record.podcast_id
-      record.errors[:podcast_id] << 'Must have an associated podcast'
-    end
-
     if CATEGORIES.keys.include?(record.name)
       validate_subcategories(record)
     else
