@@ -5,7 +5,8 @@ class Podcast < ActiveRecord::Base
   has_many :episodes
   has_many :itunes_categories
 
-  validates_presence_of :itunes_image, :feed_image
+  validates :itunes_image, :feed_image, presence: true
+  validates :path, :prx_id, uniqueness: true
 
   after_update do
     DateUpdater.last_build_date(self)
@@ -18,6 +19,6 @@ class Podcast < ActiveRecord::Base
   end
 
   def generator
-    (ENV['FEEDER_GENERATOR'] || "PRX Feeder") + "v#{Feeder::VERSION}"
+    (ENV['FEEDER_GENERATOR'] || 'PRX Feeder') + " v#{Feeder::VERSION}"
   end
 end
