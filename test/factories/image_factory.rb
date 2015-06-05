@@ -12,8 +12,8 @@ FactoryGirl.define do
     link 'http://www.maximumfun.org/jjgo'
     title 'Jordan, Jesse GO!'
     description 'Not a picture of Jordan or Jesse'
-    width 300
-    height 300
+    width 144
+    height 144
     size 14467
     format 'png'
   end
