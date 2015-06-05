@@ -12,4 +12,12 @@ class Podcast < ActiveRecord::Base
   end
 
   acts_as_paranoid
+
+  def web_master
+    ENV['FEEDER_WEB_MASTER'] || 'prxhelp@prx.org (PRX)'
+  end
+
+  def generator
+    (ENV['FEEDER_GENERATOR'] || "PRX Feeder") + "v#{Feeder::VERSION}"
+  end
 end
