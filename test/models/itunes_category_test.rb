@@ -22,9 +22,4 @@ describe ITunesCategory do
     cat.wont_be(:valid?)
     cat.errors[:subcategories].must_include "Literature is not a valid subcategory"
   end
-
-  it 'must belong to a podcast' do
-    cat.podcast = nil
-    cat.wont_be(:valid?)
-  end
 end

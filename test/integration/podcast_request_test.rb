@@ -25,9 +25,9 @@ describe 'RSS feed Integration Test' do
     @feed.at_css('description').text.must_equal @podcast.description
     @feed.css('copyright').text.must_equal @podcast.copyright
     @feed.css('managingEditor').text.must_equal @podcast.managing_editor
-    @feed.at_css('pubDate').text.must_equal @podcast.pub_date.strftime('%a, %d %b %Y %H:%M:%S %Z')
-    @feed.css('lastBuildDate').text.must_equal @podcast.last_build_date.strftime('%a, %d %b %Y %H:%M:%S %Z')
-    @feed.css('atom|link').text.must_equal "/podcasts/#{@podcast.id}"
+    @feed.at_css('pubDate').text.must_equal @podcast.pub_date.rfc2822
+    @feed.css('lastBuildDate').text.must_equal @podcast.last_build_date.rfc2822
+    @feed.at_css('atom10|link').attributes['href'].value.must_equal 'http://feeds.feedburner.com/thornmorris'
     @feed.at_css('itunes|author').text.must_equal @podcast.author
     @feed.at_css('itunes|explicit').text.must_equal 'yes'
   end
@@ -61,8 +61,7 @@ describe 'RSS feed Integration Test' do
 
   it 'displays plaintext and richtext descriptions' do
     node = @feed.css('item')[0]
-
-    node.css('description').text[0..3].must_equal 'Tina'
-    node.css('content|encoded').text[0..4].must_equal '<div>'
+    node.css('description').text.strip[0..3].must_equal "Tina"
+    node.css('content|encoded').text.strip[0..4].must_equal "<div>"
   end
 end
