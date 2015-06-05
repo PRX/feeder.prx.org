@@ -38,4 +38,6 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
 
   config.active_support.test_order = :random
+
+  config.active_job.queue_adapter = :test
 end
