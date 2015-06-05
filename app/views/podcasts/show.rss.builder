@@ -1,7 +1,7 @@
 xml.instruct! :xml, version: '1.0'
 xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
-        'xmlns:media' => 'http://search.yahoo.com/mrss/',
         'xmlns:itunes' => 'http://www.itunes.com/dtds/podcast-1.0.dtd',
+        'xmlns:media' => 'http://search.yahoo.com/mrss/',
         'xmlns:sy' => 'http://purl.org/rss/1.0/modules/syndication/',
         'xmlns:content' => 'http://purl.org/rss/1.0/modules/content/',
         'xmlns:dc' => 'http://purl.org/dc/elements/1.1/',
@@ -26,27 +26,16 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       xml.url @podcast.feed_image.url
       xml.title @podcast.feed_image.title
       xml.link @podcast.link
+      xml.width @podcast.feed_image.width
+      xml.height @podcast.feed_image.height
       xml.description @podcast.feed_image.description
     end
 
     xml.atom :link, href: @podcast.url, rel: 'self', type: 'application/rss+xml'
 
-    xml.media :copyright, @podcast.copyright
-    xml.media :thumbnail, url: @podcast.feed_image.url
-    xml.media :keywords, @podcast.keywords
-
-    xml.media :category, @categories.first.try(:name), scheme: 'http://www.itunes.com/dtds/podcast-1.0.dtd'
-
     xml.itunes :author, @podcast.author
-    xml.itunes :explicit, @podcast.explicit ? 'yes' : 'no'
-    xml.itunes :owner do
-      xml.itunes :email, @podcast.owner_email
-      xml.itunes :name, @podcast.owner_name
-    end
-    xml.itunes :subtitle, @podcast.subtitle
-    xml.itunes(:summary) { xml.cdata!(@podcast.summary) }
 
-    @categories[0,3].each do |cat|
+    @podcast.itunes_categories[0,3].each do |cat|
       if cat.subcategories.nil?
         xml.itunes :category, text: cat.name
       else
@@ -59,7 +48,19 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     end
 
     xml.itunes :image, href: @podcast.itunes_image.url
+    xml.itunes :explicit, @podcast.explicit ? 'yes' : 'no'
+    xml.itunes :owner do
+      xml.itunes :email, @podcast.owner_email
+      xml.itunes :name, @podcast.owner_name
+    end
+    xml.itunes :subtitle, @podcast.subtitle
+    xml.itunes(:summary) { xml.cdata!(@podcast.summary) }
     xml.itunes :keywords, @podcast.keywords
+
+    xml.media :copyright, @podcast.copyright
+    xml.media :thumbnail, url: @podcast.feed_image.url
+    xml.media :keywords, @podcast.keywords
+    xml.media :category, @podcast.itunes_categories.first.try(:name), scheme: 'http://www.itunes.com/dtds/podcast-1.0.dtd'
 
     xml.sy :updatePeriod, @podcast.update_period
     xml.sy :updateFrequency, @podcast.update_value
@@ -68,30 +69,31 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     @episodes.each do |ep|
       xml.item do
         xml.title ep[:title]
-        xml.description { xml.cdata!(ep[:description][:plain]) }
         xml.link ep[:link]
+        xml.description { xml.cdata!(ep[:description][:plain]) }
         xml.author "#{ep[:author_email]} (#{ep[:author_name]})"
-        xml.pubDate ep[:pub_date]
-        xml.source url: @podcast.url
-
         unless ep[:categories].empty?
           ep[:categories].split(', ').each { |c| xml.category c }
         end
-
-        xml.guid ep[:link]
         xml.enclosure url: ep[:audio_file],
                       length: ep[:duration],
                       type: ep[:audio_file_type]
+
+        xml.guid ep[:link], isPermaLink: false
+        xml.pubDate ep[:pub_date]
+
+        xml.media :content, fileSize: ep[:duration], type: ep[:audio_file_type], url: ep[:audio_file]
+
         xml.content(:encoded) { xml.cdata!(ep[:description][:rich]) }
 
         xml.dc :created, ep[:created].rfc2822
         xml.dc :modified, ep[:modified].rfc2822
 
         xml.itunes :author, ep[:author_name]
+        xml.itunes :duration, ep[:duration]
+        xml.itunes :explicit, ep[:explicit]
         xml.itunes :subtitle, ep[:subtitle]
         xml.itunes :summary, ep[:summary]
-        xml.itunes :explicit, ep[:explicit]
-        xml.itunes :duration, ep[:duration]
         xml.itunes :keywords, ep[:keywords]
       end
     end
