@@ -1,4 +1,4 @@
-class ItunesCategoryValidator < ActiveModel::Validator
+class ITunesCategoryValidator < ActiveModel::Validator
   CATEGORIES = {
     "Arts" => ["Design", "Fashion &amp; Beauty", "Food", "Literature", "Performing Arts", "Visual Arts"],
     "Business" => ["Business News", "Careers", "Investing", "Management &amp; Marketing", "Shopping"],

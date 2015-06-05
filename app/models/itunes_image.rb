@@ -1,4 +1,4 @@
-class ItunesImage < ActiveRecord::Base
+class ITunesImage < ActiveRecord::Base
   include ImageFile
 
   belongs_to :podcast

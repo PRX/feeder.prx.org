@@ -1,6 +1,6 @@
 require 'test_helper'
 
-describe ItunesCategory do
+describe ITunesCategory do
   let(:cat) { build_stubbed(:itunes_category) }
 
   it 'is valid when all attributes are valid' do

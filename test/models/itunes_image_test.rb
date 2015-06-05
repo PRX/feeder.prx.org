@@ -1,6 +1,6 @@
 require 'test_helper'
 
-describe ItunesImage do
+describe ITunesImage do
   describe 'associations' do
     it 'belongs to a podcast' do
       podcast = build_stubbed(:podcast)
