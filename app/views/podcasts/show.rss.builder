@@ -1,5 +1,5 @@
 xml.instruct! :xml, version: '1.0'
-xml.rss 'xmlns:atom10' => 'http://www.w3.org/2005/Atom',
+xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         'xmlns:media' => 'http://search.yahoo.com/mrss/',
         'xmlns:itunes' => 'http://www.itunes.com/dtds/podcast-1.0.dtd',
         'xmlns:sy' => 'http://purl.org/rss/1.0/modules/syndication/',
@@ -25,13 +25,11 @@ xml.rss 'xmlns:atom10' => 'http://www.w3.org/2005/Atom',
     xml.image do
       xml.url @podcast.feed_image.url
       xml.title @podcast.feed_image.title
-      xml.link @podcast.feed_image.link
-      xml.width @podcast.feed_image.width
-      xml.height @podcast.feed_image.height
+      xml.link @podcast.link
       xml.description @podcast.feed_image.description
     end
 
-    xml.atom10 :link, href: @podcast.url, rel: 'self', type: 'application/rss+xml'
+    xml.atom :link, href: @podcast.url, rel: 'self', type: 'application/rss+xml'
 
     xml.media :copyright, @podcast.copyright
     xml.media :thumbnail, url: @podcast.feed_image.url
