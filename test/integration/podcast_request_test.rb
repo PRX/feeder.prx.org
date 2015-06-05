@@ -5,10 +5,13 @@ describe 'RSS feed Integration Test' do
   before do
     stub_requests_to_prx_cms
 
+    Podcast.delete_all
+    Episode.delete_all
+
     @podcast = create(:podcast)
     @channel_image = @podcast.feed_image
     @itunes_image = @podcast.itunes_image
-    @episodes = create_list(:episode, 2, podcast: @podcast).reverse
+    @episodes = create_list(:episode, 1, podcast: @podcast).reverse
     @category = create(:itunes_category, podcast: @podcast)
 
     get "/podcasts/#{@podcast.id}"
