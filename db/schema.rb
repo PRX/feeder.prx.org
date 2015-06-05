@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150604184449) do
+ActiveRecord::Schema.define(version: 20150605130436) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -84,6 +84,7 @@ ActiveRecord::Schema.define(version: 20150604184449) do
     t.string   "owner_email"
     t.integer  "prx_id"
     t.time     "deleted_at"
+    t.string   "url"
   end
 
   add_index "podcasts", ["prx_id"], name: "index_podcasts_on_prx_id", using: :btree
