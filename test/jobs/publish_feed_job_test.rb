@@ -2,7 +2,7 @@ require 'test_helper'
 
 describe PublishFeedJob do
 
-  let(:episode) { create(:episode) }
+  let(:episode) { create(:episode, prx_id: 87683) }
   let(:podcast) { episode.podcast }
 
   let(:job) { PublishFeedJob.new }
