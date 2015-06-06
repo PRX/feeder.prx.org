@@ -14,8 +14,9 @@ class PublishFeedJob < ActiveJob::Base
 
   def setup_data(podcast)
     @podcast = podcast
-    episodes = @podcast.episodes.order('created_at desc')
-    @episodes = episodes.map { |e| EpisodeBuilder.from_prx_story(e) }
+    @episodes = @podcast.feed_episodes.map do |e|
+      EpisodeBuilder.from_prx_story(e)
+    end
   end
 
   def generate_rss_xml
