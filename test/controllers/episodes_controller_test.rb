@@ -32,7 +32,7 @@ describe EpisodesController do
 
       episode.wont_be :nil?
       episode.podcast.must_equal @podcast
-      JSON.parse(episode.overrides)['title'].must_equal 'Virginity & Fidelity'
+      episode.overrides['title'].must_equal 'Virginity & Fidelity'
     end
   end
 
@@ -51,7 +51,7 @@ describe EpisodesController do
 
       @episode.reload
 
-      JSON.parse(@episode.overrides)["title"].must_equal 'New Title'
+      @episode.overrides["title"].must_equal 'New Title'
     end
   end
 

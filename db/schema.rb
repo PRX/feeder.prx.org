@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150605224030) do
+ActiveRecord::Schema.define(version: 20150606154517) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -23,8 +23,10 @@ ActiveRecord::Schema.define(version: 20150605224030) do
     t.integer  "prx_id"
     t.text     "overrides"
     t.time     "deleted_at"
+    t.string   "guid"
   end
 
+  add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree
   add_index "episodes", ["prx_id"], name: "index_episodes_on_prx_id", unique: true, using: :btree
 
   create_table "feed_images", force: :cascade do |t|

@@ -79,7 +79,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
                       length: ep[:duration],
                       type: ep[:audio_file_type]
 
-        xml.guid ep[:link], isPermaLink: false
+        xml.guid ep[:guid], isPermaLink: false
         xml.pubDate ep[:pub_date]
 
         xml.media :content, fileSize: ep[:duration], type: ep[:audio_file_type], url: ep[:audio_file]
