@@ -42,10 +42,6 @@
       },
       "required": ["url", "length", "type"]
     },
-    "comments_link": {
-      "type": "string",
-      "format": "uri"
-    },
     "author": {
       "type": "object",
       "properties": {

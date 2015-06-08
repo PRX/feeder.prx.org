@@ -1,4 +1,4 @@
-class ItunesCategoryValidator < ActiveModel::Validator
+class ITunesCategoryValidator < ActiveModel::Validator
   CATEGORIES = {
     "Arts" => ["Design", "Fashion &amp; Beauty", "Food", "Literature", "Performing Arts", "Visual Arts"],
     "Business" => ["Business News", "Careers", "Investing", "Management &amp; Marketing", "Shopping"],
@@ -19,10 +19,6 @@ class ItunesCategoryValidator < ActiveModel::Validator
   }
 
   def validate(record)
-    unless record.podcast_id
-      record.errors[:podcast_id] << 'Must have an associated podcast'
-    end
-
     if CATEGORIES.keys.include?(record.name)
       validate_subcategories(record)
     else

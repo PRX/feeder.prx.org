@@ -2,6 +2,7 @@ app_name: feeder
 
 subscribe:
   story:
+    - create
     - update
     - delete
     - publish

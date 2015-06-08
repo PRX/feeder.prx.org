@@ -15,7 +15,6 @@ class EpisodeBuilder
 
   def from_prx_story
     get_story
-
     {
       title: @story.title,
       description: {
@@ -31,8 +30,8 @@ class EpisodeBuilder
       explicit: @story.contentAdvisory ? 'yes' : 'no',
       keywords: @story.tags.join(', '),
       categories: @story.tags.join(', '),
-      created: @ep.created_at.strftime('%a, %d %b %Y %H:%M:%S %Z'),
-      modified: @ep.updated_at.strftime('%a, %d %b %Y %H:%M:%S %Z')
+      created: @ep.created_at,
+      modified: @ep.updated_at
     }.merge(@overrides)
   end
 

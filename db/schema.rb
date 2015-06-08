@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150205175613) do
+ActiveRecord::Schema.define(version: 20150605213849) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -25,7 +25,7 @@ ActiveRecord::Schema.define(version: 20150205175613) do
     t.time     "deleted_at"
   end
 
-  add_index "episodes", ["prx_id"], name: "index_episodes_on_prx_id", using: :btree
+  add_index "episodes", ["prx_id"], name: "index_episodes_on_prx_id", unique: true, using: :btree
 
   create_table "feed_images", force: :cascade do |t|
     t.string  "url"
@@ -35,6 +35,8 @@ ActiveRecord::Schema.define(version: 20150205175613) do
     t.integer "width"
     t.integer "podcast_id"
     t.string  "title"
+    t.string  "format"
+    t.integer "size"
   end
 
   add_index "feed_images", ["podcast_id"], name: "index_feed_images_on_podcast_id", using: :btree
@@ -50,6 +52,10 @@ ActiveRecord::Schema.define(version: 20150205175613) do
   create_table "itunes_images", force: :cascade do |t|
     t.string  "url"
     t.integer "podcast_id"
+    t.string  "format"
+    t.integer "width"
+    t.integer "height"
+    t.integer "size"
   end
 
   add_index "itunes_images", ["podcast_id"], name: "index_itunes_images_on_podcast_id", using: :btree
@@ -78,8 +84,11 @@ ActiveRecord::Schema.define(version: 20150205175613) do
     t.string   "owner_email"
     t.integer  "prx_id"
     t.time     "deleted_at"
+    t.string   "url"
+    t.string   "path"
   end
 
-  add_index "podcasts", ["prx_id"], name: "index_podcasts_on_prx_id", using: :btree
+  add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
+  add_index "podcasts", ["prx_id"], name: "index_podcasts_on_prx_id", unique: true, using: :btree
 
 end

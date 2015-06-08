@@ -36,14 +36,13 @@ describe FeedImage do
 
   it 'can have a description' do
     image.description = nil
-
     image.must_be(:valid?)
   end
 
   it 'must be a jpg, png, or gif' do
-    FastImage.stub(:type, :bmp) do
-      image.wont_be(:valid?)
-      image.errors[:type].must_include "Image must be a jpg, gif, or png"
-    end
+    image.detect_image_attributes
+    image.format = 'bmp'
+    image.valid?
+    image.errors[:format].must_include "is not included in the list"
   end
 end

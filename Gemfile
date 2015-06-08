@@ -29,6 +29,10 @@ gem 'fastimage'
 gem 'shoryuken'
 gem 'announce'
 
+# Integrations
+gem 'fixer_client'
+gem 'fog'
+
 group :test do
   gem 'minitest-spec-rails'
   gem 'factory_girl_rails'

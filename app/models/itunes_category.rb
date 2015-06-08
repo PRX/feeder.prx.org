@@ -1,5 +1,5 @@
-class ItunesCategory < ActiveRecord::Base
+class ITunesCategory < ActiveRecord::Base
   belongs_to :podcast
 
-  validates_with ItunesCategoryValidator
+  validates_with ITunesCategoryValidator
 end

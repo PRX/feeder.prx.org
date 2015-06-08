@@ -22,6 +22,10 @@ require 'minitest/autorun'
 require 'minitest/spec'
 require 'minitest/pride'
 require 'webmock/minitest'
+require 'announce/testing'
+
+include Announce::Testing
+reset_announce
 
 WebMock.allow_net_connect! unless use_webmock?
 
