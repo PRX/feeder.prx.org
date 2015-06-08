@@ -1,7 +1,7 @@
 FactoryGirl.define do
   factory :episode do
     podcast
-    prx_id 87683
+    sequence(:prx_id) { |n| (87683 + n) }
 
     guid "prx:#{87683}:#{SecureRandom.uuid}"
 

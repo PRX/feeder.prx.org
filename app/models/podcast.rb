@@ -14,6 +14,12 @@ class Podcast < ActiveRecord::Base
 
   acts_as_paranoid
 
+  def feed_episodes
+    items = episodes.order('created_at desc')
+    items = episodes.limit(max_episodes) if max_episodes.to_i > 0
+    items
+  end
+
   def web_master
     ENV['FEEDER_WEB_MASTER'] || 'prxhelp@prx.org (PRX)'
   end

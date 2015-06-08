@@ -33,4 +33,15 @@ describe Podcast do
 
     Timecop.return
   end
+
+  describe 'episode limit' do
+    let(:episodes) { create_list(:episode, 10, podcast: podcast).reverse }
+
+    it 'returns only limited number of episodes' do
+      episodes.count.must_equal podcast.episodes.count
+      podcast.feed_episodes.count.must_equal 10
+      podcast.max_episodes = 5
+      podcast.feed_episodes.count.must_equal 5
+    end
+  end
 end
