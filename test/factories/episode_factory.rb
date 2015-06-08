@@ -3,6 +3,8 @@ FactoryGirl.define do
     podcast
     prx_id 87683
 
+    guid "prx:#{87683}:#{SecureRandom.uuid}"
+
     sequence(:overrides) do |n|
       {
         title: "Episode #{n}",
