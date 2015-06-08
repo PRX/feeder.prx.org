@@ -4,7 +4,7 @@ class EpisodesController < ApplicationController
     @episode = Episode.with_deleted.find_or_initialize_by(prx_id: episode_params[:prx_id],
                                                           podcast_id: @podcast.id)
 
-    @episode.overrides = episode_params[:overrides].to_json
+    @episode.overrides = episode_params[:overrides]
     @episode.deleted_at = nil
 
     if @episode.save
@@ -19,7 +19,7 @@ class EpisodesController < ApplicationController
     @episode = Episode.find(params[:id])
     @podcast = @episode.podcast
 
-    @episode.overrides = episode_params[:overrides].to_json
+    @episode.overrides = episode_params[:overrides]
 
     if @episode.save
       publish_feed

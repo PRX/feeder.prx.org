@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" media="screen" href="/~d/styles/rss2enclosuresfull.xsl"?>
+<?xml-stylesheet type="text/css" media="screen" href="http://feeds.gimletmedia.com/~d/styles/itemcontent.css"?>
+<rss
+  version="2.0"
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0"
+  xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+  xmlns:media="http://search.yahoo.com/mrss/">
+
+
+
+
+  <channel>
+    <title>StartUp Podcast</title>
+    <link>http://gimletmedia.com</link>
+    <pubDate>Fri, 05 Jun 2015 03:27:21 +0000</pubDate>
+    <lastBuildDate>Fri, 05 Jun 2015 03:27:21 +0000</lastBuildDate>
+    <ttl>60</ttl>
+    <language>en</language>
+    <copyright>All rights reserved</copyright>
+    <webMaster>feeds@soundcloud.com (SoundCloud Feeds)</webMaster>
+    <description>Two women build a dating company in the male-dominated world of startups</description>
+    <itunes:subtitle>The business origin story you never get to hear</itunes:subtitle>
+    <itunes:author>Gimlet</itunes:author>
+    <itunes:explicit>yes</itunes:explicit>
+    <itunes:image href="http://i1.sndcdn.com/avatars-000116508031-lllic3-original.png"/>
+    <image>
+      <url>http://i1.sndcdn.com/avatars-000116508031-lllic3-original.png</url>
+      <title>StartUp Podcast</title>
+      <link>http://gimletmedia.com</link>
+    </image>
+    <atom10:link href="http://feeds.gimletmedia.com/hearstartup" rel="self" type="application/rss+xml" xmlns:atom10="http://www.w3.org/2005/Atom"/>
+    <feedburner:info uri="hearstartup"/>
+    <atom10:link href="http://pubsubhubbub.appspot.com/" rel="hub" xmlns:atom10="http://www.w3.org/2005/Atom"/>
+    <media:copyright>All rights reserved</media:copyright>
+    <media:thumbnail url="http://i1.sndcdn.com/avatars-000116508031-lllic3-original.png"/>
+    <media:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</media:keywords>
+    <media:category scheme="http://www.itunes.com/dtds/podcast-1.0.dtd">Business</media:category>
+    <itunes:owner>
+      <itunes:email>hearstartup@gmail.com</itunes:email>
+      <itunes:name>Gimlet</itunes:name>
+    </itunes:owner>
+    <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+    <itunes:category text="Business"/>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/208879014</guid>
+      <title>Profiled (Season 2, #6)</title>
+      <pubDate>Fri, 05 Jun 2015 03:27:21 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/profiled-season-2-6</link>
+      <itunes:duration>00:29:24</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>In online dating, love is not blind</itunes:summary>
+      <itunes:subtitle>In online dating, love is not blind</itunes:subtitle>
+      <description>In online dating, love is not blind&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/IxV3aryOHqo&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000119242181-tycvg4-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="42329297" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/2b3PbmNkmQE/208879014-hearstartup-profiled-season-2-6.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="42329297" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/2b3PbmNkmQE/208879014-hearstartup-profiled-season-2-6.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/208879014-hearstartup-profiled-season-2-6.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/207894228</guid>
+      <title>BONUS - Gimlet's Newest Podcast (Season 2, #5.5)</title>
+      <pubDate>Fri, 29 May 2015 23:02:34 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/bonus-episode-season-2-55</link>
+      <itunes:duration>00:25:53</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>This week, we take a break from our usual programming on Dating Ring to bring you this very special bonus episode, featuring Gimlet's newest show. </itunes:summary>
+      <itunes:subtitle>This week, we take a break from our usual program…</itunes:subtitle>
+      <description>This week, we take a break from our usual programming on Dating Ring to bring you this very special bonus episode, featuring Gimlet's newest show.&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/cCGEHYK0Zzk&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000118516166-afbzl6-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="62129992" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/yUPv0Yv_ZTE/207894228-hearstartup-bonus-episode-season-2-55.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="62129992" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/yUPv0Yv_ZTE/207894228-hearstartup-bonus-episode-season-2-55.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/207894228-hearstartup-bonus-episode-season-2-55.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/206641319</guid>
+      <title>Playing With Matches (Season 2, #5)</title>
+      <pubDate>Fri, 22 May 2015 03:07:08 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/playing-with-matches-season-2-5</link>
+      <itunes:duration>00:30:56</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Inside Dating Ring's Matchmaking System</itunes:summary>
+      <itunes:subtitle>Inside Dating Ring's Matchmaking System</itunes:subtitle>
+      <description>Inside Dating Ring's Matchmaking System&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/W8XtQBL62MM&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000117623661-ys65in-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="44524701" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/kMunc61ND9s/206641319-hearstartup-playing-with-matches-season-2-5.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="44524701" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/kMunc61ND9s/206641319-hearstartup-playing-with-matches-season-2-5.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/206641319-hearstartup-playing-with-matches-season-2-5.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/205548180</guid>
+      <title>Save The Date (Season 2, #4)</title>
+      <pubDate>Fri, 15 May 2015 03:40:05 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/save-the-date-season-2-4</link>
+      <itunes:duration>00:29:10</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Save The Date (Season 2, #4) by Gimlet</itunes:summary>
+      <itunes:subtitle>Save The Date (Season 2, #4) by Gimlet</itunes:subtitle>
+      <description>Save The Date (Season 2, #4) by Gimlet&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/Cw7XYhjJfr4&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000116836538-fc77px-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="41997527" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/nnoMQBQjOpI/205548180-hearstartup-save-the-date-season-2-4.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="41997527" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/nnoMQBQjOpI/205548180-hearstartup-save-the-date-season-2-4.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/205548180-hearstartup-save-the-date-season-2-4.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/204451712</guid>
+      <title>Another Side Of The Story (Season 2, #3)</title>
+      <pubDate>Fri, 08 May 2015 02:08:11 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/another-side-of-the-story-season-2-3</link>
+      <itunes:duration>00:31:24</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Welcome to fundraising</itunes:summary>
+      <itunes:subtitle>Welcome to fundraising</itunes:subtitle>
+      <description>Welcome to fundraising&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/WjhuiiXTCBU&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000116028931-agt6ge-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="45211411" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/D6ol15mvyvw/204451712-hearstartup-another-side-of-the-story-season-2-3.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="45211411" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/D6ol15mvyvw/204451712-hearstartup-another-side-of-the-story-season-2-3.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/204451712-hearstartup-another-side-of-the-story-season-2-3.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/203357473</guid>
+      <title>Grow Big Or Go Home (Season 2 #2)</title>
+      <pubDate>Thu, 30 Apr 2015 23:58:20 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/grow-big-or-go-home-season-2-2</link>
+      <itunes:duration>00:32:20</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Inside the Startup School Y Combinator </itunes:summary>
+      <itunes:subtitle>Inside the Startup School Y Combinator </itunes:subtitle>
+      <description>Inside the Startup School Y Combinator&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/wkFpCbKQSFY&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000115217044-hbshw3-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="46534149" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/pgYd81_6cnc/203357473-hearstartup-grow-big-or-go-home-season-2-2.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="46534149" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/pgYd81_6cnc/203357473-hearstartup-grow-big-or-go-home-season-2-2.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/203357473-hearstartup-grow-big-or-go-home-season-2-2.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/202208246</guid>
+      <title>Origin Story (Season 2 #1)</title>
+      <pubDate>Thu, 23 Apr 2015 17:06:24 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/origin-story-season-2-1</link>
+      <itunes:duration>00:31:37</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>First comes love...then comes equity
+
+StartUp is a podcast series about what it’s really like to get a business off the ground. In Season 1, Alex Blumberg told the story of launching this business, Gimlet Media, a podcast network.
+
+In Season 2, Alex is joined by co-Host Lisa Chow, to follow an entirely new company. The business is Dating Ring, a dating company that combines technology with old-fashioned matchmaking. The founders are women in their 20s, outsiders in the male-dominated world of Silicon Valley. And over the 10 episodes, we'll take you inside that world. Some of the challenges they face are different from Alex’s: founder disagreements, hellish fundraising, and sexism. But just like Gimlet's story, theirs is also a transparent account of something that happens everyday in America, but we rarely get to see firsthand: starting a business. </itunes:summary>
+      <itunes:subtitle>First comes love...then comes equity
+
+StartUp is…</itunes:subtitle>
+      <description>First comes love...then comes equity
+
+StartUp is a podcast series about what it’s really like to get a business off the ground. In Season 1, Alex Blumberg told the story of launching this business, Gimlet Media, a podcast network.
+
+In Season 2, Alex is joined by co-Host Lisa Chow, to follow an entirely new company. The business is Dating Ring, a dating company that combines technology with old-fashioned matchmaking. The founders are women in their 20s, outsiders in the male-dominated world of Silicon Valley. And over the 10 episodes, we'll take you inside that world. Some of the challenges they face are different from Alex’s: founder disagreements, hellish fundraising, and sexism. But just like Gimlet's story, theirs is also a transparent account of something that happens everyday in America, but we rarely get to see firsthand: starting a business.&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/fLylGXn0PS4&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000114380685-xj6s3q-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="45523797" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/bpB_gYXj62Q/202208246-hearstartup-origin-story-season-2-1.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="45523797" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/bpB_gYXj62Q/202208246-hearstartup-origin-story-season-2-1.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/202208246-hearstartup-origin-story-season-2-1.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/191508217</guid>
+      <title>#14 Where We Are</title>
+      <pubDate>Tue, 17 Feb 2015 00:39:36 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/where-we-are</link>
+      <itunes:duration>00:37:57</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>An end and a beginning </itunes:summary>
+      <itunes:subtitle>An end and a beginning </itunes:subtitle>
+      <description>An end and a beginning&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/PldKQanZuys&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000106973004-wq18k5-original.png"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="54691730" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/rUUuYSq5fjw/191508217-hearstartup-where-we-are.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="54691730" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/rUUuYSq5fjw/191508217-hearstartup-where-we-are.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/191508217-hearstartup-where-we-are.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/189223270</guid>
+      <title>#13 Fake It Til You Make It</title>
+      <pubDate>Tue, 03 Feb 2015 04:02:11 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/13-fake-it-til-you-make-it</link>
+      <itunes:duration>00:28:40</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Episode 13 addresses a question that has been dogging us since the company’s beginnings: Are we a technology company or a content company?
+
+This question led to months of debate. Many voices weighed in on either side, including Marco Arment, the lead developer of Tumblr and creator of Instapaper, who came in surprisingly anti-tech.
+
+A few weeks back, we had a breakthrough when one of the most successful tech companies in the world paid a visit to the Gimlet Media headquarters.
+
+SPOILER: Check out the video demo of the app prototype we built with Google Ventures on this week’s episode of StartUp: https://www.youtube.com/watch?v=iqGLrMjBLZ4
+
+We should caveat that this is not a real app, it’s just a prototype - a series of images stitched together to give the appearance of an app. You can’t download it in the App store, or anywhere else.
+
+After you watch the video, we’d love your feedback. Fill out our survey about the prototype here: http://bit.ly/1HPFFWu
+
+For more about design sprints, how they work, and how you can do one yourself -- check out this tutorial from the Google Ventures team: http://www.gv.com/sprint</itunes:summary>
+      <itunes:subtitle>Episode 13 addresses a question that has been dog…</itunes:subtitle>
+      <description>Episode 13 addresses a question that has been dogging us since the company’s beginnings: Are we a technology company or a content company?
+
+This question led to months of debate. Many voices weighed in on either side, including Marco Arment, the lead developer of Tumblr and creator of Instapaper, who came in surprisingly anti-tech.
+
+A few weeks back, we had a breakthrough when one of the most successful tech companies in the world paid a visit to the Gimlet Media headquarters.
+
+SPOILER: Check out the video demo of the app prototype we built with Google Ventures on this week’s episode of StartUp: https://www.youtube.com/watch?v=iqGLrMjBLZ4
+
+We should caveat that this is not a real app, it’s just a prototype - a series of images stitched together to give the appearance of an app. You can’t download it in the App store, or anywhere else.
+
+After you watch the video, we’d love your feedback. Fill out our survey about the prototype here: http://bit.ly/1HPFFWu
+
+For more about design sprints, how they work, and how you can do one yourself -- check out this tutorial from the Google Ventures team: http://www.gv.com/sprint&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/qSzEeyd43nE&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000105445132-87crb3-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="41347926" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/ArzykxD-KIQ/189223270-hearstartup-13-fake-it-til-you-make-it.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="41347926" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/ArzykxD-KIQ/189223270-hearstartup-13-fake-it-til-you-make-it.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/189223270-hearstartup-13-fake-it-til-you-make-it.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/186920380</guid>
+      <title>#12 Burnout</title>
+      <pubDate>Tue, 20 Jan 2015 05:12:41 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/12-burnout</link>
+      <itunes:duration>00:25:30</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Recovering from a breaking point
+
+Thanks to everyone who took our listener survey last week. To see the results, visit: https://hearstartup.typeform.com/report/ofUGcO/wheU </itunes:summary>
+      <itunes:subtitle>Recovering from a breaking point
+
+Thanks to every…</itunes:subtitle>
+      <description>Recovering from a breaking point
+
+Thanks to everyone who took our listener survey last week. To see the results, visit: https://hearstartup.typeform.com/report/ofUGcO/wheU&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/7JvYYxai898&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000103951093-9dx8pu-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="36790629" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/ldLEKUcwpWE/186920380-hearstartup-12-burnout.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="36790629" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/ldLEKUcwpWE/186920380-hearstartup-12-burnout.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/186920380-hearstartup-12-burnout.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/184695569</guid>
+      <title>#11 Know Your Customer</title>
+      <pubDate>Tue, 06 Jan 2015 05:34:38 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/11-know-your-customer</link>
+      <itunes:duration>00:23:56</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Lessons on building an audience
+
+While working on this episode, we realized we want to know more about our audience. So, we created a survey. It takes about two minutes to complete, and you can find it at startuplistener.com  We would be very grateful if you took the time to help us learn more about our listeners. Thanks!</itunes:summary>
+      <itunes:subtitle>Lessons on building an audience
+
+While working o…</itunes:subtitle>
+      <description>Lessons on building an audience
+
+While working on this episode, we realized we want to know more about our audience. So, we created a survey. It takes about two minutes to complete, and you can find it at startuplistener.com  We would be very grateful if you took the time to help us learn more about our listeners. Thanks!&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/47nhOFvdN1g&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000102422011-tc4mfk-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="34545179" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/RxwODmRo1Lg/184695569-hearstartup-11-know-your-customer.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="34545179" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/RxwODmRo1Lg/184695569-hearstartup-11-know-your-customer.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/184695569-hearstartup-11-know-your-customer.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/182742155</guid>
+      <title>#10 Mixing Art And Business</title>
+      <pubDate>Mon, 22 Dec 2014 23:39:23 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/10-mixing-art-and-business</link>
+      <itunes:duration>00:29:19</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Lessons on outgrowing your business plan </itunes:summary>
+      <itunes:subtitle>Lessons on outgrowing your business plan </itunes:subtitle>
+      <description>Lessons on outgrowing your business plan&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/vSeg38mlbS0&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000101065768-r1jao0-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="42298820" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/dSg-kSk9iSc/182742155-hearstartup-10-mixing-art-and-business.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="42298820" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/dSg-kSk9iSc/182742155-hearstartup-10-mixing-art-and-business.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/182742155-hearstartup-10-mixing-art-and-business.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/180646134</guid>
+      <title>#9 We Made A Mistake</title>
+      <pubDate>Tue, 09 Dec 2014 03:36:44 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/9-we-made-a-mistake</link>
+      <itunes:duration>00:27:52</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Gimlet Media addresses a company mistake.</itunes:summary>
+      <itunes:subtitle>Gimlet Media addresses a company mistake.</itunes:subtitle>
+      <description>Gimlet Media addresses a company mistake.&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/-nUTsv8Fhao&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000099656529-wkqplu-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="40202339" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/2zuaWZSiV78/180646134-hearstartup-9-we-made-a-mistake.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="40202339" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/2zuaWZSiV78/180646134-hearstartup-9-we-made-a-mistake.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/180646134-hearstartup-9-we-made-a-mistake.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/178503526</guid>
+      <title>#8 Our New Show</title>
+      <pubDate>Tue, 25 Nov 2014 00:57:04 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/8-our-new-show</link>
+      <itunes:duration>00:25:52</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Welcome, Reply All </itunes:summary>
+      <itunes:subtitle>Welcome, Reply All </itunes:subtitle>
+      <description>Welcome, Reply All&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/iHYMvCLd_ds&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000098218465-v7r5hy-original.png"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="37318973" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/_MZGax98uDk/178503526-hearstartup-8-our-new-show.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="37318973" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/_MZGax98uDk/178503526-hearstartup-8-our-new-show.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/178503526-hearstartup-8-our-new-show.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/176185715</guid>
+      <title>#7 How Listeners Become Owners</title>
+      <pubDate>Mon, 10 Nov 2014 05:55:57 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/how-listeners-become-owners</link>
+      <itunes:duration>00:32:28</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Are you ready to invest in Gimlet Media?</itunes:summary>
+      <itunes:subtitle>Are you ready to invest in Gimlet Media?</itunes:subtitle>
+      <description>Are you ready to invest in Gimlet Media?&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/lVJ-nrix3x4&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000096676506-psh9j9-original.png"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="46819796" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/4Sm96ymvr9E/176185715-hearstartup-how-listeners-become-owners.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="46819796" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/4Sm96ymvr9E/176185715-hearstartup-how-listeners-become-owners.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/176185715-hearstartup-how-listeners-become-owners.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/174179641</guid>
+      <title>#6 How To Value Your Startup</title>
+      <pubDate>Tue, 28 Oct 2014 03:43:28 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/6-how-to-value-your-startup</link>
+      <itunes:duration>00:31:27</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>It's all about your story. </itunes:summary>
+      <itunes:subtitle>It's all about your story. </itunes:subtitle>
+      <description>It's all about your story.&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/Jx7CtXAS9k4&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000095374711-t6d6q3-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="45344312" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/DqhtlGk4nmQ/174179641-hearstartup-6-how-to-value-your-startup.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="45344312" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/DqhtlGk4nmQ/174179641-hearstartup-6-how-to-value-your-startup.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/174179641-hearstartup-6-how-to-value-your-startup.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/172008630</guid>
+      <title>#5 How To Name Your Company</title>
+      <pubDate>Mon, 13 Oct 2014 22:10:11 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/5-how-to-name-your-company</link>
+      <itunes:duration>00:26:33</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Choosing a favorite is only the beginning. </itunes:summary>
+      <itunes:subtitle>Choosing a favorite is only the beginning. </itunes:subtitle>
+      <description>Choosing a favorite is only the beginning.&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/njvI54vfJ7c&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000093877120-9tnqxs-original.jpg"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="38313705" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/qOwuYMaOszY/172008630-hearstartup-5-how-to-name-your-company.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="38313705" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/qOwuYMaOszY/172008630-hearstartup-5-how-to-name-your-company.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/172008630-hearstartup-5-how-to-name-your-company.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/169954282</guid>
+      <title>#4 Startups are a Risky Business</title>
+      <pubDate>Tue, 30 Sep 2014 00:56:15 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/4-startups-are-a-risky-business</link>
+      <itunes:duration>00:27:54</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>StartUps are a risky business, but there's lots of reasons to write a check. </itunes:summary>
+      <itunes:subtitle>StartUps are a risky business, but there's lots o…</itunes:subtitle>
+      <description>StartUps are a risky business, but there's lots of reasons to write a check.&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/RBMD7rVzpgM&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000092509151-t4gs9w-original.png"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="40247424" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/FZD_w10GUC8/169954282-hearstartup-4-startups-are-a-risky-business.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="40247424" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/FZD_w10GUC8/169954282-hearstartup-4-startups-are-a-risky-business.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/169954282-hearstartup-4-startups-are-a-risky-business.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/168182483</guid>
+      <title>#3 How To Divide An Imaginary Pie</title>
+      <pubDate>Wed, 17 Sep 2014 19:26:18 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/3-how-to-divide-an-imaginary-pie</link>
+      <itunes:duration>00:30:32</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>How much of your company should you give up when you bring on a partner?</itunes:summary>
+      <itunes:subtitle>How much of your company should you give up when …</itunes:subtitle>
+      <description>How much of your company should you give up when you bring on a partner?&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/gTRRBApEwq0&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000091323660-nilkk1-original.png"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="44045367" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/mHAFOzm8uyE/168182483-hearstartup-3-how-to-divide-an-imaginary-pie.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="44045367" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/mHAFOzm8uyE/168182483-hearstartup-3-how-to-divide-an-imaginary-pie.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/168182483-hearstartup-3-how-to-divide-an-imaginary-pie.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/166357477</guid>
+      <title>#2 Is Podcasting the Future or the Past?</title>
+      <pubDate>Fri, 05 Sep 2014 14:27:40 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/2-is-podcasting-the-future-or-the-past</link>
+      <itunes:duration>00:24:07</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>Dreaming big is harder than you'd think. </itunes:summary>
+      <itunes:subtitle>Dreaming big is harder than you'd think. </itunes:subtitle>
+      <description>Dreaming big is harder than you'd think.&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/HruGyy1T6wU&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000090143808-ndykj2-original.png"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="34801858" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/Vk5CEePNSIw/166357477-hearstartup-2-is-podcasting-the-future-or-the-past.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="34801858" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/Vk5CEePNSIw/166357477-hearstartup-2-is-podcasting-the-future-or-the-past.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/166357477-hearstartup-2-is-podcasting-the-future-or-the-past.mp3</feedburner:origEnclosureLink>
+    </item>
+    <item>
+      <guid isPermaLink="false">tag:soundcloud,2010:tracks/165352308</guid>
+      <title>#1 How Not to Pitch a Billionaire</title>
+      <pubDate>Fri, 29 Aug 2014 19:20:57 +0000</pubDate>
+      <link>https://soundcloud.com/hearstartup/1-how-not-to-pitch-a-billionaire</link>
+      <itunes:duration>00:27:08</itunes:duration>
+      <itunes:author>Gimlet</itunes:author>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:summary>This is a series about what happens when someone who knows nothing about business starts one. It's called StartUp.  In episode one, Alex Blumberg botches his pitch to Silicon Valley billionaire Chris Sacca.</itunes:summary>
+      <itunes:subtitle>This is a series about what happens when someone …</itunes:subtitle>
+      <description>This is a series about what happens when someone who knows nothing about business starts one. It's called StartUp.  In episode one, Alex Blumberg botches his pitch to Silicon Valley billionaire Chris Sacca.&lt;img src=&quot;http://feeds.feedburner.com/~r/hearstartup/~4/204_t-LtPFg&quot; height=&quot;1&quot; width=&quot;1&quot; alt=&quot;&quot;/&gt;</description>
+      <itunes:image href="http://i1.sndcdn.com/artworks-000090091235-t2cuxh-original.png"/>
+      <author>hearstartup@gmail.com (Gimlet)</author>
+      <media:content fileSize="39148169" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/hU825oZpot8/165352308-hearstartup-1-how-not-to-pitch-a-billionaire.mp3"/>
+      <itunes:keywords>startup,Blumberg,Alex,Blumberg,business,entrepreneurship,podcast,company,podcast,network</itunes:keywords>
+      <enclosure length="39148169" type="audio/mpeg" url="http://feeds.gimletmedia.com/~r/hearstartup/~5/hU825oZpot8/165352308-hearstartup-1-how-not-to-pitch-a-billionaire.mp3"/>
+      <feedburner:origEnclosureLink>http://www.podtrac.com/pts/redirect.mp3/feeds.soundcloud.com/stream/165352308-hearstartup-1-how-not-to-pitch-a-billionaire.mp3</feedburner:origEnclosureLink>
+    </item>
+    <media:credit role="author">Gimlet</media:credit>
+    <media:rating>adult</media:rating>
+    <media:description type="plain">The business origin story you never get to hear</media:description>
+  </channel>
+</rss>

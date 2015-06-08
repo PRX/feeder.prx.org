@@ -32,7 +32,7 @@ describe EpisodeBuilder do
 
   describe 'with overrides' do
     it 'includes overrides' do
-      @record.overrides = { title: 'Virginity & Fidelity' }.to_json
+      @record.overrides = { title: 'Virginity & Fidelity' }
 
       @ep = EpisodeBuilder.from_prx_story(@record)
 

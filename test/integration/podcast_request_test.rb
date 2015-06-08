@@ -57,7 +57,7 @@ describe 'RSS feed Integration Test' do
 
   it 'displays correct episode titles' do
     @feed.css('item').each_with_index do |node, i|
-      title = JSON.parse(@episodes[i].overrides)['title']
+      title = @episodes[i].overrides['title']
       node.css('title').text.must_equal title
     end
   end
