@@ -10,7 +10,7 @@ class EpisodeBuilder
   def initialize(e)
     @ep = e
     @prx_id = e.prx_id
-    @overrides = JSON.parse(e.overrides || '{}').symbolize_keys!
+    @overrides = (e.overrides || {}).symbolize_keys!
   end
 
   def from_prx_story

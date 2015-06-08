@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom10="http://www.w3.org/2005/Atom"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     version="2.0">
+  <channel>
+    <title>99% Invisible</title>
+    <link>http://99percentinvisible.org</link>
+    <description>A Tiny Radio Show about Design with Roman Mars</description>
+    <language>en-US</language>
+    <copyright>Copyright © 2014 Roman Mars. All rights reserved.</copyright>
+    <managingEditor>roman@prx.org (Roman Mars)</managingEditor>
+    <webMaster>prxhelp@prx.org (PRX)</webMaster>
+    <pubDate>Fri, 05 Jun 2015 13:01:53 UTC</pubDate>
+    <lastBuildDate>Fri, 05 Jun 2015 13:46:55 UTC</lastBuildDate>
+    <category>99% Invisible</category>
+    <category>broadcasting</category>
+    <category>design</category>
+    <category>kitchen sisters</category>
+    <category>radio</category>
+    <category>radio diaries</category>
+    <category>radiotopia</category>
+    <category>recording</category>
+    <category>sound</category>
+    <generator>PRX Feeder v1.0.0</generator>
+    <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+    <ttl>60</ttl>
+    <image>
+      <url>http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99invisible-logo-1400.jpg</url>
+      <title>99% Invisible</title>
+      <link>http://99percentinvisible.org/</link>
+      <width>1400</width>
+      <height>1400</height>
+      <description>99% Invisible</description>
+    </image>
+    <atom10:link href="http://feeds.99percentinvisible.org/99percentinvisible" rel="self" type="application/rss+xml"/>
+    <itunes:author>Roman Mars</itunes:author>
+    <itunes:explicit>no</itunes:explicit>
+    <itunes:owner>
+      <itunes:email>roman@prx.org</itunes:email>
+      <itunes:name>Roman Mars</itunes:name>
+    </itunes:owner>
+    <itunes:subtitle>A tiny radio show about design, architecture &amp; the 99% invisible activity that shapes our world.</itunes:subtitle>
+    <itunes:summary>
+      <![CDATA[Design is everywhere in our lives, perhaps most importantly in the places where we've just stopped noticing. 99% Invisible (99 Percent Invisible) is a weekly exploration of the process and power of design and architecture. From award winning producer Roman Mars, KALW in San Francisco, and Radiotopia from PRX. Learn more: http://99percentinvisible.org
+
+Awesome people saying nice things:
+"Roman Mars lights the radio.  His pieces conjure other worlds, grapple with big ideas, make sound three dimensional.  They are smart and funny and original. The Kitchen Sisters would like to be Presidents of his Fan Club." -The Kitchen Sisters, NPR
+
+"Highly digging 99% Invisible. One of the best podcasts I've bumped into in a while." -Jad Abumrad, Radiolab
+
+"I love the show. It's wonderful. Actually reminded me of why I love radio." -Jonathan Goldstein, CBC's WireTap
+
+"99% Invisible is completely wonderful…entertaining, and beautifully produced.” -Ira Glass, This American Life
+
+Proud member of PRX's Radiotopia.]]>
+    </itunes:summary>
+    <itunes:category text="Arts">
+      <itunes:category text="Design"/>
+    </itunes:category>
+    <itunes:image href="http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99invisible-logo-1400.jpg"/>
+    <itunes:keywords/>
+    <sy:updatePeriod>hourly</sy:updatePeriod>
+    <sy:updateFrequency>1</sy:updateFrequency>
+  </channel>
+</rss>
