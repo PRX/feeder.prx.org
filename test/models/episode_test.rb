@@ -9,4 +9,11 @@ describe Episode do
     episode = build_stubbed(:episode, podcast: nil)
     episode.wont_be(:valid?)
   end
+
+  it 'sets the guid on save' do
+    episode = build(:episode, guid: nil)
+    episode.guid.must_be_nil
+    episode.save
+    episode.guid.wont_be_nil
+  end
 end
