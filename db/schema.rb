@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150606154517) do
+ActiveRecord::Schema.define(version: 20150608194749) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,14 +20,14 @@ ActiveRecord::Schema.define(version: 20150606154517) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "podcast_id"
-    t.integer  "prx_id"
     t.text     "overrides"
     t.time     "deleted_at"
     t.string   "guid"
+    t.string   "prx_uri"
   end
 
   add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree
-  add_index "episodes", ["prx_id"], name: "index_episodes_on_prx_id", unique: true, using: :btree
+  add_index "episodes", ["prx_uri"], name: "index_episodes_on_prx_uri", unique: true, using: :btree
 
   create_table "feed_images", force: :cascade do |t|
     t.string  "url"
@@ -84,14 +84,14 @@ ActiveRecord::Schema.define(version: 20150606154517) do
     t.string   "author"
     t.string   "owner_name"
     t.string   "owner_email"
-    t.integer  "prx_id"
     t.time     "deleted_at"
     t.string   "url"
     t.string   "path"
     t.integer  "max_episodes"
+    t.string   "prx_uri"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
-  add_index "podcasts", ["prx_id"], name: "index_podcasts_on_prx_id", unique: true, using: :btree
+  add_index "podcasts", ["prx_uri"], name: "index_podcasts_on_prx_uri", unique: true, using: :btree
 
 end
