@@ -9,7 +9,7 @@ class EpisodeBuilder
 
   def initialize(e)
     @ep = e
-    @prx_id = e.prx_id
+    @prx_uri = e.prx_uri
     @overrides = (e.overrides || {}).symbolize_keys!
   end
 
@@ -52,7 +52,7 @@ class EpisodeBuilder
   end
 
   def get_story
-    @story = api.get.links.story[0].where(id: @prx_id)
+    @story = api.tap { |a| a.href = @prx_uri }.get
   end
 
   def link

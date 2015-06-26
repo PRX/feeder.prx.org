@@ -16,6 +16,6 @@ class Episode < ActiveRecord::Base
   end
 
   def story_id
-    prx_id
+    prx_uri
   end
 end

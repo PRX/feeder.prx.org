@@ -1,9 +1,9 @@
 FactoryGirl.define do
   factory :episode do
     podcast
-    sequence(:prx_id) { |n| (87683 + n) }
+    sequence(:prx_uri) { |n| "/api/v1/stories/#{(87683 + n)}" }
 
-    guid "prx:#{87683}:#{SecureRandom.uuid}"
+    sequence(:guid) { |n| "prx:#{87683 + n}:#{SecureRandom.uuid}" }
 
     sequence(:overrides) do |n|
       {

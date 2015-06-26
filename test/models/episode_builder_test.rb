@@ -3,7 +3,7 @@ require 'test_helper'
 describe EpisodeBuilder do
   before do
     stub_requests_to_prx_cms
-    @record = build_stubbed(:episode, prx_id: 87683, overrides: nil)
+    @record = build_stubbed(:episode, prx_uri: "/api/v1/stories/87683", overrides: nil)
     @record.created_at, @record.updated_at = [Time.now, Time.now + 1.day]
 
     @ep = EpisodeBuilder.from_prx_story(@record)

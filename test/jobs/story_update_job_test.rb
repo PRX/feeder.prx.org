@@ -2,7 +2,7 @@ require 'test_helper'
 
 describe StoryUpdateJob do
 
-  let(:podcast) { create(:podcast, prx_id: 20829) }
+  let(:podcast) { create(:podcast, prx_uri: "/api/v1/series/20829") }
 
   let(:job) { StoryUpdateJob.new }
 
@@ -43,14 +43,14 @@ describe StoryUpdateJob do
   end
 
   it 'can update an episode' do
-    episode = create(:episode, prx_id: 149726, podcast: podcast)
+    episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
     job.receive_story_update(JSON.parse(body))
     job.episode.podcast.last_build_date.must_be :>, episode.podcast.last_build_date
     job.episode.updated_at.must_be :>, episode.updated_at
   end
 
   it 'can delete an episode' do
-    episode = create(:episode, prx_id: 149726, podcast: podcast)
+    episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
     job.receive_story_delete(JSON.parse(body))
     job.episode.deleted_at.wont_be_nil
   end

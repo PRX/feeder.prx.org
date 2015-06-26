@@ -37,7 +37,7 @@ class StoryUpdateJob < ActiveJob::Base
   def load_resources(data)
     @body = data.is_a?(String) ? JSON.parse(data) : data
     @story = story_resource(@body)
-    @episode = Episode.with_deleted.where(prx_id: @story.attributes.id).first if @story
+    @episode = Episode.with_deleted.where(prx_uri: @story.links['self'].href).first
     @podcast = @episode.podcast if @episode
   end
 
@@ -50,12 +50,8 @@ class StoryUpdateJob < ActiveJob::Base
 
   def create_episode
     return unless story && story.try(:series)
-    if @podcast = Podcast.where(prx_id: series_id_for(story)).first
-      @episode = Episode.create!(podcast: @podcast, prx_id: story.attributes.id)
+    if @podcast = Podcast.where(prx_uri: story.links['series'].href).first
+      @episode = Episode.create!(podcast: @podcast, prx_uri: story.links['self'].href)
     end
-  end
-
-  def series_id_for(story)
-    story.series.href.split('/').last.to_i
   end
 end
