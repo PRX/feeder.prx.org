@@ -6,7 +6,7 @@ class Podcast < ActiveRecord::Base
   has_many :itunes_categories
 
   validates :itunes_image, :feed_image, presence: true
-  validates :path, :prx_id, uniqueness: true
+  validates :path, :prx_uri, uniqueness: true
 
   after_update do
     DateUpdater.last_build_date(self)

@@ -18,17 +18,17 @@ describe EpisodesController do
     it 'creates a new episode from a PRX ID' do
       post(:create, {
         episode: {
-          prx_id: 87683,
+          prx_uri: 87683,
           overrides: {
             title: 'Virginity & Fidelity'
           }
         },
         podcast: {
-          prx_id: @podcast.prx_id
+          prx_uri: @podcast.prx_uri
         }
       })
 
-      episode = Episode.find_by(prx_id: 87683)
+      episode = Episode.find_by(prx_uri: 87683)
 
       episode.wont_be :nil?
       episode.podcast.must_equal @podcast
@@ -62,13 +62,13 @@ describe EpisodesController do
 
       post(:create, {
         episode: {
-          prx_id: @episode.prx_id,
+          prx_uri: @episode.prx_uri,
           overrides: {
             title: 'Virginity & Fidelity'
           }
         },
         podcast: {
-          prx_id: @podcast.prx_id
+          prx_uri: @podcast.prx_uri
         }
       })
 

@@ -1,6 +1,6 @@
 FactoryGirl.define do
   factory :podcast do
-    sequence :prx_id
+    sequence(:prx_uri) { |n| "/api/v1/series/#{n}" }
     path 'jjgo'
     url 'http://feeds.feedburner.com/thornmorris'
     link 'http://www.maximumfun.org/jjgo'
