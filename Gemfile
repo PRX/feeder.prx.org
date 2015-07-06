@@ -39,7 +39,7 @@ gem 'fixer_client'
 # Monitor app performance with NewRelic
 gem 'newrelic_rpm'
 
-# sanitizing descriptions
+# Use Sanitize for HTML and CSS whitelisting
 gem 'sanitize'
 
 # Paranoia allows Active Record objects to be soft deleted
@@ -71,12 +71,25 @@ group :development do
 end
 
 group :test do
+  # Add rspec behaviour to minitest
   gem 'minitest-spec-rails'
+
+  # factory_girl provides a DSL for defining and using factories
   gem 'factory_girl_rails'
+
+  # SimpleCov is a code coverage analysis tool for Ruby
   gem 'simplecov', require: false
+
+  # Coveralls is a service that tracks test coverage
   gem 'coveralls', require: false
+
+  # Use Nokogiri for XML and HTML parsing
   gem 'nokogiri'
+
+  # WebMock allows stubbing HTTP requests
   gem 'webmock'
+
+  # Making it dead simple to test time-dependent code
   gem 'timecop'
 end
 
