@@ -115,4 +115,7 @@ end
 group :production do
   # Use Unicorn as the HTTP server
   gem 'unicorn'
+
+  # Include 'rails_12factor' gem to enable all Heroku platform features
+  gem 'rails_12factor'
 end
