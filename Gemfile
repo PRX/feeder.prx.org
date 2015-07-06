@@ -32,6 +32,7 @@ gem 'announce'
 # Integrations
 gem 'fixer_client'
 gem 'fog'
+gem 'oauth2'
 
 group :test do
   gem 'minitest-spec-rails'
@@ -46,6 +47,7 @@ end
 group :development, :test do
   gem 'pry-rails'
   gem 'spring'
+  gem 'json-jwt'
 end
 
 group :development do
