@@ -9,12 +9,11 @@ class StoryUpdateJob < ActiveJob::Base
 
   subscribe_to :story, [:create, :update, :delete, :publish, :unpublish]
 
-  attr_accessor :episode, :podcast, :story
+  attr_accessor :body, :episode, :podcast, :story
 
   def receive_story_update(data)
     load_resources(data)
-    episode ? episode.touch : create_episode
-    publish_feed
+    episode ? update_episode : create_episode
   end
 
   alias receive_story_create receive_story_update
@@ -23,22 +22,16 @@ class StoryUpdateJob < ActiveJob::Base
   def receive_story_delete(data)
     load_resources(data)
     episode.try(:destroy)
-    publish_feed
+    podcast.try(:publish!)
   end
 
   alias receive_story_unpublish receive_story_delete
 
-  def publish_feed
-    return unless podcast
-    DateUpdater.both_dates(podcast)
-    PublishFeedJob.perform_later(podcast)
-  end
-
   def load_resources(data)
-    @body = data.is_a?(String) ? JSON.parse(data) : data
-    @story = story_resource(@body)
-    @episode = Episode.with_deleted.where(prx_uri: @story.links['self'].href).first
-    @podcast = @episode.podcast if @episode
+    self.body = data.is_a?(String) ? JSON.parse(data) : data
+    self.story = story_resource(body)
+    self.episode = Episode.by_prx_story(story.links['self'].href)
+    self.podcast = episode.podcast if episode
   end
 
   def story_resource(body)
@@ -48,10 +41,20 @@ class StoryUpdateJob < ActiveJob::Base
     HyperResource.new_from(body: body, resource: resource, link: link)
   end
 
+  def update_episode
+    episode.touch
+    episode.copy_audio
+    podcast.try(:publish!)
+  end
+
   def create_episode
     return unless story && story.try(:series)
-    if @podcast = Podcast.where(prx_uri: story.links['series'].href).first
-      @episode = Episode.create!(podcast: @podcast, prx_uri: story.links['self'].href)
+    series_uri = story.links['series'].href
+    story_uri = story.links['self'].href
+    self.podcast = Podcast.where(prx_uri: series_uri).first
+    if podcast
+      self.episode = Episode.create!(podcast: podcast, prx_uri: story_uri)
+      episode.copy_audio
     end
   end
 end
