@@ -1,4 +1,4 @@
-class CreateItunesCategories < ActiveRecord::Migration
+class CreateITunesCategories < ActiveRecord::Migration
   def change
     create_table :itunes_categories do |t|
       t.timestamps
