@@ -42,19 +42,14 @@ class StoryUpdateJob < ActiveJob::Base
   end
 
   def update_episode
-    episode.touch
+    episode.update_from_story!(story)
     episode.copy_audio
     podcast.try(:publish!)
   end
 
   def create_episode
     return unless story && story.try(:series)
-    series_uri = story.links['series'].href
-    story_uri = story.links['self'].href
-    self.podcast = Podcast.where(prx_uri: series_uri).first
-    if podcast
-      self.episode = Episode.create!(podcast: podcast, prx_uri: story_uri)
-      episode.copy_audio
-    end
+    self.episode = Episode.create_from_story!(story)
+    episode.copy_audio
   end
 end
