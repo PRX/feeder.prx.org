@@ -1,7 +1,9 @@
+require 'hash_serializer'
+
 class Episode < ActiveRecord::Base
   include PrxAccess
 
-  serialize :overrides, JSON
+  serialize :overrides, HashSerializer
 
   belongs_to :podcast
   has_many :tasks, as: :owner
@@ -14,6 +16,17 @@ class Episode < ActiveRecord::Base
 
   def self.by_prx_story(story_uri)
     Episode.with_deleted.where(prx_uri: story_uri).first
+  end
+
+  def self.create_from_story!(story)
+    series_uri = story.links['series'].href
+    story_uri = story.links['self'].href
+    podcast = Podcast.where(prx_uri: series_uri).first!
+    create!(podcast: podcast, prx_uri: story_uri)
+  end
+
+  def update_from_story!(story)
+    touch
   end
 
   def set_guid
@@ -34,6 +47,10 @@ class Episode < ActiveRecord::Base
 
   def new_audio_file?
     most_recent_copy_task.try(:new_audio_file?)
+  end
+
+  def enclosure_path
+    most_recent_copy_task.try(:enclosure_path)
   end
 
   def include_in_feed?
