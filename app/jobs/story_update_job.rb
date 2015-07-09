@@ -1,9 +1,8 @@
-require 'announce'
 require 'prx_access'
 
 class StoryUpdateJob < ActiveJob::Base
   include Announce::Subscriber
-  include PrxAccess
+  include PRXAccess
 
   queue_as :feeder_default
 

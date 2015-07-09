@@ -1,8 +1,4 @@
-require 'builder'
-require 'feeder_storage'
-
 class PublishFeedJob < ActiveJob::Base
-
   include FeederStorage
 
   queue_as :feeder_default

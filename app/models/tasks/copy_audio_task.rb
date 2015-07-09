@@ -1,10 +1,4 @@
-require 'prx_access'
-require 'feeder_storage'
-require 'fixer_client'
-
 class Tasks::CopyAudioTask < ::Task
-  include PrxAccess
-  include FeederStorage
 
   def start!
     account_uri = get_story.account.href

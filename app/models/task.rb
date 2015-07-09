@@ -1,8 +1,10 @@
 require 'hash_serializer'
-
-# keeps track of status of tasks to fixer and any other systems
+require 'prx_access'
 
 class Task < ActiveRecord::Base
+  include PRXAccess
+  include FeederStorage
+
   belongs_to :owner, polymorphic: true
   serialize :options, HashSerializer
   serialize :result, HashSerializer

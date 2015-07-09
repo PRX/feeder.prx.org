@@ -1,7 +1,7 @@
 require 'prx_access'
 
 class EpisodeBuilder
-  include PrxAccess
+  include PRXAccess
 
   def self.from_prx_story(opts = {})
     new(opts).from_prx_story
