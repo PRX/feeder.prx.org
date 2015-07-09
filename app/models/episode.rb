@@ -1,8 +1,6 @@
 require 'hash_serializer'
 
 class Episode < ActiveRecord::Base
-  include PrxAccess
-
   serialize :overrides, HashSerializer
 
   belongs_to :podcast
@@ -81,7 +79,7 @@ class Episode < ActiveRecord::Base
 
   # todo: make this per podcast
   def feeder_cdn_host
-    ENV['FEEDER_CDN_HOST']
+    ENV['FEEDER_CDN_HOST'] ||
       (Rails.env.production? ? '' : (Rails.env + '-')) + 'f.prxu.org'
   end
 end
