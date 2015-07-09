@@ -1,12 +1,10 @@
 require 'prx_access'
+require 'feeder_storage'
 require 'fixer_client'
-
-# keeps track of status of tasks to fixer and any other systems
-# not responsible for sending or resending, just tracking status
-# (maybe change that - other times used this pattern to include biz logic)
 
 class Tasks::CopyAudioTask < ::Task
   include PrxAccess
+  include FeederStorage
 
   def start!
     account_uri = get_story.account.href
@@ -20,10 +18,25 @@ class Tasks::CopyAudioTask < ::Task
       source: source,
       destination: destination,
       audio_uri: audio_uri
-    }
+    }.with_indifferent_access
     job = fixer_copy_file(options)
     self.job_id = job[:job][:id]
     save!
+  end
+
+  # example result info:
+  # {
+  #   :size=>774059,
+  #   :content_type=>"audio/mpeg",
+  #   :format=>"mp3",
+  #   :channel_mode=>"Mono",
+  #   :channels=>1,
+  #   :bit_rate=>128,
+  #   :length=>48.352653,
+  #   :sample_rate=>44100
+  # }
+  def audio_info
+    result[:task][:result_details][:info]
   end
 
   def task_status_changed(fixer_task)
@@ -50,7 +63,7 @@ class Tasks::CopyAudioTask < ::Task
 
   def destination_url(ep, story)
     dest_path = "#{ep.podcast.path}/#{ep.guid}/#{story.audio[0].filename}"
-    "s3://#{bucket}/#{dest_path}"
+    "s3://#{feeder_storage_bucket}/#{dest_path}"
   end
 
   def fixer_copy_file(opts = options)
@@ -69,11 +82,6 @@ class Tasks::CopyAudioTask < ::Task
 
   def fixer_sqs_client=(client)
     @fixer_sqs_client = client
-  end
-
-  def bucket
-    ENV['PODCAST_BUCKET'] ||
-      (Rails.env.production? ? '' : (Rails.env + '-')) + 'prx-feeds'
   end
 
   def episode
