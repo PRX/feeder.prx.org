@@ -79,7 +79,6 @@ class Episode < ActiveRecord::Base
 
   # todo: make this per podcast
   def feeder_cdn_host
-    ENV['FEEDER_CDN_HOST'] ||
-      (Rails.env.production? ? '' : (Rails.env + '-')) + 'f.prxu.org'
+    ENV['FEEDER_CDN_HOST']
   end
 end

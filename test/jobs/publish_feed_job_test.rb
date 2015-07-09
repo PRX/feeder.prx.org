@@ -17,11 +17,10 @@ describe PublishFeedJob do
   end
 
   it 'knows the right bucket to write to' do
-    ENV['FEEDER_STORAGE_BUCKET'] = nil
     job.feeder_storage_bucket.must_equal 'test-prx-feed'
     ENV['FEEDER_STORAGE_BUCKET'] = 'foo'
     job.feeder_storage_bucket.must_equal 'foo'
-    ENV['FEEDER_STORAGE_BUCKET'] = nil
+    ENV['FEEDER_STORAGE_BUCKET'] = 'test-prx-feed'
   end
 
   it 'knows the right key to write to' do

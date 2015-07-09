@@ -30,10 +30,10 @@ class Podcast < ActiveRecord::Base
   end
 
   def web_master
-    ENV['FEEDER_WEB_MASTER'] || 'prxhelp@prx.org (PRX)'
+    ENV['FEEDER_WEB_MASTER']
   end
 
   def generator
-    (ENV['FEEDER_GENERATOR'] || 'PRX Feeder') + " v#{Feeder::VERSION}"
+    ENV['FEEDER_GENERATOR']
   end
 end

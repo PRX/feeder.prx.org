@@ -39,6 +39,10 @@ class PublishFeedJob < ActiveJob::Base
     s3_file = directory.files.create(opts)
   end
 
+  def feeder_storage_bucket
+    ENV['FEEDER_STORAGE_BUCKET']
+  end
+
   def key(podcast = @podcast)
     File.join(podcast.path, 'feed-rss.xml')
   end

@@ -60,6 +60,10 @@ class Tasks::CopyAudioTask < ::Task
     "s3://#{feeder_storage_bucket}/#{dest_path}"
   end
 
+  def feeder_storage_bucket
+    ENV['FEEDER_STORAGE_BUCKET']
+  end
+
   def fixer_copy_file(opts = options)
     task = {
       task_type: 'copy',

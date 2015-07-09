@@ -22,14 +22,14 @@ module PRXAccess
   end
 
   def id_root
-    ENV['ID_ROOT'] || 'https://id.prx.org/'
+    ENV['ID_ROOT']
   end
 
   def cms_root
-    ENV['CMS_ROOT'] || 'https://cms.prx.org/api/vi/'
+    ENV['CMS_ROOT']
   end
 
   def prx_root
-    ENV['PRX_ROOT'] || 'https://beta.prx.org/stories/'
+    ENV['PRX_ROOT']
   end
 end
