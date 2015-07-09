@@ -49,8 +49,20 @@ class Episode < ActiveRecord::Base
     most_recent_copy_task.try(:new_audio_file?)
   end
 
-  def enclosure_path
-    most_recent_copy_task.try(:enclosure_path)
+  def enclosure_info
+    info = most_recent_copy_task.audio_info
+    {
+      url: audio_url,
+      type: info[:content_type],
+      size: info[:size],
+      duration: info[:length].to_i
+    }
+  end
+
+  def audio_url
+    dest = most_recent_copy_task.options[:destination]
+    s3_uri = URI.parse(dest)
+    "http://#{feeder_cdn_host}#{s3_uri.path}"
   end
 
   def include_in_feed?
@@ -64,5 +76,11 @@ class Episode < ActiveRecord::Base
 
   def most_recent_copy_task
     tasks.copy_audio.order('created_at desc').first
+  end
+
+  # todo: make this per podcast
+  def feeder_cdn_host
+    ENV['FEEDER_CDN_HOST']
+      (Rails.env.production? ? '' : (Rails.env + '-')) + 'f.prxu.org'
   end
 end
