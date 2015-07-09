@@ -18,9 +18,9 @@ describe PublishFeedJob do
 
   it 'knows the right bucket to write to' do
     ENV['FEEDER_STORAGE_BUCKET'] = nil
-    job.bucket.must_equal 'test-prx-feeds'
+    job.feeder_storage_bucket.must_equal 'test-prx-feed'
     ENV['FEEDER_STORAGE_BUCKET'] = 'foo'
-    job.bucket.must_equal 'foo'
+    job.feeder_storage_bucket.must_equal 'foo'
     ENV['FEEDER_STORAGE_BUCKET'] = nil
   end
 
@@ -57,7 +57,7 @@ describe PublishFeedJob do
       Fog::Storage.new(opts)
     end
 
-    let(:local_file) { File.join(Rails.root, 'tmp', 'test-prx-feeds', 'jjgo/feed-rss.xml') }
+    let(:local_file) { File.join(Rails.root, 'tmp', 'test-prx-feed', 'jjgo/feed-rss.xml') }
 
     before {
       FileUtils.rm_f(local_file)

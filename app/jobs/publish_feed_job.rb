@@ -1,6 +1,9 @@
 require 'builder'
+require 'feeder_storage'
 
 class PublishFeedJob < ActiveJob::Base
+
+  include FeederStorage
 
   queue_as :feeder_default
 
@@ -36,17 +39,12 @@ class PublishFeedJob < ActiveJob::Base
     opts[:body] = rss
     opts[:key] = key
 
-    directory = connection.directories.create(key: bucket, public: false)
+    directory = connection.directories.create(key: feeder_storage_bucket, public: false)
     s3_file = directory.files.create(opts)
   end
 
   def key(podcast = @podcast)
     File.join(podcast.path, 'feed-rss.xml')
-  end
-
-  def bucket
-    ENV['FEEDER_STORAGE_BUCKET'] ||
-      (Rails.env.production? ? '' : (Rails.env + '-')) + 'prx-feeds'
   end
 
   def connection
