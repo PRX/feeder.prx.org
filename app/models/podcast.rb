@@ -8,16 +8,25 @@ class Podcast < ActiveRecord::Base
   validates :itunes_image, :feed_image, presence: true
   validates :path, :prx_uri, uniqueness: true
 
+  acts_as_paranoid
+
   after_update do
     DateUpdater.last_build_date(self)
   end
 
-  acts_as_paranoid
-
   def feed_episodes
-    items = episodes.order('created_at desc')
-    items = episodes.limit(max_episodes) if max_episodes.to_i > 0
-    items
+    feed = []
+    feed_max = max_episodes.to_i
+    episodes.includes(:tasks).order('created_at desc').each do |ep|
+      feed << ep if ep.include_in_feed?
+      break if (feed_max > 0) && (feed.size >= feed_max)
+    end
+    feed
+  end
+
+  def publish!
+    DateUpdater.both_dates(self)
+    PublishFeedJob.perform_later(self)
   end
 
   def web_master
