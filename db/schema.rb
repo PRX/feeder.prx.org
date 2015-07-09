@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150608194749) do
+ActiveRecord::Schema.define(version: 20150701142651) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -93,5 +93,21 @@ ActiveRecord::Schema.define(version: 20150608194749) do
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
   add_index "podcasts", ["prx_uri"], name: "index_podcasts_on_prx_uri", unique: true, using: :btree
+
+  create_table "tasks", force: :cascade do |t|
+    t.integer  "owner_id"
+    t.string   "owner_type"
+    t.string   "type"
+    t.integer  "status",     default: 0, null: false
+    t.datetime "logged_at"
+    t.string   "job_id"
+    t.text     "options"
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
+
+  add_index "tasks", ["job_id"], name: "index_tasks_on_job_id", using: :btree
+  add_index "tasks", ["owner_type", "owner_id"], name: "index_tasks_on_owner_type_and_owner_id", using: :btree
+  add_index "tasks", ["status"], name: "index_tasks_on_status", using: :btree
 
 end

@@ -75,14 +75,12 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         unless ep[:categories].empty?
           ep[:categories].split(', ').each { |c| xml.category c }
         end
-        xml.enclosure url: ep[:audio_file],
-                      length: ep[:duration],
-                      type: ep[:audio_file_type]
+        xml.enclosure ep[:audio]
 
         xml.guid ep[:guid], isPermaLink: false
         xml.pubDate ep[:pub_date]
 
-        xml.media :content, fileSize: ep[:duration], type: ep[:audio_file_type], url: ep[:audio_file]
+        xml.media :content, fileSize: ep[:audio][:length], type: ep[:audio][:type], url: ep[:audio][:url]
 
         xml.content(:encoded) { xml.cdata!(ep[:description][:rich]) }
 
