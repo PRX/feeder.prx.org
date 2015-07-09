@@ -1,4 +1,4 @@
-module PrxAccess
+module PRXAccess
   def api(account = nil)
     options = { root: cms_root }
     if account
