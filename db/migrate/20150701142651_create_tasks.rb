@@ -8,6 +8,7 @@ class CreateTasks < ActiveRecord::Migration
       t.datetime :logged_at
       t.string   :job_id, index: true
       t.text     :options
+      t.text     :result
 
       t.timestamps null: false
     end
