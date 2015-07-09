@@ -14,14 +14,15 @@ class Episode < ActiveRecord::Base
 
   before_save :set_guid
 
-  def self.by_prx_story(story_uri)
-    Episode.with_deleted.where(prx_uri: story_uri).first
+  def self.by_prx_story(story)
+    story_uri = story.links['self'].href
+    Episode.with_deleted.find_by(prx_uri: story_uri)
   end
 
   def self.create_from_story!(story)
     series_uri = story.links['series'].href
     story_uri = story.links['self'].href
-    podcast = Podcast.where(prx_uri: series_uri).first!
+    podcast = Podcast.find_by!(prx_uri: series_uri)
     create!(podcast: podcast, prx_uri: story_uri)
   end
 
