@@ -19,14 +19,3 @@ PRX_ROOT=https://beta.prx.org/stories/
 PRX_SECRET=
 SECRET_KEY_BASE=
 USE_WEBMOCK=true
-<<<<<<< HEAD
-=======
-AUDIO_FILE_PREFIX=http://www.podtrac.com/pts/redirect.
-FEEDER_WEB_MASTER
-FEEDER_GENERATOR
-FEEDER_STORAGE_BUCKET
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-AWS_REGION
-AWS_ACCOUNT_ID
->>>>>>> Update env-example
