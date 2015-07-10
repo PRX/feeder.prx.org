@@ -36,6 +36,9 @@ gem 'fog'
 # Use Fixer client for handling audio processing
 gem 'fixer_client'
 
+# Use OAuth2 for client authentication and authorization
+gem 'oauth2'
+
 # Monitor app performance with NewRelic
 gem 'newrelic_rpm'
 
@@ -110,6 +113,9 @@ group :development, :test do
 
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
+
+  # Use JSON Web Token for signing and encrypting
+  gem 'json-jwt'
 end
 
 group :production do
