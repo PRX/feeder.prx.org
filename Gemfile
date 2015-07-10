@@ -51,8 +51,6 @@ gem 'paranoia'
 # FastImage finds the size or type of an image given its uri
 gem 'fastimage'
 
-gem 'oauth2'
-
 group :development do
   # Use Capistrano for deployment
   # gem 'capistrano-rails', '~> 1.1.0'
