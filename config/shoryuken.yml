@@ -1,3 +1,5 @@
+<% env = ENV['RAILS_ENV'] || 'development' %>
+---
 aws:
   access_key_id:     <%= ENV['AWS_ACCESS_KEY_ID'] %>
   secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
@@ -5,3 +7,6 @@ aws:
   account_id:        <%= ENV['AWS_ACCOUNT_ID'] %>
 concurrency:         25 # The number of allocated threads to process messages. Default 25
 delay:               30 # The delay in seconds to pause a queue when it's empty. Default 0
+queues:
+  - [<%= env %>_feeder_default, 2]
+  - [<%= env %>_feeder_fixer_callback, 1]
