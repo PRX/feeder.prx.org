@@ -5,10 +5,19 @@ class Task < ActiveRecord::Base
   include PRXAccess
   include FeederStorage
 
-  belongs_to :owner, polymorphic: true
-  serialize :options, HashSerializer
-  serialize :result, HashSerializer
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
+
+  serialize :options, HashSerializer
+  def options
+    self[:options] ||= {}
+  end
+
+  serialize :result, HashSerializer
+  def result
+    self[:result] ||= {}
+  end
+
+  belongs_to :owner, polymorphic: true
 
   before_validation { self.status ||= :started }
 
