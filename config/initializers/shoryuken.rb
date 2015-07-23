@@ -23,4 +23,6 @@ Shoryuken.default_worker_options =  {
   'body_parser'             => :json
 }
 
-Shoryuken::EnvironmentLoader.load(config_file: (Rails.root + 'config' + 'shoryuken.yml'))
+unless Rails.env.test?
+  Shoryuken::EnvironmentLoader.load(config_file: (Rails.root + 'config' + 'shoryuken.yml'))
+end

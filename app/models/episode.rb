@@ -45,7 +45,8 @@ class Episode < ActiveRecord::Base
   end
 
   def new_audio_file?
-    most_recent_copy_task.try(:new_audio_file?)
+    copy_task = most_recent_copy_task
+    copy_task.nil? || copy_task.new_audio_file?
   end
 
   def enclosure_info
