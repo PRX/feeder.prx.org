@@ -68,10 +68,15 @@ class Tasks::CopyAudioTask < ::Task
     task = {
       task_type: 'copy',
       result: opts[:destination],
-      call_back: ENV['FIXER_CALLBACK_QUEUE']
+      call_back: fixer_call_back_queue
     }
     job = { original: opts[:source], job_type: 'audio', tasks: [ task ] }
     fixer_sqs_client.create_job(job: job)
+  end
+
+  def fixer_call_back_queue
+    q = ENV['FIXER_CALLBACK_QUEUE'] || "#{ENV['RAILS_ENV']}_feeder_fixer_callback"
+    "sqs://#{ENV['AWS_REGION']}/#{q}"
   end
 
   def fixer_sqs_client

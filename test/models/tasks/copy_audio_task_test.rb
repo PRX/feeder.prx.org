@@ -168,6 +168,10 @@ describe Tasks::CopyAudioTask do
     url.must_equal 's3://test-prx-feed/path/guid/AR0328segmentA.mp2'
   end
 
+  it 'uses an sqs queue for callbacks' do
+    task.fixer_call_back_queue.must_equal 'sqs://us-east-1/test_feeder_fixer_callback'
+  end
+
   it 'returns enclosure path' do
     task.audio_info[:content_type].must_equal 'audio/mpeg'
   end
