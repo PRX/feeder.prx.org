@@ -80,7 +80,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.guid ep[:guid], isPermaLink: false
         xml.pubDate ep[:pub_date]
 
-        xml.media :content, fileSize: ep[:audio][:length], type: ep[:audio][:type], url: ep[:audio][:url]
+        xml.media :content, fileSize: ep[:audio][:size], type: ep[:audio][:type], url: ep[:audio][:url]
 
         xml.content(:encoded) { xml.cdata!(ep[:description][:rich]) }
 
