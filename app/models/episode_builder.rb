@@ -26,7 +26,7 @@ class EpisodeBuilder
       link: link,
       audio: audio_file(@ep),
       short_description: @story.shortDescription,
-      explicit: @story.contentAdvisory ? 'yes' : 'no',
+      explicit: @story.attributes[:contentAdvisory] ? 'yes' : 'no',
       keywords: @story.tags.join(', '),
       categories: @story.tags.join(', '),
       created: @ep.created_at,
