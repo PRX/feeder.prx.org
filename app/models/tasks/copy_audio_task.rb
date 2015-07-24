@@ -57,7 +57,7 @@ class Tasks::CopyAudioTask < ::Task
 
   def destination_url(ep, story)
     dest_path = "#{ep.podcast.path}/#{ep.guid}/#{story.audio[0].filename}"
-    "s3://#{feeder_storage_bucket}/#{dest_path}"
+    "s3://#{feeder_storage_bucket}/#{dest_path}?x-fixer-public=true"
   end
 
   def feeder_storage_bucket

@@ -165,7 +165,7 @@ describe Tasks::CopyAudioTask do
     episode.expect(:podcast, podcast)
     episode.expect(:guid, 'guid')
     url = task.destination_url(episode, story)
-    url.must_equal 's3://test-prx-feed/path/guid/AR0328segmentA.mp2'
+    url.must_equal 's3://test-prx-feed/path/guid/AR0328segmentA.mp2?x-fixer-public=true'
   end
 
   it 'uses an sqs queue for callbacks' do
