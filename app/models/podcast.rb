@@ -4,6 +4,7 @@ class Podcast < ActiveRecord::Base
 
   has_many :episodes
   has_many :itunes_categories
+  has_many :tasks, as: :owner
 
   validates :itunes_image, :feed_image, presence: true
   validates :path, :prx_uri, uniqueness: true
@@ -26,7 +27,11 @@ class Podcast < ActiveRecord::Base
 
   def publish!
     DateUpdater.both_dates(self)
-    PublishFeedJob.perform_later(self)
+  end
+
+  def create_publish_task
+    publish_task = Tasks::PublishFeedTask.create!(owner: self)
+    publish_task.start!
   end
 
   def web_master
