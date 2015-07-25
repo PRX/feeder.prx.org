@@ -61,20 +61,26 @@ describe StoryUpdateJob do
 
   it 'can update an episode' do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
-    episode.stub(:copy_audio, true) do
-      Episode.stub(:by_prx_story, episode) do
-        lbd = episode.podcast.last_build_date
-        uat = episode.updated_at
-        job.receive_story_update(JSON.parse(body))
-        job.episode.podcast.last_build_date.must_be :>, lbd
-        job.episode.updated_at.must_be :>, uat
+    podcast.stub(:create_publish_task, true) do
+      episode.stub(:copy_audio, true) do
+        Episode.stub(:by_prx_story, episode) do
+          lbd = episode.podcast.last_build_date
+          uat = episode.updated_at
+          job.receive_story_update(JSON.parse(body))
+          job.episode.podcast.last_build_date.must_be :>, lbd
+          job.episode.updated_at.must_be :>, uat
+        end
       end
     end
   end
 
   it 'can delete an episode' do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
-    job.receive_story_delete(JSON.parse(body))
-    job.episode.deleted_at.wont_be_nil
+    podcast.stub(:create_publish_task, true) do
+      Episode.stub(:by_prx_story, episode) do
+        job.receive_story_delete(JSON.parse(body))
+        job.episode.deleted_at.wont_be_nil
+      end
+    end
   end
 end
