@@ -27,6 +27,7 @@ class Podcast < ActiveRecord::Base
 
   def publish!
     DateUpdater.both_dates(self)
+    create_publish_task
   end
 
   def create_publish_task
