@@ -31,8 +31,7 @@ class EpisodesController < ApplicationController
 
   def publish_feed
     return unless @podcast
-    DateUpdater.both_dates(@podcast)
-    PublishFeedJob.perform_later(@podcast)
+    @podcast.publish!
   end
 
   private
