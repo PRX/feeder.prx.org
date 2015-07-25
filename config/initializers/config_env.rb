@@ -8,3 +8,6 @@ ENV['FEEDER_GENERATOR'] ||= "PRX Feeder v#{Feeder::VERSION}"
 env_prefix = Rails.env.production? ? '' : (Rails.env + '-')
 ENV['FEEDER_CDN_HOST'] ||= "#{env_prefix}f.prxu.org"
 ENV['FEEDER_STORAGE_BUCKET'] ||= "#{env_prefix}prx-feed"
+
+env_suffix = Rails.env.development? ? 'dev' : 'org'
+ENV['FEEDER_APP_HOST'] ||= "feeder.prx.#{env_suffix}"
