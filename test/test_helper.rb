@@ -59,3 +59,14 @@ def stub_requests_to_prx_cms
   stub_request(:get, "https://cms.prx.org/api/v1/story_images/203874").
     to_return(status: 200, body: json_file(:prx_story_image), headers: {})
 end
+
+class SqsMock
+  def initialize(id = nil)
+    @id = id || '11111111'
+  end
+
+  def create_job(j)
+    j[:job][:id] = @id
+    j
+  end
+end
