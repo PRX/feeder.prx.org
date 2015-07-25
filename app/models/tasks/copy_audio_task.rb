@@ -4,14 +4,11 @@ class Tasks::CopyAudioTask < ::Task
     account_uri = get_story.account.href
     story = get_story(account_uri)
 
-    source = original_url(story)
-    destination = destination_url(episode, story)
-    audio_uri = story_audio_uri(story)
-
     self.options = {
-      source: source,
-      destination: destination,
-      audio_uri: audio_uri
+      job_type: 'audio',
+      source: original_url(story),
+      destination: destination_url(episode, story),
+      audio_uri: story_audio_uri(story)
     }.with_indifferent_access
     job = fixer_copy_file(options)
     self.job_id = job[:job][:id]
@@ -58,33 +55,6 @@ class Tasks::CopyAudioTask < ::Task
   def destination_url(ep, story)
     dest_path = "#{ep.podcast.path}/#{ep.guid}/#{story.audio[0].filename}"
     "s3://#{feeder_storage_bucket}/#{dest_path}?x-fixer-public=true"
-  end
-
-  def feeder_storage_bucket
-    ENV['FEEDER_STORAGE_BUCKET']
-  end
-
-  def fixer_copy_file(opts = options)
-    task = {
-      task_type: 'copy',
-      result: opts[:destination],
-      call_back: fixer_call_back_queue
-    }
-    job = { original: opts[:source], job_type: 'audio', tasks: [ task ] }
-    fixer_sqs_client.create_job(job: job)
-  end
-
-  def fixer_call_back_queue
-    q = ENV['FIXER_CALLBACK_QUEUE'] || "#{ENV['RAILS_ENV']}_feeder_fixer_callback"
-    "sqs://#{ENV['AWS_REGION']}/#{q}"
-  end
-
-  def fixer_sqs_client
-    @fixer_sqs_client ||= Fixer::SqsClient.new
-  end
-
-  def fixer_sqs_client=(client)
-    @fixer_sqs_client = client
   end
 
   def episode

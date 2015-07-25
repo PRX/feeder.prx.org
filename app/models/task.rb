@@ -27,6 +27,10 @@ class Task < ActiveRecord::Base
     scope subclass, -> { where('type = ?', classname) }
   end
 
+  # abstract, called by `fixer_callback`
+  def task_status_changed(fixer_task)
+  end
+
   def self.fixer_callback(fixer_task)
     Task.transaction do
       job_id = fixer_task['task']['job']['id']
@@ -49,6 +53,30 @@ class Task < ActiveRecord::Base
     end
   end
 
-  def task_status_changed(fixer_task)
+  def fixer_copy_file(opts = options)
+    task = {
+      task_type: 'copy',
+      result: opts[:destination],
+      call_back: fixer_call_back_queue
+    }
+    job = { original: opts[:source], job_type: opts[:job_type], tasks: [ task ] }
+    fixer_sqs_client.create_job(job: job)
+  end
+
+  def feeder_storage_bucket
+    ENV['FEEDER_STORAGE_BUCKET']
+  end
+
+  def fixer_call_back_queue
+    q = ENV['FIXER_CALLBACK_QUEUE'] || "#{ENV['RAILS_ENV']}_feeder_fixer_callback"
+    "sqs://#{ENV['AWS_REGION']}/#{q}"
+  end
+
+  def fixer_sqs_client
+    @fixer_sqs_client ||= Fixer::SqsClient.new
+  end
+
+  def fixer_sqs_client=(client)
+    @fixer_sqs_client = client
   end
 end
