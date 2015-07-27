@@ -18,13 +18,23 @@ class Tasks::PublishFeedTask < ::Task
   end
 
   def destination_url(podcast = owner)
-    key = File.join(podcast.path, 'feed-rss.xml')
-    "s3://#{feeder_storage_bucket}/#{key}?x-fixer-public=true"
+    "s3://#{feeder_storage_bucket}/#{feed_path}?x-fixer-public=true"
   end
 
   def task_status_changed(fixer_task)
     # purge the cdn cache
+    url = "http://#{feeder_cdn_host}/#{feed_path}"
+    HighwindsAPI::Content.purge_url(url)
+
     # (send out a feed updated event?)
+  end
+
+  def feed_path(podcast = owner)
+    File.join(podcast.path, 'feed-rss.xml')
+  end
+
+  def feeder_cdn_host
+    ENV['FEEDER_CDN_HOST']
   end
 
   def podcast
