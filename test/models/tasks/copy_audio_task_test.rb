@@ -1,17 +1,5 @@
 require 'test_helper'
 
-
-class SqsMock
-  def initialize(id = nil)
-    @id = id || '11111111'
-  end
-
-  def create_job(j)
-    j[:job][:id] = @id
-    j
-  end
-end
-
 describe Tasks::CopyAudioTask do
   let(:task) { create(:copy_audio_task) }
 
@@ -145,12 +133,6 @@ describe Tasks::CopyAudioTask do
     end
   end
 
-  it 'creates a fixer job' do
-    task.fixer_sqs_client = SqsMock.new
-    job = task.fixer_copy_file(destination: 'dest', source: 'src')
-    job[:job][:job_type].must_equal 'audio'
-  end
-
   it 'alias owner as episode' do
     task.episode.must_equal task.owner
   end
@@ -166,10 +148,6 @@ describe Tasks::CopyAudioTask do
     episode.expect(:guid, 'guid')
     url = task.destination_url(episode, story)
     url.must_equal 's3://test-prx-feed/path/guid/AR0328segmentA.mp2?x-fixer-public=true'
-  end
-
-  it 'uses an sqs queue for callbacks' do
-    task.fixer_call_back_queue.must_equal 'sqs://us-east-1/test_feeder_fixer_callback'
   end
 
   it 'returns enclosure path' do

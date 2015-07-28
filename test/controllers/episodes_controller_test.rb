@@ -1,53 +1,51 @@
 require 'test_helper'
 
 describe EpisodesController do
-  before do
-    Timecop.freeze(Time.local(2015, 1, 13))
-    @podcast = create(:podcast)
-  end
-
-  after do
-    @podcast.reload
-    @podcast.last_build_date.must_equal Time.now
-    @podcast.pub_date.must_equal Time.now
-
-    Timecop.return
-  end
+  let(:podcast) { create(:podcast) }
 
   describe '#create' do
     it 'creates a new episode from a PRX ID' do
-      post(:create, {
-        episode: {
-          prx_uri: 87683,
-          overrides: {
-            title: 'Virginity & Fidelity'
-          }
-        },
-        podcast: {
-          prx_uri: @podcast.prx_uri
-        }
-      })
+
+      podcast.stub(:create_publish_task, true) do
+        Podcast.stub(:find_by, podcast) do
+          post(:create, {
+            episode: {
+              prx_uri: 87683,
+              overrides: {
+                title: 'Virginity & Fidelity'
+              }
+            },
+            podcast: {
+              prx_uri: podcast.prx_uri
+            }
+          })
+        end
+      end
 
       episode = Episode.find_by(prx_uri: 87683)
 
       episode.wont_be :nil?
-      episode.podcast.must_equal @podcast
+      episode.podcast.must_equal podcast
       episode.overrides['title'].must_equal 'Virginity & Fidelity'
     end
   end
 
   describe '#edit' do
     it 'edits the episode overrides' do
-      @episode = create(:episode, podcast: @podcast)
+      @episode = create(:episode, podcast: podcast)
 
-      patch(:update, {
-        id: @episode.id,
-        episode: {
-          overrides: {
-            title: 'New Title'
-          }
-        }
-      })
+      podcast.stub(:create_publish_task, true) do
+        Episode.stub(:find, @episode) do
+          patch(:update, {
+            id: @episode.id,
+            episode: {
+              overrides: {
+                title: 'New Title'
+              }
+            }
+          })
+        end
+      end
 
       @episode.reload
 
@@ -57,20 +55,24 @@ describe EpisodesController do
 
   describe 'undelete' do
     it 'restores a deleted episode' do
-      @episode = create(:episode, podcast: @podcast, deleted_at: Time.now)
+      @episode = create(:episode, podcast: podcast, deleted_at: Time.now)
       @ep_count = Episode.unscoped.count
 
-      post(:create, {
-        episode: {
-          prx_uri: @episode.prx_uri,
-          overrides: {
-            title: 'Virginity & Fidelity'
-          }
-        },
-        podcast: {
-          prx_uri: @podcast.prx_uri
-        }
-      })
+      podcast.stub(:create_publish_task, true) do
+        Podcast.stub(:find_by, podcast) do
+          post(:create, {
+            episode: {
+              prx_uri: @episode.prx_uri,
+              overrides: {
+                title: 'Virginity & Fidelity'
+              }
+            },
+            podcast: {
+              prx_uri: podcast.prx_uri
+            }
+          })
+        end
+      end
 
       @episode.reload
       @episode.wont_be :deleted?

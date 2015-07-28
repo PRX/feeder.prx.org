@@ -18,4 +18,8 @@ FactoryGirl.define do
       }
     }
   end
+
+  factory :publish_feed_task, class: Tasks::PublishFeedTask do
+    association :owner, factory: :podcast
+  end
 end
