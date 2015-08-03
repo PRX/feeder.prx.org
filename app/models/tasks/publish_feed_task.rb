@@ -33,10 +33,6 @@ class Tasks::PublishFeedTask < ::Task
     File.join(podcast.path, 'feed-rss.xml')
   end
 
-  def feeder_cdn_host
-    ENV['FEEDER_CDN_HOST']
-  end
-
   def podcast
     owner
   end
