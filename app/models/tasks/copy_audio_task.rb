@@ -32,7 +32,7 @@ class Tasks::CopyAudioTask < ::Task
 
   def task_status_changed(fixer_task)
     url = "http://#{feeder_cdn_host}/#{audio_path(episode, get_story)}"
-    HighwindsAPI::Content.purge_url(url)
+    HighwindsAPI::Content.purge_url(url, false)
 
     episode.podcast.publish! if complete?
   end

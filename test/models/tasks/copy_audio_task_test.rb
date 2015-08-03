@@ -119,7 +119,6 @@ describe Tasks::CopyAudioTask do
 
       stub_request(:get, "https://cms.prx.org/api/v1/audio_files/406322/original?expiration=604800").
         to_return(status: 301, body: '', headers: { location: 'http://final/location.mp3' } )
-
     end
   end
 
@@ -159,10 +158,20 @@ describe Tasks::CopyAudioTask do
   end
 
   it 'can publish on complete' do
-    podcast = Minitest::Mock.new.expect(:publish!, true)
-    episode = Minitest::Mock.new.expect(:podcast, podcast)
+    podcast = Minitest::Mock.new
+    podcast.expect(:publish!, true)
+    podcast.expect(:path, 'path')
+
+    episode = Minitest::Mock.new
+    episode.expect(:podcast, podcast)
+    episode.expect(:podcast, podcast)
+    episode.expect(:prx_uri, '/api/v1/stories/80548')
+    episode.expect(:guid, 'guid')
+
     task.stub(:episode, episode) do
-      task.task_status_changed({})
+      HighwindsAPI::Content.stub(:purge_url, true) do
+        task.task_status_changed({})
+      end
     end
   end
 
