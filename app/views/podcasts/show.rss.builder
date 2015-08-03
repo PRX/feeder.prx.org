@@ -75,7 +75,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         unless ep[:categories].empty?
           ep[:categories].split(', ').each { |c| xml.category c }
         end
-        xml.enclosure ep[:audio]
+        xml.enclosure url: ep[:audio][:url], type: ep[:audio][:type], length: ep[:audio][:size]
 
         xml.guid ep[:guid], isPermaLink: false
         xml.pubDate ep[:pub_date]
@@ -88,7 +88,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.dc :modified, ep[:modified].rfc2822
 
         xml.itunes :author, ep[:author_name]
-        xml.itunes :duration, ep[:duration]
+        xml.itunes :duration, ep[:audio][:duration].to_time_string_summary
         xml.itunes :explicit, ep[:explicit]
         xml.itunes :subtitle, ep[:subtitle]
         xml.itunes :summary, ep[:summary]
