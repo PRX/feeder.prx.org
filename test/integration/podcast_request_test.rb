@@ -59,6 +59,8 @@ describe 'RSS feed Integration Test' do
     @feed.css('item').each_with_index do |node, i|
       title = @episodes[i].overrides['title']
       node.css('title').text.must_equal title
+      node.at_css('enclosure').attributes['length'].value.must_equal '774059'
+      node.css('itunes|duration').text.must_equal ':48'
     end
   end
 
