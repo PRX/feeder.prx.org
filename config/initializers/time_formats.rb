@@ -1,9 +1,9 @@
-require 'integer_enhancements'
+require 'time_formats'
 
 class Fixnum
-  include IntegerEnhancements
+  include TimeFormats
 end
 
 class Bignum
-  include IntegerEnhancements
+  include TimeFormats
 end
