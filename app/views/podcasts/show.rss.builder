@@ -88,7 +88,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.dc :modified, ep[:modified].rfc2822
 
         xml.itunes :author, ep[:author_name]
-        xml.itunes :duration, ep[:audio][:duration].to_time_string_summary
+        xml.itunes :duration, ep[:audio][:duration].to_time_summary
         xml.itunes :explicit, ep[:explicit]
         xml.itunes :subtitle, ep[:subtitle]
         xml.itunes :summary, ep[:summary]
