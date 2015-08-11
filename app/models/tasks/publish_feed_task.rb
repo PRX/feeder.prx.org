@@ -24,17 +24,13 @@ class Tasks::PublishFeedTask < ::Task
   def task_status_changed(fixer_task)
     # purge the cdn cache
     url = "http://#{feeder_cdn_host}/#{feed_path}"
-    HighwindsAPI::Content.purge_url(url)
+    HighwindsAPI::Content.purge_url(url, false)
 
     # (send out a feed updated event?)
   end
 
   def feed_path(podcast = owner)
     File.join(podcast.path, 'feed-rss.xml')
-  end
-
-  def feeder_cdn_host
-    ENV['FEEDER_CDN_HOST']
   end
 
   def podcast
