@@ -13,7 +13,7 @@ describe TimeFormats do
   end
 
   it 'formats integers to HH:MM:SS' do
-    1.to_time_summary.must_equal ':01'
+    1.to_time_summary.must_equal '0:01'
     100.to_time_summary.must_equal '01:40'
     10000.to_time_summary.must_equal '02:46:40'
     1000000.to_time_summary.must_equal '277:46:40'
