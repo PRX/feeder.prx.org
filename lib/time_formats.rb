@@ -42,7 +42,7 @@ module TimeFormats
   end
 
   def time_duration_summary(seconds=0)
-    return ':00' if seconds <= 0
+    return '0:00' if seconds <= 0
     time_values = time_duration(seconds)
     last_zero = true
     nums = [:hour, :minute, :second].collect do |unit|
@@ -56,7 +56,7 @@ module TimeFormats
     if nums.size > 1
       nums.join(':')
     else
-      ":#{nums[0]}"
+      "0:#{nums[0]}"
     end
   end
 

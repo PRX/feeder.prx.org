@@ -49,10 +49,6 @@ describe EpisodeBuilder do
 
       eb[:audio][:url].must_equal prefix + '/test-f.prxu.org' + link
     end
-
-    it 'gets author info' do
-      eb[:author_name].must_equal 'The Moth'
-    end
   end
 
   describe 'with overrides' do
@@ -61,7 +57,6 @@ describe EpisodeBuilder do
       eb = EpisodeBuilder.from_prx_story(episode)
 
       eb[:title].must_equal "Virginity & Fidelity"
-      eb[:author_name].must_equal "The Moth"
     end
   end
 end

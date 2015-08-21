@@ -22,7 +22,6 @@ class EpisodeBuilder
         rich: sa[:description] || '',
         plain: Sanitize.fragment(sa[:description] || '').strip
       },
-      author_name: author['name'],
       guid:  "prx:#{@ep.story_id}:#{@ep.guid}",
       link: link,
       audio: audio_file(@ep),
@@ -47,10 +46,6 @@ class EpisodeBuilder
     link = url.sub(/^http(s*):\/\//, '/')
     extension = URI.parse(url).path.split('.').pop
     prefix + extension + link
-  end
-
-  def author
-    @story.account.body
   end
 
   def get_story(account = nil)
