@@ -15,20 +15,21 @@ class EpisodeBuilder
 
   def from_prx_story
     @story = get_story
+    sa = @story.attributes
     HashWithIndifferentAccess.new(
-      title: @story.title,
+      title: sa[:title],
       description: {
-        rich: @story.description,
-        plain: Sanitize.fragment(@story.description).strip
+        rich: sa[:description] || '',
+        plain: Sanitize.fragment(sa[:description] || '').strip
       },
       author_name: author['name'],
       guid:  "prx:#{@ep.story_id}:#{@ep.guid}",
       link: link,
       audio: audio_file(@ep),
-      short_description: @story.shortDescription,
-      explicit: @story.attributes[:contentAdvisory] ? 'yes' : 'no',
-      keywords: @story.tags.join(', '),
-      categories: @story.tags.join(', '),
+      short_description: sa[:shortDescription],
+      explicit: sa[:contentAdvisory] ? 'yes' : 'no',
+      keywords: sa[:tags].join(', '),
+      categories: sa[:tags].join(', '),
       created: @ep.created_at,
       modified: @ep.updated_at
     ).merge(@overrides)

@@ -14,6 +14,27 @@ describe EpisodeBuilder do
   let(:eb) { EpisodeBuilder.from_prx_story(episode) }
 
   describe 'without overrides' do
+    it 'gets the description' do
+      eb[:description][:plain][0,4].must_equal 'Tina'
+    end
+
+    it 'handles blank description' do
+      attributes = { title: 'title', shortDescription: 'short', tags: [] }
+      story = Minitest::Mock.new
+      story.expect(:id, 12345)
+      story.expect(:attributes, attributes)
+
+      account = Minitest::Mock.new
+      account.expect(:body, 'name')
+      story.expect(:account, account)
+
+      builder = EpisodeBuilder.new(episode)
+      builder.stub(:get_story, story) do
+        result = builder.from_prx_story
+        result[:description][:plain].must_equal ''
+      end
+    end
+
     it 'gets the right story from the prx api' do
       eb[:title].must_equal "Virginity, Fidelity, and Fertility"
     end
