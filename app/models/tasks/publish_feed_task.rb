@@ -18,7 +18,16 @@ class Tasks::PublishFeedTask < ::Task
   end
 
   def destination_url(podcast = owner)
-    "s3://#{feeder_storage_bucket}/#{feed_path}?x-fixer-public=true"
+    query = URI.encode_www_form(
+      'x-fixer-public' => 'true',
+      'x-fixer-Content-Type' => 'text/xml; charset=UTF-8'
+    )
+    URI::Generic.build(
+      scheme: 's3',
+      host: feeder_storage_bucket,
+      path: "/" + feed_path,
+      query: query
+    ).to_s
   end
 
   def task_status_changed(fixer_task)
