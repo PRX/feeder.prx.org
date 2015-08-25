@@ -56,7 +56,12 @@ class Tasks::CopyAudioTask < ::Task
   end
 
   def destination_url(ep, story)
-    "s3://#{feeder_storage_bucket}/#{audio_path(ep, story)}?x-fixer-public=true"
+    URI::Generic.build(
+      scheme: 's3',
+      host: feeder_storage_bucket,
+      path: "/" + audio_path(ep, story),
+      query: "x-fixer-public=true"
+    ).to_s
   end
 
   def audio_path(ep, story)
