@@ -9,7 +9,10 @@ FactoryGirl.define do
     copyright 'Copyright © 2014 Jordan, Jesse GO!. All rights reserved.'
     language 'en-us'
     managing_editor 'Jesse Thorn'
-    author 'Jesse Thorn'
+    author_name 'Jesse Thorn'
+    author_email 'jesse@maximumfun.org'
+    owner_name 'Jesse Thorn'
+    owner_email 'jesse@maximumfun.org'
     pub_date Date.parse("Jan 11, 2015")
     last_build_date Date.parse("Jan 12, 2015")
     categories 'Humor, Entertainment'

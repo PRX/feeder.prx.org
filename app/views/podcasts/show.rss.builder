@@ -33,7 +33,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
     xml.atom :link, href: @podcast.url, rel: 'self', type: 'application/rss+xml'
 
-    xml.itunes :author, @podcast.author
+    xml.itunes :author, @podcast.author_name
 
     @podcast.itunes_categories[0,3].each do |cat|
       if cat.subcategories.nil?
@@ -71,7 +71,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.title ep[:title]
         xml.link ep[:link]
         xml.description { xml.cdata!(ep[:description][:plain]) }
-        xml.author "#{@podcast.owner_email} (#{@podcast.owner_name})"
+        xml.author "#{@podcast.author_email} (#{@podcast.author_name})"
         unless ep[:categories].empty?
           ep[:categories].split(', ').each { |c| xml.category c }
         end
@@ -87,7 +87,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         # xml.dc :created, ep[:created].rfc2822
         # xml.dc :modified, ep[:modified].rfc2822
 
-        xml.itunes :author, ep[:author_name]
+        xml.itunes :author, @podcast.author_name
         xml.itunes :duration, ep[:audio][:duration].to_time_summary
         xml.itunes :explicit, ep[:explicit]
         xml.itunes :subtitle, ep[:subtitle]
