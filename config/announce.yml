@@ -7,3 +7,8 @@ subscribe:
     - delete
     - publish
     - unpublish
+
+  feed_entry:
+    - create
+    - update
+    - delete
