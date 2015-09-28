@@ -28,16 +28,9 @@ class StoryUpdateJob < ActiveJob::Base
 
   def load_resources(data)
     self.body = data.is_a?(String) ? JSON.parse(data) : data
-    self.story = story_resource(body)
+    self.story = api_resource(body)
     self.episode = Episode.by_prx_story(story)
     self.podcast = episode.podcast if episode
-  end
-
-  def story_resource(body)
-    href = body['_links']['self']['href']
-    resource = api
-    link = HyperResource::Link.new(resource, href: href)
-    HyperResource.new_from(body: body, resource: resource, link: link)
   end
 
   def update_episode

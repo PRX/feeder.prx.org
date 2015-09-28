@@ -45,7 +45,7 @@ describe StoryUpdateJob do
   end
 
   it 'creates a story resource' do
-    story = job.story_resource(JSON.parse(body))
+    story = job.api_resource(JSON.parse(body))
     story.must_be_instance_of HyperResource
   end
 
