@@ -47,7 +47,7 @@ class Tasks::CopyAudioTask < ::Task
   end
 
   def get_story(account = nil)
-    api(account).tap { |a| a.href = episode.prx_uri }.get
+    api(account: account).tap { |a| a.href = episode.prx_uri }.get
   end
 
   def original_url(story)
