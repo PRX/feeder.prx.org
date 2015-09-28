@@ -22,15 +22,11 @@ class Podcast < ActiveRecord::Base
   end
 
   def update_from_feed(feed)
-    # puts "feed: #{feed.attributes.inspect}"
     %w(complete copyright description explicit keywords language managing_editor subtitle summary title update_frequency update_period).each do |at|
-      # puts "podcast.#{at} = #{feed.attributes[at]}"
       self.try("#{at}=", feed.attributes[at])
     end
 
-    # key is feed attribute, value is this podcast's attribute
     {feed_url: :source_url, url: :link, author: :author_name}.each do |k,v|
-      # puts "podcast.#{v} = #{feed.attributes[k.to_s]}"
       self.try("#{v}=", feed.attributes[k.to_s])
     end
 
