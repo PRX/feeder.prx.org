@@ -17,15 +17,15 @@ class EpisodeBuilder
     @story = get_story
     sa = @story.attributes
     HashWithIndifferentAccess.new(
-      title: sa[:title],
-      description: {
-        rich: sa[:description] || '',
-        plain: Sanitize.fragment(sa[:description] || '').strip
-      },
       guid:  "prx:#{@ep.story_id}:#{@ep.guid}",
-      link: link,
+      link: link(@story),
+      title: sa[:title],
+      subtitle: Sanitize.fragment(sa[:shortDescription] || '').strip,
+      description: Sanitize.fragment(sa[:description] || '').strip,
+      summary: sa[:description],
+      content: sa[:description],
+      image_url: nil,
       audio: audio_file(@ep),
-      short_description: sa[:shortDescription],
       explicit: sa[:contentAdvisory] ? 'yes' : 'no',
       keywords: sa[:tags].join(', '),
       categories: sa[:tags].join(', '),
@@ -49,11 +49,11 @@ class EpisodeBuilder
   end
 
   def get_story(account = nil)
-    api(account).tap { |a| a.href = @prx_uri }.get
+    api(account: account).tap { |a| a.href = @prx_uri }.get
   end
 
-  def link
-    "#{prx_root}#{@story.id}"
+  def link(story = @story)
+    "#{prx_root}#{story.id}"
   end
 
   def prefix

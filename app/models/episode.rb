@@ -6,7 +6,7 @@ class Episode < ActiveRecord::Base
   belongs_to :podcast
   has_many :tasks, as: :owner
 
-  validates :podcast, presence: true
+  validates :podcast_id, presence: true
 
   acts_as_paranoid
 
@@ -22,6 +22,39 @@ class Episode < ActiveRecord::Base
     story_uri = story.links['self'].href
     podcast = Podcast.find_by!(prx_uri: series_uri)
     create!(podcast: podcast, prx_uri: story_uri)
+  end
+
+  def self.create_from_entry!(podcast, entry)
+    episode = new(podcast: podcast)
+    episode.update_from_entry(entry)
+    episode.save!
+    episode
+  end
+
+  def update_from_entry(entry_resource)
+    entry = entry_resource.attributes
+    o = {}
+    %w(
+      guid title subtitle description summary content image_url explicit
+      keywords categories is_closed_captioned
+    ).each do |at|
+      o[at] = entry[at]
+    end
+
+    o[:created] = entry[:published]
+
+    o[:audio] = {
+      url: entry[:feedburner_orig_enclosure_link] || entry[:enclosure_url],
+      type: entry[:enclosure_type],
+      size: entry[:enclosure_length],
+      duration: entry[:duration]
+    }
+
+    o[:link] = entry[:feedburner_orig_link] || entry[:url]
+
+    self.overrides = o
+
+    self
   end
 
   def update_from_story!(story)

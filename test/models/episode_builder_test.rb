@@ -15,7 +15,7 @@ describe EpisodeBuilder do
 
   describe 'without overrides' do
     it 'gets the description' do
-      eb[:description][:plain][0,4].must_equal 'Tina'
+      eb[:description][0,4].must_equal 'Tina'
     end
 
     it 'handles blank description' do
@@ -31,7 +31,7 @@ describe EpisodeBuilder do
       builder = EpisodeBuilder.new(episode)
       builder.stub(:get_story, story) do
         result = builder.from_prx_story
-        result[:description][:plain].must_equal ''
+        result[:description].must_equal ''
       end
     end
 
