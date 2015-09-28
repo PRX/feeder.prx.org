@@ -67,6 +67,6 @@ describe 'RSS feed Integration Test' do
   it 'displays plaintext and richtext descriptions' do
     node = @feed.css('item')[0]
     node.css('description').text.strip[0..3].must_equal "Tina"
-    node.css('content|encoded').text.strip[0..4].must_equal "<div>"
+    node.css('itunes|summary').text.strip[0..4].must_equal "<div>"
   end
 end

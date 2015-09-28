@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150825182150) do
+ActiveRecord::Schema.define(version: 20150923142208) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -65,8 +65,8 @@ ActiveRecord::Schema.define(version: 20150825182150) do
   create_table "podcasts", force: :cascade do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "title",           null: false
-    t.string   "link",            null: false
+    t.string   "title",            null: false
+    t.string   "link",             null: false
     t.text     "description"
     t.string   "language"
     t.string   "managing_editor"
@@ -78,7 +78,7 @@ ActiveRecord::Schema.define(version: 20150825182150) do
     t.string   "summary"
     t.string   "keywords"
     t.string   "update_period"
-    t.integer  "update_value"
+    t.integer  "update_frequency"
     t.datetime "update_base"
     t.string   "copyright"
     t.string   "author_name"
@@ -90,6 +90,8 @@ ActiveRecord::Schema.define(version: 20150825182150) do
     t.integer  "max_episodes"
     t.string   "prx_uri"
     t.string   "author_email"
+    t.string   "source_url"
+    t.boolean  "complete"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree

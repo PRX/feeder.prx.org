@@ -21,7 +21,7 @@ FactoryGirl.define do
     summary 'Public radio host Jesse Thorn and @midnight writer Jordan Morris goof around'
     keywords 'laffs, comedy, good-times'
     update_period 'weekly'
-    update_value 1
+    update_frequency 1
     update_base 1.year.ago
 
     itunes_image
