@@ -6,17 +6,21 @@
       "templated": true
     }],
     "self": {
-      "href": "/api/v1/feeds/3/entries/22"
+      "href": "/api/v1/feeds/4/entries/44"
+    },
+    "prx:feed": {
+      "href": "/api/v1/feeds/4",
+      "title": "Transistor"
     }
   },
   "_embedded": {
     "prx:feed": {
       "_links": {
         "self": {
-          "href": "/api/v1/feeds/3"
+          "href": "/api/v1/feeds/4"
         },
         "prx:entries": {
-          "href": "/api/v1/feeds/3/entries"
+          "href": "/api/v1/feeds/4/entries"
         }
       },
       "feed_url": "http://feeds.prx.org/transistor_stem",
@@ -34,8 +38,6 @@
       }],
       "author": "PRX",
       "managing_editor": "prx@prx.org (PRX)",
-      "keywords": [],
-      "categories": ["Science \u0026 Medicine", "Natural Sciences"],
       "explicit": "f",
       "language": "en-US",
       "copyright": "Copyright 2015",
@@ -47,7 +49,9 @@
       "block": false,
       "published": "2015-08-18T21:01:13.000Z",
       "last_built": "2015-08-18T21:01:13.000Z",
-      "last_modified": "2015-08-18T20:43:10.000Z"
+      "last_modified": "2015-08-18T20:43:10.000Z",
+      "keywords": [],
+      "categories": ["Science \u0026 Medicine", "Natural Sciences"]
     }
   },
   "guid": "http://transistor.prx.org/?p=78",
@@ -65,11 +69,11 @@
   "feedburner_orig_enclosure_link": "http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/transistor/cdn.transistor.prx.org/wp-content/uploads/1_Transistor_We_Are_Stardust.mp3",
   "duration": 980,
   "explicit": "no",
-  "keywords": [],
-  "categories": ["Michelle Thaller", "Podcast"],
   "is_closed_captioned": false,
   "block": false,
   "comment_rss_url": "http://transistor.prx.org/2015/02/episode-1-we-are-stardust/feed/",
   "comment_count": "0",
-  "published": "2015-02-02T18:36:16.000Z"
+  "published": "2015-02-02T18:36:16.000Z",
+  "keywords": [],
+  "categories": ["Michelle Thaller", "Podcast"]
 }
