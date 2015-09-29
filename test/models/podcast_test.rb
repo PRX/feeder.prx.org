@@ -41,6 +41,14 @@ describe Podcast do
   describe 'from feed' do
     let (:entry) { api_resource(JSON.parse(json_file(:crier_entry)), crier_root) }
 
+    before {
+      stub_request(:get, "http://cdn.transistor.prx.org/wp-content/uploads/powerpress/transistor1400.jpg").
+        to_return(:status => 200, :body => test_file('/fixtures/transistor1400.jpg'), :headers => {})
+
+      stub_request(:get, "http://cdn.transistor.prx.org/wp-content/uploads/powerpress/transistor300.png").
+        to_return(:status => 200, :body => test_file('/fixtures/transistor300.png'), :headers => {})
+    }
+
     it 'create_from_feed' do
       feed = entry.objects['prx:feed']
       podcast = Podcast.create_from_feed!(feed)
@@ -62,10 +70,11 @@ describe Podcast do
 
     it 'update_images' do
       podcast = Podcast.new
-      feed = {
+      attributes = {
         thumb_url: 'http://prx.org/thumb.png',
         image_url: 'http://prx.org/image.png'
       }
+      feed = OpenStruct.new(attributes: attributes)
       podcast.update_images(feed)
       podcast.feed_image.url.must_equal 'http://prx.org/thumb.png'
       podcast.itunes_image.url.must_equal 'http://prx.org/image.png'
@@ -73,14 +82,15 @@ describe Podcast do
 
     it 'update_categories' do
       podcast = Podcast.new
-      feed = Minitest::Mock.new
-      feed.expect(:categories, ["Science & Medicine", "Natural Sciences", "Fictional"])
+      feed = OpenStruct.new(
+        categories: ["Science & Medicine", "Natural Sciences", "Fictional"]
+      )
 
       podcast.update_categories(feed)
 
       podcast.itunes_categories.size.must_equal 1
       podcast.itunes_categories.first.name.must_equal "Science & Medicine"
-      podcast.categories.must_equal "Fictional"
+      podcast.categories.first.must_equal "Fictional"
     end
   end
 

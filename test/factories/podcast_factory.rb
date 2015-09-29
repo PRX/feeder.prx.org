@@ -15,11 +15,11 @@ FactoryGirl.define do
     owner_email 'jesse@maximumfun.org'
     pub_date Date.parse("Jan 11, 2015")
     last_build_date Date.parse("Jan 12, 2015")
-    categories 'Humor, Entertainment'
+    categories ['Humor', 'Entertainment']
     explicit true
     subtitle 'Goofy laughsters'
     summary 'Public radio host Jesse Thorn and @midnight writer Jordan Morris goof around'
-    keywords 'laffs, comedy, good-times'
+    keywords ['laffs', 'comedy', 'good-times']
     update_period 'weekly'
     update_frequency 1
     update_base 1.year.ago

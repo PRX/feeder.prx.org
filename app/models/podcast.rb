@@ -1,17 +1,21 @@
 class Podcast < ActiveRecord::Base
-  has_one :itunes_image
-  has_one :feed_image
+
+  serialize :categories, JSON
+  serialize :keywords, JSON
+
+  has_one :itunes_image, autosave: true
+  has_one :feed_image, autosave: true
 
   has_many :episodes
-  has_many :itunes_categories
+  has_many :itunes_categories, autosave: true
   has_many :tasks, as: :owner
 
   validates :itunes_image, :feed_image, presence: true
-  validates :path, :prx_uri, uniqueness: true
+  validates :path, :prx_uri, uniqueness: true, allow_nil: true
 
   acts_as_paranoid
 
-  after_update do
+  after_save do
     DateUpdater.last_build_date(self)
   end
 
@@ -30,6 +34,8 @@ class Podcast < ActiveRecord::Base
       self.try("#{v}=", feed.attributes[k.to_s])
     end
 
+    self.path ||= feed.attributes['feedburner_name']
+
     if feed.attributes[:owners] && feed.attributes[:owners].size > 0
       owner = feed.attributes[:owners].first
       self.owner_name = owner['name']
@@ -44,15 +50,15 @@ class Podcast < ActiveRecord::Base
 
   def update_images(feed)
     if self.feed_image
-      self.feed_image.update_attributes!(url: feed[:thumb_url])
+      self.feed_image.update_attributes!(url: feed.attributes[:thumb_url])
     else
-      self.build_feed_image(url: feed[:thumb_url])
+      self.build_feed_image(url: feed.attributes[:thumb_url])
     end
 
     if self.itunes_image
-      self.itunes_image.update_attributes!(url: feed[:image_url])
+      self.itunes_image.update_attributes!(url: feed.attributes[:image_url])
     else
-      self.build_itunes_image(url: feed[:image_url])
+      self.build_itunes_image(url: feed.attributes[:image_url])
     end
   end
 
@@ -73,7 +79,7 @@ class Podcast < ActiveRecord::Base
     # delete and update existing itunes_categories
     self.itunes_categories.each do |icat|
       if itunes_cats.key?(icat.name)
-        subs = itunes_cats.delete(icat.name).sort.uniq.join(', ')
+        subs = itunes_cats.delete(icat.name).sort.uniq
         icat.update_attributes!(subcategories: subs)
       else
         icat.destroy!
@@ -82,11 +88,11 @@ class Podcast < ActiveRecord::Base
 
     # # create missing itunes_categories
     itunes_cats.keys.each do |cat|
-      subs = itunes_cats[cat].sort.uniq.join(', ')
+      subs = itunes_cats[cat].sort.uniq
       self.itunes_categories.build(name: cat, subcategories: subs)
     end
 
-    self.categories = cats.join(', ')
+    self.categories = cats
   end
 
   def feed_episodes
