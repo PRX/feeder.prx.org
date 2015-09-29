@@ -14,20 +14,20 @@ describe FeedImage do
     image.errors[:url].must_include "can't be blank"
   end
 
-  it 'must have a title' do
-    image.title = nil
-
-    image.wont_be(:valid?)
-    image.errors[:title].must_include "can't be blank"
-  end
-
-  it 'must have a link' do
-    image.link = nil
-
-    image.wont_be(:valid?)
-    image.errors[:link].must_include "can't be blank"
-  end
-
+  # it 'must have a title' do
+  #   image.title = nil
+  #
+  #   image.wont_be(:valid?)
+  #   image.errors[:title].must_include "can't be blank"
+  # end
+  #
+  # it 'must have a link' do
+  #   image.link = nil
+  #
+  #   image.wont_be(:valid?)
+  #   image.errors[:link].must_include "can't be blank"
+  # end
+  #
   it 'can have height and width' do
     image.height, image.width = [nil, nil]
 
