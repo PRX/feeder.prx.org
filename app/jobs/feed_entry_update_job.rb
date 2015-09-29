@@ -14,6 +14,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
     load_resources(data)
     create_podcast unless podcast
     episode ? update_episode : create_episode
+    podcast.try(:publish!)
   end
   alias receive_feed_entry_create receive_feed_entry_update
 
@@ -23,18 +24,20 @@ class FeedEntryUpdateJob < ActiveJob::Base
   end
 
   def update_episode
-    raise 'not implemented yet'
+    episode.update_from_entry(entry)
+    episode.copy_audio
+    podcast.try(:publish!)
   end
 
   def create_episode
-    return unless podcast && entry
     self.episode = Episode.create_from_entry!(podcast, entry)
-    # episode.copy_audio
+    episode.copy_audio
   end
 
   def receive_feed_entry_delete(data)
     load_resources(data)
-    raise 'not implemented yet'
+    episode.destroy!
+    podcast.try(:publish!)
   end
 
   def load_resources(data)
