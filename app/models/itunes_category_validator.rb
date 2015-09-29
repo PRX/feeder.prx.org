@@ -27,13 +27,9 @@ class ITunesCategoryValidator < ActiveModel::Validator
   end
 
   def validate_subcategories(record)
-    unless record.subcategories.nil?
-      subcats = record.subcategories.split(', ')
-
-      subcats.each do |subcat|
-        unless is_subcategory?(subcat, record.name)
-          record.errors[:subcategories] << "#{subcat} is not a valid subcategory"
-        end
+    record.subcategories.each do |subcat|
+      unless is_subcategory?(subcat, record.name)
+        record.errors[:subcategories] << "#{subcat} is not a valid subcategory"
       end
     end
   end

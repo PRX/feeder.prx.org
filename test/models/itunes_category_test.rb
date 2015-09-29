@@ -13,12 +13,12 @@ describe ITunesCategory do
   end
 
   it 'must have subcategories on list' do
-    cat.subcategories = 'Aviation, Space'
+    cat.subcategories = ['Aviation', 'Space']
     cat.wont_be(:valid?)
   end
 
   it 'must have subcategories that correspond to category' do
-    cat.subcategories = 'Aviation, Literature'
+    cat.subcategories = ['Aviation', 'Literature']
     cat.wont_be(:valid?)
     cat.errors[:subcategories].must_include "Literature is not a valid subcategory"
   end
