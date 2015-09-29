@@ -9,19 +9,19 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
   xml.channel do
     xml.title @podcast.title
     xml.link @podcast.link
-    xml.description @podcast.description
+    xml.pubDate @podcast.pub_date.utc.rfc2822
+    xml.lastBuildDate @podcast.last_build_date.utc.rfc2822
+    xml.ttl 60
     xml.language @podcast.language || 'en-us'
     xml.copyright @podcast.copyright
-    xml.managingEditor @podcast.managing_editor
     xml.webMaster @podcast.web_master
-    xml.pubDate @podcast.pub_date.rfc2822
-    xml.lastBuildDate @podcast.last_build_date.rfc2822
-    @podcast.categories.split(', ').each do |category|
+    xml.description @podcast.description
+    xml.managingEditor @podcast.managing_editor
+    @podcast.categories.each do |category|
       xml.category category
     end
     xml.generator @podcast.generator
     xml.docs 'http://blogs.law.harvard.edu/tech/rss'
-    xml.ttl 60
     xml.image do
       xml.url @podcast.feed_image.url
       xml.title @podcast.title
@@ -40,7 +40,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.itunes :category, text: cat.name
       else
         xml.itunes :category, text: cat.name do
-          cat.subcategories.split(', ').each do |subcat|
+          cat.subcategories.each do |subcat|
             xml.itunes :category, text: subcat
           end
         end
@@ -55,11 +55,11 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     end
     xml.itunes :subtitle, @podcast.subtitle
     xml.itunes(:summary) { xml.cdata!(@podcast.summary || '') }
-    xml.itunes :keywords, @podcast.keywords
+    xml.itunes :keywords, @podcast.keywords.join(',') if @podcast.keywords.size > 0
 
     xml.media :copyright, @podcast.copyright
     xml.media :thumbnail, url: @podcast.feed_image.url
-    xml.media :keywords, @podcast.keywords
+    xml.media :keywords, @podcast.keywords.join(',') if @podcast.keywords.size > 0
     xml.media :category, @podcast.itunes_categories.first.try(:name), scheme: 'http://www.itunes.com/dtds/podcast-1.0.dtd'
 
     xml.sy :updatePeriod, @podcast.update_period if @podcast.update_period
@@ -70,6 +70,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       xml.item do
         xml.guid ep[:guid], isPermaLink: false
         xml.title ep[:title]
+        xml.author "#{ep[:author_email]} (#{ep[:author_name]})"
         xml.pubDate ep[:created].rfc2822
         xml.link ep[:link]
         xml.description { xml.cdata!(ep[:description] || '') }
