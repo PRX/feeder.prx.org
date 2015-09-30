@@ -19,6 +19,10 @@ class Podcast < ActiveRecord::Base
     DateUpdater.last_build_date(self)
   end
 
+  def path
+    self[:path] || id
+  end
+
   def self.create_from_feed!(feed)
     podcast = new.update_from_feed(feed)
     podcast.save!
@@ -111,7 +115,9 @@ class Podcast < ActiveRecord::Base
   end
 
   def create_publish_task
-    publish_task = Tasks::PublishFeedTask.create!(owner: self)
+    publish_task = Tasks::PublishFeedTask.new
+    publish_task.owner = self
+    publish_task.save!
     publish_task.start!
   end
 

@@ -72,7 +72,9 @@ class Episode < ActiveRecord::Base
   def copy_audio(force = false)
     # see if the audio uri has been updated (new audio file in the story)
     if force || new_audio_file?
-      copy_task = Tasks::CopyAudioTask.create!(owner: self)
+      copy_task = Tasks::CopyAudioTask.new
+      copy_task.owner = self
+      copy_task.save!
       copy_task.start!
     end
   end
