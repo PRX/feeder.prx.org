@@ -4,10 +4,11 @@ describe Tasks::PublishFeedTask do
   let(:task) { create(:publish_feed_task) }
 
   it 'can start the job' do
-    task.fixer_sqs_client = SqsMock.new
-    task.start!
-    task.options[:source].must_equal "http://feeder.prx.org/podcasts/#{task.owner_id}"
-    task.options[:destination].must_equal 's3://test-prx-feed/jjgo/feed-rss.xml?x-fixer-public=true&x-fixer-Content-Type=application%2Frss%2Bxml%3B+charset%3DUTF-8'
+    Task.stub :new_fixer_sqs_client, SqsMock.new do
+      task.start!
+      task.options[:source].must_equal "http://feeder.prx.org/podcasts/#{task.owner_id}"
+      task.options[:destination].must_equal 's3://test-prx-feed/jjgo/feed-rss.xml?x-fixer-public=true&x-fixer-Content-Type=application%2Frss%2Bxml%3B+charset%3DUTF-8'
+    end
   end
 
   it 'alias owner as podcast' do

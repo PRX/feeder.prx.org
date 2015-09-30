@@ -73,11 +73,15 @@ class Task < ActiveRecord::Base
   end
 
   def fixer_sqs_client
-    @fixer_sqs_client ||= Fixer::SqsClient.new
+    @fixer_sqs_client ||= Task.new_fixer_sqs_client
   end
 
   def fixer_sqs_client=(client)
     @fixer_sqs_client = client
+  end
+
+  def self.new_fixer_sqs_client
+    Fixer::SqsClient.new
   end
 
   def feeder_cdn_host

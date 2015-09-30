@@ -16,7 +16,9 @@ class FeedEntryUpdateJobTest < ActiveJob::TestCase
 
     it 'handles a feed entry update' do
       data = json_file(:crier_entry)
-      job.receive_feed_entry_update(data)
+      Task.stub :new_fixer_sqs_client, SqsMock.new do
+        job.receive_feed_entry_update(data)
+      end
     end
   end
 end

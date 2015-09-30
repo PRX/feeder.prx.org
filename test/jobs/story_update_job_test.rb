@@ -6,35 +6,7 @@ describe StoryUpdateJob do
 
   let(:job) { StoryUpdateJob.new }
 
-  let(:body) { %{
-    {
-      "id": 149726,
-      "publishedAt": "2015-05-18T23:12:38.000Z",
-      "title": "Big Data Shows How We Live and Die",
-      "_links": {
-        "curies": [
-          {
-            "href": "http://meta.prx.org/relation/{rel}",
-            "name": "prx",
-            "templated": true
-          }
-        ],
-        "prx:account": {
-          "href": "/api/v1/accounts/124",
-          "title": "KUFM - Montana Public Radio",
-          "profile": "http://meta.prx.org/model/account/station"
-        },
-        "prx:series": {
-            "href": "/api/v1/series/20829",
-            "title": "The Write Question"
-        },
-        "self": {
-            "href": "/api/v1/stories/149726",
-            "profile": "http://meta.prx.org/model/story"
-        }
-      }
-    }
-  }}
+  let(:body) { json_file(:prx_story_updates) }
 
   before do
     if use_webmock?
@@ -51,8 +23,10 @@ describe StoryUpdateJob do
 
   it 'can create an episode' do
     mock_task = Minitest::Mock.new
+    mock_task.expect(:owner=, true, [Object])
+    mock_task.expect(:save!, true)
     mock_task.expect(:start!, true)
-    Tasks::CopyAudioTask.stub(:create!, mock_task) do
+    Tasks::CopyAudioTask.stub(:new, mock_task) do
       lbd = podcast.last_build_date
       job.receive_story_update(JSON.parse(body))
       job.episode.wont_be_nil
