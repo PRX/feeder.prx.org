@@ -68,7 +68,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
     @episodes.each do |ep|
       xml.item do
-        xml.guid ep[:guid], isPermaLink: false
+        xml.guid ep[:guid], isPermaLink: !!ep[:is_perma_link]
         xml.title ep[:title]
         xml.author "#{ep[:author_email]} (#{ep[:author_name]})"
         xml.pubDate ep[:created].rfc2822
