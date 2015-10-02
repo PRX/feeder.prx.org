@@ -32,14 +32,13 @@ class Episode < ActiveRecord::Base
     episode
   end
 
+  ENTRY_ATTRS = %w( guid title subtitle description summary content image_url
+    explicit keywords categories is_closed_captioned is_perma_link ).freeze
 
   def update_from_entry(entry_resource)
     entry = entry_resource.attributes
 
-    entry_attrs = %w( guid title subtitle description summary content image_url
-      explicit keywords categories is_closed_captioned )
-
-    o = entry.slice(*entry_attrs)
+    o = entry.slice(*ENTRY_ATTRS)
 
     o[:created] = entry[:published]
 
