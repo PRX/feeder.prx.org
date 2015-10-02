@@ -29,40 +29,43 @@ class Podcast < ActiveRecord::Base
     podcast
   end
 
-  def update_from_feed(feed)
-    %w(complete copyright description explicit keywords language managing_editor subtitle summary title update_frequency update_period).each do |at|
-      self.try("#{at}=", feed.attributes[at])
-    end
+  def update_from_feed(feed_resource)
+    feed = feed_resource.attributes
+
+    feed_attrs = %w( complete copyright description explicit keywords language
+      managing_editor subtitle summary title update_frequency update_period )
+
+    self.attributes = feed.slice(*feed_attrs)
 
     {feed_url: :source_url, url: :link, author: :author_name}.each do |k,v|
-      self.try("#{v}=", feed.attributes[k.to_s])
+      send("#{v}=", feed[k.to_s])
     end
 
-    self.path ||= feed.attributes['feedburner_name']
+    self.path ||= feed['feedburner_name']
 
-    if feed.attributes[:owners] && feed.attributes[:owners].size > 0
-      owner = feed.attributes[:owners].first
+    unless feed[:owners].blank?
+      owner = feed[:owners].first
       self.owner_name = owner['name']
       self.owner_email = owner['email']
     end
 
     update_images(feed)
-    update_categories(feed)
+    update_categories(feed_resource)
 
     self
   end
 
   def update_images(feed)
     if self.feed_image
-      self.feed_image.update_attributes!(url: feed.attributes[:thumb_url])
+      self.feed_image.update_attributes!(url: feed[:thumb_url])
     else
-      self.build_feed_image(url: feed.attributes[:thumb_url])
+      self.build_feed_image(url: feed[:thumb_url])
     end
 
     if self.itunes_image
-      self.itunes_image.update_attributes!(url: feed.attributes[:image_url])
+      self.itunes_image.update_attributes!(url: feed[:image_url])
     else
-      self.build_itunes_image(url: feed.attributes[:image_url])
+      self.build_itunes_image(url: feed[:image_url])
     end
   end
 
@@ -115,10 +118,9 @@ class Podcast < ActiveRecord::Base
   end
 
   def create_publish_task
-    publish_task = Tasks::PublishFeedTask.new
-    publish_task.owner = self
-    publish_task.save!
-    publish_task.start!
+    Tasks::PublishFeedTask.create! do |task|
+      task.owner = self
+    end.start!
   end
 
   def web_master
