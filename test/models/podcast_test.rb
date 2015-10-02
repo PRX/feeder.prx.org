@@ -74,8 +74,7 @@ describe Podcast do
         thumb_url: 'http://prx.org/thumb.png',
         image_url: 'http://prx.org/image.png'
       }
-      feed = OpenStruct.new(attributes: attributes)
-      podcast.update_images(feed)
+      podcast.update_images(attributes)
       podcast.feed_image.url.must_equal 'http://prx.org/thumb.png'
       podcast.itunes_image.url.must_equal 'http://prx.org/image.png'
     end
