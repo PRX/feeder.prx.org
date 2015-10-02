@@ -29,13 +29,13 @@ class Podcast < ActiveRecord::Base
     podcast
   end
 
+  FEED_ATTRS = %w( complete copyright description explicit keywords language
+    managing_editor subtitle summary title update_frequency update_period ).freeze
+
   def update_from_feed(feed_resource)
     feed = feed_resource.attributes
 
-    feed_attrs = %w( complete copyright description explicit keywords language
-      managing_editor subtitle summary title update_frequency update_period )
-
-    self.attributes = feed.slice(*feed_attrs)
+    self.attributes = feed.slice(*FEED_ATTRS)
 
     {feed_url: :source_url, url: :link, author: :author_name}.each do |k,v|
       send("#{v}=", feed[k.to_s])
