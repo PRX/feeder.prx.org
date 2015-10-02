@@ -36,7 +36,7 @@ class StoryUpdateJob < ActiveJob::Base
   def update_episode
     episode.update_from_story!(story)
     episode.copy_audio
-    podcast.try(:publish!)
+    podcast.publish!
   end
 
   def create_episode
