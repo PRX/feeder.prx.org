@@ -7,6 +7,7 @@ class Episode < ActiveRecord::Base
   has_many :tasks, as: :owner
 
   validates :podcast_id, presence: true
+  validates_associated :podcast
 
   acts_as_paranoid
 
@@ -31,15 +32,14 @@ class Episode < ActiveRecord::Base
     episode
   end
 
+
   def update_from_entry(entry_resource)
     entry = entry_resource.attributes
-    o = {}
-    %w(
-      guid title subtitle description summary content image_url explicit
-      keywords categories is_closed_captioned
-    ).each do |at|
-      o[at] = entry[at]
-    end
+
+    entry_attrs = %w( guid title subtitle description summary content image_url
+      explicit keywords categories is_closed_captioned )
+
+    o = entry.slice(*entry_attrs)
 
     o[:created] = entry[:published]
 
@@ -72,10 +72,9 @@ class Episode < ActiveRecord::Base
   def copy_audio(force = false)
     # see if the audio uri has been updated (new audio file in the story)
     if force || new_audio_file?
-      copy_task = Tasks::CopyAudioTask.new
-      copy_task.owner = self
-      copy_task.save!
-      copy_task.start!
+      Tasks::CopyAudioTask.create! do |task|
+        task.owner = self
+      end.start!
     end
   end
 
