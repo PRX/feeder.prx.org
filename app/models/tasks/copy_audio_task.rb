@@ -86,6 +86,6 @@ class Tasks::CopyAudioTask < ::Task
   end
 
   def episode
-    self.owner
+    owner
   end
 end
