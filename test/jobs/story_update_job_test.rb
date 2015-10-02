@@ -22,14 +22,11 @@ describe StoryUpdateJob do
   end
 
   it 'can create an episode' do
-    mock_task = Minitest::Mock.new
-    mock_task.expect(:owner=, true, [Object])
-    mock_task.expect(:save!, true)
-    mock_task.expect(:start!, true)
-    Tasks::CopyAudioTask.stub(:new, mock_task) do
-      lbd = podcast.last_build_date
+    podcast.wont_be_nil
+    mock_episode = Minitest::Mock.new
+    mock_episode.expect(:copy_audio, true)
+    Episode.stub(:create_from_story!, mock_episode) do
       job.receive_story_update(JSON.parse(body))
-      job.episode.wont_be_nil
     end
   end
 
