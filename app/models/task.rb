@@ -83,8 +83,4 @@ class Task < ActiveRecord::Base
   def self.new_fixer_sqs_client
     Fixer::SqsClient.new
   end
-
-  def feeder_cdn_host
-    ENV['FEEDER_CDN_HOST']
-  end
 end

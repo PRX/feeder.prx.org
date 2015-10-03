@@ -130,4 +130,17 @@ class Podcast < ActiveRecord::Base
   def generator
     ENV['FEEDER_GENERATOR']
   end
+
+  def base_published_url
+    "http://#{feeder_cdn_host}/#{path}"
+  end
+
+  def published_url
+    "#{base_published_url}/feed-rss.xml"
+  end
+
+  # todo: make this per podcast
+  def feeder_cdn_host
+    ENV['FEEDER_CDN_HOST']
+  end
 end

@@ -52,6 +52,7 @@ describe Tasks::CopyAudioTask do
     episode = Minitest::Mock.new
     episode.expect(:podcast, podcast)
     episode.expect(:guid, 'guid')
+    episode.expect(:published_audio_url, 'http://test-f.prxu.org/path/guid/audio.mp3')
     url = task.destination_url(episode)
     url.must_equal 's3://test-prx-feed/path/guid/audio.mp3?x-fixer-public=true'
   end
@@ -74,6 +75,7 @@ describe Tasks::CopyAudioTask do
     episode.expect(:podcast, podcast)
     episode.expect(:prx_uri, '/api/v1/stories/80548')
     episode.expect(:guid, 'guid')
+    episode.expect(:published_audio_url, 'http://test-f.prxu.org/path/guid/audio.mp3')
 
     task.stub(:episode, episode) do
       HighwindsAPI::Content.stub(:purge_url, true) do

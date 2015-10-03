@@ -19,9 +19,7 @@ class Tasks::CopyAudioTask < ::Task
   #   :sample_rate=>44100
   # }
   def task_status_changed(fixer_task)
-    url = "http://#{feeder_cdn_host}/#{audio_path(episode)}"
-    HighwindsAPI::Content.purge_url(url, false)
-
+    HighwindsAPI::Content.purge_url(episode.published_audio_url, false)
     episode.podcast.publish! if complete?
   end
 
@@ -76,13 +74,13 @@ class Tasks::CopyAudioTask < ::Task
     URI::Generic.build(
       scheme: 's3',
       host: feeder_storage_bucket,
-      path: "/" + audio_path(ep),
+      path: audio_path(ep),
       query: "x-fixer-public=true"
     ).to_s
   end
 
   def audio_path(ep)
-    "#{ep.podcast.path}/#{ep.guid}/audio.mp3"
+    URI.parse(ep.published_audio_url).path
   end
 
   def episode
