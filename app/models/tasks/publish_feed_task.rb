@@ -1,3 +1,5 @@
+require 'weblog_updater'
+
 class Tasks::PublishFeedTask < ::Task
 
   include Rails.application.routes.url_helpers
@@ -25,21 +27,23 @@ class Tasks::PublishFeedTask < ::Task
     URI::Generic.build(
       scheme: 's3',
       host: feeder_storage_bucket,
-      path: "/" + feed_path,
+      path: feed_path,
       query: query
     ).to_s
   end
 
   def task_status_changed(fixer_task)
     # purge the cdn cache
-    url = "http://#{feeder_cdn_host}/#{feed_path}"
-    HighwindsAPI::Content.purge_url(url, false)
+    HighwindsAPI::Content.purge_url(podcast.published_url, false)
 
-    # (send out a feed updated event?)
+    # send out a feed updated event?
+    if podcast.feedburner_url
+      WeblogUpdater.ping(feed_url: podcast.feedburner_url)
+    end
   end
 
   def feed_path(podcast = owner)
-    File.join(podcast.path, 'feed-rss.xml')
+    URI.parse(podcast.published_url).path
   end
 
   def podcast
