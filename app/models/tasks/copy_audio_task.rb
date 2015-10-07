@@ -23,15 +23,18 @@ class Tasks::CopyAudioTask < ::Task
     episode.podcast.publish! if complete?
   end
 
+  def audio_info
+    result[:task][:result_details][:info]
+  end
+
   def task_options
     {
       job_type: 'audio',
       destination: destination_url(episode),
-    }.merge(story_options || episode_options).with_indifferent_access
+    }.merge(episode_options || story_options).with_indifferent_access
   end
 
   def story_options
-    return nil unless episode.prx_uri
     account_uri = get_story.account.href
     story = get_story(account_uri)
     {
@@ -41,24 +44,26 @@ class Tasks::CopyAudioTask < ::Task
   end
 
   def episode_options
-    audio_uri = episode.overrides[:audio][:url]
+    return nil if episode && episode.prx_uri
+    audio_uri = episode_audio_uri
     {
       source: audio_uri,
       audio_uri: audio_uri
     }
   end
 
-  def audio_info
-    result[:task][:result_details][:info]
-  end
-
   def new_audio_file?(story = nil)
-    story ||= get_story
-    options[:audio_uri] != story_audio_uri(story)
+    options[:audio_uri] != (episode_audio_uri || story_audio_uri(story))
   end
 
-  def story_audio_uri(story)
+  def story_audio_uri(story = nil)
+    story ||= get_story
     story.audio[0].body['_links']['self']['href']
+  end
+
+  def episode_audio_uri
+    return nil if episode && episode.prx_uri
+    episode.overrides[:original_audio][:url]
   end
 
   def get_story(account = nil)

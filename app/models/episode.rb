@@ -40,9 +40,9 @@ class Episode < ActiveRecord::Base
 
     o = entry.slice(*ENTRY_ATTRS)
 
-    o[:created] = entry[:published]
+    o[:published] = Time.parse(entry[:published]) if entry[:published]
 
-    o[:audio] = {
+    o[:original_audio] = {
       url: entry[:feedburner_orig_enclosure_link] || entry[:enclosure_url],
       type: entry[:enclosure_type],
       size: entry[:enclosure_length],
@@ -64,10 +64,6 @@ class Episode < ActiveRecord::Base
     self.guid ||= SecureRandom.uuid
   end
 
-  def story_id
-    prx_uri
-  end
-
   def copy_audio(force = false)
     # see if the audio uri has been updated (new audio file in the story)
     if force || new_audio_file?
@@ -83,6 +79,7 @@ class Episode < ActiveRecord::Base
   end
 
   def enclosure_info
+    return nil unless audio_ready?
     info = most_recent_copy_task.audio_info
     {
       url: audio_url,
@@ -93,6 +90,7 @@ class Episode < ActiveRecord::Base
   end
 
   def audio_url
+    return nil unless audio_ready?
     dest = most_recent_copy_task.options[:destination]
     s3_uri = URI.parse(dest)
     "http://#{podcast.feeder_cdn_host}#{s3_uri.path}"
@@ -113,5 +111,9 @@ class Episode < ActiveRecord::Base
 
   def most_recent_copy_task
     tasks.copy_audio.order('created_at desc').first
+  end
+
+  def enclosure_template
+    podcast.enclosure_template
   end
 end

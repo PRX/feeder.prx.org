@@ -56,6 +56,7 @@ class Task < ActiveRecord::Base
   def fixer_copy_file(opts = options)
     task = {
       task_type: 'copy',
+      priority: 1,
       result: opts[:destination],
       call_back: fixer_call_back_queue
     }

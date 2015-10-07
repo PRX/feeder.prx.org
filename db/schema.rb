@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151003004616) do
+ActiveRecord::Schema.define(version: 20151005185404) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -65,8 +65,8 @@ ActiveRecord::Schema.define(version: 20151003004616) do
   create_table "podcasts", force: :cascade do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "title",            null: false
-    t.string   "link",             null: false
+    t.string   "title",              null: false
+    t.string   "link",               null: false
     t.text     "description"
     t.string   "language"
     t.string   "managing_editor"
@@ -93,6 +93,7 @@ ActiveRecord::Schema.define(version: 20151003004616) do
     t.string   "source_url"
     t.boolean  "complete"
     t.string   "feedburner_url"
+    t.string   "enclosure_template"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
