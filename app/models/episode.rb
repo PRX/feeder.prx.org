@@ -40,7 +40,7 @@ class Episode < ActiveRecord::Base
 
     o = entry.slice(*ENTRY_ATTRS)
 
-    o[:created] = entry[:published]
+    o[:published] = Time.parse(entry[:published]) if entry[:published]
 
     o[:original_audio] = {
       url: entry[:feedburner_orig_enclosure_link] || entry[:enclosure_url],

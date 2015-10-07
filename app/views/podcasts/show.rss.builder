@@ -71,7 +71,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.guid ep[:guid], isPermaLink: !!ep[:is_perma_link]
         xml.title ep[:title]
         xml.author "#{ep[:author_email]} (#{ep[:author_name]})"
-        xml.pubDate ep[:created]
+        xml.pubDate (ep[:published] || ep[:created]).utc.rfc2822
         xml.link ep[:link]
         xml.description { xml.cdata!(ep[:description] || '') }
         unless ep[:categories].empty?
@@ -90,8 +90,8 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
         xml.media(:content, fileSize: ep[:audio][:size], type: ep[:audio][:type], url: ep[:audio][:url])
         xml.content(:encoded) { xml.cdata!(ep[:content] || '') }
-        # xml.dc :created, ep[:created]
-        # xml.dc :modified, ep[:modified]
+        # xml.dc :created, ep[:created].utc.rfc2822
+        # xml.dc :modified, ep[:modified].utc.rfc2822
       end
     end
   end

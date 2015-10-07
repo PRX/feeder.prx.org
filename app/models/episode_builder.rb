@@ -20,8 +20,8 @@ class EpisodeBuilder
       guid:  "prx:#{@ep.prx_uri || @ep.podcast_id }:#{@ep.guid}",
       audio: audio_file,
       image_url: nil,
-      created: @ep.created_at.utc.rfc2822,
-      modified: @ep.updated_at.utc.rfc2822
+      created: @ep.created_at,
+      modified: @ep.updated_at
     )
 
     if @story = get_story
@@ -35,7 +35,8 @@ class EpisodeBuilder
         content: sa[:description],
         explicit: sa[:contentAdvisory] ? 'yes' : 'no',
         keywords: sa[:tags],
-        categories: sa[:tags]
+        categories: sa[:tags],
+        published: (Time.parse(sa[:publishedAt]) if sa[:publishedAt])
       )
       info.merge!(story_info)
     end
