@@ -6,7 +6,8 @@ class Episode < ActiveRecord::Base
   belongs_to :podcast
   has_many :tasks, as: :owner
 
-  validates :podcast, presence: true
+  validates :podcast_id, presence: true
+  validates_associated :podcast
 
   acts_as_paranoid
 
@@ -24,6 +25,37 @@ class Episode < ActiveRecord::Base
     create!(podcast: podcast, prx_uri: story_uri)
   end
 
+  def self.create_from_entry!(podcast, entry)
+    episode = new(podcast: podcast)
+    episode.update_from_entry(entry)
+    episode.save!
+    episode
+  end
+
+  ENTRY_ATTRS = %w( guid title subtitle description summary content image_url
+    explicit keywords categories is_closed_captioned is_perma_link ).freeze
+
+  def update_from_entry(entry_resource)
+    entry = entry_resource.attributes
+
+    o = entry.slice(*ENTRY_ATTRS)
+
+    o[:created] = entry[:published]
+
+    o[:audio] = {
+      url: entry[:feedburner_orig_enclosure_link] || entry[:enclosure_url],
+      type: entry[:enclosure_type],
+      size: entry[:enclosure_length],
+      duration: entry[:duration]
+    }
+
+    o[:link] = entry[:feedburner_orig_link] || entry[:url]
+
+    self.overrides = o
+
+    self
+  end
+
   def update_from_story!(story)
     touch
   end
@@ -39,8 +71,9 @@ class Episode < ActiveRecord::Base
   def copy_audio(force = false)
     # see if the audio uri has been updated (new audio file in the story)
     if force || new_audio_file?
-      copy_task = Tasks::CopyAudioTask.create!(owner: self)
-      copy_task.start!
+      Tasks::CopyAudioTask.create! do |task|
+        task.owner = self
+      end.start!
     end
   end
 

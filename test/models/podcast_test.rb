@@ -1,6 +1,10 @@
 require 'test_helper'
+require 'prx_access'
 
 describe Podcast do
+
+  include PRXAccess
+
   let(:podcast) { create(:podcast) }
 
   it 'has episodes' do
@@ -32,6 +36,61 @@ describe Podcast do
     podcast.last_build_date.must_equal Time.now
 
     Timecop.return
+  end
+
+  describe 'from feed' do
+    let (:entry) { api_resource(JSON.parse(json_file(:crier_entry)), crier_root) }
+
+    before {
+      stub_request(:get, "http://cdn.transistor.prx.org/wp-content/uploads/powerpress/transistor1400.jpg").
+        to_return(:status => 200, :body => test_file('/fixtures/transistor1400.jpg'), :headers => {})
+
+      stub_request(:get, "http://cdn.transistor.prx.org/wp-content/uploads/powerpress/transistor300.png").
+        to_return(:status => 200, :body => test_file('/fixtures/transistor300.png'), :headers => {})
+    }
+
+    it 'create_from_feed' do
+      feed = entry.objects['prx:feed']
+      podcast = Podcast.create_from_feed!(feed)
+    end
+
+    it 'update_from_feed' do
+      feed = entry.objects['prx:feed']
+
+      podcast = Podcast.new
+      podcast.update_from_feed(feed)
+
+      podcast.title.must_equal 'Transistor'
+      podcast.source_url.must_equal 'http://feeds.prx.org/transistor_stem'
+      podcast.link.must_equal 'http://transistor.prx.org'
+      podcast.author_name.must_equal 'PRX'
+      podcast.owner_name.must_equal 'PRX'
+      podcast.owner_email.must_equal 'prx@prx.org'
+    end
+
+    it 'update_images' do
+      podcast = Podcast.new
+      attributes = {
+        thumb_url: 'http://prx.org/thumb.png',
+        image_url: 'http://prx.org/image.png'
+      }
+      podcast.update_images(attributes)
+      podcast.feed_image.url.must_equal 'http://prx.org/thumb.png'
+      podcast.itunes_image.url.must_equal 'http://prx.org/image.png'
+    end
+
+    it 'update_categories' do
+      podcast = Podcast.new
+      feed = OpenStruct.new(
+        categories: ["Science & Medicine", "Natural Sciences", "Fictional"]
+      )
+
+      podcast.update_categories(feed)
+
+      podcast.itunes_categories.size.must_equal 1
+      podcast.itunes_categories.first.name.must_equal "Science & Medicine"
+      podcast.categories.first.must_equal "Fictional"
+    end
   end
 
   describe 'episode limit' do

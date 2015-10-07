@@ -3,103 +3,9 @@ require 'test_helper'
 describe Tasks::CopyAudioTask do
   let(:task) { create(:copy_audio_task) }
 
-  let(:msg) do
-    %{
-      {
-        "_links": {
-          "curies": [{
-            "name": "prx",
-            "href": "http://meta.prx.org/relation/{rel}",
-            "templated": true
-          }],
-          "self": {
-            "href": "/api/v1/stories/80548",
-            "profile": "http://meta.prx.org/model/story"
-          },
-          "prx:account": {
-            "href": "/api/v1/accounts/125347",
-            "title": "American Routes",
-            "profile": "http://meta.prx.org/model/account/group"
-          },
-          "prx:audio": {
-            "href": "/api/v1/stories/80548/audio_files",
-            "count": 2
-          }
-        }
-      }
-    }
-  end
+  let(:msg) { json_file(:prx_story_small) }
 
-  let(:audio_msg) do
-    %{
-      {
-        "_links": {
-          "curies": [{
-            "name": "prx",
-            "href": "http://meta.prx.org/relation/{rel}",
-            "templated": true
-          }],
-          "self": {
-            "href": "/api/v1/stories/80548/audio_files",
-            "profile": "http://meta.prx.org/model/collection/audio-file"
-          }
-        },
-        "count": 2,
-        "total": 2,
-        "_embedded": {
-          "prx:items": [{
-            "_links": {
-              "self": {
-                "href": "/api/v1/audio_files/406322",
-                "profile": "http://meta.prx.org/model/audio-file"
-              },
-              "profile": {
-                "href": "http://meta.prx.org/model/audio-file"
-              },
-              "enclosure": {
-                "href": "/pub/80abf51e1bc69102259ef4eeca86ac8a/0/web/audio_file/406322/broadcast/AR0328segmentA.mp3",
-                "type": "audio/mpeg"
-              },
-              "original": {
-                "href": "/api/v1/audio_files/406322/original{?expiration}",
-                "templated": true,
-                "type": "audio/mpeg"
-              }
-            },
-            "id": 406322,
-            "filename": "AR0328segmentA.mp2",
-            "label": "AR0328segmentA",
-            "size": 33690581,
-            "duration": 1054
-          }, {
-            "_links": {
-              "self": {
-                "href": "/api/v1/audio_files/406315",
-                "profile": "http://meta.prx.org/model/audio-file"
-              },
-              "profile": {
-                "href": "http://meta.prx.org/model/audio-file"
-              },
-              "enclosure": {
-                "href": "/pub/cec6514f74e8caa075d4e28a0cc0788a/0/web/audio_file/406315/broadcast/AR0328cutaway1.mp3",
-                "type": "audio/mpeg"
-              },
-              "original": {
-                "href": "/api/v1/audio_files/406315/original{?expiration}",
-                "templated": true,
-                "type": "audio/mpeg"
-              }
-            },
-            "id": 406315,
-            "filename": "AR0328cutaway1.mp2",
-            "label": "AR0328cutaway1",
-            "size": 1955571,
-            "duration": 61
-          }]
-        }
-      }
-    }
-  end
+  let(:audio_msg) { json_file(:prx_story_with_audio) }
 
   let(:story) do
     body = JSON.parse(msg)
@@ -123,12 +29,13 @@ describe Tasks::CopyAudioTask do
   end
 
   it 'can start the job' do
-    task.fixer_sqs_client = SqsMock.new
-    task.stub(:get_account_token, "token") do
-      task.start!
-      task.options[:source].must_equal 'http://final/location.mp3'
-      task.options[:destination].must_match /s3:\/\/test-prx-feed\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/AR0328segmentA.mp2/
-      task.options[:audio_uri].must_equal '/api/v1/audio_files/406322'
+    Task.stub :new_fixer_sqs_client, SqsMock.new do
+      task.stub(:get_account_token, "token") do
+        task.start!
+        task.options[:source].must_equal 'http://final/location.mp3'
+        task.options[:destination].must_match /s3:\/\/test-prx-feed\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/audio.mp3/
+        task.options[:audio_uri].must_equal '/api/v1/audio_files/406322'
+      end
     end
   end
 
@@ -145,8 +52,8 @@ describe Tasks::CopyAudioTask do
     episode = Minitest::Mock.new
     episode.expect(:podcast, podcast)
     episode.expect(:guid, 'guid')
-    url = task.destination_url(episode, story)
-    url.must_equal 's3://test-prx-feed/path/guid/AR0328segmentA.mp2?x-fixer-public=true'
+    url = task.destination_url(episode)
+    url.must_equal 's3://test-prx-feed/path/guid/audio.mp3?x-fixer-public=true'
   end
 
   it 'returns enclosure path' do

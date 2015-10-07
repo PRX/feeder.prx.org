@@ -1,12 +1,22 @@
 module PRXAccess
-  def api(account = nil)
-    options = { root: cms_root }
-    if account
+  def api(options = {})
+    opts = { root: cms_root }.merge(options)
+    if account = opts.delete(:account)
       token = get_account_token(account)
-      options[:headers] = { 'Authorization' =>  "Bearer #{token}" }
+      opts[:headers] = { 'Authorization' =>  "Bearer #{token}" }
     end
 
-    HyperResource.new(options)
+    HyperResource.new(opts)
+  end
+
+  def api_resource(body, root = cms_root)
+    href = body['_links']['self']['href']
+    resource = api(root: root)
+    link = HyperResource::Link.new(resource, href: href)
+    # puts "href: #{href}"
+    # puts "resource: #{resource.inspect}"
+    # puts "link: #{link.inspect}"
+    HyperResource.new_from(body: body, resource: resource, link: link)
   end
 
   def get_account_token(account)
@@ -31,5 +41,9 @@ module PRXAccess
 
   def prx_root
     ENV['PRX_ROOT']
+  end
+
+  def crier_root
+    ENV['CRIER_ROOT']
   end
 end

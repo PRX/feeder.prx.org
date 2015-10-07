@@ -27,9 +27,10 @@ class TaskTest < ActiveSupport::TestCase
   end
 
   it 'creates a fixer job' do
-    task.fixer_sqs_client = SqsMock.new
-    job = task.fixer_copy_file(destination: 'dest', source: 'src', job_type: 'file')
-    job[:job][:job_type].must_equal 'file'
+    Task.stub :new_fixer_sqs_client, SqsMock.new do
+      job = task.fixer_copy_file(destination: 'dest', source: 'src', job_type: 'file')
+      job[:job][:job_type].must_equal 'file'
+    end
   end
 
   it 'class can handle fixer callback' do
