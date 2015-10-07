@@ -44,10 +44,20 @@ describe EpisodeBuilder do
     end
 
     it 'appends podtrac redirect to audio file link' do
-      link = '/podcast/episode/filename.mp3'
-      prefix = EpisodeBuilder.new(episode).prefix + 'mp3'
+      episode = Minitest::Mock.new
+      episode.expect(:prx_uri, nil)
+      episode.expect(:overrides, {})
+      episode.expect(:enclosure_template, 'http://foo.com/r.{extension}/b/n/{host}{+path}')
 
-      eb[:audio][:url].must_equal prefix + '/test-f.prxu.org' + link
+      builder = EpisodeBuilder.new(episode)
+      url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'
+      new_url = builder.rewrite_audio_url(url)
+      new_url.must_equal('http://foo.com/r.mp3/b/n/test-f.prxu.org/podcast/episode/filename.mp3')
+
+      # link = '/podcast/episode/filename.mp3'
+      # prefix = EpisodeBuilder.new(episode).prefix + 'mp3'
+      #
+      # eb[:audio][:url].must_equal prefix + '/test-f.prxu.org' + link
     end
   end
 
