@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150923142208) do
+ActiveRecord::Schema.define(version: 20151003004616) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -92,6 +92,7 @@ ActiveRecord::Schema.define(version: 20150923142208) do
     t.string   "author_email"
     t.string   "source_url"
     t.boolean  "complete"
+    t.string   "feedburner_url"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree

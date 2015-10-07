@@ -95,7 +95,11 @@ class Episode < ActiveRecord::Base
   def audio_url
     dest = most_recent_copy_task.options[:destination]
     s3_uri = URI.parse(dest)
-    "http://#{feeder_cdn_host}#{s3_uri.path}"
+    "http://#{podcast.feeder_cdn_host}#{s3_uri.path}"
+  end
+
+  def published_audio_url
+    "#{podcast.base_published_url}/#{guid}/audio.mp3"
   end
 
   def include_in_feed?
@@ -109,10 +113,5 @@ class Episode < ActiveRecord::Base
 
   def most_recent_copy_task
     tasks.copy_audio.order('created_at desc').first
-  end
-
-  # todo: make this per podcast
-  def feeder_cdn_host
-    ENV['FEEDER_CDN_HOST']
   end
 end

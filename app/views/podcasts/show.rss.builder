@@ -31,7 +31,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       xml.description @podcast.feed_image.description if @podcast.feed_image.description
     end
 
-    xml.atom :link, href: @podcast.url, rel: 'self', type: 'application/rss+xml'
+    xml.atom :link, href: (@podcast.url || @podcast.published_url), rel: 'self', type: 'application/rss+xml'
 
     xml.itunes :author, @podcast.author_name
 
