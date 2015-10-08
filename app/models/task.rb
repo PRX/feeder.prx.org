@@ -56,11 +56,10 @@ class Task < ActiveRecord::Base
   def fixer_copy_file(opts = options)
     task = {
       task_type: 'copy',
-      priority: 1,
       result: opts[:destination],
       call_back: fixer_call_back_queue
     }
-    job = { original: opts[:source], job_type: opts[:job_type], tasks: [ task ] }
+    job = { priority: 1, original: opts[:source], job_type: opts[:job_type], tasks: [ task ] }
     fixer_sqs_client.create_job(job: job)
   end
 
