@@ -24,6 +24,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
   end
 
   def update_episode
+    episode.restore if episode.deleted?
     episode.update_from_entry(entry)
     episode.copy_audio
     podcast.try(:publish!)

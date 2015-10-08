@@ -45,6 +45,19 @@ describe StoryUpdateJob do
     end
   end
 
+  it 'can update a deleted episode' do
+    episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast, deleted_at: Time.now)
+    episode.must_be :deleted?
+    podcast.stub(:create_publish_task, true) do
+      episode.stub(:copy_audio, true) do
+        Episode.stub(:by_prx_story, episode) do
+          job.receive_story_update(JSON.parse(body))
+          job.episode.wont_be :deleted?
+        end
+      end
+    end
+  end
+
   it 'can delete an episode' do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
     podcast.stub(:create_publish_task, true) do
