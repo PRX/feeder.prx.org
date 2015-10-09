@@ -34,6 +34,7 @@ class StoryUpdateJob < ActiveJob::Base
   end
 
   def update_episode
+    episode.restore if episode.deleted?
     episode.update_from_story!(story)
     episode.copy_audio
     podcast.publish!
