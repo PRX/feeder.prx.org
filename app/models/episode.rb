@@ -120,4 +120,16 @@ class Episode < ActiveRecord::Base
   def podcast_slug
     podcast.path
   end
+
+  def audio_files
+    [AudioFile.new(enclosure_info)]
+  end
+
+  def duration
+    most_recent_copy_task.audio_info[:length].to_i
+  end
+
+  def published
+    EpisodeBuilder.from_prx_story(self)[:published]
+  end
 end

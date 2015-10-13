@@ -74,4 +74,8 @@ class EpisodeBuilder
   def link(story = @story)
     Addressable::URI.join(prx_root, story.id.to_s) if story
   end
+
+  def published
+    @overrides[:published]
+  end
 end
