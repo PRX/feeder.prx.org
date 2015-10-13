@@ -23,7 +23,9 @@ class TaskTest < ActiveSupport::TestCase
   end
 
   it 'uses an sqs queue for callbacks' do
+    r, ENV['AWS_REGION'], ENV['FIXER_CALLBACK_QUEUE'], q = ENV['AWS_REGION'], 'us-east-1', nil, ENV['FIXER_CALLBACK_QUEUE']
     task.fixer_call_back_queue.must_equal 'sqs://us-east-1/test_feeder_fixer_callback'
+    ENV['AWS_REGION'], ENV['FIXER_CALLBACK_QUEUE'] = r, q
   end
 
   it 'creates a fixer job' do

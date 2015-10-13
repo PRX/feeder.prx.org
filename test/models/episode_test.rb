@@ -63,6 +63,14 @@ describe Episode do
     end
   end
 
+  it 'proxies podcast_slug to #podcast' do
+    podcast = build_stubbed(:podcast)
+    episode = build_stubbed(:episode, podcast: podcast)
+    podcast.stub(:path, 'podcast path!') do
+      episode.podcast_slug.must_equal('podcast path!')
+    end
+  end
+
   describe 'prx story' do
     let(:story) do
       msg = json_file(:prx_story_small)
