@@ -122,14 +122,14 @@ class Episode < ActiveRecord::Base
   end
 
   def audio_files
-    [AudioFile.new(enclosure_info)]
+    (info = enclosure_info) ? [AudioFile.new(info)] : []
   end
 
   def duration
-    most_recent_copy_task.audio_info[:length].to_i
+    (task = most_recent_copy_task) ? task.audio_info[:length].to_i : 0
   end
 
   def published
-    EpisodeBuilder.from_prx_story(self)[:published]
+    created_at
   end
 end

@@ -71,6 +71,28 @@ describe Episode do
     end
   end
 
+  it 'has no audio file until processed' do
+    episode = build_stubbed(:episode)
+    episode.audio_files.length.must_equal 0
+  end
+
+  it 'has one audio file once processed' do
+    episode = create(:episode)
+    task = create(:copy_audio_task, owner: episode)
+    episode.audio_files.length.must_equal 1
+  end
+
+  it 'has a 0 duration when unprocessed' do
+    episode = build_stubbed(:episode)
+    episode.duration.must_equal 0
+  end
+
+  it 'has duration once processed' do
+    episode = create(:episode)
+    task = create(:copy_audio_task, owner: episode)
+    episode.duration.must_equal task.audio_info[:length].to_i
+  end
+
   describe 'prx story' do
     let(:story) do
       msg = json_file(:prx_story_small)

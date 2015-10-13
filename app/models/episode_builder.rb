@@ -48,7 +48,7 @@ class EpisodeBuilder
 
   def audio_file(episode = @ep)
     episode.enclosure_info.tap do |info|
-      info[:url] = rewrite_audio_url(info[:url])
+      info[:url] = rewrite_audio_url(info[:url]) if info
     end
   end
 
