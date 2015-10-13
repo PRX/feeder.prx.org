@@ -48,7 +48,7 @@ class EpisodeBuilder
 
   def audio_file(episode = @ep)
     episode.enclosure_info.tap do |info|
-      info[:url] = rewrite_audio_url(info[:url])
+      info[:url] = rewrite_audio_url(info[:url]) if info
     end
   end
 
@@ -73,5 +73,9 @@ class EpisodeBuilder
 
   def link(story = @story)
     Addressable::URI.join(prx_root, story.id.to_s) if story
+  end
+
+  def published
+    @overrides[:published]
   end
 end

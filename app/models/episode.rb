@@ -120,4 +120,16 @@ class Episode < ActiveRecord::Base
   def podcast_slug
     podcast.path
   end
+
+  def audio_files
+    (info = enclosure_info) ? [AudioFile.new(info)] : []
+  end
+
+  def duration
+    (task = most_recent_copy_task) ? task.audio_info[:length].to_i : 0
+  end
+
+  def published
+    created_at
+  end
 end
