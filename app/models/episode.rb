@@ -116,4 +116,8 @@ class Episode < ActiveRecord::Base
   def enclosure_template
     podcast.enclosure_template
   end
+
+  def podcast_slug
+    podcast.path
+  end
 end

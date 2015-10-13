@@ -57,7 +57,11 @@ class EpisodeBuilder
     return url if et.blank?
 
     url_info = Addressable::URI.parse(url).to_hash
-    url_info[:extension] = url_info[:path].split('.').pop
+    url_info.merge!(
+      extension: url_info[:path].split('.').pop,
+      slug: @ep.podcast_slug,
+      guid: @ep.guid
+    )
     template = Addressable::Template.new(et)
     template.expand(url_info).to_str
   end
