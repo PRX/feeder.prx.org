@@ -49,7 +49,7 @@ describe Episode do
     it 'can update from entry' do
       episode = Episode.new
       episode.update_from_entry(entry)
-      episode.overrides['title'].must_equal 'We Are Stardust'
+      episode.overrides['title'].must_equal 'Episode 12: What We Know'
     end
 
     it 'can create from entry' do
@@ -59,7 +59,7 @@ describe Episode do
       episode.guid.wont_be_nil
       episode.overrides[:guid].wont_be_nil
       episode.guid.wont_equal episode.overrides[:guid]
-      episode.overrides['title'].must_equal 'We Are Stardust'
+      episode.overrides['title'].must_equal 'Episode 12: What We Know'
     end
   end
 
