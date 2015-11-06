@@ -45,6 +45,7 @@ class Episode < ActiveRecord::Base
 
     o[:published] = Time.parse(entry[:published]) if entry[:published]
 
+    # TODO - this needs to be removed or changed based on new enclosure handling
     o[:original_audio] = {
       url: entry[:feedburner_orig_enclosure_link] || entry[:enclosure_url],
       type: entry[:enclosure_type],
@@ -55,6 +56,14 @@ class Episode < ActiveRecord::Base
     o[:link] = entry[:feedburner_orig_link] || entry[:url]
 
     self.overrides = o
+
+    if entry[:enclosure]
+      self.enclosure = Enclosure.build_from_enclosure(entry[:enclosure])
+    end
+
+    Array(entry[:contents]).each do |c|
+      self.contents << Content.build_from_content(c)
+    end
 
     self
   end

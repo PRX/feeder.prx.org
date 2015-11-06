@@ -61,6 +61,18 @@ describe Episode do
       episode.guid.wont_equal episode.overrides[:guid]
       episode.overrides['title'].must_equal 'Episode 12: What We Know'
     end
+
+    it 'creates enclosure from entry' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry)
+      episode.enclosure.wont_be_nil
+    end
+
+    it 'creates contents from entry' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry)
+      episode.contents.size.must_equal 2
+    end
   end
 
   it 'proxies podcast_slug to #podcast' do
