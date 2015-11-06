@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151008163401) do
+ActiveRecord::Schema.define(version: 20151105175033) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -61,6 +61,30 @@ ActiveRecord::Schema.define(version: 20151008163401) do
   end
 
   add_index "itunes_images", ["podcast_id"], name: "index_itunes_images_on_podcast_id", using: :btree
+
+  create_table "media_resources", force: :cascade do |t|
+    t.integer  "episode_id"
+    t.integer  "position"
+    t.string   "type"
+    t.string   "url"
+    t.string   "mime_type"
+    t.integer  "file_size"
+    t.boolean  "is_default"
+    t.string   "medium"
+    t.string   "expression"
+    t.integer  "bitrate"
+    t.integer  "framerate"
+    t.decimal  "samplingrate"
+    t.integer  "channels"
+    t.decimal  "duration"
+    t.integer  "height"
+    t.integer  "width"
+    t.string   "lang"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+  end
+
+  add_index "media_resources", ["episode_id"], name: "index_media_resources_on_episode_id", using: :btree
 
   create_table "podcasts", force: :cascade do |t|
     t.datetime "created_at"

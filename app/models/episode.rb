@@ -6,6 +6,9 @@ class Episode < ActiveRecord::Base
   belongs_to :podcast
   has_many :tasks, as: :owner
 
+  has_many :contents, -> { order("position ASC") }
+  has_one :enclosure
+
   validates :podcast_id, presence: true
   validates_associated :podcast
 

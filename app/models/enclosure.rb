@@ -1,0 +1,2 @@
+class Enclosure < MediaResource
+end
