@@ -98,6 +98,8 @@ group :test do
 
   # Making it dead simple to test time-dependent code
   gem 'timecop'
+
+  gem 'rubocop', require: false
 end
 
 group :development, :test do
