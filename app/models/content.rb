@@ -17,6 +17,7 @@ class Content < MediaResource
       self.try("#{at}=", content[at])
     end
 
+    self.original_url = content['url']
     self.mime_type    = content['type']
     self.file_size    = content['file_size'].to_i
     self.is_default   = content['is_default'] && content['is_default'].downcase == 'true'
