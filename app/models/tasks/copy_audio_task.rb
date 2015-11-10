@@ -18,20 +18,36 @@ class Tasks::CopyAudioTask < ::Task
   #   :length=>48.352653,
   #   :sample_rate=>44100
   # }
-  def task_status_changed(fixer_task)
-    HighwindsAPI::Content.purge_url(episode.published_audio_url, false)
-    episode.podcast.publish! if complete?
-  end
+  def task_status_changed(fixer_task, new_status)
+    media_resource.update_attribute(:status, new_status)
+    audio_info = fixer_task.fetch(:task, {}).fetch(:result_details, {}).fetch(:info, nil)
+    if new_status == 'complete' && audio_info
+      self.mime_type = audio_info[:content_type]
+      self.file_size = audio_info[:size].to_i
+      self.medium = self.mime_type.split('/').first
+      self.sample_rate = audio_info[:sample_rate].to_i
+      self.channels = audio_info[:channels].to_i
+      self.duration = audio_info[:length].to_f
+      self.bit_rate = audio_info[:bit_rate].to_i
+    end
 
-  def audio_info
-    result[:task][:result_details][:info]
+    HighwindsAPI::Content.purge_url(episode.url, false)
+    episode.podcast.publish! if complete?
   end
 
   def task_options
     {
       job_type: 'audio',
-      destination: destination_url(episode),
+      destination: destination_url(media_resource),
     }.merge(episode_options || story_options).with_indifferent_access
+  end
+
+  def episode_options
+    return nil if episode && episode.prx_uri
+    {
+      source: media_resource.original_url,
+      audio_uri: media_resource.original_url
+    }
   end
 
   def story_options
@@ -43,27 +59,13 @@ class Tasks::CopyAudioTask < ::Task
     }
   end
 
-  def episode_options
-    return nil if episode && episode.prx_uri
-    audio_uri = episode_audio_uri
-    {
-      source: audio_uri,
-      audio_uri: audio_uri
-    }
-  end
-
   def new_audio_file?(story = nil)
-    options[:audio_uri] != (episode_audio_uri || story_audio_uri(story))
+    options[:audio_uri] != (media_resource.original_url || story_audio_uri(story))
   end
 
   def story_audio_uri(story = nil)
     story ||= get_story
     story.audio[0].body['_links']['self']['href']
-  end
-
-  def episode_audio_uri
-    return nil if episode && episode.prx_uri
-    episode.overrides[:original_audio][:url]
   end
 
   def get_story(account = nil)
@@ -75,20 +77,24 @@ class Tasks::CopyAudioTask < ::Task
     resp.headers['location']
   end
 
-  def destination_url(ep)
+  def destination_url(media_resource)
     URI::Generic.build(
       scheme: 's3',
       host: feeder_storage_bucket,
-      path: audio_path(ep),
+      path: audio_path(media_resource),
       query: "x-fixer-public=true"
     ).to_s
   end
 
-  def audio_path(ep)
-    URI.parse(ep.published_audio_url).path
+  def audio_path(media_resource)
+    URI.parse(media_resource.url).path
   end
 
   def episode
+    media_resource.episode
+  end
+
+  def media_resource
     owner
   end
 end
