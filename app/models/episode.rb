@@ -4,7 +4,6 @@ class Episode < ActiveRecord::Base
   serialize :overrides, HashSerializer
 
   belongs_to :podcast
-  has_many :tasks, as: :owner
 
   has_many :contents, -> { order("position ASC") }
   has_one :enclosure
@@ -14,7 +13,16 @@ class Episode < ActiveRecord::Base
 
   acts_as_paranoid
 
-  before_save :set_guid
+  before_validation :initialize_guid
+
+  def initialize_guid
+    guid
+  end
+
+  def guid
+    self[:guid] ||= SecureRandom.uuid
+    self[:guid]
+  end
 
   def self.by_prx_story(story)
     story_uri = story.links['self'].href
@@ -36,7 +44,7 @@ class Episode < ActiveRecord::Base
   end
 
   ENTRY_ATTRS = %w( guid title subtitle description summary content image_url
-    explicit keywords categories is_closed_captioned is_perma_link ).freeze
+    explicit keywords categories is_closed_captioned is_perma_link duration ).freeze
 
   def update_from_entry(entry_resource)
     entry = entry_resource.attributes
@@ -45,18 +53,15 @@ class Episode < ActiveRecord::Base
 
     o[:published] = Time.parse(entry[:published]) if entry[:published]
 
-    # TODO - this needs to be removed or changed based on new enclosure handling
-    o[:original_audio] = {
-      url: entry[:feedburner_orig_enclosure_link] || entry[:enclosure_url],
-      type: entry[:enclosure_type],
-      size: entry[:enclosure_length],
-      duration: entry[:duration]
-    }
-
+    o[:original_enclosure] = entry[:enclosure] || {}
+    o[:original_enclosure][:url] ||= entry[:feedburner_orig_enclosure_link]
     o[:link] = entry[:feedburner_orig_link] || entry[:url]
+
+    o[:original_contents] = entry[:contents]
 
     self.overrides = o
 
+    # TODO: handle updates
     if entry[:enclosure]
       self.enclosure = Enclosure.build_from_enclosure(entry[:enclosure])
     end
@@ -68,6 +73,12 @@ class Episode < ActiveRecord::Base
     self
   end
 
+  def duration
+    overrides[:duration] ||
+    (enclosure && enclosure.duration) ||
+    contents.inject(0.0) { |s, c| s + c.duration }
+  end
+
   def update_from_story!(story)
     touch
   end
@@ -77,39 +88,12 @@ class Episode < ActiveRecord::Base
   end
 
   def copy_audio(force = false)
-    # see if the audio uri has been updated (new audio file in the story)
-    if force || new_audio_file?
-      Tasks::CopyAudioTask.create! do |task|
-        task.owner = self
-      end.start!
-    end
+    enclosure.copy_audio if enclosure
+    contents.each{ |c| c.copy_audio }
   end
 
-  def new_audio_file?
-    copy_task = most_recent_copy_task
-    copy_task.nil? || copy_task.new_audio_file?
-  end
-
-  def enclosure_info
-    return nil unless audio_ready?
-    info = most_recent_copy_task.audio_info
-    {
-      url: audio_url,
-      type: info[:content_type],
-      size: info[:size],
-      duration: info[:length].to_i
-    }
-  end
-
-  def audio_url
-    return nil unless audio_ready?
-    dest = most_recent_copy_task.options[:destination]
-    s3_uri = URI.parse(dest)
-    "http://#{podcast.feeder_cdn_host}#{s3_uri.path}"
-  end
-
-  def published_audio_url
-    "#{podcast.base_published_url}/#{guid}/audio.mp3"
+  def base_published_url
+    "#{podcast.base_published_url}/#{guid}"
   end
 
   def include_in_feed?
@@ -117,12 +101,8 @@ class Episode < ActiveRecord::Base
   end
 
   def audio_ready?
-    copy_task = most_recent_copy_task
-    copy_task && copy_task.complete?
-  end
-
-  def most_recent_copy_task
-    tasks.copy_audio.order('created_at desc').first
+    (!enclosure.blank? && enclosure.complete?) ||
+    (!contents.blank? && contents.all?{ |a| a.complete? })
   end
 
   def enclosure_template
@@ -134,11 +114,11 @@ class Episode < ActiveRecord::Base
   end
 
   def audio_files
-    (info = enclosure_info) ? [AudioFile.new(info)] : []
-  end
-
-  def duration
-    (task = most_recent_copy_task) ? task.audio_info[:length].to_i : 0
+    if !contents.blank?
+      contents
+    else
+      Array(enclosure)
+    end
   end
 
   def published

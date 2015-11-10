@@ -15,10 +15,8 @@ describe Episode do
     episode.wont_be(:valid?)
   end
 
-  it 'sets the guid on save' do
+  it 'lazily sets the guid' do
     episode = build(:episode, guid: nil)
-    episode.guid.must_be_nil
-    episode.save
     episode.guid.wont_be_nil
   end
 
@@ -26,17 +24,13 @@ describe Episode do
     episode.must_be :include_in_feed?
   end
 
-  it 'retrieves latest copy task' do
-    episode.most_recent_copy_task.wont_be_nil
-  end
-
   it 'knows if audio is ready' do
+    episode.enclosure = create(:enclosure, episode: episode, status: 'created')
+    episode.enclosure.wont_be :complete?
+    episode.wont_be :audio_ready?
+    episode.enclosure.complete!
+    episode.enclosure.must_be :complete?
     episode.must_be :audio_ready?
-    task = Minitest::Mock.new
-    task.expect(:complete?, false)
-    episode.stub(:most_recent_copy_task, task) do |variable|
-      episode.wont_be :audio_ready?
-    end
   end
 
   describe 'rss entry' do
@@ -90,7 +84,6 @@ describe Episode do
 
   it 'has one audio file once processed' do
     episode = create(:episode)
-    task = create(:copy_audio_task, owner: episode)
     episode.audio_files.length.must_equal 1
   end
 
@@ -101,8 +94,8 @@ describe Episode do
 
   it 'has duration once processed' do
     episode = create(:episode)
-    task = create(:copy_audio_task, owner: episode)
-    episode.duration.must_equal task.audio_info[:length].to_i
+    episode.enclosure = create(:enclosure, episode: episode, status: 'complete', duration: 10)
+    episode.duration.must_equal 10
   end
 
   describe 'prx story' do

@@ -7,7 +7,7 @@ FactoryGirl.define do
       create_list(:copy_audio_task, 1, owner: media_resource)
     end
 
-    factory :enclosure do
+    factory :enclosure, class: Enclosure do
     end
 
     factory :content do
