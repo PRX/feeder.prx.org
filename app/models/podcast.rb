@@ -114,7 +114,7 @@ class Podcast < ActiveRecord::Base
   def feed_episodes
     feed = []
     feed_max = max_episodes.to_i
-    episodes.includes(:tasks).order('created_at desc').each do |ep|
+    episodes.order('created_at desc').each do |ep|
       feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (feed.size >= feed_max)
     end
