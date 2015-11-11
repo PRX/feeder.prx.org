@@ -83,7 +83,7 @@ class Episode < ActiveRecord::Base
       url: audio_url,
       type: content_type,
       size: file_size,
-      duration: duration
+      duration: duration.to_i
     }
   end
 
