@@ -8,7 +8,7 @@ class Episode < ActiveRecord::Base
   has_many :contents, -> { order("position ASC") }
   has_one :enclosure
 
-  validates :podcast_id, presence: true
+  validates :podcast_id, :guid, presence: true
   validates_associated :podcast
 
   acts_as_paranoid
@@ -17,6 +17,10 @@ class Episode < ActiveRecord::Base
 
   def initialize_guid
     guid
+  end
+
+  def overrides
+    self[:overrides] ||= HashWithIndifferentAccess.new
   end
 
   def guid
@@ -73,10 +77,33 @@ class Episode < ActiveRecord::Base
     self
   end
 
+  def enclosure_info
+    return nil unless audio_ready?
+    {
+      url: audio_url,
+      type: content_type,
+      size: file_size,
+      duration: duration
+    }
+  end
+
+  def audio_url
+    enclosure.try(:audio_url) || "#{base_published_url}/audio.mp3"
+  end
+
+  def content_type
+    enclosure.try(:mime_type) || contents.first.try(:mime_type)
+  end
+
   def duration
     overrides[:duration] ||
     (enclosure && enclosure.duration) ||
     contents.inject(0.0) { |s, c| s + c.duration }
+  end
+
+  def file_size
+    (enclosure && enclosure.file_size) ||
+    contents.inject(0) { |s, c| s + c.file_size }
   end
 
   def update_from_story!(story)
