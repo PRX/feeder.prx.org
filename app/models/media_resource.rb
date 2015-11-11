@@ -17,7 +17,7 @@ class MediaResource < ActiveRecord::Base
   end
 
   def url
-    self[:url] ||= (episode && audio_url)
+    self[:url] ||= audio_url
     self[:url]
   end
 
