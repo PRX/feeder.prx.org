@@ -15,6 +15,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
     create_podcast unless podcast
     episode ? update_episode : create_episode
     podcast.try(:publish!)
+    episode
   end
   alias receive_feed_entry_create receive_feed_entry_update
 
