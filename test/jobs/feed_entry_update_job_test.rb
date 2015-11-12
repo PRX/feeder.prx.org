@@ -9,9 +9,6 @@ class FeedEntryUpdateJobTest < ActiveJob::TestCase
     before {
       stub_request(:get, "http://serialpodcast.org/sites/all/modules/custom/serial/img/serial-itunes-logo.png").
         to_return(:status => 200, :body => test_file('/fixtures/transistor1400.jpg'), :headers => {})
-      #
-      # stub_request(:get, "http://cdn.transistor.prx.org/wp-content/uploads/powerpress/transistor300.png").
-      #   to_return(:status => 200, :body => test_file('/fixtures/transistor300.png'), :headers => {})
     }
 
     it 'handles a feed entry update' do
