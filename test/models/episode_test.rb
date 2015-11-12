@@ -57,7 +57,7 @@ describe Episode do
       episode = Episode.create_from_entry!(podcast, entry)
       episode.podcast_id.must_equal podcast.id
       episode.guid.wont_be_nil
-      episode.overrides[:guid].wont_be_nil
+      episode.original_guid.wont_be_nil
       episode.guid.wont_equal episode.overrides[:guid]
       episode.overrides['title'].must_equal 'Episode 12: What We Know'
     end

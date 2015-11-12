@@ -19,13 +19,13 @@ class Episode < ActiveRecord::Base
     guid
   end
 
-  def overrides
-    self[:overrides] ||= HashWithIndifferentAccess.new
-  end
-
   def guid
     self[:guid] ||= SecureRandom.uuid
     self[:guid]
+  end
+
+  def overrides
+    self[:overrides] ||= HashWithIndifferentAccess.new
   end
 
   def self.by_prx_story(story)
@@ -47,11 +47,13 @@ class Episode < ActiveRecord::Base
     episode
   end
 
-  ENTRY_ATTRS = %w( guid title subtitle description summary content image_url
+  ENTRY_ATTRS = %w( title subtitle description summary content image_url
     explicit keywords categories is_closed_captioned is_perma_link duration ).freeze
 
   def update_from_entry(entry_resource)
     entry = entry_resource.attributes
+
+    self.original_guid = entry[:guid]
 
     o = entry.slice(*ENTRY_ATTRS).with_indifferent_access
     o[:published] = Time.parse(entry[:published]) if entry[:published]
