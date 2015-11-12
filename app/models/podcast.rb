@@ -10,7 +10,7 @@ class Podcast < ActiveRecord::Base
   has_many :itunes_categories, autosave: true
   has_many :tasks, as: :owner
 
-  # validates :itunes_image, :feed_image, presence: true
+  validates_associated :itunes_image, :feed_image
   validates :path, :prx_uri, uniqueness: true, allow_nil: true
 
   acts_as_paranoid
