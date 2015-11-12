@@ -12,8 +12,8 @@ module ImageFile
   end
 
   def url=(url)
+    reset_image_attributes
     super
-    reset_image_attributes if url_changed?
   end
 
   def reset_image_attributes
