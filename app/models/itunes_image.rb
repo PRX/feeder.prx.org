@@ -1,6 +1,4 @@
 class ITunesImage < ActiveRecord::Base
-  include ImageFile
-
   belongs_to :podcast
 
   validates :height, :width, numericality: {
@@ -9,4 +7,6 @@ class ITunesImage < ActiveRecord::Base
   }
 
   validates :height, numericality: { equal_to: -> (image) { image.width } }
+
+  include ImageFile
 end
