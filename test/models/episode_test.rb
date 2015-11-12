@@ -6,6 +6,12 @@ describe Episode do
 
   let(:episode) { create(:episode) }
 
+  it 'initializes guid and overrides' do
+    e = Episode.new
+    e.guid.wont_be_nil
+    e.overrides.wont_be_nil
+  end
+
   it 'must belong to a podcast' do
     episode = build_stubbed(:episode)
     episode.must_be(:valid?)
@@ -62,10 +68,39 @@ describe Episode do
       episode.enclosure.wont_be_nil
     end
 
+    it 'updates enclosure from entry' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry)
+      first_enclosure = episode.enclosure
+
+      episode.update_from_entry(entry)
+      episode.enclosure.must_equal first_enclosure
+
+      first_enclosure.original_url = "https://test.com"
+      episode.update_from_entry(entry)
+      episode.enclosure.wont_equal first_enclosure
+    end
+
     it 'creates contents from entry' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry)
       episode.contents.size.must_equal 2
+    end
+
+    it 'updates contents from entry' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry)
+      first_content = episode.contents.first
+      last_content = episode.contents.last
+
+      episode.update_from_entry(entry)
+      episode.contents.first.must_equal first_content
+      episode.contents.last.must_equal last_content
+
+      episode.contents.first.original_url = "https://test.com"
+      episode.update_from_entry(entry)
+      episode.contents(true).first.id.wont_equal first_content.id
+      episode.contents.last.must_equal last_content
     end
   end
 

@@ -53,28 +53,43 @@ class Episode < ActiveRecord::Base
   def update_from_entry(entry_resource)
     entry = entry_resource.attributes
 
-    o = entry.slice(*ENTRY_ATTRS)
-
+    o = entry.slice(*ENTRY_ATTRS).with_indifferent_access
     o[:published] = Time.parse(entry[:published]) if entry[:published]
-
-    o[:original_enclosure] = entry[:enclosure] || {}
-    o[:original_enclosure][:url] ||= entry[:feedburner_orig_enclosure_link]
     o[:link] = entry[:feedburner_orig_link] || entry[:url]
-
+    o[:original_enclosure] = entry[:enclosure] || {}
+    o[:original_enclosure][:url] = entry[:feedburner_orig_enclosure_link] || o[:original_enclosure][:url]
     o[:original_contents] = entry[:contents]
+    self.overrides = overrides.merge(o)
 
-    self.overrides = o
+    update_enclosure
 
-    # TODO: handle updates
-    if entry[:enclosure]
-      self.enclosure = Enclosure.build_from_enclosure(entry[:enclosure])
-    end
-
-    Array(entry[:contents]).each do |c|
-      self.contents << Content.build_from_content(c)
-    end
+    update_contents
 
     self
+  end
+
+  def update_contents
+    Array(overrides[:original_contents]).each_with_index do |c, i|
+      existing_content = contents[i]
+      if existing_content && existing_content.original_url != c[:url]
+        existing_content.destroy
+        existing_content = nil
+      end
+      if !existing_content
+        new_content = Content.build_from_content(c)
+        contents << new_content
+        new_content.set_list_position(i + 1)
+      end
+    end
+  end
+
+  def update_enclosure
+    enclosure_url = overrides[:original_enclosure][:url]
+    if !enclosure_url || (enclosure && (enclosure.original_url != enclosure_url))
+      enclosure.try(:destroy)
+      self.enclosure = nil
+    end
+    self.enclosure ||= Enclosure.build_from_enclosure(overrides[:original_enclosure])
   end
 
   def enclosure_info
