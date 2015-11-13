@@ -57,6 +57,8 @@ gem 'addressable'
 
 gem 'hal_api-rails', github: 'prx/hal_api-rails', ref: 'master'
 
+gem 'acts_as_list'
+
 group :development do
   # Use Capistrano for deployment
   # gem 'capistrano-rails', '~> 1.1.0'
@@ -98,6 +100,8 @@ group :test do
 
   # Making it dead simple to test time-dependent code
   gem 'timecop'
+
+  gem 'rubocop', require: false
 end
 
 group :development, :test do

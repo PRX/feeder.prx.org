@@ -22,13 +22,13 @@ class Task < ActiveRecord::Base
   before_validation { self.status ||= :started }
 
   # convenient scopes for subclass types
-  [:copy_audio].each do |subclass|
+  [:copy_audio, :publish_feed].each do |subclass|
     classname = "Tasks::#{subclass.to_s.camelize}Task"
     scope subclass, -> { where('type = ?', classname) }
   end
 
   # abstract, called by `fixer_callback`
-  def task_status_changed(fixer_task)
+  def task_status_changed(fixer_task, new_status)
   end
 
   def self.fixer_callback(fixer_task)
@@ -49,7 +49,7 @@ class Task < ActiveRecord::Base
         logged_at: new_logged_at,
         result: fixer_task
       )
-      task_status_changed(fixer_task)
+      task_status_changed(fixer_task, new_status)
     end
   end
 

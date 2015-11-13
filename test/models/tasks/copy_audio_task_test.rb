@@ -33,14 +33,14 @@ describe Tasks::CopyAudioTask do
       task.stub(:get_account_token, "token") do
         task.start!
         task.options[:source].must_equal 'http://final/location.mp3'
-        task.options[:destination].must_match /s3:\/\/test-prx-feed\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/audio.mp3/
+        task.options[:destination].must_match /s3:\/\/test-prx-feed\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/
         task.options[:audio_uri].must_equal '/api/v1/audio_files/406322'
       end
     end
   end
 
   it 'alias owner as episode' do
-    task.episode.must_equal task.owner
+    task.episode.must_equal task.owner.episode
   end
 
   it 'knows what bucket to drop the file in' do
@@ -52,13 +52,9 @@ describe Tasks::CopyAudioTask do
     episode = Minitest::Mock.new
     episode.expect(:podcast, podcast)
     episode.expect(:guid, 'guid')
-    episode.expect(:published_audio_url, 'http://test-f.prxu.org/path/guid/audio.mp3')
+    episode.expect(:url, 'http://test-f.prxu.org/path/guid/audio.mp3')
     url = task.destination_url(episode)
     url.must_equal 's3://test-prx-feed/path/guid/audio.mp3?x-fixer-public=true'
-  end
-
-  it 'returns enclosure path' do
-    task.audio_info[:content_type].must_equal 'audio/mpeg'
   end
 
   it 'determines the story audio uri' do
@@ -75,11 +71,11 @@ describe Tasks::CopyAudioTask do
     episode.expect(:podcast, podcast)
     episode.expect(:prx_uri, '/api/v1/stories/80548')
     episode.expect(:guid, 'guid')
-    episode.expect(:published_audio_url, 'http://test-f.prxu.org/path/guid/audio.mp3')
+    episode.expect(:url, 'http://test-f.prxu.org/path/guid/audio.mp3')
 
     task.stub(:episode, episode) do
       HighwindsAPI::Content.stub(:purge_url, true) do
-        task.task_status_changed({})
+        task.task_status_changed({}, 'complete')
       end
     end
   end

@@ -11,20 +11,6 @@ describe Podcast do
     podcast.must_respond_to(:episodes)
   end
 
-  it 'must have an iTunes image' do
-    podcast.itunes_image.destroy
-    podcast.reload
-
-    podcast.wont_be(:valid?)
-  end
-
-  it 'must have a feed image' do
-    podcast.feed_image.destroy
-    podcast.reload
-
-    podcast.wont_be(:valid?)
-  end
-
   it 'has iTunes categories' do
     podcast.must_respond_to(:itunes_categories)
   end
@@ -42,11 +28,8 @@ describe Podcast do
     let (:entry) { api_resource(JSON.parse(json_file(:crier_entry)), crier_root) }
 
     before {
-      stub_request(:get, "http://cdn.transistor.prx.org/wp-content/uploads/powerpress/transistor1400.jpg").
+      stub_request(:get, "http://serialpodcast.org/sites/all/modules/custom/serial/img/serial-itunes-logo.png").
         to_return(:status => 200, :body => test_file('/fixtures/transistor1400.jpg'), :headers => {})
-
-      stub_request(:get, "http://cdn.transistor.prx.org/wp-content/uploads/powerpress/transistor300.png").
-        to_return(:status => 200, :body => test_file('/fixtures/transistor300.png'), :headers => {})
     }
 
     it 'create_from_feed' do
@@ -60,12 +43,12 @@ describe Podcast do
       podcast = Podcast.new
       podcast.update_from_feed(feed)
 
-      podcast.title.must_equal 'Transistor'
-      podcast.source_url.must_equal 'http://feeds.prx.org/transistor_stem'
-      podcast.link.must_equal 'http://transistor.prx.org'
-      podcast.author_name.must_equal 'PRX'
-      podcast.owner_name.must_equal 'PRX'
-      podcast.owner_email.must_equal 'prx@prx.org'
+      podcast.title.must_equal 'Serial'
+      podcast.source_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml'
+      podcast.link.must_equal 'http://serialpodcast.org'
+      podcast.author_name.must_equal 'This American Life'
+      podcast.owner_name.must_be_nil
+      podcast.owner_email.must_equal 'rich@strangebirdlabs.com'
     end
 
     it 'update_images' do

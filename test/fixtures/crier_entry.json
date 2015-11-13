@@ -1,4 +1,88 @@
 {
+  "guid": "57 at http://serialpodcast.org",
+  "is_perma_link": false,
+  "url": "http://feeds.serialpodcast.org/~r/serialpodcast/~3/_LnOrNUV5n4/",
+  "feedburner_orig_link": "http://serialpodcast.org",
+  "author": {
+    "name": "This American Life",
+    "email": null
+  },
+  "title": "Episode 12: What We Know",
+  "subtitle": "On January 13, 1999, Adnan Syed was a hurt and vengeful ex-boyfriend who carried out a premeditated murder. Or he was a bewildered bystander, framed for a crime he could never have committed. After 15 months of reporting, we take out\n        everything we’ve got - interviews and documents and police reports - we shake it all out, and we see what sticks.",
+  "summary": "On January 13, 1999, Adnan Syed was a hurt and vengeful ex-boyfriend who carried out a premeditated murder. Or he was a bewildered bystander, framed for a crime he could never have committed. After 15 months of reporting, we take out\n        everything we’ve got - interviews and documents and police reports - we shake it all out, and we see what sticks.",
+  "description": "On January 13, 1999, Adnan Syed was a hurt and vengeful ex-boyfriend who carried out a premeditated murder. Or he was a bewildered bystander, framed for a crime he could never have committed. After 15 months of reporting, we take out\n        everything we’ve got - interviews and documents and police reports - we shake it all out, and we see what sticks.\u003cimg src=\"http://feeds.feedburner.com/~r/serialpodcast/~4/_LnOrNUV5n4\" height=\"1\" width=\"1\" alt=\"\"/\u003e",
+  "enclosure": {
+    "url": "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3",
+    "type": "audio/mpeg",
+    "length": 27485957
+  },
+  "duration": 3360,
+  "is_closed_captioned": false,
+  "position": 12,
+  "block": false,
+  "published": "2014-12-18T10:30:00.000Z",
+  "contents": [{
+    "position": 1,
+    "url": "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3",
+    "type": "audio/mpeg",
+    "file_size": 26017749,
+    "medium": "audio",
+    "expression": "sample",
+    "bitrate": 64,
+    "samplingrate": "44.1",
+    "channels": 1,
+    "duration": "3252.19",
+    "lang": "en"
+  }, {
+    "position": 2,
+    "url": "https://s3.amazonaws.com/prx-dovetail/testserial/serial_credits.mp3",
+    "type": "audio/mpeg",
+    "file_size": 162376,
+    "medium": "audio",
+    "expression": "sample",
+    "bitrate": 64,
+    "samplingrate": "44.1",
+    "channels": 1,
+    "duration": "20.27",
+    "lang": "en"
+  }],
+  "keywords": [],
+  "_embedded": {
+    "prx:feed": {
+      "feed_url": "https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml",
+      "url": "http://serialpodcast.org",
+      "image_url": "http://serialpodcast.org/sites/all/modules/custom/serial/img/serial-itunes-logo.png",
+      "hub_url": "http://pubsubhubbub.appspot.com/",
+      "title": "Serial",
+      "subtitle": "A new podcast from the creators of This American Life",
+      "description": "Serial is a new podcast from the creators of This American Life, hosted by Sarah Koenig. Serial unfolds one story - a true story - over the course of a whole season. The show follows the plot and characters wherever they lead, through\n      many surprising twists and turns. Sarah won't know what happens at the end of the story until she gets there, not long before you get there with her. Each week she'll bring you the latest chapter, so it's important to listen in, starting with Episode\n      1. New episodes are released on Thursday mornings.",
+      "owners": [{
+        "name": null,
+        "email": "rich@strangebirdlabs.com"
+      }],
+      "author": {
+        "name": "This American Life",
+        "email": null
+      },
+      "language": "en",
+      "copyright": "Copyright 2015 Ira Glass",
+      "complete": false,
+      "feedburner_name": "serialpodcast",
+      "block": false,
+      "published": "2014-12-18T10:30:00.000Z",
+      "last_modified": "2014-12-18T10:30:00.000Z",
+      "keywords": [],
+      "categories": ["News \u0026 Politics"],
+      "_links": {
+        "self": {
+          "href": "/api/v1/feeds/11"
+        },
+        "prx:entries": {
+          "href": "/api/v1/feeds/11/entries"
+        }
+      }
+    }
+  },
   "_links": {
     "curies": [{
       "name": "prx",
@@ -6,74 +90,11 @@
       "templated": true
     }],
     "self": {
-      "href": "/api/v1/feeds/4/entries/44"
+      "href": "/api/v1/feeds/11/entries/145"
     },
     "prx:feed": {
-      "href": "/api/v1/feeds/4",
-      "title": "Transistor"
+      "href": "/api/v1/feeds/11",
+      "title": "Serial"
     }
-  },
-  "_embedded": {
-    "prx:feed": {
-      "_links": {
-        "self": {
-          "href": "/api/v1/feeds/4"
-        },
-        "prx:entries": {
-          "href": "/api/v1/feeds/4/entries"
-        }
-      },
-      "feed_url": "http://feeds.prx.org/transistor_stem",
-      "url": "http://transistor.prx.org",
-      "image_url": "http://cdn.transistor.prx.org/wp-content/uploads/powerpress/transistor1400.jpg",
-      "thumb_url": "http://cdn.transistor.prx.org/wp-content/uploads/powerpress/transistor300.png",
-      "hub_url": "http://pubsubhubbub.appspot.com/",
-      "title": "Transistor",
-      "subtitle": "A podcast of scientific questions and stories, with many episodes hosted by key scientists at the forefront of discovery.",
-      "description": "A podcast of scientific questions and stories, with many episodes hosted by key scientists at the forefront of discovery.",
-      "summary": "Transistor is a transformative STEM podcast from PRX. Three scientist hosts — microbiologist Christina Agapakis, astrophysicist Michelle Thaller, and neuroscientist Wendy Suzuki — report on curiosities and current events in and beyond their fields. Sprinkled among their episodes are special science stories from around the globe. Presented with support from the Sloan Foundation.",
-      "owners": [{
-        "name": "PRX",
-        "email": "prx@prx.org"
-      }],
-      "author": "PRX",
-      "managing_editor": "prx@prx.org (PRX)",
-      "explicit": "f",
-      "language": "en-US",
-      "copyright": "Copyright 2015",
-      "generator": "http://wordpress.org/?v=4.3.1",
-      "complete": false,
-      "update_period": "hourly",
-      "update_frequency": 1,
-      "feedburner_name": "transistor_stem",
-      "block": false,
-      "published": "2015-08-18T21:01:13.000Z",
-      "last_built": "2015-08-18T21:01:13.000Z",
-      "last_modified": "2015-08-18T20:43:10.000Z",
-      "keywords": [],
-      "categories": ["Science \u0026 Medicine", "Natural Sciences"]
-    }
-  },
-  "guid": "http://transistor.prx.org/?p=78",
-  "url": "http://feeds.prx.org/~r/transistor_stem/~3/DogRqmTJkiE/",
-  "feedburner_orig_link": "http://transistor.prx.org/2015/02/episode-1-we-are-stardust/",
-  "author": "PRX",
-  "title": "We Are Stardust",
-  "subtitle": "We're closer than ever before to discovering if we're not alone in the universe. The host for this episode of Transistor, astrophysicist Michelle Thaller, visits the NASA lab that discovered that meteorites contain some of the very same chemical elemen...",
-  "content": "\u003cp\u003e\u003cscript id='prx-p141886-embed' src='http://www.prx.org/p/141886/embed.js?size=small'\u003e\u003c/script\u003e\u003cbr /\u003e\nWe\u0026#8217;re closer than ever before to discovering if we\u0026#8217;re not alone in the universe. The host for this episode of \u003cem\u003eTransistor\u003c/em\u003e, \u003ca href=\"http://transistor.prx.org/about-our-hosts#michelle\"\u003eastrophysicist Michelle Thaller\u003c/a\u003e, visits the NASA lab that discovered that meteorites contain some of the very same chemical elements that \u003cem\u003ewe\u003c/em\u003e contain. Then, Michelle talks to a Vatican planetary scientist about how science and religion can meet on the topic of life beyond Earth.\u003c/p\u003e\n\u003cp\u003e\u003cstrong\u003eInside the Episode:\u003c/strong\u003e\u003c/p\u003e\n\u003cp\u003e\u003ca href=\"http://astrobiology.gsfc.nasa.gov/analytical/glavin.html\"\u003eAstrobiologist Danny Glavin\u003c/a\u003e works at the NASA Goddard Center for Astrobiology. Here are some of those \u0026#8220;mad scientist machines\u0026#8221; from the lab.\u003c/p\u003e\n\u003cp\u003e\u003cimg src=\"http://transistor.prx.org.s3.amazonaws.com/wp-content/uploads/IMG_0135-copy.jpg\" alt=\"\" /\u003e\u003cbr /\u003e\n\u003cspan style=\"font-size: 13px;\"\u003eThis nanoelectrospray emitter is used by the lab to analyze very small samples. It gives sample molecules an electric charge, then transfers them to a mass spectrometer, which identifies the molecules by their mass.\u003c/span\u003e\u003c/p\u003e\n\u003cp\u003e\u003cimg src=\"http://transistor.prx.org.s3.amazonaws.com/wp-content/uploads/DSCN3476-copy.jpg\" alt=\"\" /\u003e\u003cbr /\u003e\n\u003cspan style=\"font-size: 13px;\"\u003eMass spectrometer instrument used to detect amino acids in meteorite sample extracts.\u003c/span\u003e\u003c/p\u003e\n\u003cp\u003eLearn more about \u003ca href=\"http://vaticanobservatory.org/about-us/personnel-and-research/73-personnel-and-research/brother-guy/325-brother-guy\"\u003eVatican planetary scientist Br. Guy Consolmagno\u003c/a\u003e and his \u003ca href=\"http://www.imagecatholicbooks.com/book/228109/would-you-baptize-an-extraterrestrial/\"\u003emost recent book\u003c/a\u003e.\u003c/p\u003e\n\u003cp\u003e\u003cem\u003eThis episode was produced by \u003ca href=\"http://transistor.prx.org/about-our-producers\"\u003eLauren Ober\u003c/a\u003e and edited by Katie Davis. Mix and sound design by \u003ca href=\"http://www.whitneyajones.com\" target=\"_blank\"\u003eWhitney Jones\u003c/a\u003e.\u003c/em\u003e\u003c/p\u003e\n\u003cp\u003e\u003cem\u003ePhotos courtesy of NASA.\u003c/em\u003e\u003c/p\u003e\n\u003cimg src=\"http://feeds.feedburner.com/~r/transistor_stem/~4/DogRqmTJkiE\" height=\"1\" width=\"1\" alt=\"\"/\u003e",
-  "summary": "We're closer than ever before to discovering if we're not alone in the universe. The host for this episode of Transistor, astrophysicist Michelle Thaller, visits the NASA lab that discovered that meteorites contain some of the very same chemical elements that we contain. Then, Michelle talks to a Vatican planetary scientist about how science and religion can meet on the topic of life beyond Earth.",
-  "description": "We\u0026#8217;re closer than ever before to discovering if we\u0026#8217;re not alone in the universe. The host for this episode of Transistor, astrophysicist Michelle Thaller, visits the NASA lab that discovered that meteorites contain some of the very same chemical elements that we contain. Then, Michelle talks to a Vatican planetary scientist about how science and \u0026#8230; \u003ca href=\"http://transistor.prx.org/2015/02/episode-1-we-are-stardust/\" class=\"more-link\"\u003eContinue reading \u003cspan class=\"screen-reader-text\"\u003eWe Are Stardust\u003c/span\u003e\u003c/a\u003e",
-  "enclosure_length": "9801966",
-  "enclosure_type": "audio/mpeg",
-  "enclosure_url": "http://feeds.prx.org/~r/transistor_stem/~5/PVqYF2oAhHs/1_Transistor_We_Are_Stardust.mp3",
-  "feedburner_orig_enclosure_link": "http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/transistor/cdn.transistor.prx.org/wp-content/uploads/1_Transistor_We_Are_Stardust.mp3",
-  "duration": 980,
-  "explicit": "no",
-  "is_closed_captioned": false,
-  "block": false,
-  "comment_rss_url": "http://transistor.prx.org/2015/02/episode-1-we-are-stardust/feed/",
-  "comment_count": "0",
-  "published": "2015-02-02T18:36:16.000Z",
-  "keywords": [],
-  "categories": ["Michelle Thaller", "Podcast"]
+  }
 }

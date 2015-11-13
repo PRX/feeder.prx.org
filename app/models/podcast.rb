@@ -10,7 +10,7 @@ class Podcast < ActiveRecord::Base
   has_many :itunes_categories, autosave: true
   has_many :tasks, as: :owner
 
-  validates :itunes_image, :feed_image, presence: true
+  validates_associated :itunes_image, :feed_image
   validates :path, :prx_uri, uniqueness: true, allow_nil: true
 
   acts_as_paranoid
@@ -43,6 +43,11 @@ class Podcast < ActiveRecord::Base
 
     self.path ||= feed['feedburner_name']
 
+    unless feed[:author].blank?
+      self.author_name = feed[:author]['name']
+      self.author_email = feed[:author]['email']
+    end
+
     unless feed[:owners].blank?
       owner = feed[:owners].first
       self.owner_name = owner['name']
@@ -55,17 +60,21 @@ class Podcast < ActiveRecord::Base
     self
   end
 
-  def update_images(feed)
-    if self.feed_image
-      self.feed_image.update_attributes!(url: feed[:thumb_url])
+  def save_image(type, url)
+    if i = send("#{type}_image")
+      i.update_attributes!(url: url)
     else
-      self.build_feed_image(url: feed[:thumb_url])
+      send("build_#{type}_image", url:url)
     end
+  end
 
-    if self.itunes_image
-      self.itunes_image.update_attributes!(url: feed[:image_url])
-    else
-      self.build_itunes_image(url: feed[:image_url])
+  def update_images(feed)
+    { feed: :thumb_url, itunes: :image_url }.each do |type, url|
+      if feed[url]
+        save_image(type, feed[url])
+      elsif i = send("#{type}_image")
+        i.destroy
+      end
     end
   end
 
@@ -105,7 +114,7 @@ class Podcast < ActiveRecord::Base
   def feed_episodes
     feed = []
     feed_max = max_episodes.to_i
-    episodes.includes(:tasks).order('created_at desc').each do |ep|
+    episodes.order('created_at desc').each do |ep|
       feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (feed.size >= feed_max)
     end

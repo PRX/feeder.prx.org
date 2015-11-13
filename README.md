@@ -76,6 +76,12 @@ powder link
 open http://feeder.prx.dev
 ```
 
+## Audio Handling
+
+When a new file episode is inserted, the audio files for it (either from `enclosure` or `media:content` tags) are also inserted as `media_resource` records. For each resource, a copy task is created to move the audio to the s3 bucket where it can be served by the CDN.
+
+When an episode has a new audio url, that is considered a new file, and the old one is deleted and a new `media_resource` is added, with a new copy task.
+
 ## License
 [AGPL License](https://www.gnu.org/licenses/agpl-3.0.html)
 

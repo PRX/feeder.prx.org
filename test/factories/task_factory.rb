@@ -1,6 +1,6 @@
 FactoryGirl.define do
   factory :copy_audio_task, class: Tasks::CopyAudioTask do
-    association :owner, factory: :episode, prx_uri: '/api/v1/stories/80548'
+    association :owner, factory: :enclosure
     status :complete
     options destination: 's3://test-prx-up/podcast/episode/filename.mp3'
     result task: {

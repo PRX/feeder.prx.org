@@ -13,7 +13,7 @@ FactoryGirl.define do
     end
 
     after(:create) do |episode, evaluator|
-      create_list(:copy_audio_task, 1, owner: episode)
+      episode.enclosure = create(:enclosure, episode: episode, status: 'complete')
     end
   end
 end

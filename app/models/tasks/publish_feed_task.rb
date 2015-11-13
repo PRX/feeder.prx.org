@@ -32,7 +32,7 @@ class Tasks::PublishFeedTask < ::Task
     ).to_s
   end
 
-  def task_status_changed(fixer_task)
+  def task_status_changed(fixer_task, new_status)
     # purge the cdn cache
     HighwindsAPI::Content.purge_url(podcast.published_url, false)
 

@@ -1,9 +1,5 @@
 require 'time_formats'
 
-class Fixnum
-  include TimeFormats
-end
-
-class Bignum
+class Numeric
   include TimeFormats
 end

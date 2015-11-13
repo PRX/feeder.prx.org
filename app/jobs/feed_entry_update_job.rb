@@ -15,6 +15,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
     create_podcast unless podcast
     episode ? update_episode : create_episode
     podcast.try(:publish!)
+    episode
   end
   alias receive_feed_entry_create receive_feed_entry_update
 
@@ -47,6 +48,6 @@ class FeedEntryUpdateJob < ActiveJob::Base
     self.feed = entry.objects['prx:feed']
 
     self.podcast = Podcast.with_deleted.find_by(source_url: feed.feed_url)
-    self.episode = podcast.episodes.with_deleted.find_by(guid: entry.guid, podcast_id: podcast.id) if podcast
+    self.episode = podcast.episodes.with_deleted.find_by(original_guid: entry.guid, podcast_id: podcast.id) if podcast
   end
 end
