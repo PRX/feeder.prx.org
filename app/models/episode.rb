@@ -24,6 +24,10 @@ class Episode < ActiveRecord::Base
     self[:guid]
   end
 
+  def item_guid
+    original_guid || "prx:#{podcast.path}:#{guid}"
+  end
+
   def overrides
     self[:overrides] ||= HashWithIndifferentAccess.new
   end
