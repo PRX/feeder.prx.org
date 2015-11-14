@@ -25,7 +25,7 @@ class Tasks::CopyAudioTask < ::Task
       media_resource.update_from_fixer(fixer_task)
     end
 
-    HighwindsAPI::Content.purge_url(episode.url, false)
+    HighwindsAPI::Content.purge_url(media_resource.audio_url, false)
     episode.podcast.publish! if complete?
   end
 
