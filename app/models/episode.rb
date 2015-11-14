@@ -109,22 +109,35 @@ class Episode < ActiveRecord::Base
   end
 
   def audio_url
-    enclosure.try(:audio_url) || "#{base_published_url}/audio.mp3"
+    if contents.blank?
+      enclosure.try(:audio_url)
+    else
+      "#{base_published_url}/audio.mp3"
+    end
   end
 
   def content_type
-    enclosure.try(:mime_type) || contents.first.try(:mime_type)
+    if contents.blank?
+      enclosure.try(:mime_type)
+    else
+      contents.first.try(:mime_type)
+    end
   end
 
   def duration
-    overrides[:duration] ||
-    (enclosure && enclosure.duration) ||
-    contents.inject(0.0) { |s, c| s + c.duration }
+    if contents.blank?
+      enclosure.try(:duration)
+    else
+      contents.inject(0.0) { |s, c| s + c.duration }
+    end
   end
 
   def file_size
-    (enclosure && enclosure.file_size) ||
-    contents.inject(0) { |s, c| s + c.file_size }
+    if contents.blank?
+      enclosure.try(:file_size)
+    else
+      contents.inject(0) { |s, c| s + c.file_size }
+    end
   end
 
   def update_from_story!(story)
