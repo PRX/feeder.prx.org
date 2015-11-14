@@ -29,7 +29,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       xml.width @podcast.feed_image.width
       xml.height @podcast.feed_image.height
       xml.description @podcast.feed_image.description if @podcast.feed_image.description
-    end
+    end if @podcast.feed_image
 
     xml.atom :link, href: (@podcast.url || @podcast.published_url), rel: 'self', type: 'application/rss+xml'
 
@@ -58,7 +58,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.itunes :keywords, @podcast.keywords.join(',') if @podcast.keywords.size > 0
 
     xml.media :copyright, @podcast.copyright
-    xml.media :thumbnail, url: @podcast.feed_image.url
+    xml.media :thumbnail, url: @podcast.feed_image.url if @podcast.feed_image
     xml.media :keywords, @podcast.keywords.join(',') if @podcast.keywords.size > 0
     xml.media :category, @podcast.itunes_categories.first.try(:name), scheme: 'http://www.itunes.com/dtds/podcast-1.0.dtd'
 
@@ -74,7 +74,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.pubDate (ep[:published] || ep[:created]).utc.rfc2822
         xml.link ep[:link]
         xml.description { xml.cdata!(ep[:description] || '') }
-        unless ep[:categories].empty?
+        unless ep[:categories].blank?
           ep[:categories].each { |c| xml.category { xml.cdata!(c) } }
         end
         xml.enclosure url: ep[:audio][:url], type: ep[:audio][:type], length: ep[:audio][:size]
