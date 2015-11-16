@@ -2,7 +2,7 @@
 require 'hal_api/representer'
 
 class EpisodeRepresenter < HalApi::Representer
-  property :guid
+  property :item_guid, as: :guid
   property :audio_files, as: :audio
   property :duration
   property :published

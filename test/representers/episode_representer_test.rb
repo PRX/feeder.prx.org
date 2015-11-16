@@ -6,7 +6,13 @@ describe EpisodeRepresenter do
 
   it 'includes the guid' do
     episode.stub(:guid, 'guid') do
-      representer.as_json['guid'].must_equal 'guid'
+      representer.as_json['guid'].must_equal 'prx:jjgo:guid'
+    end
+  end
+
+  it 'includes the original guid if set' do
+    episode.stub(:original_guid, 'original-guid') do
+      representer.as_json['guid'].must_equal 'original-guid'
     end
   end
 

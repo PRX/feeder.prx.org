@@ -17,7 +17,7 @@ class EpisodeBuilder
 
   def from_prx_story
     info = HashWithIndifferentAccess.new(
-      guid: item_guid,
+      guid: @ep.item_guid,
       audio: audio_file,
       image_url: nil,
       created: @ep.created_at,
@@ -44,10 +44,6 @@ class EpisodeBuilder
     info.merge!(@overrides) if @overrides
 
     info
-  end
-
-  def item_guid(episode = @ep)
-    episode.original_guid || "prx:#{episode.prx_uri || episode.podcast_id }:#{episode.guid}"
   end
 
   def audio_file(episode = @ep)

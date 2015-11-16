@@ -26,6 +26,11 @@ describe Episode do
     episode.guid.wont_be_nil
   end
 
+  it 'returns a guid ot use in the channel item' do
+    episode.guid = 'guid'
+    episode.item_guid.must_equal "prx:jjgo:guid"
+  end
+
   it 'is ready to add to a feed' do
     episode.must_be :include_in_feed?
   end
