@@ -36,12 +36,14 @@ class EpisodeBuilder
         explicit: sa[:contentAdvisory] ? 'yes' : 'no',
         keywords: sa[:tags],
         categories: sa[:tags],
-        published: (Time.parse(sa[:publishedAt]) if sa[:publishedAt])
+        published: sa[:publishedAt]
       )
       info.merge!(story_info)
     end
 
     info.merge!(@overrides) if @overrides
+
+    info[:published] = Time.parse(info[:published]) if info[:published]
 
     info
   end

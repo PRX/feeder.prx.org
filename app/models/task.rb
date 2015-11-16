@@ -42,8 +42,8 @@ class Task < ActiveRecord::Base
   def fixer_callback(fixer_task)
     ft = fixer_task['task']
     new_status = ft['result_details']['status']
-    new_logged_at = ft['result_details']['logged_at']
-    if logged_at.nil? || (new_logged_at > logged_at)
+    new_logged_at = Time.parse(ft['result_details']['logged_at'])
+    if logged_at.nil? || (new_logged_at >= logged_at)
       update_attributes!(
         status: new_status,
         logged_at: new_logged_at,
