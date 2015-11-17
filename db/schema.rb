@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151112022708) do
+ActiveRecord::Schema.define(version: 20151117195934) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -25,10 +25,12 @@ ActiveRecord::Schema.define(version: 20151112022708) do
     t.string   "prx_uri"
     t.datetime "deleted_at"
     t.string   "original_guid"
+    t.datetime "published_at"
   end
 
   add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree
   add_index "episodes", ["prx_uri"], name: "index_episodes_on_prx_uri", unique: true, using: :btree
+  add_index "episodes", ["published_at", "podcast_id"], name: "index_episodes_on_published_at_and_podcast_id", using: :btree
 
   create_table "feed_images", force: :cascade do |t|
     t.string  "url"
