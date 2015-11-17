@@ -7,6 +7,6 @@ Rails.application.load_tasks
 begin
   require 'rubocop/rake_task'
   RuboCop::RakeTask.new if defined? RuboCop
-rescue
+rescue LoadError => e
   puts 'No RuboCop Present'
 end
