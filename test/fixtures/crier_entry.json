@@ -60,6 +60,10 @@
         "name": null,
         "email": "rich@strangebirdlabs.com"
       }],
+      "managing_editor": {
+        "name": "This American Life",
+        "email": "chad@thislife.org"
+      },
       "author": {
         "name": "This American Life",
         "email": null

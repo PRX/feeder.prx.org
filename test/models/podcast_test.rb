@@ -49,6 +49,8 @@ describe Podcast do
       podcast.author_name.must_equal 'This American Life'
       podcast.owner_name.must_be_nil
       podcast.owner_email.must_equal 'rich@strangebirdlabs.com'
+      podcast.managing_editor_name.must_equal 'This American Life'
+      podcast.managing_editor_email.must_equal 'chad@thislife.org'
     end
 
     it 'update_images' do

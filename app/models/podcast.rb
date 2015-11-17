@@ -30,34 +30,47 @@ class Podcast < ActiveRecord::Base
   end
 
   FEED_ATTRS = %w( complete copyright description explicit keywords language
-    managing_editor subtitle summary title update_frequency update_period ).freeze
+    subtitle summary title update_frequency update_period
+    author managing_editor owners ).freeze
 
   def update_from_feed(feed_resource)
     feed = feed_resource.attributes
 
     self.attributes = feed.slice(*FEED_ATTRS)
 
-    {feed_url: :source_url, url: :link, author: :author_name}.each do |k,v|
+    {feed_url: :source_url, url: :link}.each do |k,v|
       send("#{v}=", feed[k.to_s])
     end
 
     self.path ||= feed['feedburner_name']
 
-    unless feed[:author].blank?
-      self.author_name = feed[:author]['name']
-      self.author_email = feed[:author]['email']
-    end
-
-    unless feed[:owners].blank?
-      owner = feed[:owners].first
-      self.owner_name = owner['name']
-      self.owner_email = owner['email']
-    end
-
     update_images(feed)
     update_categories(feed_resource)
 
     self
+  end
+
+  def owners=(os)
+    owner = Array(os).first || {}
+    self.owner_name = owner['name']
+    self.owner_email = owner['email']
+  end
+
+  def author=(a)
+    author = a || {}
+    self.author_name = author['name']
+    self.author_email = author['email']
+  end
+
+  def managing_editor=(me)
+    managing_editor = me || {}
+    self.managing_editor_name = managing_editor['name']
+    self.managing_editor_email = managing_editor['email']
+  end
+
+  def managing_editor
+    return nil unless (managing_editor_name || managing_editor_email)
+    "#{managing_editor_email} (#{managing_editor_name})"
   end
 
   def save_image(type, url)
