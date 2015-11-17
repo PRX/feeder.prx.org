@@ -21,7 +21,8 @@ class EpisodeBuilder
       audio: audio_file,
       image_url: nil,
       created: @ep.created_at,
-      modified: @ep.updated_at
+      modified: @ep.updated_at,
+      published: @ep.published_at
     )
 
     if @story = get_story
@@ -43,7 +44,9 @@ class EpisodeBuilder
 
     info.merge!(@overrides) if @overrides
 
-    info[:published] = Time.parse(info[:published]) if info[:published]
+    if info[:published] && info[:published].is_a?(String)
+      info[:published] = Time.parse(info[:published])
+    end
 
     info
   end
