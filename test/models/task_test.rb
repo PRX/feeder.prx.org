@@ -10,7 +10,7 @@ class TaskTest < ActiveSupport::TestCase
         },
         'result_details' => {
           'status' => 'complete',
-          'logged_at' => Time.parse('1/1/2010')
+          'logged_at' => "2010-01-01T00:00:00.000Z"
         }
       }
     }
@@ -44,6 +44,6 @@ class TaskTest < ActiveSupport::TestCase
   it 'can handle fixer callback' do
     task.fixer_callback(fixer_task)
     task.must_be :complete?
-    task.logged_at.must_equal Time.parse('1/1/2010')
+    task.logged_at.must_equal Time.parse("2010-01-01T00:00:00.000Z")
   end
 end
