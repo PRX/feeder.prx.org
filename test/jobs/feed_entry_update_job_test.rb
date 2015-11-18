@@ -21,5 +21,25 @@ class FeedEntryUpdateJobTest < ActiveJob::TestCase
         create_episode.must_equal update_episode
       end
     end
+
+    it 'retries podcast update on unique constraint error' do
+      data = json_file(:crier_entry)
+      Task.stub :new_fixer_sqs_client, SqsMock.new do
+        episode = job.receive_feed_entry_update(data)
+        created_podcast = job.podcast
+        job.create_podcast
+        job.podcast.must_equal created_podcast
+      end
+    end
+
+    it 'retries episode update on unique constraint error' do
+      data = json_file(:crier_entry)
+      Task.stub :new_fixer_sqs_client, SqsMock.new do
+        episode = job.receive_feed_entry_update(data)
+        created_episode = job.episode
+        job.create_episode
+        job.episode.must_equal created_episode
+      end
+    end
   end
 end
