@@ -63,6 +63,7 @@ describe Episode do
       episode.podcast_id.must_equal podcast.id
       episode.guid.wont_be_nil
       episode.original_guid.wont_be_nil
+      episode.published_at.wont_be_nil
       episode.guid.wont_equal episode.overrides[:guid]
       episode.overrides['title'].must_equal 'Episode 12: What We Know'
     end
@@ -152,6 +153,7 @@ describe Episode do
       podcast = create(:podcast, prx_uri: '/api/v1/series/32166')
       episode = Episode.create_from_story!(story)
       episode.wont_be_nil
+      episode.published_at.wont_be_nil
     end
 
     it 'can be found by story' do

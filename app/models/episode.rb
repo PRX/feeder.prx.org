@@ -41,7 +41,8 @@ class Episode < ActiveRecord::Base
     series_uri = story.links['series'].href
     story_uri = story.links['self'].href
     podcast = Podcast.find_by!(prx_uri: series_uri)
-    create!(podcast: podcast, prx_uri: story_uri)
+    published = Time.parse(story.attributes[:publishedAt]) if story.attributes[:publishedAt]
+    create!(podcast: podcast, prx_uri: story_uri, published_at: published)
   end
 
   def self.create_from_entry!(podcast, entry)
@@ -59,8 +60,14 @@ class Episode < ActiveRecord::Base
 
     self.original_guid = entry[:guid]
 
+    # if the feed entry provides a
+    if entry[:published]
+      self.published_at = Time.parse(entry[:published])
+    elsif entry[:last_modified]
+      self.published_at = Time.parse(entry[:last_modified])
+    end
+
     o = entry.slice(*ENTRY_ATTRS).with_indifferent_access
-    o[:published] = Time.parse(entry[:published]) if entry[:published]
     o[:link] = entry[:feedburner_orig_link] || entry[:url]
     o[:original_enclosure] = entry[:enclosure] || {}
     o[:original_enclosure][:url] = entry[:feedburner_orig_enclosure_link] || o[:original_enclosure][:url]
@@ -126,9 +133,9 @@ class Episode < ActiveRecord::Base
 
   def duration
     if contents.blank?
-      enclosure.try(:duration)
+      enclosure.try(:duration).to_f
     else
-      contents.inject(0.0) { |s, c| s + c.duration }
+      contents.inject(0.0) { |s, c| s + c.duration.to_f }
     end
   end
 
@@ -136,7 +143,7 @@ class Episode < ActiveRecord::Base
     if contents.blank?
       enclosure.try(:file_size)
     else
-      contents.inject(0) { |s, c| s + c.file_size }
+      contents.inject(0) { |s, c| s + c.file_size.to_i }
     end
   end
 
@@ -180,9 +187,5 @@ class Episode < ActiveRecord::Base
     else
       Array(enclosure)
     end
-  end
-
-  def published
-    created_at
   end
 end

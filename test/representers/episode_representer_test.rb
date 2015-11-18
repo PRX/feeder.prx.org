@@ -30,7 +30,7 @@ describe EpisodeRepresenter do
 
   it 'includes the published date' do
     date = DateTime.parse('16:11 October 29, 1987 EST')
-    episode.stub(:published, date) do
+    episode.stub(:published_at, date) do
       DateTime.parse(representer.as_json['published']).must_equal date
     end
   end
