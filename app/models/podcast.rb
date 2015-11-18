@@ -11,7 +11,7 @@ class Podcast < ActiveRecord::Base
   has_many :tasks, as: :owner
 
   validates_associated :itunes_image, :feed_image
-  validates :path, :prx_uri, uniqueness: true, allow_nil: true
+  validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
 
   acts_as_paranoid
 

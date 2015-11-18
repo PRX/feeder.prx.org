@@ -12,7 +12,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
 
   def receive_feed_entry_update(data)
     load_resources(data)
-    create_podcast unless podcast
+    podcast ? update_podcast : create_podcast
     episode ? update_episode : create_episode
     podcast.try(:publish!)
     episode
@@ -22,6 +22,15 @@ class FeedEntryUpdateJob < ActiveJob::Base
   def create_podcast
     return unless feed
     self.podcast = Podcast.create_from_feed!(feed)
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
+    self.podcast = Podcast.find_by(source_url: feed.feed_url)
+    raise ex unless podcast
+    update_podcast
+  end
+
+  def update_podcast
+    podcast.update_from_feed(feed)
+    podcast.publish!
   end
 
   def update_episode
@@ -34,6 +43,10 @@ class FeedEntryUpdateJob < ActiveJob::Base
   def create_episode
     self.episode = Episode.create_from_entry!(podcast, entry)
     episode.copy_audio
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
+    self.episode = podcast.episodes.find_by(original_guid: entry.guid, podcast_id: podcast.id) if podcast
+    raise ex unless episode
+    update_episode
   end
 
   def receive_feed_entry_delete(data)
@@ -47,7 +60,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
     self.entry = api_resource(body, crier_root)
     self.feed = entry.objects['prx:feed']
 
-    self.podcast = Podcast.with_deleted.find_by(source_url: feed.feed_url)
+    self.podcast = Podcast.find_by(source_url: feed.feed_url)
     self.episode = podcast.episodes.with_deleted.find_by(original_guid: entry.guid, podcast_id: podcast.id) if podcast
   end
 end

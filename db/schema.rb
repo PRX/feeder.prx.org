@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151117214252) do
+ActiveRecord::Schema.define(version: 20151118023919) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(version: 20151117214252) do
   end
 
   add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree
+  add_index "episodes", ["original_guid", "podcast_id"], name: "index_episodes_on_original_guid_and_podcast_id", unique: true, where: "((deleted_at IS NULL) AND (original_guid IS NOT NULL))", using: :btree
   add_index "episodes", ["prx_uri"], name: "index_episodes_on_prx_uri", unique: true, using: :btree
   add_index "episodes", ["published_at", "podcast_id"], name: "index_episodes_on_published_at_and_podcast_id", using: :btree
 
@@ -131,6 +132,7 @@ ActiveRecord::Schema.define(version: 20151117214252) do
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
   add_index "podcasts", ["prx_uri"], name: "index_podcasts_on_prx_uri", unique: true, using: :btree
+  add_index "podcasts", ["source_url"], name: "index_podcasts_on_source_url", unique: true, where: "((deleted_at IS NULL) AND (source_url IS NOT NULL))", using: :btree
 
   create_table "tasks", force: :cascade do |t|
     t.integer  "owner_id"

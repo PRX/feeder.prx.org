@@ -3,7 +3,7 @@ require 'hash_serializer'
 class Episode < ActiveRecord::Base
   serialize :overrides, HashSerializer
 
-  belongs_to :podcast
+  belongs_to :podcast, -> { with_deleted }
 
   has_many :contents, -> { order("position ASC") }
   has_one :enclosure
@@ -149,10 +149,6 @@ class Episode < ActiveRecord::Base
 
   def update_from_story!(story)
     touch
-  end
-
-  def set_guid
-    self.guid ||= SecureRandom.uuid
   end
 
   def copy_audio(force = false)
