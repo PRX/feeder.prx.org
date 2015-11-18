@@ -4,13 +4,13 @@ describe MediaResource do
   let(:episode) { create(:episode) }
   let(:media_resource) { create(:media_resource) }
   let(:fixer_task) do
-    { task: { result_details: { info: {
-      content_type: 'test/type',
-      size: 1111,
-      sample_rate: 44444,
-      channels: 3,
-      length: 2222,
-      bit_rate: 55
+    { 'task' => { 'result_details' => { 'info' => {
+      'content_type' => 'test/type',
+      'size' => 1111,
+      'sample_rate' => 44444,
+      'channels' => 3,
+      'length' => 2222,
+      'bit_rate' => 55
     }}}}
   end
 
