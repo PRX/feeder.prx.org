@@ -18,7 +18,7 @@ FactoryGirl.define do
     factory :enclosure, class: Enclosure do
     end
 
-    factory :content do
+    factory :content, class: Content do
     end
   end
 end
