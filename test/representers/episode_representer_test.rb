@@ -23,8 +23,9 @@ describe EpisodeRepresenter do
   end
 
   it 'includes audio files' do
-    episode.stub(:audio_files, [:sym]) do
-      representer.as_json['audio'].must_equal ['sym']
+    episode.stub(:audio_files, [create(:enclosure)]) do
+      json = representer.as_json
+      json['audio'].length.must_equal 1
     end
   end
 

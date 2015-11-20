@@ -10,4 +10,6 @@ class EpisodeRepresenter < HalApi::Representer
   def self_url(episode)
     episode_path(id: episode.guid)
   end
+
+  collection :audio_files, as: :audio, decorator: MediaResourceRepresenter, class: MediaResource
 end
