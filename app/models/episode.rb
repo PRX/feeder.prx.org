@@ -1,3 +1,5 @@
+require 'addressable/uri'
+require 'addressable/template'
 require 'hash_serializer'
 
 class Episode < ActiveRecord::Base
@@ -108,19 +110,36 @@ class Episode < ActiveRecord::Base
   def enclosure_info
     return nil unless audio_ready?
     {
-      url: audio_url,
+      url: enclosure_template_url,
       type: content_type,
       size: file_size,
       duration: duration.to_i
     }
   end
 
-  def audio_url
-    if contents.blank?
+  def base_enclosure_url
+    url = if contents.blank?
       enclosure.try(:audio_url)
     else
       "#{base_published_url}/audio.mp3"
     end
+  end
+
+  def enclosure_template_url(base_url = base_enclosure_url)
+    return base_url if enclosure_template.blank?
+    return base_url if content_type.split('/').first != 'audio'
+
+    url_info = Addressable::URI.parse(base_url).to_hash
+    path = url_info[:path].to_s
+    url_info.merge!(
+      filename: File.basename(path),
+      extension: File.extname(path),
+      slug: podcast_slug,
+      guid: guid
+    )
+
+    template = Addressable::Template.new(enclosure_template)
+    template.expand(url_info).to_str
   end
 
   def content_type
@@ -128,7 +147,7 @@ class Episode < ActiveRecord::Base
       enclosure.try(:mime_type)
     else
       contents.first.try(:mime_type)
-    end
+    end || ''
   end
 
   def duration
