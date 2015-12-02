@@ -26,7 +26,7 @@ describe Episode do
     episode.guid.wont_be_nil
   end
 
-  it 'returns a guid ot use in the channel item' do
+  it 'returns a guid to use in the channel item' do
     episode.guid = 'guid'
     episode.item_guid.must_equal "prx:jjgo:guid"
   end
@@ -97,6 +97,16 @@ describe Episode do
       episode.published_at.wont_be_nil
       episode.guid.wont_equal episode.overrides[:guid]
       episode.overrides['title'].must_equal 'Episode 12: What We Know'
+      episode.overrides['link'].must_equal 'http://serialpodcast.org'
+    end
+
+    it 'fixes libsyn links' do
+      entry.attributes["url"] = "http://traffic.libsyn.com/test/test.mp3"
+      entry.attributes["feedburner_orig_link"] = nil
+
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry)
+      episode.overrides['link'].must_equal episode.audio_url
     end
 
     it 'creates enclosure from entry' do
