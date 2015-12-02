@@ -1,5 +1,4 @@
 require 'addressable/uri'
-require 'addressable/template'
 require 'prx_access'
 
 class EpisodeBuilder
@@ -18,7 +17,7 @@ class EpisodeBuilder
   def from_prx_story
     info = HashWithIndifferentAccess.new(
       guid: @ep.item_guid,
-      audio: audio_file,
+      audio: @ep.enclosure_info,
       image_url: nil,
       created: @ep.created_at,
       modified: @ep.updated_at,
@@ -49,26 +48,6 @@ class EpisodeBuilder
     end
 
     info
-  end
-
-  def audio_file(episode = @ep)
-    episode.enclosure_info.tap do |info|
-      info[:url] = rewrite_audio_url(info[:url]) if info
-    end
-  end
-
-  def rewrite_audio_url(url)
-    et = @ep.enclosure_template
-    return url if et.blank?
-
-    url_info = Addressable::URI.parse(url).to_hash
-    url_info.merge!(
-      extension: url_info[:path].split('.').pop,
-      slug: @ep.podcast_slug,
-      guid: @ep.guid
-    )
-    template = Addressable::Template.new(et)
-    template.expand(url_info).to_str
   end
 
   def get_story(account = nil)

@@ -44,6 +44,37 @@ describe Episode do
     episode.must_be :audio_ready?
   end
 
+  describe 'enclosure template' do
+    before {
+      episode.guid = 'guid'
+      episode.podcast.path = 'foo'
+    }
+
+    it 'appends podtrac redirect to audio file link' do
+      episode.podcast.enclosure_template = 'http://foo.com/r{extension}/b/n/{host}{+path}'
+
+      url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'
+      new_url = episode.enclosure_template_url(url)
+      new_url.must_equal('http://foo.com/r.mp3/b/n/test-f.prxu.org/podcast/episode/filename.mp3')
+    end
+
+    it 'can include the slug from the podcast' do
+      episode.podcast.enclosure_template = "{slug}"
+      episode.enclosure_template_url("http://example.com/foo.mp3").must_equal("foo")
+    end
+
+    it 'can include the guid' do
+      episode.podcast.enclosure_template = "{guid}"
+      episode.enclosure_template_url("http://example.com/foo.mp3").must_equal("guid")
+    end
+
+    it 'can include all properties' do
+      episode.podcast.enclosure_template = "http://fake.host/{slug}/{guid}{extension}{?host}"
+      url = episode.enclosure_template_url("http://example.com/path/filename.extension")
+      url.must_equal("http://fake.host/foo/guid.extension?host=example.com")
+    end
+  end
+
   describe 'rss entry' do
     let (:entry) {
       data = json_file(:crier_entry)
