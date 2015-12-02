@@ -23,7 +23,8 @@ begin
       Shoryuken::Client.account_id = Shoryuken.options[:aws][:account_id] || ENV['AWS_ACCOUNT_ID']
     end
   end
-rescue
+rescue StandardError => err
   Rails.logger.error("*** Shoryuken client failed to initialize. ***")
-  Rails.logger.error($!)
+  Rails.logger.error(err)
+  raise err if Rails.env.production?
 end
