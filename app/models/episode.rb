@@ -3,17 +3,21 @@ require 'addressable/template'
 require 'hash_serializer'
 
 class Episode < ActiveRecord::Base
+  ENTRY_ATTRIBUTES = %w(title subtitle description summary content is_perma_link
+    image_url explicit keywords categories is_closed_captioned duration contents
+    guid enclosure feedburner_orig_enclosure_link feedburner_orig_link published
+    url last_modified ).freeze
+
+  acts_as_paranoid
+
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }
-
   has_many :contents, -> { order("position ASC") }
   has_one :enclosure
 
   validates :podcast_id, :guid, presence: true
   validates_associated :podcast
-
-  acts_as_paranoid
 
   before_validation :initialize_guid
 
@@ -43,7 +47,8 @@ class Episode < ActiveRecord::Base
     series_uri = story.links['series'].href
     story_uri = story.links['self'].href
     podcast = Podcast.find_by!(prx_uri: series_uri)
-    published = Time.parse(story.attributes[:publishedAt]) if story.attributes[:publishedAt]
+    published = story.attributes[:publishedAt]
+    published = Time.parse(published) if published
     create!(podcast: podcast, prx_uri: story_uri, published_at: published)
   end
 
@@ -54,37 +59,55 @@ class Episode < ActiveRecord::Base
     episode
   end
 
-  ENTRY_ATTRS = %w( title subtitle description summary content image_url
-    explicit keywords categories is_closed_captioned is_perma_link duration ).freeze
-
   def update_from_entry(entry_resource)
     entry = entry_resource.attributes
 
-    self.original_guid = entry[:guid]
-
-    # if the feed entry provides a
-    if entry[:published]
-      self.published_at = Time.parse(entry[:published])
-    elsif entry[:last_modified]
-      self.published_at = Time.parse(entry[:last_modified])
-    end
-
-    o = entry.slice(*ENTRY_ATTRS).with_indifferent_access
-    o[:link] = entry[:feedburner_orig_link] || entry[:url]
-    o[:original_enclosure] = entry[:enclosure] || {}
-    o[:original_enclosure][:url] = entry[:feedburner_orig_enclosure_link] || o[:original_enclosure][:url]
-    o[:original_contents] = entry[:contents]
+    o = entry.slice(*ENTRY_ATTRIBUTES).with_indifferent_access
     self.overrides = overrides.merge(o)
 
+    self.original_guid = overrides[:guid]
+    update_published_at
     update_enclosure
-
     update_contents
 
+    # must come after update_enclosure and update_contents
+    # as it depends on audio url
+    update_link
     self
   end
 
+  def update_published_at
+    published = overrides[:published] || overrides[:last_modified]
+    self.published_at = Time.parse(published) if published
+  end
+
+  # must be called after update_enclosure and update_contents
+  # as it depends on audio url
+  def update_link
+    overrides[:link] = overrides[:feedburner_orig_link] || overrides[:url]
+
+    # libsyn sets the link to a libsyn url - audio file or page
+    if overrides[:link].match(/libsyn\.com/)
+      overrides[:link] = audio_url
+    end
+  end
+
+  def update_enclosure
+    enclosure_hash = overrides.fetch(:enclosure, {}).dup
+    if overrides[:feedburner_orig_enclosure_link]
+      enclosure_hash[:url] = overrides[:feedburner_orig_enclosure_link]
+    end
+    if !overrides[:enclosure] || (enclosure && (enclosure.original_url != enclosure_hash[:url]))
+      enclosure.try(:destroy)
+      self.enclosure = nil
+    end
+    if enclosure_hash[:url]
+      self.enclosure ||= Enclosure.build_from_enclosure(enclosure_hash)
+    end
+  end
+
   def update_contents
-    Array(overrides[:original_contents]).each_with_index do |c, i|
+    Array(overrides[:contents]).each_with_index do |c, i|
       existing_content = contents[i]
       if existing_content && existing_content.original_url != c[:url]
         existing_content.destroy
@@ -98,23 +121,18 @@ class Episode < ActiveRecord::Base
     end
   end
 
-  def update_enclosure
-    enclosure_url = overrides[:original_enclosure][:url]
-    if !enclosure_url || (enclosure && (enclosure.original_url != enclosure_url))
-      enclosure.try(:destroy)
-      self.enclosure = nil
-    end
-    self.enclosure ||= Enclosure.build_from_enclosure(overrides[:original_enclosure])
-  end
-
   def enclosure_info
     return nil unless audio_ready?
     {
-      url: enclosure_template_url,
+      url: audio_url,
       type: content_type,
       size: file_size,
       duration: duration.to_i
     }
+  end
+
+  def audio_url
+    enclosure_template_url(base_enclosure_url)
   end
 
   def base_enclosure_url
@@ -125,7 +143,7 @@ class Episode < ActiveRecord::Base
     end
   end
 
-  def enclosure_template_url(base_url = base_enclosure_url)
+  def enclosure_template_url(base_url)
     return base_url if enclosure_template.blank?
     return base_url if content_type.split('/').first != 'audio'
 
