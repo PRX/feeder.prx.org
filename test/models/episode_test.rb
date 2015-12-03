@@ -73,6 +73,22 @@ describe Episode do
       url = episode.enclosure_template_url("http://example.com/path/filename.extension")
       url.must_equal("http://fake.host/foo/guid.extension?host=example.com")
     end
+
+    it 'gets expansions for original and base urls' do
+      base_url = "http://example.com/path/filename.extension"
+      original_url = "http://original.com/folder/original.mp3"
+      expansions = episode.enclosure_template_expansions(base_url, original_url)
+      expansions[:filename].must_equal "filename.extension"
+      expansions[:host].must_equal "example.com"
+      expansions[:original_filename].must_equal "original.mp3"
+      expansions[:original_host].must_equal "original.com"
+    end
+
+    it 'can use original properties' do
+      episode.podcast.enclosure_template = "http://fake.host/{original_host}/{original_filename}"
+      url = episode.enclosure_template_url("http://blah", "http://original.host/path/filename.mp3")
+      url.must_equal("http://fake.host/original.host/filename.mp3")
+    end
   end
 
   describe 'rss entry' do
@@ -82,8 +98,13 @@ describe Episode do
       api_resource(body, crier_root)
     }
 
+    let (:entry_no_enclosure) {
+      data = json_file(:crier_no_enclosure)
+      body = data.is_a?(String) ? JSON.parse(data) : data
+      api_resource(body, crier_root)
+    }
+
     it 'can update from entry' do
-      episode = Episode.new
       episode.update_from_entry(entry)
       episode.overrides['title'].must_equal 'Episode 12: What We Know'
     end
@@ -148,6 +169,18 @@ describe Episode do
       episode.update_from_entry(entry)
       episode.contents(true).first.id.wont_equal first_content.id
       episode.contents.last.must_equal last_content
+    end
+
+    it 'creates contents with no enclosure' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
+      episode.contents.size.must_equal 2
+    end
+
+    it 'uses first content url when there is no enclosure' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
+      episode.audio_url.must_match /#{episode.contents.first.guid}.mp3$/
     end
   end
 

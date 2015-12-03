@@ -102,7 +102,7 @@ class Episode < ActiveRecord::Base
       self.enclosure = nil
     end
     if enclosure_hash[:url]
-      self.enclosure ||= Enclosure.build_from_enclosure(enclosure_hash)
+      self.enclosure ||= Enclosure.build_from_enclosure(self, enclosure_hash)
     end
   end
 
@@ -114,7 +114,7 @@ class Episode < ActiveRecord::Base
         existing_content = nil
       end
       if !existing_content
-        new_content = Content.build_from_content(c)
+        new_content = Content.build_from_content(self, c)
         contents << new_content
         new_content.set_list_position(i + 1)
       end
@@ -132,40 +132,43 @@ class Episode < ActiveRecord::Base
   end
 
   def audio_url
-    enclosure_template_url(base_enclosure_url)
+    audio = first_audio_resource
+    enclosure_template_url(audio.audio_url, audio.original_url)
   end
 
-  def base_enclosure_url
-    url = if contents.blank?
-      enclosure.try(:audio_url)
+  def first_audio_resource
+    if contents.blank?
+      enclosure
     else
-      "#{base_published_url}/audio.mp3"
+      contents.first
     end
   end
 
-  def enclosure_template_url(base_url)
+  def enclosure_template_url(base_url, original_url = nil)
     return base_url if enclosure_template.blank?
     return base_url if content_type.split('/').first != 'audio'
 
-    url_info = Addressable::URI.parse(base_url).to_hash
-    path = url_info[:path].to_s
-    url_info.merge!(
-      filename: File.basename(path),
-      extension: File.extname(path),
+    expansions = enclosure_template_expansions(base_url, original_url)
+    template = Addressable::Template.new(enclosure_template)
+    template.expand(expansions).to_str
+  end
+
+  def enclosure_template_expansions(base_url, original_url)
+    original = Addressable::URI.parse(original_url || '').to_hash
+    original = Hash[original.map { |k,v| ["original_#{k}".to_sym, v] }]
+    base = Addressable::URI.parse(base_url || '').to_hash
+    {
+      original_filename: File.basename(original[:original_path].to_s),
+      original_extension: File.extname(original[:original_path].to_s),
+      filename: File.basename(base[:path].to_s),
+      extension: File.extname(base[:path].to_s),
       slug: podcast_slug,
       guid: guid
-    )
-
-    template = Addressable::Template.new(enclosure_template)
-    template.expand(url_info).to_str
+    }.merge(original).merge(base)
   end
 
   def content_type
-    if contents.blank?
-      enclosure.try(:mime_type)
-    else
-      contents.first.try(:mime_type)
-    end || ''
+    first_audio_resource.try(:mime_type) || ''
   end
 
   def duration
