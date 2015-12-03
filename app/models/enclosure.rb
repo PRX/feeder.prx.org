@@ -1,6 +1,6 @@
 class Enclosure < MediaResource
-  def self.build_from_enclosure(enclosure)
-    new.update_attributes_with_enclosure(enclosure)
+  def self.build_from_enclosure(episode, enclosure)
+    new.update_attributes_with_enclosure(enclosure).tap { |e| e.episode = episode }
   end
 
   def update_with_enclosure(enclosure)

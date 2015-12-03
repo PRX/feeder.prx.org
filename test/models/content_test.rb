@@ -20,8 +20,7 @@ describe Content do
   }
 
   it 'can be constructed from feed content' do
-    c = Content.build_from_content(crier_content)
-    c.episode = episode
+    c = Content.build_from_content(episode, crier_content)
     c.is_default.wont_equal true
     c.bit_rate.must_equal 64
     c.channels.must_equal 1
