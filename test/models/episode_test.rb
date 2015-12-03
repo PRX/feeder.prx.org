@@ -82,8 +82,13 @@ describe Episode do
       api_resource(body, crier_root)
     }
 
+    let (:entry_no_enclosure) {
+      data = json_file(:crier_no_enclosure)
+      body = data.is_a?(String) ? JSON.parse(data) : data
+      api_resource(body, crier_root)
+    }
+
     it 'can update from entry' do
-      episode = Episode.new
       episode.update_from_entry(entry)
       episode.overrides['title'].must_equal 'Episode 12: What We Know'
     end
@@ -148,6 +153,18 @@ describe Episode do
       episode.update_from_entry(entry)
       episode.contents(true).first.id.wont_equal first_content.id
       episode.contents.last.must_equal last_content
+    end
+
+    it 'creates contents with no enclosure' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
+      episode.contents.size.must_equal 2
+    end
+
+    it 'uses first content url when there is no enclosure' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
+      episode.base_enclosure_url.must_match /#{episode.contents.first.guid}.mp3$/
     end
   end
 

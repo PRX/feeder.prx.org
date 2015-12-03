@@ -102,7 +102,7 @@ class Episode < ActiveRecord::Base
       self.enclosure = nil
     end
     if enclosure_hash[:url]
-      self.enclosure ||= Enclosure.build_from_enclosure(enclosure_hash)
+      self.enclosure ||= Enclosure.build_from_enclosure(self, enclosure_hash)
     end
   end
 
@@ -114,7 +114,7 @@ class Episode < ActiveRecord::Base
         existing_content = nil
       end
       if !existing_content
-        new_content = Content.build_from_content(c)
+        new_content = Content.build_from_content(self, c)
         contents << new_content
         new_content.set_list_position(i + 1)
       end
@@ -139,7 +139,7 @@ class Episode < ActiveRecord::Base
     url = if contents.blank?
       enclosure.try(:audio_url)
     else
-      "#{base_published_url}/audio.mp3"
+      contents.first.audio_url
     end
   end
 
