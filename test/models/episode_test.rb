@@ -73,6 +73,22 @@ describe Episode do
       url = episode.enclosure_template_url("http://example.com/path/filename.extension")
       url.must_equal("http://fake.host/foo/guid.extension?host=example.com")
     end
+
+    it 'gets expansions for original and base urls' do
+      base_url = "http://example.com/path/filename.extension"
+      original_url = "http://original.com/folder/original.mp3"
+      expansions = episode.enclosure_template_expansions(base_url, original_url)
+      expansions[:filename].must_equal "filename.extension"
+      expansions[:host].must_equal "example.com"
+      expansions[:original_filename].must_equal "original.mp3"
+      expansions[:original_host].must_equal "original.com"
+    end
+
+    it 'can use original properties' do
+      episode.podcast.enclosure_template = "http://fake.host/{original_host}/{original_filename}"
+      url = episode.enclosure_template_url("http://blah", "http://original.host/path/filename.mp3")
+      url.must_equal("http://fake.host/original.host/filename.mp3")
+    end
   end
 
   describe 'rss entry' do
@@ -164,7 +180,7 @@ describe Episode do
     it 'uses first content url when there is no enclosure' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
-      episode.base_enclosure_url.must_match /#{episode.contents.first.guid}.mp3$/
+      episode.audio_url.must_match /#{episode.contents.first.guid}.mp3$/
     end
   end
 
