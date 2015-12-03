@@ -2,7 +2,10 @@ class Content < MediaResource
   acts_as_list scope: :episode
 
   def self.build_from_content(episode, content)
-    new.update_attributes_with_content(content).tap { |c| c.episode = episode }
+    new.tap do |c|
+      c.episode = episode
+      c.update_attributes_with_content(content)
+    end
   end
 
   def update_with_content(content)
