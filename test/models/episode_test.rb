@@ -183,11 +183,20 @@ describe Episode do
       episode.audio_url.must_match /#{episode.contents.first.guid}.mp3$/
     end
 
-    it 'returns nil for audio_url whe there is no audio' do
+    it 'returns nil for audio_url when there is no audio' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
       episode.contents.clear
       episode.audio_url.must_equal nil
+    end
+
+    it 'return include in feed and has_audio false when no audio' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
+      episode.contents.clear
+      episode.wont_be :has_audio?
+      episode.wont_be :audio_ready?
+      episode.must_be :include_in_feed?
     end
   end
 
