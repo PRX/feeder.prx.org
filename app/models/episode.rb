@@ -201,7 +201,11 @@ class Episode < ActiveRecord::Base
   end
 
   def include_in_feed?
-    audio_ready?
+    !has_audio? || audio_ready?
+  end
+
+  def has_audio?
+    enclosure || contents.size > 0
   end
 
   def audio_ready?
