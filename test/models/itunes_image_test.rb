@@ -19,6 +19,11 @@ describe ITunesImage do
       @image.must_be(:valid?)
     end
 
+    it 'is valid with no size or type' do
+      @image = ITunesImage.new(url: 'test/fixtures/valid_series_image.png')
+      @image.must_be(:valid?)
+    end
+
     it 'is invalid without a url' do
       @image.url = nil
 
