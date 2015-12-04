@@ -192,8 +192,8 @@ class Episode < ActiveRecord::Base
   end
 
   def copy_audio(force = false)
-    enclosure.copy_audio if enclosure
-    contents.each{ |c| c.copy_audio }
+    enclosure.copy_audio(force) if enclosure
+    contents.each{ |c| c.copy_audio(force) }
   end
 
   def base_published_url

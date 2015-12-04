@@ -21,10 +21,12 @@ class MediaResource < ActiveRecord::Base
     self[:url]
   end
 
-  def copy_audio
-    Tasks::CopyAudioTask.create! do |task|
-      task.owner = self
-    end.start!
+  def copy_audio(force = false)
+    if !task || force
+      Tasks::CopyAudioTask.create! do |task|
+        task.owner = self
+      end.start!
+    end
   end
 
   def is_processed?
