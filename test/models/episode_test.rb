@@ -182,6 +182,13 @@ describe Episode do
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
       episode.audio_url.must_match /#{episode.contents.first.guid}.mp3$/
     end
+
+    it 'returns nil for audio_url whe there is no audio' do
+      podcast = create(:podcast)
+      episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
+      episode.contents.clear
+      episode.audio_url.must_equal nil
+    end
   end
 
   it 'proxies podcast_slug to #podcast' do
