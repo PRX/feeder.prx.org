@@ -133,7 +133,7 @@ class Episode < ActiveRecord::Base
 
   def audio_url
     audio = first_audio_resource
-    enclosure_template_url(audio.audio_url, audio.original_url)
+    enclosure_template_url(audio.audio_url, audio.original_url) if audio
   end
 
   def first_audio_resource
