@@ -18,7 +18,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.description @podcast.description
     xml.managingEditor @podcast.managing_editor if @podcast.managing_editor
 
-    @podcast.categories.each do |category|
+    Array(@podcast.categories).each do |category|
       xml.category category
     end
 
