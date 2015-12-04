@@ -8,7 +8,7 @@ module ImageFile
 
     validates :url, presence: true
 
-    validates :format, inclusion: { in: ['jpeg', 'png', 'gif'] }
+    validates :format, inclusion: { in: ['jpeg', 'png', 'gif', nil] }
   end
 
   def url=(url)
