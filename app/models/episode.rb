@@ -21,6 +21,8 @@ class Episode < ActiveRecord::Base
 
   before_validation :initialize_guid
 
+  scope :released, -> { where('released_at IS NULL OR released_at <= now()') }
+
   def initialize_guid
     guid
   end
