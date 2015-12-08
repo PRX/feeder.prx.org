@@ -6,7 +6,7 @@ class Podcast < ActiveRecord::Base
   has_one :itunes_image, autosave: true
   has_one :feed_image, autosave: true
 
-  has_many :episodes
+  has_many :episodes, -> { order("published_at desc") }
   has_many :itunes_categories, autosave: true
   has_many :tasks, as: :owner
 
@@ -127,7 +127,7 @@ class Podcast < ActiveRecord::Base
   def feed_episodes
     feed = []
     feed_max = max_episodes.to_i
-    episodes.order('published_at desc').each do |ep|
+    episodes.released.each do |ep|
       feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (feed.size >= feed_max)
     end
