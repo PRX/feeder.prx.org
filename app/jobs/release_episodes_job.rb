@@ -2,14 +2,16 @@ class ReleaseEpisodesJob < ActiveJob::Base
 
   queue_as :feeder_default
 
-  def perform
+  def perform(reschedule = false)
     ActiveRecord::Base.connection_pool.with_connection do
       begin
         podcasts_to_release.tap do |podcasts|
           podcasts.each { |p| p.publish! }
         end
       ensure
-        ReleaseEpisodesJob.set(wait: release_check_delay).perform_later
+        if reschedule
+          ReleaseEpisodesJob.set(wait: release_check_delay).perform_later(true)
+        end
       end
     end
   end
