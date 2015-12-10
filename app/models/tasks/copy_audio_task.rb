@@ -19,6 +19,7 @@ class Tasks::CopyAudioTask < ::Task
   #   :sample_rate=>44100
   # }
   def task_status_changed(fixer_task, new_status)
+    return if !media_resource
     media_resource.update_attribute(:status, new_status)
 
     if fixer_task && new_status == 'complete'
