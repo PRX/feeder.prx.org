@@ -2,7 +2,7 @@ require 'test_helper'
 
 describe Content do
   let(:episode) { create(:episode) }
-  let(:content) { Content.new(original_url: 'u', file_size: 10, mime_type: 'mt', episode: episode) }
+  let(:content) { Content.create(original_url: 'u', file_size: 10, mime_type: 'mt', episode: episode) }
   let(:crier_content) {
     {
       "position" => 1,
@@ -35,7 +35,7 @@ describe Content do
   end
 
   it 'can be updated' do
-    content.update_with_content(crier_content)
+    content.update_with_content!(crier_content)
     content.original_url.must_equal "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3"
     content.file_size.must_equal 26017749
     content.mime_type.must_equal 'audio/mpeg'

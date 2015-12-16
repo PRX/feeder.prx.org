@@ -6,9 +6,9 @@ class Enclosure < MediaResource
     end
   end
 
-  def update_with_enclosure(enclosure)
+  def update_with_enclosure!(enclosure)
     update_attributes_with_enclosure(enclosure)
-    save
+    save!
   end
 
   def update_attributes_with_enclosure(enclosure)

@@ -144,7 +144,7 @@ describe Episode do
       episode.update_from_entry(entry)
       episode.enclosure.must_equal first_enclosure
 
-      first_enclosure.original_url = "https://test.com"
+      episode.enclosure.update_attributes(original_url: "https://test.com")
       episode.update_from_entry(entry)
       episode.enclosure.wont_equal first_enclosure
     end
@@ -165,7 +165,9 @@ describe Episode do
       episode.contents.first.must_equal first_content
       episode.contents.last.must_equal last_content
 
-      episode.contents.first.original_url = "https://test.com"
+
+      first_content = episode.contents.first
+      episode.contents.first.update_attributes(original_url: "https://test.com")
       episode.update_from_entry(entry)
       episode.contents(true).first.id.wont_equal first_content.id
       episode.contents.last.must_equal last_content

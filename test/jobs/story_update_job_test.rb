@@ -25,8 +25,11 @@ describe StoryUpdateJob do
     podcast.wont_be_nil
     mock_episode = Minitest::Mock.new
     mock_episode.expect(:copy_audio, true)
+    mock_episode.expect(:podcast, podcast)
     Episode.stub(:create_from_story!, mock_episode) do
-      job.receive_story_update(JSON.parse(body))
+      podcast.stub(:create_publish_task, true) do
+        job.receive_story_update(JSON.parse(body))
+      end
     end
   end
 

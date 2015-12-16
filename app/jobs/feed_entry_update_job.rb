@@ -30,14 +30,13 @@ class FeedEntryUpdateJob < ActiveJob::Base
 
   def update_podcast
     podcast.update_from_feed(feed)
-    podcast.publish!
+    podcast.save!
   end
 
   def update_episode
     episode.restore if episode.deleted?
     episode.update_from_entry(entry)
     episode.copy_audio
-    podcast.try(:publish!)
   end
 
   def create_episode

@@ -1,5 +1,4 @@
 class Content < MediaResource
-  acts_as_list scope: :episode
 
   def self.build_from_content(episode, content)
     new.tap do |c|
@@ -8,9 +7,10 @@ class Content < MediaResource
     end
   end
 
-  def update_with_content(content)
+  def update_with_content!(content)
     update_attributes_with_content(content)
-    save
+    save!
+    self
   end
 
   def update_attributes_with_content(content)
