@@ -13,6 +13,8 @@ class StoryUpdateJob < ActiveJob::Base
   def receive_story_update(data)
     load_resources(data)
     episode ? update_episode : create_episode
+    episode.copy_audio
+    episode.podcast.publish!
   end
 
   alias receive_story_create receive_story_update
@@ -36,13 +38,10 @@ class StoryUpdateJob < ActiveJob::Base
   def update_episode
     episode.restore if episode.deleted?
     episode.update_from_story!(story)
-    episode.copy_audio
-    podcast.publish!
   end
 
   def create_episode
     return unless story && story.try(:series)
     self.episode = Episode.create_from_story!(story)
-    episode.copy_audio
   end
 end
