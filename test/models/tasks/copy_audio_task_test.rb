@@ -84,4 +84,9 @@ describe Tasks::CopyAudioTask do
     task.options = {}
     assert task.new_audio_file?(story)
   end
+
+  it 'does not throw errors when owner is missing on callback' do
+    task.owner = nil
+    task.task_status_changed({}, 'complete')
+  end
 end
