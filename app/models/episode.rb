@@ -62,19 +62,21 @@ class Episode < ActiveRecord::Base
   end
 
   def update_from_entry(entry_resource)
-    entry = entry_resource.attributes
+    with_lock do
+      entry = entry_resource.attributes
 
-    o = entry.slice(*ENTRY_ATTRIBUTES).with_indifferent_access
-    self.overrides = overrides.merge(o)
+      o = entry.slice(*ENTRY_ATTRIBUTES).with_indifferent_access
+      self.overrides = overrides.merge(o)
 
-    self.original_guid = overrides[:guid]
-    update_published_at
-    update_enclosure
-    update_contents
+      self.original_guid = overrides[:guid]
+      update_published_at
+      update_enclosure
+      update_contents
 
-    # must come after update_enclosure and update_contents
-    # as it depends on audio url
-    update_link
+      # must come after update_enclosure and update_contents
+      # as it depends on audio url
+      update_link
+    end
     self
   end
 
@@ -109,17 +111,35 @@ class Episode < ActiveRecord::Base
   end
 
   def update_contents
-    Array(overrides[:contents]).each_with_index do |c, i|
-      existing_content = contents[i]
-      if existing_content && existing_content.original_url != c[:url]
-        existing_content.destroy
-        existing_content = nil
+    if overrides[:contents].blank?
+      contents.destroy_all
+    else
+      to_insert = []
+      to_destroy = []
+
+      if contents.size > overrides[:contents].size
+        to_destroy = contents[overrides[:contents].size..(contents.size - 1)]
       end
-      if !existing_content
-        new_content = Content.build_from_content(self, c)
-        contents << new_content
-        new_content.set_list_position(i + 1)
+
+      Array(overrides[:contents]).each_with_index do |c, i|
+        existing_content = self.contents[i]
+        # puts "\n #{i}: existing_content: #{existing_content.inspect}"
+        if existing_content
+          if existing_content.original_url == c[:url]
+            existing_content.update_with_content!(c)
+          else
+            to_destroy << existing_content
+            existing_content = nil
+          end
+        end
+        if !existing_content
+          new_content = Content.build_from_content(self, c)
+          new_content.position = i + 1
+          to_insert << new_content
+        end
       end
+      contents.destroy(to_destroy)
+      to_insert.each{|c| contents << c}
     end
   end
 
