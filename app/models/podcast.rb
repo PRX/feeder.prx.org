@@ -115,7 +115,7 @@ class Podcast < ActiveRecord::Base
       end
     end
 
-    # # create missing itunes_categories
+    # create missing itunes_categories
     itunes_cats.keys.each do |cat|
       subs = itunes_cats[cat].sort.uniq
       self.itunes_categories.build(name: cat, subcategories: subs)
