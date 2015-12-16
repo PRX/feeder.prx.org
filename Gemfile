@@ -57,8 +57,6 @@ gem 'addressable'
 
 gem 'hal_api-rails', github: 'prx/hal_api-rails', ref: 'master'
 
-gem 'acts_as_list'
-
 group :development do
   # Use Capistrano for deployment
   # gem 'capistrano-rails', '~> 1.1.0'
