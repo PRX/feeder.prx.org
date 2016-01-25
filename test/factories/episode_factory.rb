@@ -13,7 +13,8 @@ FactoryGirl.define do
     end
 
     after(:create) do |episode, evaluator|
-      episode.enclosure = create(:enclosure, episode: episode, status: 'complete')
+      enclosure = create(:enclosure, episode: episode, status: 'complete')
+      episode.enclosures << enclosure
     end
   end
 end
