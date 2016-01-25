@@ -13,8 +13,8 @@ class Episode < ActiveRecord::Base
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }
-  has_many :contents, -> { order("position ASC") }
-  has_one :enclosure
+  has_many :contents, -> { order("position ASC, created_at DESC") }
+  has_many :enclosures, -> { order("created_at DESC") }
 
   validates :podcast_id, :guid, presence: true
   validates_associated :podcast
@@ -22,6 +22,10 @@ class Episode < ActiveRecord::Base
   before_validation :initialize_guid
 
   scope :released, -> { where('released_at IS NULL OR released_at <= now()') }
+
+  def enclosure
+    enclosures.complete.first
+  end
 
   def initialize_guid
     guid
@@ -101,12 +105,18 @@ class Episode < ActiveRecord::Base
     if overrides[:feedburner_orig_enclosure_link]
       enclosure_hash[:url] = overrides[:feedburner_orig_enclosure_link]
     end
-    if !overrides[:enclosure] || (enclosure && (enclosure.original_url != enclosure_hash[:url]))
+
+    # If the enclosure has been removed, just delete it (rare but simple case)
+    if !overrides[:enclosure]
       enclosure.try(:destroy)
-      self.enclosure = nil
-    end
-    if enclosure_hash[:url]
-      self.enclosure ||= Enclosure.build_from_enclosure(self, enclosure_hash)
+
+    # If there no enclosure, but a url specified, create one!
+    elsif !enclosure && enclosure_hash[:url]
+      self.enclosures << Enclosure.build_from_enclosure(self, enclosure_hash)
+
+    # If there is an enclosure but the url has changed, create one!
+    elsif enclosure && (enclosure.original_url != enclosure_hash[:url])
+      self.enclosures << Enclosure.build_from_enclosure(self, enclosure_hash)
     end
   end
 
@@ -227,7 +237,7 @@ class Episode < ActiveRecord::Base
   end
 
   def has_audio?
-    enclosure || contents.size > 0
+    enclosures.size > 0 || contents.size > 0
   end
 
   def audio_ready?
