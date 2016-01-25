@@ -55,7 +55,7 @@ gem 'fastimage'
 # for url templates
 gem 'addressable'
 
-gem 'hal_api-rails', github: 'prx/hal_api-rails', ref: 'master'
+gem 'hal_api-rails'
 
 group :development do
   # Use Capistrano for deployment
