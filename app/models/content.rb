@@ -27,4 +27,16 @@ class Content < MediaResource
     self.is_default   = content['is_default'] && content['is_default'].downcase == 'true'
     self
   end
+
+  def update_from_fixer(fixer_task)
+    super(fixer_task)
+    replace_resources!
+  end
+
+  def replace_resources!
+    episode.with_lock do
+      # delete enclosures in the same episode created before this
+      episode.all_contents.where("position = ? AND created_at < ? AND id != ?", position, created_at, id).destroy_all
+    end
+  end
 end

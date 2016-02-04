@@ -165,35 +165,44 @@ describe Episode do
     it 'creates contents from entry' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry)
-      episode.contents.size.must_equal 2
+      episode.all_contents.size.must_equal 2
     end
 
     it 'updates contents from entry' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry)
-      first_content = episode.contents.first
-      last_content = episode.contents.last
+
+      # complete just one of them
+      episode.all_contents.first.complete!
+      episode.reload
+      first_content = episode.all_contents.first
+      last_content = episode.all_contents.last
+      # puts "\nfirst_content #{first_content.inspect}"
+      # puts "\nlast_content #{last_content.inspect}"
 
       episode.update_from_entry(entry)
-      episode.contents.first.must_equal first_content
-      episode.contents.last.must_equal last_content
+      episode.reload
+      episode.all_contents.first.must_equal first_content
+      episode.all_contents.last.must_equal last_content
 
       first_content = episode.contents.first
       episode.contents.first.update_attributes(original_url: "https://test.com")
       episode.update_from_entry(entry)
-      episode.contents(true).first.id.wont_equal first_content.id
-      episode.contents.last.must_equal last_content
+      episode.all_contents.size.must_equal 3
+      episode.all_contents.group_by(&:position)[first_content.position].size.must_equal 2
     end
 
     it 'creates contents with no enclosure' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
-      episode.contents.size.must_equal 2
+      episode.all_contents.size.must_equal 2
     end
 
     it 'uses first content url when there is no enclosure' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
+      episode.all_contents.first.complete!
+      episode.reload
       episode.audio_url.must_match /#{episode.contents.first.guid}.mp3$/
     end
 
