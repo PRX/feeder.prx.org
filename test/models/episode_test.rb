@@ -36,10 +36,10 @@ describe Episode do
   end
 
   it 'knows if audio is ready' do
-    episode.enclosure = create(:enclosure, episode: episode, status: 'created')
-    episode.enclosure.wont_be :complete?
+    episode.enclosures = [create(:enclosure, episode: episode, status: 'created')]
+    episode.enclosures.first.wont_be :complete?
     episode.wont_be :audio_ready?
-    episode.enclosure.complete!
+    episode.enclosures.first.complete!
     episode.enclosure.must_be :complete?
     episode.must_be :audio_ready?
   end
@@ -133,55 +133,76 @@ describe Episode do
     it 'creates enclosure from entry' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry)
-      episode.enclosure.wont_be_nil
+      episode.enclosures.size.must_equal 1
     end
 
     it 'updates enclosure from entry' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry)
+      episode.enclosures.first.complete!
       first_enclosure = episode.enclosure
 
       episode.update_from_entry(entry)
       episode.enclosure.must_equal first_enclosure
+      episode.enclosures.size.must_equal 1
 
-      episode.enclosure.update_attributes(original_url: "https://test.com")
+      episode.enclosure.update_attribute(:original_url, "https://test.com")
+      first_enclosure = episode.enclosure
       episode.update_from_entry(entry)
-      episode.enclosure.wont_equal first_enclosure
+      episode.enclosures.size.must_equal 2
+      replacement_enclosure = episode.enclosures.first
+
+      episode.enclosure.must_equal first_enclosure
+      first_enclosure.original_url.must_equal "https://test.com"
+      replacement_enclosure.original_url.must_equal "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
+
+      replacement_enclosure.complete!
+      replacement_enclosure.replace_resources!
+      episode.enclosures(true).size.must_equal 1
+      episode.enclosure.must_equal replacement_enclosure
     end
 
     it 'creates contents from entry' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry)
-      episode.contents.size.must_equal 2
+      episode.all_contents.size.must_equal 2
     end
 
     it 'updates contents from entry' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry)
-      first_content = episode.contents.first
-      last_content = episode.contents.last
+
+      # complete just one of them
+      episode.all_contents.first.complete!
+      episode.reload
+      first_content = episode.all_contents.first
+      last_content = episode.all_contents.last
+      # puts "\nfirst_content #{first_content.inspect}"
+      # puts "\nlast_content #{last_content.inspect}"
 
       episode.update_from_entry(entry)
-      episode.contents.first.must_equal first_content
-      episode.contents.last.must_equal last_content
-
+      episode.reload
+      episode.all_contents.first.must_equal first_content
+      episode.all_contents.last.must_equal last_content
 
       first_content = episode.contents.first
       episode.contents.first.update_attributes(original_url: "https://test.com")
       episode.update_from_entry(entry)
-      episode.contents(true).first.id.wont_equal first_content.id
-      episode.contents.last.must_equal last_content
+      episode.all_contents.size.must_equal 3
+      episode.all_contents.group_by(&:position)[first_content.position].size.must_equal 2
     end
 
     it 'creates contents with no enclosure' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
-      episode.contents.size.must_equal 2
+      episode.all_contents.size.must_equal 2
     end
 
     it 'uses first content url when there is no enclosure' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
+      episode.all_contents.first.complete!
+      episode.reload
       episode.audio_url.must_match /#{episode.contents.first.guid}.mp3$/
     end
 
@@ -227,7 +248,7 @@ describe Episode do
 
   it 'has duration once processed' do
     episode = create(:episode)
-    episode.enclosure = create(:enclosure, episode: episode, status: 'complete', duration: 10)
+    episode.enclosures = [create(:enclosure, episode: episode, status: 'complete', duration: 10)]
     episode.duration.must_equal 10
   end
 

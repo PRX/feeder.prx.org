@@ -13,8 +13,9 @@ class Episode < ActiveRecord::Base
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }
-  has_many :contents, -> { order("position ASC") }
-  has_one :enclosure
+  has_many :all_contents, -> { order("position ASC, created_at DESC") }, class_name: 'Content'
+  has_many :contents, -> { order("position ASC, created_at DESC").complete }
+  has_many :enclosures, -> { order("created_at DESC") }
 
   validates :podcast_id, :guid, presence: true
   validates_associated :podcast
@@ -22,6 +23,10 @@ class Episode < ActiveRecord::Base
   before_validation :initialize_guid
 
   scope :released, -> { where('released_at IS NULL OR released_at <= now()') }
+
+  def enclosure
+    enclosures.complete.first
+  end
 
   def initialize_guid
     guid
@@ -101,45 +106,43 @@ class Episode < ActiveRecord::Base
     if overrides[:feedburner_orig_enclosure_link]
       enclosure_hash[:url] = overrides[:feedburner_orig_enclosure_link]
     end
-    if !overrides[:enclosure] || (enclosure && (enclosure.original_url != enclosure_hash[:url]))
+
+    # If the enclosure has been removed, just delete it (rare but simple case)
+    if !overrides[:enclosure]
       enclosure.try(:destroy)
-      self.enclosure = nil
     end
-    if enclosure_hash[:url]
-      self.enclosure ||= Enclosure.build_from_enclosure(self, enclosure_hash)
+
+    # If no enclosure exists for this url (of any status), create one
+    if overrides[:enclosure] && !enclosures.exists?(original_url: enclosure_hash[:url])
+      self.enclosures << Enclosure.build_from_enclosure(self, enclosure_hash)
     end
   end
 
   def update_contents
     if overrides[:contents].blank?
       contents.destroy_all
-    else
-      to_insert = []
-      to_destroy = []
+      return
+    end
 
-      if contents.size > overrides[:contents].size
-        to_destroy = contents[overrides[:contents].size..(contents.size - 1)]
-      end
+    # If there really are too many files now, truncate the excess
+    if contents.size > overrides[:contents].size
+      all_contents.destroy(contents[overrides[:contents].size..(contents.size - 1)])
+    end
 
-      Array(overrides[:contents]).each_with_index do |c, i|
-        existing_content = self.contents[i]
-        # puts "\n #{i}: existing_content: #{existing_content.inspect}"
-        if existing_content
-          if existing_content.original_url == c[:url]
-            existing_content.update_with_content!(c)
-          else
-            to_destroy << existing_content
-            existing_content = nil
-          end
-        end
-        if !existing_content
-          new_content = Content.build_from_content(self, c)
-          new_content.position = i + 1
-          to_insert << new_content
-        end
+    Array(overrides[:contents]).each_with_index do |c, i|
+      existing_content = all_contents.where(position: (i + 1), original_url: c[:url]).first
+
+      # If there is an existing file with the same url, update
+      if existing_content
+        existing_content.update_with_content!(c)
+
+      # Otherwise, make a new content to be or replace content for that position
+      # If there is no file, or the file has a different url
+      else
+        new_content = Content.build_from_content(self, c)
+        new_content.position = i + 1
+        self.all_contents << new_content
       end
-      contents.destroy(to_destroy)
-      to_insert.each{|c| contents << c}
     end
   end
 
@@ -227,7 +230,7 @@ class Episode < ActiveRecord::Base
   end
 
   def has_audio?
-    enclosure || contents.size > 0
+    enclosures.size > 0 || contents.size > 0
   end
 
   def audio_ready?
