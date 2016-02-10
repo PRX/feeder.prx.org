@@ -56,7 +56,7 @@ gem 'fastimage'
 # for url templates
 gem 'addressable'
 
-gem 'hal_api-rails', path: '/Users/andrew/dev/projects/hal_api-rails'
+gem 'hal_api-rails'
 
 # Load local environment variables with dotenv
 gem 'dotenv-rails'
