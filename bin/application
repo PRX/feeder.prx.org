@@ -1,0 +1,41 @@
+#!/bin/sh
+
+PROCESS=
+CMD_ARGS=
+
+FeederUsage () {
+  echo "usage: application [ web | worker | migrate | test | sqs | release_episodes | -- ]"
+}
+
+FeederParseOpts () {
+  PROCESS=$1
+  shift
+  CMD_ARGS=$*
+}
+
+FeederRun () {
+  CMD=
+  if [ "$PROCESS" = "web" ] ; then
+    CMD="bundle exec puma -C config/puma.rb"
+  elif [ "$PROCESS" = "worker" ] ; then
+    CMD="bundle exec shoryuken --verbose --rails --config config/shoryuken.yml"
+  elif [ "$PROCESS" = "migrate" ] ; then
+    CMD="bundle exec rake db:migrate"
+  elif [ "$PROCESS" = "test" ] ; then
+    CMD="bundle exec rake RAILS_ENV=test"
+  elif [ "$PROCESS" = "sqs" ] ; then
+    CMD="bundle exec rake sqs:create"
+  elif [ "$PROCESS" = "release_episodes" ] ; then
+    CMD="bundle exec rake feeder:release_episodes"
+  elif [ "$PROCESS" = "--" ] ; then
+    CMD=
+  else
+    FeederUsage
+    exit
+  fi
+
+  $CMD $CMD_ARGS
+}
+
+FeederParseOpts $*
+FeederRun
