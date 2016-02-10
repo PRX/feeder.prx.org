@@ -1,0 +1,15 @@
+feeder:
+  build: .
+  container_name: feeder-prx-org
+  env_file:
+    - .env.compose
+  links:
+    - db
+  ports:
+    - "3000:3000"
+db:
+  image: postgres
+  env_file:
+    - .env.compose
+  ports:
+    - "5432:5432"
