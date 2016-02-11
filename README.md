@@ -7,14 +7,19 @@
 
 ## Description
 This Rails app provides the Feeder service.
+It follows the [standards for PRX services](https://github.com/PRX/meta.prx.org/wiki/Project-Standards#services).
 
 It generates RSS feeds based on stories and their podcast specific data.
-
-It follows the [standards for PRX services](https://github.com/PRX/meta.prx.org/wiki/Project-Standards#services).
+It can also generate RSS feeds based on existing (Media)RSS feeds.
+It provides an API for information about feed items.
 
 ## Integrations & Dependencies
 - postgres - main database
 - cms.prx.org - get data about episodes
+- id.prx.org - get token for protected cms requests
+- fixer.prx.org - send tasks to analyze and manipulate audio files
+- crier.prx.org - receive updates about podcasts and episodes
+- dovetail.prxu.org - calls feeder for info about episodes
 
 ## Installation
 These instructions are written assuming Mac OS X install.
@@ -26,13 +31,57 @@ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 
 # Git - http://git-scm.com/
 brew install git
+```
 
+### Docker Development
+You can now build and run the feeder application using docker.
+We're using Docker for deployment, so this is also a good way to make sure
+Development and production environments match as much as possible.
+
+#### Prerequisites
+[Install Dinghy and related projects](https://github.com/codekitchen/dinghy)
+Notes:
+* Using 'VirtualBox' is recommended.
+* Also be sure to install `docker-compose` along with the toolbox
+
+#### Install Feeder
+```
+# Get the code
+git clone git@github.com:PRX/feeder.prx.org.git
+cd feeder.prx.org
+
+# Make .env, start with the example and edit to include AWS & other credentials
+cp env-example .env
+vim .env
+
+# Build the `feeder` container, it will be used for `web` and `worker`
+docker-compose build
+
+# Start the postgres `db`
+docker-compose start db
+
+# ... and run migrations against it
+docker-compose run feeder migrate
+
+# Create SQS (and SNS) configuration
+docker-compose run feeder sqs
+
+# Test
+docker-compose run feeder test
+
+# Guard
+docker-compose run feeder guard
+
+# Run the web, worker, and db
+docker-compose up
+```
+
+### Local Rails/Ruby Development
+If docker is not your style, you can also run as a regular local Rails application.
+```
 # Pow to serve the app - http://pow.cx/
 curl get.pow.cx | sh
-```
 
-### Ruby & Related Projects
-```
 brew update
 
 # rbenv and ruby-build - https://github.com/sstephenson/rbenv
@@ -44,7 +93,7 @@ source ~/.bash_profile
 # ruby (.ruby-version default)
 rbenv install
 
-# bundler gem - http://bundler.io/
+# bundler and powder gem - http://bundler.io/
 gem install bundler powder
 ```
 
