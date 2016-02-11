@@ -4,7 +4,7 @@ PROCESS=
 CMD_ARGS=
 
 FeederUsage () {
-  echo "usage: application [ web | worker | migrate | test | sqs | release_episodes | -- ]"
+  echo "usage: application [ help | web | worker | migrate | test | sqs | release_episodes | -- ]"
 }
 
 FeederParseOpts () {
@@ -15,21 +15,25 @@ FeederParseOpts () {
 
 FeederRun () {
   CMD=
-  if [ "$PROCESS" = "web" ] ; then
+  if [ "$PROCESS" = "help" ] ; then
+    FeederUsage
+    exit
+  elif [ "$PROCESS" = "web" ] ; then
     CMD="bundle exec puma -C config/puma.rb"
   elif [ "$PROCESS" = "worker" ] ; then
     CMD="bundle exec shoryuken --verbose --rails --config config/shoryuken.yml"
-  elif [ "$PROCESS" = "migrate" ] ; then
-    CMD="bundle exec rake db:migrate"
   elif [ "$PROCESS" = "test" ] ; then
-    CMD="bundle exec rake RAILS_ENV=test"
+    CMD="bundle exec rake db:create test RAILS_ENV=test"
+  elif [ "$PROCESS" = "migrate" ] ; then
+    CMD="bundle exec rake -vt db:migrate"
   elif [ "$PROCESS" = "sqs" ] ; then
-    CMD="bundle exec rake sqs:create"
+    CMD="bundle exec rake -vt announce:configure_broker sqs:create"
   elif [ "$PROCESS" = "release_episodes" ] ; then
-    CMD="bundle exec rake feeder:release_episodes"
+    CMD="bundle exec rake -vt feeder:release_episodes"
   elif [ "$PROCESS" = "--" ] ; then
     CMD=
   else
+    echo "ERROR: $PROCESS is not a valid command."
     FeederUsage
     exit
   fi
