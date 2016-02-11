@@ -1,15 +1,28 @@
 feeder:
   build: .
-  container_name: feeder-prx-org
+  volumes:
+    - .:/app
+  container_name: feeder-web
   env_file:
-    - .env.compose
+    - .env
   links:
     - db
   ports:
     - "3000:3000"
+  command: web
+worker:
+  image: feederprxorg_feeder
+  volumes:
+    - .:/app
+  container_name: feeder-worker
+  env_file:
+    - .env
+  links:
+    - db
+  command: worker
 db:
   image: postgres
   env_file:
-    - .env.compose
+    - .env
   ports:
     - "5432:5432"
