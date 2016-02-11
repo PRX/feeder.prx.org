@@ -1,3 +1,5 @@
+ENV['RAILS_ENV'] = 'test'
+
 require 'simplecov'
 SimpleCov.start 'rails'
 
@@ -8,28 +10,33 @@ end
 
 Dotenv.load
 
-ENV['RAILS_ENV'] ||= 'test'
+require File.expand_path("../../config/environment", __FILE__)
+require 'rails/test_help'
+require 'minitest/pride'
+require 'minitest/autorun'
+require 'factory_girl'
+require 'webmock/minitest'
+require 'announce/testing'
 
 def use_webmock?
   ENV['USE_WEBMOCK'].nil? || (ENV['USE_WEBMOCK'] == 'true')
 end
-
-require File.expand_path("../../config/environment", __FILE__)
-
-require 'rails/test_help'
-require 'factory_girl'
-require 'minitest/autorun'
-require 'minitest/spec'
-require 'minitest/pride'
-require 'webmock/minitest'
-require 'announce/testing'
+WebMock.allow_net_connect! unless use_webmock?
 
 include Announce::Testing
 reset_announce
 
-WebMock.allow_net_connect! unless use_webmock?
-
 class ActiveSupport::TestCase
+  include FactoryGirl::Syntax::Methods
+end
+
+# MiniTest
+class MiniTest::Unit::TestCase
+  include FactoryGirl::Syntax::Methods
+end
+
+# MiniTest::Spec
+class MiniTest::Spec
   include FactoryGirl::Syntax::Methods
 end
 

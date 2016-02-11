@@ -83,4 +83,5 @@ test:
 #     url: <%= ENV['DATABASE_URL'] %>
 #
 production:
-  url: <%= ENV['DATABASE_URL'] %>
+  <<: *default
+  database: <%= ENV['DB_ENV_POSTGRES_DATABASE'] %>

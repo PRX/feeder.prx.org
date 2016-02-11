@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class TaskTest < ActiveSupport::TestCase
+describe Task do
 
   let(:fixer_task) do
     {

@@ -18,8 +18,10 @@
 /log/*.log
 /tmp
 
-.env
+.env*
 PRX Podcast RSS spec.xml
 
 coverage
 notes*
+
+/public/assets
