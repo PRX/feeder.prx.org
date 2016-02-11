@@ -38,5 +38,5 @@ USER nobody
 
 RUN bundle exec rake assets:precompile
 
-ENTRYPOINT ["/tini", "--", "./bin/feeder"]
+ENTRYPOINT ["/tini", "--", "./bin/application"]
 CMD ["web"]
