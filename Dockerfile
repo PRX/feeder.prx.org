@@ -24,11 +24,11 @@ RUN apk --update add --virtual build-dependencies build-base ruby-dev openssl-de
     bundle config --global build.nokogiri  "--use-system-libraries" && \
     bundle config --global build.nokogumbo "--use-system-libraries" && \
     bundle config --global build.ffi  "--use-system-libraries" && \
-    bundle install --jobs 10 --retry 10 --deployment && \
+    bundle install --jobs 10 --retry 10 && \
     apk del build-dependencies && \
     find / -type f -iname \*.apk-new -delete && \
     rm -rf /var/cache/apk/* && \
-    rm -rf /usr/lib/lib/ruby/gems/*/cache/* && \
+    rm -rf /usr/lib/ruby/gems/*/cache/* && \
     rm -rf /tmp/* /var/tmp/* && \
     rm -rf ~/.gem
 
