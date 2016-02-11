@@ -2,6 +2,7 @@
 ENV['ID_ROOT'] ||= 'https://id.prx.org/'
 ENV['CMS_ROOT'] ||= 'https://cms.prx.org/api/vi/'
 ENV['PRX_ROOT'] ||= 'https://beta.prx.org/stories/'
+ENV['CRIER_ROOT'] ||= 'https://crier.prx.org/api/v1'
 ENV['FEEDER_WEB_MASTER'] ||= 'prxhelp@prx.org (PRX)'
 ENV['FEEDER_GENERATOR'] ||= "PRX Feeder v#{Feeder::VERSION}"
 
