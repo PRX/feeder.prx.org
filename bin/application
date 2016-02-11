@@ -24,8 +24,10 @@ FeederRun () {
     CMD="bundle exec shoryuken --verbose --rails --config config/shoryuken.yml"
   elif [ "$PROCESS" = "test" ] ; then
     CMD="bundle exec rake db:create test RAILS_ENV=test"
+  elif [ "$PROCESS" = "guard" ] ; then
+    CMD="bundle exec guard"
   elif [ "$PROCESS" = "migrate" ] ; then
-    CMD="bundle exec rake -vt db:migrate"
+    CMD="bundle exec rake -vt db:create db:migrate"
   elif [ "$PROCESS" = "sqs" ] ; then
     CMD="bundle exec rake -vt announce:configure_broker sqs:create"
   elif [ "$PROCESS" = "release_episodes" ] ; then
