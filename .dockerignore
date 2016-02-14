@@ -3,6 +3,7 @@
 #
 tmp/*
 log/*
+build/
 coverage/
 .git
 .gitignore

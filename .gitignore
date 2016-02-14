@@ -25,3 +25,4 @@ coverage
 notes*
 
 /public/assets
+/build
