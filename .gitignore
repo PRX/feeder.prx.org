@@ -26,3 +26,6 @@ notes*
 
 /public/assets
 /build
+
+# ignore deploy variables
+.deploy
