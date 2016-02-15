@@ -125,6 +125,48 @@ powder link
 open http://feeder.prx.dev
 ```
 
+## Build and Deploy Scripts
+The scripts will not create the entire deployment environment, but they will
+help in a few ways.
+
+### Prerequisites
+You will need to copy and will out the deploy-example file:
+```
+cp deploy-example .deploy
+vi .deploy
+```
+
+When building and deploying a new version, you'll need to increment the version.
+
+You also need to install the AWS CLI and `jq`:
+```
+pip install awscli
+brew install jq
+```
+
+### Scripts
+The available scripts will do the following:
+
+* Create the task definitions for the first time setup of the services
+You need a `.env.staging` file for staging, and `env.production` for production.
+```
+# create the staging defs
+container/create-task-definitions.sh
+
+# create the production defs
+export ENV=production && container/create-task-definitions.sh
+```
+
+* Build the image and same it with the version number to ECR
+```
+container/build-image.sh
+```
+
+* Update the services with the latest build
+```
+container/deploy.sh
+```
+
 ## Audio Handling
 
 When a new file episode is inserted, the audio files for it (either from `enclosure` or `media:content` tags) are also inserted as `media_resource` records. For each resource, a copy task is created to move the audio to the s3 bucket where it can be served by the CDN.
