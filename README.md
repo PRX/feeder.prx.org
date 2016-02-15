@@ -154,7 +154,7 @@ You need a `.env.staging` file for staging, and `env.production` for production.
 container/create-task-definitions.sh
 
 # create the production defs
-export ENV=production && container/create-task-definitions.sh
+ENV=production container/create-task-definitions.sh
 ```
 
 * Build the image and same it with the version number to ECR
@@ -164,7 +164,11 @@ container/build-image.sh
 
 * Update the services with the latest build
 ```
+# Deploy to staging
 container/deploy.sh
+
+# Deploy to production
+ENV=production container/deploy.sh
 ```
 
 ## Audio Handling
