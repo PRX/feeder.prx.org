@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151208181322) do
+ActiveRecord::Schema.define(version: 20160215031227) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -129,6 +129,7 @@ ActiveRecord::Schema.define(version: 20151208181322) do
     t.string   "enclosure_template"
     t.datetime "deleted_at"
     t.string   "managing_editor_email"
+    t.decimal  "duration_padding"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
