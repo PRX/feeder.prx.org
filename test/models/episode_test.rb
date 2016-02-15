@@ -252,6 +252,13 @@ describe Episode do
     episode.duration.must_equal 10
   end
 
+  it 'has duration with podcast duration padding' do
+    episode = create(:episode)
+    episode.enclosures = [create(:enclosure, episode: episode, status: 'complete', duration: 10)]
+    episode.podcast.duration_padding = 10
+    episode.duration.must_equal 20
+  end
+
   describe 'prx story' do
     let(:story) do
       msg = json_file(:prx_story_small)
