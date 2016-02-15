@@ -4,6 +4,7 @@
 tmp/*
 log/*
 build/
+container/
 coverage/
 .git
 .gitignore
