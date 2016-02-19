@@ -2,7 +2,6 @@ feeder:
   build: .
   volumes:
     - .:/app
-  container_name: feeder-web
   env_file:
     - .env
   links:
@@ -10,11 +9,12 @@ feeder:
   ports:
     - "3000:3000"
   command: web
+  environment:
+    VIRTUAL_HOST: feeder.docker
 worker:
   image: feederprxorg_feeder
   volumes:
     - .:/app
-  container_name: feeder-worker
   env_file:
     - .env
   links:

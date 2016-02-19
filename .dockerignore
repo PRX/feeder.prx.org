@@ -3,16 +3,20 @@
 #
 tmp/*
 log/*
+build/
+container/
 coverage/
 .git
 .gitignore
 .bundle
 .powder
+.deploy
 build.sh
 docker-compose.yml
 Dockerfile
 Procfile
 env-example
+deploy-example
 
 #
 # OS X
