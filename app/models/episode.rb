@@ -201,7 +201,7 @@ class Episode < ActiveRecord::Base
       enclosure.try(:duration).to_f
     else
       contents.inject(0.0) { |s, c| s + c.duration.to_f }
-    end
+    end + podcast.duration_padding.to_f
   end
 
   def file_size
