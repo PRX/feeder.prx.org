@@ -248,4 +248,8 @@ class Episode < ActiveRecord::Base
       Array(enclosure)
     end
   end
+
+  def audio_files
+    media_files
+  end
 end

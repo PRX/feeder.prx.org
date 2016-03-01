@@ -23,7 +23,7 @@ describe EpisodeRepresenter do
   end
 
   it 'includes audio files' do
-    episode.stub(:,media_files, [create(:enclosure)]) do
+    episode.stub(:media_files, [create(:enclosure)]) do
       json = representer.as_json
       json['audio'].length.must_equal 1
       json['media'].length.must_equal 1
