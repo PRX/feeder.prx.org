@@ -34,7 +34,8 @@ class MediaResource < ActiveRecord::Base
   end
 
   def media_url
-    ext = File.extname(original_url || '') || '.mp3'
+    ext = File.extname(original_url || '')
+    ext = '.mp3' if ext.blank?
     "#{episode.base_published_url}/#{guid}#{ext}" if episode
   end
 
