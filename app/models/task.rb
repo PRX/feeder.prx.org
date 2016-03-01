@@ -3,7 +3,6 @@ require 'prx_access'
 
 class Task < ActiveRecord::Base
   include PRXAccess
-  include FeederStorage
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
@@ -22,7 +21,7 @@ class Task < ActiveRecord::Base
   before_validation { self.status ||= :started }
 
   # convenient scopes for subclass types
-  [:copy_audio, :publish_feed].each do |subclass|
+  [:copy_audio, :publish_feed, :copy_url].each do |subclass|
     classname = "Tasks::#{subclass.to_s.camelize}Task"
     scope subclass, -> { where('type = ?', classname) }
   end
