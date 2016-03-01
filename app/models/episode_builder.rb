@@ -17,7 +17,7 @@ class EpisodeBuilder
   def from_prx_story
     info = HashWithIndifferentAccess.new(
       guid: @ep.item_guid,
-      audio: @ep.enclosure_info,
+      media: @ep.enclosure_info,
       image_url: nil,
       created: @ep.created_at,
       modified: @ep.updated_at,

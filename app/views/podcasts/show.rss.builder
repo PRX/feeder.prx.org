@@ -90,11 +90,11 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
           ep[:categories].each { |c| xml.category { xml.cdata!(c) } }
         end
 
-        if a = ep[:audio]
-          xml.enclosure url: a[:url], type: a[:type], length: a[:size]
+        if m = ep[:media]
+          xml.enclosure url: m[:url], type: m[:type], length: m[:size]
         end
 
-        xml.itunes :duration, ep[:audio][:duration].to_time_summary if ep[:audio]
+        xml.itunes :duration, ep[:media][:duration].to_time_summary if ep[:media]
         xml.itunes :author, @podcast.author_name if @podcast.author_name
         xml.itunes :explicit, ep[:explicit] if ep.key?(:explicit)
         xml.itunes(:summary) { xml.cdata!(ep[:summary]) } if ep[:summary]
@@ -107,8 +107,8 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.itunes :keywords, ep[:keywords].join(',') if !ep[:keywords].blank?
         xml.itunes(:isClosedCaptioned, ep[:is_closed_captioned]) if ep.key?(:is_closed_captioned)
 
-        if a = ep[:audio]
-          xml.media(:content, fileSize: a[:size], type: a[:type], url: a[:url])
+        if m = ep[:media]
+          xml.media(:content, fileSize: m[:size], type: m[:type], url: m[:url])
         end
 
         if ep[:content]

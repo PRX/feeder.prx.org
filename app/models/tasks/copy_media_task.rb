@@ -1,4 +1,4 @@
-class Tasks::CopyAudioTask < ::Task
+class Tasks::CopyMediaTask < ::Task
 
   def start!
     self.options = task_options
@@ -26,7 +26,7 @@ class Tasks::CopyAudioTask < ::Task
       media_resource.update_from_fixer(fixer_task)
     end
 
-    HighwindsAPI::Content.purge_url(media_resource.audio_url, false)
+    HighwindsAPI::Content.purge_url(media_resource.media_url, false)
     episode.podcast.publish! if complete?
   end
 
@@ -76,12 +76,12 @@ class Tasks::CopyAudioTask < ::Task
     URI::Generic.build(
       scheme: 's3',
       host: feeder_storage_bucket,
-      path: audio_path(media_resource),
+      path: media_path(media_resource),
       query: "x-fixer-public=true"
     ).to_s
   end
 
-  def audio_path(media_resource)
+  def media_path(media_resource)
     URI.parse(media_resource.url).path
   end
 

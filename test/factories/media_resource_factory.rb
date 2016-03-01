@@ -12,7 +12,7 @@ FactoryGirl.define do
     bit_rate 64
 
     after(:create) do |media_resource, evaluator|
-      create_list(:copy_audio_task, 1, owner: media_resource)
+      create_list(:copy_media_task, 1, owner: media_resource)
     end
 
     factory :enclosure, class: Enclosure do
