@@ -1,5 +1,2 @@
-class FeedImage < ActiveRecord::Base
-  belongs_to :podcast
-
-  include ImageFile
+class FeedImage < PodcastImage
 end
