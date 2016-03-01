@@ -61,6 +61,10 @@ gem 'hal_api-rails'
 # Load local environment variables with dotenv
 gem 'dotenv-rails'
 
+gem 'faraday'
+
+gem 'aws-sdk-core'
+
 group :development do
   # Use Capistrano for deployment
   # gem 'capistrano-rails', '~> 1.1.0'

@@ -366,11 +366,13 @@ PLATFORMS
 DEPENDENCIES
   addressable
   announce
+  aws-sdk-core
   byebug
   coffee-rails (~> 4.1.0)
   coveralls
   dotenv-rails
   factory_girl_rails
+  faraday
   fastimage
   fixer_client
   guard
