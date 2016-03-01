@@ -34,7 +34,8 @@ class MediaResource < ActiveRecord::Base
   end
 
   def media_url
-    "#{episode.base_published_url}/#{guid}.mp3" if episode
+    ext = File.extname(original_url || '') || '.mp3'
+    "#{episode.base_published_url}/#{guid}#{ext}" if episode
   end
 
   def update_from_fixer(fixer_task)
