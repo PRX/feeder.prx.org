@@ -1,6 +1,6 @@
 FactoryGirl.define do
   factory :itunes_image do
-    url 'test/fixtures/valid_series_image.jpg'
+    original_url 'test/fixtures/valid_series_image.jpg'
     width 1400
     height 1400
     size 95314
@@ -8,7 +8,7 @@ FactoryGirl.define do
   end
 
   factory :feed_image do
-    url 'test/fixtures/valid_feed_image.png'
+    original_url 'test/fixtures/valid_feed_image.png'
     link 'http://www.maximumfun.org/jjgo'
     title 'Jordan, Jesse GO!'
     description 'Not a picture of Jordan or Jesse'

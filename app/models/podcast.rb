@@ -73,14 +73,6 @@ class Podcast < ActiveRecord::Base
     "#{managing_editor_email} (#{managing_editor_name})"
   end
 
-  def save_image(type, url)
-    if i = send("#{type}_image")
-      i.update_attributes!(url: url)
-    else
-      send("build_#{type}_image", url:url)
-    end
-  end
-
   def update_images(feed)
     { feed: :thumb_url, itunes: :image_url }.each do |type, url|
       if feed[url]
@@ -88,6 +80,14 @@ class Podcast < ActiveRecord::Base
       elsif i = send("#{type}_image")
         i.destroy
       end
+    end
+  end
+
+  def save_image(type, url)
+    if i = send("#{type}_image")
+      i.update_attributes!(original_url: url)
+    else
+      send("build_#{type}_image", original_url: url)
     end
   end
 
