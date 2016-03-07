@@ -10,5 +10,8 @@ class EpisodeRepresenter < HalApi::Representer
     episode_path(id: episode.guid)
   end
 
+  # return as both `audio` and `media` until dovetail updated to use `media` only
   collection :audio_files, as: :audio, decorator: MediaResourceRepresenter, class: MediaResource
+
+  collection :media_files, as: :media, decorator: MediaResourceRepresenter, class: MediaResource
 end

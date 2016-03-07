@@ -39,8 +39,8 @@ describe EpisodeBuilder do
       eb[:title].must_equal "Virginity, Fidelity, and Fertility"
     end
 
-    it 'gets audio file type' do
-      eb[:audio][:type].must_equal 'audio/mpeg'
+    it 'gets media file type' do
+      eb[:media][:type].must_equal 'audio/mpeg'
     end
   end
 

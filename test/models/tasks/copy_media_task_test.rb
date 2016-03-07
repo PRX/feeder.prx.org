@@ -1,7 +1,7 @@
 require 'test_helper'
 
-describe Tasks::CopyAudioTask do
-  let(:task) { create(:copy_audio_task) }
+describe Tasks::CopyMediaTask do
+  let(:task) { create(:copy_media_task) }
 
   let(:msg) { json_file(:prx_story_small) }
 
