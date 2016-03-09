@@ -110,7 +110,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
           end
 
           xml.itunes :keywords, ep[:keywords].join(',') if !ep[:keywords].blank?
-          xml.itunes(:isClosedCaptioned, ep[:is_closed_captioned]) if ep.key?(:is_closed_captioned)
+          xml.itunes(:isClosedCaptioned, 'Yes') if ep[:is_closed_captioned]
 
           if m = ep[:media]
             xml.media(:content, fileSize: m[:size], type: m[:type], url: m[:url])
