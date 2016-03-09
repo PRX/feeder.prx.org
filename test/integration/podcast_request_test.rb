@@ -11,7 +11,13 @@ describe 'RSS feed Integration Test' do
     @podcast = create(:podcast)
     @channel_image = @podcast.feed_image
     @itunes_image = @podcast.itunes_image
-    @episodes = create_list(:episode, 1, podcast: @podcast, prx_uri: '/api/v1/stories/87683').reverse
+    @episodes = create_list(:episode, 4, podcast: @podcast).reverse
+
+    @episodes.each do |e|
+      stub_request(:get, "https://cms.prx.org#{e.prx_uri}").
+        to_return(status: 200, body: json_file(:prx_story), headers: {})
+    end
+
     @category = create(:itunes_category, podcast: @podcast)
 
     get "/podcasts/#{@podcast.id}"
@@ -57,7 +63,7 @@ describe 'RSS feed Integration Test' do
 
   it 'displays correct episode titles' do
     @feed.css('item').each_with_index do |node, i|
-      title = @episodes[i].overrides['title']
+      title = @episodes.reverse[i].overrides['title']
       node.css('title').text.must_equal title
       node.at_css('enclosure').attributes['length'].value.must_equal '774059'
       node.css('itunes|duration').text.must_equal '0:48'
@@ -68,5 +74,19 @@ describe 'RSS feed Integration Test' do
     node = @feed.css('item')[0]
     node.css('description').text.strip[0..3].must_equal "Tina"
     node.css('itunes|summary').text.strip[0..4].must_equal "<div>"
+  end
+
+  it 'returns limited number of episodes' do
+    @podcast.update_attributes(display_episodes_count: 1)
+    get "/podcasts/#{@podcast.id}"
+    @feed = Nokogiri::XML(response.body).css('channel')
+    @feed.css('item').count.must_equal 1
+  end
+
+  it 'returns episodes wih minimal tags' do
+    @podcast.update_attributes(display_full_episodes_count: 1)
+    get "/podcasts/#{@podcast.id}"
+    @feed = Nokogiri::XML(response.body).css('channel')
+    @feed.xpath('//item/itunes:author').count.must_equal 1
   end
 end
