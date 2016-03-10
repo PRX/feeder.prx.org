@@ -51,7 +51,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     end
 
     xml.itunes :image, href: @podcast.itunes_image.url if @podcast.itunes_image
-    xml.itunes :explicit, @podcast.explicit ? 'yes' : 'clean'
+    xml.itunes :explicit, @podcast.explicit ? 'yes' : 'no'
 
     if (@podcast.owner_name || @podcast.owner_email)
       xml.itunes :owner do
