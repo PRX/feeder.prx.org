@@ -26,7 +26,7 @@ RUN apk --update add --virtual build-dependencies build-base ruby-dev openssl-de
     bundle config --global build.ffi  "--use-system-libraries" && \
     bundle install --jobs 10 --retry 10 && \
     apk del build-dependencies && \
-    find / -type f -iname \*.apk-new -delete && \
+    (find / -type f -iname \*.apk-new -delete || true) && \
     rm -rf /var/cache/apk/* && \
     rm -rf /usr/lib/ruby/gems/*/cache/* && \
     rm -rf /tmp/* /var/tmp/* && \
