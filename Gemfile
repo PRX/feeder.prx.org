@@ -61,6 +61,20 @@ gem 'hal_api-rails'
 # Load local environment variables with dotenv
 gem 'dotenv-rails'
 
+group :development, :test do
+  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
+  gem 'byebug'
+
+  # Pry is an IRB alternative and runtime developer console
+  gem 'pry-rails'
+
+  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
+  gem 'spring'
+
+  # Use JSON Web Token for signing and encrypting
+  gem 'json-jwt'
+end
+
 group :development do
   # Use Capistrano for deployment
   # gem 'capistrano-rails', '~> 1.1.0'
@@ -106,20 +120,6 @@ group :test do
   gem 'timecop'
 
   gem 'rubocop', require: false
-end
-
-group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug'
-
-  # Pry is an IRB alternative and runtime developer console
-  gem 'pry-rails'
-
-  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
-
-  # Use JSON Web Token for signing and encrypting
-  gem 'json-jwt'
 end
 
 group :production do

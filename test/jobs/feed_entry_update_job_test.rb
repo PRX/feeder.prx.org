@@ -16,6 +16,7 @@ describe FeedEntryUpdateJob do
       create_episode.wont_be_nil
 
       update_episode = job.receive_feed_entry_update(data)
+      update_episode.wont_be :changed?
       create_episode.must_equal update_episode
     end
   end
