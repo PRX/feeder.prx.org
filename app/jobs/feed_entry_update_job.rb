@@ -36,6 +36,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
   def update_episode
     episode.restore if episode.deleted?
     episode.update_from_entry(entry)
+    episode.save!
     episode.copy_media
   end
 
