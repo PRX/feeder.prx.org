@@ -4,7 +4,7 @@ PROCESS=
 CMD_ARGS=
 
 FeederUsage () {
-  echo "usage: application [ help | web | worker | migrate | test | sqs | release_episodes | -- ]"
+  echo "usage: application [ help | web | worker | migrate | test | sqs | rake | rails | release_episodes | -- ]"
 }
 
 FeederParseOpts () {
