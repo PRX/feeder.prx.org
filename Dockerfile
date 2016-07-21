@@ -4,7 +4,7 @@ MAINTAINER PRX <sysadmin@prx.org>
 
 RUN apk update && apk --update add ca-certificates ruby ruby-irb ruby-json ruby-rake \
     ruby-bigdecimal ruby-io-console libstdc++ tzdata postgresql-client nodejs \
-    linux-headers libc-dev zlib libxml2 libxslt libffi
+    linux-headers libc-dev zlib libxml2 libxslt libffi less
 
 ENV TINI_VERSION v0.9.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /tini
