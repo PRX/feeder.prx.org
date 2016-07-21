@@ -32,6 +32,10 @@ FeederRun () {
     CMD="bundle exec rake -vt announce:configure_broker sqs:create"
   elif [ "$PROCESS" = "release_episodes" ] ; then
     CMD="bundle exec rake -vt feeder:release_episodes"
+  elif [ "$PROCESS" = "rails" ] ; then
+    CMD="bundle exec rails"
+  elif [ "$PROCESS" = "rake" ] ; then
+    CMD="bundle exec rake"
   elif [ "$PROCESS" = "--" ] ; then
     CMD=
   else
