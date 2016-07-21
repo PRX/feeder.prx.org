@@ -17,7 +17,7 @@ FactoryGirl.define do
     pub_date Date.parse("Jan 11, 2015")
     last_build_date Date.parse("Jan 12, 2015")
     categories ['Humor', 'Entertainment']
-    explicit true
+    explicit 'yes'
     subtitle 'Goofy laughsters'
     summary 'Public radio host Jesse Thorn and @midnight writer Jordan Morris goof around'
     keywords ['laffs', 'comedy', 'good-times']
