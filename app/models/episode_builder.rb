@@ -33,7 +33,7 @@ class EpisodeBuilder
         description: Sanitize.fragment(sa[:description] || '').strip,
         summary: sa[:description],
         content: sa[:description],
-        explicit: sa[:contentAdvisory] ? 'yes' : 'no',
+        explicit: sa[:contentAdvisory] ? 'yes' : 'clean',
         keywords: sa[:tags],
         categories: sa[:tags],
         published: sa[:publishedAt]

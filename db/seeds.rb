@@ -33,7 +33,7 @@ p = Podcast.create(
   language: 'en-US',
   managing_editor: 'roman@prx.org (Roman Mars)',
   categories: ['99% Invisible','broadcasting','design','kitchen sisters','radio','radio diaries','radiotopia','recording','sound'].join(', '),
-  explicit: false,
+  explicit: 'clean',
   subtitle: 'A tiny radio show about design, architecture & the 99% invisible activity that shapes our world.',
   summary: "Design is everywhere in our lives, perhaps most importantly in the places where we've just stopped noticing. 99% Invisible (99 Percent Invisible) is a weekly exploration of the process and power of design and architecture. From award winning producer Roman Mars, KALW in San Francisco, and Radiotopia from PRX. Learn more: http://99percentinvisible.org\n\nAwesome people saying nice things:\n\"Roman Mars lights the radio.  His pieces conjure other worlds, grapple with big ideas, make sound three dimensional.  They are smart and funny and original. The Kitchen Sisters would like to be Presidents of his Fan Club.\" -The Kitchen Sisters, NPR\n\n\"Highly digging 99% Invisible. One of the best podcasts I've bumped into in a while.\" -Jad Abumrad, Radiolab\n\n\"I love the show. It's wonderful. Actually reminded me of why I love radio.\" -Jonathan Goldstein, CBC's WireTap\n\n\"99% Invisible is completely wonderful…entertaining, and beautifully produced.” -Ira Glass, This American Life\n\nProud member of PRX's Radiotopia.",
   keywords: nil,

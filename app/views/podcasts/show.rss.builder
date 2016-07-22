@@ -51,7 +51,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     end
 
     xml.itunes :image, href: @podcast.itunes_image.url if @podcast.itunes_image
-    xml.itunes :explicit, @podcast.explicit ? 'yes' : 'no'
+    xml.itunes :explicit, @podcast.explicit
 
     if (@podcast.owner_name || @podcast.owner_email)
       xml.itunes :owner do
@@ -77,8 +77,6 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
       # Display no more episodes if we are over the max
       break if @podcast.display_episodes_count.to_i > 0 && index >= @podcast.display_episodes_count.to_i
-
-      # guid, title, link, pubDate, description, itunes:subtitle, itunes:explicit, itunes:duration, enclosure
 
       xml.item do
         xml.guid(ep[:guid], isPermaLink: !!ep[:is_perma_link])

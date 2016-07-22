@@ -46,7 +46,7 @@ GEM
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
     builder (3.2.2)
-    byebug (8.2.2)
+    byebug (9.0.5)
     celluloid (0.17.3)
       celluloid-essentials
       celluloid-extras
@@ -222,6 +222,9 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
+    pry-byebug (3.4.0)
+      byebug (~> 9.0)
+      pry (~> 0.10)
     pry-rails (0.3.4)
       pry (>= 0.9.10)
     puma (2.16.0)
@@ -366,7 +369,6 @@ PLATFORMS
 DEPENDENCIES
   addressable
   announce
-  byebug
   coffee-rails (~> 4.1.0)
   coveralls
   dotenv-rails
@@ -389,6 +391,7 @@ DEPENDENCIES
   oauth2
   paranoia
   pg
+  pry-byebug
   pry-rails
   puma
   quiet_assets

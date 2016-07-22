@@ -67,7 +67,7 @@
     },
     "explicit": {
       "type": "string",
-      "enum": ["yes", "no"]
+      "enum": ["yes", "clean"]
     }
   },
   "required": ["title", "enclosure"]
