@@ -54,7 +54,7 @@ class Episode < ActiveRecord::Base
     series_uri = story.links['series'].href
     story_uri = story.links['self'].href
     podcast = Podcast.find_by!(prx_uri: series_uri)
-    published = story.attributes[:publishedAt]
+    published = story.attributes[:published_at]
     published = Time.parse(published) if published
     create!(podcast: podcast, prx_uri: story_uri, published_at: published)
   end

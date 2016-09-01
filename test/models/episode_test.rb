@@ -264,9 +264,9 @@ describe Episode do
       msg = json_file(:prx_story_small)
       body = JSON.parse(msg)
       href = body['_links']['self']['href']
-      resource = HyperResource.new(root: 'https://cms.prx.org/api/vi/')
-      link = HyperResource::Link.new(resource, href: href)
-      HyperResource.new_from(body: body, resource: resource, link: link)
+      resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
+      link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
+      PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
     end
 
     it 'can be created from a story' do

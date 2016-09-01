@@ -18,7 +18,7 @@ describe StoryUpdateJob do
 
   it 'creates a story resource' do
     story = job.api_resource(JSON.parse(body))
-    story.must_be_instance_of HyperResource
+    story.must_be_instance_of PRXAccess::PRXHyperResource
   end
 
   it 'can create an episode' do
