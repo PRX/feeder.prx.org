@@ -3,7 +3,6 @@ require 'prx_access'
 
 class Task < ActiveRecord::Base
   include PRXAccess
-  include FeederStorage
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
