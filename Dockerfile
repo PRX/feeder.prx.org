@@ -37,7 +37,6 @@ RUN apk --update add --virtual build-dependencies \
     bundle config --global build.nokogiri  "--use-system-libraries" && \
     bundle config --global build.nokogumbo "--use-system-libraries" && \
     bundle config --global build.ffi  "--use-system-libraries" && \
-    bundle config --global build.ruby-audio --with-cflags=-Wno-error=format-security && \
     bundle install --jobs 10 --retry 10 && \
     apk del build-dependencies && \
     (find / -type f -iname \*.apk-new -delete || true) && \
