@@ -38,10 +38,10 @@ describe Episode do
   it 'knows if audio is ready' do
     episode.enclosures = [create(:enclosure, episode: episode, status: 'created')]
     episode.enclosures.first.wont_be :complete?
-    episode.wont_be :audio_ready?
+    episode.wont_be :media_ready?
     episode.enclosures.first.complete!
     episode.enclosure.must_be :complete?
-    episode.must_be :audio_ready?
+    episode.must_be :media_ready?
   end
 
   describe 'enclosure template' do
@@ -127,7 +127,7 @@ describe Episode do
 
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry)
-      episode.overrides['link'].must_equal episode.audio_url
+      episode.overrides['link'].must_equal episode.media_url
     end
 
     it 'creates enclosure from entry' do
@@ -203,22 +203,22 @@ describe Episode do
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
       episode.all_contents.first.complete!
       episode.reload
-      episode.audio_url.must_match /#{episode.contents.first.guid}.mp3$/
+      episode.media_url.must_match /#{episode.contents.first.guid}.mp3$/
     end
 
-    it 'returns nil for audio_url when there is no audio' do
+    it 'returns nil for media_url when there is no audio' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
       episode.contents.clear
-      episode.audio_url.must_equal nil
+      episode.media_url.must_equal nil
     end
 
-    it 'return include in feed and has_audio false when no audio' do
+    it 'return include in feed and has_media false when no audio' do
       podcast = create(:podcast)
       episode = Episode.create_from_entry!(podcast, entry_no_enclosure)
       episode.contents.clear
-      episode.wont_be :has_audio?
-      episode.wont_be :audio_ready?
+      episode.wont_be :has_media?
+      episode.wont_be :media_ready?
       episode.must_be :include_in_feed?
     end
   end
@@ -233,12 +233,12 @@ describe Episode do
 
   it 'has no audio file until processed' do
     episode = build_stubbed(:episode)
-    episode.audio_files.length.must_equal 0
+    episode.media_files.length.must_equal 0
   end
 
   it 'has one audio file once processed' do
     episode = create(:episode)
-    episode.audio_files.length.must_equal 1
+    episode.media_files.length.must_equal 1
   end
 
   it 'has a 0 duration when unprocessed' do
@@ -264,9 +264,9 @@ describe Episode do
       msg = json_file(:prx_story_small)
       body = JSON.parse(msg)
       href = body['_links']['self']['href']
-      resource = HyperResource.new(root: 'https://cms.prx.org/api/vi/')
-      link = HyperResource::Link.new(resource, href: href)
-      HyperResource.new_from(body: body, resource: resource, link: link)
+      resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
+      link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
+      PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
     end
 
     it 'can be created from a story' do

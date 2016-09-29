@@ -18,13 +18,13 @@ describe StoryUpdateJob do
 
   it 'creates a story resource' do
     story = job.api_resource(JSON.parse(body))
-    story.must_be_instance_of HyperResource
+    story.must_be_instance_of PRXAccess::PRXHyperResource
   end
 
   it 'can create an episode' do
     podcast.wont_be_nil
     mock_episode = Minitest::Mock.new
-    mock_episode.expect(:copy_audio, true)
+    mock_episode.expect(:copy_media, true)
     mock_episode.expect(:podcast, podcast)
     Episode.stub(:create_from_story!, mock_episode) do
       podcast.stub(:create_publish_task, true) do
@@ -36,7 +36,7 @@ describe StoryUpdateJob do
   it 'can update an episode' do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
     podcast.stub(:create_publish_task, true) do
-      episode.stub(:copy_audio, true) do
+      episode.stub(:copy_media, true) do
         Episode.stub(:by_prx_story, episode) do
           lbd = episode.podcast.last_build_date
           uat = episode.updated_at
@@ -52,7 +52,7 @@ describe StoryUpdateJob do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast, deleted_at: Time.now)
     episode.must_be :deleted?
     podcast.stub(:create_publish_task, true) do
-      episode.stub(:copy_audio, true) do
+      episode.stub(:copy_media, true) do
         Episode.stub(:by_prx_story, episode) do
           job.receive_story_update(JSON.parse(body))
           job.episode.wont_be :deleted?

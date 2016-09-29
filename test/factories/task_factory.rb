@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :copy_audio_task, class: Tasks::CopyAudioTask do
+  factory :copy_media_task, class: Tasks::CopyMediaTask do
     association :owner, factory: :enclosure
     status :complete
     options destination: 's3://test-prx-up/podcast/episode/filename.mp3'

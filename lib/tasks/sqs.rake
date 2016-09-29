@@ -3,7 +3,7 @@ require 'aws-sdk-core'
 namespace :sqs do
 
   desc 'Create required SQS queues'
-  task :create, [:env] => [:environment] do |t, args|
+  task :create, [:env] do |t, args|
 
     env = args[:env] || Rails.env
 

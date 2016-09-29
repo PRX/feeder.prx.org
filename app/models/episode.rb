@@ -54,7 +54,7 @@ class Episode < ActiveRecord::Base
     series_uri = story.links['series'].href
     story_uri = story.links['self'].href
     podcast = Podcast.find_by!(prx_uri: series_uri)
-    published = story.attributes[:publishedAt]
+    published = story.attributes[:published_at]
     published = Time.parse(published) if published
     create!(podcast: podcast, prx_uri: story_uri, published_at: published)
   end
@@ -79,7 +79,7 @@ class Episode < ActiveRecord::Base
       update_contents
 
       # must come after update_enclosure and update_contents
-      # as it depends on audio url
+      # as it depends on media_url
       update_link
     end
     self
@@ -91,13 +91,13 @@ class Episode < ActiveRecord::Base
   end
 
   # must be called after update_enclosure and update_contents
-  # as it depends on audio url
+  # as it depends on media_url
   def update_link
     overrides[:link] = overrides[:feedburner_orig_link] || overrides[:url]
 
-    # libsyn sets the link to a libsyn url - audio file or page
+    # libsyn sets the link to a libsyn url, instead set to media file or page
     if overrides[:link].match(/libsyn\.com/)
-      overrides[:link] = audio_url
+      overrides[:link] = media_url
     end
   end
 
@@ -147,31 +147,26 @@ class Episode < ActiveRecord::Base
   end
 
   def enclosure_info
-    return nil unless audio_ready?
+    return nil unless media_ready?
     {
-      url: audio_url,
+      url: media_url,
       type: content_type,
       size: file_size,
       duration: duration.to_i
     }
   end
 
-  def audio_url
-    audio = first_audio_resource
-    enclosure_template_url(audio.audio_url, audio.original_url) if audio
+  def media_url
+    media = first_media_resource
+    enclosure_template_url(media.media_url, media.original_url) if media
   end
 
-  def first_audio_resource
-    if contents.blank?
-      enclosure
-    else
-      contents.first
-    end
+  def first_media_resource
+    contents.blank? ? enclosure : contents.first
   end
 
   def enclosure_template_url(base_url, original_url = nil)
     return base_url if enclosure_template.blank?
-    return base_url if content_type.split('/').first != 'audio'
 
     expansions = enclosure_template_expansions(base_url, original_url)
     template = Addressable::Template.new(enclosure_template)
@@ -193,7 +188,7 @@ class Episode < ActiveRecord::Base
   end
 
   def content_type
-    first_audio_resource.try(:mime_type) || ''
+    first_media_resource.try(:mime_type) || 'application/octet-stream'
   end
 
   def duration
@@ -216,9 +211,9 @@ class Episode < ActiveRecord::Base
     touch
   end
 
-  def copy_audio(force = false)
-    enclosures.each { |e| e.copy_audio(force) }
-    all_contents.each { |c| c.copy_audio(force) }
+  def copy_media(force = false)
+    enclosures.each { |e| e.copy_media(force) }
+    all_contents.each { |c| c.copy_media(force) }
   end
 
   def base_published_url
@@ -226,14 +221,14 @@ class Episode < ActiveRecord::Base
   end
 
   def include_in_feed?
-    !has_audio? || audio_ready?
+    !has_media? || media_ready?
   end
 
-  def has_audio?
+  def has_media?
     enclosures.size > 0 || contents.size > 0
   end
 
-  def audio_ready?
+  def media_ready?
     (!enclosure.blank? && enclosure.complete?) ||
     (!contents.blank? && contents.all?{ |a| a.complete? })
   end
@@ -246,11 +241,15 @@ class Episode < ActiveRecord::Base
     podcast.path
   end
 
-  def audio_files
+  def media_files
     if !contents.blank?
       contents
     else
       Array(enclosure)
     end
+  end
+
+  def audio_files
+    media_files
   end
 end

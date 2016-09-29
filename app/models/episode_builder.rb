@@ -17,7 +17,7 @@ class EpisodeBuilder
   def from_prx_story
     info = HashWithIndifferentAccess.new(
       guid: @ep.item_guid,
-      audio: @ep.enclosure_info,
+      media: @ep.enclosure_info,
       image_url: nil,
       created: @ep.created_at,
       modified: @ep.updated_at,
@@ -29,14 +29,14 @@ class EpisodeBuilder
       story_info = HashWithIndifferentAccess.new(
         link: link(@story),
         title: sa[:title],
-        subtitle: Sanitize.fragment(sa[:shortDescription] || '').strip,
+        subtitle: Sanitize.fragment(sa[:short_description] || '').strip,
         description: Sanitize.fragment(sa[:description] || '').strip,
         summary: sa[:description],
         content: sa[:description],
-        explicit: sa[:contentAdvisory] ? 'yes' : 'no',
+        explicit: sa[:content_advisory] ? 'yes' : 'clean',
         keywords: sa[:tags],
         categories: sa[:tags],
-        published: sa[:publishedAt]
+        published: sa[:published_at]
       )
       info.merge!(story_info)
     end

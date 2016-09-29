@@ -1,8 +1,8 @@
 {
   "guid": "57 at http://serialpodcast.org",
-  "is_perma_link": false,
+  "isPermaLink": false,
   "url": "http://feeds.serialpodcast.org/~r/serialpodcast/~3/_LnOrNUV5n4/",
-  "feedburner_orig_link": "http://serialpodcast.org",
+  "feedburnerOrigLink": "http://serialpodcast.org",
   "author": {
     "name": "This American Life",
     "email": null
@@ -17,7 +17,7 @@
     "length": 27485957
   },
   "duration": 3360,
-  "is_closed_captioned": false,
+  "isClosedCaptioned": false,
   "position": 12,
   "block": false,
   "published": "2014-12-18T10:30:00.000Z",
@@ -25,7 +25,7 @@
     "position": 1,
     "url": "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3",
     "type": "audio/mpeg",
-    "file_size": 26017749,
+    "fileSize": 26017749,
     "medium": "audio",
     "expression": "sample",
     "bitrate": 64,
@@ -37,7 +37,7 @@
     "position": 2,
     "url": "https://s3.amazonaws.com/prx-dovetail/testserial/serial_credits.mp3",
     "type": "audio/mpeg",
-    "file_size": 162376,
+    "fileSize": 162376,
     "medium": "audio",
     "expression": "sample",
     "bitrate": 64,
@@ -49,10 +49,10 @@
   "keywords": [],
   "_embedded": {
     "prx:feed": {
-      "feed_url": "https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml",
+      "feedUrl": "https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml",
       "url": "http://serialpodcast.org",
-      "image_url": "http://serialpodcast.org/sites/all/modules/custom/serial/img/serial-itunes-logo.png",
-      "hub_url": "http://pubsubhubbub.appspot.com/",
+      "imageUrl": "http://serialpodcast.org/sites/all/modules/custom/serial/img/serial-itunes-logo.png",
+      "hubUrl": "http://pubsubhubbub.appspot.com/",
       "title": "Serial",
       "subtitle": "A new podcast from the creators of This American Life",
       "description": "Serial is a new podcast from the creators of This American Life, hosted by Sarah Koenig. Serial unfolds one story - a true story - over the course of a whole season. The show follows the plot and characters wherever they lead, through\n      many surprising twists and turns. Sarah won't know what happens at the end of the story until she gets there, not long before you get there with her. Each week she'll bring you the latest chapter, so it's important to listen in, starting with Episode\n      1. New episodes are released on Thursday mornings.",
@@ -60,7 +60,7 @@
         "name": null,
         "email": "rich@strangebirdlabs.com"
       }],
-      "managing_editor": {
+      "managingEditor": {
         "name": "This American Life",
         "email": "chad@thislife.org"
       },
@@ -71,10 +71,10 @@
       "language": "en",
       "copyright": "Copyright 2015 Ira Glass",
       "complete": false,
-      "feedburner_name": "serialpodcast",
+      "feedburnerName": "serialpodcast",
       "block": false,
       "published": "2014-12-18T10:30:00.000Z",
-      "last_modified": "2014-12-18T10:30:00.000Z",
+      "lastModified": "2014-12-18T10:30:00.000Z",
       "keywords": [],
       "categories": ["News \u0026 Politics"],
       "_links": {

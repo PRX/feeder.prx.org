@@ -26,5 +26,4 @@ begin
 rescue StandardError => err
   Rails.logger.error("*** Shoryuken client failed to initialize. ***")
   Rails.logger.error(err)
-  raise err if Rails.env.production?
 end
