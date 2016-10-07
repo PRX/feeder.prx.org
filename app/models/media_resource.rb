@@ -46,13 +46,23 @@ class MediaResource < ActiveRecord::Base
   end
 
   def update_attributes_with_fixer_info(info)
-    self.mime_type = info['content_type']
-    self.file_size = info['size'].to_i
+    # this is not working
+    # self.mime_type = info['content_type']
+    update_mime_type_with_fixer_info(info)
     self.medium = self.mime_type.split('/').first
+    self.file_size = info['size'].to_i
     self.sample_rate = info['sample_rate'].to_i
     self.channels = info['channels'].to_i
     self.duration = info['length'].to_f
     self.bit_rate = info['bit_rate'].to_i
     self
+  end
+
+  def update_mime_type_with_fixer_info(info)
+    if info['content_type'].nil? || info['content_type'] == 'application/octect-stream'
+      self.mime_type ||= 'audio/mpeg'
+    else
+      self.mime_type = info['content_type']
+    end
   end
 end

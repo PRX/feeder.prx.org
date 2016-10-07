@@ -188,7 +188,7 @@ class Episode < ActiveRecord::Base
   end
 
   def content_type
-    first_media_resource.try(:mime_type) || 'application/octet-stream'
+    first_media_resource.try(:mime_type) || 'audio/mpeg'
   end
 
   def duration
