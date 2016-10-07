@@ -39,4 +39,16 @@ describe MediaResource do
     media_resource.duration.must_equal 2222
     media_resource.bit_rate.must_equal 55
   end
+
+  it 'defaults bad content type from a fixer callback to audio/mpeg' do
+    media_resource.mime_type.must_equal 'audio/mpeg'
+    fixer_task['task']['result_details']['info']['content_type'] = 'application/octect-stream'
+    media_resource.update_from_fixer(fixer_task)
+    media_resource.mime_type.must_equal 'audio/mpeg'
+
+    media_resource.mime_type = nil
+    fixer_task['task']['result_details']['info']['content_type'] = 'application/octect-stream'
+    media_resource.update_from_fixer(fixer_task)
+    media_resource.mime_type.must_equal 'audio/mpeg'
+  end
 end

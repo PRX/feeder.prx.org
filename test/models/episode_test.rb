@@ -44,6 +44,14 @@ describe Episode do
     episode.must_be :media_ready?
   end
 
+  it 'returns an audio content_type by default' do
+    Episode.new.content_type.must_equal 'audio/mpeg'
+  end
+
+  it 'returns the first media content_type' do
+    episode.content_type.must_equal 'audio/mpeg'
+  end
+
   describe 'enclosure template' do
     before {
       episode.guid = 'guid'
