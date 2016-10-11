@@ -39,6 +39,13 @@ describe Tasks::CopyMediaTask do
     end
   end
 
+  it 'remove query string from audio url' do
+    task.media_resource.wont_be_nil
+    original = task.media_resource.original_url
+    task.media_resource.original_url = original + '?remove=this'
+    task.episode_audio_uri.must_equal original
+  end
+
   it 'alias owner as episode' do
     task.episode.must_equal task.owner.episode
   end
