@@ -1,6 +1,16 @@
 require File.expand_path('../boot', __FILE__)
 
-require 'rails/all'
+%w(
+  active_model
+  active_job
+  active_record
+  action_controller
+  action_mailer
+  action_view
+  rails/test_unit
+).each do |framework|
+  require "#{framework}/railtie"
+end
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -30,5 +40,11 @@ module Feeder
     config.active_job.queue_name_delimiter = '_'
 
     config.active_record.raise_in_transactional_callbacks = true
+
+    config.assets.enabled = false
+
+    config.generators do |g|
+      g.assets false
+    end
   end
 end
