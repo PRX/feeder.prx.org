@@ -49,7 +49,5 @@ ADD . ./
 RUN chown -R nobody:nogroup /app
 USER nobody
 
-RUN bundle exec rake assets:precompile
-
 ENTRYPOINT ["/tini", "--", "./bin/application"]
 CMD ["web"]
