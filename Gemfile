@@ -44,10 +44,17 @@ gem 'fastimage'
 # for url templates
 gem 'addressable'
 
-gem 'hal_api-rails'
-
 # Load local environment variables with dotenv
 gem 'dotenv-rails'
+
+gem 'actionpack-action_caching'
+
+# paging
+gem 'kaminari'
+
+gem 'responders'
+gem 'roar-rails'
+gem 'hal_api-rails', '~> 0.2.9'
 
 group :development, :test do
   # Pry is an IRB alternative and runtime developer console
