@@ -56,6 +56,9 @@ class Episode < ActiveRecord::Base
     podcast = Podcast.find_by!(prx_uri: series_uri)
     published = story.attributes[:published_at]
     published = Time.parse(published) if published
+
+    # Add in a bunch more stuff getting saved here
+
     create!(podcast: podcast, prx_uri: story_uri, published_at: published)
   end
 
