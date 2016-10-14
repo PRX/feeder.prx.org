@@ -3,10 +3,13 @@ require 'addressable/template'
 require 'hash_serializer'
 
 class Episode < ActiveRecord::Base
+  # serialize :categories, JSON
+  # serialize :keywords, JSON
+
   ENTRY_ATTRIBUTES = %w(title subtitle description summary content is_perma_link
     image_url explicit keywords categories is_closed_captioned duration contents
     guid enclosure feedburner_orig_enclosure_link feedburner_orig_link published
-    url last_modified ).freeze
+    url updated block).freeze
 
   acts_as_paranoid
 
@@ -89,7 +92,7 @@ class Episode < ActiveRecord::Base
   end
 
   def update_published_at
-    published = overrides[:published] || overrides[:last_modified]
+    published = overrides[:published] || overrides[:updated]
     self.published_at = Time.parse(published) if published
   end
 
