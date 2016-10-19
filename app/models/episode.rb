@@ -3,13 +3,12 @@ require 'addressable/template'
 require 'hash_serializer'
 
 class Episode < ActiveRecord::Base
-  # serialize :categories, JSON
-  # serialize :keywords, JSON
+  serialize :categories, JSON
+  serialize :keywords, JSON
 
-  ENTRY_ATTRIBUTES = %w(title subtitle description summary content is_perma_link
-    image_url explicit keywords categories is_closed_captioned duration contents
-    guid enclosure feedburner_orig_enclosure_link feedburner_orig_link published
-    url updated block).freeze
+  ENTRY_ATTRIBUTES = %w(author block categories content description explicit
+    feedburner_orig_enclosure_link feedburner_orig_link image_url is_closed_captioned
+    is_perma_link keywords position subtitle summary title url).freeze
 
   acts_as_paranoid
 
@@ -26,6 +25,12 @@ class Episode < ActiveRecord::Base
   before_validation :initialize_guid
 
   scope :released, -> { where('released_at IS NULL OR released_at <= now()') }
+
+  def author=(a)
+    author = a || {}
+    self.author_name = author['name']
+    self.author_email = author['email']
+  end
 
   def enclosure
     enclosures.complete.first
@@ -74,37 +79,36 @@ class Episode < ActiveRecord::Base
 
   def update_from_entry(entry_resource)
     with_lock do
-      entry = entry_resource.attributes
+      self.overrides = entry_resource.attributes.with_indifferent_access
+      o = overrides.slice(*ENTRY_ATTRIBUTES).with_indifferent_access
+      self.assign_attributes(o)
 
-      o = entry.slice(*ENTRY_ATTRIBUTES).with_indifferent_access
-      self.overrides = overrides.merge(o)
-
-      self.original_guid = overrides[:guid]
-      update_published_at
+      update_guid
+      update_dates
       update_enclosure
       update_contents
-
-      # must come after update_enclosure and update_contents
-      # as it depends on media_url
+      # must come after update_enclosure & update_contents, depends on media_url
       update_link
     end
     self
   end
 
-  def update_published_at
-    published = overrides[:published] || overrides[:updated]
-    self.published_at = Time.parse(published) if published
+  def update_guid
+    self.original_guid = overrides[:guid]
+  end
+
+  def update_dates
+    self.published = Time.parse(overrides[:published]) if overrides[:published]
+    self.updated = Time.parse(overrides[:updated]) if overrides[:updated]
+    self.published_at = published || updated
   end
 
   # must be called after update_enclosure and update_contents
   # as it depends on media_url
   def update_link
-    overrides[:link] = overrides[:feedburner_orig_link] || overrides[:url]
-
+    self.url = overrides[:feedburner_orig_link] || overrides[:url]
     # libsyn sets the link to a libsyn url, instead set to media file or page
-    if overrides[:link].match(/libsyn\.com/)
-      overrides[:link] = media_url
-    end
+    self.url = media_url if url.match(/libsyn\.com/)
   end
 
   def update_enclosure

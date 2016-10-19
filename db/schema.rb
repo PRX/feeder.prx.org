@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160721152111) do
+ActiveRecord::Schema.define(version: 20161014123500) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,6 +27,26 @@ ActiveRecord::Schema.define(version: 20160721152111) do
     t.string   "original_guid"
     t.datetime "published_at"
     t.datetime "released_at"
+    t.string   "url"
+    t.string   "author_name"
+    t.string   "author_email"
+    t.text     "title"
+    t.text     "subtitle"
+    t.text     "content"
+    t.text     "summary"
+    t.datetime "published"
+    t.datetime "updated"
+    t.string   "image_url"
+    t.string   "explicit"
+    t.text     "keywords"
+    t.text     "description"
+    t.text     "categories"
+    t.boolean  "block"
+    t.boolean  "is_closed_captioned"
+    t.integer  "position"
+    t.string   "feedburner_orig_link"
+    t.string   "feedburner_orig_enclosure_link"
+    t.boolean  "is_perma_link"
   end
 
   add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree
