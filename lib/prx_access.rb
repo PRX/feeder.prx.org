@@ -4,6 +4,32 @@ module PRXAccess
     def incoming_body_filter(hash)
       super(hash.deep_transform_keys { |key| key.to_s.underscore })
     end
+
+    class Link < HyperResource::Link
+      attr_accessor :type, :profile
+
+      def initialize(resource, link_spec={})
+        super
+        self.type = link_spec['type']
+        self.profile = link_spec['profile']
+      end
+
+      def where(params)
+        super.tap do |res|
+          res.type = self.type
+          res.profile = self.profile
+        end
+      end
+
+      def headers(*args)
+        super.tap do |res|
+          if args.count > 0
+            res.type = self.type
+            res.profile = self.profile
+          end
+        end
+      end
+    end
   end
 
   def api(options = {})
