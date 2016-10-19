@@ -15,9 +15,9 @@ class Episode < ActiveRecord::Base
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }
-  has_many :all_contents, -> { order("position ASC, created_at DESC") }, class_name: 'Content'
-  has_many :contents, -> { order("position ASC, created_at DESC").complete }
-  has_many :enclosures, -> { order("created_at DESC") }
+  has_many :all_contents, -> { order('position ASC, created_at DESC') }, class_name: 'Content'
+  has_many :contents, -> { order('position ASC, created_at DESC').complete }
+  has_many :enclosures, -> { order('created_at DESC') }
 
   validates :podcast_id, :guid, presence: true
   validates_associated :podcast
@@ -129,31 +129,40 @@ class Episode < ActiveRecord::Base
   end
 
   def update_contents
-    if overrides[:contents].blank?
+    new_contents = Array(overrides[:contents]).sort_by { |c| c[:position] }
+
+    if new_contents.blank?
       contents.destroy_all
       return
     end
 
-    # If there really are too many files now, truncate the excess
-    if contents.size > overrides[:contents].size
-      all_contents.destroy(contents[overrides[:contents].size..(contents.size - 1)])
-    end
-
-    Array(overrides[:contents]).each_with_index do |c, i|
-      existing_content = all_contents.where(position: (i + 1), original_url: c[:url]).first
+    final_contents = []
+    new_contents.each do |c|
+      existing_content = find_existing_content(c)
 
       # If there is an existing file with the same url, update
       if existing_content
         existing_content.update_with_content!(c)
+        final_contents << existing_content
 
       # Otherwise, make a new content to be or replace content for that position
       # If there is no file, or the file has a different url
       else
         new_content = Content.build_from_content(self, c)
-        new_content.position = i + 1
         self.all_contents << new_content
       end
     end
+
+    # find all contents with a greater position and whack them
+    max_pos = new_contents.last[:position]
+    all_contents.where(['position > ?', max_pos]).delete_all
+  end
+
+  def find_existing_content(c)
+    all_contents.
+      where(position: c[:position], original_url: c[:url]).
+      order(created_at: :desc).
+      first
   end
 
   def enclosure_info
