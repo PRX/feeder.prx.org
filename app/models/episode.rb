@@ -115,10 +115,6 @@ class Episode < ActiveRecord::Base
     end
   end
 
-  def update_from_story!(story)
-    touch
-  end
-
   def copy_media(force = false)
     enclosures.each { |e| e.copy_media(force) }
     all_contents.each { |c| c.copy_media(force) }

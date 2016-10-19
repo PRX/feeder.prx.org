@@ -7,7 +7,7 @@ describe EpisodeStoryHandler do
   let(:episode) { create(:episode) }
 
   let(:story) do
-    msg = json_file(:prx_story_small)
+    msg = json_file(:prx_story_all)
     body = JSON.parse(msg)
     href = body['_links']['self']['href']
     resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
@@ -16,7 +16,7 @@ describe EpisodeStoryHandler do
   end
 
   it 'can be created from a story' do
-    podcast = create(:podcast, prx_uri: '/api/v1/series/32166')
+    podcast = create(:podcast, prx_uri: '/api/v1/series/36501')
     episode = EpisodeStoryHandler.create_from_story!(story)
     episode.wont_be_nil
     episode.published_at.wont_be_nil

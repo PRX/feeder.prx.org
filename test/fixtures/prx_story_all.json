@@ -1,0 +1,609 @@
+{
+  "_embedded": {
+    "prx:account": {
+      "_embedded": {
+        "prx:address": {
+          "_links": {
+            "profile": {
+              "href": "http://meta.prx.org/model/address"
+            },
+            "self": {
+              "href": "/api/v1/accounts/208391/address",
+              "profile": "http://meta.prx.org/model/address"
+            }
+          },
+          "city": "Estes Park",
+          "country": "United States",
+          "id": 331325,
+          "postalCode": "80517",
+          "state": "Colorado",
+          "street1": ""
+        },
+        "prx:image": {
+          "_links": {
+            "enclosure": {
+              "href": "/pub/438b16f02cfe5fc547e8109f6cf4c132/0/web/user_image/38940/medium/run.jpg",
+              "type": "image/jpeg"
+            },
+            "original": {
+              "href": "/pub/6d38cef16bb79d4eb8cc07d7acdedbe3/0/web/user_image/38940/original/run.jpg",
+              "type": "image/jpeg"
+            },
+            "profile": {
+              "href": "http://meta.prx.org/model/image/user"
+            },
+            "self": {
+              "href": "/api/v1/users/228055/image",
+              "profile": "http://meta.prx.org/model/image/user"
+            }
+          },
+          "filename": "run.jpg",
+          "id": 38940,
+          "size": 64887
+        }
+      },
+      "_links": {
+        "alternate": {
+          "href": "https://beta.prx.org/accounts/208391",
+          "type": "text/html"
+        },
+        "profile": {
+          "href": "http://meta.prx.org/model/account/individual/min"
+        },
+        "prx:address": {
+          "href": "/api/v1/accounts/208391/address"
+        },
+        "prx:audio-files": {
+          "href": "/api/v1/accounts/208391/audio_files"
+        },
+        "prx:image": {
+          "href": "/api/v1/accounts/208391/image",
+          "title": "run.jpg"
+        },
+        "prx:opener": {
+          "href": "/api/v1/users/228055",
+          "title": "ryancavis"
+        },
+        "prx:series": {
+          "href": "/api/v1/accounts/208391/series{?page,per,zoom,filters,sorts}",
+          "templated": true
+        },
+        "prx:stories": {
+          "count": 4,
+          "href": "/api/v1/accounts/208391/stories{?page,per,zoom,filters,sorts}",
+          "templated": true
+        },
+        "self": {
+          "href": "/api/v1/accounts/208391",
+          "profile": "http://meta.prx.org/model/account/individual/min"
+        }
+      },
+      "id": 208391,
+      "name": "Ryan Cavis",
+      "path": "ryancavis",
+      "shortName": "Ryan",
+      "type": "IndividualAccount"
+    },
+    "prx:audio": {
+      "_embedded": {
+        "prx:items": [
+          {
+            "_links": {
+              "enclosure": {
+                "href": "/pub/e3718718a9a6c83a2cc077ee6ecb5a63/0/web/audio_file/1200648/broadcast/lcs_spring16_act1.mp3",
+                "type": "audio/mpeg"
+              },
+              "original": {
+                "href": "/api/v1/audio_files/1200648/original{?expiration}",
+                "templated": true,
+                "type": "audio/mpeg"
+              },
+              "profile": {
+                "href": "http://meta.prx.org/model/audio-file"
+              },
+              "self": {
+                "href": "/api/v1/audio_files/1200648",
+                "profile": "http://meta.prx.org/model/audio-file"
+              }
+            },
+            "duration": 3334,
+            "filename": "lcs_spring16_act1.mp3",
+            "id": 1200648,
+            "position": 2,
+            "size": 106684456,
+            "status": "complete"
+          },
+          {
+            "_links": {
+              "enclosure": {
+                "href": "/pub/d357caa1057739c1f20b81df111c4aab/0/web/audio_file/1200655/broadcast/t03.mp3",
+                "type": "audio/mpeg"
+              },
+              "original": {
+                "href": "/api/v1/audio_files/1200655/original{?expiration}",
+                "templated": true,
+                "type": "audio/mpeg"
+              },
+              "profile": {
+                "href": "http://meta.prx.org/model/audio-file"
+              },
+              "self": {
+                "href": "/api/v1/audio_files/1200655",
+                "profile": "http://meta.prx.org/model/audio-file"
+              }
+            },
+            "duration": 4,
+            "filename": "t03.mp3",
+            "id": 1200655,
+            "position": 5,
+            "size": 36370,
+            "status": "complete"
+          },
+          {
+            "_links": {
+              "enclosure": {
+                "href": "/pub/db970cd89f4cc82cc339b7cb8b46c4ad/0/web/audio_file/1200656/broadcast/t05.mp3",
+                "type": "audio/mpeg"
+              },
+              "original": {
+                "href": "/api/v1/audio_files/1200656/original{?expiration}",
+                "templated": true,
+                "type": "audio/mpeg"
+              },
+              "profile": {
+                "href": "http://meta.prx.org/model/audio-file"
+              },
+              "self": {
+                "href": "/api/v1/audio_files/1200656",
+                "profile": "http://meta.prx.org/model/audio-file"
+              }
+            },
+            "duration": 6,
+            "filename": "t05.mp3",
+            "id": 1200656,
+            "position": 6,
+            "size": 60471,
+            "status": "complete"
+          },
+          {
+            "_links": {
+              "enclosure": {
+                "href": "/pub/8d5b5626a6ed4798fffa71e48e80fca2/0/web/audio_file/1200657/broadcast/t01.mp3",
+                "type": "audio/mpeg"
+              },
+              "original": {
+                "href": "/api/v1/audio_files/1200657/original{?expiration}",
+                "templated": true,
+                "type": "audio/mpeg"
+              },
+              "profile": {
+                "href": "http://meta.prx.org/model/audio-file"
+              },
+              "self": {
+                "href": "/api/v1/audio_files/1200657",
+                "profile": "http://meta.prx.org/model/audio-file"
+              }
+            },
+            "duration": 2,
+            "filename": "t01.mp3",
+            "id": 1200657,
+            "position": 7,
+            "size": 12582,
+            "status": "complete"
+          }
+        ]
+      },
+      "_links": {
+        "profile": {
+          "href": "http://meta.prx.org/model/collection/audio-file"
+        },
+        "self": {
+          "href": "/api/v1/stories/186751/audio_files",
+          "profile": "http://meta.prx.org/model/collection/audio-file"
+        }
+      },
+      "count": 4,
+      "total": 4
+    },
+    "prx:image": {
+      "_links": {
+        "enclosure": {
+          "href": "/pub/407692d270782e6a857df61219743752/0/web/story_image/437192/medium/lindsay.png",
+          "type": "image/png"
+        },
+        "original": {
+          "href": "/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/lindsay.png",
+          "type": "image/png"
+        },
+        "profile": {
+          "href": "http://meta.prx.org/model/image/story"
+        },
+        "self": {
+          "href": "/api/v1/stories/186751/images/437192",
+          "profile": "http://meta.prx.org/model/image/story"
+        }
+      },
+      "caption": "",
+      "credit": "",
+      "filename": "lindsay.png",
+      "id": 437192,
+      "size": 551330,
+      "status": "complete"
+    },
+    "prx:promos": {
+      "_embedded": {
+        "prx:items": [
+        ]
+      },
+      "_links": {
+        "profile": {
+          "href": "http://meta.prx.org/model/collection/audio-file"
+        },
+        "self": {
+          "href": "/api/v1/stories/186751/audio_files",
+          "profile": "http://meta.prx.org/model/collection/audio-file"
+        }
+      },
+      "count": 0,
+      "total": 0
+    },
+    "prx:series": {
+      "_embedded": {
+        "prx:image": {
+          "_links": {
+            "enclosure": {
+              "href": "/pub/4585c860463e3e4e41b15096099c9faa/0/web/series_image/16622/medium/tobias.jpeg",
+              "type": "image/jpeg"
+            },
+            "original": {
+              "href": "/pub/fdfc8c9e2c0754d822161d24c72b3656/0/web/series_image/16622/original/tobias.jpeg",
+              "type": "image/jpeg"
+            },
+            "profile": {
+              "href": "http://meta.prx.org/model/image/series"
+            },
+            "self": {
+              "href": "/api/v1/series/36501/image",
+              "profile": "http://meta.prx.org/model/image/series"
+            }
+          },
+          "caption": "",
+          "credit": "",
+          "filename": "tobias.jpeg",
+          "id": 16622,
+          "size": 60572,
+          "status": "complete"
+        },
+        "prx:stories": {
+          "_embedded": {
+            "prx:items": [
+              {
+                "_embedded": {
+                  "prx:audio": {
+                    "_embedded": {
+                      "prx:items": [
+                        {
+                          "_links": {
+                            "enclosure": {
+                              "href": "/pub/e3718718a9a6c83a2cc077ee6ecb5a63/0/web/audio_file/1200648/broadcast/lcs_spring16_act1.mp3",
+                              "type": "audio/mpeg"
+                            },
+                            "original": {
+                              "href": "/api/v1/audio_files/1200648/original{?expiration}",
+                              "templated": true,
+                              "type": "audio/mpeg"
+                            },
+                            "profile": {
+                              "href": "http://meta.prx.org/model/audio-file"
+                            },
+                            "self": {
+                              "href": "/api/v1/audio_files/1200648",
+                              "profile": "http://meta.prx.org/model/audio-file"
+                            }
+                          },
+                          "duration": 3334,
+                          "filename": "lcs_spring16_act1.mp3",
+                          "id": 1200648,
+                          "position": 2,
+                          "size": 106684456,
+                          "status": "complete"
+                        },
+                        {
+                          "_links": {
+                            "enclosure": {
+                              "href": "/pub/d357caa1057739c1f20b81df111c4aab/0/web/audio_file/1200655/broadcast/t03.mp3",
+                              "type": "audio/mpeg"
+                            },
+                            "original": {
+                              "href": "/api/v1/audio_files/1200655/original{?expiration}",
+                              "templated": true,
+                              "type": "audio/mpeg"
+                            },
+                            "profile": {
+                              "href": "http://meta.prx.org/model/audio-file"
+                            },
+                            "self": {
+                              "href": "/api/v1/audio_files/1200655",
+                              "profile": "http://meta.prx.org/model/audio-file"
+                            }
+                          },
+                          "duration": 4,
+                          "filename": "t03.mp3",
+                          "id": 1200655,
+                          "position": 5,
+                          "size": 36370,
+                          "status": "complete"
+                        },
+                        {
+                          "_links": {
+                            "enclosure": {
+                              "href": "/pub/db970cd89f4cc82cc339b7cb8b46c4ad/0/web/audio_file/1200656/broadcast/t05.mp3",
+                              "type": "audio/mpeg"
+                            },
+                            "original": {
+                              "href": "/api/v1/audio_files/1200656/original{?expiration}",
+                              "templated": true,
+                              "type": "audio/mpeg"
+                            },
+                            "profile": {
+                              "href": "http://meta.prx.org/model/audio-file"
+                            },
+                            "self": {
+                              "href": "/api/v1/audio_files/1200656",
+                              "profile": "http://meta.prx.org/model/audio-file"
+                            }
+                          },
+                          "duration": 6,
+                          "filename": "t05.mp3",
+                          "id": 1200656,
+                          "position": 6,
+                          "size": 60471,
+                          "status": "complete"
+                        },
+                        {
+                          "_links": {
+                            "enclosure": {
+                              "href": "/pub/8d5b5626a6ed4798fffa71e48e80fca2/0/web/audio_file/1200657/broadcast/t01.mp3",
+                              "type": "audio/mpeg"
+                            },
+                            "original": {
+                              "href": "/api/v1/audio_files/1200657/original{?expiration}",
+                              "templated": true,
+                              "type": "audio/mpeg"
+                            },
+                            "profile": {
+                              "href": "http://meta.prx.org/model/audio-file"
+                            },
+                            "self": {
+                              "href": "/api/v1/audio_files/1200657",
+                              "profile": "http://meta.prx.org/model/audio-file"
+                            }
+                          },
+                          "duration": 2,
+                          "filename": "t01.mp3",
+                          "id": 1200657,
+                          "position": 7,
+                          "size": 12582,
+                          "status": "complete"
+                        }
+                      ]
+                    },
+                    "_links": {
+                      "profile": {
+                        "href": "http://meta.prx.org/model/collection/audio-file"
+                      },
+                      "self": {
+                        "href": "/api/v1/stories/186751/audio_files",
+                        "profile": "http://meta.prx.org/model/collection/audio-file"
+                      }
+                    },
+                    "count": 4,
+                    "total": 4
+                  },
+                  "prx:image": {
+                    "_links": {
+                      "enclosure": {
+                        "href": "/pub/407692d270782e6a857df61219743752/0/web/story_image/437192/medium/lindsay.png",
+                        "type": "image/png"
+                      },
+                      "original": {
+                        "href": "/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/lindsay.png",
+                        "type": "image/png"
+                      },
+                      "profile": {
+                        "href": "http://meta.prx.org/model/image/story"
+                      },
+                      "self": {
+                        "href": "/api/v1/stories/186751/images/437192",
+                        "profile": "http://meta.prx.org/model/image/story"
+                      }
+                    },
+                    "caption": "",
+                    "credit": "",
+                    "filename": "lindsay.png",
+                    "id": 437192,
+                    "size": 551330,
+                    "status": "complete"
+                  },
+                  "prx:promos": {
+                    "_embedded": {
+                      "prx:items": [
+                      ]
+                    },
+                    "_links": {
+                      "profile": {
+                        "href": "http://meta.prx.org/model/collection/audio-file"
+                      },
+                      "self": {
+                        "href": "/api/v1/stories/186751/audio_files",
+                        "profile": "http://meta.prx.org/model/collection/audio-file"
+                      }
+                    },
+                    "count": 0,
+                    "total": 0
+                  }
+                },
+                "_links": {
+                  "alternate": {
+                    "href": "https://beta.prx.org/stories/186751",
+                    "type": "text/html"
+                  },
+                  "profile": {
+                    "href": "http://meta.prx.org/model/story/min"
+                  },
+                  "prx:account": {
+                    "href": "/api/v1/accounts/208391",
+                    "profile": "http://meta.prx.org/model/account/individual/min",
+                    "title": "Ryan Cavis"
+                  },
+                  "prx:audio": {
+                    "count": 4,
+                    "href": "/api/v1/stories/186751/audio_files"
+                  },
+                  "prx:image": {
+                    "href": "/api/v1/stories/186751/images/437192",
+                    "title": "lindsay.png"
+                  },
+                  "prx:promos": {
+                    "count": 0,
+                    "href": "/api/v1/stories/186751/promos"
+                  },
+                  "prx:series": {
+                    "href": "/api/v1/series/36501",
+                    "title": "Really really cool series on stuff"
+                  },
+                  "self": {
+                    "href": "/api/v1/stories/186751",
+                    "profile": "http://meta.prx.org/model/story/min"
+                  }
+                },
+                "appVersion": "v4",
+                "createdAt": "2016-09-29T22:05:33.000Z",
+                "duration": 3346,
+                "id": 186751,
+                "points": 0,
+                "publishedAt": "2016-09-29T22:14:13.000Z",
+                "shortDescription": "With a teaser of the story",
+                "title": "Here is a new story in my brand new series",
+                "updatedAt": "2016-10-18T22:16:40.000Z"
+              }
+            ]
+          },
+          "_links": {
+            "profile": {
+              "href": "http://meta.prx.org/model/collection/story"
+            },
+            "self": {
+              "href": "/api/v1/series/36501/stories",
+              "profile": "http://meta.prx.org/model/collection/story"
+            }
+          },
+          "count": 1,
+          "total": 1
+        }
+      },
+      "_links": {
+        "alternate": {
+          "href": "https://beta.prx.org/series/36501",
+          "type": "text/html"
+        },
+        "profile": {
+          "href": "http://meta.prx.org/model/series/min"
+        },
+        "prx:account": {
+          "href": "/api/v1/accounts/208391",
+          "profile": "http://meta.prx.org/model/account/individual/min",
+          "title": "Ryan Cavis"
+        },
+        "prx:image": {
+          "href": "/api/v1/series/36501/image",
+          "title": "tobias.jpeg"
+        },
+        "prx:stories": {
+          "count": 1,
+          "href": "/api/v1/series/36501/stories{?page,per,zoom,filters,sorts}",
+          "templated": true
+        },
+        "self": {
+          "href": "/api/v1/series/36501",
+          "profile": "http://meta.prx.org/model/series/min"
+        }
+      },
+      "appVersion": "v4",
+      "id": 36501,
+      "shortDescription": "And this is my description of the series.",
+      "title": "Really really cool series on stuff"
+    }
+  },
+  "_links": {
+    "alternate": {
+      "href": "https://beta.prx.org/stories/186751",
+      "type": "text/html"
+    },
+    "curies": [
+      {
+        "href": "http://meta.prx.org/relation/{rel}",
+        "name": "prx",
+        "templated": true
+      }
+    ],
+    "profile": {
+      "href": "http://meta.prx.org/model/story"
+    },
+    "prx:account": {
+      "href": "/api/v1/accounts/208391",
+      "profile": "http://meta.prx.org/model/account/individual",
+      "title": "Ryan Cavis"
+    },
+    "prx:audio": {
+      "count": 4,
+      "href": "/api/v1/stories/186751/audio_files"
+    },
+    "prx:audio-versions": {
+      "count": 1,
+      "href": "/api/v1/stories/186751/audio_versions"
+    },
+    "prx:image": {
+      "href": "/api/v1/stories/186751/images/437192",
+      "title": "lindsay.png"
+    },
+    "prx:images": {
+      "count": 1,
+      "href": "/api/v1/stories/186751/images"
+    },
+    "prx:musical-works": {
+      "count": 0,
+      "href": "/api/v1/stories/186751/musical_works{?page,per,zoom,filters,sorts}",
+      "templated": true
+    },
+    "prx:promos": {
+      "count": 0,
+      "href": "/api/v1/stories/186751/promos"
+    },
+    "prx:series": {
+      "href": "/api/v1/series/36501",
+      "title": "Really really cool series on stuff"
+    },
+    "prx:unpublish": {
+      "href": "/api/v1/stories/186751/unpublish"
+    },
+    "self": {
+      "href": "/api/v1/stories/186751",
+      "profile": "http://meta.prx.org/model/story"
+    }
+  },
+  "appVersion": "v4",
+  "createdAt": "2016-09-29T22:05:33.000Z",
+  "description": "",
+  "duration": 3346,
+  "id": 186751,
+  "points": 0,
+  "publishedAt": "2016-09-29T22:14:13.000Z",
+  "shortDescription": "With a teaser of the story",
+  "tags": [
+    "Business",
+    "Careers"
+  ],
+  "title": "Here is a new story in my brand new series",
+  "updatedAt": "2016-10-18T22:16:40.000Z"
+}
