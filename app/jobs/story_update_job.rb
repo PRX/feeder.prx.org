@@ -43,11 +43,11 @@ class StoryUpdateJob < ActiveJob::Base
     # if it is truly not update,
     #  then update it with the latest from the API
     episode.restore if episode.deleted?
-    episode.update_from_story!(story)
+    self.episode = EpisodeStoryHandler.update_from_story!(episode, story)
   end
 
   def create_episode
     return unless story && story.try(:series)
-    self.episode = Episode.create_from_story!(story)
+    self.episode = EpisodeStoryHandler.create_from_story!(story)
   end
 end

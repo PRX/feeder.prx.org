@@ -35,13 +35,12 @@ class FeedEntryUpdateJob < ActiveJob::Base
 
   def update_episode
     episode.restore if episode.deleted?
-    episode.update_from_entry(entry)
-    episode.save!
+    EpisodeEntryHandler.update_from_entry!(episode, entry)
     episode.copy_media
   end
 
   def create_episode
-    self.episode = Episode.create_from_entry!(podcast, entry)
+    self.episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
     episode.copy_media
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
     self.episode = podcast.episodes.find_by(original_guid: entry.guid, podcast_id: podcast.id) if podcast

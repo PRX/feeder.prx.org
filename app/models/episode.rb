@@ -6,10 +6,6 @@ class Episode < ActiveRecord::Base
   serialize :categories, JSON
   serialize :keywords, JSON
 
-  ENTRY_ATTRIBUTES = %w(author block categories content description explicit
-    feedburner_orig_enclosure_link feedburner_orig_link image_url is_closed_captioned
-    is_perma_link keywords position subtitle summary title url).freeze
-
   acts_as_paranoid
 
   serialize :overrides, HashSerializer
@@ -56,113 +52,6 @@ class Episode < ActiveRecord::Base
   def self.by_prx_story(story)
     story_uri = story.links['self'].href
     Episode.with_deleted.find_by(prx_uri: story_uri)
-  end
-
-  def self.create_from_story!(story)
-    series_uri = story.links['series'].href
-    story_uri = story.links['self'].href
-    podcast = Podcast.find_by!(prx_uri: series_uri)
-    published = story.attributes[:published_at]
-    published = Time.parse(published) if published
-
-    # Add in a bunch more stuff getting saved here
-
-    create!(podcast: podcast, prx_uri: story_uri, published_at: published)
-  end
-
-  def self.create_from_entry!(podcast, entry)
-    episode = new(podcast: podcast)
-    episode.update_from_entry(entry)
-    episode.save!
-    episode
-  end
-
-  def update_from_entry(entry_resource)
-    with_lock do
-      self.overrides = entry_resource.attributes.with_indifferent_access
-      o = overrides.slice(*ENTRY_ATTRIBUTES).with_indifferent_access
-      self.assign_attributes(o)
-
-      update_guid
-      update_dates
-      update_enclosure
-      update_contents
-      # must come after update_enclosure & update_contents, depends on media_url
-      update_link
-    end
-    self
-  end
-
-  def update_guid
-    self.original_guid = overrides[:guid]
-  end
-
-  def update_dates
-    self.published = Time.parse(overrides[:published]) if overrides[:published]
-    self.updated = Time.parse(overrides[:updated]) if overrides[:updated]
-    self.published_at = published || updated
-  end
-
-  # must be called after update_enclosure and update_contents
-  # as it depends on media_url
-  def update_link
-    self.url = overrides[:feedburner_orig_link] || overrides[:url]
-    # libsyn sets the link to a libsyn url, instead set to media file or page
-    self.url = media_url if url.match(/libsyn\.com/)
-  end
-
-  def update_enclosure
-    enclosure_hash = overrides.fetch(:enclosure, {}).dup
-    if overrides[:feedburner_orig_enclosure_link]
-      enclosure_hash[:url] = overrides[:feedburner_orig_enclosure_link]
-    end
-
-    # If the enclosure has been removed, just delete it (rare but simple case)
-    if !overrides[:enclosure]
-      enclosure.try(:destroy)
-    end
-
-    # If no enclosure exists for this url (of any status), create one
-    if overrides[:enclosure] && !enclosures.exists?(original_url: enclosure_hash[:url])
-      self.enclosures << Enclosure.build_from_enclosure(self, enclosure_hash)
-    end
-  end
-
-  def update_contents
-    new_contents = Array(overrides[:contents]).sort_by { |c| c[:position] }
-
-    if new_contents.blank?
-      contents.destroy_all
-      return
-    end
-
-    final_contents = []
-    new_contents.each do |c|
-      existing_content = find_existing_content(c)
-
-      # If there is an existing file with the same url, update
-      if existing_content
-        existing_content.update_with_content!(c)
-        final_contents << existing_content
-
-      # Otherwise, make a new content to be or replace content for that position
-      # If there is no file, or the file has a different url
-      else
-        new_content = Content.build_from_content(self, c)
-        self.all_contents << new_content
-      end
-    end
-
-    # find all contents with a greater position and whack them
-    max_pos = new_contents.last[:position]
-    all_contents.where(['position > ?', max_pos]).delete_all
-  end
-
-  def find_existing_content(c)
-    all_contents.
-      where(position: c[:position], original_url: c[:url]).
-      order(created_at: :desc).
-      first
   end
 
   def enclosure_info
