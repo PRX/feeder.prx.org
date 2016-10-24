@@ -1,6 +1,8 @@
 require 'episode'
 
 class EpisodeStoryHandler
+  include PRXAccess
+
   attr_accessor :episode, :story
 
   def initialize(episode)
@@ -14,7 +16,8 @@ class EpisodeStoryHandler
     update_from_story!(episode, story)
   end
 
-  def self.update_from_story!(episode, story)
+  def self.update_from_story!(episode, story = nil)
+    story ||= get_story
     new(episode).update_from_story!(story)
   end
 
@@ -82,5 +85,10 @@ class EpisodeStoryHandler
       where(position: audio.position, original_url: audio.links['enclosure'].href).
       order(created_at: :desc).
       first
+  end
+
+  def get_story(account = nil)
+    return nil unless episode.prx_uri
+    api(account: account).tap { |a| a.href = episode.prx_uri }.get
   end
 end
