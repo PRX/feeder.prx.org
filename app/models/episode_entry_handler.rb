@@ -31,7 +31,11 @@ class EpisodeEntryHandler
   end
 
   def update_from_entry(entry)
-    self.episode.overrides = entry.attributes.with_indifferent_access
+    episode.overrides = entry.attributes.with_indifferent_access
+    update_from_overrides
+  end
+
+  def update_from_overrides
     o = overrides.slice(*ENTRY_ATTRIBUTES).with_indifferent_access
     episode.assign_attributes(o)
 
