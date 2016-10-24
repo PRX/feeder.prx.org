@@ -10,6 +10,12 @@ class FeedEntryUpdateJob < ActiveJob::Base
 
   attr_accessor :body, :feed, :episode, :podcast, :entry
 
+  def perform(*args)
+    ActiveRecord::Base.connection_pool.with_connection do
+      super
+    end
+  end
+
   def receive_feed_entry_update(data)
     load_resources(data)
     podcast ? update_podcast : create_podcast
