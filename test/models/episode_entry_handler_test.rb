@@ -158,7 +158,7 @@ describe EpisodeEntryHandler do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
     episode.contents.clear
-    episode.wont_be :has_media?
+    episode.wont_be :media?
     episode.wont_be :media_ready?
     episode.must_be :include_in_feed?
   end

@@ -21,6 +21,7 @@ class Episode < ActiveRecord::Base
   before_validation :initialize_guid
 
   scope :released, -> { where('released_at IS NULL OR released_at <= now()') }
+  scope :published, -> { where('published_at IS NOT NULL') }
 
   def author=(a)
     author = a || {}
@@ -125,11 +126,11 @@ class Episode < ActiveRecord::Base
   end
 
   def include_in_feed?
-    !has_media? || media_ready?
+    !media? || media_ready?
   end
 
-  def has_media?
-    enclosures.size > 0 || contents.size > 0
+  def media?
+    media_files.size > 0
   end
 
   def media_ready?
