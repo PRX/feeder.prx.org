@@ -58,7 +58,14 @@ class Task < ActiveRecord::Base
       result: opts[:destination],
       call_back: fixer_call_back_queue
     }
-    job = { priority: 1, original: opts[:source], job_type: opts[:job_type], tasks: [ task ] }
+    job = {
+      job_type: opts[:job_type],
+      original: opts[:source],
+      tasks: [ task ],
+      priority: 1,
+      retry_delay: 300,
+      retry_max: 12
+    }
     fixer_sqs_client.create_job(job: job)
   end
 
