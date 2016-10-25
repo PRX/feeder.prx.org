@@ -35,14 +35,16 @@ describe StoryUpdateJob do
 
   it 'can update an episode' do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
-    podcast.stub(:create_publish_task, true) do
-      episode.stub(:copy_media, true) do
-        Episode.stub(:by_prx_story, episode) do
-          lbd = episode.podcast.last_build_date
-          uat = episode.updated_at
-          job.receive_story_update(JSON.parse(body))
-          job.episode.podcast.last_build_date.must_be :>, lbd
-          job.episode.updated_at.must_be :>, uat
+    episode.stub(:copy_media, true) do
+      episode.stub(:podcast, podcast) do
+        episode.podcast.stub(:create_publish_task, true) do
+          Episode.stub(:by_prx_story, episode) do
+            lbd = episode.podcast.last_build_date
+            uat = episode.updated_at
+            job.receive_story_update(JSON.parse(body))
+            job.episode.podcast.last_build_date.must_be :>, lbd
+            job.episode.updated_at.must_be :>, uat
+          end
         end
       end
     end
@@ -53,9 +55,11 @@ describe StoryUpdateJob do
     episode.must_be :deleted?
     podcast.stub(:create_publish_task, true) do
       episode.stub(:copy_media, true) do
-        Episode.stub(:by_prx_story, episode) do
-          job.receive_story_update(JSON.parse(body))
-          job.episode.wont_be :deleted?
+        episode.stub(:podcast, podcast) do
+          Episode.stub(:by_prx_story, episode) do
+            job.receive_story_update(JSON.parse(body))
+            job.episode.wont_be :deleted?
+          end
         end
       end
     end
@@ -65,8 +69,10 @@ describe StoryUpdateJob do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
     podcast.stub(:create_publish_task, true) do
       Episode.stub(:by_prx_story, episode) do
-        job.receive_story_delete(JSON.parse(body))
-        job.episode.deleted_at.wont_be_nil
+        episode.stub(:podcast, podcast) do
+          job.receive_story_delete(JSON.parse(body))
+          job.episode.deleted_at.wont_be_nil
+        end
       end
     end
   end
