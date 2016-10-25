@@ -17,7 +17,7 @@ describe StoryUpdateJob do
   end
 
   it 'creates a story resource' do
-    story = job.api_resource(JSON.parse(body))
+    story = job.api_resource(JSON.parse(body).with_indifferent_access)
     story.must_be_instance_of PRXAccess::PRXHyperResource
   end
 
@@ -28,7 +28,7 @@ describe StoryUpdateJob do
     mock_episode.expect(:podcast, podcast)
     EpisodeStoryHandler.stub(:create_from_story!, mock_episode) do
       podcast.stub(:create_publish_task, true) do
-        job.receive_story_update(JSON.parse(body))
+        job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
       end
     end
   end
@@ -41,7 +41,7 @@ describe StoryUpdateJob do
           Episode.stub(:by_prx_story, episode) do
             lbd = episode.podcast.last_build_date
             uat = episode.updated_at
-            job.receive_story_update(JSON.parse(body))
+            job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
             job.episode.podcast.last_build_date.must_be :>, lbd
             job.episode.updated_at.must_be :>, uat
           end
@@ -57,7 +57,7 @@ describe StoryUpdateJob do
       episode.stub(:copy_media, true) do
         episode.stub(:podcast, podcast) do
           Episode.stub(:by_prx_story, episode) do
-            job.receive_story_update(JSON.parse(body))
+            job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
             job.episode.wont_be :deleted?
           end
         end
@@ -70,7 +70,7 @@ describe StoryUpdateJob do
     podcast.stub(:create_publish_task, true) do
       Episode.stub(:by_prx_story, episode) do
         episode.stub(:podcast, podcast) do
-          job.receive_story_delete(JSON.parse(body))
+          job.perform(subject: 'story', action: 'delete', body: JSON.parse(body))
           job.episode.deleted_at.wont_be_nil
         end
       end
