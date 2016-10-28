@@ -42,14 +42,13 @@ class StoryUpdateJob < ActiveJob::Base
   end
 
   def update_episode
-    # check the updated_at value in the message versus the db
-    # if it is not more recent, do nothing
-    # if it is, then retrieve the latest story from api
-    #  and check the updated_at again
-    # if it is truly not update,
-    #  then update it with the latest from the API
-    episode.restore if episode.deleted?
-    self.episode = EpisodeStoryHandler.update_from_story!(episode, story)
+    story_updated = Time.parse(story.attributes[:updated_at]) if story.attributes[:updated_at]
+    if episode.updated && story_last_updated && story_updated < episode.updated
+      logger.info("Not updating episode: #{episode.id} as #{story_updated} > #{episode.updated}")
+    else
+      episode.restore if episode.deleted?
+      self.episode = EpisodeStoryHandler.update_from_story!(episode, story)
+    end
   end
 
   def create_episode
