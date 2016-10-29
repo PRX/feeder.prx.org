@@ -20,5 +20,6 @@ describe EpisodeStoryHandler do
     episode = EpisodeStoryHandler.create_from_story!(story)
     episode.wont_be_nil
     episode.published_at.wont_be_nil
+    episode.published_at.must_equal Time.parse(story.attributes[:published_at])
   end
 end
