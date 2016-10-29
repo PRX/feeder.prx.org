@@ -52,7 +52,7 @@ class EpisodeStoryHandler
   end
 
   def update_audio
-    audio = story.objects["prx:audio"].objects['prx:items'] rescue []
+    audio = story.objects['prx:audio'].objects['prx:items'] rescue []
     audio.each do |a|
       next unless a.status == 'complete'
 
