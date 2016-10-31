@@ -110,8 +110,8 @@ group :test do
   gem 'rubocop', require: false
 end
 
-group :production do
-  # Include 'rails_12factor' gem to enable all Heroku platform features
+group :development, :production do
+  # Include 'rails_12factor' gem so all logs go to stdout, etc.
   gem 'rails_12factor'
 
   # Use puma as the HTTP server

@@ -42,12 +42,17 @@ class StoryUpdateJob < ActiveJob::Base
   end
 
   def update_episode
-    episode.restore if episode.deleted?
-    episode.update_from_story!(story)
+    story_updated = Time.parse(story.attributes[:updated_at]) if story.attributes[:updated_at]
+    if episode.updated && story_last_updated && story_updated < episode.updated
+      logger.info("Not updating episode: #{episode.id} as #{story_updated} > #{episode.updated}")
+    else
+      episode.restore if episode.deleted?
+      self.episode = EpisodeStoryHandler.update_from_story!(episode, story)
+    end
   end
 
   def create_episode
     return unless story && story.try(:series)
-    self.episode = Episode.create_from_story!(story)
+    self.episode = EpisodeStoryHandler.create_from_story!(story)
   end
 end

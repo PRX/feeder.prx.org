@@ -127,7 +127,7 @@ class Podcast < ActiveRecord::Base
   def feed_episodes
     feed = []
     feed_max = max_episodes.to_i
-    episodes.released.each do |ep|
+    episodes.published.released.each do |ep|
       feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (feed.size >= feed_max)
     end
