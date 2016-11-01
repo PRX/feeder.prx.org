@@ -60,9 +60,9 @@ class EpisodeEntryHandler
   # must be called after update_enclosure and update_contents
   # as it depends on media_url
   def update_link
-    self.episode.url = overrides[:feedburner_orig_link] || overrides[:url]
+    self.episode.url = overrides[:feedburner_orig_link] || overrides[:url] || overrides[:link]
     # libsyn sets the link to a libsyn url, instead set to media file or page
-    self.episode.url = episode.media_url if episode.url.match(/libsyn\.com/)
+    self.episode.url = episode.media_url if episode.url && episode.url.match(/libsyn\.com/)
   end
 
   def update_enclosure
