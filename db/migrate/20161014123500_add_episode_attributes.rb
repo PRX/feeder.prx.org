@@ -21,6 +21,10 @@ class AddEpisodeAttributes < ActiveRecord::Migration
     add_column :episodes, :feedburner_orig_enclosure_link, :string
     add_column :episodes, :is_perma_link, :boolean
 
-    Episode.where(prx_uri: nil, title: nil).each { |e| EpisodeEntryHandler.new(e).update_from_overrides }
+    Episode.where(prx_uri: nil, title: nil).each do |e|
+      EpisodeEntryHandler.new(e).update_from_overrides
+      puts "saving #{e.id}..."
+      e.save!
+    end
   end
 end
