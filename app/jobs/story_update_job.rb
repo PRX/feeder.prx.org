@@ -10,6 +10,12 @@ class StoryUpdateJob < ActiveJob::Base
 
   attr_accessor :body, :episode, :podcast, :story
 
+  def perform(*args)
+    ActiveRecord::Base.connection_pool.with_connection do
+      super
+    end
+  end
+
   def receive_story_update(data)
     load_resources(data)
     episode ? update_episode : create_episode
@@ -30,18 +36,23 @@ class StoryUpdateJob < ActiveJob::Base
 
   def load_resources(data)
     self.body = data.is_a?(String) ? JSON.parse(data) : data
-    self.story = api_resource(body)
+    self.story = api_resource(body.with_indifferent_access)
     self.episode = Episode.by_prx_story(story)
     self.podcast = episode.podcast if episode
   end
 
   def update_episode
-    episode.restore if episode.deleted?
-    episode.update_from_story!(story)
+    story_updated = Time.parse(story.attributes[:updated_at]) if story.attributes[:updated_at]
+    if episode.updated && story_last_updated && story_updated < episode.updated
+      logger.info("Not updating episode: #{episode.id} as #{story_updated} > #{episode.updated}")
+    else
+      episode.restore if episode.deleted?
+      self.episode = EpisodeStoryHandler.update_from_story!(episode, story)
+    end
   end
 
   def create_episode
     return unless story && story.try(:series)
-    self.episode = Episode.create_from_story!(story)
+    self.episode = EpisodeStoryHandler.create_from_story!(story)
   end
 end

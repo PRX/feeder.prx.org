@@ -10,6 +10,12 @@ class FeedEntryUpdateJob < ActiveJob::Base
 
   attr_accessor :body, :feed, :episode, :podcast, :entry
 
+  def perform(*args)
+    ActiveRecord::Base.connection_pool.with_connection do
+      super
+    end
+  end
+
   def receive_feed_entry_update(data)
     load_resources(data)
     podcast ? update_podcast : create_podcast
@@ -35,13 +41,12 @@ class FeedEntryUpdateJob < ActiveJob::Base
 
   def update_episode
     episode.restore if episode.deleted?
-    episode.update_from_entry(entry)
-    episode.save!
+    EpisodeEntryHandler.update_from_entry!(episode, entry)
     episode.copy_media
   end
 
   def create_episode
-    self.episode = Episode.create_from_entry!(podcast, entry)
+    self.episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
     episode.copy_media
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
     self.episode = podcast.episodes.find_by(original_guid: entry.guid, podcast_id: podcast.id) if podcast

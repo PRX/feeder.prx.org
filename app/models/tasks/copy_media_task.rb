@@ -40,8 +40,8 @@ class Tasks::CopyMediaTask < ::Task
   def episode_options
     return nil if episode && episode.prx_uri
     {
-      source: media_resource.original_url,
-      audio_uri: media_resource.original_url
+      source: episode_audio_uri,
+      audio_uri: episode_audio_uri
     }
   end
 
@@ -55,12 +55,16 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def new_audio_file?(story = nil)
-    options[:audio_uri] != (media_resource.original_url || story_audio_uri(story))
+    options[:audio_uri] != (episode_audio_uri || story_audio_uri(story))
   end
 
   def story_audio_uri(story = nil)
     story ||= get_story
     story.audio[0].body['_links']['self']['href']
+  end
+
+  def episode_audio_uri
+    media_resource.original_url.gsub(/\?.*/, '')
   end
 
   def get_story(account = nil)
