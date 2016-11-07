@@ -3,8 +3,8 @@ require 'addressable/template'
 require 'hash_serializer'
 
 class Episode < ActiveRecord::Base
-  serialize :categories, JSON
-  serialize :keywords, JSON
+  serialize :categories, HashSerializer
+  serialize :keywords, HashSerializer
 
   acts_as_paranoid
 
