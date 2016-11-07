@@ -1,5 +1,5 @@
 class AddEpisodeAttributes < ActiveRecord::Migration
-  def change
+  def up
     add_column :episodes, :url, :string
     add_column :episodes, :author_name, :string
     add_column :episodes, :author_email, :string
@@ -26,5 +26,28 @@ class AddEpisodeAttributes < ActiveRecord::Migration
       puts "saving #{e.id}..."
       e.save!
     end
+  end
+
+  def down
+    remove_column :episodes, :url
+    remove_column :episodes, :author_name
+    remove_column :episodes, :author_email
+    remove_column :episodes, :title
+    remove_column :episodes, :subtitle
+    remove_column :episodes, :content
+    remove_column :episodes, :summary
+    remove_column :episodes, :published
+    remove_column :episodes, :updated
+    remove_column :episodes, :image_url
+    remove_column :episodes, :explicit
+    remove_column :episodes, :keywords
+    remove_column :episodes, :description
+    remove_column :episodes, :categories
+    remove_column :episodes, :block
+    remove_column :episodes, :is_closed_captioned
+    remove_column :episodes, :position
+    remove_column :episodes, :feedburner_orig_link
+    remove_column :episodes, :feedburner_orig_enclosure_link
+    remove_column :episodes, :is_perma_link
   end
 end
