@@ -3,8 +3,8 @@ require 'addressable/template'
 require 'hash_serializer'
 
 class Episode < ActiveRecord::Base
-  serialize :categories, HashSerializer
-  serialize :keywords, HashSerializer
+  serialize :categories, JSON
+  serialize :keywords, JSON
 
   acts_as_paranoid
 
@@ -48,6 +48,14 @@ class Episode < ActiveRecord::Base
 
   def overrides
     self[:overrides] ||= HashWithIndifferentAccess.new
+  end
+
+  def categories
+    self[:categories] ||= []
+  end
+
+  def keywords
+    self[:keywords] ||= []
   end
 
   def self.by_prx_story(story)
