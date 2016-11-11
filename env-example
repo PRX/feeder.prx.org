@@ -26,6 +26,7 @@ HIGHWINDS_PASSWORD=
 HIGHWINDS_USERNAME=
 ID_ROOT=https://id.prx.org/
 LANG=en_US.UTF-8
+NEW_RELIC_KEY=
 POSTGRES_PASSWORD=password
 PRX_CLIENT_ID=
 PRX_ROOT=https://beta.prx.org/stories/

@@ -50,6 +50,14 @@ class Episode < ActiveRecord::Base
     self[:overrides] ||= HashWithIndifferentAccess.new
   end
 
+  def categories
+    self[:categories] ||= []
+  end
+
+  def keywords
+    self[:keywords] ||= []
+  end
+
   def self.by_prx_story(story)
     story_uri = story.links['self'].href
     Episode.with_deleted.find_by(prx_uri: story_uri)
