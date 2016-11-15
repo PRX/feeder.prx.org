@@ -31,7 +31,7 @@ class Podcast < ActiveRecord::Base
 
   FEED_ATTRS = %w( complete copyright description explicit keywords language
     subtitle summary title update_frequency update_period
-    author managing_editor owners ).freeze
+    author managing_editor new_feed_url owners ).freeze
 
   def update_from_feed(feed_resource)
     feed = feed_resource.attributes
