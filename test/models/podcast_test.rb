@@ -35,6 +35,15 @@ describe Podcast do
     it 'create_from_feed' do
       feed = entry.objects['prx:feed']
       podcast = Podcast.create_from_feed!(feed)
+      podcast.title.must_equal 'Serial'
+      podcast.source_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml'
+      podcast.link.must_equal 'http://serialpodcast.org'
+      podcast.author_name.must_equal 'This American Life'
+      podcast.owner_name.must_be_nil
+      podcast.owner_email.must_equal 'rich@strangebirdlabs.com'
+      podcast.managing_editor_name.must_equal 'This American Life'
+      podcast.managing_editor_email.must_equal 'chad@thislife.org'
+      podcast.new_feed_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/newserialpodcast.xml'
     end
 
     it 'update_from_feed' do
@@ -51,6 +60,7 @@ describe Podcast do
       podcast.owner_email.must_equal 'rich@strangebirdlabs.com'
       podcast.managing_editor_name.must_equal 'This American Life'
       podcast.managing_editor_email.must_equal 'chad@thislife.org'
+      podcast.new_feed_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/newserialpodcast.xml'
     end
 
     it 'update_images' do

@@ -39,6 +39,7 @@ describe 'RSS feed Integration Test' do
     @feed.at_css('atom|link').attributes['href'].value.must_equal 'http://feeds.feedburner.com/thornmorris'
     @feed.at_css('itunes|author').text.must_equal @podcast.author_name
     @feed.at_css('itunes|explicit').text.must_equal 'yes'
+    @feed.at_css('itunes|new-feed-url').text.must_equal 'http://feeds.feedburner.com/newthornmorris'
   end
 
   it 'contains correct podcast image information' do

@@ -70,6 +70,7 @@
         "name": "This American Life",
         "email": null
       },
+      "newFeedUrl": "https://s3.amazonaws.com/prx-dovetail/testserial/newserialpodcast.xml",
       "language": "en",
       "copyright": "Copyright 2015 Ira Glass",
       "complete": false,
