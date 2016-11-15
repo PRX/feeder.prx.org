@@ -33,6 +33,10 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
     xml.atom :link, href: (@podcast.url || @podcast.published_url), rel: 'self', type: 'application/rss+xml'
 
+    unless @podcast.new_feed_url.blank?
+      xml.itunes :'new-feed-url', @podcast.new_feed_url
+    end
+
     xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
 
     @podcast.itunes_categories[0, 3].each do |cat|
