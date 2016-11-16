@@ -74,11 +74,12 @@ class EpisodeEntryHandler
     # If the enclosure has been removed, just delete it (rare but simple case)
     if !overrides[:enclosure]
       episode.enclosure.try(:destroy)
-    end
-
-    # If no enclosure exists for this url (of any status), create one
-    if overrides[:enclosure] && !episode.enclosures.exists?(original_url: enclosure_hash[:url])
-      episode.enclosures << Enclosure.build_from_enclosure(episode, enclosure_hash)
+    else
+      # If no enclosure exists for this url (of any status), create one
+      enclosure_file = URI.parse(enclosure_hash[:url] || '').path.split('/').last
+      if !episode.enclosures.where('original_url like ?', "%/#{enclosure_file}").exists?
+        episode.enclosures << Enclosure.build_from_enclosure(episode, enclosure_hash)
+      end
     end
   end
 
@@ -113,8 +114,10 @@ class EpisodeEntryHandler
   end
 
   def find_existing_content(c)
+    content_file = URI.parse(c[:url] || '').path.split('/').last
     episode.all_contents.
-      where(position: c[:position], original_url: c[:url]).
+      where(position: c[:position]).
+      where('original_url like ?', "%/#{content_file}").
       order(created_at: :desc).
       first
   end
