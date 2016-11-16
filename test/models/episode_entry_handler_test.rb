@@ -103,6 +103,33 @@ describe EpisodeEntryHandler do
     episode.enclosure.must_equal replacement_enclosure
   end
 
+  it 'will not changes enclosure when file name same' do
+    podcast = create(:podcast)
+    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
+    episode.enclosures.first.complete!
+    first_enclosure = episode.enclosure
+
+    first_enclosure.original_url.must_equal "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
+    first_enclosure.update_attribute(:original_url, "http://www.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3")
+    EpisodeEntryHandler.update_from_entry!(episode, entry)
+    episode.enclosures(true).size.must_equal 1
+    episode.enclosures.first.original_url.must_equal "http://www.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
+  end
+
+  it 'updates enclosure when only file name changes' do
+    podcast = create(:podcast)
+    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
+    episode.enclosures.first.complete!
+    first_enclosure = episode.enclosure
+
+    first_enclosure.original_url.must_equal "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
+    first_enclosure.update_attribute(:original_url, "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12_original.mp3")
+    EpisodeEntryHandler.update_from_entry!(episode, entry)
+    episode.enclosures(true).size.must_equal 2
+    episode.enclosures.first.original_url.must_equal "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
+    episode.enclosures.last.original_url.must_equal "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12_original.mp3"
+  end
+
   it 'creates contents from entry' do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
@@ -118,8 +145,6 @@ describe EpisodeEntryHandler do
     episode.reload
     first_content = episode.all_contents.first
     last_content = episode.all_contents.last
-    # puts "\nfirst_content #{first_content.inspect}"
-    # puts "\nlast_content #{last_content.inspect}"
 
     EpisodeEntryHandler.update_from_entry!(episode, entry)
     episode.reload
@@ -127,9 +152,14 @@ describe EpisodeEntryHandler do
     episode.all_contents.last.must_equal last_content
 
     first_content = episode.contents.first
-    episode.contents.first.update_attributes(original_url: "https://test.com")
+    first_content.original_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3'
+    first_content.update_attributes(original_url: 'https://prx-dovetail.amazonaws.com/testserial/serial_audio.mp3')
     EpisodeEntryHandler.update_from_entry!(episode, entry)
-    episode.all_contents.size.must_equal 3
+    episode.all_contents(true).size.must_equal 2
+
+    first_content.update_attributes(original_url: 'https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio_original.mp3')
+    EpisodeEntryHandler.update_from_entry!(episode, entry)
+    episode.all_contents(true).size.must_equal 3
     episode.all_contents.group_by(&:position)[first_content.position].size.must_equal 2
   end
 
