@@ -2,6 +2,10 @@
 
 class Api::PodcastRepresenter < Api::BaseRepresenter
   property :prx_uri
+  property :prx_account_uri
+  property :created_at
+  property :updated_at
+
   property :path
   property :url
   property :published_url, writeable: false
@@ -44,4 +48,19 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :enclosure_template
   property :display_episodes_count
   property :display_full_episodes_count
+
+  link :episodes do
+    {
+      href: api_podcast_episodes_path(represented),
+      count: represented.episodes.published.released.count
+    } if represented.id
+  end
+
+  link :series do
+    URI.join(cms_root, represented.prx_uri) if represented.id
+  end
+
+  link :account do
+    URI.join(cms_root, represented.prx_account_uri) if represented.id
+  end
 end
