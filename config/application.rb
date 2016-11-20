@@ -41,12 +41,24 @@ module Feeder
       g.assets false
     end
 
+    config.middleware.insert_after Rails::Rack::Logger, Rack::Cors do
+      allow do
+        origins /.*\.prx\.(?:org|dev|tech|docker)$/
+        resource '/api/*', methods: [:get, :put, :post, :delete, :options], headers: :any
+      end
+
+      allow do
+        origins '*'
+        resource '/api/*', methods: [:get]
+      end
+    end
+
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
 
     config.representer.represented_formats = [:hal, :json]
-    config.representer.default_url_options = { host: 'feeder.prx.org' }
+    config.representer.default_url_options = { host: (ENV['FEEDER_APP_HOST'] || 'feeder.prx.org') }
 
     # Set Time.zone default to the specified zone and make Active Record auto-convert to this zone.
     # Run "rake -D time" for a list of tasks for finding time zone names. Default is UTC.
