@@ -19,6 +19,10 @@ class Podcast < ActiveRecord::Base
     DateUpdater.last_build_date(self)
   end
 
+  def account_id
+    URI.parse(prx_account_uri || '').path.split('/').last.to_i
+  end
+
   def path
     self[:path] || id
   end
@@ -126,7 +130,7 @@ class Podcast < ActiveRecord::Base
 
   def feed_episodes
     feed = []
-    feed_max = max_episodes.to_i
+    feed_max = display_episodes_count.to_i
     episodes.published.released.each do |ep|
       feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (feed.size >= feed_max)
