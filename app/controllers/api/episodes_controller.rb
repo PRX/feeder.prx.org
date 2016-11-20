@@ -3,4 +3,8 @@ class Api::EpisodesController < Api::BaseController
   represent_with Api::EpisodeRepresenter
   filter_resources_by :podcast_id
   find_method :find_by_guid
+
+  def scoped(relation)
+    relation.published.released
+  end
 end
