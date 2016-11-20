@@ -7,8 +7,9 @@ describe Api::PodcastsController do
   let(:podcast_hash) do
     {
       path: 'testcast',
-      prxUri: "/api/v1/series/123",
-      prxAccountUri: "/api/v1/accounts/#{account_id}"
+      prxUri: '/api/v1/series/123',
+      prxAccountUri: "/api/v1/accounts/#{account_id}",
+      itunesCategories: [{ name: 'Arts', subcategories: ['Design', 'Fashion & Beauty'] }]
     }
   end
 
@@ -22,6 +23,9 @@ describe Api::PodcastsController do
     it 'can create a new podcast' do
       post :create, podcast_hash.to_json, api_version: 'v1', format: 'json'
       assert_response :success
+      id = JSON.parse(response.body)['id']
+      new_podcast = Podcast.find(id)
+      new_podcast.itunes_categories.first.name.must_equal 'Arts'
     end
 
     it 'rejects create without valid token' do

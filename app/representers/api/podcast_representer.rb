@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 class Api::PodcastRepresenter < Api::BaseRepresenter
+  property :id
   property :prx_uri
   property :prx_account_uri
   property :created_at
@@ -57,10 +58,10 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   end
 
   link :series do
-    URI.join(cms_root, represented.prx_uri) if represented.id
+    URI.join(cms_root, represented.prx_uri).to_s if represented.id
   end
 
   link :account do
-    URI.join(cms_root, represented.prx_account_uri) if represented.id
+    URI.join(cms_root, represented.prx_account_uri).to_s if represented.id
   end
 end
