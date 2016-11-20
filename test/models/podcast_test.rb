@@ -94,7 +94,7 @@ describe Podcast do
     it 'returns only limited number of episodes' do
       episodes.count.must_equal podcast.episodes.count
       podcast.feed_episodes.count.must_equal 10
-      podcast.max_episodes = 5
+      podcast.display_episodes_count = 5
       podcast.feed_episodes.count.must_equal 5
     end
   end

@@ -74,11 +74,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.sy :updateFrequency, @podcast.update_frequency if @podcast.update_frequency
     xml.sy :updateBase, @podcast.update_base if @podcast.update_base
 
-    episode_count = @podcast.display_episodes_count.to_i
     @episodes.each_with_index do |ep, index|
-      # Display no more episodes if we are over the max
-      break if episode_count > 0 && index >= episode_count
-
       xml.item do
         xml.guid(ep.item_guid, isPermaLink: !!ep.is_perma_link)
         xml.title(ep.title)
