@@ -52,9 +52,17 @@ gem 'actionpack-action_caching'
 # paging
 gem 'kaminari'
 
+# JWS
+gem 'prx_auth-rails', '~> 0.0.4'
+gem 'rack-prx_auth', '~> 0.0.8'
+
 gem 'responders'
 gem 'roar-rails'
 gem 'hal_api-rails', '~> 0.2.9'
+
+# auth
+gem 'rack-cors', require: 'rack/cors'
+gem 'pundit'
 
 group :development, :test do
   # Pry is an IRB alternative and runtime developer console
