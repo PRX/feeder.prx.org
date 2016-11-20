@@ -46,9 +46,6 @@ module PRXAccess
     href = body['_links']['self']['href']
     resource = api(root: root)
     link = PRXHyperResource::Link.new(resource, href: href)
-    # puts "href: #{href}"
-    # puts "resource: #{resource.inspect}"
-    # puts "link: #{link.inspect}"
     PRXHyperResource.new_from(body: body, resource: resource, link: link)
   end
 
