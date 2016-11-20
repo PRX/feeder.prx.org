@@ -1,10 +1,10 @@
 Rails.application.routes.draw do
   namespace :api do
     scope ':api_version', api_version: 'v1', defaults: { format: 'hal' } do
-      resources :podcasts, only: [:show, :index] do
-        resources :episodes, only: [:show, :index]
+      resources :podcasts, except: [:new, :edit] do
+        resources :episodes, except: [:new, :edit]
       end
-      resources :episodes, only: [:show, :index]
+      resources :episodes, except: [:new, :edit]
 
       root to: 'base#entrypoint'
       match '*any', via: [:options], to: 'base#options'
