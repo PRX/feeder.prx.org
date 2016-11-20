@@ -376,6 +376,7 @@ DEPENDENCIES
   rails_12factor
   rake
   responders
+  roar
   roar-rails
   rubocop
   sanitize
