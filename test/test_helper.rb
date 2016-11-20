@@ -77,3 +77,23 @@ class SqsMock
     j
   end
 end
+
+Minitest::Expectations.infect_an_assertion :assert_operator, :must_allow, :reverse
+Minitest::Expectations.infect_an_assertion :refute_operator, :wont_allow, :reverse
+
+StubToken = Struct.new(:resource, :scopes, :user_id)
+class StubToken
+  @@fake_user_id = 0
+
+  def initialize(res, scopes, explicit_user_id = nil)
+    if explicit_user_id
+      super(res.to_s, scopes, explicit_user_id)
+    else
+      super(res.to_s, scopes, @@fake_user_id += 1)
+    end
+  end
+
+  def authorized?(r, s = nil)
+    resource == r.to_s && (s.nil? || scopes.include?(s.to_s))
+  end
+end
