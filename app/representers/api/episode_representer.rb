@@ -41,7 +41,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     api_episode_path(id: episode.guid)
   end
 
-  link :podcast do
+  link rel: :podcast, writeable: true do
     api_podcast_path(represented.podcast) if represented.id
   end
 
