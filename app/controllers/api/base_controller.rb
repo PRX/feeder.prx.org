@@ -19,7 +19,7 @@ class Api::BaseController < ApplicationController
 
   protect_from_forgery with: :null_session
 
-  allow_params :show, :zoom
+  allow_params :show, [:api_version, :format, :zoom]
   allow_params :index, [:page, :per, :zoom]
 
   cache_api_action :show, if: :cache_show?
