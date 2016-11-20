@@ -1,5 +1,6 @@
 class ITunesImage < ActiveRecord::Base
   belongs_to :podcast
+  attr_accessor :link, :description
 
   validates :height, :width, numericality: {
     less_than_or_equal_to: 3000,
