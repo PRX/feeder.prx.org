@@ -38,7 +38,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     class: MediaResource
 
   def self_url(episode)
-    episode_path(id: episode.guid)
+    api_episode_path(id: episode.guid)
   end
 
   link :podcast do
@@ -46,6 +46,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   end
 
   link :story do
-    URI.join(cms_root, represented.prx_uri) if represented.id
+    URI.join(cms_root, represented.prx_uri).to_s if represented.id
   end
 end
