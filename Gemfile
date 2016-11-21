@@ -3,20 +3,50 @@ source 'https://rubygems.org'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 4.2.0'
 
+# JWS
+gem 'prx_auth-rails', '~> 0.0.4'
+gem 'rack-prx_auth', '~> 0.0.8'
+
+# Controller
+gem 'responders'
+gem 'hal_api-rails', '~> 0.2.9'
+
+# auth
+gem 'rack-cors', require: 'rack/cors'
+gem 'pundit'
+
+# paging
+gem 'kaminari'
+
+# caching
+gem 'actionpack-action_caching'
+
+
+## View
+# json handling
+gem 'roar'
+gem 'roar-rails'
+# gem 'oj'
+# gem 'oj_mimic_json'
+
+# Use Shoryuken for processing SQS jobs
+gem 'shoryuken'
+# Use Announce for event subscriptions
+gem 'announce'
+
+# Load local environment variables with dotenv
+gem 'dotenv-rails'
+
+
+# Use Postresql as the database for Active Record
+gem 'pg'
+
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.0'
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0', group: :doc
 
 gem 'rake'
-
-# Use Postresql as the database for Active Record
-gem 'pg'
-
-# Use Shoryuken for processing SQS jobs
-gem 'shoryuken'
-# Use Announce for event subscriptions
-gem 'announce'
 
 # Use HyperResource for handling HAL APIs
 gem 'hyperresource'
@@ -44,17 +74,6 @@ gem 'fastimage'
 # for url templates
 gem 'addressable'
 
-# Load local environment variables with dotenv
-gem 'dotenv-rails'
-
-gem 'actionpack-action_caching'
-
-# paging
-gem 'kaminari'
-
-gem 'responders'
-gem 'roar-rails'
-gem 'hal_api-rails', '~> 0.2.9'
 
 group :development, :test do
   # Pry is an IRB alternative and runtime developer console

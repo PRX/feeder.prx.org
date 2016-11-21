@@ -16,7 +16,6 @@ class Episode < ActiveRecord::Base
   has_many :enclosures, -> { order('created_at DESC') }
 
   validates :podcast_id, :guid, presence: true
-  # validates_associated :podcast
 
   before_validation :initialize_guid
 

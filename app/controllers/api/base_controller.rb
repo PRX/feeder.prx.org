@@ -3,11 +3,23 @@ require 'hal_api/rails'
 
 class Api::BaseController < ApplicationController
   include HalApi::Controller
+  include Pundit
   include ApiVersioning
+
+  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+
+  def pundit_user
+    prx_auth_token
+  end
+
+  def user_not_authorized
+    message = { error: 'You are not authorized to perform this action' }
+    render json: message, status: 401
+  end
 
   protect_from_forgery with: :null_session
 
-  allow_params :show, :zoom
+  allow_params :show, [:api_version, :format, :zoom]
   allow_params :index, [:page, :per, :zoom]
 
   cache_api_action :show, if: :cache_show?
