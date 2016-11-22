@@ -6,7 +6,7 @@ class Podcast < ActiveRecord::Base
   has_one :itunes_image, autosave: true
   has_one :feed_image, autosave: true
 
-  has_many :episodes, -> { order("published_at desc") }
+  has_many :episodes, -> { order('published_at desc') }
   has_many :itunes_categories, autosave: true
   has_many :tasks, as: :owner
 
@@ -14,6 +14,8 @@ class Podcast < ActiveRecord::Base
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
 
   acts_as_paranoid
+
+  scope :published, -> { where('published_at IS NOT NULL') }
 
   after_save do
     DateUpdater.last_build_date(self)
