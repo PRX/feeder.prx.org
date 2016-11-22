@@ -1,4 +1,4 @@
-class ITunesImage < ActiveRecord::Base
+class ITunesImage < BaseModel
   belongs_to :podcast
   attr_accessor :link, :description
 

@@ -1,5 +1,4 @@
-class Podcast < ActiveRecord::Base
-
+class Podcast < BaseModel
   serialize :categories, JSON
   serialize :keywords, JSON
 

@@ -1,4 +1,4 @@
-class ITunesCategory < ActiveRecord::Base
+class ITunesCategory < BaseModel
   belongs_to :podcast
   serialize :subcategories, JSON
 
