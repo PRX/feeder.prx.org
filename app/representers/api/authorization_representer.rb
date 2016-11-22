@@ -10,6 +10,13 @@ class Api::AuthorizationRepresenter < Api::BaseRepresenter
     }
   end
 
+  link :podcast do
+    {
+      href: api_authorization_podcast_path_template(id: '{id}'),
+      templated: true,
+    }
+  end
+
   def self_url(_r)
     api_authorization_path
   end
