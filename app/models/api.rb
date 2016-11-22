@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class Api
-  extend ActiveModel::Naming
+  include HalApi::RepresentedModel
 
   attr_accessor :version
 
@@ -11,6 +11,7 @@ class Api
 
   def initialize(version)
     @version = version
+    self.is_root_resource = true
   end
 
   def to_model
@@ -27,16 +28,5 @@ class Api
 
   def updated_at
     File.mtime(__FILE__)
-  end
-
-  def is_root_resource
-    true
-  end
-
-  def is_root_resource=(is_root)
-  end
-
-  def show_curies
-    true
   end
 end
