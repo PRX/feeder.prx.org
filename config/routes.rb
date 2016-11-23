@@ -8,8 +8,17 @@ Rails.application.routes.draw do
 
       root to: 'base#entrypoint'
       match '*any', via: [:options], to: 'base#options'
+
+      resource :authorization, only: [:show] do
+        resources :podcasts, except: [:new, :edit], module: :auth do
+          resources :episodes, except: [:new, :edit], module: :auth
+        end
+
+        resources :episodes, except: [:new, :edit], module: :auth
+      end
     end
   end
+
 
   match '/api', via: [:get], to: redirect("/api/v1")
   match '/', via: [:get], to: redirect("/api/v1")

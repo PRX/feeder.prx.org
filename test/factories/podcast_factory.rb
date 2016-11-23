@@ -2,6 +2,7 @@ FactoryGirl.define do
   factory :podcast do
     sequence(:prx_uri) { |n| "/api/v1/series/#{n}" }
     sequence(:prx_account_uri) { |n| "/api/v1/accounts/#{n}" }
+    sequence(:published_at) { |n| Date.today - n.days }
     path 'jjgo'
     url 'http://feeds.feedburner.com/thornmorris'
     link 'http://www.maximumfun.org/jjgo'

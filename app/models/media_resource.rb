@@ -1,4 +1,4 @@
-class MediaResource < ActiveRecord::Base
+class MediaResource < BaseModel
   has_one :task, as: :owner
   belongs_to :episode, -> { with_deleted }
 

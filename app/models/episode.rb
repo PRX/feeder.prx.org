@@ -2,7 +2,7 @@ require 'addressable/uri'
 require 'addressable/template'
 require 'hash_serializer'
 
-class Episode < ActiveRecord::Base
+class Episode < BaseModel
   serialize :categories, JSON
   serialize :keywords, JSON
 
