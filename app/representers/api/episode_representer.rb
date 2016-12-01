@@ -46,6 +46,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   end
 
   link :story do
-    URI.join(cms_root, represented.prx_uri).to_s if represented.id
+    URI.join(cms_root, represented.prx_uri).to_s if represented.prx_uri
   end
 end

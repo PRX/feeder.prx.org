@@ -58,10 +58,10 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   end
 
   link :series do
-    URI.join(cms_root, represented.prx_uri).to_s if represented.id
+    URI.join(cms_root, represented.prx_uri).to_s if represented.prx_uri
   end
 
   link :account do
-    URI.join(cms_root, represented.prx_account_uri).to_s if represented.id
+    URI.join(cms_root, represented.prx_account_uri).to_s if represented.prx_account_uri
   end
 end
