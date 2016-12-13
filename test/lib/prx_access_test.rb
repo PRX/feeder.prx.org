@@ -14,9 +14,9 @@ describe PRXAccess do
 
   it 'returns root uri' do
     prx_access.id_root.wont_be_nil
-    prx_access.crier_root.wont_be_nil
     prx_access.cms_root.wont_be_nil
-    prx_access.prx_root.wont_be_nil
+    prx_access.crier_root.wont_be_nil
+    prx_access.feeder_root.wont_be_nil
   end
 
   it 'create a resource from json' do
