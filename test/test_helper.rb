@@ -8,8 +8,6 @@ if ENV['TRAVIS']
   Coveralls.wear!
 end
 
-# Dotenv.load
-#
 ENV['CMS_HOST']    = 'cms.prx.org'
 ENV['FEEDER_HOST'] = 'feeder.prx.org'
 ENV['ID_HOST']     = 'id.prx.org'
