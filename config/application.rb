@@ -53,6 +53,14 @@ module Feeder
       end
     end
 
+    if ENV['ID_HOST'].present?
+      protocol = ENV['ID_HOST'].include?('.docker') ? 'http' : 'https'
+      PrxAuth::Rails.middleware = false
+      config.middleware.insert_before 'ActionDispatch::ParamsParser', 'Rack::PrxAuth',
+                                      cert_location: "#{protocol}://#{ENV['ID_HOST']}/api/v1/certs",
+                                      issuer: ENV['ID_HOST']
+    end
+
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
