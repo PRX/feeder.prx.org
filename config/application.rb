@@ -66,7 +66,7 @@ module Feeder
     # config.i18n.default_locale = :de
 
     config.representer.represented_formats = [:hal, :json]
-    config.representer.default_url_options = { host: (ENV['FEEDER_APP_HOST'] || 'feeder.prx.org') }
+    config.representer.default_url_options = { host: (ENV['FEEDER_HOST'] || 'feeder.prx.org') }
 
     # Set Time.zone default to the specified zone and make Active Record auto-convert to this zone.
     # Run "rake -D time" for a list of tasks for finding time zone names. Default is UTC.
