@@ -32,11 +32,18 @@ module PRXAccess
     end
   end
 
+  def default_headers
+    {
+      'Content-Type' => 'application/json',
+      'Accept' =>  'application/json'
+    }
+  end
+
   def api(options = {})
-    opts = { root: cms_root }.merge(options)
+    opts = { root: cms_root, headers: default_headers }.merge(options)
     if account = opts.delete(:account)
       token = get_account_token(account)
-      opts[:headers] = { 'Authorization' =>  "Bearer #{token}" }
+      opts[:headers]['Authorization'] = "Bearer #{token}"
     end
 
     PRXHyperResource.new(opts)
@@ -62,18 +69,29 @@ module PRXAccess
   end
 
   def id_root
-    ENV['ID_ROOT']
+    root_uri ENV['ID_HOST']
   end
 
   def cms_root
-    ENV['CMS_ROOT']
-  end
-
-  def prx_root
-    ENV['PRX_ROOT']
+    root_uri ENV['CMS_HOST'], '/api/v1'
   end
 
   def crier_root
-    ENV['CRIER_ROOT']
+    root_uri ENV['CRIER_HOST'], '/api/v1'
   end
+
+  def feeder_root
+    root_uri ENV['FEEDER_HOST'], '/api/v1'
+  end
+
+  private
+
+  def root_uri(host, path = '')
+    if host =~ /\.org/ # TODO: should .tech's be here too?
+      URI::HTTPS.build(host: host, path: path).to_s
+    else
+      URI::HTTP.build(host: host, path: path).to_s
+    end
+  end
+
 end

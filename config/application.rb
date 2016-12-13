@@ -53,12 +53,20 @@ module Feeder
       end
     end
 
+    if ENV['ID_HOST'].present?
+      protocol = ENV['ID_HOST'].include?('.docker') ? 'http' : 'https'
+      PrxAuth::Rails.middleware = false
+      config.middleware.insert_before 'ActionDispatch::ParamsParser', 'Rack::PrxAuth',
+                                      cert_location: "#{protocol}://#{ENV['ID_HOST']}/api/v1/certs",
+                                      issuer: ENV['ID_HOST']
+    end
+
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
 
     config.representer.represented_formats = [:hal, :json]
-    config.representer.default_url_options = { host: (ENV['FEEDER_APP_HOST'] || 'feeder.prx.org') }
+    config.representer.default_url_options = { host: (ENV['FEEDER_HOST'] || 'feeder.prx.org') }
 
     # Set Time.zone default to the specified zone and make Active Record auto-convert to this zone.
     # Run "rake -D time" for a list of tasks for finding time zone names. Default is UTC.

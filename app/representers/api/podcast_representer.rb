@@ -4,6 +4,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :id
   property :prx_uri
   property :prx_account_uri
+  property :source_url
   property :created_at
   property :updated_at
 
