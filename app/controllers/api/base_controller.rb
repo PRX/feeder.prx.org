@@ -9,14 +9,6 @@ class Api::BaseController < ApplicationController
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
-  rescue_from HalApi::Errors::NotFound do |error|
-    if self.class.resource_class.try(:paranoid?)
-      gone = resources_base.with_deleted.send(self.class.find_method, params[:id]).try(:deleted?)
-      error = ResourceGone.new if gone
-    end
-    respond_with_error(error)
-  end
-
   def user_not_authorized
     respond_with_error(NotAuthorized.new)
   end
