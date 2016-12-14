@@ -1,6 +1,6 @@
 class MediaResource < BaseModel
   has_one :task, as: :owner
-  belongs_to :episode, -> { with_deleted }
+  belongs_to :episode, -> { with_deleted }, touch: true
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
