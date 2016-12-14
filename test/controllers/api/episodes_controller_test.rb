@@ -2,6 +2,8 @@ require 'test_helper'
 
 describe Api::EpisodesController do
   let(:episode) { create(:episode) }
+  let(:episode_deleted) { create(:episode, deleted_at: Time.now) }
+  let(:episode_unpublished) { create(:episode, published_at: nil) }
   let(:podcast) { episode.podcast }
 
   let(:episode_hash) do
@@ -14,6 +16,24 @@ describe Api::EpisodesController do
     episode.id.wont_be_nil
     get(:show, { api_version: 'v1', format: 'json', id: episode.guid } )
     assert_response :success
+  end
+
+  it 'should return resource gone for deleted resource' do
+    episode_deleted.id.wont_be_nil
+    get(:show, { api_version: 'v1', format: 'json', id: episode_deleted.guid } )
+    assert_response 410
+  end
+
+  it 'should return resource unknown for unpublished resource' do
+    episode_unpublished.id.wont_be_nil
+    get(:show, { api_version: 'v1', format: 'json', id: episode_unpublished.guid } )
+    assert_response 404
+  end
+
+  it 'should return not found for unknown resource' do
+    episode_deleted.id.wont_be_nil
+    get(:show, { api_version: 'v1', format: 'json', id: 'thisismadeup' } )
+    assert_response 404
   end
 
   it 'should list' do

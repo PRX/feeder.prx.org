@@ -7,6 +7,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :source_url
   property :created_at
   property :updated_at
+  property :published_at
 
   property :path
   property :url

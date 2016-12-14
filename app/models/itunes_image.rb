@@ -1,5 +1,5 @@
 class ITunesImage < BaseModel
-  belongs_to :podcast
+  belongs_to :podcast, touch: true
   attr_accessor :link, :description
 
   validates :height, :width, numericality: {

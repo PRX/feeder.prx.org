@@ -22,6 +22,14 @@ class Episode < BaseModel
   scope :released, -> { where('released_at IS NULL OR released_at <= now()') }
   scope :published, -> { where('published_at IS NOT NULL') }
 
+  def published?
+    !published_at.nil?
+  end
+
+  def released?
+    released_at.nil? || released_at <= Time.now
+  end
+
   def author=(a)
     author = a || {}
     self.author_name = author['name']
