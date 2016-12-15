@@ -2,20 +2,26 @@ AWS_ACCESS_KEY_ID=
 AWS_ACCOUNT_ID=
 AWS_REGION=
 AWS_SECRET_ACCESS_KEY=
-CMS_HOST=cms.prx.org
-CRIER_HOST=crier.prx.org
+CMS_HOST=cms-staging.prx.org
+CRIER_HOST=crier-staging.prx.org
 DATABASE_POOL_SIZE=15
-DB_ENV_POSTGRES_DATABASE=
-DB_ENV_POSTGRES_PASSWORD=
-DB_ENV_POSTGRES_USER=
-DB_PORT_5432_TCP_ADDR=
-DB_PORT_5432_TCP_PORT=
-FEEDER_HOST=feeder.prx.org
-FEEDER_CDN_HOST=
-FEEDER_GENERATOR=
-FEEDER_RELEASE_CHECK_DELAY=300
-FEEDER_STORAGE_BUCKET=
-FEEDER_WEB_MASTER=
+DB_ENV_POSTGRES_DATABASE=feeder
+DB_ENV_POSTGRES_PASSWORD=password
+DB_ENV_POSTGRES_USER=feeder
+DB_PORT_5432_TCP_ADDR=db
+DB_PORT_5432_TCP_PORT=5432
+# defaults to f.prxu.org in production, otherwise {env}-f.prxu.org
+# FEEDER_CDN_HOST=
+# defaults to feeder.prx.org
+FEEDER_HOST=feeder.prx.docker
+# defaults to "PRX Feeder v#{Feeder::VERSION}"
+# FEEDER_GENERATOR=
+# defaults to 300
+# FEEDER_RELEASE_CHECK_DELAY=
+# defaults to prx-feed in production, otherwise {env}-prx-feed
+# FEEDER_STORAGE_BUCKET=
+# defaults to 'prxhelp@prx.org (PRX)'
+# FEEDER_WEB_MASTER=
 FIXER_CALLBACK_QUEUE=development_feeder_fixer_callback
 FIXER_CLIENT_ID=
 FIXER_CLIENT_SECRET=
@@ -24,13 +30,15 @@ FIXER_QUEUE=development_fixer_job_create
 HIGHWINDS_ACCOUNT_HASH=
 HIGHWINDS_PASSWORD=
 HIGHWINDS_USERNAME=
-ID_HOST=id.prx.org
+ID_HOST=id-staging.prx.org
 LANG=en_US.UTF-8
 NEW_RELIC_KEY=
+POSTGRES_USER=feeder
 POSTGRES_PASSWORD=password
 PRX_CLIENT_ID=
 PRX_HOST=beta.prx.org
 PRX_SECRET=
 RAILS_ENV=development
+RAILS_SERVE_STATIC_FILES=enabled
 SECRET_KEY_BASE=
 USE_WEBMOCK=true
