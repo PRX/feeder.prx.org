@@ -26,7 +26,4 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
   # Better logging for docker-compose
   config.logger = Logger.new(STDOUT)
-
-  # PrxAuth::Rails.middleware = false
-  # config.middleware.insert_before 'ActionDispatch::ParamsParser', 'Rack::PrxAuth', cert_location: 'http://id.prx.dev/api/v1/certs', issuer: 'id.prx.dev'
 end
