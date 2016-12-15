@@ -11,15 +11,15 @@ feeder:
   command: web
   environment:
     VIRTUAL_HOST: feeder.prx.docker
-# worker:
-#   image: feederprxorg_feeder
-#   volumes:
-#     - .:/app
-#   env_file:
-#     - .env
-#   links:
-#     - db
-#   command: worker
+worker:
+  image: feederprxorg_feeder
+  volumes:
+    - .:/app
+  env_file:
+    - .env
+  links:
+    - db
+  command: worker
 db:
   image: postgres
   env_file:

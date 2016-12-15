@@ -14,8 +14,7 @@ ApplicationParseOpts () {
 }
 
 ApplicationUpdate () {
-  # bundle exec rake -vt sqs:create announce:configure_broker db:create db:migrate
-  bundle exec rake -vt db:create db:migrate
+  bundle exec rake -vt sqs:create announce:configure_broker db:create db:migrate
 }
 
 ApplicationRun () {
