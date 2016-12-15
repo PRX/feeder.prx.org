@@ -10,8 +10,8 @@ Rails.application.configure do
   config.eager_load = false
 
   # Show full error reports and disable caching.
-  config.consider_all_requests_local       = true
-  config.action_controller.perform_caching = false
+  config.consider_all_requests_local       = false
+  config.action_controller.perform_caching = true
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
@@ -26,7 +26,4 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
   # Better logging for docker-compose
   config.logger = Logger.new(STDOUT)
-
-  # PrxAuth::Rails.middleware = false
-  # config.middleware.insert_before 'ActionDispatch::ParamsParser', 'Rack::PrxAuth', cert_location: 'http://id.prx.dev/api/v1/certs', issuer: 'id.prx.dev'
 end

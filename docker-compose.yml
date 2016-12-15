@@ -10,16 +10,16 @@ feeder:
     - "3000:3000"
   command: web
   environment:
-    VIRTUAL_HOST: feeder.docker
-worker:
-  image: feederprxorg_feeder
-  volumes:
-    - .:/app
-  env_file:
-    - .env
-  links:
-    - db
-  command: worker
+    VIRTUAL_HOST: feeder.prx.docker
+# worker:
+#   image: feederprxorg_feeder
+#   volumes:
+#     - .:/app
+#   env_file:
+#     - .env
+#   links:
+#     - db
+#   command: worker
 db:
   image: postgres
   env_file:

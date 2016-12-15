@@ -8,7 +8,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :guid, as: :id, writable: false
 
   # an original guid for an imported feed, overrides the feeder generated guid
-  property :original_guid, writable: false
+  property :original_guid
 
   property :prx_uri
   property :created_at
