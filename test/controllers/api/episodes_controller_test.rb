@@ -63,8 +63,8 @@ describe Api::EpisodesController do
     it 'can create a new episode' do
       post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
       assert_response :success
-      guid = JSON.parse(response.body)['guid']
-      new_episode = Episode.find_by_guid(guid)
+      id = JSON.parse(response.body)['id']
+      new_episode = Episode.find_by_guid(id)
       new_episode.prx_uri.must_equal '/api/v1/stories/123'
     end
   end
