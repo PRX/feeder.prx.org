@@ -129,7 +129,7 @@ group :test do
   gem 'rubocop', require: false
 end
 
-group :development, :production do
+group :development, :staging, :production do
   # Include 'rails_12factor' gem so all logs go to stdout, etc.
   gem 'rails_12factor'
 
