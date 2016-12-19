@@ -9,6 +9,9 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :updated_at
   property :published_at
 
+  property :pub_date, writeable: false
+  property :last_build_date, writeable: false
+
   property :path
   property :url
   property :published_url, writeable: false
@@ -55,7 +58,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   link :episodes do
     {
       href: api_podcast_episodes_path(represented),
-      count: represented.episodes.published.released.count
+      count: represented.episodes.published.count
     } if represented.id
   end
 
