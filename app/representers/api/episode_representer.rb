@@ -14,7 +14,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :created_at
   property :updated_at
   property :published_at
-  property :released_at
 
   property :url
   property :image_url
