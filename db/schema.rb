@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161121171637) do
+ActiveRecord::Schema.define(version: 20161218183833) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -26,7 +26,6 @@ ActiveRecord::Schema.define(version: 20161121171637) do
     t.datetime "deleted_at"
     t.string   "original_guid"
     t.datetime "published_at"
-    t.datetime "released_at"
     t.string   "url"
     t.string   "author_name"
     t.string   "author_email"
@@ -34,8 +33,6 @@ ActiveRecord::Schema.define(version: 20161121171637) do
     t.text     "subtitle"
     t.text     "content"
     t.text     "summary"
-    t.datetime "published"
-    t.datetime "updated"
     t.string   "image_url"
     t.string   "explicit"
     t.text     "keywords"
@@ -124,8 +121,6 @@ ActiveRecord::Schema.define(version: 20161121171637) do
     t.text     "description"
     t.string   "language"
     t.string   "managing_editor_name"
-    t.datetime "pub_date"
-    t.datetime "last_build_date"
     t.string   "categories"
     t.string   "subtitle"
     t.string   "summary"
