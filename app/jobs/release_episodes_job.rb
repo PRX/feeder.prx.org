@@ -5,9 +5,7 @@ class ReleaseEpisodesJob < ActiveJob::Base
   def perform(reschedule = false)
     ActiveRecord::Base.connection_pool.with_connection do
       begin
-        podcasts_to_release.tap do |podcasts|
-          podcasts.each { |p| p.publish! }
-        end
+        release_podcasts!
       ensure
         if reschedule
           ReleaseEpisodesJob.set(wait: release_check_delay).perform_later(true)
@@ -20,12 +18,16 @@ class ReleaseEpisodesJob < ActiveJob::Base
     (ENV['FEEDER_RELEASE_CHECK_DELAY'] || 300).to_i
   end
 
-  def podcasts_to_release
-    Podcast.
-      joins(:episodes).
-      where('podcasts.last_build_date < episodes.released_at').
-      where('episodes.released_at <= now()').
-      uniq.
-      all
+  def release_podcasts!
+    podcasts = []
+    episodes_to_release.each do |e|
+      podcasts << e.podcast
+      e.touch
+    end
+    podcasts.uniq.each { |p| p.publish! }
+  end
+
+  def episodes_to_release
+    Episode.where('published_at > updated_at AND published_at <= now()').all
   end
 end
