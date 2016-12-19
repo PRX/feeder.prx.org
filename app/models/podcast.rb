@@ -16,16 +16,16 @@ class Podcast < BaseModel
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
+  def publish_updated
+    update_column(:published_at, max_episode_published_at)
+  end
+
   def pub_date
-    if max_episode_published_at
-      [published_at, max_episode_published_at].max
-    else
-      published_at
-    end
+    published_at
   end
 
   def max_episode_published_at
-    @_max_episode_published_at ||= episodes.published.maximum(:published_at)
+    episodes.published.maximum(:published_at)
   end
 
   def last_build_date

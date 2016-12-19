@@ -19,7 +19,13 @@ class Episode < BaseModel
 
   before_validation :initialize_guid
 
+  after_save :publish_updated, if: -> (e) { e.published_at.present? and e.published_at_changed? }
+
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
+
+  def publish_updated
+    podcast.publish_updated if podcast
+  end
 
   def published?
     !published_at.nil? && published_at <= Time.now
