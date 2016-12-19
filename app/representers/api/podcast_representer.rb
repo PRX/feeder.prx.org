@@ -9,9 +9,6 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :updated_at
   property :published_at
 
-  property :pub_date, writeable: false
-  property :last_build_date, writeable: false
-
   property :path
   property :url
   property :published_url, writeable: false
