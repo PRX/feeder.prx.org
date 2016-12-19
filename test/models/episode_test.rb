@@ -88,6 +88,17 @@ describe Episode do
     episode.duration.must_equal 20
   end
 
+  it 'updates the podcast published date' do
+    now = 1.minute.ago
+    podcast = episode.podcast
+    orig = episode.podcast.published_at
+    now.wont_equal orig
+    episode.run_callbacks :save do
+      episode.update_attribute(:published_at, now)
+    end
+    podcast.reload.published_at.to_i.must_equal now.to_i
+  end
+
   describe 'enclosure template' do
     before {
       episode.guid = 'guid'
