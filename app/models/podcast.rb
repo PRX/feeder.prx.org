@@ -14,10 +14,22 @@ class Podcast < BaseModel
 
   acts_as_paranoid
 
-  scope :published, -> { where('published_at IS NOT NULL') }
+  scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
-  after_save do
-    DateUpdater.last_build_date(self)
+  def publish_updated
+    update_column(:published_at, max_episode_published_at)
+  end
+
+  def pub_date
+    published_at
+  end
+
+  def max_episode_published_at
+    episodes.published.maximum(:published_at)
+  end
+
+  def last_build_date
+    updated_at
   end
 
   def account_id
@@ -132,7 +144,7 @@ class Podcast < BaseModel
   def feed_episodes
     feed = []
     feed_max = display_episodes_count.to_i
-    episodes.published.released.each do |ep|
+    episodes.published.each do |ep|
       feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (feed.size >= feed_max)
     end
@@ -140,7 +152,6 @@ class Podcast < BaseModel
   end
 
   def publish!
-    DateUpdater.both_dates(self)
     create_publish_task
   end
 

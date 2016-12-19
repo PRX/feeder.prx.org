@@ -46,8 +46,7 @@ describe EpisodeEntryHandler do
     episode.prx_uri.must_be_nil
     episode.deleted_at.must_be_nil
     episode.original_guid.must_equal 'http://99percentinvisible.prx.org/?p=1253'
-    episode.published_at.must_equal episode.published
-    episode.released_at.must_be_nil
+    episode.published_at.must_equal episode.published_at
     episode.url.must_equal 'http://99percentinvisible.prx.org/2016/10/18/232-mcmansion-hell/'
     episode.author_name.must_equal 'Roman Mars'
     episode.author_email.must_equal 'roman@99pi.org'
@@ -55,8 +54,6 @@ describe EpisodeEntryHandler do
     episode.subtitle.must_equal 'Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact...'
     episode.content.must_equal "<p>Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact with their environment. Kate Wagner, architecture critic and creator of <a href=\"http://www.mcmansionhell.com/\">McMansion Hell</a>, is on a mission to illustrate just why these buildings are so terrible.</p>\n<p><a href=\"http://99percentinvisible.org/?p=15841&amp;post_type=episode\">McMansion Hell: The Devil is in the Details</a></p>\n<p><a href=\"https://www.commitchange.com/ma/cambridge/prx-inc/campaigns/radiotopia-fall-campaign-2016\">Support 99pi and Radiotopia today</a>! Be part of the 5000 backer FreshBooks challenge: FreshBooks will donate $40,000 to Radiotopia if we get 5000 total new donations during this drive. <a href=\"https://www.freshbooks.com\">FreshBooks</a> makes intuitive and beautiful cloud accounting software for small businesses.</p>\n"
     episode.summary.must_equal 'Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact with their environment. Kate Wagner, architecture critic and creator of McMansion Hell, is on a mission to illustrate just why these buildings are so terrible. McMansion Hell: The Devil is in the Details Support 99pi and Radiotopia today! Be part of the 5000 backer FreshBooks challenge: FreshBooks will donate $40,000 to Radiotopia if we get 5000 total new donations during this drive. FreshBooks makes intuitive and beautiful cloud accounting software for small businesses.'
-    episode.published.wont_be_nil
-    episode.updated.must_be_nil
     episode.image_url.must_equal 'http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99-1400.png?entry=1'
     episode.explicit.must_equal 'clean'
     episode.keywords.must_equal ["Roman Mars", "Kate Wagner"]

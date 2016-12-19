@@ -16,8 +16,6 @@ FactoryGirl.define do
     author_email 'jesse@maximumfun.org'
     owner_name 'Jesse Thorn'
     owner_email 'jesse@maximumfun.org'
-    pub_date Date.parse("Jan 11, 2015")
-    last_build_date Date.parse("Jan 12, 2015")
     categories ['Humor', 'Entertainment']
     explicit 'yes'
     subtitle 'Goofy laughsters'

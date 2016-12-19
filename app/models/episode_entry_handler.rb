@@ -52,9 +52,8 @@ class EpisodeEntryHandler
   end
 
   def update_dates
-    self.episode.published = Time.parse(overrides[:published]) if overrides[:published]
-    self.episode.updated = Time.parse(overrides[:updated]) if overrides[:updated]
-    self.episode.published_at = episode.published || episode.updated
+    self.episode.published_at = Time.parse(overrides[:published]) if overrides[:published]
+    self.episode.updated_at = Time.parse(overrides[:updated]) if overrides[:updated]
   end
 
   # must be called after update_enclosure and update_contents

@@ -10,7 +10,7 @@ class Episode < BaseModel
 
   serialize :overrides, HashSerializer
 
-  belongs_to :podcast, -> { with_deleted }
+  belongs_to :podcast, -> { with_deleted }, touch: true
   has_many :all_contents, -> { order('position ASC, created_at DESC') }, class_name: 'Content'
   has_many :contents, -> { order('position ASC, created_at DESC').complete }
   has_many :enclosures, -> { order('created_at DESC') }
@@ -19,15 +19,16 @@ class Episode < BaseModel
 
   before_validation :initialize_guid
 
-  scope :released, -> { where('released_at IS NULL OR released_at <= now()') }
-  scope :published, -> { where('published_at IS NOT NULL') }
+  after_save :publish_updated, if: -> (e) { e.published_at_changed? }
 
-  def published?
-    !published_at.nil?
+  scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
+
+  def publish_updated
+    podcast.publish_updated if podcast
   end
 
-  def released?
-    released_at.nil? || released_at <= Time.now
+  def published?
+    !published_at.nil? && published_at <= Time.now
   end
 
   def author=(a)

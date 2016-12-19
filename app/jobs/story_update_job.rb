@@ -43,8 +43,8 @@ class StoryUpdateJob < ActiveJob::Base
 
   def update_episode
     story_updated = Time.parse(story.attributes[:updated_at]) if story.attributes[:updated_at]
-    if episode.updated && story_last_updated && story_updated < episode.updated
-      logger.info("Not updating episode: #{episode.id} as #{story_updated} > #{episode.updated}")
+    if episode.updated_at && story_updated && story_updated < episode.updated_at
+      logger.info("Not updating episode: #{episode.id} as #{story_updated} > #{episode.updated_at}")
     else
       episode.restore if episode.deleted?
       self.episode = EpisodeStoryHandler.update_from_story!(episode, story)

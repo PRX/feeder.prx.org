@@ -6,7 +6,7 @@ class Api::EpisodesController < Api::BaseController
 
   def show
     res = show_resource
-    if !res || !res.published? || !res.released?
+    if !res || !res.published?
       respond_with_error(HalApi::Errors::NotFound.new)
     elsif res.deleted?
       respond_with_error(ResourceGone.new)
