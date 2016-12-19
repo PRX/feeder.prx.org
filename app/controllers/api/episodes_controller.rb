@@ -4,6 +4,8 @@ class Api::EpisodesController < Api::BaseController
   filter_resources_by :podcast_id
   find_method :find_by_guid
 
+  after_action :publish, only: [:create, :update, :destroy]
+
   def show
     res = show_resource
     if !res || !res.published? || !res.released?
@@ -13,6 +15,12 @@ class Api::EpisodesController < Api::BaseController
     else
       super
     end
+  end
+
+  private
+
+  def publish
+    resource.podcast.publish! if resource && resource.podcast
   end
 
   def scoped(relation)
