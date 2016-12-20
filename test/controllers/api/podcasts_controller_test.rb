@@ -21,7 +21,9 @@ describe Api::PodcastsController do
     end
 
     it 'can create a new podcast' do
-      post :create, podcast_hash.to_json, api_version: 'v1', format: 'json'
+      @controller.stub(:publish, true) do
+        post :create, podcast_hash.to_json, api_version: 'v1', format: 'json'
+      end
       assert_response :success
       id = JSON.parse(response.body)['id']
       new_podcast = Podcast.find(id)
