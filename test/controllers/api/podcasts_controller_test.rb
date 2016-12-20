@@ -28,6 +28,18 @@ describe Api::PodcastsController do
       new_podcast.itunes_categories.first.name.must_equal 'Arts'
     end
 
+    it 'can update a podcast' do
+      pua = podcast.updated_at
+      podcast.itunes_categories.size.must_be :>, 0
+      update_hash = { itunesCategories: [] }
+
+      put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+      assert_response :success
+
+      podcast.reload.updated_at.must_be :>, pua
+      podcast.itunes_categories.size.must_equal 0
+    end
+
     it 'rejects create without valid token' do
       @controller.prx_auth_token = nil
       post :create, podcast_hash.to_json, api_version: 'v1', format: 'json'
