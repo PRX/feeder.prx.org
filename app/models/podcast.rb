@@ -2,11 +2,11 @@ class Podcast < BaseModel
   serialize :categories, JSON
   serialize :keywords, JSON
 
-  has_one :itunes_image, autosave: true
-  has_one :feed_image, autosave: true
+  has_one :itunes_image, autosave: true, dependent: :destroy
+  has_one :feed_image, autosave: true, dependent: :destroy
 
   has_many :episodes, -> { order('published_at desc') }
-  has_many :itunes_categories, autosave: true
+  has_many :itunes_categories, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
 
   validates_associated :itunes_image, :feed_image
