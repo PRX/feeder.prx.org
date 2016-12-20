@@ -35,7 +35,9 @@ describe Api::PodcastsController do
       podcast.itunes_categories.size.must_be :>, 0
       update_hash = { itunesCategories: [] }
 
-      put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+      @controller.stub(:publish, true) do
+        put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+      end
       assert_response :success
 
       podcast.reload.updated_at.must_be :>, pua
