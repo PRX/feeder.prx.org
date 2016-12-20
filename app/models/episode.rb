@@ -11,9 +11,22 @@ class Episode < BaseModel
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
-  has_many :all_contents, -> { order('position ASC, created_at DESC') }, class_name: 'Content'
-  has_many :contents, -> { order('position ASC, created_at DESC').complete }
-  has_many :enclosures, -> { order('created_at DESC') }
+
+  has_many :all_contents,
+    -> { order('position ASC, created_at DESC') },
+    class_name: 'Content',
+    autosave: true,
+    dependent: :destroy
+
+  has_many :contents,
+    -> { order('position ASC, created_at DESC').complete },
+    autosave: true,
+    dependent: :destroy
+
+  has_many :enclosures,
+    -> { order('created_at DESC') },
+    autosave: true,
+    dependent: :destroy
 
   validates :podcast_id, :guid, presence: true
 
