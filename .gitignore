@@ -19,13 +19,9 @@
 /tmp
 
 .env*
-PRX Podcast RSS spec.xml
 
 coverage
 notes*
 
 /public/assets
 /build
-
-# ignore deploy variables
-.deploy
