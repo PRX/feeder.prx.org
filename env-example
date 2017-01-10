@@ -10,6 +10,7 @@ DB_ENV_POSTGRES_PASSWORD=password
 DB_ENV_POSTGRES_USER=feeder
 DB_PORT_5432_TCP_ADDR=db
 DB_PORT_5432_TCP_PORT=5432
+DOVETAIL_HOST=dovetail-staging.prxu.org
 # defaults to f.prxu.org in production, otherwise {env}-f.prxu.org
 # FEEDER_CDN_HOST=
 # defaults to feeder.prx.org
