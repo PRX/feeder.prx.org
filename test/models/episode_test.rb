@@ -105,7 +105,41 @@ describe Episode do
       episode.podcast.path = 'foo'
     }
 
-    it 'appends podtrac redirect to audio file link' do
+    it 'applies template to enclosure url' do
+      template = "https://#{ENV['DOVETAIL_HOST']}/{slug}/{guid}/{original_filename}"
+      base_url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'
+      original_url = 'http://foo.com/whatever/filename.mp3'
+
+      episode.podcast.enclosure_template = template
+      episode.podcast.enclosure_prefix = nil
+      new_url = episode.enclosure_url(base_url, original_url)
+      new_url.must_equal("https://#{ENV['DOVETAIL_HOST']}/foo/guid/filename.mp3")
+    end
+
+    it 'applies prefix to enclosure url' do
+      pre = 'https://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/test'
+      base_url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'
+      original_url = 'http://foo.com/whatever/filename.mp3'
+
+      episode.podcast.enclosure_template = nil
+      episode.podcast.enclosure_prefix = pre
+      new_url = episode.enclosure_url(base_url, original_url)
+      new_url.must_equal "#{pre}/test-f.prxu.org/podcast/episode/filename.mp3"
+    end
+
+    it 'applies prefix and template' do
+      template = "https://#{ENV['DOVETAIL_HOST']}/{slug}/{guid}/{original_filename}"
+      pre = 'https://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/test'
+      base_url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'
+      original_url = 'http://foo.com/whatever/filename.mp3'
+
+      episode.podcast.enclosure_template = template
+      episode.podcast.enclosure_prefix = pre
+      new_url = episode.enclosure_url(base_url, original_url)
+      new_url.must_equal "#{pre}/#{ENV['DOVETAIL_HOST']}/foo/guid/filename.mp3"
+    end
+
+    it 'applies template to audio file link' do
       episode.podcast.enclosure_template = 'http://foo.com/r{extension}/b/n/{host}{+path}'
 
       url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'
