@@ -96,11 +96,27 @@ class Episode < BaseModel
 
   def media_url
     media = first_media_resource
-    enclosure_template_url(media.media_url, media.original_url) if media
+    enclosure_url(media.media_url, media.original_url) if media
   end
 
   def first_media_resource
     contents.blank? ? enclosure : contents.first
+  end
+
+  def enclosure_url(base_url, original_url = nil)
+    templated_url = enclosure_template_url(base_url, original_url)
+    add_enclosure_prefix(templated_url)
+  end
+
+  def add_enclosure_prefix(u)
+    return u if enclosure_prefix.blank?
+    pre = Addressable::URI.parse(enclosure_prefix)
+    orig = Addressable::URI.parse(u)
+    orig.path = File.join(orig.host, orig.path)
+    orig.path = File.join(pre.path, orig.path)
+    orig.scheme = pre.scheme
+    orig.host = pre.host
+    orig.to_s
   end
 
   def enclosure_template_url(base_url, original_url = nil)
@@ -169,6 +185,10 @@ class Episode < BaseModel
 
   def enclosure_template
     podcast.enclosure_template
+  end
+
+  def enclosure_prefix
+    podcast.enclosure_prefix
   end
 
   def podcast_slug

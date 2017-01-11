@@ -14,7 +14,17 @@ class Podcast < BaseModel
 
   acts_as_paranoid
 
+  before_validation :set_defaults
+
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
+
+  def set_defaults
+    self.enclosure_template ||= enclosure_template_default
+  end
+
+  def enclosure_template_default
+    "https://#{ENV['DOVETAIL_HOST']}/{slug}/{guid}/{original_filename}"
+  end
 
   def publish_updated
     update_column(:published_at, max_episode_published_at)

@@ -11,6 +11,12 @@ describe Podcast do
     podcast.must_respond_to(:episodes)
   end
 
+  it 'has a default enclosure template' do
+    podcast = Podcast.new.tap {|p| p.valid? }
+    podcast.enclosure_template_default.must_match /^http/
+    podcast.enclosure_template.must_equal podcast.enclosure_template_default
+  end
+
   it 'has iTunes categories' do
     podcast.must_respond_to(:itunes_categories)
   end

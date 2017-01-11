@@ -49,6 +49,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :feed_image, decorator: Api::ImageRepresenter, class: FeedImage
 
   property :enclosure_template
+  property :enclosure_prefix
   property :display_episodes_count
   property :display_full_episodes_count
 
