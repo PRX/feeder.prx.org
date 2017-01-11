@@ -8,14 +8,9 @@ class Api::Auth::EpisodesController < Api::BaseController
   find_method :find_by_guid
 
   def show
-    res = show_resource
-    if !res
-      respond_with_error(HalApi::Errors::NotFound.new)
-    elsif res.deleted?
-      respond_with_error(ResourceGone.new)
-    else
-      super
-    end
+    return respond_with_error(HalApi::Errors::NotFound.new) if !show_resource
+    return respond_with_error(ResourceGone.new) if show_resource.deleted?
+    super
   end
 
   def scoped(relation)
