@@ -4,6 +4,8 @@ describe Api::PodcastsController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
   let(:token) { StubToken.new(account_id, ['member']) }
+  let(:bad_token) { StubToken.new(account_id + 100, ['member']) }
+
   let(:podcast_hash) do
     {
       path: 'testcast',
@@ -42,6 +44,18 @@ describe Api::PodcastsController do
 
       podcast.reload.updated_at.must_be :>, pua
       podcast.itunes_categories.size.must_equal 0
+    end
+
+    it 'rejects update for unauthorizd token' do
+      @controller.prx_auth_token = bad_token
+      pua = podcast.updated_at
+      podcast.itunes_categories.size.must_be :>, 0
+      update_hash = { itunesCategories: [] }
+
+      @controller.stub(:publish, true) do
+        put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+      end
+      assert_response 401
     end
 
     it 'rejects create without valid token' do
