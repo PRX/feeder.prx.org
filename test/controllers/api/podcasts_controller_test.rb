@@ -3,6 +3,7 @@ require 'test_helper'
 describe Api::PodcastsController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
+  let(:podcast_redirect) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", published_at: nil) }
   let(:token) { StubToken.new(account_id, ['member']) }
   let(:podcast_hash) do
     {
@@ -18,6 +19,12 @@ describe Api::PodcastsController do
       class << @controller; attr_accessor :prx_auth_token; end
       @controller.prx_auth_token = token
       @request.env['CONTENT_TYPE'] = 'application/json'
+    end
+
+    it 'should redirect for authorized request of unpublished resource' do
+      podcast_redirect.id.wont_be_nil
+      get(:show, { api_version: 'v1', format: 'json', id: podcast_redirect.id } )
+      assert_response :redirect
     end
 
     it 'can create a new podcast' do

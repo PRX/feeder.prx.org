@@ -20,6 +20,10 @@ class Podcast < BaseModel
     update_column(:published_at, max_episode_published_at)
   end
 
+  def published?
+    !published_at.nil? && published_at <= Time.now
+  end
+
   def pub_date
     published_at
   end
