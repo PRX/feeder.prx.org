@@ -9,9 +9,9 @@ class Api::BaseController < ApplicationController
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
-  def user_not_authorized(exception)
+  def user_not_authorized(exception = nil)
     message = { status: 401, message: 'You are not authorized to perform this action' }
-    if Rails.configuration.try(:consider_all_requests_local)
+    if exception && Rails.configuration.try(:consider_all_requests_local)
       message[:backtrace] = exception.backtrace
     end
     render json: message, status: 401
