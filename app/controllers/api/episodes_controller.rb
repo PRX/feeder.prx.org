@@ -7,13 +7,14 @@ class Api::EpisodesController < Api::BaseController
   after_action :publish, only: [:create, :update, :destroy]
 
   def show
-    res = show_resource
-    if !res || !res.published?
-      respond_with_error(HalApi::Errors::NotFound.new)
-    elsif res.deleted?
-      respond_with_error(ResourceGone.new)
+    return respond_with_error(HalApi::Errors::NotFound.new) if !show_resource
+    return respond_with_error(ResourceGone.new) if show_resource.deleted?
+    return super if show_resource.published?
+
+    if EpisodePolicy.new(pundit_user, show_resource).update?
+      redirect_to api_authorization_episode_path(api_version, show_resource)
     else
-      super
+      respond_with_error(HalApi::Errors::NotFound.new)
     end
   end
 
