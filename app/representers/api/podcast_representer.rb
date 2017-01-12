@@ -1,17 +1,18 @@
 # encoding: utf-8
 
 class Api::PodcastRepresenter < Api::BaseRepresenter
-  property :id
+  property :id, writeable: false
+  property :created_at, writeable: false
+  property :updated_at, writeable: false
+
   property :prx_uri
   property :prx_account_uri
   property :source_url
-  property :created_at
-  property :updated_at
   property :published_at
 
+  property :published_url, writeable: false
   property :path
   property :url
-  property :published_url, writeable: false
   property :new_feed_url
   property :feedburner_url
   property :link
