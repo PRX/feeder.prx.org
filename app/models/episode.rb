@@ -67,6 +67,10 @@ class Episode < BaseModel
     original_guid || "prx:#{podcast.path}:#{guid}"
   end
 
+  def item_guid=(new_guid)
+    self.original_guid = new_guid
+  end
+
   def overrides
     self[:overrides] ||= HashWithIndifferentAccess.new
   end
