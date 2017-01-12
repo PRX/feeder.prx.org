@@ -64,7 +64,7 @@ class Episode < BaseModel
   end
 
   def item_guid
-    original_guid || "prx:#{podcast.path}:#{guid}"
+    original_guid || "prx:#{podcast.id}:#{guid}"
   end
 
   def item_guid=(new_guid)
