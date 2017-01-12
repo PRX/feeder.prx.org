@@ -53,6 +53,30 @@ describe Api::PodcastsController do
       podcast.itunes_categories.size.must_equal 0
     end
 
+    it 'returns errors for any errors' do
+      create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'dupe')
+      pua = podcast.updated_at
+      podcast.itunes_categories.size.must_be :>, 0
+      update_hash = { path: 'dupe' }
+
+      @controller.stub(:publish, true) do
+        put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+      end
+      assert_response :error
+    end
+
+    it 'ignores updating readonly attribute' do
+      pua = podcast.updated_at
+      podcast.itunes_categories.size.must_be :>, 0
+      update_hash = { published_url: 'this is read only' }
+
+      @controller.stub(:publish, true) do
+        put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+      end
+      assert_response :success
+      JSON.parse(response.body)['published_url'].wont_equal 'this is read only'
+    end
+
     it 'rejects update for unauthorizd token' do
       @controller.prx_auth_token = bad_token
       pua = podcast.updated_at
