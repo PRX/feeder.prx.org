@@ -20,4 +20,8 @@ describe Api::EpisodeRepresenter do
     json['media'].size.must_equal 1
     json['media'].first['href'].must_equal episode.enclosure.url
   end
+
+  it 'has enclosure' do
+    json['_links']['enclosure']['href'].must_equal episode.media_url
+  end
 end
