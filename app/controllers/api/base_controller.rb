@@ -4,6 +4,11 @@ require 'hal_api/errors'
 
 class Api::BaseController < ApplicationController
   include HalApi::Controller
+
+  def self.responder
+    Api::ApiResponder
+  end
+
   include Pundit
   include ApiVersioning
 

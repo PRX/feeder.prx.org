@@ -36,6 +36,11 @@ class Episode < BaseModel
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
+  def self.by_prx_story(story)
+    story_uri = story.links['self'].href
+    Episode.with_deleted.find_by(prx_uri: story_uri)
+  end
+
   def publish_updated
     podcast.publish_updated if podcast
   end
@@ -81,11 +86,6 @@ class Episode < BaseModel
 
   def keywords
     self[:keywords] ||= []
-  end
-
-  def self.by_prx_story(story)
-    story_uri = story.links['self'].href
-    Episode.with_deleted.find_by(prx_uri: story_uri)
   end
 
   def enclosure_info
