@@ -72,7 +72,7 @@ class EpisodeStoryHandler
   def build_content(audio)
     Content.new.tap do |c|
       c.position = audio.attributes['position']
-      c.original_url = audio.links['enclosure'].href
+      c.original_url = audio_url(audio.links['enclosure'].href)
       c.mime_type = audio.links['enclosure'].type || audio.attributes['content_type']
       c.file_size = audio.attributes['size']
       c.duration = audio.attributes['duration']
@@ -83,9 +83,25 @@ class EpisodeStoryHandler
 
   def find_existing_content(audio)
     episode.all_contents.
-      where(position: audio.position, original_url: audio.links['enclosure'].href).
+      where(position: audio.position, original_url: audio_url(audio.links['enclosure'].href)).
       order(created_at: :desc).
       first
+  end
+
+  def audio_url(url)
+    if url =~ /^http/
+      url
+    else
+      path_to_url(ENV['CMS_HOST'], url)
+    end
+  end
+
+  def path_to_url(host, path)
+    if host =~ /\.org/ # TODO: should .tech's be here too?
+      URI::HTTPS.build(host: host, path: path).to_s
+    else
+      URI::HTTP.build(host: host, path: path).to_s
+    end
   end
 
   def get_story(account = nil)

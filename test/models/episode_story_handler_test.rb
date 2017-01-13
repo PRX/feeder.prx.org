@@ -21,5 +21,10 @@ describe EpisodeStoryHandler do
     episode.wont_be_nil
     episode.published_at.wont_be_nil
     episode.published_at.must_equal Time.parse(story.attributes[:published_at])
+    first_audio = episode.all_contents.first.original_url
+    last_audio = episode.all_contents.last.original_url
+    first_audio.must_equal 'https://cms.prx.org/pub/e3718718a9a6c83a2cc077ee6ecb5a63/0/web/audio_file/1200648/broadcast/lcs_spring16_act1.mp3'
+    last_audio.must_equal 'https://cms.prx.org/pub/8d5b5626a6ed4798fffa71e48e80fca2/0/web/audio_file/1200657/broadcast/t01.mp3'
+    episode.description.must_equal 'this is a description'
   end
 end
