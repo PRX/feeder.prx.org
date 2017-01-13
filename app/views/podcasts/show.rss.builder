@@ -97,8 +97,9 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
           xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
           xml.itunes(:summary) { xml.cdata!(ep.summary) } unless ep.summary.blank?
 
-          image = ep.image_url.blank? ? @podcast.itunes_image.url : ep.image_url
-          xml.itunes :image, href: image if image
+          if ep.image_url || @podcast.itunes_image
+            xml.itunes :image, href: (ep.image_url || @podcast.itunes_image.url)
+          end
 
           xml.itunes :keywords, ep.keywords.join(',') unless ep.keywords.blank?
           xml.itunes(:isClosedCaptioned, 'Yes') if ep.is_closed_captioned
