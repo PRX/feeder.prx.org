@@ -10,6 +10,8 @@ ENV['PRX_HOST']    ||= 'www.prx.org'
 ENV['FEEDER_WEB_MASTER'] ||= 'prxhelp@prx.org (PRX)'
 ENV['FEEDER_GENERATOR'] ||= "PRX Feeder v#{Feeder::VERSION}"
 
+env_suffix = Rails.env.production? ? '' : ('-' + Rails.env)
+ENV['FEEDER_CDN_HOST'] ||= "f#{env_suffix}.prxu.org"
+
 env_prefix = Rails.env.production? ? '' : (Rails.env + '-')
-ENV['FEEDER_CDN_HOST'] ||= "#{env_prefix}f.prxu.org"
 ENV['FEEDER_STORAGE_BUCKET'] ||= "#{env_prefix}prx-feed"
