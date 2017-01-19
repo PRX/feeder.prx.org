@@ -32,7 +32,7 @@ class StoryUpdateJob < ActiveJob::Base
     podcast.try(:publish!)
   end
 
-  alias receive_story_unpublish receive_story_delete
+  alias receive_story_unpublish receive_story_update
 
   def load_resources(data)
     self.body = data.is_a?(String) ? JSON.parse(data) : data
