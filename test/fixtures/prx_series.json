@@ -50,6 +50,7 @@
                     "profile": "http://meta.prx.org/model/image/series"
                 }
             },
+            "purpose": "profile",
             "caption": "",
             "credit": "",
             "filename": "WEEKLY_LOGO.jpg",

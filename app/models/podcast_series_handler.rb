@@ -52,7 +52,7 @@ class PodcastSeriesHandler
     { feed: 'thumbnail', itunes: 'profile' }.each do |type, purpose|
       if image = images.detect { |i| i.attributes['purpose'] == purpose }
         save_image(podcast, type, cms_url(image.links['original'].href))
-      elsif i = send("#{type}_image")
+      elsif i = podcast.send("#{type}_image")
         i.destroy
       end
     end
