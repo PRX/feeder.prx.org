@@ -38,9 +38,11 @@ describe Episode do
   it 'knows if audio is ready' do
     episode.enclosures = [create(:enclosure, episode: episode, status: 'created')]
     episode.enclosures.first.wont_be :complete?
+    episode.must_be :media?
     episode.wont_be :media_ready?
     episode.enclosures.first.complete!
     episode.enclosure.must_be :complete?
+    episode.must_be :media?
     episode.must_be :media_ready?
   end
 

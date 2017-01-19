@@ -179,12 +179,12 @@ class Episode < BaseModel
   end
 
   def media?
-    media_files.size > 0
+    !(enclosures.blank? && all_contents.blank?)
   end
 
   def media_ready?
-    (!enclosure.blank? && enclosure.complete?) ||
-    (!contents.blank? && contents.all?{ |a| a.complete? })
+    (!enclosures.blank? && enclosure) ||
+    (!all_contents.blank? && all_contents.all?{ |a| a.complete? })
   end
 
   def enclosure_template
