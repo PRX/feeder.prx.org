@@ -18,6 +18,11 @@ class Podcast < BaseModel
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
+  def self.by_prx_series(series)
+    series_uri = series.links['self'].href
+    Podcast.with_deleted.find_by(prx_uri: series_uri)
+  end
+
   def set_defaults
     self.enclosure_template ||= enclosure_template_default
   end
@@ -54,33 +59,6 @@ class Podcast < BaseModel
     self[:path] || id
   end
 
-  def self.create_from_feed!(feed)
-    podcast = new.update_from_feed(feed)
-    podcast.save!
-    podcast
-  end
-
-  FEED_ATTRS = %w( complete copyright description explicit keywords language
-    subtitle summary title update_frequency update_period
-    author managing_editor new_feed_url owners ).freeze
-
-  def update_from_feed(feed_resource)
-    feed = feed_resource.attributes
-
-    self.attributes = feed.slice(*FEED_ATTRS)
-
-    {feed_url: :source_url, url: :link}.each do |k,v|
-      send("#{v}=", feed[k.to_s])
-    end
-
-    self.path ||= feed['feedburner_name']
-
-    update_images(feed)
-    update_categories(feed_resource)
-
-    self
-  end
-
   def owners=(os)
     owner = Array(os).first || {}
     self.owner_name = owner['name']
@@ -102,57 +80,6 @@ class Podcast < BaseModel
   def managing_editor
     return nil unless (managing_editor_name || managing_editor_email)
     "#{managing_editor_email} (#{managing_editor_name})"
-  end
-
-  def save_image(type, url)
-    if i = send("#{type}_image")
-      i.update_attributes!(url: url)
-    else
-      send("build_#{type}_image", url:url)
-    end
-  end
-
-  def update_images(feed)
-    { feed: :thumb_url, itunes: :image_url }.each do |type, url|
-      if feed[url]
-        save_image(type, feed[url])
-      elsif i = send("#{type}_image")
-        i.destroy
-      end
-    end
-  end
-
-  def update_categories(feed)
-    itunes_cats = {}
-    cats = []
-    feed.categories.each do |cat|
-      if ITunesCategoryValidator.is_category?(cat)
-        itunes_cats[cat] ||= []
-      elsif parent_cat = ITunesCategoryValidator.is_subcategory?(cat)
-        itunes_cats[parent_cat] ||= []
-        itunes_cats[parent_cat] << cat
-      else
-        cats << cat
-      end
-    end
-
-    # delete and update existing itunes_categories
-    self.itunes_categories.each do |icat|
-      if itunes_cats.key?(icat.name)
-        subs = itunes_cats.delete(icat.name).sort.uniq
-        icat.update_attributes!(subcategories: subs)
-      else
-        icat.destroy!
-      end
-    end
-
-    # create missing itunes_categories
-    itunes_cats.keys.each do |cat|
-      subs = itunes_cats[cat].sort.uniq
-      self.itunes_categories.build(name: cat, subcategories: subs)
-    end
-
-    self.categories = cats
   end
 
   def feed_episodes
