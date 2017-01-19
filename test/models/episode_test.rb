@@ -28,7 +28,7 @@ describe Episode do
 
   it 'returns a guid to use in the channel item' do
     episode.guid = 'guid'
-    episode.item_guid.must_equal "prx:#{episode.podcast_id}:guid"
+    episode.item_guid.must_equal "prx_#{episode.podcast_id}_guid"
   end
 
   it 'is ready to add to a feed' do

@@ -6,7 +6,7 @@ describe EpisodeRepresenter do
 
   it 'includes the guid' do
     episode.stub(:guid, 'guid') do
-      representer.as_json['guid'].must_equal "prx:#{episode.podcast_id}:guid"
+      representer.as_json['guid'].must_equal "prx_#{episode.podcast_id}_guid"
     end
   end
 
