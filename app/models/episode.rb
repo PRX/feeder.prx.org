@@ -179,11 +179,11 @@ class Episode < BaseModel
   end
 
   def media?
-    enclosure.blank? && all_contents.blank?
+    !(enclosures.blank? && all_contents.blank?)
   end
 
   def media_ready?
-    (!enclosure.blank? && enclosure.complete?) ||
+    (!enclosures.blank? && enclosure) ||
     (!all_contents.blank? && all_contents.all?{ |a| a.complete? })
   end
 
