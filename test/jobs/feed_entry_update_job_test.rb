@@ -5,8 +5,8 @@ describe FeedEntryUpdateJob do
   let(:job) { FeedEntryUpdateJob.new }
 
   before {
-    stub_request(:get, "http://serialpodcast.org/sites/all/modules/custom/serial/img/serial-itunes-logo.png").
-      to_return(:status => 200, :body => test_file('/fixtures/transistor1400.jpg'), :headers => {})
+    stub_request(:get, 'http://serialpodcast.org/sites/all/modules/custom/serial/img/serial-itunes-logo.png').
+      to_return(status: 200, body: test_file('/fixtures/transistor1400.jpg'), headers: {})
   }
 
   it 'handles a feed entry create and update' do

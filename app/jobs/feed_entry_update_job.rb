@@ -27,7 +27,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
 
   def create_podcast
     return unless feed
-    self.podcast = Podcast.create_from_feed!(feed)
+    self.podcast = PodcastFeedHandler.create_from_feed!(feed)
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
     self.podcast = Podcast.find_by(source_url: feed.feed_url)
     raise ex unless podcast
@@ -35,8 +35,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
   end
 
   def update_podcast
-    podcast.update_from_feed(feed)
-    podcast.save!
+    PodcastFeedHandler.update_from_feed!(podcast, feed)
   end
 
   def update_episode
