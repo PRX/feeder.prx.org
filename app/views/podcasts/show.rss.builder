@@ -94,9 +94,8 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
           Array(ep.categories).each { |c| xml.category { xml.cdata!(c || '') } }
 
-          if ep.author_name || @podcast.author_name
-            xml.itunes :author, (ep.author_name || @podcast.author_name)
-          end
+          author_name = [ep.author_name, @podcast.author_name].find { |name| !name.blank? }
+          xml.itunes :author, author_name if author_name
 
           xml.itunes(:summary) { xml.cdata!(ep.summary) } unless ep.summary.blank?
 
