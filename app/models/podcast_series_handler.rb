@@ -5,10 +5,6 @@ class PodcastSeriesHandler
 
   attr_accessor :podcast, :series
 
-  def initialize(podcast)
-    self.podcast = podcast
-  end
-
   def self.create_from_series!(series)
     podcast = Podcast.new
     update_from_series!(podcast, series)
@@ -17,6 +13,10 @@ class PodcastSeriesHandler
   def self.update_from_series!(podcast, series = nil)
     series ||= get_series
     new(podcast).update_from_series!(series)
+  end
+
+  def initialize(podcast)
+    self.podcast = podcast
   end
 
   def update_from_series!(series)
@@ -30,8 +30,8 @@ class PodcastSeriesHandler
 
   def update_from_series(series)
     self.series = series
-    self.podcast.prx_uri = series.links['self'].href
-    self.podcast.prx_account_uri = series.links['account'].href
+    podcast.prx_uri = series.links['self'].href
+    podcast.prx_account_uri = series.links['account'].href
 
     update_attributes
     update_images
@@ -39,12 +39,14 @@ class PodcastSeriesHandler
 
   def update_attributes
     sa = series.attributes
-    self.podcast.title = sa[:title]
-    self.podcast.subtitle = sa[:short_description]
-    self.podcast.description = sa[:description]
-    self.podcast.summary = sa[:description]
-    self.podcast.updated_at = Time.parse(sa[:updated_at]) if sa[:updated_at]
-    self.podcast.published_at ||= Time.now # always set this for series (for now)
+    updated = Time.parse(sa[:updated_at]) if sa[:updated_at]
+    if updated && (podcast.updated_at.nil? || updated > podcast.updated_at)
+      podcast.updated_at = updated
+    end
+    podcast.title = sa[:title]
+    podcast.subtitle = sa[:short_description]
+    podcast.description = sa[:description]
+    podcast.summary = sa[:description]
   end
 
   def update_images
