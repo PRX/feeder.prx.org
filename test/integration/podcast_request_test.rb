@@ -89,4 +89,20 @@ describe 'RSS feed Integration Test' do
     @feed = Nokogiri::XML(response.body).css('channel')
     @feed.xpath('//item/itunes:author').count.must_equal 1
   end
+
+  describe 'with a guest author' do
+    before do
+      @podcast.episodes.destroy_all
+      @guest_ep = create(:episode, podcast: @podcast, author_name: 'Foo Bar')
+      get "/podcasts/#{@podcast.id}"
+      @feed = Nokogiri::XML(response.body).css('channel')
+    end
+
+    it 'displays correct podcast and episode author names' do
+      @feed.at_css('itunes|author').text.must_equal @podcast.author_name
+      @feed.at_css('item').css('author').text.must_include @guest_ep.author_name
+      @feed.at_css('item').css('itunes|author').text.must_equal @guest_ep.author_name
+    end
+  end
+
 end

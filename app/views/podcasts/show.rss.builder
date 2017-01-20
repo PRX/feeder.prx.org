@@ -94,7 +94,10 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
           Array(ep.categories).each { |c| xml.category { xml.cdata!(c || '') } }
 
-          xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
+          if ep.author_name || @podcast.author_name
+            xml.itunes :author, (ep.author_name || @podcast.author_name)
+          end
+
           xml.itunes(:summary) { xml.cdata!(ep.summary) } unless ep.summary.blank?
 
           if ep.image_url || @podcast.itunes_image
