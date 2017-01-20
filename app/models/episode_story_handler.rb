@@ -32,8 +32,8 @@ class EpisodeStoryHandler
 
   def update_from_story(story)
     self.story = story
-    self.episode.prx_uri = story.links['self'].href
-    self.episode.url = story.links['alternate'].try(:href)
+    episode.prx_uri = story.links['self'].href
+    episode.url = story.links['alternate'].try(:href)
 
     update_attributes
     update_audio
@@ -41,14 +41,19 @@ class EpisodeStoryHandler
 
   def update_attributes
     sa = story.attributes
-    self.episode.title = sa[:title]
-    self.episode.subtitle = Sanitize.fragment(sa[:short_description] || '').strip
-    self.episode.description = Sanitize.fragment(sa[:description] || '').strip
-    self.episode.summary = sa[:description]
-    self.episode.content = sa[:description]
-    self.episode.categories = sa[:tags]
-    self.episode.published_at = Time.parse(sa[:published_at]) if sa[:published_at]
-    self.episode.updated_at = Time.parse(sa[:updated_at]) if sa[:updated_at]
+
+    updated = Time.parse(sa[:updated_at]) if sa[:updated_at]
+    if updated && (episode.updated_at.nil? || updated > episode.updated_at)
+      episode.updated_at = updated
+    end
+
+    episode.title = sa[:title]
+    episode.subtitle = Sanitize.fragment(sa[:short_description] || '').strip
+    episode.description = Sanitize.fragment(sa[:description] || '').strip
+    episode.summary = sa[:description]
+    episode.content = sa[:description]
+    episode.categories = sa[:tags]
+    episode.published_at = Time.parse(sa[:published_at]) if sa[:published_at]
   end
 
   def update_audio
