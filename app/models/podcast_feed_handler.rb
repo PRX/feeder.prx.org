@@ -7,16 +7,16 @@ class PodcastFeedHandler
 
   attr_accessor :podcast, :feed
 
-  def initialize(podcast)
-    self.podcast = podcast
-  end
-
   def self.create_from_feed!(feed)
     update_from_feed!(Podcast.new, feed)
   end
 
   def self.update_from_feed!(podcast, feed = nil)
     new(podcast).update_from_feed!(feed)
+  end
+
+  def initialize(podcast)
+    self.podcast = podcast
   end
 
   def update_from_feed!(feed)
@@ -37,19 +37,20 @@ class PodcastFeedHandler
 
   def update_attributes
     fa = feed.attributes.with_indifferent_access
-    self.podcast.attributes = fa.slice(*FEED_ATTRS).with_indifferent_access
+    podcast.attributes = fa.slice(*FEED_ATTRS).with_indifferent_access
 
     {feed_url: :source_url, url: :link}.each do |k,v|
-      self.podcast.send("#{v}=", fa[k.to_s])
+      podcast.send("#{v}=", fa[k.to_s])
     end
 
-    self.podcast.path ||= fa['feedburner_name']
+    podcast.path ||= fa['feedburner_name']
   end
 
   def update_images
+    fa = feed.attributes.with_indifferent_access
     { feed: :thumb_url, itunes: :image_url }.each do |type, url|
-      if feed.attributes[url]
-        save_image(podcast, type, feed.attributes[url])
+      if fa[url]
+        save_image(podcast, type, fa[url])
       elsif i = podcast.send("#{type}_image")
         i.destroy
       end
@@ -79,7 +80,7 @@ class PodcastFeedHandler
     end
 
     # delete and update existing itunes_categories
-    self.podcast.itunes_categories.each do |icat|
+    podcast.itunes_categories.each do |icat|
       if itunes_cats.key?(icat.name)
         subs = itunes_cats.delete(icat.name).sort.uniq
         icat.update_attributes!(subcategories: subs)
@@ -91,9 +92,9 @@ class PodcastFeedHandler
     # create missing itunes_categories
     itunes_cats.keys.each do |cat|
       subs = itunes_cats[cat].sort.uniq
-      self.podcast.itunes_categories.build(name: cat, subcategories: subs)
+      podcast.itunes_categories.build(name: cat, subcategories: subs)
     end
 
-    self.podcast.categories = cats
+    podcast.categories = cats
   end
 end
