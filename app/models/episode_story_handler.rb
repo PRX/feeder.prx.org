@@ -43,8 +43,8 @@ class EpisodeStoryHandler
     sa = story.attributes
 
     updated = Time.parse(sa[:updated_at]) if sa[:updated_at]
-    if updated && (episode.updated_at.nil? || updated > episode.updated_at)
-      episode.updated_at = updated
+    if updated && (episode.source_updated_at.nil? || updated > episode.source_updated_at)
+      episode.source_updated_at = updated
     end
 
     episode.title = sa[:title]

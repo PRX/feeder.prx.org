@@ -40,8 +40,8 @@ class PodcastSeriesHandler
   def update_attributes
     sa = series.attributes
     updated = Time.parse(sa[:updated_at]) if sa[:updated_at]
-    if updated && (podcast.updated_at.nil? || updated > podcast.updated_at)
-      podcast.updated_at = updated
+    if updated && (podcast.source_updated_at.nil? || updated > podcast.source_updated_at)
+      podcast.source_updated_at = updated
     end
     podcast.title = sa[:title]
     podcast.subtitle = sa[:short_description]

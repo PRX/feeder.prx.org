@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170110154352) do
+ActiveRecord::Schema.define(version: 20170120221323) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -44,6 +44,7 @@ ActiveRecord::Schema.define(version: 20170110154352) do
     t.string   "feedburner_orig_link"
     t.string   "feedburner_orig_enclosure_link"
     t.boolean  "is_perma_link"
+    t.datetime "source_updated_at"
   end
 
   add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree
@@ -151,6 +152,7 @@ ActiveRecord::Schema.define(version: 20170110154352) do
     t.string   "prx_account_uri"
     t.datetime "published_at"
     t.string   "enclosure_prefix"
+    t.datetime "source_updated_at"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
