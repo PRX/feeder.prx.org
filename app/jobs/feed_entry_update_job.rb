@@ -29,7 +29,9 @@ class FeedEntryUpdateJob < ActiveJob::Base
   def create_podcast
     return unless feed
     self.podcast = PodcastFeedHandler.create_from_feed!(feed).tap do |p|
-      p.update_attribute(:source_updated_at, update_sent) if update_sent
+      if update_sent && update_sent > p.source_updated_at
+        p.update_attribute(:source_updated_at, update_sent)
+      end
     end
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
     self.podcast = Podcast.find_by(source_url: feed.feed_url)
@@ -43,7 +45,9 @@ class FeedEntryUpdateJob < ActiveJob::Base
     else
       podcast.restore if podcast.deleted?
       self.podcast = PodcastFeedHandler.update_from_feed!(podcast, feed).tap do |p|
-        p.update_attribute(:source_updated_at, update_sent) if update_sent
+        if update_sent && update_sent > p.source_updated_at
+          p.update_attribute(:source_updated_at, update_sent)
+        end
       end
     end
 
@@ -55,14 +59,18 @@ class FeedEntryUpdateJob < ActiveJob::Base
     else
       episode.restore if episode.deleted?
       self.episode = EpisodeEntryHandler.update_from_entry!(episode, entry).tap do |e|
-        e.update_attribute(:source_updated_at, update_sent) if update_sent
+        if update_sent && update_sent > e.source_updated_at
+          e.update_attribute(:source_updated_at, update_sent)
+        end
       end
     end
   end
 
   def create_episode
     self.episode = EpisodeEntryHandler.create_from_entry!(podcast, entry).tap do |e|
-      e.update_attribute(:source_updated_at, update_sent) if update_sent
+      if update_sent && update_sent > e.source_updated_at
+        e.update_attribute(:source_updated_at, update_sent)
+      end
     end
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
     self.episode = podcast.episodes.find_by(original_guid: entry.guid, podcast_id: podcast.id) if podcast
