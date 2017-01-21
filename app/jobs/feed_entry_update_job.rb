@@ -20,6 +20,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
     load_resources(data)
     podcast ? update_podcast : create_podcast
     episode ? update_episode : create_episode
+    episode.try(:copy_media)
     podcast.try(:publish!)
     episode
   end
@@ -27,7 +28,9 @@ class FeedEntryUpdateJob < ActiveJob::Base
 
   def create_podcast
     return unless feed
-    self.podcast = PodcastFeedHandler.create_from_feed!(feed)
+    self.podcast = PodcastFeedHandler.create_from_feed!(feed).tap do |p|
+      p.update_attribute(:source_updated_at, update_sent) if update_sent
+    end
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
     self.podcast = Podcast.find_by(source_url: feed.feed_url)
     raise ex unless podcast
@@ -35,18 +38,32 @@ class FeedEntryUpdateJob < ActiveJob::Base
   end
 
   def update_podcast
-    PodcastFeedHandler.update_from_feed!(podcast, feed)
+    if podcast.source_updated_at && update_sent && update_sent < podcast.source_updated_at
+      logger.info("Not updating podcast: #{podcast.id} as #{update_sent} < #{podcast.source_updated_at}")
+    else
+      podcast.restore if podcast.deleted?
+      self.podcast = PodcastFeedHandler.update_from_feed!(podcast, feed).tap do |p|
+        p.update_attribute(:source_updated_at, update_sent) if update_sent
+      end
+    end
+
   end
 
   def update_episode
-    episode.restore if episode.deleted?
-    EpisodeEntryHandler.update_from_entry!(episode, entry)
-    episode.copy_media
+    if episode.source_updated_at && update_sent && update_sent < episode.source_updated_at
+      logger.info("Not updating episode: #{episode.id} as #{update_sent} < #{episode.source_updated_at}")
+    else
+      episode.restore if episode.deleted?
+      self.episode = EpisodeEntryHandler.update_from_entry!(episode, entry).tap do |e|
+        e.update_attribute(:source_updated_at, update_sent) if update_sent
+      end
+    end
   end
 
   def create_episode
-    self.episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
-    episode.copy_media
+    self.episode = EpisodeEntryHandler.create_from_entry!(podcast, entry).tap do |e|
+      e.update_attribute(:source_updated_at, update_sent) if update_sent
+    end
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
     self.episode = podcast.episodes.find_by(original_guid: entry.guid, podcast_id: podcast.id) if podcast
     raise ex unless episode
@@ -59,9 +76,13 @@ class FeedEntryUpdateJob < ActiveJob::Base
     podcast.try(:publish!)
   end
 
+  def update_sent
+    @_update_sent ||= Time.parse(message[:sent_at])
+  end
+
   def load_resources(data)
     self.body = data.is_a?(String) ? JSON.parse(data) : data
-    self.entry = api_resource(body, crier_root)
+    self.entry = api_resource(body.with_indifferent_access, crier_root)
     self.feed = entry.objects['prx:feed']
 
     self.podcast = Podcast.find_by(source_url: feed.feed_url)

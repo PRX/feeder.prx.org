@@ -4,9 +4,16 @@ describe StoryUpdateJob do
 
   let(:podcast) { create(:podcast, prx_uri: '/api/v1/series/20829') }
 
-  let(:job) { StoryUpdateJob.new }
-
   let(:body) { json_file(:prx_story_updates) }
+  let(:msg) { { subject: 'story', action: 'update', body: body, sent_at: 1.second.ago } }
+
+  let(:job) do
+    StoryUpdateJob.new.tap do |j|
+      j.message = msg
+      j.subject = msg[:subject]
+      j.action = msg[:action]
+    end
+  end
 
   before do
     if use_webmock?

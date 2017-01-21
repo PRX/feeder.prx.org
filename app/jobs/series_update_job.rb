@@ -18,8 +18,10 @@ class SeriesUpdateJob < ActiveJob::Base
 
   def receive_series_update(data)
     load_resources(data)
-    podcast ? update_podcast : create_podcast
-    podcast.publish! if podcast
+    if podcast
+      update_podcast
+      podcast.publish!
+    end
   end
 
   alias receive_series_create receive_series_update
@@ -38,15 +40,10 @@ class SeriesUpdateJob < ActiveJob::Base
   def update_podcast
     series_updated = Time.parse(series.attributes[:updated_at]) if series.attributes[:updated_at]
     if podcast.source_updated_at && series_updated && series_updated < podcast.source_updated_at
-      logger.info("Not updating podcast: #{podcast.id} as #{series_updated} > #{podcast.source_updated_at}")
+      logger.info("Not updating podcast: #{podcast.id} as #{series_updated} < #{podcast.source_updated_at}")
     else
       podcast.restore if podcast.deleted?
       self.podcast = PodcastSeriesHandler.update_from_series!(podcast, series)
     end
-  end
-
-  def create_podcast
-    return unless series && series.try(:series)
-    self.podcast = PodcastSeriesHandler.create_from_series!(series)
   end
 end
