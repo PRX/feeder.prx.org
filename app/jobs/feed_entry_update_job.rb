@@ -29,7 +29,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
   def create_podcast
     return unless feed
     self.podcast = PodcastFeedHandler.create_from_feed!(feed).tap do |p|
-      if update_sent && update_sent > p.source_updated_at
+      if update_sent && (!p.source_updated_at || update_sent > p.source_updated_at)
         p.update_attribute(:source_updated_at, update_sent)
       end
     end
@@ -45,12 +45,11 @@ class FeedEntryUpdateJob < ActiveJob::Base
     else
       podcast.restore if podcast.deleted?
       self.podcast = PodcastFeedHandler.update_from_feed!(podcast, feed).tap do |p|
-        if update_sent && update_sent > p.source_updated_at
+        if update_sent && (!p.source_updated_at || update_sent > p.source_updated_at)
           p.update_attribute(:source_updated_at, update_sent)
         end
       end
     end
-
   end
 
   def update_episode
@@ -59,7 +58,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
     else
       episode.restore if episode.deleted?
       self.episode = EpisodeEntryHandler.update_from_entry!(episode, entry).tap do |e|
-        if update_sent && update_sent > e.source_updated_at
+        if update_sent && (!e.source_updated_at || update_sent > e.source_updated_at)
           e.update_attribute(:source_updated_at, update_sent)
         end
       end
@@ -68,7 +67,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
 
   def create_episode
     self.episode = EpisodeEntryHandler.create_from_entry!(podcast, entry).tap do |e|
-      if update_sent && update_sent > e.source_updated_at
+      if update_sent && (!e.source_updated_at || update_sent > e.source_updated_at)
         e.update_attribute(:source_updated_at, update_sent)
       end
     end
