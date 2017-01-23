@@ -12,6 +12,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :prx_uri
   property :published_at
 
+  # combo of title, published_at, and guid at time of first pub
+  property :adzerk_keyword
+
   property :url
   property :image_url
 

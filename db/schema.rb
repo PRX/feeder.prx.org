@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170110154352) do
+ActiveRecord::Schema.define(version: 20170123205547) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -44,6 +44,7 @@ ActiveRecord::Schema.define(version: 20170110154352) do
     t.string   "feedburner_orig_link"
     t.string   "feedburner_orig_enclosure_link"
     t.boolean  "is_perma_link"
+    t.string   "adzerk_keyword"
   end
 
   add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree

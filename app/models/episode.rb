@@ -30,7 +30,7 @@ class Episode < BaseModel
 
   validates :podcast_id, :guid, presence: true
 
-  before_validation :initialize_guid
+  before_validation :initialize_guid, :set_adzerk_keyword
 
   after_save :publish_updated, if: -> (e) { e.published_at_changed? }
 
@@ -209,5 +209,15 @@ class Episode < BaseModel
 
   def audio_files
     media_files
+  end
+
+  def set_adzerk_keyword
+    return unless published? && adzerk_keyword.nil?
+    identifiers = []
+    [:title, :published_at, :guid].each do |attr|
+      # Adzerk does not allow commas or colons in keywords
+      identifiers << self.send(attr).slice(0, 10).gsub(/[:,]/,'')
+    end
+    self.adzerk_keyword = identifiers.join('_')
   end
 end
