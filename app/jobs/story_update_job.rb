@@ -20,7 +20,7 @@ class StoryUpdateJob < ActiveJob::Base
     load_resources(data)
     episode ? update_episode : create_episode
     episode.copy_media
-    episode.podcast.publish!
+    podcast.try(:publish!)
   end
 
   alias receive_story_create receive_story_update
@@ -54,5 +54,6 @@ class StoryUpdateJob < ActiveJob::Base
   def create_episode
     return unless story && story.try(:series)
     self.episode = EpisodeStoryHandler.create_from_story!(story)
+    self.podcast = episode.podcast if episode
   end
 end
