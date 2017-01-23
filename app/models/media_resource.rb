@@ -29,10 +29,6 @@ class MediaResource < BaseModel
     end
   end
 
-  def is_processed?
-    complete?
-  end
-
   def media_url
     ext = File.extname(original_url || '')
     ext = '.mp3' if ext.blank?
@@ -46,8 +42,6 @@ class MediaResource < BaseModel
   end
 
   def update_attributes_with_fixer_info(info)
-    # this is not working
-    # self.mime_type = info['content_type']
     update_mime_type_with_fixer_info(info)
     self.medium = self.mime_type.split('/').first
     self.file_size = info['size'].to_i

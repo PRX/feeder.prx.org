@@ -21,9 +21,9 @@ describe MediaResource do
   end
 
   it 'answers if it is processed' do
-    media_resource.wont_be :is_processed?
+    media_resource.wont_be :complete?
     media_resource.complete!
-    media_resource.must_be :is_processed?
+    media_resource.must_be :complete?
   end
 
   it 'provides audio url based on guid' do
