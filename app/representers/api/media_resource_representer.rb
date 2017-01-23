@@ -7,4 +7,5 @@ class Api::MediaResourceRepresenter < Roar::Decorator
   property :mime_type, as: :type
   property :file_size, as: :size
   property :duration
+  property :status
 end
