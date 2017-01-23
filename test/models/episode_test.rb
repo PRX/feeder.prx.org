@@ -40,10 +40,12 @@ describe Episode do
     episode.enclosures.first.wont_be :complete?
     episode.must_be :media?
     episode.wont_be :media_ready?
+    episode.media_status.must_equal 'processing'
     episode.enclosures.first.complete!
     episode.enclosure.must_be :complete?
     episode.must_be :media?
     episode.must_be :media_ready?
+    episode.media_status.must_equal 'complete'
   end
 
   it 'returns an audio content_type by default' do

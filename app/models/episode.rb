@@ -88,23 +88,13 @@ class Episode < BaseModel
     self[:keywords] ||= []
   end
 
-  def enclosure_info
-    return nil unless media_ready?
-    {
-      url: media_url,
-      type: content_type,
-      size: file_size,
-      duration: duration.to_i
-    }
-  end
-
   def media_url
     media = first_media_resource
     enclosure_url(media.media_url, media.original_url) if media
   end
 
-  def first_media_resource
-    contents.blank? ? enclosure : contents.first
+  def content_type
+    first_media_resource.try(:mime_type) || 'audio/mpeg'
   end
 
   def enclosure_url(base_url, original_url = nil)
@@ -145,10 +135,6 @@ class Episode < BaseModel
     }.merge(original).merge(base)
   end
 
-  def content_type
-    first_media_resource.try(:mime_type) || 'audio/mpeg'
-  end
-
   def duration
     if contents.blank?
       enclosure.try(:duration).to_f
@@ -179,12 +165,36 @@ class Episode < BaseModel
   end
 
   def media?
-    !(enclosures.blank? && all_contents.blank?)
+    !all_media_files.blank?
+  end
+
+  def media_status
+    states = all_media_files.map { |f| f.status }.uniq
+    if !(['started', 'created', 'processing', 'retrying'] & states).empty?
+      'processing'
+    elsif states.any?{ |s| s == 'error' }
+      'error'
+    elsif media_ready?
+      'complete'
+    end
   end
 
   def media_ready?
-    (!enclosures.blank? && enclosure) ||
-    (!all_contents.blank? && all_contents.all?{ |a| a.complete? })
+    # if this episode has enclosores, media is ready if there is a complete one
+    if !enclosures.blank?
+      enclosure
+    # if this episode has contents, ready when each position is ready
+    elsif !all_contents.blank?
+      max_pos = all_contents.map { |c| c.position }.max
+      contents.size == max_pos
+    # if this episode has no audio, the media can't be ready, and `media?` will be false
+    else
+      false
+    end
+  end
+
+  def first_media_resource
+    all_media_files.first
   end
 
   def enclosure_template
@@ -204,6 +214,14 @@ class Episode < BaseModel
       contents
     else
       Array(enclosure)
+    end
+  end
+
+  def all_media_files
+    if !all_contents.blank?
+      all_contents
+    else
+      Array(enclosures)
     end
   end
 
