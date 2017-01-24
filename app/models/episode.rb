@@ -209,12 +209,47 @@ class Episode < BaseModel
     podcast.path
   end
 
+  # used in the API, both read and write
   def media_files
     if !contents.blank?
       contents
     else
       Array(enclosure)
     end
+  end
+
+  def media_files=(files)
+    update_contents(files)
+  end
+
+  def update_contents(files)
+    ignore = [:id, :type, :episode_id, :guid, :position, :status, :created_at, :updated_at]
+    files.each_with_index do |f, index|
+      file = f.attributes.with_indifferent_access.except(*ignore)
+      file[:position] = index + 1
+      existing_content = find_existing_content(file[:position], file[:original_url])
+
+      # If there is an existing file with the same url, update
+      if existing_content
+        existing_content.update_attributes(file)
+      # Otherwise, make a new content to be or replace content for that position
+      # If there is no file, or the file has a different url
+      else
+        all_contents << Content.new(file)
+      end
+    end
+
+    # find all contents with a greater position and whack them
+    all_contents.where(['position > ?', files.count]).destroy_all
+  end
+
+  def find_existing_content(pos, url)
+    content_file = URI.parse(url || '').path.split('/').last
+    all_contents.
+      where(position: pos).
+      where('original_url like ?', "%/#{content_file}").
+      order(created_at: :desc).
+      first
   end
 
   def all_media_files
