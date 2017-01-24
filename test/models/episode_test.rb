@@ -107,6 +107,7 @@ describe Episode do
     episode.run_callbacks :save do
       episode.save
     end
+    episode.reload.adzerk_keyword.wont_be_nil
     episode.reload.adzerk_keyword.must_equal orig_keyword
   end
 
