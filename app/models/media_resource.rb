@@ -25,7 +25,7 @@ class MediaResource < BaseModel
   end
 
   def href=(h)
-    if self.original_url != h
+    if original_url != h
       self.original_url = h
       self.task = nil
       self.status = nil
