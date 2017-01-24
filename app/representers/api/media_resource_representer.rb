@@ -3,9 +3,9 @@
 class Api::MediaResourceRepresenter < Roar::Decorator
   include Roar::JSON
 
-  property :url, as: :href
+  property :href
   property :mime_type, as: :type
   property :file_size, as: :size
   property :duration
-  property :status
+  property :status, writeable: false
 end
