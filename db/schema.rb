@@ -44,10 +44,11 @@ ActiveRecord::Schema.define(version: 20170123205547) do
     t.string   "feedburner_orig_link"
     t.string   "feedburner_orig_enclosure_link"
     t.boolean  "is_perma_link"
-    t.string   "adzerk_keyword"
+    t.string   "keyword_xid"
   end
 
   add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree
+  add_index "episodes", ["keyword_xid"], name: "index_episodes_on_keyword_xid", unique: true, using: :btree
   add_index "episodes", ["original_guid", "podcast_id"], name: "index_episodes_on_original_guid_and_podcast_id", unique: true, where: "((deleted_at IS NULL) AND (original_guid IS NOT NULL))", using: :btree
   add_index "episodes", ["prx_uri"], name: "index_episodes_on_prx_uri", unique: true, using: :btree
   add_index "episodes", ["published_at", "podcast_id"], name: "index_episodes_on_published_at_and_podcast_id", using: :btree
