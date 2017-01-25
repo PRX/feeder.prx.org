@@ -32,7 +32,7 @@ class Podcast < BaseModel
   end
 
   def publish_updated
-    update_column(:published_at, max_episode_published_at)
+    update_column(:published_at, max_episode_published_at || Time.now)
   end
 
   def published?
