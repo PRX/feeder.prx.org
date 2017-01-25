@@ -42,7 +42,7 @@ class Episode < BaseModel
   end
 
   def publish_updated
-    podcast.publish_updated if podcast
+    podcast.publish_updated if podcast && published?
   end
 
   def published?

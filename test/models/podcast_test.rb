@@ -6,6 +6,7 @@ describe Podcast do
   include PRXAccess
 
   let(:podcast) { create(:podcast) }
+  let(:episode) { create(:episode, podcast: podcast) }
 
   it 'has episodes' do
     podcast.must_respond_to(:episodes)
@@ -28,6 +29,13 @@ describe Podcast do
     podcast.last_build_date.must_equal Time.now
 
     Timecop.return
+  end
+
+  it 'wont nil out podcast published_at' do
+    pub_at = podcast.published_at
+    podcast.episodes.each { |episode| episode.update_attributes(published_at: 1.day.from_now) }
+    podcast.reload.published_at.wont_be_nil
+    podcast.published_at.must_equal pub_at
   end
 
   describe 'episode limit' do
