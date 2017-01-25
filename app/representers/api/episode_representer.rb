@@ -12,6 +12,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :prx_uri
   property :published_at
 
+  # combo of published_at, guid, and title at time of first scheduling for publication
+  property :keyword_xid, writeable: false
+
   property :url
   property :image_url
 

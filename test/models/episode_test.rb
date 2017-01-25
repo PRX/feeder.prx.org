@@ -101,6 +101,16 @@ describe Episode do
     podcast.reload.published_at.to_i.must_equal now.to_i
   end
 
+  it 'sets one unique identifying episode keyword for tracking purposes' do
+    orig_keyword = episode.keyword_xid
+    episode.update_attributes(published_at: 1.day.from_now, title: 'A different title')
+    episode.run_callbacks :save do
+      episode.save
+    end
+    episode.reload.keyword_xid.wont_be_nil
+    episode.reload.keyword_xid.must_equal orig_keyword
+  end
+
   describe 'enclosure template' do
     before {
       episode.guid = 'guid'
