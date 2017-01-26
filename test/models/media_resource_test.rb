@@ -21,9 +21,32 @@ describe MediaResource do
   end
 
   it 'answers if it is processed' do
-    media_resource.wont_be :is_processed?
+    media_resource.wont_be :complete?
     media_resource.complete!
-    media_resource.must_be :is_processed?
+    media_resource.must_be :complete?
+  end
+
+  it 'sets url based on href' do
+    mr = MediaResource.new(episode: episode)
+    mr.href.must_be_nil
+    mr.href = 'http://test.prxu.org/somefile.mp3'
+    mr.href.must_equal 'http://test.prxu.org/somefile.mp3'
+    mr.original_url.must_equal 'http://test.prxu.org/somefile.mp3'
+  end
+
+  it 'resets processing when href changes' do
+    mr = MediaResource.new( episode: episode,
+                            status: MediaResource.statuses[:completed],
+                            original_url: 'http://test.prxu.org/old.mp3'
+                          )
+    mr.complete!
+    mr.task = Task.new
+
+    mr.href = 'http://test.prxu.org/somefile.mp3'
+    mr.href.must_equal 'http://test.prxu.org/somefile.mp3'
+    mr.original_url.must_equal 'http://test.prxu.org/somefile.mp3'
+    mr.wont_be :complete?
+    mr.task.must_be_nil
   end
 
   it 'provides audio url based on guid' do

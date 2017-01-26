@@ -8,7 +8,12 @@ describe Api::EpisodesController do
 
   let(:episode_hash) do
     {
-      prxUri: '/api/v1/stories/123'
+      prxUri: '/api/v1/stories/123',
+      media: [
+        { href: 'https://s3.amazonaws.com/prx-testing/test/audio1.mp3' },
+        { href: 'https://s3.amazonaws.com/prx-testing/test/audio2.mp3' },
+        { href: 'https://s3.amazonaws.com/prx-testing/test/audio3.mp3' }
+      ]
     }
   end
 
@@ -53,6 +58,7 @@ describe Api::EpisodesController do
     let(:account_id) { 123 }
     let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
     let(:episode_redirect) { create(:episode, podcast: podcast, published_at: nil) }
+    let(:episode_update) { create(:episode, podcast: podcast, published_at: nil) }
     let(:token) { StubToken.new(account_id, ['member']) }
 
     before do
@@ -75,6 +81,43 @@ describe Api::EpisodesController do
       id = JSON.parse(response.body)['id']
       new_episode = Episode.find_by_guid(id)
       new_episode.prx_uri.must_equal '/api/v1/stories/123'
+      new_episode.enclosures.count.must_equal 0
+      new_episode.all_contents.count.must_equal 3
+      c = new_episode.all_contents.first
+      c.original_url.must_equal 'https://s3.amazonaws.com/prx-testing/test/audio1.mp3'
+    end
+
+    it 'can update audio on an episode' do
+      update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/test/change1.mp3' }] }
+
+      episode_update.all_contents.size.must_equal 0
+
+      @controller.stub(:publish, true) do
+        put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+      end
+      assert_response :success
+
+      episode_update.reload.all_contents.size.must_equal 1
+
+      # updating with a dupe should not insert it
+      @controller.stub(:publish, true) do
+        put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+      end
+      assert_response :success
+
+      episode_update.reload.all_contents.size.must_equal 1
+
+      update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/test/change2.mp3' }] }
+
+      # updating with a different url should insert it, with same position value of 1
+      @controller.stub(:publish, true) do
+        put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+      end
+      assert_response :success
+
+      episode_update.reload.all_contents.size.must_equal 2
+      episode_update.all_contents.first.position.must_equal 1
+      episode_update.all_contents.last.position.must_equal 1
     end
   end
 end

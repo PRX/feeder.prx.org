@@ -1,11 +1,11 @@
 require 'test_helper'
 
-describe MediaResourceRepresenter do
+describe Api::MediaResourceRepresenter do
   let(:media_resource) { MediaResource.new }
-  let(:representer) { MediaResourceRepresenter.new(media_resource) }
+  let(:representer) { Api::MediaResourceRepresenter.new(media_resource) }
 
   it 'includes the href' do
-    media_resource.stub(:url, 'url') do
+    media_resource.stub(:href, 'url') do
       representer.as_json['href'].must_equal 'url'
     end
   end

@@ -56,36 +56,30 @@ class EpisodeStoryHandler
     audio.each do |a|
       next unless a.status == 'complete'
 
-      existing_content = find_existing_content(a)
-
+      existing_content = episode.find_existing_content(a.position, a.links['enclosure'].href)
       if existing_content
-        # update it? maybe not
+        update_content(existing_content, a)
       else
         episode.all_contents << build_content(a)
       end
-
     end
     max_pos = audio.last.try(:position).to_i
     episode.all_contents.where(['position > ?', max_pos]).delete_all if max_pos > 0
   end
 
   def build_content(audio)
-    Content.new.tap do |c|
-      c.position = audio.attributes['position']
-      c.original_url = audio_url(audio.links['enclosure'].href)
-      c.mime_type = audio.links['enclosure'].type || audio.attributes['content_type']
-      c.file_size = audio.attributes['size']
-      c.duration = audio.attributes['duration']
-      c.bit_rate = audio.attributes['bit_rate']
-      c.sample_rate = audio.attributes['frequency'] * 1000 if audio.attributes['frequency']
-    end
+    update_content(Content.new, audio)
   end
 
-  def find_existing_content(audio)
-    episode.all_contents.
-      where(position: audio.position, original_url: audio_url(audio.links['enclosure'].href)).
-      order(created_at: :desc).
-      first
+  def update_content(c, audio)
+    c.position = audio.attributes['position']
+    c.href = audio_url(audio.links['enclosure'].href)
+    c.mime_type = audio.links['enclosure'].type || audio.attributes['content_type']
+    c.file_size = audio.attributes['size']
+    c.duration = audio.attributes['duration']
+    c.bit_rate = audio.attributes['bit_rate']
+    c.sample_rate = audio.attributes['frequency'] * 1000 if audio.attributes['frequency']
+    c
   end
 
   def audio_url(url)

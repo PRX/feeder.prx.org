@@ -52,8 +52,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
       href: represented.media_url,
       type: represented.content_type,
       size: represented.file_size,
-      duration: represented.duration.to_i
-    } if represented.media_ready?
+      duration: represented.duration.to_i,
+      status: represented.media_status
+    } if represented.media?
   end
 
   link rel: :podcast, writeable: true do
