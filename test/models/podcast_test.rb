@@ -30,6 +30,21 @@ describe Podcast do
     Timecop.return
   end
 
+  it 'wont nil out podcast published_at' do
+    ep = podcast.episodes.create(published_at: 1.week.ago)
+    pub_at = podcast.reload.published_at
+    podcast.published_at.wont_be_nil
+
+    ep.update_attributes(published_at: 1.week.from_now)
+    podcast.reload
+    podcast.published_at.wont_be_nil
+    podcast.published_at.wont_equal ep.published_at
+    podcast.published_at.wont_equal pub_at
+
+    ep.destroy
+    podcast.reload.published_at.wont_be_nil
+  end
+
   describe 'episode limit' do
     let(:episodes) { create_list(:episode, 10, podcast: podcast).reverse }
 
