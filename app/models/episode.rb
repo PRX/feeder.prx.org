@@ -271,7 +271,7 @@ class Episode < BaseModel
       # Adzerk does not allow commas or colons in keywords; omitting dashes for space
       identifiers << self.send(attr).to_s.slice(0, 10).gsub(/[:,-]/,'')
     end
-    identifiers << title.slice(0, 20)
+    identifiers << (title || 'undefined').slice(0, 20)
     self.keyword_xid = identifiers.join('_')
   end
 end
