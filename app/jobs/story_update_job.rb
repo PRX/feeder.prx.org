@@ -19,7 +19,7 @@ class StoryUpdateJob < ActiveJob::Base
   def receive_story_update(data)
     load_resources(data)
     episode ? update_episode : create_episode
-    episode.copy_media
+    episode.try(:copy_media)
     podcast.try(:publish!)
   end
 
