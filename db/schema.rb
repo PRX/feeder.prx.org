@@ -44,6 +44,7 @@ ActiveRecord::Schema.define(version: 20170123205547) do
     t.string   "feedburner_orig_link"
     t.string   "feedburner_orig_enclosure_link"
     t.boolean  "is_perma_link"
+    t.datetime "source_updated_at"
     t.string   "keyword_xid"
   end
 
@@ -153,6 +154,7 @@ ActiveRecord::Schema.define(version: 20170123205547) do
     t.string   "prx_account_uri"
     t.datetime "published_at"
     t.string   "enclosure_prefix"
+    t.datetime "source_updated_at"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
