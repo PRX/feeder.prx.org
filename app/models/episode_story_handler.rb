@@ -11,9 +11,10 @@ class EpisodeStoryHandler
 
   def self.create_from_story!(story)
     series_uri = story.links['series'].href
-    podcast = Podcast.find_by!(prx_uri: series_uri)
-    episode = Episode.new(podcast: podcast)
-    update_from_story!(episode, story)
+    if podcast = Podcast.find_by(prx_uri: series_uri)
+      episode = Episode.new(podcast: podcast)
+      update_from_story!(episode, story)
+    end
   end
 
   def self.update_from_story!(episode, story = nil)
