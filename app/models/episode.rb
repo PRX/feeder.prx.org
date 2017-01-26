@@ -30,7 +30,7 @@ class Episode < BaseModel
 
   validates :podcast_id, :guid, presence: true
 
-  before_validation :initialize_guid
+  before_validation :initialize_guid, :set_external_keyword
 
   after_save :publish_updated, if: -> (e) { e.published_at_changed? }
 
@@ -88,23 +88,13 @@ class Episode < BaseModel
     self[:keywords] ||= []
   end
 
-  def enclosure_info
-    return nil unless media_ready?
-    {
-      url: media_url,
-      type: content_type,
-      size: file_size,
-      duration: duration.to_i
-    }
-  end
-
   def media_url
     media = first_media_resource
     enclosure_url(media.media_url, media.original_url) if media
   end
 
-  def first_media_resource
-    contents.blank? ? enclosure : contents.first
+  def content_type
+    first_media_resource.try(:mime_type) || 'audio/mpeg'
   end
 
   def enclosure_url(base_url, original_url = nil)
@@ -145,10 +135,6 @@ class Episode < BaseModel
     }.merge(original).merge(base)
   end
 
-  def content_type
-    first_media_resource.try(:mime_type) || 'audio/mpeg'
-  end
-
   def duration
     if contents.blank?
       enclosure.try(:duration).to_f
@@ -179,12 +165,36 @@ class Episode < BaseModel
   end
 
   def media?
-    media_files.size > 0
+    !all_media_files.blank?
+  end
+
+  def media_status
+    states = all_media_files.map { |f| f.status }.uniq
+    if !(['started', 'created', 'processing', 'retrying'] & states).empty?
+      'processing'
+    elsif states.any?{ |s| s == 'error' }
+      'error'
+    elsif media_ready?
+      'complete'
+    end
   end
 
   def media_ready?
-    (!enclosure.blank? && enclosure.complete?) ||
-    (!contents.blank? && contents.all?{ |a| a.complete? })
+    # if this episode has enclosores, media is ready if there is a complete one
+    if !enclosures.blank?
+      enclosure
+    # if this episode has contents, ready when each position is ready
+    elsif !all_contents.blank?
+      max_pos = all_contents.map { |c| c.position }.max
+      contents.size == max_pos
+    # if this episode has no audio, the media can't be ready, and `media?` will be false
+    else
+      false
+    end
+  end
+
+  def first_media_resource
+    all_media_files.first
   end
 
   def enclosure_template
@@ -199,6 +209,7 @@ class Episode < BaseModel
     podcast.path
   end
 
+  # used in the API, both read and write
   def media_files
     if !contents.blank?
       contents
@@ -207,7 +218,60 @@ class Episode < BaseModel
     end
   end
 
+  def media_files=(files)
+    update_contents(files)
+  end
+
+  def update_contents(files)
+    ignore = [:id, :type, :episode_id, :guid, :position, :status, :created_at, :updated_at]
+    files.each_with_index do |f, index|
+      file = f.attributes.with_indifferent_access.except(*ignore)
+      file[:position] = index + 1
+      existing_content = find_existing_content(file[:position], file[:original_url])
+
+      # If there is an existing file with the same url, update
+      if existing_content
+        existing_content.update_attributes(file)
+      # Otherwise, make a new content to be or replace content for that position
+      # If there is no file, or the file has a different url
+      else
+        all_contents << Content.new(file)
+      end
+    end
+
+    # find all contents with a greater position and whack them
+    all_contents.where(['position > ?', files.count]).destroy_all
+  end
+
+  def find_existing_content(pos, url)
+    content_file = URI.parse(url || '').path.split('/').last
+    all_contents.
+      where(position: pos).
+      where('original_url like ?', "%/#{content_file}").
+      order(created_at: :desc).
+      first
+  end
+
+  def all_media_files
+    if !all_contents.blank?
+      all_contents
+    else
+      Array(enclosures)
+    end
+  end
+
   def audio_files
     media_files
+  end
+
+  def set_external_keyword
+    return unless !published_at.nil? && keyword_xid.nil?
+    identifiers = []
+    [:published_at, :guid].each do |attr|
+      # Adzerk does not allow commas or colons in keywords; omitting dashes for space
+      identifiers << self.send(attr).to_s.slice(0, 10).gsub(/[:,-]/,'')
+    end
+    identifiers << title.slice(0, 20)
+    self.keyword_xid = identifiers.join('_')
   end
 end

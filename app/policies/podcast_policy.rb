@@ -1,6 +1,6 @@
 class PodcastPolicy < ApplicationPolicy
   def create?
-    token.present?
+    token && token.authorized?(account_id)
   end
 
   def update?

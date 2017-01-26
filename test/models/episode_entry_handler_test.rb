@@ -177,14 +177,14 @@ describe EpisodeEntryHandler do
   it 'returns nil for media_url when there is no audio' do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
-    episode.contents.clear
+    episode.all_contents.clear
     episode.media_url.must_equal nil
   end
 
   it 'return include in feed and has_media false when no audio' do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
-    episode.contents.clear
+    episode.all_contents.clear
     episode.wont_be :media?
     episode.wont_be :media_ready?
     episode.must_be :include_in_feed?

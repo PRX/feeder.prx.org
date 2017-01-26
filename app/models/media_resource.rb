@@ -18,7 +18,19 @@ class MediaResource < BaseModel
 
   def url
     self[:url] ||= media_url
-    self[:url]
+  end
+
+  def href
+    complete? ? url : original_url
+  end
+
+  def href=(h)
+    if original_url != h
+      self.original_url = h
+      self.task = nil
+      self.status = nil
+    end
+    original_url
   end
 
   def copy_media(force = false)
@@ -27,10 +39,6 @@ class MediaResource < BaseModel
         task.owner = self
       end.start!
     end
-  end
-
-  def is_processed?
-    complete?
   end
 
   def media_url
@@ -46,8 +54,6 @@ class MediaResource < BaseModel
   end
 
   def update_attributes_with_fixer_info(info)
-    # this is not working
-    # self.mime_type = info['content_type']
     update_mime_type_with_fixer_info(info)
     self.medium = self.mime_type.split('/').first
     self.file_size = info['size'].to_i

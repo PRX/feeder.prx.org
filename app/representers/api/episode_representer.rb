@@ -12,6 +12,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :prx_uri
   property :published_at
 
+  # combo of published_at, guid, and title at time of first scheduling for publication
+  property :keyword_xid, writeable: false
+
   property :url
   property :image_url
 
@@ -49,8 +52,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
       href: represented.media_url,
       type: represented.content_type,
       size: represented.file_size,
-      duration: represented.duration.to_i
-    } if represented.media_ready?
+      duration: represented.duration.to_i,
+      status: represented.media_status
+    } if represented.media?
   end
 
   link rel: :podcast, writeable: true do

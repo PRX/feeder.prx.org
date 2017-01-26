@@ -38,10 +38,14 @@ describe Episode do
   it 'knows if audio is ready' do
     episode.enclosures = [create(:enclosure, episode: episode, status: 'created')]
     episode.enclosures.first.wont_be :complete?
+    episode.must_be :media?
     episode.wont_be :media_ready?
+    episode.media_status.must_equal 'processing'
     episode.enclosures.first.complete!
     episode.enclosure.must_be :complete?
+    episode.must_be :media?
     episode.must_be :media_ready?
+    episode.media_status.must_equal 'complete'
   end
 
   it 'returns an audio content_type by default' do
@@ -97,6 +101,16 @@ describe Episode do
       episode.update_attribute(:published_at, now)
     end
     podcast.reload.published_at.to_i.must_equal now.to_i
+  end
+
+  it 'sets one unique identifying episode keyword for tracking purposes' do
+    orig_keyword = episode.keyword_xid
+    episode.update_attributes(published_at: 1.day.from_now, title: 'A different title')
+    episode.run_callbacks :save do
+      episode.save
+    end
+    episode.reload.keyword_xid.wont_be_nil
+    episode.reload.keyword_xid.must_equal orig_keyword
   end
 
   describe 'enclosure template' do

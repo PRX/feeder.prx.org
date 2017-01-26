@@ -90,15 +90,12 @@ class EpisodeEntryHandler
       return
     end
 
-    final_contents = []
     new_contents.each do |c|
-      existing_content = find_existing_content(c)
+      existing_content = episode.find_existing_content(c[:position], c[:url])
 
       # If there is an existing file with the same url, update
       if existing_content
         existing_content.update_with_content!(c)
-        final_contents << existing_content
-
       # Otherwise, make a new content to be or replace content for that position
       # If there is no file, or the file has a different url
       else
@@ -110,14 +107,5 @@ class EpisodeEntryHandler
     # find all contents with a greater position and whack them
     max_pos = new_contents.last[:position]
     episode.all_contents.where(['position > ?', max_pos]).delete_all
-  end
-
-  def find_existing_content(c)
-    content_file = URI.parse(c[:url] || '').path.split('/').last
-    episode.all_contents.
-      where(position: c[:position]).
-      where('original_url like ?', "%/#{content_file}").
-      order(created_at: :desc).
-      first
   end
 end
