@@ -8,6 +8,11 @@ subscribe:
     - publish
     - unpublish
 
+  series:
+    - create
+    - update
+    - delete
+
   feed_entry:
     - create
     - update
