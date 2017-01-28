@@ -4,6 +4,7 @@ class Api::PodcastsController < Api::BaseController
   api_versions :v1
   represent_with Api::PodcastRepresenter
   after_action :publish, only: [:create, :update, :destroy]
+  filter_resources_by :prx_account_uri
 
   def show
     return respond_with_error(HalApi::Errors::NotFound.new) if !show_resource

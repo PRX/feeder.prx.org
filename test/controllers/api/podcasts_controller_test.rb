@@ -106,4 +106,19 @@ describe Api::PodcastsController do
     get(:index, { api_version: 'v1', format: 'json' } )
     assert_response :success
   end
+
+  it 'should list podcasts for an account' do
+    podcast.id.wont_be_nil
+    get(:index, { api_version: 'v1', format: 'json', prx_account_uri: "/api/v1/accounts/#{account_id}" } )
+    assert_response :success
+    podcasts = JSON.parse(response.body)['_embedded']['prx:items']
+    podcasts.count.must_equal 1
+  end
+
+  it 'should not list podcasts for a different account' do
+    get(:index, { api_version: 'v1', format: 'json', prx_account_uri: "/api/v1/accounts/#{account_id}99" } )
+    assert_response :success
+    podcasts = JSON.parse(response.body)['_embedded']['prx:items']
+    podcasts.count.must_equal 0
+  end
 end
