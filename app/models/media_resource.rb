@@ -4,9 +4,10 @@ class MediaResource < BaseModel
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
-  before_validation :initialize_guid_and_url
+  before_validation :initialize_attributes, on: :create
 
-  def initialize_guid_and_url
+  def initialize_attributes
+    self.status ||= :created
     guid
     url
   end
