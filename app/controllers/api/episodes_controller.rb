@@ -5,6 +5,7 @@ class Api::EpisodesController < Api::BaseController
   find_method :find_by_guid
 
   after_action :publish, only: [:create, :update, :destroy]
+  after_action :process_media, only: [:create, :update]
 
   def show
     return respond_with_error(HalApi::Errors::NotFound.new) if !show_resource
@@ -19,6 +20,10 @@ class Api::EpisodesController < Api::BaseController
   end
 
   private
+
+  def process_media
+    resource.copy_media if resource
+  end
 
   def publish
     resource.podcast.publish! if resource && resource.podcast
