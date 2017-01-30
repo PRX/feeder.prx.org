@@ -14,10 +14,12 @@ describe MediaResource do
     }}}}
   end
 
-  it 'initializes guid and url' do
+  it 'initializes attributes' do
     mr = MediaResource.new(episode: episode)
+    mr.validate
     mr.guid.wont_be_nil
     mr.url.wont_be_nil
+    mr.status.must_equal 'created'
   end
 
   it 'answers if it is processed' do

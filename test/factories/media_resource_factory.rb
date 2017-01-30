@@ -11,6 +11,7 @@ FactoryGirl.define do
     duration 48
     bit_rate 64
     original_url 'audio.mp3'
+    status 'created'
 
     after(:create) do |media_resource, evaluator|
       create_list(:copy_media_task, 1, owner: media_resource)
