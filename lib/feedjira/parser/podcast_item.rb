@@ -40,7 +40,7 @@ module Feedjira
       element :"dc:date", as: :published
       element :"dc:Date", as: :published
       element :"dcterms:created", as: :published
-      element :"dc:identifier", :as => :entry_id
+      element :"dc:identifier", as: :entry_id
       element :issued, as: :published
       element :"dcterms:modified", as: :updated
     end

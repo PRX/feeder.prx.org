@@ -44,10 +44,10 @@ module Feedjira
 
       element :"sy:updatePeriod", as: :update_period
       element :"sy:updateFrequency", as: :update_frequency
-      element :"feedburner:info", as: :feedburner_name, :value => :uri
+      element :"feedburner:info", as: :feedburner_name, value: :uri
 
-      elements :link, as: :hubs, value: :href, with: {rel: "hub"}
-      elements :"atom10:link", as: :hubs, value: :href, with: {rel: "hub"}
+      elements :link, as: :hubs, value: :href, with: { rel: 'hub' }
+      elements :"atom10:link", as: :hubs, value: :href, with: { rel: 'hub' }
 
       elements :item, as: :entries, class: PodcastItem
 
