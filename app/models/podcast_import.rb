@@ -44,6 +44,7 @@ class PodcastImport < BaseModel
     update_attributes(status: 'complete')
   rescue StandardError => err
     update_attributes(status: 'failed')
+    raise err
   end
 
   def get_feed
@@ -72,14 +73,14 @@ class PodcastImport < BaseModel
 
     # Add images to the series
     if !feed.itunes_image.blank?
-      self.series.images.create!(
+      series.images.create!(
         upload: feed.itunes_image,
         purpose: Image::PROFILE
       )
     end
 
     if feed.image && feed.image.url
-      self.series.images.create!(
+      series.images.create!(
         upload: feed.image.url,
         purpose: Image::THUMBNAIL
       )
@@ -104,6 +105,8 @@ class PodcastImport < BaseModel
       distributable: series,
       audio_version_template: template
     )
+
+    series
   end
 
   def create_podcast

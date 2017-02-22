@@ -15,7 +15,12 @@ describe PodcastImport do
   let(:feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor.xml')) }
   let(:series) { create(:series) }
   let(:template) { create(:audio_version_template, series: series) }
-  let(:distribution) { build(:podcast_distribution, audio_version_template: template, url: 'https://feeder.prx.org/api/v1/podcasts/51') }
+  let(:distribution) do
+    build(:podcast_distribution,
+          audio_version_template: template,
+          url: 'https://feeder.prx.org/api/v1/podcasts/51')
+  end
+
   let(:podcast) do
     api_resource(JSON.parse(json_file('transistor_podcast')), feeder_root).tap do |r|
       r.headers = r.headers.merge('Authorization' => 'Bearer thisisnotatoken')
