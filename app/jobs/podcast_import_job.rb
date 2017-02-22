@@ -1,17 +1,12 @@
-require 'podcast_importer'
+# encoding: utf-8
 
-class PodcastImportJob < ActiveJob::Base
+class PodcastImportJob < ApplicationJob
 
   queue_as :cms_default
 
-  def perform(account_uri, podcast_uri)
+  def perform(podcast_import)
     ActiveRecord::Base.connection_pool.with_connection do
-      import_podcast(account_uri, podcast_uri)
+      podcast_import.import
     end
-  end
-
-  def import_podcast(account_uri, podcast_uri)
-    pi = PodcastImporter.new(account_uri, podcast_uri)
-    pi.import
   end
 end

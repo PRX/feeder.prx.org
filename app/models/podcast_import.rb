@@ -1,0 +1,264 @@
+# encoding: utf-8
+
+require 'prx_access'
+require 'addressable/uri'
+require 'feedjira'
+require 'itunes_category_validator'
+
+class PodcastImport < BaseModel
+  include PRXAccess
+  include Rails.application.routes.url_helpers
+
+  attr_accessor :feed, :template, :stories, :podcast, :distribution
+
+  belongs_to :account, -> { with_deleted }
+  belongs_to :series, -> { with_deleted }
+
+  before_validation :set_defaults, on: :create
+
+  def set_defaults
+    self.status ||= 'created'
+  end
+
+  def import_later
+    PodcastImportJob.perform_later self
+  end
+
+  def import
+    update_attributes(status: 'started')
+
+    # Request the RSS feed
+    get_feed
+    update_attributes(status: 'feed retrieved')
+
+    # Create the series
+    create_series_from_podcast
+    update_attributes(status: 'series created')
+
+    # Update podcast attributes
+    create_podcast
+    update_attributes(status: 'podcast created')
+
+    # Create the episodes
+    create_stories
+    update_attributes(status: 'complete')
+  rescue StandardError => err
+    update_attributes(status: 'failed')
+  end
+
+  def get_feed
+    response = connection.get(uri.path, uri.query_values)
+    podcast_feed = Feedjira::Feed.parse(response.body)
+    validate_feed(podcast_feed)
+    self.feed = podcast_feed
+  end
+
+  def validate_feed(podcast_feed)
+    if !podcast_feed.is_a?(Feedjira::Parser::Podcast)
+      parser = podcast_feed.class.name.demodulize.underscore.humanize rescue ''
+      raise "Failed to retrieve #{url}, not a podcast feed: #{parser}"
+    end
+  end
+
+  def create_series_from_podcast(feed = self.feed)
+    # create the series
+    self.series = create_series!(
+      account: account,
+      title: feed.title,
+      short_description: feed.itunes_subtitle,
+      description: feed.description
+    )
+    save!
+
+    # Add images to the series
+    if !feed.itunes_image.blank?
+      self.series.images.create!(
+        upload: feed.itunes_image,
+        purpose: Image::PROFILE
+      )
+    end
+
+    if feed.image && feed.image.url
+      self.series.images.create!(
+        upload: feed.image.url,
+        purpose: Image::THUMBNAIL
+      )
+    end
+
+    # Add the template and a single file template
+    self.template = series.audio_version_templates.create!(
+      label: 'Podcast Audio',
+      promos: false,
+      length_minimum: 0,
+      length_maximum: 0
+    )
+
+    template.audio_file_templates.create!(
+      position: 1,
+      label: 'Segment A',
+      length_minimum: 0,
+      length_maximum: 0
+    )
+
+    self.distribution = Distributions::PodcastDistribution.create!(
+      distributable: series,
+      audio_version_template: template
+    )
+  end
+
+  def create_podcast
+    podcast_attributes = {}
+    %w(copyright language update_frequency update_period).each do |atr|
+      podcast_attributes[atr.to_sym] = feed.send(atr)
+    end
+
+    podcast_attributes[:link] = feed.url
+    podcast_attributes[:explicit] = feed.itunes_explicit
+    podcast_attributes[:new_feed_url] = feed.itunes_new_feed_url
+    podcast_attributes[:path] ||= feed.feedburner_name
+
+    podcast_attributes[:author] = person(feed.itunes_author)
+    podcast_attributes[:managing_editor] = person(feed.managing_editor)
+    podcast_attributes[:owners] = Array(feed.itunes_owners).map do |o|
+      { name: o.name, email: o.email }
+    end
+
+    podcast_attributes[:itunes_categories] = parse_itunes_categories(feed)
+    podcast_attributes[:categories] = parse_categories(feed)
+    podcast_attributes[:complete] = (feed.itunes_complete == 'yes')
+    podcast_attributes[:copyright] ||= feed.media_copyright
+    podcast_attributes[:keywords] = parse_keywords(feed)
+
+    self.podcast = distribution.add_podcast_to_feeder(podcast_attributes)
+    podcast
+  end
+
+  def person(arg)
+    return nil if arg.blank?
+
+    email = name = nil
+    if arg.is_a?(Hash)
+      email = arg[:email]
+      name = arg[:name]
+    else
+      s = arg.to_s.try(:strip)
+      if match = s.match(/(.+) \((.+)\)/)
+        email = match[1]
+        name = match[2]
+      else
+        name = s
+      end
+    end
+
+    { name: name, email: email }
+  end
+
+  def parse_itunes_categories(feed)
+    itunes_cats = {}
+    Array(feed.itunes_categories).map(&:strip).select { |c| !c.blank? }.each do |cat|
+      if ITunesCategoryValidator.category?(cat)
+        itunes_cats[cat] ||= []
+      elsif parent_cat = ITunesCategoryValidator.subcategory?(cat)
+        itunes_cats[parent_cat] ||= []
+        itunes_cats[parent_cat] << cat
+      end
+    end
+
+    itunes_cats.keys.map { |n| { name: n, subcategories: itunes_cats[n] } }
+  end
+
+  def parse_categories(feed)
+    mcat = Array(feed.media_categories).map(&:strip)
+    rcat = Array(feed.categories).map(&:strip)
+    (mcat + rcat).compact.uniq
+  end
+
+  def parse_keywords(feed)
+    ikey = Array(feed.itunes_keywords).map(&:strip)
+    mkey = Array(feed.media_keywords).map(&:strip)
+    (ikey + mkey).compact.uniq
+  end
+
+  def create_stories
+    feed.entries.map do |entry|
+      story = create_story(entry, series)
+      create_episode(story, entry)
+      story
+    end
+  end
+
+  def create_story(entry, series)
+    story = series.stories.create!(
+      title: entry[:title],
+      short_description: entry[:itunes_subtitle],
+      description: entry[:description],
+      tags: entry[:categories],
+      published_at: entry[:published]
+    )
+
+    # add the audio version
+    version = story.audio_versions.create!(
+      audio_version_template: template,
+      label: 'Podcast Audio',
+      explicit: entry[:itunes_explicit]
+    )
+
+    # add the audio
+    enclosure = enclosure_url(entry)
+    version.audio_files.create!(label: 'Segment A', upload: enclosure) if enclosure
+
+    # add the image
+    story.images.create!(upload: entry.itunes_image) if entry.itunes_image
+
+    story
+  end
+
+  def enclosure_url(entry)
+    entry[:feedburner_orig_enclosure_link] || entry[:enclosure].try(:url)
+  end
+
+  def create_episode(story, entry)
+    # create the distro from the story
+    distro = StoryDistributions::EpisodeDistribution.create(
+      distribution: distribution,
+      story: story,
+      guid: entry.entry_id
+    )
+
+    create_attributes = {}
+    create_attributes[:author] = person(entry[:itunes_author] || entry[:author] || entry[:creator])
+    create_attributes[:block] = (entry[:itunes_block] == 'yes')
+    create_attributes[:explicit] = entry[:itunes_explicit]
+    create_attributes[:guid] = entry.entry_id
+    create_attributes[:is_closed_captioned] = (entry[:itunes_is_closed_captioned] == 'yes')
+    create_attributes[:is_perma_link] = entry[:is_perma_link]
+    create_attributes[:keywords] = (entry[:itunes_keywords] || '').split(',').map(&:strip)
+    create_attributes[:position] = entry[:itunes_order]
+    create_attributes[:url] = episode_url(entry)
+
+    distro.add_episode_to_feeder(create_attributes)
+  end
+
+  def episode_url(entry)
+    url = entry[:feedburner_orig_link] || entry[:url] || entry[:link]
+    if url =~ /libsyn\.com/
+      url = nil
+    end
+    url
+  end
+
+  def uri
+    @uri ||= Addressable::URI.parse(url)
+  end
+
+  def connection
+    conn_uri = "#{uri.scheme}://#{uri.host}:#{uri.port}"
+    Faraday.new(conn_uri) { |stack| stack.adapter :excon }.tap do |c|
+      c.headers[:user_agent] = 'PRX CMS FeedValidator'
+    end
+  end
+
+  def self.policy_class
+    AccountablePolicy
+  end
+end

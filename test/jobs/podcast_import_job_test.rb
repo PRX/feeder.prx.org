@@ -1,14 +1,13 @@
 require 'test_helper'
+require 'minitest/mock'
 
 describe PodcastImportJob do
 
-  let(:account_path) { '/api/v1/accounts/8' }
-  let(:podcast_url) { 'http://feeds.prx.org/transistor_stem' }
   let(:job) { PodcastImportJob.new }
 
   it 'import that podcast' do
-    job.stub(:import_podcast, true) do
-      job.perform(account_path, podcast_url).must_equal true
-    end
+    importer = MiniTest::Mock.new
+    importer.expect(:import, true)
+    job.perform(importer).must_equal true
   end
 end
