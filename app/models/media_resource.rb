@@ -1,12 +1,13 @@
-class MediaResource < ActiveRecord::Base
+class MediaResource < BaseModel
   has_one :task, as: :owner
-  belongs_to :episode, -> { with_deleted }
+  belongs_to :episode, -> { with_deleted }, touch: true
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
-  before_validation :initialize_guid_and_url
+  before_validation :initialize_attributes, on: :create
 
-  def initialize_guid_and_url
+  def initialize_attributes
+    self.status ||= :created
     guid
     url
   end
@@ -18,7 +19,19 @@ class MediaResource < ActiveRecord::Base
 
   def url
     self[:url] ||= media_url
-    self[:url]
+  end
+
+  def href
+    complete? ? url : original_url
+  end
+
+  def href=(h)
+    if original_url != h
+      self.original_url = h
+      self.task = nil
+      self.status = nil
+    end
+    original_url
   end
 
   def copy_media(force = false)
@@ -27,10 +40,6 @@ class MediaResource < ActiveRecord::Base
         task.owner = self
       end.start!
     end
-  end
-
-  def is_processed?
-    complete?
   end
 
   def media_url
@@ -46,8 +55,6 @@ class MediaResource < ActiveRecord::Base
   end
 
   def update_attributes_with_fixer_info(info)
-    # this is not working
-    # self.mime_type = info['content_type']
     update_mime_type_with_fixer_info(info)
     self.medium = self.mime_type.split('/').first
     self.file_size = info['size'].to_i

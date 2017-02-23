@@ -1,6 +1,8 @@
 FactoryGirl.define do
   factory :podcast do
     sequence(:prx_uri) { |n| "/api/v1/series/#{n}" }
+    sequence(:prx_account_uri) { |n| "/api/v1/accounts/#{n}" }
+    sequence(:published_at) { |n| Date.today - n.days }
     path 'jjgo'
     url 'http://feeds.feedburner.com/thornmorris'
     link 'http://www.maximumfun.org/jjgo'
@@ -14,8 +16,6 @@ FactoryGirl.define do
     author_email 'jesse@maximumfun.org'
     owner_name 'Jesse Thorn'
     owner_email 'jesse@maximumfun.org'
-    pub_date Date.parse("Jan 11, 2015")
-    last_build_date Date.parse("Jan 12, 2015")
     categories ['Humor', 'Entertainment']
     explicit 'yes'
     subtitle 'Goofy laughsters'
@@ -29,5 +29,10 @@ FactoryGirl.define do
 
     itunes_image
     feed_image
+
+    after(:create) do |podcast, evaluator|
+      itunes_category = create(:itunes_category, podcast: podcast)
+      podcast.itunes_categories << itunes_category
+    end
   end
 end

@@ -5,6 +5,10 @@ module PRXAccess
       super(hash.deep_transform_keys { |key| key.to_s.underscore })
     end
 
+    def outgoing_body_filter(hash)
+      super(hash.deep_transform_keys { |key| key.to_s.camelize(:lower) })
+    end
+
     class Link < HyperResource::Link
       attr_accessor :type, :profile
 
@@ -32,11 +36,18 @@ module PRXAccess
     end
   end
 
+  def default_headers
+    {
+      'Content-Type' => 'application/json',
+      'Accept' =>  'application/json'
+    }
+  end
+
   def api(options = {})
-    opts = { root: cms_root }.merge(options)
+    opts = { root: cms_root, headers: default_headers }.merge(options)
     if account = opts.delete(:account)
       token = get_account_token(account)
-      opts[:headers] = { 'Authorization' =>  "Bearer #{token}" }
+      opts[:headers]['Authorization'] = "Bearer #{token}"
     end
 
     PRXHyperResource.new(opts)
@@ -46,9 +57,6 @@ module PRXAccess
     href = body['_links']['self']['href']
     resource = api(root: root)
     link = PRXHyperResource::Link.new(resource, href: href)
-    # puts "href: #{href}"
-    # puts "resource: #{resource.inspect}"
-    # puts "link: #{link.inspect}"
     PRXHyperResource.new_from(body: body, resource: resource, link: link)
   end
 
@@ -65,18 +73,28 @@ module PRXAccess
   end
 
   def id_root
-    ENV['ID_ROOT']
+    root_uri ENV['ID_HOST']
   end
 
-  def cms_root
-    ENV['CMS_ROOT']
+  private
+
+  def method_missing(method, *args)
+    if method =~ /_root$/
+      root_uri ENV[method.to_s.sub(/_root$/, '_HOST').upcase], '/api/v1'
+    else
+      super
+    end
   end
 
-  def prx_root
-    ENV['PRX_ROOT']
+  def respond_to_missing?(method, include_private = false)
+    method.to_s.ends_with?('_root') || super
   end
 
-  def crier_root
-    ENV['CRIER_ROOT']
+  def root_uri(host, path = '')
+    if host =~ /\.org/ # TODO: should .tech's be here too?
+      URI::HTTPS.build(host: host, path: path).to_s
+    else
+      URI::HTTP.build(host: host, path: path).to_s
+    end
   end
 end

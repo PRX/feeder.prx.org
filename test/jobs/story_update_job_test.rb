@@ -4,9 +4,16 @@ describe StoryUpdateJob do
 
   let(:podcast) { create(:podcast, prx_uri: '/api/v1/series/20829') }
 
-  let(:job) { StoryUpdateJob.new }
-
   let(:body) { json_file(:prx_story_updates) }
+  let(:msg) { { subject: 'story', action: 'update', body: body, sent_at: 1.second.ago } }
+
+  let(:job) do
+    StoryUpdateJob.new.tap do |j|
+      j.message = msg
+      j.subject = msg[:subject]
+      j.action = msg[:action]
+    end
+  end
 
   before do
     if use_webmock?
@@ -24,7 +31,7 @@ describe StoryUpdateJob do
   it 'can create an episode' do
     podcast.wont_be_nil
     mock_episode = Minitest::Mock.new
-    mock_episode.expect(:copy_media, true)
+    mock_episode.expect(:try, true, [:copy_media])
     mock_episode.expect(:podcast, podcast)
     EpisodeStoryHandler.stub(:create_from_story!, mock_episode) do
       podcast.stub(:create_publish_task, true) do

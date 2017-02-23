@@ -10,7 +10,7 @@ feeder:
     - "3000:3000"
   command: web
   environment:
-    VIRTUAL_HOST: feeder.docker
+    VIRTUAL_HOST: feeder.prx.docker
 worker:
   image: feederprxorg_feeder
   volumes:

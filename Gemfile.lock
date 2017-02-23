@@ -43,7 +43,7 @@ GEM
     announce (0.2.3)
     arel (6.0.3)
     ast (2.3.0)
-    aws-sdk-core (2.6.20)
+    aws-sdk-core (2.6.24)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
     aws-sigv4 (1.0.0)
@@ -208,6 +208,8 @@ GEM
       ast (~> 2.2)
     pg (0.19.0)
     powerpack (0.1.1)
+    prx_auth-rails (0.0.4)
+      rack-prx_auth (~> 0.0.6)
     pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -219,7 +221,14 @@ GEM
       pry (>= 0.9.10)
     public_suffix (2.0.4)
     puma (3.6.0)
+    pundit (1.1.0)
+      activesupport (>= 3.0.0)
     rack (1.6.5)
+    rack-cors (0.4.0)
+    rack-prx_auth (0.0.8)
+      json (~> 1.8, >= 1.8.1)
+      json-jwt (~> 1.0, >= 1.0.1)
+      rack (~> 1.5, >= 1.5.2)
     rack-test (0.6.3)
       rack (>= 1.0)
     rails (4.2.7.1)
@@ -358,13 +367,18 @@ DEPENDENCIES
   oauth2
   paranoia
   pg
+  prx_auth-rails (~> 0.0.4)
   pry-byebug
   pry-rails
   puma
+  pundit
+  rack-cors
+  rack-prx_auth (~> 0.0.8)
   rails (~> 4.2.0)
   rails_12factor
   rake
   responders
+  roar
   roar-rails
   rubocop
   sanitize

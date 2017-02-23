@@ -11,6 +11,12 @@ describe Podcast do
     podcast.must_respond_to(:episodes)
   end
 
+  it 'has a default enclosure template' do
+    podcast = Podcast.new.tap {|p| p.valid? }
+    podcast.enclosure_template_default.must_match /^http/
+    podcast.enclosure_template.must_equal podcast.enclosure_template_default
+  end
+
   it 'has iTunes categories' do
     podcast.must_respond_to(:itunes_categories)
   end
@@ -24,68 +30,19 @@ describe Podcast do
     Timecop.return
   end
 
-  describe 'from feed' do
-    let (:entry) { api_resource(JSON.parse(json_file(:crier_entry)), crier_root) }
+  it 'wont nil out podcast published_at' do
+    ep = podcast.episodes.create(published_at: 1.week.ago)
+    pub_at = podcast.reload.published_at
+    podcast.published_at.wont_be_nil
 
-    before {
-      stub_request(:get, "http://serialpodcast.org/sites/all/modules/custom/serial/img/serial-itunes-logo.png").
-        to_return(:status => 200, :body => test_file('/fixtures/transistor1400.jpg'), :headers => {})
-    }
+    ep.update_attributes(published_at: 1.week.from_now)
+    podcast.reload
+    podcast.published_at.wont_be_nil
+    podcast.published_at.wont_equal ep.published_at
+    podcast.published_at.wont_equal pub_at
 
-    it 'create_from_feed' do
-      feed = entry.objects['prx:feed']
-      podcast = Podcast.create_from_feed!(feed)
-      podcast.title.must_equal 'Serial'
-      podcast.source_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml'
-      podcast.link.must_equal 'http://serialpodcast.org'
-      podcast.author_name.must_equal 'This American Life'
-      podcast.owner_name.must_be_nil
-      podcast.owner_email.must_equal 'rich@strangebirdlabs.com'
-      podcast.managing_editor_name.must_equal 'This American Life'
-      podcast.managing_editor_email.must_equal 'chad@thislife.org'
-      podcast.new_feed_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/newserialpodcast.xml'
-    end
-
-    it 'update_from_feed' do
-      feed = entry.objects['prx:feed']
-
-      podcast = Podcast.new
-      podcast.update_from_feed(feed)
-
-      podcast.title.must_equal 'Serial'
-      podcast.source_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml'
-      podcast.link.must_equal 'http://serialpodcast.org'
-      podcast.author_name.must_equal 'This American Life'
-      podcast.owner_name.must_be_nil
-      podcast.owner_email.must_equal 'rich@strangebirdlabs.com'
-      podcast.managing_editor_name.must_equal 'This American Life'
-      podcast.managing_editor_email.must_equal 'chad@thislife.org'
-      podcast.new_feed_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/newserialpodcast.xml'
-    end
-
-    it 'update_images' do
-      podcast = Podcast.new
-      attributes = {
-        thumb_url: 'http://prx.org/thumb.png',
-        image_url: 'http://prx.org/image.png'
-      }
-      podcast.update_images(attributes)
-      podcast.feed_image.url.must_equal 'http://prx.org/thumb.png'
-      podcast.itunes_image.url.must_equal 'http://prx.org/image.png'
-    end
-
-    it 'update_categories' do
-      podcast = Podcast.new
-      feed = OpenStruct.new(
-        categories: ["Science & Medicine", "Natural Sciences", "Fictional"]
-      )
-
-      podcast.update_categories(feed)
-
-      podcast.itunes_categories.size.must_equal 1
-      podcast.itunes_categories.first.name.must_equal "Science & Medicine"
-      podcast.categories.first.must_equal "Fictional"
-    end
+    ep.destroy
+    podcast.reload.published_at.wont_be_nil
   end
 
   describe 'episode limit' do
@@ -94,7 +51,7 @@ describe Podcast do
     it 'returns only limited number of episodes' do
       episodes.count.must_equal podcast.episodes.count
       podcast.feed_episodes.count.must_equal 10
-      podcast.max_episodes = 5
+      podcast.display_episodes_count = 5
       podcast.feed_episodes.count.must_equal 5
     end
   end

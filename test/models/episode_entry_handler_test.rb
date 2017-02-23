@@ -46,8 +46,7 @@ describe EpisodeEntryHandler do
     episode.prx_uri.must_be_nil
     episode.deleted_at.must_be_nil
     episode.original_guid.must_equal 'http://99percentinvisible.prx.org/?p=1253'
-    episode.published_at.must_equal episode.published
-    episode.released_at.must_be_nil
+    episode.published_at.must_equal episode.published_at
     episode.url.must_equal 'http://99percentinvisible.prx.org/2016/10/18/232-mcmansion-hell/'
     episode.author_name.must_equal 'Roman Mars'
     episode.author_email.must_equal 'roman@99pi.org'
@@ -55,8 +54,6 @@ describe EpisodeEntryHandler do
     episode.subtitle.must_equal 'Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact...'
     episode.content.must_equal "<p>Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact with their environment. Kate Wagner, architecture critic and creator of <a href=\"http://www.mcmansionhell.com/\">McMansion Hell</a>, is on a mission to illustrate just why these buildings are so terrible.</p>\n<p><a href=\"http://99percentinvisible.org/?p=15841&amp;post_type=episode\">McMansion Hell: The Devil is in the Details</a></p>\n<p><a href=\"https://www.commitchange.com/ma/cambridge/prx-inc/campaigns/radiotopia-fall-campaign-2016\">Support 99pi and Radiotopia today</a>! Be part of the 5000 backer FreshBooks challenge: FreshBooks will donate $40,000 to Radiotopia if we get 5000 total new donations during this drive. <a href=\"https://www.freshbooks.com\">FreshBooks</a> makes intuitive and beautiful cloud accounting software for small businesses.</p>\n"
     episode.summary.must_equal 'Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact with their environment. Kate Wagner, architecture critic and creator of McMansion Hell, is on a mission to illustrate just why these buildings are so terrible. McMansion Hell: The Devil is in the Details Support 99pi and Radiotopia today! Be part of the 5000 backer FreshBooks challenge: FreshBooks will donate $40,000 to Radiotopia if we get 5000 total new donations during this drive. FreshBooks makes intuitive and beautiful cloud accounting software for small businesses.'
-    episode.published.wont_be_nil
-    episode.updated.must_be_nil
     episode.image_url.must_equal 'http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99-1400.png?entry=1'
     episode.explicit.must_equal 'clean'
     episode.keywords.must_equal ["Roman Mars", "Kate Wagner"]
@@ -103,6 +100,33 @@ describe EpisodeEntryHandler do
     episode.enclosure.must_equal replacement_enclosure
   end
 
+  it 'will not changes enclosure when file name same' do
+    podcast = create(:podcast)
+    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
+    episode.enclosures.first.complete!
+    first_enclosure = episode.enclosure
+
+    first_enclosure.original_url.must_equal "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
+    first_enclosure.update_attribute(:original_url, "http://www.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3")
+    EpisodeEntryHandler.update_from_entry!(episode, entry)
+    episode.enclosures(true).size.must_equal 1
+    episode.enclosures.first.original_url.must_equal "http://www.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
+  end
+
+  it 'updates enclosure when only file name changes' do
+    podcast = create(:podcast)
+    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
+    episode.enclosures.first.complete!
+    first_enclosure = episode.enclosure
+
+    first_enclosure.original_url.must_equal "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
+    first_enclosure.update_attribute(:original_url, "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12_original.mp3")
+    EpisodeEntryHandler.update_from_entry!(episode, entry)
+    episode.enclosures(true).size.must_equal 2
+    episode.enclosures.first.original_url.must_equal "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
+    episode.enclosures.last.original_url.must_equal "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12_original.mp3"
+  end
+
   it 'creates contents from entry' do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
@@ -118,8 +142,6 @@ describe EpisodeEntryHandler do
     episode.reload
     first_content = episode.all_contents.first
     last_content = episode.all_contents.last
-    # puts "\nfirst_content #{first_content.inspect}"
-    # puts "\nlast_content #{last_content.inspect}"
 
     EpisodeEntryHandler.update_from_entry!(episode, entry)
     episode.reload
@@ -127,9 +149,14 @@ describe EpisodeEntryHandler do
     episode.all_contents.last.must_equal last_content
 
     first_content = episode.contents.first
-    episode.contents.first.update_attributes(original_url: "https://test.com")
+    first_content.original_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3'
+    first_content.update_attributes(original_url: 'https://prx-dovetail.amazonaws.com/testserial/serial_audio.mp3')
     EpisodeEntryHandler.update_from_entry!(episode, entry)
-    episode.all_contents.size.must_equal 3
+    episode.all_contents(true).size.must_equal 2
+
+    first_content.update_attributes(original_url: 'https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio_original.mp3')
+    EpisodeEntryHandler.update_from_entry!(episode, entry)
+    episode.all_contents(true).size.must_equal 3
     episode.all_contents.group_by(&:position)[first_content.position].size.must_equal 2
   end
 
@@ -150,14 +177,14 @@ describe EpisodeEntryHandler do
   it 'returns nil for media_url when there is no audio' do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
-    episode.contents.clear
+    episode.all_contents.clear
     episode.media_url.must_equal nil
   end
 
   it 'return include in feed and has_media false when no audio' do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
-    episode.contents.clear
+    episode.all_contents.clear
     episode.wont_be :media?
     episode.wont_be :media_ready?
     episode.must_be :include_in_feed?

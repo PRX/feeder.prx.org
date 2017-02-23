@@ -16,7 +16,7 @@ class Tasks::PublishFeedTask < ::Task
   end
 
   def source_url(podcast = owner)
-    podcast_url(podcast, host: ENV['FEEDER_APP_HOST'])
+    podcast_url(podcast, host: ENV['FEEDER_HOST'])
   end
 
   def destination_url(podcast = owner)

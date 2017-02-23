@@ -28,7 +28,7 @@ describe Episode do
 
   it 'returns a guid to use in the channel item' do
     episode.guid = 'guid'
-    episode.item_guid.must_equal "prx:jjgo:guid"
+    episode.item_guid.must_equal "prx_#{episode.podcast_id}_guid"
   end
 
   it 'is ready to add to a feed' do
@@ -36,12 +36,17 @@ describe Episode do
   end
 
   it 'knows if audio is ready' do
-    episode.enclosures = [create(:enclosure, episode: episode, status: 'created')]
+    episode.enclosures = [create(:enclosure, episode: episode)]
+    episode.enclosures.first.status.must_equal 'created'
     episode.enclosures.first.wont_be :complete?
+    episode.must_be :media?
     episode.wont_be :media_ready?
+    episode.media_status.must_equal 'processing'
     episode.enclosures.first.complete!
     episode.enclosure.must_be :complete?
+    episode.must_be :media?
     episode.must_be :media_ready?
+    episode.media_status.must_equal 'complete'
   end
 
   it 'returns an audio content_type by default' do
@@ -88,13 +93,68 @@ describe Episode do
     episode.duration.must_equal 20
   end
 
+  it 'updates the podcast published date' do
+    now = 1.minute.ago
+    podcast = episode.podcast
+    orig = episode.podcast.published_at
+    now.wont_equal orig
+    episode.run_callbacks :save do
+      episode.update_attribute(:published_at, now)
+    end
+    podcast.reload.published_at.to_i.must_equal now.to_i
+  end
+
+  it 'sets one unique identifying episode keyword for tracking purposes' do
+    orig_keyword = episode.keyword_xid
+    episode.update_attributes(published_at: 1.day.from_now, title: 'A different title')
+    episode.run_callbacks :save do
+      episode.save
+    end
+    episode.reload.keyword_xid.wont_be_nil
+    episode.reload.keyword_xid.must_equal orig_keyword
+  end
+
   describe 'enclosure template' do
     before {
       episode.guid = 'guid'
       episode.podcast.path = 'foo'
     }
 
-    it 'appends podtrac redirect to audio file link' do
+    it 'applies template to enclosure url' do
+      template = "https://#{ENV['DOVETAIL_HOST']}/{slug}/{guid}/{original_filename}"
+      base_url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'
+      original_url = 'http://foo.com/whatever/filename.mp3'
+
+      episode.podcast.enclosure_template = template
+      episode.podcast.enclosure_prefix = nil
+      new_url = episode.enclosure_url(base_url, original_url)
+      new_url.must_equal("https://#{ENV['DOVETAIL_HOST']}/foo/guid/filename.mp3")
+    end
+
+    it 'applies prefix to enclosure url' do
+      pre = 'https://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/test'
+      base_url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'
+      original_url = 'http://foo.com/whatever/filename.mp3'
+
+      episode.podcast.enclosure_template = nil
+      episode.podcast.enclosure_prefix = pre
+      new_url = episode.enclosure_url(base_url, original_url)
+      new_url.must_equal "#{pre}/test-f.prxu.org/podcast/episode/filename.mp3"
+    end
+
+    it 'applies prefix and template' do
+      template = "https://#{ENV['DOVETAIL_HOST']}/{slug}/{guid}/{original_filename}"
+      pre = 'https://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/test'
+      base_url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'
+      original_url = 'http://foo.com/whatever/filename.mp3'
+
+      episode.podcast.enclosure_template = template
+      episode.podcast.enclosure_prefix = pre
+      new_url = episode.enclosure_url(base_url, original_url)
+      new_url.must_equal "#{pre}/#{ENV['DOVETAIL_HOST']}/foo/guid/filename.mp3"
+    end
+
+    it 'applies template to audio file link' do
       episode.podcast.enclosure_template = 'http://foo.com/r{extension}/b/n/{host}{+path}'
 
       url = 'http://test-f.prxu.org/podcast/episode/filename.mp3'

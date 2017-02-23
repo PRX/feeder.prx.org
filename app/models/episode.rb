@@ -2,7 +2,7 @@ require 'addressable/uri'
 require 'addressable/template'
 require 'hash_serializer'
 
-class Episode < ActiveRecord::Base
+class Episode < BaseModel
   serialize :categories, JSON
   serialize :keywords, JSON
 
@@ -10,18 +10,44 @@ class Episode < ActiveRecord::Base
 
   serialize :overrides, HashSerializer
 
-  belongs_to :podcast, -> { with_deleted }
-  has_many :all_contents, -> { order('position ASC, created_at DESC') }, class_name: 'Content'
-  has_many :contents, -> { order('position ASC, created_at DESC').complete }
-  has_many :enclosures, -> { order('created_at DESC') }
+  belongs_to :podcast, -> { with_deleted }, touch: true
+
+  has_many :all_contents,
+    -> { order('position ASC, created_at DESC') },
+    class_name: 'Content',
+    autosave: true,
+    dependent: :destroy
+
+  has_many :contents,
+    -> { order('position ASC, created_at DESC').complete },
+    autosave: true,
+    dependent: :destroy
+
+  has_many :enclosures,
+    -> { order('created_at DESC') },
+    autosave: true,
+    dependent: :destroy
 
   validates :podcast_id, :guid, presence: true
-  # validates_associated :podcast
 
-  before_validation :initialize_guid
+  before_validation :initialize_guid, :set_external_keyword
 
-  scope :released, -> { where('released_at IS NULL OR released_at <= now()') }
-  scope :published, -> { where('published_at IS NOT NULL') }
+  after_save :publish_updated, if: -> (e) { e.published_at_changed? }
+
+  scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
+
+  def self.by_prx_story(story)
+    story_uri = story.links['self'].href
+    Episode.with_deleted.find_by(prx_uri: story_uri)
+  end
+
+  def publish_updated
+    podcast.publish_updated if podcast
+  end
+
+  def published?
+    !published_at.nil? && published_at <= Time.now
+  end
 
   def author=(a)
     author = a || {}
@@ -43,7 +69,11 @@ class Episode < ActiveRecord::Base
   end
 
   def item_guid
-    original_guid || "prx:#{podcast.path}:#{guid}"
+    original_guid || "prx_#{podcast.id}_#{guid}"
+  end
+
+  def item_guid=(new_guid)
+    self.original_guid = new_guid
   end
 
   def overrides
@@ -58,28 +88,29 @@ class Episode < ActiveRecord::Base
     self[:keywords] ||= []
   end
 
-  def self.by_prx_story(story)
-    story_uri = story.links['self'].href
-    Episode.with_deleted.find_by(prx_uri: story_uri)
-  end
-
-  def enclosure_info
-    return nil unless media_ready?
-    {
-      url: media_url,
-      type: content_type,
-      size: file_size,
-      duration: duration.to_i
-    }
-  end
-
   def media_url
     media = first_media_resource
-    enclosure_template_url(media.media_url, media.original_url) if media
+    enclosure_url(media.media_url, media.original_url) if media
   end
 
-  def first_media_resource
-    contents.blank? ? enclosure : contents.first
+  def content_type
+    first_media_resource.try(:mime_type) || 'audio/mpeg'
+  end
+
+  def enclosure_url(base_url, original_url = nil)
+    templated_url = enclosure_template_url(base_url, original_url)
+    add_enclosure_prefix(templated_url)
+  end
+
+  def add_enclosure_prefix(u)
+    return u if enclosure_prefix.blank?
+    pre = Addressable::URI.parse(enclosure_prefix)
+    orig = Addressable::URI.parse(u)
+    orig.path = File.join(orig.host, orig.path)
+    orig.path = File.join(pre.path, orig.path)
+    orig.scheme = pre.scheme
+    orig.host = pre.host
+    orig.to_s
   end
 
   def enclosure_template_url(base_url, original_url = nil)
@@ -102,10 +133,6 @@ class Episode < ActiveRecord::Base
       slug: podcast_slug,
       guid: guid
     }.merge(original).merge(base)
-  end
-
-  def content_type
-    first_media_resource.try(:mime_type) || 'audio/mpeg'
   end
 
   def duration
@@ -138,22 +165,51 @@ class Episode < ActiveRecord::Base
   end
 
   def media?
-    media_files.size > 0
+    !all_media_files.blank?
+  end
+
+  def media_status
+    states = all_media_files.map { |f| f.status }.uniq
+    if !(['started', 'created', 'processing', 'retrying'] & states).empty?
+      'processing'
+    elsif states.any?{ |s| s == 'error' }
+      'error'
+    elsif media_ready?
+      'complete'
+    end
   end
 
   def media_ready?
-    (!enclosure.blank? && enclosure.complete?) ||
-    (!contents.blank? && contents.all?{ |a| a.complete? })
+    # if this episode has enclosores, media is ready if there is a complete one
+    if !enclosures.blank?
+      enclosure
+    # if this episode has contents, ready when each position is ready
+    elsif !all_contents.blank?
+      max_pos = all_contents.map { |c| c.position }.max
+      contents.size == max_pos
+    # if this episode has no audio, the media can't be ready, and `media?` will be false
+    else
+      false
+    end
+  end
+
+  def first_media_resource
+    all_media_files.first
   end
 
   def enclosure_template
     podcast.enclosure_template
   end
 
+  def enclosure_prefix
+    podcast.enclosure_prefix
+  end
+
   def podcast_slug
     podcast.path
   end
 
+  # used in the API, both read and write
   def media_files
     if !contents.blank?
       contents
@@ -162,7 +218,60 @@ class Episode < ActiveRecord::Base
     end
   end
 
+  def media_files=(files)
+    update_contents(files)
+  end
+
+  def update_contents(files)
+    ignore = [:id, :type, :episode_id, :guid, :position, :status, :created_at, :updated_at]
+    files.each_with_index do |f, index|
+      file = f.attributes.with_indifferent_access.except(*ignore)
+      file[:position] = index + 1
+      existing_content = find_existing_content(file[:position], file[:original_url])
+
+      # If there is an existing file with the same url, update
+      if existing_content
+        existing_content.update_attributes(file)
+      # Otherwise, make a new content to be or replace content for that position
+      # If there is no file, or the file has a different url
+      else
+        all_contents << Content.new(file)
+      end
+    end
+
+    # find all contents with a greater position and whack them
+    all_contents.where(['position > ?', files.count]).destroy_all
+  end
+
+  def find_existing_content(pos, url)
+    content_file = URI.parse(url || '').path.split('/').last
+    all_contents.
+      where(position: pos).
+      where('original_url like ?', "%/#{content_file}").
+      order(created_at: :desc).
+      first
+  end
+
+  def all_media_files
+    if !all_contents.blank?
+      all_contents
+    else
+      Array(enclosures)
+    end
+  end
+
   def audio_files
     media_files
+  end
+
+  def set_external_keyword
+    return unless !published_at.nil? && keyword_xid.nil?
+    identifiers = []
+    [:published_at, :guid].each do |attr|
+      # Adzerk does not allow commas or colons in keywords; omitting dashes for space
+      identifiers << self.send(attr).to_s.slice(0, 10).gsub(/[:,-]/,'')
+    end
+    identifiers << (title || 'undefined').slice(0, 20)
+    self.keyword_xid = identifiers.join('_')
   end
 end

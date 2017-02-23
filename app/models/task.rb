@@ -1,7 +1,7 @@
 require 'hash_serializer'
 require 'prx_access'
 
-class Task < ActiveRecord::Base
+class Task < BaseModel
   include PRXAccess
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
