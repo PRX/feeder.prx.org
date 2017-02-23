@@ -344,11 +344,9 @@ DEPENDENCIES
   actionpack-action_caching
   addressable
   announce
-  aws-sdk-core
   coveralls
   dotenv-rails
   factory_girl_rails
-  faraday
   fastimage
   fixer_client
   guard
