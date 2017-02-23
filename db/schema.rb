@@ -11,10 +11,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170123205547) do
+ActiveRecord::Schema.define(version: 20170223174042) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "episode_images", force: :cascade do |t|
+    t.integer  "episode_id"
+    t.string   "type"
+    t.integer  "status"
+    t.string   "guid"
+    t.string   "url"
+    t.string   "link"
+    t.string   "original_url"
+    t.string   "description"
+    t.string   "title"
+    t.string   "format"
+    t.integer  "height"
+    t.integer  "width"
+    t.integer  "size"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+  end
+
+  add_index "episode_images", ["episode_id"], name: "index_episode_images_on_episode_id", using: :btree
+  add_index "episode_images", ["guid"], name: "index_episode_images_on_guid", unique: true, using: :btree
 
   create_table "episodes", force: :cascade do |t|
     t.datetime "created_at"
@@ -117,17 +138,21 @@ ActiveRecord::Schema.define(version: 20170123205547) do
   add_index "media_resources", ["original_url"], name: "index_media_resources_on_original_url", using: :btree
 
   create_table "podcast_images", force: :cascade do |t|
-    t.integer "podcast_id"
-    t.string  "type"
-    t.string  "guid"
-    t.string  "url"
-    t.string  "link"
-    t.string  "original_url"
-    t.string  "description"
-    t.string  "format"
-    t.integer "height"
-    t.integer "width"
-    t.integer "size"
+    t.integer  "podcast_id"
+    t.string   "type"
+    t.string   "guid"
+    t.string   "url"
+    t.string   "link"
+    t.string   "original_url"
+    t.string   "description"
+    t.string   "title"
+    t.string   "format"
+    t.integer  "height"
+    t.integer  "width"
+    t.integer  "size"
+    t.integer  "status"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   add_index "podcast_images", ["guid"], name: "index_podcast_images_on_guid", unique: true, using: :btree

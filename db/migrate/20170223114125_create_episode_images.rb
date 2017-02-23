@@ -1,9 +1,9 @@
-class RefactorImages < ActiveRecord::Migration
+class CreateEpisodeImages < ActiveRecord::Migration
   def change
-
-    create_table :podcast_images do |t|
-      t.references :podcast, index: true
+    create_table :episode_images do |t|
+      t.references :episode, index: true
       t.string :type
+      t.integer :status
       t.string :guid, index: { unique: true }
       t.string :url
       t.string :link
@@ -14,8 +14,7 @@ class RefactorImages < ActiveRecord::Migration
       t.integer :height
       t.integer :width
       t.integer :size
+      t.timestamps null: false
     end
-
-    execute 'INSERT into podcast_images (original_url, url, podcast_id, format, width, height, size) SELECT url, url, podcast_id, format, width, height, size FROM itunes_images'
   end
 end
