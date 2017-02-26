@@ -21,7 +21,7 @@ class Task < BaseModel
   before_validation { self.status ||= :started }
 
   # convenient scopes for subclass types
-  [:copy_media, :publish_feed, :copy_url].each do |subclass|
+  [:copy_media, :copy_image, :publish_feed, :copy_url].each do |subclass|
     classname = "Tasks::#{subclass.to_s.camelize}Task"
     scope subclass, -> { where('type = ?', classname) }
   end
@@ -53,6 +53,7 @@ class Task < BaseModel
   end
 
   def fixer_copy_file(opts = options)
+    opts = (opts || {}).with_indifferent_access
     task = {
       task_type: 'copy',
       result: opts[:destination],
