@@ -33,6 +33,45 @@ module PRXAccess
           end
         end
       end
+
+      def post_response(attrs=nil)
+        attrs ||= self.resource.attributes
+        attrs = (self.resource.default_attributes || {}).merge(attrs)
+
+        # adding this line to call outgoing_body_filter
+        attrs = resource.outgoing_body_filter(attrs)
+
+        response = faraday_connection.post do |req|
+          req.body = self.resource.adapter.serialize(attrs)
+        end
+        response
+      end
+
+      def put_response(attrs=nil)
+        attrs ||= self.resource.attributes
+        attrs = (self.resource.default_attributes || {}).merge(attrs)
+
+        # adding this line to call outgoing_body_filter
+        attrs = resource.outgoing_body_filter(attrs)
+
+        response = faraday_connection.put do |req|
+          req.body = self.resource.adapter.serialize(attrs)
+        end
+        response
+      end
+
+      def patch_response(attrs=nil)
+        attrs ||= self.resource.attributes.changed_attributes
+        attrs = (self.resource.default_attributes || {}).merge(attrs)
+
+        # adding this line to call outgoing_body_filter
+        attrs = resource.outgoing_body_filter(attrs)
+
+        response = faraday_connection.patch do |req|
+          req.body = self.resource.adapter.serialize(attrs)
+        end
+        response
+      end
     end
   end
 
@@ -66,7 +105,6 @@ module PRXAccess
     oauth_options = { site: id_root, token_url: '/token' }
     client = OAuth2::Client.new(id, se, oauth_options) do |faraday|
       faraday.request  :url_encoded
-      faraday.response :logger
       faraday.adapter  :excon
     end
     client.client_credentials.get_token(account: account).token
@@ -91,7 +129,7 @@ module PRXAccess
   end
 
   def root_uri(host, path = '')
-    if host =~ /\.org/ # TODO: should .tech's be here too?
+    if host =~ /\.org|\.tech/
       URI::HTTPS.build(host: host, path: path).to_s
     else
       URI::HTTP.build(host: host, path: path).to_s
