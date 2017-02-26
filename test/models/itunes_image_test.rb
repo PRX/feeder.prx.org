@@ -3,7 +3,7 @@ require 'test_helper'
 describe ITunesImage do
   describe 'associations' do
     it 'belongs to a podcast' do
-      podcast = build_stubbed(:podcast)
+      podcast = create(:podcast)
       image = podcast.itunes_image
 
       image.podcast.must_equal podcast
@@ -20,37 +20,37 @@ describe ITunesImage do
     end
 
     it 'is valid with no size or type' do
-      @image = ITunesImage.new(url: 'test/fixtures/valid_series_image.png')
+      @image = ITunesImage.new(original_url: 'test/fixtures/valid_series_image.png')
       @image.must_be(:valid?)
     end
 
     it 'is invalid without a url' do
-      @image.url = nil
+      @image.original_url = nil
 
       @image.wont_be(:valid?)
     end
 
     it 'must be a jpg or png' do
-      @image.url = 'test/fixtures/valid_series_image.png'
+      @image.original_url = 'test/fixtures/valid_series_image.png'
       @image.must_be(:valid?)
 
-      @image.url = 'test/fixtures/wrong_type_image.gif'
+      @image.original_url = 'test/fixtures/wrong_type_image.gif'
       @image.wont_be(:valid?)
     end
 
     it 'must be under 2048x2048' do
-      @image.url = 'test/fixtures/too_big_image.jpg'
+      @image.original_url = 'test/fixtures/too_big_image.jpg'
       @image.wont_be(:valid?)
     end
 
     it 'must be greater than 1400x1400' do
-      @image.url = "test/fixtures/too_small_image.jpg"
+      @image.original_url = "test/fixtures/too_small_image.jpg"
 
       @image.wont_be(:valid?)
     end
 
     it 'must be a square' do
-      @image.url = "test/fixtures/wrong_proportions_image.jpg"
+      @image.original_url = "test/fixtures/wrong_proportions_image.jpg"
 
       @image.wont_be(:valid?)
     end

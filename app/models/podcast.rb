@@ -5,6 +5,16 @@ class Podcast < BaseModel
   has_one :itunes_image, autosave: true, dependent: :destroy
   has_one :feed_image, autosave: true, dependent: :destroy
 
+  has_many :itunes_images,
+    -> { order('created_at DESC') },
+    autosave: true,
+    dependent: :destroy
+
+  has_many :feed_images,
+    -> { order('created_at DESC') },
+    autosave: true,
+    dependent: :destroy
+
   has_many :episodes, -> { order('published_at desc') }
   has_many :itunes_categories, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
@@ -96,10 +106,24 @@ class Podcast < BaseModel
     create_publish_task
   end
 
+  def copy_media(force = false)
+    itunes_images.each{ |i| i.copy_media(force) }
+    feed_images.each{ |i| i.copy_media(force) }
+  end
+
   def create_publish_task
     Tasks::PublishFeedTask.create! do |task|
       task.owner = self
     end.start!
+  end
+
+  def find_existing_image(type, url)
+    return nil if url.blank?
+    image_file = URI.parse(url || '').path.split('/').last
+    send("#{type}_images").
+      where('original_url like ?', "%/#{image_file}").
+      order(created_at: :desc).
+      first
   end
 
   def web_master
@@ -111,14 +135,13 @@ class Podcast < BaseModel
   end
 
   def base_published_url
-    "http://#{feeder_cdn_host}/#{path}"
+    "https://#{feeder_cdn_host}/#{path}"
   end
 
   def published_url
     "#{base_published_url}/feed-rss.xml"
   end
 
-  # todo: make this per podcast
   def feeder_cdn_host
     ENV['FEEDER_CDN_HOST']
   end

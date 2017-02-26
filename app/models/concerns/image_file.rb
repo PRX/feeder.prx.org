@@ -14,9 +14,9 @@ module ImageFile
 
     validates :format, inclusion: { in: ['jpeg', 'png', 'gif', nil] }
 
-    after_commit :copy_original_image
+    enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
-    attr_accessor :copy_original
+    before_validation :initialize_attributes, on: :create
   end
 
   # need to implement these for your image classes
@@ -26,40 +26,33 @@ module ImageFile
   def published_url
   end
 
+  def initialize_attributes
+    self.status ||= :created
+    guid
+    url
+  end
+
   def guid
     self[:guid] ||= SecureRandom.uuid
     self[:guid]
   end
 
-  def copy_original_image
-    return if task && !copy_original
-    self.copy_original = false
-    Tasks::CopyAudioTask.create! do |task|
-      task.options = copy_options
-      task.owner = self
-    end.start!
-  end
-
-  def copy_options
-    {
-      source: original_url,
-      destination: destination_path
-    }
-  end
-
-  def task_complete
-    update_attributes!(url: published_url)
+  def copy_media(force = false)
+    if !task || force
+      Tasks::CopyImageTask.create! do |task|
+        task.owner = self
+      end.start!
+    end
   end
 
   def url
-    self[:url] || self[:original_url]
+    complete? ? self[:url] : self[:original_url]
   end
 
   def original_url=(url)
     super
     if original_url_changed?
       reset_image_attributes
-      self.copy_original = true
     end
     self[:original_url]
   end
@@ -85,5 +78,9 @@ module ImageFile
 
   def dimensions=(s)
     self.width, self.height = s
+  end
+
+  def update_from_fixer(fixer_task)
+    update_attributes!(url: published_url)
   end
 end
