@@ -8,12 +8,13 @@ if ENV['TRAVIS']
   Coveralls.wear!
 end
 
-ENV['CMS_HOST']      = 'cms.prx.org'
-ENV['FEEDER_HOST']   = 'feeder.prx.org'
-ENV['ID_HOST']       = 'id.prx.org'
-ENV['META_HOST']     = 'meta.prx.org'
-ENV['PRX_HOST']      = 'www.prx.org'
-ENV['DOVETAIL_HOST'] = 'dovetail.prxu.org'
+ENV['CMS_HOST']        = 'cms.prx.org'
+ENV['FEEDER_HOST']     = 'feeder.prx.org'
+ENV['FEEDER_CDN_HOST'] = 'f.prxu.org'
+ENV['ID_HOST']         = 'id.prx.org'
+ENV['META_HOST']       = 'meta.prx.org'
+ENV['PRX_HOST']        = 'www.prx.org'
+ENV['DOVETAIL_HOST']   = 'dovetail.prxu.org'
 
 require File.expand_path("../../config/environment", __FILE__)
 require 'rails/test_help'
