@@ -99,8 +99,10 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
           xml.itunes(:summary) { xml.cdata!(ep.summary) } unless ep.summary.blank?
 
-          if ep.image_url || @podcast.itunes_image
-            xml.itunes :image, href: (ep.image_url || @podcast.itunes_image.url)
+          if ep.image
+            xml.itunes :image, href: ep.image.url
+          elsif @podcast.itunes_image
+            xml.itunes :image, href: @podcast.itunes_image.url
           end
 
           xml.itunes :keywords, ep.keywords.join(',') unless ep.keywords.blank?
