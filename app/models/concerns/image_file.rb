@@ -6,9 +6,9 @@ module ImageFile
   included do
     has_one :task, as: :owner
 
-    before_validation :detect_image_attributes
+    before_validation :initialize_attributes, on: :create
 
-    before_validation :guid
+    before_validation :detect_image_attributes
 
     validates :original_url, presence: true
 
@@ -16,7 +16,6 @@ module ImageFile
 
     enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
-    before_validation :initialize_attributes, on: :create
   end
 
   # need to implement these for your image classes
