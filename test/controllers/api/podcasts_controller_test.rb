@@ -31,7 +31,9 @@ describe Api::PodcastsController do
 
     it 'can create a new podcast' do
       @controller.stub(:publish, true) do
-        post :create, podcast_hash.to_json, api_version: 'v1', format: 'json'
+        @controller.stub(:process_media, true) do
+          post :create, podcast_hash.to_json, api_version: 'v1', format: 'json'
+        end
       end
       assert_response :success
       id = JSON.parse(response.body)['id']
@@ -45,7 +47,9 @@ describe Api::PodcastsController do
       update_hash = { itunesCategories: [] }
 
       @controller.stub(:publish, true) do
-        put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+        @controller.stub(:process_media, true) do
+          put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+        end
       end
       assert_response :success
 
@@ -68,7 +72,9 @@ describe Api::PodcastsController do
       update_hash = { published_url: 'this is read only', title: 'new title' }
 
       @controller.stub(:publish, true) do
-        put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+        @controller.stub(:process_media, true) do
+          put :update, update_hash.to_json, id: podcast.id, api_version: 'v1', format: 'json'
+        end
       end
       assert_response :success
       podcast.reload.updated_at.must_be :>, pua

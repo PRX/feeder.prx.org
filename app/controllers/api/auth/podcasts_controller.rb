@@ -4,6 +4,9 @@ class Api::Auth::PodcastsController < Api::BaseController
   include ApiAuthenticated
   api_versions :v1
   represent_with Api::PodcastRepresenter
+  filter_resources_by :prx_account_uri
+
+  after_action :process_media, only: [:create, :update]
   after_action :publish, only: [:create, :update, :destroy]
 
   def show
@@ -14,11 +17,15 @@ class Api::Auth::PodcastsController < Api::BaseController
 
   private
 
-  def publish
-    resource.publish! if resource
-  end
-
   def scoped(relation)
     relation.with_deleted
+  end
+
+  def process_media
+    resource.copy_media if resource
+  end
+
+  def publish
+    resource.publish! if resource
   end
 end
