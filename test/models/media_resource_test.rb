@@ -52,7 +52,7 @@ describe MediaResource do
   end
 
   it 'provides audio url based on guid' do
-    media_resource.media_url.must_match /http:\/\/f-test.prxu.org\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/
+    media_resource.media_url.must_match /https:\/\/f.prxu.org\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/
   end
 
   it 'handles an update from a fixer callback' do
