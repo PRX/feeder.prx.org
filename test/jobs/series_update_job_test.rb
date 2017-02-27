@@ -42,13 +42,15 @@ describe SeriesUpdateJob do
   end
 
   it 'can update an podcast' do
-    podcast.stub(:create_publish_task, true) do
-      Podcast.stub(:by_prx_series, podcast) do
-        lbd = podcast.last_build_date
-        uat = podcast.updated_at
-        job.perform(msg)
-        job.podcast.last_build_date.must_be :>, lbd
-        job.podcast.updated_at.must_be :>, uat
+    podcast.stub(:copy_media, true) do
+      podcast.stub(:create_publish_task, true) do
+        Podcast.stub(:by_prx_series, podcast) do
+          lbd = podcast.last_build_date
+          uat = podcast.updated_at
+          job.perform(msg)
+          job.podcast.last_build_date.must_be :>, lbd
+          job.podcast.updated_at.must_be :>, uat
+        end
       end
     end
   end
@@ -56,10 +58,12 @@ describe SeriesUpdateJob do
   it 'can update a deleted podcast' do
     podcast = create(:podcast, prx_uri: '/api/v1/series/32832', deleted_at: Time.now)
     podcast.must_be :deleted?
-    podcast.stub(:create_publish_task, true) do
-      Podcast.stub(:by_prx_series, podcast) do
-        job.perform(msg)
-        job.podcast.wont_be :deleted?
+    podcast.stub(:copy_media, true) do
+      podcast.stub(:create_publish_task, true) do
+        Podcast.stub(:by_prx_series, podcast) do
+          job.perform(msg)
+          job.podcast.wont_be :deleted?
+        end
       end
     end
   end
