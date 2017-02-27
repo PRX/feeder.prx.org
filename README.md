@@ -144,11 +144,12 @@ pip install awscli
 brew install jq
 ```
 
-## Audio Handling
+## File Handling
 
-When a new file episode is inserted, the audio files for it (either from `enclosure` or `media:content` tags) are also inserted as `media_resource` records. For each resource, a copy task is created to move the audio to the s3 bucket where it can be served by the CDN.
+When an episode is created or updated, the image and audio files (either from `enclosure` or `media:content` tags) are also inserted as `podcast_image`, `episode_image`, and `media_resource` records.
+For each resource, a copy task is created to add the files to the s3 bucket for CDN serving.
 
-When an episode has a new audio url, that is considered a new file, and the old one is deleted and a new `media_resource` is added, with a new copy task.
+When an episode file has a new original url, that is considered a new file. When this happens, the old file is left in place, and a new resource inserted for the new original url. Once the new resource has processed (e.g. been copied), it is marked as complete, and the old resource is deleted.
 
 ## License
 [AGPL License](https://www.gnu.org/licenses/agpl-3.0.html)
