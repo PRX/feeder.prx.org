@@ -57,6 +57,25 @@ describe StoryUpdateJob do
     end
   end
 
+  it 'wont update an episode to become invalid unless its to unpublish' do
+    episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast, status: 'invalid')
+
+    # MORE HERE
+    episode.stub(:copy_media, true) do
+      episode.stub(:podcast, podcast) do
+        episode.podcast.stub(:create_publish_task, true) do
+          Episode.stub(:by_prx_story, episode) do
+            lbd = episode.podcast.last_build_date
+            uat = episode.updated_at
+            job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
+            job.episode.podcast.last_build_date.must_be :>, lbd
+            job.episode.updated_at.must_be :>, uat
+          end
+        end
+      end
+    end
+  end
+
   it 'can update a deleted episode' do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast, deleted_at: Time.now)
     episode.must_be :deleted?
