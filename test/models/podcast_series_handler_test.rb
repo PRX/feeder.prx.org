@@ -30,7 +30,7 @@ describe PodcastSeriesHandler do
     podcast.summary.must_match /^Brought to you by PRX/
     podcast.subtitle.must_match /^The Moth Radio Hour is a weekly series/
 
-    podcast.itunes_image.url.must_equal profile
+    podcast.itunes_images.first.original_url.must_equal profile
     podcast.feed_image.must_be_nil
   end
 end

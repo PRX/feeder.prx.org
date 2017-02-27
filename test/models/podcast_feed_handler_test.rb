@@ -59,8 +59,8 @@ describe PodcastFeedHandler do
 
     handler.update_images
 
-    handler.podcast.feed_image.url.must_equal 'http://prx.org/thumb.png'
-    handler.podcast.itunes_image.url.must_equal 'http://prx.org/image.png'
+    handler.podcast.feed_images.first.original_url.must_equal 'http://prx.org/thumb.png'
+    handler.podcast.itunes_images.first.original_url.must_equal 'http://prx.org/image.png'
   end
 
   it 'update_categories' do

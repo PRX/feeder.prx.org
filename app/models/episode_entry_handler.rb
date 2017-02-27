@@ -2,7 +2,7 @@ require 'episode'
 
 class EpisodeEntryHandler
   ENTRY_ATTRIBUTES = %w(author block categories content description explicit
-    feedburner_orig_enclosure_link feedburner_orig_link image_url is_closed_captioned
+    feedburner_orig_enclosure_link feedburner_orig_link is_closed_captioned
     is_perma_link keywords position subtitle summary title url).freeze
 
   attr_accessor :episode
@@ -43,6 +43,7 @@ class EpisodeEntryHandler
     update_dates
     update_enclosure
     update_contents
+    update_image
     # must come after update_enclosure & update_contents, depends on media_url
     update_link
   end
@@ -70,15 +71,21 @@ class EpisodeEntryHandler
       enclosure_hash[:url] = overrides[:feedburner_orig_enclosure_link]
     end
 
-    # If the enclosure has been removed, just delete it (rare but simple case)
-    if !overrides[:enclosure]
-      episode.enclosure.try(:destroy)
-    else
-      # If no enclosure exists for this url (of any status), create one
+    if overrides[:enclosure]
       enclosure_file = URI.parse(enclosure_hash[:url] || '').path.split('/').last
       if !episode.enclosures.where('original_url like ?', "%/#{enclosure_file}").exists?
         episode.enclosures << Enclosure.build_from_enclosure(episode, enclosure_hash)
       end
+    else
+      episode.enclosures.destroy_all
+    end
+  end
+
+  def update_image
+    if image_url = overrides[:image_url]
+      episode.images.build(original_url: image_url) if !episode.find_existing_image(image_url)
+    else
+      episode.images.destroy_all
     end
   end
 

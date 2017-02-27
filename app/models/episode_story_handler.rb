@@ -38,6 +38,7 @@ class EpisodeStoryHandler
 
     update_attributes
     update_audio
+    update_image
   end
 
   def update_attributes
@@ -73,13 +74,21 @@ class EpisodeStoryHandler
     episode.all_contents.where(['position > ?', max_pos]).delete_all if max_pos > 0
   end
 
+  def update_image
+    if image_url = cms_url(story.objects['prx:image'].links['original'].href) rescue nil
+      episode.images.build(original_url: image_url) if !episode.find_existing_image(image_url)
+    else
+      episode.images.destroy_all
+    end
+  end
+
   def build_content(audio)
     update_content(Content.new, audio)
   end
 
   def update_content(c, audio)
     c.position = audio.attributes['position']
-    c.href = audio_url(audio.links['enclosure'].href)
+    c.href = cms_url(audio.links['enclosure'].href)
     c.mime_type = audio.links['enclosure'].type || audio.attributes['content_type']
     c.file_size = audio.attributes['size']
     c.duration = audio.attributes['duration']
@@ -88,7 +97,7 @@ class EpisodeStoryHandler
     c
   end
 
-  def audio_url(url)
+  def cms_url(url)
     if url =~ /^http/
       url
     else

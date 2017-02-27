@@ -9,6 +9,11 @@ describe EpisodeEntryHandler do
   let(:entry_all) { api_resource(JSON.parse(json_file(:crier_all)), crier_root) }
   let(:entry_no_enclosure) { api_resource(JSON.parse(json_file(:crier_no_enclosure)), crier_root) }
 
+  before {
+    stub_request(:get, 'http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99-1400.png?entry=1').
+      to_return(status: 200, body: test_file('/fixtures/transistor1400.jpg'), headers: {})
+  }
+
   it 'can update from entry' do
     EpisodeEntryHandler.update_from_entry!(episode, entry)
     episode.title.must_equal 'Episode 12: What We Know'
@@ -54,7 +59,6 @@ describe EpisodeEntryHandler do
     episode.subtitle.must_equal 'Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact...'
     episode.content.must_equal "<p>Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact with their environment. Kate Wagner, architecture critic and creator of <a href=\"http://www.mcmansionhell.com/\">McMansion Hell</a>, is on a mission to illustrate just why these buildings are so terrible.</p>\n<p><a href=\"http://99percentinvisible.org/?p=15841&amp;post_type=episode\">McMansion Hell: The Devil is in the Details</a></p>\n<p><a href=\"https://www.commitchange.com/ma/cambridge/prx-inc/campaigns/radiotopia-fall-campaign-2016\">Support 99pi and Radiotopia today</a>! Be part of the 5000 backer FreshBooks challenge: FreshBooks will donate $40,000 to Radiotopia if we get 5000 total new donations during this drive. <a href=\"https://www.freshbooks.com\">FreshBooks</a> makes intuitive and beautiful cloud accounting software for small businesses.</p>\n"
     episode.summary.must_equal 'Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact with their environment. Kate Wagner, architecture critic and creator of McMansion Hell, is on a mission to illustrate just why these buildings are so terrible. McMansion Hell: The Devil is in the Details Support 99pi and Radiotopia today! Be part of the 5000 backer FreshBooks challenge: FreshBooks will donate $40,000 to Radiotopia if we get 5000 total new donations during this drive. FreshBooks makes intuitive and beautiful cloud accounting software for small businesses.'
-    episode.image_url.must_equal 'http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99-1400.png?entry=1'
     episode.explicit.must_equal 'clean'
     episode.keywords.must_equal ["Roman Mars", "Kate Wagner"]
     episode.description.must_equal 'Few forms of contemporary architecture draw as much criticism as the McMansion, a particular type of oversized house that people love to hate. McMansions usually feature 3,000 or more square feet of space and fail to embody a cohesive style or interact with their environment. Kate Wagner, architecture critic and creator of McMansion Hell, is on a mission to illustrate just why these buildings are so terrible. McMansion Hell: The Devil is in the Details Support 99pi and Radiotopia today! Be part of the 5000 backer FreshBooks challenge: FreshBooks will donate $40,000 to Radiotopia if we get 5000 total new donations during this drive. FreshBooks makes intuitive and beautiful cloud accounting software for small businesses.'
@@ -67,6 +71,11 @@ describe EpisodeEntryHandler do
     episode.wont_be :is_perma_link
   end
 
+  it 'creates image for entry' do
+    podcast = create(:podcast)
+    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_all)
+    episode.images.first.original_url.must_equal 'http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99-1400.png?entry=1'
+  end
 
   it 'creates enclosure from entry' do
     podcast = create(:podcast)
