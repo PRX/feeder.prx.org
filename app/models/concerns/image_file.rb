@@ -29,7 +29,6 @@ module ImageFile
   def initialize_attributes
     self.status ||= :created
     guid
-    url
   end
 
   def guid
