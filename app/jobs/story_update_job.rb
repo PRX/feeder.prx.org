@@ -18,7 +18,7 @@ class StoryUpdateJob < ActiveJob::Base
 
   def receive_story_update(data)
     # don't allow invalid episodes to update or publish
-    return if ['update', 'publish'].include?(action) && data[:status] == 'invalid'
+    return if ['update', 'publish'].include?(action) && data[:status] != 'complete'
 
     load_resources(data)
     episode ? update_episode : create_episode
