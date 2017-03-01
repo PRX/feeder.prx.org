@@ -54,7 +54,7 @@ class EpisodeStoryHandler
     episode.summary = sa[:description]
     episode.content = sa[:description]
     episode.categories = sa[:tags]
-    episode.published_at = Time.parse(sa[:published_at]) if sa[:published_at]
+    episode.published_at = sa[:published_at] ? Time.parse(sa[:published_at]) : nil
   end
 
   def update_audio
