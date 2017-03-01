@@ -9,15 +9,26 @@ class Api::PodcastsController < Api::BaseController
   after_action :publish, only: [:create, :update, :destroy]
 
   def show
-    return respond_with_error(HalApi::Errors::NotFound.new) if !show_resource
-    return respond_with_error(ResourceGone.new) if show_resource.deleted?
-    return super if show_resource.published?
+    super if visibile?
+  end
 
-    if PodcastPolicy.new(pundit_user, show_resource).update?
-      redirect_to api_authorization_podcast_path(api_version, show_resource)
-    else
+  def visibile?
+    visible = false
+    if !show_resource
       respond_with_error(HalApi::Errors::NotFound.new)
+    elsif show_resource.deleted?
+      respond_with_error(ResourceGone.new)
+    elsif !show_resource.published?
+      if PodcastPolicy.new(pundit_user, show_resource).update?
+        redirect_to api_authorization_podcast_path(api_version, show_resource)
+      else
+        respond_with_error(HalApi::Errors::NotFound.new)
+      end
+    else
+      visible = true
     end
+
+    visible
   end
 
   private
