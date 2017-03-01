@@ -17,6 +17,9 @@ class StoryUpdateJob < ActiveJob::Base
   end
 
   def receive_story_update(data)
+    # don't allow invalid episodes to update or publish
+    return if ['update', 'publish'].include?(action) && data[:status] == 'invalid'
+    
     load_resources(data)
     episode ? update_episode : create_episode
     episode.try(:copy_media)

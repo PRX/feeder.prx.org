@@ -57,25 +57,6 @@ describe StoryUpdateJob do
     end
   end
 
-  it 'wont update an episode to become invalid unless its to unpublish' do
-    episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast, status: 'invalid')
-
-    # MORE HERE
-    episode.stub(:copy_media, true) do
-      episode.stub(:podcast, podcast) do
-        episode.podcast.stub(:create_publish_task, true) do
-          Episode.stub(:by_prx_story, episode) do
-            lbd = episode.podcast.last_build_date
-            uat = episode.updated_at
-            job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
-            job.episode.podcast.last_build_date.must_be :>, lbd
-            job.episode.updated_at.must_be :>, uat
-          end
-        end
-      end
-    end
-  end
-
   it 'can update a deleted episode' do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast, deleted_at: Time.now)
     episode.must_be :deleted?
@@ -98,6 +79,58 @@ describe StoryUpdateJob do
         episode.stub(:podcast, podcast) do
           job.perform(subject: 'story', action: 'delete', body: JSON.parse(body))
           job.episode.deleted_at.wont_be_nil
+        end
+      end
+    end
+  end
+
+  describe 'with an invalid story' do
+    let(:invalid_update_body) { json_file(:prx_invalid_story_updates) }
+    let(:invalid_update_msg) do
+      {
+        subject: 'story',
+        action: 'update',
+        body: invalid_update_body,
+        sent_at: 1.second.ago
+      }
+    end
+    let(:invalid_update_job) do
+      StoryUpdateJob.new.tap do |j|
+        j.message = invalid_update_msg
+        j.subject = invalid_update_msg[:subject]
+        j.action = invalid_update_msg[:action]
+      end
+    end
+
+    it 'wont accept an invalid story on update' do
+      episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
+      episode.stub(:copy_media, true) do
+        episode.stub(:podcast, podcast) do
+          episode.podcast.stub(:create_publish_task, true) do
+            Episode.stub(:by_prx_story, episode) do
+              lbd = episode.podcast.last_build_date
+              uat = episode.updated_at
+              job.perform(subject: 'story', action: 'update', body: JSON.parse(invalid_update_body))
+              episode.podcast.last_build_date.wont_be :>, lbd
+              episode.updated_at.wont_be :>, uat
+            end
+          end
+        end
+      end
+    end
+
+    it 'will accept an invalid story on unpublish' do
+      episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
+      episode.stub(:copy_media, true) do
+        episode.stub(:podcast, podcast) do
+          episode.podcast.stub(:create_publish_task, true) do
+            Episode.stub(:by_prx_story, episode) do
+              job.perform(subject: 'story', action: 'unpublish', body: JSON.parse(invalid_update_body))
+              job.episode.wont_be :published?
+              job.episode.podcast.last_build_date.wont_be :>, lbd
+              job.episode.updated_at.wont_be :>, uat
+            end
+          end
         end
       end
     end

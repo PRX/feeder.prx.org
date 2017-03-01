@@ -1,0 +1,26 @@
+{
+  "id": 149726,
+  "title": "Big Data Shows How We Live and Die",
+  "status": "invalid",
+  "status_message": "Audio Version 1 has no audio",
+  "_links": {
+    "curies": [{
+      "href": "http://meta.prx.org/relation/{rel}",
+      "name": "prx",
+      "templated": true
+    }],
+    "prx:account": {
+      "href": "/api/v1/accounts/124",
+      "title": "KUFM - Montana Public Radio",
+      "profile": "http://meta.prx.org/model/account/station"
+    },
+    "prx:series": {
+      "href": "/api/v1/series/20829",
+      "title": "The Write Question"
+    },
+    "self": {
+      "href": "/api/v1/stories/149726",
+      "profile": "http://meta.prx.org/model/story"
+    }
+  }
+}
