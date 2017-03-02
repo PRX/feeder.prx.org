@@ -53,18 +53,13 @@ class PodcastSeriesHandler
     images = series.objects['prx:images'].objects['prx:items'] rescue []
     { feed: 'thumbnail', itunes: 'profile' }.each do |type, purpose|
       if image = images.detect { |i| i.attributes['purpose'] == purpose }
-        save_image(podcast, type, cms_url(image.links['original'].href))
-      elsif i = podcast.send("#{type}_image")
-        i.destroy
+        image_url = cms_url(image.links['original'].href)
+        if !podcast.find_existing_image(type, image_url)
+          podcast.send("#{type}_images").build(original_url: image_url)
+        end
+      else
+        podcast.send("#{type}_images").destroy_all
       end
-    end
-  end
-
-  def save_image(podcast, type, url)
-    if i = podcast.send("#{type}_image")
-      i.update_attributes!(url: url)
-    else
-      podcast.send("build_#{type}_image", url: url)
     end
   end
 

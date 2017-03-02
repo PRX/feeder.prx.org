@@ -14,8 +14,8 @@ FactoryGirl.define do
     summary "<div>Tina McElroy Ansa is a little girl when her father&rsquo;s business goes under and her family must leave their beloved, expansive home.</div>"
 
     after(:create) do |episode, evaluator|
-      enclosure = create(:enclosure, episode: episode, status: 'complete')
-      episode.enclosures << enclosure
+      episode.enclosures << create(:enclosure, episode: episode, status: 'complete')
+      episode.images << create(:episode_image, episode: episode, status: 'complete')
     end
   end
 end

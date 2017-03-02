@@ -12,6 +12,12 @@ class Episode < BaseModel
 
   belongs_to :podcast, -> { with_deleted }, touch: true
 
+  has_many :images,
+    -> { order('created_at DESC') },
+    class_name: 'EpisodeImage',
+    autosave: true,
+    dependent: :destroy
+
   has_many :all_contents,
     -> { order('position ASC, created_at DESC') },
     class_name: 'Content',
@@ -57,6 +63,10 @@ class Episode < BaseModel
 
   def enclosure
     enclosures.complete.first
+  end
+
+  def image
+    images.complete.first
   end
 
   def initialize_guid
@@ -154,10 +164,15 @@ class Episode < BaseModel
   def copy_media(force = false)
     enclosures.each { |e| e.copy_media(force) }
     all_contents.each { |c| c.copy_media(force) }
+    images.each{ |i| i.copy_media(force) }
   end
 
   def base_published_url
-    "#{podcast.base_published_url}/#{guid}"
+    "https://#{feeder_cdn_host}/#{path}"
+  end
+
+  def path
+    "#{podcast.path}/#{guid}"
   end
 
   def include_in_feed?
@@ -244,10 +259,20 @@ class Episode < BaseModel
   end
 
   def find_existing_content(pos, url)
+    return nil if url.blank?
     content_file = URI.parse(url || '').path.split('/').last
     all_contents.
       where(position: pos).
       where('original_url like ?', "%/#{content_file}").
+      order(created_at: :desc).
+      first
+  end
+
+  def find_existing_image(url)
+    return nil if url.blank?
+    image_file = URI.parse(url || '').path.split('/').last
+    images.
+      where('original_url like ?', "%/#{image_file}").
       order(created_at: :desc).
       first
   end
@@ -273,5 +298,9 @@ class Episode < BaseModel
     end
     identifiers << (title || 'undefined').slice(0, 20)
     self.keyword_xid = identifiers.join('_')
+  end
+
+  def feeder_cdn_host
+    ENV['FEEDER_CDN_HOST']
   end
 end

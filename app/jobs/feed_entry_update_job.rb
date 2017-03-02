@@ -21,6 +21,7 @@ class FeedEntryUpdateJob < ActiveJob::Base
     podcast ? update_podcast : create_podcast
     episode ? update_episode : create_episode
     episode.try(:copy_media)
+    podcast.try(:copy_media)
     podcast.try(:publish!)
     episode
   end

@@ -20,6 +20,7 @@ class SeriesUpdateJob < ActiveJob::Base
     load_resources(data)
     if podcast
       update_podcast
+      podcast.copy_media
       podcast.publish!
     end
   end

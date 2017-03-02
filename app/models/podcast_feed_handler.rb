@@ -50,18 +50,12 @@ class PodcastFeedHandler
     fa = feed.attributes.with_indifferent_access
     { feed: :thumb_url, itunes: :image_url }.each do |type, url|
       if fa[url]
-        save_image(podcast, type, fa[url])
-      elsif i = podcast.send("#{type}_image")
-        i.destroy
+        if !podcast.find_existing_image(type, fa[url])
+          podcast.send("#{type}_images").build(original_url: fa[url])
+        end
+      else
+        podcast.send("#{type}_images").destroy_all
       end
-    end
-  end
-
-  def save_image(podcast, type, url)
-    if i = podcast.send("#{type}_image")
-      i.update_attributes!(url: url)
-    else
-      podcast.send("build_#{type}_image", url: url)
     end
   end
 

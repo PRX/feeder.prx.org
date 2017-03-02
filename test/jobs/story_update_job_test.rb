@@ -34,8 +34,10 @@ describe StoryUpdateJob do
     mock_episode.expect(:try, true, [:copy_media])
     mock_episode.expect(:podcast, podcast)
     EpisodeStoryHandler.stub(:create_from_story!, mock_episode) do
-      podcast.stub(:create_publish_task, true) do
-        job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
+      podcast.stub(:copy_media, true) do
+        podcast.stub(:create_publish_task, true) do
+          job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
+        end
       end
     end
   end
@@ -45,12 +47,14 @@ describe StoryUpdateJob do
     episode.stub(:copy_media, true) do
       episode.stub(:podcast, podcast) do
         episode.podcast.stub(:create_publish_task, true) do
-          Episode.stub(:by_prx_story, episode) do
-            lbd = episode.podcast.last_build_date
-            uat = episode.updated_at
-            job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
-            job.episode.podcast.last_build_date.must_be :>, lbd
-            job.episode.updated_at.must_be :>, uat
+          episode.podcast.stub(:copy_media, true) do
+            Episode.stub(:by_prx_story, episode) do
+              lbd = episode.podcast.last_build_date
+              uat = episode.updated_at
+              job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
+              job.episode.podcast.last_build_date.must_be :>, lbd
+              job.episode.updated_at.must_be :>, uat
+            end
           end
         end
       end
@@ -61,11 +65,13 @@ describe StoryUpdateJob do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast, deleted_at: Time.now)
     episode.must_be :deleted?
     podcast.stub(:create_publish_task, true) do
-      episode.stub(:copy_media, true) do
-        episode.stub(:podcast, podcast) do
-          Episode.stub(:by_prx_story, episode) do
-            job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
-            job.episode.wont_be :deleted?
+      podcast.stub(:copy_media, true) do
+        episode.stub(:copy_media, true) do
+          episode.stub(:podcast, podcast) do
+            Episode.stub(:by_prx_story, episode) do
+              job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
+              job.episode.wont_be :deleted?
+            end
           end
         end
       end
@@ -124,13 +130,15 @@ describe StoryUpdateJob do
       episode.stub(:copy_media, true) do
         episode.stub(:podcast, podcast) do
           episode.podcast.stub(:create_publish_task, true) do
-            Episode.stub(:by_prx_story, episode) do
-              lbd = episode.podcast.last_build_date
-              uat = episode.updated_at
-              job.perform(subject: 'story', action: 'unpublish', body: invalid_update_body)
-              job.episode.wont_be :published?
-              job.episode.podcast.last_build_date.must_be :>, lbd
-              job.episode.updated_at.must_be :>, uat
+            episode.podcast.stub(:copy_media, true) do
+              Episode.stub(:by_prx_story, episode) do
+                lbd = episode.podcast.last_build_date
+                uat = episode.updated_at
+                job.perform(subject: 'story', action: 'unpublish', body: invalid_update_body)
+                job.episode.wont_be :published?
+                job.episode.podcast.last_build_date.must_be :>, lbd
+                job.episode.updated_at.must_be :>, uat
+              end
             end
           end
         end

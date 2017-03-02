@@ -24,10 +24,9 @@ class Tasks::CopyMediaTask < ::Task
 
     if fixer_task && new_status == 'complete'
       media_resource.update_from_fixer(fixer_task)
+      HighwindsAPI::Content.purge_url(media_resource.media_url, false)
+      episode.podcast.publish!
     end
-
-    HighwindsAPI::Content.purge_url(media_resource.media_url, false)
-    episode.podcast.publish! if complete?
   end
 
   def task_options

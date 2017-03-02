@@ -74,7 +74,6 @@ gem 'fastimage'
 # for url templates
 gem 'addressable'
 
-
 group :development, :test do
   # Pry is an IRB alternative and runtime developer console
   gem 'pry-rails'

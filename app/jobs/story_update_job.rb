@@ -23,6 +23,7 @@ class StoryUpdateJob < ActiveJob::Base
 
     episode ? update_episode : create_episode
     episode.try(:copy_media)
+    podcast.try(:copy_media)
     podcast.try(:publish!)
   end
 
