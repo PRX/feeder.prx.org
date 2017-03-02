@@ -44,8 +44,10 @@ describe PodcastImport do
     importer.series.wont_be_nil
     importer.series.account_id.wont_be_nil
     importer.series.title.must_equal 'Transistor'
-    importer.series.short_description.must_equal 'A podcast of scientific questions and stories featuring guest hosts and reporters.'
-    importer.series.description.must_equal 'A podcast of scientific questions and stories, with many episodes hosted by key scientists at the forefront of discovery.'
+    importer.series.short_description.must_equal 'A podcast of scientific questions and ' +
+      'stories featuring guest hosts and reporters.'
+    importer.series.description.must_equal 'A podcast of scientific questions and stories, ' +
+      'with many episodes hosted by key scientists at the forefront of discovery.'
     importer.series.images.count.must_equal 2
     importer.series.audio_version_templates.count.must_equal 1
     template = importer.series.audio_version_templates.first
