@@ -4,9 +4,10 @@ require 'prx_access'
 describe PodcastImport do
   include PRXAccess
 
-  let(:account) { create(:account, id: 8) }
+  let(:user) { create(:user) }
+  let(:account) { create(:account, id: 8, opener: user) }
   let(:podcast_url) { 'http://feeds.prx.org/transistor_stem' }
-  let(:importer) { PodcastImport.create(account: account, url: podcast_url) }
+  let(:importer) { PodcastImport.create(user: user, account: account, url: podcast_url) }
 
   before do
     stub_requests
@@ -41,15 +42,27 @@ describe PodcastImport do
     importer.feed = feed
     importer.create_series_from_podcast
     importer.series.wont_be_nil
+    importer.series.account_id.wont_be_nil
+    importer.series.title.must_equal 'Transistor'
+    importer.series.short_description.must_equal 'A podcast of scientific questions and stories featuring guest hosts and reporters.'
+    importer.series.description.must_equal 'A podcast of scientific questions and stories, with many episodes hosted by key scientists at the forefront of discovery.'
+    importer.series.images.count.must_equal 2
+    importer.series.audio_version_templates.count.must_equal 1
+    template = importer.series.audio_version_templates.first
+    template.audio_file_templates.count.must_equal 1
+    importer.distribution.wont_be_nil
+    importer.distribution.distributable.must_equal importer.series
+    importer.distribution.audio_version_template.must_equal template
   end
 
-  it 'creates a series' do
+  it 'creates a podast' do
     importer.feed = feed
     importer.series = series
     importer.template = template
     importer.distribution = distribution.tap { |d| d.url = nil }
     importer.create_podcast
     importer.podcast.wont_be_nil
+    importer.podcast.title.must_equal 'Transistor'
   end
 
   it 'creates stories' do
@@ -58,13 +71,22 @@ describe PodcastImport do
     importer.template = template
     importer.distribution = distribution
     importer.podcast = podcast
-    importer.create_stories
+    stories = importer.create_stories
+    s = stories.first
+    s.account_id.wont_be_nil
+    s.creator_id.wont_be_nil
+    s.series_id.wont_be_nil
+    s.published_at.wont_be_nil
+    s.audio_versions.count.must_equal 1
+    version = s.audio_versions.first
+    version.audio_version_template_id.wont_be_nil
+    version.label.must_equal 'Podcast Audio'
+    version.explicit.must_be_nil
   end
 
   it 'imports a feed' do
     importer.import
   end
-
 end
 
 def stub_requests

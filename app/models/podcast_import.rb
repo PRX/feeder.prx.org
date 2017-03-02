@@ -1,16 +1,19 @@
 # encoding: utf-8
 
 require 'prx_access'
+require 'announce'
 require 'addressable/uri'
 require 'feedjira'
 require 'itunes_category_validator'
 
 class PodcastImport < BaseModel
+  include Announce::Publisher
   include PRXAccess
   include Rails.application.routes.url_helpers
 
   attr_accessor :feed, :template, :stories, :podcast, :distribution
 
+  belongs_to :user, -> { with_deleted }
   belongs_to :account, -> { with_deleted }
   belongs_to :series, -> { with_deleted }
 
@@ -73,17 +76,19 @@ class PodcastImport < BaseModel
 
     # Add images to the series
     if !feed.itunes_image.blank?
-      series.images.create!(
+      image = series.images.create!(
         upload: feed.itunes_image,
         purpose: Image::PROFILE
       )
+      announce_image(image)
     end
 
     if feed.image && feed.image.url
-      series.images.create!(
+      image = series.images.create!(
         upload: feed.image.url,
         purpose: Image::THUMBNAIL
       )
+      announce_image(image)
     end
 
     # Add the template and a single file template
@@ -192,6 +197,8 @@ class PodcastImport < BaseModel
 
   def create_story(entry, series)
     story = series.stories.create!(
+      creator_id: user_id,
+      account_id: series.account_id,
       title: entry[:title],
       short_description: entry[:itunes_subtitle],
       description: entry[:description],
@@ -208,10 +215,12 @@ class PodcastImport < BaseModel
 
     # add the audio
     enclosure = enclosure_url(entry)
-    version.audio_files.create!(label: 'Segment A', upload: enclosure) if enclosure
+    audio = version.audio_files.create!(label: 'Segment A', upload: enclosure) if enclosure
+    announce_audio(audio)
 
     # add the image
-    story.images.create!(upload: entry.itunes_image) if entry.itunes_image
+    image = story.images.create!(upload: entry.itunes_image) if entry.itunes_image
+    announce_image(image)
 
     story
   end
@@ -263,5 +272,13 @@ class PodcastImport < BaseModel
 
   def self.policy_class
     AccountablePolicy
+  end
+
+  def announce_image(image)
+    announce('image', 'create', Api::Msg::ImageRepresenter.new(image).to_json)
+  end
+
+  def announce_audio(audio)
+    announce('audio', 'create', Api::Msg::AudioFileRepresenter.new(audio).to_json)
   end
 end
