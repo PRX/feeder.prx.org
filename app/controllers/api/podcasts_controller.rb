@@ -9,10 +9,10 @@ class Api::PodcastsController < Api::BaseController
   after_action :publish, only: [:create, :update, :destroy]
 
   def show
-    super if visibile?
+    super if visible?
   end
 
-  def visibile?
+  def visible?
     visible = false
     if !show_resource
       respond_with_error(HalApi::Errors::NotFound.new)

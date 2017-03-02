@@ -6,7 +6,7 @@ class Api::Auth::PodcastsController < Api::PodcastsController
   represent_with Api::PodcastRepresenter
   filter_resources_by :prx_account_uri
 
-  def visibile?
+  def visible?
     visible = false
     if !show_resource
       respond_with_error(HalApi::Errors::NotFound.new)

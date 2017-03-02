@@ -7,7 +7,7 @@ class Api::Auth::EpisodesController < Api::EpisodesController
   filter_resources_by :podcast_id
   find_method :find_by_guid
 
-  def visibile?
+  def visible?
     visible = false
     if !show_resource
       respond_with_error(HalApi::Errors::NotFound.new)
