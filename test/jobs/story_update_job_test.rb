@@ -130,13 +130,15 @@ describe StoryUpdateJob do
       episode.stub(:copy_media, true) do
         episode.stub(:podcast, podcast) do
           episode.podcast.stub(:create_publish_task, true) do
-            Episode.stub(:by_prx_story, episode) do
-              lbd = episode.podcast.last_build_date
-              uat = episode.updated_at
-              job.perform(subject: 'story', action: 'unpublish', body: JSON.parse(invalid_update_body))
-              job.episode.wont_be :published?
-              job.episode.podcast.last_build_date.must_be :>, lbd
-              job.episode.updated_at.must_be :>, uat
+            episode.podcast.stub(:copy_media, true) do
+              Episode.stub(:by_prx_story, episode) do
+                lbd = episode.podcast.last_build_date
+                uat = episode.updated_at
+                job.perform(subject: 'story', action: 'unpublish', body: JSON.parse(invalid_update_body))
+                job.episode.wont_be :published?
+                job.episode.podcast.last_build_date.must_be :>, lbd
+                job.episode.updated_at.must_be :>, uat
+              end
             end
           end
         end
