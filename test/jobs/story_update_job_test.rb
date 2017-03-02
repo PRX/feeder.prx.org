@@ -110,7 +110,7 @@ describe StoryUpdateJob do
             Episode.stub(:by_prx_story, episode) do
               lbd = episode.podcast.last_build_date
               uat = episode.updated_at
-              job.perform(subject: 'story', action: 'update', body: JSON.parse(invalid_update_body))
+              job.perform(subject: 'story', action: 'update', body: invalid_update_body)
               episode.podcast.last_build_date.wont_be :>, lbd
               episode.updated_at.wont_be :>, uat
             end
@@ -127,7 +127,7 @@ describe StoryUpdateJob do
             Episode.stub(:by_prx_story, episode) do
               lbd = episode.podcast.last_build_date
               uat = episode.updated_at
-              job.perform(subject: 'story', action: 'unpublish', body: JSON.parse(invalid_update_body))
+              job.perform(subject: 'story', action: 'unpublish', body: invalid_update_body)
               job.episode.wont_be :published?
               job.episode.podcast.last_build_date.must_be :>, lbd
               job.episode.updated_at.must_be :>, uat
