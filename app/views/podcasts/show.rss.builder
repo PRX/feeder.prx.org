@@ -88,9 +88,8 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.itunes :duration, ep.duration.to_i.to_time_summary if ep.media?
 
         if @podcast.display_full_episodes_count.to_i <= 0 || index < @podcast.display_full_episodes_count.to_i
-          unless ep.author_email.blank? && ep.author_name.blank?
-            xml.author "#{ep.author_email} (#{ep.author_name})"
-          end
+
+          xml.author(episode_contact('author', ep)) if episode_contact('author', ep)
 
           Array(ep.categories).each { |c| xml.category { xml.cdata!(c || '') } }
 
