@@ -3,9 +3,9 @@ module PodcastsHelper
     name = ep.try("#{type}_name")
     email = ep.try("#{type}_email")
     result = nil
-    unless email.blank?
+    if !email.blank?
       result = email
-      result = "#{result} (#{name})" unless name.blank?
+      result = "#{result} (#{name})" if !name.blank?
     end
     result
   end
