@@ -1,8 +1,8 @@
 {
   "id": 149726,
-  "publishedAt": "2015-05-18T23:12:38.000Z",
-  "status": "complete",
   "title": "Big Data Shows How We Live and Die",
+  "status": "invalid",
+  "status_message": "Audio Version 1 has no audio",
   "_links": {
     "curies": [{
       "href": "http://meta.prx.org/relation/{rel}",
