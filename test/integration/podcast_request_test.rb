@@ -93,16 +93,23 @@ describe 'RSS feed Integration Test' do
   describe 'with a guest author' do
     before do
       @podcast.episodes.destroy_all
-      @guest_ep = create(:episode, podcast: @podcast, author_name: 'Foo Bar')
-      get "/podcasts/#{@podcast.id}"
-      @feed = Nokogiri::XML(response.body).css('channel')
     end
 
     it 'displays correct podcast and episode author names' do
+      @ep = create(:episode, podcast: @podcast, author_name: 'Foo Bar', author_email: 'foo@bar.com')
+      get "/podcasts/#{@podcast.id}"
+      @feed = Nokogiri::XML(response.body).css('channel')
+
       @feed.at_css('itunes|author').text.must_equal @podcast.author_name
-      @feed.at_css('item').css('author').text.must_include @guest_ep.author_name
-      @feed.at_css('item').css('itunes|author').text.must_equal @guest_ep.author_name
+      @feed.at_css('item').css('itunes|author').text.must_equal @ep.author_name
+      @feed.at_css('item').css('author').text.must_equal "#{@ep.author_email} (#{@ep.author_name})"
+    end
+
+    it 'does not display episode author without email' do
+      @ep = create(:episode, podcast: @podcast, author_name: 'Foo Bar')
+      get "/podcasts/#{@podcast.id}"
+      @feed = Nokogiri::XML(response.body).css('channel')
+      @feed.at_css('item').css('author').count.must_equal 0
     end
   end
-
 end
