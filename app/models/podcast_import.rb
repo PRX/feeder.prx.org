@@ -19,6 +19,8 @@ class PodcastImport < BaseModel
 
   before_validation :set_defaults, on: :create
 
+  validates :user_id, :account_id, :url, presence: true
+
   def set_defaults
     self.status ||= 'created'
   end
@@ -214,13 +216,16 @@ class PodcastImport < BaseModel
     )
 
     # add the audio
-    enclosure = enclosure_url(entry)
-    audio = version.audio_files.create!(label: 'Segment A', upload: enclosure) if enclosure
-    announce_audio(audio)
+    if enclosure = enclosure_url(entry)
+      audio = version.audio_files.create!(label: 'Segment A', upload: enclosure)
+      announce_audio(audio)
+    end
 
     # add the image
-    image = story.images.create!(upload: entry.itunes_image) if entry.itunes_image
-    announce_image(image)
+    if entry.itunes_image
+      image = story.images.create!(upload: entry.itunes_image)
+      announce_image(image)
+    end
 
     story
   end
