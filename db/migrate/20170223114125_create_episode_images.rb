@@ -17,7 +17,9 @@ class CreateEpisodeImages < ActiveRecord::Migration
       t.timestamps null: false
     end
 
+    enable_extension 'uuid-ossp' if Rails.env.test? || Rails.env.development?
     execute 'INSERT into episode_images (guid, original_url, url, episode_id, status, created_at, updated_at) SELECT uuid_generate_v4(), image_url, image_url, id, 3, created_at, updated_at FROM episodes'
+    disable_extension 'uuid-ossp' if Rails.env.test? || Rails.env.development?
   end
 
   def down
