@@ -19,7 +19,7 @@ class StoryUpdateJob < ActiveJob::Base
   def receive_story_update(data)
     load_resources(data)
     # don't allow invalid episodes to do anything but unpublish or delete
-    return if ['create', 'update', 'publish'].include?(action) && body[:status] != 'complete'
+    return if ['create', 'update', 'publish'].include?(action) && story.status != 'complete'
 
     episode ? update_episode : create_episode
     episode.try(:copy_media)
