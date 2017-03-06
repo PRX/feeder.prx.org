@@ -19,7 +19,7 @@ class Tasks::CopyImageTask < ::Task
 
   def task_options
     {
-      job_type: 'audio',
+      job_type: 'image',
       source: image_resource.original_url,
       destination: destination_url(image_resource)
     }.with_indifferent_access

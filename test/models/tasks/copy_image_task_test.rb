@@ -13,7 +13,7 @@ describe Tasks::CopyImageTask do
 
   it 'gets the options for fixer copy' do
     opts = task.task_options
-    opts[:job_type].must_equal 'audio'
+    opts[:job_type].must_equal 'image'
     opts[:source].must_equal image.original_url
     opts[:destination].must_match /s3:\/\/test-prx-feed\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/images\/4e745a8c-77ee-481c-a72b-fd868dfd1c9(\d+)\/image\.png/
   end
