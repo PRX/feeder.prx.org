@@ -52,11 +52,10 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.itunes :image, href: @podcast.itunes_image.url if @podcast.itunes_image
     xml.itunes :explicit, @podcast.explicit
 
-    unless @podcast.owner_name.blank? && @podcast.owner_email.blank?
-      xml.itunes :owner do
-        xml.itunes :email, @podcast.owner_email
-        xml.itunes :name, @podcast.owner_name
-      end
+    rel = full_contact('owner', @podcast) ? 'owner' : 'author'
+    xml.itunes :owner do
+      xml.itunes :email, @podcast.send("#{rel}_email")
+      xml.itunes :name, @podcast.send("#{rel}_name") if @podcast.send("#{rel}_name")
     end
 
     xml.itunes :subtitle, @podcast.subtitle unless @podcast.subtitle.blank?
@@ -89,12 +88,13 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
         if @podcast.display_full_episodes_count.to_i <= 0 || index < @podcast.display_full_episodes_count.to_i
 
-          xml.author(episode_contact('author', ep)) if episode_contact('author', ep)
+          has_au_email = first_nonblank('author_email', [ep, @podcast])
+          xml.author(full_contact('author', has_au_email)) if full_contact('author', has_au_email)
 
           Array(ep.categories).each { |c| xml.category { xml.cdata!(c || '') } }
 
-          author_name = [ep.author_name, @podcast.author_name].find { |name| !name.blank? }
-          xml.itunes :author, author_name if author_name
+          has_au_name = first_nonblank('author_name', [ep, @podcast])
+          xml.itunes :author, has_au_name.author_name if has_au_name.author_name
 
           xml.itunes(:summary) { xml.cdata!(ep.summary) } unless ep.summary.blank?
 
