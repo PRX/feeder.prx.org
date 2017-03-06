@@ -34,7 +34,7 @@ class EpisodeStoryHandler
   def update_from_story(story)
     self.story = story
     episode.prx_uri = story.links['self'].href
-    episode.url = story.links['alternate'].try(:href)
+    episode.url ||= story.links['alternate'].try(:href)
 
     update_attributes
     update_audio
