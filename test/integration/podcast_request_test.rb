@@ -114,7 +114,7 @@ describe 'RSS feed Integration Test' do
 
     it 'does not display episode author without email' do
       @ep = create(:episode, podcast: @podcast, author_name: 'Foo Bar')
-      @podcast.update(author_email: '')
+      @podcast.update_attributes(author_email: '')
       get "/podcasts/#{@podcast.id}"
       @feed = Nokogiri::XML(response.body).css('channel')
       @feed.at_css('item').css('author').count.must_equal 0
