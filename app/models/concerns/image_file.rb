@@ -1,3 +1,4 @@
+require 'newrelic_rpm'
 require 'active_support/concern'
 
 module ImageFile
@@ -15,7 +16,6 @@ module ImageFile
     validates :format, inclusion: { in: ['jpeg', 'png', 'gif', nil] }
 
     enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
-
   end
 
   # need to implement these for your image classes
@@ -64,7 +64,19 @@ module ImageFile
 
   def detect_image_attributes
     return if !original_url || (width && height && format)
-    info = FastImage.new(original_url)
+    info = nil
+    begin
+      fastimage_options = {
+        timeout: 10,
+        raise_on_failure: true,
+        http_header: { 'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X) PRX Feeder/1.0' }
+      }
+      info = FastImage.new(original_url, fastimage_options)
+    rescue FastImage::FastImageException => err
+      logger.error(err)
+      NewRelic::Agent.notice_error(err)
+      raise
+    end
     self.dimensions = info.size
     self.format = info.type
     self.size = info.content_length

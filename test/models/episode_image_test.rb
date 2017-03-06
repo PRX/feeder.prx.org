@@ -42,40 +42,56 @@ describe EpisodeImage do
     end
 
     it 'is valid with correct size and type' do
-      @image.must_be(:valid?)
+      @image.must_be :valid?
     end
 
     it 'is valid with no size or type' do
       @image = EpisodeImage.new(original_url: 'test/fixtures/valid_series_image.png')
-      @image.must_be(:valid?)
+      @image.must_be :valid?
     end
 
     it 'is invalid without an original url' do
       @image.original_url = nil
-      @image.wont_be(:valid?)
+      @image.wont_be :valid?
     end
 
     it 'must be a jpg or png' do
       @image.original_url = 'test/fixtures/valid_series_image.png'
-      @image.must_be(:valid?)
+      @image.must_be :valid?
 
       @image.original_url = 'test/fixtures/wrong_type_image.gif'
-      @image.wont_be(:valid?)
+      @image.wont_be :valid?
     end
 
     it 'must be under 3000x3000' do
       @image.original_url = 'test/fixtures/too_big_image.jpg'
-      @image.wont_be(:valid?)
+      @image.wont_be :valid?
     end
 
     it 'must be greater than 1400x1400' do
-      @image.original_url = "test/fixtures/too_small_image.jpg"
-      @image.wont_be(:valid?)
+      @image.original_url = 'test/fixtures/too_small_image.jpg'
+      @image.wont_be :valid?
     end
 
     it 'must be a square' do
-      @image.original_url = "test/fixtures/wrong_proportions_image.jpg"
-      @image.wont_be(:valid?)
+      @image.original_url = 'test/fixtures/wrong_proportions_image.jpg'
+      @image.wont_be :valid?
+    end
+
+    it 'can be a large file' do
+      @image.original_url = 'test/fixtures/offshore-logo-3000.jpg'
+      @image.must_be :valid?
+      @image.width.must_equal 3000
+    end
+
+    it 'handle fastimage error' do
+      stub_request(:get, "http://www.prx.org/fakeimageurl.jpg").
+        to_return(status: 500, body: '', headers: {})
+
+      lambda do
+        @image.original_url = 'http://www.prx.org/fakeimageurl.jpg'
+        @image.valid?
+      end.must_raise(FastImage::ImageFetchFailure)
     end
   end
 end
