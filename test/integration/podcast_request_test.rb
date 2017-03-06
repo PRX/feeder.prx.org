@@ -90,6 +90,13 @@ describe 'RSS feed Integration Test' do
     @feed.xpath('//item/itunes:author').count.must_equal 1
   end
 
+  it 'defaults owner to author if owner email not set' do
+    @podcast.update_attributes(owner_email: '')
+    get "/podcasts/#{@podcast.id}"
+    @feed.at_css('itunes|owner').css('itunes|email').text.must_equal @podcast.author_email
+    @feed.at_css('itunes|owner').css('itunes|name').text.must_equal @podcast.author_name
+  end
+
   describe 'with a guest author' do
     before do
       @podcast.episodes.destroy_all
@@ -107,9 +114,18 @@ describe 'RSS feed Integration Test' do
 
     it 'does not display episode author without email' do
       @ep = create(:episode, podcast: @podcast, author_name: 'Foo Bar')
+      @podcast.update(author_email: '')
       get "/podcasts/#{@podcast.id}"
       @feed = Nokogiri::XML(response.body).css('channel')
       @feed.at_css('item').css('author').count.must_equal 0
+    end
+
+    it 'defaults episode author to podcast author if ep author email not set' do
+      @ep = create(:episode, podcast: @podcast, author_name: 'Foo Bar')
+      get "/podcasts/#{@podcast.id}"
+      @feed = Nokogiri::XML(response.body).css('channel')
+      @feed.at_css('item').css('author').count.must_equal 1
+      @feed.at_css('item').css('author').text.must_equal "#{@podcast.author_email} (#{@podcast.author_name})"
     end
   end
 end
