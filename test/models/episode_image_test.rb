@@ -83,5 +83,15 @@ describe EpisodeImage do
       @image.must_be :valid?
       @image.width.must_equal 3000
     end
+
+    it 'handle fastimage error' do
+      stub_request(:get, "http://www.prx.org/fakeimageurl.jpg").
+        to_return(status: 500, body: '', headers: {})
+
+      lambda do
+        @image.original_url = 'http://www.prx.org/fakeimageurl.jpg'
+        @image.valid?
+      end.must_raise(FastImage::ImageFetchFailure)
+    end
   end
 end

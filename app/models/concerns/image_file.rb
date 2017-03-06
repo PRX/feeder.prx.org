@@ -72,9 +72,10 @@ module ImageFile
         http_header: { 'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X) PRX Feeder/1.0' }
       }
       info = FastImage.new(original_url, fastimage_options)
-    rescue FastImageException => err
+    rescue FastImage::FastImageException => err
       logger.error(err)
       NewRelic::Agent.notice_error(err)
+      raise
     end
     self.dimensions = info.size
     self.format = info.type
