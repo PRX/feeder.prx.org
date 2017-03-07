@@ -128,6 +128,8 @@ class PodcastImport < BaseModel
     podcast_attributes[:explicit] = feed.itunes_explicit
     podcast_attributes[:new_feed_url] = feed.itunes_new_feed_url
     podcast_attributes[:path] ||= feed.feedburner_name
+    podcast_attributes[:feedburner_url] ||= feed.feedburner_url
+    podcast_attributes[:url] ||= feed.feedburner_url
 
     podcast_attributes[:author] = feed.author ? person(feed.author) : person(feed.itunes_author)
     podcast_attributes[:managing_editor] = person(feed.managing_editor)

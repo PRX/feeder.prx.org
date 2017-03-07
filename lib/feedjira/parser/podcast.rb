@@ -57,6 +57,10 @@ module Feedjira
       element :"media:keywords", as: :media_keywords
       elements :"media:category", as: :media_categories
 
+      def feedburner_url
+        feedburner_name ? "http://feeds.feedburner.com/#{feedburner_name}" : nil
+      end
+
       def published
         [last_modified, pub_date, last_built].compact.max
       end
