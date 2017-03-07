@@ -58,7 +58,7 @@ describe PodcastImport do
     importer.distribution.audio_version_template.must_equal template
   end
 
-  it 'creates a podast' do
+  it 'creates a podcast' do
     importer.feed = feed
     importer.series = series
     importer.template = template

@@ -19,6 +19,7 @@ module Feedjira
       element :description
       element :language
       element :copyright
+      element :author
       element :managingEditor, as: :managing_editor
       element :webMaster, as: :web_master
       elements :category, as: :categories

@@ -127,7 +127,7 @@ class PodcastImport < BaseModel
     podcast_attributes[:new_feed_url] = feed.itunes_new_feed_url
     podcast_attributes[:path] ||= feed.feedburner_name
 
-    podcast_attributes[:author] = person(feed.itunes_author)
+    podcast_attributes[:author] = feed.author ? person(feed.author) : person(feed.itunes_author)
     podcast_attributes[:managing_editor] = person(feed.managing_editor)
     podcast_attributes[:owners] = Array(feed.itunes_owners).map do |o|
       { name: o.name, email: o.email }
