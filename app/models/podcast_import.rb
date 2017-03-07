@@ -67,12 +67,14 @@ class PodcastImport < BaseModel
   end
 
   def create_series_from_podcast(feed = self.feed)
+    description = feed.itunes_summary ? [feed.description, feed.itunes_summary].max : feed.description
+
     # create the series
     self.series = create_series!(
       account: account,
       title: feed.title,
       short_description: feed.itunes_subtitle,
-      description: feed.description
+      description: description
     )
     save!
 
