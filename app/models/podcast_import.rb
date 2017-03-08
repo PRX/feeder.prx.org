@@ -132,12 +132,12 @@ class PodcastImport < BaseModel
     podcast_attributes[:explicit] = feed.itunes_explicit
     podcast_attributes[:new_feed_url] = feed.itunes_new_feed_url
     podcast_attributes[:path] ||= feed.feedburner_name
-    podcast_attributes[:feedburner_url] ||= feed.feedburner_url
-    podcast_attributes[:url] ||= feed.feedburner_url
+    podcast_attributes[:feedburner_url] ||= feedburner_url(feed.feedburner_name)
+    podcast_attributes[:url] ||= feedburner_url(feed.feedburner_name)
 
-    podcast_attributes[:author] = feed.author ? person(feed.author) : person(feed.itunes_author)
+    podcast_attributes[:author] = person(feed.itunes_author)
     podcast_attributes[:managing_editor] = person(feed.managing_editor)
-    podcast_attributes[:owner] = person(feed.owner)
+    podcast_attributes[:owner] = owner(feed.itunes_owners)
 
     podcast_attributes[:itunes_categories] = parse_itunes_categories(feed)
     podcast_attributes[:categories] = parse_categories(feed)
@@ -147,6 +147,16 @@ class PodcastImport < BaseModel
 
     self.podcast = distribution.add_podcast_to_feeder(podcast_attributes)
     podcast
+  end
+
+  def feedburner_url(fb_name)
+    fb_name ? "http://feeds.feedburner.com/#{fb_name}" : nil
+  end
+
+  def owner(itunes_owners)
+    if o = itunes_owners.try(:first)
+      { name: o.name, email: o.email }
+    end
   end
 
   def person(arg)

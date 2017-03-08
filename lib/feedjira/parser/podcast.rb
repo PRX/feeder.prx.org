@@ -19,7 +19,6 @@ module Feedjira
       element :description
       element :language
       element :copyright
-      element :author
       element :managingEditor, as: :managing_editor
       element :webMaster, as: :web_master
       elements :category, as: :categories
@@ -38,7 +37,7 @@ module Feedjira
       element :"itunes:explicit", as: :itunes_explicit
       element :"itunes:complete", as: :itunes_complete
       element :"itunes:new_feed_url", as: :itunes_new_feed_url
-      element :"itunes:owner", as: :itunes_owner, class: ITunesRSSOwner
+      elements :"itunes:owner", as: :itunes_owners, class: ITunesRSSOwner
       element :"itunes:subtitle", as: :itunes_subtitle
       element :"itunes:summary", as: :itunes_summary
       element :"itunes:keywords", as: :itunes_keywords
@@ -57,10 +56,6 @@ module Feedjira
       element :"media:keywords", as: :media_keywords
       elements :"media:category", as: :media_categories
 
-      def feedburner_url
-        feedburner_name ? "http://feeds.feedburner.com/#{feedburner_name}" : nil
-      end
-
       def published
         [last_modified, pub_date, last_built].compact.max
       end
@@ -77,10 +72,6 @@ module Feedjira
         DateTime.parse(value).utc if value.present?
       rescue ArgumentError
         nil
-      end
-
-      def owner
-        { name: itunes_owner.name, email: itunes_owner.email } if itunes_owner
       end
 
       def self.able_to_parse?(xml) #:nodoc:
