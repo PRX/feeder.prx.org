@@ -1,4 +1,75 @@
 {
+  "appVersion": "v4",
+  "createdAt": "2016-09-29T22:05:33.000Z",
+  "description": "this is a description",
+  "duration": 3346,
+  "id": 186751,
+  "points": 0,
+  "publishedAt": "2016-09-29T22:14:13.000Z",
+  "shortDescription": "With a teaser of the story",
+  "tags": [
+    "Business",
+    "Careers"
+  ],
+  "title": "Here is a new story in my brand new series",
+  "updatedAt": "2016-10-18T22:16:40.000Z",
+  "_links": {
+    "alternate": {
+      "href": "https://beta.prx.org/stories/186751",
+      "type": "text/html"
+    },
+    "curies": [
+      {
+        "href": "http://meta.prx.org/relation/{rel}",
+        "name": "prx",
+        "templated": true
+      }
+    ],
+    "profile": {
+      "href": "http://meta.prx.org/model/story"
+    },
+    "prx:account": {
+      "href": "/api/v1/accounts/208391",
+      "profile": "http://meta.prx.org/model/account/individual",
+      "title": "Ryan Cavis"
+    },
+    "prx:audio": {
+      "count": 4,
+      "href": "/api/v1/stories/186751/audio_files"
+    },
+    "prx:audio-versions": {
+      "count": 1,
+      "href": "/api/v1/stories/186751/audio_versions"
+    },
+    "prx:image": {
+      "href": "/api/v1/stories/186751/images/437192",
+      "title": "lindsay.png"
+    },
+    "prx:images": {
+      "count": 1,
+      "href": "/api/v1/stories/186751/images"
+    },
+    "prx:musical-works": {
+      "count": 0,
+      "href": "/api/v1/stories/186751/musical_works{?page,per,zoom,filters,sorts}",
+      "templated": true
+    },
+    "prx:promos": {
+      "count": 0,
+      "href": "/api/v1/stories/186751/promos"
+    },
+    "prx:series": {
+      "href": "/api/v1/series/36501",
+      "title": "Really really cool series on stuff"
+    },
+    "prx:unpublish": {
+      "href": "/api/v1/stories/186751/unpublish"
+    },
+    "self": {
+      "href": "/api/v1/stories/186751",
+      "profile": "http://meta.prx.org/model/story"
+    }
+  },
   "_embedded": {
     "prx:account": {
       "_embedded": {
@@ -101,6 +172,10 @@
               "profile": {
                 "href": "http://meta.prx.org/model/audio-file"
               },
+              "prx:storage": {
+                "href": "s3://mediajoint.production.prx.org/public/audio_files/1200648/lcs_spring16_act1.mp3",
+                "type": "audio/mpeg"
+              },
               "self": {
                 "href": "/api/v1/audio_files/1200648",
                 "profile": "http://meta.prx.org/model/audio-file"
@@ -126,6 +201,10 @@
               },
               "profile": {
                 "href": "http://meta.prx.org/model/audio-file"
+              },
+              "prx:storage": {
+                "href": "s3://mediajoint.production.prx.org/public/audio_files/1200655/broadcast/t03.mp3",
+                "type": "audio/mpeg"
               },
               "self": {
                 "href": "/api/v1/audio_files/1200655",
@@ -153,6 +232,10 @@
               "profile": {
                 "href": "http://meta.prx.org/model/audio-file"
               },
+              "prx:storage": {
+                "href": "s3://mediajoint.production.prx.org/public/audio_files/1200656/broadcast/t05.mp3",
+                "type": "audio/mpeg"
+              },
               "self": {
                 "href": "/api/v1/audio_files/1200656",
                 "profile": "http://meta.prx.org/model/audio-file"
@@ -178,6 +261,10 @@
               },
               "profile": {
                 "href": "http://meta.prx.org/model/audio-file"
+              },
+              "prx:storage": {
+                "href": "s3://mediajoint.production.prx.org/public/audio_files/1200657/broadcast/t01.mp3",
+                "type": "audio/mpeg"
               },
               "self": {
                 "href": "/api/v1/audio_files/1200657",
@@ -534,76 +621,5 @@
       "shortDescription": "And this is my description of the series.",
       "title": "Really really cool series on stuff"
     }
-  },
-  "_links": {
-    "alternate": {
-      "href": "https://beta.prx.org/stories/186751",
-      "type": "text/html"
-    },
-    "curies": [
-      {
-        "href": "http://meta.prx.org/relation/{rel}",
-        "name": "prx",
-        "templated": true
-      }
-    ],
-    "profile": {
-      "href": "http://meta.prx.org/model/story"
-    },
-    "prx:account": {
-      "href": "/api/v1/accounts/208391",
-      "profile": "http://meta.prx.org/model/account/individual",
-      "title": "Ryan Cavis"
-    },
-    "prx:audio": {
-      "count": 4,
-      "href": "/api/v1/stories/186751/audio_files"
-    },
-    "prx:audio-versions": {
-      "count": 1,
-      "href": "/api/v1/stories/186751/audio_versions"
-    },
-    "prx:image": {
-      "href": "/api/v1/stories/186751/images/437192",
-      "title": "lindsay.png"
-    },
-    "prx:images": {
-      "count": 1,
-      "href": "/api/v1/stories/186751/images"
-    },
-    "prx:musical-works": {
-      "count": 0,
-      "href": "/api/v1/stories/186751/musical_works{?page,per,zoom,filters,sorts}",
-      "templated": true
-    },
-    "prx:promos": {
-      "count": 0,
-      "href": "/api/v1/stories/186751/promos"
-    },
-    "prx:series": {
-      "href": "/api/v1/series/36501",
-      "title": "Really really cool series on stuff"
-    },
-    "prx:unpublish": {
-      "href": "/api/v1/stories/186751/unpublish"
-    },
-    "self": {
-      "href": "/api/v1/stories/186751",
-      "profile": "http://meta.prx.org/model/story"
-    }
-  },
-  "appVersion": "v4",
-  "createdAt": "2016-09-29T22:05:33.000Z",
-  "description": "this is a description",
-  "duration": 3346,
-  "id": 186751,
-  "points": 0,
-  "publishedAt": "2016-09-29T22:14:13.000Z",
-  "shortDescription": "With a teaser of the story",
-  "tags": [
-    "Business",
-    "Careers"
-  ],
-  "title": "Here is a new story in my brand new series",
-  "updatedAt": "2016-10-18T22:16:40.000Z"
+  }
 }
