@@ -63,7 +63,7 @@ class EpisodeStoryHandler
     audio.each do |a|
       next unless a.status == 'complete'
 
-      existing_content = episode.find_existing_content(a.position, a.links['enclosure'].href)
+      existing_content = episode.find_existing_content(a.position, a.links['prx:storage'].href)
       if existing_content
         update_content(existing_content, a)
       else
@@ -88,8 +88,8 @@ class EpisodeStoryHandler
 
   def update_content(c, audio)
     c.position = audio.attributes['position']
-    c.href = cms_url(audio.links['enclosure'].href)
-    c.mime_type = audio.links['enclosure'].type || audio.attributes['content_type']
+    c.href = audio.links['prx:storage'].href
+    c.mime_type = audio.links['prx:storage'].type || audio.attributes['content_type']
     c.file_size = audio.attributes['size']
     c.duration = audio.attributes['duration']
     c.bit_rate = audio.attributes['bit_rate']
