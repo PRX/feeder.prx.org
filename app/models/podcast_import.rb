@@ -67,10 +67,9 @@ class PodcastImport < BaseModel
   end
 
   def create_series_from_podcast(feed = self.feed)
-    if feed.itunes_summary && feed.itunes_summary.length > feed.description.length
-      description = feed.itunes_summary
-    else
-      description = feed.description
+    description = feed.description
+    if feed.itunes_summary
+      description = feed.itunes_summary if feed.itunes_summary.length > feed.description.length
     end
 
     # create the series
