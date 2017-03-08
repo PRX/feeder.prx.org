@@ -133,9 +133,7 @@ class PodcastImport < BaseModel
 
     podcast_attributes[:author] = feed.author ? person(feed.author) : person(feed.itunes_author)
     podcast_attributes[:managing_editor] = person(feed.managing_editor)
-    podcast_attributes[:owners] = Array(feed.itunes_owners).map do |o|
-      { name: o.name, email: o.email }
-    end
+    podcast_attributes[:owner] = person(feed.owner)
 
     podcast_attributes[:itunes_categories] = parse_itunes_categories(feed)
     podcast_attributes[:categories] = parse_categories(feed)
