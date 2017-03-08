@@ -96,12 +96,12 @@ describe PodcastImport do
   describe 'helper methods' do
     let(:sample_link1) do
       'https://www.podtrac.com/pts/redirect.mp3/audio.wnyc.org/' +
-      'radiolab_podcast/radiolab_podcast17updatecrispr.mp3'
+        'radiolab_podcast/radiolab_podcast17updatecrispr.mp3'
     end
     let(:sample_link2) do
       'http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com' +
-      '/99percentinvisible/dovetail.prxu.org/99pi/9350e921-b910' +
-      '-4b1c-bbc6-2912d79d014f/248-Atom-in-the-Garden-of-Eden.mp3'
+        '/99percentinvisible/dovetail.prxu.org/99pi/9350e921-b910' +
+        '-4b1c-bbc6-2912d79d014f/248-Atom-in-the-Garden-of-Eden.mp3'
     end
     let(:sample_link3) { 'http://media.blubrry.com/www.podtrac.com/pts/redirect.mp3/blah' }
 
