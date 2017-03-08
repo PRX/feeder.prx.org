@@ -31,7 +31,7 @@ describe 'RSS feed Integration Test' do
     @feed.at_css('link').text.must_equal @podcast.link
     @feed.at_css('title').text.must_equal @podcast.title
     @feed.css('language').text.must_equal @podcast.language
-    @feed.at_css('description').text.must_equal @podcast.description
+    @feed.at_css('description').text.strip.must_equal @podcast.description
     @feed.css('copyright').text.must_equal @podcast.copyright
     @feed.css('managingEditor').text.must_equal @podcast.managing_editor
     @feed.at_css('pubDate').text.must_equal @podcast.pub_date.utc.rfc2822

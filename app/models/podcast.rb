@@ -119,9 +119,8 @@ class Podcast < BaseModel
 
   def find_existing_image(type, url)
     return nil if url.blank?
-    image_file = URI.parse(url || '').path.split('/').last
     send("#{type}_images").
-      where('original_url like ?', "%/#{image_file}").
+      where(original_url: url).
       order(created_at: :desc).
       first
   end
