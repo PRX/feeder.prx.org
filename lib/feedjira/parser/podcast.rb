@@ -80,11 +80,7 @@ module Feedjira
       end
 
       def owner
-        if itunes_owner
-          { name: itunes_owner.name, email: itunes_owner.email }
-        else
-          nil
-        end
+        { name: itunes_owner.name, email: itunes_owner.email } if itunes_owner
       end
 
       def self.able_to_parse?(xml) #:nodoc:
