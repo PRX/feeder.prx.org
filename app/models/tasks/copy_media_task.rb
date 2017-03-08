@@ -32,59 +32,25 @@ class Tasks::CopyMediaTask < ::Task
   def task_options
     {
       job_type: 'audio',
-      destination: destination_url(media_resource),
-    }.merge(episode_options || story_options).with_indifferent_access
+      source: source_url(media_resource),
+      destination: destination_url(media_resource)
+    }.with_indifferent_access
   end
 
-  def episode_options
-    return nil if episode && episode.prx_uri
-    {
-      source: episode_audio_uri,
-      audio_uri: episode_audio_uri
-    }
-  end
-
-  def story_options
-    account_uri = get_story.account.href
-    story = get_story(account_uri)
-    {
-      source: original_url(story),
-      audio_uri: story_audio_uri(story)
-    }
-  end
-
-  def new_audio_file?(story = nil)
-    options[:audio_uri] != (episode_audio_uri || story_audio_uri(story))
-  end
-
-  def story_audio_uri(story = nil)
-    story ||= get_story
-    story.audio[0].body['_links']['self']['href']
-  end
-
-  def episode_audio_uri
-    media_resource.original_url.gsub(/\?.*/, '')
-  end
-
-  def get_story(account = nil)
-    api(account: account).tap { |a| a.href = episode.prx_uri }.get
-  end
-
-  def original_url(story)
-    resp = story.audio[0].original(expiration: 1.week.to_i).get_response
-    resp.headers['location']
+  def source_url(media_resource)
+    media_resource.original_url.sub(/\?.*$/, '')
   end
 
   def destination_url(media_resource)
     URI::Generic.build(
       scheme: 's3',
       host: feeder_storage_bucket,
-      path: media_path(media_resource),
+      path: destination_path(media_resource),
       query: "x-fixer-public=true"
     ).to_s
   end
 
-  def media_path(media_resource)
+  def destination_path(media_resource)
     URI.parse(media_resource.url).path
   end
 

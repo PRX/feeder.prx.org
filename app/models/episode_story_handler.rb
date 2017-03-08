@@ -63,7 +63,7 @@ class EpisodeStoryHandler
     audio.each do |a|
       next unless a.status == 'complete'
 
-      existing_content = episode.find_existing_content(a.position, a.links['enclosure'].href)
+      existing_content = episode.find_existing_content(a.position, a.links['prx:storage'].href)
       if existing_content
         update_content(existing_content, a)
       else
@@ -75,7 +75,7 @@ class EpisodeStoryHandler
   end
 
   def update_image
-    if image_url = cms_url(story.objects['prx:image'].links['original'].href) rescue nil
+    if image_url = story.objects['prx:image'].links['original'].href rescue nil
       episode.images.build(original_url: image_url) if !episode.find_existing_image(image_url)
     else
       episode.images.destroy_all
@@ -88,29 +88,13 @@ class EpisodeStoryHandler
 
   def update_content(c, audio)
     c.position = audio.attributes['position']
-    c.href = cms_url(audio.links['enclosure'].href)
-    c.mime_type = audio.links['enclosure'].type || audio.attributes['content_type']
+    c.href = audio.links['prx:storage'].href
+    c.mime_type = audio.links['prx:storage'].type || audio.attributes['content_type']
     c.file_size = audio.attributes['size']
     c.duration = audio.attributes['duration']
     c.bit_rate = audio.attributes['bit_rate']
     c.sample_rate = audio.attributes['frequency'] * 1000 if audio.attributes['frequency']
     c
-  end
-
-  def cms_url(url)
-    if url =~ /^http/
-      url
-    else
-      path_to_url(ENV['CMS_HOST'], url)
-    end
-  end
-
-  def path_to_url(host, path)
-    if host =~ /\.org/ # TODO: should .tech's be here too?
-      URI::HTTPS.build(host: host, path: path).to_s
-    else
-      URI::HTTP.build(host: host, path: path).to_s
-    end
   end
 
   def get_story(account = nil)
