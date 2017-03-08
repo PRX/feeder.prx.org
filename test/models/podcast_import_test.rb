@@ -92,6 +92,29 @@ describe PodcastImport do
   it 'imports a feed' do
     importer.import
   end
+
+  describe 'helper methods' do
+    let(:sample_link1) { 'https://www.podtrac.com/pts/redirect.mp3/audio.wnyc.' +
+                         'org/radiolab_podcast/radiolab_podcast17updatecrispr.mp3' }
+    let(:sample_link2) { 'http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com' +
+                         '/99percentinvisible/dovetail.prxu.org/99pi/9350e921-b910' +
+                         '-4b1c-bbc6-2912d79d014f/248-Atom-in-the-Garden-of-Eden.mp3' }
+
+    it 'can make a good guess for an enclosure prefix' do
+      item = feed.entries.first
+      importer.enclosure_prefix(item).must_equal 'https://dts.podtrac.com/' +
+                                                 'redirect.mp3/media.blubrry.com/'
+
+      item.feedburner_orig_enclosure_link = nil
+      item.enclosure.url = sample_link1
+      importer.enclosure_prefix(item).must_equal 'https://www.podtrac.com/pts/redirect.mp3/'
+
+      item.feedburner_orig_enclosure_link = 'something_without_those_words'
+      item.enclosure.url = sample_link2
+      importer.enclosure_prefix(item).must_equal 'http://www.podtrac.com/pts/redirect' +
+                                                 '.mp3/media.blubrry.com/'
+    end
+  end
 end
 
 def stub_requests
