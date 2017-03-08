@@ -75,7 +75,7 @@ class EpisodeStoryHandler
   end
 
   def update_image
-    if image_url = cms_url(story.objects['prx:image'].links['original'].href) rescue nil
+    if image_url = story.objects['prx:image'].links['original'].href rescue nil
       episode.images.build(original_url: image_url) if !episode.find_existing_image(image_url)
     else
       episode.images.destroy_all
@@ -95,22 +95,6 @@ class EpisodeStoryHandler
     c.bit_rate = audio.attributes['bit_rate']
     c.sample_rate = audio.attributes['frequency'] * 1000 if audio.attributes['frequency']
     c
-  end
-
-  def cms_url(url)
-    if url =~ /^http/
-      url
-    else
-      path_to_url(ENV['CMS_HOST'], url)
-    end
-  end
-
-  def path_to_url(host, path)
-    if host =~ /\.org/ # TODO: should .tech's be here too?
-      URI::HTTPS.build(host: host, path: path).to_s
-    else
-      URI::HTTP.build(host: host, path: path).to_s
-    end
   end
 
   def get_story(account = nil)

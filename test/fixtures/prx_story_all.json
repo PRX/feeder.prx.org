@@ -93,11 +93,11 @@
         "prx:image": {
           "_links": {
             "enclosure": {
-              "href": "/pub/438b16f02cfe5fc547e8109f6cf4c132/0/web/user_image/38940/medium/run.jpg",
+              "href": "https://cms.prx.org/pub/438b16f02cfe5fc547e8109f6cf4c132/0/web/user_image/38940/medium/run.jpg",
               "type": "image/jpeg"
             },
             "original": {
-              "href": "/pub/6d38cef16bb79d4eb8cc07d7acdedbe3/0/web/user_image/38940/original/run.jpg",
+              "href": "https://cms.prx.org/pub/6d38cef16bb79d4eb8cc07d7acdedbe3/0/web/user_image/38940/original/run.jpg",
               "type": "image/jpeg"
             },
             "profile": {
@@ -161,7 +161,7 @@
           {
             "_links": {
               "enclosure": {
-                "href": "/pub/e3718718a9a6c83a2cc077ee6ecb5a63/0/web/audio_file/1200648/broadcast/lcs_spring16_act1.mp3",
+                "href": "https://cms.prx.org/pub/e3718718a9a6c83a2cc077ee6ecb5a63/0/web/audio_file/1200648/broadcast/lcs_spring16_act1.mp3",
                 "type": "audio/mpeg"
               },
               "original": {
@@ -191,7 +191,7 @@
           {
             "_links": {
               "enclosure": {
-                "href": "/pub/d357caa1057739c1f20b81df111c4aab/0/web/audio_file/1200655/broadcast/t03.mp3",
+                "href": "https://cms.prx.org/pub/d357caa1057739c1f20b81df111c4aab/0/web/audio_file/1200655/broadcast/t03.mp3",
                 "type": "audio/mpeg"
               },
               "original": {
@@ -221,7 +221,7 @@
           {
             "_links": {
               "enclosure": {
-                "href": "/pub/db970cd89f4cc82cc339b7cb8b46c4ad/0/web/audio_file/1200656/broadcast/t05.mp3",
+                "href": "https://cms.prx.org/pub/db970cd89f4cc82cc339b7cb8b46c4ad/0/web/audio_file/1200656/broadcast/t05.mp3",
                 "type": "audio/mpeg"
               },
               "original": {
@@ -251,7 +251,7 @@
           {
             "_links": {
               "enclosure": {
-                "href": "/pub/8d5b5626a6ed4798fffa71e48e80fca2/0/web/audio_file/1200657/broadcast/t01.mp3",
+                "href": "https://cms.prx.org/pub/8d5b5626a6ed4798fffa71e48e80fca2/0/web/audio_file/1200657/broadcast/t01.mp3",
                 "type": "audio/mpeg"
               },
               "original": {
@@ -295,11 +295,11 @@
     "prx:image": {
       "_links": {
         "enclosure": {
-          "href": "/pub/407692d270782e6a857df61219743752/0/web/story_image/437192/medium/lindsay.png",
+          "href": "https://cms.prx.org/pub/407692d270782e6a857df61219743752/0/web/story_image/437192/medium/lindsay.png",
           "type": "image/png"
         },
         "original": {
-          "href": "/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/lindsay.png",
+          "href": "https://cms.prx.org/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/lindsay.png",
           "type": "image/png"
         },
         "profile": {
@@ -339,11 +339,11 @@
         "prx:image": {
           "_links": {
             "enclosure": {
-              "href": "/pub/4585c860463e3e4e41b15096099c9faa/0/web/series_image/16622/medium/tobias.jpeg",
+              "href": "https://cms.prx.org/pub/4585c860463e3e4e41b15096099c9faa/0/web/series_image/16622/medium/tobias.jpeg",
               "type": "image/jpeg"
             },
             "original": {
-              "href": "/pub/fdfc8c9e2c0754d822161d24c72b3656/0/web/series_image/16622/original/tobias.jpeg",
+              "href": "https://cms.prx.org/pub/fdfc8c9e2c0754d822161d24c72b3656/0/web/series_image/16622/original/tobias.jpeg",
               "type": "image/jpeg"
             },
             "profile": {
@@ -372,7 +372,7 @@
                         {
                           "_links": {
                             "enclosure": {
-                              "href": "/pub/e3718718a9a6c83a2cc077ee6ecb5a63/0/web/audio_file/1200648/broadcast/lcs_spring16_act1.mp3",
+                              "href": "https://cms.prx.org/pub/e3718718a9a6c83a2cc077ee6ecb5a63/0/web/audio_file/1200648/broadcast/lcs_spring16_act1.mp3",
                               "type": "audio/mpeg"
                             },
                             "original": {
@@ -398,7 +398,7 @@
                         {
                           "_links": {
                             "enclosure": {
-                              "href": "/pub/d357caa1057739c1f20b81df111c4aab/0/web/audio_file/1200655/broadcast/t03.mp3",
+                              "href": "https://cms.prx.org/pub/d357caa1057739c1f20b81df111c4aab/0/web/audio_file/1200655/broadcast/t03.mp3",
                               "type": "audio/mpeg"
                             },
                             "original": {
@@ -424,7 +424,7 @@
                         {
                           "_links": {
                             "enclosure": {
-                              "href": "/pub/db970cd89f4cc82cc339b7cb8b46c4ad/0/web/audio_file/1200656/broadcast/t05.mp3",
+                              "href": "https://cms.prx.org/pub/db970cd89f4cc82cc339b7cb8b46c4ad/0/web/audio_file/1200656/broadcast/t05.mp3",
                               "type": "audio/mpeg"
                             },
                             "original": {
@@ -450,7 +450,7 @@
                         {
                           "_links": {
                             "enclosure": {
-                              "href": "/pub/8d5b5626a6ed4798fffa71e48e80fca2/0/web/audio_file/1200657/broadcast/t01.mp3",
+                              "href": "https://cms.prx.org/pub/8d5b5626a6ed4798fffa71e48e80fca2/0/web/audio_file/1200657/broadcast/t01.mp3",
                               "type": "audio/mpeg"
                             },
                             "original": {
@@ -490,11 +490,11 @@
                   "prx:image": {
                     "_links": {
                       "enclosure": {
-                        "href": "/pub/407692d270782e6a857df61219743752/0/web/story_image/437192/medium/lindsay.png",
+                        "href": "https://cms.prx.org/pub/407692d270782e6a857df61219743752/0/web/story_image/437192/medium/lindsay.png",
                         "type": "image/png"
                       },
                       "original": {
-                        "href": "/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/lindsay.png",
+                        "href": "https://cms.prx.org/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/lindsay.png",
                         "type": "image/png"
                       },
                       "profile": {

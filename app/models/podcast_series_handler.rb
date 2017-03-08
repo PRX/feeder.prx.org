@@ -53,7 +53,7 @@ class PodcastSeriesHandler
     images = series.objects['prx:images'].objects['prx:items'] rescue []
     { feed: 'thumbnail', itunes: 'profile' }.each do |type, purpose|
       if image = images.detect { |i| i.attributes['purpose'] == purpose }
-        image_url = cms_url(image.links['original'].href)
+        image_url = image.links['original'].href
         if !podcast.find_existing_image(type, image_url)
           podcast.send("#{type}_images").build(original_url: image_url)
         end
@@ -66,21 +66,5 @@ class PodcastSeriesHandler
   def get_series(account = nil)
     return nil unless podcast.prx_uri
     api(account: account).tap { |a| a.href = podcast.prx_uri }.get
-  end
-
-  def cms_url(url)
-    if url =~ /^http/
-      url
-    else
-      path_to_url(ENV['CMS_HOST'], url)
-    end
-  end
-
-  def path_to_url(host, path)
-    if host =~ /\.org/ # TODO: should .tech's be here too?
-      URI::HTTPS.build(host: host, path: path).to_s
-    else
-      URI::HTTP.build(host: host, path: path).to_s
-    end
   end
 end
