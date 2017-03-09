@@ -59,7 +59,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     end
 
     xml.itunes :subtitle, @podcast.subtitle unless @podcast.subtitle.blank?
-    xml.itunes(:summary) { xml.cdata!(@podcast.summary) } unless @podcast.summary.blank?
+    xml.itunes(:summary) { xml.cdata!(itunes_summary(@podcast)) }
     xml.itunes :keywords, @podcast.keywords.join(',') unless @podcast.keywords.blank?
 
     xml.media :copyright, @podcast.copyright unless @podcast.copyright.blank?
@@ -96,7 +96,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
           has_au_name = first_nonblank('author_name', [ep, @podcast])
           xml.itunes :author, has_au_name.author_name if has_au_name.author_name
 
-          xml.itunes(:summary) { xml.cdata!(ep.summary) } unless ep.summary.blank?
+          xml.itunes(:summary) { xml.cdata!(itunes_summary(ep)) }
 
           if ep.image
             xml.itunes :image, href: ep.image.url
