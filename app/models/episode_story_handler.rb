@@ -50,9 +50,8 @@ class EpisodeStoryHandler
     end
 
     episode.title = sa[:title]
-    episode.subtitle = Sanitize.fragment(sa[:short_description] || '').strip
-    episode.description = Sanitize.fragment(sa[:description] || '').strip
-    episode.summary = sa[:description]
+    episode.subtitle = sa[:short_description]
+    episode.description = sa[:description]
     episode.content = sa[:description]
     episode.categories = sa[:tags]
     episode.published_at = sa[:published_at] ? Time.parse(sa[:published_at]) : nil
