@@ -1,9 +1,12 @@
 # encoding: utf-8
 require 'hal_api/representer'
 require 'prx_access'
+require 'text_sanitizer'
 
 class Api::BaseRepresenter < HalApi::Representer
   include PRXAccess
+  include TextSanitizer
+
   self.alternate_host = ENV['PRX_HOST'] || 'www.prx.org'
   self.profile_host = ENV['META_HOST'] || 'meta.prx.org'
 
@@ -13,5 +16,9 @@ class Api::BaseRepresenter < HalApi::Representer
       href: "http://#{profile_host}/relation/{rel}",
       templated: true
     }]
+  end
+
+  def summary_preview
+    sanitize_links_only(represented.description)
   end
 end
