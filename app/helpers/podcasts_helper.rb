@@ -18,6 +18,10 @@ module PodcastsHelper
     items.find { |item| !item.send("#{type}").blank? }
   end
 
+  def show_itunes_summary?(model)
+    model.summary || model.description
+  end
+
   def itunes_summary(model)
     model.summary || sanitize_links_only(model.description)
   end
