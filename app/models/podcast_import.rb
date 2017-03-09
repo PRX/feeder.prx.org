@@ -156,15 +156,14 @@ class PodcastImport < BaseModel
             podcast_item.media_contents.first.try(:url)].find do |url|
               url.try(:match, /podtrac/) || url.try(:match, /blubrry/)
             end
-    if link.try(:match, /podtrac/)
-      podtrac_end = link.index('mp3') + 'mp3/'.length
-      prefix += link[0...podtrac_end]
+    if scheme = link.try(:match, /^https?:\/\//)
+      prefix += scheme.to_s
     end
-    if link.try(:match, /blubrry/) && !prefix.match(/blubrry/)
-      blubrry_start = link.index('media.blubrry.com/')
-      blubrry_end = blubrry_start + 'media.blubrry.com/'.length
-      show_name_end = link.index('/', blubrry_end)
-      prefix += link[blubrry_start...blubrry_end] + link[blubrry_end..show_name_end]
+    if podtrac = link.try(:match, /\/(\w+\.podtrac.com\/.+?\.mp3\/)/)
+      prefix += podtrac[1]
+    end
+    if blubrry = link.try(:match, /\/(media\.blubrry\.com\/[^\/]+\/)/)
+      prefix += blubrry[1]
     end
     prefix
   end

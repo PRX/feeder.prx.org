@@ -119,8 +119,8 @@ describe PodcastImport do
       importer.enclosure_prefix(item).must_equal 'http://www.podtrac.com/pts/redirect' +
                                                  '.mp3/media.blubrry.com/99percentinvisible/'
       item.feedburner_orig_enclosure_link = sample_link3
-      importer.enclosure_prefix(item).must_equal 'http://media.blubrry.com/some_name/' +
-                                                 'www.podtrac.com/pts/redirect.mp3/'
+      importer.enclosure_prefix(item).must_equal 'http://www.podtrac.com/pts/redirect.mp3' +
+                                                 '/media.blubrry.com/some_name/'
     end
   end
 end
