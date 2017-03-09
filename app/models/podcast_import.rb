@@ -126,10 +126,7 @@ class PodcastImport < BaseModel
       podcast_attributes[atr.to_sym] = feed.send(atr)
     end
 
-    if feed.itunes_summary && feed.itunes_summary != feed_description(feed)
-      podcast_attributes[:summary] = feed.itunes_summary
-    end
-
+    podcast_attributes[:summary] = feed.itunes_summary
     podcast_attributes[:link] = feed.url
     podcast_attributes[:explicit] = feed.itunes_explicit
     podcast_attributes[:new_feed_url] = feed.itunes_new_feed_url
