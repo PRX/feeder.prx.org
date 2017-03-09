@@ -103,12 +103,14 @@ describe PodcastImport do
         '/99percentinvisible/dovetail.prxu.org/99pi/9350e921-b910' +
         '-4b1c-bbc6-2912d79d014f/248-Atom-in-the-Garden-of-Eden.mp3'
     end
-    let(:sample_link3) { 'http://media.blubrry.com/www.podtrac.com/pts/redirect.mp3/blah' }
+    let(:sample_link3) do
+      'http://media.blubrry.com/some_name/www.podtrac.com/pts/redirect.mp3/blah'
+    end
 
     it 'can make a good guess for an enclosure prefix' do
       item = feed.entries.first
-      importer.enclosure_prefix(item).must_equal 'https://dts.podtrac.com/' +
-                                                 'redirect.mp3/media.blubrry.com/'
+      importer.enclosure_prefix(item).must_equal 'https://dts.podtrac.com/redirect' +
+                                                 '.mp3/media.blubrry.com/transistor/'
 
       item.feedburner_orig_enclosure_link = nil
       item.enclosure.url = sample_link1
@@ -117,11 +119,11 @@ describe PodcastImport do
       item.feedburner_orig_enclosure_link = 'something_without_those_words'
       item.enclosure.url = sample_link2
       importer.enclosure_prefix(item).must_equal 'http://www.podtrac.com/pts/redirect' +
-                                                 '.mp3/media.blubrry.com/'
+                                                 '.mp3/media.blubrry.com/99percentinvisible/'
 
       item.feedburner_orig_enclosure_link = sample_link3
-      importer.enclosure_prefix(item).must_equal 'http://media.blubrry.com/www.podtrac' +
-                                                 '.com/pts/redirect.mp3/'
+      importer.enclosure_prefix(item).must_equal 'http://media.blubrry.com/some_name/' +
+                                                 'www.podtrac.com/pts/redirect.mp3/'
     end
   end
 end

@@ -161,7 +161,10 @@ class PodcastImport < BaseModel
       prefix += link[0...podtrac_end]
     end
     if link.try(:match, /blubrry/) && !prefix.match(/blubrry/)
-      prefix += 'media.blubrry.com/'
+      blubrry_start = link.index('media.blubrry.com/')
+      blubrry_end = blubrry_start + 'media.blubrry.com/'.length
+      show_name_end = link.index('/', blubrry_end)
+      prefix += link[blubrry_start...blubrry_end] + link[blubrry_end..show_name_end]
     end
     prefix
   end
