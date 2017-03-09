@@ -111,16 +111,13 @@ describe PodcastImport do
       item = feed.entries.first
       importer.enclosure_prefix(item).must_equal 'https://dts.podtrac.com/redirect' +
                                                  '.mp3/media.blubrry.com/transistor/'
-
       item.feedburner_orig_enclosure_link = nil
       item.enclosure.url = sample_link1
       importer.enclosure_prefix(item).must_equal 'https://www.podtrac.com/pts/redirect.mp3/'
-
       item.feedburner_orig_enclosure_link = 'something_without_those_words'
       item.enclosure.url = sample_link2
       importer.enclosure_prefix(item).must_equal 'http://www.podtrac.com/pts/redirect' +
                                                  '.mp3/media.blubrry.com/99percentinvisible/'
-
       item.feedburner_orig_enclosure_link = sample_link3
       importer.enclosure_prefix(item).must_equal 'http://media.blubrry.com/some_name/' +
                                                  'www.podtrac.com/pts/redirect.mp3/'
