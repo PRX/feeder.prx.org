@@ -1,8 +1,11 @@
 require 'addressable/uri'
 require 'addressable/template'
 require 'hash_serializer'
+require 'text_sanitizer'
 
 class Episode < BaseModel
+  include TextSanitizer
+
   serialize :categories, JSON
   serialize :keywords, JSON
 
@@ -36,7 +39,7 @@ class Episode < BaseModel
 
   validates :podcast_id, :guid, presence: true
 
-  before_validation :initialize_guid, :set_external_keyword
+  before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: -> (e) { e.published_at_changed? }
 
@@ -297,6 +300,14 @@ class Episode < BaseModel
     end
     identifiers << (title || 'undefined').slice(0, 20)
     self.keyword_xid = identifiers.join('_')
+  end
+
+  def sanitize_text
+    self.description = sanitize_white_list(description) if description_changed?
+    self.content = sanitize_white_list(content) if content_changed?
+    self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
+    self.summary = sanitize_links_only(summary) if summary_changed?
+    self.title = sanitize_text_only(title) if title_changed?
   end
 
   def feeder_cdn_host

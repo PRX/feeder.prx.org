@@ -20,9 +20,10 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
 
   property :title
   property :subtitle
+  property :description
   property :content
   property :summary
-  property :description
+  property :summary_preview, exec_context: :decorator, if: ->(_o) { !represented.summary }
 
   property :explicit
   property :block

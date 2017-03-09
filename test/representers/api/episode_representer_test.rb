@@ -8,6 +8,23 @@ describe Api::EpisodeRepresenter do
 
   it 'includes basic properties' do
     json['prxUri'].must_match /\/api\/v1\/stories\//
+    json['summary'].must_match /<a href="\/tina">Tina<\/a>/
+  end
+
+  it 'uses summary when not blank' do
+    episode.summary = 'summary has <a href="/">a link</a>'
+    episode.description = '<b>tags</b> removed, <a href="/">links remain</a>'
+    json['summary'].must_equal episode.summary
+    json['summaryPreview'].must_be_nil
+    json['description'].must_equal episode.description
+  end
+
+  it 'uses sanitized description for nil summary' do
+    episode.summary = nil
+    episode.description = '<b>tags</b> removed, <a href="/">links remain</a>'
+    json['summary'].must_be_nil
+    json['summaryPreview'].must_equal 'tags removed, <a href="/">links remain</a>'
+    json['description'].must_equal episode.description
   end
 
   it 'has links' do

@@ -12,12 +12,6 @@ describe 'RSS feed Integration Test' do
     @channel_image = @podcast.feed_image
     @itunes_image = @podcast.itunes_image
     @episodes = create_list(:episode, 4, podcast: @podcast).reverse
-
-    @episodes.each do |e|
-      stub_request(:get, "https://cms.prx.org#{e.prx_uri}").
-        to_return(status: 200, body: json_file(:prx_story), headers: {})
-    end
-
     @category = create(:itunes_category, podcast: @podcast)
 
     get "/podcasts/#{@podcast.id}"
@@ -72,8 +66,8 @@ describe 'RSS feed Integration Test' do
 
   it 'displays plaintext and richtext descriptions' do
     node = @feed.css('item')[0]
-    node.css('description').text.strip[0..3].must_equal "Tina"
-    node.css('itunes|summary').text.strip[0..4].must_equal "<div>"
+    node.css('description').text.strip[0..4].must_equal "<div>"
+    node.css('itunes|summary').text.strip[0..6].must_equal "<a href"
   end
 
   it 'returns limited number of episodes' do
