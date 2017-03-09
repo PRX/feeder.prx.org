@@ -1,4 +1,8 @@
+require 'text_sanitizer'
+
 class Podcast < BaseModel
+  include TextSanitizer
+
   serialize :categories, JSON
   serialize :keywords, JSON
 
@@ -24,7 +28,7 @@ class Podcast < BaseModel
 
   acts_as_paranoid
 
-  before_validation :set_defaults
+  before_validation :set_defaults, :sanitize_text
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
@@ -139,6 +143,13 @@ class Podcast < BaseModel
 
   def published_url
     "#{base_published_url}/feed-rss.xml"
+  end
+
+  def sanitize_text
+    self.description = sanitize_white_list(description) if description_changed?
+    self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
+    self.summary = sanitize_links_only(summary) if summary_changed?
+    self.title = sanitize_text_only(title) if title_changed?
   end
 
   def feeder_cdn_host
