@@ -77,20 +77,23 @@ describe PodcastImport do
     importer.distribution = distribution
     importer.podcast = podcast
     stories = importer.create_stories
-    s = stories.first
-    s.description.must_match /^For the next few episodes/
-    s.description.wont_match /<script/
-    s.description.wont_match /<iframe/
-    s.description.wont_match /feedburner/
-    s.account_id.wont_be_nil
-    s.creator_id.wont_be_nil
-    s.series_id.wont_be_nil
-    s.published_at.wont_be_nil
-    s.audio_versions.count.must_equal 1
-    version = s.audio_versions.first
+    f = stories.first
+    f.description.must_match /^For the next few episodes/
+    f.description.wont_match /<script/
+    f.description.wont_match /<iframe/
+    f.description.wont_match /feedburner/
+    f.account_id.wont_be_nil
+    f.creator_id.wont_be_nil
+    f.series_id.wont_be_nil
+    f.published_at.wont_be_nil
+    f.images.count.must_equal 1
+    f.audio_versions.count.must_equal 1
+    version = f.audio_versions.first
     version.audio_version_template_id.wont_be_nil
     version.label.must_equal 'Podcast Audio'
     version.explicit.must_be_nil
+    l = stories.last
+    l.images.count.must_equal 0
   end
 
   it 'imports a feed' do

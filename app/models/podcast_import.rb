@@ -274,8 +274,8 @@ class PodcastImport < BaseModel
       announce_audio(audio)
     end
 
-    # add the image
-    if entry.itunes_image
+    # add the image if it is different from the channel itunes_image
+    if entry.itunes_image && self.feed.itunes_image != entry.itunes_image
       image = story.images.create!(upload: entry.itunes_image)
       announce_image(image)
     end
