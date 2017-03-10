@@ -13,7 +13,7 @@ describe PodcastImport do
     stub_requests
   end
 
-  let(:feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor.xml')) }
+  let(:feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor_two.xml')) }
   let(:series) { create(:series) }
   let(:template) { create(:audio_version_template, series: series) }
   let(:distribution) do
