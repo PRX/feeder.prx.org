@@ -133,7 +133,7 @@ describe PodcastImport do
       importer.remove_feedburner_tracker(desc).must_equal 'desc '
     end
 
-    it 'can remove feedburner tracking pixels' do
+    it 'can remove unsafe tags' do
       desc = 'desc <iframe src="/"></iframe><script src="/"></script>'
       importer.sanitize_html(desc).must_equal 'desc '
     end
