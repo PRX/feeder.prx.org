@@ -78,6 +78,10 @@ describe PodcastImport do
     importer.podcast = podcast
     stories = importer.create_stories
     s = stories.first
+    s.description.must_match /^For the next few episodes/
+    s.description.wont_match /<script/
+    s.description.wont_match /<iframe/
+    s.description.wont_match /feedburner/
     s.account_id.wont_be_nil
     s.creator_id.wont_be_nil
     s.series_id.wont_be_nil
@@ -121,6 +125,17 @@ describe PodcastImport do
       item.feedburner_orig_enclosure_link = sample_link3
       importer.enclosure_prefix(item).must_equal 'http://www.podtrac.com/pts/redirect.mp3' +
                                                  '/media.blubrry.com/some_name/'
+    end
+
+    it 'can remove feedburner tracking pixels' do
+      desc = 'desc <img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" ' +
+             'height="1" width="1" alt=""/>'
+      importer.remove_feedburner_tracker(desc).must_equal 'desc '
+    end
+
+    it 'can remove feedburner tracking pixels' do
+      desc = 'desc <iframe src="/"></iframe><script src="/"></script>'
+      importer.sanitize_html(desc).must_equal 'desc '
     end
   end
 end

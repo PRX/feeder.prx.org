@@ -5,6 +5,7 @@ require 'announce'
 require 'addressable/uri'
 require 'feedjira'
 require 'itunes_category_validator'
+require 'loofah'
 
 class PodcastImport < BaseModel
   include Announce::Publisher
@@ -67,16 +68,19 @@ class PodcastImport < BaseModel
   end
 
   def feed_description(feed)
-    [feed.itunes_summary, feed.description].find { |d| !d.blank? }
+    result = [feed.itunes_summary, feed.description].find { |d| !d.blank? }.try(:strip)
+    result = sanitize_html(result)
+    result
   end
 
   def create_series_from_podcast(feed = self.feed)
     # create the series
     self.series = create_series!(
+      app_version: PRX::APP_VERSION,
       account: account,
       title: feed.title,
       short_description: feed.itunes_subtitle,
-      description: feed_description(feed)
+      description_html: feed_description(feed)
     )
     save!
 
@@ -126,7 +130,7 @@ class PodcastImport < BaseModel
       podcast_attributes[atr.to_sym] = feed.send(atr)
     end
 
-    podcast_attributes[:summary] = feed.itunes_summary
+    podcast_attributes[:summary] = feed.itunes_summary.try(:strip)
     podcast_attributes[:link] = feed.url
     podcast_attributes[:explicit] = feed.itunes_explicit
     podcast_attributes[:new_feed_url] = feed.itunes_new_feed_url
@@ -234,11 +238,20 @@ class PodcastImport < BaseModel
 
   def entry_description(entry)
     atr = [:content, :itunes_summary, :description].find { |d| !entry[d].blank? }
-    entry[atr] if atr
+    result = entry[atr].try(:strip) if atr
+    result = remove_feedburner_tracker(result)
+    result = sanitize_html(result)
+    result
+  end
+
+  def remove_feedburner_tracker(str)
+    return nil if str.blank?
+    str.sub(/<img src="http:\/\/feeds\.feedburner\.com.+" height="1" width="1" alt=""\/>/, '')
   end
 
   def create_story(entry, series)
     story = series.stories.create!(
+      app_version: PRX::APP_VERSION,
       creator_id: user_id,
       account_id: series.account_id,
       title: entry[:title],
@@ -284,7 +297,7 @@ class PodcastImport < BaseModel
 
     create_attributes = {}
     if entry[:itunes_summary] && entry[:itunes_summary] != entry_description(entry)
-      create_attributes[:summary] = entry[:itunes_summary]
+      create_attributes[:summary] = entry[:itunes_summary].try(:strip)
     end
     create_attributes[:author] = person(entry[:itunes_author] || entry[:author] || entry[:creator])
     create_attributes[:block] = (entry[:itunes_block] == 'yes')
@@ -305,6 +318,12 @@ class PodcastImport < BaseModel
       url = nil
     end
     url
+  end
+
+  def sanitize_html(text)
+    return nil if text.blank?
+    sanitizer = Rails::Html::WhiteListSanitizer.new
+    sanitizer.sanitize(Loofah.fragment(text).scrub!(:prune).to_s)
   end
 
   def uri
