@@ -299,7 +299,7 @@ class PodcastImport < BaseModel
     create_attributes[:block] = (clean_string(entry[:itunes_block]) == 'yes')
     create_attributes[:explicit] = explicit(entry[:itunes_explicit])
     create_attributes[:guid] = clean_string(entry.entry_id)
-    create_attributes[:is_closed_captioned] = (clean_string(entry[:itunes_is_closed_captioned]) == 'yes')
+    create_attributes[:is_closed_captioned] = is_closed_captioned(entry)
     create_attributes[:is_perma_link] = entry[:is_perma_link]
     create_attributes[:keywords] = (entry[:itunes_keywords] || '').split(',').map(&:strip)
     create_attributes[:position] = entry[:itunes_order]
@@ -314,6 +314,10 @@ class PodcastImport < BaseModel
       url = nil
     end
     url
+  end
+
+  def is_closed_captioned(entry)
+    (clean_string(entry[:itunes_is_closed_captioned]) == 'yes')
   end
 
   def explicit(str)
