@@ -69,8 +69,7 @@ class PodcastImport < BaseModel
 
   def feed_description(feed)
     result = [feed.itunes_summary, feed.description].find { |d| !d.blank? }.try(:strip)
-    result = sanitize_html(result)
-    result
+    clean_text(result)
   end
 
   def create_series_from_podcast(feed = self.feed)
@@ -130,7 +129,7 @@ class PodcastImport < BaseModel
       podcast_attributes[atr.to_sym] = feed.send(atr)
     end
 
-    podcast_attributes[:summary] = feed.itunes_summary.try(:strip)
+    podcast_attributes[:summary] = clean_text(feed.itunes_summary)
     podcast_attributes[:link] = feed.url
     podcast_attributes[:explicit] = feed.itunes_explicit
     podcast_attributes[:new_feed_url] = feed.itunes_new_feed_url
@@ -237,16 +236,12 @@ class PodcastImport < BaseModel
   end
 
   def entry_description(entry)
-    atr = [:content, :itunes_summary, :description].find { |d| !entry[d].blank? }
-    result = entry[atr].try(:strip) if atr
-    result = remove_feedburner_tracker(result)
-    result = sanitize_html(result)
-    result
+    atr = entry_description_attribute(entry)
+    clean_text(entry[atr])
   end
 
-  def remove_feedburner_tracker(str)
-    return nil if str.blank?
-    str.sub(/<img src="http:\/\/feeds\.feedburner\.com.+" height="1" width="1" alt=""\/>/, '')
+  def entry_description_attribute(entry)
+    [:content, :itunes_summary, :description].find { |d| !entry[d].blank? }
   end
 
   def create_story(entry, series)
@@ -296,8 +291,8 @@ class PodcastImport < BaseModel
     )
 
     create_attributes = {}
-    if entry[:itunes_summary] && entry[:itunes_summary] != entry_description(entry)
-      create_attributes[:summary] = entry[:itunes_summary].try(:strip)
+    if entry[:itunes_summary] && :itunes_summary != entry_description_attribute(entry)
+      create_attributes[:summary] = clean_text(entry[:itunes_summary])
     end
     create_attributes[:author] = person(entry[:itunes_author] || entry[:author] || entry[:creator])
     create_attributes[:block] = (entry[:itunes_block] == 'yes')
@@ -320,10 +315,22 @@ class PodcastImport < BaseModel
     url
   end
 
+  def clean_text(text)
+    return nil if text.blank?
+    result = remove_feedburner_tracker(text)
+    sanitize_html(result)
+  end
+
+  def remove_feedburner_tracker(str)
+    return nil if str.blank?
+    feedburner_tag_regex = /<img src="http:\/\/feeds\.feedburner\.com.+" height="1" width="1" alt=""\/>/
+    str.sub(feedburner_tag_regex, '').strip
+  end
+
   def sanitize_html(text)
     return nil if text.blank?
     sanitizer = Rails::Html::WhiteListSanitizer.new
-    sanitizer.sanitize(Loofah.fragment(text).scrub!(:prune).to_s)
+    sanitizer.sanitize(Loofah.fragment(text).scrub!(:prune).to_s).strip
   end
 
   def uri

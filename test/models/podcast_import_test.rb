@@ -133,19 +133,19 @@ describe PodcastImport do
     it 'can remove feedburner tracking pixels' do
       desc = 'desc <img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" ' +
              'height="1" width="1" alt=""/>'
-      importer.remove_feedburner_tracker(desc).must_equal 'desc '
+      importer.remove_feedburner_tracker(desc).must_equal 'desc'
     end
 
     it 'can remove unsafe tags' do
       desc = 'desc <iframe src="/"></iframe><script src="/"></script>'
-      importer.sanitize_html(desc).must_equal 'desc '
+      importer.sanitize_html(desc).must_equal 'desc'
     end
   end
 end
 
 def stub_requests
   stub_request(:get, 'http://feeds.prx.org/transistor_stem').
-    to_return(status: 200, body: test_file('/fixtures/transistor.xml'), headers: {})
+    to_return(status: 200, body: test_file('/fixtures/transistor_two.xml'), headers: {})
 
   stub_request(:get, 'https://www.prx.org/search/all.atom?q=radio').
     to_return(status: 200, body: test_file('/fixtures/prx-atom.xml'), headers: {})
