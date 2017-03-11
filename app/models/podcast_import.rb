@@ -318,10 +318,10 @@ class PodcastImport < BaseModel
 
   def explicit(str)
     return nil if str.blank?
-    explicit = clean_string(str)
-    if %w(yes true explicit).include?(explicit)
+    explicit = clean_string(str).downcase
+    if %w(true explicit).include?(explicit)
       explicit = 'yes'
-    elsif %w(no false clean).include?(explicit)
+    elsif %w(no false).include?(explicit)
       explicit = 'clean'
     end
     explicit

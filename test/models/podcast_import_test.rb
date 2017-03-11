@@ -140,6 +140,12 @@ describe PodcastImport do
       desc = 'desc <iframe src="/"></iframe><script src="/"></script>'
       importer.sanitize_html(desc).must_equal 'desc'
     end
+
+    it 'can interpret explicit values' do
+      %w(Yes TRUE Explicit).each { |x| importer.explicit(x).must_equal 'yes' }
+      %w(NO False Clean).each { |x| importer.explicit(x).must_equal 'clean' }
+      %w(UnClean y N 1 0).each { |x| importer.explicit(x).must_equal x.downcase }
+    end
   end
 end
 
