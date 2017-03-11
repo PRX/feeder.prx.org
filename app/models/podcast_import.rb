@@ -341,8 +341,8 @@ class PodcastImport < BaseModel
 
   def remove_feedburner_tracker(str)
     return nil if str.blank?
-    feedburner_tag_regex = /<img src="http:\/\/feeds\.feedburner\.com.+" height="1" width="1" alt=""\/>/
-    str.sub(feedburner_tag_regex, '').strip
+    regex = /<img src="http:\/\/feeds\.feedburner\.com.+" height="1" width="1" alt=""\/>/
+    str.sub(regex, '').strip
   end
 
   def sanitize_html(text)
