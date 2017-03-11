@@ -68,7 +68,7 @@ class PodcastImport < BaseModel
   end
 
   def feed_description(feed)
-    result = [feed.itunes_summary, feed.description].find { |d| !d.blank? }.try(:strip)
+    result = [feed.itunes_summary, feed.description].find { |d| !d.blank? }
     clean_text(result)
   end
 
@@ -77,8 +77,8 @@ class PodcastImport < BaseModel
     self.series = create_series!(
       app_version: PRX::APP_VERSION,
       account: account,
-      title: feed.title,
-      short_description: feed.itunes_subtitle,
+      title: clean_string(feed.title),
+      short_description: clean_string(feed.itunes_subtitle),
       description_html: feed_description(feed)
     )
     save!
@@ -86,7 +86,7 @@ class PodcastImport < BaseModel
     # Add images to the series
     if !feed.itunes_image.blank?
       image = series.images.create!(
-        upload: feed.itunes_image,
+        upload: clean_string(feed.itunes_image),
         purpose: Image::PROFILE
       )
       announce_image(image)
@@ -94,7 +94,7 @@ class PodcastImport < BaseModel
 
     if feed.image && feed.image.url
       image = series.images.create!(
-        upload: feed.image.url,
+        upload: clean_string(feed.image.url),
         purpose: Image::THUMBNAIL
       )
       announce_image(image)
@@ -126,15 +126,15 @@ class PodcastImport < BaseModel
   def create_podcast
     podcast_attributes = {}
     %w(copyright language update_frequency update_period).each do |atr|
-      podcast_attributes[atr.to_sym] = feed.send(atr)
+      podcast_attributes[atr.to_sym] = clean_string(feed.send(atr))
     end
 
     podcast_attributes[:summary] = clean_text(feed.itunes_summary)
-    podcast_attributes[:link] = feed.url
-    podcast_attributes[:explicit] = feed.itunes_explicit
-    podcast_attributes[:new_feed_url] = feed.itunes_new_feed_url
+    podcast_attributes[:link] = clean_string(feed.url)
+    podcast_attributes[:explicit] = explicit(feed.itunes_explicit)
+    podcast_attributes[:new_feed_url] = clean_string(feed.itunes_new_feed_url)
     podcast_attributes[:enclosure_prefix] ||= enclosure_prefix(feed.entries.first)
-    podcast_attributes[:path] ||= feed.feedburner_name
+    podcast_attributes[:path] ||= clean_string(feed.feedburner_name)
     podcast_attributes[:feedburner_url] ||= feedburner_url(feed.feedburner_name)
     podcast_attributes[:url] ||= feedburner_url(feed.feedburner_name)
 
@@ -144,8 +144,8 @@ class PodcastImport < BaseModel
 
     podcast_attributes[:itunes_categories] = parse_itunes_categories(feed)
     podcast_attributes[:categories] = parse_categories(feed)
-    podcast_attributes[:complete] = (feed.itunes_complete == 'yes')
-    podcast_attributes[:copyright] ||= feed.media_copyright
+    podcast_attributes[:complete] = (clean_string(feed.itunes_complete) == 'yes')
+    podcast_attributes[:copyright] ||= clean_string(feed.media_copyright)
     podcast_attributes[:keywords] = parse_keywords(feed)
 
     self.podcast = distribution.add_podcast_to_feeder(podcast_attributes)
@@ -172,12 +172,12 @@ class PodcastImport < BaseModel
   end
 
   def feedburner_url(fb_name)
-    fb_name ? "http://feeds.feedburner.com/#{fb_name}" : nil
+    fb_name ? "http://feeds.feedburner.com/#{clean_string(fb_name)}" : nil
   end
 
   def owner(itunes_owners)
     if o = itunes_owners.try(:first)
-      { name: o.name, email: o.email }
+      { name: clean_string(o.name), email: clean_string(o.email) }
     end
   end
 
@@ -186,10 +186,10 @@ class PodcastImport < BaseModel
 
     email = name = nil
     if arg.is_a?(Hash)
-      email = arg[:email]
-      name = arg[:name]
+      email = clean_string(arg[:email])
+      name = clean_string(arg[:name])
     else
-      s = arg.to_s.try(:strip)
+      s = clean_string(arg)
       if match = s.match(/(.+) \((.+)\)/)
         email = match[1]
         name = match[2]
@@ -249,8 +249,8 @@ class PodcastImport < BaseModel
       app_version: PRX::APP_VERSION,
       creator_id: user_id,
       account_id: series.account_id,
-      title: entry[:title],
-      short_description: entry[:itunes_subtitle],
+      title: clean_string(entry[:title]),
+      short_description: clean_string(entry[:itunes_subtitle]),
       description_html: entry_description(entry),
       tags: entry[:categories],
       published_at: entry[:published]
@@ -260,7 +260,7 @@ class PodcastImport < BaseModel
     version = story.audio_versions.create!(
       audio_version_template: template,
       label: 'Podcast Audio',
-      explicit: entry[:itunes_explicit]
+      explicit: explicit(entry[:itunes_explicit])
     )
 
     # add the audio
@@ -279,7 +279,8 @@ class PodcastImport < BaseModel
   end
 
   def enclosure_url(entry)
-    entry[:feedburner_orig_enclosure_link] || entry[:enclosure].try(:url)
+    url = entry[:feedburner_orig_enclosure_link] || entry[:enclosure].try(:url)
+    clean_string(url)
   end
 
   def create_episode(story, entry)
@@ -295,10 +296,10 @@ class PodcastImport < BaseModel
       create_attributes[:summary] = clean_text(entry[:itunes_summary])
     end
     create_attributes[:author] = person(entry[:itunes_author] || entry[:author] || entry[:creator])
-    create_attributes[:block] = (entry[:itunes_block] == 'yes')
-    create_attributes[:explicit] = entry[:itunes_explicit]
-    create_attributes[:guid] = entry.entry_id
-    create_attributes[:is_closed_captioned] = (entry[:itunes_is_closed_captioned] == 'yes')
+    create_attributes[:block] = (clean_string(entry[:itunes_block]) == 'yes')
+    create_attributes[:explicit] = explicit(entry[:itunes_explicit])
+    create_attributes[:guid] = clean_string(entry.entry_id)
+    create_attributes[:is_closed_captioned] = (clean_string(entry[:itunes_is_closed_captioned]) == 'yes')
     create_attributes[:is_perma_link] = entry[:is_perma_link]
     create_attributes[:keywords] = (entry[:itunes_keywords] || '').split(',').map(&:strip)
     create_attributes[:position] = entry[:itunes_order]
@@ -308,11 +309,28 @@ class PodcastImport < BaseModel
   end
 
   def episode_url(entry)
-    url = entry[:feedburner_orig_link] || entry[:url] || entry[:link]
+    url = clean_string(entry[:feedburner_orig_link] || entry[:url] || entry[:link])
     if url =~ /libsyn\.com/
       url = nil
     end
     url
+  end
+
+  def explicit(str)
+    return nil if str.blank?
+    explicit = clean_string(str)
+    if %w(yes true explicit).include?(explicit)
+      explicit = 'yes'
+    elsif %w(no false clean).include?(explicit)
+      explicit = 'clean'
+    end
+    explicit
+  end
+
+  def clean_string(str)
+    return nil if str.blank?
+    return str if !str.is_a?(String)
+    str.strip
   end
 
   def clean_text(text)
