@@ -61,7 +61,7 @@ class EpisodeEntryHandler
   # as it depends on media_url
   def update_link
     self.episode.url = overrides[:feedburner_orig_link] || overrides[:url] || overrides[:link]
-    # libsyn sets the link to a libsyn url, instead set to media file or page
+    # libsyn sets link to the libsyn mp3; nil it out (in rss, will fallback on the enclosure url)
     self.episode.url = nil if episode.url && episode.url.match(/libsyn\.com/)
   end
 
