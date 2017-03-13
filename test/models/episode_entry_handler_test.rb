@@ -37,7 +37,7 @@ describe EpisodeEntryHandler do
 
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
-    episode.url.must_equal episode.media_url
+    episode.url.must_equal nil
   end
 
   it 'sets all attributes' do
