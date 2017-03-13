@@ -46,7 +46,6 @@ class PodcastSeriesHandler
     podcast.title = sa[:title]
     podcast.subtitle = sa[:short_description]
     podcast.description = sa[:description]
-    podcast.summary = sa[:description]
   end
 
   def update_images
