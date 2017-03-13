@@ -134,7 +134,6 @@ class PodcastImport < BaseModel
     podcast_attributes[:explicit] = explicit(feed.itunes_explicit)
     podcast_attributes[:new_feed_url] = clean_string(feed.itunes_new_feed_url)
     podcast_attributes[:enclosure_prefix] ||= enclosure_prefix(feed.entries.first)
-    podcast_attributes[:path] ||= clean_string(feed.feedburner_name)
     podcast_attributes[:feedburner_url] ||= feedburner_url(feed.feedburner_name)
     podcast_attributes[:url] ||= feedburner_url(feed.feedburner_name)
 
