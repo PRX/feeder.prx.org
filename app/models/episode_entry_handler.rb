@@ -44,7 +44,6 @@ class EpisodeEntryHandler
     update_enclosure
     update_contents
     update_image
-    # must come after update_enclosure & update_contents, depends on media_url
     update_link
   end
 
@@ -57,8 +56,6 @@ class EpisodeEntryHandler
     self.episode.updated_at = Time.parse(overrides[:updated]) if overrides[:updated]
   end
 
-  # must be called after update_enclosure and update_contents
-  # as it depends on media_url
   def update_link
     self.episode.url = overrides[:feedburner_orig_link] || overrides[:url] || overrides[:link]
     # libsyn sets link to the libsyn mp3; nil it out (in rss, will fallback on the enclosure url)
@@ -98,20 +95,18 @@ class EpisodeEntryHandler
     end
 
     new_contents.each do |c|
-      existing_content = episode.find_existing_content(c[:position], c[:url])
-
-      # If there is an existing file with the same url, update
-      if existing_content
+      # If there is an existing file with the same filename, then update
+      if existing_content = episode.find_existing_content(c[:position], c[:url])
         existing_content.update_with_content!(c)
-      # Otherwise, make a new content to be or replace content for that position
-      # If there is no file, or the file has a different url
+      # else if there is no file, or the filename in the url is different
+      # then make a new content to be or replace content for that position
       else
         new_content = Content.build_from_content(episode, c)
         episode.all_contents << new_content
       end
     end
 
-    # find all contents with a greater position and whack them
+    # find all contents with a greater position than last file and whack them
     max_pos = new_contents.last[:position]
     episode.all_contents.where(['position > ?', max_pos]).delete_all
   end
