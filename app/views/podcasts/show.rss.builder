@@ -4,6 +4,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         'xmlns:media' => 'http://search.yahoo.com/mrss/',
         'xmlns:sy' => 'http://purl.org/rss/1.0/modules/syndication/',
         'xmlns:content' => 'http://purl.org/rss/1.0/modules/content/',
+        'xmlns:smcore' => 'https://schema.syndicated.media/core/1.0/',
         'version' => '2.0' do
   xml.channel do
     xml.title @podcast.title
