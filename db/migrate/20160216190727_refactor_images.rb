@@ -16,6 +16,7 @@ class RefactorImages < ActiveRecord::Migration
       t.integer :size
     end
 
-    execute 'INSERT into podcast_images (original_url, url, podcast_id, format, width, height, size) SELECT url, url, podcast_id, format, width, height, size FROM itunes_images'
+    execute "INSERT into podcast_images (guid, type, original_url, url, podcast_id, format, width, height, size, title, link, description, updated_at, created_at, status) SELECT uuid_generate_v4(), 'FeedImage', url, url, podcast_id, format, width, height, size, title, link, description, now(), now(), 3 FROM feed_images"
+    execute "INSERT into podcast_images (guid, type, original_url, url, podcast_id, format, width, height, size, title, link, description, updated_at, created_at, status) SELECT uuid_generate_v4(), 'ITunesImage', url, url, podcast_id, format, width, height, size, NULL, NULL, NULL, now(), now(), 3 FROM itunes_images"
   end
 end
