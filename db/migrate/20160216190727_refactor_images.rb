@@ -16,6 +16,11 @@ class RefactorImages < ActiveRecord::Migration
       t.integer :size
     end
 
-    execute 'INSERT into podcast_images (original_url, url, podcast_id, format, width, height, size) SELECT url, url, podcast_id, format, width, height, size FROM itunes_images'
+    enable_extension 'uuid-ossp' if Rails.env.test? || Rails.env.development?
+
+    execute "INSERT into podcast_images (guid, type, original_url, url, podcast_id, format, width, height, size, title, link, description) SELECT uuid_generate_v4(), 'FeedImage', url, url, podcast_id, format, width, height, size, title, link, description FROM feed_images"
+    execute "INSERT into podcast_images (guid, type, original_url, url, podcast_id, format, width, height, size, title, link, description) SELECT uuid_generate_v4(), 'ITunesImage', url, url, podcast_id, format, width, height, size, NULL, NULL, NULL FROM itunes_images"
+
+    disable_extension 'uuid-ossp' if Rails.env.test? || Rails.env.development?
   end
 end
