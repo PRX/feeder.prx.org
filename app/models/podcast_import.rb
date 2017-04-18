@@ -382,7 +382,7 @@ class PodcastImport < BaseModel
     @uri ||= Addressable::URI.parse(url)
   end
 
-  def connection(u = self.uri)
+  def connection(u = uri)
     conn_uri = "#{u.scheme}://#{u.host}:#{u.port}"
     Faraday.new(conn_uri) { |stack| stack.adapter :excon }.tap do |c|
       c.headers[:user_agent] = 'PRX CMS FeedValidator'
