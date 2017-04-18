@@ -118,7 +118,7 @@ class PodcastImport < BaseModel
       length_maximum: 0
     )
 
-    num_segments = [config[:segments].to_i, 1 ].max
+    num_segments = [config[:segments].to_i, 1].max
     num_segments.times do |x|
       num = x + 1
       template.audio_file_templates.create!(
@@ -382,8 +382,8 @@ class PodcastImport < BaseModel
     @uri ||= Addressable::URI.parse(url)
   end
 
-  def connection(uri = uri)
-    conn_uri = "#{uri.scheme}://#{uri.host}:#{uri.port}"
+  def connection(u = self.uri)
+    conn_uri = "#{u.scheme}://#{u.host}:#{u.port}"
     Faraday.new(conn_uri) { |stack| stack.adapter :excon }.tap do |c|
       c.headers[:user_agent] = 'PRX CMS FeedValidator'
     end
