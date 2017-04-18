@@ -6,11 +6,14 @@ require 'addressable/uri'
 require 'feedjira'
 require 'itunes_category_validator'
 require 'loofah'
+require 'hash_serializer'
 
 class PodcastImport < BaseModel
   include Announce::Publisher
   include PRXAccess
   include Rails.application.routes.url_helpers
+
+  serialize :config, HashSerializer
 
   attr_accessor :feed, :template, :stories, :podcast, :distribution
 
@@ -22,8 +25,15 @@ class PodcastImport < BaseModel
 
   validates :user_id, :account_id, :url, presence: true
 
+  def set_config_url(config_url)
+    c_url = Addressable::URI.parse(config_url)
+    response = connection(c_url).get(c_url.path, c_url.query_values)
+    self.config = ActiveSupport::JSON.decode(response.body).try(:with_indifferent_access)
+  end
+
   def set_defaults
     self.status ||= 'created'
+    self.config ||= {}
   end
 
   def import_later
@@ -108,12 +118,16 @@ class PodcastImport < BaseModel
       length_maximum: 0
     )
 
-    template.audio_file_templates.create!(
-      position: 1,
-      label: 'Segment A',
-      length_minimum: 0,
-      length_maximum: 0
-    )
+    num_segments = [config[:segments].to_i, 1 ].max
+    num_segments.times do |x|
+      num = x + 1
+      template.audio_file_templates.create!(
+        position: num,
+        label: "Segment #{num}",
+        length_minimum: 0,
+        length_maximum: 0
+      )
+    end
 
     self.distribution = Distributions::PodcastDistribution.create!(
       distributable: series,
@@ -127,6 +141,10 @@ class PodcastImport < BaseModel
     podcast_attributes = {}
     %w(copyright language update_frequency update_period).each do |atr|
       podcast_attributes[atr.to_sym] = clean_string(feed.send(atr))
+    end
+
+    if config[:program]
+      podcast_attributes[:path] = config[:program]
     end
 
     podcast_attributes[:summary] = clean_text(feed.itunes_summary)
@@ -262,9 +280,15 @@ class PodcastImport < BaseModel
       explicit: explicit(entry[:itunes_explicit])
     )
 
-    # add the audio
-    if enclosure = enclosure_url(entry)
-      audio = version.audio_files.create!(label: 'Segment A', upload: enclosure)
+    if config[:audio] && config[:audio][entry.entry_id]
+      audio_files = config[:audio][entry.entry_id]
+      audio_files.each_with_index do |af, i|
+        num = i + 1
+        audio = version.audio_files.create!(label: "Segment #{num}", upload: af)
+        announce_audio(audio)
+      end
+    elsif enclosure = enclosure_url(entry)
+      audio = version.audio_files.create!(label: 'Segment 1', upload: enclosure)
       announce_audio(audio)
     end
 
@@ -358,7 +382,7 @@ class PodcastImport < BaseModel
     @uri ||= Addressable::URI.parse(url)
   end
 
-  def connection
+  def connection(uri = uri)
     conn_uri = "#{uri.scheme}://#{uri.host}:#{uri.port}"
     Faraday.new(conn_uri) { |stack| stack.adapter :excon }.tap do |c|
       c.headers[:user_agent] = 'PRX CMS FeedValidator'
