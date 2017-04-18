@@ -33,6 +33,13 @@ describe PodcastImport do
     importer.feed.wont_be_nil
   end
 
+  it 'retrieves a config' do
+    importer.set_config_url('http://test.prx.org/transistor_import_config.json')
+    importer.config[:segments].must_equal 1
+    importer.config[:program].must_equal 'transistor_stem'
+    importer.config[:audio]['https://transistor.prx.org/?p=1286'].count.must_equal 1
+  end
+
   it 'fails when feed is invalid' do
     importer.url = 'https://www.prx.org/search/all.atom?q=radio'
     -> { importer.get_feed }.must_raise(RuntimeError)
@@ -71,6 +78,7 @@ describe PodcastImport do
   end
 
   it 'creates stories' do
+    importer.set_config_url('http://test.prx.org/transistor_import_config.json')
     importer.feed = feed
     importer.series = series
     importer.template = template
@@ -152,6 +160,9 @@ end
 def stub_requests
   stub_request(:get, 'http://feeds.prx.org/transistor_stem').
     to_return(status: 200, body: test_file('/fixtures/transistor_two.xml'), headers: {})
+
+  stub_request(:get, 'http://test.prx.org/transistor_import_config.json').
+    to_return(status: 200, body: json_file('transistor_import_config'), headers: {})
 
   stub_request(:get, 'https://www.prx.org/search/all.atom?q=radio').
     to_return(status: 200, body: test_file('/fixtures/prx-atom.xml'), headers: {})
