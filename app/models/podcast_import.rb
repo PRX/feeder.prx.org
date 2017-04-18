@@ -326,7 +326,7 @@ class PodcastImport < BaseModel
     create_attributes[:is_perma_link] = entry[:is_perma_link]
     create_attributes[:keywords] = (entry[:itunes_keywords] || '').split(',').map(&:strip)
     create_attributes[:position] = entry[:itunes_order]
-    create_attributes[:url] = episode_url(entry)
+    create_attributes[:url] = episode_url(entry) || distro.default_url(story)
 
     distro.add_episode_to_feeder(create_attributes)
   end
