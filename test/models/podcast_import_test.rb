@@ -96,6 +96,8 @@ describe PodcastImport do
     f.published_at.wont_be_nil
     f.images.count.must_equal 1
     f.audio_versions.count.must_equal 1
+    config_audio = 'https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3'
+    f.audio_versions.first.audio_files.first.upload.must_equal config_audio
     version = f.audio_versions.first
     version.audio_version_template_id.wont_be_nil
     version.label.must_equal 'Podcast Audio'
