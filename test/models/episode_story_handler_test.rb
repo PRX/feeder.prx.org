@@ -23,6 +23,7 @@ describe EpisodeStoryHandler do
   it 'can be created from a story' do
     podcast = create(:podcast, prx_uri: '/api/v1/series/36501')
     episode = EpisodeStoryHandler.create_from_story!(story)
+    episode.explicit.must_equal 'clean'
     episode.wont_be_nil
     episode.published_at.wont_be_nil
     episode.published_at.must_equal Time.parse(story.attributes[:published_at])

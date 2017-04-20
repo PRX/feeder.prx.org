@@ -43,6 +43,12 @@ class EpisodeStoryHandler
   def update_attributes
     sa = story.attributes
 
+    versions = story.objects['prx:audio-versions'].objects['prx:items'] rescue []
+    if !versions.blank?
+      va = versions.first.attributes
+      episode.explicit = va['explicit']
+    end
+
     updated = Time.parse(sa[:updated_at]) if sa[:updated_at]
     if updated && (episode.source_updated_at.nil? || updated > episode.source_updated_at)
       episode.source_updated_at = updated
