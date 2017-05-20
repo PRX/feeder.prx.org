@@ -25,7 +25,6 @@ UpdateEnvironment () {
       export "$clean"
     done
     unset IFS
-    export
   fi
 }
 
