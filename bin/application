@@ -17,15 +17,29 @@ ApplicationUpdate () {
   bundle exec rake -vt sqs:create announce:configure_broker db:create db:migrate
 }
 
+UpdateEnvironment () {
+  if [ -z "$LOCAL_ENV" ]; then
+    IFS=$'\n'
+    for item in `aws-secrets-get`; do
+      clean=`echo $item | sed 's/="\(.*\)"$/=\1/'`
+      export "$clean"
+    done
+    unset IFS
+    export
+  fi
+}
+
 ApplicationRun () {
   CMD=
   if [ "$PROCESS" = "help" ] ; then
     ApplicationUsage
     exit
   elif [ "$PROCESS" = "web" ] ; then
+    UpdateEnvironment
     ApplicationUpdate
     CMD="bundle exec puma -C config/puma.rb"
   elif [ "$PROCESS" = "worker" ] ; then
+    UpdateEnvironment
     ApplicationUpdate
     CMD="bundle exec shoryuken --verbose --rails --config config/shoryuken.yml"
   elif [ "$PROCESS" = "test" ] ; then
@@ -33,16 +47,22 @@ ApplicationRun () {
   elif [ "$PROCESS" = "guard" ] ; then
     CMD="bundle exec guard"
   elif [ "$PROCESS" = "migrate" ] ; then
+    UpdateEnvironment
     CMD="bundle exec rake -vt db:create db:migrate"
   elif [ "$PROCESS" = "sqs" ] ; then
+    UpdateEnvironment
     CMD="bundle exec rake -vt sqs:create announce:configure_broker"
   elif [ "$PROCESS" = "release_episodes" ] ; then
+    UpdateEnvironment
     CMD="bundle exec rake -vt feeder:release_episodes"
   elif [ "$PROCESS" = "rails" ] ; then
+    UpdateEnvironment
     CMD="bundle exec rails"
   elif [ "$PROCESS" = "rake" ] ; then
+    UpdateEnvironment
     CMD="bundle exec rake"
   elif [ "$PROCESS" = "--" ] ; then
+    UpdateEnvironment
     CMD=
   else
     echo "ERROR: $PROCESS is not a valid command."
