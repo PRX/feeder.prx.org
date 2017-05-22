@@ -2,15 +2,24 @@ FROM ruby:2.3-alpine
 
 MAINTAINER PRX <sysadmin@prx.org>
 
-RUN apk update && apk --update add \
+# install git, aws-cli
+RUN apk --no-cache add \
     ca-certificates \
-    tzdata \
-    linux-headers \
+    git \
+    groff \
+    less \
     libxml2 \
     libxslt \
-    postgresql-client \
+    linux-headers \
     nodejs \
-    less
+    postgresql-client \
+    python py-pip py-setuptools \
+    tzdata \
+    && pip --no-cache-dir install awscli
+
+# install PRX aws-secrets scripts
+RUN git clone -o github https://github.com/PRX/aws-secrets
+RUN cp ./aws-secrets/bin/* /usr/local/bin
 
 ENV TINI_VERSION v0.9.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /tini
