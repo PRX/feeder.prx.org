@@ -93,8 +93,8 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
           Array(ep.categories).each { |c| xml.category { xml.cdata!(c || '') } }
 
-          has_au_name = first_nonblank('author_name', [ep, @podcast])
-          xml.itunes :author, has_au_name.author_name if has_au_name.author_name
+          has_author = first_nonblank('author_name', [ep, @podcast])
+          xml.itunes :author, has_author.author_name if has_author && has_author.author_name
 
           xml.itunes(:summary) { xml.cdata!(itunes_summary(ep)) } if show_itunes_summary?(ep)
 
