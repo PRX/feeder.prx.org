@@ -31,7 +31,7 @@ class Api::EpisodesController < Api::BaseController
     visible
   end
 
-  def scoped(relation)
+  def included(relation)
     relation.with_deleted
   end
 
