@@ -33,7 +33,7 @@ class Api::PodcastsController < Api::BaseController
 
   private
 
-  def scoped(relation)
+  def included(relation)
     relation.with_deleted
   end
 

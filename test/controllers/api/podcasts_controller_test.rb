@@ -3,6 +3,7 @@ require 'test_helper'
 describe Api::PodcastsController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
+  let(:podcast_deleted) { create(:podcast, path: 'deleted', deleted_at: Time.now) }
   let(:podcast_redirect) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", published_at: nil) }
   let(:token) { StubToken.new(account_id, ['member']) }
   let(:bad_token) { StubToken.new(account_id + 100, ['member']) }
@@ -108,9 +109,12 @@ describe Api::PodcastsController do
   end
 
   it 'should list' do
+    podcast_deleted.id.wont_be_nil
     podcast.id.wont_be_nil
     get(:index, { api_version: 'v1', format: 'json' } )
     assert_response :success
+    ids = JSON.parse(response.body)['_embedded']['prx:items'].map { |p| p['id'] }
+    ids.wont_include(podcast_deleted.id)
   end
 
   it 'should list podcasts for an account' do
