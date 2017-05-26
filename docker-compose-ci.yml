@@ -1,7 +1,5 @@
 feeder:
   build: .
-  volumes:
-    - .:/app
   links:
     - db
   ports:
