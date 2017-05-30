@@ -1,0 +1,19 @@
+feeder:
+  build: .
+  links:
+    - db
+  ports:
+    - "3000:3000"
+  command: test
+  environment:
+    VIRTUAL_HOST: 'feeder.prx.docker'
+    LOCAL_ENV: 'true'
+    DB_ENV_POSTGRES_USER: feeder
+    DB_ENV_POSTGRES_PASSWORD: password
+db:
+  image: postgres
+  environment:
+    POSTGRES_USER: feeder
+    POSTGRES_PASSWORD: password
+  ports:
+    - "5432:5432"
