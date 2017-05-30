@@ -1,6 +1,7 @@
 FROM ruby:2.3-alpine
 
 MAINTAINER PRX <sysadmin@prx.org>
+LABEL org.prx.app="yes"
 
 # install git, aws-cli
 RUN apk --no-cache add \
