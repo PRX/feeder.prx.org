@@ -263,10 +263,11 @@ class Episode < BaseModel
 
   def find_existing_content(pos, url)
     return nil if url.blank?
-    content_file = URI.parse(url || '').path.split('/').last
+    content_file = URI.parse(url || '').path.split('/')[-2, 2].join('/')
+    content_file = "/#{content_file}" unless content_file[0] == '/'
     all_contents.
       where(position: pos).
-      where('original_url like ?', "%/#{content_file}").
+      where('original_url like ?', "%#{content_file}").
       order(created_at: :desc).
       first
   end
