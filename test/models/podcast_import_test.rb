@@ -140,6 +140,24 @@ describe PodcastImport do
                                                  '/media.blubrry.com/some_name/'
     end
 
+    it 'can substitute for a missing short description' do
+      item = feed.entries.first
+      importer.short_desc(item).must_equal 'An astronomer has turned the night sky into a symphony.'
+      item.itunes_subtitle = nil
+      importer.short_desc(item).must_equal 'Sidedoor from the Smithsonian: Shake it Up'
+      item.description = 'Some text that\'s under 50 words'
+      importer.short_desc(item).must_equal 'Some text that\'s under 50 words'
+
+      importer.short_desc(feed).must_equal 'A podcast of scientific questions and stories' +
+                                           ' featuring guest hosts and reporters.'
+      feed.itunes_subtitle = nil
+      importer.short_desc(feed).must_equal 'A podcast of scientific questions and stories,' +
+                                           ' with many episodes hosted by key scientists' +
+                                           ' at the forefront of discovery.'
+      feed.description = nil
+      importer.short_desc(feed).must_equal 'Transistor'
+    end
+
     it 'can remove feedburner tracking pixels' do
       desc = 'desc <img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" ' +
              'height="1" width="1" alt=""/>'
