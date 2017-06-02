@@ -88,7 +88,7 @@ class PodcastImport < BaseModel
       app_version: PRX::APP_VERSION,
       account: account,
       title: clean_string(feed.title),
-      short_description: clean_string(feed.itunes_subtitle),
+      short_description: clean_string(short_desc(feed)),
       description_html: feed_description(feed)
     )
     save!
@@ -267,7 +267,7 @@ class PodcastImport < BaseModel
       creator_id: user_id,
       account_id: series.account_id,
       title: clean_string(entry[:title]),
-      short_description: clean_string(entry[:itunes_subtitle]),
+      short_description: clean_string(short_desc(entry)),
       description_html: entry_description(entry),
       tags: entry[:categories],
       published_at: entry[:published]
@@ -352,6 +352,12 @@ class PodcastImport < BaseModel
       explicit = 'clean'
     end
     explicit
+  end
+
+  def short_desc(item)
+    [item.itunes_subtitle, item.description, item.title].find do |field|
+      !field.nil? && field.split.length < 50
+    end
   end
 
   def clean_string(str)
