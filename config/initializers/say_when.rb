@@ -1,5 +1,5 @@
 require 'say_when'
-require 'say_when/poller/concurrent_poller'
+# require 'say_when/poller/concurrent_poller'
 
 # you can specify a the logger
 SayWhen.logger = Rails.logger
@@ -26,5 +26,5 @@ job = SayWhen.schedule(
 )
 
 # # for use with Shoryuken >= 3.x
-# poller = SayWhen::Poller::ConcurrentPoller.new(1)
+# poller = SayWhen::Poller::ConcurrentPoller.new(5)
 # poller.start

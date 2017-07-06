@@ -1,11 +1,3 @@
-GIT
-  remote: git://github.com/kookster/say_when.git
-  revision: c609e813adfd40dd9bc216fb0715d1a1e8698c91
-  branch: feat/version_2
-  specs:
-    say_when (2.0.0)
-      activesupport
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -300,6 +292,8 @@ GEM
       crass (~> 1.0.2)
       nokogiri (>= 1.4.4)
       nokogumbo (~> 1.4.1)
+    say_when (2.0.0)
+      activesupport
     sdoc (0.4.2)
       json (~> 1.7, >= 1.7.7)
       rdoc (~> 4.0)
@@ -388,7 +382,7 @@ DEPENDENCIES
   roar-rails
   rubocop
   sanitize
-  say_when!
+  say_when (~> 2.0)
   sdoc (~> 0.4.0)
   shoryuken
   simplecov
