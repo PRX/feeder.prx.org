@@ -46,8 +46,6 @@ class Episode < BaseModel
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
   def self.release_episodes!(options = {})
-    puts("\n\n\n ********* release_episodes! \n\n\n")
-    logger.debug("\n\n\n ********* release_episodes! \n\n\n")
     podcasts = []
     episodes_to_release.each do |e|
       podcasts << e.podcast
