@@ -34,6 +34,8 @@ gem 'shoryuken'
 # Use Announce for event subscriptions
 gem 'announce'
 
+gem 'say_when', github: 'kookster/say_when', branch: 'feat/version_2'
+
 # Load local environment variables with dotenv
 gem 'dotenv-rails'
 
