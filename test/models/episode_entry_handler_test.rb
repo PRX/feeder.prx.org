@@ -37,7 +37,7 @@ describe EpisodeEntryHandler do
 
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
-    episode.url.must_equal nil
+    episode.url.must_be_nil
   end
 
   it 'sets all attributes' do
@@ -187,7 +187,7 @@ describe EpisodeEntryHandler do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
     episode.all_contents.clear
-    episode.media_url.must_equal nil
+    episode.media_url.must_be_nil
   end
 
   it 'return include in feed and has_media false when no audio' do
