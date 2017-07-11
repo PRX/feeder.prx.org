@@ -16,14 +16,18 @@ SayWhen.configure do |options|
   options[:queue] = :feeder_default
 end
 
-job = SayWhen.schedule(
-  group: 'application',
-  name: 'release_episodes',
-  trigger_strategy: 'cron',
-  trigger_options: { expression: '0 0/5 * * * ?', time_zone: 'UTC' },
-  job_class: 'Episode',
-  job_method: 'release_episodes!'
-)
+begin
+  job = SayWhen.schedule(
+    group: 'application',
+    name: 'release_episodes',
+    trigger_strategy: 'cron',
+    trigger_options: { expression: '0 0/5 * * * ?', time_zone: 'UTC' },
+    job_class: 'Episode',
+    job_method: 'release_episodes!'
+  )
+rescue ActiveRecord::StatementInvalid => ex
+  puts "Failed to init say_when job: #{ex.inspect}"
+end
 
 # # for use with Shoryuken >= 3.x
 # poller = SayWhen::Poller::ConcurrentPoller.new(5)
