@@ -1,14 +1,13 @@
 require 'say_when'
-# require 'say_when/poller/concurrent_poller'
 
-# you can specify a the logger
+# Specify a logger for SayWhen
 SayWhen.logger = Rails.logger
 
-# configure the scheduler for how to store and process scheduled jobs
+# Configure the scheduler for how to store and process scheduled jobs
 # it will default to a :memory strategy and :simple processor
 SayWhen.configure do |options|
   # options[:storage_strategy]   = :memory
-  options[:storage_strategy]   = :active_record
+  options[:storage_strategy] = :active_record
 
   # options[:processor_strategy] = :simple
   options[:processor_strategy] = :active_job
@@ -17,7 +16,7 @@ SayWhen.configure do |options|
 end
 
 begin
-  job = SayWhen.schedule(
+  SayWhen.schedule(
     group: 'application',
     name: 'release_episodes',
     trigger_strategy: 'cron',
@@ -30,5 +29,6 @@ rescue ActiveRecord::StatementInvalid => ex
 end
 
 # # for use with Shoryuken >= 3.x
+# require 'say_when/poller/concurrent_poller'
 # poller = SayWhen::Poller::ConcurrentPoller.new(5)
 # poller.start
