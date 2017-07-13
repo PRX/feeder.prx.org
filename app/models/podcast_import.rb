@@ -356,7 +356,7 @@ class PodcastImport < BaseModel
 
   def short_desc(item)
     [item.itunes_subtitle, item.description, item.title].find do |field|
-      !field.nil? && field.split.length < 50
+      !field.blank? && field.split.length < 50
     end
   end
 

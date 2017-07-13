@@ -143,8 +143,13 @@ describe PodcastImport do
     it 'can substitute for a missing short description' do
       item = feed.entries.first
       importer.short_desc(item).must_equal 'An astronomer has turned the night sky into a symphony.'
+
+      item.itunes_subtitle = ''
+      importer.short_desc(item).wont_equal ''
+
       item.itunes_subtitle = nil
       importer.short_desc(item).must_equal 'Sidedoor from the Smithsonian: Shake it Up'
+
       item.description = 'Some text that\'s under 50 words'
       importer.short_desc(item).must_equal 'Some text that\'s under 50 words'
 
