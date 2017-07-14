@@ -4,7 +4,7 @@ PROCESS=
 CMD_ARGS=
 
 ApplicationUsage () {
-  echo "usage: application [ help | web | worker | migrate | test | guard | sqs | rake | rails | release_episodes | -- ]"
+  echo "usage: application [ help | web | worker | console | migrate | test | guard | sqs | rake | rails | release_episodes | -- ]"
 }
 
 ApplicationUpdate () {
@@ -47,6 +47,8 @@ ApplicationRun () {
     CMD="bundle exec puma -C config/puma.rb"
   elif [ "$PROCESS" = "worker" ] ; then
     CMD="bundle exec shoryuken --verbose --rails --config config/shoryuken.yml"
+  elif [ "$PROCESS" = "console" ] ; then
+    CMD="bundle exec rails console"
   elif [ "$PROCESS" = "test" ] ; then
     CMD="bundle exec rake db:create test RAILS_ENV=test"
   elif [ "$PROCESS" = "guard" ] ; then
