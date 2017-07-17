@@ -34,6 +34,8 @@ gem 'shoryuken'
 # Use Announce for event subscriptions
 gem 'announce'
 
+gem 'say_when', '~> 2.0'
+
 # Load local environment variables with dotenv
 gem 'dotenv-rails'
 

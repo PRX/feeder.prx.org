@@ -45,6 +45,19 @@ class Episode < BaseModel
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
+  def self.release_episodes!(options = {})
+    podcasts = []
+    episodes_to_release.each do |e|
+      podcasts << e.podcast
+      e.touch
+    end
+    podcasts.uniq.each { |p| p.publish! }
+  end
+
+  def self.episodes_to_release
+    where('published_at > updated_at AND published_at <= now()').all
+  end
+
   def self.by_prx_story(story)
     story_uri = story.links['self'].href
     Episode.with_deleted.find_by(prx_uri: story_uri)
