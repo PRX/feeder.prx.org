@@ -114,6 +114,35 @@ describe Episode do
     episode.reload.keyword_xid.must_equal orig_keyword
   end
 
+  describe 'release episodes' do
+
+    let(:podcast) { episode.podcast }
+
+    before do
+      day_ago = 1.day.ago
+      podcast.update_columns(updated_at: day_ago)
+      episode.update_columns(updated_at: day_ago, published_at: 1.hour.ago)
+    end
+
+    it 'lists episodes to release' do
+      podcast.last_build_date.must_be :<, episode.published_at
+      episodes = Episode.episodes_to_release
+      episodes.size.must_equal 1
+      episodes.first.must_equal episode
+    end
+
+    it 'updates feed published date after release' do
+      podcast.published_at.must_be :<, episode.published_at
+      episodes = Episode.episodes_to_release
+      episodes.first.must_equal episode
+      Task.stub :new_fixer_sqs_client, SqsMock.new(123) do
+        Episode.release_episodes!
+      end
+      podcast.reload
+      podcast.published_at.to_i.must_equal episode.published_at.to_i
+    end
+  end
+
   describe 'enclosure template' do
     before {
       episode.guid = 'guid'
