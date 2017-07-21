@@ -51,7 +51,7 @@ class Episode < BaseModel
       podcasts << e.podcast
       e.touch
     end
-    podcasts.uniq.each { |p| p.publish! }
+    podcasts.uniq.each { |p| p.publish_updated && p.publish! }
   end
 
   def self.episodes_to_release
