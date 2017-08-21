@@ -114,15 +114,14 @@ describe Episode do
     episode.reload.keyword_xid.must_equal orig_keyword
   end
 
-
   it 'strips commas and colons from keywords' do
     episode.update_attributes(keyword_xid: nil, title: '241: A title, with characters')
     episode.run_callbacks :save do
       episode.save
     end
     episode.reload.keyword_xid.wont_be_nil
-    episode.reload.keyword_xid.wont_include ','
-    episode.reload.keyword_xid.wont_include ':'
+    episode.keyword_xid.wont_include ','
+    episode.keyword_xid.wont_include ':'
   end
 
   describe 'release episodes' do
