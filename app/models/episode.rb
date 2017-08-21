@@ -309,10 +309,11 @@ class Episode < BaseModel
     return unless !published_at.nil? && keyword_xid.nil?
     identifiers = []
     [:published_at, :guid].each do |attr|
-      # Adzerk does not allow commas or colons in keywords; omitting dashes for space
-      identifiers << self.send(attr).to_s.slice(0, 10).gsub(/[:,-]/,'')
+      identifiers << self.send(attr).to_s.slice(0, 10)
     end
     identifiers << (title || 'undefined').slice(0, 20)
+    # Adzerk does not allow commas or colons in keywords; omitting dashes for space
+    identifiers.map! { |id| id.downcase.gsub(/[:,-]/,'').gsub(/\s+/,'').strip }
     self.keyword_xid = identifiers.join('_')
   end
 
