@@ -310,9 +310,20 @@ class Episode < BaseModel
     identifiers = []
     [:published_at, :guid].each do |attr|
       # Adzerk does not allow commas or colons in keywords; omitting dashes for space
-      identifiers << self.send(attr).to_s.slice(0, 10).gsub(/[:,-]/,'')
+      identifiers << self.send(attr)
+                         .to_s
+                         .downcase
+                         .gsub(/[:,-]/,'')
+                         .gsub(/\s+/,'')
+                         .strip
+                         .slice(0, 10)
     end
-    identifiers << (title || 'undefined').slice(0, 20)
+    identifiers << (title || 'undefined').to_s
+                                         .downcase
+                                         .gsub(/[:,-]/,' ')
+                                         .gsub(/\s+/,' ')
+                                         .strip
+                                         .slice(0, 20)
     self.keyword_xid = identifiers.join('_')
   end
 
