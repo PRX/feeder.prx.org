@@ -309,22 +309,19 @@ class Episode < BaseModel
     return unless !published_at.nil? && keyword_xid.nil?
     identifiers = []
     [:published_at, :guid].each do |attr|
-      # Adzerk does not allow commas or colons in keywords; omitting dashes for space
-      identifiers << self.send(attr)
-                         .to_s
-                         .downcase
-                         .gsub(/[:,-]/,'')
-                         .gsub(/\s+/,'')
-                         .strip
-                         .slice(0, 10)
+      identifiers << sanitize_keyword(self.send(attr), 10)
     end
-    identifiers << (title || 'undefined').to_s
-                                         .downcase
-                                         .gsub(/[:,-]/,' ')
-                                         .gsub(/\s+/,' ')
-                                         .strip
-                                         .slice(0, 20)
+    identifiers << sanitize_keyword(title || 'undefined', 20)
     self.keyword_xid = identifiers.join('_')
+  end
+
+  def sanitize_keyword(kw, length)
+    kw.to_s
+      .downcase
+      .gsub(/[^ a-z0-9_-]/,'')
+      .gsub(/\s+/,' ')
+      .strip
+      .slice(0, length)
   end
 
   def sanitize_text
@@ -333,6 +330,7 @@ class Episode < BaseModel
     self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
     self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
+    self.keywords = keywords.map { |kw| sanitize_keyword(kw, kw.length) }
   end
 
   def feeder_cdn_host
