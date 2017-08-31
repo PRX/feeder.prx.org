@@ -120,7 +120,7 @@ describe Episode do
       episode.save
     end
     episode.reload.keyword_xid.wont_be_nil
-    episode.keyword_xid.must_include '241 it s a title yay'
+    episode.keyword_xid.must_include '241 its a title yay'
   end
 
   it 'strips non-alphanumeric characters from all keywords' do

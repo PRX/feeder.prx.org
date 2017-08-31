@@ -318,7 +318,7 @@ class Episode < BaseModel
   def sanitize_keyword(kw, length)
     kw.to_s
       .downcase
-      .gsub(/[^ a-z0-9_-]/,' ')
+      .gsub(/[^ a-z0-9_-]/,'')
       .gsub(/\s+/,' ')
       .strip
       .slice(0, length)
