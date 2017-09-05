@@ -23,7 +23,7 @@ describe PodcastImport do
   end
 
   let(:podcast) do
-    api_resource(JSON.parse(json_file('transistor_podcast')), feeder_root).tap do |r|
+    api_resource(JSON.parse(json_file('transistor_podcast_basic')), feeder_root).tap do |r|
       r.headers = r.headers.merge('Authorization' => 'Bearer thisisnotatoken')
     end
   end
@@ -203,11 +203,11 @@ def stub_requests
 
   stub_request(:get, 'https://feeder.prx.org/api/v1/podcasts/51').
     with(headers: { 'Authorization' => 'Bearer thisisnotatoken' }).
-    to_return(status: 200, body: json_file('transistor_podcast'), headers: {})
+    to_return(status: 200, body: json_file('transistor_podcast_basic'), headers: {})
 
   stub_request(:post, 'https://feeder.prx.org/api/v1/podcasts').
     with(body: /prxUri/).
-    to_return(status: 200, body: json_file('transistor_podcast'), headers: {})
+    to_return(status: 200, body: json_file('transistor_podcast_basic'), headers: {})
 
   stub_request(:post, 'https://feeder.prx.org/api/v1/podcasts/51/episodes').
     with(body: /prxUri/,
