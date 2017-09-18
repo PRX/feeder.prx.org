@@ -15,7 +15,7 @@ class PodcastImport < BaseModel
 
   serialize :config, HashSerializer
 
-  attr_accessor :feed, :template, :stories, :podcast, :distribution
+  attr_accessor :feed, :templates, :stories, :podcast, :distribution
 
   belongs_to :user, -> { with_deleted }
   belongs_to :account, -> { with_deleted }
@@ -110,28 +110,8 @@ class PodcastImport < BaseModel
       announce_image(image)
     end
 
-    # Add the template and a single file template
-    self.template = series.audio_version_templates.create!(
-      label: 'Podcast Audio',
-      promos: false,
-      length_minimum: 0,
-      length_maximum: 0
-    )
-
-    num_segments = [config[:segments].to_i, 1].max
-    num_segments.times do |x|
-      num = x + 1
-      template.audio_file_templates.create!(
-        position: num,
-        label: "Segment #{num}",
-        length_minimum: 0,
-        length_maximum: 0
-      )
-    end
-
     self.distribution = Distributions::PodcastDistribution.create!(
-      distributable: series,
-      audio_version_template: template
+      distributable: series
     )
 
     series
@@ -245,6 +225,7 @@ class PodcastImport < BaseModel
   end
 
   def create_stories
+    self.templates ||= []
     feed.entries.map do |entry|
       story = create_story(entry, series)
       create_episode(story, entry)
@@ -273,22 +254,23 @@ class PodcastImport < BaseModel
       published_at: entry[:published]
     )
 
+    audio_files = []
+    if config[:audio] && config[:audio][entry.entry_id]
+      audio_files = config[:audio][entry.entry_id]
+    elsif enclosure = enclosure_url(entry)
+      audio_files = [enclosure]
+    end
+
     # add the audio version
+    template = get_or_create_template(audio_files.size)
     version = story.audio_versions.create!(
       audio_version_template: template,
       label: 'Podcast Audio',
       explicit: explicit(entry[:itunes_explicit])
     )
 
-    if config[:audio] && config[:audio][entry.entry_id]
-      audio_files = config[:audio][entry.entry_id]
-      audio_files.each_with_index do |af, i|
-        num = i + 1
-        audio = version.audio_files.create!(label: "Segment #{num}", upload: af)
-        announce_audio(audio)
-      end
-    elsif enclosure = enclosure_url(entry)
-      audio = version.audio_files.create!(label: 'Segment 1', upload: enclosure)
+    audio_files.each_with_index do |af, i|
+      audio = version.audio_files.create!(label: "Segment #{i + 1}", upload: af)
       announce_audio(audio)
     end
 
@@ -299,6 +281,35 @@ class PodcastImport < BaseModel
     end
 
     story
+  end
+
+  def get_or_create_template(segments)
+    num_segments = [segments.to_i, 1].max
+    if !templates[num_segments]
+      template = series.audio_version_templates.create!(
+        label: "Podcast Audio #{num_segments}",
+        promos: false,
+        length_minimum: 0,
+        length_maximum: 0
+      )
+
+      num_segments.times do |x|
+        num = x + 1
+        ft = template.audio_file_templates.create!(
+          position: num,
+          label: "Segment #{num}",
+          length_minimum: 0,
+          length_maximum: 0
+        )
+      end
+
+      distribution.distribution_templates.create!(
+        distribution: distribution,
+        audio_version_template: template
+      )
+      self.templates[num_segments] = template
+    end
+    templates[num_segments]
   end
 
   def enclosure_url(entry)
