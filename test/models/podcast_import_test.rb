@@ -33,7 +33,6 @@ describe PodcastImport do
 
   it 'retrieves a config' do
     importer.set_config_url('http://test.prx.org/transistor_import_config.json')
-    importer.config[:segments].must_equal 1
     importer.config[:program].must_equal 'transistor_stem'
     importer.config[:audio]['https://transistor.prx.org/?p=1286'].count.must_equal 2
   end
