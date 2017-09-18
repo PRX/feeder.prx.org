@@ -295,7 +295,7 @@ class PodcastImport < BaseModel
 
       num_segments.times do |x|
         num = x + 1
-        ft = template.audio_file_templates.create!(
+        template.audio_file_templates.create!(
           position: num,
           label: "Segment #{num}",
           length_minimum: 0,
