@@ -16,8 +16,9 @@ describe PodcastImport do
   let(:feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor_two.xml')) }
   let(:series) { create(:series) }
   let(:distribution) do
-    create(:podcast_distribution,
-          url: 'https://feeder.prx.org/api/v1/podcasts/51')
+    create(:podcast_distribution, distributable: series, url: 'https://feeder.prx.org/api/v1/podcasts/51').tap do |dist|
+      dist.audio_version_templates << template
+    end
   end
 
   let(:podcast) do
