@@ -287,7 +287,7 @@ class PodcastImport < BaseModel
     num_segments = [segments.to_i, 1].max
     if !templates[num_segments]
       template = series.audio_version_templates.create!(
-        label: "Podcast Audio #{num_segments}",
+        label: "Podcast Audio #{num_segments} segments",
         promos: false,
         length_minimum: 0,
         length_maximum: 0
