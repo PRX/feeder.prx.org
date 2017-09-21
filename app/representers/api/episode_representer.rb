@@ -16,7 +16,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :keyword_xid, writeable: false
 
   property :url
-  property :image_url
 
   property :title
   property :subtitle
@@ -43,6 +42,10 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     as: :media,
     decorator: MediaResourceRepresenter,
     class: MediaResource
+
+  collection :images,
+    decorator: ImageRepresenter,
+    class: EpisodeImage
 
   def self_url(episode)
     api_episode_path(id: episode.guid)

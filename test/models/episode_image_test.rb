@@ -29,7 +29,7 @@ describe EpisodeImage do
     it 'updates from fixer callback' do
       old_image = create(:episode_image_with_episode, episode: episode, created_at: 1.year.ago)
       episode.images.must_be :include?, old_image
-      image.url.must_be_nil
+      image.url = nil
       image.update_from_fixer({})
       image.url.must_equal image.published_url
       episode.images(true).wont_be :include?, old_image

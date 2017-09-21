@@ -36,6 +36,13 @@ describe Api::EpisodeRepresenter do
   it 'has media' do
     json['media'].size.must_equal 1
     json['media'].first['href'].must_equal episode.enclosure.url
+    json['media'].first['original_url'].must_equal episode.enclosure.original_url
+  end
+
+  it 'has image' do
+    json['images'].size.must_equal 1
+    json['images'].first['url'].must_equal episode.image.url
+    json['images'].first['original_url'].must_equal episode.image.original_url
   end
 
   it 'has enclosure' do
