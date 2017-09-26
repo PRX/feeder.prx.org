@@ -145,6 +145,10 @@ class Podcast < BaseModel
     "#{base_published_url}/feed-rss.xml"
   end
 
+  def itunes_type
+    serial_order ? 'serial' : 'episodic'
+  end
+
   def sanitize_text
     self.description = sanitize_white_list(description) if description_changed?
     self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?

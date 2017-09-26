@@ -21,6 +21,12 @@ describe Podcast do
     podcast.must_respond_to(:itunes_categories)
   end
 
+  it 'is episodic or serial' do
+    podcast.itunes_type.must_match /episodic/
+    podcast.update_attributes(serial_order: true)
+    podcast.itunes_type.must_match /serial/
+  end
+
   it 'updates last build date after update' do
     Timecop.freeze
     podcast.update_attributes(managing_editor: 'Brian Fernandez')
