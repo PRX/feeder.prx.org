@@ -138,6 +138,12 @@ describe Episode do
     episode.wont_be(:valid?)
   end
 
+  it 'concats identifying information for full version of title' do
+    episode.update_attributes(season_number: 2, episode_number: 3, title: 'The Thing Happened')
+    episode.title.wont_include 'Season'
+    episode.full_title.must_equal 'Season 2 Episode 3: The Thing Happened'
+  end
+
   describe 'release episodes' do
 
     let(:podcast) { episode.podcast }

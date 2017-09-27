@@ -58,7 +58,8 @@ describe 'RSS feed Integration Test' do
 
   it 'displays correct episode titles' do
     @feed.css('item').each_with_index do |node, i|
-      node.css('title').text.must_match /Episode \d+/
+      node.css('title').text.must_match /Season \d+ Episode \d+/
+      node.css('itunes|title').text.wont_match /Season/
       node.at_css('enclosure').attributes['length'].value.must_equal '774059'
       node.css('itunes|duration').text.must_equal '0:48'
     end

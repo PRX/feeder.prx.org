@@ -342,4 +342,11 @@ class Episode < BaseModel
   def feeder_cdn_host
     ENV['FEEDER_CDN_HOST']
   end
+
+  def full_title
+    ft = ''
+    ft += "Season #{season} " if season
+    ft += "Episode #{number}: " if number
+    ft + title
+  end
 end
