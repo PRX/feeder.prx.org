@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170926204117) do
+ActiveRecord::Schema.define(version: 20170926210603) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -66,6 +66,9 @@ ActiveRecord::Schema.define(version: 20170926204117) do
     t.boolean  "is_perma_link"
     t.datetime "source_updated_at"
     t.string   "keyword_xid"
+    t.integer  "season"
+    t.integer  "number"
+    t.string   "itunes_type",                    default: "full"
   end
 
   add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree

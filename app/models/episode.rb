@@ -38,6 +38,7 @@ class Episode < BaseModel
     dependent: :destroy
 
   validates :podcast_id, :guid, presence: true
+  validates :itunes_type, inclusion: { in: %w(full trailer bonus) }
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 

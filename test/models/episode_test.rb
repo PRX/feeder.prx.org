@@ -132,6 +132,12 @@ describe Episode do
     episode.keywords.each { |k| k.wont_match(/['?!,']/) }
   end
 
+  it 'has a valid itunes episode type' do
+    episode.itunes_type.must_equal('full')
+    episode.itunes_type = 'foo'
+    episode.wont_be(:valid?)
+  end
+
   describe 'release episodes' do
 
     let(:podcast) { episode.podcast }
