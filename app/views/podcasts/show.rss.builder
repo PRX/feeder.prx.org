@@ -38,6 +38,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     end
 
     xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
+    xml.itunes :type, @podcast.itunes_type unless @podcast.itunes_type.blank?
 
     @podcast.itunes_categories[0, 3].each do |cat|
       if cat.subcategories.blank?
@@ -82,8 +83,12 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.description { xml.cdata!(ep.description || '') }
         xml.enclosure(url: ep.media_url, type: ep.content_type, length: ep.file_size) if ep.media?
 
+        xml.itunes :title, ep.title unless ep.title.blank?
         xml.itunes :subtitle, ep.subtitle unless ep.subtitle.blank?
         xml.itunes :explicit, ep.explicit unless ep.explicit.blank?
+        xml.itunes :episodeType, ep.itunes_type unless ep.itunes_type.blank?
+        xml.itunes :season, ep.season if ep.season?
+        xml.itunes :episode, ep.number if ep.number?
         xml.itunes :duration, ep.duration.to_i.to_time_summary if ep.media?
 
         if @podcast.display_full_episodes_count.to_i <= 0 || index < @podcast.display_full_episodes_count.to_i

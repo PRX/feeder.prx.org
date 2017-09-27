@@ -4,6 +4,7 @@ FactoryGirl.define do
     sequence(:prx_uri) { |n| "/api/v1/stories/#{(87683 + n)}" }
 
     sequence(:season_number) { |n| n * 2 }
+    sequence(:episode_number) { |n| n }
     sequence(:guid) { |n| "ba047dce-9df5-4132-a04b-31d24c7c55a#{n}" }
     sequence(:title) { |n| "Episode #{n}" }
     sequence(:published_at) { |n| Date.today - n.days }
