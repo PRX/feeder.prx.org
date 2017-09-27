@@ -32,5 +32,7 @@ describe EpisodeStoryHandler do
     first_audio.must_equal 's3://mediajoint.production.prx.org/public/audio_files/1200648/lcs_spring16_act1.mp3'
     last_audio.must_equal 's3://mediajoint.production.prx.org/public/audio_files/1200657/broadcast/t01.mp3'
     episode.description.must_equal 'this is a description'
+    episode.season_number.must_equal 2
+    episode.episode_number.must_equal 4
   end
 end
