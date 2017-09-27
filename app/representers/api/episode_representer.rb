@@ -23,6 +23,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :content
   property :summary
   property :summary_preview, exec_context: :decorator, if: ->(_o) { !represented.summary }
+  property :season_number
+  property :episode_number
+  property :itunes_type
 
   property :explicit
   property :block

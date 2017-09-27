@@ -24,6 +24,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :summary_preview, exec_context: :decorator, if: ->(_o) { !represented.summary }
 
   property :explicit
+  property :serial_order
   property :complete
   property :copyright
   property :language

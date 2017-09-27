@@ -11,6 +11,12 @@ describe Api::EpisodeRepresenter do
     json['summary'].must_match /<a href="\/tina">Tina<\/a>/
   end
 
+  it 'includes season, episode, and ep type info' do
+    json['seasonNumber'].must_be_instance_of(Fixnum)
+    json['episodeNumber'].must_be_instance_of(Fixnum)
+    json['itunesType'].must_equal 'full'
+  end
+
   it 'uses summary when not blank' do
     episode.summary = 'summary has <a href="/">a link</a>'
     episode.description = '<b>tags</b> removed, <a href="/">links remain</a>'
