@@ -3,7 +3,8 @@ require 'episode'
 class EpisodeEntryHandler
   ENTRY_ATTRIBUTES = %w(author block categories content description explicit
     feedburner_orig_enclosure_link feedburner_orig_link is_closed_captioned
-    is_perma_link keywords position subtitle summary title url).freeze
+    is_perma_link keywords position subtitle summary title url
+    season_number episode_number).freeze
 
   attr_accessor :episode
   delegate :overrides, to: :episode
