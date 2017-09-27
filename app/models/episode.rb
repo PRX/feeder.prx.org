@@ -39,6 +39,8 @@ class Episode < BaseModel
 
   validates :podcast_id, :guid, presence: true
   validates :itunes_type, inclusion: { in: %w(full trailer bonus) }
+  validates :episode_number, numericality: { only_integer: true }, allow_nil: true
+  validates :season_number, numericality: { only_integer: true }, allow_nil: true
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
@@ -47,7 +49,7 @@ class Episode < BaseModel
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
   alias_attribute :number, :episode_number
-
+  alias_attribute :season, :season_number
 
   def self.release_episodes!(options = {})
     podcasts = []
