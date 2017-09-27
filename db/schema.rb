@@ -66,8 +66,8 @@ ActiveRecord::Schema.define(version: 20170926210603) do
     t.boolean  "is_perma_link"
     t.datetime "source_updated_at"
     t.string   "keyword_xid"
-    t.integer  "season"
-    t.integer  "number"
+    t.integer  "season_number"
+    t.integer  "episode_number"
     t.string   "itunes_type",                    default: "full"
   end
 

@@ -46,6 +46,9 @@ class Episode < BaseModel
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
+  alias_attribute :number, :episode_number
+
+
   def self.release_episodes!(options = {})
     podcasts = []
     episodes_to_release.each do |e|
