@@ -35,4 +35,48 @@ describe EpisodeStoryHandler do
     episode.season_number.must_equal 2
     episode.episode_number.must_equal 4
   end
+
+  describe 'with episode identifiers' do
+
+    let(:zero_identifiers_story) do
+      msg = json_file(:prx_story_zero_identifiers)
+      body = JSON.parse(msg)
+      href = body['_links']['self']['href']
+      resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
+      link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
+      PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
+    end
+
+    let(:invalid_identifiers_story) do
+      msg = json_file(:prx_story_invalid_identifiers)
+      body = JSON.parse(msg)
+      href = body['_links']['self']['href']
+      resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
+      link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
+      PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
+    end
+
+    it 'sets episode and season numbers from identifiers' do
+      podcast = create(:podcast, prx_uri: '/api/v1/series/36501')
+      episode = EpisodeStoryHandler.create_from_story!(story)
+      episode.season_number.must_equal 2
+      episode.episode_number.must_equal 4
+    end
+
+    it 'wont use string identifiers' do
+      podcast = create(:podcast, prx_uri: '/api/v1/series/32165')
+      episode = EpisodeStoryHandler.create_from_story!(invalid_identifiers_story)
+      episode.season_number.must_be_nil
+      episode.episode_number.must_be_nil
+
+    end
+
+   it 'allows identifiers to be zero' do
+     podcast = create(:podcast, prx_uri: '/api/v1/series/32164')
+     episode = EpisodeStoryHandler.create_from_story!(zero_identifiers_story)
+     episode.season_number.must_equal 0
+     episode.episode_number.must_equal 0
+   end
+  end
+
 end

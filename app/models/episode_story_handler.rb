@@ -61,10 +61,10 @@ class EpisodeStoryHandler
     episode.categories = sa[:tags]
     episode.published_at = sa[:published_at] ? Time.parse(sa[:published_at]) : nil
 
-    season_num = sa[:season_identifier].to_i
-    episode.season_number = season_num unless season_num.blank? || season_num.zero?
-    episode_num = sa[:episode_identifier].to_i
-    episode.episode_number = episode_num unless episode_num.blank? || episode_num.zero?
+    %w(season episode).each do |time|
+      id = sa["#{time}_identifier"]
+      episode["#{time}_number"] = id.to_i if id && (!id.to_i.zero? || [0, '0'].include?(id))
+    end
   end
 
   def update_audio
