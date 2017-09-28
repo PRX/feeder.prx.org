@@ -83,7 +83,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.description { xml.cdata!(ep.description || '') }
         xml.enclosure(url: ep.media_url, type: ep.content_type, length: ep.file_size) if ep.media?
 
-        xml.itunes :title, ep.title unless ep.title.blank?
+        xml.itunes :title, ep.clean_title unless ep.clean_title.blank?
         xml.itunes :subtitle, ep.subtitle unless ep.subtitle.blank?
         xml.itunes :explicit, ep.explicit unless ep.explicit.blank?
         xml.itunes :episodeType, ep.itunes_type unless ep.itunes_type.blank?

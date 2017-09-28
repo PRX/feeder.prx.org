@@ -18,6 +18,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :url
 
   property :title
+  property :clean_title
   property :subtitle
   property :description
   property :content

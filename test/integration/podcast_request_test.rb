@@ -58,7 +58,7 @@ describe 'RSS feed Integration Test' do
 
   it 'displays correct episode titles' do
     @feed.css('item').each_with_index do |node, i|
-      node.css('title').text.must_match /Season \d+ Episode \d+/
+      node.css('title').text.must_match /Episode \d+/
       node.at_css('enclosure').attributes['length'].value.must_equal '774059'
       node.css('itunes|duration').text.must_equal '0:48'
     end
@@ -95,7 +95,8 @@ describe 'RSS feed Integration Test' do
     @episodes.each_with_index do |e, i|
       e.update_attributes(season_number: i + 1,
                           episode_number: i + 1,
-                          title: 'Stripped-down title')
+                          title: 'Season 2 Episode 3 Stripped-down title',
+                          clean_title: 'Stripped-down title')
     end
     @podcast.update_attributes(serial_order: false)
     get "/podcasts/#{@podcast.id}"

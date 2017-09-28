@@ -11,9 +11,10 @@ describe Api::EpisodeRepresenter do
     json['summary'].must_match /<a href="\/tina">Tina<\/a>/
   end
 
-  it 'includes season, episode, and ep type info' do
+  it 'includes clean title, season, episode, and ep type info' do
     json['seasonNumber'].must_be_instance_of(Fixnum)
     json['episodeNumber'].must_be_instance_of(Fixnum)
+    json['cleanTitle'].must_match /Clean title/
     json['itunesType'].must_equal 'full'
   end
 
