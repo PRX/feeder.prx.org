@@ -34,6 +34,7 @@ describe EpisodeStoryHandler do
     episode.description.must_equal 'this is a description'
     episode.season_number.must_equal 2
     episode.episode_number.must_equal 4
+    episode.clean_title.must_equal 'Stripped-down title'
   end
 
   describe 'with episode identifiers' do
