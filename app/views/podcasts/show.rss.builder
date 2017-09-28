@@ -77,7 +77,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     @episodes.each_with_index do |ep, index|
       xml.item do
         xml.guid(ep.item_guid, isPermaLink: !!ep.is_perma_link)
-        xml.title(ep.full_title)
+        xml.title(ep.title)
         xml.pubDate ep.published_at.utc.rfc2822
         xml.link ep.url || ep.media_url
         xml.description { xml.cdata!(ep.description || '') }
