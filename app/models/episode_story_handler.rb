@@ -55,11 +55,17 @@ class EpisodeStoryHandler
     end
 
     episode.title = sa[:title]
+    episode.clean_title = sa[:clean_title]
     episode.subtitle = sa[:short_description]
     episode.description = sa[:description]
     episode.content = sa[:description]
     episode.categories = sa[:tags]
     episode.published_at = sa[:published_at] ? Time.parse(sa[:published_at]) : nil
+
+    %w(season episode).each do |time|
+      id = sa["#{time}_identifier"]
+      episode["#{time}_number"] = id.to_i if id && (!id.to_i.zero? || [0, '0'].include?(id))
+    end
   end
 
   def update_audio

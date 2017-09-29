@@ -1,0 +1,35 @@
+{
+  "id": 80548,
+  "publishedAt": "2015-05-18T23:12:38.000Z",
+  "title": "Title",
+  "episodeIdentifier": "The first one",
+  "seasonIdentifier": "Second season",
+  "_links": {
+    "curies": [{
+      "name": "prx",
+      "href": "http://meta.prx.org/relation/{rel}",
+      "templated": true
+    }],
+    "self": {
+      "href": "/api/v1/stories/80548",
+      "profile": "http://meta.prx.org/model/story"
+    },
+    "alternate": {
+      "href": "https://beta.prx.org/stories/80548",
+      "type": "text/html"
+    },
+    "prx:account": {
+      "href": "/api/v1/accounts/125347",
+      "title": "American Routes",
+      "profile": "http://meta.prx.org/model/account/group"
+    },
+    "prx:series": {
+      "href": "/api/v1/series/32165",
+      "title": "American Routes"
+    },
+    "prx:audio": {
+      "href": "/api/v1/stories/80548/audio_files",
+      "count": 2
+    }
+  }
+}

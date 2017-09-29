@@ -132,6 +132,12 @@ describe Episode do
     episode.keywords.each { |k| k.wont_match(/['?!,']/) }
   end
 
+  it 'has a valid itunes episode type' do
+    episode.itunes_type.must_equal('full')
+    episode.itunes_type = 'foo'
+    episode.wont_be(:valid?)
+  end
+
   describe 'release episodes' do
 
     let(:podcast) { episode.podcast }
@@ -246,7 +252,7 @@ describe Episode do
     let(:story) do
       msg = json_file(:prx_story_small)
       body = JSON.parse(msg)
-      href = body['_links']['self']['href']
+      href = body.dig(:_links, :self, :href)
       resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
       link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
       PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)

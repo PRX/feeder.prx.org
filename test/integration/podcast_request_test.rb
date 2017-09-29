@@ -91,6 +91,27 @@ describe 'RSS feed Integration Test' do
     @feed.at_css('itunes|owner').css('itunes|name').text.must_equal @podcast.author_name
   end
 
+  it 'supports iTunes tags new in iOS11' do
+    @episodes.each_with_index do |e, i|
+      e.update_attributes(season_number: i + 1,
+                          episode_number: i + 1,
+                          title: 'Season 2 Episode 3 Stripped-down title',
+                          clean_title: 'Stripped-down title')
+    end
+    @podcast.update_attributes(serial_order: false)
+    get "/podcasts/#{@podcast.id}"
+    @feed = Nokogiri::XML(response.body).css('channel')
+
+    @feed.at_css('itunes|type').text.must_equal @podcast.itunes_type
+    @feed.css('item').reverse.each_with_index do |node, ind|
+      node.css('title').text.must_match /Season \d+ Episode \d+/
+      node.css('itunes|title').text.must_equal "Stripped-down title"
+      node.css('itunes|season').text.to_i.must_equal ind + 1
+      node.css('itunes|episode').text.to_i.must_equal ind + 1
+      node.css('itunes|episodeType').text.must_match 'full'
+    end
+  end
+
   describe 'with a guest author' do
     before do
       @podcast.episodes.destroy_all

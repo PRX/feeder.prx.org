@@ -7,7 +7,7 @@ describe Tasks::CopyMediaTask do
 
   let(:story) do
     body = JSON.parse(json_file(:prx_story_small))
-    href = body['_links']['self']['href']
+    href = body.dig(:_links, :self, :href)
     resource = task.api
     link = HyperResource::Link.new(resource, href: href)
     HyperResource.new_from(body: body, resource: resource, link: link)

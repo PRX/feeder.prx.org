@@ -4,6 +4,8 @@
   "description": "this is a description",
   "duration": 3346,
   "id": 186751,
+  "episodeIdentifier": 4,
+  "seasonIdentifier": 2,
   "points": 0,
   "publishedAt": "2016-09-29T22:14:13.000Z",
   "shortDescription": "With a teaser of the story",
@@ -12,6 +14,7 @@
     "Careers"
   ],
   "title": "Here is a new story in my brand new series",
+  "clean_title": "Stripped-down title",
   "updatedAt": "2016-10-18T22:16:40.000Z",
   "_links": {
     "alternate": {

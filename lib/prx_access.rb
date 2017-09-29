@@ -93,7 +93,7 @@ module PRXAccess
   end
 
   def api_resource(body, root = cms_root)
-    href = body['_links']['self']['href']
+    href = body.dig(:_links, :self, :href)
     resource = api(root: root)
     link = PRXHyperResource::Link.new(resource, href: href)
     PRXHyperResource.new_from(body: body, resource: resource, link: link)

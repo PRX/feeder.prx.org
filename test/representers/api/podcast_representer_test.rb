@@ -37,6 +37,10 @@ describe Api::PodcastRepresenter do
     json['feedImage']['url'].must_equal 'test/fixtures/valid_feed_image.png'
   end
 
+  it 'includes serial v. episodic ordering' do
+    json['serialOrder'].must_equal false
+  end
+
   it 'has links' do
     json['_links']['self']['href'].must_equal "/api/v1/podcasts/#{podcast.id}"
     json['_links']['prx:series']['href'].must_equal "https://cms.prx.org#{podcast.prx_uri}"
