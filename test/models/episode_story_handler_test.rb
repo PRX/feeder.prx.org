@@ -9,7 +9,7 @@ describe EpisodeStoryHandler do
   let(:story) do
     msg = json_file(:prx_story_all)
     body = JSON.parse(msg)
-    href = body['_links']['self']['href']
+    href = body.dig(:_links, :self, :href)
     resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
     link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
     PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
@@ -42,7 +42,7 @@ describe EpisodeStoryHandler do
     let(:zero_identifiers_story) do
       msg = json_file(:prx_story_zero_identifiers)
       body = JSON.parse(msg)
-      href = body['_links']['self']['href']
+      href = body.dig(:_links, :self, :href)
       resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
       link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
       PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
@@ -51,7 +51,7 @@ describe EpisodeStoryHandler do
     let(:invalid_identifiers_story) do
       msg = json_file(:prx_story_invalid_identifiers)
       body = JSON.parse(msg)
-      href = body['_links']['self']['href']
+      href = body.dig(:_links, :self, :href)
       resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
       link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
       PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)

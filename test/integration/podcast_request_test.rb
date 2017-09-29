@@ -105,7 +105,6 @@ describe 'RSS feed Integration Test' do
     @feed.at_css('itunes|type').text.must_equal @podcast.itunes_type
     @feed.css('item').reverse.each_with_index do |node, ind|
       node.css('title').text.must_match /Season \d+ Episode \d+/
-      node.css('itunes|title').text.wont_match /Season/
       node.css('itunes|title').text.must_equal "Stripped-down title"
       node.css('itunes|season').text.to_i.must_equal ind + 1
       node.css('itunes|episode').text.to_i.must_equal ind + 1
