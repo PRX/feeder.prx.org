@@ -21,6 +21,6 @@ module TextSanitizer
   def sanitize_text_only(text)
     return nil if text.blank?
     sanitizer = Rails::Html::FullSanitizer.new
-    sanitizer.sanitize(text)
+    sanitizer.sanitize(text).gsub('&amp;', '&')
   end
 end

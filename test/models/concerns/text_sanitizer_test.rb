@@ -15,6 +15,10 @@ describe TextSanitizer do
     model.sanitize_text_only(text).must_equal 'my dog ate my '
   end
 
+  it 'leaves ampersands alone' do
+    model.sanitize_text_only('Us & Them').must_equal 'Us & Them'
+  end
+
   it 'scrubs all but links' do
     r = 'my dog <a href="/">ate</a> my '
     model.sanitize_links_only(text).must_equal r
