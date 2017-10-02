@@ -20,7 +20,6 @@ module TextSanitizer
 
   def sanitize_text_only(text)
     return nil if text.blank?
-    sanitizer = Rails::Html::FullSanitizer.new
-    sanitizer.sanitize(text)
+    Loofah.fragment(text).scrub!(:prune).text(encode_special_chars: false)
   end
 end

@@ -12,6 +12,12 @@ describe Episode do
     e.overrides.wont_be_nil
   end
 
+  it 'leaves title ampersands alone' do
+    episode.title = "Hear & Now"
+    episode.save!
+    episode.title.must_equal "Hear & Now"
+  end
+
   it 'must belong to a podcast' do
     episode = build_stubbed(:episode)
     episode.must_be(:valid?)
