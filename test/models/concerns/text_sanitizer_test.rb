@@ -7,12 +7,12 @@ end
 describe TextSanitizer do
   let(:model) { TestSanitizer.new }
   let(:text) do
-    '<!-- Sorry! --><p>my</p> <b>dog</b> <a href="/">ate</a> ' +
+    '<!-- Sorry! --><p>my</p> <b>dog & cat</b> <a href="/">ate</a> ' +
     '<span><div>my</div></span> <script>homework</script>'
   end
 
   it 'scrubs all tags' do
-    model.sanitize_text_only(text).must_equal 'my dog ate my '
+    model.sanitize_text_only(text).must_equal 'my dog & cat ate my '
   end
 
   it 'leaves ampersands alone' do
@@ -20,12 +20,12 @@ describe TextSanitizer do
   end
 
   it 'scrubs all but links' do
-    r = 'my dog <a href="/">ate</a> my '
+    r = 'my dog &amp; cat <a href="/">ate</a> my '
     model.sanitize_links_only(text).must_equal r
   end
 
   it 'scrubs all but white listed' do
-    r = '<p>my</p> <b>dog</b> <a href="/">ate</a> <span><div>my</div></span> '
+    r = '<p>my</p> <b>dog &amp; cat</b> <a href="/">ate</a> <span><div>my</div></span> '
     model.sanitize_white_list(text).must_equal r
   end
 
