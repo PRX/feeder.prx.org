@@ -36,7 +36,7 @@ class Tasks::CopyImageTask < ::Task
 
   def image_path(image_resource)
     if !image_resource
-      logger.info("in CopyImageTask#image_path and image_resource is nil. self is #{self}")
+      logger.info("in CopyImageTask#image_path and image_resource is nil. self is #{self.inspect}")
     end
     URI.parse(image_resource.published_url).path
   end

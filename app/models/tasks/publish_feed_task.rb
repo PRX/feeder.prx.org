@@ -35,7 +35,7 @@ class Tasks::PublishFeedTask < ::Task
   def task_status_changed(fixer_task, new_status)
     # purge the cdn cache
     if !podcast
-      logger.info("in PublishFeedTask#task_status_changed and podcast is nil. self is #{self}")
+      logger.info("in PublishFeedTask#task_status_changed and podcast is nil. self is #{self.inspect}")
     end
     HighwindsAPI::Content.purge_url(podcast.published_url, false)
 
@@ -47,7 +47,7 @@ class Tasks::PublishFeedTask < ::Task
 
   def feed_path(podcast = owner)
     if !podcast
-      logger.info("in PublishFeedTask#feed_path and podcast is nil. self is #{self}")
+      logger.info("in PublishFeedTask#feed_path and podcast is nil. self is #{self.inspect}")
     end
     URI.parse(podcast.published_url).path
   end
