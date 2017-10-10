@@ -94,6 +94,7 @@ describe PodcastImport do
     f.audio_versions.first.audio_files.first.upload.must_equal config_audio
     version = f.audio_versions.first
     version.audio_version_template_id.wont_be_nil
+    version.audio_version_template.segment_count.wont_be_nil
     version.label.must_equal 'Podcast Audio'
     version.explicit.must_be_nil
     l = stories.last

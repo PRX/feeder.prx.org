@@ -289,6 +289,7 @@ class PodcastImport < BaseModel
       template = series.audio_version_templates.create!(
         label: "Podcast Audio #{num_segments} segments",
         promos: false,
+        segment_count: num_segments,
         length_minimum: 0,
         length_maximum: 0
       )
