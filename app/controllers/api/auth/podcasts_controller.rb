@@ -17,4 +17,8 @@ class Api::Auth::PodcastsController < Api::PodcastsController
     end
     visible
   end
+
+  def resources_base
+    @podcasts ||= authorization.token_auth_podcasts
+  end
 end
