@@ -10,6 +10,13 @@ class Api::AuthorizationRepresenter < Api::BaseRepresenter
     }
   end
 
+  link :podcasts do
+    {
+      href: api_authorization_podcasts_path,
+      count: represented.token_auth_podcasts.count
+    }
+  end
+
   link :podcast do
     {
       href: api_authorization_podcast_path_template(id: '{id}'),
