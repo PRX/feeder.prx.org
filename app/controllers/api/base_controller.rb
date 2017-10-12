@@ -26,6 +26,10 @@ class Api::BaseController < ApplicationController
     prx_auth_token
   end
 
+  def authorization
+    Authorization.new(prx_auth_token) if prx_auth_token
+  end
+
   protect_from_forgery with: :null_session
 
   allow_params :show, [:api_version, :format, :zoom]
