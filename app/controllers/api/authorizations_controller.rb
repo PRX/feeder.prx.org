@@ -8,6 +8,6 @@ class Api::AuthorizationsController < Api::BaseController
   private
 
   def resource
-    Authorization.new(prx_auth_token)
+    authorization
   end
 end

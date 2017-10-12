@@ -103,6 +103,10 @@ class StubToken
     { sub: @@fake_user_id, aur: { resource => scopes }, scope: 'read write purchase sell delete' }
   end
 
+  def authorized_resources
+    attributes[:aur]
+  end
+
   def authorized?(r, s = nil)
     resource == r.to_s && (s.nil? || scopes.include?(s.to_s))
   end
