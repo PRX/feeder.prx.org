@@ -84,6 +84,9 @@ describe PodcastImport do
     f.description.wont_match /<script/
     f.description.wont_match /<iframe/
     f.description.wont_match /feedburner/
+    f.tags.must_equal ['Indie Features', 'science', 'architecture']
+    f.tags.wont_include '\n'
+    f.tags.wont_include '\t'
     f.account_id.wont_be_nil
     f.creator_id.wont_be_nil
     f.series_id.wont_be_nil
