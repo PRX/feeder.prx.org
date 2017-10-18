@@ -85,7 +85,10 @@ describe PodcastImport do
     f.description.wont_match /<iframe/
     f.description.wont_match /feedburner/
     f.tags.must_include 'Indie Features'
-    f.tags.each {|tag| tag.wont_match /\n/}
+    f.tags.each do |tag|
+      tag.wont_match /\n/
+      tag.wont_be :blank?
+    end
     f.tags.wont_include '\t'
     f.account_id.wont_be_nil
     f.creator_id.wont_be_nil

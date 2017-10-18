@@ -250,7 +250,7 @@ class PodcastImport < BaseModel
       title: clean_string(entry[:title]),
       short_description: clean_string(short_desc(entry)),
       description_html: entry_description(entry),
-      tags: Array(entry[:categories]).map(&:strip),
+      tags: Array(entry[:categories]).map(&:strip).reject(&:blank?),
       published_at: entry[:published]
     )
 
