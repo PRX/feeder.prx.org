@@ -239,7 +239,7 @@ class PodcastImport < BaseModel
   end
 
   def entry_description_attribute(entry)
-    [:content, :itunes_summary, :description].find { |d| !entry[d].blank? }
+    [:content, :itunes_summary, :description, :title].find { |d| !entry[d].blank? }
   end
 
   def create_story(entry, series)

@@ -168,6 +168,14 @@ describe PodcastImport do
       importer.short_desc(feed).must_equal 'Transistor'
     end
 
+    it 'can substitute for a missing description' do
+      item = feed.entries.first
+      item.description = nil
+      item.itunes_summary = nil
+      item.content = nil
+      importer.entry_description(item).wont_be :blank?
+    end
+
     it 'can remove feedburner tracking pixels' do
       desc = 'desc <img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" ' +
              'height="1" width="1" alt=""/>'
