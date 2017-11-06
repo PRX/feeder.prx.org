@@ -30,6 +30,7 @@ module Feedjira
       element :pubDate, as: :pub_date_string
       element :lastBuildDate, as: :last_built_string
 
+      element :"itunes:type", as: :itunes_type
       element :"itunes:author", as: :itunes_author
       element :"itunes:block", as: :itunes_block
       elements :"itunes:category", as: :itunes_categories, value: :text

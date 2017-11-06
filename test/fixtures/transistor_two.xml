@@ -24,6 +24,7 @@
 		<generator>https://wordpress.org/?v=4.7.1</generator>
 		<!-- podcast_generator="Blubrry PowerPress/7.0.3" mode="advanced" feedslug="podcast" -->
 		<itunes:new-feed-url>http://feeds.prx.org/transistor_stem</itunes:new-feed-url>
+		<itunes:type>episodic</itunes:type>
 		<itunes:summary>Transistor is a podcast of scientific curiosities and current events, featuring guest hosts, scientists, and story-driven reporters. Presented by radio and podcast powerhouse PRX, with support from the Sloan Foundation.</itunes:summary>
 		<itunes:author>PRX</itunes:author>
 		<itunes:explicit>clean</itunes:explicit>
@@ -78,11 +79,15 @@
 <img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" height="1" width="1" alt=""/>]]>
 			</content:encoded>
 
+			<itunes:title>Sidedoor iTunes title</itunes:title>
 			<itunes:subtitle>An astronomer has turned the night sky into a symphony.</itunes:subtitle>
 			<itunes:summary>For the next few episodes, we’re featuring the Smithsonian’s new series, Sidedoor, about where science, art, history, and humanity unexpectedly overlap — just like in their museums. In this episode: an astronomer who has turned the
 				night sky into a symphony.</itunes:summary>
 			<itunes:author>PRX</itunes:author>
 			<itunes:duration>24:46</itunes:duration>
+			<itunes:season>2</itunes:season>
+			<itunes:episode>4</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
 			<post-id xmlns="com-wordpress:feed-additions:1">1286</post-id>
 			<feedburner:origLink>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/</feedburner:origLink><enclosure url="http://feeds.prx.org/~r/transistor_stem/~5/7X0iW0LgXWg/Smithsonian3_Transistor.mp3" length="29714854" type="audio/mpeg"/>
 			<feedburner:origEnclosureLink>https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3</feedburner:origEnclosureLink>

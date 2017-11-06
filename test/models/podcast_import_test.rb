@@ -69,6 +69,7 @@ describe PodcastImport do
     importer.create_podcast
     importer.podcast.wont_be_nil
     importer.podcast.title.must_equal 'Transistor'
+    importer.podcast.serial_order.must_equal false
   end
 
   it 'creates stories' do
@@ -90,6 +91,10 @@ describe PodcastImport do
       tag.wont_be :blank?
     end
     f.tags.wont_include '\t'
+    f.clean_title.must_equal 'Sidedoor iTunes title'
+    f.season_identifier.must_equal '2'
+    f.episode_identifier.must_equal '4'
+    f.distributions.first.get_episode.itunes_type.must_equal 'full'
     f.account_id.wont_be_nil
     f.creator_id.wont_be_nil
     f.series_id.wont_be_nil
@@ -225,5 +230,9 @@ def stub_requests
   stub_request(:post, 'https://feeder.prx.org/api/v1/podcasts/51/episodes').
     with(body: /prxUri/,
          headers: { 'Authorization' => 'Bearer thisisnotatoken' }).
+    to_return(status: 200, body: json_file('transistor_episode'), headers: {})
+
+stub_request(:get, "https://feeder.prx.org/api/v1/authorization/episodes/153e6ea8-6485-4d53-9c22-bd996d0b3b03").
+    with(headers: { 'Authorization'=>'Bearer thisisnotatoken' }).
     to_return(status: 200, body: json_file('transistor_episode'), headers: {})
 end

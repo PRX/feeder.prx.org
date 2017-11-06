@@ -15,6 +15,10 @@ module Feedjira
       element :guid, value: :isPermaLink, as: :is_perma_link
       element :pubDate, as: :published
 
+      element :"itunes:title", as: :itunes_title
+      element :"itunes:season", as: :itunes_season
+      element :"itunes:episode", as: :itunes_episode
+      element :"itunes:episodeType", as: :itunes_episode_type
       element :"itunes:author", as: :itunes_author
       element :"itunes:block", as: :itunes_block
       element :"itunes:image", value: :href, as: :itunes_image

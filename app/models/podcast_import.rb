@@ -144,6 +144,7 @@ class PodcastImport < BaseModel
     podcast_attributes[:complete] = (clean_string(feed.itunes_complete) == 'yes')
     podcast_attributes[:copyright] ||= clean_string(feed.media_copyright)
     podcast_attributes[:keywords] = parse_keywords(feed)
+    podcast_attributes[:serial_order] = feed.itunes_type.downcase == 'serial'
 
     self.podcast = distribution.add_podcast_to_feeder(podcast_attributes)
     podcast
@@ -251,7 +252,10 @@ class PodcastImport < BaseModel
       short_description: clean_string(short_desc(entry)),
       description_html: entry_description(entry),
       tags: Array(entry[:categories]).map(&:strip).reject(&:blank?),
-      published_at: entry[:published]
+      published_at: entry[:published],
+      season_identifier: entry[:itunes_season],
+      episode_identifier: entry[:itunes_episode],
+      clean_title: entry[:itunes_title]
     )
 
     audio_files = []
@@ -339,6 +343,7 @@ class PodcastImport < BaseModel
     create_attributes[:keywords] = (entry[:itunes_keywords] || '').split(',').map(&:strip)
     create_attributes[:position] = entry[:itunes_order]
     create_attributes[:url] = episode_url(entry) || distro.default_url(story)
+    create_attributes[:itunes_type] = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
 
     distro.add_episode_to_feeder(create_attributes)
   end
