@@ -274,6 +274,7 @@ class PodcastImport < BaseModel
     )
 
     audio_files.each_with_index do |af, i|
+      af = af.gsub(' ', '%20')
       audio = version.audio_files.create!(label: "Segment #{i + 1}", upload: af)
       announce_audio(audio)
     end
