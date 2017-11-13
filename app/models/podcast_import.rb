@@ -144,7 +144,7 @@ class PodcastImport < BaseModel
     podcast_attributes[:complete] = (clean_string(feed.itunes_complete) == 'yes')
     podcast_attributes[:copyright] ||= clean_string(feed.media_copyright)
     podcast_attributes[:keywords] = parse_keywords(feed)
-    podcast_attributes[:serial_order] = feed.itunes_type.downcase == 'serial'
+    podcast_attributes[:serial_order] = feed.itunes_type && !!feed.itunes_type.match(/serial/i)
 
     self.podcast = distribution.add_podcast_to_feeder(podcast_attributes)
     podcast
