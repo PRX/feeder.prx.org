@@ -193,7 +193,7 @@ describe PodcastImport do
     end
 
     it 'can interpret explicit values' do
-      %w(Yes TRUE Explicit).each { |x| importer.explicit(x).must_equal 'yes' }
+      %w(Yes TRUE Explicit).each { |x| importer.explicit(x).must_equal 'explicit' }
       %w(NO False Clean).each { |x| importer.explicit(x).must_equal 'clean' }
       %w(UnClean y N 1 0).each { |x| importer.explicit(x).must_equal x.downcase }
     end
