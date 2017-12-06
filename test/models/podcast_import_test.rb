@@ -46,7 +46,7 @@ describe PodcastImport do
 
   it 'creates a series' do
     importer.feed = feed
-    importer.create_series_from_podcast
+    importer.create_or_update_series
     importer.series.wont_be_nil
     importer.series.account_id.wont_be_nil
     importer.series.title.must_equal 'Transistor'
@@ -66,54 +66,24 @@ describe PodcastImport do
     importer.feed = feed
     importer.series = series
     importer.distribution = distribution.tap { |d| d.url = nil }
-    importer.create_podcast
+    importer.create_or_update_podcast
     importer.podcast.wont_be_nil
     importer.podcast.title.must_equal 'Transistor'
     importer.podcast.serial_order.must_equal false
   end
 
-  it 'creates stories' do
+  it 'creates podcast episode imports' do
     importer.set_config_url('http://test.prx.org/transistor_import_config.json')
     importer.feed = feed
     importer.series = series
     series.audio_version_templates.clear
     importer.distribution = distribution
     importer.podcast = podcast
-    stories = importer.create_stories
-    f = stories.first
-    f.description.must_match /^For the next few episodes/
-    f.description.wont_match /<script/
-    f.description.wont_match /<iframe/
-    f.description.wont_match /feedburner/
-    f.tags.must_include 'Indie Features'
-    f.tags.each do |tag|
-      tag.wont_match /\n/
-      tag.wont_be :blank?
-    end
-    f.tags.wont_include '\t'
-    f.clean_title.must_equal 'Sidedoor iTunes title'
-    f.season_identifier.must_equal '2'
-    f.episode_identifier.must_equal '4'
-    f.distributions.first.get_episode.itunes_type.must_equal 'full'
-    f.account_id.wont_be_nil
-    f.creator_id.wont_be_nil
-    f.series_id.wont_be_nil
-    f.published_at.wont_be_nil
-    f.images.count.must_equal 1
-    f.audio_versions.count.must_equal 1
-    config_audio = 'https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3'
-    f.audio_versions.first.audio_files.first.upload.must_equal config_audio
-    version = f.audio_versions.first
-    version.audio_version_template_id.wont_be_nil
-    version.audio_version_template.segment_count.wont_be_nil
-    version.label.must_equal 'Podcast Audio'
-    version.explicit.must_be_nil
-    l = stories.last
-    l.images.count.must_equal 0
+    episode_imports = importer.create_podcast_episode_imports
+    ei = episode_imports.first
+
     importer.series.audio_version_templates.count.must_equal 2
     importer.distribution.audio_version_templates.count.must_equal 2
-    importer.templates[1].audio_file_templates.count.must_equal 1
-    importer.templates[2].audio_file_templates.count.must_equal 2
   end
 
   it 'imports a feed' do
@@ -151,18 +121,6 @@ describe PodcastImport do
     end
 
     it 'can substitute for a missing short description' do
-      item = feed.entries.first
-      importer.short_desc(item).must_equal 'An astronomer has turned the night sky into a symphony.'
-
-      item.itunes_subtitle = ''
-      importer.short_desc(item).wont_equal ''
-
-      item.itunes_subtitle = nil
-      importer.short_desc(item).must_equal 'Sidedoor from the Smithsonian: Shake it Up'
-
-      item.description = 'Some text that\'s under 50 words'
-      importer.short_desc(item).must_equal 'Some text that\'s under 50 words'
-
       importer.short_desc(feed).must_equal 'A podcast of scientific questions and stories' +
                                            ' featuring guest hosts and reporters.'
       feed.itunes_subtitle = nil
@@ -171,14 +129,6 @@ describe PodcastImport do
                                            ' at the forefront of discovery.'
       feed.description = nil
       importer.short_desc(feed).must_equal 'Transistor'
-    end
-
-    it 'can substitute for a missing description' do
-      item = feed.entries.first
-      item.description = nil
-      item.itunes_summary = nil
-      item.content = nil
-      importer.entry_description(item).wont_be :blank?
     end
 
     it 'can remove feedburner tracking pixels' do
@@ -232,7 +182,7 @@ def stub_requests
          headers: { 'Authorization' => 'Bearer thisisnotatoken' }).
     to_return(status: 200, body: json_file('transistor_episode'), headers: {})
 
-stub_request(:get, "https://feeder.prx.org/api/v1/authorization/episodes/153e6ea8-6485-4d53-9c22-bd996d0b3b03").
+  stub_request(:get, "https://feeder.prx.org/api/v1/authorization/episodes/153e6ea8-6485-4d53-9c22-bd996d0b3b03").
     with(headers: { 'Authorization'=>'Bearer thisisnotatoken' }).
     to_return(status: 200, body: json_file('transistor_episode'), headers: {})
 end
