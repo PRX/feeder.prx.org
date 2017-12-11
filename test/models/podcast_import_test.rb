@@ -79,7 +79,7 @@ describe PodcastImport do
     series.audio_version_templates.clear
     importer.distribution = distribution
     importer.podcast = podcast
-    episode_imports = importer.create_podcast_episode_imports
+    episode_imports = importer.create_or_update_episode_imports
     ei = episode_imports.first
 
     importer.series.audio_version_templates.count.must_equal 2

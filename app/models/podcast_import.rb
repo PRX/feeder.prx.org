@@ -13,13 +13,13 @@ class PodcastImport < BaseModel
 
   serialize :config, HashSerializer
 
-  attr_accessor :feed, :templates, :stories, :podcast, :distribution
+  attr_accessor :feed, :templates, :podcast, :distribution
 
   belongs_to :user, -> { with_deleted }
   belongs_to :account, -> { with_deleted }
   belongs_to :series, -> { with_deleted }
 
-  has_many :podcast_episode_imports, dependent: :destroy
+  has_many :episode_imports, dependent: :destroy
 
   before_validation :set_defaults, on: :create
 
@@ -34,6 +34,11 @@ class PodcastImport < BaseModel
   def set_defaults
     self.status ||= 'created'
     self.config ||= {}
+  end
+
+  def retry!
+    update_attributes(status: 'retrying')
+    import_later
   end
 
   def import_later
@@ -57,7 +62,7 @@ class PodcastImport < BaseModel
 
     # Create the episodes
     update_attributes(status: 'importing')
-    create_podcast_episode_imports
+    episode_imports = create_or_update_episode_imports
   rescue StandardError => err
     update_attributes(status: 'failed')
     raise err
@@ -71,23 +76,27 @@ class PodcastImport < BaseModel
     end
   end
 
-  def create_podcast_episode_imports
+  def create_or_update_episode_imports
     feed.entries.map do |entry|
       entry_hash = entry.to_h.with_indifferent_access
       audio_files = entry_audio_files(entry_hash)
       get_or_create_template(audio_files[:files].count)
-      episode_import = create_podcast_episode_import(entry_hash, audio_files)
-      PodcastEpisodeImportJob.perform_later(episode_import)
-      episode_import
+      episode_import = create_or_update_episode_import(entry_hash, audio_files)
+      episode_import.import_later
     end
   end
 
-  def create_podcast_episode_import(entry, audio_files)
-    podcast_episode_imports.create(
-      guid: entry[:entry_id],
-      entry: entry,
-      audio: audio_files
-    )
+  def create_or_update_episode_import(entry, audio_files)
+    if ei = episode_imports.where(guid: entry[:entry_id]).first
+      ei.update_attributes!(entry: entry, audio: audio_files)
+    else
+      ei = episode_imports.create(
+        guid: entry[:entry_id],
+        entry: entry,
+        audio: audio_files
+      )
+    end
+    ei
   end
 
   def get_feed
