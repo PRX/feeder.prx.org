@@ -61,7 +61,7 @@ describe StoryUpdateJob do
     end
   end
 
-  it 'can update a deleted episode' do
+  it 'will not update a deleted episode' do
     episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast, deleted_at: Time.now)
     episode.must_be :deleted?
     podcast.stub(:create_publish_task, true) do
@@ -70,7 +70,7 @@ describe StoryUpdateJob do
           episode.stub(:podcast, podcast) do
             Episode.stub(:by_prx_story, episode) do
               job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
-              job.episode.wont_be :deleted?
+              job.episode.must_be :deleted?
             end
           end
         end

@@ -50,7 +50,6 @@ class StoryUpdateJob < ActiveJob::Base
     if episode.source_updated_at && story_updated && story_updated < episode.source_updated_at
       logger.info("Not updating episode: #{episode.id} as #{story_updated} < #{episode.source_updated_at}")
     else
-      episode.restore if episode.deleted?
       self.episode = EpisodeStoryHandler.update_from_story!(episode, story)
     end
   end
