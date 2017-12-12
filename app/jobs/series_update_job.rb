@@ -43,7 +43,6 @@ class SeriesUpdateJob < ActiveJob::Base
     if podcast.source_updated_at && series_updated && series_updated < podcast.source_updated_at
       logger.info("Not updating podcast: #{podcast.id} as #{series_updated} < #{podcast.source_updated_at}")
     else
-      podcast.restore if podcast.deleted?
       self.podcast = PodcastSeriesHandler.update_from_series!(podcast, series)
     end
   end

@@ -66,7 +66,7 @@ class Episode < BaseModel
 
   def self.by_prx_story(story)
     story_uri = story.links['self'].href
-    Episode.with_deleted.find_by(prx_uri: story_uri)
+    Episode.find_by(prx_uri: story_uri)
   end
 
   def publish_updated
