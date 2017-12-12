@@ -34,7 +34,7 @@ class Podcast < BaseModel
 
   def self.by_prx_series(series)
     series_uri = series.links['self'].href
-    Podcast.with_deleted.find_by(prx_uri: series_uri)
+    Podcast.find_by(prx_uri: series_uri)
   end
 
   def set_defaults
