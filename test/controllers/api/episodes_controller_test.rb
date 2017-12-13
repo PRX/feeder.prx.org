@@ -2,9 +2,10 @@ require 'test_helper'
 
 describe Api::EpisodesController do
   let(:episode) { create(:episode) }
-  let(:episode_deleted) { create(:episode, deleted_at: Time.now) }
-  let(:episode_unpublished) { create(:episode, published_at: nil) }
   let(:podcast) { episode.podcast }
+  let(:episode_deleted) { create(:episode, deleted_at: Time.now, podcast: podcast) }
+  let(:episode_unpublished) { create(:episode, published_at: nil, podcast: podcast) }
+  let(:episode_prepublished) { create(:episode, published_at: (Time.now + 1.week), podcast: podcast) }
 
   let(:episode_hash) do
     {
@@ -45,6 +46,19 @@ describe Api::EpisodesController do
     episode.id.wont_be_nil
     get(:index, { api_version: 'v1', format: 'json' } )
     assert_response :success
+  end
+
+  it 'should not list future published' do
+    episode_unpublished.id.wont_be_nil
+    episode_prepublished.id.wont_be_nil
+    episode.id.wont_be_nil
+    get(:index, { api_version: 'v1', format: 'json' } )
+    assert_response :success
+    list = JSON.parse(response.body)
+    ids = list.dig('_embedded', 'prx:items').map{ |i| i['id'] }
+    ids.must_include(episode.guid)
+    ids.wont_include(episode_prepublished.guid)
+    ids.wont_include(episode_unpublished.guid)
   end
 
   it 'should list for podcast' do

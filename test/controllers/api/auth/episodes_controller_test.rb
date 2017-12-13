@@ -55,8 +55,14 @@ describe Api::Auth::EpisodesController do
 
   it 'should list' do
     episode.id.wont_be_nil
+    episode_unpublished.id.wont_be_nil
+    episode_unpublished.published_at.must_be_nil
     get(:index, { api_version: 'v1', format: 'json' } )
     assert_response :success
+    list = JSON.parse(response.body)
+    ids = list.dig('_embedded', 'prx:items').map{ |i| i['id'] }
+    ids.must_include(episode.guid)
+    ids.must_include(episode_unpublished.guid)
   end
 
   it 'should list for podcast' do

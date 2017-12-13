@@ -9,6 +9,14 @@ class Api::EpisodesController < Api::BaseController
   after_action :process_media, only: [:create, :update]
   after_action :publish, only: [:create, :update, :destroy]
 
+  def decorate_query(res)
+    list_scoped(super(res))
+  end
+
+  def list_scoped(res)
+    res.published
+  end
+
   def show
     super if visible?
   end
