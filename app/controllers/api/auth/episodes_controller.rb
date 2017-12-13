@@ -7,6 +7,10 @@ class Api::Auth::EpisodesController < Api::EpisodesController
   filter_resources_by :podcast_id
   find_method :find_by_guid
 
+  def list_scoped(res)
+    res
+  end
+
   def visible?
     visible = false
     if !show_resource
