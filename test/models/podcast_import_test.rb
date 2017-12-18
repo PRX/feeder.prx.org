@@ -46,7 +46,7 @@ describe PodcastImport do
 
   it 'creates a series' do
     importer.feed = feed
-    importer.create_or_update_series
+    importer.create_or_update_series!
     importer.series.wont_be_nil
     importer.series.account_id.wont_be_nil
     importer.series.title.must_equal 'Transistor'
@@ -66,7 +66,7 @@ describe PodcastImport do
     importer.feed = feed
     importer.series = series
     importer.distribution = distribution.tap { |d| d.url = nil }
-    importer.create_or_update_podcast
+    importer.create_or_update_podcast!
     importer.podcast.wont_be_nil
     importer.podcast.title.must_equal 'Transistor'
     importer.podcast.serial_order.must_equal false
@@ -79,7 +79,7 @@ describe PodcastImport do
     series.audio_version_templates.clear
     importer.distribution = distribution
     importer.podcast = podcast
-    episode_imports = importer.create_or_update_episode_imports
+    episode_imports = importer.create_or_update_episode_imports!
     ei = episode_imports.first
 
     importer.series.audio_version_templates.count.must_equal 2
