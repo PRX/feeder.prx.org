@@ -36,6 +36,15 @@ class PodcastImport < BaseModel
     self.config ||= {}
   end
 
+  def update_status!
+    return unless episode_imports.count > 0
+    if episode_imports.all? { |e| e.status == 'complete' }
+      update_attributes!(status: 'complete')
+    elsif episode_imports.any? { |e| e.status == 'failed' }
+      update_attributes!(status: 'failed')
+    end
+  end
+
   def retry!
     update_attributes(status: 'retrying')
     import_later
@@ -46,23 +55,23 @@ class PodcastImport < BaseModel
   end
 
   def import
-    update_attributes(status: 'started')
+    update_attributes!(status: 'started')
 
     # Request the RSS feed
     get_feed
-    update_attributes(status: 'feed retrieved')
+    update_attributes!(status: 'feed retrieved')
 
     # Create the series
-    create_or_update_series
-    update_attributes(status: 'series created')
+    create_or_update_series!
+    update_attributes!(status: 'series created')
 
     # Update podcast attributes
-    create_or_update_podcast
-    update_attributes(status: 'podcast created')
+    create_or_update_podcast!
+    update_attributes!(status: 'podcast created')
 
     # Create the episodes
-    update_attributes(status: 'importing')
-    episode_imports = create_or_update_episode_imports
+    update_attributes!(status: 'importing')
+    episode_imports = create_or_update_episode_imports!
   rescue StandardError => err
     update_attributes(status: 'failed')
     raise err
@@ -76,17 +85,17 @@ class PodcastImport < BaseModel
     end
   end
 
-  def create_or_update_episode_imports
+  def create_or_update_episode_imports!
     feed.entries.map do |entry|
       entry_hash = entry.to_h.with_indifferent_access
       audio_files = entry_audio_files(entry_hash)
       get_or_create_template(audio_files[:files].count)
-      episode_import = create_or_update_episode_import(entry_hash, audio_files)
+      episode_import = create_or_update_episode_import!(entry_hash, audio_files)
       episode_import.import_later
     end
   end
 
-  def create_or_update_episode_import(entry, audio_files)
+  def create_or_update_episode_import!(entry, audio_files)
     if ei = episode_imports.where(guid: entry[:entry_id]).first
       ei.update_attributes!(entry: entry, audio: audio_files)
     else
@@ -118,7 +127,7 @@ class PodcastImport < BaseModel
     clean_text(result)
   end
 
-  def create_or_update_series(feed = self.feed)
+  def create_or_update_series!(feed = self.feed)
     # create the series
 
     series_attributes = {
@@ -170,7 +179,7 @@ class PodcastImport < BaseModel
     self.distribution ||= series.distributions.where(type: 'Distributions::PodcastDistribution').first
   end
 
-  def create_or_update_podcast
+  def create_or_update_podcast!
     podcast_attributes = {}
     %w(copyright language update_frequency update_period).each do |atr|
       podcast_attributes[atr.to_sym] = clean_string(feed.send(atr))
@@ -199,7 +208,7 @@ class PodcastImport < BaseModel
     podcast_attributes[:keywords] = parse_keywords(feed)
     podcast_attributes[:serial_order] = feed.itunes_type && !!feed.itunes_type.match(/serial/i)
 
-    self.podcast = podcast_distribution.create_or_update_podcast(podcast_attributes)
+    self.podcast = podcast_distribution.create_or_update_podcast!(podcast_attributes)
     podcast
   end
 

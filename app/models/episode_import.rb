@@ -19,6 +19,7 @@ class EpisodeImport < BaseModel
   has_one :series, through: :podcast_import
 
   before_validation :set_defaults, on: :create
+  after_commit :update_import_status
 
   validates :entry, :guid, presence: true
 
@@ -32,6 +33,13 @@ class EpisodeImport < BaseModel
     self.audio ||= { files: [] }
   end
 
+  def update_import_status
+    return unless podcast_import
+    podcast_import.with_lock do
+      podcast_import.update_status!
+    end
+  end
+
   def import_later
     EpisodeImportJob.perform_later self
     self
@@ -39,10 +47,11 @@ class EpisodeImport < BaseModel
 
   def import
     create_or_update_story!
-    update_attributes(status: 'story saved', piece_id: story.id)
+    update_attributes!(status: 'story saved', piece_id: story.id)
     create_or_update_episode!
-    update_attributes(status: 'episode saved')
+    update_attributes!(status: 'episode saved')
     story.save!
+    update_attributes!(status: 'complete')
     story
   rescue StandardError => err
     update_attributes(status: 'failed')
