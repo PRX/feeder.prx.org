@@ -25,7 +25,7 @@ class PodcastImport < BaseModel
 
   validates :user_id, :account_id, :url, presence: true
 
-  def set_config_url(config_url)
+  def config_url=(config_url)
     c_url = Addressable::URI.parse(config_url)
     response = connection(c_url).get(c_url.path, c_url.query_values)
     self.config = ActiveSupport::JSON.decode(response.body).try(:with_indifferent_access)
@@ -71,7 +71,7 @@ class PodcastImport < BaseModel
 
     # Create the episodes
     update_attributes!(status: 'importing')
-    episode_imports = create_or_update_episode_imports!
+    create_or_update_episode_imports!
   rescue StandardError => err
     update_attributes(status: 'failed')
     raise err
@@ -134,7 +134,7 @@ class PodcastImport < BaseModel
       app_version: PRX::APP_VERSION,
       account: account,
       title: clean_string(feed.title),
-      short_description: clean_string(short_desc(feed)),
+      short_description: clean_string(podcast_short_desc(feed)),
       description_html: feed_description(feed)
     }
 
@@ -300,6 +300,12 @@ class PodcastImport < BaseModel
     end
 
     template
+  end
+
+  def podcast_short_desc(item)
+    [item.itunes_subtitle, item.description, item.title].find do |field|
+      !field.blank? && field.split.length < 50
+    end
   end
 
   def uri
