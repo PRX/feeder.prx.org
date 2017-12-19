@@ -44,11 +44,11 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
 
   collection :media_files,
     as: :media,
-    decorator: MediaResourceRepresenter,
+    decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
   collection :images,
-    decorator: ImageRepresenter,
+    decorator: Api::ImageRepresenter,
     class: EpisodeImage
 
   def self_url(episode)
