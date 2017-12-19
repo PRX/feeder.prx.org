@@ -5,8 +5,10 @@ aws:
   secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
   region:            <%= ENV['AWS_REGION'] %>
   account_id:        <%= ENV['AWS_ACCOUNT_ID'] %>
-concurrency:         25 # The number of allocated threads to process messages. Default 25
-delay:               30 # The delay in seconds to pause a queue when it's empty. Default 0
+# The number of allocated threads to process messages. Default 25
+concurrency:         <%= ENV['WORKER_COUNT'] || 25 %>
+# The delay in seconds to pause a queue when it's empty. Default 0
+delay:               <%= ENV['WORKER_PAUSE'] || 30 %>
 queues:
   - [<%= env %>_feeder_default, 2]
   - [<%= env %>_feeder_fixer_callback, 1]
