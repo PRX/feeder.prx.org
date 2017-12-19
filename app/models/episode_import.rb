@@ -72,7 +72,7 @@ class EpisodeImport < BaseModel
     story.creator_id = podcast_import.user_id
     story.account_id = series.account_id
     story.title = clean_string(entry[:title])
-    story.short_description = clean_string(short_desc(entry))
+    story.short_description = clean_string(episode_short_desc(entry))
     story.description_html = entry_description(entry)
     story.tags = Array(entry[:categories]).map(&:strip).reject(&:blank?)
     story.published_at = entry[:published]
@@ -114,6 +114,8 @@ class EpisodeImport < BaseModel
       new_image = story.images.build(upload: entry[:itunes_image])
       to_insert << new_image
     end
+
+    story.images.destroy(to_destroy) if to_destroy.size > 0
 
     to_insert
   end
@@ -186,10 +188,8 @@ class EpisodeImport < BaseModel
     [:content, :itunes_summary, :description, :title].find { |d| !entry[d].blank? }
   end
 
-
   def get_or_create_template(segments)
-    num_segments = [segments.to_i, 1].max
-    podcast_import.get_or_create_template(num_segments)
+    podcast_import.get_or_create_template(segments)
   end
 
   def enclosure_url(entry)
@@ -238,45 +238,10 @@ class EpisodeImport < BaseModel
     (clean_string(entry[:itunes_is_closed_captioned]) == 'yes')
   end
 
-  def explicit(str)
-    return nil if str.blank?
-    explicit = clean_string(str).downcase
-    if %w(true yes).include?(explicit)
-      explicit = 'explicit'
-    elsif %w(no false).include?(explicit)
-      explicit = 'clean'
-    end
-    explicit
-  end
-
-  def short_desc(item)
+  def episode_short_desc(item)
     [item[:itunes_subtitle], item[:description], item[:title]].find do |field|
       !field.blank? && field.split.length < 50
     end
-  end
-
-  def clean_string(str)
-    return nil if str.blank?
-    return str if !str.is_a?(String)
-    str.strip
-  end
-
-  def clean_text(text)
-    return nil if text.blank?
-    result = remove_feedburner_tracker(text)
-    sanitize_html(result)
-  end
-
-  def remove_feedburner_tracker(str)
-    return nil if str.blank?
-    regex = /<img src="http:\/\/feeds\.feedburner\.com.+" height="1" width="1" alt=""\/>/
-    str.sub(regex, '').strip
-  end
-
-  def sanitize_html(text)
-    return nil if text.blank?
-    sanitizer = Rails::Html::WhiteListSanitizer.new
-    sanitizer.sanitize(Loofah.fragment(text).scrub!(:prune).to_s).strip
   end
 
   def uri
