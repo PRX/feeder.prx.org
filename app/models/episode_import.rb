@@ -170,15 +170,6 @@ class EpisodeImport < BaseModel
     to_insert
   end
 
-  def files_match?(file, url)
-    if file.upload_path
-      file.upload_path == url
-    else
-      filename = URI.parse(url || '').path.split('/').last
-      file.filename == filename
-    end
-  end
-
   def entry_description(entry)
     atr = entry_description_attribute(entry)
     clean_text(entry[atr])

@@ -71,6 +71,15 @@ module ImportUtils
     sanitizer.sanitize(Loofah.fragment(text).scrub!(:prune).to_s).strip
   end
 
+  def files_match?(file, url)
+    if file.upload_path
+      file.upload_path == url
+    else
+      filename = URI.parse(url || '').path.split('/').last
+      file.filename == filename
+    end
+  end
+
   def announce_image(image)
     announce('image', 'create', Api::Msg::ImageRepresenter.new(image).to_json)
   end
