@@ -128,8 +128,6 @@ class PodcastImport < BaseModel
   end
 
   def create_or_update_series!(feed = self.feed)
-    # create the series
-
     series_attributes = {
       app_version: PRX::APP_VERSION,
       account: account,
@@ -145,34 +143,47 @@ class PodcastImport < BaseModel
       save!
     end
 
-    # Add images to the series
-    if feed.itunes_image.blank?
-      series.images.where(purpose: Image::PROFILE).destroy_all
-    else
-      image = series.images.create!(
-        upload: clean_string(feed.itunes_image),
-        purpose: Image::PROFILE
-      )
-      announce_image(image)
-    end
-
-    if !feed.image || feed.image.url.blank?
-      series.images.where(purpose: Image::THUMBNAIL).destroy_all
-    else
-      image = series.images.create!(
-        upload: clean_string(feed.image.url),
-        purpose: Image::THUMBNAIL
-      )
-      announce_image(image)
-    end
-
     if !podcast_distribution
-      self.distribution = Distributions::PodcastDistribution.create!(
-        distributable: series
-      )
+      self.distribution = Distributions::PodcastDistribution.create!(distributable: series)
     end
+
+    new_images = update_images(feed)
+
+    series.save!
+
+    new_images.each { |i| announce_image(i) }
 
     series
+  end
+
+  def update_images(feed)
+    [[Image::PROFILE, feed.itunes_image], [Image::THUMBNAIL, feed.image.try(:url)]].map do |p, u|
+      update_image(p, u)
+    end.flatten
+  end
+
+  def update_image(purpose, image_url)
+    if image_url.blank?
+      series.images.where(purpose: purpose).destroy_all
+      return []
+    end
+
+    to_destroy = []
+    to_insert = []
+
+    existing_image = series.images.send(purpose)
+    if existing_image && !files_match?(existing_image, image_url)
+      to_destroy << existing_image
+      existing_image = nil
+    end
+
+    if !existing_image
+      to_insert << series.images.build(upload: clean_string(image_url), purpose: purpose)
+    end
+
+    story.images.destroy(to_destroy) if to_destroy.size > 0
+
+    to_insert
   end
 
   def podcast_distribution
