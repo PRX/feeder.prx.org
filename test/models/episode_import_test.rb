@@ -14,17 +14,21 @@ describe EpisodeImport do
            url: 'https://feeder.prx.org/api/v1/podcasts/51')
   end
 
-  let(:podcast_url) { 'http://feeds.prx.org/transistor_stem' }
-  let(:importer) { PodcastImport.create(user: user, account: account, url: podcast_url, series: series) }
-  let(:episode_import) { EpisodeImport.create!(
-                                                      podcast_import: importer,
-                                                      audio: { files: ['https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3'] },
-                                                      entry: entry.to_h,
-                                                      guid: 'https://transistor.prx.org/?p=1286'
-                                                     ) }
+  let(:importer) { create(:podcast_import, user: user, account: account, series: series) }
 
   let(:feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor_two.xml')) }
   let(:entry) { feed.entries.first }
+
+  let(:episode_import) do
+    EpisodeImport.create!(
+      podcast_import: importer,
+      audio: {
+        files: ['https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3']
+      },
+      entry: entry.to_h,
+      guid: 'https://transistor.prx.org/?p=1286'
+    )
+  end
 
   let(:podcast) do
     api_resource(JSON.parse(json_file('transistor_podcast_basic')), feeder_root).tap do |r|
@@ -83,16 +87,16 @@ describe EpisodeImport do
 
     it 'can substitute for a missing short description' do
       e = entry.to_h.with_indifferent_access
-      episode_import.short_desc(e).must_equal 'An astronomer has turned the night sky into a symphony.'
+      episode_import.episode_short_desc(e).must_equal 'An astronomer has turned the night sky into a symphony.'
 
       e[:itunes_subtitle] = ''
-      episode_import.short_desc(e).wont_equal ''
+      episode_import.episode_short_desc(e).wont_equal ''
 
       e[:itunes_subtitle] = nil
-      episode_import.short_desc(e).must_equal 'Sidedoor from the Smithsonian: Shake it Up'
+      episode_import.episode_short_desc(e).must_equal 'Sidedoor from the Smithsonian: Shake it Up'
 
       e[:description] = 'Some text that\'s under 50 words'
-      episode_import.short_desc(e).must_equal 'Some text that\'s under 50 words'
+      episode_import.episode_short_desc(e).must_equal 'Some text that\'s under 50 words'
     end
 
     it 'can substitute for a missing description' do
