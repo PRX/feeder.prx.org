@@ -17,14 +17,14 @@ Shoryuken.default_worker_options =  {
   'body_parser'             => :json
 }
 
-Shoryuken.configure_server do |config|
+Shoryuken.configure_server do |_config|
   Rails.logger = Shoryuken::Logging.logger
   ActiveJob::Base.logger = Shoryuken::Logging.logger
   ActiveRecord::Base.logger = Shoryuken::Logging.logger
 end
 
 begin
-  Shoryuken.configure_client do |config|
+  Shoryuken.configure_client do |_config|
     unless Rails.env.test?
       config_file = File.join(Rails.root, 'config', 'shoryuken.yml')
       Shoryuken::EnvironmentLoader.load(config_file: config_file)
