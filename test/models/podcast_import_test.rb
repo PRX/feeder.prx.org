@@ -34,7 +34,7 @@ describe PodcastImport do
   end
 
   it 'retrieves a config' do
-    importer.set_config_url('http://test.prx.org/transistor_import_config.json')
+    importer.config_url = 'http://test.prx.org/transistor_import_config.json'
     importer.config[:program].must_equal 'transistor_stem'
     importer.config[:audio]['https://transistor.prx.org/?p=1286'].count.must_equal 2
   end
@@ -73,7 +73,7 @@ describe PodcastImport do
   end
 
   it 'creates podcast episode imports' do
-    importer.set_config_url('http://test.prx.org/transistor_import_config.json')
+    importer.config_url = 'http://test.prx.org/transistor_import_config.json'
     importer.feed = feed
     importer.series = series
     series.audio_version_templates.clear
@@ -121,14 +121,14 @@ describe PodcastImport do
     end
 
     it 'can substitute for a missing short description' do
-      importer.short_desc(feed).must_equal 'A podcast of scientific questions and stories' +
-                                           ' featuring guest hosts and reporters.'
+      importer.podcast_short_desc(feed).must_equal 'A podcast of scientific questions and stories' +
+                                                   ' featuring guest hosts and reporters.'
       feed.itunes_subtitle = nil
-      importer.short_desc(feed).must_equal 'A podcast of scientific questions and stories,' +
-                                           ' with many episodes hosted by key scientists' +
-                                           ' at the forefront of discovery.'
+      importer.podcast_short_desc(feed).must_equal 'A podcast of scientific questions and stories,' +
+                                                   ' with many episodes hosted by key scientists' +
+                                                   ' at the forefront of discovery.'
       feed.description = nil
-      importer.short_desc(feed).must_equal 'Transistor'
+      importer.podcast_short_desc(feed).must_equal 'Transistor'
     end
 
     it 'can remove feedburner tracking pixels' do
