@@ -27,12 +27,6 @@ module ImportUtils
     explicit
   end
 
-  def short_desc(item)
-    [item.itunes_subtitle, item.description, item.title].find do |field|
-      !field.blank? && field.split.length < 50
-    end
-  end
-
   def person(arg)
     return nil if arg.blank?
 
