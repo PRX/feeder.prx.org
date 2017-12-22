@@ -196,10 +196,6 @@ class PodcastImport < BaseModel
       podcast_attributes[atr.to_sym] = clean_string(feed.send(atr))
     end
 
-    if config[:program]
-      podcast_attributes[:path] = config[:program]
-    end
-
     podcast_attributes[:summary] = clean_text(feed.itunes_summary)
     podcast_attributes[:link] = clean_string(feed.url)
     podcast_attributes[:explicit] = explicit(feed.itunes_explicit)
