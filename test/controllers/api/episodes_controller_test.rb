@@ -103,6 +103,23 @@ describe Api::EpisodesController do
       c.original_url.must_equal 'https://s3.amazonaws.com/prx-testing/test/audio1.mp3'
     end
 
+    it 'can update on create of a new episode' do
+      ep = create(:episode, published_at: (Time.now + 1.week), podcast: podcast, prx_uri: '/api/v1/stories/123')
+      @controller.stub(:publish, true) do
+        @controller.stub(:process_media, true) do
+          post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
+        end
+      end
+      assert_response :success
+      id = JSON.parse(response.body)['id']
+      new_episode = Episode.find_by_guid(id)
+      ep.id.must_equal new_episode.id
+
+      new_episode.all_contents.count.must_equal 3
+      c = new_episode.all_contents.first
+      c.original_url.must_equal 'https://s3.amazonaws.com/prx-testing/test/audio1.mp3'
+    end
+
     it 'can update audio on an episode' do
       update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/test/change1.mp3' }] }
 

@@ -9,6 +9,21 @@ class Api::EpisodesController < Api::BaseController
   after_action :process_media, only: [:create, :update]
   after_action :publish, only: [:create, :update, :destroy]
 
+  def create
+    res = create_resource
+    consume! res, create_options
+
+    if !res.prx_uri.blank? && existing_res = Episode.find_by(prx_uri: res.prx_uri)
+      res = existing_res
+      consume! res, create_options
+    end
+
+    hal_authorize res
+    res.save!
+    respond_with root_resource(res), create_options
+    res
+  end
+
   def decorate_query(res)
     list_scoped(super(res))
   end
