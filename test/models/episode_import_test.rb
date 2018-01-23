@@ -18,6 +18,7 @@ describe EpisodeImport do
 
   let(:feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor_two.xml')) }
   let(:entry) { feed.entries.first }
+  let(:entry_libsyn) { feed.entries.last }
 
   let(:episode_import) do
     EpisodeImport.create!(
@@ -27,6 +28,17 @@ describe EpisodeImport do
       },
       entry: entry.to_h,
       guid: 'https://transistor.prx.org/?p=1286'
+    )
+  end
+
+  let(:libsyn_episode_import) do
+    EpisodeImport.create!(
+      podcast_import: importer,
+      audio: {
+        files: ['https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3']
+      },
+      entry: entry.to_h,
+      guid: 'https://transistor.prx.org/?p=1287'
     )
   end
 
@@ -69,6 +81,11 @@ describe EpisodeImport do
     version.audio_version_template.segment_count.wont_be_nil
     version.label.must_equal 'Podcast Audio'
     version.explicit.must_be_nil
+  end
+
+  it 'creates correctly for libsyn entries' do
+    s = libsyn_episode_import.import
+    s.distributions.count.must_equal 1
   end
 
   describe 'helper methods' do

@@ -201,7 +201,7 @@ class EpisodeImport < BaseModel
     episode_attributes[:is_perma_link] = entry[:is_perma_link]
     episode_attributes[:keywords] = (entry[:itunes_keywords] || '').split(',').map(&:strip)
     episode_attributes[:position] = entry[:itunes_order]
-    episode_attributes[:url] = episode_url(entry) || distro.default_url(story)
+    episode_attributes[:url] = episode_url(entry) || default_story_url(story)
     episode_attributes[:itunes_type] = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
 
     # if there is a distro, and an episode, then announce will sync changes

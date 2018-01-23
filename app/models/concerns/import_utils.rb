@@ -17,6 +17,10 @@ module ImportUtils
     clean_string(url)
   end
 
+  def default_story_url(story)
+    StoryDistributions::EpisodeDistribution.default_story_url(story)
+  end
+
   def explicit(str)
     return nil if str.blank?
     explicit = clean_string(str).downcase

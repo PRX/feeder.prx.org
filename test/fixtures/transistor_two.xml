@@ -89,7 +89,8 @@
 			<itunes:episode>4</itunes:episode>
 			<itunes:episodeType>full</itunes:episodeType>
 			<post-id xmlns="com-wordpress:feed-additions:1">1286</post-id>
-			<feedburner:origLink>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/</feedburner:origLink><enclosure url="http://feeds.prx.org/~r/transistor_stem/~5/7X0iW0LgXWg/Smithsonian3_Transistor.mp3" length="29714854" type="audio/mpeg"/>
+			<feedburner:origLink>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/</feedburner:origLink>
+			<enclosure url="http://feeds.prx.org/~r/transistor_stem/~5/7X0iW0LgXWg/Smithsonian3_Transistor.mp3" length="29714854" type="audio/mpeg"/>
 			<feedburner:origEnclosureLink>https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3</feedburner:origEnclosureLink>
 			<itunes:image href="https://cdn-transistor.prx.org/shake.jpg"/>
 		</item>
@@ -117,7 +118,8 @@
 			<itunes:author>PRX</itunes:author>
 			<itunes:duration>24:46</itunes:duration>
 			<post-id xmlns="com-wordpress:feed-additions:1">1286</post-id>
-			<feedburner:origLink>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/</feedburner:origLink><enclosure url="http://feeds.prx.org/~r/transistor_stem/~5/7X0iW0LgXWg/Smithsonian3_Transistor.mp3" length="29714854" type="audio/mpeg"/>
+			<feedburner:origLink>https://libsyn.com/2017/01/sidedoor-from-the-smithsonian-shake-it-up/</feedburner:origLink>
+			<enclosure url="http://feeds.prx.org/~r/transistor_stem/~5/7X0iW0LgXWg/Smithsonian3_Transistor.mp3" length="29714854" type="audio/mpeg"/>
 			<feedburner:origEnclosureLink>https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3</feedburner:origEnclosureLink>
 			<itunes:image href="https://cdn-transistor.prx.org/transistor1400.jpg"/>
 		</item>
