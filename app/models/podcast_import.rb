@@ -87,12 +87,19 @@ class PodcastImport < BaseModel
 
   def create_or_update_episode_imports!
     feed.entries.map do |entry|
-      entry_hash = entry.to_h.with_indifferent_access
+      entry_hash = feed_entry_to_hash(entry)
       audio_files = entry_audio_files(entry_hash)
       get_or_create_template(audio_files[:files].count)
       episode_import = create_or_update_episode_import!(entry_hash, audio_files)
       episode_import.import_later
     end
+  end
+
+  def feed_entry_to_hash(entry)
+    entry
+      .to_h
+      .with_indifferent_access
+      .transform_values { |x| x.is_a?(String) ? remove_utf8_4byte(x) : x }
   end
 
   def create_or_update_episode_import!(entry, audio_files)

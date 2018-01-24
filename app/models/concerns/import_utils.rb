@@ -62,7 +62,11 @@ module ImportUtils
     return nil if text.blank?
     result = remove_feedburner_tracker(text)
     result = sanitize_html(result)
-    result.each_char.select { |char| char.bytesize < 4 }.join('')
+    remove_utf8_4byte(result)
+  end
+
+  def remove_utf8_4byte(str)
+    str.each_char.select { |char| char.bytesize < 4 }.join('')
   end
 
   def remove_feedburner_tracker(str)
