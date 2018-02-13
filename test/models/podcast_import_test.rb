@@ -110,7 +110,6 @@ describe PodcastImport do
     end
 
     it 'imports with a series and podcast' do
-      # series.distributions << create(:podcast_distribution, distributable: series)
       importer.series = series
       importer.import
     end
