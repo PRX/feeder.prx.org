@@ -6,6 +6,7 @@ describe PodcastImport do
 
   let(:user) { create(:user) }
   let(:account) { create(:account, id: 8, opener: user) }
+  let(:series) { create(:series, account: account) }
   let(:podcast_url) { 'http://feeds.prx.org/transistor_stem' }
   let(:importer) { PodcastImport.create(user: user, account: account, url: podcast_url) }
 
@@ -88,6 +89,31 @@ describe PodcastImport do
 
   it 'imports a feed' do
     importer.import
+  end
+
+  describe 'episodes only' do
+
+    before {
+      importer.config[:episodes_only] = true
+    }
+
+    it 'must have series set' do
+      exception = -> { importer.import }.must_raise(RuntimeError)
+      exception.message.must_be :start_with?, 'No series'
+    end
+
+    it 'must have podcast distribution' do
+      series.distributions.delete_all
+      importer.series = series
+      exception = -> { importer.import }.must_raise(RuntimeError)
+      exception.message.must_be :start_with?, 'No podcast distribution'
+    end
+
+    it 'imports with a series and podcast' do
+      # series.distributions << create(:podcast_distribution, distributable: series)
+      importer.series = series
+      importer.import
+    end
   end
 
   describe 'helper methods' do
@@ -185,4 +211,8 @@ def stub_requests
   stub_request(:get, "https://feeder.prx.org/api/v1/authorization/episodes/153e6ea8-6485-4d53-9c22-bd996d0b3b03").
     with(headers: { 'Authorization'=>'Bearer thisisnotatoken' }).
     to_return(status: 200, body: json_file('transistor_episode'), headers: {})
+
+  stub_request(:get, "https://feeder.prx.org/api/v1/podcasts/23").
+    with(headers: { 'Authorization' => 'Bearer thisisnotatoken' }).
+    to_return(status: 200, body: json_file('transistor_podcast_basic'), headers: {})
 end

@@ -33,7 +33,10 @@ class PodcastImport < BaseModel
 
   def set_defaults
     self.status ||= 'created'
-    self.config ||= {}
+    self.config ||= {
+      audio: {},            # map of guids to array of audio file urls
+      episodes_only: false  # indicates if podcast and series should be updated
+    }
   end
 
   def update_status!
@@ -135,6 +138,11 @@ class PodcastImport < BaseModel
   end
 
   def create_or_update_series!(feed = self.feed)
+    if config[:episodes_only]
+      raise "No series for import of episodes only" if !series
+      return series
+    end
+
     series_attributes = {
       app_version: PRX::APP_VERSION,
       account: account,
@@ -198,6 +206,14 @@ class PodcastImport < BaseModel
   end
 
   def create_or_update_podcast!
+    if config[:episodes_only]
+      raise "No podcast distribution for import of episodes only" if !podcast_distribution
+      raise "No podcast distribution url for import of episodes only" if !podcast_distribution.url
+      self.podcast = podcast_distribution.get_podcast
+      raise "No podcast for import of episodes only" if !podcast
+      return podcast
+    end
+
     podcast_attributes = {}
     %w(copyright language update_frequency update_period).each do |atr|
       podcast_attributes[atr.to_sym] = clean_string(feed.send(atr))
