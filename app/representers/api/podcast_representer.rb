@@ -29,6 +29,8 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :copyright
   property :language
 
+  property :locked
+
   nested :owner do
     property :owner_name, as: :name
     property :owner_email, as: :email

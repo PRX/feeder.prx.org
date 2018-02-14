@@ -107,7 +107,7 @@ class Podcast < BaseModel
   end
 
   def publish!
-    create_publish_task
+    create_publish_task unless locked?
   end
 
   def copy_media(force = false)
