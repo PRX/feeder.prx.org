@@ -14,6 +14,13 @@ describe PodcastsController do
     response.status.to_i.must_equal 302
   end
 
+  it 'does not redirect if the podcast is locked but param unlock' do
+    @podcast.update_attribute(:locked, true)
+    get :show, id: @podcast.id, format: 'rss', unlock: true
+
+    response.status.to_i.must_equal 200
+  end
+
   it 'returns a fresh version of the podcast when it has been updated' do
     @request.headers["HTTP_IF_MODIFIED_SINCE"] = 1.day.ago.strftime('%a, %d %b %Y %H:%M:%S %Z')
     get :show, id: @podcast.id, format: 'rss'
