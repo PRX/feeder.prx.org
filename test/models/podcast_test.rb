@@ -51,6 +51,27 @@ describe Podcast do
     podcast.reload.published_at.wont_be_nil
   end
 
+  describe 'publishing' do
+
+    before(:each) { podcast.tasks.delete_all }
+
+    it 'creates a publish task on publish' do
+      Task.stub :new_fixer_sqs_client, SqsMock.new do
+        podcast.tasks.count.must_equal 0
+        podcast.publish!
+        podcast.tasks(true).count.must_equal 1
+        podcast.tasks.first.must_be :is_a?, Tasks::PublishFeedTask
+      end
+    end
+
+    it 'wont create a publish task when podcast is locked' do
+      podcast.tasks.count.must_equal 0
+      podcast.locked = true
+      podcast.publish!
+      podcast.tasks(true).count.must_equal 0
+    end
+  end
+
   describe 'episode limit' do
     let(:episodes) { create_list(:episode, 10, podcast: podcast).reverse }
 
