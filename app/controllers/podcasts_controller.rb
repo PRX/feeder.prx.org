@@ -3,7 +3,7 @@ class PodcastsController < ApplicationController
     @podcast = Podcast.find(podcast_params)
 
     if @podcast.locked?
-      redirect_to published_url
+      redirect_to @podcast.published_url
     else
       if stale?(last_modified: @podcast.updated_at.utc, etag: @podcast.cache_key)
         @episodes = @podcast.feed_episodes
