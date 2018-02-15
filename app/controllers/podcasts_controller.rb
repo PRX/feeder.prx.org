@@ -2,8 +2,12 @@ class PodcastsController < ApplicationController
   def show
     @podcast = Podcast.find(podcast_params)
 
-    if stale?(last_modified: @podcast.updated_at.utc, etag: @podcast.cache_key)
-      @episodes = @podcast.feed_episodes
+    if @podcast.locked? && !params[:unlock]
+      redirect_to @podcast.published_url
+    else
+      if stale?(last_modified: @podcast.updated_at.utc, etag: @podcast.cache_key)
+        @episodes = @podcast.feed_episodes
+      end
     end
   end
 
