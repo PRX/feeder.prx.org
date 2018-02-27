@@ -22,6 +22,7 @@ describe PodcastImport do
            distributable: series,
            url: 'https://feeder.prx.org/api/v1/podcasts/51')
   end
+  let(:feed_with_video) { Feedjira::Feed.parse(test_file('/fixtures/99pi-feed-rss.xml')) }
 
   let(:podcast) do
     api_resource(JSON.parse(json_file('transistor_podcast_basic')), feeder_root).tap do |r|
@@ -89,6 +90,21 @@ describe PodcastImport do
 
   it 'imports a feed' do
     importer.import
+  end
+
+  it 'handles audio and video templates in episodes' do
+    importer.feed = feed_with_video
+    importer.series = series
+    series.audio_version_templates.clear
+    importer.distribution = distribution
+    importer.podcast = podcast
+
+    importer.create_or_update_episode_imports!
+
+    importer.series.audio_version_templates.count.must_equal 2
+    importer.distribution.audio_version_templates.count.must_equal 2
+    importer.series.audio_version_templates.
+      select { |avt| avt.content_type == AudioFile::VIDEO_CONTENT_TYPE }.count.must_equal 1
   end
 
   describe 'episodes only' do

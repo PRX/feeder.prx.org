@@ -127,7 +127,7 @@ class EpisodeImport < BaseModel
     end
 
     if story.audio_versions.blank?
-      template = get_or_create_template(audio[:files].size)
+      template = get_or_create_template(audio, entry['enclosure']['type'])
       version = story.audio_versions.build(
         audio_version_template: template,
         label: 'Podcast Audio',
@@ -179,8 +179,8 @@ class EpisodeImport < BaseModel
     [:content, :itunes_summary, :description, :title].find { |d| !entry[d].blank? }
   end
 
-  def get_or_create_template(segments)
-    podcast_import.get_or_create_template(segments)
+  def get_or_create_template(segments, enclosure)
+    podcast_import.get_or_create_template(segments, enclosure)
   end
 
   def enclosure_url(entry)

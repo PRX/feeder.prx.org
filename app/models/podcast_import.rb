@@ -92,7 +92,7 @@ class PodcastImport < BaseModel
     feed.entries.map do |entry|
       entry_hash = feed_entry_to_hash(entry)
       audio_files = entry_audio_files(entry_hash)
-      get_or_create_template(audio_files)
+      get_or_create_template(audio_files, entry_hash['enclosure'].type)
       episode_import = create_or_update_episode_import!(entry_hash, audio_files)
       episode_import.import_later
     end
@@ -297,17 +297,19 @@ class PodcastImport < BaseModel
     (ikey + mkey).compact.uniq
   end
 
-  def get_or_create_template(audio_files)
-    pp audio_files
+  def get_or_create_template(audio_files, enclosure_type=nil)
     num_segments = [audio_files[:files].count, 1].max
     template = nil
+    contains_video = enclosure_type && enclosure_type.starts_with?('video/')
+    content_type = contains_video ? AudioFile::VIDEO_CONTENT_TYPE : AudioFile::MP3_CONTENT_TYPE
 
     self.series.with_lock do
-      template = series.audio_version_templates.where(segment_count: num_segments).first
+      template = series.audio_version_templates.
+                 where(segment_count: num_segments, content_type: content_type).first
       if !template
         template = series.audio_version_templates.create!(
-          label: "Podcast Audio #{num_segments} #{'segment'.pluralize(num_segments)}",
-          content_type: AudioFile::MP3_CONTENT_TYPE,
+          label: podcast_label(contains_video, num_segments),
+          content_type: content_type,
           segment_count: num_segments,
           promos: false,
           length_minimum: 0,
@@ -332,6 +334,12 @@ class PodcastImport < BaseModel
     end
 
     template
+  end
+
+  def podcast_label(contains_video, num_segments)
+    label = contains_video ? 'Podcast Video' : 'Podcast Audio'
+    label += " #{num_segments} #{'segment'.pluralize(num_segments)}"
+    label
   end
 
   def podcast_short_desc(item)
