@@ -92,7 +92,7 @@ class PodcastImport < BaseModel
     feed.entries.map do |entry|
       entry_hash = feed_entry_to_hash(entry)
       audio_files = entry_audio_files(entry_hash)
-      get_or_create_template(audio_files[:files].count)
+      get_or_create_template(audio_files)
       episode_import = create_or_update_episode_import!(entry_hash, audio_files)
       episode_import.import_later
     end
@@ -297,8 +297,9 @@ class PodcastImport < BaseModel
     (ikey + mkey).compact.uniq
   end
 
-  def get_or_create_template(segments)
-    num_segments = [segments.to_i, 1].max
+  def get_or_create_template(audio_files)
+    pp audio_files
+    num_segments = [audio_files[:files].count, 1].max
     template = nil
 
     self.series.with_lock do
@@ -306,6 +307,7 @@ class PodcastImport < BaseModel
       if !template
         template = series.audio_version_templates.create!(
           label: "Podcast Audio #{num_segments} #{'segment'.pluralize(num_segments)}",
+          content_type: AudioFile::MP3_CONTENT_TYPE,
           segment_count: num_segments,
           promos: false,
           length_minimum: 0,
