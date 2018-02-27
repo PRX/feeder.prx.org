@@ -297,7 +297,7 @@ class PodcastImport < BaseModel
     (ikey + mkey).compact.uniq
   end
 
-  def get_or_create_template(audio_files, enclosure_type=nil)
+  def get_or_create_template(audio_files, enclosure_type = nil)
     num_segments = [audio_files[:files].count, 1].max
     template = nil
     contains_video = enclosure_type && enclosure_type.starts_with?('video/')
