@@ -72,6 +72,7 @@ describe PodcastImport do
     importer.podcast.wont_be_nil
     importer.podcast.title.must_equal 'Transistor'
     importer.podcast.serial_order.must_equal false
+    importer.podcast.locked.must_equal true
   end
 
   it 'creates podcast episode imports' do

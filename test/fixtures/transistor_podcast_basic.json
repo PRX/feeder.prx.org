@@ -2,6 +2,7 @@
   "id": 51,
   "title": "Transistor",
   "serialOrder": false,
+  "locked": true,
   "_links": {
     "curies": [
       {
