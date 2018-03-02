@@ -99,9 +99,11 @@ module ImportUtils
   end
 
   def remind_to_unlock(title)
-    puts '################################'
-    puts "Reminder: #{title} is LOCKED. Unlock in Feeder to publish feed."
-    puts '################################'
+    unless Rails.env.test?
+      puts '################################'
+      puts "Reminder: #{title} is LOCKED. Unlock in Feeder to publish feed."
+      puts '################################'
+    end
   end
 
 end
