@@ -98,10 +98,10 @@ module ImportUtils
     announce('audio', 'create', Api::Msg::AudioFileRepresenter.new(audio).to_json)
   end
 
-  def remind_to_unlock(podcast_title)
-    puts "################################"
-    puts "Reminder that #{podcast_title} is currently LOCKED. Unlock in Feeder to resume publishing."
-    puts "################################"
+  def remind_to_unlock(title)
+    puts '################################'
+    puts "Reminder: #{title} is LOCKED. Unlock in Feeder to publish feed."
+    puts '################################'
   end
 
 end
