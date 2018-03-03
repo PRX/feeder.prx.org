@@ -1,6 +1,6 @@
 require 'prx_access'
 
-class SeriesUpdateJob < ActiveJob::Base
+class SeriesUpdateJob < ApplicationJob
   include Announce::Subscriber
   include PRXAccess
 
@@ -9,12 +9,6 @@ class SeriesUpdateJob < ActiveJob::Base
   subscribe_to :series, [:create, :update, :delete]
 
   attr_accessor :body, :podcast, :series
-
-  def perform(*args)
-    ActiveRecord::Base.connection_pool.with_connection do
-      super
-    end
-  end
 
   def receive_series_update(data)
     load_resources(data)
