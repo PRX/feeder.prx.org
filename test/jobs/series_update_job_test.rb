@@ -29,11 +29,9 @@ describe SeriesUpdateJob do
   }
 
   before do
-    if use_webmock?
-      stub_request(:get, 'https://cms.prx.org/api/v1/series/149726').
-        with(headers: { 'Accept' => 'application/json' } ).
-        to_return(status: 200, body: body, headers: {})
-    end
+    stub_request(:get, 'https://cms.prx.org/api/v1/series/149726').
+      with(headers: { 'Accept' => 'application/json' } ).
+      to_return(status: 200, body: body, headers: {})
   end
 
   it 'creates a series resource' do
