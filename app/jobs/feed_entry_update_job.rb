@@ -1,6 +1,6 @@
 require 'prx_access'
 
-class FeedEntryUpdateJob < ActiveJob::Base
+class FeedEntryUpdateJob < ApplicationJob
   include Announce::Subscriber
   include PRXAccess
 
@@ -9,12 +9,6 @@ class FeedEntryUpdateJob < ActiveJob::Base
   subscribe_to :feed_entry, [:create, :update, :delete]
 
   attr_accessor :body, :feed, :episode, :podcast, :entry
-
-  def perform(*args)
-    ActiveRecord::Base.connection_pool.with_connection do
-      super
-    end
-  end
 
   def receive_feed_entry_update(data)
     load_resources(data)
