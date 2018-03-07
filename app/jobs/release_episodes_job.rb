@@ -1,15 +1,13 @@
-class ReleaseEpisodesJob < ActiveJob::Base
+class ReleaseEpisodesJob < ApplicationJob
 
   queue_as :feeder_default
 
   def perform(reschedule = false)
-    ActiveRecord::Base.connection_pool.with_connection do
-      begin
-        Episode.release_episodes!
-      ensure
-        if reschedule
-          ReleaseEpisodesJob.set(wait: release_check_delay).perform_later(true)
-        end
+    begin
+      Episode.release_episodes!
+    ensure
+      if reschedule
+        ReleaseEpisodesJob.set(wait: release_check_delay).perform_later(true)
       end
     end
   end
