@@ -68,7 +68,7 @@ class Episode < BaseModel
     Episode.find_by(prx_uri: story_uri(story))
   end
 
-  def story_uri(story)
+  def self.story_uri(story)
     (story.links['self'].href || '').gsub('/authorization/', '/')
   end
 
