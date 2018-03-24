@@ -5,6 +5,7 @@ describe StoryUpdateJob do
   let(:podcast) { create(:podcast, prx_uri: '/api/v1/series/20829') }
 
   let(:body) { json_file(:prx_story_updates) }
+  let(:this_is_love) { json_file(:this_is_love) }
   let(:msg) { { subject: 'story', action: 'update', body: body, sent_at: 1.second.ago } }
 
   let(:job) do
@@ -19,6 +20,10 @@ describe StoryUpdateJob do
     stub_request(:get, 'https://cms.prx.org/api/v1/authorization/stories/149726').
       with(headers: { 'Accept' => 'application/json' } ).
       to_return(status: 200, body: body, headers: {})
+
+    stub_request(:get, 'https://cms.prx.org/api/v1/authorization/stories/235196').
+      with(headers: { 'Accept' => 'application/json' } ).
+      to_return(status: 200, body: this_is_love, headers: {})
   end
 
   it 'creates a story resource' do
@@ -43,7 +48,7 @@ describe StoryUpdateJob do
   end
 
   it 'can update an episode' do
-    episode = create(:episode, prx_uri: '/api/v1/stories/149726', podcast: podcast)
+    episode = create(:episode, prx_uri: '/api/v1/stories/235196', podcast: podcast)
     episode.stub(:copy_media, true) do
       episode.stub(:podcast, podcast) do
         episode.podcast.stub(:create_publish_task, true) do
@@ -52,7 +57,8 @@ describe StoryUpdateJob do
               job.stub(:get_account_token, 'token') do
                 lbd = episode.podcast.last_build_date
                 uat = episode.updated_at
-                job.perform(subject: 'story', action: 'update', body: JSON.parse(body))
+                bod = JSON.parse(this_is_love)
+                job.perform(subject: 'story', action: 'update', body: bod)
                 job.episode.podcast.last_build_date.must_be :>, lbd
                 job.episode.updated_at.must_be :>, uat
               end
