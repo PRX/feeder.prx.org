@@ -62,6 +62,7 @@ describe StoryUpdateJob do
                 uat = episode.updated_at
                 bod = JSON.parse(real_story_update)
                 job.perform(subject: 'story', action: 'update', body: bod)
+                job.episode.prx_uri.must_equal "/api/v1/stories/#{real_story_id}"
                 job.episode.podcast.last_build_date.must_be :>, lbd
                 job.episode.updated_at.must_be :>, uat
               end
