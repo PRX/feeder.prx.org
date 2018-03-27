@@ -24,11 +24,6 @@ require 'factory_girl'
 require 'webmock/minitest'
 require 'announce/testing'
 
-def use_webmock?
-  ENV['USE_WEBMOCK'].nil? || (ENV['USE_WEBMOCK'] == 'true')
-end
-WebMock.allow_net_connect! unless use_webmock?
-
 include Announce::Testing
 reset_announce
 
@@ -55,8 +50,6 @@ def test_file(path)
 end
 
 def stub_requests_to_prx_cms
-  return unless use_webmock?
-
   stub_request(:get, 'https://cms.prx.org/api/v1').
     to_return(status: 200, body: json_file(:prx_root), headers: {})
 
