@@ -33,11 +33,19 @@ class EpisodeStoryHandler
 
   def update_from_story(story)
     self.story = story
-    episode.prx_uri = story.links['self'].href
+    episode.prx_uri = clean_prx_uri(story.links['self'].href)
 
     update_attributes
     update_audio
     update_image
+  end
+
+  def clean_prx_uri(url)
+    result = url
+    if result && !result.match(/authorization/)
+      result = result.gsub('/', '/authorization/')
+    end
+    result
   end
 
   def update_attributes
