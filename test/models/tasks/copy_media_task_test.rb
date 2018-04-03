@@ -13,6 +13,9 @@ describe Tasks::CopyMediaTask do
     HyperResource.new_from(body: body, resource: resource, link: link)
   end
 
+  let(:cache_control) { 'x-fixer-Cache-Control=max-age%3D86400' }
+  let(:query_str) { "x-fixer-public=true&#{cache_control}" }
+
   it 'can start the job' do
     Task.stub :new_fixer_sqs_client, SqsMock.new do
       task.stub(:get_account_token, "token") do
@@ -45,7 +48,7 @@ describe Tasks::CopyMediaTask do
     episode.expect(:guid, 'guid')
     episode.expect(:url, 'http://test-f.prxu.org/path/guid/audio.mp3')
     url = task.destination_url(episode)
-    url.must_equal 's3://test-prx-feed/path/guid/audio.mp3?x-fixer-public=true'
+    url.must_equal "s3://test-prx-feed/path/guid/audio.mp3?#{query_str}"
   end
 
   it 'use original url as the source url' do
