@@ -20,15 +20,11 @@ class Tasks::PublishFeedTask < ::Task
   end
 
   def destination_url(podcast = owner)
-    query = URI.encode_www_form(
-      'x-fixer-public' => 'true',
-      'x-fixer-Content-Type' => 'application/rss+xml; charset=UTF-8'
-    )
     URI::Generic.build(
       scheme: 's3',
       host: feeder_storage_bucket,
       path: feed_path,
-      query: query
+      query: fixer_query('x-fixer-Content-Type' => 'application/rss+xml; charset=UTF-8')
     ).to_s
   end
 

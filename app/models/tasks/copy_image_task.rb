@@ -30,7 +30,7 @@ class Tasks::CopyImageTask < ::Task
       scheme: 's3',
       host: feeder_storage_bucket,
       path: image_path(image_resource),
-      query: "x-fixer-public=true"
+      query: fixer_query
     ).to_s
   end
 
