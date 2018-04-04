@@ -46,7 +46,7 @@ class Tasks::CopyMediaTask < ::Task
       scheme: 's3',
       host: feeder_storage_bucket,
       path: destination_path(media_resource),
-      query: "x-fixer-public=true"
+      query: fixer_query
     ).to_s
   end
 

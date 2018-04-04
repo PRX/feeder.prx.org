@@ -46,4 +46,12 @@ describe Task do
     task.must_be :complete?
     task.logged_at.must_equal Time.parse("2010-01-01T00:00:00.000Z")
   end
+
+  it 'encodes fixer query params' do
+    task.fixer_query.must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D86400'
+    task.fixer_query('foo': 'b a r').must_equal 'foo=b+a+r&x-fixer-public=true&x-fixer-Cache-Control=max-age%3D86400'
+    m, ENV['FIXER_CACHE_MAX_AGE'] = ENV['FIXER_CACHE_MAX_AGE'], '1234'
+    task.fixer_query.must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D1234'
+    ENV['FIXER_CACHE_MAX_AGE'] = m
+  end
 end

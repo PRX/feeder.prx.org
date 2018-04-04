@@ -70,6 +70,15 @@ class Task < BaseModel
     fixer_sqs_client.create_job(job: job)
   end
 
+  def fixer_query(params = {})
+    max_age = ENV['FIXER_CACHE_MAX_AGE'].present? ? ENV['FIXER_CACHE_MAX_AGE'] : 86400
+    defaults = {
+      'x-fixer-public' => 'true',
+      'x-fixer-Cache-Control' => "max-age=#{max_age}"
+    }
+    URI.encode_www_form(params.merge(defaults))
+  end
+
   def feeder_storage_bucket
     ENV['FEEDER_STORAGE_BUCKET']
   end

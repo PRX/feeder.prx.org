@@ -3,6 +3,8 @@ require 'test_helper'
 describe Tasks::CopyImageTask do
   let(:task) { create(:copy_image_task) }
   let(:image) { task.owner }
+  let(:cache_control) { 'x-fixer-Cache-Control=max-age%3D86400' }
+  let(:query_str) { "x-fixer-public=true&#{cache_control}" }
 
   it 'can start the job' do
     Task.stub :new_fixer_sqs_client, SqsMock.new(123) do
@@ -16,6 +18,7 @@ describe Tasks::CopyImageTask do
     opts[:job_type].must_equal 'file'
     opts[:source].must_equal image.original_url
     opts[:destination].must_match /s3:\/\/test-prx-feed\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/images\/4e745a8c-77ee-481c-a72b-fd868dfd1c9(\d+)\/image\.png/
+    opts[:destination].split('?').last.must_equal query_str
   end
 
   it 'gets the image path' do
