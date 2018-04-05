@@ -3,7 +3,7 @@ require 'test_helper'
 describe Tasks::PublishFeedTask do
   let(:task) { create(:publish_feed_task) }
   let(:content_type) { 'x-fixer-Content-Type=application%2Frss%2Bxml%3B+charset%3DUTF-8' }
-  let(:cache_control) { 'x-fixer-Cache-Control=max-age%3D86400' }
+  let(:cache_control) { 'x-fixer-Cache-Control=max-age%3D60' }
   let(:query_str) { "#{content_type}&x-fixer-public=true&#{cache_control}" }
 
   it 'can start the job' do
