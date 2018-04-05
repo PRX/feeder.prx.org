@@ -49,7 +49,7 @@ describe Task do
 
   it 'encodes fixer query params' do
     task.fixer_query.must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D86400'
-    task.fixer_query('foo': 'b a r').must_equal 'foo=b+a+r&x-fixer-public=true&x-fixer-Cache-Control=max-age%3D86400'
+    task.fixer_query('foo': 'b a r').must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D86400&foo=b+a+r'
     m, ENV['FIXER_CACHE_MAX_AGE'] = ENV['FIXER_CACHE_MAX_AGE'], '1234'
     task.fixer_query.must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D1234'
     ENV['FIXER_CACHE_MAX_AGE'] = m

@@ -24,7 +24,10 @@ class Tasks::PublishFeedTask < ::Task
       scheme: 's3',
       host: feeder_storage_bucket,
       path: feed_path,
-      query: fixer_query('x-fixer-Content-Type' => 'application/rss+xml; charset=UTF-8')
+      query: fixer_query(
+        'x-fixer-Content-Type' => 'application/rss+xml; charset=UTF-8',
+        'x-fixer-Cache-Control' => 'max-age=60'
+      )
     ).to_s
   end
 
