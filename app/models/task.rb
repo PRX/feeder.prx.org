@@ -76,7 +76,7 @@ class Task < BaseModel
       'x-fixer-public' => 'true',
       'x-fixer-Cache-Control' => "max-age=#{max_age}"
     }
-    URI.encode_www_form(params.merge(defaults))
+    URI.encode_www_form(defaults.merge(params))
   end
 
   def feeder_storage_bucket
