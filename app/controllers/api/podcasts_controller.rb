@@ -1,6 +1,8 @@
 # encoding: utf-8
 
 class Api::PodcastsController < Api::BaseController
+  include ApiUpdatedSince
+
   api_versions :v1
   represent_with Api::PodcastRepresenter
   filter_resources_by :prx_account_uri

@@ -1,6 +1,8 @@
 # encoding: utf-8
 
 class Api::EpisodesController < Api::BaseController
+  include ApiUpdatedSince
+
   api_versions :v1
   represent_with Api::EpisodeRepresenter
   find_method :find_by_guid
