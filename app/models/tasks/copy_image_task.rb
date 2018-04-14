@@ -12,7 +12,6 @@ class Tasks::CopyImageTask < ::Task
 
     if fixer_task && new_status == 'complete'
       image_resource.update_from_fixer(fixer_task)
-      HighwindsAPI::Content.purge_url(image_resource.url, false)
       podcast.publish!
     end
   end
