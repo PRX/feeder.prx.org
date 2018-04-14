@@ -55,9 +55,6 @@ gem 'hyperresource'
 # Use Fixer client for handling audio processing
 gem 'fixer_client'
 
-# Control highwinds cdn
-gem 'highwinds-api'
-
 # Use OAuth2 for client authentication and authorization
 gem 'oauth2'
 
@@ -75,6 +72,8 @@ gem 'fastimage'
 
 # for url templates
 gem 'addressable'
+
+gem 'aws-sdk'
 
 group :development, :test do
   # Pry is an IRB alternative and runtime developer console
