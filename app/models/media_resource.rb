@@ -35,11 +35,7 @@ class MediaResource < BaseModel
   end
 
   def copy_media(force = false)
-    if !task || force
-      Tasks::CopyMediaTask.create! do |task|
-        task.owner = self
-      end.start!
-    end
+    CopyMediaJob.perform_later(self)
   end
 
   def media_url

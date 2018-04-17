@@ -13,10 +13,6 @@ FactoryGirl.define do
     original_url 'audio.mp3'
     status 'created'
 
-    after(:create) do |media_resource, evaluator|
-      create_list(:copy_media_task, 1, owner: media_resource)
-    end
-
     factory :enclosure, class: Enclosure do
     end
 
