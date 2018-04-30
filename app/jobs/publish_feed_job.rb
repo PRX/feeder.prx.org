@@ -1,3 +1,5 @@
+require 'builder'
+
 class PublishFeedJob < ApplicationJob
 
   queue_as :feeder_default

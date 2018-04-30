@@ -42,9 +42,21 @@ describe PublishFeedJob do
     rss[0, 38].must_equal '<?xml version="1.0" encoding="UTF-8"?>'
   end
 
-  describe 'test writing file' do
+  describe 'saving the rss file' do
+    let (:stub_conn) { Aws::S3::Resource.new(stub_responses: true) }
+
     it 'can save a podcast file' do
-      raise "finish this"
+      job.podcast = podcast
+      job.stub(:connection, stub_conn) do
+        rss = "<xml></xml>"
+        job.save_podcast_file(rss)
+      end
+    end
+
+    it 'can process publishing a podcast' do
+      job.stub(:connection, stub_conn) do
+        job.perform(podcast)
+      end
     end
   end
 end
