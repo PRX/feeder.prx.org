@@ -11,7 +11,8 @@ class StoryUpdateJob < ApplicationJob
   attr_accessor :body, :episode, :podcast, :story
 
   def receive_story_update(data)
-    load_resources(data)
+    parse_message(data)
+
     # don't allow invalid episodes to do anything but unpublish or delete
     return if ['create', 'update', 'publish'].include?(action) && story.status != 'complete'
 
@@ -23,35 +24,28 @@ class StoryUpdateJob < ApplicationJob
 
   alias receive_story_create receive_story_update
   alias receive_story_publish receive_story_update
+  alias receive_story_unpublish receive_story_update
 
   def receive_story_delete(data)
-    load_resources(data)
+    parse_message(data)
+
+    # don't delete unless it is really deleted - should return 404/exception
+    return unless story_deleted?
+
+    self.story = api_resource(body.with_indifferent_access)
+
     episode.try(:destroy)
     podcast.try(:publish!)
   end
 
-  alias receive_story_unpublish receive_story_update
-
-  def load_resources(data)
-    self.body = data.is_a?(String) ? JSON.parse(data) : data
-    self.story = get_story(body)
-    self.episode = Episode.by_prx_story(story)
-    self.podcast = episode.podcast if episode
-  end
-
-  def get_story(story_msg)
-    story = api_resource(story_msg.with_indifferent_access)
-    story_url = story_auth_url(story.href)
-    account_url = story.account.href
-    api(account: account_url).tap { |a| a.href = story_url }.get
-  end
-
-  def story_auth_url(url)
-    result = url
-    if result && !result.match(/authorization/)
-      result = result.gsub('/stories/', '/authorization/stories/')
+  def story_deleted?
+    story_deleted = false
+    begin
+      get_story(body)
+    rescue HyperResource::ClientError
+      story_deleted = true
     end
-    result
+    story_deleted
   end
 
   def update_episode
@@ -67,5 +61,36 @@ class StoryUpdateJob < ApplicationJob
     return unless story && story.try(:series)
     self.episode = EpisodeStoryHandler.create_from_story!(story)
     self.podcast = episode.podcast if episode
+  end
+
+  def parse_message(data)
+    self.body = data.is_a?(String) ? JSON.parse(data) : data
+  end
+
+  def episode
+    @episode ||= Episode.by_prx_story(story)
+  end
+
+  def podcast
+    @podcast ||= episode.try(:podcast)
+  end
+
+  def story
+    @story ||= get_story(body)
+  end
+
+  def get_story(story_msg)
+    story = api_resource(story_msg.with_indifferent_access)
+    story_url = story_auth_url(story.href)
+    account_url = story.account.href
+    api(account: account_url).tap { |a| a.href = story_url }.get
+  end
+
+  def story_auth_url(url)
+    result = url
+    if result && !result.match(/authorization/)
+      result = result.gsub('/stories/', '/authorization/stories/')
+    end
+    result
   end
 end

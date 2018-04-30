@@ -6,6 +6,7 @@ describe StoryUpdateJob do
 
   let(:prx_story_update) { json_file(:prx_story_updates) }
   let(:prx_story_id) { 149726 }
+  let(:prx_story_deleted) { json_file(:prx_story_deleted) }
   let(:real_story_update) { json_file(:this_is_love) }
   let(:real_story_id) { 235196 }
 
@@ -27,6 +28,10 @@ describe StoryUpdateJob do
     stub_request(:get, "https://cms.prx.org/api/v1/authorization/stories/#{real_story_id}").
       with(headers: { 'Accept' => 'application/json' } ).
       to_return(status: 200, body: real_story_update, headers: {})
+
+    stub_request(:get, "https://cms.prx.org/api/v1/authorization/stories/99999").
+      with(headers: { 'Accept' => 'application/json' } ).
+      to_return(status: 400, body: '{"status":404,"message":"Resource Not Found"}', headers: {})
   end
 
   it 'creates a story resource' do
@@ -87,11 +92,11 @@ describe StoryUpdateJob do
   end
 
   it 'can delete an episode' do
-    episode = create(:episode, prx_uri: "/api/v1/stories/#{prx_story_id}", podcast: podcast)
+    episode = create(:episode, prx_uri: "/api/v1/stories/99999", podcast: podcast)
     Episode.stub(:by_prx_story, episode) do
       episode.stub(:podcast, podcast) do
         job.stub(:get_account_token, 'token') do
-          job.perform(subject: 'story', action: 'delete', body: JSON.parse(prx_story_update))
+          job.perform(subject: 'story', action: 'delete', body: JSON.parse(prx_story_deleted))
           job.episode.deleted_at.wont_be_nil
         end
       end
