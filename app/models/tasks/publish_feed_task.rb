@@ -1,4 +1,4 @@
-require 'weblog_updater'
+require 'weblog_pinger'
 
 class Tasks::PublishFeedTask < ::Task
 
@@ -40,7 +40,7 @@ class Tasks::PublishFeedTask < ::Task
 
     # send out a feed updated event?
     if podcast.feedburner_url
-      WeblogUpdater.ping(feed_url: podcast.feedburner_url)
+      WeblogPinger.ping(feed_url: podcast.feedburner_url)
     end
   end
 
