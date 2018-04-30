@@ -37,9 +37,7 @@ describe Tasks::CopyImageTask do
     image_resource.expect(:try, image_resource, [:episode])
     image_resource.expect(:try, podcast, [:podcast])
     task.stub(:image_resource, image_resource) do
-      HighwindsAPI::Content.stub(:purge_url, true) do
-        task.task_status_changed({}, 'complete')
-      end
+      task.task_status_changed({}, 'complete')
     end
   end
 end
