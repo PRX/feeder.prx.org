@@ -6,7 +6,7 @@ class PublishFeedJob < ApplicationJob
 
   include PodcastsHelper
 
-  attr_accessor :podcast, :episodes
+  attr_accessor :podcast, :episodes, :rss
 
   def perform(podcast)
     setup_data(podcast)

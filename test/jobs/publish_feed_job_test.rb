@@ -56,6 +56,7 @@ describe PublishFeedJob do
     it 'can process publishing a podcast' do
       job.stub(:connection, stub_conn) do
         job.perform(podcast)
+        job.rss.wont_be_nil
       end
     end
   end
