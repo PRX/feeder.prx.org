@@ -54,14 +54,16 @@ describe Podcast do
   describe 'publishing' do
 
     it 'creates a publish job on publish' do
-      podcast.publish!
-      raise "finish this"
+      podcast.stub(:create_publish_job, "published!") do
+        podcast.publish!.must_equal 'published!'
+      end
     end
 
     it 'wont create a publish job when podcast is locked' do
-      podcast.locked = true
-      podcast.publish!
-      raise "finish this"
+      podcast.stub(:create_publish_job, 'published!') do
+        podcast.locked = true
+        podcast.publish!.wont_equal 'published!'
+      end
     end
   end
 
