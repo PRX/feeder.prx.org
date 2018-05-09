@@ -46,10 +46,8 @@ describe StoryUpdateJob do
     mock_episode.expect(:podcast, podcast)
     EpisodeStoryHandler.stub(:create_from_story!, mock_episode) do
       podcast.stub(:copy_media, true) do
-        podcast.stub(:create_publish_task, true) do
-          job.stub(:get_account_token, 'token') do
-            job.perform(subject: 'story', action: 'update', body: JSON.parse(prx_story_update))
-          end
+        job.stub(:get_account_token, 'token') do
+          job.perform(subject: 'story', action: 'update', body: JSON.parse(prx_story_update))
         end
       end
     end
@@ -59,18 +57,16 @@ describe StoryUpdateJob do
     episode = create(:episode, prx_uri: "/api/v1/stories/#{real_story_id}", podcast: podcast)
     episode.stub(:copy_media, true) do
       episode.stub(:podcast, podcast) do
-        episode.podcast.stub(:create_publish_task, true) do
-          episode.podcast.stub(:copy_media, true) do
-            Episode.stub(:by_prx_story, episode) do
-              job.stub(:get_account_token, 'token') do
-                lbd = episode.podcast.last_build_date
-                uat = episode.updated_at
-                bod = JSON.parse(real_story_update)
-                job.perform(subject: 'story', action: 'update', body: bod)
-                job.episode.prx_uri.must_equal "/api/v1/stories/#{real_story_id}"
-                job.episode.podcast.last_build_date.must_be :>, lbd
-                job.episode.updated_at.must_be :>, uat
-              end
+        episode.podcast.stub(:copy_media, true) do
+          Episode.stub(:by_prx_story, episode) do
+            job.stub(:get_account_token, 'token') do
+              lbd = episode.podcast.last_build_date
+              uat = episode.updated_at
+              bod = JSON.parse(real_story_update)
+              job.perform(subject: 'story', action: 'update', body: bod)
+              job.episode.prx_uri.must_equal "/api/v1/stories/#{real_story_id}"
+              job.episode.podcast.last_build_date.must_be :>, lbd
+              job.episode.updated_at.must_be :>, uat
             end
           end
         end
@@ -81,15 +77,13 @@ describe StoryUpdateJob do
   it 'will not update a deleted episode' do
     episode = create(:episode, prx_uri: "/api/v1/stories/#{prx_story_id}", podcast: podcast, deleted_at: Time.now)
     episode.must_be :deleted?
-    podcast.stub(:create_publish_task, true) do
-      podcast.stub(:copy_media, true) do
-        episode.stub(:copy_media, true) do
-          episode.stub(:podcast, podcast) do
-            Episode.stub(:by_prx_story, episode) do
-              job.stub(:get_account_token, 'token') do
-                job.perform(subject: 'story', action: 'update', body: JSON.parse(prx_story_update))
-                job.episode.must_be :deleted?
-              end
+    podcast.stub(:copy_media, true) do
+      episode.stub(:copy_media, true) do
+        episode.stub(:podcast, podcast) do
+          Episode.stub(:by_prx_story, episode) do
+            job.stub(:get_account_token, 'token') do
+              job.perform(subject: 'story', action: 'update', body: JSON.parse(prx_story_update))
+              job.episode.must_be :deleted?
             end
           end
         end
@@ -99,13 +93,11 @@ describe StoryUpdateJob do
 
   it 'can delete an episode' do
     episode = create(:episode, prx_uri: "/api/v1/stories/99999", podcast: podcast)
-    podcast.stub(:create_publish_task, true) do
-      Episode.stub(:by_prx_story, episode) do
-        episode.stub(:podcast, podcast) do
-          job.stub(:get_account_token, 'token') do
-            job.perform(subject: 'story', action: 'delete', body: JSON.parse(prx_story_deleted))
-            job.episode.deleted_at.wont_be_nil
-          end
+    Episode.stub(:by_prx_story, episode) do
+      episode.stub(:podcast, podcast) do
+        job.stub(:get_account_token, 'token') do
+          job.perform(subject: 'story', action: 'delete', body: JSON.parse(prx_story_deleted))
+          job.episode.deleted_at.wont_be_nil
         end
       end
     end
@@ -141,15 +133,13 @@ describe StoryUpdateJob do
       episode = create(:episode, prx_uri: "/api/v1/stories/#{invalid_story_id}", podcast: podcast)
       episode.stub(:copy_media, true) do
         episode.stub(:podcast, podcast) do
-          episode.podcast.stub(:create_publish_task, true) do
-            Episode.stub(:by_prx_story, episode) do
-              job.stub(:get_account_token, 'token') do
-                lbd = episode.podcast.last_build_date
-                uat = episode.updated_at
-                job.perform(subject: 'story', action: 'update', body: invalid_story_update)
-                episode.podcast.last_build_date.wont_be :>, lbd
-                episode.updated_at.wont_be :>, uat
-              end
+          Episode.stub(:by_prx_story, episode) do
+            job.stub(:get_account_token, 'token') do
+              lbd = episode.podcast.last_build_date
+              uat = episode.updated_at
+              job.perform(subject: 'story', action: 'update', body: invalid_story_update)
+              episode.podcast.last_build_date.wont_be :>, lbd
+              episode.updated_at.wont_be :>, uat
             end
           end
         end
@@ -160,17 +150,15 @@ describe StoryUpdateJob do
       episode = create(:episode, prx_uri: "/api/v1/stories/#{invalid_story_id}", podcast: podcast)
       episode.stub(:copy_media, true) do
         episode.stub(:podcast, podcast) do
-          episode.podcast.stub(:create_publish_task, true) do
-            episode.podcast.stub(:copy_media, true) do
-              Episode.stub(:by_prx_story, episode) do
-                job.stub(:get_account_token, 'token') do
-                  lbd = episode.podcast.last_build_date
-                  uat = episode.updated_at
-                  job.perform(subject: 'story', action: 'unpublish', body: invalid_story_update)
-                  job.episode.wont_be :published?
-                  job.episode.podcast.last_build_date.must_be :>, lbd
-                  job.episode.updated_at.must_be :>, uat
-                end
+          episode.podcast.stub(:copy_media, true) do
+            Episode.stub(:by_prx_story, episode) do
+              job.stub(:get_account_token, 'token') do
+                lbd = episode.podcast.last_build_date
+                uat = episode.updated_at
+                job.perform(subject: 'story', action: 'unpublish', body: invalid_story_update)
+                job.episode.wont_be :published?
+                job.episode.podcast.last_build_date.must_be :>, lbd
+                job.episode.updated_at.must_be :>, uat
               end
             end
           end

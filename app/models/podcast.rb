@@ -107,7 +107,7 @@ class Podcast < BaseModel
   end
 
   def publish!
-    create_publish_task unless locked?
+    create_publish_job unless locked?
   end
 
   def copy_media(force = false)
@@ -115,10 +115,8 @@ class Podcast < BaseModel
     feed_images.each{ |i| i.copy_media(force) }
   end
 
-  def create_publish_task
-    Tasks::PublishFeedTask.create! do |task|
-      task.owner = self
-    end.start!
+  def create_publish_job
+    PublishFeedJob.perform_later(self)
   end
 
   def find_existing_image(type, url)

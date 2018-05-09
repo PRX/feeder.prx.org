@@ -68,9 +68,7 @@ describe Tasks::CopyMediaTask do
     episode.expect(:url, 'http://test-f.prxu.org/path/guid/audio.mp3')
 
     task.stub(:episode, episode) do
-      HighwindsAPI::Content.stub(:purge_url, true) do
-        task.task_status_changed({}, 'complete')
-      end
+      task.task_status_changed({}, 'complete')
     end
   end
 

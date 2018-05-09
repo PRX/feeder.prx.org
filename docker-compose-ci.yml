@@ -10,6 +10,7 @@ feeder:
     LOCAL_ENV: 'true'
     DB_ENV_POSTGRES_USER: feeder
     DB_ENV_POSTGRES_PASSWORD: password
+    AWS_REGION: us-east-1
 db:
   image: postgres
   environment:

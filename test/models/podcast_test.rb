@@ -53,22 +53,17 @@ describe Podcast do
 
   describe 'publishing' do
 
-    before(:each) { podcast.tasks.delete_all }
-
-    it 'creates a publish task on publish' do
-      Task.stub :new_fixer_sqs_client, SqsMock.new do
-        podcast.tasks.count.must_equal 0
-        podcast.publish!
-        podcast.tasks(true).count.must_equal 1
-        podcast.tasks.first.must_be :is_a?, Tasks::PublishFeedTask
+    it 'creates a publish job on publish' do
+      podcast.stub(:create_publish_job, "published!") do
+        podcast.publish!.must_equal 'published!'
       end
     end
 
-    it 'wont create a publish task when podcast is locked' do
-      podcast.tasks.count.must_equal 0
-      podcast.locked = true
-      podcast.publish!
-      podcast.tasks(true).count.must_equal 0
+    it 'wont create a publish job when podcast is locked' do
+      podcast.stub(:create_publish_job, 'published!') do
+        podcast.locked = true
+        podcast.publish!.wont_equal 'published!'
+      end
     end
   end
 
