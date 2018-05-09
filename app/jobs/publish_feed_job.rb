@@ -49,7 +49,7 @@ class PublishFeedJob < ApplicationJob
   end
 
   def key(podcast = @podcast)
-    File.join(podcast.path, 'feed-rss.xml')
+    "#{podcast.path}/feed-rss.xml"
   end
 
   def connection
