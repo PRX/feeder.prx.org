@@ -37,7 +37,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       xml.itunes :'new-feed-url', @podcast.new_feed_url
     end
 
-    xml.itunes :block, "Yes" if @podcast.itunes_block
+    xml.itunes :block, 'Yes' if @podcast.itunes_block
 
     xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
     xml.itunes :type, @podcast.itunes_type unless @podcast.itunes_type.blank?
