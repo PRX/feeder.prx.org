@@ -37,6 +37,8 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       xml.itunes :'new-feed-url', @podcast.new_feed_url
     end
 
+    xml.itunes :block, 'Yes' if @podcast.itunes_block
+
     xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
     xml.itunes :type, @podcast.itunes_type unless @podcast.itunes_type.blank?
 
@@ -90,6 +92,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.itunes :season, ep.season if ep.season?
         xml.itunes :episode, ep.number if ep.number?
         xml.itunes :duration, ep.duration.to_i.to_time_summary if ep.media?
+        xml.itunes :block, 'Yes' if ep.itunes_block
 
         if @podcast.display_full_episodes_count.to_i <= 0 || index < @podcast.display_full_episodes_count.to_i
 

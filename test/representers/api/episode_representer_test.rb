@@ -16,6 +16,7 @@ describe Api::EpisodeRepresenter do
     json['episodeNumber'].must_be_instance_of(Fixnum)
     json['cleanTitle'].must_match /Clean title/
     json['itunesType'].must_equal 'full'
+    json['itunesBlock'].must_equal false
   end
 
   it 'uses summary when not blank' do

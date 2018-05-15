@@ -51,6 +51,12 @@ describe Podcast do
     podcast.reload.published_at.wont_be_nil
   end
 
+  it 'sets the itunes block to false by default' do
+    podcast.wont_be :itunes_block
+    podcast.update_attribute(:itunes_block, true)
+    podcast.must_be :itunes_block
+  end
+
   describe 'publishing' do
 
     it 'creates a publish job on publish' do

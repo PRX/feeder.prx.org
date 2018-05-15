@@ -34,4 +34,13 @@ describe PodcastsController do
 
     response.status.to_i.must_equal 304
   end
+
+  it 'rss includes itunes block yes when podcast itunes_block true' do
+    get :show, id: @podcast.id, format: 'rss'
+    response.body.wont_match /itunes:block/
+
+    @podcast.update_attribute(:itunes_block, true)
+    get :show, id: @podcast.id, format: 'rss'
+    response.body.must_match /itunes:block>Yes/
+  end
 end

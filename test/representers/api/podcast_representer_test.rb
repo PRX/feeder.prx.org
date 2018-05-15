@@ -41,6 +41,10 @@ describe Api::PodcastRepresenter do
     json['serialOrder'].must_equal false
   end
 
+  it 'includes itunes block' do
+    json['itunesBlock'].must_equal false
+  end
+
   it 'has links' do
     json['_links']['self']['href'].must_equal "/api/v1/podcasts/#{podcast.id}"
     json['_links']['prx:series']['href'].must_equal "https://cms.prx.org#{podcast.prx_uri}"
