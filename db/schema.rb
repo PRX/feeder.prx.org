@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180214150849) do
+ActiveRecord::Schema.define(version: 20180515172031) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -70,6 +70,7 @@ ActiveRecord::Schema.define(version: 20180214150849) do
     t.integer  "episode_number"
     t.string   "itunes_type",                    default: "full"
     t.text     "clean_title"
+    t.boolean  "itunes_block",                   default: false
   end
 
   add_index "episodes", ["guid"], name: "index_episodes_on_guid", unique: true, using: :btree
@@ -202,6 +203,7 @@ ActiveRecord::Schema.define(version: 20180214150849) do
     t.datetime "source_updated_at"
     t.boolean  "serial_order",                default: false
     t.boolean  "locked",                      default: false
+    t.boolean  "itunes_block",                default: false
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree

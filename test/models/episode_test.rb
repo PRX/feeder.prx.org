@@ -144,6 +144,12 @@ describe Episode do
     episode.wont_be(:valid?)
   end
 
+  it 'sets the itunes block to false by default' do
+    episode.wont_be :itunes_block
+    episode.update_attribute(:itunes_block, true)
+    episode.must_be :itunes_block
+  end
+
   describe 'release episodes' do
 
     let(:podcast) { episode.podcast }

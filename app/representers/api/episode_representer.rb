@@ -27,6 +27,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :season_number
   property :episode_number
   property :itunes_type
+  property :itunes_block
 
   property :explicit
   property :block

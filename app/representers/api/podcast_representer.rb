@@ -22,6 +22,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :description
   property :summary
   property :summary_preview, exec_context: :decorator, if: ->(_o) { !represented.summary }
+  property :itunes_block
 
   property :explicit
   property :serial_order
