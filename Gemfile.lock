@@ -80,7 +80,7 @@ GEM
       tins (>= 1.6.0, < 2)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
-    crass (1.0.3)
+    crass (1.0.4)
     diffy (3.1.0)
     docile (1.1.5)
     dotenv (2.1.1)
@@ -169,7 +169,7 @@ GEM
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
       ruby_dep (~> 1.2)
-    loofah (2.2.1)
+    loofah (2.2.2)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     lumberjack (1.0.10)
@@ -187,7 +187,7 @@ GEM
     multipart-post (2.0.0)
     nenv (0.3.0)
     newrelic_rpm (3.17.1.326)
-    nokogiri (1.8.2)
+    nokogiri (1.8.3)
       mini_portile2 (~> 2.3.0)
     nokogumbo (1.5.0)
       nokogiri
@@ -247,8 +247,8 @@ GEM
       activesupport (>= 4.2.0, < 5.0)
       nokogiri (~> 1.6)
       rails-deprecated_sanitizer (>= 1.0.1)
-    rails-html-sanitizer (1.0.3)
-      loofah (~> 2.0)
+    rails-html-sanitizer (1.0.4)
+      loofah (~> 2.2, >= 2.2.2)
     rails_12factor (0.0.3)
       rails_serve_static_assets
       rails_stdout_logging
@@ -375,6 +375,7 @@ DEPENDENCIES
   rack-cors
   rack-prx_auth (~> 0.0.8)
   rails (~> 4.2.0)
+  rails-html-sanitizer (~> 1.0.4)
   rails_12factor
   rake
   responders
