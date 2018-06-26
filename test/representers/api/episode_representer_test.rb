@@ -56,4 +56,11 @@ describe Api::EpisodeRepresenter do
   it 'has enclosure' do
     json['_links']['enclosure']['href'].must_equal episode.media_url
   end
+
+  it 'can represent a sad, podcast-less episode' do
+    episode.podcast_id = nil
+    json['guid'].must_equal "prx__#{episode.guid}"
+    json['_links']['enclosure']['href'].must_match "//#{episode.guid}/"
+    json['_links']['prx:podcast'].must_be_nil
+  end
 end
