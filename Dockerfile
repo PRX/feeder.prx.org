@@ -1,4 +1,4 @@
-FROM ruby:2.3-alpine
+FROM ruby:2.3-alpine3.7
 
 MAINTAINER PRX <sysadmin@prx.org>
 LABEL org.prx.app="yes"
