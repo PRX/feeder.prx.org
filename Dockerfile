@@ -1,4 +1,4 @@
-FROM ruby:2.3-alpine
+FROM ruby:2.3-alpine3.7
 
 MAINTAINER PRX <sysadmin@prx.org>
 LABEL org.prx.app="yes"
@@ -37,7 +37,7 @@ ADD Gemfile.lock ./
 RUN apk --update add --virtual build-dependencies \
     build-base \
     curl-dev \
-    openssl-dev \
+    libressl-dev \
     postgresql-dev \
     sqlite-dev \
     zlib-dev \

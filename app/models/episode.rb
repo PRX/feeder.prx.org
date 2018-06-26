@@ -104,7 +104,7 @@ class Episode < BaseModel
   end
 
   def item_guid
-    original_guid || "prx_#{podcast.id}_#{guid}"
+    original_guid || "prx_#{podcast_id}_#{guid}"
   end
 
   def item_guid=(new_guid)
@@ -175,7 +175,7 @@ class Episode < BaseModel
       enclosure.try(:duration).to_f
     else
       contents.inject(0.0) { |s, c| s + c.duration.to_f }
-    end + podcast.duration_padding.to_f
+    end + podcast.try(:duration_padding).to_f
   end
 
   def file_size
@@ -197,7 +197,7 @@ class Episode < BaseModel
   end
 
   def path
-    "#{podcast.path}/#{guid}"
+    "#{podcast.try(:path)}/#{guid}"
   end
 
   def include_in_feed?
@@ -238,11 +238,11 @@ class Episode < BaseModel
   end
 
   def enclosure_template
-    podcast.enclosure_template
+    podcast.try(:enclosure_template)
   end
 
   def enclosure_prefix
-    podcast.enclosure_prefix
+    podcast.try(:enclosure_prefix)
   end
 
   def podcast_slug
