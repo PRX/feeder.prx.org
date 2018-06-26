@@ -37,7 +37,7 @@ ADD Gemfile.lock ./
 RUN apk --update add --virtual build-dependencies \
     build-base \
     curl-dev \
-    openssl-dev \
+    libressl-dev \
     postgresql-dev \
     sqlite-dev \
     zlib-dev \
