@@ -10,7 +10,7 @@ gem 'rack-prx_auth', '~> 0.0.8'
 
 # Controller
 gem 'responders'
-gem 'hal_api-rails', '~> 0.2.9'
+gem 'hal_api-rails', '~> 0.3.3'
 
 # auth
 gem 'rack-cors', require: 'rack/cors'
