@@ -44,8 +44,12 @@ describe Api::EpisodesController do
 
   it 'should list' do
     episode.id.wont_be_nil
+    episode_deleted.id.wont_be_nil
     get(:index, { api_version: 'v1', format: 'json' } )
     assert_response :success
+    guids = JSON.parse(response.body)['_embedded']['prx:items'].map { |p| p['id'] }
+    guids.must_include(episode.guid)
+    guids.wont_include(episode_deleted.guid)
   end
 
   it 'should not list future published' do
@@ -63,9 +67,13 @@ describe Api::EpisodesController do
 
   it 'should list for podcast' do
     episode.id.wont_be_nil
+    episode_deleted.id.wont_be_nil
     podcast.id.wont_be_nil
     get(:index, { api_version: 'v1', format: 'json', podcast_id: podcast.id } )
     assert_response :success
+    guids = JSON.parse(response.body)['_embedded']['prx:items'].map { |p| p['id'] }
+    guids.must_include(episode.guid)
+    guids.wont_include(episode_deleted.guid)
   end
 
   describe 'with a valid token' do

@@ -108,6 +108,12 @@ describe Api::PodcastsController do
     assert_response :success
   end
 
+  it 'should return resource gone for deleted resource' do
+    podcast_deleted.id.wont_be_nil
+    get(:show, { api_version: 'v1', format: 'json', id: podcast_deleted.id } )
+    assert_response 410
+  end
+
   it 'should list' do
     podcast_deleted.id.wont_be_nil
     podcast.id.wont_be_nil
