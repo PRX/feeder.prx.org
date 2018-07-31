@@ -21,7 +21,7 @@ worker:
     - db
   command: worker
 db:
-  image: postgres
+  image: postgres:9.4.15-alpine
   env_file:
     - .env
   expose:

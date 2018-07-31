@@ -131,7 +131,7 @@ GEM
     guard-minitest (2.4.6)
       guard-compat (~> 1.2)
       minitest (>= 3.0)
-    hal_api-rails (0.2.9)
+    hal_api-rails (0.3.3)
       actionpack (>= 3.0.0)
       activemodel (>= 3.0.0)
       activesupport (>= 3.0.0)
@@ -355,7 +355,7 @@ DEPENDENCIES
   guard
   guard-bundler
   guard-minitest
-  hal_api-rails (~> 0.2.9)
+  hal_api-rails (~> 0.3.3)
   highline
   hyperresource
   jbuilder (~> 2.0)

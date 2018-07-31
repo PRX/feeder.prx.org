@@ -16,14 +16,16 @@ SayWhen.configure do |options|
 end
 
 begin
-  SayWhen.schedule(
-    group: 'application',
-    name: 'release_episodes',
-    trigger_strategy: 'cron',
-    trigger_options: { expression: '0 0/5 * * * ?', time_zone: 'UTC' },
-    job_class: 'Episode',
-    job_method: 'release_episodes!'
-  )
+  unless Rails.env.test?
+    SayWhen.schedule(
+      group: 'application',
+      name: 'release_episodes',
+      trigger_strategy: 'cron',
+      trigger_options: { expression: '0 0/5 * * * ?', time_zone: 'UTC' },
+      job_class: 'Episode',
+      job_method: 'release_episodes!'
+    )
+  end
 rescue ActiveRecord::StatementInvalid => ex
   puts "Failed to init say_when job: #{ex.inspect}"
 end

@@ -35,8 +35,8 @@ class Api::PodcastsController < Api::BaseController
 
   private
 
-  def included(relation)
-    relation.with_deleted
+  def find_base
+    super.with_deleted
   end
 
   def process_media

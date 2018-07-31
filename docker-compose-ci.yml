@@ -12,7 +12,7 @@ feeder:
     DB_ENV_POSTGRES_PASSWORD: password
     AWS_REGION: us-east-1
 db:
-  image: postgres
+  image: postgres:9.4.15-alpine
   environment:
     POSTGRES_USER: feeder
     POSTGRES_PASSWORD: password
