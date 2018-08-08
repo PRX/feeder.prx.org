@@ -14,6 +14,7 @@ feeder:
 db:
   image: postgres:9.4.15-alpine
   environment:
+    LOCAL_ENV: 'true'
     POSTGRES_USER: feeder
     POSTGRES_PASSWORD: password
   ports:

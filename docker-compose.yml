@@ -11,6 +11,7 @@ feeder:
   command: web
   environment:
     VIRTUAL_HOST: feeder.prx.docker
+    LOCAL_ENV: "true"
 worker:
   image: feederprxorg_feeder
   volumes:
