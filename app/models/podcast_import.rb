@@ -58,7 +58,7 @@ class PodcastImport < BaseModel
     PodcastImportJob.perform_later self
   end
 
-  def import
+  def import_prelude
     update_attributes!(status: 'started')
 
     # Request the RSS feed
@@ -68,6 +68,10 @@ class PodcastImport < BaseModel
     # Create the series
     create_or_update_series!
     update_attributes!(status: 'series created')
+  end
+
+  def import
+    import_prelude
 
     # Update podcast attributes
     create_or_update_podcast!
