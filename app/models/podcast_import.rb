@@ -54,11 +54,11 @@ class PodcastImport < BaseModel
     import_later
   end
 
-  def import_later
-    PodcastImportJob.perform_later self
+  def import_later(import_series = true)
+    PodcastImportJob.perform_later(self, import_series)
   end
 
-  def import_prelude
+  def import_series!
     update_attributes!(status: 'started')
 
     # Request the RSS feed
@@ -68,11 +68,12 @@ class PodcastImport < BaseModel
     # Create the series
     create_or_update_series!
     update_attributes!(status: 'series created')
+  rescue StandardError => err
+    update_attributes(status: 'failed')
+    raise err
   end
 
-  def import
-    import_prelude
-
+  def import_episodes!
     # Update podcast attributes
     create_or_update_podcast!
     update_attributes!(status: 'podcast created')
@@ -83,6 +84,11 @@ class PodcastImport < BaseModel
   rescue StandardError => err
     update_attributes(status: 'failed')
     raise err
+  end
+
+  def import
+    import_series!
+    import_episodes!
   end
 
   def entry_audio_files(entry)
