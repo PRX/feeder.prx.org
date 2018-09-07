@@ -74,6 +74,9 @@ class PodcastImport < BaseModel
   end
 
   def import_episodes!
+    # Request the RSS feed again
+    get_feed
+
     # Update podcast attributes
     create_or_update_podcast!
     update_attributes!(status: 'podcast created')
