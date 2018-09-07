@@ -375,6 +375,6 @@ class PodcastImport < BaseModel
   end
 
   def self.policy_class
-    AccountablePolicy
+    PodcastImportPolicy
   end
 end
