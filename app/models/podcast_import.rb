@@ -13,7 +13,7 @@ class PodcastImport < BaseModel
 
   serialize :config, HashSerializer
 
-  attr_accessor :feed, :templates, :podcast, :distribution
+  attr_accessor :feed, :feed_raw_doc, :templates, :podcast, :distribution
 
   belongs_to :user, -> { with_deleted }
   belongs_to :account, -> { with_deleted }
@@ -134,7 +134,8 @@ class PodcastImport < BaseModel
 
   def get_feed
     response = connection.get(uri.path, uri.query_values)
-    podcast_feed = Feedjira::Feed.parse(response.body)
+    self.feed_raw_doc = response.body
+    podcast_feed = Feedjira::Feed.parse(feed_raw_doc)
     validate_feed(podcast_feed)
     self.feed = podcast_feed
   end
