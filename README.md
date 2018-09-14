@@ -7,7 +7,7 @@
 
 ## Description
 This Rails app provides the Feeder service.
-It follows the [standards for PRX services](https://github.com/PRX/meta.prx.org/wiki/Project-Standards#services).
+It follows the [standards for PRX services](https://github.com/PRX/docs.prx.org/blob/master/team/Project-Standards.md#services).
 
 It generates RSS feeds based on stories and their podcast specific data.
 It can also generate RSS feeds based on existing (Media)RSS feeds.
