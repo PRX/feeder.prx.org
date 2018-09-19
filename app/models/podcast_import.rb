@@ -25,6 +25,17 @@ class PodcastImport < BaseModel
 
   validates :user_id, :account_id, :url, presence: true
 
+  COMPLETE        = 'complete'.freeze
+  FAILED          = 'failed'.freeze
+
+  CREATED         = 'created'.freeze
+  STARTED         = 'started'.freeze
+  FEED_RETRIEVED  = 'feed retrieved'.freeze
+  RETRYING        = 'retrying'.freeze
+  SERIES_CREATED  = 'series created'.freeze
+  IMPORTING       = 'importing'.freeze
+  PODCAST_CREATED = 'podcast created'.freeze
+
   def config_url=(config_url)
     c_url = Addressable::URI.parse(config_url)
     response = connection(c_url).get(c_url.path, c_url.query_values)
@@ -32,7 +43,7 @@ class PodcastImport < BaseModel
   end
 
   def set_defaults
-    self.status ||= 'created'
+    self.status ||= CREATED
     self.config ||= {
       audio: {},            # map of guids to array of audio file urls
       episodes_only: false  # indicates if podcast and series should be updated
@@ -41,16 +52,16 @@ class PodcastImport < BaseModel
 
   def update_status!
     return unless episode_imports.count > 0
-    if episode_imports.all? { |e| e.status == 'complete' }
-      update_attributes!(status: 'complete')
+    if episode_imports.all? { |e| e.status == EpisodeImport::COMPLETE }
+      update_attributes!(status: COMPLETE)
       remind_to_unlock(series.title)
-    elsif episode_imports.any? { |e| e.status == 'failed' }
-      update_attributes!(status: 'failed')
+    elsif episode_imports.any? { |e| e.status == EpisodeImport::FAILED }
+      update_attributes!(status: FAILED)
     end
   end
 
   def retry!
-    update_attributes(status: 'retrying')
+    update_attributes(status: RETRYING)
     import_later
   end
 
@@ -59,17 +70,17 @@ class PodcastImport < BaseModel
   end
 
   def import_series!
-    update_attributes!(status: 'started')
+    update_attributes!(status: STARTED)
 
     # Request the RSS feed
     get_feed
-    update_attributes!(status: 'feed retrieved')
+    update_attributes!(status: FEED_RETRIEVED)
 
     # Create the series
     create_or_update_series!
-    update_attributes!(status: 'series created')
+    update_attributes!(status: SERIES_CREATED)
   rescue StandardError => err
-    update_attributes(status: 'failed')
+    update_attributes(status: FAILED)
     raise err
   end
 
@@ -79,13 +90,13 @@ class PodcastImport < BaseModel
 
     # Update podcast attributes
     create_or_update_podcast!
-    update_attributes!(status: 'podcast created')
+    update_attributes!(status: PODCAST_CREATED)
 
     # Create the episodes
-    update_attributes!(status: 'importing')
+    update_attributes!(status: IMPORTING)
     create_or_update_episode_imports!
   rescue StandardError => err
-    update_attributes(status: 'failed')
+    update_attributes(status: FAILED)
     raise err
   end
 

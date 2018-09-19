@@ -23,13 +23,20 @@ class EpisodeImport < BaseModel
 
   validates :entry, :guid, presence: true
 
+  COMPLETE = 'complete'.freeze
+  FAILED = 'failed'.freeze
+  CREATED = 'created'.freeze
+  RETRYING = 'retrying'.freeze
+  STORY_SAVED = 'story saved'.freeze
+  EPISODE_SAVED = 'episode saved'.freeze
+
   def retry!
-    update_attributes(status: 'retrying')
+    update_attributes(status: RETRYING)
     import_later
   end
 
   def set_defaults
-    self.status ||= 'created'
+    self.status ||= CREATED
     self.audio ||= { files: [] }
   end
 
@@ -47,14 +54,14 @@ class EpisodeImport < BaseModel
 
   def import
     create_or_update_story!
-    update_attributes!(status: 'story saved', piece_id: story.id)
+    update_attributes!(status: STORY_SAVED, piece_id: story.id)
     create_or_update_episode!
-    update_attributes!(status: 'episode saved')
+    update_attributes!(status: EPISODE_SAVED)
     story.save!
-    update_attributes!(status: 'complete')
+    update_attributes!(status: COMPLETE)
     story
   rescue StandardError => err
-    update_attributes(status: 'failed')
+    update_attributes(status: FAILED)
     raise err
   end
 
