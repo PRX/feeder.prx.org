@@ -389,4 +389,31 @@ class PodcastImport < BaseModel
   def self.policy_class
     PodcastImportPolicy
   end
+
+  def parse_feed_entries_for_dupe_guids
+    sorted_entries = feed.entries.sort_by(&:entry_id)
+
+    dupped_entries = []
+    good_entries = []
+    duplicate_run = []
+
+    process_duplicate_run = lambda do
+      if duplicate_run.length > 1
+        dupped_entries += duplicate_run
+      else
+        good_entries += duplicate_run
+      end
+      duplicate_run = []
+    end
+
+    sorted_entries.each do |entry|
+      if duplicate_run.last.present? && (entry.entry_id != duplicate_run.last.entry_id)
+        process_duplicate_run.call
+      end
+      duplicate_run.push(entry)
+    end
+    process_duplicate_run.call
+
+    [good_entries, dupped_entries]
+  end
 end

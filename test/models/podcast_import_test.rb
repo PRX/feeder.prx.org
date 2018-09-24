@@ -1,5 +1,6 @@
 require 'test_helper'
 require 'prx_access'
+require 'ostruct'
 
 describe PodcastImport do
   include PRXAccess
@@ -189,6 +190,32 @@ describe PodcastImport do
       %w(NO False Clean).each { |x| importer.explicit(x).must_equal 'clean' }
       %w(UnClean y N 1 0).each { |x| importer.explicit(x).must_equal x.downcase }
     end
+  end
+
+  describe("#parse_feed_entries_for_dupe_guids") do
+    let(:rss_feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor_dupped_guids.xml')) }
+
+    it 'will parse feed entries for doog and duped entries' do
+      importer.feed = rss_feed
+      good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
+      good_entries.length.must_equal 3
+      dupped_guid_entries.length.must_equal 3
+    end
+
+    it 'handles entry lists of size 0' do
+      importer.feed = []
+      good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
+      good_entries.length.must_equal 0
+      dupped_guid_entries.length.must_equal 0
+    end
+
+    it 'handles entry lists of size 1' do
+      importer.feed = [ OpenStruct.new(entry_id: 1) ]
+      good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
+      good_entries.length.must_equal 1
+      dupped_guid_entries.length.must_equal 0
+    end
+
   end
 end
 
