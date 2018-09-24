@@ -114,7 +114,9 @@ class PodcastImport < BaseModel
   end
 
   def create_or_update_episode_imports!
-    feed.entries.map do |entry|
+    # skip duplicate entries
+    feed_entries, _ = parse_feed_entries_for_dupe_guids
+    feed_entries.map do |entry|
       entry_hash = feed_entry_to_hash(entry)
       audio_files = entry_audio_files(entry_hash)
       get_or_create_template(audio_files, entry_hash['enclosure'].type)
