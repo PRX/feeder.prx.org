@@ -192,10 +192,34 @@ describe PodcastImport do
     end
   end
 
-  describe("#parse_feed_entries_for_dupe_guids") do
+  describe('#episode_import_placeholders') do
+
+    it('should have an empty list of placeholders before import') do
+      importer.episode_import_placeholders.to_a.must_equal []
+    end
+
+    it('should create episode import placeholders') do
+      importer.url = 'http://feeds.prx.org/transistor_stem_duped'
+      importer.import
+      importer.episode_import_placeholders.length.must_equal 3
+      importer.episode_imports.length.must_equal 3
+    end
+
+    it('should delete all import placeholders with each import') do
+      importer.url = 'http://feeds.prx.org/transistor_stem_duped'
+      importer.import_series!
+      # invoke the creation of placeholders
+      importer.import_episodes!
+      importer.create_or_update_episode_imports!
+      importer.episode_import_placeholders.length.must_equal 3
+    end
+
+  end
+
+  describe('#parse_feed_entries_for_dupe_guids') do
     let(:rss_feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor_dupped_guids.xml')) }
 
-    it 'will parse feed entries for doog and duped entries' do
+    it 'will parse feed entries for good and duped entries' do
       importer.feed = rss_feed
       good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
       good_entries.length.must_equal 3
@@ -210,10 +234,21 @@ describe PodcastImport do
     end
 
     it 'handles entry lists of size 1' do
-      importer.feed = [ OpenStruct.new(entry_id: 1) ]
+      importer.feed = [OpenStruct.new(entry_id: 1)]
       good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
       good_entries.length.must_equal 1
       dupped_guid_entries.length.must_equal 0
+    end
+  end
+
+  describe('#episode_importing_count') do
+
+    it 'registers the count of episodes that it will be importing' do
+      importer.import
+      importer.episode_importing_count.must_equal 2
+      importer.episode_imports.count.must_equal 2
+
+      importer.series.stories.count.must_equal 0
     end
 
   end
@@ -258,4 +293,7 @@ def stub_requests
   stub_request(:get, "https://feeder.prx.org/api/v1/podcasts/23").
     with(headers: { 'Authorization' => 'Bearer thisisnotatoken' }).
     to_return(status: 200, body: json_file('transistor_podcast_basic'), headers: {})
+
+  stub_request(:get, 'http://feeds.prx.org/transistor_stem_duped').
+    to_return(status: 200, body: test_file('/fixtures/transistor_dupped_guids.xml'), headers: {})
 end

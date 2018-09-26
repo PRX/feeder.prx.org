@@ -20,6 +20,7 @@ class PodcastImport < BaseModel
   belongs_to :series, -> { with_deleted }
 
   has_many :episode_imports, dependent: :destroy
+  has_many :episode_import_placeholders, dependent: :destroy
 
   before_validation :set_defaults, on: :create
 
@@ -114,14 +115,24 @@ class PodcastImport < BaseModel
   end
 
   def create_or_update_episode_imports!
-    # skip duplicate entries
-    feed_entries, _ = parse_feed_entries_for_dupe_guids
-    feed_entries.map do |entry|
+    feed_entries, entries_with_dupe_guids = parse_feed_entries_for_dupe_guids
+
+    feed_entries.each do |entry|
       entry_hash = feed_entry_to_hash(entry)
       audio_files = entry_audio_files(entry_hash)
       get_or_create_template(audio_files, entry_hash['enclosure'].type)
       episode_import = create_or_update_episode_import!(entry_hash, audio_files)
       episode_import.import_later
+    end
+    update_attributes(episode_importing_count: feed_entries.length)
+
+    # create placeholders for episode imports with duped guids
+    episode_import_placeholders.delete_all
+    entries_with_dupe_guids.each do |entry|
+      entry_hash = feed_entry_to_hash(entry)
+      episode_import_placeholders.create!(title: entry_hash['title'],
+                                          duplicate_guid: true,
+                                          guid: entry_hash['entry_id'])
     end
   end
 
