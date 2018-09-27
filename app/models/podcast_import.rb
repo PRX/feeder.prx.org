@@ -19,9 +19,6 @@ class PodcastImport < BaseModel
   belongs_to :account, -> { with_deleted }
   belongs_to :series, -> { with_deleted }
 
-  has_many :episode_imports, dependent: :destroy
-  has_many :episode_import_placeholders, dependent: :destroy
-
   before_validation :set_defaults, on: :create
 
   validates :user_id, :account_id, :url, presence: true
@@ -36,6 +33,14 @@ class PodcastImport < BaseModel
   SERIES_CREATED  = 'series created'.freeze
   IMPORTING       = 'importing'.freeze
   PODCAST_CREATED = 'podcast created'.freeze
+
+  def episode_imports
+    EpisodeImport.where(podcast_import_id: self.id, has_duplicate_guid: false)
+  end
+
+  def episode_import_placeholders
+    EpisodeImport.where(podcast_import_id: self.id).having_duplicate_guids
+  end
 
   def config_url=(config_url)
     c_url = Addressable::URI.parse(config_url)
@@ -117,23 +122,21 @@ class PodcastImport < BaseModel
   def create_or_update_episode_imports!
     feed_entries, entries_with_dupe_guids = parse_feed_entries_for_dupe_guids
 
-    feed_entries.each do |entry|
-      entry_hash = feed_entry_to_hash(entry)
-      audio_files = entry_audio_files(entry_hash)
-      get_or_create_template(audio_files, entry_hash['enclosure'].type)
-      episode_import = create_or_update_episode_import!(entry_hash, audio_files)
+    episode_imports.having_duplicate_guids.destroy_all
+
+    created_imports = feed_entries.map do |entry|
+      episode_import = create_or_update_episode_import!(entry)
       episode_import.import_later
     end
+
+    created_imports += entries_with_dupe_guids.map do |entry|
+      episode_import = create_or_update_episode_import!(entry, has_duplicate_guid = true)
+      episode_import.import_later
+    end
+
     update_attributes(episode_importing_count: feed_entries.length)
 
-    # create placeholders for episode imports with duped guids
-    episode_import_placeholders.delete_all
-    entries_with_dupe_guids.each do |entry|
-      entry_hash = feed_entry_to_hash(entry)
-      episode_import_placeholders.create!(title: entry_hash['title'],
-                                          duplicate_guid: true,
-                                          guid: entry_hash['entry_id'])
-    end
+    created_imports
   end
 
   def feed_entry_to_hash(entry)
@@ -143,14 +146,20 @@ class PodcastImport < BaseModel
       .transform_values { |x| x.is_a?(String) ? remove_utf8_4byte(x) : x }
   end
 
-  def create_or_update_episode_import!(entry, audio_files)
-    if ei = episode_imports.where(guid: entry[:entry_id]).first
-      ei.update_attributes!(entry: entry, audio: audio_files)
+  def create_or_update_episode_import!(entry, has_duplicate_guid = false)
+
+    entry_hash = feed_entry_to_hash(entry)
+    audio_files = entry_audio_files(entry_hash)
+    get_or_create_template(audio_files, entry_hash['enclosure'].type)
+
+    if ei = episode_imports.where(guid: entry_hash[:entry_id]).first
+      ei.update_attributes!(entry: entry_hash, audio: audio_files, has_duplicate_guid: has_duplicate_guid)
     else
       ei = episode_imports.create(
-        guid: entry[:entry_id],
-        entry: entry,
-        audio: audio_files
+        guid: entry_hash[:entry_id],
+        entry: entry_hash,
+        audio: audio_files,
+        has_duplicate_guid: has_duplicate_guid
       )
     end
     ei

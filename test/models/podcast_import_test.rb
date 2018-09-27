@@ -192,17 +192,13 @@ describe PodcastImport do
     end
   end
 
-  describe('#episode_import_placeholders') do
-
-    it('should have an empty list of placeholders before import') do
-      importer.episode_import_placeholders.to_a.must_equal []
-    end
+  describe('#episode_imports') do
 
     it('should create episode import placeholders') do
       importer.url = 'http://feeds.prx.org/transistor_stem_duped'
       importer.import
-      importer.episode_import_placeholders.length.must_equal 3
-      importer.episode_imports.length.must_equal 3
+      importer.episode_imports.having_duplicate_guids.count.must_equal 3
+      importer.episode_imports.count.must_equal 3
     end
 
     it('should delete all import placeholders with each import') do
@@ -211,7 +207,7 @@ describe PodcastImport do
       # invoke the creation of placeholders
       importer.import_episodes!
       importer.create_or_update_episode_imports!
-      importer.episode_import_placeholders.length.must_equal 3
+      importer.episode_imports.having_duplicate_guids.count.must_equal 3
     end
 
   end

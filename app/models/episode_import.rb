@@ -18,8 +18,11 @@ class EpisodeImport < BaseModel
   belongs_to :podcast_import
   has_one :series, through: :podcast_import
 
+  scope :having_duplicate_guids, -> { unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true) }
+
   before_validation :set_defaults, on: :create
   after_commit :update_import_status
+
 
   validates :entry, :guid, presence: true
 
