@@ -131,7 +131,6 @@ class PodcastImport < BaseModel
 
     created_imports += entries_with_dupe_guids.map do |entry|
       episode_import = create_or_update_episode_import!(entry, has_duplicate_guid = true)
-      episode_import.import_later
     end
 
     update_attributes(episode_importing_count: feed_entries.length)
