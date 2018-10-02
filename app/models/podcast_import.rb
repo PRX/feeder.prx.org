@@ -122,6 +122,8 @@ class PodcastImport < BaseModel
   def create_or_update_episode_imports!
     feed_entries, entries_with_dupe_guids = parse_feed_entries_for_dupe_guids
 
+    update_attributes(episode_importing_count: feed_entries.length)
+
     episode_imports.having_duplicate_guids.destroy_all
 
     created_imports = feed_entries.map do |entry|
@@ -132,8 +134,6 @@ class PodcastImport < BaseModel
     created_imports += entries_with_dupe_guids.map do |entry|
       episode_import = create_or_update_episode_import!(entry, has_duplicate_guid = true)
     end
-
-    update_attributes(episode_importing_count: feed_entries.length)
 
     created_imports
   end
