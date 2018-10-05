@@ -21,13 +21,12 @@ class EpisodeImport < BaseModel
   scope :having_duplicate_guids, -> { unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true) }
 
   before_validation :set_defaults, on: :create
-  after_commit :update_import_status
-
 
   validates :entry, :guid, presence: true
 
   COMPLETE = 'complete'.freeze
   FAILED = 'failed'.freeze
+
   CREATED = 'created'.freeze
   RETRYING = 'retrying'.freeze
   STORY_SAVED = 'story saved'.freeze
@@ -41,13 +40,6 @@ class EpisodeImport < BaseModel
   def set_defaults
     self.status ||= CREATED
     self.audio ||= { files: [] }
-  end
-
-  def update_import_status
-    return unless podcast_import
-    podcast_import.with_lock do
-      podcast_import.update_status!
-    end
   end
 
   def import_later

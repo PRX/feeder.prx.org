@@ -246,7 +246,38 @@ describe PodcastImport do
 
       importer.series.stories.count.must_equal 0
     end
+  end
 
+  describe('#status') do
+    it 'sets a status based on the episode imports' do
+      importer.import
+      importer.status.must_equal PodcastImport::IMPORTING
+
+      ep1 = importer.episode_imports[0]
+      ep2 = importer.episode_imports[1]
+
+      importer.status.must_equal PodcastImport::IMPORTING
+
+      ep1.update_attributes! status: EpisodeImport::FAILED
+      ep2.update_attributes! status: EpisodeImport::COMPLETE
+
+      importer.reload
+      importer.status.must_equal PodcastImport::FAILED
+    end
+
+    it 'is failed so long as any episodes are failed' do
+      importer.import
+      importer.status.must_equal PodcastImport::IMPORTING
+
+      ep1 = importer.episode_imports[0]
+      ep2 = importer.episode_imports[1]
+
+      ep1.update_attributes! status: EpisodeImport::FAILED
+      ep2.update_attributes! status: EpisodeImport::STORY_SAVED
+
+      importer.reload
+      importer.status.must_equal PodcastImport::FAILED
+    end
   end
 end
 

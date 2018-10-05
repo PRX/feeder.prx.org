@@ -56,13 +56,15 @@ class PodcastImport < BaseModel
     }
   end
 
-  def update_status!
-    return unless episode_imports.count > 0
+  def status
+    return super unless episode_imports.length > 0
+
     if episode_imports.all? { |e| e.status == EpisodeImport::COMPLETE }
-      update_attributes!(status: COMPLETE)
-      remind_to_unlock(series.title)
+      COMPLETE
     elsif episode_imports.any? { |e| e.status == EpisodeImport::FAILED }
-      update_attributes!(status: FAILED)
+      FAILED
+    else
+      super
     end
   end
 
