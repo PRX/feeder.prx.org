@@ -278,6 +278,23 @@ describe PodcastImport do
       importer.reload
       importer.status.must_equal PodcastImport::FAILED
     end
+
+    it 'is in progress so long as the episode imports are not all created' do
+      importer.import
+
+      # simulate a more imports than currently created
+      importer.update_attributes(episode_importing_count: 3)
+      importer.episode_imports.length.must_equal 2
+
+      ep1 = importer.episode_imports[0]
+      ep2 = importer.episode_imports[1]
+
+      ep1.update_attributes! status: EpisodeImport::FAILED
+      ep2.update_attributes! status: EpisodeImport::FAILED
+
+      importer.reload
+      importer.status.must_equal PodcastImport::IMPORTING
+    end
   end
 end
 

@@ -58,6 +58,7 @@ class PodcastImport < BaseModel
 
   def status
     return super unless episode_imports.length > 0
+    return super if episode_importing_count > episode_imports.length
 
     if episode_imports.all? { |e| e.status == EpisodeImport::COMPLETE }
       COMPLETE
