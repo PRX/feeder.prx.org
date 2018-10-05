@@ -60,13 +60,30 @@ class PodcastImport < BaseModel
     return super unless episode_imports.length > 0
     return super if episode_importing_count > episode_imports.length
 
-    if episode_imports.all? { |e| e.status == EpisodeImport::COMPLETE }
+    if complete?
       COMPLETE
-    elsif episode_imports.any? { |e| e.status == EpisodeImport::FAILED }
+    elsif finished? && some_failed?
       FAILED
     else
       super
     end
+  end
+
+  def finished?
+    return false unless episode_imports.length == episode_importing_count
+    episode_imports.all? do |e|
+      e.status == EpisodeImport::COMPLETE ||
+        e.status == EpisodeImport::FAILED
+    end
+  end
+
+  def complete?
+    return false unless episode_imports.length == episode_importing_count
+    episode_imports.all? { |e| e.status == EpisodeImport::COMPLETE }
+  end
+
+  def some_failed?
+    episode_imports.any? { |e| e.status == EpisodeImport::FAILED }
   end
 
   def retry!

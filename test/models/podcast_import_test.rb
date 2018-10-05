@@ -258,14 +258,18 @@ describe PodcastImport do
 
       importer.status.must_equal PodcastImport::IMPORTING
 
-      ep1.update_attributes! status: EpisodeImport::FAILED
+      ep1.update_attributes! status: EpisodeImport::COMPLETE
       ep2.update_attributes! status: EpisodeImport::COMPLETE
 
       importer.reload
-      importer.status.must_equal PodcastImport::FAILED
+
+      importer.complete?.must_equal true
+      importer.finished?.must_equal true
+      importer.some_failed?.must_equal false
+      importer.status.must_equal PodcastImport::COMPLETE
     end
 
-    it 'is failed so long as any episodes are failed' do
+    it 'is failed so long as the import is finished' do
       importer.import
       importer.status.must_equal PodcastImport::IMPORTING
 
@@ -273,9 +277,13 @@ describe PodcastImport do
       ep2 = importer.episode_imports[1]
 
       ep1.update_attributes! status: EpisodeImport::FAILED
-      ep2.update_attributes! status: EpisodeImport::STORY_SAVED
+      ep2.update_attributes! status: EpisodeImport::COMPLETE
 
       importer.reload
+
+      importer.complete?.must_equal false
+      importer.finished?.must_equal true
+      importer.some_failed?.must_equal true
       importer.status.must_equal PodcastImport::FAILED
     end
 
@@ -293,6 +301,30 @@ describe PodcastImport do
       ep2.update_attributes! status: EpisodeImport::FAILED
 
       importer.reload
+
+      importer.complete?.must_equal false
+      importer.finished?.must_equal false
+      importer.some_failed?.must_equal true
+      importer.status.must_equal PodcastImport::IMPORTING
+    end
+
+    it 'is in progress so long as the episode imports are not finished' do
+      importer.import
+
+      # simulate a more imports than currently created
+      importer.episode_imports.length.must_equal 2
+
+      ep1 = importer.episode_imports[0]
+      ep2 = importer.episode_imports[1]
+
+      ep1.update_attributes! status: EpisodeImport::FAILED
+      ep2.update_attributes! status: EpisodeImport::STORY_SAVED
+
+      importer.reload
+
+      importer.complete?.must_equal false
+      importer.finished?.must_equal false
+      importer.some_failed?.must_equal true
       importer.status.must_equal PodcastImport::IMPORTING
     end
   end
