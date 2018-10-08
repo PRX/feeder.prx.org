@@ -140,14 +140,34 @@ class PodcastImport < BaseModel
 
     created_imports = feed_entries.map do |entry|
       episode_import = create_or_update_episode_import!(entry)
-      episode_import.import_later
     end
+
+    enqueue_episode_import_jobs(created_imports)
 
     created_imports += entries_with_dupe_guids.map do |entry|
       episode_import = create_or_update_episode_import!(entry, has_duplicate_guid = true)
     end
 
     created_imports
+  end
+
+  def enqueue_episode_import_jobs(created_imports)
+    messages = created_imports.map do |ei|
+      job = EpisodeImportJob.new(ei)
+      msg = {}
+      msg[:message_body] = job.serialize
+      msg[:message_attributes] = {
+        'shoryuken_class' => {
+          string_value: ActiveJob::QueueAdapters::ShoryukenAdapter::JobWrapper.to_s,
+          data_type: 'String'
+        }
+      }
+      msg
+    end
+    queue_name = EpisodeImportJob.queue_name
+    messages.in_groups_of(10, false) do |msg_group|
+      Shoryuken::Client.queues(queue_name).send_messages(msg_group)
+    end
   end
 
   def feed_entry_to_hash(entry)
