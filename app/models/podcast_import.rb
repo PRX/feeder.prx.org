@@ -131,14 +131,6 @@ class PodcastImport < BaseModel
     import_episodes!
   end
 
-  def entry_audio_files(entry)
-    if config[:audio] && config[:audio][entry[:entry_id]]
-      { files: (config[:audio][entry[:entry_id]] || []) }
-    elsif enclosure = enclosure_url(entry)
-      { files: [enclosure] }
-    end
-  end
-
   def create_or_update_episode_imports!
     feed_entries, entries_with_dupe_guids = parse_feed_entries_for_dupe_guids
 
@@ -163,21 +155,20 @@ class PodcastImport < BaseModel
       .to_h
       .with_indifferent_access
       .transform_values { |x| x.is_a?(String) ? remove_utf8_4byte(x) : x }
+      .as_json
+      .with_indifferent_access
   end
 
   def create_or_update_episode_import!(entry, has_duplicate_guid = false)
 
     entry_hash = feed_entry_to_hash(entry)
-    audio_files = entry_audio_files(entry_hash)
-    get_or_create_template(audio_files, entry_hash['enclosure'].type)
 
     if ei = episode_imports.where(guid: entry_hash[:entry_id]).first
-      ei.update_attributes!(entry: entry_hash, audio: audio_files, has_duplicate_guid: has_duplicate_guid)
+      ei.update_attributes!(entry: entry_hash, has_duplicate_guid: has_duplicate_guid)
     else
-      ei = episode_imports.create(
+      ei = episode_imports.create!(
         guid: entry_hash[:entry_id],
         entry: entry_hash,
-        audio: audio_files,
         has_duplicate_guid: has_duplicate_guid
       )
     end

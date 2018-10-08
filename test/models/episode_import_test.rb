@@ -23,9 +23,6 @@ describe EpisodeImport do
   let(:episode_import) do
     EpisodeImport.create!(
       podcast_import: importer,
-      audio: {
-        files: ['https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3']
-      },
       entry: entry.to_h,
       guid: 'https://transistor.prx.org/?p=1286'
     )
@@ -34,9 +31,6 @@ describe EpisodeImport do
   let(:libsyn_episode_import) do
     EpisodeImport.create!(
       podcast_import: importer,
-      audio: {
-        files: ['https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3']
-      },
       entry: entry.to_h,
       guid: 'https://transistor.prx.org/?p=1287'
     )
@@ -74,7 +68,7 @@ describe EpisodeImport do
     f.published_at.wont_be_nil
     f.images.count.must_equal 1
     f.audio_versions.count.must_equal 1
-    config_audio = 'https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3'
+    config_audio = 'https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3'
     f.audio_versions.first.audio_files.first.upload.must_equal config_audio
     version = f.audio_versions.first
     version.audio_version_template_id.wont_be_nil
@@ -86,6 +80,20 @@ describe EpisodeImport do
   it 'creates correctly for libsyn entries' do
     s = libsyn_episode_import.import
     s.distributions.count.must_equal 1
+  end
+
+  it 'creates audio entries' do
+    ei = EpisodeImport.create!(
+      podcast_import: importer,
+      entry: entry.to_h,
+      guid: 'https://transistor.prx.org/?p=1286'
+    )
+
+    ei.audio["files"].present?.must_equal(false)
+
+    ei.import
+
+    ei.audio["files"].present?.must_equal(true)
   end
 
   describe 'helper methods' do

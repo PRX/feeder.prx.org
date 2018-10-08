@@ -13,7 +13,7 @@ module ImportUtils
   end
 
   def enclosure_url(entry)
-    url = entry[:feedburner_orig_enclosure_link] || entry[:enclosure].try(:url)
+    url = entry[:feedburner_orig_enclosure_link] || enclosure_url_from_entry(entry)
     clean_string(url)
   end
 
@@ -104,6 +104,13 @@ module ImportUtils
       puts "Reminder: #{title} is LOCKED. Unlock in Feeder to publish feed."
       puts '################################'
     end
+  end
+
+  private
+
+  def enclosure_url_from_entry(entry)
+    return nil unless entry.key?(:enclosure)
+    entry[:enclosure][:url]
   end
 
 end

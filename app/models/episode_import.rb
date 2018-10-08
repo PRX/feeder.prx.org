@@ -17,6 +17,7 @@ class EpisodeImport < BaseModel
   belongs_to :story, -> { with_deleted }, class_name: 'Story', foreign_key: 'piece_id', touch: true
   belongs_to :podcast_import
   has_one :series, through: :podcast_import
+  delegate :config, to: :podcast_import
 
   scope :having_duplicate_guids, -> { unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true) }
 
@@ -28,6 +29,7 @@ class EpisodeImport < BaseModel
   FAILED = 'failed'.freeze
 
   CREATED = 'created'.freeze
+  AUDIO_SAVED = 'audio saved'.freeze
   RETRYING = 'retrying'.freeze
   STORY_SAVED = 'story saved'.freeze
   EPISODE_SAVED = 'episode saved'.freeze
@@ -48,6 +50,8 @@ class EpisodeImport < BaseModel
   end
 
   def import
+    update_episode_audio!
+    update_attributes!(status: AUDIO_SAVED)
     create_or_update_story!
     update_attributes!(status: STORY_SAVED, piece_id: story.id)
     create_or_update_episode!
@@ -58,6 +62,19 @@ class EpisodeImport < BaseModel
   rescue StandardError => err
     update_attributes(status: FAILED)
     raise err
+  end
+
+  def update_episode_audio!
+    audio_files = entry_audio_files(entry)
+    update_attributes!(audio: audio_files)
+  end
+
+  def entry_audio_files(entry)
+    if config[:audio] && config[:audio][entry[:entry_id]]
+      { files: (config[:audio][entry[:entry_id]] || []) }
+    elsif enclosure = enclosure_url(entry)
+      { files: [enclosure] }
+    end
   end
 
   def create_or_update_story!
@@ -183,11 +200,6 @@ class EpisodeImport < BaseModel
 
   def get_or_create_template(segments, enclosure)
     podcast_import.get_or_create_template(segments, enclosure)
-  end
-
-  def enclosure_url(entry)
-    url = entry[:feedburner_orig_enclosure_link] || entry[:enclosure].try(:url)
-    clean_string(url)
   end
 
   def create_or_update_episode!

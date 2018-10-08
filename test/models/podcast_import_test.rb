@@ -12,17 +12,13 @@ describe PodcastImport do
   let(:importer) { PodcastImport.create(user: user, account: account, url: podcast_url) }
 
   before do
+    # stub to prevent network access
+    def importer.enqueue_episode_import_jobs(arg); nil; end
     stub_requests
   end
 
   let(:feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor_two.xml')) }
   let(:template) { create(:audio_version_template, series: series) }
-  let(:distribution) do
-    create(:podcast_distribution,
-           distributable: series,
-           url: 'https://feeder.prx.org/api/v1/podcasts/51')
-  end
-  let(:feed_with_video) { Feedjira::Feed.parse(test_file('/fixtures/99pi-feed-rss.xml')) }
 
   let(:podcast) do
     api_resource(JSON.parse(json_file('transistor_podcast_basic')), feeder_root).tap do |r|
@@ -67,6 +63,11 @@ describe PodcastImport do
   it 'creates a podcast' do
     importer.feed = feed
     importer.series = series
+
+    distribution =  create(:podcast_distribution,
+                           distributable: series,
+                           url: 'https://feeder.prx.org/api/v1/podcasts/51')
+
     importer.distribution = distribution.tap { |d| d.url = nil }
     importer.create_or_update_podcast!
     importer.podcast.wont_be_nil
@@ -80,10 +81,10 @@ describe PodcastImport do
     importer.feed = feed
     importer.series = series
     series.audio_version_templates.clear
-    importer.distribution = distribution
     importer.podcast = podcast
-    episode_imports = importer.create_or_update_episode_imports!
-    ei = episode_imports.first
+
+    importer.import
+    importer.episode_imports.map(&:import)
 
     importer.series.audio_version_templates.count.must_equal 2
     importer.distribution.audio_version_templates.count.must_equal 2
@@ -94,13 +95,11 @@ describe PodcastImport do
   end
 
   it 'handles audio and video templates in episodes' do
-    importer.feed = feed_with_video
-    importer.series = series
-    series.audio_version_templates.clear
-    importer.distribution = distribution
-    importer.podcast = podcast
+    # XXX 299 entries in this feed
+    importer.url = 'http://feeds.prx.org/feed_with_video'
 
-    importer.create_or_update_episode_imports!
+    importer.import
+    importer.episode_imports.map(&:import)
 
     importer.series.audio_version_templates.count.must_equal 2
     importer.distribution.audio_version_templates.count.must_equal 2
@@ -330,6 +329,11 @@ describe PodcastImport do
 end
 
 def stub_requests
+  stub_request(:put, "https://feeder.prx.org/api/v1/podcasts/51").
+    with(:body => "{\"copyright\":\"Copyright 2016 PRX\",\"language\":\"en-US\",\"updateFrequency\":\"1\",\"updatePeriod\":\"hourly\",\"summary\":\"Transistor is a podcast of scientific curiosities and current events, featuring guest hosts, scientists, and story-driven reporters. Presented by radio and podcast powerhouse PRX, with support from the Sloan Foundation.\",\"link\":\"https://transistor.prx.org\",\"explicit\":\"clean\",\"newFeedUrl\":\"http://feeds.prx.org/transistor_stem\",\"enclosurePrefix\":\"https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/\",\"feedburnerUrl\":\"http://feeds.feedburner.com/transistor_stem\",\"url\":\"http://feeds.feedburner.com/transistor_stem\",\"author\":{\"name\":\"PRX\",\"email\":null},\"managingEditor\":{\"name\":\"PRX\",\"email\":\"prxwpadmin@prx.org\"},\"owner\":{\"name\":\"PRX\",\"email\":\"prxwpadmin@prx.org\"},\"itunesCategories\":[{\"name\":\"Science & Medicine\",\"subcategories\":[\"Natural Sciences\"]}],\"categories\":[],\"complete\":false,\"keywords\":[],\"serialOrder\":false,\"locked\":true}",
+         :headers => {'Accept'=>'application/json', 'Authorization'=>'Bearer thisisnotatoken', 'Content-Type'=>'application/json', 'Host'=>'feeder.prx.org', 'User-Agent'=>'HyperResource 0.9.4'}).
+  to_return(:status => 200, :body => "", :headers => {})
+
   stub_request(:get, 'http://feeds.prx.org/transistor_stem').
     to_return(status: 200, body: test_file('/fixtures/transistor_two.xml'), headers: {})
 
@@ -371,4 +375,7 @@ def stub_requests
 
   stub_request(:get, 'http://feeds.prx.org/transistor_stem_duped').
     to_return(status: 200, body: test_file('/fixtures/transistor_dupped_guids.xml'), headers: {})
+
+  stub_request(:get, 'http://feeds.prx.org/feed_with_video').
+    to_return(status: 200, body: test_file('/fixtures/99pi-feed-rss.xml'), headers: {})
 end
