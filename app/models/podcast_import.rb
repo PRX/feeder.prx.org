@@ -13,7 +13,7 @@ class PodcastImport < BaseModel
 
   serialize :config, HashSerializer
 
-  attr_accessor :feed, :feed_raw_doc, :templates, :podcast, :distribution
+  attr_accessor :feed, :feed_raw_doc, :templates, :podcast
 
   belongs_to :user, -> { with_deleted }
   belongs_to :account, -> { with_deleted }
@@ -279,8 +279,16 @@ class PodcastImport < BaseModel
     to_insert
   end
 
+  def distribution=(dist)
+    @distribution = dist
+  end
+
+  def distribution
+    @distribution ||= series.distributions.where(type: 'Distributions::PodcastDistribution').first
+  end
+
   def podcast_distribution
-    self.distribution ||= series.distributions.where(type: 'Distributions::PodcastDistribution').first
+    distribution
   end
 
   def create_or_update_podcast!
