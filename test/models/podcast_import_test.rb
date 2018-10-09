@@ -95,7 +95,6 @@ describe PodcastImport do
   end
 
   it 'handles audio and video templates in episodes' do
-    # XXX 299 entries in this feed
     importer.url = 'http://feeds.prx.org/feed_with_video'
 
     importer.import
