@@ -19,7 +19,9 @@ class EpisodeImport < BaseModel
   has_one :series, through: :podcast_import
   delegate :config, to: :podcast_import
 
-  scope :having_duplicate_guids, -> { unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true) }
+  scope :having_duplicate_guids, -> do
+    unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true)
+  end
 
   before_validation :set_defaults, on: :create
 

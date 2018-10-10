@@ -145,7 +145,7 @@ class PodcastImport < BaseModel
     enqueue_episode_import_jobs(created_imports)
 
     created_imports += entries_with_dupe_guids.map do |entry|
-      episode_import = create_or_update_episode_import!(entry, has_duplicate_guid = true)
+      create_or_update_episode_import!(entry, has_duplicate_guid = true)
     end
 
     created_imports
