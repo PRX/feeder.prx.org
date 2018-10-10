@@ -274,8 +274,6 @@ class PodcastImport < BaseModel
       to_insert << series.images.build(upload: clean_string(image_url), purpose: purpose)
     end
 
-    story.images.destroy(to_destroy) if to_destroy.size > 0
-
     to_insert
   end
 
