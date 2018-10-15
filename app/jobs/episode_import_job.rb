@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class EpisodeImportJob < ApplicationJob
-  queue_as :cms_default
+  queue_as :cms_podcast_import
 
   def perform(episode_import)
     episode_import.import
