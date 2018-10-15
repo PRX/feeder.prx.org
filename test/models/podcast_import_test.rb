@@ -13,7 +13,7 @@ describe PodcastImport do
 
   before do
     # stub to prevent network access
-    def importer.enqueue_episode_import_jobs(arg); nil; end
+    def importer.enqueue_episode_import_jobs(*); nil; end
     stub_requests
   end
 
@@ -328,10 +328,10 @@ describe PodcastImport do
 end
 
 def stub_requests
-  stub_request(:put, "https://feeder.prx.org/api/v1/podcasts/51").
+  stub_request(:put, 'https://feeder.prx.org/api/v1/podcasts/51').
     with(:body => "{\"copyright\":\"Copyright 2016 PRX\",\"language\":\"en-US\",\"updateFrequency\":\"1\",\"updatePeriod\":\"hourly\",\"summary\":\"Transistor is a podcast of scientific curiosities and current events, featuring guest hosts, scientists, and story-driven reporters. Presented by radio and podcast powerhouse PRX, with support from the Sloan Foundation.\",\"link\":\"https://transistor.prx.org\",\"explicit\":\"clean\",\"newFeedUrl\":\"http://feeds.prx.org/transistor_stem\",\"enclosurePrefix\":\"https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/\",\"feedburnerUrl\":\"http://feeds.feedburner.com/transistor_stem\",\"url\":\"http://feeds.feedburner.com/transistor_stem\",\"author\":{\"name\":\"PRX\",\"email\":null},\"managingEditor\":{\"name\":\"PRX\",\"email\":\"prxwpadmin@prx.org\"},\"owner\":{\"name\":\"PRX\",\"email\":\"prxwpadmin@prx.org\"},\"itunesCategories\":[{\"name\":\"Science & Medicine\",\"subcategories\":[\"Natural Sciences\"]}],\"categories\":[],\"complete\":false,\"keywords\":[],\"serialOrder\":false,\"locked\":true}",
          :headers => {'Accept'=>'application/json', 'Authorization'=>'Bearer thisisnotatoken', 'Content-Type'=>'application/json', 'Host'=>'feeder.prx.org', 'User-Agent'=>'HyperResource 0.9.4'}).
-  to_return(:status => 200, :body => "", :headers => {})
+  to_return(:status => 200, :body => '', :headers => {})
 
   stub_request(:get, 'http://feeds.prx.org/transistor_stem').
     to_return(status: 200, body: test_file('/fixtures/transistor_two.xml'), headers: {})

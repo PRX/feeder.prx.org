@@ -89,11 +89,11 @@ describe EpisodeImport do
       guid: 'https://transistor.prx.org/?p=1286'
     )
 
-    ei.audio["files"].present?.must_equal(false)
+    ei.audio['files'].present?.must_equal(false)
 
     ei.import
 
-    ei.audio["files"].present?.must_equal(true)
+    ei.audio['files'].present?.must_equal(true)
   end
 
   describe 'helper methods' do
