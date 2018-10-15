@@ -59,11 +59,16 @@ class EpisodeImport < BaseModel
     create_or_update_episode!
     update_attributes!(status: EPISODE_SAVED)
     story.save!
+    update_search_index!
     update_attributes!(status: COMPLETE)
     story
   rescue StandardError => err
     update_attributes(status: FAILED)
     raise err
+  end
+
+  def update_search_index!
+    SearchIndexerJob.set(wait: 5.minutes).perform_later(story)
   end
 
   def update_episode_audio!
@@ -84,7 +89,7 @@ class EpisodeImport < BaseModel
   end
 
   def create_story_with_entry!
-    self.story = Story.create!(series: series)
+    self.story = Story.create!(series: series, skip_searchable: true)
     update_story_with_entry!
   end
 
@@ -104,6 +109,7 @@ class EpisodeImport < BaseModel
     new_audio = update_audio
     new_images = update_image
 
+    story.skip_searchable = true
     story.save!
 
     new_audio.each { |a| announce_audio(a) }
