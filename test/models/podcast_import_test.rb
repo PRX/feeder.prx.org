@@ -234,11 +234,11 @@ describe PodcastImport do
     end
   end
 
-  describe('#episode_importing_count') do
+  describe('#feed_episode_count') do
 
     it 'registers the count of episodes that it will be importing' do
       importer.import
-      importer.episode_importing_count.must_equal 2
+      importer.feed_episode_count.must_equal 2
       importer.episode_imports.count.must_equal 2
 
       importer.series.stories.count.must_equal 0
@@ -288,7 +288,7 @@ describe PodcastImport do
       importer.import
 
       # simulate a more imports than currently created
-      importer.update_attributes(episode_importing_count: 3)
+      importer.update_attributes(feed_episode_count: 3)
       importer.episode_imports.length.must_equal 2
 
       ep1 = importer.episode_imports[0]

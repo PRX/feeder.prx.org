@@ -3,7 +3,7 @@ FactoryGirl.define do
     account
     user
     series
-    episode_importing_count 10
+    feed_episode_count 10
 
     url 'http://feeds.prx.org/transistor_stem'
   end

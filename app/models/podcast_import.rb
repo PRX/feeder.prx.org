@@ -58,7 +58,7 @@ class PodcastImport < BaseModel
 
   def status
     return super unless episode_imports.count > 0
-    return super if episode_importing_count > episode_imports.count
+    return super if feed_episode_count > episode_imports.count
 
     if complete?
       COMPLETE
@@ -70,7 +70,7 @@ class PodcastImport < BaseModel
   end
 
   def finished?
-    return false unless episode_imports.count == episode_importing_count
+    return false unless episode_imports.count == feed_episode_count
     episode_imports.all? do |e|
       e.status == EpisodeImport::COMPLETE ||
         e.status == EpisodeImport::FAILED
@@ -78,7 +78,7 @@ class PodcastImport < BaseModel
   end
 
   def complete?
-    return false unless episode_imports.count == episode_importing_count
+    return false unless episode_imports.count == feed_episode_count
     episode_imports.all? { |e| e.status == EpisodeImport::COMPLETE }
   end
 
@@ -134,7 +134,7 @@ class PodcastImport < BaseModel
   def create_or_update_episode_imports!
     feed_entries, entries_with_dupe_guids = parse_feed_entries_for_dupe_guids
 
-    update_attributes(episode_importing_count: feed_entries.length)
+    update_attributes(feed_episode_count: feed_entries.length)
 
     episode_imports.having_duplicate_guids.destroy_all
 
