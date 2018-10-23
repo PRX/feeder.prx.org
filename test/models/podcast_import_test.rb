@@ -236,7 +236,7 @@ describe PodcastImport do
 
   describe('#feed_episode_count') do
 
-    it 'registers the count of episodes that it will be importing' do
+    it 'registers the count of episodes in the feed' do
       importer.import
       importer.feed_episode_count.must_equal 2
       importer.episode_imports.count.must_equal 2
