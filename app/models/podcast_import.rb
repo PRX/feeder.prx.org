@@ -156,6 +156,7 @@ class PodcastImport < BaseModel
   end
 
   def enqueue_episode_import_jobs(created_imports)
+    # TODO port these jobs to a shoryuken worker
     messages = created_imports.map do |ei|
       job = EpisodeImportJob.new(ei)
       msg = {}
