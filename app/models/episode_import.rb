@@ -97,7 +97,7 @@ class EpisodeImport < BaseModel
     story.app_version = PRX::APP_VERSION
     story.creator_id = podcast_import.user_id
     story.account_id = series.account_id
-    story.title = clean_string(entry[:title])
+    story.title = clean_title(entry[:title])
     story.short_description = clean_string(episode_short_desc(entry))
     story.description_html = entry_description(entry)
     story.tags = Array(entry[:categories]).map(&:strip).reject(&:blank?)

@@ -21,6 +21,18 @@ module ImportUtils
     StoryDistributions::EpisodeDistribution.default_story_url(story)
   end
 
+  def clean_title(str)
+    str = clean_string(str)
+    return str if str.length <= 255
+    truncated = str[0..254]
+
+    e = RuntimeError.new("ImportUtils: String length of #{str.length} exceeds title column length of 255: #{truncated}")
+    e.set_backtrace(caller)
+    NewRelic::Agent.notice_error(e)
+
+    clean_string(truncated)
+  end
+
   def explicit(str)
     return nil if str.blank?
     explicit = clean_string(str).downcase
