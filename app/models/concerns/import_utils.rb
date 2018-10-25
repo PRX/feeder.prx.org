@@ -26,7 +26,7 @@ module ImportUtils
     return str if str.length <= 255
     truncated = str[0..254]
 
-    e = RuntimeError.new("ImportUtils: String length of #{str.length} exceeds title column length of 255: #{truncated}")
+    e = RuntimeError.new("ImportUtils: #{self.class.name}[id:#{try(:id)}] having title string length of #{str.length} exceeds column length of 255: #{truncated}")
     e.set_backtrace(caller)
     NewRelic::Agent.notice_error(e)
 
