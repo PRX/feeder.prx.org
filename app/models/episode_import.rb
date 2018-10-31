@@ -62,6 +62,10 @@ class EpisodeImport < BaseModel
     story.save!
     update_search_index!
     update_attributes!(status: COMPLETE)
+    # work around the sync creation of the episode
+    # which happens in `create_or_update_episode!`
+    # racing with the announce in the audio callback worker
+    announce(:story, :update, Api::Msg::StoryRepresenter.new(story).to_json)
     story
   rescue StandardError => err
     update_attributes(status: FAILED)
