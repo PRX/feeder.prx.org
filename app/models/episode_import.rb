@@ -22,6 +22,7 @@ class EpisodeImport < BaseModel
   scope :having_duplicate_guids, -> do
     unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true)
   end
+  scope :complete, -> { where(status: COMPLETE) }
 
   before_validation :set_defaults, on: :create
 
