@@ -336,7 +336,6 @@ describe PodcastImport do
 
       ep1.stub :podcast_import, importer do
 
-        # stub the podcast_distribution update_imports!
         podcast_distribution_mock = MiniTest::Mock.new
         podcast_distribution_mock.expect :call, true, [{locked: false}]
         importer.podcast_distribution.stub :update_podcast!, podcast_distribution_mock do
