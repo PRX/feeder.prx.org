@@ -37,6 +37,12 @@ class EpisodeImport < BaseModel
   STORY_SAVED = 'story saved'.freeze
   EPISODE_SAVED = 'episode saved'.freeze
 
+  def unlock_podcast
+    if podcast_import.finished?
+      podcast_import.podcast_distribution.update_podcast!(locked: false)
+    end
+  end
+
   def retry!
     update_attributes(status: RETRYING)
     import_later
@@ -62,10 +68,10 @@ class EpisodeImport < BaseModel
     story.save!
     update_search_index!
     update_attributes!(status: COMPLETE)
-    # work around the sync creation of the episode
-    # which happens in `create_or_update_episode!`
-    # racing with the announce in the audio callback worker
+
     announce(:story, :update, Api::Msg::StoryRepresenter.new(story).to_json)
+    unlock_podcast
+
     story
   rescue StandardError => err
     update_attributes(status: FAILED)

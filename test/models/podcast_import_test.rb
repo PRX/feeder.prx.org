@@ -324,6 +324,28 @@ describe PodcastImport do
       importer.some_failed?.must_equal true
       importer.status.must_equal PodcastImport::IMPORTING
     end
+
+    it 'should unlock the podcast distribution once all the episodes are imported' do
+      importer.import
+
+      ep1 = importer.episode_imports[0]
+      ep2 = importer.episode_imports[1]
+
+      ep1.update_attributes! status: EpisodeImport::COMPLETE
+      ep2.update_attributes! status: EpisodeImport::FAILED
+
+      ep1.stub :podcast_import, importer do
+
+        # stub the podcast_distribution update_imports!
+        podcast_distribution_mock = MiniTest::Mock.new
+        podcast_distribution_mock.expect :call, true, [{locked: false}]
+        importer.podcast_distribution.stub :update_podcast!, podcast_distribution_mock do
+          ep1.import
+        end
+        podcast_distribution_mock.verify()
+      end
+    end
+
   end
 end
 
@@ -332,6 +354,11 @@ def stub_requests
     with(:body => "{\"copyright\":\"Copyright 2016 PRX\",\"language\":\"en-US\",\"updateFrequency\":\"1\",\"updatePeriod\":\"hourly\",\"summary\":\"Transistor is a podcast of scientific curiosities and current events, featuring guest hosts, scientists, and story-driven reporters. Presented by radio and podcast powerhouse PRX, with support from the Sloan Foundation.\",\"link\":\"https://transistor.prx.org\",\"explicit\":\"clean\",\"newFeedUrl\":\"http://feeds.prx.org/transistor_stem\",\"enclosurePrefix\":\"https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/\",\"feedburnerUrl\":\"http://feeds.feedburner.com/transistor_stem\",\"url\":\"http://feeds.feedburner.com/transistor_stem\",\"author\":{\"name\":\"PRX\",\"email\":null},\"managingEditor\":{\"name\":\"PRX\",\"email\":\"prxwpadmin@prx.org\"},\"owner\":{\"name\":\"PRX\",\"email\":\"prxwpadmin@prx.org\"},\"itunesCategories\":[{\"name\":\"Science & Medicine\",\"subcategories\":[\"Natural Sciences\"]}],\"categories\":[],\"complete\":false,\"keywords\":[],\"serialOrder\":false,\"locked\":true}",
          :headers => {'Accept'=>'application/json', 'Authorization'=>'Bearer thisisnotatoken', 'Content-Type'=>'application/json', 'Host'=>'feeder.prx.org', 'User-Agent'=>'HyperResource 0.9.4'}).
   to_return(:status => 200, :body => '', :headers => {})
+
+  stub_request(:put, "https://feeder.prx.org/api/v1/podcasts/51").
+    with(:body => "{\"locked\":false}",
+         :headers => {'Accept'=>'application/json', 'Authorization'=>'Bearer thisisnotatoken', 'Content-Type'=>'application/json', 'Host'=>'feeder.prx.org', 'User-Agent'=>'HyperResource 0.9.4'}).
+  to_return(:status => 200, :body => "", :headers => {})
 
   stub_request(:get, 'http://feeds.prx.org/transistor_stem').
     to_return(status: 200, body: test_file('/fixtures/transistor_two.xml'), headers: {})
