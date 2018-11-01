@@ -341,7 +341,7 @@ describe PodcastImport do
         importer.podcast_distribution.stub :update_podcast!, podcast_distribution_mock do
           ep1.import
         end
-        podcast_distribution_mock.verify()
+        podcast_distribution_mock.verify
       end
     end
 
