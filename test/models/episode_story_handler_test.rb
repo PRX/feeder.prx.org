@@ -6,19 +6,31 @@ describe EpisodeStoryHandler do
 
   let(:episode) { create(:episode) }
 
-  let(:story) do
-    msg = json_file(:prx_story_all)
-    body = JSON.parse(msg)
-    href = body.dig(:_links, :self, :href)
-    resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
-    link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
-    PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
+  let(:msg) { json_file(:prx_story_all) }
+  let(:body) { JSON.parse(msg) }
+  let(:href) { body.dig(:_links, :self, :href) }
+  let(:resource) { PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/') }
+  let(:link) { PRXAccess::PRXHyperResource::Link.new(resource, href: href) }
+  let(:story) { PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link) }
+
+  let(:story_with_nil_season) do
+    body_no_season = body.merge("seasonIdentifier" => nil)
+    PRXAccess::PRXHyperResource.new_from(body: body_no_season, resource: resource, link: link)
   end
 
   before {
     stub_request(:get, 'https://cms.prx.org/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/lindsay.png').
       to_return(status: 200, body: test_file('/fixtures/transistor1400.jpg'), headers: {})
   }
+
+  it 'can nil out the season' do
+    podcast = create(:podcast, prx_uri: '/api/v1/series/36501')
+    episode = EpisodeStoryHandler.create_from_story!(story)
+    episode.season.must_equal 2
+
+    episode = EpisodeStoryHandler.new(episode).update_from_story!(story_with_nil_season)
+    episode.reload.season.must_equal nil
+  end
 
   it 'can be created from a story' do
     podcast = create(:podcast, prx_uri: '/api/v1/series/36501')
