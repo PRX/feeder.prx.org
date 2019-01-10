@@ -63,8 +63,16 @@ class EpisodeStoryHandler
     episode.published_at = sa[:published_at] ? Time.parse(sa[:published_at]) : nil
 
     %w(season episode).each do |time|
-      id = sa["#{time}_identifier"].to_i
-      episode["#{time}_number"] = id > 0 ? id : nil
+      episode["#{time}_number"] = if sa["#{time}_identifier"].nil?
+                                    nil
+                                  else
+                                    begin
+                                      id = Integer(sa["#{time}_identifier"])
+                                      id >= 0 ? id : nil
+                                    rescue ArgumentError
+                                      nil
+                                    end
+                                  end
     end
   end
 
