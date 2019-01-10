@@ -63,8 +63,8 @@ class EpisodeStoryHandler
     episode.published_at = sa[:published_at] ? Time.parse(sa[:published_at]) : nil
 
     %w(season episode).each do |time|
-      id = sa["#{time}_identifier"]
-      episode["#{time}_number"] = id.to_i if id && (!id.to_i.zero? || [0, '0'].include?(id))
+      id = sa["#{time}_identifier"].to_i
+      episode["#{time}_number"] = id > 0 ? id : nil
     end
   end
 
