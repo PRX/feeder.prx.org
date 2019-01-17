@@ -69,15 +69,23 @@ describe EpisodeStoryHandler do
       episode = EpisodeStoryHandler.create_from_story!(invalid_identifiers_story)
       episode.season_number.must_be_nil
       episode.episode_number.must_be_nil
-
     end
 
-   it 'allows identifiers to be zero' do
+   it 'does not allow identifiers to be zero' do
      podcast = create(:podcast, prx_uri: '/api/v1/series/32164')
      episode = EpisodeStoryHandler.create_from_story!(zero_identifiers_story)
-     episode.season_number.must_equal 0
-     episode.episode_number.must_equal 0
+     episode.season_number.must_be_nil
+     episode.episode_number.must_be_nil
+   end
+
+   it 'blanks out identifiers on update' do
+     podcast = create(:podcast, prx_uri: '/api/v1/series/36501')
+     episode = EpisodeStoryHandler.create_from_story!(story)
+     episode.season_number.must_be :>, 0
+     episode.episode_number.must_be :>, 0
+     EpisodeStoryHandler.new(episode).update_from_story(zero_identifiers_story)
+     episode.season_number.must_be_nil
+     episode.episode_number.must_be_nil
    end
   end
-
 end
