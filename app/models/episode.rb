@@ -222,7 +222,7 @@ class Episode < BaseModel
   def media_ready?
     # if this episode has enclosores, media is ready if there is a complete one
     if !enclosures.blank?
-      enclosure
+      !!enclosure
     # if this episode has contents, ready when each position is ready
     elsif !all_contents.blank?
       max_pos = all_contents.map { |c| c.position }.max
