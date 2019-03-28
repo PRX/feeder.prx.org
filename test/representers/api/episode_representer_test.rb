@@ -19,6 +19,15 @@ describe Api::EpisodeRepresenter do
     json['itunesBlock'].must_equal false
   end
 
+  it 'indicates if the episode media is not ready' do
+    json['isFeedReady'].must_equal true
+  end
+
+  it 'indicates if the episode media is not ready' do
+    episode.enclosure.update_attributes(status: 'error')
+    json['isFeedReady'].must_equal false
+  end
+
   it 'uses summary when not blank' do
     episode.summary = 'summary has <a href="/">a link</a>'
     episode.description = '<b>tags</b> removed, <a href="/">links remain</a>'
