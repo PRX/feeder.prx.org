@@ -139,11 +139,12 @@ describe Api::EpisodesController do
       put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
-      episode_update.reload.all_contents.size.must_equal 1
-      episode_update.all_contents.first.mime_type.must_equal 'audio/mpeg'
-      episode_update.all_contents.first.file_size.must_equal 123456
-      episode_update.all_contents.first.duration.to_s.must_equal '1234.5678'
-      guid1 = episode_update.all_contents.first.guid
+      contents = episode_update.reload.all_contents
+      contents.size.must_equal 1
+      contents.first.mime_type.must_equal 'audio/mpeg'
+      contents.first.file_size.must_equal 123456
+      contents.first.duration.to_s.must_equal '1234.5678'
+      guid1 = contents.first.guid
 
 
       # updating with a dupe should not insert it
@@ -151,31 +152,44 @@ describe Api::EpisodesController do
       put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
-      episode_update.reload.all_contents.size.must_equal 1
-      episode_update.all_contents.first.mime_type.must_equal 'audio/mpeg'
-      episode_update.all_contents.first.file_size.must_equal 123456
-      episode_update.all_contents.first.duration.to_s.must_equal '1234.5678'
-      episode_update.all_contents.first.guid.must_equal guid1
+      contents = episode_update.reload.all_contents
+      contents.size.must_equal 1
+      contents.first.mime_type.must_equal 'audio/mpeg'
+      contents.first.file_size.must_equal 123456
+      contents.first.duration.to_s.must_equal '1234.5678'
+      contents.first.guid.must_equal guid1
 
       # updating with a different url but with matching path and filename won't insert
       update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/this.is.different/test/change1.mp3' }] }
       put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
-      episode_update.reload.all_contents.size.must_equal 1
-      episode_update.all_contents.first.mime_type.must_equal 'audio/mpeg'
-      episode_update.all_contents.first.file_size.must_equal 123456
-      episode_update.all_contents.first.duration.to_s.must_equal '1234.5678'
-      episode_update.all_contents.first.guid.must_equal guid1
+      contents = episode_update.reload.all_contents
+      contents.size.must_equal 1
+      contents.first.mime_type.must_equal 'audio/mpeg'
+      contents.first.file_size.must_equal 123456
+      contents.first.duration.to_s.must_equal '1234.5678'
+      contents.first.guid.must_equal guid1
 
       # updating with a different path should insert it, with same position value of 1
       update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/testing/change1.mp3' }] }
       put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
-      episode_update.reload.all_contents.size.must_equal 2
-      episode_update.all_contents.first.position.must_equal 1
-      episode_update.all_contents.last.position.must_equal 1
+      contents = episode_update.reload.all_contents
+      contents.size.must_equal 2
+
+      contents.first.guid.wont_equal guid1
+      contents.first.position.must_equal 1
+      contents.first.mime_type.must_be_nil
+      contents.first.file_size.must_be_nil
+      contents.first.duration.must_be_nil
+
+      contents.last.guid.must_equal guid1
+      contents.last.position.must_equal 1
+      contents.last.mime_type.must_equal 'audio/mpeg'
+      contents.last.file_size.must_equal 123456
+      contents.last.duration.to_s.must_equal '1234.5678'
     end
   end
 end
