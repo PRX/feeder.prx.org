@@ -264,6 +264,7 @@ class Episode < BaseModel
 
   def update_contents(files)
     ignore = [:id, :type, :episode_id, :guid, :position, :status, :created_at, :updated_at]
+    ignore_nil = [:mime_type, :file_size, :duration]
     files.each_with_index do |f, index|
       file = f.attributes.with_indifferent_access.except(*ignore)
       file[:position] = index + 1
@@ -271,6 +272,7 @@ class Episode < BaseModel
 
       # If there is an existing file with the same url, update
       if existing_content
+        ignore_nil.each { |k| file[k] = existing_content[k] if file[k].nil? }
         existing_content.update_attributes(file)
       # Otherwise, make a new content to be or replace content for that position
       # If there is no file, or the file has a different url
