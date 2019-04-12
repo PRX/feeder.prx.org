@@ -125,7 +125,14 @@ describe Api::EpisodesController do
     end
 
     it 'can update audio on an episode' do
-      update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/test/change1.mp3' }] }
+      update_hash = {
+        media: [{
+          href: 'https://s3.amazonaws.com/prx-testing/test/change1.mp3',
+          type: 'audio/mpeg',
+          size: 123456,
+          duration: '1234.5678',
+        }]
+      }
 
       episode_update.all_contents.size.must_equal 0
 
@@ -133,12 +140,22 @@ describe Api::EpisodesController do
       assert_response :success
 
       episode_update.reload.all_contents.size.must_equal 1
+      episode_update.all_contents.first.mime_type.must_equal 'audio/mpeg'
+      episode_update.all_contents.first.file_size.must_equal 123456
+      episode_update.all_contents.first.duration.to_s.must_equal '1234.5678'
+      guid1 = episode_update.all_contents.first.guid
+
 
       # updating with a dupe should not insert it
+      update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/test/change1.mp3' }] }
       put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
       episode_update.reload.all_contents.size.must_equal 1
+      episode_update.all_contents.first.mime_type.must_equal 'audio/mpeg'
+      episode_update.all_contents.first.file_size.must_equal 123456
+      episode_update.all_contents.first.duration.to_s.must_equal '1234.5678'
+      episode_update.all_contents.first.guid.must_equal guid1
 
       # updating with a different url but with matching path and filename won't insert
       update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/this.is.different/test/change1.mp3' }] }
@@ -146,6 +163,10 @@ describe Api::EpisodesController do
       assert_response :success
 
       episode_update.reload.all_contents.size.must_equal 1
+      episode_update.all_contents.first.mime_type.must_equal 'audio/mpeg'
+      episode_update.all_contents.first.file_size.must_equal 123456
+      episode_update.all_contents.first.duration.to_s.must_equal '1234.5678'
+      episode_update.all_contents.first.guid.must_equal guid1
 
       # updating with a different path should insert it, with same position value of 1
       update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/testing/change1.mp3' }] }
