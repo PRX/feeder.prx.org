@@ -83,11 +83,15 @@ describe Api::EpisodesController do
     let(:episode_update) { create(:episode, podcast: podcast, published_at: nil) }
     let(:token) { StubToken.new(account_id, ['member']) }
 
-    before do
+    around do |test|
       class << @controller; attr_accessor :prx_auth_token; end
       @controller.prx_auth_token = token
       @request.env['CONTENT_TYPE'] = 'application/json'
+      @controller.stub(:publish, true) do
+        @controller.stub(:process_media, true) { test.call }
+      end
     end
+
 
     it 'should redirect for authorized request of unpublished resource' do
       episode_redirect.id.wont_be_nil
@@ -96,11 +100,7 @@ describe Api::EpisodesController do
     end
 
     it 'can create a new episode' do
-      @controller.stub(:publish, true) do
-        @controller.stub(:process_media, true) do
-          post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
-        end
-      end
+      post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
       assert_response :success
       id = JSON.parse(response.body)['id']
       new_episode = Episode.find_by_guid(id)
@@ -113,11 +113,7 @@ describe Api::EpisodesController do
 
     it 'can update on create of a new episode' do
       ep = create(:episode, published_at: (Time.now + 1.week), podcast: podcast, prx_uri: '/api/v1/stories/123')
-      @controller.stub(:publish, true) do
-        @controller.stub(:process_media, true) do
-          post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
-        end
-      end
+      post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
       assert_response :success
       id = JSON.parse(response.body)['id']
       new_episode = Episode.find_by_guid(id)
@@ -133,43 +129,27 @@ describe Api::EpisodesController do
 
       episode_update.all_contents.size.must_equal 0
 
-      @controller.stub(:publish, true) do
-        @controller.stub(:process_media, true) do
-          put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
-        end
-      end
+      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
       episode_update.reload.all_contents.size.must_equal 1
 
       # updating with a dupe should not insert it
-      @controller.stub(:publish, true) do
-        @controller.stub(:process_media, true) do
-          put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
-        end
-      end
+      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
       episode_update.reload.all_contents.size.must_equal 1
 
       # updating with a different url but with matching path and filename won't insert
       update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/this.is.different/test/change1.mp3' }] }
-      @controller.stub(:publish, true) do
-        @controller.stub(:process_media, true) do
-          put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
-        end
-      end
+      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
       episode_update.reload.all_contents.size.must_equal 1
 
       # updating with a different path should insert it, with same position value of 1
       update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/testing/change1.mp3' }] }
-      @controller.stub(:publish, true) do
-        @controller.stub(:process_media, true) do
-          put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
-        end
-      end
+      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
       episode_update.reload.all_contents.size.must_equal 2
