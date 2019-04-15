@@ -108,6 +108,7 @@ end
 group :test do
   # Add rspec behaviour to minitest
   gem 'minitest-spec-rails'
+  gem 'minitest-around'
 
   # factory_girl provides a DSL for defining and using factories
   gem 'factory_girl_rails'
