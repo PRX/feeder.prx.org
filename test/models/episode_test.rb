@@ -150,6 +150,46 @@ describe Episode do
     episode.must_be :itunes_block
   end
 
+  describe 'update contents' do
+    it 'adds new contents' do
+      episode.all_contents.count.must_equal 0
+      episode.update_contents [build(:content, episode: episode)]
+      episode.all_contents.count.must_equal 1
+      episode.all_contents[0].href.must_equal 's3://prx-testing/test/audio.mp3'
+    end
+
+    it 'removes contents' do
+      episode.update_contents [build(:content, episode: episode)]
+      episode.all_contents.count.must_equal 1
+      episode.update_contents []
+      episode.all_contents.count.must_equal 0
+    end
+
+    it 'does not insert new content when nothing changes' do
+      episode.update_contents [build(:content, episode: episode)]
+      episode.update_contents [build(:content, episode: episode)]
+      episode.all_contents.count.must_equal 1
+      episode.all_contents.first.href.must_equal 's3://prx-testing/test/audio.mp3'
+    end
+
+    it 'does not insert new content when the last 2 segments of the path did not change' do
+      episode.update_contents [build(:content, episode: episode)]
+      episode.update_contents [build(:content, episode: episode, original_url: 's3://prx-other/test/audio.mp3')]
+      episode.all_contents.count.must_equal 1
+      episode.all_contents.first.href.must_equal 's3://prx-other/test/audio.mp3'
+    end
+
+    it 'inserts new content when the end of the path chages' do
+      episode.update_contents [build(:content, episode: episode)]
+      episode.update_contents [build(:content, episode: episode, original_url: 's3://prx-testing/test/other.mp3')]
+      episode.all_contents.count.must_equal 2
+      episode.all_contents.first.href.must_equal 's3://prx-testing/test/other.mp3'
+      episode.all_contents.first.position.must_equal 1
+      episode.all_contents.last.href.must_equal 's3://prx-testing/test/audio.mp3'
+      episode.all_contents.last.position.must_equal 1
+    end
+  end
+
   describe 'release episodes' do
 
     let(:podcast) { episode.podcast }
