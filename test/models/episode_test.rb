@@ -150,6 +150,43 @@ describe Episode do
     episode.must_be :itunes_block
   end
 
+  it 'sets media files by adding new ones' do
+    episode.all_contents.count.must_equal 0
+
+    episode.media_files = [build(:content, episode: episode)]
+    episode.all_contents.count.must_equal 1
+
+    episode.media_files = [build(:content, episode: episode), build(:content, episode: episode)]
+    episode.all_contents.count.must_equal 3
+  end
+
+  it 'deletes media files' do
+    episode.all_contents.count.must_equal 0
+
+    episode.media_files = [build(:content, episode: episode), build(:content, episode: episode)]
+    episode.all_contents.count.must_equal 2
+
+    episode.media_files = [build(:content, episode: episode)]
+    episode.all_contents.count.must_equal 2
+
+    episode.media_files = []
+    episode.all_contents.count.must_equal 0
+  end
+
+  it 'finds existing content based on the last 2 segments of the url' do
+    episode.all_contents << build(:content, episode: episode, position: 1)
+    episode.all_contents.first.href.must_equal 's3://prx-testing/test/audio.mp3'
+
+    episode.find_existing_content(1, 's3://prx-testing/test/audio.mp3').wont_be_nil
+    episode.find_existing_content(1, 's3://change-this/test/audio.mp3').wont_be_nil
+    episode.find_existing_content(1, 'http://prx-testing/any/thing/here/test/audio.mp3').wont_be_nil
+
+    episode.find_existing_content(1, nil).must_be_nil
+    episode.find_existing_content(1, 's3://prx-testing/changed/audio.mp3').must_be_nil
+    episode.find_existing_content(1, 's3://prx-testing/test/changed.mp3').must_be_nil
+    episode.find_existing_content(2, 's3://prx-testing/test/audio.mp3').must_be_nil
+  end
+
   describe 'release episodes' do
 
     let(:podcast) { episode.podcast }
