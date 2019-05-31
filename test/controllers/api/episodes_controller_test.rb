@@ -146,33 +146,8 @@ describe Api::EpisodesController do
       contents.first.duration.to_s.must_equal '1234.5678'
       guid1 = contents.first.guid
 
-
-      # updating with a dupe should not insert it
-      update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/test/change1.mp3' }] }
-      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
-      assert_response :success
-
-      contents = episode_update.reload.all_contents
-      contents.size.must_equal 1
-      contents.first.mime_type.must_equal 'audio/mpeg'
-      contents.first.file_size.must_equal 123456
-      contents.first.duration.to_s.must_equal '1234.5678'
-      contents.first.guid.must_equal guid1
-
-      # updating with a different url but with matching path and filename won't insert
-      update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/this.is.different/test/change1.mp3' }] }
-      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
-      assert_response :success
-
-      contents = episode_update.reload.all_contents
-      contents.size.must_equal 1
-      contents.first.mime_type.must_equal 'audio/mpeg'
-      contents.first.file_size.must_equal 123456
-      contents.first.duration.to_s.must_equal '1234.5678'
-      contents.first.guid.must_equal guid1
-
-      # updating with a different path should insert it, with same position value of 1
-      update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/testing/change1.mp3' }] }
+      # updating with a dupe should insert it
+      update_hash = { media: [{ href: update_hash[:media][0][:href] }] }
       put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
       assert_response :success
 
@@ -190,6 +165,18 @@ describe Api::EpisodesController do
       contents.last.mime_type.must_equal 'audio/mpeg'
       contents.last.file_size.must_equal 123456
       contents.last.duration.to_s.must_equal '1234.5678'
+
+      # updating without media does nothing
+      update_hash = { title: 'a new title' }
+      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+      assert_response :success
+      episode_update.reload.all_contents.size.must_equal 2
+
+      # updating with an empty array deletes
+      update_hash = { media: [] }
+      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+      assert_response :success
+      episode_update.reload.all_contents.size.must_equal 0
     end
   end
 end
