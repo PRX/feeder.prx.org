@@ -120,19 +120,7 @@ describe Api::Auth::EpisodesController do
 
       episode_update.reload.all_contents.size.must_equal 1
 
-      # updating with a dupe should not insert it
-      @controller.stub(:publish, true) do
-        @controller.stub(:process_media, true) do
-          put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
-        end
-      end
-      assert_response :success
-
-      episode_update.reload.all_contents.size.must_equal 1
-
-      update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/test/change2.mp3' }] }
-
-      # updating with a different url should insert it, with same position value of 1
+      # updating with a dupe should insert it, with the same position value of 1
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
           put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
