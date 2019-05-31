@@ -258,33 +258,20 @@ class Episode < BaseModel
     end
   end
 
+  # API updates for media= ... just append new files and reprocess
   def media_files=(files)
-    update_contents(files)
-  end
-
-  def update_contents(files)
     ignore = [:id, :type, :episode_id, :guid, :position, :status, :created_at, :updated_at]
-    ignore_nil = [:mime_type, :file_size, :duration]
     files.each_with_index do |f, index|
       file = f.attributes.with_indifferent_access.except(*ignore)
       file[:position] = index + 1
-      existing_content = find_existing_content(file[:position], file[:original_url])
-
-      # If there is an existing file with the same url, update
-      if existing_content
-        ignore_nil.each { |k| file[k] = existing_content[k] if file[k].nil? }
-        existing_content.update_attributes(file)
-      # Otherwise, make a new content to be or replace content for that position
-      # If there is no file, or the file has a different url
-      else
-        all_contents << Content.new(file)
-      end
+      all_contents << Content.new(file)
     end
 
     # find all contents with a greater position and whack them
     all_contents.where(['position > ?', files.count]).destroy_all
   end
 
+  # find existing content by the last 2 segments of the url
   def find_existing_content(pos, url)
     return nil if url.blank?
     content_file = URI.parse(url || '').path.split('/')[-2, 2].join('/')

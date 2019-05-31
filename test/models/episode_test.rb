@@ -150,44 +150,41 @@ describe Episode do
     episode.must_be :itunes_block
   end
 
-  describe 'update contents' do
-    it 'adds new contents' do
-      episode.all_contents.count.must_equal 0
-      episode.update_contents [build(:content, episode: episode)]
-      episode.all_contents.count.must_equal 1
-      episode.all_contents[0].href.must_equal 's3://prx-testing/test/audio.mp3'
-    end
+  it 'sets media files by adding new ones' do
+    episode.all_contents.count.must_equal 0
 
-    it 'removes contents' do
-      episode.update_contents [build(:content, episode: episode)]
-      episode.all_contents.count.must_equal 1
-      episode.update_contents []
-      episode.all_contents.count.must_equal 0
-    end
+    episode.media_files = [build(:content, episode: episode)]
+    episode.all_contents.count.must_equal 1
 
-    it 'does not insert new content when nothing changes' do
-      episode.update_contents [build(:content, episode: episode)]
-      episode.update_contents [build(:content, episode: episode)]
-      episode.all_contents.count.must_equal 1
-      episode.all_contents.first.href.must_equal 's3://prx-testing/test/audio.mp3'
-    end
+    episode.media_files = [build(:content, episode: episode), build(:content, episode: episode)]
+    episode.all_contents.count.must_equal 3
+  end
 
-    it 'does not insert new content when the last 2 segments of the path did not change' do
-      episode.update_contents [build(:content, episode: episode)]
-      episode.update_contents [build(:content, episode: episode, original_url: 's3://prx-other/test/audio.mp3')]
-      episode.all_contents.count.must_equal 1
-      episode.all_contents.first.href.must_equal 's3://prx-other/test/audio.mp3'
-    end
+  it 'deletes media files' do
+    episode.all_contents.count.must_equal 0
 
-    it 'inserts new content when the end of the path chages' do
-      episode.update_contents [build(:content, episode: episode)]
-      episode.update_contents [build(:content, episode: episode, original_url: 's3://prx-testing/test/other.mp3')]
-      episode.all_contents.count.must_equal 2
-      episode.all_contents.first.href.must_equal 's3://prx-testing/test/other.mp3'
-      episode.all_contents.first.position.must_equal 1
-      episode.all_contents.last.href.must_equal 's3://prx-testing/test/audio.mp3'
-      episode.all_contents.last.position.must_equal 1
-    end
+    episode.media_files = [build(:content, episode: episode), build(:content, episode: episode)]
+    episode.all_contents.count.must_equal 2
+
+    episode.media_files = [build(:content, episode: episode)]
+    episode.all_contents.count.must_equal 2
+
+    episode.media_files = []
+    episode.all_contents.count.must_equal 0
+  end
+
+  it 'finds existing content based on the last 2 segments of the url' do
+    episode.all_contents << build(:content, episode: episode, position: 1)
+    episode.all_contents.first.href.must_equal 's3://prx-testing/test/audio.mp3'
+
+    episode.find_existing_content(1, 's3://prx-testing/test/audio.mp3').wont_be_nil
+    episode.find_existing_content(1, 's3://change-this/test/audio.mp3').wont_be_nil
+    episode.find_existing_content(1, 'http://prx-testing/any/thing/here/test/audio.mp3').wont_be_nil
+
+    episode.find_existing_content(1, nil).must_be_nil
+    episode.find_existing_content(1, 's3://prx-testing/changed/audio.mp3').must_be_nil
+    episode.find_existing_content(1, 's3://prx-testing/test/changed.mp3').must_be_nil
+    episode.find_existing_content(2, 's3://prx-testing/test/audio.mp3').must_be_nil
   end
 
   describe 'release episodes' do
