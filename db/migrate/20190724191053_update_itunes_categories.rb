@@ -1,5 +1,5 @@
 class UpdateITunesCategories < ActiveRecord::Migration
-  def change
+  def up
     ITunesCategories.find_each do |category|
       # 'Arts' sub 'Literature' -> 'Books'
       if category.name == 'Arts' && category.subcategories.include? = 'Literature'
@@ -179,5 +179,9 @@ class UpdateITunesCategories < ActiveRecord::Migration
         category.save!
       end
     end
+  end
+
+  def down
+    puts "No going back"
   end
 end
