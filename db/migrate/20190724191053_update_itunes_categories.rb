@@ -101,8 +101,8 @@ class UpdateITunesCategories < ActiveRecord::Migration
       end
       
       # 'News & Politics' -> 'News'
-      if category.name == 'News'
-        category.name = 'News & Politics'
+      if category.name == 'News & Politics'
+        category.name = 'News'
       end
 
       # 'Religion & Spirituality' sub 'Other' -> 'Religion'
@@ -118,7 +118,6 @@ class UpdateITunesCategories < ActiveRecord::Migration
 
       # 'Science & Medicine' -> 'Science'
       if category.name == 'Science & Medicine'
-        say(category.to_s)
         category.name = 'Science'
       end
 
