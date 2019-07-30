@@ -1,7 +1,7 @@
 FactoryGirl.define do
   factory :itunes_category do
     podcast
-    name 'Games & Hobbies'
+    name 'Leisure'
     subcategories ['Aviation', 'Automotive']
   end
 end
