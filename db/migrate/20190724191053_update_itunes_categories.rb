@@ -54,7 +54,7 @@ class UpdateITunesCategories < ActiveRecord::Migration
       end
       
       # 'Games & Hobbbies' -> 'Leisure'
-      if category.name == 'Games & Hobbbies'
+      if category.name == 'Games & Hobbies'
         category.name = 'Leisure'
       end
 
