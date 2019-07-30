@@ -177,6 +177,7 @@ class UpdateITunesCategories < ActiveRecord::Migration
       # Sidedoor(50) and AirSpace(111) -> 'History'
       if category.podcast_id == 50 || category.podcast_id == 111
         category.name = 'History'
+        category.subcategories = []
       end
       # HowSound(223) to 'Education' sub 'How To'
       if category.podcast_id == 223
