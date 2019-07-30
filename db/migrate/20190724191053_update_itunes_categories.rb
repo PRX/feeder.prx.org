@@ -201,6 +201,8 @@ class UpdateITunesCategories < ActiveRecord::Migration
       if category.changed?
         puts "updated category[#{category.id}] for podcast[#{category.podcast_id}] => #{category.changes}"
         category.save!
+        category.try(:podcast).try(:publish!)
+        puts "Podcast[#{category.podcast_id}] published"
       end
     end
   end
