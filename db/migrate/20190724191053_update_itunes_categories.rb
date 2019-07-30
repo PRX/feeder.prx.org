@@ -174,9 +174,28 @@ class UpdateITunesCategories < ActiveRecord::Migration
       end
 
       # Rules for specific Podcasts
-      # Sidedoor(50) and AirSpace(111) -> History
+      # Sidedoor(50) and AirSpace(111) -> 'History'
       if category.podcast_id == 50 || category.podcast_id == 111
         category.name = 'History'
+      end
+      # HowSound(223) to 'Education' sub 'How To'
+      if category.podcast_id == 223
+        category.name = 'Education'
+        category.subcategories = ['How To']
+      end
+      # Outside Podcast(210) to 'Sports' sub 'Wilderness'
+      if category.podcast_id == 210
+        category.name = 'Sports'
+        category.subcategories = ['Wilderness']
+      end
+      # Scene on Radio(153) to 'Society & Culture'
+      if category.podcast_id == 153
+        category.name = 'Society & Culture'
+      end
+      # Second Wave(88) to 'Society & Culture' sub 'Personal Journals'
+      if category.podcast_id == 88
+        category.name = 'Society & Culture'
+        category.subcategories = ['Personal Journals']
       end
 
       if category.changed?
