@@ -173,8 +173,14 @@ class UpdateITunesCategories < ActiveRecord::Migration
         category.subcategories.delete_at(category.subcategories.index('Software How-To'))
       end
 
+      # Rules for specific Podcasts
+      # Sidedoor(50) and AirSpace(111) -> History
+      if category.podcast_id == 50 || category.podcast_id == 111
+        category.name = 'History'
+      end
+
       if category.changed?
-        puts "updated category[#{category.id}] for podcast[#{category.podcast}] => #{category.changes}"
+        puts "updated category[#{category.id}] for podcast[#{category.podcast_id}] => #{category.changes}"
         category.save!
       end
     end
