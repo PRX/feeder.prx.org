@@ -4,7 +4,37 @@ class Tasks::CopyMediaTask < ::Task
     self.options = task_options
     job = fixer_copy_file(options)
     self.job_id = job[:job][:id]
+
+    # send_rexif_job
+
     save!
+  end
+
+  def send_rexif_job
+    if ENV['REXIF_JOB_EXECUTION_SNS_TOPIC']
+      sns = Aws::SNS::Client.new
+      sns.publish({
+        topic_arn: ENV['REXIF_JOB_EXECUTION_SNS_TOPIC'],
+        message: JSON.dump({
+          Job: {
+            Id: self.job_id,
+            Source: {
+              URI: source_url(media_resource)
+            },
+            Inspect: { Perform: false },
+            Transcode: { Perform: false },
+            Copy: {
+              Perform: true,
+              Destinations: [
+                Mode: 'S3',
+                BucketName: feeder_storage_bucket,
+                ObjectKey: destination_path(media_resource)
+              ]
+            }
+          }
+        })
+      })
+    end
   end
 
   # callback - example result info:
