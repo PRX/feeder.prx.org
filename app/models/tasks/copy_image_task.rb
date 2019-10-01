@@ -3,7 +3,35 @@ class Tasks::CopyImageTask < ::Task
     self.options = task_options
     job = fixer_copy_file(options)
     self.job_id = job[:job][:id]
+
+    send_rexif_job
+
     save!
+  end
+
+  def send_rexif_job
+    sns = Aws::SNS::Client.new
+    sns.publish({
+      topic_arn: ENV['REXIF_JOB_EXECUTION_SNS_TOPIC'],
+      message: JSON.dump({
+        Job: {
+          Id: self.job_id,
+          Source: {
+            URI: image_resource.original_url
+          },
+          Inspect: { Perform: false },
+          Transcode: { Perform: false },
+          Copy: {
+            Perform: true,
+            Destinations: [
+              Mode: 'S3',
+              BucketName: feeder_storage_bucket,
+              ObjectKey: image_path(image_resource)
+            ]
+          }
+        }
+      })
+    })
   end
 
   def task_status_changed(fixer_task, new_status)
