@@ -20,10 +20,7 @@ class Tasks::CopyImageTask < ::Task
             Source: {
               URI: image_resource.original_url
             },
-            Inspect: { Perform: false },
-            Transcode: { Perform: false },
             Copy: {
-              Perform: true,
               Destinations: [
                 Mode: 'S3',
                 BucketName: feeder_storage_bucket,

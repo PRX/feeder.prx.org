@@ -21,10 +21,7 @@ class Tasks::CopyMediaTask < ::Task
             Source: {
               URI: source_url(media_resource)
             },
-            Inspect: { Perform: false },
-            Transcode: { Perform: false },
             Copy: {
-              Perform: true,
               Destinations: [
                 Mode: 'S3',
                 BucketName: feeder_storage_bucket,
