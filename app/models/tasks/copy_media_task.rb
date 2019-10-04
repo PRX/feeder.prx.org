@@ -23,7 +23,7 @@ class Tasks::CopyMediaTask < ::Task
             },
             Copy: {
               Destinations: [
-                Mode: 'S3',
+                Mode: 'AWS/S3',
                 BucketName: feeder_storage_bucket,
                 ObjectKey: destination_path(media_resource)
               ]

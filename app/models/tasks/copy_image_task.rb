@@ -22,7 +22,7 @@ class Tasks::CopyImageTask < ::Task
             },
             Copy: {
               Destinations: [
-                Mode: 'S3',
+                Mode: 'AWS/S3',
                 BucketName: feeder_storage_bucket,
                 ObjectKey: image_path(image_resource)
               ]
