@@ -10,7 +10,13 @@ class Tasks::CopyMediaTask < ::Task
     save!
   end
 
-  def send_rexif_job
+  def send_rexif_job]
+    return if !source_url(media_resource)
+
+    parts = source_url(media_resource).gsub(/^s3:\/\//, '').split('/', 2)
+    source_bucket_name = parts[0]
+    source_object_key = parts[1]
+
     if ENV['REXIF_JOB_EXECUTION_SNS_TOPIC']
       sns = Aws::SNS::Client.new
       sns.publish({
@@ -19,7 +25,9 @@ class Tasks::CopyMediaTask < ::Task
           Job: {
             Id: self.job_id,
             Source: {
-              URI: source_url(media_resource)
+              Mode: 'AWS/S3',
+              BucketName: source_bucket_name,
+              ObjectKey: source_object_key
             },
             Copy: {
               Destinations: [
