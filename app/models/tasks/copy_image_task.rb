@@ -13,6 +13,7 @@ class Tasks::CopyImageTask < ::Task
     return if !image_resource.original_url
 
     if image_resource.original_url.match(/^s3:/)
+      parts = image_resource.original_url.gsub(/^s3:\/\//, '').split('/', 2)
       source = {
         Mode: 'AWS/S3',
         BucketName: parts[0],
