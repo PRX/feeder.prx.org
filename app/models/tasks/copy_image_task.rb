@@ -12,13 +12,13 @@ class Tasks::CopyImageTask < ::Task
   def send_rexif_job
     return if !image_resource.original_url
 
-    if image_resource.original_url.match?(/^s3:/)
+    if image_resource.original_url.match(/^s3:/)
       source = {
         Mode: 'AWS/S3',
         BucketName: parts[0],
         ObjectKey: parts[1]
       }
-    elsif image_resource.original_url.match?(/^https:/)
+    elsif image_resource.original_url.match(/^https:/)
       source = {
         Mode: 'HTTP',
         URL: image_resource.original_url
