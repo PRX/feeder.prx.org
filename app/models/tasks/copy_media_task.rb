@@ -10,7 +10,7 @@ class Tasks::CopyMediaTask < ::Task
     save!
   end
 
-  def send_rexif_job]
+  def send_rexif_job
     return if !source_url(media_resource)
 
     parts = source_url(media_resource).gsub(/^s3:\/\//, '').split('/', 2)
