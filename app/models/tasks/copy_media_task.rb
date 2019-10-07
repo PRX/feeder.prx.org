@@ -5,17 +5,31 @@ class Tasks::CopyMediaTask < ::Task
     job = fixer_copy_file(options)
     self.job_id = job[:job][:id]
 
-    # send_rexif_job
+    # # TODO Only used in prototyping
+    send_rexif_job
 
     save!
   end
 
+  # TODO Only used in prototyping
   def send_rexif_job
     return if !source_url(media_resource)
 
-    parts = source_url(media_resource).gsub(/^s3:\/\//, '').split('/', 2)
-    source_bucket_name = parts[0]
-    source_object_key = parts[1]
+    if source_url(media_resource).match(/^s3:/)
+      parts = source_url(media_resource).gsub(/^s3:\/\//, '').split('/', 2)
+      source = {
+        Mode: 'AWS/S3',
+        BucketName: parts[0],
+        ObjectKey: parts[1]
+      }
+    elsif source_url(media_resource).match(/^https:/)
+      source = {
+        Mode: 'HTTP',
+        URL: source_url(media_resource)
+      }
+    else
+      return
+    end
 
     if ENV['REXIF_JOB_EXECUTION_SNS_TOPIC']
       sns = Aws::SNS::Client.new
@@ -24,16 +38,12 @@ class Tasks::CopyMediaTask < ::Task
         message: JSON.dump({
           Job: {
             Id: self.job_id,
-            Source: {
-              Mode: 'AWS/S3',
-              BucketName: source_bucket_name,
-              ObjectKey: source_object_key
-            },
+            Source: source,
             Copy: {
               Destinations: [
                 Mode: 'AWS/S3',
                 BucketName: feeder_storage_bucket,
-                ObjectKey: "#{destination_path(media_resource)}_rexif"
+                ObjectKey: "#{destination_path(media_resource)}_rexif".gsub(/^\//, '')
               ]
             }
           }
