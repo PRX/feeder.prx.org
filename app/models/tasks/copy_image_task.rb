@@ -4,11 +4,13 @@ class Tasks::CopyImageTask < ::Task
     job = fixer_copy_file(options)
     self.job_id = job[:job][:id]
 
+    # TODO Only used in prototyping
     send_rexif_job
 
     save!
   end
 
+  # TODO Only used in prototyping
   def send_rexif_job
     return if !image_resource.original_url
 
