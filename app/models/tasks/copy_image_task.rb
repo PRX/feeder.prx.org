@@ -40,7 +40,7 @@ class Tasks::CopyImageTask < ::Task
               Destinations: [
                 Mode: 'AWS/S3',
                 BucketName: feeder_storage_bucket,
-                ObjectKey: "#{image_path(image_resource)}_rexif"
+                ObjectKey: "#{image_path(image_resource)}_rexif".gsub(/^\//, '')
               ]
             }
           }
