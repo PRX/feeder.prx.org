@@ -14,6 +14,7 @@ class Tasks::CopyMediaTask < ::Task
   # TODO Only used in prototyping
   def send_rexif_job
     return if !source_url(media_resource)
+    return if !ENV['REXIF_CALLBACK_SQS_QUEUE']
 
     if source_url(media_resource).match(/^s3:/)
       parts = source_url(media_resource).gsub(/^s3:\/\//, '').split('/', 2)
@@ -45,7 +46,13 @@ class Tasks::CopyMediaTask < ::Task
                 BucketName: feeder_storage_bucket,
                 ObjectKey: "#{destination_path(media_resource)}_rexif".gsub(/^\//, '')
               ]
-            }
+            },
+            Callbacks: [
+              {
+                Type: 'AWS/SQS',
+                Queue: ENV['REXIF_CALLBACK_SQS_QUEUE']
+              }
+            ]
           }
         })
       })

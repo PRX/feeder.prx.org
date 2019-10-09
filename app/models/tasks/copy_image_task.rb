@@ -13,6 +13,7 @@ class Tasks::CopyImageTask < ::Task
   # TODO Only used in prototyping
   def send_rexif_job
     return if !image_resource.original_url
+    return if !ENV['REXIF_CALLBACK_SQS_QUEUE']
 
     if image_resource.original_url.match(/^s3:/)
       parts = image_resource.original_url.gsub(/^s3:\/\//, '').split('/', 2)
@@ -44,7 +45,13 @@ class Tasks::CopyImageTask < ::Task
                 BucketName: feeder_storage_bucket,
                 ObjectKey: "#{image_path(image_resource)}_rexif".gsub(/^\//, '')
               ]
-            }
+            },
+            Callbacks: [
+              {
+                Type: 'AWS/SQS',
+                Queue: ENV['REXIF_CALLBACK_SQS_QUEUE']
+              }
+            ]
           }
         })
       })
