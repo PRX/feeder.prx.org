@@ -67,11 +67,14 @@ def stub_requests_to_prx_cms
 end
 
 class SqsMock
+  attr_accessor :job
+
   def initialize(id = nil)
     @id = id || '11111111'
   end
 
   def create_job(j)
+    self.job = j
     j[:job][:id] = @id
     j
   end

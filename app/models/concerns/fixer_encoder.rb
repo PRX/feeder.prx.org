@@ -29,13 +29,13 @@ module FixerEncoder
   end
 
   def fixer_destination(dest)
-    dest
-    # URI::Generic.build(
-    #   scheme: 's3',
-    #   host: feeder_storage_bucket,
-    #   path: destination_path(media_resource),
-    #   query: fixer_query
-    # ).to_s
+    parsed = URI.parse(dest)
+    URI::Generic.build(
+      scheme: parsed.scheme,
+      host: parsed.host,
+      path: parsed.path,
+      query: fixer_query
+    ).to_s
   end
 
   def fixer_query(params = {})
