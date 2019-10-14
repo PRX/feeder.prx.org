@@ -40,4 +40,8 @@ module RexifParser
       end
     end
   end
+
+  def fixer_callback_audio_meta
+    {}
+  end
 end

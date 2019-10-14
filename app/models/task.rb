@@ -60,7 +60,7 @@ class Task < BaseModel
   def callback_queue
     q = ENV['FIXER_CALLBACK_QUEUE'] || "#{ENV['RAILS_ENV']}_feeder_fixer_callback"
     r = ENV['AWS_REGION'] || 'us-east-1'
-    "sqs://#{region}/#{q}"
+    "sqs://#{r}/#{q}"
   end
 
   def rexif_enabled?
