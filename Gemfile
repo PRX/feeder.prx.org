@@ -103,6 +103,8 @@ group :development do
   gem 'guard-minitest'
   # Automatically install/update your gem bundle when needed
   gem 'guard-bundler'
+
+  gem 'm'
 end
 
 group :test do
