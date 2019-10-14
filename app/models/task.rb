@@ -3,6 +3,8 @@ require 'prx_access'
 
 class Task < BaseModel
   include PRXAccess
+  include FixerParser
+  include FixerEncoder
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
@@ -20,83 +22,45 @@ class Task < BaseModel
 
   before_validation { self.status ||= :started }
 
-  # convenient scopes for subclass types
-  [:copy_media, :copy_image, :publish_feed, :copy_url].each do |subclass|
-    classname = "Tasks::#{subclass.to_s.camelize}Task"
-    scope subclass, -> { where('type = ?', classname) }
-  end
+  scope :copy_media, -> { where(type: 'Tasks::CopyMediaTask') }
+  scope :copy_image, -> { where(type: 'Tasks::CopyImageTask') }
 
-  # abstract, called by `fixer_callback`
-  def task_status_changed(fixer_task, new_status)
-  end
-
-  def self.fixer_callback(fixer_task)
+  def self.callback(msg)
     Task.transaction do
-      job_id = fixer_task['task']['job']['id']
+      job_id = fixer_callback_job_id(msg) || rexif_callback_job_id(msg)
+      status = fixer_callback_status(msg) || rexif_callback_status(msg)
+      time = fixer_callback_time(msg) || rexif_callback_time(msg)
       task = where(job_id: job_id).lock(true).first
-      task.fixer_callback(fixer_task) if task
+      if task && (task.logged_at.nil? || (time >= task.logged_at))
+        task.update_attributes!(status: status, logged_at: time, result: msg)
+      end
     end
   end
 
-  def fixer_callback(fixer_task)
-    ft = fixer_task['task']
-    new_status = ft['result_details']['status']
-    new_logged_at = Time.parse(ft['result_details']['logged_at'])
-    if logged_at.nil? || (new_logged_at >= logged_at)
-      update_attributes!(
-        status: new_status,
-        logged_at: new_logged_at,
-        result: fixer_task
-      )
-      task_status_changed(fixer_task, new_status)
+  def start!
+    self.options = task_options
+    if rexif_enabled?
+      self.job_id = rexif_start!(options)
+    else
+      self.job_id = fixer_start!(options)
     end
+    save!
   end
 
-  def fixer_copy_file(opts = options)
-    opts = (opts || {}).with_indifferent_access
-    task = {
-      task_type: 'copy',
-      result: opts[:destination],
-      call_back: fixer_call_back_queue
-    }
-    job = {
-      job_type: opts[:job_type],
-      original: opts[:source],
-      tasks: [ task ],
-      priority: 1,
-      retry_delay: 300,
-      retry_max: 12
-    }
-    fixer_sqs_client.create_job(job: job)
-  end
-
-  def fixer_query(params = {})
-    max_age = ENV['FIXER_CACHE_MAX_AGE'].present? ? ENV['FIXER_CACHE_MAX_AGE'] : 86400
-    defaults = {
-      'x-fixer-public' => 'true',
-      'x-fixer-Cache-Control' => "max-age=#{max_age}"
-    }
-    URI.encode_www_form(defaults.merge(params))
+  def task_options
+    {callback: callback_queue}.with_indifferent_access
   end
 
   def feeder_storage_bucket
     ENV['FEEDER_STORAGE_BUCKET']
   end
 
-  def fixer_call_back_queue
+  def callback_queue
     q = ENV['FIXER_CALLBACK_QUEUE'] || "#{ENV['RAILS_ENV']}_feeder_fixer_callback"
     "sqs://#{ENV['AWS_REGION']}/#{q}"
   end
 
-  def fixer_sqs_client
-    @fixer_sqs_client ||= Task.new_fixer_sqs_client
-  end
-
-  def fixer_sqs_client=(client)
-    @fixer_sqs_client = client
-  end
-
-  def self.new_fixer_sqs_client
-    Fixer::SqsClient.new
+  def rexif_enabled?
+    false
   end
 end

@@ -16,11 +16,6 @@ class EpisodeImage < ActiveRecord::Base
     "images/#{guid}/#{fn}"
   end
 
-  def update_from_fixer(fixer_task)
-    super(fixer_task)
-    replace_resources!
-  end
-
   def replace_resources!
     episode.with_lock do
       episode.images.where("created_at < ? AND id != ?", created_at, id).destroy_all
