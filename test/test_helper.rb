@@ -80,6 +80,17 @@ class SqsMock
   end
 end
 
+class SnsMock
+  attr_accessor :message
+
+  def publish(params)
+    self.message = JSON.parse(params[:message]).with_indifferent_access
+    {
+      message_id: 'whatever'
+    }
+  end
+end
+
 Minitest::Expectations.infect_an_assertion :assert_operator, :must_allow, :reverse
 Minitest::Expectations.infect_an_assertion :refute_operator, :wont_allow, :reverse
 

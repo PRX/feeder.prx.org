@@ -5,6 +5,8 @@ class Task < BaseModel
   include PRXAccess
   include FixerParser
   include FixerEncoder
+  include RexifParser
+  include RexifEncoder
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
@@ -62,6 +64,6 @@ class Task < BaseModel
   end
 
   def rexif_enabled?
-    false
+    ENV['REXIF_JOB_EXECUTION_SNS_TOPIC'].present?
   end
 end
