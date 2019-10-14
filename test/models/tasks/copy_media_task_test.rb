@@ -71,6 +71,9 @@ describe Tasks::CopyMediaTask do
 
     task.stub(:episode, episode) do
       task.update_attributes(status: 'complete')
+      # TODO: why do these fail?
+      # podcast.verify
+      # episode.verify
     end
   end
 

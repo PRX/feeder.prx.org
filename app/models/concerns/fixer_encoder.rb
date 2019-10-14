@@ -36,6 +36,8 @@ module FixerEncoder
       path: parsed.path,
       query: fixer_query
     ).to_s
+  rescue URI::InvalidURIError
+    dest
   end
 
   def fixer_query(params = {})
