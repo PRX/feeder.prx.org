@@ -8,7 +8,7 @@ class Tasks::CopyMediaTask < ::Task
         if meta
           media_resource.update_attributes!(meta)
         else
-          Logger.warn("No audio meta found in result: #{JSON.generate(result)}")
+          Rails.logger.warn("No audio meta found in result: #{JSON.generate(result)}")
         end
         episode.try(:podcast).try(:publish!)
       end
