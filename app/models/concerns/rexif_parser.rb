@@ -28,7 +28,20 @@ module RexifParser
       rexif_parsed(msg).try(:[], :Result)
     end
 
+    def rexif_callback_copy(msg)
+      rexif_result(msg, 'Copy')
+    end
+
+    def rexif_callback_inspect(msg)
+      rexif_result(msg, 'Inspect')
+    end
+
     protected
+
+    def rexif_result(msg, task)
+      results = rexif_parsed(msg).try(:[], :Result) || []
+      results.detect {|t| t[:Task] == task}
+    end
 
     def rexif_parsed(msg)
       msg[rexif_key(msg)].with_indifferent_access if rexif_key(msg)
@@ -41,7 +54,29 @@ module RexifParser
     end
   end
 
-  def fixer_callback_audio_meta
-    {}
+  def rexif_callback_audio_meta
+    info = self.class.rexif_callback_inspect(result).try(:[], :Inspection)
+    if info
+      mime = rexif_callback_mime(info)
+      {
+        mime_type: mime,
+        medium: (mime || '').split('/').first,
+        file_size: info[:size].to_i,
+        sample_rate: info[:audio][:frequency].to_i,
+        channels: info[:audio][:channels].to_i,
+        duration: info[:audio][:duration].to_f / 1000,
+        bit_rate: info[:audio][:bitrate].to_i / 1000
+      }
+    end
   end
+
+  # TODO: inspect not really returning this yet
+  def rexif_callback_mime(info)
+    if info[:audio]
+      'audio/mpeg'
+    else
+      nil
+    end
+  end
+
 end
