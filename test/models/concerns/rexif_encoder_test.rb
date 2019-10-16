@@ -24,7 +24,9 @@ describe RexifEncoder do
   end
 
   it 'starts a rexif job' do
+    account_bk, ENV['AWS_ACCOUNT_ID'] = ENV['AWS_ACCOUNT_ID'], '12345678'
     model.rexif_start!(opts)
+    ENV['AWS_ACCOUNT_ID'] = account_bk
 
     sns.message[:Job][:Id].length.must_equal 36
     sns.message[:Job][:Source].must_equal({
@@ -42,7 +44,7 @@ describe RexifEncoder do
     sns.message[:Job][:Inspect].must_be_nil
     sns.message[:Job][:Callbacks].must_equal([{
       'Type' => 'AWS/SQS',
-      'Queue' => 'https://sqs.us-whatev.amazonaws.com/561178107736/queue-name'
+      'Queue' => 'https://sqs.us-whatev.amazonaws.com/12345678/queue-name'
     }])
   end
 
