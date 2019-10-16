@@ -30,9 +30,11 @@ describe Task do
 
   it 'creates a fixer job' do
     Task.stub :new_fixer_sqs_client, SqsMock.new do
-      task.start!
-      task.job_id.must_equal '11111111'
-      task.options[:callback].must_match /^sqs:\/\//
+      task.stub :rexif_enabled?, false do
+        task.start!
+        task.job_id.must_equal '11111111'
+        task.options[:callback].must_match /^sqs:\/\//
+      end
     end
   end
 
