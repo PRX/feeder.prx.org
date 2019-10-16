@@ -122,7 +122,7 @@ group :test do
   gem 'coveralls', require: false
 
   # Use Nokogiri for XML and HTML parsing
-  gem 'nokogiri'
+  gem 'nokogiri', '>= 1.10.4'
 
   # WebMock allows stubbing HTTP requests
   gem 'webmock'

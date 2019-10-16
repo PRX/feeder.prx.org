@@ -191,7 +191,7 @@ GEM
     multipart-post (2.0.0)
     nenv (0.3.0)
     newrelic_rpm (5.2.0.345)
-    nokogiri (1.10.0)
+    nokogiri (1.10.4)
       mini_portile2 (~> 2.4.0)
     nokogumbo (1.5.0)
       nokogiri
@@ -367,7 +367,7 @@ DEPENDENCIES
   minitest-around
   minitest-spec-rails
   newrelic_rpm
-  nokogiri
+  nokogiri (>= 1.10.4)
   oauth2
   paranoia
   pg
