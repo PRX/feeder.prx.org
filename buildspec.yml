@@ -5,6 +5,9 @@ env:
     PRX_ECR_REPOSITORY: "feeder.prx.org"
     PRX_ECR_CONFIG_PARAMETERS: "FeederEcrImageTag"
 phases:
+  install:
+    runtime-versions:
+      docker: 18
   build:
     commands:
       - "cd $(ls -d */|head -n 1)"
