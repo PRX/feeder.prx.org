@@ -10,7 +10,7 @@ describe RexifEncoder do
   let(:model) { TestEncoder.new }
   let(:opts) do
     {
-      job_type: 'audio',
+      job_type: 'copy',
       source: 's3://src/path/key.mp3',
       destination: 's3://dest/path/key.mp3',
       callback: 'sqs://us-whatev/queue-name'
@@ -39,6 +39,7 @@ describe RexifEncoder do
         'ObjectKey' => 'path/key.mp3'
       }]
     })
+    sns.message[:Job][:Inspect].must_be_nil
     sns.message[:Job][:Callbacks].must_equal([{
       'Type' => 'AWS/SQS',
       'Queue' => 'https://sqs.us-whatev.amazonaws.com/561178107736/queue-name'
@@ -53,5 +54,12 @@ describe RexifEncoder do
       'Mode' => 'HTTP',
       'URL' => 'https://some.where/the/file.mp3'
     })
+  end
+
+  it 'also inspects audio job types' do
+    opts[:job_type] = 'audio'
+    model.rexif_start!(opts)
+
+    sns.message[:Job][:Inspect].must_equal({'Perform' => true})
   end
 end

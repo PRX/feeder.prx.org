@@ -13,18 +13,20 @@ module RexifEncoder
     opts = (opts || {}).with_indifferent_access
     job_id = SecureRandom.uuid
 
+    job = {
+      Id: job_id,
+      Source: rexif_source(opts[:source]),
+      Copy: {Destinations: [rexif_destination(opts[:destination])]},
+      Callbacks: [rexif_callback(opts[:callback])]
+    }
+
+    if opts[:job_type] == 'audio'
+      job.merge!(Inspect: {Perform: true})
+    end
+
     rexif_sns_client.publish({
       topic_arn: ENV['REXIF_JOB_EXECUTION_SNS_TOPIC'],
-      message: JSON.generate({
-        Job: {
-          Id: job_id,
-          Source: rexif_source(opts[:source]),
-          Copy: {
-            Destinations: [rexif_destination(opts[:destination])]
-          },
-          Callbacks: [rexif_callback(opts[:callback])]
-        }
-      })
+      message: JSON.generate({Job: job})
     })
 
     job_id
