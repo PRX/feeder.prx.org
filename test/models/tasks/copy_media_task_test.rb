@@ -57,24 +57,33 @@ describe Tasks::CopyMediaTask do
     task.media_resource.status.must_equal 'processing'
   end
 
-  it 'can publish on complete' do
-    podcast = Minitest::Mock.new
-    podcast.expect(:publish!, true, [])
-    podcast.expect(:path, 'path')
+  it 'replaces resources and publishes on complete' do
+    replace = MiniTest::Mock.new
+    publish = MiniTest::Mock.new
 
-    episode = Minitest::Mock.new
-    episode.expect(:podcast, podcast)
-    episode.expect(:podcast, podcast)
-    episode.expect(:prx_uri, '/api/v1/stories/80548')
-    episode.expect(:guid, 'guid')
-    episode.expect(:url, 'http://test-f.prxu.org/path/guid/audio.mp3')
+    task.media_resource.stub(:replace_resources!, replace) do
+      task.episode.podcast.stub(:publish!, publish) do
+        task.update_attributes(status: 'created')
+        replace.verify
+        publish.verify
 
-    task.stub(:episode, episode) do
-      task.update_attributes(status: 'complete')
-      # TODO: why do these fail?
-      # podcast.verify
-      # episode.verify
+        replace.expect(:call, nil)
+        publish.expect(:call, nil)
+        task.update_attributes(status: 'complete')
+        replace.verify
+        publish.verify
+      end
     end
+  end
+
+  it 'updates audio metadata on complete' do
+    task.result[:task][:result_details][:info][:bit_rate] = 999
+
+    task.update_attributes(status: 'created')
+    task.media_resource.bit_rate.wont_equal 999
+
+    task.update_attributes(status: 'complete')
+    task.media_resource.bit_rate.must_equal 999
   end
 
   it 'does not throw errors when owner is missing on callback' do

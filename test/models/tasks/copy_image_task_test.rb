@@ -23,21 +23,37 @@ describe Tasks::CopyImageTask do
     task.image_resource.status.must_equal 'processing'
   end
 
-  it 'updates the image on complete' do
-    podcast = Minitest::Mock.new
-    podcast.expect(:publish!, true)
-    image_resource = Minitest::Mock.new
+  it 'replaces resources and publishes on complete' do
+    replace = MiniTest::Mock.new
+    publish = MiniTest::Mock.new
 
-    image_resource.expect('!', false)
-    image_resource.expect(:update_attribute, true, [Symbol, String])
-    image_resource.expect(:url, 'http://image.url/image.png')
-    image_resource.expect(:try, image_resource, [:episode])
-    image_resource.expect(:try, podcast, [:podcast])
-    task.stub(:image_resource, image_resource) do
-      task.update_attributes(status: 'complete')
-      # TODO: why do these fail?
-      # podcast.verify
-      # image_resource.verify
+    task.image_resource.stub(:replace_resources!, replace) do
+      task.podcast.stub(:publish!, publish) do
+        task.update_attributes(status: 'created')
+        replace.verify
+        publish.verify
+
+        replace.expect(:call, nil)
+        publish.expect(:call, nil)
+        task.update_attributes(status: 'complete')
+        replace.verify
+        publish.verify
+      end
     end
+  end
+
+  it 'updates the image url on complete' do
+    task.image_resource.update_attributes(url: 'what/ever')
+
+    task.update_attributes(status: 'created')
+    task.image_resource[:url].must_equal 'what/ever'
+    task.image_resource.url.wont_equal 'what/ever'
+    task.image_resource.url.must_equal task.image_resource.original_url
+
+    task.update_attributes(status: 'complete')
+    task.image_resource[:url].wont_equal 'what/ever'
+    task.image_resource[:url].must_equal task.image_resource.published_url
+    task.image_resource.url.wont_equal 'what/ever'
+    task.image_resource.url.must_equal task.image_resource.published_url
   end
 end
