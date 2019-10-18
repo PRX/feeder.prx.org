@@ -32,7 +32,7 @@ module FixerParser
     end
   end
 
-  def fixer_callback_audio_meta
+  def fixer_callback_media_meta
     info = self.class.fixer_callback_info(result)
     if info
       mime = fixer_callback_mime(info)

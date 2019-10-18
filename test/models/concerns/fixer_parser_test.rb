@@ -42,13 +42,13 @@ describe FixerParser do
   it 'handles non-fixer audio metadata' do
     model = TestParser.new
     model.result = {any: 'data'}
-    model.fixer_callback_audio_meta.must_be_nil
+    model.fixer_callback_media_meta.must_be_nil
   end
 
   it 'parses fixer audio metadata' do
     model = TestParser.new
     model.result = fixer_callback
-    model.fixer_callback_audio_meta.must_equal({
+    model.fixer_callback_media_meta.must_equal({
       mime_type: 'audio/mpeg',
       medium: 'audio',
       file_size: 32980032,

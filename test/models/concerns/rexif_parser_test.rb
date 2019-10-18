@@ -21,7 +21,7 @@ describe RexifParser do
   let(:rexif_success_callback) do
     rexif_callback.merge(JobResult: {
       Job: {Id: 'the-job-id'},
-      Result: [rexif_copy_result, rexif_inspect_result]
+      Result: [rexif_copy_result, rexif_inspect_audio]
     })
   end
 
@@ -29,7 +29,7 @@ describe RexifParser do
     {Task: 'Copy', Other: 'Things'}.with_indifferent_access
   end
 
-  let(:rexif_inspect_result) do
+  let(:rexif_inspect_audio) do
     {
       Task: 'Inspect',
       Inspection: {
@@ -46,6 +46,34 @@ describe RexifParser do
           Layer: '3',
           Samples: nil,
           Frames: '57143'
+        }
+      }
+    }.with_indifferent_access
+  end
+
+  let(:rexif_inspect_video) do
+    {
+      Task: 'Inspect',
+      Inspection: {
+        Extension: 'mp4',
+        MIME: 'video/mp4',
+        Size: '16996018',
+        Audio: {
+          Duration: 158035,
+          Format: 'aac',
+          Bitrate: '109507',
+          Frequency: '44100',
+          Channels: 2,
+          Layout: 'stereo'
+        },
+        Video: {
+          Duration: 157991,
+          Format: 'h264',
+          Bitrate: '747441',
+          Width: 640,
+          Height: 360,
+          Aspect: '16:9',
+          Framerate: '24000/1001'
         }
       }
     }.with_indifferent_access
@@ -80,13 +108,13 @@ describe RexifParser do
     TestParser.rexif_callback_status(rexif_success_callback).must_equal 'complete'
     TestParser.rexif_callback_time(rexif_success_callback).must_equal Time.parse('2012-12-21T12:34:56Z')
     TestParser.rexif_callback_copy(rexif_success_callback).must_equal(rexif_copy_result)
-    TestParser.rexif_callback_inspect(rexif_success_callback).must_equal(rexif_inspect_result)
+    TestParser.rexif_callback_inspect(rexif_success_callback).must_equal(rexif_inspect_audio)
   end
 
   it 'parses rexif audio metadata' do
     model = TestParser.new
     model.result = rexif_success_callback
-    model.rexif_callback_audio_meta.must_equal({
+    model.rexif_callback_media_meta.must_equal({
       mime_type: 'audio/mpeg',
       medium: 'audio',
       file_size: 32980032,
@@ -97,11 +125,44 @@ describe RexifParser do
     })
   end
 
-  it 'parses rexif mime type' do
-    rexif_inspect_result[:Inspection][:MIME] = 'image/png'
+  it 'parses rexif audio metadata' do
     model = TestParser.new
     model.result = rexif_success_callback
-    model.rexif_callback_audio_meta[:mime_type].must_equal('image/png')
-    model.rexif_callback_audio_meta[:medium].must_equal('image')
+    model.rexif_callback_media_meta.must_equal({
+      mime_type: 'audio/mpeg',
+      medium: 'audio',
+      file_size: 32980032,
+      sample_rate: 48000,
+      channels: 2,
+      duration: 1371.437,
+      bit_rate: 192,
+    })
+  end
+
+  it 'parses rexif video metadata' do
+    rexif_success_callback[:JobResult][:Result] = [rexif_copy_result, rexif_inspect_video]
+
+    model = TestParser.new
+    model.result = rexif_success_callback
+    model.rexif_callback_media_meta.must_equal({
+      mime_type: 'video/mp4',
+      medium: 'video',
+      file_size: 16996018,
+      sample_rate: 44100,
+      channels: 2,
+      duration: 157.991,
+      bit_rate: 747,
+      frame_rate: '24000/1001',
+      width: 640,
+      height: 360
+    })
+  end
+
+  it 'parses rexif mime type' do
+    rexif_inspect_audio[:Inspection][:MIME] = 'image/png'
+    model = TestParser.new
+    model.result = rexif_success_callback
+    model.rexif_callback_media_meta[:mime_type].must_equal('image/png')
+    model.rexif_callback_media_meta[:medium].must_equal('image')
   end
 end

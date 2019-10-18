@@ -54,19 +54,19 @@ module RexifParser
     end
   end
 
-  def rexif_callback_audio_meta
+  def rexif_callback_media_meta
     info = self.class.rexif_callback_inspect(result).try(:[], :Inspection)
     if info
       mime = rexif_callback_mime(info)
-      {
+      meta = {
         mime_type: mime,
         medium: (mime || '').split('/').first,
-        file_size: info[:Size].to_i,
-        sample_rate: info[:Audio][:Frequency].to_i,
-        channels: info[:Audio][:Channels].to_i,
-        duration: info[:Audio][:Duration].to_f / 1000,
-        bit_rate: info[:Audio][:Bitrate].to_i / 1000
+        file_size: info[:Size].to_i
       }
+      audio_meta = rexif_callback_audio_meta(mime, info)
+      video_meta = rexif_callback_video_meta(mime, info)
+
+      meta.merge(audio_meta).merge(video_meta)
     end
   end
 
@@ -80,4 +80,31 @@ module RexifParser
     end
   end
 
+  def rexif_callback_audio_meta(mime, info)
+    if info[:Audio]
+      {
+        sample_rate: info[:Audio][:Frequency].to_i,
+        channels: info[:Audio][:Channels].to_i,
+        duration: info[:Audio][:Duration].to_f / 1000,
+        bit_rate: info[:Audio][:Bitrate].to_i / 1000
+      }
+    else
+      {}
+    end
+  end
+
+  def rexif_callback_video_meta(mime, info)
+    # only return for actual videos - not detected images in id3 tags
+    if info[:Video] && mime.starts_with?('video')
+      {
+        duration: info[:Video][:Duration].to_f / 1000,
+        bit_rate: info[:Video][:Bitrate].to_i / 1000,
+        frame_rate: info[:Video][:Framerate],
+        width: info[:Video][:Width].to_i,
+        height: info[:Video][:Height].to_i
+      }
+    else
+      {}
+    end
+  end
 end
