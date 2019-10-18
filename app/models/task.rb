@@ -33,7 +33,7 @@ class Task < BaseModel
       status = fixer_callback_status(msg) || rexif_callback_status(msg)
       time = fixer_callback_time(msg) || rexif_callback_time(msg)
       task = where(job_id: job_id).lock(true).first
-      if task && (task.logged_at.nil? || (time >= task.logged_at))
+      if task && status && time && (task.logged_at.nil? || (time >= task.logged_at))
         task.update_attributes!(status: status, logged_at: time, result: msg)
       end
     end

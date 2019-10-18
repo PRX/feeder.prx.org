@@ -16,6 +16,16 @@ describe Task do
     }
   end
 
+  let(:rexif_task) do
+    {
+      'Time' => '2010-01-01T00:00:00.000Z',
+      'JobResult' => {
+        'Job' => {'Id' => '11111111'},
+        'Result' => {}
+      }
+    }
+  end
+
   let(:task) { Task.create }
 
   it 'knows what bucket to drop the file in' do
@@ -52,5 +62,24 @@ describe Task do
     m, ENV['FIXER_CACHE_MAX_AGE'] = ENV['FIXER_CACHE_MAX_AGE'], '1234'
     task.fixer_query.must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D1234'
     ENV['FIXER_CACHE_MAX_AGE'] = m
+  end
+
+  it 'handles rexif callbacks' do
+    task.update_attribute(:job_id, rexif_task['JobResult']['Job']['Id'])
+    task.must_be :started?
+    Task.callback(rexif_task)
+    task.reload.must_be :complete?
+    task.logged_at.must_equal Time.parse("2010-01-01T00:00:00.000Z")
+  end
+
+  it 'ignores rexif task results' do
+    task.update_attribute(:job_id, rexif_task['JobResult']['Job']['Id'])
+    task.must_be :started?
+    task.logged_at.must_be_nil
+
+    rexif_task['TaskResult'] = rexif_task.delete('JobResult')
+    Task.callback(rexif_task)
+    task.reload.must_be :started?
+    task.logged_at.must_be_nil
   end
 end
