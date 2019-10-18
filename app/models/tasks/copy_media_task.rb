@@ -4,7 +4,7 @@ class Tasks::CopyMediaTask < ::Task
     if media_resource && status_changed?
       media_resource.update_attributes!(status: status)
       if complete?
-        meta = fixer_callback_media_meta || rexif_callback_media_meta
+        meta = fixer_callback_media_meta || porter_callback_media_meta
         if meta
           media_resource.update_attributes!(meta)
         else

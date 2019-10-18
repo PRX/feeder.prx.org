@@ -5,8 +5,8 @@ class Task < BaseModel
   include PRXAccess
   include FixerParser
   include FixerEncoder
-  include RexifParser
-  include RexifEncoder
+  include PorterParser
+  include PorterEncoder
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 
@@ -29,9 +29,9 @@ class Task < BaseModel
 
   def self.callback(msg)
     Task.transaction do
-      job_id = fixer_callback_job_id(msg) || rexif_callback_job_id(msg)
-      status = fixer_callback_status(msg) || rexif_callback_status(msg)
-      time = fixer_callback_time(msg) || rexif_callback_time(msg)
+      job_id = fixer_callback_job_id(msg) || porter_callback_job_id(msg)
+      status = fixer_callback_status(msg) || porter_callback_status(msg)
+      time = fixer_callback_time(msg) || porter_callback_time(msg)
       task = where(job_id: job_id).lock(true).first
       if task && status && time && (task.logged_at.nil? || (time >= task.logged_at))
         task.update_attributes!(status: status, logged_at: time, result: msg)
@@ -41,8 +41,8 @@ class Task < BaseModel
 
   def start!
     self.options = task_options
-    if rexif_enabled?
-      self.job_id = rexif_start!(options)
+    if porter_enabled?
+      self.job_id = porter_start!(options)
     else
       self.job_id = fixer_start!(options)
     end
@@ -63,7 +63,7 @@ class Task < BaseModel
     "sqs://#{r}/#{q}"
   end
 
-  def rexif_enabled?
-    ENV['REXIF_JOB_EXECUTION_SNS_TOPIC'].present?
+  def porter_enabled?
+    ENV['PORTER_SNS_TOPIC'].present?
   end
 end

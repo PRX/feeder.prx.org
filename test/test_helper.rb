@@ -16,7 +16,7 @@ ENV['META_HOST']       = 'meta.prx.org'
 ENV['PRX_HOST']        = 'www.prx.org'
 ENV['DOVETAIL_HOST']   = 'dovetail.prxu.org'
 ENV['FEEDER_STORAGE_BUCKET'] = 'test-prx-feed'
-ENV['REXIF_JOB_EXECUTION_SNS_TOPIC'] = nil
+ENV['PORTER_SNS_TOPIC'] = nil
 
 require File.expand_path("../../config/environment", __FILE__)
 require 'rails/test_help'

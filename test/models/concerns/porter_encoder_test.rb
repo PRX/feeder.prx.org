@@ -1,10 +1,10 @@
 require 'test_helper'
 
 class TestEncoder
-  include RexifEncoder
+  include PorterEncoder
 end
 
-describe RexifEncoder do
+describe PorterEncoder do
 
   let(:sns) { SnsMock.new }
   let(:model) { TestEncoder.new }
@@ -18,14 +18,14 @@ describe RexifEncoder do
   end
 
   around do |test|
-    TestEncoder.stub :new_rexif_sns_client, sns do
+    TestEncoder.stub :new_porter_sns_client, sns do
       test.call
     end
   end
 
-  it 'starts a rexif job' do
+  it 'starts a porter job' do
     account_bk, ENV['AWS_ACCOUNT_ID'] = ENV['AWS_ACCOUNT_ID'], '12345678'
-    model.rexif_start!(opts)
+    model.porter_start!(opts)
     ENV['AWS_ACCOUNT_ID'] = account_bk
 
     sns.message[:Job][:Id].length.must_equal 36
@@ -56,7 +56,7 @@ describe RexifEncoder do
 
   it 'allows http sources' do
     opts[:source] = 'https://some.where/the/file.mp3'
-    model.rexif_start!(opts)
+    model.porter_start!(opts)
 
     sns.message[:Job][:Source].must_equal({
       'Mode' => 'HTTP',
@@ -66,7 +66,7 @@ describe RexifEncoder do
 
   it 'also inspects audio job types' do
     opts[:job_type] = 'audio'
-    model.rexif_start!(opts)
+    model.porter_start!(opts)
 
     sns.message[:Job][:Inspect].must_equal({'Perform' => true})
   end

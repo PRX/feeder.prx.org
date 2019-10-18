@@ -16,7 +16,7 @@ describe Task do
     }
   end
 
-  let(:rexif_task) do
+  let(:porter_task) do
     {
       'Time' => '2010-01-01T00:00:00.000Z',
       'JobResult' => {
@@ -40,7 +40,7 @@ describe Task do
 
   it 'creates a fixer job' do
     Task.stub :new_fixer_sqs_client, SqsMock.new do
-      task.stub :rexif_enabled?, false do
+      task.stub :porter_enabled?, false do
         task.start!
         task.job_id.must_equal '11111111'
         task.options[:callback].must_match /^sqs:\/\//
@@ -64,21 +64,21 @@ describe Task do
     ENV['FIXER_CACHE_MAX_AGE'] = m
   end
 
-  it 'handles rexif callbacks' do
-    task.update_attribute(:job_id, rexif_task['JobResult']['Job']['Id'])
+  it 'handles porter callbacks' do
+    task.update_attribute(:job_id, porter_task['JobResult']['Job']['Id'])
     task.must_be :started?
-    Task.callback(rexif_task)
+    Task.callback(porter_task)
     task.reload.must_be :complete?
     task.logged_at.must_equal Time.parse("2010-01-01T00:00:00.000Z")
   end
 
-  it 'ignores rexif task results' do
-    task.update_attribute(:job_id, rexif_task['JobResult']['Job']['Id'])
+  it 'ignores porter task results' do
+    task.update_attribute(:job_id, porter_task['JobResult']['Job']['Id'])
     task.must_be :started?
     task.logged_at.must_be_nil
 
-    rexif_task['TaskResult'] = rexif_task.delete('JobResult')
-    Task.callback(rexif_task)
+    porter_task['TaskResult'] = porter_task.delete('JobResult')
+    Task.callback(porter_task)
     task.reload.must_be :started?
     task.logged_at.must_be_nil
   end
