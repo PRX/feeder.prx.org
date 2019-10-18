@@ -33,17 +33,19 @@ describe RexifParser do
     {
       Task: 'Inspect',
       Inspection: {
-        size: '32980032',
-        audio: {
-          duration: 1371437,
-          format: 'mp3',
-          bitrate: '192000',
-          frequency: '48000',
-          channels: 2,
-          layout: 'stereo',
-          layer: '                        3',
-          samples: nil,
-          frames: '                       57143'
+        Extension: 'mp3',
+        MIME: 'audio/mpeg',
+        Size: '32980032',
+        Audio: {
+          Duration: 1371437,
+          Format: 'mp3',
+          Bitrate: '192000',
+          Frequency: '48000',
+          Channels: 2,
+          Layout: 'stereo',
+          Layer: '3',
+          Samples: nil,
+          Frames: '57143'
         }
       }
     }.with_indifferent_access
@@ -95,4 +97,11 @@ describe RexifParser do
     })
   end
 
+  it 'parses rexif mime type' do
+    rexif_inspect_result[:Inspection][:MIME] = 'image/png'
+    model = TestParser.new
+    model.result = rexif_success_callback
+    model.rexif_callback_audio_meta[:mime_type].must_equal('image/png')
+    model.rexif_callback_audio_meta[:medium].must_equal('image')
+  end
 end

@@ -61,18 +61,19 @@ module RexifParser
       {
         mime_type: mime,
         medium: (mime || '').split('/').first,
-        file_size: info[:size].to_i,
-        sample_rate: info[:audio][:frequency].to_i,
-        channels: info[:audio][:channels].to_i,
-        duration: info[:audio][:duration].to_f / 1000,
-        bit_rate: info[:audio][:bitrate].to_i / 1000
+        file_size: info[:Size].to_i,
+        sample_rate: info[:Audio][:Frequency].to_i,
+        channels: info[:Audio][:Channels].to_i,
+        duration: info[:Audio][:Duration].to_f / 1000,
+        bit_rate: info[:Audio][:Bitrate].to_i / 1000
       }
     end
   end
 
-  # TODO: inspect not really returning this yet
   def rexif_callback_mime(info)
-    if info[:audio]
+    if info[:MIME]
+      info[:MIME]
+    elsif info[:Audio]
       'audio/mpeg'
     else
       nil
