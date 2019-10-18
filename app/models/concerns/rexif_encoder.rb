@@ -16,7 +16,7 @@ module RexifEncoder
     job = {
       Id: job_id,
       Source: rexif_source(opts[:source]),
-      Copy: {Destinations: [rexif_destination(opts[:destination])]},
+      Copy: {Destinations: [rexif_destination(opts[:destination], opts[:source])]},
       Callbacks: [rexif_callback(opts[:callback])]
     }
 
@@ -45,10 +45,21 @@ module RexifEncoder
     end
   end
 
-  def rexif_destination(url)
+  def rexif_destination(url, src_url)
     if url.starts_with?('s3://')
       parts = url.sub('s3://', '').split('/', 2)
-      {Mode: 'AWS/S3', BucketName: parts[0], ObjectKey: parts[1]}
+      filename = File.basename(src_url)
+      {
+        Mode: 'AWS/S3',
+        BucketName: parts[0],
+        ObjectKey: parts[1],
+        ContentType: 'REPLACE',
+        Parameters: {
+          ACL: 'public-read',
+          CacheControl: 'max-age=86400',
+          ContentDisposition: "attachment; filename=\"#{filename}\""
+        }
+      }
     else
       raise "Invalid rexif destination: #{url}"
     end

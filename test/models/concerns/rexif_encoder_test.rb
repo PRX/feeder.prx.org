@@ -38,7 +38,13 @@ describe RexifEncoder do
       'Destinations' => [{
         'Mode' => 'AWS/S3',
         'BucketName' => 'dest',
-        'ObjectKey' => 'path/key.mp3'
+        'ObjectKey' => 'path/key.mp3',
+        'ContentType' => 'REPLACE',
+        'Parameters' => {
+          'ACL' => 'public-read',
+          'CacheControl' => 'max-age=86400',
+          'ContentDisposition' => 'attachment; filename="key.mp3"'
+        }
       }]
     })
     sns.message[:Job][:Inspect].must_be_nil
