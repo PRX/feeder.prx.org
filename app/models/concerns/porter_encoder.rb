@@ -16,12 +16,12 @@ module PorterEncoder
     job = {
       Id: job_id,
       Source: porter_source(opts[:source]),
-      Copy: {Destinations: [porter_destination(opts[:destination], opts[:source])]},
+      Tasks: [porter_copy(opts[:destination], opts[:source])],
       Callbacks: [porter_callback(opts[:callback])]
     }
 
     if opts[:job_type] == 'audio'
-      job.merge!(Inspect: {Perform: true})
+      job[:Tasks] << {Type: 'Inspect'}
     end
 
     porter_sns_client.publish({
@@ -45,11 +45,12 @@ module PorterEncoder
     end
   end
 
-  def porter_destination(url, src_url)
+  def porter_copy(url, src_url)
     if url.starts_with?('s3://')
       parts = url.sub('s3://', '').split('/', 2)
       filename = File.basename(src_url)
       {
+        Type: 'Copy',
         Mode: 'AWS/S3',
         BucketName: parts[0],
         ObjectKey: parts[1],

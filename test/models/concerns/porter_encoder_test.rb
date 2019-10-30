@@ -34,19 +34,18 @@ describe PorterEncoder do
       'BucketName' => 'src',
       'ObjectKey' => 'path/key.mp3'
     })
-    sns.message[:Job][:Copy].must_equal({
-      'Destinations' => [{
-        'Mode' => 'AWS/S3',
-        'BucketName' => 'dest',
-        'ObjectKey' => 'path/key.mp3',
-        'ContentType' => 'REPLACE',
-        'Parameters' => {
-          'ACL' => 'public-read',
-          'CacheControl' => 'max-age=86400',
-          'ContentDisposition' => 'attachment; filename="key.mp3"'
-        }
-      }]
-    })
+    sns.message[:Job][:Tasks].must_equal([{
+      'Type' => 'Copy',
+      'Mode' => 'AWS/S3',
+      'BucketName' => 'dest',
+      'ObjectKey' => 'path/key.mp3',
+      'ContentType' => 'REPLACE',
+      'Parameters' => {
+        'ACL' => 'public-read',
+        'CacheControl' => 'max-age=86400',
+        'ContentDisposition' => 'attachment; filename="key.mp3"'
+      }
+    }])
     sns.message[:Job][:Inspect].must_be_nil
     sns.message[:Job][:Callbacks].must_equal([{
       'Type' => 'AWS/SQS',
@@ -68,6 +67,6 @@ describe PorterEncoder do
     opts[:job_type] = 'audio'
     model.porter_start!(opts)
 
-    sns.message[:Job][:Inspect].must_equal({'Perform' => true})
+    sns.message[:Job][:Tasks].must_include({'Type' => 'Inspect'})
   end
 end
