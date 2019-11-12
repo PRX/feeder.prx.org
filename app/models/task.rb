@@ -29,9 +29,14 @@ class Task < BaseModel
 
   def self.callback(msg)
     Task.transaction do
-      job_id = fixer_callback_job_id(msg) || porter_callback_job_id(msg)
-      status = fixer_callback_status(msg) || porter_callback_status(msg)
-      time = fixer_callback_time(msg) || porter_callback_time(msg)
+      if job_id = fixer_callback_job_id(msg)
+        status = fixer_callback_status(msg)
+        time = fixer_callback_time(msg)
+      elsif job_id = porter_callback_job_id(msg)
+        status = porter_callback_status(msg)
+        time = porter_callback_time(msg)
+      end
+
       task = where(job_id: job_id).lock(true).first
       if task && status && time && (task.logged_at.nil? || (time >= task.logged_at))
         task.update_attributes!(status: status, logged_at: time, result: msg)
