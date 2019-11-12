@@ -47,29 +47,4 @@ class MediaResource < BaseModel
     ext = '.mp3' if ext.blank?
     "#{episode.base_published_url}/#{guid}#{ext}" if episode
   end
-
-  def update_from_fixer(fixer_task)
-    if info = fixer_task.fetch('task', {}).fetch('result_details', {}).fetch('info', nil)
-      update_attributes_with_fixer_info(info).save
-    end
-  end
-
-  def update_attributes_with_fixer_info(info)
-    update_mime_type_with_fixer_info(info)
-    self.medium = self.mime_type.split('/').first
-    self.file_size = info['size'].to_i
-    self.sample_rate = info['sample_rate'].to_i
-    self.channels = info['channels'].to_i
-    self.duration = info['length'].to_f
-    self.bit_rate = info['bit_rate'].to_i
-    self
-  end
-
-  def update_mime_type_with_fixer_info(info)
-    if info['content_type'].nil? || info['content_type'] == 'application/octect-stream'
-      self.mime_type ||= 'audio/mpeg'
-    else
-      self.mime_type = info['content_type']
-    end
-  end
 end

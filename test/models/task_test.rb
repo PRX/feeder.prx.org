@@ -6,12 +6,22 @@ describe Task do
     {
       'task' => {
         'job' => {
-          'id' => 12345
+          'id' => 11111111
         },
         'result_details' => {
           'status' => 'complete',
           'logged_at' => "2010-01-01T00:00:00.000Z"
         }
+      }
+    }
+  end
+
+  let(:porter_task) do
+    {
+      'Time' => '2010-01-01T00:00:00.000Z',
+      'JobResult' => {
+        'Job' => {'Id' => '11111111'},
+        'Result' => {}
       }
     }
   end
@@ -24,26 +34,25 @@ describe Task do
 
   it 'uses an sqs queue for callbacks' do
     r, ENV['AWS_REGION'], ENV['FIXER_CALLBACK_QUEUE'], q = ENV['AWS_REGION'], 'us-east-1', nil, ENV['FIXER_CALLBACK_QUEUE']
-    task.fixer_call_back_queue.must_equal 'sqs://us-east-1/test_feeder_fixer_callback'
+    task.callback_queue.must_equal 'sqs://us-east-1/test_feeder_fixer_callback'
     ENV['AWS_REGION'], ENV['FIXER_CALLBACK_QUEUE'] = r, q
   end
 
   it 'creates a fixer job' do
     Task.stub :new_fixer_sqs_client, SqsMock.new do
-      job = task.fixer_copy_file(destination: 'dest', source: 'src', job_type: 'file')
-      job[:job][:job_type].must_equal 'file'
+      task.stub :porter_enabled?, false do
+        task.start!
+        task.job_id.must_equal '11111111'
+        task.options[:callback].must_match /^sqs:\/\//
+      end
     end
   end
 
-  it 'class can handle fixer callback' do
-    ft = fixer_task
-    ft['task']['job']['id'] = task.id
-    Task.fixer_callback(ft)
-  end
-
   it 'can handle fixer callback' do
-    task.fixer_callback(fixer_task)
-    task.must_be :complete?
+    task.update_attribute(:job_id, fixer_task['task']['job']['id'])
+    task.must_be :started?
+    Task.callback(fixer_task)
+    task.reload.must_be :complete?
     task.logged_at.must_equal Time.parse("2010-01-01T00:00:00.000Z")
   end
 
@@ -53,5 +62,24 @@ describe Task do
     m, ENV['FIXER_CACHE_MAX_AGE'] = ENV['FIXER_CACHE_MAX_AGE'], '1234'
     task.fixer_query.must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D1234'
     ENV['FIXER_CACHE_MAX_AGE'] = m
+  end
+
+  it 'handles porter callbacks' do
+    task.update_attribute(:job_id, porter_task['JobResult']['Job']['Id'])
+    task.must_be :started?
+    Task.callback(porter_task)
+    task.reload.must_be :complete?
+    task.logged_at.must_equal Time.parse("2010-01-01T00:00:00.000Z")
+  end
+
+  it 'ignores porter task results' do
+    task.update_attribute(:job_id, porter_task['JobResult']['Job']['Id'])
+    task.must_be :started?
+    task.logged_at.must_be_nil
+
+    porter_task['TaskResult'] = porter_task.delete('JobResult')
+    Task.callback(porter_task)
+    task.reload.must_be :started?
+    task.logged_at.must_be_nil
   end
 end

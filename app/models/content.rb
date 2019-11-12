@@ -28,11 +28,6 @@ class Content < MediaResource
     self
   end
 
-  def update_from_fixer(fixer_task)
-    super(fixer_task)
-    replace_resources!
-  end
-
   def replace_resources!
     episode.with_lock do
       # delete enclosures in the same episode created before this

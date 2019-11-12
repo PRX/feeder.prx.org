@@ -15,9 +15,4 @@ class PodcastImage < ActiveRecord::Base
     fn = File.basename(URI.parse(original_url).path)
     "images/#{guid}/#{fn}"
   end
-
-  def update_from_fixer(fixer_task)
-    super(fixer_task)
-    replace_resources!
-  end
 end

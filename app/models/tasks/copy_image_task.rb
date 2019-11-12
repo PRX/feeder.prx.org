@@ -1,72 +1,22 @@
 class Tasks::CopyImageTask < ::Task
-  def start!
-    self.options = task_options
-    job = fixer_copy_file(options)
-    self.job_id = job[:job][:id]
 
-    # TODO Only used in prototyping
-    send_rexif_job
-
-    save!
-  end
-
-  # TODO Only used in prototyping
-  def send_rexif_job
-    return if !image_resource.original_url
-
-    if image_resource.original_url.match(/^s3:/)
-      parts = image_resource.original_url.gsub(/^s3:\/\//, '').split('/', 2)
-      source = {
-        Mode: 'AWS/S3',
-        BucketName: parts[0],
-        ObjectKey: parts[1]
-      }
-    elsif image_resource.original_url.match(/^https:/)
-      source = {
-        Mode: 'HTTP',
-        URL: image_resource.original_url
-      }
-    else
-      return
-    end
-
-    if ENV['REXIF_JOB_EXECUTION_SNS_TOPIC']
-      sns = Aws::SNS::Client.new
-      sns.publish({
-        topic_arn: ENV['REXIF_JOB_EXECUTION_SNS_TOPIC'],
-        message: JSON.dump({
-          Job: {
-            Id: self.job_id,
-            Source: source,
-            Copy: {
-              Destinations: [
-                Mode: 'AWS/S3',
-                BucketName: feeder_storage_bucket,
-                ObjectKey: "#{image_path(image_resource)}_rexif".gsub(/^\//, '')
-              ]
-            }
-          }
-        })
-      })
-    end
-  end
-
-  def task_status_changed(fixer_task, new_status)
-    return if !image_resource
-    image_resource.update_attribute(:status, new_status)
-
-    if fixer_task && new_status == 'complete'
-      image_resource.update_from_fixer(fixer_task)
-      podcast.publish!
+  before_save do
+    if image_resource && status_changed?
+      image_resource.update_attributes!(status: status)
+      if complete?
+        image_resource.update_attributes!(url: image_resource.published_url)
+        image_resource.try(:replace_resources!)
+        podcast.try(:publish!)
+      end
     end
   end
 
   def task_options
-    {
+    super.merge({
       job_type: 'file',
       source: image_resource.original_url,
       destination: destination_url(image_resource)
-    }.with_indifferent_access
+    }).with_indifferent_access
   end
 
   def destination_url(image_resource)
@@ -74,7 +24,6 @@ class Tasks::CopyImageTask < ::Task
       scheme: 's3',
       host: feeder_storage_bucket,
       path: image_path(image_resource),
-      query: fixer_query
     ).to_s
   end
 

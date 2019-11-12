@@ -15,6 +15,8 @@ ENV['ID_HOST']         = 'id.prx.org'
 ENV['META_HOST']       = 'meta.prx.org'
 ENV['PRX_HOST']        = 'www.prx.org'
 ENV['DOVETAIL_HOST']   = 'dovetail.prxu.org'
+ENV['FEEDER_STORAGE_BUCKET'] = 'test-prx-feed'
+ENV['PORTER_SNS_TOPIC'] = nil
 
 require File.expand_path("../../config/environment", __FILE__)
 require 'rails/test_help'
@@ -67,13 +69,27 @@ def stub_requests_to_prx_cms
 end
 
 class SqsMock
+  attr_accessor :job
+
   def initialize(id = nil)
     @id = id || '11111111'
   end
 
   def create_job(j)
+    self.job = j
     j[:job][:id] = @id
     j
+  end
+end
+
+class SnsMock
+  attr_accessor :message
+
+  def publish(params)
+    self.message = JSON.parse(params[:message]).with_indifferent_access
+    {
+      message_id: 'whatever'
+    }
   end
 end
 
