@@ -16,7 +16,7 @@ docker-compose.yml
 Dockerfile
 Procfile
 env-example
-.env
+.env*
 deploy-example
 
 #
