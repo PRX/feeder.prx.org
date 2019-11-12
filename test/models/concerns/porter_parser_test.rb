@@ -152,7 +152,7 @@ describe PorterParser do
       channels: 2,
       duration: 157.991,
       bit_rate: 747,
-      frame_rate: '24000/1001',
+      frame_rate: 24, # (24000 / 1001).round
       width: 640,
       height: 360
     })

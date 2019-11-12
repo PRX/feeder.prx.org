@@ -99,12 +99,19 @@ module PorterParser
       {
         duration: info[:Video][:Duration].to_f / 1000,
         bit_rate: info[:Video][:Bitrate].to_i / 1000,
-        frame_rate: info[:Video][:Framerate],
+        frame_rate: porter_callback_video_framerate(info[:Video][:Framerate]),
         width: info[:Video][:Width].to_i,
         height: info[:Video][:Height].to_i
       }
     else
       {}
     end
+  end
+
+  # note: frame_rate is an integer in the schema, so just round it
+  def porter_callback_video_framerate(fraction_str)
+    Rational(fraction_str).to_f.round
+  rescue StandardError
+    nil
   end
 end
