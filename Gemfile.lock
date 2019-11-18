@@ -227,7 +227,7 @@ GEM
     pundit (1.1.0)
       activesupport (>= 3.0.0)
     rack (1.6.11)
-    rack-cors (1.0.5)
+    rack-cors (1.0.6)
       rack (>= 1.6.0)
     rack-prx_auth (0.1.0)
       json (~> 1.8, >= 1.8.1)
