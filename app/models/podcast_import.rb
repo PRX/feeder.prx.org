@@ -372,7 +372,7 @@ class PodcastImport < BaseModel
       end
     end
 
-    itunes_cats.keys.map { |n| { name: n, subcategories: itunes_cats[n] } }
+    [itunes_cats.keys.map { |n| { name: n, subcategories: itunes_cats[n] } }.first].compact
   end
 
   def parse_categories(feed)
