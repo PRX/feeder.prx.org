@@ -103,6 +103,18 @@ class Episode < BaseModel
     self[:guid]
   end
 
+  def explicit_content
+    e = (explicit.blank? && podcast) ? podcast.explicit : explicit
+    e = e.to_s.downcase.strip
+    if ["clean", "no", "false", "f"].include?(e)
+      false
+    elsif ["explicit", "yes", "true", "t"].include?(e)
+      true
+    else
+      nil
+    end
+  end
+
   def item_guid
     original_guid || "prx_#{podcast_id}_#{guid}"
   end

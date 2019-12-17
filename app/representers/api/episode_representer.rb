@@ -6,6 +6,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :created_at, writable: false
   property :updated_at, writable: false
 
+  # based on the podcast explicit and the episode explicit values: true, false, and nil
+  property :explicit_content, writeable: false
+
   # the guid that shows up in the rss feed
   # based on id by default, if updated, can be set to anything
   property :item_guid, as: :guid
