@@ -23,6 +23,12 @@ describe Api::EpisodeRepresenter do
     json['isFeedReady'].must_equal true
   end
 
+  it 'includes an explicit_content value' do
+    episode.explicit.must_be_nil
+    episode.podcast.must_be :explicit
+    json['explicitContent'].must_equal true
+  end
+
   it 'indicates if the episode media is not ready' do
     episode.enclosure.update_attributes(status: 'error')
     json['isFeedReady'].must_equal false
