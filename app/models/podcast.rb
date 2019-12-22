@@ -23,6 +23,11 @@ class Podcast < BaseModel
   has_many :itunes_categories, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
 
+  has_many :feeds,
+    -> { order('created_at DESC') },
+    autosave: true,
+    dependent: :destroy
+
   validates_associated :itunes_image, :feed_image
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
 
@@ -140,7 +145,11 @@ class Podcast < BaseModel
   end
 
   def published_url
-    "#{base_published_url}/feed-rss.xml"
+    "#{base_published_url}/#{feed_file}"
+  end
+
+  def feed_file
+    "feed-rss.xml"
   end
 
   def itunes_type

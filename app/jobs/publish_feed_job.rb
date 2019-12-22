@@ -1,36 +1,20 @@
-require 'builder'
+require 'feed_builder'
+require 'feed_decorator'
 
 class PublishFeedJob < ApplicationJob
-
   queue_as :feeder_default
 
   include PodcastsHelper
 
-  attr_accessor :podcast, :episodes, :rss
-
   def perform(podcast)
-    setup_data(podcast)
-    @rss = generate_rss_xml
-    save_podcast_file(@rss)
+    rss = save_file(podcast)
+    podcast.feeds.each { |f| save_file(FeedDecorator.new(f)) }
+    rss
   end
 
-  def setup_data(podcast)
-    @podcast = podcast
-    @episodes = @podcast.feed_episodes
-  end
+  def save_file(podcast, options = {})
+    rss = FeedBuilder.new(podcast).to_feed_xml
 
-  def generate_rss_xml
-    xml = Builder::XmlMarkup.new(indent: 2)
-    instance_eval rss_template
-    xml.target!
-  end
-
-  def rss_template
-    p = File.join(Rails.root, 'app', 'views', 'podcasts', 'show.rss.builder')
-    File.read(p)
-  end
-
-  def save_podcast_file(rss, options = {})
     default_options = {
       acl: 'public-read',
       content_type: 'application/rss+xml; charset=UTF-8',
@@ -40,16 +24,17 @@ class PublishFeedJob < ApplicationJob
     opts = default_options.merge(options)
     opts[:body] = rss
 
-    obj = connection.bucket(feeder_storage_bucket).object(key)
+    obj = connection.bucket(feeder_storage_bucket).object(key(podcast))
     obj.put(opts)
+    rss
   end
 
   def feeder_storage_bucket
     ENV['FEEDER_STORAGE_BUCKET']
   end
 
-  def key(podcast = @podcast)
-    "#{podcast.path}/feed-rss.xml"
+  def key(podcast)
+    "#{podcast.path}/#{podcast.feed_file}"
   end
 
   def connection

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190724191053) do
+ActiveRecord::Schema.define(version: 20191222033238) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -92,6 +92,16 @@ ActiveRecord::Schema.define(version: 20190724191053) do
   end
 
   add_index "feed_images", ["podcast_id"], name: "index_feed_images_on_podcast_id", using: :btree
+
+  create_table "feeds", force: :cascade do |t|
+    t.integer  "podcast_id"
+    t.string   "name"
+    t.text     "overrides"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "feeds", ["podcast_id"], name: "index_feeds_on_podcast_id", using: :btree
 
   create_table "itunes_categories", force: :cascade do |t|
     t.datetime "created_at"
@@ -260,4 +270,5 @@ ActiveRecord::Schema.define(version: 20190724191053) do
   add_index "tasks", ["owner_type", "owner_id"], name: "index_tasks_on_owner_type_and_owner_id", using: :btree
   add_index "tasks", ["status"], name: "index_tasks_on_status", using: :btree
 
+  add_foreign_key "feeds", "podcasts"
 end
