@@ -5,6 +5,7 @@ Rails.application.routes.draw do
     scope ':api_version', api_version: 'v1', defaults: { format: 'hal' } do
       resources :podcasts, except: [:new, :edit] do
         resources :episodes, except: [:new, :edit]
+        resources :feeds, except: [:new, :edit]
       end
       resources :episodes, except: [:new, :edit]
 

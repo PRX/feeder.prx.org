@@ -59,18 +59,25 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :display_episodes_count
   property :display_full_episodes_count
 
-  link :episodes do
-    {
-      href: api_podcast_episodes_path(represented),
-      count: represented.episodes.published.count
-    } if represented.id
+  link :account do
+    URI.join(cms_root, represented.prx_account_uri).to_s if represented.prx_account_uri
   end
 
   link :series do
     URI.join(cms_root, represented.prx_uri).to_s if represented.prx_uri
   end
 
-  link :account do
-    URI.join(cms_root, represented.prx_account_uri).to_s if represented.prx_account_uri
+  link :feeds do
+    {
+      href: api_podcast_feeds_path(represented),
+      count: represented.feeds.count
+    } if represented.id
+  end
+
+  link :episodes do
+    {
+      href: api_podcast_episodes_path(represented),
+      count: represented.episodes.published.count
+    } if represented.id
   end
 end

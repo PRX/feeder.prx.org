@@ -26,9 +26,6 @@ describe FeedBuilder do
     rss = builder.to_feed_xml
     rss.wont_be_nil
     rss[0, 38].must_equal '<?xml version="1.0" encoding="UTF-8"?>'
-    # puts "------rss start--------"
-    # puts rss
-    # puts "-------rss end---------"
   end
 
   it 'can setup the data based on a decorated feed' do
@@ -36,8 +33,5 @@ describe FeedBuilder do
     rss = builder.to_feed_xml
     rss.wont_be_nil
     rss[0, 38].must_equal '<?xml version="1.0" encoding="UTF-8"?>'
-    # puts "------rss start--------"
-    # puts rss
-    # puts "-------rss end---------"
   end
 end
