@@ -226,7 +226,7 @@ GEM
     puma (3.12.2)
     pundit (1.1.0)
       activesupport (>= 3.0.0)
-    rack (1.6.11)
+    rack (1.6.12)
     rack-cors (1.0.6)
       rack (>= 1.6.0)
     rack-prx_auth (0.1.0)
