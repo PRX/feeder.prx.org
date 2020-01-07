@@ -81,9 +81,9 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.guid(ep.item_guid, isPermaLink: !!ep.is_perma_link)
         xml.title(ep.title)
         xml.pubDate ep.published_at.utc.rfc2822
-        xml.link ep.url || ep.media_url
+        xml.link ep.url || enclosure_url(@podcast, ep)
         xml.description { xml.cdata!(ep.description || '') }
-        xml.enclosure(url: ep.media_url, type: ep.content_type, length: ep.file_size) if ep.media?
+        xml.enclosure(url: enclosure_url(@podcast, ep), type: ep.content_type, length: ep.file_size) if ep.media?
 
         xml.itunes :title, ep.clean_title unless ep.clean_title.blank?
         xml.itunes :subtitle, ep.subtitle unless ep.subtitle.blank?
@@ -118,7 +118,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
           xml.media(:content,
             fileSize: ep.file_size,
             type: ep.content_type,
-            url: ep.media_url) if ep.media?
+            url: enclosure_url(@podcast, ep)) if ep.media?
 
           xml.content(:encoded) { xml.cdata!(ep.content) } unless ep.content.blank?
         end

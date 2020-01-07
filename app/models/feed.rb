@@ -1,5 +1,5 @@
 class Feed < ActiveRecord::Base
-  OVERRIDES = %w[title display_episodes_count itunes_block itunes_type].freeze
+  OVERRIDES = %w[title display_episodes_count itunes_block itunes_type enclosure_prefix enclosure_template].freeze
   belongs_to :podcast
   serialize :overrides, HashSerializer
 

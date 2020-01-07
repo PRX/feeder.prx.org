@@ -1,4 +1,5 @@
 require 'text_sanitizer'
+require 'enclosure_url_builder'
 
 module PodcastsHelper
   include TextSanitizer
@@ -24,5 +25,9 @@ module PodcastsHelper
 
   def itunes_summary(model)
     model.summary || sanitize_links_only(model.description)
+  end
+
+  def enclosure_url(podcast, episode)
+    EnclosureUrlBuilder.new.podcast_episode_url(podcast, episode)
   end
 end

@@ -124,50 +124,11 @@ class Episode < BaseModel
   end
 
   def media_url
-    media = first_media_resource
-    enclosure_url(media.media_url, media.original_url) if media
+    first_media_resource.try(:href)
   end
 
   def content_type
     first_media_resource.try(:mime_type) || 'audio/mpeg'
-  end
-
-  def enclosure_url(base_url, original_url = nil)
-    templated_url = enclosure_template_url(base_url, original_url)
-    add_enclosure_prefix(templated_url)
-  end
-
-  def add_enclosure_prefix(u)
-    return u if enclosure_prefix.blank?
-    pre = Addressable::URI.parse(enclosure_prefix)
-    orig = Addressable::URI.parse(u)
-    orig.path = File.join(orig.host, orig.path)
-    orig.path = File.join(pre.path, orig.path)
-    orig.scheme = pre.scheme
-    orig.host = pre.host
-    orig.to_s
-  end
-
-  def enclosure_template_url(base_url, original_url = nil)
-    return base_url if enclosure_template.blank?
-
-    expansions = enclosure_template_expansions(base_url, original_url)
-    template = Addressable::Template.new(enclosure_template)
-    template.expand(expansions).to_str
-  end
-
-  def enclosure_template_expansions(base_url, original_url)
-    original = Addressable::URI.parse(original_url || '').to_hash
-    original = Hash[original.map { |k,v| ["original_#{k}".to_sym, v] }]
-    base = Addressable::URI.parse(base_url || '').to_hash
-    {
-      original_filename: File.basename(original[:original_path].to_s),
-      original_extension: File.extname(original[:original_path].to_s),
-      filename: File.basename(base[:path].to_s),
-      extension: File.extname(base[:path].to_s),
-      slug: podcast_slug,
-      guid: guid
-    }.merge(original).merge(base)
   end
 
   def duration
