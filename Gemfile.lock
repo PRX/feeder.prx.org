@@ -168,7 +168,7 @@ GEM
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
       ruby_dep (~> 1.2)
-    loofah (2.3.1)
+    loofah (2.4.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     lumberjack (1.0.10)
@@ -191,7 +191,7 @@ GEM
     multipart-post (2.0.0)
     nenv (0.3.0)
     newrelic_rpm (5.2.0.345)
-    nokogiri (1.10.4)
+    nokogiri (1.10.7)
       mini_portile2 (~> 2.4.0)
     nokogumbo (1.5.0)
       nokogiri
@@ -252,8 +252,8 @@ GEM
       activesupport (>= 4.2.0, < 5.0)
       nokogiri (~> 1.6)
       rails-deprecated_sanitizer (>= 1.0.1)
-    rails-html-sanitizer (1.0.4)
-      loofah (~> 2.2, >= 2.2.2)
+    rails-html-sanitizer (1.3.0)
+      loofah (~> 2.3)
     rails_12factor (0.0.3)
       rails_serve_static_assets
       rails_stdout_logging
@@ -380,7 +380,7 @@ DEPENDENCIES
   rack-cors
   rack-prx_auth (~> 0.1.0)
   rails (~> 4.2.0)
-  rails-html-sanitizer (~> 1.0.4)
+  rails-html-sanitizer (~> 1.3.0)
   rails_12factor
   rake
   responders
@@ -397,4 +397,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   1.16.2
+   1.17.3
