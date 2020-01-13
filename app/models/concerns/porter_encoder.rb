@@ -48,12 +48,22 @@ module PorterEncoder
   def porter_copy(url, src_url)
     if url.starts_with?('s3://')
       parts = url.sub('s3://', '').split('/', 2)
+      s3_bucket = parts[0]
+      s3_path = parts[1]
       filename = File.basename(src_url)
+
+      # NOTE: for HTTP sources (NOT S3) - make sure the eventual encoding of
+      # the CloudFront filename matches the source HTTP url
+      if src_url.starts_with?('http')
+        s3_path = CGI.unescape(s3_path)
+        filename = CGI.unescape(filename)
+      end
+
       {
         Type: 'Copy',
         Mode: 'AWS/S3',
-        BucketName: parts[0],
-        ObjectKey: parts[1],
+        BucketName: s3_bucket,
+        ObjectKey: s3_path,
         ContentType: 'REPLACE',
         Parameters: {
           ACL: 'public-read',
