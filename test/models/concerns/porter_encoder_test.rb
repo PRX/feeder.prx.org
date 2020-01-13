@@ -53,6 +53,53 @@ describe PorterEncoder do
     }])
   end
 
+  it 'unescapes filenames from http sources' do
+    opts[:source] = 'https://some.where/the/file%252B.mp3'
+    opts[:destination] = 's3://dest/path/file%252B.mp3'
+    model.porter_start!(opts)
+
+    sns.message[:Job][:Source].must_equal({
+      'Mode' => 'HTTP',
+      'URL' => 'https://some.where/the/file%252B.mp3'
+    })
+    sns.message[:Job][:Tasks].must_equal([{
+      'Type' => 'Copy',
+      'Mode' => 'AWS/S3',
+      'BucketName' => 'dest',
+      'ObjectKey' => 'path/file%2B.mp3',
+      'ContentType' => 'REPLACE',
+      'Parameters' => {
+        'ACL' => 'public-read',
+        'CacheControl' => 'max-age=86400',
+        'ContentDisposition' => 'attachment; filename="file%2B.mp3"'
+      }
+    }])
+  end
+
+  it 'does not escape filenames from s3 sources' do
+    opts[:source] = 's3://src/the/file%252B.mp3'
+    opts[:destination] = 's3://dest/path/file%252B.mp3'
+    model.porter_start!(opts)
+
+    sns.message[:Job][:Source].must_equal({
+      'Mode' => 'AWS/S3',
+      'BucketName' => 'src',
+      'ObjectKey' => 'the/file%252B.mp3'
+    })
+    sns.message[:Job][:Tasks].must_equal([{
+      'Type' => 'Copy',
+      'Mode' => 'AWS/S3',
+      'BucketName' => 'dest',
+      'ObjectKey' => 'path/file%252B.mp3',
+      'ContentType' => 'REPLACE',
+      'Parameters' => {
+        'ACL' => 'public-read',
+        'CacheControl' => 'max-age=86400',
+        'ContentDisposition' => 'attachment; filename="file%252B.mp3"'
+      }
+    }])
+  end
+
   it 'allows http sources' do
     opts[:source] = 'https://some.where/the/file.mp3'
     model.porter_start!(opts)
