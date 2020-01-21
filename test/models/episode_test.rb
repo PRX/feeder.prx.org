@@ -187,6 +187,40 @@ describe Episode do
     episode.find_existing_content(2, 's3://prx-testing/test/audio.mp3').must_be_nil
   end
 
+  it 'returns explicit_content based on the podcast' do
+    podcast = episode.podcast
+    episode.explicit = nil
+
+    ["explicit", "yes", true].each do |val|
+      podcast.explicit = val
+      episode.explicit_content.must_equal true
+    end
+
+    ["clean", "no", false].each do |val|
+      podcast.explicit = val
+      episode.explicit_content.must_equal false
+    end
+
+    podcast.explicit = nil
+    episode.explicit_content.must_be_nil
+  end
+
+  it 'returns explicit_content overriden by the episode' do
+    podcast = episode.podcast
+
+    podcast.explicit = false
+    ["explicit", "yes", true].each do |val|
+      episode.explicit = val
+      episode.explicit_content.must_equal true
+    end
+
+    podcast.explicit = true
+    ["clean", "no", false].each do |val|
+      episode.explicit = val
+      episode.explicit_content.must_equal false
+    end
+  end
+
   describe 'release episodes' do
 
     let(:podcast) { episode.podcast }
