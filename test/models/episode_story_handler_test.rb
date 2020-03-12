@@ -27,6 +27,8 @@ describe EpisodeStoryHandler do
     episode.wont_be_nil
     episode.published_at.wont_be_nil
     episode.published_at.must_equal Time.parse(story.attributes[:published_at])
+    episode.released_at.wont_be_nil
+    episode.released_at.must_equal Time.parse(story.attributes[:released_at])
     first_audio = episode.all_contents.first.original_url
     last_audio = episode.all_contents.last.original_url
     first_audio.must_equal 's3://mediajoint.production.prx.org/public/audio_files/1200648/lcs_spring16_act1.mp3'
@@ -35,6 +37,9 @@ describe EpisodeStoryHandler do
     episode.season_number.must_equal 2
     episode.episode_number.must_equal 4
     episode.clean_title.must_equal 'Stripped-down title'
+    episode.audio_version_uri.must_equal '/api/v1/audio_versions/35397'
+    episode.audio_version.must_equal 'Audio Version'
+    episode.segment_count.must_equal 4
   end
 
   describe 'with episode identifiers' do

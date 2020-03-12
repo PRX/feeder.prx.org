@@ -14,6 +14,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :item_guid, as: :guid
   property :prx_uri
   property :published_at
+  property :released_at
 
   # combo of published_at, guid, and title at time of first scheduling for publication
   property :keyword_xid, writeable: false
