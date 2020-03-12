@@ -8,6 +8,7 @@
   "seasonIdentifier": 2,
   "points": 0,
   "publishedAt": "2016-09-29T22:14:13.000Z",
+  "releasedAt": "2016-09-29T11:11:11.000Z",
   "shortDescription": "With a teaser of the story",
   "tags": [
     "Business",
@@ -169,7 +170,14 @@
             "timingAndCues": "Timing and cues",
             "transcript": "Transcript of all the text in this audio",
             "status": "complete",
-            "explicit": "clean"
+            "explicit": "clean",
+            "segmentCount": 4,
+            "_links": {
+              "self": {
+                "href": "/api/v1/audio_versions/35397",
+                "profile": "http://meta.prx.org/model/audio-version"
+              }
+            }
           }
         ]
       },
