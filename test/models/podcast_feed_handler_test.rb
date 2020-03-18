@@ -65,7 +65,7 @@ describe PodcastFeedHandler do
 
   it 'update_categories' do
     feed = OpenStruct.new(
-      categories: ["Science & Medicine", "Natural Sciences", "Fictional"]
+      categories: ["Science", "Natural Sciences", "Fictional"]
     )
     podcast = Podcast.new
     handler = PodcastFeedHandler.new(podcast)
@@ -74,7 +74,7 @@ describe PodcastFeedHandler do
     handler.update_categories
 
     podcast.itunes_categories.size.must_equal 1
-    podcast.itunes_categories.first.name.must_equal "Science & Medicine"
+    podcast.itunes_categories.first.name.must_equal "Science"
     podcast.categories.first.must_equal "Fictional"
   end
 end

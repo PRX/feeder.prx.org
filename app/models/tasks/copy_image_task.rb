@@ -1,27 +1,22 @@
 class Tasks::CopyImageTask < ::Task
-  def start!
-    self.options = task_options
-    job = fixer_copy_file(options)
-    self.job_id = job[:job][:id]
-    save!
-  end
 
-  def task_status_changed(fixer_task, new_status)
-    return if !image_resource
-    image_resource.update_attribute(:status, new_status)
-
-    if fixer_task && new_status == 'complete'
-      image_resource.update_from_fixer(fixer_task)
-      podcast.publish!
+  before_save do
+    if image_resource && status_changed?
+      image_resource.update_attributes!(status: status)
+      if complete?
+        image_resource.update_attributes!(url: image_resource.published_url)
+        image_resource.try(:replace_resources!)
+        podcast.try(:publish!)
+      end
     end
   end
 
   def task_options
-    {
+    super.merge({
       job_type: 'file',
       source: image_resource.original_url,
       destination: destination_url(image_resource)
-    }.with_indifferent_access
+    }).with_indifferent_access
   end
 
   def destination_url(image_resource)
@@ -29,7 +24,6 @@ class Tasks::CopyImageTask < ::Task
       scheme: 's3',
       host: feeder_storage_bucket,
       path: image_path(image_resource),
-      query: fixer_query
     ).to_s
   end
 

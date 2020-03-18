@@ -34,6 +34,7 @@ FIXER_QUEUE=development_fixer_job_create
 ID_HOST=id-staging.prx.tech
 LANG=en_US.UTF-8
 NEW_RELIC_KEY=
+PORTER_SNS_TOPIC=
 POSTGRES_USER=feeder
 POSTGRES_PASSWORD=password
 PRX_CLIENT_ID=

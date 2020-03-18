@@ -13,7 +13,7 @@ describe Api::PodcastRepresenter do
 
   it 'includes itunes categories' do
     json['itunesCategories'].wont_be_nil
-    json['itunesCategories'].first['name'].must_equal 'Games & Hobbies'
+    json['itunesCategories'].first['name'].must_equal 'Leisure'
   end
 
   it 'includes owner' do

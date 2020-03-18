@@ -89,8 +89,4 @@ module ImageFile
   def dimensions=(s)
     self.width, self.height = s
   end
-
-  def update_from_fixer(fixer_task)
-    update_attributes!(url: published_url)
-  end
 end

@@ -10,14 +10,19 @@ FactoryGirl.define do
     channels 2
     duration 48
     bit_rate 64
-    original_url 'audio.mp3'
+    original_url 's3://prx-testing/test/audio.mp3'
     status 'created'
 
+    transient do
+      task_count 1
+    end
+
     after(:create) do |media_resource, evaluator|
-      create_list(:copy_media_task, 1, owner: media_resource)
+      create_list(:copy_media_task, evaluator.task_count, owner: media_resource)
     end
 
     factory :enclosure, class: Enclosure do
+      task_count 0
     end
 
     factory :content, class: Content do

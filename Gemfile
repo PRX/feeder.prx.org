@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 4.2.0'
-gem 'rails-html-sanitizer', '~> 1.0.4'
+gem 'rails-html-sanitizer', '~> 1.3.0'
 
 # JWS
 gem 'prx_auth-rails', '~> 0.1.0'
@@ -103,6 +103,8 @@ group :development do
   gem 'guard-minitest'
   # Automatically install/update your gem bundle when needed
   gem 'guard-bundler'
+
+  gem 'm'
 end
 
 group :test do
@@ -120,7 +122,7 @@ group :test do
   gem 'coveralls', require: false
 
   # Use Nokogiri for XML and HTML parsing
-  gem 'nokogiri'
+  gem 'nokogiri', '>= 1.10.4'
 
   # WebMock allows stubbing HTTP requests
   gem 'webmock'

@@ -1,39 +1,27 @@
 class Tasks::CopyMediaTask < ::Task
 
-  def start!
-    self.options = task_options
-    job = fixer_copy_file(options)
-    self.job_id = job[:job][:id]
-    save!
-  end
-
-  # callback - example result info:
-  # {
-  #   :size=>774059,
-  #   :content_type=>"audio/mpeg",
-  #   :format=>"mp3",
-  #   :channel_mode=>"Mono",
-  #   :channels=>1,
-  #   :bit_rate=>128,
-  #   :length=>48.352653,
-  #   :sample_rate=>44100
-  # }
-  def task_status_changed(fixer_task, new_status)
-    return if !media_resource
-    media_resource.update_attribute(:status, new_status)
-
-    if fixer_task && new_status == 'complete'
-      media_resource.update_from_fixer(fixer_task)
-      episode.podcast.publish!
+  before_save do
+    if media_resource && status_changed?
+      media_resource.update_attributes!(status: status)
+      if complete?
+        meta = fixer_callback_media_meta || porter_callback_media_meta
+        if meta
+          media_resource.update_attributes!(meta)
+        else
+          Rails.logger.warn("No audio meta found in result: #{JSON.generate(result)}")
+        end
+        media_resource.try(:replace_resources!)
+        episode.try(:podcast).try(:publish!)
+      end
     end
   end
 
   def task_options
-    {
+    super.merge({
       job_type: 'audio',
       source: source_url(media_resource),
       destination: destination_url(media_resource)
-    }.with_indifferent_access
+    }).with_indifferent_access
   end
 
   def source_url(media_resource)
@@ -45,7 +33,6 @@ class Tasks::CopyMediaTask < ::Task
       scheme: 's3',
       host: feeder_storage_bucket,
       path: destination_path(media_resource),
-      query: fixer_query
     ).to_s
   end
 
