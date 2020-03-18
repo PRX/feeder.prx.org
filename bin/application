@@ -17,6 +17,13 @@ ApplicationUpdate () {
   bundle exec rake -vt sqs:create announce:configure_broker db:create db:migrate
 }
 
+SetWorkerDatabasePoolSize(){
+  if [ ! -z "$WORKER_DATABASE_POOL_SIZE" ]; then
+    echo "altering database pool size for workers: $WORKER_DATABASE_POOL_SIZE"
+    export DATABASE_POOL_SIZE=$WORKER_DATABASE_POOL_SIZE
+  fi
+}
+
 UpdateEnvironment () {
   if [ -z "$LOCAL_ENV" ]; then
     IFS=$'\n'
@@ -46,6 +53,7 @@ ApplicationRun () {
   if [ "$PROCESS" = "web" ] ; then
     CMD="bundle exec puma -C config/puma.rb"
   elif [ "$PROCESS" = "worker" ] ; then
+    SetWorkerDatabasePoolSize
     CMD="bundle exec shoryuken --verbose --rails --config config/shoryuken.yml"
   elif [ "$PROCESS" = "console" ] ; then
     CMD="bundle exec rails console"

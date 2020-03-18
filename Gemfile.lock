@@ -191,7 +191,8 @@ GEM
     multipart-post (2.0.0)
     nenv (0.3.0)
     newrelic_rpm (5.2.0.345)
-    nokogiri (1.10.8)
+    nio4r (2.5.2)
+    nokogiri (1.10.0)
       mini_portile2 (~> 2.4.0)
     nokogumbo (1.5.0)
       nokogiri
@@ -223,7 +224,8 @@ GEM
     pry-rails (0.3.4)
       pry (>= 0.9.10)
     public_suffix (2.0.4)
-    puma (3.12.4)
+    puma (4.3.3)
+      nio4r (~> 2.0)
     pundit (1.1.0)
       activesupport (>= 3.0.0)
     rack (1.6.12)
@@ -397,4 +399,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   1.17.3
+   1.16.5
