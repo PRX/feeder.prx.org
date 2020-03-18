@@ -191,12 +191,8 @@ GEM
     multipart-post (2.0.0)
     nenv (0.3.0)
     newrelic_rpm (5.2.0.345)
-<<<<<<< HEAD
     nio4r (2.5.2)
     nokogiri (1.10.0)
-=======
-    nokogiri (1.10.8)
->>>>>>> master
       mini_portile2 (~> 2.4.0)
     nokogumbo (1.5.0)
       nokogiri
@@ -228,12 +224,8 @@ GEM
     pry-rails (0.3.4)
       pry (>= 0.9.10)
     public_suffix (2.0.4)
-<<<<<<< HEAD
     puma (4.3.3)
       nio4r (~> 2.0)
-=======
-    puma (3.12.4)
->>>>>>> master
     pundit (1.1.0)
       activesupport (>= 3.0.0)
     rack (1.6.12)
@@ -407,8 +399,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-<<<<<<< HEAD
    1.16.5
-=======
-   1.17.3
->>>>>>> master
