@@ -37,7 +37,7 @@ describe EpisodeStoryHandler do
     episode.season_number.must_equal 2
     episode.episode_number.must_equal 4
     episode.clean_title.must_equal 'Stripped-down title'
-    episode.audio_version_uri.must_equal '/api/v1/audio_versions/35397'
+    episode.prx_audio_version_uri.must_equal '/api/v1/audio_versions/35397'
     episode.audio_version.must_equal 'Audio Version'
     episode.segment_count.must_equal 4
   end

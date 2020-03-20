@@ -46,7 +46,7 @@ class EpisodeStoryHandler
     versions = story.objects['prx:audio-versions'].objects['prx:items'] rescue []
     if !versions.blank?
       version = versions.first
-      episode.audio_version_uri = version.href
+      episode.prx_audio_version_uri = version.href
       episode.audio_version = version.attributes[:label] # TODO: is this right?
       episode.segment_count = version.attributes[:segment_count]
       episode.explicit = version.attributes[:explicit]

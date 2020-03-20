@@ -72,7 +72,7 @@ ActiveRecord::Schema.define(version: 20200312202854) do
     t.text     "clean_title"
     t.boolean  "itunes_block",                   default: false
     t.datetime "released_at"
-    t.string   "audio_version_uri"
+    t.string   "prx_audio_version_uri"
     t.string   "audio_version"
     t.integer  "segment_count"
   end
