@@ -3,23 +3,40 @@
 class Api::AuthorizationRepresenter < Api::BaseRepresenter
   property :user_id, writeable: false
 
+  link :episodes do
+    {
+      title: 'Get a paged collection of authorized episodes',
+      profile: profile_url(:collection, :episode),
+      href: api_authorization_episodes_path + '{?page,per,zoom,since}',
+      templated: true,
+      count: represented.token_auth_episodes.count,
+    }
+  end
+
   link :episode do
     {
-      href: api_authorization_episode_path_template(id: '{guid}'),
+      title: 'Get a single authorized episode',
+      profile: profile_url(:episode),
+      href: api_authorization_episode_path_template(id: '{id}') + '{?zoom}',
       templated: true,
     }
   end
 
   link :podcasts do
     {
-      href: api_authorization_podcasts_path,
-      count: represented.token_auth_podcasts.count
+      title: 'Get a paged collection of authorized podcasts',
+      profile: profile_url(:collection, :podcasts),
+      href: api_authorization_podcasts_path + '{?page,per,zoom,since}',
+      templated: true,
+      count: represented.token_auth_podcasts.count,
     }
   end
 
   link :podcast do
     {
-      href: api_authorization_podcast_path_template(id: '{id}'),
+      title: 'Get a single authorized podcast',
+      profile: profile_url(:podcast),
+      href: api_authorization_podcast_path_template(id: '{id}') + '{?zoom}',
       templated: true,
     }
   end
