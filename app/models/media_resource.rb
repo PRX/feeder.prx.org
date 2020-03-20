@@ -43,8 +43,13 @@ class MediaResource < BaseModel
   end
 
   def media_url
+    media_url_for_base(episode.base_published_url) if episode
+  end
+
+  def media_url_for_base(base_published_url)
     ext = File.extname(original_url || '')
     ext = '.mp3' if ext.blank?
-    "#{episode.base_published_url}/#{guid}#{ext}" if episode
+    "#{base_published_url}/#{guid}#{ext}"
   end
+
 end

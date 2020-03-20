@@ -10,6 +10,10 @@ class Api::PodcastsController < Api::BaseController
   after_action :process_media, only: [:create, :update]
   after_action :publish, only: [:create, :update, :destroy]
 
+  def included(relation)
+    relation.includes(:itunes_image, :feed_image, :itunes_categories)
+  end
+
   def show
     super if visible?
   end
