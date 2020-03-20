@@ -60,12 +60,18 @@ describe Api::EpisodeRepresenter do
     json['_links']['self']['href'].must_equal "/api/v1/episodes/#{episode.guid}"
     json['_links']['prx:podcast']['href'].must_equal "/api/v1/podcasts/#{episode.podcast.id}"
     json['_links']['prx:story']['href'].must_equal "https://cms.prx.org#{episode.prx_uri}"
+    json['_links']['prx:audio-version']['href'].must_equal "https://cms.prx.org#{episode.prx_audio_version_uri}"
   end
 
   it 'has media' do
     json['media'].size.must_equal 1
     json['media'].first['href'].must_equal episode.enclosure.url
     json['media'].first['original_url'].must_equal episode.enclosure.original_url
+  end
+
+  it 'has an audio version' do
+    json['audioVersion'].must_equal 'One segment audio'
+    json['segmentCount'].must_equal 1
   end
 
   it 'has image' do
