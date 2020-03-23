@@ -226,6 +226,7 @@
             "label": "Podcast Audio segments",
             "explicit": "",
             "status": "complete",
+            "segmentCount": 2,
             "_embedded": {
               "prx:audio": [
                 {
@@ -299,6 +300,7 @@
                 "contentType": "audio/mpeg",
                 "lengthMinimum": 0,
                 "lengthMaximum": 0,
+                "segmentCount": 2,
                 "_embedded": {
                   "prx:audio-file-templates": {
                     "count": 2,

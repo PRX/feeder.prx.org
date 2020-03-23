@@ -11,6 +11,10 @@ class Api::EpisodesController < Api::BaseController
   after_action :process_media, only: [:create, :update]
   after_action :publish, only: [:create, :update, :destroy]
 
+  def included(relation)
+    relation.includes(:podcast, :images, :all_contents, :contents, :enclosures)
+  end
+
   def create
     res = create_resource
     consume! res, create_options

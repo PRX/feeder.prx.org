@@ -14,6 +14,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :item_guid, as: :guid
   property :prx_uri
   property :published_at
+  property :released_at
 
   # combo of published_at, guid, and title at time of first scheduling for publication
   property :keyword_xid, writeable: false
@@ -47,6 +48,8 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     property :author_email, as: :email
   end
 
+  property :audio_version
+  property :segment_count
   collection :media_files,
     as: :media,
     decorator: Api::MediaResourceRepresenter,
@@ -76,5 +79,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
 
   link :story do
     URI.join(cms_root, represented.prx_uri).to_s if represented.prx_uri
+  end
+
+  link :audio_version do
+    URI.join(cms_root, represented.prx_audio_version_uri).to_s if represented.prx_audio_version_uri
   end
 end

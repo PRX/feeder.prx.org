@@ -2,6 +2,8 @@
 
 class Api::Auth::EpisodesController < Api::EpisodesController
   include ApiAuthenticated
+  include ApiUpdatedSince
+
   api_versions :v1
   represent_with Api::EpisodeRepresenter
   filter_resources_by :podcast_id
@@ -21,5 +23,9 @@ class Api::Auth::EpisodesController < Api::EpisodesController
       visible = true
     end
     visible
+  end
+
+  def resources_base
+    @episodes ||= authorization.token_auth_episodes.merge(super)
   end
 end

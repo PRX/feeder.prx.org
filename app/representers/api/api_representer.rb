@@ -23,7 +23,7 @@ class Api::ApiRepresenter < Api::BaseRepresenter
       {
         title:     "Get a paged collection of episodes",
         profile:   profile_url(:collection, :episode),
-        href:      api_episodes_path_template(api_version: represented.version) + '{?page,per,zoom}',
+        href:      api_episodes_path_template(api_version: represented.version) + '{?page,per,zoom,since}',
         templated: true
       }
     ]
@@ -45,7 +45,7 @@ class Api::ApiRepresenter < Api::BaseRepresenter
       {
         title:     "Get a paged collection of podcasts",
         profile:   profile_url(:collection, :podcasts),
-        href:      api_podcasts_path_template(api_version: represented.version) + '{?page,per,zoom}',
+        href:      api_podcasts_path_template(api_version: represented.version) + '{?page,per,zoom,since}',
         templated: true
       }
     ]

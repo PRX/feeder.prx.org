@@ -13,8 +13,8 @@ class StoryUpdateJob < ApplicationJob
   def receive_story_update(data)
     parse_message(data)
 
-    # don't allow invalid episodes to do anything but unpublish or delete
-    return if ['create', 'update', 'publish'].include?(action) && story.status != 'complete'
+    # don't allow incomplete stories to alter a published episode
+    return if episode.try(:published?) && action == 'update' && story.status != 'complete'
 
     episode ? update_episode : create_episode
     episode.try(:copy_media)

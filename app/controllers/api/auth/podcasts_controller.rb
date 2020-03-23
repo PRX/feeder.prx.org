@@ -2,6 +2,8 @@
 
 class Api::Auth::PodcastsController < Api::PodcastsController
   include ApiAuthenticated
+  include ApiUpdatedSince
+
   api_versions :v1
   represent_with Api::PodcastRepresenter
   filter_resources_by :prx_account_uri
@@ -19,6 +21,6 @@ class Api::Auth::PodcastsController < Api::PodcastsController
   end
 
   def resources_base
-    @podcasts ||= authorization.token_auth_podcasts
+    @podcasts ||= authorization.token_auth_podcasts.merge(super)
   end
 end

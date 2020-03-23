@@ -37,4 +37,9 @@ class Authorization
   def token_auth_podcasts
     Podcast.where(prx_account_uri: token_auth_account_uris)
   end
+
+  # avoid joining podcasts here, as it breaks a bunch of other queries
+  def token_auth_episodes
+    Episode.where(podcast_id: token_auth_podcasts.pluck(:id))
+  end
 end

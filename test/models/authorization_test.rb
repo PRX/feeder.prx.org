@@ -7,6 +7,9 @@ describe Authorization do
   let(:podcast1) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'pod1') }
   let(:podcast2) { create(:podcast, prx_account_uri: "/api/v1/accounts/987", path: 'pod2') }
   let(:podcast3) { create(:podcast, prx_account_uri: "/api/v1/accounts/654", path: 'pod3') }
+  let(:episode1) { create(:episode, podcast: podcast1) }
+  let(:episode2) { create(:episode, podcast: podcast2) }
+  let(:episode3) { create(:episode, podcast: podcast3) }
 
   it 'has a user_id' do
     authorization.user_id.must_equal 456
@@ -31,5 +34,11 @@ describe Authorization do
     podcast1 && podcast2 && podcast3
     authorization.token_auth_podcasts.count.must_equal 1
     authorization.token_auth_podcasts.first.must_equal podcast1
+  end
+
+  it 'gets episodes for token accounts' do
+    episode1 && episode2 && episode3
+    authorization.token_auth_episodes.count.must_equal 1
+    authorization.token_auth_episodes.first.must_equal episode1
   end
 end

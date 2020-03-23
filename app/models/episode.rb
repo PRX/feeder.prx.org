@@ -137,7 +137,7 @@ class Episode < BaseModel
 
   def media_url
     media = first_media_resource
-    enclosure_url(media.media_url, media.original_url) if media
+    enclosure_url(media.media_url_for_base(base_published_url), media.original_url) if media
   end
 
   def content_type

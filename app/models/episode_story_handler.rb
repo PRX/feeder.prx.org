@@ -45,8 +45,11 @@ class EpisodeStoryHandler
 
     versions = story.objects['prx:audio-versions'].objects['prx:items'] rescue []
     if !versions.blank?
-      va = versions.first.attributes
-      episode.explicit = va['explicit']
+      version = versions.first
+      episode.prx_audio_version_uri = version.href
+      episode.audio_version = version.attributes[:label] # TODO: is this right?
+      episode.segment_count = version.attributes[:segment_count]
+      episode.explicit = version.attributes[:explicit]
     end
 
     updated = Time.parse(sa[:updated_at]) if sa[:updated_at]
@@ -61,6 +64,7 @@ class EpisodeStoryHandler
     episode.content = sa[:description]
     episode.categories = sa[:tags]
     episode.published_at = sa[:published_at] ? Time.parse(sa[:published_at]) : nil
+    episode.released_at = sa[:released_at] ? Time.parse(sa[:released_at]) : nil
 
     %w(season episode).each do |time|
       id = sa["#{time}_identifier"].to_i

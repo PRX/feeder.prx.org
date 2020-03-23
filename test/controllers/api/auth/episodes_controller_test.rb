@@ -13,6 +13,7 @@ describe Api::Auth::EpisodesController do
   let(:episode_deleted) { create(:episode, deleted_at: Time.now, podcast: podcast) }
   let(:episode_hash) do
     {
+      releasedAt: '2020-03-12T18:02:03.000Z',
       prxUri: '/api/v1/stories/123',
       media: [
         { href: 'https://s3.amazonaws.com/prx-testing/test/audio1.mp3' },
@@ -99,6 +100,7 @@ describe Api::Auth::EpisodesController do
       assert_response :success
       id = JSON.parse(response.body)['id']
       new_episode = Episode.find_by_guid(id)
+      new_episode.released_at.must_equal Time.parse(episode_hash[:releasedAt])
       new_episode.prx_uri.must_equal '/api/v1/stories/123'
       new_episode.enclosures.count.must_equal 0
       new_episode.all_contents.count.must_equal 3
