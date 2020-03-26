@@ -24,7 +24,7 @@ describe FeedEntryUpdateJob do
 
   it 'handles a feed entry create and update' do
     data = json_file(:crier_entry)
-    Task.stub :new_fixer_sqs_client, SqsMock.new do
+    Task.stub :new_porter_sns_client, SnsMock.new do
       create_episode = job.perform(msg)
       create_episode.wont_be_nil
       create_episode.source_updated_at.must_equal Time.parse(msg[:sent_at])
@@ -36,7 +36,7 @@ describe FeedEntryUpdateJob do
   end
 
   it 'retries podcast update on unique constraint error' do
-    Task.stub :new_fixer_sqs_client, SqsMock.new do
+    Task.stub :new_porter_sns_client, SnsMock.new do
       episode = job.perform(msg)
       created_podcast = job.podcast
       created_podcast.source_updated_at.must_equal Time.parse(msg[:sent_at])
@@ -47,7 +47,7 @@ describe FeedEntryUpdateJob do
   end
 
   it 'retries episode update on unique constraint error' do
-    Task.stub :new_fixer_sqs_client, SqsMock.new do
+    Task.stub :new_porter_sns_client, SnsMock.new do
       episode = job.perform(msg)
       created_episode = job.episode
       job.create_episode

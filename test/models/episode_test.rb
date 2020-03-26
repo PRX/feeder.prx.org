@@ -242,9 +242,7 @@ describe Episode do
       podcast.published_at.must_be :<, episode.published_at
       episodes = Episode.episodes_to_release
       episodes.first.must_equal episode
-      Task.stub :new_fixer_sqs_client, SqsMock.new(123) do
-        Episode.release_episodes!
-      end
+      Episode.release_episodes!
       podcast.reload
       podcast.published_at.to_i.must_equal episode.published_at.to_i
     end

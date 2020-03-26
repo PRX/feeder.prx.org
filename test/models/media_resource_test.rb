@@ -3,16 +3,6 @@ require 'test_helper'
 describe MediaResource do
   let(:episode) { create(:episode) }
   let(:media_resource) { create(:media_resource, task_count: 0) }
-  let(:fixer_task) do
-    { 'task' => { 'result_details' => { 'info' => {
-      'content_type' => 'test/type',
-      'size' => 1111,
-      'sample_rate' => 44444,
-      'channels' => 3,
-      'length' => 2222,
-      'bit_rate' => 55
-    }}}}
-  end
 
   it 'initializes attributes' do
     mr = MediaResource.new(episode: episode)
