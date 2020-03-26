@@ -5,7 +5,8 @@ module ImageFile
   extend ActiveSupport::Concern
 
   included do
-    has_one :task, as: :owner
+    has_one :task, -> { order('id desc') }, as: :owner
+    has_many :tasks, as: :owner
 
     before_validation :initialize_attributes, on: :create
 
