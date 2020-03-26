@@ -2,15 +2,7 @@ require 'test_helper'
 
 describe Task do
 
-  let(:porter_task) do
-    {
-      'Time' => '2010-01-01T00:00:00.000Z',
-      'JobResult' => {
-        'Job' => {'Id' => '11111111'},
-        'Result' => {}
-      }
-    }
-  end
+  let(:porter_task) { build(:porter_job_results) }
 
   let(:task) { Task.create }
 
@@ -29,7 +21,7 @@ describe Task do
     task.must_be :started?
     Task.callback(porter_task)
     task.reload.must_be :complete?
-    task.logged_at.must_equal Time.parse("2010-01-01T00:00:00.000Z")
+    task.logged_at.must_equal Time.parse('2012-12-21T12:34:56Z')
   end
 
   it 'ignores porter task results' do
