@@ -77,7 +77,7 @@ describe Tasks::CopyMediaTask do
   end
 
   it 'updates audio metadata on complete' do
-    task.result[:JobResult][:Result][1][:Inspection][:Audio][:Bitrate] = '999000'
+    task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = '999000'
 
     task.update_attributes(status: 'created')
     task.media_resource.bit_rate.wont_equal 999
