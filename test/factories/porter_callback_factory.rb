@@ -130,4 +130,18 @@ FactoryGirl.define do
     end
     initialize_with { attributes.with_indifferent_access }
   end
+
+  factory :porter_job_ingest_failed, class: Hash do
+    Time '2012-12-21T12:34:56Z'
+    Timestamp 1356093296.0
+    JobResult do
+      {
+        Job: {Id: 'the-job-id'},
+        State: 'SOURCE_FILE_INGEST_ERROR',
+        TaskResults: [],
+        FailedTasks: [],
+      }
+    end
+    initialize_with { attributes.with_indifferent_access }
+  end
 end

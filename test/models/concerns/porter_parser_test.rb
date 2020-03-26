@@ -35,6 +35,15 @@ describe PorterParser do
     TestParser.porter_callback_status(task_error_callback).must_be_nil
   end
 
+  it 'parses porter ingest failed callback messages' do
+    porter_404_callback = build(:porter_job_ingest_failed)
+    TestParser.porter_callback_job_id(porter_404_callback).must_equal 'the-job-id'
+    TestParser.porter_callback_status(porter_404_callback).must_equal 'error'
+    TestParser.porter_callback_time(porter_404_callback).must_equal Time.parse('2012-12-21T12:34:56Z')
+    TestParser.porter_callback_copy(porter_404_callback).must_be_nil
+    TestParser.porter_callback_inspect(porter_404_callback).must_be_nil
+  end
+
   it 'parses porter job failed callback messages' do
     porter_error_callback = build(:porter_job_failed)
     TestParser.porter_callback_job_id(porter_error_callback).must_equal 'the-job-id'

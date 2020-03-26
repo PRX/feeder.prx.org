@@ -14,6 +14,8 @@ module PorterParser
         'processing'
       elsif key == 'JobResult' && porter_failed(msg).any?
         'error'
+      elsif key == 'JobResult' && porter_parsed(msg)[:State] != 'DONE'
+        'error'
       elsif key == 'JobResult'
         'complete'
       end
