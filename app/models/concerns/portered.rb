@@ -68,8 +68,6 @@ module Portered
   def publish_porter_sns(message)
     return false if Rails.env.test? || !SNS_CLIENT.present?
 
-    pp message
-
     SNS_CLIENT.publish(
       topic_arn: ENV['PORTER_SNS_TOPIC_ARN'],
       message: message.to_json
