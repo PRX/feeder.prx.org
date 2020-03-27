@@ -25,12 +25,7 @@ FEEDER_HOST=feeder.prx.docker
 # FEEDER_STORAGE_BUCKET=
 # defaults to 'prxhelp@prx.org (PRX)'
 # FEEDER_WEB_MASTER=
-FIXER_CACHE_MAX_AGE=86400
 FIXER_CALLBACK_QUEUE=development_feeder_fixer_callback
-FIXER_CLIENT_ID=
-FIXER_CLIENT_SECRET=
-FIXER_ENDPOINT=
-FIXER_QUEUE=development_fixer_job_create
 ID_HOST=id-staging.prx.tech
 LANG=en_US.UTF-8
 NEW_RELIC_KEY=

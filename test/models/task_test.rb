@@ -2,29 +2,7 @@ require 'test_helper'
 
 describe Task do
 
-  let(:fixer_task) do
-    {
-      'task' => {
-        'job' => {
-          'id' => 11111111
-        },
-        'result_details' => {
-          'status' => 'complete',
-          'logged_at' => "2010-01-01T00:00:00.000Z"
-        }
-      }
-    }
-  end
-
-  let(:porter_task) do
-    {
-      'Time' => '2010-01-01T00:00:00.000Z',
-      'JobResult' => {
-        'Job' => {'Id' => '11111111'},
-        'Result' => {}
-      }
-    }
-  end
+  let(:porter_task) { build(:porter_job_results) }
 
   let(:task) { Task.create }
 
@@ -38,38 +16,12 @@ describe Task do
     ENV['AWS_REGION'], ENV['FIXER_CALLBACK_QUEUE'] = r, q
   end
 
-  it 'creates a fixer job' do
-    Task.stub :new_fixer_sqs_client, SqsMock.new do
-      task.stub :porter_enabled?, false do
-        task.start!
-        task.job_id.must_equal '11111111'
-        task.options[:callback].must_match /^sqs:\/\//
-      end
-    end
-  end
-
-  it 'can handle fixer callback' do
-    task.update_attribute(:job_id, fixer_task['task']['job']['id'])
-    task.must_be :started?
-    Task.callback(fixer_task)
-    task.reload.must_be :complete?
-    task.logged_at.must_equal Time.parse("2010-01-01T00:00:00.000Z")
-  end
-
-  it 'encodes fixer query params' do
-    task.fixer_query.must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D86400'
-    task.fixer_query('foo': 'b a r').must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D86400&foo=b+a+r'
-    m, ENV['FIXER_CACHE_MAX_AGE'] = ENV['FIXER_CACHE_MAX_AGE'], '1234'
-    task.fixer_query.must_equal 'x-fixer-public=true&x-fixer-Cache-Control=max-age%3D1234'
-    ENV['FIXER_CACHE_MAX_AGE'] = m
-  end
-
   it 'handles porter callbacks' do
     task.update_attribute(:job_id, porter_task['JobResult']['Job']['Id'])
     task.must_be :started?
     Task.callback(porter_task)
     task.reload.must_be :complete?
-    task.logged_at.must_equal Time.parse("2010-01-01T00:00:00.000Z")
+    task.logged_at.must_equal Time.parse('2012-12-21T12:34:56Z')
   end
 
   it 'ignores porter task results' do

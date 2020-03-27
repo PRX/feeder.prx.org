@@ -68,20 +68,6 @@ def stub_requests_to_prx_cms
     to_return(status: 200, body: json_file(:prx_story_image), headers: {})
 end
 
-class SqsMock
-  attr_accessor :job
-
-  def initialize(id = nil)
-    @id = id || '11111111'
-  end
-
-  def create_job(j)
-    self.job = j
-    j[:job][:id] = @id
-    j
-  end
-end
-
 class SnsMock
   attr_accessor :message
 

@@ -53,8 +53,6 @@ gem 'rake'
 
 # Use HyperResource for handling HAL APIs
 gem 'hyperresource'
-# Use Fixer client for handling audio processing
-gem 'fixer_client'
 
 # Use OAuth2 for client authentication and authorization
 gem 'oauth2'

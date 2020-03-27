@@ -3,8 +3,6 @@ require 'prx_access'
 
 class Task < BaseModel
   include PRXAccess
-  include FixerParser
-  include FixerEncoder
   include PorterParser
   include PorterEncoder
 
@@ -29,10 +27,7 @@ class Task < BaseModel
 
   def self.callback(msg)
     Task.transaction do
-      if job_id = fixer_callback_job_id(msg)
-        status = fixer_callback_status(msg)
-        time = fixer_callback_time(msg)
-      elsif job_id = porter_callback_job_id(msg)
+      if job_id = porter_callback_job_id(msg)
         status = porter_callback_status(msg)
         time = porter_callback_time(msg)
       end
@@ -48,8 +43,6 @@ class Task < BaseModel
     self.options = task_options
     if porter_enabled?
       self.job_id = porter_start!(options)
-    else
-      self.job_id = fixer_start!(options)
     end
     save!
   end

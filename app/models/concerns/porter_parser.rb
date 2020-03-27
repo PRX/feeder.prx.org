@@ -12,7 +12,9 @@ module PorterParser
       key = porter_key(msg).to_s
       if key == 'JobReceived'
         'processing'
-      elsif key == 'JobResult' && porter_parsed(msg)[:Error]
+      elsif key == 'JobResult' && porter_failed(msg).any?
+        'error'
+      elsif key == 'JobResult' && porter_parsed(msg)[:State] != 'DONE'
         'error'
       elsif key == 'JobResult'
         'complete'
@@ -38,9 +40,14 @@ module PorterParser
 
     protected
 
-    def porter_result(msg, task)
-      results = porter_parsed(msg).try(:[], :Result) || []
-      results.detect {|t| t[:Task] == task}
+    def porter_result(msg, task = nil)
+      results = porter_parsed(msg).try(:[], :TaskResults) || []
+      task ? results.detect {|t| t[:Task] == task} : results
+    end
+
+    def porter_failed(msg, type = nil)
+      failed = porter_parsed(msg).try(:[], :FailedTasks) || []
+      type ? failed.detect {|t| t[:Type] == type} : failed
     end
 
     def porter_parsed(msg)

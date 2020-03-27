@@ -17,7 +17,7 @@ It provides an API for information about feed items.
 - postgres - main database
 - cms.prx.org - get data about episodes
 - id.prx.org - get token for protected cms requests
-- fixer.prx.org - send tasks to analyze and manipulate audio files
+- Porter - send tasks to analyze and manipulate audio files
 - crier.prx.org - receive updates about podcasts and episodes
 - dovetail.prxu.org - calls feeder for info about episodes
 
