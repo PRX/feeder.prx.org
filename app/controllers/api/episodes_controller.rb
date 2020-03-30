@@ -12,7 +12,11 @@ class Api::EpisodesController < Api::BaseController
   after_action :publish, only: [:create, :update, :destroy]
 
   def included(relation)
-    relation.includes(:podcast, :images, :all_contents, :contents, :enclosures)
+    if action_name == 'index'
+      relation.includes(:podcast, :images, :all_contents, :contents, :enclosures)
+    else
+      relation
+    end
   end
 
   def create
