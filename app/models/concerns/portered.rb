@@ -9,35 +9,36 @@ module Portered
     Rails.logger.warn('No Porter SNS topic provided - Porter jobs will be skipped.')
   end
 
-  class_methods do
-    def porter_callbacks(callbacks = nil)
-      if callbacks.present?
-        @porter_callbacks = Array.wrap(callbacks).map { |callback| format_callback(callback) }
+  def self.included(klass)
+    class << klass
+      def porter_callbacks(callbacks = nil)
+        if callbacks.present?
+          @porter_callbacks = Array.wrap(callbacks).map { |callback| format_callback(callback) }
+        end
+        @porter_callbacks || superclass.try(:porter_callbacks)
       end
-      @porter_callbacks
-    end
-
-    def format_callback(callback)
-      if callback[:sqs].present?
-        {
-          Type: 'AWS/SQS',
-          Queue: URI::HTTPS.build(
-            host: "sqs.#{ENV['AWS_REGION']}.amazonaws.com",
-            path: "/#{ENV['AWS_ACCOUNT_ID']}/#{callback[:sqs]}"
-          ).to_s
-        }
-      elsif callback[:s3].present?
-        uri = URI(callback[:s3])
-        {
-          Type: 'AWS/S3',
-          BucketName: uri.host,
-          ObjectPrefix: uri.path.sub(/^\//, '')
-        }
-      else
-        callback
+  
+      def format_callback(callback)
+        if callback[:sqs].present?
+          {
+            Type: 'AWS/SQS',
+            Queue: URI::HTTPS.build(
+              host: "sqs.#{ENV['AWS_REGION']}.amazonaws.com",
+              path: "/#{ENV['AWS_ACCOUNT_ID']}/#{callback[:sqs]}"
+            ).to_s
+          }
+        elsif callback[:s3].present?
+          uri = URI(callback[:s3])
+          {
+            Type: 'AWS/S3',
+            BucketName: uri.host,
+            ObjectPrefix: uri.path.sub(/^\//, '')
+          }
+        else
+          callback
+        end
       end
     end
-
   end
 
   def self.sns_client
