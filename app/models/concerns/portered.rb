@@ -67,7 +67,7 @@ module Portered
   end
 
   def publish_porter_sns(message)
-    return if Rails.env.test? || !Portered.sns_client.present?
+    return if Rails.env.test? || !ENV['PORTER_SNS_TOPIC_ARN'].present?
 
     Portered.sns_client.publish(
       topic_arn: ENV['PORTER_SNS_TOPIC_ARN'],
