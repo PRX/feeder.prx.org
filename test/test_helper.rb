@@ -82,16 +82,15 @@ end
 Minitest::Expectations.infect_an_assertion :assert_operator, :must_allow, :reverse
 Minitest::Expectations.infect_an_assertion :refute_operator, :wont_allow, :reverse
 
-StubToken = Struct.new(:resource, :scopes, :user_id)
-class StubToken
+class StubToken < Rack::PrxAuth::TokenData
   @@fake_user_id = 0
 
+  attr_reader :resource, :scopes, :user_id
+
   def initialize(res, scopes, explicit_user_id = nil)
-    if explicit_user_id
-      super(res.to_s, scopes, explicit_user_id)
-    else
-      super(res.to_s, scopes, @@fake_user_id += 1)
-    end
+    @resource = res.to_s
+    @scopes = scopes
+    @user_id = explicit_user_id || (@@fake_user_id += 1)
   end
 
   def attributes

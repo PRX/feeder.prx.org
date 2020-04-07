@@ -135,4 +135,27 @@ describe Api::Auth::EpisodesController do
       episode_update.all_contents.last.position.must_equal 1
     end
   end
+
+  describe 'with wildcard token' do
+    let (:token) { StubToken.new('*', ['read-private']) }
+    let (:other_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id + 1}", path: 'foo') }
+    let (:other_unpublished_episode) { create(:episode, podcast: other_podcast, published_at: nil) }
+
+    it 'includes all episodes (including unpublished)' do
+      guids = [episode_unpublished.guid, other_unpublished_episode.guid]
+      get(:index, { api_version: 'v1', format: 'json' } )
+      assert_response :success
+      list = JSON.parse(response.body)
+      ids = list.dig('_embedded', 'prx:items').map{ |i| i['id'] }
+      guids.each do |guid|
+        ids.must_include guid
+      end
+    end
+
+    it 'cannot create a new episode' do
+      post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
+      assert_response :unauthorized
+    end
+
+  end
 end

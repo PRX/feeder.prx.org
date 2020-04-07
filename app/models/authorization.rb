@@ -40,6 +40,10 @@ class Authorization
 
   # avoid joining podcasts here, as it breaks a bunch of other queries
   def token_auth_episodes
-    Episode.where(podcast_id: token_auth_podcasts.pluck(:id))
+    if token.globally_authorized?('read-private')
+      Episode.all
+    else
+      Episode.where(podcast_id: token_auth_podcasts.pluck(:id))
+    end
   end
 end
