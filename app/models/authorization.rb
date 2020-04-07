@@ -35,7 +35,11 @@ class Authorization
   end
 
   def token_auth_podcasts
-    Podcast.where(prx_account_uri: token_auth_account_uris)
+    if token.globally_authorized?('read-private')
+      Podcast.all
+    else
+      Podcast.where(prx_account_uri: token_auth_account_uris)
+    end
   end
 
   # avoid joining podcasts here, as it breaks a bunch of other queries
