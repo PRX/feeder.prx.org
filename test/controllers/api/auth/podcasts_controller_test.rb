@@ -34,4 +34,18 @@ describe Api::Auth::PodcastsController do
     assigns[:podcasts].must_include published_podcast
     assigns[:podcasts].wont_include other_account_podcast
   end
+
+  describe 'with wildcard token' do
+    let (:token) { StubToken.new('*', ['read-private']) }
+
+    it 'includes all podcasts' do
+      podcast && published_podcast && other_account_podcast
+      get(:index, api_version: 'v1')
+      assert_response :success
+      assert_not_nil assigns[:podcasts]
+      assigns[:podcasts].must_include podcast
+      assigns[:podcasts].must_include published_podcast
+      assigns[:podcasts].must_include other_account_podcast
+    end
+  end
 end
