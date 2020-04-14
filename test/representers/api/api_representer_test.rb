@@ -24,5 +24,6 @@ describe Api::ApiRepresenter do
     json['_links']['prx:episodes'].size.must_equal 1
     json['_links']['prx:podcast'].size.must_equal 1
     json['_links']['prx:podcasts'].size.must_equal 1
+    json['_links']['prx:authorization'].must_be_instance_of Hash
   end
 end

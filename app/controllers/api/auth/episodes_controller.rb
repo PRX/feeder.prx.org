@@ -5,7 +5,7 @@ class Api::Auth::EpisodesController < Api::EpisodesController
   include ApiUpdatedSince
 
   api_versions :v1
-  represent_with Api::EpisodeRepresenter
+  represent_with Api::Auth::EpisodeRepresenter
   filter_resources_by :podcast_id
   find_method :find_by_guid
 

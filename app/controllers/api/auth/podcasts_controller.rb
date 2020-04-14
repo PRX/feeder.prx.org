@@ -5,7 +5,7 @@ class Api::Auth::PodcastsController < Api::PodcastsController
   include ApiUpdatedSince
 
   api_versions :v1
-  represent_with Api::PodcastRepresenter
+  represent_with Api::Auth::PodcastRepresenter
   filter_resources_by :prx_account_uri
 
   def visible?
