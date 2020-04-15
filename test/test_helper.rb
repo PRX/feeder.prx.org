@@ -82,26 +82,15 @@ end
 Minitest::Expectations.infect_an_assertion :assert_operator, :must_allow, :reverse
 Minitest::Expectations.infect_an_assertion :refute_operator, :wont_allow, :reverse
 
-class StubToken < Rack::PrxAuth::TokenData
+class StubToken < PrxAuth::Rails::Token
   @@fake_user_id = 0
 
-  attr_reader :resource, :scopes, :user_id
-
   def initialize(res, scopes, explicit_user_id = nil)
-    @resource = res.to_s
-    @scopes = scopes
-    @user_id = explicit_user_id || (@@fake_user_id += 1)
-  end
-
-  def attributes
-    { sub: @@fake_user_id, aur: { resource => scopes }, scope: 'read write purchase sell delete' }
-  end
-
-  def authorized_resources
-    attributes[:aur]
-  end
-
-  def authorized?(r, s = nil)
-    resource == r.to_s && (s.nil? || scopes.include?(s.to_s))
+    scopes = Array.wrap(scopes).map(&:to_s).join(' ')
+    super(Rack::PrxAuth::TokenData.new({
+      "scope" => scopes,
+      "aur" => { res.to_s => scopes },
+      "sub" => explicit_user_id || (@@fake_user_id += 1)
+    }))
   end
 end
