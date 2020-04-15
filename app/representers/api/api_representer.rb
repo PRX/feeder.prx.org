@@ -50,4 +50,13 @@ class Api::ApiRepresenter < Api::BaseRepresenter
       }
     ]
   end
+
+  link :authorization do
+    {
+      title: 'Get information about the active authorization for this request',
+      profile: 'http://meta.prx.org/model/user',
+      href: api_authorization_path,
+      templated: false
+    }
+  end
 end
