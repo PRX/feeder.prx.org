@@ -22,12 +22,12 @@ class Authorization
   end
 
   def cache_key
-    token_key = OpenSSL::Digest::MD5.hexdigest(token.attributes.flatten.join)
+    token_key = OpenSSL::Digest::MD5.hexdigest([token.scopes, token.resources].map(&:to_s).join(''))
     ActiveSupport::Cache.expand_cache_key(['PRX::Authorization', token_key])
   end
 
   def token_auth_account_ids
-    token.authorized_resources.try(:keys) || []
+    token.resources
   end
 
   def token_auth_account_uris
