@@ -7,9 +7,9 @@ describe PublishFeedJob do
 
   let(:job) { PublishFeedJob.new }
 
-  it 'gets an aws connection' do
-    job.connection.wont_be_nil
-    job.connection.must_be_instance_of Aws::S3::Resource
+  it 'gets an aws client' do
+    job.client.wont_be_nil
+    job.client.must_be_instance_of Aws::S3::Client
   end
 
   it 'knows the right bucket to write to' do
@@ -43,20 +43,31 @@ describe PublishFeedJob do
   end
 
   describe 'saving the rss file' do
-    let (:stub_conn) { Aws::S3::Resource.new(stub_responses: true) }
+    let (:stub_client) { Aws::S3::Client.new(stub_responses: true) }
 
     it 'can save a podcast file' do
       job.podcast = podcast
-      job.stub(:connection, stub_conn) do
+      job.stub(:client, stub_client) do
         rss = "<xml></xml>"
         job.save_podcast_file(rss)
       end
     end
 
     it 'can process publishing a podcast' do
-      job.stub(:connection, stub_conn) do
+      job.stub(:client, stub_client) do
         job.perform(podcast)
         job.rss.wont_be_nil
+        job.put_object.wont_be_nil
+        job.copy_object.must_be_nil
+      end
+    end
+
+    it 'makes an alias copy of the podcast file' do
+      podcast.feed_rss_alias = 'some-alias'
+      job.stub(:client, stub_client) do
+        job.perform(podcast)
+        job.put_object.wont_be_nil
+        job.copy_object.wont_be_nil
       end
     end
   end
