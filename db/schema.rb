@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200312202854) do
+ActiveRecord::Schema.define(version: 20200427153653) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -208,6 +208,7 @@ ActiveRecord::Schema.define(version: 20200312202854) do
     t.boolean  "serial_order",                default: false
     t.boolean  "locked",                      default: false
     t.boolean  "itunes_block",                default: false
+    t.string   "feed_rss_alias"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
