@@ -6,12 +6,13 @@ class PublishFeedJob < ApplicationJob
 
   include PodcastsHelper
 
-  attr_accessor :podcast, :episodes, :rss
+  attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   def perform(podcast)
     setup_data(podcast)
     @rss = generate_rss_xml
     save_podcast_file(@rss)
+    copy_podcast_file_alias if podcast.feed_rss_alias.present?
   end
 
   def setup_data(podcast)
@@ -31,17 +32,19 @@ class PublishFeedJob < ApplicationJob
   end
 
   def save_podcast_file(rss, options = {})
-    default_options = {
-      acl: 'public-read',
-      content_type: 'application/rss+xml; charset=UTF-8',
-      cache_control: 'max-age=60'
-    }
-
     opts = default_options.merge(options)
     opts[:body] = rss
+    opts[:bucket] = feeder_storage_bucket
+    opts[:key] = key
+    @put_object = client.put_object(opts)
+  end
 
-    obj = connection.bucket(feeder_storage_bucket).object(key)
-    obj.put(opts)
+  def copy_podcast_file_alias(options = {})
+    opts = default_options.merge(options)
+    opts[:bucket] = feeder_storage_bucket
+    opts[:copy_source] = "#{feeder_storage_bucket}/#{key}"
+    opts[:key] = alias_key
+    @copy_object = client.copy_object(opts)
   end
 
   def feeder_storage_bucket
@@ -52,8 +55,20 @@ class PublishFeedJob < ApplicationJob
     "#{podcast.path}/feed-rss.xml"
   end
 
-  def connection
-    Aws::S3::Resource.new(
+  def alias_key(podcast = @podcast)
+    "#{podcast.path}/#{podcast.feed_rss_alias}"
+  end
+
+  def default_options
+    {
+      acl: 'public-read',
+      content_type: 'application/rss+xml; charset=UTF-8',
+      cache_control: 'max-age=60'
+    }
+  end
+
+  def client
+    s3 = Aws::S3::Client.new(
       credentials: Aws::Credentials.new(ENV['AWS_ACCESS_KEY_ID'], ENV['AWS_SECRET_ACCESS_KEY']),
       region: ENV['AWS_REGION']
     )
