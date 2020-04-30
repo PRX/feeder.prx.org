@@ -65,10 +65,11 @@ describe PodcastImport do
     importer.distribution.distributable.must_equal importer.series
 
     # images must be processing
-    importer.series.images.count.must_equal 2
+    images = importer.series.images
+    images.count.must_equal 2
     Portered.sns_client.messages.count.must_equal 2
-    Portered.sns_client.messages[0]['Job']['Id'].must_equal importer.series.images[0].to_global_id.to_s
-    Portered.sns_client.messages[1]['Job']['Id'].must_equal importer.series.images[1].to_global_id.to_s
+    Portered.sns_client.messages[0]['Job']['Id'].must_equal images[0].to_global_id.to_s
+    Portered.sns_client.messages[1]['Job']['Id'].must_equal images[1].to_global_id.to_s
   end
 
   it 'creates a podcast' do
