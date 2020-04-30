@@ -104,10 +104,12 @@ module ImportUtils
 
   def announce_image(image)
     announce('image', 'create', Api::Msg::ImageRepresenter.new(image).to_json)
+    image.process!
   end
 
   def announce_audio(audio)
     announce('audio', 'create', Api::Msg::AudioFileRepresenter.new(audio).to_json)
+    audio.process!
   end
 
   def remind_to_unlock(title)

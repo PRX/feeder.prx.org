@@ -5,10 +5,6 @@ require 'aws-sdk'
 module Portered
   extend ActiveSupport::Concern
 
-  unless ENV['PORTER_SNS_TOPIC_ARN'] || Rails.env.test?
-    Rails.logger.warn('No Porter SNS topic provided - Porter jobs will be skipped.')
-  end
-
   class_methods do
     def porter_callbacks(callbacks = nil)
       if callbacks.present?
@@ -67,12 +63,14 @@ module Portered
   end
 
   def publish_porter_sns(message)
-    return if Rails.env.test? || !ENV['PORTER_SNS_TOPIC_ARN'].present?
-
-    Portered.sns_client.publish(
-      topic_arn: ENV['PORTER_SNS_TOPIC_ARN'],
-      message: message.to_json
-    )
+    if ENV['PORTER_SNS_TOPIC_ARN'].present?
+      Portered.sns_client.publish(
+        topic_arn: ENV['PORTER_SNS_TOPIC_ARN'],
+        message: message.to_json
+      )
+    else
+      Rails.logger.warn('No Porter SNS topic provided - Porter jobs will be skipped.')
+    end
   end
 
 end

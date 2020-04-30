@@ -46,6 +46,12 @@ describe EpisodeImport do
     stub_episode_requests
   end
 
+  around do |test|
+    ENV['PORTER_SNS_TOPIC_ARN'] = 'anything'
+    Portered.stub(:sns_client, StubSns.new) { test.call }
+    ENV['PORTER_SNS_TOPIC_ARN'] = ''
+  end
+
   it 'creates a story on import' do
     f = episode_import.import
     f.description.must_match /^For the next few episodes/
@@ -66,15 +72,21 @@ describe EpisodeImport do
     f.creator_id.wont_be_nil
     f.series_id.wont_be_nil
     f.published_at.wont_be_nil
-    f.images.count.must_equal 1
     f.audio_versions.count.must_equal 1
     config_audio = 'https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3'
-    f.audio_versions.first.audio_files.first.upload.must_equal config_audio
     version = f.audio_versions.first
     version.audio_version_template_id.wont_be_nil
     version.audio_version_template.segment_count.wont_be_nil
     version.label.must_equal 'Podcast Audio'
     version.explicit.must_be_nil
+
+    # audio and image must be processing
+    f.audio_files.count.must_equal 1
+    f.audio_files[0].upload.must_equal config_audio
+    f.images.count.must_equal 1
+    Portered.sns_client.messages.count.must_equal 2
+    Portered.sns_client.messages[0]['Job']['Id'].must_equal f.audio_files[0].to_global_id.to_s
+    Portered.sns_client.messages[1]['Job']['Id'].must_equal f.images[0].to_global_id.to_s
   end
 
   it 'creates correctly for libsyn entries' do

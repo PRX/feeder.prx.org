@@ -17,6 +17,12 @@ describe PodcastImport do
     stub_requests
   end
 
+  around do |test|
+    ENV['PORTER_SNS_TOPIC_ARN'] = 'anything'
+    Portered.stub(:sns_client, StubSns.new) { test.call }
+    ENV['PORTER_SNS_TOPIC_ARN'] = ''
+  end
+
   let(:feed) { Feedjira::Feed.parse(test_file('/fixtures/transistor_two.xml')) }
   let(:template) { create(:audio_version_template, series: series) }
 
@@ -55,9 +61,14 @@ describe PodcastImport do
                                            'scientists, and story-driven reporters. Presented ' +
                                            'by radio and podcast powerhouse PRX, with support ' +
                                            'from the Sloan Foundation.'
-    importer.series.images.count.must_equal 2
     importer.distribution.wont_be_nil
     importer.distribution.distributable.must_equal importer.series
+
+    # images must be processing
+    importer.series.images.count.must_equal 2
+    Portered.sns_client.messages.count.must_equal 2
+    Portered.sns_client.messages[0]['Job']['Id'].must_equal importer.series.images[0].to_global_id.to_s
+    Portered.sns_client.messages[1]['Job']['Id'].must_equal importer.series.images[1].to_global_id.to_s
   end
 
   it 'creates a podcast' do
