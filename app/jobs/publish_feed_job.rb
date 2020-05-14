@@ -61,7 +61,6 @@ class PublishFeedJob < ApplicationJob
 
   def default_options
     {
-      acl: 'public-read',
       content_type: 'application/rss+xml; charset=UTF-8',
       cache_control: 'max-age=60'
     }

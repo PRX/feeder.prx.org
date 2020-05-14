@@ -66,7 +66,6 @@ module PorterEncoder
         ObjectKey: s3_path,
         ContentType: 'REPLACE',
         Parameters: {
-          ACL: 'public-read',
           CacheControl: 'max-age=86400',
           ContentDisposition: "attachment; filename=\"#{filename}\""
         }
