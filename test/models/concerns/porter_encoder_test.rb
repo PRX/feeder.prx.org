@@ -41,7 +41,6 @@ describe PorterEncoder do
       'ObjectKey' => 'path/key.mp3',
       'ContentType' => 'REPLACE',
       'Parameters' => {
-        'ACL' => 'public-read',
         'CacheControl' => 'max-age=86400',
         'ContentDisposition' => 'attachment; filename="key.mp3"'
       }
@@ -69,7 +68,6 @@ describe PorterEncoder do
       'ObjectKey' => 'path/file%2B.mp3',
       'ContentType' => 'REPLACE',
       'Parameters' => {
-        'ACL' => 'public-read',
         'CacheControl' => 'max-age=86400',
         'ContentDisposition' => 'attachment; filename="file%2B.mp3"'
       }
@@ -93,7 +91,6 @@ describe PorterEncoder do
       'ObjectKey' => 'path/file%252B.mp3',
       'ContentType' => 'REPLACE',
       'Parameters' => {
-        'ACL' => 'public-read',
         'CacheControl' => 'max-age=86400',
         'ContentDisposition' => 'attachment; filename="file%252B.mp3"'
       }
