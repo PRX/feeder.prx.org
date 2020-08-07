@@ -5,8 +5,9 @@ describe Api::PodcastsController do
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
   let(:podcast_deleted) { create(:podcast, path: 'deleted', deleted_at: Time.now) }
   let(:podcast_redirect) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", published_at: nil) }
-  let(:token) { StubToken.new(account_id, ['member']) }
-  let(:bad_token) { StubToken.new(account_id + 100, ['member']) }
+  let(:member_token) { StubToken.new(account_id, ['member feeder:read-private feeder:podcast-edit feeder:podcast-create']) }
+  let(:limited_token) { StubToken.new(account_id + 100, ['member feeder:episode']) }
+  let(:admin_token) { StubToken.new(account_id, ['admin feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:podcast-delete']) }
 
   let(:podcast_hash) do
     {
@@ -20,7 +21,7 @@ describe Api::PodcastsController do
   describe 'with a valid token' do
     before do
       class << @controller; attr_accessor :prx_auth_token; end
-      @controller.prx_auth_token = token
+      @controller.prx_auth_token = member_token
       @request.env['CONTENT_TYPE'] = 'application/json'
     end
 
@@ -58,6 +59,17 @@ describe Api::PodcastsController do
       podcast.itunes_categories.size.must_equal 0
     end
 
+    it 'cannot delete a podcast with a member token' do
+      delete :destroy, id: podcast.id, api_version: 'v1', format: 'json'
+      assert_response :unauthorized
+    end
+
+    it 'can delete a podcast with an admin token' do
+      @controller.prx_auth_token = admin_token
+      delete :destroy, id: podcast.id, api_version: 'v1', format: 'json'
+      assert_response :no_content
+    end
+
     it 'returns errors for any errors' do
       # create a podcast with a specific path so it will cause dupe path error
       create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'dupe')
@@ -85,7 +97,7 @@ describe Api::PodcastsController do
     end
 
     it 'rejects update for unauthorizd token' do
-      @controller.prx_auth_token = bad_token
+      @controller.prx_auth_token = limited_token
       pua = podcast.updated_at
       podcast.itunes_categories.size.must_be :>, 0
       update_hash = { itunesCategories: [] }
