@@ -80,6 +80,18 @@ class Episode < BaseModel
     !published_at.nil? && published_at <= Time.now
   end
 
+  def draft?
+    published_at.nil?
+  end
+
+  def was_draft?
+    if published_at_changed?
+      published_at_was.nil?
+    else
+      draft?
+    end
+  end
+
   def author=(a)
     author = a || {}
     self.author_name = author['name']
