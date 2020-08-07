@@ -2,7 +2,7 @@ require 'test_helper'
 
 describe Authorization do
   let(:account_id) { '123' }
-  let(:token) { StubToken.new(account_id, ['member'], 456) }
+  let(:token) { StubToken.new(account_id, ['feeder:read-private'], 456) }
   let(:authorization) { Authorization.new(token) }
   let(:podcast1) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'pod1') }
   let(:podcast2) { create(:podcast, prx_account_uri: "/api/v1/accounts/987", path: 'pod2') }
@@ -14,7 +14,6 @@ describe Authorization do
   it 'has a user_id' do
     authorization.user_id.must_equal 456
   end
-
 
   it 'has a token' do
     authorization.token.wont_be_nil

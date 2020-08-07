@@ -3,7 +3,7 @@ require 'test_helper'
 describe Api::AuthorizationsController do
 
   let(:account_id) { '123' }
-  let(:token) { StubToken.new(account_id, ['member']) }
+  let(:token) { StubToken.new(account_id, ['feeder:read-private']) }
 
   it 'shows the user with a valid token' do
     @controller.stub(:prx_auth_token, token) do
