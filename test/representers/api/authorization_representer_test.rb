@@ -3,7 +3,7 @@ require 'test_helper'
 describe Api::AuthorizationRepresenter do
 
   let(:account_id) { '123' }
-  let(:token) { StubToken.new(account_id, ['member'], 456) }
+  let(:token) { StubToken.new(account_id, ['feeder:read-private'], 456) }
   let(:authorization) { Authorization.new(token) }
   let(:representer) { Api::AuthorizationRepresenter.new(authorization) }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }

@@ -27,7 +27,7 @@ class Authorization
   end
 
   def token_auth_account_ids
-    token.resources
+    token.resources(:read_private)
   end
 
   def token_auth_account_uris
