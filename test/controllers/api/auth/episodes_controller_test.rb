@@ -3,9 +3,7 @@ require 'test_helper'
 describe Api::Auth::EpisodesController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
-  let(:member_token) { StubToken.new(account_id, ['member feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft']) }
-  let(:limited_token) { StubToken.new(account_id, ['member feeder:read-private']) }
-  let(:admin_token) { StubToken.new(account_id, ['admin feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft']) }
+  let(:token) { StubToken.new(account_id, ['member']) }
   let(:episode) { create(:episode, podcast: podcast) }
 
   let(:different_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'diff') }
@@ -27,7 +25,7 @@ describe Api::Auth::EpisodesController do
 
   before do
     class << @controller; attr_accessor :prx_auth_token; end
-    @controller.prx_auth_token = member_token
+    @controller.prx_auth_token = token
     @request.env['CONTENT_TYPE'] = 'application/json'
   end
 
@@ -85,10 +83,11 @@ describe Api::Auth::EpisodesController do
     let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
     let(:episode_redirect) { create(:episode, podcast: podcast, published_at: nil) }
     let(:episode_update) { create(:episode, podcast: podcast, published_at: nil) }
+    let(:token) { StubToken.new(account_id, ['member']) }
 
     before do
       class << @controller; attr_accessor :prx_auth_token; end
-      @controller.prx_auth_token = member_token
+      @controller.prx_auth_token = token
       @request.env['CONTENT_TYPE'] = 'application/json'
     end
 
@@ -138,7 +137,7 @@ describe Api::Auth::EpisodesController do
   end
 
   describe 'with wildcard token' do
-    let (:member_token) { StubToken.new('*', ['feeder:read-private']) }
+    let (:token) { StubToken.new('*', ['read-private']) }
     let (:other_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id + 1}", path: 'foo') }
     let (:other_unpublished_episode) { create(:episode, podcast: other_podcast, published_at: nil) }
 

@@ -1,11 +1,10 @@
 class EpisodePolicy < ApplicationPolicy
   def create?
-    update?
+    token && token.authorized?(account_id)
   end
 
   def update?
-    token&.authorized?(account_id, :episode) ||
-      ( token&.authorized?(account_id, :episode_draft) && resource.draft? && resource.was_draft? )
+    token && token.authorized?(account_id)
   end
 
   def destroy?

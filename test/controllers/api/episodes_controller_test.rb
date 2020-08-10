@@ -81,7 +81,7 @@ describe Api::EpisodesController do
     let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
     let(:episode_redirect) { create(:episode, podcast: podcast, published_at: nil) }
     let(:episode_update) { create(:episode, podcast: podcast, published_at: nil) }
-    let(:token) { StubToken.new(account_id, ['member feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft']) }
+    let(:token) { StubToken.new(account_id, ['member']) }
 
     around do |test|
       class << @controller; attr_accessor :prx_auth_token; end

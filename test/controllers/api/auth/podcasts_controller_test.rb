@@ -5,7 +5,7 @@ describe Api::Auth::PodcastsController do
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", published_at: nil) }
   let(:published_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'pod2') }
   let(:other_account_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/9876", path: 'pod3') }
-  let(:token) { StubToken.new(account_id, ['feeder:read-private']) }
+  let(:token) { StubToken.new(account_id, ['member']) }
 
   before do
     class << @controller; attr_accessor :prx_auth_token; end
