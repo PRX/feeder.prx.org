@@ -1,14 +1,14 @@
 class PodcastPolicy < ApplicationPolicy
   def create?
-    token&.authorized?(account_id, :podcast_create)
+    token && token.authorized?(account_id)
   end
 
   def update?
-    token&.authorized?(account_id, :podcast_edit)
+    token && token.authorized?(account_id)
   end
 
   def destroy?
-    token&.authorized?(account_id, :podcast_delete)
+    token && token.authorized?(account_id, :admin)
   end
 
   def account_id
