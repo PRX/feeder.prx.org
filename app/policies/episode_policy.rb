@@ -4,15 +4,24 @@ class EpisodePolicy < ApplicationPolicy
   end
 
   def update?
-    token&.authorized?(account_id, :episode) ||
-      ( token&.authorized?(account_id, :episode_draft) && resource.draft? && resource.was_draft? )
+    authorized?(:episode) || (authorized?(:episode_draft) && resource.draft? && resource.was_draft?)
   end
 
   def destroy?
-    token && token.authorized?(account_id, :admin)
+    authorized?(:admin)
   end
+
+  private
 
   def account_id
     resource.podcast.account_id
+  end
+
+  def account_id_was
+    if resource.podcast_id_changed? && resource.podcast_id_was.present?
+      Podcast.find(resource.podcast_id_was)
+    else
+      resource.podcast
+    end.account_id_was
   end
 end
