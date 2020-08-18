@@ -65,8 +65,16 @@ class Podcast < BaseModel
     updated_at
   end
 
-  def account_id
-    URI.parse(prx_account_uri || '').path.split('/').last.to_i
+  def account_id(uri = prx_account_uri)
+    URI.parse(uri || '').path.split('/').last.to_i
+  end
+
+  def account_id_was
+    if prx_account_uri_changed? && prx_account_uri_was.present?
+      account_id(prx_account_uri_was)
+    else
+      account_id
+    end
   end
 
   def path
