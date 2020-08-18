@@ -27,7 +27,6 @@ describe PodcastPolicy do
 
     it 'disallows changing the account id of a podcast which the token did not previously have access to' do
       podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id + 1}")
-      p podcast.account_id
       podcast.prx_account_uri = "/api/v1/accounts/#{account_id}"
 
       refute PodcastPolicy.new(token('feeder: podcast-edit'), podcast).update?
