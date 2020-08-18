@@ -9,7 +9,7 @@ class EpisodePolicy < ApplicationPolicy
   end
 
   def destroy?
-    token && token.authorized?(account_id, :admin)
+    update?
   end
 
   def account_id
