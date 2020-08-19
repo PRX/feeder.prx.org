@@ -9,24 +9,29 @@ describe EpisodePolicy do
     StubToken.new(set_account_id, scopes)
   end
 
-  describe '#update? and #create?' do
+  describe '#update?, #create?, and #delete?' do
     it 'returns false if token is not present' do
       EpisodePolicy.new(nil, episode).wont_allow :update?
+      EpisodePolicy.new(nil, episode).wont_allow :create?
+      EpisodePolicy.new(nil, episode).wont_allow :destroy?
     end
 
     it 'returns false if token is not a member of the account' do
       EpisodePolicy.new(token('feeder:episode', account_id + 1), episode).wont_allow :update?
       EpisodePolicy.new(token('feeder:episode', account_id + 1), episode).wont_allow :create?
+      EpisodePolicy.new(token('feeder:episode', account_id + 1), episode).wont_allow :destroy?
     end
 
     it 'returns true if token is a member of the account' do
       EpisodePolicy.new(token('feeder:episode'), episode).must_allow :update?
       EpisodePolicy.new(token('feeder:episode'), episode).must_allow :create?
+      EpisodePolicy.new(token('feeder:episode'), episode).must_allow :destroy?
     end
 
     it 'returns false if the token lacks the episode scope' do
       EpisodePolicy.new(token('feeder:read-private'), episode).wont_allow :update?
       EpisodePolicy.new(token('feeder:read-private'), episode).wont_allow :create?
+      EpisodePolicy.new(token('feeder:read-private'), episode).wont_allow :destroy?
     end
 
     it 'returns false if changing podcast from one the token has no access to' do
@@ -63,6 +68,18 @@ describe EpisodePolicy do
 
       episode.published_at = nil
       refute EpisodePolicy.new(draft_token, episode).update?
+    end
+
+    it 'allows deleting a draft episode' do
+      episode = create(:episode, published_at: nil, podcast: podcast)
+
+      assert EpisodePolicy.new(draft_token, episode).destroy?
+    end
+
+    it 'does not allow deleting a non-draft episode' do
+      episode = create(:episode, published_at: 25.years.ago, podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}"))
+
+      refute EpisodePolicy.new(draft_token, episode).destroy?
     end
   end
 end

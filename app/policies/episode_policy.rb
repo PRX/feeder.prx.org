@@ -8,7 +8,7 @@ class EpisodePolicy < ApplicationPolicy
   end
 
   def destroy?
-    authorized?(:admin)
+    update?
   end
 
   private
