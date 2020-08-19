@@ -33,6 +33,13 @@ describe EpisodePolicy do
       EpisodePolicy.new(token('feeder:read-private'), episode).wont_allow :create?
       EpisodePolicy.new(token('feeder:read-private'), episode).wont_allow :destroy?
     end
+
+    it 'returns false if changing podcast from one the token has no access to' do
+      episode = create(:episode, podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id + 1}"))
+      episode.podcast = podcast
+
+      refute EpisodePolicy.new(token('feeder:episode'), episode).update?
+    end
   end
 
   describe 'with a draft only token' do
