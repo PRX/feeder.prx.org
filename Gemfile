@@ -5,7 +5,7 @@ gem 'rails', '~> 4.2.0'
 gem 'rails-html-sanitizer', '~> 1.3.0'
 
 # JWS
-gem 'prx_auth-rails', '~> 1.0.0'
+gem 'prx_auth-rails', '~> 1.2.0'
 
 # Controller
 gem 'responders'
