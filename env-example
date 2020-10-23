@@ -23,7 +23,7 @@ FEEDER_HOST=feeder.prx.docker
 # FEEDER_RELEASE_CHECK_DELAY=
 # defaults to prx-feed in production, otherwise {env}-prx-feed
 # FEEDER_STORAGE_BUCKET=
-# defaults to 'prxhelp@prx.org (PRX)'
+# defaults to 'help@prx.org (PRX)'
 # FEEDER_WEB_MASTER=
 FIXER_CALLBACK_QUEUE=development_feeder_fixer_callback
 ID_HOST=id-staging.prx.tech

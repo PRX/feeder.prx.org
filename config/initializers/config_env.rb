@@ -7,7 +7,7 @@ ENV['META_HOST']   ||= 'meta.prx.org'
 ENV['PRX_HOST']    ||= 'www.prx.org'
 
 # default env vars that may not be set
-ENV['FEEDER_WEB_MASTER'] ||= 'prxhelp@prx.org (PRX)'
+ENV['FEEDER_WEB_MASTER'] ||= 'help@prx.org (PRX)'
 ENV['FEEDER_GENERATOR'] ||= "PRX Feeder v#{Feeder::VERSION}"
 
 env_suffix = Rails.env.production? ? '' : ('-' + Rails.env)
