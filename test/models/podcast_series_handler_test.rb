@@ -24,13 +24,13 @@ describe PodcastSeriesHandler do
 
   it 'can be created from a series' do
     podcast = PodcastSeriesHandler.create_from_series!(series)
-    podcast.wont_be_nil
-    podcast.title.must_equal 'The Moth Radio Hour'
-    podcast.description.must_match /^Brought to you by PRX/
-    podcast.summary.must_be_nil
-    podcast.subtitle.must_match /^The Moth Radio Hour is a weekly series/
+    refute_nil podcast
+    assert_equal podcast.title, 'The Moth Radio Hour'
+    assert_match(/^Brought to you by PRX/, podcast.description)
+    assert_nil podcast.summary
+    assert_match(/^The Moth Radio Hour is a weekly series/, podcast.subtitle)
 
-    podcast.itunes_images.first.original_url.must_equal profile
-    podcast.feed_image.must_be_nil
+    assert_equal podcast.itunes_images.first.original_url, profile
+    assert_nil podcast.feed_image
   end
 end

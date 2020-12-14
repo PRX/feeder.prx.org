@@ -12,32 +12,32 @@ describe Authorization do
   let(:episode3) { create(:episode, podcast: podcast3) }
 
   it 'has a user_id' do
-    authorization.user_id.must_equal 456
+    assert_equal authorization.user_id, 456
   end
 
   it 'has a token' do
-    authorization.token.wont_be_nil
+    refute_nil authorization.token
   end
 
   it 'has a cache_key' do
-    authorization.cache_key.wont_be_nil
-    authorization.cache_key.must_match /PRX::Authorization/
+    refute_nil authorization.cache_key
+    assert_match(/PRX::Authorization/, authorization.cache_key)
   end
 
   it 'has token accounts' do
-    authorization.token_auth_account_ids.must_equal ['123']
-    authorization.token_auth_account_uris.must_equal ['/api/v1/accounts/123']
+    assert_equal authorization.token_auth_account_ids, ['123']
+    assert_equal authorization.token_auth_account_uris, ['/api/v1/accounts/123']
   end
 
   it 'gets podcasts for token accounts' do
     podcast1 && podcast2 && podcast3
-    authorization.token_auth_podcasts.count.must_equal 1
-    authorization.token_auth_podcasts.first.must_equal podcast1
+    assert_equal authorization.token_auth_podcasts.count, 1
+    assert_equal authorization.token_auth_podcasts.first, podcast1
   end
 
   it 'gets episodes for token accounts' do
     episode1 && episode2 && episode3
-    authorization.token_auth_episodes.count.must_equal 1
-    authorization.token_auth_episodes.first.must_equal episode1
+    assert_equal authorization.token_auth_episodes.count, 1
+    assert_equal authorization.token_auth_episodes.first, episode1
   end
 end

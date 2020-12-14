@@ -7,6 +7,6 @@ describe Api::Auth::EpisodeRepresenter do
   let(:json) { JSON.parse(representer.to_json) }
 
   it 'has authorized links' do
-    json['_links']['self']['href'].must_equal "/api/v1/authorization/episodes/#{episode.guid}"
+    assert_equal json['_links']['self']['href'], "/api/v1/authorization/episodes/#{episode.guid}"
   end
 end

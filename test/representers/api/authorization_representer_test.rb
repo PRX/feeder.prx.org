@@ -11,22 +11,22 @@ describe Api::AuthorizationRepresenter do
   let(:json) { JSON.parse(representer.to_json) }
 
   it 'has link to episodes' do
-    episode.id.wont_be_nil
-    json['_links']['prx:episodes'].wont_be_nil
-    json['_links']['prx:episodes']['count'].must_equal 1
+    refute_nil episode.id
+    refute_nil json['_links']['prx:episodes']
+    assert_equal json['_links']['prx:episodes']['count'], 1
   end
 
   it 'has link to episode' do
-    json['_links']['prx:episode'].wont_be_nil
+    refute_nil json['_links']['prx:episode']
   end
 
   it 'has link to podcasts' do
-    podcast.id.wont_be_nil
-    json['_links']['prx:podcasts'].wont_be_nil
-    json['_links']['prx:podcasts']['count'].must_equal 1
+    refute_nil podcast.id
+    refute_nil json['_links']['prx:podcasts']
+    assert_equal json['_links']['prx:podcasts']['count'], 1
   end
 
   it 'has link to podcast' do
-    json['_links']['prx:podcast'].wont_be_nil
+    refute_nil json['_links']['prx:podcast']
   end
 end

@@ -5,14 +5,14 @@ describe ApplicationPolicy do
   let(:resource) { 'resource' }
 
   it 'prevents create' do
-    ApplicationPolicy.new(token, resource).wont_allow :create?
+    refute ApplicationPolicy.new(token, resource).create?
   end
 
   it 'prevents update' do
-    ApplicationPolicy.new(token, resource).wont_allow :update?
+    refute ApplicationPolicy.new(token, resource).update?
   end
 
   it 'prevents destroy' do
-    ApplicationPolicy.new(token, resource).wont_allow :destroy?
+    refute ApplicationPolicy.new(token, resource).destroy?
   end
 end

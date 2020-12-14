@@ -23,23 +23,23 @@ describe EpisodeStoryHandler do
   it 'can be created from a story' do
     podcast = create(:podcast, prx_uri: '/api/v1/series/36501')
     episode = EpisodeStoryHandler.create_from_story!(story)
-    episode.explicit.must_equal 'clean'
-    episode.wont_be_nil
-    episode.published_at.wont_be_nil
-    episode.published_at.must_equal Time.parse(story.attributes[:published_at])
-    episode.released_at.wont_be_nil
-    episode.released_at.must_equal Time.parse(story.attributes[:released_at])
+    assert_equal episode.explicit, 'clean'
+    refute_nil episode
+    refute_nil episode.published_at
+    assert_equal episode.published_at, Time.parse(story.attributes[:published_at])
+    refute_nil episode.released_at
+    assert_equal episode.released_at, Time.parse(story.attributes[:released_at])
     first_audio = episode.all_contents.first.original_url
     last_audio = episode.all_contents.last.original_url
-    first_audio.must_equal 's3://mediajoint.production.prx.org/public/audio_files/1200648/lcs_spring16_act1.mp3'
-    last_audio.must_equal 's3://mediajoint.production.prx.org/public/audio_files/1200657/broadcast/t01.mp3'
-    episode.description.must_equal 'this is a description'
-    episode.season_number.must_equal 2
-    episode.episode_number.must_equal 4
-    episode.clean_title.must_equal 'Stripped-down title'
-    episode.prx_audio_version_uri.must_equal '/api/v1/audio_versions/35397'
-    episode.audio_version.must_equal 'Audio Version'
-    episode.segment_count.must_equal 4
+    assert_equal first_audio, 's3://mediajoint.production.prx.org/public/audio_files/1200648/lcs_spring16_act1.mp3'
+    assert_equal last_audio, 's3://mediajoint.production.prx.org/public/audio_files/1200657/broadcast/t01.mp3'
+    assert_equal episode.description, 'this is a description'
+    assert_equal episode.season_number, 2
+    assert_equal episode.episode_number, 4
+    assert_equal episode.clean_title, 'Stripped-down title'
+    assert_equal episode.prx_audio_version_uri, '/api/v1/audio_versions/35397'
+    assert_equal episode.audio_version, 'Audio Version'
+    assert_equal episode.segment_count, 4
   end
 
   describe 'with episode identifiers' do
@@ -65,32 +65,32 @@ describe EpisodeStoryHandler do
     it 'sets episode and season numbers from identifiers' do
       podcast = create(:podcast, prx_uri: '/api/v1/series/36501')
       episode = EpisodeStoryHandler.create_from_story!(story)
-      episode.season_number.must_equal 2
-      episode.episode_number.must_equal 4
+      assert_equal episode.season_number, 2
+      assert_equal episode.episode_number, 4
     end
 
     it 'wont use string identifiers' do
       podcast = create(:podcast, prx_uri: '/api/v1/series/32165')
       episode = EpisodeStoryHandler.create_from_story!(invalid_identifiers_story)
-      episode.season_number.must_be_nil
-      episode.episode_number.must_be_nil
+      assert_nil episode.season_number
+      assert_nil episode.episode_number
     end
 
    it 'does not allow identifiers to be zero' do
      podcast = create(:podcast, prx_uri: '/api/v1/series/32164')
      episode = EpisodeStoryHandler.create_from_story!(zero_identifiers_story)
-     episode.season_number.must_be_nil
-     episode.episode_number.must_be_nil
+     assert_nil episode.season_number
+     assert_nil episode.episode_number
    end
 
    it 'blanks out identifiers on update' do
      podcast = create(:podcast, prx_uri: '/api/v1/series/36501')
      episode = EpisodeStoryHandler.create_from_story!(story)
-     episode.season_number.must_be :>, 0
-     episode.episode_number.must_be :>, 0
+     assert_operator episode.season_number, :>, 0
+     assert_operator episode.episode_number, :>, 0
      EpisodeStoryHandler.new(episode).update_from_story(zero_identifiers_story)
-     episode.season_number.must_be_nil
-     episode.episode_number.must_be_nil
+     assert_nil episode.season_number
+     assert_nil episode.episode_number
    end
   end
 end

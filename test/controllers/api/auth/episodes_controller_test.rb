@@ -32,52 +32,52 @@ describe Api::Auth::EpisodesController do
   end
 
   it 'should show the unpublished episode' do
-    episode_unpublished.id.wont_be_nil
-    episode_unpublished.published_at.must_be_nil
+    refute_nil episode_unpublished.id
+    assert_nil episode_unpublished.published_at
     get(:show, { api_version: 'v1', format: 'json', id: episode_unpublished.guid } )
     assert_response :success
   end
 
   it 'should show' do
-    episode.id.wont_be_nil
+    refute_nil episode.id
     get(:show, { api_version: 'v1', format: 'json', id: episode.guid } )
     assert_response :success
   end
 
   it 'should return resource gone for deleted resource' do
-    episode_deleted.id.wont_be_nil
+    refute_nil episode_deleted.id
     get(:show, { api_version: 'v1', format: 'json', id: episode_deleted.guid } )
     assert_response 410
   end
 
   it 'should return not found for unknown resource' do
-    episode_deleted.id.wont_be_nil
+    refute_nil episode_deleted.id
     get(:show, { api_version: 'v1', format: 'json', id: 'thisismadeup' } )
     assert_response 404
   end
 
   it 'should list' do
-    episode.id.wont_be_nil
-    episode_unpublished.id.wont_be_nil
-    episode_unpublished.published_at.must_be_nil
+    refute_nil episode.id
+    refute_nil episode_unpublished.id
+    assert_nil episode_unpublished.published_at
     get(:index, { api_version: 'v1', format: 'json' } )
     assert_response :success
     list = JSON.parse(response.body)
     ids = list.dig('_embedded', 'prx:items').map{ |i| i['id'] }
-    ids.must_include(episode.guid)
-    ids.must_include(episode_unpublished.guid)
+    assert_includes ids, episode.guid
+    assert_includes ids, episode_unpublished.guid
   end
 
   it 'should list for podcast' do
-    episode.id.wont_be_nil
-    podcast.id.wont_be_nil
-    episode_different_podcast.id.wont_be_nil
+    refute_nil episode.id
+    refute_nil podcast.id
+    refute_nil episode_different_podcast.id
     get(:index, { api_version: 'v1', format: 'json', podcast_id: podcast.id } )
     assert_response :success
     body = JSON.parse(response.body)
     ids = body['_embedded']['prx:items'].map { |s| s['id'] }
-    ids.count.must_equal 1
-    ids.wont_include episode_different_podcast.guid
+    assert_equal ids.count, 1
+    refute_includes ids, episode_different_podcast.guid
   end
 
   describe 'with a valid token' do
@@ -101,18 +101,18 @@ describe Api::Auth::EpisodesController do
       assert_response :success
       id = JSON.parse(response.body)['id']
       new_episode = Episode.find_by_guid(id)
-      new_episode.released_at.must_equal Time.parse(episode_hash[:releasedAt])
-      new_episode.prx_uri.must_equal '/api/v1/stories/123'
-      new_episode.enclosures.count.must_equal 0
-      new_episode.all_contents.count.must_equal 3
+      assert_equal new_episode.released_at, Time.parse(episode_hash[:releasedAt])
+      assert_equal new_episode.prx_uri, '/api/v1/stories/123'
+      assert_equal new_episode.enclosures.count, 0
+      assert_equal new_episode.all_contents.count, 3
       c = new_episode.all_contents.first
-      c.original_url.must_equal 'https://s3.amazonaws.com/prx-testing/test/audio1.mp3'
+      assert_equal c.original_url, 'https://s3.amazonaws.com/prx-testing/test/audio1.mp3'
     end
 
     it 'can update audio on an episode' do
       update_hash = { media: [{ href: 'https://s3.amazonaws.com/prx-testing/test/change1.mp3' }] }
 
-      episode_update.all_contents.size.must_equal 0
+      assert_equal episode_update.all_contents.size, 0
 
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
@@ -121,7 +121,7 @@ describe Api::Auth::EpisodesController do
       end
       assert_response :success
 
-      episode_update.reload.all_contents.size.must_equal 1
+      assert_equal episode_update.reload.all_contents.size, 1
 
       # updating with a dupe should insert it, with the same position value of 1
       @controller.stub(:publish, true) do
@@ -131,9 +131,9 @@ describe Api::Auth::EpisodesController do
       end
       assert_response :success
 
-      episode_update.reload.all_contents.size.must_equal 2
-      episode_update.all_contents.first.position.must_equal 1
-      episode_update.all_contents.last.position.must_equal 1
+      assert_equal episode_update.reload.all_contents.size, 2
+      assert_equal episode_update.all_contents.first.position, 1
+      assert_equal episode_update.all_contents.last.position, 1
     end
   end
 
@@ -149,7 +149,7 @@ describe Api::Auth::EpisodesController do
       list = JSON.parse(response.body)
       ids = list.dig('_embedded', 'prx:items').map{ |i| i['id'] }
       guids.each do |guid|
-        ids.must_include guid
+        assert_includes ids, guid
       end
     end
 

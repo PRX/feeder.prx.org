@@ -10,19 +10,19 @@ describe PodcastPolicy do
 
   describe '#update?' do
     it 'returns false if token is not present' do
-      PodcastPolicy.new(nil, podcast).wont_allow :update?
+      refute PodcastPolicy.new(nil, podcast).update?
     end
 
     it 'returns false if token is not a member of the account' do
-      PodcastPolicy.new(token('feeder:podcast-edit', account_id + 1), podcast).wont_allow :update?
+      refute PodcastPolicy.new(token('feeder:podcast-edit', account_id + 1), podcast).update?
     end
 
     it 'returns true if token is a member of the account and has edit scope' do
-      PodcastPolicy.new(token('feeder:podcast-edit'), podcast).must_allow :update?
+      assert PodcastPolicy.new(token('feeder:podcast-edit'), podcast).update?
     end
 
     it 'returns false if token lacks edit scope' do
-      PodcastPolicy.new(token('feeder:podcast-create feeder:podcast-delete'), podcast).wont_allow :update?
+      refute PodcastPolicy.new(token('feeder:podcast-create feeder:podcast-delete'), podcast).update?
     end
 
     it 'disallows changing the account id of a podcast which the token did not previously have access to' do
@@ -35,37 +35,37 @@ describe PodcastPolicy do
 
   describe '#create?' do
     it 'returns false if token is not present' do
-      PodcastPolicy.new(nil, podcast).wont_allow :create?
+      refute PodcastPolicy.new(nil, podcast).create?
     end
 
     it 'returns false if token is not a member of the account' do
-      PodcastPolicy.new(token('feeder:podcast-create', account_id + 1), podcast).wont_allow :create?
+      refute PodcastPolicy.new(token('feeder:podcast-create', account_id + 1), podcast).create?
     end
 
     it 'returns true if token is a member of the account and has create scope' do
-      PodcastPolicy.new(token('feeder:podcast-create'), podcast).must_allow :create?
+      assert PodcastPolicy.new(token('feeder:podcast-create'), podcast).create?
     end
 
     it 'returns false if token lacks create scope' do
-      PodcastPolicy.new(token('feeder:podcast-edit feeder:podcast-delete'), podcast).wont_allow :create?
+      refute PodcastPolicy.new(token('feeder:podcast-edit feeder:podcast-delete'), podcast).create?
     end
   end
 
   describe '#destroy?' do
     it 'returns false if token is not present' do
-      PodcastPolicy.new(nil, podcast).wont_allow :destroy?
+      refute PodcastPolicy.new(nil, podcast).destroy?
     end
 
     it 'returns false if token is not a member of the account' do
-      PodcastPolicy.new(token('feeder:podcast-delete', account_id + 1), podcast).wont_allow :destroy?
+      refute PodcastPolicy.new(token('feeder:podcast-delete', account_id + 1), podcast).destroy?
     end
 
     it 'returns true if token is a member of the account and has create scope' do
-      PodcastPolicy.new(token('feeder:podcast-delete'), podcast).must_allow :destroy?
+      assert PodcastPolicy.new(token('feeder:podcast-delete'), podcast).destroy?
     end
 
     it 'returns false if token lacks destroy scope' do
-      PodcastPolicy.new(token('feeder:podcast-create feeder:podcast-edit'), podcast).wont_allow :destroy?
+      refute PodcastPolicy.new(token('feeder:podcast-create feeder:podcast-edit'), podcast).destroy?
     end
   end
 end

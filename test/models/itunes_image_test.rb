@@ -6,7 +6,7 @@ describe ITunesImage do
       podcast = create(:podcast)
       image = podcast.itunes_image
 
-      image.podcast.must_equal podcast
+      assert_equal image.podcast, podcast
     end
   end
 
@@ -16,43 +16,43 @@ describe ITunesImage do
     end
 
     it 'is valid with correct size and type' do
-      @image.must_be(:valid?)
+      assert @image.valid?
     end
 
     it 'is valid with no size or type' do
       @image = ITunesImage.new(original_url: 'test/fixtures/valid_series_image.png')
-      @image.must_be(:valid?)
+      assert @image.valid?
     end
 
     it 'is invalid without a url' do
       @image.original_url = nil
 
-      @image.wont_be(:valid?)
+      refute @image.valid?
     end
 
     it 'must be a jpg or png' do
       @image.original_url = 'test/fixtures/valid_series_image.png'
-      @image.must_be(:valid?)
+      assert @image.valid?
 
       @image.original_url = 'test/fixtures/wrong_type_image.gif'
-      @image.wont_be(:valid?)
+      refute @image.valid?
     end
 
     it 'must be under 2048x2048' do
       @image.original_url = 'test/fixtures/too_big_image.jpg'
-      @image.wont_be(:valid?)
+      refute @image.valid?
     end
 
     it 'must be greater than 1400x1400' do
       @image.original_url = "test/fixtures/too_small_image.jpg"
 
-      @image.wont_be(:valid?)
+      refute @image.valid?
     end
 
     it 'must be a square' do
       @image.original_url = "test/fixtures/wrong_proportions_image.jpg"
 
-      @image.wont_be(:valid?)
+      refute @image.valid?
     end
   end
 end

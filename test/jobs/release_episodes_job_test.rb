@@ -14,9 +14,9 @@ describe ReleaseEpisodesJob do
   it 'publishes the podcast if released is passed and after the last build' do
     episode.update_columns(updated_at: 1.day.ago, published_at: 1.hour.ago)
     Episode.stub(:episodes_to_release, [episode]) do
-      episode.updated_at.must_be :<, episode.published_at
+      assert_operator episode.updated_at, :<, episode.published_at
       job.perform
-      podcast.reload.updated_at.must_be :>, episode.published_at
+      assert_operator podcast.reload.updated_at, :>, episode.published_at
     end
   end
 end

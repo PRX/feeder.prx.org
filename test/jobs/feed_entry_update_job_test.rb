@@ -26,12 +26,12 @@ describe FeedEntryUpdateJob do
     data = json_file(:crier_entry)
     Task.stub :new_porter_sns_client, SnsMock.new do
       create_episode = job.perform(msg)
-      create_episode.wont_be_nil
-      create_episode.source_updated_at.must_equal Time.parse(msg[:sent_at])
+      refute_nil create_episode
+      assert_equal create_episode.source_updated_at, Time.parse(msg[:sent_at])
 
       update_episode = job.perform(msg)
-      update_episode.wont_be :changed?
-      create_episode.must_equal update_episode
+      refute update_episode.changed?
+      assert_equal create_episode, update_episode
     end
   end
 
@@ -39,10 +39,10 @@ describe FeedEntryUpdateJob do
     Task.stub :new_porter_sns_client, SnsMock.new do
       episode = job.perform(msg)
       created_podcast = job.podcast
-      created_podcast.source_updated_at.must_equal Time.parse(msg[:sent_at])
+      assert_equal created_podcast.source_updated_at, Time.parse(msg[:sent_at])
 
       job.create_podcast
-      job.podcast.must_equal created_podcast
+      assert_equal job.podcast, created_podcast
     end
   end
 
@@ -51,7 +51,7 @@ describe FeedEntryUpdateJob do
       episode = job.perform(msg)
       created_episode = job.episode
       job.create_episode
-      job.episode.must_equal created_episode
+      assert_equal job.episode, created_episode
     end
   end
 end
