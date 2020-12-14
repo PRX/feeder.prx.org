@@ -11,10 +11,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200427153653) do
+ActiveRecord::Schema.define(version: 20201214170208) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "uuid-ossp"
 
   create_table "episode_images", force: :cascade do |t|
     t.integer  "episode_id"
@@ -209,6 +210,7 @@ ActiveRecord::Schema.define(version: 20200427153653) do
     t.boolean  "locked",                      default: false
     t.boolean  "itunes_block",                default: false
     t.string   "feed_rss_alias"
+    t.string   "restriction"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
