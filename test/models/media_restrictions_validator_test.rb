@@ -5,13 +5,13 @@ describe MediaRestrictionsValidator do
 
   it 'allows blank restrictions' do
     podcast.restrictions = nil
-    podcast.must_be :valid?
+    assert(podcast.valid?)
 
     podcast.restrictions = []
-    podcast.must_be :valid?
+    assert(podcast.valid?)
 
     podcast.restrictions = {}
-    podcast.wont_be :valid?
+    refute(podcast.valid?)
   end
 
   it 'validates the restriction hash' do
@@ -27,8 +27,8 @@ describe MediaRestrictionsValidator do
 
     bad_restrictions.each do |val|
       podcast.restrictions = [val]
-      podcast.wont_be :valid?
-      podcast.errors[:restrictions].must_include 'has invalid restrictions'
+      refute(podcast.valid?)
+      assert_includes(podcast.errors[:restrictions], 'has invalid restrictions')
     end
   end
 
@@ -37,34 +37,34 @@ describe MediaRestrictionsValidator do
       { type: 'country', relationship: 'allow', values: ['US'] },
       { type: 'country', relationship: 'allow', values: ['CA'] }
     ]
-    podcast.wont_be :valid?
-    podcast.errors[:restrictions].must_include 'has duplicate restriction types'
+    refute(podcast.valid?)
+    assert_includes(podcast.errors[:restrictions], 'has duplicate restriction types')
   end
 
   it 'validates known restriction types' do
     podcast.restrictions = [{ type: 'something', relationship: 'allow', values: ['US'] }]
-    podcast.wont_be :valid?
-    podcast.errors[:restrictions].must_include 'has an unsupported restriction type'
+    refute(podcast.valid?)
+    assert_includes(podcast.errors[:restrictions], 'has an unsupported restriction type')
   end
 
   it 'validates allowed-country restrictions' do
     podcast.restrictions = [{ type: 'country', relationship: 'deny', values: ['US'] }]
-    podcast.wont_be :valid?
-    podcast.errors[:restrictions].must_include 'has an unsupported media restriction relationship'
+    refute(podcast.valid?)
+    assert_includes(podcast.errors[:restrictions], 'has an unsupported media restriction relationship')
 
     podcast.restrictions = [{ type: 'uri', relationship: 'allow', values: ['https://prx.org'] }]
-    podcast.wont_be :valid?
-    podcast.errors[:restrictions].must_include 'has an unsupported restriction type'
+    refute(podcast.valid?)
+    assert_includes(podcast.errors[:restrictions], 'has an unsupported restriction type')
 
     podcast.restrictions = [{ type: 'country', relationship: 'allow', values: [] }]
-    podcast.wont_be :valid?
-    podcast.errors[:restrictions].must_include 'does not have country code values'
+    refute(podcast.valid?)
+    assert_includes(podcast.errors[:restrictions], 'does not have country code values')
 
     podcast.restrictions[0][:values] = %w(US BLAH CA)
-    podcast.wont_be :valid?
-    podcast.errors[:restrictions].must_include 'has non-ISO3166 country codes'
+    refute(podcast.valid?)
+    assert_includes(podcast.errors[:restrictions], 'has non-ISO3166 country codes')
 
     podcast.restrictions[0][:values] = %w(US CA)
-    podcast.must_be :valid?
+    assert(podcast.valid?)
   end
 end
