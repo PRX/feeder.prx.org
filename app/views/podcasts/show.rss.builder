@@ -119,10 +119,11 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         end
 
         if ep.media?
-          if @podcast.restriction?
+          if @podcast.restrictions.present?
             xml.media(:content, fileSize: ep.file_size, type: ep.content_type, url: ep.media_url) do
-              rest = @podcast.restriction
-              xml.media :restriction, rest['values'].join(' '), type: rest['type'], relationship: rest['relationship']
+              @podcast.restrictions.each do |r|
+                xml.media :restriction, r['values'].join(' '), type: r['type'], relationship: r['relationship']
+              end
             end
           elsif @podcast.display_full_episode?(index)
             xml.media(:content, fileSize: ep.file_size, type: ep.content_type, url: ep.media_url)

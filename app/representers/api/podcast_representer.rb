@@ -29,7 +29,6 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :complete
   property :copyright
   property :language
-  property :restriction
 
   property :locked
 
@@ -50,6 +49,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
 
   collection :keywords
   collection :categories
+  collection :restrictions
 
   collection :itunes_categories, decorator: Api::ITunesCategoryRepresenter, class: ITunesCategory
   property :itunes_image, decorator: Api::ImageRepresenter, class: ITunesImage

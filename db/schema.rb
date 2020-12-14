@@ -210,7 +210,7 @@ ActiveRecord::Schema.define(version: 20201214170208) do
     t.boolean  "locked",                      default: false
     t.boolean  "itunes_block",                default: false
     t.string   "feed_rss_alias"
-    t.string   "restriction"
+    t.string   "restrictions"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
