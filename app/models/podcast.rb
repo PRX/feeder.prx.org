@@ -116,6 +116,10 @@ class Podcast < BaseModel
     feed
   end
 
+  def display_full_episode?(index)
+    display_full_episodes_count.to_i <= 0 || index < display_full_episodes_count.to_i
+  end
+
   def publish!
     create_publish_job unless locked?
   end

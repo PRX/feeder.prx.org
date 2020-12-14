@@ -94,7 +94,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.itunes :duration, ep.duration.to_i.to_time_summary if ep.media?
         xml.itunes :block, 'Yes' if ep.itunes_block
 
-        if @podcast.display_full_episodes_count.to_i <= 0 || index < @podcast.display_full_episodes_count.to_i
+        if @podcast.display_full_episode?(index)
 
           has_au_email = first_nonblank('author_email', [ep, @podcast])
           xml.author(full_contact('author', has_au_email)) if full_contact('author', has_au_email)
@@ -121,6 +121,17 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
             url: ep.media_url) if ep.media?
 
           xml.content(:encoded) { xml.cdata!(ep.content) } unless ep.content.blank?
+        end
+
+        if ep.media?
+          if @podcast.restriction?
+            xml.media(:content, fileSize: ep.file_size, type: ep.content_type, url: ep.media_url) do
+              rest = @podcast.restriction
+              xml.media :restriction, rest['values'].join(' '), type: rest['type'], relationship: rest['relationship']
+            end
+          elsif @podcast.display_full_episode?(index)
+            xml.media(:content, fileSize: ep.file_size, type: ep.content_type, url: ep.media_url)
+          end
         end
       end
     end
