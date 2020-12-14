@@ -1,11 +1,14 @@
 class MediaRestrictionsValidator < ActiveModel::EachValidator
   # https://www.rssboard.org/media-rss/#media-restriction
   def validate_each(record, attribute, values)
-    return if values.nil? || values == []
+    return if values.nil?
 
     # must have format [{type: '', relationship: '', values: []}]
+    unless values.is_a?(Array)
+      return record.errors.add attribute, 'has invalid restrictions'
+    end
     values = values.try(:map) { |v| v.try(:with_indifferent_access) }
-    unless values.is_a?(Array) && values.all? { |v| valid_restriction?(v) }
+    unless values.all? { |v| valid_restriction?(v) }
       return record.errors.add attribute, 'has invalid restrictions'
     end
 
