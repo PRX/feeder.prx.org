@@ -72,6 +72,9 @@ gem 'fastimage'
 # for url templates
 gem 'addressable'
 
+# for validating media:restriction codes
+gem 'countries'
+
 gem 'aws-sdk'
 
 group :development, :test do
