@@ -8,38 +8,38 @@ describe PublishFeedJob do
   let(:job) { PublishFeedJob.new }
 
   it 'gets an aws client' do
-    job.client.wont_be_nil
-    job.client.must_be_instance_of Aws::S3::Client
+    refute_nil job.client
+    assert_instance_of Aws::S3::Client, job.client
   end
 
   it 'knows the right bucket to write to' do
-    job.feeder_storage_bucket.must_equal 'test-prx-feed'
+    assert_equal job.feeder_storage_bucket, 'test-prx-feed'
     ENV['FEEDER_STORAGE_BUCKET'] = 'foo'
-    job.feeder_storage_bucket.must_equal 'foo'
+    assert_equal job.feeder_storage_bucket, 'foo'
     ENV['FEEDER_STORAGE_BUCKET'] = 'test-prx-feed'
   end
 
   it 'knows the right key to write to' do
-    job.key(podcast).must_equal 'jjgo/feed-rss.xml'
+    assert_equal job.key(podcast), 'jjgo/feed-rss.xml'
   end
 
   it 'can load the rss template' do
-    job.rss_template.wont_be_nil
-    job.rss_template[0,12].must_equal 'xml.instruct'
+    refute_nil job.rss_template
+    assert_equal job.rss_template[0,12], 'xml.instruct'
   end
 
   it 'can setup the data based on the podcast' do
     job.setup_data(podcast)
-    job.podcast.must_equal podcast
-    job.episodes.count.must_equal 1
+    assert_equal job.podcast, podcast
+    assert_equal job.episodes.count, 1
   end
 
   it 'can setup the data based on the podcast' do
     job.podcast = podcast
     job.episodes = podcast.feed_episodes
     rss = job.generate_rss_xml
-    rss.wont_be_nil
-    rss[0, 38].must_equal '<?xml version="1.0" encoding="UTF-8"?>'
+    refute_nil rss
+    assert_equal rss[0, 38], '<?xml version="1.0" encoding="UTF-8"?>'
   end
 
   describe 'saving the rss file' do
@@ -56,9 +56,9 @@ describe PublishFeedJob do
     it 'can process publishing a podcast' do
       job.stub(:client, stub_client) do
         job.perform(podcast)
-        job.rss.wont_be_nil
-        job.put_object.wont_be_nil
-        job.copy_object.must_be_nil
+        refute_nil job.rss
+        refute_nil job.put_object
+        assert_nil job.copy_object
       end
     end
 
@@ -66,8 +66,8 @@ describe PublishFeedJob do
       podcast.feed_rss_alias = 'some-alias'
       job.stub(:client, stub_client) do
         job.perform(podcast)
-        job.put_object.wont_be_nil
-        job.copy_object.wont_be_nil
+        refute_nil job.put_object
+        refute_nil job.copy_object
       end
     end
   end

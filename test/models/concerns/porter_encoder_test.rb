@@ -28,13 +28,13 @@ describe PorterEncoder do
     model.porter_start!(opts)
     ENV['AWS_ACCOUNT_ID'] = account_bk
 
-    sns.message[:Job][:Id].length.must_equal 36
-    sns.message[:Job][:Source].must_equal({
+    assert_equal sns.message[:Job][:Id].length, 36
+    assert_equal(sns.message[:Job][:Source], {
       'Mode' => 'AWS/S3',
       'BucketName' => 'src',
       'ObjectKey' => 'path/key.mp3'
     })
-    sns.message[:Job][:Tasks].must_equal([{
+    assert_equal(sns.message[:Job][:Tasks], [{
       'Type' => 'Copy',
       'Mode' => 'AWS/S3',
       'BucketName' => 'dest',
@@ -45,8 +45,8 @@ describe PorterEncoder do
         'ContentDisposition' => 'attachment; filename="key.mp3"'
       }
     }])
-    sns.message[:Job][:Inspect].must_be_nil
-    sns.message[:Job][:Callbacks].must_equal([{
+    assert_nil sns.message[:Job][:Inspect]
+    assert_equal(sns.message[:Job][:Callbacks], [{
       'Type' => 'AWS/SQS',
       'Queue' => 'https://sqs.us-whatev.amazonaws.com/12345678/queue-name'
     }])
@@ -57,11 +57,11 @@ describe PorterEncoder do
     opts[:destination] = 's3://dest/path/file%252B.mp3'
     model.porter_start!(opts)
 
-    sns.message[:Job][:Source].must_equal({
+    assert_equal(sns.message[:Job][:Source], {
       'Mode' => 'HTTP',
       'URL' => 'https://some.where/the/file%252B.mp3'
     })
-    sns.message[:Job][:Tasks].must_equal([{
+    assert_equal(sns.message[:Job][:Tasks], [{
       'Type' => 'Copy',
       'Mode' => 'AWS/S3',
       'BucketName' => 'dest',
@@ -79,12 +79,12 @@ describe PorterEncoder do
     opts[:destination] = 's3://dest/path/file%252B.mp3'
     model.porter_start!(opts)
 
-    sns.message[:Job][:Source].must_equal({
+    assert_equal(sns.message[:Job][:Source], {
       'Mode' => 'AWS/S3',
       'BucketName' => 'src',
       'ObjectKey' => 'the/file%252B.mp3'
     })
-    sns.message[:Job][:Tasks].must_equal([{
+    assert_equal(sns.message[:Job][:Tasks], [{
       'Type' => 'Copy',
       'Mode' => 'AWS/S3',
       'BucketName' => 'dest',
@@ -101,7 +101,7 @@ describe PorterEncoder do
     opts[:source] = 'https://some.where/the/file.mp3'
     model.porter_start!(opts)
 
-    sns.message[:Job][:Source].must_equal({
+    assert_equal(sns.message[:Job][:Source], {
       'Mode' => 'HTTP',
       'URL' => 'https://some.where/the/file.mp3'
     })
@@ -111,6 +111,6 @@ describe PorterEncoder do
     opts[:job_type] = 'audio'
     model.porter_start!(opts)
 
-    sns.message[:Job][:Tasks].must_include({'Type' => 'Inspect'})
+    assert_includes sns.message[:Job][:Tasks], ({'Type' => 'Inspect'})
   end
 end

@@ -12,26 +12,26 @@ describe TextSanitizer do
   end
 
   it 'scrubs all tags' do
-    model.sanitize_text_only(text).must_equal 'my dog & cat ate my '
+    assert_equal model.sanitize_text_only(text), 'my dog & cat ate my '
   end
 
   it 'leaves ampersands alone' do
-    model.sanitize_text_only('Us & Them').must_equal 'Us & Them'
+    assert_equal model.sanitize_text_only('Us & Them'), 'Us & Them'
   end
 
   it 'scrubs all but links' do
     r = 'my dog &amp; cat <a href="/">ate</a> my '
-    model.sanitize_links_only(text).must_equal r
+    assert_equal model.sanitize_links_only(text), r
   end
 
   it 'scrubs all but white listed' do
     r = '<p>my</p> <b>dog &amp; cat</b> <a href="/">ate</a> <span><div>my</div></span> '
-    model.sanitize_white_list(text).must_equal r
+    assert_equal model.sanitize_white_list(text), r
   end
 
   it 'white lists tables' do
     text = "<table>\n<thead></thead>\n<tbody>\n<tr>\n<th></th>\n<td></td>\n</tr>\n" +
            "<caption></caption>\n</tbody>\n<tfoot></tfoot>\n</table>"
-    model.sanitize_white_list(text).must_equal text
+    assert_equal model.sanitize_white_list(text), text
   end
 end

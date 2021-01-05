@@ -11,27 +11,27 @@ describe EpisodePolicy do
 
   describe '#update?, #create?, and #delete?' do
     it 'returns false if token is not present' do
-      EpisodePolicy.new(nil, episode).wont_allow :update?
-      EpisodePolicy.new(nil, episode).wont_allow :create?
-      EpisodePolicy.new(nil, episode).wont_allow :destroy?
+      refute EpisodePolicy.new(nil, episode).update?
+      refute EpisodePolicy.new(nil, episode).create?
+      refute EpisodePolicy.new(nil, episode).destroy?
     end
 
     it 'returns false if token is not a member of the account' do
-      EpisodePolicy.new(token('feeder:episode', account_id + 1), episode).wont_allow :update?
-      EpisodePolicy.new(token('feeder:episode', account_id + 1), episode).wont_allow :create?
-      EpisodePolicy.new(token('feeder:episode', account_id + 1), episode).wont_allow :destroy?
+      refute EpisodePolicy.new(token('feeder:episode', account_id + 1), episode).update?
+      refute EpisodePolicy.new(token('feeder:episode', account_id + 1), episode).create?
+      refute EpisodePolicy.new(token('feeder:episode', account_id + 1), episode).destroy?
     end
 
     it 'returns true if token is a member of the account' do
-      EpisodePolicy.new(token('feeder:episode'), episode).must_allow :update?
-      EpisodePolicy.new(token('feeder:episode'), episode).must_allow :create?
-      EpisodePolicy.new(token('feeder:episode'), episode).must_allow :destroy?
+      assert EpisodePolicy.new(token('feeder:episode'), episode).update?
+      assert EpisodePolicy.new(token('feeder:episode'), episode).create?
+      assert EpisodePolicy.new(token('feeder:episode'), episode).destroy?
     end
 
     it 'returns false if the token lacks the episode scope' do
-      EpisodePolicy.new(token('feeder:read-private'), episode).wont_allow :update?
-      EpisodePolicy.new(token('feeder:read-private'), episode).wont_allow :create?
-      EpisodePolicy.new(token('feeder:read-private'), episode).wont_allow :destroy?
+      refute EpisodePolicy.new(token('feeder:read-private'), episode).update?
+      refute EpisodePolicy.new(token('feeder:read-private'), episode).create?
+      refute EpisodePolicy.new(token('feeder:read-private'), episode).destroy?
     end
 
     it 'returns false if changing podcast from one the token has no access to' do

@@ -36,7 +36,7 @@ describe SeriesUpdateJob do
 
   it 'creates a series resource' do
     series = job.api_resource(JSON.parse(body).with_indifferent_access)
-    series.must_be_instance_of PRXAccess::PRXHyperResource
+    assert_instance_of PRXAccess::PRXHyperResource, series
   end
 
   it 'can update an podcast' do
@@ -45,19 +45,19 @@ describe SeriesUpdateJob do
         lbd = podcast.last_build_date
         uat = podcast.updated_at
         job.perform(msg)
-        job.podcast.last_build_date.must_be :>, lbd
-        job.podcast.updated_at.must_be :>, uat
+        assert_operator job.podcast.last_build_date, :>, lbd
+        assert_operator job.podcast.updated_at, :>, uat
       end
     end
   end
 
   it 'will not update a deleted podcast' do
     podcast = create(:podcast, prx_uri: '/api/v1/series/32832', deleted_at: Time.now)
-    podcast.must_be :deleted?
+    assert podcast.deleted?
     podcast.stub(:copy_media, true) do
       Podcast.stub(:by_prx_series, podcast) do
         job.perform(msg)
-        job.podcast.must_be :deleted?
+        assert job.podcast.deleted?
       end
     end
   end
@@ -66,7 +66,7 @@ describe SeriesUpdateJob do
     podcast = create(:podcast, prx_uri: '/api/v1/series/32832')
     Podcast.stub(:by_prx_series, podcast) do
       job.perform(msg.tap { |m| m[:action] = 'delete'} )
-      job.podcast.deleted_at.wont_be_nil
+      refute_nil job.podcast.deleted_at
     end
   end
 end

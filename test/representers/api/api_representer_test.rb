@@ -10,20 +10,20 @@ describe Api::ApiRepresenter do
   let(:json)        { JSON.parse(representer.to_json) }
 
   it 'create api representer' do
-    representer.wont_be_nil
+    refute_nil representer
   end
 
   it 'use api representer to create json' do
-    json['version'].must_equal '1.0'
-    json.keys.sort.must_equal ['_links', 'version']
+    assert_equal json['version'], '1.0'
+    assert_equal json.keys.sort, ['_links', 'version']
   end
 
   it 'return root doc with links for an api version' do
-    json['_links']['self']['href'].must_equal '/api/1.0'
-    json['_links']['prx:episode'].size.must_equal 1
-    json['_links']['prx:episodes'].size.must_equal 1
-    json['_links']['prx:podcast'].size.must_equal 1
-    json['_links']['prx:podcasts'].size.must_equal 1
-    json['_links']['prx:authorization'].must_be_instance_of Hash
+    assert_equal json['_links']['self']['href'], '/api/1.0'
+    assert_equal json['_links']['prx:episode'].size, 1
+    assert_equal json['_links']['prx:episodes'].size, 1
+    assert_equal json['_links']['prx:podcast'].size, 1
+    assert_equal json['_links']['prx:podcasts'].size, 1
+    assert_instance_of Hash, json['_links']['prx:authorization']
   end
 end

@@ -13,19 +13,19 @@ describe ApiUpdatedSince do
   let(:controller) { ApiUpdatedSinceTestController.new }
 
   it 'defaults to nothing' do
-    controller.updated_since?.must_equal false
-    controller.updated_since.must_be_nil
+    assert_equal controller.updated_since?, false
+    assert_nil controller.updated_since
   end
 
   it 'parses since params' do
     controller.since_string = '2018-01-10'
-    controller.updated_since?.must_equal true
-    controller.updated_since.must_equal DateTime.parse('2018-01-10T00:00:00 +0000')
+    assert_equal controller.updated_since?, true
+    assert_equal controller.updated_since, DateTime.parse('2018-01-10T00:00:00 +0000')
   end
 
   it 'handles insanity' do
     controller.since_string = 'anything'
-    controller.updated_since?.must_equal false
-    controller.updated_since.must_be_nil
+    assert_equal controller.updated_since?, false
+    assert_nil controller.updated_since
   end
 end

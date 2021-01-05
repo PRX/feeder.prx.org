@@ -13,26 +13,26 @@ describe Tasks::CopyMediaTask do
 
   it 'has task options' do
     options = task.task_options
-    options.keys.must_equal %w(callback job_type source destination)
-    options[:callback].must_match /^sqs:\/\//
-    options[:job_type].must_equal 'audio'
-    options[:source].must_equal 's3://prx-testing/test/audio.mp3'
-    options[:destination].must_match /^s3:\/\//
+    assert_equal options.keys, %w(callback job_type source destination)
+    assert_match(/^sqs:\/\//, options[:callback])
+    assert_equal options[:job_type], 'audio'
+    assert_equal options[:source], 's3://prx-testing/test/audio.mp3'
+    assert_match(/^s3:\/\//, options[:destination])
   end
 
   it 'remove query string from audio url' do
-    task.media_resource.wont_be_nil
+    refute_nil task.media_resource
     original = task.media_resource.original_url
     task.media_resource.original_url = original + '?remove=this'
-    task.task_options[:source].must_equal original
+    assert_equal task.task_options[:source], original
   end
 
   it 'alias owner as episode' do
-    task.episode.must_equal task.owner.episode
+    assert_equal task.episode, task.owner.episode
   end
 
   it 'knows what bucket to drop the file in' do
-    task.feeder_storage_bucket.must_equal 'test-prx-feed'
+    assert_equal task.feeder_storage_bucket, 'test-prx-feed'
   end
 
   it 'determines a destination url' do
@@ -42,19 +42,19 @@ describe Tasks::CopyMediaTask do
     episode.expect(:guid, 'guid')
     episode.expect(:url, 'http://test-f.prxu.org/path/guid/audio.mp3')
     url = task.destination_url(episode)
-    url.must_equal "s3://test-prx-feed/path/guid/audio.mp3"
+    assert_equal url, "s3://test-prx-feed/path/guid/audio.mp3"
   end
 
   it 'use original url as the source url' do
-    task.source_url(task.media_resource).must_equal task.media_resource.original_url
+    assert_equal task.source_url(task.media_resource), task.media_resource.original_url
   end
 
   it 'updates status before save' do
-    task.status.must_equal 'complete'
-    task.media_resource.status.must_equal 'complete'
+    assert_equal task.status, 'complete'
+    assert_equal task.media_resource.status, 'complete'
     task.update_attributes(status: 'processing')
-    task.status.must_equal 'processing'
-    task.media_resource.status.must_equal 'processing'
+    assert_equal task.status, 'processing'
+    assert_equal task.media_resource.status, 'processing'
   end
 
   it 'replaces resources and publishes on complete' do
@@ -80,10 +80,10 @@ describe Tasks::CopyMediaTask do
     task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = '999000'
 
     task.update_attributes(status: 'created')
-    task.media_resource.bit_rate.wont_equal 999
+    refute_equal task.media_resource.bit_rate, 999
 
     task.update_attributes(status: 'complete')
-    task.media_resource.bit_rate.must_equal 999
+    assert_equal task.media_resource.bit_rate, 999
   end
 
   it 'does not throw errors when owner is missing on callback' do

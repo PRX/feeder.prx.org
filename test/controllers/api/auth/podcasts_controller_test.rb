@@ -14,8 +14,8 @@ describe Api::Auth::PodcastsController do
   end
 
   it 'should show the unpublished podcast' do
-    podcast.id.wont_be_nil
-    podcast.published_at.must_be_nil
+    refute_nil podcast.id
+    assert_nil podcast.published_at
     get(:show, { api_version: 'v1', format: 'json', id: podcast.id } )
     assert_response :success
   end
@@ -30,9 +30,9 @@ describe Api::Auth::PodcastsController do
     get(:index, api_version: 'v1')
     assert_response :success
     assert_not_nil assigns[:podcasts]
-    assigns[:podcasts].must_include podcast
-    assigns[:podcasts].must_include published_podcast
-    assigns[:podcasts].wont_include other_account_podcast
+    assert_includes assigns[:podcasts], podcast
+    assert_includes assigns[:podcasts], published_podcast
+    refute_includes assigns[:podcasts], other_account_podcast
   end
 
   describe 'with wildcard token' do
@@ -43,9 +43,9 @@ describe Api::Auth::PodcastsController do
       get(:index, api_version: 'v1')
       assert_response :success
       assert_not_nil assigns[:podcasts]
-      assigns[:podcasts].must_include podcast
-      assigns[:podcasts].must_include published_podcast
-      assigns[:podcasts].must_include other_account_podcast
+      assert_includes assigns[:podcasts], podcast
+      assert_includes assigns[:podcasts], published_podcast
+      assert_includes assigns[:podcasts], other_account_podcast
     end
   end
 end

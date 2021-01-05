@@ -36,11 +36,11 @@ describe StoryUpdateJob do
 
   it 'creates a story resource' do
     story = job.api_resource(JSON.parse(prx_story_update).with_indifferent_access)
-    story.must_be_instance_of PRXAccess::PRXHyperResource
+    assert_instance_of PRXAccess::PRXHyperResource, story
   end
 
   it 'can create an episode' do
-    podcast.wont_be_nil
+    refute_nil podcast
     mock_episode = Minitest::Mock.new
     mock_episode.expect(:try, true, [:copy_media])
     mock_episode.expect(:podcast, podcast)
@@ -64,9 +64,9 @@ describe StoryUpdateJob do
               uat = episode.updated_at
               bod = JSON.parse(real_story_update)
               job.perform(subject: 'story', action: 'update', body: bod)
-              job.episode.prx_uri.must_equal "/api/v1/stories/#{real_story_id}"
-              job.episode.podcast.last_build_date.must_be :>, lbd
-              job.episode.updated_at.must_be :>, uat
+              assert_equal job.episode.prx_uri, "/api/v1/stories/#{real_story_id}"
+              assert_operator job.episode.podcast.last_build_date, :>, lbd
+              assert_operator job.episode.updated_at, :>, uat
             end
           end
         end
@@ -76,14 +76,14 @@ describe StoryUpdateJob do
 
   it 'will not update a deleted episode' do
     episode = create(:episode, prx_uri: "/api/v1/stories/#{prx_story_id}", podcast: podcast, deleted_at: Time.now)
-    episode.must_be :deleted?
+    assert episode.deleted?
     podcast.stub(:copy_media, true) do
       episode.stub(:copy_media, true) do
         episode.stub(:podcast, podcast) do
           Episode.stub(:by_prx_story, episode) do
             job.stub(:get_account_token, 'token') do
               job.perform(subject: 'story', action: 'update', body: JSON.parse(prx_story_update))
-              job.episode.must_be :deleted?
+              assert job.episode.deleted?
             end
           end
         end
@@ -97,7 +97,7 @@ describe StoryUpdateJob do
       episode.stub(:podcast, podcast) do
         job.stub(:get_account_token, 'token') do
           job.perform(subject: 'story', action: 'delete', body: JSON.parse(prx_story_deleted))
-          job.episode.deleted_at.wont_be_nil
+          refute_nil job.episode.deleted_at
         end
       end
     end
@@ -138,8 +138,8 @@ describe StoryUpdateJob do
               lbd = episode.podcast.last_build_date
               uat = episode.updated_at
               job.perform(subject: 'story', action: 'update', body: invalid_story_update)
-              episode.podcast.last_build_date.wont_be :>, lbd
-              episode.updated_at.wont_be :>, uat
+              refute_operator episode.podcast.last_build_date, :>, lbd
+              refute_operator episode.updated_at, :>, uat
             end
           end
         end
@@ -156,9 +156,9 @@ describe StoryUpdateJob do
                 lbd = episode.podcast.last_build_date
                 uat = episode.updated_at
                 job.perform(subject: 'story', action: 'unpublish', body: invalid_story_update)
-                job.episode.wont_be :published?
-                job.episode.podcast.last_build_date.must_be :>, lbd
-                job.episode.updated_at.must_be :>, uat
+                refute job.episode.published?
+                assert_operator job.episode.podcast.last_build_date, :>, lbd
+                assert_operator job.episode.updated_at, :>, uat
               end
             end
           end

@@ -6,7 +6,7 @@ describe EpisodeImage do
       episode = create(:episode)
       image = episode.image
 
-      image.episode.must_equal episode
+      assert_equal image.episode, episode
     end
   end
 
@@ -15,15 +15,15 @@ describe EpisodeImage do
     let (:episode) { image.episode }
 
     it 'has a path' do
-      image.destination_path.must_equal "jjgo/#{image.episode.guid}/images/#{image.guid}/image.png"
+      assert_equal image.destination_path, "jjgo/#{image.episode.guid}/images/#{image.guid}/image.png"
     end
 
     it 'has a published url' do
-      image.published_url.must_equal "https://f.prxu.org/jjgo/#{image.episode.guid}/images/#{image.guid}/image.png"
+      assert_equal image.published_url, "https://f.prxu.org/jjgo/#{image.episode.guid}/images/#{image.guid}/image.png"
     end
 
     it 'has a path for episode images' do
-      image.image_path.must_equal "images/#{image.guid}/image.png"
+      assert_equal image.image_path, "images/#{image.guid}/image.png"
     end
   end
 
@@ -33,56 +33,56 @@ describe EpisodeImage do
     end
 
     it 'is valid with correct size and type' do
-      @image.must_be :valid?
+      assert @image.valid?
     end
 
     it 'is valid with no size or type' do
       @image = EpisodeImage.new(original_url: 'test/fixtures/valid_series_image.png')
-      @image.must_be :valid?
+      assert @image.valid?
     end
 
     it 'is invalid without an original url' do
       @image.original_url = nil
-      @image.wont_be :valid?
+      refute @image.valid?
     end
 
     it 'must be a jpg or png' do
       @image.original_url = 'test/fixtures/valid_series_image.png'
-      @image.must_be :valid?
+      assert @image.valid?
 
       @image.original_url = 'test/fixtures/wrong_type_image.gif'
-      @image.wont_be :valid?
+      refute @image.valid?
     end
 
     it 'must be under 3000x3000' do
       @image.original_url = 'test/fixtures/too_big_image.jpg'
-      @image.wont_be :valid?
+      refute @image.valid?
     end
 
     it 'must be greater than 1400x1400' do
       @image.original_url = 'test/fixtures/too_small_image.jpg'
-      @image.wont_be :valid?
+      refute @image.valid?
     end
 
     it 'must be a square' do
       @image.original_url = 'test/fixtures/wrong_proportions_image.jpg'
-      @image.wont_be :valid?
+      refute @image.valid?
     end
 
     it 'can be a large file' do
       @image.original_url = 'test/fixtures/offshore-logo-3000.jpg'
-      @image.must_be :valid?
-      @image.width.must_equal 3000
+      assert @image.valid?
+      assert_equal @image.width, 3000
     end
 
     it 'handle fastimage error' do
       stub_request(:get, "http://www.prx.org/fakeimageurl.jpg").
         to_return(status: 500, body: '', headers: {})
 
-      lambda do
+      assert_raises(FastImage::ImageFetchFailure) do
         @image.original_url = 'http://www.prx.org/fakeimageurl.jpg'
         @image.valid?
-      end.must_raise(FastImage::ImageFetchFailure)
+      end
     end
   end
 end

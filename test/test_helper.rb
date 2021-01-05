@@ -79,9 +79,6 @@ class SnsMock
   end
 end
 
-Minitest::Expectations.infect_an_assertion :assert_operator, :must_allow, :reverse
-Minitest::Expectations.infect_an_assertion :refute_operator, :wont_allow, :reverse
-
 class StubToken < PrxAuth::Rails::Token
   @@fake_user_id = 0
 

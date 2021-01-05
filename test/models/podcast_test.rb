@@ -8,30 +8,30 @@ describe Podcast do
   let(:podcast) { create(:podcast) }
 
   it 'has episodes' do
-    podcast.must_respond_to(:episodes)
+    assert_respond_to podcast, :episodes
   end
 
   it 'has a default enclosure template' do
     podcast = Podcast.new.tap {|p| p.valid? }
-    podcast.enclosure_template_default.must_match /^http/
-    podcast.enclosure_template.must_equal podcast.enclosure_template_default
+    assert_match(/^http/, podcast.enclosure_template_default)
+    assert_equal podcast.enclosure_template, podcast.enclosure_template_default
   end
 
   it 'has iTunes categories' do
-    podcast.must_respond_to(:itunes_categories)
+    assert_respond_to podcast, :itunes_categories
   end
 
   it 'is episodic or serial' do
-    podcast.itunes_type.must_match /episodic/
+    assert_match(/episodic/, podcast.itunes_type)
     podcast.update_attributes(serial_order: true)
-    podcast.itunes_type.must_match /serial/
+    assert_match(/serial/, podcast.itunes_type)
   end
 
   it 'updates last build date after update' do
     Timecop.freeze
     podcast.update_attributes(managing_editor: 'Brian Fernandez')
 
-    podcast.last_build_date.must_equal Time.now
+    assert_equal podcast.last_build_date, Time.now
 
     Timecop.return
   end
@@ -39,36 +39,36 @@ describe Podcast do
   it 'wont nil out podcast published_at' do
     ep = podcast.episodes.create(published_at: 1.week.ago)
     pub_at = podcast.reload.published_at
-    podcast.published_at.wont_be_nil
+    refute_nil podcast.published_at
 
     ep.update_attributes(published_at: 1.week.from_now)
     podcast.reload
-    podcast.published_at.wont_be_nil
-    podcast.published_at.wont_equal ep.published_at
-    podcast.published_at.wont_equal pub_at
+    refute_nil podcast.published_at
+    refute_equal podcast.published_at, ep.published_at
+    refute_equal podcast.published_at, pub_at
 
     ep.destroy
-    podcast.reload.published_at.wont_be_nil
+    refute_nil podcast.reload.published_at
   end
 
   it 'sets the itunes block to false by default' do
-    podcast.wont_be :itunes_block
+    refute podcast.itunes_block
     podcast.update_attribute(:itunes_block, true)
-    podcast.must_be :itunes_block
+    assert podcast.itunes_block
   end
 
   describe 'publishing' do
 
     it 'creates a publish job on publish' do
       podcast.stub(:create_publish_job, "published!") do
-        podcast.publish!.must_equal 'published!'
+        assert_equal podcast.publish!, 'published!'
       end
     end
 
     it 'wont create a publish job when podcast is locked' do
       podcast.stub(:create_publish_job, 'published!') do
         podcast.locked = true
-        podcast.publish!.wont_equal 'published!'
+        refute_equal podcast.publish!, 'published!'
       end
     end
   end
@@ -77,10 +77,10 @@ describe Podcast do
     let(:episodes) { create_list(:episode, 10, podcast: podcast).reverse }
 
     it 'returns only limited number of episodes' do
-      episodes.count.must_equal podcast.episodes.count
-      podcast.feed_episodes.count.must_equal 10
+      assert_equal episodes.count, podcast.episodes.count
+      assert_equal podcast.feed_episodes.count, 10
       podcast.display_episodes_count = 5
-      podcast.feed_episodes.count.must_equal 5
+      assert_equal podcast.feed_episodes.count, 5
     end
   end
 end

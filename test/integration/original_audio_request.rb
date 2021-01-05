@@ -32,6 +32,6 @@ describe 'Get Original Audio Integration Test' do
     original = story.audio[0].original(expiration: 6000).get_response
     location = original.headers['location']
 
-    location.wont_be_nil
+    refute_nil(location)
   end
 end

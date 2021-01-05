@@ -7,23 +7,23 @@ describe MediaResource do
   it 'initializes attributes' do
     mr = MediaResource.new(episode: episode)
     mr.validate
-    mr.guid.wont_be_nil
-    mr.url.wont_be_nil
-    mr.status.must_equal 'created'
+    refute_nil mr.guid
+    refute_nil mr.url
+    assert_equal mr.status, 'created'
   end
 
   it 'answers if it is processed' do
-    media_resource.wont_be :complete?
+    refute media_resource.complete?
     media_resource.complete!
-    media_resource.must_be :complete?
+    assert media_resource.complete?
   end
 
   it 'sets url based on href' do
     mr = MediaResource.new(episode: episode)
-    mr.href.must_be_nil
+    assert_nil mr.href
     mr.href = 'http://test.prxu.org/somefile.mp3'
-    mr.href.must_equal 'http://test.prxu.org/somefile.mp3'
-    mr.original_url.must_equal 'http://test.prxu.org/somefile.mp3'
+    assert_equal mr.href, 'http://test.prxu.org/somefile.mp3'
+    assert_equal mr.original_url, 'http://test.prxu.org/somefile.mp3'
   end
 
   it 'resets processing when href changes' do
@@ -35,13 +35,13 @@ describe MediaResource do
     mr.task = Task.new
 
     mr.href = 'http://test.prxu.org/somefile.mp3'
-    mr.href.must_equal 'http://test.prxu.org/somefile.mp3'
-    mr.original_url.must_equal 'http://test.prxu.org/somefile.mp3'
-    mr.wont_be :complete?
-    mr.task.must_be_nil
+    assert_equal mr.href, 'http://test.prxu.org/somefile.mp3'
+    assert_equal mr.original_url, 'http://test.prxu.org/somefile.mp3'
+    refute mr.complete?
+    assert_nil mr.task
   end
 
   it 'provides audio url based on guid' do
-    media_resource.media_url.must_match /https:\/\/f.prxu.org\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/
+    assert_match(/https:\/\/f.prxu.org\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/, media_resource.media_url)
   end
 end

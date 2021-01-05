@@ -26,7 +26,7 @@ describe Api::PodcastsController do
     end
 
     it 'should redirect for authorized request of unpublished resource' do
-      podcast_redirect.id.wont_be_nil
+      refute_nil podcast_redirect.id
       get(:show, { api_version: 'v1', format: 'json', id: podcast_redirect.id } )
       assert_response :redirect
     end
@@ -40,12 +40,12 @@ describe Api::PodcastsController do
       assert_response :success
       id = JSON.parse(response.body)['id']
       new_podcast = Podcast.find(id)
-      new_podcast.itunes_categories.first.name.must_equal 'Arts'
+      assert_equal new_podcast.itunes_categories.first.name, 'Arts'
     end
 
     it 'can update a podcast' do
       pua = podcast.updated_at
-      podcast.itunes_categories.size.must_be :>, 0
+      assert_operator podcast.itunes_categories.size, :>, 0
       update_hash = { itunesCategories: [] }
 
       @controller.stub(:publish, true) do
@@ -55,8 +55,8 @@ describe Api::PodcastsController do
       end
       assert_response :success
 
-      podcast.reload.updated_at.must_be :>, pua
-      podcast.itunes_categories.size.must_equal 0
+      assert_operator podcast.reload.updated_at, :>, pua
+      assert_equal podcast.itunes_categories.size, 0
     end
 
     it 'cannot delete a podcast with a member token' do
@@ -90,16 +90,16 @@ describe Api::PodcastsController do
         end
       end
       assert_response :success
-      podcast.reload.updated_at.must_be :>, pua
+      assert_operator podcast.reload.updated_at, :>, pua
       res = JSON.parse(response.body)
-      res['published_url'].wont_equal 'this is read only'
-      res['title'].must_equal 'new title'
+      refute_equal res['published_url'], 'this is read only'
+      assert_equal res['title'], 'new title'
     end
 
     it 'rejects update for unauthorizd token' do
       @controller.prx_auth_token = limited_token
       pua = podcast.updated_at
-      podcast.itunes_categories.size.must_be :>, 0
+      assert_operator podcast.itunes_categories.size, :>, 0
       update_hash = { itunesCategories: [] }
 
       @controller.stub(:publish, true) do
@@ -121,33 +121,33 @@ describe Api::PodcastsController do
   end
 
   it 'should return resource gone for deleted resource' do
-    podcast_deleted.id.wont_be_nil
+    refute_nil podcast_deleted.id
     get(:show, { api_version: 'v1', format: 'json', id: podcast_deleted.id } )
     assert_response 410
   end
 
   it 'should list' do
-    podcast_deleted.id.wont_be_nil
-    podcast.id.wont_be_nil
+    refute_nil podcast_deleted.id
+    refute_nil podcast.id
     get(:index, { api_version: 'v1', format: 'json' } )
     assert_response :success
     ids = JSON.parse(response.body)['_embedded']['prx:items'].map { |p| p['id'] }
-    ids.wont_include(podcast_deleted.id)
+    refute_includes ids, podcast_deleted.id
   end
 
   it 'should list podcasts for an account' do
-    podcast.id.wont_be_nil
+    refute_nil podcast.id
     get(:index, { api_version: 'v1', format: 'json', prx_account_uri: "/api/v1/accounts/#{account_id}" } )
     assert_response :success
     podcasts = JSON.parse(response.body)['_embedded']['prx:items']
-    podcasts.count.must_equal 1
+    assert_equal podcasts.count, 1
   end
 
   it 'should not list podcasts for a different account' do
-    podcast.id.wont_be_nil
+    refute_nil podcast.id
     get(:index, { api_version: 'v1', format: 'json', prx_account_uri: "/api/v1/accounts/#{account_id}99" } )
     assert_response :success
     podcasts = JSON.parse(response.body)['_embedded']['prx:items']
-    podcasts.count.must_equal 0
+    assert_equal podcasts.count, 0
   end
 end

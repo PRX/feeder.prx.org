@@ -10,37 +10,37 @@ describe PodcastsController do
     @podcast.update_attribute(:locked, true)
     get :show, id: @podcast.id, format: 'rss'
 
-    response.headers['Location'].must_equal 'https://f.prxu.org/jjgo/feed-rss.xml'
-    response.status.to_i.must_equal 302
+    assert_equal response.headers['Location'], 'https://f.prxu.org/jjgo/feed-rss.xml'
+    assert_equal response.status.to_i, 302
   end
 
   it 'does not redirect if the podcast is locked but param unlock' do
     @podcast.update_attribute(:locked, true)
     get :show, id: @podcast.id, format: 'rss', unlock: true
 
-    response.status.to_i.must_equal 200
+    assert_equal response.status.to_i, 200
   end
 
   it 'returns a fresh version of the podcast when it has been updated' do
     @request.headers["HTTP_IF_MODIFIED_SINCE"] = 1.day.ago.strftime('%a, %d %b %Y %H:%M:%S %Z')
     get :show, id: @podcast.id, format: 'rss'
 
-    response.status.to_i.must_equal 200
+    assert_equal response.status.to_i, 200
   end
 
   it 'returns 304 if the resource has not been updated' do
     @request.headers["HTTP_IF_MODIFIED_SINCE"] = Time.now.strftime('%a, %d %b %Y %H:%M:%S %Z')
     get :show, id: @podcast.id, format: 'rss'
 
-    response.status.to_i.must_equal 304
+    assert_equal response.status.to_i, 304
   end
 
   it 'rss includes itunes block yes when podcast itunes_block true' do
     get :show, id: @podcast.id, format: 'rss'
-    response.body.wont_match /itunes:block/
+    refute_match(/itunes:block/, response.body)
 
     @podcast.update_attribute(:itunes_block, true)
     get :show, id: @podcast.id, format: 'rss'
-    response.body.must_match /itunes:block>Yes/
+    assert_match(/itunes:block>Yes/, response.body)
   end
 end

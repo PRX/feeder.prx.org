@@ -7,47 +7,47 @@ describe Api::PodcastRepresenter do
   let(:json) { JSON.parse(representer.to_json) }
 
   it 'includes basic properties' do
-    json['path'].must_equal 'jjgo'
-    json['prxUri'].must_match /\/api\/v1\/series\//
+    assert_equal json['path'], 'jjgo'
+    assert_match(/\/api\/v1\/series\//, json['prxUri'])
   end
 
   it 'includes itunes categories' do
-    json['itunesCategories'].wont_be_nil
-    json['itunesCategories'].first['name'].must_equal 'Leisure'
+    refute_nil json['itunesCategories']
+    assert_equal json['itunesCategories'].first['name'], 'Leisure'
   end
 
   it 'includes owner' do
-    json['owner']['name'].must_equal 'Jesse Thorn'
-    json['owner']['email'].must_equal 'jesse@maximumfun.org'
+    assert_equal json['owner']['name'], 'Jesse Thorn'
+    assert_equal json['owner']['email'], 'jesse@maximumfun.org'
   end
 
   it 'includes keywords' do
-    json['keywords'].must_include 'laffs'
+    assert_includes json['keywords'], 'laffs'
   end
 
   it 'includes categories' do
-    json['categories'].must_include 'Humor'
+    assert_includes json['categories'], 'Humor'
   end
 
   it 'includes itunes image' do
-    json['itunesImage']['url'].must_equal 'test/fixtures/valid_series_image.jpg'
+    assert_equal json['itunesImage']['url'], 'test/fixtures/valid_series_image.jpg'
   end
 
   it 'includes feed image' do
-    json['feedImage']['url'].must_equal 'test/fixtures/valid_feed_image.png'
+    assert_equal json['feedImage']['url'], 'test/fixtures/valid_feed_image.png'
   end
 
   it 'includes serial v. episodic ordering' do
-    json['serialOrder'].must_equal false
+    assert_equal json['serialOrder'], false
   end
 
   it 'includes itunes block' do
-    json['itunesBlock'].must_equal false
+    assert_equal json['itunesBlock'], false
   end
 
   it 'has links' do
-    json['_links']['self']['href'].must_equal "/api/v1/podcasts/#{podcast.id}"
-    json['_links']['prx:series']['href'].must_equal "https://cms.prx.org#{podcast.prx_uri}"
-    json['_links']['prx:account']['href'].must_equal "https://cms.prx.org#{podcast.prx_account_uri}"
+    assert_equal json['_links']['self']['href'], "/api/v1/podcasts/#{podcast.id}"
+    assert_equal json['_links']['prx:series']['href'], "https://cms.prx.org#{podcast.prx_uri}"
+    assert_equal json['_links']['prx:account']['href'], "https://cms.prx.org#{podcast.prx_account_uri}"
   end
 end

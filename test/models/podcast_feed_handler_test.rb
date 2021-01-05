@@ -15,35 +15,35 @@ describe PodcastFeedHandler do
   it 'create_from_feed' do
     podcast = PodcastFeedHandler.create_from_feed!(feed)
 
-    podcast.id.wont_be_nil
-    podcast.created_at.wont_be_nil
-    podcast.updated_at.wont_be_nil
-    podcast.prx_uri.must_be_nil
-    podcast.deleted_at.must_be_nil
-    podcast.title.must_equal 'Serial'
-    podcast.source_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml'
-    podcast.link.must_equal 'http://serialpodcast.org'
-    podcast.author_name.must_equal 'This American Life'
-    podcast.owner_name.must_be_nil
-    podcast.owner_email.must_equal 'rich@strangebirdlabs.com'
-    podcast.managing_editor_name.must_equal 'This American Life'
-    podcast.managing_editor_email.must_equal 'chad@thislife.org'
-    podcast.new_feed_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/newserialpodcast.xml'
+    refute_nil podcast.id
+    refute_nil podcast.created_at
+    refute_nil podcast.updated_at
+    assert_nil podcast.prx_uri
+    assert_nil podcast.deleted_at
+    assert_equal podcast.title, 'Serial'
+    assert_equal podcast.source_url, 'https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml'
+    assert_equal podcast.link, 'http://serialpodcast.org'
+    assert_equal podcast.author_name, 'This American Life'
+    assert_nil podcast.owner_name
+    assert_equal podcast.owner_email, 'rich@strangebirdlabs.com'
+    assert_equal podcast.managing_editor_name, 'This American Life'
+    assert_equal podcast.managing_editor_email, 'chad@thislife.org'
+    assert_equal podcast.new_feed_url, 'https://s3.amazonaws.com/prx-dovetail/testserial/newserialpodcast.xml'
   end
 
   it 'update_from_feed' do
     podcast = Podcast.new
     PodcastFeedHandler.update_from_feed!(podcast, feed)
 
-    podcast.title.must_equal 'Serial'
-    podcast.source_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml'
-    podcast.link.must_equal 'http://serialpodcast.org'
-    podcast.author_name.must_equal 'This American Life'
-    podcast.owner_name.must_be_nil
-    podcast.owner_email.must_equal 'rich@strangebirdlabs.com'
-    podcast.managing_editor_name.must_equal 'This American Life'
-    podcast.managing_editor_email.must_equal 'chad@thislife.org'
-    podcast.new_feed_url.must_equal 'https://s3.amazonaws.com/prx-dovetail/testserial/newserialpodcast.xml'
+    assert_equal podcast.title, 'Serial'
+    assert_equal podcast.source_url, 'https://s3.amazonaws.com/prx-dovetail/testserial/serialpodcast.xml'
+    assert_equal podcast.link, 'http://serialpodcast.org'
+    assert_equal podcast.author_name, 'This American Life'
+    assert_nil podcast.owner_name
+    assert_equal podcast.owner_email, 'rich@strangebirdlabs.com'
+    assert_equal podcast.managing_editor_name, 'This American Life'
+    assert_equal podcast.managing_editor_email, 'chad@thislife.org'
+    assert_equal podcast.new_feed_url, 'https://s3.amazonaws.com/prx-dovetail/testserial/newserialpodcast.xml'
   end
 
   it 'update_images' do
@@ -59,8 +59,8 @@ describe PodcastFeedHandler do
 
     handler.update_images
 
-    handler.podcast.feed_images.first.original_url.must_equal 'http://prx.org/thumb.png'
-    handler.podcast.itunes_images.first.original_url.must_equal 'http://prx.org/image.png'
+    assert_equal handler.podcast.feed_images.first.original_url, 'http://prx.org/thumb.png'
+    assert_equal handler.podcast.itunes_images.first.original_url, 'http://prx.org/image.png'
   end
 
   it 'update_categories' do
@@ -73,8 +73,8 @@ describe PodcastFeedHandler do
 
     handler.update_categories
 
-    podcast.itunes_categories.size.must_equal 1
-    podcast.itunes_categories.first.name.must_equal "Science"
-    podcast.categories.first.must_equal "Fictional"
+    assert_equal podcast.itunes_categories.size, 1
+    assert_equal podcast.itunes_categories.first.name, "Science"
+    assert_equal podcast.categories.first, "Fictional"
   end
 end
