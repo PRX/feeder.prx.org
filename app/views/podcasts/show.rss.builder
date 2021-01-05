@@ -94,7 +94,11 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.itunes :duration, ep.duration.to_i.to_time_summary if ep.media?
         xml.itunes :block, 'Yes' if ep.itunes_block
 
-        if @podcast.display_full_episode?(index)
+        @podcast.restrictions.try(:each) do |r|
+          xml.media :restriction, r['values'].join(' '), type: r['type'], relationship: r['relationship']
+        end
+
+        if @podcast.display_full_episodes_count.to_i <= 0 || index < @podcast.display_full_episodes_count.to_i
 
           has_au_email = first_nonblank('author_email', [ep, @podcast])
           xml.author(full_contact('author', has_au_email)) if full_contact('author', has_au_email)
@@ -115,19 +119,12 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
           xml.itunes :keywords, ep.keywords.join(',') unless ep.keywords.blank?
           xml.itunes(:isClosedCaptioned, 'Yes') if ep.is_closed_captioned
 
-          xml.content(:encoded) { xml.cdata!(ep.content) } unless ep.content.blank?
-        end
+          xml.media(:content,
+            fileSize: ep.file_size,
+            type: ep.content_type,
+            url: ep.media_url) if ep.media?
 
-        if ep.media?
-          if @podcast.restrictions.present?
-            xml.media(:content, fileSize: ep.file_size, type: ep.content_type, url: ep.media_url) do
-              @podcast.restrictions.each do |r|
-                xml.media :restriction, r['values'].join(' '), type: r['type'], relationship: r['relationship']
-              end
-            end
-          elsif @podcast.display_full_episode?(index)
-            xml.media(:content, fileSize: ep.file_size, type: ep.content_type, url: ep.media_url)
-          end
+          xml.content(:encoded) { xml.cdata!(ep.content) } unless ep.content.blank?
         end
       end
     end
