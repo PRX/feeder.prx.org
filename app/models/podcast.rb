@@ -5,6 +5,7 @@ class Podcast < BaseModel
 
   serialize :categories, JSON
   serialize :keywords, JSON
+  serialize :restrictions, JSON
 
   has_one :itunes_image, autosave: true, dependent: :destroy
   has_one :feed_image, autosave: true, dependent: :destroy
@@ -25,6 +26,7 @@ class Podcast < BaseModel
 
   validates_associated :itunes_image, :feed_image
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
+  validates :restrictions, media_restrictions: true
 
   acts_as_paranoid
 

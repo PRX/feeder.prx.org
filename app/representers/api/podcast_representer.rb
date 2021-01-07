@@ -49,6 +49,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
 
   collection :keywords
   collection :categories
+  collection :restrictions
 
   collection :itunes_categories, decorator: Api::ITunesCategoryRepresenter, class: ITunesCategory
   property :itunes_image, decorator: Api::ImageRepresenter, class: ITunesImage
