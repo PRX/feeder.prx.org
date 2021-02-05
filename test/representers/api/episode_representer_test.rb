@@ -29,12 +29,6 @@ describe Api::EpisodeRepresenter do
     assert_equal json['explicitContent'], true
   end
 
-  it 'nil explicit_content left out of the json' do
-    episode.explicit = nil
-    episode.podcast.explicit = nil
-    assert_equal json.key?('explicitContent'), false
-  end
-
   it 'indicates if the episode media is not ready' do
     episode.enclosure.update_attributes(status: 'error')
     assert_equal json['isFeedReady'], false
