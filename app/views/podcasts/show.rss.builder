@@ -87,6 +87,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
         xml.itunes :title, ep.clean_title unless ep.clean_title.blank?
         xml.itunes :subtitle, ep.subtitle unless ep.subtitle.blank?
+        # NOTE: you'll only get a tag if this was explicitly set (pun intended)
         xml.itunes :explicit, ep.explicit unless ep.explicit.blank?
         xml.itunes :episodeType, ep.itunes_type unless ep.itunes_type.blank?
         xml.itunes :season, ep.season if ep.season?
