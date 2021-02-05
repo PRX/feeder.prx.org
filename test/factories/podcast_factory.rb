@@ -17,7 +17,7 @@ FactoryGirl.define do
     owner_name 'Jesse Thorn'
     owner_email 'jesse@maximumfun.org'
     categories ['Humor', 'Entertainment']
-    explicit 'yes'
+    explicit 'true'
     subtitle 'Goofy laughsters'
     summary 'Public radio host Jesse Thorn and @midnight writer Jordan Morris goof around'
     keywords ['laffs', 'comedy', 'good-times']

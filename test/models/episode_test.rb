@@ -200,9 +200,6 @@ describe Episode do
       podcast.explicit = val
       assert_equal episode.explicit_content, false
     end
-
-    podcast.explicit = nil
-    assert_nil episode.explicit_content
   end
 
   it 'returns explicit_content overriden by the episode' do

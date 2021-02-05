@@ -27,6 +27,18 @@ class Podcast < BaseModel
   validates_associated :itunes_image, :feed_image
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
+  validates :explicit, inclusion: { in: %w(true false) }, allow_nil: false
+
+  # these keep changing - so just translate to the current accepted values
+  EXPLICIT_ALIASES = {
+    '' => 'false',
+    'no' => 'false',
+    'clean' => 'false',
+    false => 'false',
+    'yes' => 'true',
+    'explicit' => 'true',
+    true => 'true'
+  }.freeze
 
   acts_as_paranoid
 
@@ -41,6 +53,11 @@ class Podcast < BaseModel
 
   def set_defaults
     self.enclosure_template ||= enclosure_template_default
+    self.explicit ||= 'false'
+  end
+
+  def explicit=(value)
+    super(EXPLICIT_ALIASES[value] || value)
   end
 
   def enclosure_template_default
