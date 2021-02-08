@@ -155,9 +155,9 @@ describe EpisodeImport do
     end
 
     it 'can interpret explicit values' do
-      %w(Yes TRUE Explicit).each { |x| episode_import.explicit(x).must_equal 'explicit' }
-      %w(NO False Clean).each { |x| episode_import.explicit(x).must_equal 'clean' }
-      %w(UnClean y N 1 0).each { |x| episode_import.explicit(x).must_equal x.downcase }
+      %w(Yes TRUE Explicit).each { |x| episode_import.explicit(x).must_equal 'true' }
+      %w(NO False Clean).each { |x| episode_import.explicit(x).must_equal 'false' }
+      %w(UnClean y N 1 0).each { |x| episode_import.explicit(x).must_equal nil }
     end
   end
 end

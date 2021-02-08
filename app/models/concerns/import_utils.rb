@@ -33,15 +33,17 @@ module ImportUtils
     clean_string(truncated)
   end
 
-  def explicit(str)
-    return nil if str.blank?
-    explicit = clean_string(str).downcase
-    if %w(true yes).include?(explicit)
-      explicit = 'explicit'
-    elsif %w(no false).include?(explicit)
-      explicit = 'clean'
+  # only 'true'/'false' now allowed
+  def explicit(str, default = nil)
+    explicit = clean_string(str).try(:downcase)
+
+    if %w(true yes explicit).include?(explicit)
+      'true'
+    elsif %w(false no clean).include?(explicit)
+      'false'
+    else
+      default
     end
-    explicit
   end
 
   def person(arg)
