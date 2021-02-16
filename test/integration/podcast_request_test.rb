@@ -32,7 +32,7 @@ describe 'RSS feed Integration Test' do
     assert_equal @feed.css('lastBuildDate').text, @podcast.last_build_date.utc.rfc2822
     assert_equal @feed.at_css('atom|link').attributes['href'].value, 'http://feeds.feedburner.com/thornmorris'
     assert_equal @feed.at_css('itunes|author').text, @podcast.author_name
-    assert_equal @feed.at_css('itunes|explicit').text, 'yes'
+    assert_equal @feed.at_css('itunes|explicit').text, 'true'
     assert_equal @feed.at_css('itunes|new-feed-url').text, 'http://feeds.feedburner.com/newthornmorris'
   end
 

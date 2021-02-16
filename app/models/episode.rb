@@ -41,6 +41,7 @@ class Episode < BaseModel
   validates :itunes_type, inclusion: { in: %w(full trailer bonus) }
   validates :episode_number, numericality: { only_integer: true }, allow_nil: true
   validates :season_number, numericality: { only_integer: true }, allow_nil: true
+  validates :explicit, inclusion: { in: %w(true false) }, allow_nil: true
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
@@ -115,16 +116,12 @@ class Episode < BaseModel
     self[:guid]
   end
 
+  def explicit=(value)
+    super(Podcast::EXPLICIT_ALIASES[value] || value)
+  end
+
   def explicit_content
-    e = (explicit.blank? && podcast) ? podcast.explicit : explicit
-    e = e.to_s.downcase.strip
-    if ["clean", "no", "false", "f"].include?(e)
-      false
-    elsif ["explicit", "yes", "true", "t"].include?(e)
-      true
-    else
-      nil
-    end
+    (explicit || podcast&.explicit) == 'true'
   end
 
   def item_guid
