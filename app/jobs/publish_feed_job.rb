@@ -68,12 +68,12 @@ class PublishFeedJob < ApplicationJob
 
   def client
     if ENV['AWS_ACCESS_KEY_ID'].present?
-      Aws::S3::Client.new(
+      s3 = Aws::S3::Client.new(
         credentials: Aws::Credentials.new(ENV['AWS_ACCESS_KEY_ID'], ENV['AWS_SECRET_ACCESS_KEY']),
         region: ENV['AWS_REGION']
       )
     else
-      Aws::S3::Client.new
+      s3 = Aws::S3::Client.new
     end
   end
 end
