@@ -84,10 +84,24 @@ describe Api::EpisodeRepresenter do
     assert_equal json['_links']['enclosure']['href'], episode.media_url
   end
 
+  it 'has a podcast-feed' do
+    assert_equal json['_links']['prx:podcast-feed']['href'],
+                 episode.podcast_feed_url
+    assert_equal json['_links']['prx:podcast-feed']['type'],
+                 'application/rss+xml'
+  end
+
+  it 'has a default podcast-feed link when no podcast url set' do
+    episode.podcast.url = nil
+    assert_equal json['_links']['prx:podcast-feed']['href'],
+                 episode.podcast.published_url
+  end
+
   it 'can represent a sad, podcast-less episode' do
     episode.podcast_id = nil
     assert_equal json['guid'], "prx__#{episode.guid}"
     assert_match("//#{episode.guid}/", json['_links']['enclosure']['href'])
     assert_nil json['_links']['prx:podcast']
+    assert_nil json['_links']['prx:podcast-feed']
   end
 end
