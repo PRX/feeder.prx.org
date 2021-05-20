@@ -211,6 +211,10 @@ class Episode < BaseModel
     images.each { |i| i.copy_media(force) }
   end
 
+  def podcast_feed_url
+    podcast&.url || podcast&.published_url
+  end
+
   def base_published_url
     "https://#{feeder_cdn_host}/#{path}"
   end
