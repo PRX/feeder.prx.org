@@ -16,38 +16,35 @@ class Episode < BaseModel
   belongs_to :podcast, -> { with_deleted }, touch: true
 
   has_many :images,
-    -> { order('created_at DESC') },
-    class_name: 'EpisodeImage',
-    autosave: true,
-    dependent: :destroy
+           -> { order('created_at DESC') },
+           class_name: 'EpisodeImage', autosave: true, dependent: :destroy
 
   has_many :all_contents,
-    -> { order('position ASC, created_at DESC') },
-    class_name: 'Content',
-    autosave: true,
-    dependent: :destroy
+           -> { order('position ASC, created_at DESC') },
+           class_name: 'Content', autosave: true, dependent: :destroy
 
   has_many :contents,
-    -> { order('position ASC, created_at DESC').complete },
-    autosave: true,
-    dependent: :destroy
+           -> { order('position ASC, created_at DESC').complete },
+           autosave: true, dependent: :destroy
 
   has_many :enclosures,
-    -> { order('created_at DESC') },
-    autosave: true,
-    dependent: :destroy
+           -> { order('created_at DESC') },
+           autosave: true, dependent: :destroy
 
   validates :podcast_id, :guid, presence: true
-  validates :itunes_type, inclusion: { in: %w(full trailer bonus) }
-  validates :episode_number, numericality: { only_integer: true }, allow_nil: true
-  validates :season_number, numericality: { only_integer: true }, allow_nil: true
-  validates :explicit, inclusion: { in: %w(true false) }, allow_nil: true
+  validates :itunes_type, inclusion: { in: %w[full trailer bonus] }
+  validates :episode_number,
+            numericality: { only_integer: true }, allow_nil: true
+  validates :season_number,
+            numericality: { only_integer: true }, allow_nil: true
+  validates :explicit, inclusion: { in: %w[true false] }, allow_nil: true
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
-  after_save :publish_updated, if: -> (e) { e.published_at_changed? }
+  after_save :publish_updated, if: ->(e) { e.published_at_changed? }
 
-  scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
+  scope :published,
+        -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -86,11 +83,7 @@ class Episode < BaseModel
   end
 
   def was_draft?
-    if published_at_changed?
-      published_at_was.nil?
-    else
-      draft?
-    end
+    published_at_changed? ? published_at_was.nil? : draft?
   end
 
   def author=(a)
@@ -146,7 +139,12 @@ class Episode < BaseModel
 
   def media_url
     media = first_media_resource
-    enclosure_url(media.media_url_for_base(base_published_url), media.original_url) if media
+    if media
+      enclosure_url(
+        media.media_url_for_base(base_published_url),
+        media.original_url
+      )
+    end
   end
 
   def content_type
@@ -179,7 +177,7 @@ class Episode < BaseModel
 
   def enclosure_template_expansions(base_url, original_url)
     original = Addressable::URI.parse(original_url || '').to_hash
-    original = Hash[original.map { |k,v| ["original_#{k}".to_sym, v] }]
+    original = Hash[original.map { |k, v| ["original_#{k}".to_sym, v] }]
     base = Addressable::URI.parse(base_url || '').to_hash
     {
       original_filename: File.basename(original[:original_path].to_s),
@@ -210,7 +208,7 @@ class Episode < BaseModel
   def copy_media(force = false)
     enclosures.each { |e| e.copy_media(force) }
     all_contents.each { |c| c.copy_media(force) }
-    images.each{ |i| i.copy_media(force) }
+    images.each { |i| i.copy_media(force) }
   end
 
   def base_published_url
@@ -230,10 +228,10 @@ class Episode < BaseModel
   end
 
   def media_status
-    states = all_media_files.map { |f| f.status }.uniq
-    if !(['started', 'created', 'processing', 'retrying'] & states).empty?
+    states = all_media_files.map(&:status).uniq
+    if !(%w[started created processing retrying] & states).empty?
       'processing'
-    elsif states.any?{ |s| s == 'error' }
+    elsif states.any? { |s| s == 'error' }
       'error'
     elsif media_ready?
       'complete'
@@ -244,11 +242,11 @@ class Episode < BaseModel
     # if this episode has enclosores, media is ready if there is a complete one
     if !enclosures.blank?
       !!enclosure
-    # if this episode has contents, ready when each position is ready
+      # if this episode has contents, ready when each position is ready
     elsif !all_contents.blank?
-      max_pos = all_contents.map { |c| c.position }.max
+      max_pos = all_contents.map(&:position).max
       contents.size == max_pos
-    # if this episode has no audio, the media can't be ready, and `media?` will be false
+      # if this episode has no audio, the media can't be ready, and `media?` will be false
     else
       false
     end
@@ -272,16 +270,12 @@ class Episode < BaseModel
 
   # used in the API, both read and write
   def media_files
-    if !contents.blank?
-      contents
-    else
-      Array(enclosure)
-    end
+    !contents.blank? ? contents : Array(enclosure)
   end
 
   # API updates for media= ... just append new files and reprocess
   def media_files=(files)
-    ignore = [:id, :type, :episode_id, :guid, :position, :status, :created_at, :updated_at]
+    ignore = %i[id type episode_id guid position status created_at updated_at]
     files.each_with_index do |f, index|
       file = f.attributes.with_indifferent_access.except(*ignore)
       file[:position] = index + 1
@@ -297,27 +291,19 @@ class Episode < BaseModel
     return nil if url.blank?
     content_file = URI.parse(url || '').path.split('/')[-2, 2].join('/')
     content_file = "/#{content_file}" unless content_file[0] == '/'
-    all_contents.
-      where(position: pos).
-      where('original_url like ?', "%#{content_file}").
-      order(created_at: :desc).
-      first
+    all_contents.where(position: pos).where(
+      'original_url like ?',
+      "%#{content_file}"
+    ).order(created_at: :desc).first
   end
 
   def find_existing_image(url)
     return nil if url.blank?
-    images.
-      where(original_url: url).
-      order(created_at: :desc).
-      first
+    images.where(original_url: url).order(created_at: :desc).first
   end
 
   def all_media_files
-    if !all_contents.blank?
-      all_contents
-    else
-      Array(enclosures)
-    end
+    !all_contents.blank? ? all_contents : Array(enclosures)
   end
 
   def audio_files
@@ -327,7 +313,7 @@ class Episode < BaseModel
   def set_external_keyword
     return unless !published_at.nil? && keyword_xid.nil?
     identifiers = []
-    [:published_at, :guid].each do |attr|
+    %i[published_at guid].each do |attr|
       identifiers << sanitize_keyword(self.send(attr), 10)
     end
     identifiers << sanitize_keyword(title || 'undefined', 20)
@@ -335,12 +321,10 @@ class Episode < BaseModel
   end
 
   def sanitize_keyword(kw, length)
-    kw.to_s
-      .downcase
-      .gsub(/[^ a-z0-9_-]/,'')
-      .gsub(/\s+/,' ')
-      .strip
-      .slice(0, length)
+    kw.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip.slice(
+      0,
+      length
+    )
   end
 
   def sanitize_text
