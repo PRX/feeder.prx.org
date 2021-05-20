@@ -89,4 +89,10 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
       URI.join(cms_root, represented.prx_audio_version_uri).to_s
     end
   end
+
+  link :podcast_feed do
+    if represented.podcast_feed_url
+      { href: represented.podcast_feed_url, type: 'application/rss+xml' }
+    end
+  end
 end
