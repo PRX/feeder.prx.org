@@ -1,4 +1,6 @@
 class Api::Auth::PodcastRepresenter < Api::PodcastRepresenter
+  property :deleted_at, writeable: false
+
   def self_url(podcast)
     api_authorization_podcast_path(podcast)
   end

@@ -60,12 +60,14 @@ describe Api::Auth::EpisodesController do
     refute_nil episode.id
     refute_nil episode_unpublished.id
     assert_nil episode_unpublished.published_at
+    refute_nil episode_deleted.id
     get(:index, { api_version: 'v1', format: 'json' } )
     assert_response :success
     list = JSON.parse(response.body)
     ids = list.dig('_embedded', 'prx:items').map{ |i| i['id'] }
     assert_includes ids, episode.guid
     assert_includes ids, episode_unpublished.guid
+    refute_includes ids, episode_deleted.guid
   end
 
   it 'should list for podcast' do
@@ -142,8 +144,8 @@ describe Api::Auth::EpisodesController do
     let (:other_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id + 1}", path: 'foo') }
     let (:other_unpublished_episode) { create(:episode, podcast: other_podcast, published_at: nil) }
 
-    it 'includes all episodes (including unpublished)' do
-      guids = [episode_unpublished.guid, other_unpublished_episode.guid]
+    it 'includes all episodes (including unpublished and deleted)' do
+      guids = [episode_unpublished.guid, other_unpublished_episode.guid, episode_deleted.guid]
       get(:index, { api_version: 'v1', format: 'json' } )
       assert_response :success
       list = JSON.parse(response.body)
