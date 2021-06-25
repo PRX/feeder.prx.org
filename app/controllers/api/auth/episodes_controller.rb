@@ -26,6 +26,6 @@ class Api::Auth::EpisodesController < Api::EpisodesController
   end
 
   def resources_base
-    @episodes ||= authorization.token_auth_episodes.merge(super)
+    @episodes ||= super.merge(authorization.token_auth_episodes)
   end
 end

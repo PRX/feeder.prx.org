@@ -36,7 +36,7 @@ class Authorization
 
   def token_auth_podcasts
     if token.globally_authorized?('read-private')
-      Podcast.all
+      Podcast.with_deleted.all
     else
       Podcast.where(prx_account_uri: token_auth_account_uris)
     end
@@ -45,7 +45,7 @@ class Authorization
   # avoid joining podcasts here, as it breaks a bunch of other queries
   def token_auth_episodes
     if token.globally_authorized?('read-private')
-      Episode.all
+      Episode.with_deleted.all
     else
       Episode.where(podcast_id: token_auth_podcasts.pluck(:id))
     end
