@@ -25,6 +25,10 @@ class Api::Auth::EpisodesController < Api::EpisodesController
     visible
   end
 
+  def sorted(res)
+    res.order('COALESCE(published_at, released_at) DESC NULLS LAST, id DESC')
+  end
+
   def resources_base
     @episodes ||= super.merge(authorization.token_auth_episodes)
   end

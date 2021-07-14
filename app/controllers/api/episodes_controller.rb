@@ -68,6 +68,10 @@ class Api::EpisodesController < Api::BaseController
     super.with_deleted
   end
 
+  def sorted(res)
+    res.order('published_at DESC, id DESC')
+  end
+
   def process_media
     resource.copy_media if resource
   end
