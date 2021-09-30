@@ -10,7 +10,7 @@ Shoryuken.on_start do
 end
 
 Shoryuken.default_worker_options =  {
-  'queue'                   => "#{Rails.env}_feeder_default",
+  'queue'                   => ENV['DEFAULT_JOB_QUEUE_NAME'] || "#{Rails.env}_feeder_default",
   'auto_delete'             => true,
   'auto_visibility_timeout' => true,
   'batch'                   => false,
