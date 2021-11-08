@@ -40,7 +40,7 @@ GEM
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     aes_key_wrap (1.0.1)
-    announce (0.2.3)
+    announce (0.3.0)
     arel (6.0.4)
     ast (2.3.0)
     aws-sdk (2.6.24)
@@ -355,7 +355,7 @@ PLATFORMS
 DEPENDENCIES
   actionpack-action_caching
   addressable
-  announce
+  announce (~> 0.3.0)
   aws-sdk
   countries
   coveralls

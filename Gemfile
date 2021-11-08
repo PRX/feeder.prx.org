@@ -32,7 +32,7 @@ gem 'roar-rails'
 # Use Shoryuken for processing SQS jobs
 gem 'shoryuken'
 # Use Announce for event subscriptions
-gem 'announce'
+gem 'announce', '~> 0.3.0'
 
 gem 'say_when', '~> 2.0'
 
