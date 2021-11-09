@@ -1,5 +1,3 @@
-require 'podcast'
-
 class PodcastFeedHandler
   FEED_ATTRS = %w( complete copyright description explicit keywords language
     subtitle summary title update_frequency update_period
