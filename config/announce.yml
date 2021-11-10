@@ -1,5 +1,4 @@
 app_name: feeder
-queue_name_prefix: <%= ENV['ANNOUNCE_RESOURCE_PREFIX'] || ENV['RAILS_ENV'] %>
 
 subscribe:
   story:
