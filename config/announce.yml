@@ -13,7 +13,8 @@ subscribe:
     - update
     - delete
 
-  feed_entry:
-    - create
-    - update
-    - delete
+  # TODO: crier be gone; remove feed entry handlers
+  # feed_entry:
+  #   - create
+  #   - update
+  #   - delete
