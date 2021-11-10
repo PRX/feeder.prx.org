@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 4.2.0'
+gem 'rails', '~> 4.2.11.3'
 gem 'rails-html-sanitizer', '~> 1.3.0'
 
 # JWS
@@ -32,7 +32,7 @@ gem 'roar-rails'
 # Use Shoryuken for processing SQS jobs
 gem 'shoryuken'
 # Use Announce for event subscriptions
-gem 'announce'
+gem 'announce', '~> 0.3.0'
 
 gem 'say_when', '~> 2.0'
 

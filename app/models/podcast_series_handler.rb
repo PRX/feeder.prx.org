@@ -1,5 +1,3 @@
-require 'podcast'
-
 class PodcastSeriesHandler
   include PRXAccess
 

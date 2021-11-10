@@ -30,7 +30,7 @@ module Feeder
     config.active_record.raise_in_transactional_callbacks = true
 
     config.active_job.queue_adapter = :shoryuken
-    config.active_job.queue_name_prefix = Rails.env
+    config.active_job.queue_name_prefix = ENV['ANNOUNCE_RESOURCE_PREFIX'] || ENV['RAILS_ENV']
     config.active_job.queue_name_delimiter = '_'
 
     config.assets.enabled = false

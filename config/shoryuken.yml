@@ -1,4 +1,4 @@
-<% env = ENV['RAILS_ENV'] || 'development' %>
+<% prefix = Rails.configuration.active_job.queue_name_prefix %>
 ---
 aws:
   access_key_id:     <%= ENV['AWS_ACCESS_KEY_ID'] %>
@@ -10,5 +10,5 @@ concurrency:         <%= ENV['WORKER_COUNT'] || 25 %>
 # The delay in seconds to pause a queue when it's empty. Default 0
 delay:               <%= ENV['WORKER_PAUSE'] || 30 %>
 queues:
-  - [<%= ENV['DEFAULT_JOB_QUEUE_NAME'] || "#{env}_feeder_default" %>, 2]
-  - [<%= ENV['FIXER_CALLBACK_QUEUE_NAME'] || "#{env}_feeder_fixer_callback" %>, 1]
+  - ["<%= prefix %>_feeder_default", 2]
+  - ["<%= prefix %>_feeder_fixer_callback" %>, 1]
