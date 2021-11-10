@@ -11,4 +11,4 @@ concurrency:         <%= ENV['WORKER_COUNT'] || 25 %>
 delay:               <%= ENV['WORKER_PAUSE'] || 30 %>
 queues:
   - ["<%= prefix %>_feeder_default", 2]
-  - ["<%= prefix %>_feeder_fixer_callback" %>, 1]
+  - ["<%= prefix %>_feeder_fixer_callback", 1]
