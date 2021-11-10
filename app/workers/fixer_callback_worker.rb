@@ -1,7 +1,7 @@
 class FixerCallbackWorker
   include Shoryuken::Worker
 
-  shoryuken_options queue: ENV['FIXER_CALLBACK_QUEUE_NAME'] || ENV['FIXER_CALLBACK_QUEUE'], auto_delete: true
+  shoryuken_options queue: "#{Rails.configuration.active_job.queue_name_prefix}_feeder_fixer_callback", auto_delete: true
 
   def perform(sqs_msg, job)
     Task.callback(job)

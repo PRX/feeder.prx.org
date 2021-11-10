@@ -11,9 +11,11 @@ describe Task do
   end
 
   it 'uses an sqs queue for callbacks' do
-    r, ENV['AWS_REGION'], ENV['FIXER_CALLBACK_QUEUE'], q = ENV['AWS_REGION'], 'us-east-1', nil, ENV['FIXER_CALLBACK_QUEUE']
-    assert_equal task.callback_queue, 'sqs://us-east-1/test_feeder_fixer_callback'
-    ENV['AWS_REGION'], ENV['FIXER_CALLBACK_QUEUE'] = r, q
+    initial_region = ENV['AWS_REGION']
+    ENV['AWS_REGION'] = 'us-east-1'
+    prefix = Rails.configuration.active_job.queue_name_prefix
+    assert_equal task.callback_queue, "sqs://us-east-1/#{prefix}_feeder_fixer_callback"
+    ENV['AWS_REGION'] = initial_region
   end
 
   it 'handles porter callbacks' do

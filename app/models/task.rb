@@ -56,7 +56,7 @@ class Task < BaseModel
   end
 
   def callback_queue
-    q = ENV['FIXER_CALLBACK_QUEUE'] || "#{ENV['RAILS_ENV']}_feeder_fixer_callback"
+    q = "#{Rails.configuration.active_job.queue_name_prefix}_feeder_fixer_callback"
     r = ENV['AWS_REGION'] || 'us-east-1'
     "sqs://#{r}/#{q}"
   end
