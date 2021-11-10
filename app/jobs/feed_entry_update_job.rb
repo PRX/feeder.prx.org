@@ -6,7 +6,7 @@ class FeedEntryUpdateJob < ApplicationJob
 
   queue_as :feeder_default
 
-  subscribe_to :feed_entry, [:create, :update, :delete]
+  # subscribe_to :feed_entry, [:create, :update, :delete]
 
   attr_accessor :body, :feed, :episode, :podcast, :entry
 
