@@ -1,4 +1,4 @@
-<% prefix = ENV['ANNOUNCE_RESOURCE_PREFIX'] || ENV['RAILS_ENV'] || 'development' %>
+<% prefix = Rails.configuration.active_job.queue_name_prefix %>
 ---
 aws:
   access_key_id:     <%= ENV['AWS_ACCESS_KEY_ID'] %>
