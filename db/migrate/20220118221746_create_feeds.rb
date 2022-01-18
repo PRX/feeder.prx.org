@@ -4,7 +4,8 @@ class CreateFeeds < ActiveRecord::Migration
 
     create_table :feeds do |t|
       t.references :podcast, index: true, foreign_key: true
-      t.string :slug
+      t.string :label
+      t.string :slug, null: false
 
       # optional overrides
       t.text :title

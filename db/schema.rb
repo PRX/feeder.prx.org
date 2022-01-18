@@ -15,7 +15,6 @@ ActiveRecord::Schema.define(version: 20220118221746) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-  enable_extension "uuid-ossp"
 
   create_table "episode_images", force: :cascade do |t|
     t.integer  "episode_id"
@@ -112,7 +111,8 @@ ActiveRecord::Schema.define(version: 20220118221746) do
 
   create_table "feeds", force: :cascade do |t|
     t.integer  "podcast_id"
-    t.string   "slug"
+    t.string   "label"
+    t.string   "slug",                                       null: false
     t.text     "title"
     t.string   "url"
     t.string   "path"
