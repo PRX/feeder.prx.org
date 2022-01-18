@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210204184430) do
+ActiveRecord::Schema.define(version: 20220118221746) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -97,6 +97,40 @@ ActiveRecord::Schema.define(version: 20210204184430) do
   end
 
   add_index "feed_images", ["podcast_id"], name: "index_feed_images_on_podcast_id", using: :btree
+
+  create_table "feed_tokens", force: :cascade do |t|
+    t.integer  "feed_id"
+    t.string   "label"
+    t.string   "token",      null: false
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "feed_tokens", ["feed_id", "token"], name: "index_feed_tokens_on_feed_id_and_token", unique: true, using: :btree
+  add_index "feed_tokens", ["feed_id"], name: "index_feed_tokens_on_feed_id", using: :btree
+
+  create_table "feeds", force: :cascade do |t|
+    t.integer  "podcast_id"
+    t.string   "slug"
+    t.text     "title"
+    t.string   "url"
+    t.string   "path"
+    t.string   "enclosure_prefix"
+    t.string   "enclosure_template"
+    t.integer  "display_episodes_count"
+    t.integer  "display_full_episodes_count"
+    t.boolean  "private",                     default: true
+    t.integer  "publish_offset_seconds"
+    t.text     "filter_zones"
+    t.text     "filter_tags"
+    t.text     "audio_format"
+    t.datetime "created_at",                                 null: false
+    t.datetime "updated_at",                                 null: false
+  end
+
+  add_index "feeds", ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, using: :btree
+  add_index "feeds", ["podcast_id"], name: "index_feeds_on_podcast_id", using: :btree
 
   create_table "itunes_categories", force: :cascade do |t|
     t.datetime "created_at"
@@ -188,7 +222,6 @@ ActiveRecord::Schema.define(version: 20210204184430) do
     t.string   "owner_email"
     t.string   "url"
     t.string   "path"
-    t.integer  "max_episodes"
     t.string   "prx_uri"
     t.string   "author_email"
     t.string   "source_url"
@@ -267,4 +300,6 @@ ActiveRecord::Schema.define(version: 20210204184430) do
   add_index "tasks", ["owner_type", "owner_id"], name: "index_tasks_on_owner_type_and_owner_id", using: :btree
   add_index "tasks", ["status"], name: "index_tasks_on_status", using: :btree
 
+  add_foreign_key "feed_tokens", "feeds"
+  add_foreign_key "feeds", "podcasts"
 end
