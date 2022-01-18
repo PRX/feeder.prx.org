@@ -122,7 +122,7 @@ ActiveRecord::Schema.define(version: 20220118221746) do
     t.integer  "display_full_episodes_count"
     t.boolean  "private",                     default: true
     t.integer  "publish_offset_seconds"
-    t.text     "filter_zones"
+    t.text     "reject_zones"
     t.text     "filter_tags"
     t.text     "audio_format"
     t.datetime "created_at",                                 null: false

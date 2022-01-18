@@ -19,7 +19,7 @@ class CreateFeeds < ActiveRecord::Migration
       # optional sub-feed settings
       t.boolean :private, default: true
       t.integer :publish_offset_seconds
-      t.text :filter_zones
+      t.text :reject_zones
       t.text :filter_tags
       t.text :audio_format
 
