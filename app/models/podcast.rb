@@ -61,7 +61,7 @@ class Podcast < BaseModel
   end
 
   def enclosure_template_default
-    "https://#{ENV['DOVETAIL_HOST']}/_/{slug}/{guid}/{original_filename}"
+    "https://#{ENV['DOVETAIL_HOST']}/{slug}/{guid}/{original_filename}"
   end
 
   def publish_updated
