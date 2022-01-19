@@ -3,7 +3,7 @@ class CreateFeeds < ActiveRecord::Migration
 
   def up
     create_table :feeds do |t|
-      t.references :podcast, index: true, foreign_key: true, unique: true, where: 'slug IS NULL'
+      t.references :podcast, index: true, foreign_key: true
       t.string :slug, null: true
       t.string :file_name, null: false
       t.boolean :private, default: true
