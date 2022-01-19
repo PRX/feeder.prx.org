@@ -10,6 +10,9 @@ class Podcast < BaseModel
   has_one :itunes_image, autosave: true, dependent: :destroy
   has_one :feed_image, autosave: true, dependent: :destroy
 
+  has_one :default_feed, -> { default }, class_name: 'Feed'
+  has_many :feeds, dependent: :destroy
+
   has_many :itunes_images,
     -> { order('created_at DESC') },
     autosave: true,
