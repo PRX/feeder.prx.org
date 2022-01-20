@@ -1,4 +1,7 @@
 class Podcast < BaseModel
+  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count)
+  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count=)
+
   include TextSanitizer
 
   serialize :categories, JSON
@@ -8,14 +11,8 @@ class Podcast < BaseModel
   has_one :itunes_image, autosave: true, dependent: :destroy
   has_one :feed_image, autosave: true, dependent: :destroy
 
-  has_one :default_feed, -> { default }, class_name: 'Feed', autosave: true, validate: true
+  has_one :default_feed, -> { default }, class_name: 'Feed', validate: true, autosave: true
   has_many :feeds, dependent: :destroy
-
-  delegate :url, :url=,
-           :new_feed_url, :new_feed_url=,
-           :display_episodes_count, :display_episodes_count=,
-           :display_full_episodes_count, :display_full_episodes_count=,
-           to: :default_feed
 
   has_many :itunes_images,
     -> { order('created_at DESC') },
@@ -49,8 +46,7 @@ class Podcast < BaseModel
 
   acts_as_paranoid
 
-  after_initialize :set_defaults
-  before_validation :sanitize_text
+  before_validation :set_defaults, :sanitize_text
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
@@ -192,5 +188,27 @@ class Podcast < BaseModel
 
   def feeder_cdn_host
     ENV['FEEDER_CDN_HOST']
+  end
+
+  # TODO: temporary delegations, until Publish + our Representers get updated
+  # the tests also seem to have issues with this - and the need for just-in-time
+  # initializing the default feed
+  def method_missing(method, *args, &block)
+    if FEED_GETTERS.include?(method)
+      default_feed.try(:public_send, method, *args, &block)
+    elsif FEED_SETTERS.include?(method)
+      self.default_feed ||= feeds.new
+      default_feed.public_send(method, *args, &block)
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(method, *args)
+    if FEED_GETTERS.include?(method) || FEED_SETTERS.include?(method)
+      true
+    else
+      super
+    end
   end
 end
