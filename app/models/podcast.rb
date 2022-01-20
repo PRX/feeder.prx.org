@@ -172,7 +172,7 @@ class Podcast < BaseModel
   end
 
   def published_url
-    "#{base_published_url}/feed-rss.xml"
+    "#{base_published_url}/#{default_feed.file_name}"
   end
 
   def itunes_type

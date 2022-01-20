@@ -12,7 +12,9 @@ class PublishFeedJob < ApplicationJob
     setup_data(podcast)
     @rss = generate_rss_xml
     save_podcast_file(@rss)
-    copy_podcast_file_alias if podcast.feed_rss_alias.present?
+    if podcast.default_feed.file_name != Feed::DEFAULT_FILE_NAME
+      copy_podcast_file_alias
+    end
   end
 
   def setup_data(podcast)
@@ -51,12 +53,14 @@ class PublishFeedJob < ApplicationJob
     ENV['FEEDER_STORAGE_BUCKET']
   end
 
+  # TODO: use the default_feed.file_name
   def key(podcast = @podcast)
     "#{podcast.path}/feed-rss.xml"
   end
 
+  # TODO: no need for copy aliases when the feed has the file_name
   def alias_key(podcast = @podcast)
-    "#{podcast.path}/#{podcast.feed_rss_alias}"
+    "#{podcast.path}/#{podcast.default_feed.file_name}"
   end
 
   def default_options
