@@ -5,7 +5,7 @@ class Feed < BaseModel
 
   serialize :reject_zones, JSON
   serialize :filter_tags, JSON
-  serialize :audio_format, JSON
+  serialize :audio_format, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }
   has_many :feed_tokens, dependent: :destroy
