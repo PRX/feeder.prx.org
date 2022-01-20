@@ -1,5 +1,3 @@
-require 'text_sanitizer'
-
 class Podcast < BaseModel
   include TextSanitizer
 
@@ -10,8 +8,14 @@ class Podcast < BaseModel
   has_one :itunes_image, autosave: true, dependent: :destroy
   has_one :feed_image, autosave: true, dependent: :destroy
 
-  has_one :default_feed, -> { default }, class_name: 'Feed'
+  has_one :default_feed, -> { default }, class_name: 'Feed', autosave: true, validate: true
   has_many :feeds, dependent: :destroy
+
+  delegate :url, :url=,
+           :new_feed_url, :new_feed_url=,
+           :display_episodes_count, :display_episodes_count=,
+           :display_full_episodes_count, :display_full_episodes_count=,
+           to: :default_feed
 
   has_many :itunes_images,
     -> { order('created_at DESC') },
@@ -45,7 +49,8 @@ class Podcast < BaseModel
 
   acts_as_paranoid
 
-  before_validation :set_defaults, :sanitize_text
+  after_initialize :set_defaults
+  before_validation :sanitize_text
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
@@ -55,6 +60,7 @@ class Podcast < BaseModel
   end
 
   def set_defaults
+    self.default_feed ||= feeds.new
     self.enclosure_template ||= enclosure_template_default
     self.explicit ||= 'false'
   end
