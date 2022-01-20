@@ -56,7 +56,7 @@ class Podcast < BaseModel
   end
 
   def set_defaults
-    self.default_feed ||= feeds.new
+    self.default_feed ||= feeds.new(private: false)
     self.enclosure_template ||= enclosure_template_default
     self.explicit ||= 'false'
   end
@@ -197,7 +197,7 @@ class Podcast < BaseModel
     if FEED_GETTERS.include?(method)
       default_feed.try(:public_send, method, *args, &block)
     elsif FEED_SETTERS.include?(method)
-      self.default_feed ||= feeds.new
+      self.default_feed ||= feeds.new(private: false)
       default_feed.public_send(method, *args, &block)
     else
       super

@@ -11,6 +11,14 @@ describe Podcast do
     assert_respond_to podcast, :episodes
   end
 
+  it 'has a default feed' do
+    podcast = Podcast.new.tap {|p| p.valid? }
+    assert podcast.default_feed.present?
+    assert podcast.default_feed.private? == false
+    assert podcast.default_feed.slug == nil
+    assert podcast.default_feed.file_name == Feed::DEFAULT_FILE_NAME
+  end
+
   it 'has a default enclosure template' do
     podcast = Podcast.new.tap {|p| p.valid? }
     assert_match(/^http/, podcast.enclosure_template_default)

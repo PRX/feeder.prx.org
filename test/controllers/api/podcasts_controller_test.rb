@@ -41,6 +41,8 @@ describe Api::PodcastsController do
       id = JSON.parse(response.body)['id']
       new_podcast = Podcast.find(id)
       assert_equal new_podcast.itunes_categories.first.name, 'Arts'
+      assert_equal new_podcast.feeds.count, 1
+      assert new_podcast.default_feed.present?
     end
 
     it 'can update a podcast' do
@@ -57,6 +59,7 @@ describe Api::PodcastsController do
 
       assert_operator podcast.reload.updated_at, :>, pua
       assert_equal podcast.itunes_categories.size, 0
+      assert_equal podcast.feeds.count, 1
     end
 
     it 'cannot delete a podcast with a member token' do
