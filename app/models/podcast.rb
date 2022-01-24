@@ -190,6 +190,10 @@ class Podcast < BaseModel
     ENV['FEEDER_CDN_HOST']
   end
 
+  def default_feed_settings?
+    feeds.all?(&:default_runtime_settings?)
+  end
+
   # TODO: temporary delegations, until Publish + our Representers get updated
   # the tests also seem to have issues with this - and the need for just-in-time
   # initializing the default feed

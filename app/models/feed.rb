@@ -38,6 +38,14 @@ class Feed < BaseModel
     slug.nil?
   end
 
+  def public?
+    !private?
+  end
+
+  def default_runtime_settings?
+    default? && public? && filter_zones.blank? && audio_format.blank?
+  end
+
   def published_url
     if default?
       "#{podcast.base_published_url}/#{file_name}"
