@@ -172,7 +172,7 @@ class Podcast < BaseModel
   end
 
   def published_url
-    "#{base_published_url}/#{default_feed.file_name}"
+    "#{base_published_url}/#{default_feed.try(:file_name) || Feed::DEFAULT_FILE_NAME}"
   end
 
   def itunes_type
