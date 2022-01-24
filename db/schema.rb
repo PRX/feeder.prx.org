@@ -121,14 +121,13 @@ ActiveRecord::Schema.define(version: 20220118221746) do
     t.integer  "display_episodes_count"
     t.integer  "display_full_episodes_count"
     t.integer  "episode_offset_seconds"
-    t.text     "reject_zones"
+    t.text     "filter_zones"
     t.text     "filter_tags"
     t.text     "audio_format"
     t.datetime "created_at",                                 null: false
     t.datetime "updated_at",                                 null: false
   end
 
-  add_index "feeds", ["podcast_id", "file_name"], name: "index_feeds_on_podcast_id_and_file_name", unique: true, using: :btree
   add_index "feeds", ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)", using: :btree
   add_index "feeds", ["podcast_id"], name: "index_feeds_on_podcast_id", using: :btree
   add_index "feeds", ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)", using: :btree

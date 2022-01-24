@@ -54,15 +54,14 @@ describe Feed do
       end
     end
 
-    it 'validates unique file names' do
+    it 'restricts some slugs already used in S3' do
       assert feed1.valid?
-      assert feed2.valid?
 
-      feed2.file_name = 'feed-rss.xml'
-      refute feed2.valid?
+      feed1.slug = 'images'
+      refute feed1.valid?
 
-      feed2.file_name = 'feed2-rss.xml'
-      assert feed2.valid?
+      feed1.slug = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+      refute feed1.valid?
     end
 
     it 'restricts file name characters' do
@@ -70,16 +69,6 @@ describe Feed do
         feed1.file_name = s
         refute feed1.valid?
       end
-    end
-
-    it 'restricts some file names already used in S3' do
-      assert feed1.valid?
-
-      feed1.file_name = 'images'
-      refute feed1.valid?
-
-      feed1.file_name = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
-      refute feed1.valid?
     end
   end
 end

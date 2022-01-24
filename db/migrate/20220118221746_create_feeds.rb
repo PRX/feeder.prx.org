@@ -19,7 +19,7 @@ class CreateFeeds < ActiveRecord::Migration
 
       # additional feed settings
       t.integer :episode_offset_seconds
-      t.text :reject_zones
+      t.text :filter_zones
       t.text :filter_tags
       t.text :audio_format
 
@@ -28,7 +28,6 @@ class CreateFeeds < ActiveRecord::Migration
 
     add_index :feeds, :podcast_id, unique: true, where: 'slug IS NULL', name: :index_feeds_on_podcast_id_default
     add_index :feeds, [:podcast_id, :slug], unique: true, where: 'slug IS NOT NULL'
-    add_index :feeds, [:podcast_id, :file_name], unique: true
 
     create_table :feed_tokens do |t|
       t.references :feed, index: true, foreign_key: true
