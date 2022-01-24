@@ -39,7 +39,7 @@ class Feed < BaseModel
   end
 
   def published_url
-    if default_feed?
+    if default?
       "#{podcast.base_published_url}/#{file_name}"
     else
       "#{podcast.base_published_url}/#{slug}/#{file_name}"

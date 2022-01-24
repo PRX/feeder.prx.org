@@ -4,7 +4,7 @@ describe Feed do
   let(:podcast) { create(:podcast) }
   let(:feed1) { podcast.default_feed }
   let(:feed2) { create(:feed, podcast: podcast, slug: 'adfree') }
-  let(:feed3) { create(:feed, podcast: podcast, slug: 'other') }
+  let(:feed3) { create(:feed, podcast: podcast, slug: 'other', file_name: 'something') }
 
   describe '.new' do
     it 'sets a default file name' do
@@ -12,7 +12,7 @@ describe Feed do
     end
   end
 
-  describe '.default' do
+  describe '#default' do
     it 'returns default feeds' do
       assert feed1.default?
       refute feed2.default?
@@ -69,6 +69,17 @@ describe Feed do
         feed1.file_name = s
         refute feed1.valid?
       end
+    end
+  end
+
+  describe '#published_url' do
+    it 'returns default feed urls' do
+      assert_equal feed1.published_url, "#{podcast.base_published_url}/feed-rss.xml"
+    end
+
+    it 'returns slugged feed urls' do
+      assert_equal feed2.published_url, "#{podcast.base_published_url}/adfree/feed-rss.xml"
+      assert_equal feed3.published_url, "#{podcast.base_published_url}/other/something"
     end
   end
 end
