@@ -25,6 +25,7 @@ FEEDER_HOST=feeder.prx.docker
 # FEEDER_STORAGE_BUCKET=
 # defaults to 'help@prx.org (PRX)'
 # FEEDER_WEB_MASTER=
+FEEDS_TOKEN=
 ID_HOST=id-staging.prx.tech
 LANG=en_US.UTF-8
 NEW_RELIC_KEY=
