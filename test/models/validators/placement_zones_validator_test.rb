@@ -18,10 +18,10 @@ describe PlacementZonesValidator do
     feed.include_zones = ['anything']
     refute feed.valid?
 
-    feed.include_zones = ['z', 'a', 'i']
+    feed.include_zones = ['paidad', 'paidad2', 'sonicid']
     refute feed.valid?
 
-    feed.include_zones = ['a', 'b', 'i']
+    feed.include_zones = ['paidad', 'billboard', 'sonicid']
     assert feed.valid?
   end
 end
