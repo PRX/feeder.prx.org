@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   resources :podcasts, only: [:show], defaults: { format: 'rss' }
+  resources :feeds, only: [:index]
 
   namespace :api do
     scope ':api_version', api_version: 'v1', defaults: { format: 'hal' } do

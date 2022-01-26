@@ -4,7 +4,6 @@ FactoryGirl.define do
     sequence(:prx_account_uri) { |n| "/api/v1/accounts/#{n}" }
     sequence(:published_at) { |n| Date.today - n.days }
     path 'jjgo'
-    url 'http://feeds.feedburner.com/thornmorris'
     link 'http://www.maximumfun.org/jjgo'
     title 'Jordan, Jesse GO!'
     description 'A goofy fun-time laughcast with doofuses'
@@ -25,8 +24,8 @@ FactoryGirl.define do
     update_frequency 1
     update_base 1.year.ago
     enclosure_template 'http://www.podtrac.com/pts/redirect{extension}/media.blubrry.com/transistor/{host}{+path}'
-    new_feed_url 'http://feeds.feedburner.com/newthornmorris'
 
+    default_feed
     itunes_image
     feed_image
 

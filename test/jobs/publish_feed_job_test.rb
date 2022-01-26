@@ -63,7 +63,7 @@ describe PublishFeedJob do
     end
 
     it 'makes an alias copy of the podcast file' do
-      podcast.feed_rss_alias = 'some-alias'
+      podcast.default_feed.file_name = 'some-alias'
       job.stub(:client, stub_client) do
         job.perform(podcast)
         refute_nil job.put_object
