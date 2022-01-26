@@ -1,5 +1,5 @@
 class PlacementZonesValidator < ActiveModel::EachValidator
-  ZONE_TYPES = %w(o a h b i)
+  ZONE_TYPES = %w(a h b i)
 
   def validate_each(record, attribute, value)
     return if value.nil?

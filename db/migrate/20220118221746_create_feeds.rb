@@ -19,8 +19,8 @@ class CreateFeeds < ActiveRecord::Migration
 
       # additional feed settings
       t.integer :episode_offset_seconds
-      t.text :filter_zones
-      t.text :filter_tags
+      t.text :include_zones
+      t.text :include_tags
       t.text :audio_format
 
       t.timestamps null: false

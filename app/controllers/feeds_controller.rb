@@ -39,7 +39,7 @@ class FeedsController < ApplicationController
 
   def feed_json(feed)
     feed.
-      slice(:private, :filter_zones, :audio_format).
+      slice(:private, :include_zones, :audio_format).
       transform_keys { |k| k.camelize(:lower) }.
       merge(tokens: feed.tokens.map { |t| token_json(t) } )
   end

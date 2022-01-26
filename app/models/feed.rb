@@ -5,8 +5,8 @@ class Feed < BaseModel
 
   include TextSanitizer
 
-  serialize :filter_zones, JSON
-  serialize :filter_tags, JSON
+  serialize :include_zones, JSON
+  serialize :include_tags, JSON
   serialize :audio_format, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }
@@ -17,8 +17,8 @@ class Feed < BaseModel
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
   validates_format_of :slug, without: /\A(images|\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\z/
   validates :file_name, presence: true, format: { with: /\A[0-9a-zA-Z_.-]+\z/ }
-  validates :filter_zones, placement_zones: true
-  validates :filter_tags, tag_list: true
+  validates :include_zones, placement_zones: true
+  validates :include_tags, tag_list: true
   validates :audio_format, audio_format: true
 
   after_initialize :set_defaults
@@ -43,7 +43,7 @@ class Feed < BaseModel
   end
 
   def default_runtime_settings?
-    default? && public? && filter_zones.blank? && audio_format.blank?
+    default? && public? && include_zones.nil? && audio_format.blank?
   end
 
   def published_url

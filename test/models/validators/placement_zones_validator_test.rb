@@ -4,24 +4,24 @@ describe PlacementZonesValidator do
   let(:feed) { build(:feed) }
 
   it 'allows nil' do
-    feed.filter_zones = nil
+    feed.include_zones = nil
     assert feed.valid?
 
-    feed.filter_zones = {}
+    feed.include_zones = {}
     refute feed.valid?
 
-    feed.filter_zones = []
+    feed.include_zones = []
     assert feed.valid?
   end
 
   it 'validates zone types' do
-    feed.filter_zones = ['anything']
+    feed.include_zones = ['anything']
     refute feed.valid?
 
-    feed.filter_zones = ['z', 'a', 'o']
+    feed.include_zones = ['z', 'a', 'i']
     refute feed.valid?
 
-    feed.filter_zones = ['a', 'o', 'i']
+    feed.include_zones = ['a', 'b', 'i']
     assert feed.valid?
   end
 end

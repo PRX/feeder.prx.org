@@ -121,8 +121,8 @@ ActiveRecord::Schema.define(version: 20220118221746) do
     t.integer  "display_episodes_count"
     t.integer  "display_full_episodes_count"
     t.integer  "episode_offset_seconds"
-    t.text     "filter_zones"
-    t.text     "filter_tags"
+    t.text     "include_zones"
+    t.text     "include_tags"
     t.text     "audio_format"
     t.datetime "created_at",                                 null: false
     t.datetime "updated_at",                                 null: false

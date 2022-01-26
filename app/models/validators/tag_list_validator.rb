@@ -6,6 +6,10 @@ class TagListValidator < ActiveModel::EachValidator
       return record.errors.add attribute, 'has invalid tags'
     end
 
+    if value.blank?
+      return record.errors.add attribute, 'cannot be empty'
+    end
+
     unless value.all? { |s| s.is_a?(String) }
       return record.errors.add attribute, 'has non-string tags'
     end
