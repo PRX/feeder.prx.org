@@ -269,7 +269,7 @@ class Episode < BaseModel
   end
 
   def podcast_slug
-    podcast.path
+    podcast_id
   end
 
   # used in the API, both read and write

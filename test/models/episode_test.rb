@@ -63,11 +63,11 @@ describe Episode do
     assert_equal episode.content_type, 'audio/mpeg'
   end
 
-  it 'proxies podcast_slug to #podcast' do
+  it 'uses the podcast_id as the slug' do
     podcast = build_stubbed(:podcast)
     episode = build_stubbed(:episode, podcast: podcast)
     podcast.stub(:path, 'podcast path!') do
-      assert_equal episode.podcast_slug, 'podcast path!'
+      assert_equal episode.podcast_slug, podcast.id
     end
   end
 
@@ -259,7 +259,7 @@ describe Episode do
       episode.podcast.enclosure_template = template
       episode.podcast.enclosure_prefix = nil
       new_url = episode.enclosure_url(base_url, original_url)
-      assert_equal new_url, "https://#{ENV['DOVETAIL_HOST']}/foo/guid/filename.mp3"
+      assert_equal new_url, "https://#{ENV['DOVETAIL_HOST']}/#{episode.podcast.id}/guid/filename.mp3"
     end
 
     it 'applies prefix to enclosure url' do
@@ -282,7 +282,7 @@ describe Episode do
       episode.podcast.enclosure_template = template
       episode.podcast.enclosure_prefix = pre
       new_url = episode.enclosure_url(base_url, original_url)
-      assert_equal new_url, "#{pre}/#{ENV['DOVETAIL_HOST']}/foo/guid/filename.mp3"
+      assert_equal new_url, "#{pre}/#{ENV['DOVETAIL_HOST']}/#{episode.podcast.id}/guid/filename.mp3"
     end
 
     it 'applies template to audio file link' do
@@ -295,7 +295,7 @@ describe Episode do
 
     it 'can include the slug from the podcast' do
       episode.podcast.enclosure_template = "{slug}"
-      assert_equal episode.enclosure_template_url("http://example.com/foo.mp3"), "foo"
+      assert_equal episode.enclosure_template_url("http://example.com/foo.mp3"), "#{episode.podcast.id}"
     end
 
     it 'can include the guid' do
@@ -306,7 +306,7 @@ describe Episode do
     it 'can include all properties' do
       episode.podcast.enclosure_template = "http://fake.host/{slug}/{guid}{extension}{?host}"
       url = episode.enclosure_template_url("http://example.com/path/filename.extension")
-      assert_equal url, "http://fake.host/foo/guid.extension?host=example.com"
+      assert_equal url, "http://fake.host/#{episode.podcast.id}/guid.extension?host=example.com"
     end
 
     it 'gets expansions for original and base urls' do
