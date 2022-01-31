@@ -23,10 +23,6 @@ RUN apk --no-cache add \
 RUN git clone -o github https://github.com/PRX/aws-secrets
 RUN cp ./aws-secrets/bin/* /usr/local/bin
 
-ENV TINI_VERSION v0.9.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /tini
-RUN chmod +x /tini
-
 ENV RAILS_ENV production
 ENV APP_HOME /app
 RUN mkdir -p $APP_HOME
@@ -61,5 +57,5 @@ ADD . ./
 RUN chown -R nobody:nogroup /app
 USER nobody
 
-ENTRYPOINT ["/tini", "--", "./bin/application"]
+ENTRYPOINT ["./bin/application"]
 CMD ["web"]
