@@ -9,15 +9,15 @@ describe FeedPolicy do
 
   describe '#update?' do
     it 'returns false if token is not present' do
-      FeedPolicy.new(nil, feed).wont_allow :update?
+      refute FeedPolicy.new(nil, feed).update?
     end
 
     it 'returns false if token is not a member of the account' do
-      FeedPolicy.new(non_member_token, feed).wont_allow :update?
+      refute FeedPolicy.new(non_member_token, feed).update?
     end
 
     it 'returns true if token is a member of the account' do
-      FeedPolicy.new(member_token, feed).must_allow :update?
+      assert FeedPolicy.new(member_token, feed).update?
     end
   end
 end
