@@ -21,8 +21,8 @@ describe Podcast do
 
   it 'has a default enclosure template' do
     podcast = Podcast.new.tap {|p| p.valid? }
-    assert_match(/^http/, podcast.enclosure_template_default)
-    assert_equal podcast.enclosure_template, podcast.enclosure_template_default
+    assert_match(/^http/, Podcast.enclosure_template_default)
+    assert_equal podcast.enclosure_template, Podcast.enclosure_template_default
   end
 
   it 'has iTunes categories' do
