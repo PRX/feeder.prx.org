@@ -12,6 +12,17 @@ describe Feed do
     end
   end
 
+  describe 'mime type' do
+    it 'has a default mime type' do
+      assert_equal Feed.new.mime_type, 'audio/mpeg'
+    end
+
+    it 'has a different mime type' do
+      f = Feed.new(audio_format: { f: 'flac', b: 16, c: 2, s: 44100 })
+      assert_equal f.mime_type, 'audio/flac'
+    end
+  end
+
   describe '#default' do
     it 'returns default feeds' do
       assert feed1.default?
@@ -73,6 +84,12 @@ describe Feed do
   end
 
   describe '#published_url' do
+    it 'returns default feed path' do
+      assert_equal feed1.published_path, "feed-rss.xml"
+      assert_equal feed2.published_path, "adfree/feed-rss.xml"
+      assert_equal feed3.published_path, "other/something"
+    end
+
     it 'returns default feed urls' do
       assert_equal feed1.published_url, "#{podcast.base_published_url}/feed-rss.xml"
     end
