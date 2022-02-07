@@ -28,38 +28,36 @@ describe Api::Auth::FeedsController do
       _(new_feed.slug).must_equal 'test-slug'
     end
 
-  #   it 'can update a feed' do
-  #     fua = feed.updated_at
-  #     feed.overrides.keys.size.must_equal 0
-  #     update_hash = { overrides: { title: 'new title', display_episodes_count: 1 } }
+    it 'can update a feed' do
+      fua = feed.updated_at
+      update_hash = { title: 'new title', slug: 'somesluggy1' }
 
-  #     put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
-  #     assert_response :success
+      put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+      assert_response :success
 
-  #     feed.reload.updated_at.must_be :>, fua
-  #     feed.overrides.keys.size.must_equal 2
-  #   end
+      _(feed.reload.updated_at).must_be :>, fua
+      _(feed.title).must_equal 'new title'
+    end
 
-  #   it 'ignores updating invalid overrides' do
-  #     fua = feed.updated_at
-  #     feed.overrides.keys.size.must_equal 0
-  #     update_hash = { overrides: { title: 'new title', nope: 'nada' } }
+    it 'ignores updating invalid overrides' do
+      fua = feed.updated_at
+      update_hash = { title: 'new title2', slug: 'somesluggy2', display_episodes_count: 1 }
 
-  #     put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
-  #     assert_response :success
+      put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+      assert_response :success
 
-  #     feed.reload.updated_at.must_be :>, fua
-  #     feed.overrides.keys.size.must_equal 1
-  #   end
+      feed.reload
+      _(feed.updated_at).must_be :>, fua
+      _(feed.slug).must_equal 'somesluggy2'
+    end
 
-  #   it 'rejects update for unauthorizd token' do
-  #     @controller.prx_auth_token = bad_token
-  #     feed.overrides.keys.size.must_equal 0
-  #     update_hash = { overrides: { title: 'new title', display_episodes_count: 1 } }
+    it 'rejects update for unauthorizd token' do
+      @controller.prx_auth_token = bad_token
+      update_hash = { title: 'new title3', slug: 'somesluggy3', display_episodes_count: 1 }
 
-  #     put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
-  #     assert_response 401
-  #   end
+      put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+      assert_response 401
+    end
   end
 
   it 'should show' do
