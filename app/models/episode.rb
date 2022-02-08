@@ -221,8 +221,8 @@ class Episode < BaseModel
     podcast.try(:enclosure_template)
   end
 
-  def enclosure_prefix
-    podcast.try(:enclosure_prefix)
+  def enclosure_prefix(feed = nil)
+    feed.try(:enclosure_prefix) || podcast.try(:enclosure_prefix)
   end
 
   def enclosure_url(feed = nil)

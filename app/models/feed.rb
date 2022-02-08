@@ -95,8 +95,4 @@ class Feed < BaseModel
     f = (audio_format || {})[:f] || 'mp3'
     AUDIO_MIME_TYPES[f]
   end
-
-  # TODO: this should probably be a feeds table db column
-  def enclosure_prefix
-  end
 end

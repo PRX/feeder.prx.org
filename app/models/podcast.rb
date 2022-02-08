@@ -1,6 +1,6 @@
 class Podcast < BaseModel
-  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count)
-  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count=)
+  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix)
+  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix)
 
   include TextSanitizer
 
