@@ -32,8 +32,13 @@ class Feed < BaseModel
 
   scope :default, -> { where(slug: nil) }
 
+  def self.enclosure_template_default
+    "https://#{ENV['DOVETAIL_HOST']}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
+  end
+
   def set_defaults
     self.file_name ||= DEFAULT_FILE_NAME
+    self.enclosure_template ||= Feed.enclosure_template_default
   end
 
   def sanitize_text
@@ -88,7 +93,7 @@ class Feed < BaseModel
   end
 
   def enclosure_template
-    Podcast.enclosure_template_default
+    self[:enclosure_template] || Feed.enclosure_template_default
   end
 
   def mime_type

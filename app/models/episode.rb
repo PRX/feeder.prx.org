@@ -217,14 +217,6 @@ class Episode < BaseModel
     all_media_files.first
   end
 
-  def enclosure_template
-    podcast.try(:enclosure_template)
-  end
-
-  def enclosure_prefix(feed = nil)
-    feed.try(:enclosure_prefix) || podcast.try(:enclosure_prefix)
-  end
-
   def enclosure_url(feed = nil)
     EnclosureUrlBuilder.new.podcast_episode_url(podcast, self, feed)
   end

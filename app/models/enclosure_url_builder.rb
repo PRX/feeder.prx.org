@@ -4,15 +4,9 @@ require 'addressable/template'
 class EnclosureUrlBuilder
 
   def podcast_episode_url(podcast, episode, feed = nil)
-    if feed
-      template = feed.try(:enclosure_template)
-      prefix = feed.try(:enclosure_prefix)
-    else  
-      template = podcast.try(:enclosure_template)
-      prefix = podcast.try(:enclosure_prefix)
-    end
-
-    template ||= Podcast.enclosure_template_default
+    feed ||= podcast.default_feed
+    template = feed.try(:enclosure_template)
+    prefix = feed.try(:enclosure_prefix)
     expansions = podcast_episode_expansions(podcast, episode, feed)
     enclosure_url(template, expansions, prefix)
   end

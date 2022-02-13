@@ -23,7 +23,6 @@ FactoryGirl.define do
     update_period 'weekly'
     update_frequency 1
     update_base 1.year.ago
-    enclosure_template 'http://www.podtrac.com/pts/redirect{extension}/media.blubrry.com/transistor/{host}{+path}'
 
     default_feed
     itunes_image

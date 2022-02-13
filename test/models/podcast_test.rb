@@ -19,12 +19,6 @@ describe Podcast do
     assert podcast.default_feed.file_name == Feed::DEFAULT_FILE_NAME
   end
 
-  it 'has a default enclosure template' do
-    podcast = Podcast.new.tap {|p| p.valid? }
-    assert_match(/^http/, Podcast.enclosure_template_default)
-    assert_equal podcast.enclosure_template, Podcast.enclosure_template_default
-  end
-
   it 'has iTunes categories' do
     assert_respond_to podcast, :itunes_categories
   end

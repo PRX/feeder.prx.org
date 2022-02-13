@@ -1,6 +1,6 @@
 class Podcast < BaseModel
-  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix)
-  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix)
+  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template)
+  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template=)
 
   include TextSanitizer
 
@@ -55,13 +55,8 @@ class Podcast < BaseModel
     Podcast.find_by(prx_uri: series_uri)
   end
 
-  def self.enclosure_template_default
-    "https://#{ENV['DOVETAIL_HOST']}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
-  end
-
   def set_defaults
     self.default_feed ||= feeds.new(private: false)
-    self.enclosure_template ||= Podcast.enclosure_template_default
     self.explicit ||= 'false'
   end
 

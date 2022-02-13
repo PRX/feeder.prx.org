@@ -81,6 +81,12 @@ describe Feed do
         refute feed1.valid?
       end
     end
+    
+    it 'has a default enclosure template' do
+      feed = Podcast.new.tap { |p| p.valid? }
+      assert_match(/^http/, Feed.enclosure_template_default)
+      assert_equal feed.enclosure_template, Feed.enclosure_template_default
+    end
   end
 
   describe '#published_url' do

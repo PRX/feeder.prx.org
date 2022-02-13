@@ -15,7 +15,8 @@ ActiveRecord::Schema.define(version: 20220207234307) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
+  enable_extension "uuid-ossp"
+  
   create_table "episode_images", force: :cascade do |t|
     t.integer  "episode_id"
     t.string   "type"
@@ -126,6 +127,7 @@ ActiveRecord::Schema.define(version: 20220207234307) do
     t.datetime "created_at",                                 null: false
     t.datetime "updated_at",                                 null: false
     t.string   "enclosure_prefix"
+    t.string   "enclosure_template"
   end
 
   add_index "feeds", ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)", using: :btree
@@ -227,14 +229,12 @@ ActiveRecord::Schema.define(version: 20220207234307) do
     t.string   "source_url"
     t.boolean  "complete"
     t.string   "feedburner_url"
-    t.string   "enclosure_template"
     t.datetime "deleted_at"
     t.string   "managing_editor_email"
     t.decimal  "duration_padding"
     t.string   "explicit"
     t.string   "prx_account_uri"
     t.datetime "published_at"
-    t.string   "enclosure_prefix"
     t.datetime "source_updated_at"
     t.boolean  "serial_order",          default: false
     t.boolean  "locked",                default: false

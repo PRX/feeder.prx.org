@@ -32,7 +32,7 @@ describe EnclosureUrlBuilder do
     _(expansions[:basename]).must_match /ca047dce-9df5-4132-a04b-31d24c7c55a(\d+)/
     _(expansions[:slug]).must_equal podcast.id
     _(expansions[:feed_slug]).must_equal "no-ads-pls"
-    _(expansions[:feed_extension]).must_equal ".mp3"
+    _(expansions[:feed_extension]).must_equal ".flac"
     _(expansions[:guid]).must_match /ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)/
     _(expansions[:original_scheme]).must_equal "s3"
     _(expansions[:original_host]).must_equal "prx-testing"
@@ -66,8 +66,8 @@ describe EnclosureUrlBuilder do
     _(url).must_match /http:\/\/foo\.com\/r\.mp3\/b\/n\/f\.prxu\.org\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+)\.mp3/
   end
 
-  it 'can make an enclosure url for a feed and episode' do
+  it 'can make an enclosure url for a specific feed' do
     url = builder.podcast_episode_url(podcast, episode, feed)
-    _(url).must_match /#{podcast.id}\/no-ads-pls\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/audio\.mp3/
+    _(url).must_match /#{podcast.id}\/no-ads-pls\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/audio\.flac/
   end
 end
