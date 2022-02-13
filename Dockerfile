@@ -1,6 +1,5 @@
-FROM ruby:2.3-alpine3.7
+FROM ruby:2.3-alpine3.8
 
-MAINTAINER PRX <sysadmin@prx.org>
 LABEL org.prx.app="yes"
 
 # install git, aws-cli
