@@ -20,7 +20,7 @@ services:
       DB_PORT_5432_TCP_PORT: 5432
       AWS_REGION: us-east-1
   db:
-    image: postgres:9.4-alpine
+    image: postgres:13.3-alpine
     environment:
       LOCAL_ENV: 'true'
       POSTGRES_USER: 'feeder'
