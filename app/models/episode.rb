@@ -143,7 +143,12 @@ class Episode < BaseModel
   end
 
   def content_type(feed = nil)
-    feed.try(:mime_type) || first_media_resource.try(:mime_type) || 'audio/mpeg'
+    media_content_type = first_media_resource.try(:mime_type)
+    if (media_content_type || '').starts_with?('video')
+      media_content_type
+    else
+      feed.try(:mime_type) || media_content_type || 'audio/mpeg'
+    end
   end
 
   def duration

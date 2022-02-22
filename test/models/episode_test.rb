@@ -71,6 +71,24 @@ describe Episode do
     assert_equal episode.content_type, 'audio/mpeg'
   end
 
+  it 'returns the feed content type for audio' do
+    feed = build_stubbed(:feed)
+    assert_equal feed.mime_type, 'audio/flac'
+    assert_equal episode.first_media_resource.mime_type, 'audio/mpeg'
+    assert_equal episode.content_type(feed), 'audio/flac'
+  end
+
+  it 'returns the file content type for video' do
+    feed = build_stubbed(:feed)
+    episode = build(:episode)
+    video_enclosure = create(:enclosure, episode: episode, status: 'complete', mime_type: 'video/mp4')
+    episode.enclosures = [video_enclosure]
+    
+    assert_equal video_enclosure.mime_type, 'video/mp4'
+    assert_equal episode.first_media_resource.mime_type, 'video/mp4'
+    assert_equal episode.content_type(feed), 'video/mp4'
+  end
+
   it 'has no audio file until processed' do
     episode = build_stubbed(:episode)
     assert_equal episode.media_files.length, 0
