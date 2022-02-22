@@ -76,12 +76,11 @@ describe Api::EpisodeRepresenter do
   it 'has image' do
     assert_equal json['images'].size, 1
     assert_equal json['images'].first['url'], episode.image.url
-    assert_equal json['images'].first['original_url'],
-                 episode.image.original_url
+    assert_equal json['images'].first['original_url'], episode.image.original_url
   end
 
   it 'has enclosure' do
-    assert_equal json['_links']['enclosure']['href'], episode.media_url
+    assert_equal json['_links']['enclosure']['href'], episode.enclosure_url
   end
 
   it 'has a podcast-feed' do
@@ -99,9 +98,11 @@ describe Api::EpisodeRepresenter do
 
   it 'can represent a sad, podcast-less episode' do
     episode.podcast_id = nil
-    assert_equal json['guid'], "prx__#{episode.guid}"
-    assert_match("//#{episode.guid}/", json['_links']['enclosure']['href'])
-    assert_nil json['_links']['prx:podcast']
-    assert_nil json['_links']['prx:podcast-feed']
+    episode.podcast = nil
+    json2 = JSON.parse(Api::EpisodeRepresenter.new(episode).to_json)
+    assert_equal json2['guid'], "prx__#{episode.guid}"
+    assert_nil json2['_links']['enclosure']
+    assert_nil json2['_links']['prx:podcast']
+    assert_nil json2['_links']['prx:podcast-feed']
   end
 end

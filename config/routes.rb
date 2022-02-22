@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       resource :authorization, only: [:show] do
         resources :podcasts, except: [:new, :edit], module: :auth do
           resources :episodes, except: [:new, :edit]
+          resources :feeds, except: [:new, :edit]
         end
 
         resources :episodes, except: [:new, :edit], module: :auth

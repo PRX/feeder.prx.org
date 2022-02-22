@@ -1,31 +1,42 @@
-feeder:
-  build: .
-  volumes:
-    - .:/app
-  env_file:
-    - .env
-  links:
-    - db
-  ports:
-    - "3001:3000"
-  command: web
-  environment:
-    VIRTUAL_HOST: feeder.prx.docker
-    LOCAL_ENV: "true"
-worker:
-  image: feederprxorg_feeder
-  volumes:
-    - .:/app
-  env_file:
-    - .env
-  links:
-    - db
-  command: worker
-db:
-  image: postgres:9.4.15-alpine
-  env_file:
-    - .env
-  expose:
-    - "5432"
-  volumes:
-    - ./db/import:/docker-entrypoint-initdb.d
+version: '2'
+networks:
+  feeder-net:
+    driver: bridge
+services:
+  feeder:
+    build: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    links:
+      - db
+    ports:
+      - "3001:3000"
+    command: web
+    environment:
+      VIRTUAL_HOST: feeder.prx.docker
+      LOCAL_ENV: "true"
+    networks:
+      - feeder-net
+  worker:
+    image: feederprxorg_feeder
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    links:
+      - db
+    command: worker
+    networks:
+      - feeder-net
+  db:
+    image: postgres:13.3-alpine
+    env_file:
+      - .env
+    expose:
+      - "5432"
+    volumes:
+      - ./db/import:/docker-entrypoint-initdb.d
+    networks:
+      - feeder-net

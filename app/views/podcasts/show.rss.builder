@@ -6,7 +6,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         'xmlns:content' => 'http://purl.org/rss/1.0/modules/content/',
         'version' => '2.0' do
   xml.channel do
-    xml.title @podcast.title
+    xml.title @feed.title || @podcast.title
     xml.link @podcast.link
     xml.pubDate @podcast.pub_date.utc.rfc2822
     xml.lastBuildDate @podcast.last_build_date.utc.rfc2822
@@ -24,20 +24,20 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
     xml.image do
       xml.url @podcast.feed_image.url
-      xml.title @podcast.title
+      xml.title @feed.title || @podcast.title
       xml.link @podcast.link
       xml.width @podcast.feed_image.width
       xml.height @podcast.feed_image.height
       xml.description @podcast.feed_image.description unless @podcast.feed_image.description.blank?
     end if @podcast.feed_image
 
-    xml.atom :link, href: (@podcast.url || @podcast.published_url), rel: 'self', type: 'application/rss+xml'
+    xml.atom :link, href: (@feed.url || @feed.published_url), rel: 'self', type: 'application/rss+xml'
 
-    unless @podcast.new_feed_url.blank?
-      xml.itunes :'new-feed-url', @podcast.new_feed_url
+    unless @feed.new_feed_url.blank?
+      xml.itunes :'new-feed-url', @feed.new_feed_url
     end
 
-    xml.itunes :block, 'Yes' if @podcast.itunes_block
+    xml.itunes :block, 'Yes' if @podcast.itunes_block || @feed.try(:private)
 
     xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
     xml.itunes :type, @podcast.itunes_type unless @podcast.itunes_type.blank?
@@ -81,9 +81,9 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         xml.guid(ep.item_guid, isPermaLink: !!ep.is_perma_link)
         xml.title(ep.title)
         xml.pubDate ep.published_at.utc.rfc2822
-        xml.link ep.url || ep.media_url
+        xml.link ep.url || ep.enclosure_url(@feed)
         xml.description { xml.cdata!(ep.description || '') }
-        xml.enclosure(url: ep.media_url, type: ep.content_type, length: ep.file_size) if ep.media?
+        xml.enclosure(url: ep.enclosure_url(@feed), type: ep.content_type(@feed), length: ep.file_size) if ep.media?
 
         xml.itunes :title, ep.clean_title unless ep.clean_title.blank?
         xml.itunes :subtitle, ep.subtitle unless ep.subtitle.blank?
@@ -99,7 +99,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
           xml.media :restriction, r['values'].join(' '), type: r['type'], relationship: r['relationship']
         end
 
-        if @podcast.display_full_episodes_count.to_i <= 0 || index < @podcast.display_full_episodes_count.to_i
+        if @feed.display_full_episodes_count.to_i <= 0 || index < @feed.display_full_episodes_count.to_i
 
           has_au_email = first_nonblank('author_email', [ep, @podcast])
           xml.author(full_contact('author', has_au_email)) if full_contact('author', has_au_email)
@@ -122,8 +122,8 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
 
           xml.media(:content,
             fileSize: ep.file_size,
-            type: ep.content_type,
-            url: ep.media_url) if ep.media?
+            type: ep.content_type(@feed),
+            url: ep.enclosure_url(@feed)) if ep.media?
 
           xml.content(:encoded) { xml.cdata!(ep.content) } unless ep.content.blank?
         end

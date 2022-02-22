@@ -3,6 +3,12 @@ require 'hash_serializer'
 class Feed < BaseModel
   DEFAULT_FILE_NAME = 'feed-rss.xml'.freeze
 
+  AUDIO_MIME_TYPES = {
+    'mp3' => 'audio/mpeg',
+    'flac' => 'audio/flac',
+    'wav' => 'audio/wav'
+  }.freeze
+
   include TextSanitizer
 
   serialize :include_zones, JSON
@@ -26,8 +32,13 @@ class Feed < BaseModel
 
   scope :default, -> { where(slug: nil) }
 
+  def self.enclosure_template_default
+    "https://#{ENV['DOVETAIL_HOST']}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
+  end
+
   def set_defaults
     self.file_name ||= DEFAULT_FILE_NAME
+    self.enclosure_template ||= Feed.enclosure_template_default
   end
 
   def sanitize_text
@@ -47,10 +58,46 @@ class Feed < BaseModel
   end
 
   def published_url
-    if default?
-      "#{podcast.base_published_url}/#{file_name}"
-    else
-      "#{podcast.base_published_url}/#{slug}/#{file_name}"
+    "#{podcast.base_published_url}/#{published_path}"
+  end
+
+  def published_path
+    default? ? file_name : "#{slug}/#{file_name}"
+  end
+
+  def feed_episodes
+    include_in_feed = []
+    feed_max = display_episodes_count.to_i
+    filtered_episodes.each do |ep|
+      next unless include_episode_categories?(ep)
+  
+      include_in_feed << ep if ep.include_in_feed?
+      break if (feed_max > 0) && (include_in_feed.size >= feed_max)
     end
+    include_in_feed
+  end
+
+  def include_episode_categories?(ep)
+    return true if (include_tags || []).length <= 0
+    tags = include_tags.map { |cat| normalize_category(cat) }
+    cats = (ep || []).categories.map { |cat| normalize_category(cat) }
+    (tags & cats).length > 0
+  end
+
+  def normalize_category(cat)
+    cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip
+  end
+
+  def filtered_episodes
+    podcast.episodes.published_by(episode_offset_seconds.to_i)
+  end
+
+  def enclosure_template
+    self[:enclosure_template] || Feed.enclosure_template_default
+  end
+
+  def mime_type
+    f = (audio_format || {})[:f] || 'mp3'
+    AUDIO_MIME_TYPES[f]
   end
 end

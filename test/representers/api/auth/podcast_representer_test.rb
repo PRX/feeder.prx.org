@@ -10,4 +10,8 @@ describe Api::Auth::PodcastRepresenter do
     assert_equal json['_links']['self']['href'], "/api/v1/authorization/podcasts/#{podcast.id}"
     assert_match("/api/v1/authorization/podcasts/#{podcast.id}/episodes", json['_links']['prx:episodes']['href'])
   end
+
+  it 'has an authorized feed' do
+    assert_match("/api/v1/authorization/podcasts/#{podcast.id}/feeds", json['_links']['prx:feeds']['href'])
+  end
 end

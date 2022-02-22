@@ -9,58 +9,24 @@ class PublishFeedJob < ApplicationJob
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   def perform(podcast)
-    setup_data(podcast)
-    @rss = generate_rss_xml
-    save_podcast_file(@rss)
-    if podcast.default_feed.file_name != Feed::DEFAULT_FILE_NAME
-      copy_podcast_file_alias
-    end
+    podcast.feeds.each { |feed| save_file(podcast, feed) }
   end
 
-  def setup_data(podcast)
-    @podcast = podcast
-    @episodes = @podcast.feed_episodes
-  end
-
-  def generate_rss_xml
-    xml = Builder::XmlMarkup.new(indent: 2)
-    instance_eval rss_template
-    xml.target!
-  end
-
-  def rss_template
-    p = File.join(Rails.root, 'app', 'views', 'podcasts', 'show.rss.builder')
-    File.read(p)
-  end
-
-  def save_podcast_file(rss, options = {})
+  def save_file(podcast, feed, options = {})
+    rss = FeedBuilder.new(podcast, feed).to_feed_xml
     opts = default_options.merge(options)
     opts[:body] = rss
     opts[:bucket] = feeder_storage_bucket
-    opts[:key] = key
+    opts[:key] = key(podcast, feed)
     @put_object = client.put_object(opts)
-  end
-
-  def copy_podcast_file_alias(options = {})
-    opts = default_options.merge(options)
-    opts[:bucket] = feeder_storage_bucket
-    opts[:copy_source] = "#{feeder_storage_bucket}/#{key}"
-    opts[:key] = alias_key
-    @copy_object = client.copy_object(opts)
   end
 
   def feeder_storage_bucket
     ENV['FEEDER_STORAGE_BUCKET']
   end
 
-  # TODO: use the default_feed.file_name
-  def key(podcast = @podcast)
-    "#{podcast.path}/feed-rss.xml"
-  end
-
-  # TODO: no need for copy aliases when the feed has the file_name
-  def alias_key(podcast = @podcast)
-    "#{podcast.path}/#{podcast.default_feed.file_name}"
+  def key(podcast, feed)
+    "#{podcast.path}/#{feed.published_path}"
   end
 
   def default_options

@@ -1,6 +1,6 @@
 class Podcast < BaseModel
-  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count)
-  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count=)
+  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template)
+  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template=)
 
   include TextSanitizer
 
@@ -57,16 +57,11 @@ class Podcast < BaseModel
 
   def set_defaults
     self.default_feed ||= feeds.new(private: false)
-    self.enclosure_template ||= enclosure_template_default
     self.explicit ||= 'false'
   end
 
   def explicit=(value)
     super(EXPLICIT_ALIASES[value] || value)
-  end
-
-  def enclosure_template_default
-    "https://#{ENV['DOVETAIL_HOST']}/{slug}/{guid}/{original_filename}"
   end
 
   def publish_updated
@@ -129,13 +124,7 @@ class Podcast < BaseModel
   end
 
   def feed_episodes
-    feed = []
-    feed_max = display_episodes_count.to_i
-    episodes.published.each do |ep|
-      feed << ep if ep.include_in_feed?
-      break if (feed_max > 0) && (feed.size >= feed_max)
-    end
-    feed
+    default_feed.feed_episodes
   end
 
   def publish!

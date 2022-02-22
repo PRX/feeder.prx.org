@@ -1,6 +1,7 @@
 class PodcastsController < ApplicationController
   def show
     @podcast = Podcast.find(podcast_params)
+    @feed = @podcast.default_feed
 
     if @podcast.locked? && !params[:unlock]
       redirect_to @podcast.published_url

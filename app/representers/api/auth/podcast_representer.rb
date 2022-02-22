@@ -13,4 +13,13 @@ class Api::Auth::PodcastRepresenter < Api::PodcastRepresenter
       templated: true
     } if represented.id
   end
+
+  # point to authorized feeds (including private)
+  link :feeds do
+    {
+      href: api_authorization_podcast_feeds_path(represented) + '{?page,per,zoom,since}',
+      count: represented.feeds.count,
+      templated: true
+    } if represented.id
+  end
 end

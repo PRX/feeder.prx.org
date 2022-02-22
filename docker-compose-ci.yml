@@ -1,21 +1,33 @@
-feeder:
-  build: .
-  links:
-    - db
-  ports:
-    - "3000:3000"
-  command: test
-  environment:
-    VIRTUAL_HOST: 'feeder.prx.docker'
-    LOCAL_ENV: 'true'
-    DB_ENV_POSTGRES_USER: feeder
-    DB_ENV_POSTGRES_PASSWORD: password
-    AWS_REGION: us-east-1
-db:
-  image: postgres:9.4.15-alpine
-  environment:
-    LOCAL_ENV: 'true'
-    POSTGRES_USER: feeder
-    POSTGRES_PASSWORD: password
-  ports:
-    - "5432:5432"
+version: '2'
+networks:
+  feeder-net:
+    driver: bridge
+services:
+  feeder:
+    build: .
+    links:
+      - db
+    ports:
+      - "3000:3000"
+    command: test
+    environment:
+      VIRTUAL_HOST: 'feeder.prx.docker'
+      LOCAL_ENV: 'true'
+      DB_ENV_POSTGRES_USER: 'feeder'
+      DB_ENV_POSTGRES_PASSWORD: 'password'
+      DB_ENV_POSTGRES_DATABASE: 'feeder'
+      DB_PORT_5432_TCP_ADDR: 'db'
+      DB_PORT_5432_TCP_PORT: 5432
+      AWS_REGION: us-east-1
+  db:
+    image: postgres:13.3-alpine
+    environment:
+      LOCAL_ENV: 'true'
+      POSTGRES_USER: 'feeder'
+      POSTGRES_PASSWORD: 'password'
+      POSTGRES_DATABASE: 'feeder'
+      POSTGRES_HOST: 'db'
+      POSTGRES_POOL_SIZE: 10
+      POSTGRES_PORT: 5432
+    ports:
+      - "5432:5432"
