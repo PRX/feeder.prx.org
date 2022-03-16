@@ -39,6 +39,20 @@ describe Api::Auth::FeedsController do
       _(feed.title).must_equal 'new title'
     end
 
+    it 'can update nested tokens' do
+      feed.tokens.create!(label: 'something', token: 'tok1')
+      feed.tokens.create!(token: 'tok2')
+
+      update_tok1 = { token: 'tok1', label: 'else', expires: '2023-02-01' }
+      create_tok3 = { token: 'tok3' }
+      update_hash = { tokens: [ update_tok1, create_tok3 ] }
+
+      put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+      assert_response :success
+
+      _(feed.reload.tokens.count).must_equal 2
+    end
+
     it 'ignores updating invalid overrides' do
       fua = feed.updated_at
       update_hash = { title: 'new title2', slug: 'somesluggy2', display_episodes_count: 1 }
