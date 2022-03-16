@@ -28,10 +28,11 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
     api_authorization_podcast_path(represented.podcast) if represented.id && represented.podcast
   end
 
-  link :rss do
+  link :private_feed do
     {
       href: represented.published_url,
-      templated: true
+      templated: true,
+      type: 'application/rss+xml'
     }
   end
 end
