@@ -3,8 +3,8 @@ require 'test_helper'
 describe Feed do
   let(:podcast) { create(:podcast) }
   let(:feed1) { podcast.default_feed }
-  let(:feed2) { create(:feed, podcast: podcast, slug: 'adfree') }
-  let(:feed3) { create(:feed, podcast: podcast, slug: 'other', file_name: 'something') }
+  let(:feed2) { create(:feed, private: false, podcast: podcast, slug: 'adfree') }
+  let(:feed3) { create(:feed, private: false, podcast: podcast, slug: 'other', file_name: 'something') }
 
   describe '.new' do
     it 'sets a default file name' do
@@ -103,6 +103,16 @@ describe Feed do
     it 'returns slugged feed urls' do
       assert_equal feed2.published_url, "#{podcast.base_published_url}/adfree/feed-rss.xml"
       assert_equal feed3.published_url, "#{podcast.base_published_url}/other/something"
+    end
+
+    it 'returns templated private feed urls' do
+      feed1.private = true
+      feed2.private = true
+      feed3.private = true
+
+      assert_equal feed1.published_url, "#{podcast.base_private_url}/feed-rss.xml{?auth}"
+      assert_equal feed2.published_url, "#{podcast.base_private_url}/adfree/feed-rss.xml{?auth}"
+      assert_equal feed3.published_url, "#{podcast.base_private_url}/other/something{?auth}"
     end
   end
 end

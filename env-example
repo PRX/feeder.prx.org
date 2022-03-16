@@ -13,8 +13,8 @@ DB_ENV_POSTGRES_USER=feeder
 DB_PORT_5432_TCP_ADDR=db
 DB_PORT_5432_TCP_PORT=5432
 DOVETAIL_HOST=dovetail-staging.prxu.org
-# defaults to f.prxu.org in production, otherwise {env}-f.prxu.org
-# FEEDER_CDN_HOST=
+FEEDER_CDN_HOST=f-staging.prxu.org
+FEEDER_CDN_PRIVATE_HOST=p.staging.prxu.org
 # defaults to feeder.prx.org
 FEEDER_HOST=feeder.prx.docker
 # defaults to "PRX Feeder v#{Feeder::VERSION}"

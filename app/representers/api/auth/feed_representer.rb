@@ -17,11 +17,22 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :include_tags
   property :audio_format
 
+  # NOTE: bypass representers here, so getting/setting works correctly
+  property :represented_tokens, as: :tokens
+
   def self_url(feed)    
     api_authorization_podcast_feed_path(podcast_id: feed.podcast_id, id: feed.id)
   end
 
   link :podcast do
     api_authorization_podcast_path(represented.podcast) if represented.id && represented.podcast
+  end
+
+  link :private_feed do
+    {
+      href: represented.published_url,
+      templated: true,
+      type: 'application/rss+xml'
+    }
   end
 end

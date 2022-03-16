@@ -11,6 +11,7 @@ end
 ENV['CMS_HOST']        = 'cms.prx.org'
 ENV['FEEDER_HOST']     = 'feeder.prx.org'
 ENV['FEEDER_CDN_HOST'] = 'f.prxu.org'
+ENV['FEEDER_CDN_PRIVATE_HOST'] = 'p.prxu.org'
 ENV['ID_HOST']         = 'id.prx.org'
 ENV['META_HOST']       = 'meta.prx.org'
 ENV['PRX_HOST']        = 'www.prx.org'
