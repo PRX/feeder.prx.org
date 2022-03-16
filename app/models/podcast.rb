@@ -160,6 +160,10 @@ class Podcast < BaseModel
     "https://#{feeder_cdn_host}/#{path}"
   end
 
+  def base_private_url
+    "https://#{feeder_cdn_private_host}/#{path}"
+  end
+
   def published_url
     "#{base_published_url}/#{default_feed.try(:file_name) || Feed::DEFAULT_FILE_NAME}"
   end
@@ -177,6 +181,10 @@ class Podcast < BaseModel
 
   def feeder_cdn_host
     ENV['FEEDER_CDN_HOST']
+  end
+
+  def feeder_cdn_private_host
+    ENV['FEEDER_CDN_PRIVATE_HOST']
   end
 
   def default_feed_settings?
