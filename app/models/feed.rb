@@ -41,38 +41,6 @@ class Feed < BaseModel
     self.enclosure_template ||= Feed.enclosure_template_default
   end
 
-  def represented_tokens
-    feed_tokens.map do |t|
-      {
-        label: t.label,
-        token: t.token,
-        expires: t.expires_at
-      }.delete_if { |k, v| v.nil? }
-    end
-  end
-
-  def represented_tokens=(updates)
-    updates = (updates || []).map { |u| u.try(:with_indifferent_access) }
-
-    # update or destroy existing tokens
-    feed_tokens.each do |t|
-      if u = updates.find { |u| u[:token] == t.token }
-        t.label = u[:label]
-        t.expires_at = u[:expires]
-        updates.delete(u)
-      else
-        t.mark_for_destruction
-      end
-    end
-
-    # build new tokens with remaining updates
-    updates.each do |u|
-      tokens.build(token: u[:token], label: u[:label], expires_at: u[:expires])
-    end
-
-    tokens
-  end
-
   def sanitize_text
     self.title = sanitize_text_only(title) if title_changed?
   end
