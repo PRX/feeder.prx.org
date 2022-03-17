@@ -39,18 +39,48 @@ describe Api::Auth::FeedsController do
       _(feed.title).must_equal 'new title'
     end
 
-    it 'can update nested tokens' do
-      feed.tokens.create!(label: 'something', token: 'tok1')
-      feed.tokens.create!(token: 'tok2')
+    describe 'feed tokens' do
+      before do
+        feed.tokens.create!(label: 'something', token: 'tok1')
+        feed.tokens.create!(token: 'tok2')
+      end
+  
+      it 'can create a new feed with tokens' do
+        token_hash = {
+          slug: 'token-slug',
+          tokens: [ 
+            { token: 'tok3', label: 'tok3', expires: '2023-02-01' },
+            { token: 'tok4' }
+          ]
+        }
+    
+        post :create, token_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
 
-      update_tok1 = { token: 'tok1', label: 'else', expires: '2023-02-01' }
-      create_tok3 = { token: 'tok3' }
-      update_hash = { tokens: [ update_tok1, create_tok3 ] }
+        assert_response :success
+        id = JSON.parse(response.body)['id']
+        new_feed = Feed.find(id)
+        _(new_feed.reload.tokens.count).must_equal 2
+      end
 
-      put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
-      assert_response :success
+      it 'can update nested tokens' do
+        update_tok1 = { token: 'tok1', label: 'else', expires: '2023-02-01' }
+        create_tok3 = { token: 'tok3' }
+        update_hash = { tokens: [ update_tok1, create_tok3 ] }
 
-      _(feed.reload.tokens.count).must_equal 2
+        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        assert_response :success
+
+        _(feed.reload.tokens.count).must_equal 2
+      end
+
+      it 'can delete nested tokens' do
+        update_hash = { tokens: [] }
+
+        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        assert_response :success
+
+        _(feed.reload.tokens.count).must_equal 0
+      end
     end
 
     it 'ignores updating invalid overrides' do

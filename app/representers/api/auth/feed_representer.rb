@@ -17,8 +17,10 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :include_tags
   property :audio_format
 
-  # NOTE: bypass representers here, so getting/setting works correctly
-  property :represented_tokens, as: :tokens
+  collection :feed_tokens,
+             as: :tokens,
+             decorator: Api::FeedTokenRepresenter,
+             class: FeedToken
 
   def self_url(feed)    
     api_authorization_podcast_feed_path(podcast_id: feed.podcast_id, id: feed.id)
