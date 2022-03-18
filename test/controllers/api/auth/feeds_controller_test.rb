@@ -14,10 +14,13 @@ describe Api::Auth::FeedsController do
   end
 
   describe 'with a valid token' do
-    before do
+    around do |test|
       class << @controller; attr_accessor :prx_auth_token; end
       @controller.prx_auth_token = token
       @request.env['CONTENT_TYPE'] = 'application/json'
+      @controller.stub(:publish, true) do
+        test.call
+      end
     end
 
     it 'can create a new feed' do
@@ -68,8 +71,8 @@ describe Api::Auth::FeedsController do
         update_hash = { tokens: [ update_tok1, create_tok3 ] }
 
         put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
-        assert_response :success
 
+        assert_response :success
         _(feed.reload.tokens.count).must_equal 2
       end
 
@@ -77,8 +80,8 @@ describe Api::Auth::FeedsController do
         update_hash = { tokens: [] }
 
         put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
-        assert_response :success
 
+        assert_response :success
         _(feed.reload.tokens.count).must_equal 0
       end
     end
