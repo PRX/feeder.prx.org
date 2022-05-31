@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'uri'
+require 'net/http'
+
 class AppleApi
 
   attr_reader :provider_id, :key_id, :key
@@ -15,12 +18,48 @@ class AppleApi
   end
 
   def jwt_payload
-    { kid: key_id,
-      iss: provider_id,
-      exp: Time.now.to_i + (60 * 15) }
+    now = Time.now.utc
+
+    { iss: provider_id,
+      exp: now.to_i + (60 * 15),
+      aud: 'podcastsconnect-v1',
+    }
+  end
+
+  def jwt_headers
+    { kid: key_id }
   end
 
   def jwt
-    JWT.encode(jwt_payload, ec_key, 'ES256')
+    JWT.encode(jwt_payload, ec_key, 'ES256', jwt_headers)
+  end
+
+  def list_shows
+    get('shows')
+  end
+
+  def api_base
+    'https://api.podcastsconnect.apple.com/v1/'
+  end
+
+  private
+
+  def join_url(api_frag)
+    URI.join(api_base, api_frag)
+  end
+
+  def get(api_frag)
+    uri = join_url(api_frag)
+
+    req = Net::HTTP::Get.new(uri)
+    req['Authorization'] = "Bearer #{jwt}"
+
+    puts req
+    require 'pry'
+    binding.pry
+
+    Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http.request(req)
+    end
   end
 end

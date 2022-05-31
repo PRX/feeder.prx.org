@@ -27,11 +27,10 @@ describe AppleApi do
     payload = decoded.first
 
     assert_equal payload['iss'], provider_id
-    assert_equal payload['kid'], key_id
     assert Time.at(payload['exp']).utc.to_datetime > Time.now.utc + 14.minutes
 
     algo = decoded.second
 
-    assert_equal algo, {'typ'=>'JWT', 'alg'=>'ES256'}
+    assert_equal algo, {'typ'=>'JWT', 'alg'=>'ES256', 'kid' => key_id}
   end
 end
