@@ -7,6 +7,9 @@ gem 'rails-html-sanitizer', '~> 1.3.0'
 # JWS
 gem 'prx_auth-rails', '~> 1.2.0'
 
+# TODO merge this into PRX auth rails
+gem 'jwt'
+
 # Controller
 gem 'responders'
 gem 'hal_api-rails', '~> 0.3.7'

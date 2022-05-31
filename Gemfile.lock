@@ -371,6 +371,7 @@ DEPENDENCIES
   hyperresource
   jbuilder (~> 2.0)
   json-jwt
+  jwt
   kaminari
   m
   minitest-around
