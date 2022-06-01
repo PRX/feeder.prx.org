@@ -3,7 +3,7 @@
 require 'uri'
 require 'net/http'
 
-class AppleApi
+class Apple::Api
 
   attr_reader :provider_id, :key_id, :key
 
@@ -54,11 +54,7 @@ class AppleApi
     req = Net::HTTP::Get.new(uri)
     req['Authorization'] = "Bearer #{jwt}"
 
-    puts req
-    require 'pry'
-    binding.pry
-
-    Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+    resp = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
       http.request(req)
     end
   end
