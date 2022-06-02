@@ -11,12 +11,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220207234307) do
+ActiveRecord::Schema.define(version: 20220601211229) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
-  
+
   create_table "episode_images", force: :cascade do |t|
     t.integer  "episode_id"
     t.string   "type"
@@ -278,6 +278,15 @@ ActiveRecord::Schema.define(version: 20220207234307) do
 
   add_index "say_when_jobs", ["next_fire_at", "status"], name: "index_say_when_jobs_on_next_fire_at_and_status", using: :btree
   add_index "say_when_jobs", ["scheduled_type", "scheduled_id"], name: "index_say_when_jobs_on_scheduled_type_and_scheduled_id", using: :btree
+
+  create_table "sync_logs", force: :cascade do |t|
+    t.string   "feeder_type",                 null: false
+    t.integer  "feeder_id",         limit: 8, null: false
+    t.string   "external_type"
+    t.string   "external_id"
+    t.datetime "sync_completed_at"
+    t.datetime "created_at"
+  end
 
   create_table "tasks", force: :cascade do |t|
     t.integer  "owner_id"
