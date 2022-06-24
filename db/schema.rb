@@ -282,7 +282,6 @@ ActiveRecord::Schema.define(version: 20220601211229) do
   create_table "sync_logs", force: :cascade do |t|
     t.string   "feeder_type",                 null: false
     t.integer  "feeder_id",         limit: 8, null: false
-    t.string   "external_type"
     t.string   "external_id"
     t.datetime "sync_completed_at"
     t.datetime "created_at"
