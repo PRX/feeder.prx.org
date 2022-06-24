@@ -50,7 +50,6 @@ class Apple::Show
   end
 
   def create_show!(sync)
-    binding.pry
     api.post('shows', show_data)
   end
 
