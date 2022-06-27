@@ -6,8 +6,6 @@ require 'base64'
 
 class Apple::Api
 
-  class ApiError < StandardError; end
-
   attr_reader :provider_id, :key_id, :key
 
   def self.from_env
