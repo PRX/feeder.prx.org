@@ -86,7 +86,7 @@ GEM
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
     crass (1.0.6)
-    diffy (3.1.0)
+    diffy (3.4.2)
     docile (1.1.5)
     dotenv (2.1.1)
     dotenv-rails (2.1.1)
