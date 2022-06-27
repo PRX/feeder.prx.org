@@ -81,12 +81,12 @@ class Apple::Api
   end
 
   def countries_and_regions
-    json = handle_response(get('countriesAndRegions?limit=200'))
+    json = unwrap_response(get('countriesAndRegions?limit=200'))
     json['data'].map { |h| h.slice('type', 'id')}
   end
 
-  def handle_response(resp)
-    raise ApiError unless resp.code == '200'
+  def unwrap_response(resp)
+    raise Apple::ApiError, resp.body unless resp.code == '200'
 
     JSON.parse(resp.body)
   end
