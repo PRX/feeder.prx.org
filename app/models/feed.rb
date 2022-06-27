@@ -58,11 +58,7 @@ class Feed < BaseModel
   end
 
   def published_url
-    if private?
-      "#{podcast.base_private_url}/#{published_path}{?auth}"
-    else
-      "#{podcast.base_published_url}/#{published_path}"
-    end
+    "#{podcast.base_published_url}/#{published_path}"
   end
 
   def published_path

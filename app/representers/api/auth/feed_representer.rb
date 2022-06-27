@@ -32,9 +32,17 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
 
   link :private_feed do
     {
-      href: represented.published_url,
+      href: represented.published_url + auth_param_format,
       templated: true,
       type: 'application/rss+xml'
     }
+  end
+
+  def auth_param_format
+    if represented.private?
+      '{?auth}'
+    else
+      ''
+    end
   end
 end
