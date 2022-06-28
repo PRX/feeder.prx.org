@@ -9,8 +9,4 @@ class FeedToken < BaseModel
   def set_defaults
     self.token ||= SecureRandom.urlsafe_base64(20)
   end
-
-  def feed_published_url_with_token
-    feed.published_url + '?auth=' + token
-  end
 end

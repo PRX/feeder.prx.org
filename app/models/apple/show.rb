@@ -10,12 +10,16 @@ class Apple::Show
   end
 
   def feed_published_url
-    raise 'Missing auth tokens for private feed' if feed.private? && feed.tokens.length == 0
+    podcast_default_feed = feed.podcast.default_feed
 
-    if feed.private?
-      feed.tokens.first.feed_published_url_with_token
+    if podcast_default_feed.private? && podcast_default_feed.tokens.empty?
+      raise 'Missing auth tokens for private feed'
+    end
+
+    if podcast_default_feed.private?
+      podcast_default_feed.tokens.first.feed_published_url_with_token
     else
-      feed.published_url
+      podcast_default_feed.published_url
     end
   end
 
