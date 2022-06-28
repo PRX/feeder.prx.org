@@ -81,7 +81,7 @@ class Apple::Show
   end
 
   def get_show(show_id)
-    resp = api.get("show/#{show_id}")
+    resp = api.get("shows/#{show_id}")
 
     api.unwrap_response(resp.body)
   end
