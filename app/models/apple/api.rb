@@ -8,6 +8,8 @@ class Apple::Api
 
   attr_reader :provider_id, :key_id, :key
 
+  SUCCESS_CODES = ['200', '201'].freeze
+
   def self.from_env
     apple_key_pem = Base64.decode64(ENV['APPLE_KEY_PEM_B64'])
 
@@ -86,7 +88,7 @@ class Apple::Api
   end
 
   def unwrap_response(resp)
-    raise Apple::ApiError, resp.body unless resp.code == '200'
+    raise Apple::ApiError, resp.body unless SUCCESS_CODES.include?(resp.code)
 
     JSON.parse(resp.body)
   end

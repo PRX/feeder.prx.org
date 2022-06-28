@@ -23,6 +23,15 @@ describe Apple::Show do
         assert_equal sync.class, SyncLog
       end
     end
+
+    it 'logs an incomplete sync record if the upsert fails' do
+      raises_exception = -> (arg) { raise Apple::ApiError.new(arg) }
+      apple_show.stub(:create_or_update_show, raises_exception) do
+        sync = apple_show.sync!
+
+        assert_equal sync.complete?, false
+      end
+    end
   end
 
   describe '#show_data' do

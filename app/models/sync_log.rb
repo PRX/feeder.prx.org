@@ -9,5 +9,7 @@ class SyncLog < BaseModel
     feeds: 'f'
   }
 
-
+  def complete?
+    sync_completed_at.present? && external_id.present?
+  end
 end

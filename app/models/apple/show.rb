@@ -49,7 +49,6 @@ class Apple::Show
 
     json = create_or_update_show(last_completed_sync)
 
-    binding.pry
     sync = SyncLog.create!(feeder_id: feed.id,
                            feeder_type: 'f',
                            sync_completed_at: Time.now.utc,
@@ -69,13 +68,12 @@ class Apple::Show
   end
 
   def create_or_update_show(sync)
-    json =
-      if sync.present?
-        show = get_show(sync.external_id)
-        update_show!(show, sync)
-      else
-        create_show!(sync)
-      end
+    if sync.present?
+      show = get_show(sync.external_id)
+      update_show!(show, sync)
+    else
+      create_show!(sync)
+    end
   end
 
   def get_show(show_id)
