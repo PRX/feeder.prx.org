@@ -53,11 +53,18 @@ class Apple::Api
     get('shows')
   end
 
+  def set_headers(req)
+    req['Authorization'] = "Bearer #{jwt}"
+    req['Content-Type'] = 'application/json'
+
+    req
+  end
+
   def get(api_frag)
     uri = join_url(api_frag)
 
     req = Net::HTTP::Get.new(uri)
-    req['Authorization'] = "Bearer #{jwt}"
+    req = set_headers(req)
 
     resp = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
       http.request(req)
@@ -66,20 +73,12 @@ class Apple::Api
     resp
   end
 
+  def patch(api_frag, data_body)
+    update_remote(Net::HTTP::Patch, api_frag, data_body)
+  end
+
   def post(api_frag, data_body)
-    uri = join_url(api_frag)
-
-    req = Net::HTTP::Post.new(uri)
-    req.body = data_body.to_json
-
-    req['Authorization'] = "Bearer #{jwt}"
-    req['Content-Type'] = 'application/json'
-
-    resp = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      http.request(req)
-    end
-
-    resp
+    update_remote(Net::HTTP::Post, api_frag, data_body)
   end
 
   def countries_and_regions
@@ -94,6 +93,21 @@ class Apple::Api
   end
 
   private
+
+  def update_remote(method_class, api_frag, data_body)
+    uri = join_url(api_frag)
+
+    req = method_class.new(uri)
+    req = set_headers(req)
+
+    req.body = data_body.to_json
+
+    resp = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http.request(req)
+    end
+
+    resp
+  end
 
   def join_url(api_frag)
     URI.join(api_base, api_frag)

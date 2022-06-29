@@ -62,19 +62,23 @@ class Apple::Show
     sync = SyncLog.create!(feeder_id: feed.id, feeder_type: 'f')
   end
 
-  def create_show!(sync)
+  def create_show!(_sync)
     resp = api.post('shows', show_data)
 
     api.unwrap_response(resp)
   end
 
-  def update_show!(show, sync)
+  def update_show!(sync)
+    show_data_with_id = show_data
+    show_data_with_id[:data][:id] = sync.external_id
+    resp = api.patch('shows/' + sync.external_id, show_data_with_id)
+
+    api.unwrap_response(resp)
   end
 
   def create_or_update_show(sync)
     if sync.present?
-      show = get_show(sync.external_id)
-      update_show!(show, sync)
+      update_show!(sync)
     else
       create_show!(sync)
     end

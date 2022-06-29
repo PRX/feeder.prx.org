@@ -21,6 +21,7 @@ describe Apple::Show do
         sync = apple_show.sync!
 
         assert_equal sync.class, SyncLog
+        assert_equal sync.complete?, true
       end
     end
 
