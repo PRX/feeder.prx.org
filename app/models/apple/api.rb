@@ -60,17 +60,34 @@ class Apple::Api
     req
   end
 
+  def get_paged_collection(api_frag)
+    uri = join_url(api_frag)
+
+    res = []
+    loop do
+      break if uri.nil?
+
+      resp = get_uri(uri)
+      json = unwrap_response(resp)
+      res << json['data']
+
+      next_uri = json['links']['next']
+
+      uri =
+        if next_uri
+          URI.join(next_uri) 
+        else
+          nil
+        end
+    end
+
+    res.flatten
+  end
+
   def get(api_frag)
     uri = join_url(api_frag)
 
-    req = Net::HTTP::Get.new(uri)
-    req = set_headers(req)
-
-    resp = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      http.request(req)
-    end
-
-    resp
+    get_uri(uri)
   end
 
   def patch(api_frag, data_body)
@@ -93,6 +110,19 @@ class Apple::Api
   end
 
   private
+
+  def get_uri(uri)
+    Rails.logger.info("Apple::Api GET #{uri}")
+
+    req = Net::HTTP::Get.new(uri)
+    req = set_headers(req)
+
+    resp = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http.request(req)
+    end
+
+    resp
+  end
 
   def update_remote(method_class, api_frag, data_body)
     uri = join_url(api_frag)

@@ -84,9 +84,26 @@ class Apple::Show
     end
   end
 
-  def get_show(show_id)
+  def get_show
+    external_id = completed_sync_log&.external_id
+    self.class.get_show(api, external_id)
+  end
+
+  def get_episodes
+    @get_episodes ||=
+      begin
+        external_id = completed_sync_log&.external_id
+        self.class.get_episodes(api, external_id)
+      end
+  end
+
+  def self.get_show(api, show_id)
     resp = api.get("shows/#{show_id}")
 
     api.unwrap_response(resp.body)
+  end
+
+  def self.get_episodes(api, show_id)
+    api.get_paged_collection("shows/#{show_id}/episodes")
   end
 end
