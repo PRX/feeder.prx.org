@@ -40,6 +40,10 @@ class Apple::Show
     }
   end
 
+  def id
+    completed_sync_log.external_id
+  end
+
   def completed_sync_log
     SyncLog.
       feeds.

@@ -125,6 +125,9 @@ class Apple::Api
   end
 
   def update_remote(method_class, api_frag, data_body)
+    method_label = method_class.name.demodulize.upcase
+    Rails.logger.info("Apple::Api #{method_label} #{join_url(api_frag)}")
+
     uri = join_url(api_frag)
 
     req = method_class.new(uri)
