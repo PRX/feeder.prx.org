@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 4.2.11.3'
-gem 'rails-html-sanitizer', '~> 1.3.0'
+gem 'rails-html-sanitizer', '~> 1.4.3'
 
 # JWS
 gem 'prx_auth-rails', '~> 1.2.0'
