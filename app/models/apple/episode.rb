@@ -27,10 +27,12 @@ class Apple::Episode
   def sync!
     remote_apple_episode = scan_for_self
 
-    json = {}
-    if remote_apple_episode.nil?
-      json = create_episode(sync, remote_apple_episode['id'])
-    end
+    json =
+      if remote_apple_episode.nil?
+        create_episode!
+      else
+        update_episode!
+      end
 
     external_id = json.dig('data', 'id')
     sync_completed = external_id.present?
@@ -52,8 +54,8 @@ class Apple::Episode
         attributes:{
           guid: episode.item_guid,
           title: episode.title,
-          originalReleaseDate: episode.published_at,
-          description: episode.description,
+          originalReleaseDate: episode.published_at.utc.iso8601,
+          description: episode.description || episode.subtitle,
           websiteUrl: episode.url,
           explicit: (episode.explicit.present? && episode.explicit),
           episodeNumber: episode.episode_number,
@@ -68,8 +70,35 @@ class Apple::Episode
     }
   end
 
-  def create_episode
-    api.post
-    create_episode(sync, apple_episode_id)
+  def update_episode_data
+    data  = create_episode_data
+    data[:data][:id] = id
+    data[:data][:attributes].delete(:guid)
+    data[:data][:relationships].delete(:show)
+
+    data
+  end
+
+  def create_episode!
+    resp = api.post('episodes', create_episode_data)
+
+    api.unwrap_response(resp)
+  end
+
+  def update_episode!
+    resp = api.patch('episodes/' + id , update_episode_data)
+
+    api.unwrap_response(resp)
+  end
+
+  def id
+    get_episode&.dig('id')
+  end
+
+  def get_episode
+    return nil unless scan_for_self.present?
+
+    scan_for_self
   end
 end
+

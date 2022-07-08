@@ -41,7 +41,7 @@ class Apple::Show
   end
 
   def id
-    completed_sync_log.external_id
+    completed_sync_log&.external_id
   end
 
   def completed_sync_log
@@ -89,8 +89,9 @@ class Apple::Show
   end
 
   def get_show
-    external_id = completed_sync_log&.external_id
-    self.class.get_show(api, external_id)
+    return nil unless id.present?
+
+    self.class.get_show(api, id)
   end
 
   def get_episodes
@@ -104,7 +105,7 @@ class Apple::Show
   def self.get_show(api, show_id)
     resp = api.get("shows/#{show_id}")
 
-    api.unwrap_response(resp.body)
+    api.unwrap_response(resp)
   end
 
   def self.get_episodes(api, show_id)
