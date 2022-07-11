@@ -36,6 +36,10 @@ module ImageFile
     self[:guid]
   end
 
+  def file_name
+    File.basename(URI.parse(original_url).path)
+  end
+
   def copy_media(force = false)
     if !task || force
       Tasks::CopyImageTask.create! do |task|
