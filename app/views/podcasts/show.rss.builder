@@ -23,13 +23,13 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.docs 'http://blogs.law.harvard.edu/tech/rss'
 
     xml.image do
-      xml.url @podcast.feed_image.url
+      xml.url @feed_image.url
       xml.title @feed.title || @podcast.title
-      xml.link @podcast.link
-      xml.width @podcast.feed_image.width
-      xml.height @podcast.feed_image.height
-      xml.description @podcast.feed_image.description unless @podcast.feed_image.description.blank?
-    end if @podcast.feed_image
+      xml.link @feed_image.link || @podcast.link
+      xml.width @feed_image.width
+      xml.height @feed_image.height
+      xml.description @feed_image.description unless @feed_image.description.blank?
+    end if @feed_image
 
     xml.atom :link, href: (@feed.url || @feed.published_url), rel: 'self', type: 'application/rss+xml'
 
@@ -52,7 +52,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       end
     end
 
-    xml.itunes :image, href: @podcast.itunes_image.url if @podcast.itunes_image
+    xml.itunes :image, href: @itunes_image.url if @itunes_image
     xml.itunes :explicit, @podcast.explicit
 
     rel = full_contact('owner', @podcast) ? 'owner' : 'author'
@@ -66,7 +66,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.itunes :keywords, @podcast.keywords.join(',') unless @podcast.keywords.blank?
 
     xml.media :copyright, @podcast.copyright unless @podcast.copyright.blank?
-    xml.media :thumbnail, url: @podcast.feed_image.url if @podcast.feed_image
+    xml.media :thumbnail, url: @feed_image.url if @feed_image
     xml.media :keywords, @podcast.keywords.join(',') unless @podcast.keywords.blank?
 
     cat = @podcast.itunes_categories.first.try(:name)
