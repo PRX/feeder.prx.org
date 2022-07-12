@@ -1,4 +1,5 @@
 class ITunesImage < BaseModel
+  include ImageFile
   include FeedImageFile
 
   validates :height, :width, numericality: {

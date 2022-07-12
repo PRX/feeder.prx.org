@@ -5,8 +5,6 @@ module FeedImageFile
   extend ActiveSupport::Concern
 
   included do
-    include ImageFile
-
     belongs_to :feed, touch: true
     delegate :podcast, to: :feed, allow_nil: true
   end

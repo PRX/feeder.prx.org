@@ -1,4 +1,5 @@
 class FeedImage < BaseModel
+  include ImageFile
   include FeedImageFile
 
   def replace_resources!
