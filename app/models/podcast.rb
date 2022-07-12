@@ -1,6 +1,6 @@
 class Podcast < BaseModel
-  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template)
-  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template=)
+  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image)
+  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template= feed_image= itunes_image=)
 
   include TextSanitizer
 
@@ -8,27 +8,13 @@ class Podcast < BaseModel
   serialize :keywords, JSON
   serialize :restrictions, JSON
 
-  has_one :itunes_image, autosave: true, dependent: :destroy
-  has_one :feed_image, autosave: true, dependent: :destroy
-
   has_one :default_feed, -> { default }, class_name: 'Feed', validate: true, autosave: true
   has_many :feeds, dependent: :destroy
-
-  has_many :itunes_images,
-    -> { order('created_at DESC') },
-    autosave: true,
-    dependent: :destroy
-
-  has_many :feed_images,
-    -> { order('created_at DESC') },
-    autosave: true,
-    dependent: :destroy
 
   has_many :episodes, -> { order('published_at desc') }
   has_many :itunes_categories, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
 
-  validates_associated :itunes_image, :feed_image
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
   validates :explicit, inclusion: { in: %w(true false) }, allow_nil: false
@@ -132,20 +118,11 @@ class Podcast < BaseModel
   end
 
   def copy_media(force = false)
-    itunes_images.each{ |i| i.copy_media(force) }
-    feed_images.each{ |i| i.copy_media(force) }
+    feeds.each { |f| f.copy_media(force) }
   end
 
   def create_publish_job
     PublishFeedJob.perform_later(self)
-  end
-
-  def find_existing_image(type, url)
-    return nil if url.blank?
-    send("#{type}_images").
-      where(original_url: url).
-      order(created_at: :desc).
-      first
   end
 
   def web_master
