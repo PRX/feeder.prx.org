@@ -115,4 +115,78 @@ describe Feed do
       assert_equal feed3.published_url, "#{podcast.base_private_url}/other/something{?auth}"
     end
   end
+
+  describe "#feed_image_file" do
+    it 'replaces images' do
+      refute_nil feed1.feed_image_file
+      refute_nil feed1.feed_image
+      refute_empty feed1.feed_images
+
+      feed1.feed_image_file = 'test/fixtures/transistor300.png'
+      assert_equal feed1.reload.feed_images.count, 2
+      assert_equal feed1.feed_image_file.original_url, 'test/fixtures/transistor300.png'
+      assert_equal feed1.feed_image_file.status, 'created'
+
+      # feed_image is still the completed one
+      refute_equal feed1.feed_image, feed1.feed_image_file
+      assert_equal feed1.feed_image.status, 'complete'
+    end
+
+    it 'ignores existing images' do
+      feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
+      assert_equal feed2.feed_images.count, 1
+      assert_equal feed2.feed_image_file.original_url, 'test/fixtures/transistor300.png'
+      assert_equal feed2.feed_image_file.status, 'created'
+      assert_nil feed2.reload.feed_image
+
+      feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
+      feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
+      feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
+      assert_equal feed2.feed_images.count, 1
+    end
+
+    it 'deletes images' do
+      refute_empty feed1.feed_images
+
+      feed1.feed_image_file = nil
+      assert_empty feed1.reload.feed_images
+    end
+  end
+
+  describe "#itunes_image_file" do
+    it 'replaces images' do
+      refute_nil feed1.itunes_image_file
+      refute_nil feed1.itunes_image
+      refute_empty feed1.itunes_images
+
+      feed1.itunes_image_file = 'test/fixtures/transistor1400.jpg'
+      assert_equal feed1.reload.itunes_images.count, 2
+      assert_equal feed1.itunes_image_file.original_url, 'test/fixtures/transistor1400.jpg'
+      assert_equal feed1.itunes_image_file.status, 'created'
+
+      # itunes_image is still the completed one
+      refute_equal feed1.itunes_image, feed1.itunes_image_file
+      assert_equal feed1.itunes_image.status, 'complete'
+    end
+
+    it 'ignores existing images' do
+      feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      assert_equal feed2.itunes_images.count, 1
+      assert_equal feed2.itunes_image_file.original_url, 'test/fixtures/transistor1400.jpg'
+      assert_equal feed2.itunes_image_file.status, 'created'
+      assert_nil feed2.reload.itunes_image
+
+      feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      assert_equal feed2.itunes_images.count, 1
+    end
+
+    it 'deletes images' do
+      refute_empty feed1.itunes_images
+
+      feed1.itunes_image_file = nil
+      assert_empty feed1.reload.itunes_images
+    end
+  end
 end
