@@ -104,10 +104,10 @@ class Episode < BaseModel
   # API updates for image=
   def image_file; images.first; end
   def image_file=(file)
-    url = file.try(:with_indifferent_access).try(:[], :original_url) || file
-    if url && url != image_file.try(:original_url)
-      images.build(original_url: url)
-    elsif !url
+    img = EpisodeImage.build(file)
+    if img && img.original_url != image_file.try(:original_url)
+      images << img
+    elsif !img
       images.destroy_all
     end
   end

@@ -19,6 +19,21 @@ module ImageFile
     enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
   end
 
+  class_methods do
+    def build(file)
+      img =
+        if file && file.is_a?(Hash)
+          self.new(file)
+        elsif file && file.is_a?(String)
+          self.new(original_url: file)
+        else
+          file
+        end
+
+      img.try(:original_url).try(:present?) ? img : nil
+    end
+  end
+
   # need to implement these for your image classes
   def destination_path
   end

@@ -20,4 +20,14 @@ describe Api::Auth::FeedRepresenter do
     _(json['_links']['prx:private-feed']['templated']).must_equal true
     _(json['_links']['prx:private-feed']['type']).must_equal 'application/rss+xml'
   end
+
+  it 'has feed and itunes images' do
+    i1 = create(:feed_image, feed: feed, description: 'd1')
+    i2 = create(:itunes_image, feed: feed, description: 'd2', created_at: 1.minute.ago)
+    i3 = create(:itunes_image, feed: feed, description: 'd3', status: 'error')
+
+    # API should always return the latest image of any status
+    _(json['feedImage']['description']).must_equal 'd1'
+    _(json['itunesImage']['description']).must_equal 'd3'
+  end
 end

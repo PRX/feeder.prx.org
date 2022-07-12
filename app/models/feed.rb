@@ -118,10 +118,10 @@ class Feed < BaseModel
   # API updates for feed_image=
   def feed_image_file; feed_images.first; end
   def feed_image_file=(file)
-    url = file.try(:with_indifferent_access).try(:[], :original_url) || file
-    if url && url != feed_image_file.try(:original_url)
-      feed_images.build(original_url: url)
-    elsif !url
+    img = FeedImage.build(file)
+    if img && img.original_url != feed_image_file.try(:original_url)
+      feed_images << img
+    elsif !img
       feed_images.destroy_all
     end
   end
@@ -129,10 +129,10 @@ class Feed < BaseModel
   # API updates for itunes_image=
   def itunes_image_file; itunes_images.first; end
   def itunes_image_file=(file)
-    url = file.try(:with_indifferent_access).try(:[], :original_url) || file
-    if url && url != itunes_image_file.try(:original_url)
-      itunes_images.build(original_url: url)
-    elsif !url
+    img = ITunesImage.build(file)
+    if img && img.original_url != itunes_image_file.try(:original_url)
+      itunes_images << img
+    elsif !img
       itunes_images.destroy_all
     end
   end
