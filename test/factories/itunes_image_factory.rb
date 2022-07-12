@@ -1,5 +1,6 @@
 FactoryGirl.define do
   factory :itunes_image do
+    url 'test/fixtures/valid_series_image.jpg'
     original_url 'test/fixtures/valid_series_image.jpg'
     width 1400
     height 1400

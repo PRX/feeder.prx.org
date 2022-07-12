@@ -1,5 +1,6 @@
 FactoryGirl.define do
   factory :feed_image do
+    url 'test/fixtures/valid_feed_image.png'
     original_url 'test/fixtures/valid_feed_image.png'
     link 'http://www.maximumfun.org/jjgo'
     title 'Jordan, Jesse GO!'
