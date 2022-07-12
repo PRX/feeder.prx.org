@@ -1,4 +1,3 @@
-require 'newrelic_rpm'
 require 'active_support/concern'
 
 module FeedImageFile
