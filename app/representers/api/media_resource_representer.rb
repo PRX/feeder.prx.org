@@ -2,6 +2,7 @@
 
 class Api::MediaResourceRepresenter < Roar::Decorator
   include Roar::JSON
+  include HalApi::Representer::FormatKeys
 
   property :href
   property :original_url, writeable: false

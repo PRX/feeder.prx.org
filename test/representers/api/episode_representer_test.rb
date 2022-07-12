@@ -64,7 +64,7 @@ describe Api::EpisodeRepresenter do
   it 'has media' do
     assert_equal json['media'].size, 1
     assert_equal json['media'].first['href'], episode.enclosure.url
-    assert_equal json['media'].first['original_url'],
+    assert_equal json['media'].first['originalUrl'],
                  episode.enclosure.original_url
   end
 

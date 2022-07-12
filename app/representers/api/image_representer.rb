@@ -4,8 +4,9 @@ class Api::ImageRepresenter < Roar::Decorator
   include Roar::JSON
   include HalApi::Representer::FormatKeys
 
-  property :url, writeable: false
-  property :original_url
+  property :href
+  property :url, writeable: false # TODO: deprecate in favor of href ... but Castle scrapes this field
+  property :original_url, writeable: false
   property :link
   property :description
   property :format, writeable: false

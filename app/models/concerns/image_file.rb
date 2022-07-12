@@ -67,6 +67,17 @@ module ImageFile
     complete? ? self[:url] : self[:original_url]
   end
 
+  def href
+    complete? ? url : original_url
+  end
+
+  def href=(h)
+    if original_url != h
+      self.original_url = h
+    end
+    original_url
+  end
+
   def original_url=(url)
     super
     if original_url_changed?
@@ -80,6 +91,7 @@ module ImageFile
     self.height = nil
     self.width = nil
     self.size = nil
+    self.status = :created
   end
 
   def detect_image_attributes
