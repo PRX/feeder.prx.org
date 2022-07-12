@@ -106,7 +106,7 @@ class Episode < BaseModel
   def image_file=(file)
     url = file.try(:with_indifferent_access).try(:[], :original_url) || file
     if url && url != image_file.try(:original_url)
-      images.create!(original_url: url)
+      images.build(original_url: url)
     elsif !url
       images.destroy_all
     end

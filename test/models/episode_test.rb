@@ -287,6 +287,7 @@ describe Episode do
       refute_empty episode.images
 
       episode.image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      episode.save!
       assert_equal episode.reload.images.count, 2
       assert_equal episode.image_file.original_url, 'test/fixtures/transistor1400.jpg'
       assert_equal episode.image_file.status, 'created'
@@ -302,6 +303,7 @@ describe Episode do
       episode.image_file = { original_url: episode.image.original_url }
       episode.image_file = episode.image.original_url
       episode.image_file = { original_url: episode.image.original_url }
+      episode.save!
       assert_equal episode.images.count, 1
     end
 
