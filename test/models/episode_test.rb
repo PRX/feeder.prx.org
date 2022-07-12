@@ -279,4 +279,37 @@ describe Episode do
       refute_nil episode
     end
   end
+
+  describe "#image" do
+    it 'replaces images' do
+      refute_nil episode.image_file
+      refute_nil episode.image
+      refute_empty episode.images
+
+      episode.image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      assert_equal episode.reload.images.count, 2
+      assert_equal episode.image_file.original_url, 'test/fixtures/transistor1400.jpg'
+      assert_equal episode.image_file.status, 'created'
+
+      # image is still the completed one
+      refute_equal episode.image, episode.image_file
+      assert_equal episode.image.status, 'complete'
+    end
+
+    it 'ignores existing images' do
+      assert_equal episode.images.count, 1
+
+      episode.image_file = { original_url: episode.image.original_url }
+      episode.image_file = episode.image.original_url
+      episode.image_file = { original_url: episode.image.original_url }
+      assert_equal episode.images.count, 1
+    end
+
+    it 'deletes images' do
+      refute_empty episode.images
+
+      episode.image_file = nil
+      assert_empty episode.reload.images
+    end
+  end
 end

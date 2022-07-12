@@ -119,7 +119,7 @@ class Feed < BaseModel
   def feed_image_file; feed_images.first; end
   def feed_image_file=(file)
     url = file.try(:with_indifferent_access).try(:[], :original_url) || file
-    if url && url != feed_image_file.try(:url)
+    if url && url != feed_image_file.try(:original_url)
       feed_images.create!(original_url: url)
     elsif !url
       feed_images.destroy_all
@@ -130,7 +130,7 @@ class Feed < BaseModel
   def itunes_image_file; itunes_images.first; end
   def itunes_image_file=(file)
     url = file.try(:with_indifferent_access).try(:[], :original_url) || file
-    if url && url != itunes_image_file.try(:url)
+    if url && url != itunes_image_file.try(:original_url)
       itunes_images.create!(original_url: url)
     elsif !url
       itunes_images.destroy_all

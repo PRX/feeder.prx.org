@@ -7,6 +7,7 @@ FactoryGirl.define do
     width 144
     height 144
     size 14467
+    status 'complete'
     format 'png'
   end
 end
