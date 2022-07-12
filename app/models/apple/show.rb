@@ -9,6 +9,10 @@ class Apple::Show
     @api = Apple::Api.from_env
   end
 
+  def podcast
+    feed.podcast
+  end
+
   def feed_published_url
     podcast_default_feed = feed.podcast.default_feed
 
@@ -23,14 +27,25 @@ class Apple::Show
     end
   end
 
-  def show_data
+  def category_data
+    podcast.itunes_categories.map { |c| {id: 1511, type: 'categories',  attributes: { name: c.name}} }
+    [{"type"=>"categories", "id"=>"1301"}]
+  end
+
+  def show_data()
     {
       data: {
         type: 'shows',
         relationships: {
           allowedCountriesAndRegions: {data: api.countries_and_regions},
+          categories: { data: category_data },
         },
         attributes: {
+          title: feed.title || podcast.title,
+          description: podcast.description || '',
+          languageCode: podcast.language || 'en-us',
+          artistName: podcast.author_name || '',
+          explicit: podcast.explicit == 'true' ? true : false,
           kind: 'RSS',
           rssUrl: feed_published_url,
           releaseFrequency: 'OPTOUT',
