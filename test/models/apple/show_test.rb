@@ -44,18 +44,23 @@ describe Apple::Show do
   describe '#feed_published_url' do
 
     before do
-      feed.update!(private: true)
-      feed.tokens.build.save!
+      feed.podcast.feeds.update_all(private: true)
+      feed.podcast.feeds.map { |f| f.tokens.build.save! }
+      apple_show.podcast.reload
     end
 
     it 'returns an authed url if private' do
-      assert_equal apple_show.feed_published_url, feed.published_url + "?auth=#{feed.tokens.first.token}"
+      assert_equal apple_show.feed_published_url, feed.podcast.published_url + "?auth=#{podcast.default_feed.tokens.first.token}"
     end
 
     it 'raises an error when there is no token' do
-      feed.tokens.delete_all
+      # a private feed with no tokens
+      podcast.feeds.map { |f| f.tokens.delete_all }
+      apple_show.podcast.reload
 
-      assert_raise(RuntimeError) { apple_show.feed_published_url}
+      assert_raise(RuntimeError) do
+        apple_show.feed_published_url
+      end
     end
   end
 end

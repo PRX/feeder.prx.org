@@ -68,9 +68,15 @@ class Feed < BaseModel
   def feed_episodes
     include_in_feed = []
     feed_max = display_episodes_count.to_i
-    filtered_episodes.each do |ep|
+    filtered_episodes.
+      includes(:images).
+      preload(:podcast).
+      preload(:enclosures).
+      preload(:contents).
+      preload(:all_contents).each do |ep|
+
       next unless include_episode_categories?(ep)
-  
+
       include_in_feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (include_in_feed.size >= feed_max)
     end

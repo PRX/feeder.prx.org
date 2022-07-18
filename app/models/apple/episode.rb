@@ -10,7 +10,7 @@ class Apple::Episode
     @api = Apple::Api.from_env
   end
 
-  def scan_for_self
+  def apple_json
     eps = show.get_episodes
 
     eps.find { |ep| ep['attributes']['guid'] == episode.item_guid }
@@ -25,7 +25,7 @@ class Apple::Episode
   end
 
   def sync!
-    remote_apple_episode = scan_for_self
+    remote_apple_episode = apple_episode
 
     json =
       if remote_apple_episode.nil?

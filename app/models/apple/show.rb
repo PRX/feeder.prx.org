@@ -32,13 +32,13 @@ class Apple::Show
     [{"type"=>"categories", "id"=>"1301"}]
   end
 
-  def show_data()
+  def show_data
     {
       data: {
         type: 'shows',
         relationships: {
           allowedCountriesAndRegions: {data: api.countries_and_regions},
-          categories: { data: category_data },
+          #categories: { data: category_data },
         },
         attributes: {
           title: feed.title || podcast.title,
@@ -70,12 +70,12 @@ class Apple::Show
   def sync!
     last_completed_sync = completed_sync_log
 
-    json = create_or_update_show(last_completed_sync)
+    apple_json = create_or_update_show(last_completed_sync)
 
     sync = SyncLog.create!(feeder_id: feed.id,
                            feeder_type: 'f',
                            sync_completed_at: Time.now.utc,
-                           external_id: json['data']['id'])
+                           external_id: apple_json['data']['id'])
 
   rescue Apple::ApiError => e
     sync = SyncLog.create!(feeder_id: feed.id, feeder_type: 'f')
@@ -110,11 +110,8 @@ class Apple::Show
   end
 
   def get_episodes
-    @get_episodes ||=
-      begin
-        external_id = completed_sync_log&.external_id
-        self.class.get_episodes(api, external_id)
-      end
+    external_id = completed_sync_log&.external_id
+    self.class.get_episodes(api, external_id)
   end
 
   def self.get_show(api, show_id)
