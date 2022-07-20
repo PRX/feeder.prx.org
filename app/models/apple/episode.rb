@@ -18,10 +18,11 @@ class Apple::Episode
 
   def completed_sync_log
     SyncLog.
-      feeds.
+      episodes.
       complete.
       where(feeder_id: episode.id, feeder_type: 'e').
-      order(created_at: :desc)
+      order(id: :desc).
+      first
   end
 
   def sync!
