@@ -19,13 +19,19 @@ describe Apple::Episode do
 
     let(:apple_episode_list) do
       [
-        {attributes: {guid: episode.item_guid}}.with_indifferent_access
+        { id: '123', attributes: { guid: episode.item_guid }}.with_indifferent_access
       ]
     end
 
     it 'fetches the apple json via the show' do
       apple_show.stub(:get_episodes, apple_episode_list) do
-        assert_equal apple_episode.apple_json, {'attributes'=>{'guid'=>episode.item_guid}}
+        assert_equal apple_episode.apple_json, {'id' => '123', 'attributes'=>{'guid'=>episode.item_guid}}
+      end
+    end
+
+    it 'lets you access the id' do
+      apple_show.stub(:get_episodes, apple_episode_list) do
+        assert_equal apple_episode.id, '123'
       end
     end
   end
@@ -41,7 +47,7 @@ describe Apple::Episode do
     end
 
     it 'returns nil if nothing is completed' do
-      assert_equal apple_episode.completed_sync_log, nil
+      assert_nil apple_episode.completed_sync_log
     end
   end
 end

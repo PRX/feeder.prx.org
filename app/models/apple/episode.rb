@@ -93,13 +93,7 @@ class Apple::Episode
   end
 
   def id
-    get_episode&.dig('id')
-  end
-
-  def get_episode
-    return nil unless scan_for_self.present?
-
-    scan_for_self
+    apple_json&.dig('id')
   end
 end
 
