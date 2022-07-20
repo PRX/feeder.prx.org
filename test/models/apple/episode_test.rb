@@ -17,21 +17,31 @@ describe Apple::Episode do
 
   describe '#apple_json' do
 
+    let(:apple_episode_json) do
+        { id: '123',
+          attributes: {
+            appleHostedAudioAssetVendorId: '456',
+            guid: episode.item_guid }
+        }.with_indifferent_access
+
+    end
+
     let(:apple_episode_list) do
       [
-        { id: '123', attributes: { guid: episode.item_guid }}.with_indifferent_access
+        apple_episode_json
       ]
     end
 
     it 'fetches the apple json via the show' do
       apple_show.stub(:get_episodes, apple_episode_list) do
-        assert_equal apple_episode.apple_json, {'id' => '123', 'attributes'=>{'guid'=>episode.item_guid}}
+        assert_equal apple_episode.apple_json, apple_episode_json
       end
     end
 
-    it 'lets you access the id' do
+    it 'lets you access various attributes' do
       apple_show.stub(:get_episodes, apple_episode_list) do
         assert_equal apple_episode.id, '123'
+        assert_equal apple_episode.audio_asset_vendor_id, '456'
       end
     end
   end

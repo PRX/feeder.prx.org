@@ -92,6 +92,10 @@ class Apple::Episode
     api.unwrap_response(resp)
   end
 
+  def audio_asset_vendor_id
+    apple_json&.dig('attributes', 'appleHostedAudioAssetVendorId')
+  end
+
   def id
     apple_json&.dig('id')
   end
