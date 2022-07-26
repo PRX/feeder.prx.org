@@ -4,6 +4,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         'xmlns:media' => 'http://search.yahoo.com/mrss/',
         'xmlns:sy' => 'http://purl.org/rss/1.0/modules/syndication/',
         'xmlns:content' => 'http://purl.org/rss/1.0/modules/content/',
+        'xmlns:podcast' => 'https://podcastindex.org/namespace/1.0',
         'version' => '2.0' do
   xml.channel do
     xml.title @feed.title || @podcast.title
@@ -75,6 +76,17 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.sy :updatePeriod, @podcast.update_period if @podcast.update_period
     xml.sy :updateFrequency, @podcast.update_frequency if @podcast.update_frequency
     xml.sy :updateBase, @podcast.update_base if @podcast.update_base
+
+    xml.podcast :value, 'type' => 'webmonetization', 'method' => 'ILP' do
+      xml.podcast :valueRecipient,
+        'name' => 'Alice',
+        'type' => 'paymentpointer',
+        'address' => "example.now/~alice",
+        'split' => '100'
+    end
+
+
+
 
     @episodes.each_with_index do |ep, index|
       xml.item do
