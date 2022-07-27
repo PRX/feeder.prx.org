@@ -38,14 +38,8 @@ class Apple::Show
         type: 'shows',
         relationships: {
           allowedCountriesAndRegions: {data: api.countries_and_regions},
-          #categories: { data: category_data },
         },
         attributes: {
-          title: feed.title || podcast.title,
-          description: podcast.description || '',
-          languageCode: podcast.language || 'en-us',
-          artistName: podcast.author_name || '',
-          explicit: podcast.explicit == 'true' ? true : false,
           kind: 'RSS',
           rssUrl: feed_published_url,
           releaseFrequency: 'OPTOUT',
