@@ -25,24 +25,41 @@ class Apple::Episode
       first
   end
 
-  def sync!
-    remote_apple_episode = apple_episode
-
+  def create_or_update_episode!
     json =
-      if remote_apple_episode.nil?
+      if apple_episode.nil?
         create_episode!
       else
         update_episode!
       end
 
     external_id = json.dig('data', 'id')
-    sync_completed = external_id.present?
+    episode_sync_completed = external_id.present?
 
-    SyncLog.create!(feeder_id: episode.id,
-                    feeder_type: 'e',
-                    sync_completed_at: sync_completed ? Time.now.utc : nil,
-                    external_id: json.dig('data', 'id'))
+    SyncLog.build(feeder_id: episode.id,
+                  feeder_type: 'e',
+                  sync_completed_at: sync_completed ? Time.now.utc : nil,
+                  external_id: json.dig('data', 'id'))
+  end
 
+  def ensure_podcast_container!(episode_sync)
+    # TODO look into podcast container swap with linking and unlinking
+    # with additive media 'replacement'
+    # podcast_Apple::PodcastContainer.new(self)
+
+    # Handle the case where there is one set of media ever.
+
+    podcast_container = Apple::PodcastContainer.new(self)
+
+    if podcast_containers.empty?
+      podcast_continer.sync!
+    end
+  end
+
+  def sync!
+    ep_sync = create_or_update_episode!
+
+    media_container_sync = ensure_media_container!(ep_sync)
   rescue Apple::ApiError => e
     sync = SyncLog.create!(feeder_id: episode.id, feeder_type: 'e')
   end
@@ -99,5 +116,13 @@ class Apple::Episode
   def id
     apple_json&.dig('id')
   end
+
+  def podcast_containers
+    resp = api.get('podcastContainers?filter[vendorId]=' + audio_asset_vendor_id)
+
+    json = api.unwrap_response(resp)
+    json['data']
+  end
+
 end
 

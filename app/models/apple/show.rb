@@ -72,6 +72,7 @@ class Apple::Show
                            external_id: apple_json['data']['id'])
 
   rescue Apple::ApiError => e
+    puts e
     sync = SyncLog.create!(feeder_id: feed.id, feeder_type: 'f')
   end
 
@@ -106,6 +107,32 @@ class Apple::Show
   def get_episodes
     external_id = completed_sync_log&.external_id
     self.class.get_episodes(api, external_id)
+  end
+
+  def get_episode_asset_container_metadata
+    get_episodes.map do |ep|
+      vendor_id = ep['attributes']['appleHostedAudioAssetVendorId']
+
+      {
+        apple_episode_id: ep['id'],
+        audio_asset_vendor_id: vendor_id,
+        podcast_containers_url: episode_podcast_container_url(vendor_id)
+      }
+    end
+  end
+
+  def episode_podcast_container_url(vendor_id)
+      api.join_url('podcastContainers?filter[vendorId]=' + vendor_id).to_s
+  end
+
+  def get_podcast_containers
+
+    resp =
+      api.bridge_get('podcastContainers', get_episode_asset_container_metadata)
+
+    binding.pry
+
+    api.unwrap_response(resp)
   end
 
   def self.get_show(api, show_id)
