@@ -25,8 +25,6 @@ FactoryGirl.define do
     update_base 1.year.ago
 
     default_feed
-    itunes_image
-    feed_image
 
     after(:create) do |podcast, evaluator|
       itunes_category = create(:itunes_category, podcast: podcast)

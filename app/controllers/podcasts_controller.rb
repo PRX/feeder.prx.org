@@ -8,6 +8,8 @@ class PodcastsController < ApplicationController
     else
       if stale?(last_modified: @podcast.updated_at.utc, etag: @podcast.cache_key)
         @episodes = @podcast.feed_episodes
+        @feed_image = @feed.feed_image || @podcast.feed_image
+        @itunes_image = @feed.itunes_image || @podcast.itunes_image
       end
     end
   end

@@ -12,8 +12,7 @@ class EpisodeImage < ActiveRecord::Base
   end
 
   def image_path
-    fn = File.basename(URI.parse(original_url).path)
-    "images/#{guid}/#{fn}"
+    "images/#{guid}/#{file_name}"
   end
 
   def replace_resources!

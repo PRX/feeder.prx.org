@@ -17,6 +17,9 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :include_tags
   property :audio_format
 
+  property :feed_image_file, as: :feed_image, decorator: Api::ImageRepresenter, class: FeedImage
+  property :itunes_image_file, as: :itunes_image, decorator: Api::ImageRepresenter, class: ITunesImage
+
   collection :feed_tokens,
              as: :tokens,
              decorator: Api::FeedTokenRepresenter,

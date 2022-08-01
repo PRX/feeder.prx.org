@@ -16,6 +16,8 @@ FactoryGirl.define do
       enclosure_template 'http://www.podtrac.com/pts/redirect{extension}/media.blubrry.com/transistor/{host}{+path}'
       enclosure_prefix ''
 
+      feed_image
+      itunes_image
     end
   end
 end

@@ -19,6 +19,21 @@ module ImageFile
     enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
   end
 
+  class_methods do
+    def build(file)
+      img =
+        if file && file.is_a?(Hash)
+          self.new(file)
+        elsif file && file.is_a?(String)
+          self.new(original_url: file)
+        else
+          file
+        end
+
+      img.try(:original_url).try(:present?) ? img : nil
+    end
+  end
+
   # need to implement these for your image classes
   def destination_path
   end
@@ -36,6 +51,10 @@ module ImageFile
     self[:guid]
   end
 
+  def file_name
+    File.basename(URI.parse(original_url).path)
+  end
+
   def copy_media(force = false)
     if !task || force
       Tasks::CopyImageTask.create! do |task|
@@ -46,6 +65,17 @@ module ImageFile
 
   def url
     complete? ? self[:url] : self[:original_url]
+  end
+
+  def href
+    complete? ? url : original_url
+  end
+
+  def href=(h)
+    if original_url != h
+      self.original_url = h
+    end
+    original_url
   end
 
   def original_url=(url)
@@ -61,6 +91,7 @@ module ImageFile
     self.height = nil
     self.width = nil
     self.size = nil
+    self.status = :created
   end
 
   def detect_image_attributes

@@ -9,6 +9,8 @@ class FeedBuilder
     @podcast = podcast
     @feed = feed || podcast.default_feed
     @episodes = @feed.feed_episodes
+    @feed_image = @feed.feed_image || @podcast.feed_image
+    @itunes_image = @feed.itunes_image || @podcast.itunes_image
   end
 
   def to_feed_xml
