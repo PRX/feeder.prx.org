@@ -133,7 +133,8 @@ describe Feed do
 
       ep = create(:episode, podcast: feed1.podcast)
 
-      # add the tag matching "exclude_tags"
+      # Add the episode category so we can match the feed "exclude_tags"
+      # Using the same tag based include scheme.
       assert_equal feed1.reload.filtered_episodes, [ep]
       ep.update!(categories: ['foo'])
       assert_equal feed1.reload.filtered_episodes, []
