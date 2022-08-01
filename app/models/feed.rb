@@ -13,6 +13,7 @@ class Feed < BaseModel
 
   serialize :include_zones, JSON
   serialize :include_tags, JSON
+  serialize :exclude_tags, JSON
   serialize :audio_format, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }
@@ -73,17 +74,14 @@ class Feed < BaseModel
     include_in_feed = []
     feed_max = display_episodes_count.to_i
     filtered_episodes.each do |ep|
-      next unless include_episode_categories?(ep)
-  
       include_in_feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (include_in_feed.size >= feed_max)
     end
     include_in_feed
   end
 
-  def include_episode_categories?(ep)
-    return true if (include_tags || []).length <= 0
-    tags = include_tags.map { |cat| normalize_category(cat) }
+  def episode_categories_include?(ep, match_tags)
+    tags = match_tags.map { |cat| normalize_category(cat) }
     cats = (ep || []).categories.map { |cat| normalize_category(cat) }
     (tags & cats).length > 0
   end
@@ -92,8 +90,29 @@ class Feed < BaseModel
     cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip
   end
 
+  def use_include_tags?
+    !include_tags.nil?
+  end
+
+  def use_exclude_tags?
+    !exclude_tags.nil?
+  end
+
   def filtered_episodes
-    podcast.episodes.published_by(episode_offset_seconds.to_i)
+    eps = podcast.episodes
+
+    eps =
+      if use_include_tags?
+        eps.select { |ep| include_tags.nil? || episode_categories_include?(ep, include_tags) }
+      else
+        eps
+      end
+
+    if use_exclude_tags?
+      eps.reject { |ep| episode_categories_include?(ep, exclude_tags) }
+    else
+      eps
+    end
   end
 
   def enclosure_template

@@ -115,4 +115,29 @@ describe Feed do
       assert_equal feed3.published_url, "#{podcast.base_private_url}/other/something{?auth}"
     end
   end
+
+  describe '#filtered_episodes' do
+
+    let(:ep) { create(:episode, podcast: feed1.podcast) }
+
+    it 'should include episodes based on a tag' do
+      feed1.update!(include_tags: ['foo'])
+
+      assert_equal feed1.reload.filtered_episodes, []
+      ep.update!(categories: ['foo'])
+      assert_equal feed1.reload.filtered_episodes, [ep]
+    end
+
+    it 'should exclude episodes based on a tag' do
+      feed1.update!(exclude_tags: ['foo'])
+
+      ep = create(:episode, podcast: feed1.podcast)
+
+      # Add the episode category so we can match the feed "exclude_tags"
+      # Using the same tag based include scheme.
+      assert_equal feed1.reload.filtered_episodes, [ep]
+      ep.update!(categories: ['foo'])
+      assert_equal feed1.reload.filtered_episodes, []
+    end
+  end
 end
