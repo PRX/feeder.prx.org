@@ -153,7 +153,7 @@ class Apple::Api
     # TODO
     uri = URI.join('http://127.0.0.1:3000', '/bridge')
 
-    Rails.logger.info("Apple::Api BRIDGE #{uri.hostname}:#{uri.port}/bridge")
+    Rails.logger.info("Apple::Api BRIDGE #{api_method.upcase} #{bridge_label} #{uri.hostname}:#{uri.port}/bridge")
 
     body = {
       name: bridge_label,
