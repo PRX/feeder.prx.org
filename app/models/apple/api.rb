@@ -157,11 +157,7 @@ class Apple::Api
 
     body = {
       name: bridge_label,
-      options: bridge_options,
-      apple_options: {
-        method: api_method,
-        route: api_route
-      }
+      options: bridge_options
     }
 
     req = Net::HTTP::Post.new(uri)
