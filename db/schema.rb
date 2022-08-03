@@ -284,6 +284,7 @@ ActiveRecord::Schema.define(version: 20220801154805) do
     t.string   "feeder_type",                 null: false
     t.integer  "feeder_id",         limit: 8, null: false
     t.string   "external_id"
+    t.string   "external_type"
     t.datetime "sync_completed_at"
     t.datetime "created_at"
   end
