@@ -6,6 +6,9 @@ require 'text_sanitizer'
 class Episode < BaseModel
   include TextSanitizer
 
+  APPLE_ADFREE_TAG = 'apple-adfree'
+  APPLE_ONLY_TAG = 'apple-exclusive'
+
   serialize :categories, JSON
   serialize :keywords, JSON
 
@@ -69,6 +72,24 @@ class Episode < BaseModel
 
   def self.story_uri(story)
     (story.links['self'].href || '').gsub('/authorization/', '/')
+  end
+
+  def apple?
+    categories_include?([APPLE_ADFREE_TAG, APPLE_ONLY_TAG].freeze)
+  end
+
+  def apple_only?
+    categories_include?([APPLE_ONLY_TAG].freeze)
+  end
+
+  def categories_include?(match_tags)
+    tags = match_tags.map { |cat| normalize_category(cat) }
+    cats = categories.map { |cat| normalize_category(cat) }
+    (tags & cats).length > 0
+  end
+
+  def normalize_category(cat)
+    cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip
   end
 
   def publish_updated

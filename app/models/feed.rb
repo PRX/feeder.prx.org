@@ -77,16 +77,6 @@ class Feed < BaseModel
     include_in_feed
   end
 
-  def episode_categories_include?(ep, match_tags)
-    tags = match_tags.map { |cat| normalize_category(cat) }
-    cats = (ep || []).categories.map { |cat| normalize_category(cat) }
-    (tags & cats).length > 0
-  end
-
-  def normalize_category(cat)
-    cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip
-  end
-
   def use_include_tags?
     !include_tags.nil?
   end
@@ -95,18 +85,26 @@ class Feed < BaseModel
     !exclude_tags.nil?
   end
 
+  def apple_filtered_episodes
+    podcast.
+      episodes.
+      published_by(episode_offset_seconds.to_i).
+      to_a.
+      select(&:apple?)
+  end
+
   def filtered_episodes
-    eps = podcast.episodes
+    eps = podcast.episodes.published_by(episode_offset_seconds.to_i)
 
     eps =
       if use_include_tags?
-        eps.select { |ep| include_tags.nil? || episode_categories_include?(ep, include_tags) }
+        eps.select { |ep| include_tags.nil? || ep.categories_include?(include_tags) }
       else
         eps
       end
 
     if use_exclude_tags?
-      eps.reject { |ep| episode_categories_include?(ep, exclude_tags) }
+      eps.reject { |ep| ep.categories_include?(exclude_tags) }
     else
       eps
     end
