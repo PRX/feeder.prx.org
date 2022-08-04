@@ -11,11 +11,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220801154805) do
+ActiveRecord::Schema.define(version: 20220804164631) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
+
+  create_table "apple_podcast_containers", force: :cascade do |t|
+    t.integer  "episode_id"
+    t.string   "external_id"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+  end
 
   create_table "episode_images", force: :cascade do |t|
     t.integer  "episode_id"
