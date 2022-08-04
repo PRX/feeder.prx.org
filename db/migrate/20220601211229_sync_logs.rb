@@ -6,7 +6,6 @@ class SyncLogs < ActiveRecord::Migration
       t.bigint :feeder_id, null: false
 
       t.string :external_id
-      t.string :external_type
 
       t.datetime :sync_completed_at
 

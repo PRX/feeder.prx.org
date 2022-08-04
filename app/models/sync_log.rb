@@ -5,14 +5,9 @@ class SyncLog < BaseModel
 
   scope :complete, -> { where('sync_completed_at IS NOT NULL AND external_id IS NOT NULL') }
 
-  # TODO, this is sort of a meta type spanning feeder and apple
   enum feeder_type: {
     feeds: 'f',
-    episodes: 'e',
-  }
-
-  enum external_type: {
-    podcast_containers: 'c',
+    episodes: 'e'
   }
 
   def complete?
