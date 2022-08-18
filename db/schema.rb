@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220707204115) do
+ActiveRecord::Schema.define(version: 20220817212106) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -133,6 +133,9 @@ ActiveRecord::Schema.define(version: 20220707204115) do
     t.datetime "updated_at",                                 null: false
     t.string   "enclosure_prefix"
     t.string   "enclosure_template"
+    t.text     "subtitle"
+    t.text     "description"
+    t.text     "summary"
   end
 
   add_index "feeds", ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)", using: :btree
@@ -201,12 +204,9 @@ ActiveRecord::Schema.define(version: 20220707204115) do
     t.datetime "updated_at"
     t.text     "title"
     t.string   "link"
-    t.text     "description"
     t.string   "language"
     t.string   "managing_editor_name"
     t.string   "categories"
-    t.text     "subtitle"
-    t.text     "summary"
     t.string   "keywords"
     t.string   "update_period"
     t.integer  "update_frequency"
