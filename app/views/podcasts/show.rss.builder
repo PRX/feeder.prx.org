@@ -14,7 +14,13 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.language @podcast.language || 'en-us'
     xml.copyright @podcast.copyright unless @podcast.copyright.blank?
     xml.webMaster @podcast.web_master unless @podcast.web_master.blank?
-    xml.description { xml.cdata!(@podcast.description || '') } unless @podcast.description.blank?
+
+    if @feed.description.present?
+      xml.description { xml.cdata!(@feed.description) }
+    elsif @podcast.description.present?
+      xml.description { xml.cdata!(@podcast.description) }
+    end
+
     xml.managingEditor @podcast.managing_editor unless @podcast.managing_editor.blank?
 
     Array(@podcast.categories).each { |cat| xml.category(cat) }
@@ -61,8 +67,18 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       xml.itunes :name, @podcast.send("#{rel}_name") if @podcast.send("#{rel}_name")
     end
 
-    xml.itunes :subtitle, @podcast.subtitle unless @podcast.subtitle.blank?
-    xml.itunes(:summary) { xml.cdata!(itunes_summary(@podcast)) } if show_itunes_summary?(@podcast)
+    if @feed.subtitle.present?
+      xml.itunes :subtitle, @feed.subtitle
+    elsif @podcast.subtitle.present?
+      xml.itunes :subtitle, @podcast.subtitle
+    end
+
+    if show_itunes_summary?(@feed)
+      xml.itunes(:summary) { xml.cdata!(itunes_summary(@feed)) }
+    elsif show_itunes_summary?(@podcast)
+      xml.itunes(:summary) { xml.cdata!(itunes_summary(@podcast)) }
+    end
+
     xml.itunes :keywords, @podcast.keywords.join(',') unless @podcast.keywords.blank?
 
     xml.media :copyright, @podcast.copyright unless @podcast.copyright.blank?
