@@ -21,7 +21,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :subtitle
   property :description
   property :summary
-  property :summary_preview, exec_context: :decorator, if: ->(_o) { !represented.summary }
+  property :summary_preview, exec_context: :decorator, if: ->(_o) { represented.summary.blank? }
   property :itunes_block
 
   property :explicit

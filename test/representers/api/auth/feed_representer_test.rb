@@ -8,6 +8,17 @@ describe Api::Auth::FeedRepresenter do
 
   it 'includes basic properties' do
     _(json['slug']).must_match /myfeed(\d+)/
+    _(json['subtitle']).must_equal feed.subtitle
+    _(json['description']).must_equal feed.description
+    _(json['summary']).must_equal feed.summary
+    _(json['summaryPreview']).must_be_nil
+  end
+
+  it 'returns a summary preview when blank' do
+    feed.summary = ''
+    feed.description = 'A <b>rich text</d> <h2>description</h2> <a href="/">with links</a>'
+
+    _(json['summaryPreview']).must_equal 'A rich text description <a href="/">with links</a>'
   end
 
   it 'has links' do

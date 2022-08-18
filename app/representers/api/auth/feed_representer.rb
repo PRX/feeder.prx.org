@@ -7,6 +7,10 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :file_name
   property :private
   property :title
+  property :subtitle
+  property :description
+  property :summary
+  property :summary_preview, exec_context: :decorator, if: ->(_o) { represented.summary.blank? }
   property :url
   property :new_feed_url
   property :enclosure_prefix
