@@ -1,6 +1,6 @@
 class Podcast < BaseModel
-  FEED_GETTERS = %i(url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image)
-  FEED_SETTERS = %i(url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template= feed_image= itunes_image=)
+  FEED_GETTERS = %i(subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image)
+  FEED_SETTERS = %i(subtitle= description= summary= url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template= feed_image= itunes_image=)
 
   include TextSanitizer
 
@@ -150,9 +150,6 @@ class Podcast < BaseModel
   end
 
   def sanitize_text
-    self.description = sanitize_white_list(description) if description_changed?
-    self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
-    self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
   end
 
