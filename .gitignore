@@ -25,3 +25,5 @@ notes*
 
 /public/assets
 /build
+
+.DS_Store

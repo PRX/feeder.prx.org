@@ -43,4 +43,10 @@ describe PodcastsController do
     get :show, id: @podcast.id, format: 'rss'
     assert_match(/itunes:block>Yes/, response.body)
   end
+
+  it 'rss includes payment pointer' do
+    get :show, id: @podcast.id, format: 'rss'
+    assert_match(/<podcast:value/, response.body)
+    puts response.body
+  end
 end

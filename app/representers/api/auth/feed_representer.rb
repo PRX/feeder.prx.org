@@ -16,6 +16,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :include_zones
   property :include_tags
   property :audio_format
+  property :payment_pointer
 
   collection :feed_tokens,
              as: :tokens,

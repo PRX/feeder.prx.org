@@ -23,6 +23,7 @@ FactoryGirl.define do
     update_period 'weekly'
     update_frequency 1
     update_base 1.year.ago
+    payment_pointer '$alice.example.pointer'
 
     default_feed
     itunes_image
