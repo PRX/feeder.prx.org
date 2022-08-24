@@ -11,8 +11,8 @@ describe Api::EpisodeRepresenter do
   end
 
   it 'includes clean title, season, episode, and ep type info' do
-    assert_instance_of Fixnum, json['seasonNumber']
-    assert_instance_of Fixnum, json['episodeNumber']
+    assert_instance_of Integer, json['seasonNumber']
+    assert_instance_of Integer, json['episodeNumber']
     assert_match(/Clean title/, json['cleanTitle'])
     assert_equal json['itunesType'], 'full'
     assert_equal json['itunesBlock'], false
