@@ -14,9 +14,10 @@ RUN apk --no-cache add \
     linux-headers \
     nodejs \
     postgresql-client \
-    python py-pip py-setuptools \
+    python3 py3-pip py-setuptools \
     tzdata \
     sqlite \
+    && ln -sf python3 /usr/bin/python \
     && pip --no-cache-dir install awscli
 
 # install PRX aws-secrets scripts
