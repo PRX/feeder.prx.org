@@ -59,8 +59,8 @@ describe PodcastFeedHandler do
 
     handler.update_images
 
-    assert_equal handler.podcast.feed_images.first.original_url, 'http://prx.org/thumb.png'
-    assert_equal handler.podcast.itunes_images.first.original_url, 'http://prx.org/image.png'
+    assert_equal handler.default_feed.feed_images.first.original_url, 'http://prx.org/thumb.png'
+    assert_equal handler.default_feed.itunes_images.first.original_url, 'http://prx.org/image.png'
   end
 
   it 'update_categories' do

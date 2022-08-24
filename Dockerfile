@@ -1,6 +1,7 @@
 FROM ruby:2.3-alpine3.8
 
 LABEL org.prx.app="yes"
+LABEL org.prx.spire.publish.ecr="RAILS_APP"
 
 # install git, aws-cli
 RUN apk --no-cache add \

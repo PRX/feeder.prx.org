@@ -30,7 +30,7 @@ describe PodcastSeriesHandler do
     assert_nil podcast.summary
     assert_match(/^The Moth Radio Hour is a weekly series/, podcast.subtitle)
 
-    assert_equal podcast.itunes_images.first.original_url, profile
-    assert_nil podcast.feed_image
+    assert_equal podcast.default_feed.itunes_images.first.original_url, profile
+    assert_nil podcast.default_feed.feed_image
   end
 end

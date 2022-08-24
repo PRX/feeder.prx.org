@@ -101,6 +101,17 @@ class Episode < BaseModel
     images.complete.first
   end
 
+  # API updates for image=
+  def image_file; images.first; end
+  def image_file=(file)
+    img = EpisodeImage.build(file)
+    if img && img.original_url != image_file.try(:original_url)
+      images << img
+    elsif !img
+      images.destroy_all
+    end
+  end
+
   def initialize_guid
     guid
   end

@@ -1,7 +1,7 @@
 class PodcastSeriesHandler
   include PRXAccess
 
-  attr_accessor :podcast, :series
+  attr_accessor :podcast, :default_feed, :series
 
   def self.create_from_series!(series)
     podcast = Podcast.new
@@ -15,6 +15,8 @@ class PodcastSeriesHandler
 
   def initialize(podcast)
     self.podcast = podcast
+    podcast.set_defaults
+    self.default_feed = podcast.default_feed
   end
 
   def update_from_series!(series)
@@ -48,16 +50,12 @@ class PodcastSeriesHandler
 
   def update_images
     images = series.objects['prx:images'].objects['prx:items'] rescue []
-    { feed: 'thumbnail', itunes: 'profile' }.each do |type, purpose|
-      if image = images.detect { |i| i.attributes['purpose'] == purpose }
-        image_url = image.links['original'].href
-        if !podcast.find_existing_image(type, image_url)
-          podcast.send("#{type}_images").build(original_url: image_url)
-        end
-      else
-        podcast.send("#{type}_images").destroy_all
-      end
-    end
+
+    feed_image = images.find { |i| i.attributes['purpose'] == 'thumbnail' }
+    default_feed.feed_image_file = feed_image.try(:links).try(:original).try(:href)
+
+    itunes_image = images.find { |i| i.attributes['purpose'] == 'profile' }
+    default_feed.itunes_image_file = itunes_image.try(:links).try(:original).try(:href)
   end
 
   def get_series(account = nil)
