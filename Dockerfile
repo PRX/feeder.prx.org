@@ -1,4 +1,4 @@
-FROM ruby:2.3-alpine3.8
+FROM ruby:2.5.9-alpine3.13
 
 LABEL org.prx.app="yes"
 LABEL org.prx.spire.publish.ecr="RAILS_APP"
@@ -14,9 +14,10 @@ RUN apk --no-cache add \
     linux-headers \
     nodejs \
     postgresql-client \
-    python py-pip py-setuptools \
+    python3 py3-pip py-setuptools \
     tzdata \
     sqlite \
+    && ln -sf python3 /usr/bin/python \
     && pip --no-cache-dir install awscli
 
 # install PRX aws-secrets scripts

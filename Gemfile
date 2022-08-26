@@ -60,6 +60,11 @@ gem 'excon'
 # Monitor app performance with NewRelic
 gem 'newrelic_rpm'
 
+# Monitor app performance with OpenTelemetry services
+gem 'opentelemetry-sdk'
+gem 'opentelemetry-exporter-otlp'
+gem 'opentelemetry-instrumentation-all'
+
 # Use Sanitize for HTML and CSS whitelisting
 gem 'sanitize'
 
