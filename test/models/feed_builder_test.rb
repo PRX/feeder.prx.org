@@ -42,7 +42,7 @@ describe FeedBuilder do
       rss = builder.to_feed_xml
       _(rss).must_include '<podcast:value'
 
-      podcast.payment_pointer = nil
+      podcast.default_feed.payment_pointer = nil
       rss = builder.to_feed_xml
       _(rss).wont_include '<podcast:value'
     end

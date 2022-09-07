@@ -234,7 +234,6 @@ ActiveRecord::Schema.define(version: 20220823044927) do
     t.boolean  "locked",                default: false
     t.boolean  "itunes_block",          default: false
     t.text     "restrictions"
-    t.string   "payment_pointer"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
