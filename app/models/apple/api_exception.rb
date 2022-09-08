@@ -1,8 +1,11 @@
-class Apple::ApiException < StandardError
+# frozen_string_literal: true
 
-  attr_reader :http_response
+class Apple
+  class ApiException < StandardError
+    attr_reader :http_response
 
-  def initialize(http_response)
-    @http_response = http_response
+    def initialize(http_response)
+      @http_response = http_response
+    end
   end
 end
