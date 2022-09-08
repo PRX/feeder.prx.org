@@ -36,7 +36,7 @@ module Apple
 
     def sync_episodes!
       episodes_to_sync.each do |episode|
-        Rails.logger("Syncing Episode Guid: #{episode.episode.guid}")
+        Rails.logger.info("Syncing Episode Guid: #{episode.episode.guid}")
 
         episode.sync!
       end
@@ -61,16 +61,7 @@ module Apple
       zip_episode_results(get_podcast_containers)
 
       # new containers
-      new_containers_response = create_podcast_containers!
-
-      new_containers_response.map do |resp|
-        ep = find_episode(resp["apple_episode_id"])
-        external_id = resp["podcast_container_response"]["data"]["id"]
-
-        Apple::PodcastContainer.create!(episode_id: ep.feeder_id,
-                                        external_id: external_id,
-                                        api_response: resp)
-      end
+      create_podcast_containers!
     rescue Apple::ApiError => _e
       SyncLog.create!(feeder_id: feed.id, feeder_type: "f")
     end
@@ -99,16 +90,39 @@ module Apple
     end
 
     def create_podcast_containers!
-      resp =
-        api.bridge_remote("createPodcastContainers", create_episode_asset_container_metadata)
+      create_metadata = create_episode_asset_container_metadata
 
-      api.unwrap_response(resp)
+      existing_containers = get_episode_asset_container_metadata
+      existing_by_episode_id = existing_containers.map { |r| r[:apple_episode_id] }.to_set
+
+      api_resp =
+        api.bridge_remote("createPodcastContainers",
+                          create_metadata.reject { |row| existing_by_episode_id.include?(row["episode_id"]) })
+
+      # TODO: error handling
+      _new_containers_response = api.unwrap_response(api_resp)
+
+      # Make sure we have local copies of the remote metadata At this point and
+      # errors should be resolved and we should have then intended set of
+      # podcast containers created (`create_metadata`)
+
+      create_metadata.map do |row|
+        ep = find_episode(row["episode_id"])
+        puts resp
+        external_id = row["podcast_container_response"]["data"]["id"]
+
+        pc = Apple::PodcastContainer.find_or_create!(episode_id: ep.feeder_id,
+                                                     external_id: external_id,
+                                                     api_response: resp)
+        SyncLog.create!(feeder_id: pc.id, feeder_type: "c", external_id: external_id)
+      end
     end
 
     def create_episode_asset_container_metadata
-      return unless show.id.present?
+      raise "Missing Show!" unless show.id.present?
 
-      episodes_to_sync.map do |ep|
+      episodes_to_sync.
+        map do |ep|
         {
           apple_episode_id: ep.id,
           podcast_containers_url: api.join_url("podcastContainers").to_s,

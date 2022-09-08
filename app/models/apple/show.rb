@@ -116,6 +116,10 @@ module Apple
         end
     end
 
+    def apple_episodes
+      get_episodes
+    end
+
     def self.get_show(api, show_id)
       resp = api.get("shows/#{show_id}")
 
