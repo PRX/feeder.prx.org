@@ -34,6 +34,8 @@ class Episode < BaseModel
            -> { order('created_at DESC') },
            autosave: true, dependent: :destroy
 
+  has_many :apple_podcast_containers, class_name: 'Apple::PodcastContainer'
+
   validates :podcast_id, :guid, presence: true
   validates :itunes_type, inclusion: { in: %w[full trailer bonus] }
   validates :episode_number,
@@ -52,6 +54,7 @@ class Episode < BaseModel
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
+  alias_method :podcast_containers, :apple_podcast_containers
 
   def self.release_episodes!(options = {})
     podcasts = []

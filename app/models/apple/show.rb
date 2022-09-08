@@ -9,6 +9,11 @@ class Apple::Show
     @api = Apple::Api.from_env
   end
 
+  def reload
+    # flush memoized attrs
+    @get_episodes = nil
+  end
+
   def podcast
     feed.podcast
   end
@@ -105,8 +110,11 @@ class Apple::Show
   end
 
   def get_episodes
-    external_id = completed_sync_log&.external_id
-    self.class.get_episodes(api, external_id)
+   @get_episodes ||=
+     begin
+      external_id = completed_sync_log&.external_id
+      self.class.get_episodes(api, external_id)
+     end
   end
 
   def self.get_show(api, show_id)

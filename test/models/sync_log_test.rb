@@ -10,4 +10,15 @@ describe SyncLog do
       assert_equal SyncLog.feeds, [s]
     end
   end
+
+  describe '#external_type' do
+    it 'can set an external type' do
+
+      s = SyncLog.new(feeder_type: :episodes, feeder_id: 123, external_type: :podcast_containers, external_id: '1235')
+      s.save!
+
+      assert_equal s.persisted?, true
+
+    end
+  end
 end

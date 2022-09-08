@@ -113,8 +113,28 @@ class Apple::Api
     JSON.parse(resp.body)
   end
 
-  def bridge_get(bridge_label, bridge_options)
-    bridge_remote(bridge_label, bridge_options, join_url(bridge_label).to_s, 'get')
+  def bridge_remote(bridge_label, bridge_options)
+
+    # TODO
+    uri = URI.join('http://127.0.0.1:3000', '/bridge')
+
+    Rails.logger.info("Apple::Api BRIDGE #{bridge_label} #{uri.hostname}:#{uri.port}/bridge")
+
+    body = {
+      name: bridge_label,
+      options: bridge_options
+    }
+
+    req = Net::HTTP::Post.new(uri)
+    req.body = body.to_json
+    req = set_headers(req)
+
+    # TODO
+    use_ssl = false
+
+    Net::HTTP.start(uri.hostname, uri.port, use_ssl: use_ssl) do |http|
+      http.request(req)
+    end
   end
 
   private
@@ -148,27 +168,4 @@ class Apple::Api
     end
   end
 
-  def bridge_remote(bridge_label, bridge_options, api_route, api_method)
-
-    # TODO
-    uri = URI.join('http://127.0.0.1:3000', '/bridge')
-
-    Rails.logger.info("Apple::Api BRIDGE #{api_method.upcase} #{bridge_label} #{uri.hostname}:#{uri.port}/bridge")
-
-    body = {
-      name: bridge_label,
-      options: bridge_options
-    }
-
-    req = Net::HTTP::Post.new(uri)
-    req.body = body.to_json
-    req = set_headers(req)
-
-    # TODO
-    use_ssl = false
-
-    Net::HTTP.start(uri.hostname, uri.port, use_ssl: use_ssl) do |http|
-      http.request(req)
-    end
-  end
 end

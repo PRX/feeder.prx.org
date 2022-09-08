@@ -20,8 +20,9 @@ ActiveRecord::Schema.define(version: 20220804164631) do
   create_table "apple_podcast_containers", force: :cascade do |t|
     t.integer  "episode_id"
     t.string   "external_id"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.string   "api_response"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
   create_table "episode_images", force: :cascade do |t|
