@@ -35,11 +35,13 @@ module Apple
     end
 
     def sync_episodes!
-      episodes_to_sync.each do |episode|
-        Rails.logger.info("Syncing Episode Guid: #{episode.episode.guid}")
+      create_apple_episodes = episodes_to_sync.select(&:apple_new?)
+      update_apple_episodes = episodes_to_sync.select(&:apple_persisted?)
 
-        episode.sync!
-      end
+      Apple::Episode.create_episodes(api, create_apple_episodes)
+      Apple::Episode.update_episodes(api, update_apple_episodes)
+
+      show.reload
     end
 
     def zip_episode_results(res)
@@ -55,58 +57,55 @@ module Apple
 
       sync_episodes!
 
-      show.reload
-
-      # sync the containers
-      zip_episode_results(get_podcast_containers)
-
-      # new containers
+      # only create if needed
       create_podcast_containers!
+
+      # success
+      SyncLog.create!(feeder_id: feed.id, feeder_type: "f", external_id: show.id)
     rescue Apple::ApiError => _e
       SyncLog.create!(feeder_id: feed.id, feeder_type: "f")
     end
 
-    def episode_podcast_container_url(vendor_id)
+    def podcast_container_url(vendor_id)
       api.join_url("podcastContainers?filter[vendorId]=" + vendor_id).to_s
     end
 
     def get_podcast_containers
       resp =
-        api.bridge_remote("getPodcastContainers", get_episode_asset_container_metadata)
+        api.bridge_remote("getPodcastContainers", get_podcast_containers_bridge_params)
 
       api.unwrap_response(resp)
     end
 
-    def get_episode_asset_container_metadata
+    def get_podcast_containers_bridge_params
       raise "Unknown show" unless show.id.present?
 
       episodes_to_sync.map do |ep|
         {
           apple_episode_id: ep.id,
-          audio_asset_vendor_id: ep.audio_asset_vendor_id,
-          podcast_containers_url: ep.podcast_container_url
+          api_url: podcast_container_url(ep.audio_asset_vendor_id),
+          api_config: {}
         }
       end
     end
 
     def create_podcast_containers!
-      create_metadata = create_episode_asset_container_metadata
+      existing_by_episode_id = episodes_to_sync.map(&:id).to_set
 
-      existing_containers = get_episode_asset_container_metadata
-      existing_by_episode_id = existing_containers.map { |r| r[:apple_episode_id] }.to_set
-
+      binding.pry
       api_resp =
         api.bridge_remote("createPodcastContainers",
-                          create_metadata.reject { |row| existing_by_episode_id.include?(row["episode_id"]) })
+                          create_podcast_containers_bridge_params.
+                            reject { |row| existing_by_episode_id.include?(row[:episode_id]) })
 
       # TODO: error handling
-      _new_containers_response = api.unwrap_response(api_resp)
+      new_containers_response = api.unwrap_response(api_resp)
 
       # Make sure we have local copies of the remote metadata At this point and
       # errors should be resolved and we should have then intended set of
       # podcast containers created (`create_metadata`)
 
-      create_metadata.map do |row|
+      new_containers_response.map do |row|
         ep = find_episode(row["episode_id"])
         puts resp
         external_id = row["podcast_container_response"]["data"]["id"]
@@ -118,17 +117,28 @@ module Apple
       end
     end
 
-    def create_episode_asset_container_metadata
+    def create_podcast_containers_bridge_params
       raise "Missing Show!" unless show.id.present?
 
       episodes_to_sync.
         map do |ep|
         {
-          apple_episode_id: ep.id,
-          podcast_containers_url: api.join_url("podcastContainers").to_s,
-          podcast_containers_create_parameters: ep.podcast_container_create_parameters
+          episode_id: ep.id,
+          api_url: api.join_url("podcastContainers").to_s,
+          api_parameters: podcast_container_create_parameters(ep.audio_asset_vendor_id)
         }
       end
+    end
+
+    def podcast_container_create_parameters(audio_asset_vendor_id)
+      {
+        'data': {
+          'type': "podcastContainers",
+          'attributes': {
+            'vendorId': audio_asset_vendor_id
+          }
+        }
+      }
     end
   end
 end
