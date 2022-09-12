@@ -36,7 +36,7 @@ module Apple
 
     def sync_episodes!
       create_apple_episodes = episodes_to_sync.select(&:apple_new?)
-      update_apple_episodes = episodes_to_sync.select(&:apple_persisted?)
+      update_apple_episodes = episodes_to_sync.select { |ep| ep.apple_persisted? && ep.apple_only? }
 
       Apple::Episode.create_episodes(api, create_apple_episodes)
       Apple::Episode.update_episodes(api, update_apple_episodes)
@@ -54,6 +54,7 @@ module Apple
 
     def publish!
       show.sync!
+      raise "Missing Show!" unless show.id.present?
 
       sync_episodes!
 

@@ -61,6 +61,10 @@ module Apple
       !apple_persisted?
     end
 
+    def apple_only?
+      episode.apple_only?
+    end
+
     def create_or_update_episode!
       raise "Not for apple!" unless apple_only?
 
@@ -118,7 +122,7 @@ module Apple
     def update_episode_bridge_params
       {
         api_url: api.join_url("episodes/" + id).to_s,
-        api_parameters: episode_create_parameters,
+        api_parameters: update_episode_parameters,
       }
     end
 
@@ -148,12 +152,20 @@ module Apple
       apple_json&.dig("attributes", "appleHostedAudioAssetVendorId")
     end
 
-    def id
+    def apple_id
       apple_json&.dig("id")
+    end
+
+    def id
+      apple_id
     end
 
     def feeder_id
       episode.id
+    end
+
+    def podcast_container
+      Apple::PodcastContainer.find_by(episode_id: episode.id)
     end
   end
 end
