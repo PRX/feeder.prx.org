@@ -6,12 +6,8 @@ module Apple
 
     belongs_to :episode, class_name: "::Episode"
 
-    def apple_resp
-      api_response["podcast_container_response"]
-    end
-
     def podcast_deliveries_url
-      apple_resp.dig("data", "relationships", "podcastDeliveries", "links", "self")
+      api_response.dig("data", "relationships", "podcastDeliveries", "links", "self")
     end
   end
 end
