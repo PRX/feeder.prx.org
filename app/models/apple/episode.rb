@@ -10,9 +10,9 @@ module Apple
       resp =
         api.bridge_remote("createEpisodes", episodes.map(&:create_episode_bridge_params))
 
+      # TODO: handle errors
       episode_bridge_results = api.unwrap_response(resp)
-
-      episode_bridge_results.each { |ebr| insert_sync_logs(ebr) }
+      insert_sync_logs(episodes, episode_bridge_results)
     end
 
     def self.update_episodes(api, episodes)
@@ -21,13 +21,21 @@ module Apple
       resp =
         api.bridge_remote("updateEpisodes", episodes.map(&:update_episode_bridge_params))
 
+      # TODO: handle errors
       episode_bridge_results = api.unwrap_response(resp)
-
-      episode_bridge_results.each { |ebr| insert_sync_logs(ebr) }
+      insert_sync_logs(episodes, episode_bridge_results)
     end
 
-    def self.insert_sync_logs(resp)
-      binding.pry
+    def self.insert_sync_logs(episodes, results)
+      episodes_by_apple_id = episodes.map { |ep| [ep.apple_id, ep] }.to_h
+
+      results.each do |res|
+        apple_id = res.dig("api_parameters", "data", "id")
+        ep = episodes_by_apple_id[apple_id]
+
+        SyncLog.
+          create(feeder_id: ep.id, feeder_type: "e", external_id: apple_id)
+      end
     end
 
     def initialize(show, episode)
