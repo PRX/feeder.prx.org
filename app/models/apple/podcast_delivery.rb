@@ -32,18 +32,21 @@ module Apple
 
       new_deliveries_response.map do |row|
         ep = episodes_by_id.fetch(row["episode_id"])
-
-        external_id = row.dig("api_response", "val", "data", "id")
-        delivery_status = row.dig("api_response", "val", "data", "attributes", "status")
-
-        pc = Apple::PodcastDelivery.find_or_create!(episode_id: ep.feeder_id,
-                                                    external_id: external_id,
-                                                    status: delivery_status,
-                                                    podcast_container: ep.podcast_container,
-                                                    api_response: resp)
-
-        SyncLog.create!(feeder_id: pc.id, feeder_type: "c", external_id: external_id)
+        create_logs(ep, row)
       end
+    end
+
+    def self.create_logs(ep, row)
+      external_id = row.dig("api_response", "val", "data", "id")
+      delivery_status = row.dig("api_response", "val", "data", "attributes", "status")
+
+      pc = Apple::PodcastDelivery.create!(episode_id: ep.feeder_id,
+                                          external_id: external_id,
+                                          status: delivery_status,
+                                          podcast_container: ep.podcast_container,
+                                          api_response: row)
+
+      SyncLog.create!(feeder_id: pc.id, feeder_type: "c", external_id: external_id)
     end
 
     def self.create_podcast_deliveries_bridge_params(api, episodes_to_sync)
