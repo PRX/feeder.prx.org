@@ -40,8 +40,6 @@ module Apple
 
       Apple::Episode.create_episodes(api, create_apple_episodes)
       Apple::Episode.update_episodes(api, update_apple_episodes)
-
-      show.reload
     end
 
     def publish!
@@ -50,8 +48,11 @@ module Apple
 
       sync_episodes!
 
+      show.reload
+
       # only create if needed
       create_podcast_containers!
+      create_podcast_deliveries!
 
       # success
       SyncLog.create!(feeder_id: feed.id, feeder_type: "f", external_id: show.id)
@@ -64,7 +65,15 @@ module Apple
     end
 
     def create_podcast_containers!
-      Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
+      Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync, show)
+    end
+
+    def get_podcast_deliveries
+      Apple::PodcastDelivery.get_podcast_deliveries(api, episodes_to_sync)
+    end
+
+    def create_podcast_deliveries!
+      Apple::PodcastDelivery.create_podcast_deliveries(api, episodes_to_sync)
     end
   end
 end

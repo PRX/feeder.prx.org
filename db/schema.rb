@@ -29,11 +29,12 @@ ActiveRecord::Schema.define(version: 20220912144326) do
 
   create_table "apple_podcast_deliveries", force: :cascade do |t|
     t.integer  "episode_id"
+    t.integer  "podcast_container_id"
     t.string   "external_id"
     t.string   "status"
     t.string   "api_response"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
   end
 
   add_index "apple_podcast_deliveries", ["episode_id"], name: "index_apple_podcast_deliveries_on_episode_id", unique: true, using: :btree

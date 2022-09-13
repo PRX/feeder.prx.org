@@ -27,14 +27,17 @@ module Apple
     end
 
     def self.insert_sync_logs(episodes, results)
-      episodes_by_apple_id = episodes.map { |ep| [ep.apple_id, ep] }.to_h
+      episodes_by_item_guid = episodes.map { |ep| [ep.item_guid, ep] }.to_h
 
       results.each do |res|
-        apple_id = res.dig("api_parameters", "data", "id")
-        ep = episodes_by_apple_id[apple_id]
+        # we don't have the external ids loadded yet.
+        # save an api call and redo the join like in
+        apple_id = res.dig("api_response", "val", "data", "id")
+        guid = res.dig("api_response", "val", "data", "attributes", "guid")
+        ep = episodes_by_item_guid.fetch(guid)
 
         SyncLog.
-          create(feeder_id: ep.id, feeder_type: "e", external_id: apple_id)
+          create(feeder_id: ep.episode.id, feeder_type: "e", external_id: apple_id)
       end
     end
 
@@ -42,6 +45,10 @@ module Apple
       @show = show
       @episode = episode
       @api = Apple::Api.from_env
+    end
+
+    def feeder_id
+      episode.id
     end
 
     def json
@@ -56,8 +63,8 @@ module Apple
       SyncLog.
         episodes.
         complete.
-        where(feeder_id: episode.id, feeder_type: "e", external_type: nil).
-        order(id: :desc).
+        latest.
+        where(feeder_id: episode.id, feeder_type: "e").
         first
     end
 
@@ -71,6 +78,10 @@ module Apple
 
     def apple_only?
       episode.apple_only?
+    end
+
+    def item_guid
+      episode.item_guid
     end
 
     def create_or_update_episode!
@@ -166,10 +177,6 @@ module Apple
 
     def id
       apple_id
-    end
-
-    def feeder_id
-      episode.id
     end
 
     def podcast_container
