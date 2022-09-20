@@ -12,8 +12,6 @@ module Apple
       episodes_needing_delivery_files =
         episodes.reject { |ep| ep.podcast_container&.podcast_delivery&.podcast_delivery_file.present? }
 
-      binding.pry
-
       resp =
         api.bridge_remote("headFileSizes", episodes_needing_delivery_files.map(&:head_file_size_bridge_params))
 
@@ -105,7 +103,7 @@ module Apple
                                          api_response: row)
 
       SyncLog.
-        create(feeder_id: ep.episode.id, feeder_type: "f", external_id: apple_id)
+        create(feeder_id: ep.feeder_id, feeder_type: "f", external_id: apple_id)
     end
   end
 end

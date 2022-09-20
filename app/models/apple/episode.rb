@@ -4,7 +4,7 @@ require "uri"
 
 module Apple
   class Episode
-    attr_reader :show, :episode, :api
+    attr_reader :show, :feeder_episode, :api
 
     def self.create_episodes(api, episodes)
       return if episodes.empty?
@@ -39,32 +39,32 @@ module Apple
         ep = episodes_by_item_guid.fetch(guid)
 
         SyncLog.
-          create(feeder_id: ep.episode.id, feeder_type: :episodes, external_id: apple_id)
+          create(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id)
       end
     end
 
     def initialize(show, episode)
       @show = show
-      @episode = episode
+      @feeder_episode = episode
       @api = Apple::Api.from_env
     end
 
     def feeder_id
-      episode.id
+      feeder_episode.id
     end
 
     def enclosure_url
-      episode.enclosure_url
+      feeder_episode.enclosure_url
     end
 
     def enclosure_filename
-      episode.enclosure_filename
+      feeder_episode.enclosure_filename
     end
 
     def json
       eps = show.get_episodes
 
-      eps.detect { |ep| ep["attributes"]["guid"] == episode.item_guid }
+      eps.detect { |ep| ep["attributes"]["guid"] == feeder_episode.item_guid }
     end
 
     alias_method :apple_json, :json
@@ -74,7 +74,7 @@ module Apple
         episodes.
         complete.
         latest.
-        where(feeder_id: episode.id, feeder_type: "e").
+        where(feeder_id: feeder_episode.id, feeder_type: "e").
         first
     end
 
@@ -87,11 +87,11 @@ module Apple
     end
 
     def apple_only?
-      episode.apple_only?
+      feeder_episode.apple_only?
     end
 
     def item_guid
-      episode.item_guid
+      feeder_episode.item_guid
     end
 
     def create_or_update_episode!
@@ -108,11 +108,11 @@ module Apple
     end
 
     def apple?
-      episode.apple?
+      feeder_episode.apple?
     end
 
     def apple_only?
-      episode.apple_only?
+      feeder_episode.apple_only?
     end
 
     def create_episode_bridge_params
@@ -123,22 +123,22 @@ module Apple
     end
 
     def episode_create_parameters
-      explicit = episode.explicit.present? && episode.explicit == "true"
+      explicit = feeder_episode.explicit.present? && feeder_episode.explicit == "true"
 
       {
         data:
         {
           type: "episodes",
           attributes: {
-            guid: episode.item_guid,
-            title: episode.title,
-            originalReleaseDate: episode.published_at.utc.iso8601,
-            description: episode.description || episode.subtitle,
-            websiteUrl: episode.url,
+            guid: feeder_episode.item_guid,
+            title: feeder_episode.title,
+            originalReleaseDate: feeder_episode.published_at.utc.iso8601,
+            description: feeder_episode.description || feeder_episode.subtitle,
+            websiteUrl: feeder_episode.url,
             explicit: explicit,
-            episodeNumber: episode.episode_number,
-            seasonNumber: episode.season_number,
-            episodeType: episode.itunes_type.upcase,
+            episodeNumber: feeder_episode.episode_number,
+            seasonNumber: feeder_episode.season_number,
+            episodeType: feeder_episode.itunes_type.upcase,
             appleHostedAudioIsSubscriberOnly: true
           },
           relationships: {
@@ -168,7 +168,7 @@ module Apple
     def head_file_size_bridge_params
       {
         episode_id: apple_id,
-        api_url: episode.enclosure_url,
+        api_url: feeder_episode.enclosure_url,
         api_parameters: {},
       }
     end
@@ -199,7 +199,7 @@ module Apple
 
     def podcast_container
       # TODO: differentiate these by container type: audio versus images
-      Apple::PodcastContainer.find_by(episode_id: episode.id)
+      Apple::PodcastContainer.find_by(episode_id: feeder_episode.id)
     end
   end
 end
