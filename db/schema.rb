@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220912144326) do
+ActiveRecord::Schema.define(version: 20220919183406) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -26,6 +26,7 @@ ActiveRecord::Schema.define(version: 20220912144326) do
   end
 
   add_index "apple_podcast_containers", ["episode_id"], name: "index_apple_podcast_containers_on_episode_id", unique: true, using: :btree
+  add_index "apple_podcast_containers", ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true, using: :btree
 
   create_table "apple_podcast_deliveries", force: :cascade do |t|
     t.integer  "episode_id"
@@ -38,6 +39,20 @@ ActiveRecord::Schema.define(version: 20220912144326) do
   end
 
   add_index "apple_podcast_deliveries", ["episode_id"], name: "index_apple_podcast_deliveries_on_episode_id", unique: true, using: :btree
+  add_index "apple_podcast_deliveries", ["external_id"], name: "index_apple_podcast_deliveries_on_external_id", unique: true, using: :btree
+  add_index "apple_podcast_deliveries", ["podcast_container_id"], name: "index_apple_podcast_deliveries_on_podcast_container_id", unique: true, using: :btree
+
+  create_table "apple_podcast_delivery_files", force: :cascade do |t|
+    t.integer  "episode_id"
+    t.integer  "podcast_delivery_id"
+    t.string   "external_id"
+    t.string   "api_response"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+  end
+
+  add_index "apple_podcast_delivery_files", ["external_id"], name: "index_apple_podcast_delivery_files_on_external_id", unique: true, using: :btree
+  add_index "apple_podcast_delivery_files", ["podcast_delivery_id"], name: "index_apple_podcast_delivery_files_on_podcast_delivery_id", unique: true, using: :btree
 
   create_table "episode_images", force: :cascade do |t|
     t.integer  "episode_id"

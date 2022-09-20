@@ -12,6 +12,10 @@ module Apple
     end
 
     def self.create_podcast_containers(api, episodes_to_sync, show)
+      # TODO: guard gatekeep the initial sync to preserve podcast connect audio.
+      # TODO: guard at the feed level -- accept list feeds for sync
+      # TODO: guard for existing media via podcast connect.
+      #
       episodes_to_create = episodes_to_sync.reject { |ep| ep.podcast_container.present? }
 
       api_resp =
@@ -21,11 +25,12 @@ module Apple
       # TODO: error handling
       new_containers_response = api.unwrap_response(api_resp)
 
+      # fetch and in
       show.reload
 
       # Make sure we have local copies of the remote metadata At this point and
       # errors should be resolved and we should have then intended set of
-      # podcast containers created (`create_metadata`)
+      # resources created.
 
       episodes_by_id = episodes_to_create.map { |ep| [ep.id, ep] }.to_h
 
@@ -49,7 +54,7 @@ module Apple
                   api_response: row)
         end
 
-      SyncLog.create!(feeder_id: pc.id, feeder_type: "c", external_id: external_id)
+      SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id)
     end
 
     def self.get_podcast_containers(api, episodes_to_sync)

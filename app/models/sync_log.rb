@@ -6,9 +6,11 @@ class SyncLog < BaseModel
   scope :complete, -> { where("sync_completed_at IS NOT NULL AND external_id IS NOT NULL") }
 
   enum feeder_type: {
-    feeds: "f",
-    episodes: "e",
-    podcast_containers: "c"
+    feeds: "feeds",
+    episodes: "episodes",
+    podcast_containers: "containers",
+    podcast_deliveries: "deliveries",
+    podcast_delivery_files: "delivery_files"
   }
 
   scope :latest, -> do

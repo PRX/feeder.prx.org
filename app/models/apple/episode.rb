@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "uri"
+
 module Apple
   class Episode
     attr_reader :show, :episode, :api
@@ -37,7 +39,7 @@ module Apple
         ep = episodes_by_item_guid.fetch(guid)
 
         SyncLog.
-          create(feeder_id: ep.episode.id, feeder_type: "e", external_id: apple_id)
+          create(feeder_id: ep.episode.id, feeder_type: :episodes, external_id: apple_id)
       end
     end
 
@@ -49,6 +51,14 @@ module Apple
 
     def feeder_id
       episode.id
+    end
+
+    def enclosure_url
+      episode.enclosure_url
+    end
+
+    def enclosure_filename
+      episode.enclosure_filename
     end
 
     def json
@@ -155,6 +165,14 @@ module Apple
       data
     end
 
+    def head_file_size_bridge_params
+      {
+        episode_id: apple_id,
+        api_url: episode.enclosure_url,
+        api_parameters: {},
+      }
+    end
+
     def create_episode!
       self.class.create_apple_episodes([self])
 
@@ -180,6 +198,7 @@ module Apple
     end
 
     def podcast_container
+      # TODO: differentiate these by container type: audio versus images
       Apple::PodcastContainer.find_by(episode_id: episode.id)
     end
   end

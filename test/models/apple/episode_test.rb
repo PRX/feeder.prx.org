@@ -46,7 +46,7 @@ describe Apple::Episode do
   describe "#completed_sync_log" do
     it "should load the last sync log if complete" do
       sync_log = SyncLog.create!(feeder_id: episode.id,
-                                 feeder_type: "e",
+                                 feeder_type: :episodes,
                                  sync_completed_at:  Time.now.utc,
                                  external_id: "1234")
 

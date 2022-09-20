@@ -2,6 +2,7 @@ require 'addressable/uri'
 require 'addressable/template'
 require 'hash_serializer'
 require 'text_sanitizer'
+require 'uri'
 
 class Episode < BaseModel
   include TextSanitizer
@@ -229,7 +230,7 @@ class Episode < BaseModel
   end
 
   def media_ready?
-    # if this episode has enclosores, media is ready if there is a complete one
+    # if this episode has enclosures, media is ready if there is a complete one
     if !enclosures.blank?
       !!enclosure
       # if this episode has contents, ready when each position is ready
@@ -248,6 +249,11 @@ class Episode < BaseModel
 
   def enclosure_url(feed = nil)
     EnclosureUrlBuilder.new.podcast_episode_url(podcast, self, feed)
+  end
+
+  def enclosure_filename
+    uri = URI.parse(enclosure_url)
+    File.basename(uri.path)
   end
 
   # used in the API, both read and write

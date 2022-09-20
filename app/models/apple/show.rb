@@ -62,7 +62,7 @@ module Apple
       SyncLog.
         feeds.
         complete.
-        where(feeder_id: feed.id, feeder_type: "f").
+        where(feeder_id: feed.id, feeder_type: :feeds).
         order(created_at: :desc).first
     end
 
@@ -72,12 +72,12 @@ module Apple
       apple_json = create_or_update_show(last_completed_sync)
 
       SyncLog.create!(feeder_id: feed.id,
-                      feeder_type: "f",
+                      feeder_type: :feeds,
                       sync_completed_at: Time.now.utc,
                       external_id: apple_json["data"]["id"])
     rescue Apple::ApiError => e
       puts e
-      SyncLog.create!(feeder_id: feed.id, feeder_type: "f")
+      SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds)
     end
 
     def create_show!(_sync)

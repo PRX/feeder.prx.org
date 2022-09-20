@@ -53,11 +53,12 @@ module Apple
       # only create if needed
       create_podcast_containers!
       create_podcast_deliveries!
+      create_podcast_delivery_files!
 
       # success
-      SyncLog.create!(feeder_id: feed.id, feeder_type: "f", external_id: show.id)
+      SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds, external_id: show.id)
     rescue Apple::ApiError => _e
-      SyncLog.create!(feeder_id: feed.id, feeder_type: "f")
+      SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds)
     end
 
     def get_podcast_containers
@@ -65,15 +66,23 @@ module Apple
     end
 
     def create_podcast_containers!
+      # TODO: right now we only create one container,
+      # Apple RSS scaping means we don't need containers for freemium episode images
+      # But we do need asset containers for apple-only (non-rss) images
       Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync, show)
     end
 
     def get_podcast_deliveries
+      # TODO: right now we only create one container,
       Apple::PodcastDelivery.get_podcast_deliveries(api, episodes_to_sync)
     end
 
     def create_podcast_deliveries!
       Apple::PodcastDelivery.create_podcast_deliveries(api, episodes_to_sync)
+    end
+
+    def create_podcast_delivery_files!
+      Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, episodes_to_sync)
     end
   end
 end

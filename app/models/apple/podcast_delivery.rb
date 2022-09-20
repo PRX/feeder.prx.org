@@ -4,6 +4,7 @@ module Apple
   class PodcastDelivery < ActiveRecord::Base
     serialize :api_response, JSON
 
+    has_one :podcast_delivery_file
     belongs_to :episode, class_name: "::Episode"
     belongs_to :podcast_container, class_name: "::Apple::PodcastContainer"
 
@@ -15,7 +16,6 @@ module Apple
 
     def self.create_podcast_deliveries(api, episodes_to_sync)
       episodes_needing_delivery = episodes_to_sync.reject { |ep| ep.podcast_container.podcast_delivery.present? }
-      binding.pry
 
       api_resp =
         api.bridge_remote("createPodcastDeliveries",
@@ -26,7 +26,7 @@ module Apple
 
       # Make sure we have local copies of the remote metadata At this point and
       # errors should be resolved and we should have then intended set of
-      # podcast containers created (`create_metadata`)
+      # resources created
 
       episodes_by_id = episodes_needing_delivery.map { |ep| [ep.id, ep] }.to_h
 
@@ -46,7 +46,7 @@ module Apple
                                           podcast_container: ep.podcast_container,
                                           api_response: row)
 
-      SyncLog.create!(feeder_id: pc.id, feeder_type: "c", external_id: external_id)
+      SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_deliveries, external_id: external_id)
     end
 
     def self.create_podcast_deliveries_bridge_params(api, episodes_to_sync)
