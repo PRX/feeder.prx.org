@@ -12,32 +12,10 @@ module Apple
       episodes_needing_delivery_files =
         episodes.reject { |ep| ep.podcast_container&.podcast_delivery&.podcast_delivery_file.present? }
 
-      resp =
-        api.bridge_remote("headFileSizes", episodes_needing_delivery_files.map(&:head_file_size_bridge_params))
-
-      # TODO: handle errors
-      file_sizes_resp = api.unwrap_response(resp)
-
-      episodes_by_id = episodes_needing_delivery_files.map { |ep| [ep.id, ep] }.to_h
-
-      delivery_file_bridge_params =
-        file_sizes_resp.map do |row|
-          episode = episodes_by_id.fetch(row["episode_id"])
-          file_size_bytes = row.dig("api_response", "val", "data", "content-length")
-          file_size_bytes = Integer(file_size_bytes)
-          create_delivery_file_bridge_params(api,
-                                             episode,
-                                             episode.enclosure_filename,
-                                             file_size_bytes)
-        end
-
-      resp = api.bridge_remote("createDeliveryFiles", delivery_file_bridge_params)
-      resp = api.unwrap_response(resp)
-
-      resp.each do |row|
+      resp = api.bridge_remote("createDeliveryFiles", create_delivery_file_bridge_params)
+      resp = api.unwrap_response(resp).each do |row|
         ep = episodes_by_id.fetch(row["request_metadata"]["episode_id"])
-        # TODO: parameterize multiple podcast deliveries per podcast container
-        create_logs(ep, ep.podcast_container.podcast_delivery, row)
+        create_podcast_delivery_file(ep, ep.podcast_container.podcast_delivery, row)
       end
 
       # episode_bridge_results
@@ -76,34 +54,34 @@ module Apple
       } }
     end
 
-    def self.create_logs(ep, podcast_delivery, row)
+    def self.create_podcast_delivery_file(podcast_delivery, row)
       external_id = row.dig("api_response", "val", "data", "id")
-
-      pc = Apple::PodcastDeliveryFile.create!(episode_id: ep.feeder_id,
+      pc = Apple::PodcastDeliveryFile.create!(episode_id: podcast_delivery.episode_id,
                                               external_id: external_id,
                                               podcast_delivery_id: podcast_delivery.id,
                                               api_response: row)
 
-      SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id)
+      SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_delivery_files, external_id: external_id)
     end
 
-    def self.episode_zip; end
+    def upload_operations(episode)
+      apple_attributes["uploadOperations"].map do |_operation_fragment|
+        Apple::UploadOperation.new(episode)
+      end
+    end
 
-    def self.insert_sync_log(row)
-      # we don't have the external ids loadded yet.
-      # save an api call and redo the join like in
-      delivery_file_apple_id = row.dig("api_response", "val", "data", "id")
-      delivery_apple_id = row.dig("request_metadata", "podcast_delivery_id")
+    def unwrap_response
+      raise "incomplete api response" unless api_response.dig("api_response", "ok")
 
-      podcast_delivery = Apple::PodcastDelivery.find_by_external_id!(delivery_apple_id)
+      api_response["api_response"]["val"]
+    end
 
-      Apple::PodcastDeliveryFile.create!(podcast_delivery: podcast_delivery,
-                                         episode_id: podcast_delivery.episode_id,
-                                         external_id: delivery_file_apple_id,
-                                         api_response: row)
+    def data
+      unwrap_response["data"]
+    end
 
-      SyncLog.
-        create(feeder_id: ep.feeder_id, feeder_type: "f", external_id: apple_id)
+    def apple_attributes
+      data["attributes"]
     end
   end
 end

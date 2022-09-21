@@ -74,7 +74,7 @@ module Apple
         episodes.
         complete.
         latest.
-        where(feeder_id: feeder_episode.id, feeder_type: "e").
+        where(feeder_id: feeder_episode.id, feeder_type: :episodes).
         first
     end
 
@@ -163,14 +163,6 @@ module Apple
       data[:data][:relationships].delete(:show)
 
       data
-    end
-
-    def head_file_size_bridge_params
-      {
-        episode_id: apple_id,
-        api_url: feeder_episode.enclosure_url,
-        api_parameters: {},
-      }
     end
 
     def create_episode!

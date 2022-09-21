@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220919183406) do
+ActiveRecord::Schema.define(version: 20220921173421) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,8 +21,13 @@ ActiveRecord::Schema.define(version: 20220919183406) do
     t.integer  "episode_id"
     t.string   "external_id"
     t.string   "api_response"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+    t.string   "vendor_id",                  null: false
+    t.string   "apple_episode_id",           null: false
+    t.string   "source_url"
+    t.string   "source_filename"
+    t.integer  "source_size",      limit: 8
   end
 
   add_index "apple_podcast_containers", ["episode_id"], name: "index_apple_podcast_containers_on_episode_id", unique: true, using: :btree

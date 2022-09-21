@@ -70,6 +70,7 @@ module Apple
       # Apple RSS scaping means we don't need containers for freemium episode images
       # But we do need asset containers for apple-only (non-rss) images
       Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync, show)
+      Apple::PodcastContainer.update_podcast_container_file_metadata(api, episodes_to_sync)
     end
 
     def get_podcast_deliveries

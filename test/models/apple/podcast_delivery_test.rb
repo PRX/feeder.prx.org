@@ -11,7 +11,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     let(:apple_episode) { Apple::Episode.new(apple_show, episode) }
 
     it "should create logs based on a returned row value" do
-      podcast_container = Apple::PodcastContainer.create!
+      podcast_container = Apple::PodcastContainer.create!(vendor_id: "123", apple_episode_id: "456")
 
       assert_equal SyncLog.count, 0
 
