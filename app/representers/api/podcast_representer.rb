@@ -29,7 +29,6 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :complete
   property :copyright
   property :language
-
   property :locked
 
   nested :owner do

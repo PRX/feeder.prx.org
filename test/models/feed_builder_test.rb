@@ -32,4 +32,29 @@ describe FeedBuilder do
     _(rss).wont_be_nil
     _(rss[0, 38]).must_equal '<?xml version="1.0" encoding="UTF-8"?>'
   end
+
+  describe 'payment pointer' do
+    let(:rss) { builder.to_feed_xml }
+    let(:rss_feed) { Nokogiri::XML(rss).css('channel') }
+    let(:value_recipient) { rss_feed.css('podcast|value').css('podcast|valueRecipient') }
+
+    it 'contains payment pointer tag' do
+      rss = builder.to_feed_xml
+      _(rss).must_include '<podcast:value'
+
+      podcast.default_feed.payment_pointer = nil
+      rss = builder.to_feed_xml
+      _(rss).wont_include '<podcast:value'
+    end
+
+    it 'contains payment pointer recipient name' do
+      name = value_recipient.attribute('name').to_s
+      _(name).must_equal('Jesse Thorn')
+    end
+
+    it 'contains payment pointer address' do
+      address = value_recipient.attribute('address').to_s
+      _(address).must_equal('$alice.example.pointer')
+    end
+  end
 end

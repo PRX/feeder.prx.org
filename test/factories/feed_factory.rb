@@ -20,6 +20,7 @@ FactoryGirl.define do
       audio_format { Hash(f: 'mp3', b: 128, c: 2, s: 44100) }
       enclosure_template 'http://www.podtrac.com/pts/redirect{extension}/media.blubrry.com/transistor/{host}{+path}'
       enclosure_prefix ''
+      payment_pointer '$alice.example.pointer'
 
       feed_image
       itunes_image
