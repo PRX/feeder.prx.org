@@ -12,35 +12,38 @@ module Apple
       episodes_needing_delivery_files =
         episodes.reject { |ep| ep.podcast_container&.podcast_delivery&.podcast_delivery_file.present? }
 
-      resp = api.bridge_remote("createDeliveryFiles", create_delivery_file_bridge_params)
-      resp = api.unwrap_response(resp).each do |row|
-        ep = episodes_by_id.fetch(row["request_metadata"]["episode_id"])
-        create_podcast_delivery_file(ep, ep.podcast_container.podcast_delivery, row)
-      end
+      podcast_deliveries = Apple::PodcastDelivery.where(episode_id: episodes_needing_delivery_files.map(&:feeder_id))
+      podcast_deliveries_by_id = podcast_deliveries.map { |p| [p.id, p] }.to_h
 
-      # episode_bridge_results
+      resp = api.bridge_remote("createDeliveryFiles",
+                               podcast_deliveries.map { |d| create_delivery_file_bridge_params(api, d) })
+      api.unwrap_response(resp).map do |row|
+        pd = podcast_deliveries_by_id.fetch(row["request_metadata"]["podcast_delivery_id"])
+        create_podcast_delivery_file(pd, row)
+      end
     end
 
-    def self.create_delivery_file_bridge_params(api, episode, filename, num_bytes)
-      podcast_delivery = episode.podcast_container.podcast_delivery
+    def self.create_delivery_file_bridge_params(api, podcast_delivery)
       {
         request_metadata: {
-          podcast_delivery_id: episode.podcast_container.podcast_delivery.external_id,
-          episode_id: episode.apple_id,
+          podcast_delivery_id: podcast_delivery.id,
+          episode_id: podcast_delivery.episode_id,
         },
         api_url: api.join_url("podcastDeliveryFiles").to_s,
-        api_parameters: podcast_delivery_file_create_parameters(podcast_delivery, filename, num_bytes)
+        api_parameters: podcast_delivery_file_create_parameters(podcast_delivery)
       }
     end
 
-    def self.podcast_delivery_file_create_parameters(podcast_delivery, filename, num_bytes)
+    def self.podcast_delivery_file_create_parameters(podcast_delivery)
+      podcast_container = podcast_delivery.podcast_container
+
       { "data": {
         "type": "podcastDeliveryFiles",
         "attributes": {
           "assetType": "ASSET",
-          "assetRole": "PodcastSourceAudio", # TODO: handle images also
-          "fileSize": num_bytes,
-          "fileName": filename,
+          "assetRole": "PodcastSourceAudio",
+          "fileSize": podcast_container.source_size,
+          "fileName": podcast_container.source_filename,
           "uti": "public.json"
         },
         "relationships": {
