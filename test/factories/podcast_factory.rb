@@ -20,6 +20,8 @@ FactoryGirl.define do
     update_period 'weekly'
     update_frequency 1
     update_base 1.year.ago
+    payment_pointer '$alice.example.pointer'
+    donation_url 'https://prx.org/donations'
 
     default_feed
 

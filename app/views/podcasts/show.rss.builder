@@ -93,13 +93,12 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.sy :updateFrequency, @podcast.update_frequency if @podcast.update_frequency
     xml.sy :updateBase, @podcast.update_base if @podcast.update_base
 
-    payment_pointer = @feed.payment_pointer || @podcast.default_feed&.payment_pointer
-    if payment_pointer.present?
+    if @podcast.payment_pointer.present? && @feed.include_podcast_value
       xml.podcast :value, 'type' => 'webmonetization', 'method' => 'ILP' do
         xml.podcast :valueRecipient,
           'name' => @podcast.owner_name || @podcast.author_name,
           'type' => 'paymentpointer',
-          'address' => payment_pointer,
+          'address' => @podcast.payment_pointer,
           'split' => '100'
       end
     end

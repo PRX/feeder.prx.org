@@ -41,8 +41,10 @@ describe FeedBuilder do
     it 'contains payment pointer tag' do
       rss = builder.to_feed_xml
       _(rss).must_include '<podcast:value'
+    end
 
-      podcast.default_feed.payment_pointer = nil
+    it 'does not contain payment_pointer tag if feed.include_podcast_value is false' do
+      feed.include_podcast_value = false
       rss = builder.to_feed_xml
       _(rss).wont_include '<podcast:value'
     end

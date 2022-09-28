@@ -30,6 +30,8 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :copyright
   property :language
   property :locked
+  property :payment_pointer
+  property :donation_url
 
   nested :owner do
     property :owner_name, as: :name
