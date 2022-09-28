@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220823044927) do
+ActiveRecord::Schema.define(version: 20220928174716) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -136,7 +136,8 @@ ActiveRecord::Schema.define(version: 20220823044927) do
     t.text     "subtitle"
     t.text     "description"
     t.text     "summary"
-    t.string   "payment_pointer"
+    t.boolean  "include_podcast_value",       default: true
+    t.boolean  "include_donation_url",        default: true
   end
 
   add_index "feeds", ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)", using: :btree
@@ -234,6 +235,8 @@ ActiveRecord::Schema.define(version: 20220823044927) do
     t.boolean  "locked",                default: false
     t.boolean  "itunes_block",          default: false
     t.text     "restrictions"
+    t.string   "payment_pointer"
+    t.string   "donation_url"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
