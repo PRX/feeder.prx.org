@@ -104,10 +104,27 @@ module Apple
       json["data"].map { |h| h.slice("type", "id") }
     end
 
+    def check_row(row_like)
+      return true unless row_like.instance_of?(Hash)
+
+      if row_like.key?("api_response")
+        binding.pry if row_like.dig("api_response", "err")
+        raise row_like.dig("api_response", "val").to_json if row_like.dig("api_response", "err")
+      end
+
+      true
+    end
+
     def unwrap_response(resp)
       raise Apple::ApiError, resp.body unless SUCCESS_CODES.include?(resp.code)
 
-      JSON.parse(resp.body)
+      parsed = JSON.parse(resp.body)
+
+      if parsed.instance_of?(Array)
+        parsed.map { |r| check_row(r) }
+      end
+
+      parsed
     end
 
     def bridge_remote(bridge_label, bridge_options)

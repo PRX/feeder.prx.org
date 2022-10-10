@@ -55,6 +55,8 @@ module Apple
       create_podcast_deliveries!
       create_podcast_delivery_files!
 
+      execute_upload_operations!
+
       # success
       SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds, external_id: show.id)
     rescue Apple::ApiError => _e
@@ -84,6 +86,10 @@ module Apple
 
     def create_podcast_delivery_files!
       Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, episodes_to_sync)
+    end
+
+    def execute_upload_operations!
+      Apple::UploadOperation.execute_upload_operations(api, episodes_to_sync)
     end
   end
 end

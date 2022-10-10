@@ -98,7 +98,7 @@ module Apple
         {
           apple_episode_id: ep.id,
           api_url: podcast_container_url(api, ep),
-          api_config: {}
+          api_parameters: {}
         }
       end
     end

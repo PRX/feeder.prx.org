@@ -4,34 +4,38 @@ require "uri"
 
 module Apple
   class UploadOperation
-    attr_reader :episode, :api, :operation
+    attr_reader :delivery_file, :api, :operation
 
-    def initialize(episode, operation_fragment)
-      @episode = episode
+    def initialize(delivery_file, operation_fragment)
+      @delivery_file = delivery_file
       @api = Apple::Api.from_env
       @operation = operation_fragment
     end
 
-    def head_file_size_bridge_params
-      {
-        episode_id: episode.apple_id,
-        api_url: episode.feeder_episode.enclosure_url,
-        api_parameters: {},
-      }
+    def self.execute_upload_operations(api, episodes)
+      delivery_files = Apple::PodcastDeliveryFile.where(episode_id: episodes.map(&:feeder_id))
+      # TODO: filter out delivery files that are pending OR complete
+
+      operation_bridge_params =
+        delivery_files.map do |df|
+          df.upload_operations.map(&:upload_operation_patch_parameters)
+        end.flatten
+
+      r = api.bridge_remote("executeUploadOperations", operation_bridge_params)
+    end
+
+    def podcast_delivery
+      delivery_file.podcast_delivery
     end
 
     def upload_operation_patch_parameters
-      podcast_delivery = episode.podcast_container.podcast_delivery
       {
         request_metadata: {
-          podcast_delivery_id: episode.podcast_container.podcast_delivery.external_id,
-          episode_id: episode.apple_id,
+          podcast_delivery_file_id: delivery_file.id,
         },
-        api_url: api.join_url("podcastDeliveryFiles").to_s,
-        api_parameters: podcast_delivery_file_create_parameters(podcast_delivery, filename, num_bytes)
+        api_url: delivery_file.episode.enclosure_url,
+        api_parameters: operation
       }
     end
-
-    def upload_operation_bridge_parameters; end
   end
 end
