@@ -89,7 +89,10 @@ module Apple
     end
 
     def execute_upload_operations!
-      Apple::UploadOperation.execute_upload_operations(api, episodes_to_sync)
+      upload_operation_result = Apple::UploadOperation.execute_upload_operations(api, episodes_to_sync)
+      delivery_file_ids = upload_operation_result.map { |r| r["request_metadata"]["podcast_delivery_file_id"] }
+      pdfs = ::Apple::PodcastDeliveryFile.where(id: delivery_file_ids)
+      ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
     end
   end
 end

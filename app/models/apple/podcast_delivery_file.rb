@@ -7,6 +7,18 @@ module Apple
     belongs_to :podcast_delivery
     belongs_to :episode, class_name: "::Episode"
 
+    def self.mark_uploaded(api, podcast_delivery_files)
+      bridge_params = podcast_delivery_files.map { |pdf| mark_uploaded_delivery_file_bridge_params(api, pdf) }
+      resp = api.bridge_remote("updateDeliveryFiles", bridge_params)
+
+      updated_pdfs = []
+
+      api.unwrap_response(resp).map do |row|
+        pd_id = row["request_metadata"]["podcast_delivery_file_id"]
+        Apple::PodcastDeliveryFile.find(pd_id).update!(api_response: row, uploaded: true)
+      end
+    end
+
     def self.create_podcast_delivery_files(api, episodes)
       return [] if episodes.empty?
       episodes_needing_delivery_files =
@@ -21,6 +33,17 @@ module Apple
         pd = podcast_deliveries_by_id.fetch(row["request_metadata"]["podcast_delivery_id"])
         create_podcast_delivery_file(pd, row)
       end
+    end
+
+    def self.mark_uploaded_delivery_file_bridge_params(api, podcast_delivery_file)
+      {
+        request_metadata: {
+          podcast_delivery_file_id: podcast_delivery_file.id,
+          episode_id: podcast_delivery_file.podcast_delivery.episode_id,
+        },
+        api_url: api.join_url("podcastDeliveryFiles/" + podcast_delivery_file.apple_id).to_s,
+        api_parameters: podcast_delivery_file.mark_uploaded_parameters
+      }
     end
 
     def self.create_delivery_file_bridge_params(api, podcast_delivery)
@@ -67,9 +90,25 @@ module Apple
       SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_delivery_files, external_id: external_id)
     end
 
-    def upload_operations(episode)
-      apple_attributes["uploadOperations"].map do |_operation_fragment|
-        Apple::UploadOperation.new(episode)
+    def mark_uploaded_parameters
+      {
+        data: {
+          id: apple_id,
+          type: "podcastDeliveryFiles",
+          attributes: {
+            uploaded: true,
+          }
+        }
+      }
+    end
+
+    def apple_id
+      api_response.dig("api_response", "val", "data", "id")
+    end
+
+    def upload_operations
+      apple_attributes["uploadOperations"].map do |operation_fragment|
+        Apple::UploadOperation.new(self, operation_fragment)
       end
     end
 

@@ -13,15 +13,16 @@ module Apple
     end
 
     def self.execute_upload_operations(api, episodes)
-      delivery_files = Apple::PodcastDeliveryFile.where(episode_id: episodes.map(&:feeder_id))
-      # TODO: filter out delivery files that are pending OR complete
+      delivery_files = Apple::PodcastDeliveryFile.where(episode_id: episodes.map(&:feeder_id), uploaded: false)
 
       operation_bridge_params =
         delivery_files.map do |df|
           df.upload_operations.map(&:upload_operation_patch_parameters)
         end.flatten
 
-      r = api.bridge_remote("executeUploadOperations", operation_bridge_params)
+      res = api.bridge_remote("executeUploadOperations", operation_bridge_params)
+
+      api.unwrap_response(res)
     end
 
     def podcast_delivery
