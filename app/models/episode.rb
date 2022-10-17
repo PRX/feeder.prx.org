@@ -35,7 +35,9 @@ class Episode < BaseModel
            -> { order('created_at DESC') },
            autosave: true, dependent: :destroy
 
-  has_many :apple_podcast_containers, class_name: 'Apple::PodcastContainer'
+  has_many :apple_podcast_containers, class_name: "Apple::PodcastContainer"
+  has_many :apple_deliveries, through: :apple_podcast_containers, source: :podcast_delivery, class_name: "Apple::PodcastDelivery"
+  has_many :apple_delivery_files, through: :apple_deliveries, source: :podcast_delivery_file, class_name: "Apple::PodcastDeliveryFile"
 
   validates :podcast_id, :guid, presence: true
   validates :itunes_type, inclusion: { in: %w[full trailer bonus] }
@@ -84,6 +86,18 @@ class Episode < BaseModel
 
   def apple_only?
     categories_include?([APPLE_ONLY_TAG].freeze)
+  end
+
+  def apple_file_errors?
+    # TODO: for now these are all considered audio files
+
+    apple_delivery_file_errors.present?
+  end
+
+  def apple_delivery_file_errors
+    # TODO: for now these are all considered audio files
+
+    apple_delivery_files.map { |p| p.asset_processing_state["errors"] }.flatten
   end
 
   def categories_include?(match_tags)

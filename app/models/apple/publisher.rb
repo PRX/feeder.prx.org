@@ -55,12 +55,25 @@ module Apple
       create_podcast_deliveries!
       create_podcast_delivery_files!
 
+      # upload and mark as uploaded
       execute_upload_operations!
+
+      wait_for_upload_processing
+
+      # wait for media to process
+      # link up data models
+      # update episodes as published
 
       # success
       SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds, external_id: show.id)
     rescue Apple::ApiError => _e
       SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds)
+    end
+
+    def wait_for_upload_processing
+      pdfs = episodes_to_sync.map(&:feeder_episode).map(&:apple_delivery_files).flatten
+
+      res = Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
     end
 
     def get_podcast_containers
