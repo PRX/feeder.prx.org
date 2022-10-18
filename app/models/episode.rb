@@ -32,6 +32,7 @@ class Episode < BaseModel
            autosave: true, dependent: :destroy
 
   validates :podcast_id, :guid, presence: true
+  validates :original_guid, uniqueness: { scope: :podcast_id, allow_nil: true }
   validates :itunes_type, inclusion: { in: %w[full trailer bonus] }
   validates :episode_number,
             numericality: { only_integer: true }, allow_nil: true
