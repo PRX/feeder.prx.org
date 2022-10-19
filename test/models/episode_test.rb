@@ -20,6 +20,13 @@ describe Episode do
     assert minimal_episode.updated_at > 10.minutes.ago
   end
 
+  it 'validates unique original guids' do
+    e1 = create(:episode, original_guid: 'original')
+    e2 = build(:episode, original_guid: 'original', podcast: e1.podcast)
+    assert e1.valid?
+    refute e2.valid?
+  end
+
   it 'leaves title ampersands alone' do
     episode.title = "Hear & Now"
     episode.save!
