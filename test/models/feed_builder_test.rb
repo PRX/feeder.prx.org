@@ -59,4 +59,33 @@ describe FeedBuilder do
       _(address).must_equal('$alice.example.pointer')
     end
   end
+
+  # <podcast:funding url="https://www.example.com/donations">Support the show!</podcast:funding>
+
+  describe 'donation url' do
+    let(:rss) { builder.to_feed_xml }
+    let(:rss_feed) { Nokogiri::XML(rss).css('channel') }
+    let(:podcast_funding) { rss_feed.css('podcast|funding') }
+
+    it 'contains funding tag' do
+      rss = builder.to_feed_xml
+      _(rss).must_include '<podcast:funding'
+    end
+
+    it 'does not contain funding tag if feed.include_donation_url is false' do
+      feed.include_donation_url = false
+      rss = builder.to_feed_xml
+      _(rss).wont_include '<podcast:funding'
+    end
+
+    it 'includes donation url' do
+      url = podcast_funding.attribute('url').to_s
+      _(url).must_equal('https://prx.org/donations')
+    end
+
+    it 'includes donation text' do
+      text = podcast_funding.text
+      _(text).must_equal('Support the Show!')
+    end
+  end
 end
