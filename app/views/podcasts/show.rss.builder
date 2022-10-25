@@ -103,6 +103,10 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       end
     end
 
+    if @podcast.donation_url.present? && @feed.include_donation_url
+      xml.podcast :funding, 'Support the Show!', 'url' => @podcast.donation_url
+    end
+
     @episodes.each_with_index do |ep, index|
       xml.item do
         xml.guid(ep.item_guid, isPermaLink: !!ep.is_perma_link)
