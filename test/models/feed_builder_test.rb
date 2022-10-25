@@ -60,8 +60,6 @@ describe FeedBuilder do
     end
   end
 
-  # <podcast:funding url="https://www.example.com/donations">Support the show!</podcast:funding>
-
   describe 'donation url' do
     let(:rss) { builder.to_feed_xml }
     let(:rss_feed) { Nokogiri::XML(rss).css('channel') }
