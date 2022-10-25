@@ -6,6 +6,17 @@ module Apple
   class Episode
     attr_reader :show, :feeder_episode, :api
 
+    def self.get_episodes(api, episodes)
+      return if episodes.empty?
+
+      resp =
+        api.bridge_remote("getEpisodes", episodes.map(&:get_episode_bridge_params))
+
+      # TODO: handle errors
+      episode_bridge_results = api.unwrap_response(resp)
+      episode_bridge_results
+    end
+
     def self.create_episodes(api, episodes)
       return if episodes.empty?
 
@@ -113,6 +124,13 @@ module Apple
 
     def apple_only?
       feeder_episode.apple_only?
+    end
+
+    def get_episode_bridge_params
+      {
+        api_url: api.join_url("episodes/" + id).to_s,
+        api_parameters: {},
+      }
     end
 
     def create_episode_bridge_params

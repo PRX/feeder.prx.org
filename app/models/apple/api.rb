@@ -134,8 +134,8 @@ module Apple
       Rails.logger.info("Apple::Api BRIDGE #{bridge_label} #{uri.hostname}:#{uri.port}/bridge")
 
       body = {
-        name: bridge_label,
-        options: bridge_options
+        bridge_resource: bridge_label,
+        bridge_parameters: bridge_options
       }
 
       req = Net::HTTP::Post.new(uri)

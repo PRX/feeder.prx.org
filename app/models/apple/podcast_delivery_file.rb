@@ -51,7 +51,11 @@ module Apple
     def self.mark_uploaded(api, pdfs)
       updated_pdfs = []
 
-      get_podcast_delivery_files(api, pdfs).map do |row|
+      bridge_params = pdfs.map { |pdf| mark_uploaded_delivery_file_bridge_params(api, pdf) }
+      resp = api.bridge_remote("updateDeliveryFiles", bridge_params)
+      # TODO: handle errors
+
+      api.unwrap_response(resp).map do |row|
         pd_id = row["request_metadata"]["podcast_delivery_file_id"]
         Apple::PodcastDeliveryFile.find(pd_id).update!(api_response: row, uploaded: true)
       end
