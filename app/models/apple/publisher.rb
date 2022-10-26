@@ -40,8 +40,6 @@ module Apple
 
       Apple::Episode.create_episodes(api, create_apple_episodes)
       Apple::Episode.update_episodes(api, update_apple_episodes)
-
-      Apple::Episode.get_episodes(api, (update_apple_episodes + create_apple_episodes).uniq)
     end
 
     def publish!
