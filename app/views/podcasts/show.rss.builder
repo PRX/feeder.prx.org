@@ -4,6 +4,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
         'xmlns:media' => 'http://search.yahoo.com/mrss/',
         'xmlns:sy' => 'http://purl.org/rss/1.0/modules/syndication/',
         'xmlns:content' => 'http://purl.org/rss/1.0/modules/content/',
+        'xmlns:podcast' => 'https://podcastindex.org/namespace/1.0',
         'version' => '2.0' do
   xml.channel do
     xml.title @feed.title || @podcast.title
@@ -14,7 +15,13 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.language @podcast.language || 'en-us'
     xml.copyright @podcast.copyright unless @podcast.copyright.blank?
     xml.webMaster @podcast.web_master unless @podcast.web_master.blank?
-    xml.description { xml.cdata!(@podcast.description || '') } unless @podcast.description.blank?
+
+    if @feed.description.present?
+      xml.description { xml.cdata!(@feed.description) }
+    elsif @podcast.description.present?
+      xml.description { xml.cdata!(@podcast.description) }
+    end
+
     xml.managingEditor @podcast.managing_editor unless @podcast.managing_editor.blank?
 
     Array(@podcast.categories).each { |cat| xml.category(cat) }
@@ -23,13 +30,13 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.docs 'http://blogs.law.harvard.edu/tech/rss'
 
     xml.image do
-      xml.url @podcast.feed_image.url
+      xml.url @feed_image.url
       xml.title @feed.title || @podcast.title
-      xml.link @podcast.link
-      xml.width @podcast.feed_image.width
-      xml.height @podcast.feed_image.height
-      xml.description @podcast.feed_image.description unless @podcast.feed_image.description.blank?
-    end if @podcast.feed_image
+      xml.link @feed_image.link || @podcast.link
+      xml.width @feed_image.width
+      xml.height @feed_image.height
+      xml.description @feed_image.description unless @feed_image.description.blank?
+    end if @feed_image
 
     xml.atom :link, href: (@feed.url || @feed.published_url), rel: 'self', type: 'application/rss+xml'
 
@@ -52,7 +59,7 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       end
     end
 
-    xml.itunes :image, href: @podcast.itunes_image.url if @podcast.itunes_image
+    xml.itunes :image, href: @itunes_image.url if @itunes_image
     xml.itunes :explicit, @podcast.explicit
 
     rel = full_contact('owner', @podcast) ? 'owner' : 'author'
@@ -61,12 +68,22 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
       xml.itunes :name, @podcast.send("#{rel}_name") if @podcast.send("#{rel}_name")
     end
 
-    xml.itunes :subtitle, @podcast.subtitle unless @podcast.subtitle.blank?
-    xml.itunes(:summary) { xml.cdata!(itunes_summary(@podcast)) } if show_itunes_summary?(@podcast)
+    if @feed.subtitle.present?
+      xml.itunes :subtitle, @feed.subtitle
+    elsif @podcast.subtitle.present?
+      xml.itunes :subtitle, @podcast.subtitle
+    end
+
+    if show_itunes_summary?(@feed)
+      xml.itunes(:summary) { xml.cdata!(itunes_summary(@feed)) }
+    elsif show_itunes_summary?(@podcast)
+      xml.itunes(:summary) { xml.cdata!(itunes_summary(@podcast)) }
+    end
+
     xml.itunes :keywords, @podcast.keywords.join(',') unless @podcast.keywords.blank?
 
     xml.media :copyright, @podcast.copyright unless @podcast.copyright.blank?
-    xml.media :thumbnail, url: @podcast.feed_image.url if @podcast.feed_image
+    xml.media :thumbnail, url: @feed_image.url if @feed_image
     xml.media :keywords, @podcast.keywords.join(',') unless @podcast.keywords.blank?
 
     cat = @podcast.itunes_categories.first.try(:name)
@@ -75,6 +92,20 @@ xml.rss 'xmlns:atom' => 'http://www.w3.org/2005/Atom',
     xml.sy :updatePeriod, @podcast.update_period if @podcast.update_period
     xml.sy :updateFrequency, @podcast.update_frequency if @podcast.update_frequency
     xml.sy :updateBase, @podcast.update_base if @podcast.update_base
+
+    if @podcast.payment_pointer.present? && @feed.include_podcast_value
+      xml.podcast :value, 'type' => 'webmonetization', 'method' => 'ILP' do
+        xml.podcast :valueRecipient,
+          'name' => @podcast.owner_name || @podcast.author_name,
+          'type' => 'paymentpointer',
+          'address' => @podcast.payment_pointer,
+          'split' => '100'
+      end
+    end
+
+    if @podcast.donation_url.present? && @feed.include_donation_url
+      xml.podcast :funding, 'Support the Show!', 'url' => @podcast.donation_url
+    end
 
     @episodes.each_with_index do |ep, index|
       xml.item do

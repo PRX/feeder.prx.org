@@ -40,6 +40,7 @@ class Episode < BaseModel
   has_many :apple_delivery_files, through: :apple_deliveries, source: :podcast_delivery_file, class_name: "Apple::PodcastDeliveryFile"
 
   validates :podcast_id, :guid, presence: true
+  validates :original_guid, uniqueness: { scope: :podcast_id, allow_nil: true }
   validates :itunes_type, inclusion: { in: %w[full trailer bonus] }
   validates :episode_number,
             numericality: { only_integer: true }, allow_nil: true
@@ -138,6 +139,17 @@ class Episode < BaseModel
 
   def image
     images.complete.first
+  end
+
+  # API updates for image=
+  def image_file; images.first; end
+  def image_file=(file)
+    img = EpisodeImage.build(file)
+    if img && img.original_url != image_file.try(:original_url)
+      images << img
+    elsif !img
+      images.destroy_all
+    end
   end
 
   def initialize_guid

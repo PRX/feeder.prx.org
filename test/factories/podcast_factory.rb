@@ -6,7 +6,6 @@ FactoryGirl.define do
     path 'jjgo'
     link 'http://www.maximumfun.org/jjgo'
     title 'Jordan, Jesse GO!'
-    description 'A goofy fun-time laughcast with doofuses'
     copyright 'Copyright © 2014 Jordan, Jesse GO!. All rights reserved.'
     language 'en-us'
     managing_editor_name 'Jesse Thorn'
@@ -17,16 +16,14 @@ FactoryGirl.define do
     owner_email 'jesse@maximumfun.org'
     categories ['Humor', 'Entertainment']
     explicit 'true'
-    subtitle 'Goofy laughsters'
-    summary 'Public radio host Jesse Thorn and @midnight writer Jordan Morris goof around'
     keywords ['laffs', 'comedy', 'good-times']
     update_period 'weekly'
     update_frequency 1
     update_base 1.year.ago
+    payment_pointer '$alice.example.pointer'
+    donation_url 'https://prx.org/donations'
 
     default_feed
-    itunes_image
-    feed_image
 
     after(:create) do |podcast, evaluator|
       itunes_category = create(:itunes_category, podcast: podcast)

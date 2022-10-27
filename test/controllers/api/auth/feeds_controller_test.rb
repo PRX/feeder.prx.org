@@ -86,6 +86,45 @@ describe Api::Auth::FeedsController do
       end
     end
 
+    describe 'feed images' do
+      let(:file) { test_file('/fixtures/transistor1400.jpg') }
+      let(:url1) { 'http://www.prx.org/fakeimageurl1.jpg' }
+      let(:url2) { 'http://www.prx.org/fakeimageurl2.jpg' }
+      before { stub_request(:get, url1).to_return(status: 200, body: file, headers: {}) }
+      before { stub_request(:get, url2).to_return(status: 200, body: file, headers: {}) }
+
+      it 'appends feed and itunes images' do
+        _(feed.feed_images.count).must_equal 0
+        fua = feed.updated_at
+
+        update_hash = { feedImage: { href: url1, description: 'd1' } }
+        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        assert_response :success
+
+        _(feed.reload.updated_at).must_be :>, fua
+        _(feed.feed_images.count).must_equal 1
+        _(feed.feed_images.first.description).must_equal 'd1'
+        _(feed.itunes_images.count).must_equal 0
+        fua = feed.updated_at
+
+        update_hash = { feedImage: { href: url2, description: 'd2' }, itunesImage: { href: url1, description: 'd3' } }
+        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        assert_response :success
+        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        assert_response :success
+
+        _(feed.reload.updated_at).must_be :>, fua
+        _(feed.feed_images.count).must_equal 2
+        _(feed.feed_images.first.description).must_equal 'd2'
+        _(feed.feed_images.last.description).must_equal 'd1'
+        _(feed.itunes_images.count).must_equal 1
+        _(feed.itunes_images.last.description).must_equal 'd3'
+      end
+
+      it 'replaces images' do
+      end
+    end
+
     it 'ignores updating invalid overrides' do
       fua = feed.updated_at
       update_hash = { title: 'new title2', slug: 'somesluggy2', display_episodes_count: 1 }

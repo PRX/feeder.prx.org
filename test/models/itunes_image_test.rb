@@ -2,11 +2,11 @@ require 'test_helper'
 
 describe ITunesImage do
   describe 'associations' do
-    it 'belongs to a podcast' do
-      podcast = create(:podcast)
-      image = podcast.itunes_image
+    it 'belongs to a feed' do
+      feed = create(:default_feed)
+      image = feed.itunes_image
 
-      assert_equal image.podcast, podcast
+      assert_equal image.feed, feed
     end
   end
 

@@ -11,8 +11,8 @@ describe Api::EpisodeRepresenter do
   end
 
   it 'includes clean title, season, episode, and ep type info' do
-    assert_instance_of Fixnum, json['seasonNumber']
-    assert_instance_of Fixnum, json['episodeNumber']
+    assert_instance_of Integer, json['seasonNumber']
+    assert_instance_of Integer, json['episodeNumber']
     assert_match(/Clean title/, json['cleanTitle'])
     assert_equal json['itunesType'], 'full'
     assert_equal json['itunesBlock'], false
@@ -64,7 +64,7 @@ describe Api::EpisodeRepresenter do
   it 'has media' do
     assert_equal json['media'].size, 1
     assert_equal json['media'].first['href'], episode.enclosure.url
-    assert_equal json['media'].first['original_url'],
+    assert_equal json['media'].first['originalUrl'],
                  episode.enclosure.original_url
   end
 
@@ -76,7 +76,7 @@ describe Api::EpisodeRepresenter do
   it 'has image' do
     assert_equal json['images'].size, 1
     assert_equal json['images'].first['url'], episode.image.url
-    assert_equal json['images'].first['original_url'], episode.image.original_url
+    assert_equal json['images'].first['originalUrl'], episode.image.original_url
   end
 
   it 'has enclosure' do

@@ -1,7 +1,10 @@
-class FeedImage < PodcastImage
+class FeedImage < BaseModel
+  include ImageFile
+  include FeedImageFile
+
   def replace_resources!
-    podcast.with_lock do
-      podcast.feed_images.where("created_at < ? AND id != ?", created_at, id).destroy_all
+    feed.with_lock do
+      feed.feed_images.where("created_at < ? AND id != ?", created_at, id).destroy_all
     end
   end
 end

@@ -7,6 +7,10 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :file_name
   property :private
   property :title
+  property :subtitle
+  property :description
+  property :summary
+  property :summary_preview, exec_context: :decorator, if: ->(_o) { represented.summary.blank? }
   property :url
   property :new_feed_url
   property :enclosure_prefix
@@ -16,6 +20,11 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :include_zones
   property :include_tags
   property :audio_format
+  property :include_podcast_value
+  property :include_donation_url
+
+  property :feed_image_file, as: :feed_image, decorator: Api::ImageRepresenter, class: FeedImage
+  property :itunes_image_file, as: :itunes_image, decorator: Api::ImageRepresenter, class: ITunesImage
 
   collection :feed_tokens,
              as: :tokens,
