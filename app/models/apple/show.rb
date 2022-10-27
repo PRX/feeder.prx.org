@@ -54,7 +54,7 @@ module Apple
       }
     end
 
-    def id
+    def apple_id
       completed_sync_log&.external_id
     end
 
@@ -103,12 +103,14 @@ module Apple
     end
 
     def get_show
-      return nil unless id.present?
+      raise 'Missing apple show id' unless apple_id.present?
 
-      self.class.get_show(api, id)
+      self.class.get_show(api, apple_id)
     end
 
     def get_episodes
+      raise 'Missing apple show id' unless apple_id.present?
+
       @get_episodes ||=
         begin
           external_id = completed_sync_log&.external_id

@@ -35,6 +35,14 @@ describe Apple::Show do
     end
   end
 
+  describe '#get_show' do
+    it 'raises an error if called without an apple_id' do
+      assert_raises(RuntimeError) do
+        apple_show.get_show
+      end
+    end
+  end
+
   describe '#show_data' do
     it 'returns a hash' do
       assert_equal apple_show.show_data.class, Hash
