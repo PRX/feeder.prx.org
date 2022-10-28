@@ -14,7 +14,7 @@ describe Apple::Api do
 
   let(:key_id) { "asdfasdf" }
 
-  let(:apple_api) { Apple::Api.new(provider_id: provider_id, key_id: key_id, key: ecdsa_pem) }
+  let(:apple_api) { build(:apple_api, provider_id: provider_id, key_id: key_id, key: ecdsa_pem) }
   let(:api) { apple_api }
 
   it "assigns the base64 key" do

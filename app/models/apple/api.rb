@@ -9,7 +9,7 @@ module Apple
     ERROR_RETRIES = 3
     SUCCESS_CODES = %w(200 201).freeze
 
-    attr_reader :provider_id, :key_id, :key
+    attr_accessor :provider_id, :key_id, :key
 
     def self.from_env
       apple_key_pem = Base64.decode64(ENV["APPLE_KEY_PEM_B64"])
