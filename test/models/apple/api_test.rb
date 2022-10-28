@@ -15,6 +15,7 @@ describe Apple::Api do
   let(:key_id) { "asdfasdf" }
 
   let(:apple_api) { Apple::Api.new(provider_id, key_id, ecdsa_pem) }
+  let(:api) { apple_api }
 
   it "decodes the base64 key" do
     assert_equal(apple_api.key, ecdsa_pem)
@@ -31,5 +32,47 @@ describe Apple::Api do
     algo = decoded.second
 
     assert_equal algo, "typ" => "JWT", "alg" => "ES256", "kid" => key_id
+  end
+
+  describe "#bridge_remote_and_retry" do
+    it "exhausts retries until failure" do
+      bridge_failure_response = [
+        build(:bridge_row_error)
+      ]
+
+      api.stub(:make_bridge_request, OpenStruct.new(body: bridge_failure_response.to_json, code: "200")) do
+        ok, err = api.bridge_remote_and_retry("someResource", [])
+
+        assert_equal ok, []
+        assert_equal err.as_json, bridge_failure_response.as_json
+      end
+    end
+
+    it "returns corrected errors as ok" do
+      bridge_failure_response = [
+        build(:bridge_row_error)
+      ]
+
+      bridge_success_response = [
+        build(:bridge_row)
+      ]
+
+      return_count = 0
+      return_values = [bridge_failure_response, bridge_success_response]
+
+      returner = proc do
+        return_count += 1
+        v = return_values.shift
+        OpenStruct.new(body: v.to_json, code: "200")
+      end
+
+      api.stub(:make_bridge_request, returner) do
+        ok, err = api.bridge_remote_and_retry("someResource", [])
+
+        assert_equal ok.as_json, bridge_success_response.as_json
+        assert_equal err, []
+        assert_equal return_count, 2
+      end
+    end
   end
 end

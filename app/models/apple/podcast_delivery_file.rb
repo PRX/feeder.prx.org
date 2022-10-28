@@ -55,10 +55,8 @@ module Apple
       updated_pdfs = []
 
       bridge_params = pdfs.map { |pdf| mark_uploaded_delivery_file_bridge_params(api, pdf) }
-      resp = api.bridge_remote("updateDeliveryFiles", bridge_params)
-      # TODO: handle errors
 
-      api.unwrap_response(resp).map do |row|
+      api.bridge_remote_and_retry!("updateDeliveryFiles", bridge_params).map do |row|
         pd_id = row["request_metadata"]["podcast_delivery_file_id"]
         Apple::PodcastDeliveryFile.find(pd_id).update!(api_response: row, uploaded: true)
       end
@@ -66,22 +64,24 @@ module Apple
 
     def self.get_podcast_delivery_files(api, pdfs)
       bridge_params = pdfs.map { |pdf| get_delivery_file_bridge_params(api, pdf) }
-      resp = api.bridge_remote("getDeliveryFiles", bridge_params)
-
-      api.unwrap_response(resp)
+      api.bridge_remote_and_retry!("getDeliveryFiles", bridge_params)
     end
 
     def self.create_podcast_delivery_files(api, episodes)
       return [] if episodes.empty?
+
       episodes_needing_delivery_files =
         episodes.reject { |ep| ep.podcast_container&.podcast_delivery&.podcast_delivery_file.present? }
 
       podcast_deliveries = Apple::PodcastDelivery.where(episode_id: episodes_needing_delivery_files.map(&:feeder_id))
       podcast_deliveries_by_id = podcast_deliveries.map { |p| [p.id, p] }.to_h
 
-      resp = api.bridge_remote("createDeliveryFiles",
-                               podcast_deliveries.map { |d| create_delivery_file_bridge_params(api, d) })
-      api.unwrap_response(resp).map do |row|
+      new_delivery_files =
+        api.bridge_remote_and_retry!("createDeliveryFiles",
+                                     podcast_deliveries.map do |d|
+                                       create_delivery_file_bridge_params(api, d)
+                                     end)
+      new_delivery_files.map do |row|
         pd = podcast_deliveries_by_id.fetch(row["request_metadata"]["podcast_delivery_id"])
         create_podcast_delivery_file(pd, row)
       end
@@ -91,7 +91,7 @@ module Apple
       {
         request_metadata: {
           podcast_delivery_file_id: podcast_delivery_file.id,
-          episode_id: podcast_delivery_file.podcast_delivery.episode_id,
+          episode_id: podcast_delivery_file.podcast_delivery.episode_id
         },
         api_url: api.join_url("podcastDeliveryFiles/" + podcast_delivery_file.apple_id).to_s
       }
@@ -101,7 +101,7 @@ module Apple
       {
         request_metadata: {
           podcast_delivery_file_id: podcast_delivery_file.id,
-          episode_id: podcast_delivery_file.podcast_delivery.episode_id,
+          episode_id: podcast_delivery_file.podcast_delivery.episode_id
         },
         api_url: api.join_url("podcastDeliveryFiles/" + podcast_delivery_file.apple_id).to_s,
         api_parameters: podcast_delivery_file.mark_uploaded_parameters
@@ -112,7 +112,7 @@ module Apple
       {
         request_metadata: {
           podcast_delivery_id: podcast_delivery.id,
-          episode_id: podcast_delivery.episode_id,
+          episode_id: podcast_delivery.episode_id
         },
         api_url: api.join_url("podcastDeliveryFiles").to_s,
         api_parameters: podcast_delivery_file_create_parameters(podcast_delivery)
@@ -158,7 +158,7 @@ module Apple
           id: apple_id,
           type: "podcastDeliveryFiles",
           attributes: {
-            uploaded: true,
+            uploaded: true
           }
         }
       }

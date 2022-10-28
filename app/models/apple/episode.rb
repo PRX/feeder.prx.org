@@ -9,33 +9,23 @@ module Apple
     def self.get_episodes(api, episodes)
       return if episodes.empty?
 
-      resp =
-        api.bridge_remote("getEpisodes", episodes.map(&:get_episode_bridge_params))
-
-      # TODO: handle errors
-      episode_bridge_results = api.unwrap_response(resp)
-      episode_bridge_results
+      api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
 
     def self.create_episodes(api, episodes)
       return if episodes.empty?
 
-      resp =
-        api.bridge_remote("createEpisodes", episodes.map(&:create_episode_bridge_params))
+      episode_bridge_results = api.bridge_remote_and_retry!("createEpisodes",
+                                                            episodes.map(&:create_episode_bridge_params))
 
-      # TODO: handle errors
-      episode_bridge_results = api.unwrap_response(resp)
       insert_sync_logs(episodes, episode_bridge_results)
     end
 
     def self.update_episodes(api, episodes)
       return if episodes.empty?
 
-      resp =
-        api.bridge_remote("updateEpisodes", episodes.map(&:update_episode_bridge_params))
-
-      # TODO: handle errors
-      episode_bridge_results = api.unwrap_response(resp)
+      episode_bridge_results = api.bridge_remote_and_retry!("updateEpisodes",
+                                                            episodes.map(&:update_episode_bridge_params))
       insert_sync_logs(episodes, episode_bridge_results)
     end
 
@@ -129,14 +119,14 @@ module Apple
     def get_episode_bridge_params
       {
         api_url: api.join_url("episodes/" + id).to_s,
-        api_parameters: {},
+        api_parameters: {}
       }
     end
 
     def create_episode_bridge_params
       {
         api_url: api.join_url("episodes").to_s,
-        api_parameters: episode_create_parameters,
+        api_parameters: episode_create_parameters
       }
     end
 
@@ -169,7 +159,7 @@ module Apple
     def update_episode_bridge_params
       {
         api_url: api.join_url("episodes/" + id).to_s,
-        api_parameters: update_episode_parameters,
+        api_parameters: update_episode_parameters
       }
     end
 

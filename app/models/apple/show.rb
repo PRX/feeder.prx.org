@@ -42,13 +42,13 @@ module Apple
         data: {
           type: "shows",
           relationships: {
-            allowedCountriesAndRegions: { data: api.countries_and_regions },
+            allowedCountriesAndRegions: { data: api.countries_and_regions }
           },
           attributes: {
             kind: "RSS",
             rssUrl: feed_published_url,
             releaseFrequency: "OPTOUT",
-            thirdPartyRights: "HAS_RIGHTS_TO_THIRD_PARTY_CONTENT",
+            thirdPartyRights: "HAS_RIGHTS_TO_THIRD_PARTY_CONTENT"
           }
         }
       }
@@ -103,13 +103,13 @@ module Apple
     end
 
     def get_show
-      raise 'Missing apple show id' unless apple_id.present?
+      raise "Missing apple show id" unless apple_id.present?
 
       self.class.get_show(api, apple_id)
     end
 
     def get_episodes
-      raise 'Missing apple show id' unless apple_id.present?
+      raise "Missing apple show id" unless apple_id.present?
 
       @get_episodes ||=
         begin

@@ -40,6 +40,7 @@ module Apple
 
       Apple::Episode.create_episodes(api, create_apple_episodes)
       Apple::Episode.update_episodes(api, update_apple_episodes)
+      show.reload
     end
 
     def publish!
@@ -47,8 +48,6 @@ module Apple
       raise "Missing Show!" unless show.id.present?
 
       sync_episodes!
-
-      show.reload
 
       # only create if needed
       create_podcast_containers!

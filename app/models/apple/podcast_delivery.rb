@@ -11,18 +11,15 @@ module Apple
     enum status: {
       awaiting_upload: "AWAITING_UPLOAD",
       completed: "COMPLETED",
-      failed: "FAILED",
+      failed: "FAILED"
     }
 
     def self.create_podcast_deliveries(api, episodes_to_sync)
       episodes_needing_delivery = episodes_to_sync.reject { |ep| ep.podcast_container.podcast_delivery.present? }
 
-      api_resp =
-        api.bridge_remote("createPodcastDeliveries",
-                          create_podcast_deliveries_bridge_params(api, episodes_needing_delivery))
-
-      # TODO: error handling
-      new_deliveries_response = api.unwrap_response(api_resp)
+      new_deliveries_response =
+        api.bridge_remote_and_retry!("createPodcastDeliveries",
+                                     create_podcast_deliveries_bridge_params(api, episodes_needing_delivery))
 
       # Make sure we have local copies of the remote metadata At this point and
       # errors should be resolved and we should have then intended set of
