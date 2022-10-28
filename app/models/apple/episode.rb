@@ -62,13 +62,13 @@ module Apple
       feeder_episode.enclosure_filename
     end
 
-    def json
+    def apple_json
+      return nil unless show.apple_id.present?
+
       eps = show.get_episodes
 
       eps.detect { |ep| ep["attributes"]["guid"] == feeder_episode.item_guid }
     end
-
-    alias_method :apple_json, :json
 
     def completed_sync_log
       SyncLog.

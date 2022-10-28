@@ -7,17 +7,17 @@ require "securerandom"
 
 describe Apple::Api do
   let(:ecdsa_pem) do
-    "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIHGYE/QPYUkdUAfs72gQTBA9i5A6DgvIE8iiWtkC1Rp7oAoGCCqGSM49\nAwEHoUQDQgAEhqIHUYP3wBlLvs/AZK3VGum/j/+2HgUQzt78LT4nS+rI1JVIOFrU\nRUFz6kRgJExlrf7oHfqfLYjvF3BoOzfmlw==\n-----END EC PRIVATE KEY-----\n"
+    test_file("/fixtures/apple_podcasts_connect_keyfile.pem")
   end
 
   let(:provider_id) { SecureRandom.uuid }
 
   let(:key_id) { "asdfasdf" }
 
-  let(:apple_api) { Apple::Api.new(provider_id, key_id, ecdsa_pem) }
+  let(:apple_api) { Apple::Api.new(provider_id: provider_id, key_id: key_id, key: ecdsa_pem) }
   let(:api) { apple_api }
 
-  it "decodes the base64 key" do
+  it "assigns the base64 key" do
     assert_equal(apple_api.key, ecdsa_pem)
   end
 

@@ -14,15 +14,16 @@ module Apple
     def self.from_env
       apple_key_pem = Base64.decode64(ENV["APPLE_KEY_PEM_B64"])
 
-      new(ENV["APPLE_PROVIDER_ID"],
-          ENV["APPLE_KEY_ID"],
-          apple_key_pem)
+      new(provider_id: ENV["APPLE_PROVIDER_ID"],
+          key_id: ENV["APPLE_KEY_ID"],
+          key: apple_key_pem)
     end
 
-    def initialize(provider_id, key_id, key)
-      @provider_id = provider_id
-      @key_id = key_id
-      @key = key
+    def initialize(**attributes)
+      attributes = attributes.with_indifferent_access
+      @provider_id = attributes[:provider_id]
+      @key_id = attributes[:key_id]
+      @key = attributes[:key]
     end
 
     def ec_key
