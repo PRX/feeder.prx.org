@@ -5,6 +5,8 @@ networks:
 services:
   feeder:
     build: .
+    env_file:
+      - env-example
     links:
       - db
     ports:
