@@ -209,7 +209,10 @@ module Apple
       end
     end
 
-    def retry_bridge_api_operation(bridge_resource, row_operations_ok, row_operation_errs, attempts = 0)
+    # Takes in a bridge resource and a list of oks (successful requests) and
+    # errs (failed requests).  Retries errs and adds any former_errors_now_ok to
+    # the oks and recurses on the remaining errs.
+    def retry_bridge_api_operation(bridge_resource, row_operations_ok, row_operation_errs, attempts = 1)
       return [row_operations_ok, row_operation_errs] if attempts >= ERROR_RETRIES || row_operation_errs.empty?
 
       Rails.logger.error("Retrying!")
