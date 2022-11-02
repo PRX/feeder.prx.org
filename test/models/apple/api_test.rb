@@ -34,6 +34,37 @@ describe Apple::Api do
     assert_equal algo, "typ" => "JWT", "alg" => "ES256", "kid" => key_id
   end
 
+  describe "#local_api_retry_errors" do
+    it "local api attempts exhausts retries until failure" do
+      attempts = 0
+
+      res = api.local_api_retry_errors do
+        attempts += 1
+        OpenStruct.new(code: "543")
+      end
+
+      assert_equal 3, attempts
+      assert_equal "543", res.code
+    end
+
+    it "succeeds after some failures" do
+      responses = [
+        OpenStruct.new(code: "543"),
+        OpenStruct.new(code: "543"),
+        OpenStruct.new(code: "200")
+      ]
+
+      attempts = 0
+      res = api.local_api_retry_errors do
+        attempts += 1
+        responses.shift
+      end
+
+      assert_equal 3, attempts
+      assert_equal "200", res.code
+    end
+  end
+
   describe "#bridge_remote_and_retry" do
     it "exhausts retries until failure" do
       bridge_failure_response = [

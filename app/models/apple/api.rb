@@ -87,18 +87,35 @@ module Apple
       URI.join(api_base, api_frag)
     end
 
+    def local_api_retry_errors
+      count = 0
+      last_resp = nil
+      while count < ERROR_RETRIES
+        count += 1
+        last_resp = yield
+        break if ok_code(last_resp)
+      end
+
+      last_resp
+    end
+
     def get(api_frag)
       uri = join_url(api_frag)
-
-      get_uri(uri)
+      local_api_retry_errors do
+        get_uri(uri)
+      end
     end
 
     def patch(api_frag, data_body)
-      update_remote(Net::HTTP::Patch, api_frag, data_body)
+      local_api_retry_errors do
+        update_remote(Net::HTTP::Patch, api_frag, data_body)
+      end
     end
 
     def post(api_frag, data_body)
-      update_remote(Net::HTTP::Post, api_frag, data_body)
+      local_api_retry_errors do
+        update_remote(Net::HTTP::Post, api_frag, data_body)
+      end
     end
 
     def countries_and_regions
