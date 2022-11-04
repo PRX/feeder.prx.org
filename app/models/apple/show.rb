@@ -93,7 +93,7 @@ module Apple
       SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds)
     end
 
-    def create_show!(_sync)
+    def create_show!
       resp = api.post("shows", show_data)
 
       api.unwrap_response(resp)
@@ -111,7 +111,7 @@ module Apple
       if sync.present?
         update_show!(sync)
       else
-        create_show!(sync)
+        create_show!
       end
     end
 
