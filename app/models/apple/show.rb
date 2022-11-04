@@ -58,10 +58,6 @@ module Apple
       completed_sync_log&.external_id
     end
 
-    def id
-      apple_id
-    end
-
     def completed_sync_log
       SyncLog.
         feeds.

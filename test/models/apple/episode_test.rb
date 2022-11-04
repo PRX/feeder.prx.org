@@ -40,7 +40,7 @@ describe Apple::Episode do
     it "lets you access various attributes" do
       apple_show.stub(:apple_id, 'apple_id') do
         apple_show.stub(:get_episodes, apple_episode_list) do
-          assert_equal apple_episode.id, "123"
+          assert_equal apple_episode.apple_id, "123"
           assert_equal apple_episode.audio_asset_vendor_id, "456"
         end
       end
