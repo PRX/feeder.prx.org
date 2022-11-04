@@ -4,6 +4,15 @@ module Apple
   class Show
     attr_reader :feed, :api
 
+    def self.connect_existing(feed, apple_show_id)
+      SyncLog.create!(feeder_id: feed.id,
+                      feeder_type: :feeds,
+                      sync_completed_at: Time.now.utc,
+                      external_id: apple_show_id)
+
+      new(feed)
+    end
+
     def initialize(feed)
       @feed = feed
       @api = Apple::Api.from_env

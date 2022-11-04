@@ -12,6 +12,14 @@ describe Apple::Show do
       to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
   end
 
+  describe ".connect_existing" do
+    it "should persist the apple id for a feed" do
+      Apple::Show.connect_existing(feed, "some_apple_id")
+
+      assert_equal Apple::Show.new(feed).apple_id, "some_apple_id"
+    end
+  end
+
   describe "#id" do
     it "should return nil if not set" do
       assert_nil apple_show.apple_id
