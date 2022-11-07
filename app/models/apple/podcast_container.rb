@@ -85,7 +85,7 @@ module Apple
                       apple_episode_id: episode.apple_id,
                       vendor_id: episode.audio_asset_vendor_id,
                       external_id: external_id).first
-          pd.update!(api_response: row)
+          pc.update!(api_response: row)
           pc
         else
           create!(episode_id: episode.feeder_id,
