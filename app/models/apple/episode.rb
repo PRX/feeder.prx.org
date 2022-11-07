@@ -119,7 +119,11 @@ module Apple
 
     def get_episode_bridge_params
       {
+<<<<<<< HEAD
         api_url: api.join_url("episodes/" + id).to_s,
+=======
+        api_url: api.join_url("episodes/" + apple_id).to_s,
+>>>>>>> origin/feat/apple-api-integration
         api_parameters: {}
       }
     end
@@ -151,7 +155,7 @@ module Apple
             appleHostedAudioIsSubscriberOnly: true
           },
           relationships: {
-            show: { data: { type: "shows", id: show.id } }
+            show: { data: { type: "shows", id: show.apple_id } }
           }
         }
       }
@@ -159,7 +163,11 @@ module Apple
 
     def update_episode_bridge_params
       {
+<<<<<<< HEAD
         api_url: api.join_url("episodes/" + id).to_s,
+=======
+        api_url: api.join_url("episodes/" + apple_id).to_s,
+>>>>>>> origin/feat/apple-api-integration
         api_parameters: update_episode_parameters
       }
     end
@@ -167,7 +175,7 @@ module Apple
     def update_episode_parameters
       data = episode_create_parameters
 
-      data[:data][:id] = id
+      data[:data][:id] = apple_id
       data[:data][:attributes].delete(:guid)
       data[:data][:relationships].delete(:show)
 
@@ -181,7 +189,7 @@ module Apple
     end
 
     def update_episode!
-      resp = api.patch("episodes/" + id, update_episode_data)
+      resp = api.patch("episodes/" + apple_id, update_episode_data)
 
       api.unwrap_response(resp)
     end
@@ -192,10 +200,6 @@ module Apple
 
     def apple_id
       apple_json&.dig("id")
-    end
-
-    def id
-      apple_id
     end
 
     def podcast_container

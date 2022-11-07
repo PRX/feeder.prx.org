@@ -18,6 +18,9 @@ ENV['PRX_HOST']        = 'www.prx.org'
 ENV['DOVETAIL_HOST']   = 'dovetail.prxu.org'
 ENV['FEEDER_STORAGE_BUCKET'] = 'test-prx-feed'
 ENV['PORTER_SNS_TOPIC'] = nil
+ENV['APPLE_PROVIDER_ID'] = '433f5f09-80f9-43d4-8cee-67bc549c28c5'
+ENV['APPLE_KEY_ID']      = 'asdfasdf'
+ENV['APPLE_KEY_PEM_B64'] = 'LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUhHWUUvUVBZVWtkVUFmczcyZ1FUQkE5aTVBNkRndklFOGlpV3RrQzFScDdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFaHFJSFVZUDN3QmxMdnMvQVpLM1ZHdW0vai8rMkhnVVF6dDc4TFQ0blMrckkxSlZJT0ZyVQpSVUZ6NmtSZ0pFeGxyZjdvSGZxZkxZanZGM0JvT3pmbWx3PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQ=='
 
 require File.expand_path("../../config/environment", __FILE__)
 require 'rails/test_help'

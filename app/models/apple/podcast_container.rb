@@ -109,7 +109,7 @@ module Apple
     def self.get_podcast_containers_bridge_params(api, episodes)
       episodes.map do |ep|
         {
-          request_metadata: { apple_episode_id: ep.id },
+          request_metadata: { apple_episode_id: ep.apple_id },
           api_url: podcast_container_url(api, ep),
           api_parameters: {}
         }

@@ -45,7 +45,7 @@ module Apple
 
     def publish!
       show.sync!
-      raise "Missing Show!" unless show.id.present?
+      raise "Missing Show!" unless show.apple_id.present?
 
       sync_episodes!
 
@@ -64,8 +64,8 @@ module Apple
       # update episodes as published
 
       # success
-      SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds, external_id: show.id)
-    rescue Apple::ApiError => e
+      SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds, external_id: show.apple_id)
+    rescue Apple::ApiError => _e
       SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds)
       raise e
     end

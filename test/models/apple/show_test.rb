@@ -20,7 +20,7 @@ describe Apple::Show do
     end
   end
 
-  describe "#id" do
+  describe "#apple_id" do
     it "should return nil if not set" do
       assert_nil apple_show.apple_id
     end
