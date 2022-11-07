@@ -119,11 +119,7 @@ module Apple
 
     def get_episode_bridge_params
       {
-<<<<<<< HEAD
-        api_url: api.join_url("episodes/" + id).to_s,
-=======
         api_url: api.join_url("episodes/" + apple_id).to_s,
->>>>>>> origin/feat/apple-api-integration
         api_parameters: {}
       }
     end
@@ -163,11 +159,7 @@ module Apple
 
     def update_episode_bridge_params
       {
-<<<<<<< HEAD
-        api_url: api.join_url("episodes/" + id).to_s,
-=======
         api_url: api.join_url("episodes/" + apple_id).to_s,
->>>>>>> origin/feat/apple-api-integration
         api_parameters: update_episode_parameters
       }
     end
