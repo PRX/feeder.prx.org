@@ -30,15 +30,19 @@ describe Apple::Episode do
     end
 
     it "fetches the apple json via the show" do
-      apple_show.stub(:get_episodes, apple_episode_list) do
-        assert_equal apple_episode.apple_json, apple_episode_json
+      apple_show.stub(:apple_id, 'apple_id') do
+        apple_show.stub(:get_episodes, apple_episode_list) do
+          assert_equal apple_episode.apple_json, apple_episode_json
+        end
       end
     end
 
     it "lets you access various attributes" do
-      apple_show.stub(:get_episodes, apple_episode_list) do
-        assert_equal apple_episode.id, "123"
-        assert_equal apple_episode.audio_asset_vendor_id, "456"
+      apple_show.stub(:apple_id, 'apple_id') do
+        apple_show.stub(:get_episodes, apple_episode_list) do
+          assert_equal apple_episode.apple_id, "123"
+          assert_equal apple_episode.audio_asset_vendor_id, "456"
+        end
       end
     end
   end

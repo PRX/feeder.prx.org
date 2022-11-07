@@ -15,10 +15,8 @@ module Apple
       containers = Apple::PodcastContainer.where(episode_id: episodes_to_sync.map(&:feeder_id))
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
 
-      resp =
-        api.bridge_remote("headFileSizes", containers.map(&:head_file_size_bridge_params))
-
-      api.unwrap_response(resp).map do |row|
+      api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params)).
+        map do |row|
         content_length = row.dig("api_response", "val", "data", "content-length")
 
         podcast_container_id = row["request_metadata"]["podcast_container_id"]
@@ -38,14 +36,10 @@ module Apple
       #
       episodes_to_create = episodes_to_sync.reject { |ep| ep.podcast_container.present? }
 
-      api_resp =
-        api.bridge_remote("createPodcastContainers",
-                          create_podcast_containers_bridge_params(api, episodes_to_create))
+      new_containers_response =
+        api.bridge_remote_and_retry!("createPodcastContainers",
+                                     create_podcast_containers_bridge_params(api, episodes_to_create))
 
-      # TODO: error handling
-      new_containers_response = api.unwrap_response(api_resp)
-
-      # fetch and in
       show.reload
 
       # Make sure we have local copies of the remote metadata At this point and
@@ -55,7 +49,7 @@ module Apple
       episodes_by_id = episodes_to_create.map { |ep| [ep.id, ep] }.to_h
 
       new_containers_response.map do |row|
-        ep = episodes_by_id.fetch(row["episode_id"])
+        ep = episodes_by_id.fetch(row["request_metadata"]["apple_episode_id"])
 
         create_podcast_container(ep, row)
       end
@@ -87,16 +81,13 @@ module Apple
     end
 
     def self.get_podcast_containers(api, episodes_to_sync)
-      resp =
-        api.bridge_remote("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes_to_sync))
-
-      api.unwrap_response(resp)
+      api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes_to_sync))
     end
 
     def self.get_podcast_containers_bridge_params(api, episodes_to_sync)
       episodes_to_sync.map do |ep|
         {
-          apple_episode_id: ep.id,
+          request_metadata: { apple_episode_id: ep.apple_id },
           api_url: podcast_container_url(api, ep),
           api_parameters: {}
         }
@@ -107,7 +98,7 @@ module Apple
       episodes_to_sync.
         map do |ep|
         {
-          episode_id: ep.id,
+          request_metadata: { apple_episode_id: ep.id },
           api_url: api.join_url("podcastContainers").to_s,
           api_parameters: podcast_container_create_parameters(ep)
         }
@@ -138,6 +129,8 @@ module Apple
     end
 
     def self.podcast_container_url(api, episode)
+      return nil unless episode.audio_asset_vendor_id.present?
+
       api.join_url("podcastContainers?filter[vendorId]=" + episode.audio_asset_vendor_id).to_s
     end
 
@@ -145,10 +138,10 @@ module Apple
       {
         request_metadata: {
           apple_episode_id: apple_episode_id,
-          podcast_container_id: id,
+          podcast_container_id: id
         },
         api_url: source_url,
-        api_parameters: {},
+        api_parameters: {}
       }
     end
   end

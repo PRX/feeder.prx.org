@@ -40,15 +40,14 @@ module Apple
 
       Apple::Episode.create_episodes(api, create_apple_episodes)
       Apple::Episode.update_episodes(api, update_apple_episodes)
+      show.reload
     end
 
     def publish!
       show.sync!
-      raise "Missing Show!" unless show.id.present?
+      raise "Missing Show!" unless show.apple_id.present?
 
       sync_episodes!
-
-      show.reload
 
       # only create if needed
       create_podcast_containers!
@@ -65,7 +64,7 @@ module Apple
       # update episodes as published
 
       # success
-      SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds, external_id: show.id)
+      SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds, external_id: show.apple_id)
     rescue Apple::ApiError => _e
       SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds)
     end
