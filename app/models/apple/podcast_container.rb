@@ -30,7 +30,7 @@ module Apple
     end
 
     def self.zip_result_with_episode(result, eps)
-      episodes_by_id = eps.map { |ep| [ep.id, ep] }.to_h
+      episodes_by_id = eps.map { |ep| [ep.apple_id, ep] }.to_h
 
       result.map do |row|
         ep = episodes_by_id.fetch(row["request_metadata"]["apple_episode_id"])
