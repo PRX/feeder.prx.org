@@ -4,7 +4,7 @@ require "uri"
 
 module Apple
   class Episode
-    attr_reader :show, :feeder_episode, :api
+    attr_accessor :show, :feeder_episode, :api
 
     def self.get_episodes(api, episodes)
       return if episodes.empty?
@@ -44,10 +44,11 @@ module Apple
       end
     end
 
-    def initialize(show, episode)
-      @show = show
-      @feeder_episode = episode
-      @api = Apple::Api.from_env
+    def initialize(**kwargs)
+      kwargs = kwargs.with_indifferent_access
+      @show = kwargs["show"]
+      @feeder_episode = kwargs["feeder_episode"]
+      @api = kwargs["api"] || Apple::Api.from_env
     end
 
     def feeder_id

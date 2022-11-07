@@ -7,7 +7,7 @@ describe Apple::Episode do
   let(:feed) { create(:feed, podcast: podcast, private: false) }
   let(:episode) { create(:episode, podcast: podcast) }
   let(:apple_show) { Apple::Show.new(feed) }
-  let(:apple_episode) { Apple::Episode.new(apple_show, episode) }
+  let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 
   before do
     stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200").

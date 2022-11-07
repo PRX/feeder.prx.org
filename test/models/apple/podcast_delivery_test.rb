@@ -8,7 +8,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     let(:feed) { create(:feed, podcast: podcast, private: false) }
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_show) { Apple::Show.new(feed) }
-    let(:apple_episode) { Apple::Episode.new(apple_show, episode) }
+    let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 
     it "should create logs based on a returned row value" do
       podcast_container = Apple::PodcastContainer.create!(vendor_id: "123", apple_episode_id: "456")
