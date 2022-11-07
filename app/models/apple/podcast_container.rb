@@ -11,8 +11,8 @@ module Apple
       api_response.dig("data", "relationships", "podcastDeliveries", "links", "self")
     end
 
-    def self.update_podcast_container_file_metadata(api, episodes_to_sync)
-      containers = Apple::PodcastContainer.where(episode_id: episodes_to_sync.map(&:feeder_id))
+    def self.update_podcast_container_file_metadata(api, episodes)
+      containers = Apple::PodcastContainer.where(episode_id: episodes.map(&:feeder_id))
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
 
       api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params)).
@@ -29,49 +29,71 @@ module Apple
       end
     end
 
-    def self.create_podcast_containers(api, episodes_to_sync, show)
+    def self.zip_result_with_episode(result, eps)
+      episodes_by_id = eps.map { |ep| [ep.id, ep] }.to_h
+
+      result.map do |row|
+        ep = episodes_by_id.fetch(row["request_metadata"]["apple_episode_id"])
+        [ep, row]
+      end
+    end
+
+    def self.update_podcast_container_state(api, episodes)
+      results = get_podcast_containers(api, episodes)
+
+      zip_result_with_episode(results, episodes).each do |(ep, row)|
+        podcast_containers_json = row.dig("api_response", "val", "data")
+        upsert_podcast_container(ep, row)
+      end
+    end
+
+    def self.create_podcast_containers(api, episodes)
       # TODO: guard gatekeep the initial sync to preserve podcast connect audio.
       # TODO: guard at the feed level -- accept list feeds for sync
       # TODO: guard for existing media via podcast connect.
       #
-      episodes_to_create = episodes_to_sync.reject { |ep| ep.podcast_container.present? }
+      episodes_to_create = episodes.reject { |ep| ep.podcast_container.present? }
 
       new_containers_response =
         api.bridge_remote_and_retry!("createPodcastContainers",
                                      create_podcast_containers_bridge_params(api, episodes_to_create))
 
-      show.reload
-
-      # Make sure we have local copies of the remote metadata At this point and
-      # errors should be resolved and we should have then intended set of
-      # resources created.
-
-      episodes_by_id = episodes_to_create.map { |ep| [ep.id, ep] }.to_h
-
-      new_containers_response.map do |row|
-        ep = episodes_by_id.fetch(row["request_metadata"]["apple_episode_id"])
-
-        create_podcast_container(ep, row)
+      zip_result_with_episode(new_containers_response, episodes_to_create) do |ep, row|
+        upsert_podcast_container(ep, row)
       end
     end
 
-    def self.create_podcast_container(ep, row)
-      external_id = row.dig("api_response", "val", "data", "id")
+    def self.upsert_podcast_container(episode, row)
+      podcast_containers_json = row.dig("api_response", "val", "data")
+
+      # TODO: support > 1 podcast container
+      (row, external_id) =
+        if podcast_containers_json.is_a?(Array)
+          raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if podcast_containers_json.length > 1
+
+          container = podcast_containers_json.first.dup
+
+          single_container_row = row.dup
+          single_container_row["api_response"]["val"]["data"] = container
+          [single_container_row, container["id"]]
+        else
+          [row, row.dig("api_response", "val", "data", "id")]
+        end
 
       pc =
-        if pc = where(episode_id: ep.feeder_id,
-                      apple_episode_id: ep.apple_id,
-                      vendor_id: ep.audio_asset_vendor_id,
+        if pc = where(episode_id: episode.feeder_id,
+                      apple_episode_id: episode.apple_id,
+                      vendor_id: episode.audio_asset_vendor_id,
                       external_id: external_id).first
           pd.update!(api_response: row)
           pc
         else
-          create!(episode_id: ep.feeder_id,
+          create!(episode_id: episode.feeder_id,
                   external_id: external_id,
-                  vendor_id: ep.audio_asset_vendor_id,
-                  apple_episode_id: ep.apple_id,
-                  source_url: ep.enclosure_url,
-                  source_filename: ep.enclosure_filename,
+                  vendor_id: episode.audio_asset_vendor_id,
+                  apple_episode_id: episode.apple_id,
+                  source_url: episode.enclosure_url,
+                  source_filename: episode.enclosure_filename,
                   api_response: row)
         end
 
@@ -80,12 +102,12 @@ module Apple
       pc
     end
 
-    def self.get_podcast_containers(api, episodes_to_sync)
-      api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes_to_sync))
+    def self.get_podcast_containers(api, episodes)
+      api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes))
     end
 
-    def self.get_podcast_containers_bridge_params(api, episodes_to_sync)
-      episodes_to_sync.map do |ep|
+    def self.get_podcast_containers_bridge_params(api, episodes)
+      episodes.map do |ep|
         {
           request_metadata: { apple_episode_id: ep.id },
           api_url: podcast_container_url(api, ep),
@@ -94,8 +116,8 @@ module Apple
       end
     end
 
-    def self.create_podcast_containers_bridge_params(api, episodes_to_sync)
-      episodes_to_sync.
+    def self.create_podcast_containers_bridge_params(api, episodes)
+      episodes.
         map do |ep|
         {
           request_metadata: { apple_episode_id: ep.id },

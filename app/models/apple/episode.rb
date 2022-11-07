@@ -66,7 +66,7 @@ module Apple
     def apple_json
       return nil unless show.apple_id.present?
 
-      eps = show.get_episodes
+      eps = show.get_episodes_json
 
       eps.detect { |ep| ep["attributes"]["guid"] == feeder_episode.item_guid }
     end

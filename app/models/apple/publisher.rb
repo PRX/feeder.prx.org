@@ -50,9 +50,9 @@ module Apple
       sync_episodes!
 
       # only create if needed
-      create_podcast_containers!
-      create_podcast_deliveries!
-      create_podcast_delivery_files!
+      sync_podcast_containers!
+      sync_podcast_deliveries!
+      sync_podcast_delivery_files!
 
       # upload and mark as uploaded
       execute_upload_operations!
@@ -79,12 +79,21 @@ module Apple
       Apple::PodcastContainer.get_podcast_containers(api, episodes_to_sync)
     end
 
-    def create_podcast_containers!
+    def sync_podcast_containers!
       # TODO: right now we only create one container,
       # Apple RSS scaping means we don't need containers for freemium episode images
       # But we do need asset containers for apple-only (non-rss) images
-      Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync, show)
-      Apple::PodcastContainer.update_podcast_container_file_metadata(api, episodes_to_sync)
+
+      Rails.logger.info("Starting podcast container sync")
+
+      res = Apple::PodcastContainer.update_podcast_container_state(api, episodes_to_sync)
+      Rails.logger.info("Updated local state for #{res.length} podcast containers.")
+
+      res = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
+      Rails.logger.info("Created remote / local state for #{res.length} podcast containers.")
+
+      res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, episodes_to_sync)
+      Rails.logger.info("Updated remote state for #{res.length} podcast containers.")
     end
 
     def get_podcast_deliveries
@@ -92,12 +101,12 @@ module Apple
       Apple::PodcastDelivery.get_podcast_deliveries(api, episodes_to_sync)
     end
 
-    def create_podcast_deliveries!
-      Apple::PodcastDelivery.create_podcast_deliveries(api, episodes_to_sync)
+    def sync_podcast_deliveries!
+      Apple::PodcastDelivery.sync_podcast_deliveries(api, episodes_to_sync)
     end
 
-    def create_podcast_delivery_files!
-      Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, episodes_to_sync)
+    def sync_podcast_delivery_files!
+      Apple::PodcastDeliveryFile.sync_podcast_delivery_files(api, episodes_to_sync)
     end
 
     def execute_upload_operations!

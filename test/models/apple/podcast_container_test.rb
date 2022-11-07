@@ -9,18 +9,41 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   let(:apple_show) { Apple::Show.new(feed) }
   let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 
+  let(:apple_episode_id) { "apple-ep-id" }
+  let(:apple_audio_asset_vendor_id) { "apple-vendor-id" }
+  let(:podcast_container_json_row) do
+    { "request_metadata" => { "apple_episode_id" => apple_episode_id },
+      "api_response" => { "val" => { "data" =>
+     [{ "type" => "podcastContainers",
+        "id" => "1234" }] } } }
+  end
 
   describe ".create_podcast_containers" do
     it "should create logs based on a returned row value" do
       assert_equal SyncLog.count, 0
 
-      apple_episode.stub(:apple_id, "1234") do
-        apple_episode.stub(:audio_asset_vendor_id, "5678") do
-          Apple::PodcastContainer.create_podcast_container(apple_episode,
-                                                           api_response: { val: { data: { id: "123" } } })
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+                                                           podcast_container_json_row)
         end
       end
 
+      assert_equal SyncLog.count, 1
+    end
+  end
+
+  describe ".update_podcast_container_state(api, episodes)" do
+    it "creates new records if they dont exist" do
+      assert_equal SyncLog.count, 0
+
+      Apple::PodcastContainer.stub(:get_podcast_containers, [podcast_container_json_row]) do
+        apple_episode.stub(:apple_id, apple_episode_id) do
+          apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+            Apple::PodcastContainer.update_podcast_container_state(nil, [apple_episode])
+          end
+        end
+      end
       assert_equal SyncLog.count, 1
     end
   end

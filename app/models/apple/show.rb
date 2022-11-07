@@ -13,6 +13,16 @@ module Apple
       new(feed)
     end
 
+    def self.get_episodes_json(api, show_id)
+      api.get_paged_collection("shows/#{show_id}/episodes")
+    end
+
+    def self.get_show(api, show_id)
+      resp = api.get("shows/#{show_id}")
+
+      api.unwrap_response(resp)
+    end
+
     def initialize(feed)
       @feed = feed
       @api = Apple::Api.from_env
@@ -121,28 +131,18 @@ module Apple
       self.class.get_show(api, apple_id)
     end
 
-    def get_episodes
+    def get_episodes_json
       raise "Missing apple show id" unless apple_id.present?
 
-      @get_episodes ||=
+      @get_episodes_json ||=
         begin
           external_id = completed_sync_log&.external_id
-          self.class.get_episodes(api, external_id)
+          self.class.get_episodes_json(api, external_id)
         end
     end
 
-    def apple_episodes
-      get_episodes
-    end
-
-    def self.get_show(api, show_id)
-      resp = api.get("shows/#{show_id}")
-
-      api.unwrap_response(resp)
-    end
-
-    def self.get_episodes(api, show_id)
-      api.get_paged_collection("shows/#{show_id}/episodes")
+    def apple_episodes_json
+      get_episodes_json
     end
   end
 end
