@@ -11,6 +11,15 @@ module Apple
       api_response.dig("data", "relationships", "podcastDeliveries", "links", "self")
     end
 
+    def self.zip_result_with_episode(result, eps)
+      episodes_by_id = eps.map { |ep| [ep.apple_id, ep] }.to_h
+
+      result.map do |row|
+        ep = episodes_by_id.fetch(row["request_metadata"]["apple_episode_id"])
+        [ep, row]
+      end
+    end
+
     def self.update_podcast_container_file_metadata(api, episodes)
       containers = Apple::PodcastContainer.where(episode_id: episodes.map(&:feeder_id))
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
@@ -26,15 +35,6 @@ module Apple
 
         container.save!
         container
-      end
-    end
-
-    def self.zip_result_with_episode(result, eps)
-      episodes_by_id = eps.map { |ep| [ep.apple_id, ep] }.to_h
-
-      result.map do |row|
-        ep = episodes_by_id.fetch(row["request_metadata"]["apple_episode_id"])
-        [ep, row]
       end
     end
 
