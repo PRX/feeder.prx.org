@@ -3,21 +3,42 @@
 require "test_helper"
 
 class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
-  describe ".create_logs" do
+  describe ".upsert_podcast_delivery" do
     let(:podcast) { create(:podcast) }
     let(:feed) { create(:feed, podcast: podcast, private: false) }
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_show) { Apple::Show.new(feed) }
     let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 
+    let(:podcast_delivery_json) { { val: { data: { id: "123" } } } }
+
     it "should create logs based on a returned row value" do
-      podcast_container = Apple::PodcastContainer.create!(vendor_id: "123", apple_episode_id: "456")
-
       assert_equal SyncLog.count, 0
+      assert_equal Apple::PodcastDelivery.count, 0
 
-      Apple::PodcastDelivery.create_logs(apple_episode, api_response: { val: { data: { id: "123" } } })
+      Apple::PodcastDelivery.upsert_podcast_delivery(apple_episode,
+                                                     api_response: podcast_delivery_json)
 
       assert_equal SyncLog.count, 1
+      assert_equal Apple::PodcastDelivery.count, 1
+
+      # Now upsert existing record
+      Apple::PodcastDelivery.upsert_podcast_delivery(apple_episode,
+                                                     api_response: podcast_delivery_json)
+
+      assert_equal SyncLog.count, 2
+      assert_equal Apple::PodcastDelivery.count, 1
+    end
+
+    it "should update timestamps" do
+      pd = Apple::PodcastDelivery.upsert_podcast_delivery(apple_episode,
+                                                          api_response: podcast_delivery_json)
+
+      # Now upsert existing record and overwrite timestamps
+      pd.update(updated_at: Time.now - 1.year)
+      pd2 = Apple::PodcastDelivery.upsert_podcast_delivery(apple_episode,
+                                                           api_response: podcast_delivery_json)
+      assert pd2.updated_at > pd.updated_at
     end
   end
 
@@ -29,8 +50,4 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
       assert_equal container.podcast_delivery.class, Apple::PodcastDelivery
     end
   end
-
-  # test "the truth" do
-  #   assert true
-  # end
 end

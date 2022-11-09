@@ -42,7 +42,6 @@ module Apple
       results = get_podcast_containers(api, episodes)
 
       zip_result_with_episode(results, episodes).each do |(ep, row)|
-        podcast_containers_json = row.dig("api_response", "val", "data")
         upsert_podcast_container(ep, row)
       end
     end
@@ -73,6 +72,7 @@ module Apple
 
           container = podcast_containers_json.first.dup
 
+          # match the singleton resource format used elsewhere in the Apple API
           single_container_row = row.dup
           single_container_row["api_response"]["val"]["data"] = container
           [single_container_row, container["id"]]
@@ -85,16 +85,20 @@ module Apple
                       apple_episode_id: episode.apple_id,
                       vendor_id: episode.audio_asset_vendor_id,
                       external_id: external_id).first
-          pc.update!(api_response: row)
+          pc.api_response = row
+          pc.save!
+          Logger.info("Updating podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
           pc
         else
-          create!(episode_id: episode.feeder_id,
-                  external_id: external_id,
-                  vendor_id: episode.audio_asset_vendor_id,
-                  apple_episode_id: episode.apple_id,
-                  source_url: episode.enclosure_url,
-                  source_filename: episode.enclosure_filename,
-                  api_response: row)
+          pc = create!(episode_id: episode.feeder_id,
+                       external_id: external_id,
+                       vendor_id: episode.audio_asset_vendor_id,
+                       apple_episode_id: episode.apple_id,
+                       source_url: episode.enclosure_url,
+                       source_filename: episode.enclosure_filename,
+                       api_response: row)
+          Logger.info("Creating podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          pc
         end
 
       SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id)

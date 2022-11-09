@@ -18,18 +18,42 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         "id" => "1234" }] } } }
   end
 
-  describe ".create_podcast_containers" do
+  describe ".upsert_podcast_containers" do
     it "should create logs based on a returned row value" do
-      assert_equal SyncLog.count, 0
-
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          assert_equal SyncLog.count, 0
+          assert_equal Apple::PodcastContainer.count, 0
+
           Apple::PodcastContainer.upsert_podcast_container(apple_episode,
                                                            podcast_container_json_row)
+          assert_equal SyncLog.count, 1
+          assert_equal Apple::PodcastContainer.count, 1
+
+          Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+                                                           podcast_container_json_row)
+
+          assert_equal SyncLog.count, 2
+          assert_equal Apple::PodcastContainer.count, 1
         end
       end
+    end
 
-      assert_equal SyncLog.count, 1
+    it "should update timestamps when upserting" do
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          pc1 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+                                                                 podcast_container_json_row)
+
+          pc1.update(updated_at: Time.now - 1.year)
+          # upsert
+          pc2 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+                                                                 podcast_container_json_row.merge({ foo: "bar" }))
+
+          assert pc1 == pc2
+          assert pc2.updated_at > pc1.updated_at
+        end
+      end
     end
   end
 

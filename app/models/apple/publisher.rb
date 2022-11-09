@@ -103,7 +103,13 @@ module Apple
     end
 
     def sync_podcast_deliveries!
-      Apple::PodcastDelivery.sync_podcast_deliveries(api, episodes_to_sync)
+      Rails.logger.info("Starting podcast deliveries sync")
+
+      res = Apple::PodcastDelivery.update_podcast_deliveries_state(api, episodes_to_sync)
+      Rails.logger.info("Updated local state for #{res.length} podcast deliveries.")
+
+      res = Apple::PodcastDelivery.create_podcast_deliveries(api, episodes_to_sync)
+      Rails.logger.info("Created remote / local state for #{res.length} podcast deliveries.")
     end
 
     def sync_podcast_delivery_files!
