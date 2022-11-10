@@ -51,4 +51,31 @@ describe Apple::ApiResponse do
       assert_equal({ "foo" => "bar" }, resp_obj.apple_attributes)
     end
   end
+
+  describe ".join_on_apple_episode_id" do
+    it "uses the request metadata to join a set of resources responging to `apple_episode_id`" do
+      row_results = [{ request_metadata: { apple_episode_id: "1" }, api_response: { foo: "111" } },
+                     { request_metadata: { apple_episode_id: "2" }, api_response: { foo: "222" } },
+                     { request_metadata: { apple_episode_id: "3" }, api_response: { foo: "333" } }]
+      row_results = row_results.map(&:with_indifferent_access)
+
+      resources = [
+        OpenStruct.new(apple_episode_id: "1", bar: "111"),
+        OpenStruct.new(apple_episode_id: "2", bar: "222"),
+        OpenStruct.new(apple_episode_id: "3", bar: "333")
+      ]
+
+      zipped = TestResponse.join_on_apple_episode_id(resources, row_results)
+
+      assert zipped.length == 3
+      assert zipped.all? { |r| r.length == 2 }
+
+      zipped.each_with_index do |(resource, row), index|
+        assert row[:request_metadata][:apple_episode_id] == resource.apple_episode_id
+
+        assert row[:request_metadata][:apple_episode_id] == row_results[index][:request_metadata][:apple_episode_id]
+        assert resource.apple_episode_id == resources[index].apple_episode_id
+      end
+    end
+  end
 end

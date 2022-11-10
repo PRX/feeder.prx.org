@@ -5,13 +5,13 @@ module Apple
     extend ActiveSupport::Concern
 
     included do
-      # assumes the
-      def self.zip_result_with_episode(result, eps)
-        episodes_by_id = eps.map { |ep| [ep.apple_id, ep] }.to_h
+      # assumes the apple_episode_id is present on the request metadata
+      def self.join_on_apple_episode_id(resources, results)
+        resources_by_id = resources.map { |resource| [resource.apple_episode_id, resource] }.to_h
 
-        result.map do |row|
-          ep = episodes_by_id.fetch(row["request_metaapple_data"]["apple_episode_id"])
-          [ep, row]
+        results.map do |row|
+          resource = resources_by_id.fetch(row["request_metadata"]["apple_episode_id"])
+          [resource, row]
         end
       end
     end
