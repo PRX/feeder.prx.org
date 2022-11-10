@@ -30,7 +30,7 @@ module Apple
     def self.update_podcast_container_state(api, episodes)
       results = get_podcast_containers(api, episodes)
 
-      zip_result_with_episode(results, episodes).each do |(ep, row)|
+      join_on_apple_episode_id(episodes, results).each do |(ep, row)|
         upsert_podcast_container(ep, row)
       end
     end
@@ -46,7 +46,7 @@ module Apple
         api.bridge_remote_and_retry!("createPodcastContainers",
                                      create_podcast_containers_bridge_params(api, episodes_to_create))
 
-      zip_result_with_episode(new_containers_response, episodes_to_create) do |ep, row|
+      join_on_apple_episode_id(episodes_to_create, new_containers_response) do |ep, row|
         upsert_podcast_container(ep, row)
       end
     end
@@ -74,9 +74,8 @@ module Apple
                       apple_episode_id: episode.apple_id,
                       vendor_id: episode.audio_asset_vendor_id,
                       external_id: external_id).first
-          pc.api_response = row
-          pc.save!
-          Rails.logger.info("Updating podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          pc.update(api_response: row, updated_at: Time.now.utc)
+          Rails.logger.info("Updating local podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
           pc
         else
           pc = create!(episode_id: episode.feeder_id,
@@ -86,7 +85,7 @@ module Apple
                        source_url: episode.enclosure_url,
                        source_filename: episode.enclosure_filename,
                        api_response: row)
-          Rails.logger.info("Creating podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          Rails.logger.info("Creating local podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
           pc
         end
 

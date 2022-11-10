@@ -65,13 +65,13 @@ module Apple
 
       # success
       SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds, external_id: show.apple_id)
-    rescue Apple::ApiError => _e
+    rescue Apple::ApiError => e
       SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds)
       raise e
     end
 
     def wait_for_upload_processing
-      pdfs = episodes_to_sync.map(&:feeder_episode).map(&:apple_delivery_files).flatten
+      pdfs = episodes_to_sync.map(&:podcast_delivery_files).flatten
 
       res = Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
     end
@@ -108,7 +108,13 @@ module Apple
     end
 
     def sync_podcast_delivery_files!
-      Apple::PodcastDeliveryFile.sync_podcast_delivery_files(api, episodes_to_sync)
+      Rails.logger.info("Starting podcast delivery files sync")
+
+      res = Apple::PodcastDeliveryFile.update_podcast_delivery_files_state(api, episodes_to_sync)
+      Rails.logger.info("Updated local state for #{res.length} delivery files.")
+
+      res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, episodes_to_sync)
+      Rails.logger.info("Created remote/local state for #{res.length} podcast delivery files.")
     end
 
     def execute_upload_operations!

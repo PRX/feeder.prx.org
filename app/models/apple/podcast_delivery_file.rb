@@ -66,28 +66,95 @@ module Apple
       end
     end
 
+    # Query from the podcast delivery side of the api
+    def self.get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries)
+      podcast_deliveries.map do |delivery|
+        get_delivery_podcast_delivery_files_bridge_param(delivery.apple_episode_id,
+                                                         delivery.id,
+                                                         delivery.podcast_delivery_files_url)
+      end
+    end
+
+    # Query from the podcast delivery side of the api
+    def self.get_delivery_podcast_delivery_files_bridge_param(apple_episode_id, podcast_delivery_id, api_url)
+      {
+        request_metadata: {
+          apple_episode_id: apple_episode_id,
+          podcast_delivery_id: podcast_delivery_id
+        },
+        api_url: api_url,
+        api_parameters: {}
+      }
+    end
+
+    def self.update_podcast_delivery_files_state(api, episodes)
+      results = get_podcast_delivery_files_via_deliveries(api, episodes)
+
+      join_on_apple_episode_id(episodes, results).map do |(episode, delivery_file_row)|
+        upsert_podcast_delivery_file(episode, delivery_file_row)
+      end
+    end
+
     def self.get_podcast_delivery_files(api, pdfs)
       bridge_params = pdfs.map { |pdf| get_delivery_file_bridge_params(api, pdf) }
-      api.bridge_remote_and_retry!("getDeliveryFiles", bridge_params)
+      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params)
+    end
+
+    def self.get_podcast_delivery_files_via_deliveries(api, episodes)
+      # Fetch the podcast delivery files from the delivery side of the api
+      podcast_containers = episodes.map(&:podcast_container)
+
+      # Assume that the delivery remote/local state is synced at this point
+      podcast_deliveries =
+        episodes.
+        map(&:feeder_episode).
+        map(&:apple_podcast_deliveries).
+        flatten
+
+      delivery_files_response =
+        api.bridge_remote_and_retry!("getPodcastDeliveryFiles",
+                                     get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries))
+
+      # Rather than mangling and persisting the enumerated view of the delivery files
+      # Instead, re-fetch the podcast delivery file from the non-list podcast delivery file resource
+      formatted_bridge_params = join_on_apple_episode_id(podcast_deliveries, delivery_files_response).map do |(pd, row)|
+        # get the urls to fetch delivery files belonging to this podcast delivery (pd)
+        get_urls_for_delivery_podcast_delivery_files(api, row).map do |url|
+          get_delivery_podcast_delivery_files_bridge_param(pd.apple_episode_id, pd.id, url)
+        end
+      end
+
+      formatted_bridge_params = formatted_bridge_params.flatten
+
+      formatted_deliveries_response =
+        api.bridge_remote_and_retry!("getPodcastDeliveryFiles",
+                                     formatted_bridge_params)
+    end
+
+    def self.get_urls_for_delivery_podcast_delivery_files(api, delivery_podcast_delivery_files_json)
+      delivery_podcast_delivery_files_json["api_response"]["val"]["data"].map do |podcast_delivery_file_data|
+        api.join_url("podcastDeliveryFiles/#{podcast_delivery_file_data['id']}").to_s
+      end
     end
 
     def self.create_podcast_delivery_files(api, episodes)
       return [] if episodes.empty?
 
+      # TODO: handle multiple containers + deliveries
       episodes_needing_delivery_files =
-        episodes.reject { |ep| ep.podcast_container&.podcast_delivery&.podcast_delivery_file.present? }
+        episodes.reject { |ep| ep.podcast_delivery_files.present? }
 
       podcast_deliveries = Apple::PodcastDelivery.where(episode_id: episodes_needing_delivery_files.map(&:feeder_id))
       podcast_deliveries_by_id = podcast_deliveries.map { |p| [p.id, p] }.to_h
 
       new_delivery_files =
-        api.bridge_remote_and_retry!("createDeliveryFiles",
+        api.bridge_remote_and_retry!("createPodcastDeliveryFiles",
                                      podcast_deliveries.map do |d|
                                        create_delivery_file_bridge_params(api, d)
                                      end)
       new_delivery_files.map do |row|
         pd = podcast_deliveries_by_id.fetch(row["request_metadata"]["podcast_delivery_id"])
-        create_podcast_delivery_file(pd, row)
+        upsert_podcast_delivery_file(pd, row)
       end
     end
 
@@ -146,14 +213,33 @@ module Apple
       } }
     end
 
-    def self.create_podcast_delivery_file(podcast_delivery, row)
+    def self.upsert_podcast_delivery_file(episode, row)
       external_id = row.dig("api_response", "val", "data", "id")
-      pc = Apple::PodcastDeliveryFile.create!(episode_id: podcast_delivery.episode_id,
-                                              external_id: external_id,
-                                              podcast_delivery_id: podcast_delivery.id,
-                                              api_response: row)
+      podcast_delivery_id = row.dig("request_metadata", "podcast_delivery_id")
 
-      SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_delivery_files, external_id: external_id)
+      pdf =
+        if delivery_file = where(episode_id: episode.feeder_id,
+                                 external_id: external_id,
+                                 podcast_delivery_id: podcast_delivery_id).first
+
+          delivery_file.update(api_response: row, updated_at: Time.now.utc)
+
+          Rails.logger.info("Updating local podcast delivery file w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+
+          delivery_file
+        else
+          pdf = Apple::PodcastDeliveryFile.create!(episode_id: episode.feeder_id,
+                                                   external_id: external_id,
+                                                   podcast_delivery_id: podcast_delivery_id,
+                                                   api_response: row)
+          Rails.logger.info("Creating local podcast delivery file w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+
+          pdf
+        end
+
+      SyncLog.create!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id)
+
+      pdf
     end
 
     def mark_uploaded_parameters
@@ -169,7 +255,7 @@ module Apple
     end
 
     def upload_operations
-      apple_apple_attributes["uploadOperations"].map do |operation_fragment|
+      (apple_attributes["uploadOperations"] || []).map do |operation_fragment|
         Apple::UploadOperation.new(self, operation_fragment)
       end
     end
@@ -205,10 +291,5 @@ module Apple
     def asset_delivery_state
       apple_attributes["assetDeliveryState"]
     end
-
-    def apple_id
-      apple_data['id']
-    end
-
   end
 end

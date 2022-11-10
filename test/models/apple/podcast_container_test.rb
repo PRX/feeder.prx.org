@@ -72,12 +72,12 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
   end
 
-  describe "#podcast_delivery" do
+  describe "#podcast_deliveries" do
     let(:container) { Apple::PodcastContainer.new }
-    it "should have one delivery" do
-      assert_nil container.podcast_delivery
-      container.build_podcast_delivery
-      assert_equal container.podcast_delivery.class, Apple::PodcastDelivery
+    it "should have many deliveries" do
+      assert_equal [], container.podcast_deliveries
+      pd = container.podcast_deliveries.build
+      assert_equal Apple::PodcastDelivery, pd.class
     end
   end
 

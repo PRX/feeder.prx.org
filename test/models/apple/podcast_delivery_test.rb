@@ -36,6 +36,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
 
       # Now upsert existing record and overwrite timestamps
       pd.update(updated_at: Time.now - 1.year)
+      # modify the json so that the podcast_delivery_changes
       pd2 = Apple::PodcastDelivery.upsert_podcast_delivery(apple_episode,
                                                            api_response: podcast_delivery_json)
       assert pd2.updated_at > pd.updated_at
@@ -44,10 +45,45 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
 
   describe "#podcast_delivery" do
     let(:container) { Apple::PodcastContainer.new }
-    it "should have one delivery" do
-      assert_nil container.podcast_delivery
-      container.build_podcast_delivery
-      assert_equal container.podcast_delivery.class, Apple::PodcastDelivery
+    it "should have many deliveries" do
+      assert_equal [], container.podcast_deliveries
+      pd = container.podcast_deliveries.build
+      assert_equal Apple::PodcastDelivery, pd.class
+    end
+  end
+
+  describe "get_podcast_containers_deliveries_bridge_param" do
+    it "should format a single bridge param row" do
+      assert_equal({
+                     request_metadata: {
+                       apple_episode_id: "some-apple-id",
+                       podcast_container_id: "podcast-container-id"
+                     },
+                     api_url: "http://apple", api_parameters: {}
+                   },
+                   Apple::PodcastDelivery.get_podcast_containers_deliveries_bridge_param("some-apple-id",
+                                                                                         "podcast-container-id",
+                                                                                         "http://apple"))
+    end
+  end
+
+  describe ".get_urls_for_container_podcast_deliveries" do
+    let(:podcast_container_deliveries_json) do
+      { "request_metadata" => { "apple_episode_id" => "apple-episode-id", "podcast_container_id" => 1 },
+        "api_url" => "https://api.podcastsconnect.apple.com/v1/podcastContainers/12345/relationships/podcastDeliveries",
+        "api_parameters" => {},
+        "api_response" => { "ok" => true,
+                            "err" => false,
+                            "val" =>
+                        { "data" => [{ "type" => "podcastDeliveries",
+                                       "id" => "1111111111111111111111111" }] } } }
+    end
+    let(:apple_api) { build(:apple_api) }
+
+    it "should format a new set of podcast delivery urls" do
+      assert_equal ["https://api.podcastsconnect.apple.com/v1/podcastDeliveries/1111111111111111111111111"],
+                   Apple::PodcastDelivery.get_urls_for_container_podcast_deliveries(apple_api,
+                                                                                    podcast_container_deliveries_json)
     end
   end
 end
