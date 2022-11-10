@@ -6,7 +6,7 @@ module Apple
 
     serialize :api_response, JSON
 
-    has_one :podcast_delivery
+    has_many :podcast_deliveries
     belongs_to :episode, class_name: "::Episode"
 
     def podcast_deliveries_url

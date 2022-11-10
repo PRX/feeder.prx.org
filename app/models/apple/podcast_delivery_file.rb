@@ -9,6 +9,8 @@ module Apple
     belongs_to :podcast_delivery
     belongs_to :episode, class_name: "::Episode"
 
+    delegate :apple_episode_id, to: :podcast_delivery
+
     def self.wait_for_delivery_files(api, pdfs)
       wait_for_delivery(api, pdfs)
       wait_for_processing(api, pdfs)
