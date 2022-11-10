@@ -194,9 +194,21 @@ module Apple
       apple_json&.dig("id")
     end
 
+    def apple_episode_id
+      apple_id
+    end
+
     def podcast_container
       # TODO: differentiate these by container type: audio versus images
       Apple::PodcastContainer.find_by(episode_id: feeder_episode.id)
+    end
+
+    def podcast_deliveries
+      feeder_episode.apple_podcast_deliveries
+    end
+
+    def podcast_delivery_files
+      feeder_episode.apple_podcast_delivery_files
     end
   end
 end
