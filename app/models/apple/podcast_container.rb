@@ -2,6 +2,8 @@
 
 module Apple
   class PodcastContainer < ActiveRecord::Base
+    include Apple::ApiResponse
+
     serialize :api_response, JSON
 
     has_one :podcast_delivery
@@ -9,15 +11,6 @@ module Apple
 
     def podcast_deliveries_url
       api_response.dig("data", "relationships", "podcastDeliveries", "links", "self")
-    end
-
-    def self.zip_result_with_episode(result, eps)
-      episodes_by_id = eps.map { |ep| [ep.apple_id, ep] }.to_h
-
-      result.map do |row|
-        ep = episodes_by_id.fetch(row["request_metadata"]["apple_episode_id"])
-        [ep, row]
-      end
     end
 
     def self.update_podcast_container_file_metadata(api, episodes)
@@ -87,7 +80,7 @@ module Apple
                       external_id: external_id).first
           pc.api_response = row
           pc.save!
-          Logger.info("Updating podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          Rails.logger.info("Updating podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
           pc
         else
           pc = create!(episode_id: episode.feeder_id,
@@ -97,7 +90,7 @@ module Apple
                        source_url: episode.enclosure_url,
                        source_filename: episode.enclosure_filename,
                        api_response: row)
-          Logger.info("Creating podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          Rails.logger.info("Creating podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
           pc
         end
 
@@ -169,6 +162,10 @@ module Apple
         api_url: source_url,
         api_parameters: {}
       }
+    end
+
+    def podcast_deliveries_url
+      apple_data.dig("relationships", "podcastDeliveries", "links", "self")
     end
   end
 end

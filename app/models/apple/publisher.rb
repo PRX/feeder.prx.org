@@ -97,11 +97,6 @@ module Apple
       Rails.logger.info("Updated remote state for #{res.length} podcast containers.")
     end
 
-    def get_podcast_deliveries
-      # TODO: right now we only create one container,
-      Apple::PodcastDelivery.get_podcast_deliveries(api, episodes_to_sync)
-    end
-
     def sync_podcast_deliveries!
       Rails.logger.info("Starting podcast deliveries sync")
 

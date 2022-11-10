@@ -2,6 +2,8 @@
 
 module Apple
   class PodcastDeliveryFile < ActiveRecord::Base
+    include Apple::ApiResponse
+
     serialize :api_response, JSON
 
     belongs_to :podcast_delivery
@@ -124,7 +126,7 @@ module Apple
 
       { "data": {
         "type": "podcastDeliveryFiles",
-        "attributes": {
+        "apple_attributes": {
           "assetType": "ASSET",
           "assetRole": "PodcastSourceAudio",
           "fileSize": podcast_container.source_size,
@@ -157,27 +159,17 @@ module Apple
         data: {
           id: apple_id,
           type: "podcastDeliveryFiles",
-          attributes: {
+          apple_attributes: {
             uploaded: true
           }
         }
       }
     end
 
-    def apple_id
-      api_response.dig("api_response", "val", "data", "id")
-    end
-
     def upload_operations
-      apple_attributes["uploadOperations"].map do |operation_fragment|
+      apple_apple_attributes["uploadOperations"].map do |operation_fragment|
         Apple::UploadOperation.new(self, operation_fragment)
       end
-    end
-
-    def unwrap_response
-      raise "incomplete api response" unless api_response.dig("api_response", "ok")
-
-      api_response["api_response"]["val"]
     end
 
     def apple_complete?
@@ -194,34 +186,27 @@ module Apple
     def processed_errors?
       return false unless asset_processing_state.present?
 
-      attributes["assetProcessingState"]["state"] == "VALIDATION_FAILED"
+      apple_attributes["assetProcessingState"]["state"] == "VALIDATION_FAILED"
     end
 
     def processed?
       return false unless asset_processing_state.present?
 
       asset_processing_state["state"] == "COMPLETE" ||
-        attributes["assetProcessingState"]["state"] == "COMPLETED"
+        apple_attributes["assetProcessingState"]["state"] == "COMPLETED"
     end
 
     def asset_processing_state
-      attributes["assetProcessingState"]
+      apple_attributes["assetProcessingState"]
     end
 
     def asset_delivery_state
-      attributes["assetDeliveryState"]
+      apple_attributes["assetDeliveryState"]
     end
 
-    def attributes
-      data["attributes"]
+    def apple_id
+      apple_data['id']
     end
 
-    def data
-      unwrap_response["data"]
-    end
-
-    def apple_attributes
-      data["attributes"]
-    end
   end
 end

@@ -2,6 +2,8 @@
 
 module Apple
   class PodcastDelivery < ActiveRecord::Base
+    include Apple::ApiResponse
+
     serialize :api_response, JSON
 
     has_one :podcast_delivery_file
@@ -13,6 +15,22 @@ module Apple
       completed: "COMPLETED",
       failed: "FAILED"
     }
+
+    def self.get_podcast_deliveries(api, episodes)
+      results = Apple::PodcastContainer.get_podcast_containers(api, episodes)
+      zip_result_with_episodo(results, episodes).map do |(ep, row)|
+        podcast_delivery_urls =
+          row["api_response"]["val"]["data"].map do |container_json|
+            container_json["relationships"]["podcastDeliveries"]["links"]["self"]
+          end
+        [ep, row]
+      end
+    end
+
+    def self.update_podcast_deliveries_state(_api, podcast_containers)
+      podcast_containers.map do |pc|
+      end
+    end
 
     def self.create_podcast_deliveries(api, episodes_to_sync)
       episodes_needing_delivery = episodes_to_sync.reject do |episode|
@@ -46,7 +64,7 @@ module Apple
 
           delivery.api_response = row
           delivery.save
-          Logger.info("Updating podcast delivery w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          Rails.logger.info("Updating podcast delivery w/ Apple id #{external_id} for episode #{episode.feeder_id}")
 
           delivery
         else
@@ -55,7 +73,7 @@ module Apple
                                          status: delivery_status,
                                          podcast_container: episode.podcast_container,
                                          api_response: row)
-          Logger.info("Creating podcast delivery w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          Rails.logger.info("Creating podcast delivery w/ Apple id #{external_id} for episode #{episode.feeder_id}")
         end
 
       SyncLog.create!(feeder_id: pd.id, feeder_type: :podcast_deliveries, external_id: external_id)
