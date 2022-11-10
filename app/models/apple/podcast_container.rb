@@ -9,10 +9,6 @@ module Apple
     has_many :podcast_deliveries
     belongs_to :episode, class_name: "::Episode"
 
-    def podcast_deliveries_url
-      api_response.dig("data", "relationships", "podcastDeliveries", "links", "self")
-    end
-
     def self.update_podcast_container_file_metadata(api, episodes)
       containers = Apple::PodcastContainer.where(episode_id: episodes.map(&:feeder_id))
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
@@ -165,7 +161,7 @@ module Apple
     end
 
     def podcast_deliveries_url
-      apple_data.dig("relationships", "podcastDeliveries", "links", "self")
+      apple_data.dig("relationships", "podcastDeliveries", "links", "related")
     end
   end
 end
