@@ -34,22 +34,12 @@ module Apple
       @find_episode.fetch(id)
     end
 
-    def sync_episodes!
-      create_apple_episodes = episodes_to_sync.select(&:apple_new?)
-      update_apple_episodes = episodes_to_sync.select { |ep| ep.apple_persisted? && ep.apple_only? }
-
-      Apple::Episode.create_episodes(api, create_apple_episodes)
-      Apple::Episode.update_episodes(api, update_apple_episodes)
-      show.reload
-    end
-
     def publish!
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
-      sync_episodes!
-
       # only create if needed
+      sync_episodes!
       sync_podcast_containers!
       sync_podcast_deliveries!
       sync_podcast_delivery_files!
@@ -78,6 +68,20 @@ module Apple
 
     def get_podcast_containers
       Apple::PodcastContainer.get_podcast_containers(api, episodes_to_sync)
+    end
+
+    def sync_episodes!
+      Rails.logger.info("Starting podcast episode sync")
+
+      create_apple_episodes = episodes_to_sync.select(&:apple_new?)
+      Rails.logger.info("Created remote / local state for #{create_apple_episodes.length} episodes.")
+
+      update_apple_episodes = episodes_to_sync.select { |ep| ep.apple_persisted? && ep.apple_only? }
+      Rails.logger.info("Updated remote / local state for #{update_apple_episodes.length} episodes.")
+
+      Apple::Episode.create_episodes(api, create_apple_episodes)
+      Apple::Episode.update_episodes(api, update_apple_episodes)
+      show.reload
     end
 
     def sync_podcast_containers!
