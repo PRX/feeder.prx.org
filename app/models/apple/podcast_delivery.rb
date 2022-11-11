@@ -38,11 +38,7 @@ module Apple
       # Make sure we have local copies of the remote metadata At this point and
       # errors should be resolved and we should have then intended set of
       # resources created
-
-      episodes_by_id = episodes_needing_delivery.map { |episode| [episode.id, episode] }.to_h
-
-      deliveries_response.map do |row|
-        episode = episodes_by_id.fetch(row["episode_id"])
+      join_on_apple_episode_id(episodes_to_create, new_containers_response) do |episode, row|
         upsert_podcast_delivery(episode, row)
       end
     end
@@ -78,9 +74,9 @@ module Apple
     def self.create_podcast_deliveries_bridge_params(api, episodes_to_sync)
       episodes_to_sync.map do |episode|
         {
-          episode_id: episode.id,
+          apple_episode_id: episode.apple_id,
           api_url: api.join_url("podcastDeliveries").to_s,
-          api_parameters: podcast_delivery_create_parameters(ep)
+          api_parameters: podcast_delivery_create_parameters(episode)
         }
       end
     end
@@ -129,7 +125,8 @@ module Apple
     # Query from the podcast container side of the api
     def self.get_podcast_containers_deliveries_bridge_params(podcast_containers)
       podcast_containers.map do |container|
-        get_podcast_containers_deliveries_bridge_param(container.apple_episode_id, container.id,
+        get_podcast_containers_deliveries_bridge_param(container.apple_episode_id,
+                                                       container.id,
                                                        container.podcast_deliveries_url)
       end
     end

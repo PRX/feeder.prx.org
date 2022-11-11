@@ -123,7 +123,7 @@ module Apple
       episodes.
         map do |ep|
         {
-          request_metadata: { apple_episode_id: ep.id },
+          request_metadata: { apple_episode_id: ep.apple_id },
           api_url: api.join_url("podcastContainers").to_s,
           api_parameters: podcast_container_create_parameters(ep)
         }
