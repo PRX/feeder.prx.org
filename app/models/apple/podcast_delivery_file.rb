@@ -139,21 +139,18 @@ module Apple
     def self.create_podcast_delivery_files(api, episodes)
       return [] if episodes.empty?
 
-      # TODO: handle multiple containers + deliveries
+      # TODO: handle multiple containers
       episodes_needing_delivery_files =
         episodes.reject { |ep| ep.podcast_delivery_files.present? }
 
       podcast_deliveries = Apple::PodcastDelivery.where(episode_id: episodes_needing_delivery_files.map(&:feeder_id))
-      podcast_deliveries_by_id = podcast_deliveries.map { |p| [p.id, p] }.to_h
 
-      new_delivery_files =
+      result =
         api.bridge_remote_and_retry!("createPodcastDeliveryFiles",
-                                     podcast_deliveries.map do |d|
-                                       create_delivery_file_bridge_params(api, d)
-                                     end)
-      new_delivery_files.map do |row|
-        pd = podcast_deliveries_by_id.fetch(row["request_metadata"]["podcast_delivery_id"])
-        upsert_podcast_delivery_file(pd, row)
+                                     podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd) })
+
+      join_on("podcast_delivery_id", podcast_deliveries, result).each do |(podcast_delivery, row)|
+        upsert_podcast_delivery_file(podcast_delivery, row)
       end
     end
 
@@ -161,7 +158,7 @@ module Apple
       {
         request_metadata: {
           podcast_delivery_file_id: podcast_delivery_file.id,
-          episode_id: podcast_delivery_file.podcast_delivery.episode_id
+          podcast_delivery_id: podcast_delivery_file.podcast_delivery.id
         },
         api_url: api.join_url("podcastDeliveryFiles/" + podcast_delivery_file.apple_id).to_s
       }
@@ -171,7 +168,7 @@ module Apple
       {
         request_metadata: {
           podcast_delivery_file_id: podcast_delivery_file.id,
-          episode_id: podcast_delivery_file.podcast_delivery.episode_id
+          podcast_delivery_id: podcast_delivery_file.podcast_delivery.id
         },
         api_url: api.join_url("podcastDeliveryFiles/" + podcast_delivery_file.apple_id).to_s,
         api_parameters: podcast_delivery_file.mark_uploaded_parameters
@@ -181,8 +178,7 @@ module Apple
     def self.create_delivery_file_bridge_params(api, podcast_delivery)
       {
         request_metadata: {
-          podcast_delivery_id: podcast_delivery.id,
-          episode_id: podcast_delivery.episode_id
+          podcast_delivery_id: podcast_delivery.id
         },
         api_url: api.join_url("podcastDeliveryFiles").to_s,
         api_parameters: podcast_delivery_file_create_parameters(podcast_delivery)
@@ -194,7 +190,7 @@ module Apple
 
       { "data": {
         "type": "podcastDeliveryFiles",
-        "apple_attributes": {
+        "attributes": {
           "assetType": "ASSET",
           "assetRole": "PodcastSourceAudio",
           "fileSize": podcast_container.source_size,
@@ -246,7 +242,7 @@ module Apple
         data: {
           id: apple_id,
           type: "podcastDeliveryFiles",
-          apple_attributes: {
+          attributes: {
             uploaded: true
           }
         }

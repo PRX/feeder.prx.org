@@ -7,10 +7,14 @@ module Apple
     included do
       # assumes the apple_episode_id is present on the request metadata
       def self.join_on_apple_episode_id(resources, results)
-        resources_by_id = resources.map { |resource| [resource.apple_episode_id, resource] }.to_h
+        join_on("apple_episode_id", resources, results)
+      end
+
+      def self.join_on(id_attribute_key, resources, results)
+        resources_by_id = resources.map { |resource| [resource.send(id_attribute_key), resource] }.to_h
 
         results.map do |row|
-          resource = resources_by_id.fetch(row["request_metadata"]["apple_episode_id"])
+          resource = resources_by_id.fetch(row["request_metadata"][id_attribute_key])
           [resource, row]
         end
       end

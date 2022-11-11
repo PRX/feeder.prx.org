@@ -146,5 +146,9 @@ module Apple
     def podcast_delivery_files_url
       apple_data.dig("relationships", "podcastDeliveryFiles", "links", "related")
     end
+
+    def podcast_delivery_id
+      id
+    end
   end
 end
