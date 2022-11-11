@@ -36,10 +36,6 @@ module Apple
     end
 
     def self.create_podcast_containers(api, episodes)
-      # TODO: guard gatekeep the initial sync to preserve podcast connect audio.
-      # TODO: guard at the feed level -- accept list feeds for sync
-      # TODO: guard for existing media via podcast connect.
-      #
       episodes_to_create = episodes.reject { |ep| ep.podcast_container.present? }
 
       new_containers_response =
