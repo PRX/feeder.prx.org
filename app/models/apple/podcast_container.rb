@@ -28,7 +28,7 @@ module Apple
     end
 
     def self.update_podcast_container_state(api, episodes)
-      results = get_podcast_containers(api, episodes)
+      results = get_podcast_containers_via_episodes(api, episodes)
 
       join_on_apple_episode_id(episodes, results).each do |(ep, row)|
         upsert_podcast_container(ep, row)
@@ -48,23 +48,7 @@ module Apple
     end
 
     def self.upsert_podcast_container(episode, row)
-      podcast_containers_json = row.dig("api_response", "val", "data")
-
-      # TODO: support > 1 podcast container per feeder episode
-      (row, external_id) =
-        if podcast_containers_json.is_a?(Array)
-          return if podcast_containers_json.is_a?(Array) && podcast_containers_json.empty?
-          raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if podcast_containers_json.length > 1
-
-          container = podcast_containers_json.first.dup
-
-          # match the singleton resource format used elsewhere in the Apple API
-          single_container_row = row.dup
-          single_container_row["api_response"]["val"]["data"] = container
-          [single_container_row, container["id"]]
-        else
-          [row, row.dig("api_response", "val", "data", "id")]
-        end
+      external_id = row.dig("api_response", "val", "data", "id")
 
       pc =
         if pc = where(episode_id: episode.feeder_id,
@@ -91,18 +75,48 @@ module Apple
       pc
     end
 
-    def self.get_podcast_containers(api, episodes)
-      api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes))
+    def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)
+      containers_json = episode_podcast_containers_json["api_response"]["val"]["data"]
+      # TODO: support > 1 podcast container per feeder episode
+      raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if containers_json.length > 1
+
+      containers_json.map do |podcast_container_json|
+        api.join_url("podcastContainers/#{podcast_container_json['id']}").to_s
+      end
+    end
+
+    def self.get_podcast_containers_via_episodes(api, episodes)
+      # Fetch the podcast containers from the episodes side of the API
+      response =
+        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes))
+
+      # Rather than mangling and persisting the enumerated view of the deliveries
+      # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
+      formatted_bridge_params =
+        join_on_apple_episode_id(episodes, response).map do |(episode, row)|
+          get_urls_for_episode_podcast_containers(api, row).map do |url|
+            get_podcast_containers_bridge_param(episode.apple_id, url)
+          end
+        end
+
+      formatted_bridge_params = formatted_bridge_params.flatten
+
+      api.bridge_remote_and_retry!("getPodcastContainers",
+                                   formatted_bridge_params)
     end
 
     def self.get_podcast_containers_bridge_params(api, episodes)
       episodes.map do |ep|
-        {
-          request_metadata: { apple_episode_id: ep.apple_id },
-          api_url: podcast_container_url(api, ep),
-          api_parameters: {}
-        }
+        get_podcast_containers_bridge_param(ep.apple_id, podcast_container_url(api, ep))
       end
+    end
+
+    def self.get_podcast_containers_bridge_param(apple_episode_id, api_url)
+      {
+        request_metadata: { apple_episode_id: apple_episode_id },
+        api_url: api_url,
+        api_parameters: {}
+      }
     end
 
     def self.create_podcast_containers_bridge_params(api, episodes)

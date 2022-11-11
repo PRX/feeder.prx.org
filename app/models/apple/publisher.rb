@@ -66,10 +66,6 @@ module Apple
       res = Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
     end
 
-    def get_podcast_containers
-      Apple::PodcastContainer.get_podcast_containers(api, episodes_to_sync)
-    end
-
     def sync_episodes!
       Rails.logger.info("Starting podcast episode sync")
 

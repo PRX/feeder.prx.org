@@ -14,8 +14,8 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   let(:podcast_container_json_row) do
     { "request_metadata" => { "apple_episode_id" => apple_episode_id },
       "api_response" => { "val" => { "data" =>
-     [{ "type" => "podcastContainers",
-        "id" => "1234" }] } } }
+     { "type" => "podcastContainers",
+       "id" => "1234" } } } }
   end
 
   describe ".upsert_podcast_containers" do
@@ -55,25 +55,13 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         end
       end
     end
-
-    it "should do nothing with an empty response" do
-      apple_episode.stub(:apple_id, apple_episode_id) do
-        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-          podcast_container_json_row["api_response"]["val"]["data"] = []
-          pc = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
-                                                                podcast_container_json_row)
-
-          assert_nil pc
-        end
-      end
-    end
   end
 
   describe ".update_podcast_container_state(api, episodes)" do
     it "creates new records if they dont exist" do
       assert_equal SyncLog.count, 0
 
-      Apple::PodcastContainer.stub(:get_podcast_containers, [podcast_container_json_row]) do
+      Apple::PodcastContainer.stub(:get_podcast_containers_via_episodes, [podcast_container_json_row]) do
         apple_episode.stub(:apple_id, apple_episode_id) do
           apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
             Apple::PodcastContainer.update_podcast_container_state(nil, [apple_episode])

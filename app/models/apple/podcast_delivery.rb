@@ -116,9 +116,8 @@ module Apple
 
       formatted_bridge_params = formatted_bridge_params.flatten
 
-      formatted_deliveries_response =
-        api.bridge_remote_and_retry!("getPodcastDeliveries",
-                                     formatted_bridge_params)
+      api.bridge_remote_and_retry!("getPodcastDeliveries",
+                                   formatted_bridge_params)
     end
 
     def self.get_urls_for_container_podcast_deliveries(api, podcast_container_deliveries_json)
