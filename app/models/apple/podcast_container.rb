@@ -50,7 +50,7 @@ module Apple
     def self.upsert_podcast_container(episode, row)
       podcast_containers_json = row.dig("api_response", "val", "data")
 
-      # TODO: support > 1 podcast container
+      # TODO: support > 1 podcast container per feeder episode
       (row, external_id) =
         if podcast_containers_json.is_a?(Array)
           raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if podcast_containers_json.length > 1
