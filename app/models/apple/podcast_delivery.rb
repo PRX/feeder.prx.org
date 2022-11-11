@@ -26,19 +26,16 @@ module Apple
       end
     end
 
-    def self.create_podcast_deliveries(api, episodes_to_sync)
-      episodes_needing_delivery = episodes_to_sync.reject do |episode|
+    def self.create_podcast_deliveries(api, episodes)
+      episodes_needing_delivery = episodes.reject do |episode|
         episode.podcast_container.podcast_deliveries.present?
       end
 
-      deliveries_response =
+      response =
         api.bridge_remote_and_retry!("createPodcastDeliveries",
                                      create_podcast_deliveries_bridge_params(api, episodes_needing_delivery))
 
-      # Make sure we have local copies of the remote metadata At this point and
-      # errors should be resolved and we should have then intended set of
-      # resources created
-      join_on_apple_episode_id(episodes_to_create, new_containers_response) do |episode, row|
+      join_on_apple_episode_id(episodes, response) do |episode, row|
         upsert_podcast_delivery(episode, row)
       end
     end

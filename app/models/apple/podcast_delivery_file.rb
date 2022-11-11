@@ -18,12 +18,14 @@ module Apple
 
     def self.wait_for_processing(api, pdfs)
       wait_for(api, pdfs) do |updated_pdfs|
+        Rails.logger.info("Probing for file processing")
         updated_pdfs.all? { |pdf| pdf.processed? || pdf.processed_errors? }
       end
     end
 
     def self.wait_for_delivery(api, pdfs)
       wait_for(api, pdfs) do |updated_pdfs|
+        Rails.logger.info("Probing for file delivery")
         updated_pdfs.all?(&:delivered?)
       end
     end
