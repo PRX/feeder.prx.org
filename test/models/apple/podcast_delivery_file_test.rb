@@ -10,7 +10,7 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
                      },
                      api_url: "http://apple", api_parameters: {}
                    },
-                   Apple::PodcastDeliveryFile.get_podcast_delivery_delivery_files_bridge_param("some-apple-id",
+                   Apple::PodcastDeliveryFile.get_delivery_podcast_delivery_files_bridge_param("some-apple-id",
                                                                                                "podcast-delivery-id",
                                                                                                "http://apple"))
     end
