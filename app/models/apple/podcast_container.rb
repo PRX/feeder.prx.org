@@ -53,6 +53,7 @@ module Apple
       # TODO: support > 1 podcast container per feeder episode
       (row, external_id) =
         if podcast_containers_json.is_a?(Array)
+          return if podcast_containers_json.is_a?(Array) && podcast_containers_json.empty?
           raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if podcast_containers_json.length > 1
 
           container = podcast_containers_json.first.dup

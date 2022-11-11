@@ -55,6 +55,18 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         end
       end
     end
+
+    it "should do nothing with an empty response" do
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          podcast_container_json_row["api_response"]["val"]["data"] = []
+          pc = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+                                                                podcast_container_json_row)
+
+          assert_nil pc
+        end
+      end
+    end
   end
 
   describe ".update_podcast_container_state(api, episodes)" do
