@@ -26,6 +26,12 @@ describe Apple::ApiResponse do
       resp_obj.api_response = valid_response_attr
       assert_equal({ "data" => "foo" }, resp_obj.unwrap_response)
     end
+
+    it "returns nil if the api_response attribute is unset" do
+      resp_obj = TestResponse.new
+      resp_obj.api_response = nil
+      assert_nil resp_obj.unwrap_response
+    end
   end
 
   describe "nested attributes" do
