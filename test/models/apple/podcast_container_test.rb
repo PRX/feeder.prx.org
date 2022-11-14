@@ -18,6 +18,8 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
        "id" => "1234" } } } }
   end
 
+  let(:api) { build(:apple_api) }
+
   describe ".upsert_podcast_containers" do
     it "should create logs based on a returned row value" do
       apple_episode.stub(:apple_id, apple_episode_id) do
@@ -82,22 +84,21 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   end
 
   describe ".get_podcast_containers_bridge_params" do
-    it "should compact params for episodes with no episode.audio_asset_vendor_id" do
-      apple_episode.stub(:apple_id, "ap-ep-id") do
-        apple_episode.stub(:audio_asset_vendor_id, nil) do
-          api = build(:apple_api)
-          assert_nil Apple::PodcastContainer.podcast_container_url(api, apple_episode)
-        end
-      end
-    end
-
     it "should set the apple episode id in the request metadata" do
-      apple_episode.stub(:audio_asset_vendor_id, nil) do
+      apple_episode.stub(:audio_asset_vendor_id, "some-vendor-id") do
         apple_episode.stub(:apple_id, "ap-ep-id") do
-          res = Apple::PodcastContainer.get_podcast_containers_bridge_params(nil, [apple_episode])
+          res = Apple::PodcastContainer.get_podcast_containers_bridge_params(api, [apple_episode])
           bridge_param = res.first
           assert_equal bridge_param[:request_metadata].fetch(:apple_episode_id), apple_episode.apple_id
         end
+      end
+    end
+  end
+
+  describe ".podcast_container_url" do
+    it "raises an error if the vendor id is missing" do
+      assert_raises(RuntimeError, "incomplete api response") do
+        Apple::PodcastContainer.podcast_container_url(api, OpenStruct.new)
       end
     end
   end

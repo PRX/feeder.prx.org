@@ -153,7 +153,7 @@ module Apple
     end
 
     def self.podcast_container_url(api, episode)
-      return nil unless episode.audio_asset_vendor_id.present?
+      raise "Missing episode audio vendor id" unless episode.audio_asset_vendor_id.present?
 
       api.join_url("podcastContainers?filter[vendorId]=" + episode.audio_asset_vendor_id).to_s
     end
