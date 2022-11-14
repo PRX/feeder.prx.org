@@ -55,19 +55,18 @@ module Apple
                       apple_episode_id: episode.apple_id,
                       vendor_id: episode.audio_asset_vendor_id,
                       external_id: external_id).first
-          pc.update(api_response: row, updated_at: Time.now.utc)
           Rails.logger.info("Updating local podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          pc.update(api_response: row, updated_at: Time.now.utc)
           pc
         else
-          pc = create!(episode_id: episode.feeder_id,
-                       external_id: external_id,
-                       vendor_id: episode.audio_asset_vendor_id,
-                       apple_episode_id: episode.apple_id,
-                       source_url: episode.enclosure_url,
-                       source_filename: episode.enclosure_filename,
-                       api_response: row)
           Rails.logger.info("Creating local podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
-          pc
+          create!(episode_id: episode.feeder_id,
+                  external_id: external_id,
+                  vendor_id: episode.audio_asset_vendor_id,
+                  apple_episode_id: episode.apple_id,
+                  source_url: episode.enclosure_url,
+                  source_filename: episode.enclosure_filename,
+                  api_response: row)
         end
 
       SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id)

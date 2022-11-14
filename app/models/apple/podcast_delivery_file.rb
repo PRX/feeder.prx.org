@@ -217,19 +217,16 @@ module Apple
                                  external_id: external_id,
                                  podcast_delivery_id: podcast_delivery_id).first
 
-          delivery_file.update(api_response: row, updated_at: Time.now.utc)
-
           Rails.logger.info("Updating local podcast delivery file w/ Apple id #{external_id} for episode #{episode.feeder_id}")
-
+          delivery_file.update(api_response: row, updated_at: Time.now.utc)
           delivery_file
         else
-          pdf = Apple::PodcastDeliveryFile.create!(episode_id: episode.feeder_id,
-                                                   external_id: external_id,
-                                                   podcast_delivery_id: podcast_delivery_id,
-                                                   api_response: row)
           Rails.logger.info("Creating local podcast delivery file w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          Apple::PodcastDeliveryFile.create!(episode_id: episode.feeder_id,
+                                             external_id: external_id,
+                                             podcast_delivery_id: podcast_delivery_id,
+                                             api_response: row)
 
-          pdf
         end
 
       SyncLog.create!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id)

@@ -68,18 +68,17 @@ module Apple
                             external_id: external_id,
                             podcast_container: episode.podcast_container).first
 
-          delivery.update(api_response: row, updated_at: Time.now.utc)
           Rails.logger.info("Updating local podcast delivery w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          delivery.update(api_response: row, updated_at: Time.now.utc)
 
           delivery
         else
-          pd = Apple::PodcastDelivery.create!(episode_id: episode.feeder_id,
-                                              external_id: external_id,
-                                              status: delivery_status,
-                                              podcast_container: episode.podcast_container,
-                                              api_response: row)
           Rails.logger.info("Creating local podcast delivery w/ Apple id #{external_id} for episode #{episode.feeder_id}")
-          pd
+          Apple::PodcastDelivery.create!(episode_id: episode.feeder_id,
+                                         external_id: external_id,
+                                         status: delivery_status,
+                                         podcast_container: episode.podcast_container,
+                                         api_response: row)
         end
 
       SyncLog.create!(feeder_id: pd.id, feeder_type: :podcast_deliveries, external_id: external_id)
@@ -112,7 +111,6 @@ module Apple
         }
       }
     end
-
 
     def self.get_urls_for_container_podcast_deliveries(api, podcast_container_deliveries_json)
       podcast_container_deliveries_json["api_response"]["val"]["data"].map do |podcast_delivery_data|
