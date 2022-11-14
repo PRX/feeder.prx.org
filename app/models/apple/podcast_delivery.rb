@@ -40,6 +40,25 @@ module Apple
       end
     end
 
+    def self.get_podcast_deliveries_via_containers(api, podcast_containers)
+      # Fetch the podcast deliveries from the containers side of the api
+      deliveries_response =
+        api.bridge_remote_and_retry!("getPodcastDeliveries",
+                                     get_podcast_containers_deliveries_bridge_params(podcast_containers))
+      # Rather than mangling and persisting the enumerated view of the deliveries
+      # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
+      formatted_bridge_params = join_on_apple_episode_id(podcast_containers, deliveries_response).map do |(pc, row)|
+        get_urls_for_container_podcast_deliveries(api, row).map do |url|
+          get_podcast_containers_deliveries_bridge_param(pc.apple_episode_id, pc.id, url)
+        end
+      end
+
+      formatted_bridge_params = formatted_bridge_params.flatten
+
+      api.bridge_remote_and_retry!("getPodcastDeliveries",
+                                   formatted_bridge_params)
+    end
+
     def self.upsert_podcast_delivery(episode, row)
       external_id = row.dig("api_response", "val", "data", "id")
       delivery_status = row.dig("api_response", "val", "data", "attributes", "status")
@@ -94,24 +113,6 @@ module Apple
       }
     end
 
-    def self.get_podcast_deliveries_via_containers(api, podcast_containers)
-      # Fetch the podcast deliveries from the containers side of the api
-      deliveries_response =
-        api.bridge_remote_and_retry!("getPodcastDeliveries",
-                                     get_podcast_containers_deliveries_bridge_params(podcast_containers))
-      # Rather than mangling and persisting the enumerated view of the deliveries
-      # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
-      formatted_bridge_params = join_on_apple_episode_id(podcast_containers, deliveries_response).map do |(pc, row)|
-        get_urls_for_container_podcast_deliveries(api, row).map do |url|
-          get_podcast_containers_deliveries_bridge_param(pc.apple_episode_id, pc.id, url)
-        end
-      end
-
-      formatted_bridge_params = formatted_bridge_params.flatten
-
-      api.bridge_remote_and_retry!("getPodcastDeliveries",
-                                   formatted_bridge_params)
-    end
 
     def self.get_urls_for_container_podcast_deliveries(api, podcast_container_deliveries_json)
       podcast_container_deliveries_json["api_response"]["val"]["data"].map do |podcast_delivery_data|

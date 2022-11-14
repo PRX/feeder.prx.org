@@ -75,16 +75,6 @@ module Apple
       pc
     end
 
-    def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)
-      containers_json = episode_podcast_containers_json["api_response"]["val"]["data"]
-      # TODO: support > 1 podcast container per feeder episode
-      raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if containers_json.length > 1
-
-      containers_json.map do |podcast_container_json|
-        api.join_url("podcastContainers/#{podcast_container_json['id']}").to_s
-      end
-    end
-
     def self.get_podcast_containers_via_episodes(api, episodes)
       # Fetch the podcast containers from the episodes side of the API
       response =
@@ -103,6 +93,16 @@ module Apple
 
       api.bridge_remote_and_retry!("getPodcastContainers",
                                    formatted_bridge_params)
+    end
+
+    def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)
+      containers_json = episode_podcast_containers_json["api_response"]["val"]["data"]
+      # TODO: support > 1 podcast container per feeder episode
+      raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if containers_json.length > 1
+
+      containers_json.map do |podcast_container_json|
+        api.join_url("podcastContainers/#{podcast_container_json['id']}").to_s
+      end
     end
 
     def self.get_podcast_containers_bridge_params(api, episodes)

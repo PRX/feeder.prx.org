@@ -66,25 +66,22 @@ module Apple
       end
     end
 
-    # Query from the podcast delivery side of the api
-    def self.get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries)
-      podcast_deliveries.map do |delivery|
-        get_delivery_podcast_delivery_files_bridge_param(delivery.apple_episode_id,
-                                                         delivery.id,
-                                                         delivery.podcast_delivery_files_url)
-      end
-    end
+    def self.create_podcast_delivery_files(api, episodes)
+      return [] if episodes.empty?
 
-    # Query from the podcast delivery side of the api
-    def self.get_delivery_podcast_delivery_files_bridge_param(apple_episode_id, podcast_delivery_id, api_url)
-      {
-        request_metadata: {
-          apple_episode_id: apple_episode_id,
-          podcast_delivery_id: podcast_delivery_id
-        },
-        api_url: api_url,
-        api_parameters: {}
-      }
+      # TODO: handle multiple containers
+      episodes_needing_delivery_files =
+        episodes.reject { |ep| ep.podcast_delivery_files.present? }
+
+      podcast_deliveries = Apple::PodcastDelivery.where(episode_id: episodes_needing_delivery_files.map(&:feeder_id))
+
+      result =
+        api.bridge_remote_and_retry!("createPodcastDeliveryFiles",
+                                     podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd) })
+
+      join_on("podcast_delivery_id", podcast_deliveries, result).each do |(podcast_delivery, row)|
+        upsert_podcast_delivery_file(podcast_delivery, row)
+      end
     end
 
     def self.update_podcast_delivery_files_state(api, episodes)
@@ -136,22 +133,25 @@ module Apple
       end
     end
 
-    def self.create_podcast_delivery_files(api, episodes)
-      return [] if episodes.empty?
-
-      # TODO: handle multiple containers
-      episodes_needing_delivery_files =
-        episodes.reject { |ep| ep.podcast_delivery_files.present? }
-
-      podcast_deliveries = Apple::PodcastDelivery.where(episode_id: episodes_needing_delivery_files.map(&:feeder_id))
-
-      result =
-        api.bridge_remote_and_retry!("createPodcastDeliveryFiles",
-                                     podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd) })
-
-      join_on("podcast_delivery_id", podcast_deliveries, result).each do |(podcast_delivery, row)|
-        upsert_podcast_delivery_file(podcast_delivery, row)
+    # Query from the podcast delivery side of the api
+    def self.get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries)
+      podcast_deliveries.map do |delivery|
+        get_delivery_podcast_delivery_files_bridge_param(delivery.apple_episode_id,
+                                                         delivery.id,
+                                                         delivery.podcast_delivery_files_url)
       end
+    end
+
+    # Query from the podcast delivery side of the api
+    def self.get_delivery_podcast_delivery_files_bridge_param(apple_episode_id, podcast_delivery_id, api_url)
+      {
+        request_metadata: {
+          apple_episode_id: apple_episode_id,
+          podcast_delivery_id: podcast_delivery_id
+        },
+        api_url: api_url,
+        api_parameters: {}
+      }
     end
 
     def self.get_delivery_file_bridge_params(api, podcast_delivery_file)
