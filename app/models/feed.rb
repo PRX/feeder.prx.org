@@ -20,6 +20,11 @@ class Feed < BaseModel
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
 
+  has_one :feed_image, -> { complete.order('created_at DESC') }, autosave: true, dependent: :destroy
+  has_many :feed_images, -> { order('created_at DESC') }, autosave: true, dependent: :destroy
+  has_one :itunes_image, -> { complete.order('created_at DESC') }, autosave: true, dependent: :destroy
+  has_many :itunes_images, -> { order('created_at DESC') }, autosave: true, dependent: :destroy
+
   validates :slug, allow_nil: true, uniqueness: { scope: :podcast_id, allow_nil: false }
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
   validates_format_of :slug, without: /\A(images|\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\z/
@@ -43,6 +48,9 @@ class Feed < BaseModel
   end
 
   def sanitize_text
+    self.description = sanitize_white_list(description) if description_changed?
+    self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
+    self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
   end
 
@@ -122,5 +130,32 @@ class Feed < BaseModel
   def mime_type
     f = (audio_format || {})[:f] || 'mp3'
     AUDIO_MIME_TYPES[f]
+  end
+
+  def copy_media(force = false)
+    feed_images.each { |i| i.copy_media(force) }
+    itunes_images.each { |i| i.copy_media(force) }
+  end
+
+  # API updates for feed_image=
+  def feed_image_file; feed_images.first; end
+  def feed_image_file=(file)
+    img = FeedImage.build(file)
+    if img && img.original_url != feed_image_file.try(:original_url)
+      feed_images << img
+    elsif !img
+      feed_images.destroy_all
+    end
+  end
+
+  # API updates for itunes_image=
+  def itunes_image_file; itunes_images.first; end
+  def itunes_image_file=(file)
+    img = ITunesImage.build(file)
+    if img && img.original_url != itunes_image_file.try(:original_url)
+      itunes_images << img
+    elsif !img
+      itunes_images.destroy_all
+    end
   end
 end

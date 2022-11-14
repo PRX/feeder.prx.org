@@ -3,7 +3,7 @@ class PodcastFeedHandler
     subtitle summary title update_frequency update_period
     author managing_editor new_feed_url owners ).freeze
 
-  attr_accessor :podcast, :feed
+  attr_accessor :podcast, :default_feed, :feed
 
   def self.create_from_feed!(feed)
     update_from_feed!(Podcast.new, feed)
@@ -15,6 +15,8 @@ class PodcastFeedHandler
 
   def initialize(podcast)
     self.podcast = podcast
+    podcast.set_defaults
+    self.default_feed = podcast.default_feed
   end
 
   def update_from_feed!(feed)
@@ -46,15 +48,8 @@ class PodcastFeedHandler
 
   def update_images
     fa = feed.attributes.with_indifferent_access
-    { feed: :thumb_url, itunes: :image_url }.each do |type, url|
-      if fa[url]
-        if !podcast.find_existing_image(type, fa[url])
-          podcast.send("#{type}_images").build(original_url: fa[url])
-        end
-      else
-        podcast.send("#{type}_images").destroy_all
-      end
-    end
+    default_feed.feed_image_file = fa[:thumb_url]
+    default_feed.itunes_image_file = fa[:image_url]
   end
 
   def update_categories

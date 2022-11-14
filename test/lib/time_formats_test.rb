@@ -1,9 +1,6 @@
 require 'test_helper'
 require 'time_formats'
 
-class Fixnum; include TimeFormats; end
-class Bignum; include TimeFormats; end
-
 describe TimeFormats do
   it 'formats 0-23 as a string' do
     assert_equal 0.to_hour_of_day, '12:00:00 midnight'

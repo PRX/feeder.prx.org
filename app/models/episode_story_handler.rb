@@ -89,11 +89,8 @@ class EpisodeStoryHandler
   end
 
   def update_image
-    if image_url = story.objects['prx:image'].links['original'].href rescue nil
-      episode.images.build(original_url: image_url) if !episode.find_existing_image(image_url)
-    else
-      episode.images.destroy_all
-    end
+    image_url = story.objects['prx:image'].links['original'].href rescue nil
+    episode.image_file = image_url
   end
 
   def build_content(audio)

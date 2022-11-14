@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220801154805) do
+ActiveRecord::Schema.define(version: 20220928174716) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -85,18 +85,24 @@ ActiveRecord::Schema.define(version: 20220801154805) do
   add_index "episodes", ["published_at", "podcast_id"], name: "index_episodes_on_published_at_and_podcast_id", using: :btree
 
   create_table "feed_images", force: :cascade do |t|
-    t.string  "url"
-    t.string  "link"
-    t.string  "description"
-    t.integer "height"
-    t.integer "width"
-    t.integer "podcast_id"
-    t.string  "title"
-    t.string  "format"
-    t.integer "size"
+    t.integer  "feed_id"
+    t.string   "guid"
+    t.string   "url"
+    t.string   "link"
+    t.string   "original_url"
+    t.string   "description"
+    t.string   "title"
+    t.string   "format"
+    t.integer  "height"
+    t.integer  "width"
+    t.integer  "size"
+    t.integer  "status"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
-  add_index "feed_images", ["podcast_id"], name: "index_feed_images_on_podcast_id", using: :btree
+  add_index "feed_images", ["feed_id"], name: "index_feed_images_on_feed_id", using: :btree
+  add_index "feed_images", ["guid"], name: "index_feed_images_on_guid", unique: true, using: :btree
 
   create_table "feed_tokens", force: :cascade do |t|
     t.integer  "feed_id"
@@ -129,6 +135,11 @@ ActiveRecord::Schema.define(version: 20220801154805) do
     t.string   "enclosure_prefix"
     t.string   "enclosure_template"
     t.text     "exclude_tags"
+    t.text     "subtitle"
+    t.text     "description"
+    t.text     "summary"
+    t.boolean  "include_podcast_value",       default: true
+    t.boolean  "include_donation_url",        default: true
   end
 
   add_index "feeds", ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)", using: :btree
@@ -144,15 +155,24 @@ ActiveRecord::Schema.define(version: 20220801154805) do
   end
 
   create_table "itunes_images", force: :cascade do |t|
-    t.string  "url"
-    t.integer "podcast_id"
-    t.string  "format"
-    t.integer "width"
-    t.integer "height"
-    t.integer "size"
+    t.integer  "feed_id"
+    t.string   "guid"
+    t.string   "url"
+    t.string   "link"
+    t.string   "original_url"
+    t.string   "description"
+    t.string   "title"
+    t.string   "format"
+    t.integer  "height"
+    t.integer  "width"
+    t.integer  "size"
+    t.integer  "status"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
-  add_index "itunes_images", ["podcast_id"], name: "index_itunes_images_on_podcast_id", using: :btree
+  add_index "itunes_images", ["feed_id"], name: "index_itunes_images_on_feed_id", using: :btree
+  add_index "itunes_images", ["guid"], name: "index_itunes_images_on_guid", unique: true, using: :btree
 
   create_table "media_resources", force: :cascade do |t|
     t.integer  "episode_id"
@@ -183,38 +203,14 @@ ActiveRecord::Schema.define(version: 20220801154805) do
   add_index "media_resources", ["guid"], name: "index_media_resources_on_guid", unique: true, using: :btree
   add_index "media_resources", ["original_url"], name: "index_media_resources_on_original_url", using: :btree
 
-  create_table "podcast_images", force: :cascade do |t|
-    t.integer  "podcast_id"
-    t.string   "type"
-    t.string   "guid"
-    t.string   "url"
-    t.string   "link"
-    t.string   "original_url"
-    t.string   "description"
-    t.string   "title"
-    t.string   "format"
-    t.integer  "height"
-    t.integer  "width"
-    t.integer  "size"
-    t.integer  "status"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "podcast_images", ["guid"], name: "index_podcast_images_on_guid", unique: true, using: :btree
-  add_index "podcast_images", ["podcast_id"], name: "index_podcast_images_on_podcast_id", using: :btree
-
   create_table "podcasts", force: :cascade do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "title"
     t.string   "link"
-    t.text     "description"
     t.string   "language"
     t.string   "managing_editor_name"
     t.string   "categories"
-    t.text     "subtitle"
-    t.text     "summary"
     t.string   "keywords"
     t.string   "update_period"
     t.integer  "update_frequency"
@@ -241,6 +237,8 @@ ActiveRecord::Schema.define(version: 20220801154805) do
     t.boolean  "locked",                default: false
     t.boolean  "itunes_block",          default: false
     t.text     "restrictions"
+    t.string   "payment_pointer"
+    t.string   "donation_url"
   end
 
   add_index "podcasts", ["path"], name: "index_podcasts_on_path", unique: true, using: :btree
@@ -297,6 +295,8 @@ ActiveRecord::Schema.define(version: 20220801154805) do
   add_index "tasks", ["owner_type", "owner_id"], name: "index_tasks_on_owner_type_and_owner_id", using: :btree
   add_index "tasks", ["status"], name: "index_tasks_on_status", using: :btree
 
+  add_foreign_key "feed_images", "feeds"
   add_foreign_key "feed_tokens", "feeds"
   add_foreign_key "feeds", "podcasts"
+  add_foreign_key "itunes_images", "feeds"
 end

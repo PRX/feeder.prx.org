@@ -80,11 +80,7 @@ class EpisodeEntryHandler
   end
 
   def update_image
-    if image_url = overrides[:image_url]
-      episode.images.build(original_url: image_url) if !episode.find_existing_image(image_url)
-    else
-      episode.images.destroy_all
-    end
+    episode.image_file = overrides[:image_url]
   end
 
   def update_contents

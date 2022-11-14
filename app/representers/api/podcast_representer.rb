@@ -21,7 +21,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :subtitle
   property :description
   property :summary
-  property :summary_preview, exec_context: :decorator, if: ->(_o) { !represented.summary }
+  property :summary_preview, exec_context: :decorator, if: ->(_o) { represented.summary.blank? }
   property :itunes_block
 
   property :explicit
@@ -29,8 +29,9 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :complete
   property :copyright
   property :language
-
   property :locked
+  property :payment_pointer
+  property :donation_url
 
   nested :owner do
     property :owner_name, as: :name

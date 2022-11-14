@@ -19,10 +19,14 @@ module PodcastsHelper
   end
 
   def show_itunes_summary?(model)
-    model.summary || model.description
+    model.summary.present? || model.description.present?
   end
 
   def itunes_summary(model)
-    model.summary || sanitize_links_only(model.description)
+    if model.summary.present?
+      model.summary
+    else
+      sanitize_links_only(model.description || '')
+    end
   end
 end
