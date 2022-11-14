@@ -58,8 +58,6 @@ module Apple
     end
 
     def self.mark_uploaded(api, pdfs)
-      updated_pdfs = []
-
       bridge_params = pdfs.map { |pdf| mark_uploaded_delivery_file_bridge_params(api, pdf) }
 
       api.bridge_remote_and_retry!("updateDeliveryFiles", bridge_params).map do |row|
