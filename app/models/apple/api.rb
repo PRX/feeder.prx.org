@@ -159,18 +159,22 @@ module Apple
       [oks + fixed_errs, remaining_errors]
     end
 
+    def api_bridge_url
+      URI.parse(ENV.fetch("APPLE_API_BRIDGE_URL"))
+    end
+
     def bridge_remote(bridge_resource, bridge_options)
       # TODO: pull this in via the ENV
-      uri = URI.join("http://127.0.0.1:3000", "/bridge")
 
-      Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{uri.hostname}:#{uri.port}/bridge")
+      url = api_bridge_url
+      Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge")
 
       body = {
         bridge_resource: bridge_resource,
         bridge_parameters: bridge_options
       }
 
-      make_bridge_request(uri, body)
+      make_bridge_request(url, body)
     end
 
     def bridge_remote_and_unwrap(bridge_resource, bridge_options, &block)
