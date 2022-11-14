@@ -21,7 +21,6 @@ module Apple
     end
 
     def unwrap_response
-      return nil unless api_response.present?
       raise "incomplete api response" unless api_response && api_response.dig("api_response", "ok")
 
       api_response["api_response"]["val"]
