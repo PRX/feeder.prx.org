@@ -102,8 +102,4 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
   end
-
-  # test "the truth" do
-  #   assert true
-  # end
 end
