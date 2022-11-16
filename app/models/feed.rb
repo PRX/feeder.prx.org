@@ -107,7 +107,7 @@ class Feed < BaseModel
   end
 
   def filtered_episodes
-    eps = podcast.episodes
+    eps = podcast.episodes.published_by(episode_offset_seconds.to_i)
 
     eps =
       if use_include_tags?
