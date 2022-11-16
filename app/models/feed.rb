@@ -111,7 +111,7 @@ class Feed < BaseModel
 
     eps =
       if use_include_tags?
-        eps.select { |ep| include_tags.nil? || episode_categories_include?(ep, include_tags) }
+        eps.select { |ep| episode_categories_include?(ep, include_tags) }
       else
         eps
       end
