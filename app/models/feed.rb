@@ -99,11 +99,11 @@ class Feed < BaseModel
   end
 
   def use_include_tags?
-    !include_tags.nil?
+    !include_tags.blank?
   end
 
   def use_exclude_tags?
-    !exclude_tags.nil?
+    !exclude_tags.blank?
   end
 
   def filtered_episodes
