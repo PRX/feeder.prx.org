@@ -205,8 +205,8 @@ module Apple
       req.body = body.to_json
       req = set_headers(req)
 
-      # TODO: vary this with the bridge endpoint url
-      use_ssl = false
+      # test if the apple_bridge_url is https
+      use_ssl = api_bridge_url.scheme == "https"
 
       Net::HTTP.start(uri.hostname, uri.port, use_ssl: use_ssl, read_timeout: 10.minutes) do |http|
         http.request(req)
