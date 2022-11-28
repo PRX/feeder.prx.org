@@ -133,6 +133,7 @@ ActiveRecord::Schema.define(version: 20220928174716) do
     t.datetime "updated_at",                                 null: false
     t.string   "enclosure_prefix"
     t.string   "enclosure_template"
+    t.text     "exclude_tags"
     t.text     "subtitle"
     t.text     "description"
     t.text     "summary"
