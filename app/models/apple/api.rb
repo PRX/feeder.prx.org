@@ -159,18 +159,20 @@ module Apple
       [oks + fixed_errs, remaining_errors]
     end
 
-    def bridge_remote(bridge_resource, bridge_options)
-      # TODO: pull this in via the ENV
-      uri = URI.join("http://127.0.0.1:3000", "/bridge")
+    def api_bridge_url
+      URI.parse(ENV.fetch("APPLE_API_BRIDGE_URL"))
+    end
 
-      Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{uri.hostname}:#{uri.port}/bridge")
+    def bridge_remote(bridge_resource, bridge_options)
+      url = api_bridge_url
+      Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge")
 
       body = {
         bridge_resource: bridge_resource,
         bridge_parameters: bridge_options
       }
 
-      make_bridge_request(uri, body)
+      make_bridge_request(url, body)
     end
 
     def bridge_remote_and_unwrap(bridge_resource, bridge_options, &block)
@@ -201,10 +203,10 @@ module Apple
       req.body = body.to_json
       req = set_headers(req)
 
-      # TODO: vary this with the bridge endpoint url
-      use_ssl = false
+      # test if the apple_bridge_url is https
+      use_ssl = api_bridge_url.scheme == "https"
 
-      Net::HTTP.start(uri.hostname, uri.port, use_ssl: use_ssl) do |http|
+      Net::HTTP.start(uri.hostname, uri.port, use_ssl: use_ssl, read_timeout: 10.minutes) do |http|
         http.request(req)
       end
     end
@@ -215,7 +217,7 @@ module Apple
     def retry_bridge_api_operation(bridge_resource, row_operations_ok, row_operation_errs, attempts = 1)
       return [row_operations_ok, row_operation_errs] if attempts >= ERROR_RETRIES || row_operation_errs.empty?
 
-      Rails.logger.error("Retrying!")
+      row_operation_errs.map { |err| Rails.logger.error("Retrying: #{err.to_json}") }
 
       # Slice off the api response and retry the row operation
       formatted_error_operations_for_retry = row_operation_errs.map do |r|

@@ -4,6 +4,25 @@ module Apple
   class Show
     attr_reader :feed, :api
 
+    def self.connect_existing(feed, apple_show_id)
+      SyncLog.create!(feeder_id: feed.id,
+                      feeder_type: :feeds,
+                      sync_completed_at: Time.now.utc,
+                      external_id: apple_show_id)
+
+      new(feed)
+    end
+
+    def self.get_episodes_json(api, show_id)
+      api.get_paged_collection("shows/#{show_id}/episodes")
+    end
+
+    def self.get_show(api, show_id)
+      resp = api.get("shows/#{show_id}")
+
+      api.unwrap_response(resp)
+    end
+
     def initialize(feed)
       @feed = feed
       @api = Apple::Api.from_env
@@ -58,6 +77,10 @@ module Apple
       completed_sync_log&.external_id
     end
 
+    def id
+      apple_id
+    end
+
     def completed_sync_log
       SyncLog.
         feeds.
@@ -80,7 +103,7 @@ module Apple
       SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds)
     end
 
-    def create_show!(_sync)
+    def create_show!
       resp = api.post("shows", show_data)
 
       api.unwrap_response(resp)
@@ -98,7 +121,7 @@ module Apple
       if sync.present?
         update_show!(sync)
       else
-        create_show!(sync)
+        create_show!
       end
     end
 
@@ -108,28 +131,18 @@ module Apple
       self.class.get_show(api, apple_id)
     end
 
-    def get_episodes
+    def get_episodes_json
       raise "Missing apple show id" unless apple_id.present?
 
-      @get_episodes ||=
+      @get_episodes_json ||=
         begin
           external_id = completed_sync_log&.external_id
-          self.class.get_episodes(api, external_id)
+          self.class.get_episodes_json(api, external_id)
         end
     end
 
-    def apple_episodes
-      get_episodes
-    end
-
-    def self.get_show(api, show_id)
-      resp = api.get("shows/#{show_id}")
-
-      api.unwrap_response(resp)
-    end
-
-    def self.get_episodes(api, show_id)
-      api.get_paged_collection("shows/#{show_id}/episodes")
+    def apple_episodes_json
+      get_episodes_json
     end
   end
 end

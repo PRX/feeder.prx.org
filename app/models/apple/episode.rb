@@ -4,7 +4,7 @@ require "uri"
 
 module Apple
   class Episode
-    attr_reader :show, :feeder_episode, :api
+    attr_accessor :show, :feeder_episode, :api
 
     def self.get_episodes(api, episodes)
       return if episodes.empty?
@@ -44,10 +44,11 @@ module Apple
       end
     end
 
-    def initialize(show, episode)
-      @show = show
-      @feeder_episode = episode
-      @api = Apple::Api.from_env
+    def initialize(**kwargs)
+      kwargs = kwargs.with_indifferent_access
+      @show = kwargs["show"]
+      @feeder_episode = kwargs["feeder_episode"]
+      @api = kwargs["api"] || Apple::Api.from_env
     end
 
     def feeder_id
@@ -65,7 +66,7 @@ module Apple
     def apple_json
       return nil unless show.apple_id.present?
 
-      eps = show.get_episodes
+      eps = show.get_episodes_json
 
       eps.detect { |ep| ep["attributes"]["guid"] == feeder_episode.item_guid }
     end
@@ -193,9 +194,21 @@ module Apple
       apple_json&.dig("id")
     end
 
+    def apple_episode_id
+      apple_id
+    end
+
     def podcast_container
       # TODO: differentiate these by container type: audio versus images
       Apple::PodcastContainer.find_by(episode_id: feeder_episode.id)
+    end
+
+    def podcast_deliveries
+      feeder_episode.apple_podcast_deliveries
+    end
+
+    def podcast_delivery_files
+      feeder_episode.apple_podcast_delivery_files
     end
   end
 end
