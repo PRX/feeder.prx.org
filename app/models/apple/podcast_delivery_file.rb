@@ -79,8 +79,8 @@ module Apple
         api.bridge_remote_and_retry!("createPodcastDeliveryFiles",
                                      podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd) })
 
-      join_on("podcast_delivery_id", podcast_deliveries, result).each do |(podcast_delivery, row)|
-        upsert_podcast_delivery_file(podcast_delivery, row)
+      join_on("podcast_delivery_id", episodes_needing_delivery_files, result).each do |(episode, row)|
+        upsert_podcast_delivery_file(episode, row)
       end
     end
 
@@ -178,6 +178,7 @@ module Apple
     def self.create_delivery_file_bridge_params(api, podcast_delivery)
       {
         request_metadata: {
+          apple_episode_id: podcast_delivery.apple_episode_id,
           podcast_delivery_id: podcast_delivery.id
         },
         api_url: api.join_url("podcastDeliveryFiles").to_s,
