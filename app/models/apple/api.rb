@@ -164,8 +164,6 @@ module Apple
     end
 
     def bridge_remote(bridge_resource, bridge_options)
-      # TODO: pull this in via the ENV
-
       url = api_bridge_url
       Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge")
 
