@@ -3,6 +3,8 @@ class AppleCredential < ActiveRecord::Base
 
   validates_associated :podcast, if: -> { prx_account_uri.blank? }
   validates_presence_of :prx_account_uri, if: -> { podcast.blank? }
+  validates_presence_of :apple_key_id
+  validates_presence_of :apple_key_pem_b64
   validate :podcast_and_prx_account_uri_not_both_set
 
   def podcast_and_prx_account_uri_not_both_set

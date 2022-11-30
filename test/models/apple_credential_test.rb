@@ -20,6 +20,16 @@ describe AppleCredential do
     end
 
     it 'requires apple key fields' do
+      p = create(:podcast)
+      c = build(:apple_credential, podcast: p)
+      assert c.valid?
+
+      c.apple_key_id = nil
+      refute c.valid?
+
+      c.apple_key_id = "pears are better"
+      c.apple_key_pem_b64 = nil
+      refute c.valid?
     end
 
     it 'is unique to a podcast' do

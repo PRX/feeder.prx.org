@@ -9,6 +9,7 @@ class Podcast < BaseModel
   serialize :restrictions, JSON
 
   has_one :default_feed, -> { default }, class_name: 'Feed', validate: true, autosave: true
+  has_one :apple_credential
   has_many :feeds, dependent: :destroy
 
   has_many :episodes, -> { order('published_at desc') }
@@ -163,6 +164,14 @@ class Podcast < BaseModel
 
   def default_feed_settings?
     feeds.all?(&:default_runtime_settings?)
+  end
+
+  def get_apple_credential
+    if apple_credential.present?
+      apple_credential
+    else
+      AppleCredential.where(prx_account_uri: prx_account_uri).first
+    end
   end
 
   # TODO: temporary delegations, until Publish + our Representers get updated

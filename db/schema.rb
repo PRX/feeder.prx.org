@@ -190,9 +190,9 @@ ActiveRecord::Schema.define(version: 20221116182526) do
     t.text     "subtitle"
     t.text     "description"
     t.text     "summary"
-    t.text     "exclude_tags"
     t.boolean  "include_podcast_value",       default: true
     t.boolean  "include_donation_url",        default: true
+    t.text     "exclude_tags"
   end
 
   add_index "feeds", ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)", using: :btree
