@@ -12,6 +12,30 @@ describe Apple::Show do
       to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
   end
 
+  describe "#reload" do
+    it "flushes memoized attrs" do
+      apple_show.instance_variable_set(:@get_episodes_json, "foo")
+      apple_show.reload
+      assert_nil apple_show.instance_variable_get(:@get_episodes_json)
+    end
+
+    it "doesn't raise an error if the attr isn't memoized" do
+      apple_show.reload
+    end
+
+    it "doesn't raise an error if the attr is nil" do
+      apple_show.instance_variable_set(:@get_episodes_json, nil)
+      apple_show.reload
+      assert_nil apple_show.instance_variable_get(:@get_episodes_json)
+    end
+
+    it "doesn't raise an error if the attr is false" do
+      apple_show.instance_variable_set(:@get_episodes_json, false)
+      apple_show.reload
+      assert_nil apple_show.instance_variable_get(:@get_episodes_json)
+    end
+  end
+
   describe ".connect_existing" do
     it "should persist the apple id for a feed" do
       Apple::Show.connect_existing(feed, "some_apple_id")
