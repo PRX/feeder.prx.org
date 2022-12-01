@@ -33,7 +33,11 @@ describe AppleCredential do
     end
 
     it 'is unique to a podcast' do
+      c1 = build(:apple_credential, podcast: p, podcast_id: 'foo')
+      c2 = build(:apple_credential, podcast_id: c1.podcast_id)
+      refute c2.valid?
     end
+
 
     it 'is unique to an account uri' do
     end
@@ -69,3 +73,23 @@ describe AppleCredential do
     # end
   end
 end
+
+
+# 1::::
+# it 'is unique to a podcast' do
+#   # c1 = create(:apple_credential, podcast: 'podcast_id')
+#   # c2 = build(:apple_credential, podcast: 'podcast_id', podcast: c1.podcast)
+#   # assert e1.valid?
+#   # refute e2.valid?
+#   end
+
+#   # e1 = create(:episode, original_guid: 'original')
+#   # e2 = build(:episode, original_guid: 'original', podcast: e1.podcast)
+#   # assert e1.valid?
+#   # refute e2.valid?
+
+# //////
+# c1 = build(:apple_key_id, podcast: p, podcast_id: 'foo')
+# c2 = build(:apple_key_id, podcast_id: c1.podcast_id)
+# assert c1.valid?
+# refute c2.valid?
