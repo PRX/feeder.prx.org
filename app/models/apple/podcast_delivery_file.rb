@@ -73,7 +73,12 @@ module Apple
       episodes_needing_delivery_files =
         episodes.reject { |ep| ep.podcast_delivery_files.present? }
 
-      podcast_deliveries = Apple::PodcastDelivery.where(episode_id: episodes_needing_delivery_files.map(&:feeder_id))
+      podcast_deliveries = episodes_needing_delivery_files.map(&:podcast_deliveries)
+      if podcast_deliveries.any? { |pds| pds.empty? }
+        raise "Missing podcast deliveries for episodes"
+      end
+
+      podcast_deliveries = podcast_deliveries.flatten
 
       result =
         api.bridge_remote_and_retry!("createPodcastDeliveryFiles",
