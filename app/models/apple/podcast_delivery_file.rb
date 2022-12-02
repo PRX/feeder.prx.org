@@ -11,6 +11,8 @@ module Apple
 
     delegate :apple_episode_id, to: :podcast_delivery
 
+    PODCAST_DELIVERY_ID_ATTR = "podcast_delivery_id"
+
     def self.wait_for_delivery_files(api, pdfs)
       wait_for_delivery(api, pdfs)
       wait_for_processing(api, pdfs)
@@ -70,39 +72,27 @@ module Apple
       return [] if episodes.empty?
 
       # TODO: handle multiple containers
-      episodes_needing_delivery_files =
-        episodes.reject { |ep| ep.podcast_delivery_files.present? }
+      podcast_containers = episodes.map(&:podcast_container)
+      podcast_deliveries = podcast_containers.map do |pc|
+        raise("Missing podcast deliveries") if pc.podcast_deliveries.empty?
 
-      podcast_deliveries = episodes_needing_delivery_files.map(&:podcast_deliveries)
-      if podcast_deliveries.any? { |pds| pds.empty? }
-        raise "Missing podcast deliveries for episodes"
+        pc.podcast_deliveries
       end
 
       podcast_deliveries = podcast_deliveries.flatten
+      # filter for only the podcast deliveries that have missing podcast delivery files
+      podcast_deliveries = podcast_deliveries.select { |pd| pd.podcast_delivery_files.empty? }
 
       result =
         api.bridge_remote_and_retry!("createPodcastDeliveryFiles",
                                      podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd) })
 
-      join_on("apple_episode_id", episodes_needing_delivery_files, result).each do |(episode, row)|
-        upsert_podcast_delivery_file(episode, row)
+      join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, result).each do |(podcast_delivery, row)|
+        upsert_podcast_delivery_file(podcast_delivery, row)
       end
     end
 
     def self.update_podcast_delivery_files_state(api, episodes)
-      results = get_podcast_delivery_files_via_deliveries(api, episodes)
-
-      join_on_apple_episode_id(episodes, results).map do |(episode, delivery_file_row)|
-        upsert_podcast_delivery_file(episode, delivery_file_row)
-      end
-    end
-
-    def self.get_podcast_delivery_files(api, pdfs)
-      bridge_params = pdfs.map { |pdf| get_delivery_file_bridge_params(api, pdf) }
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params)
-    end
-
-    def self.get_podcast_delivery_files_via_deliveries(api, episodes)
       # Fetch the podcast delivery files from the delivery side of the api
       podcast_containers = episodes.map(&:podcast_container)
 
@@ -113,6 +103,19 @@ module Apple
         map(&:apple_podcast_deliveries).
         flatten
 
+      results = get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
+
+      join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, results).map do |(podcast_delivery, delivery_file_row)|
+        upsert_podcast_delivery_file(podcast_delivery, delivery_file_row)
+      end
+    end
+
+    def self.get_podcast_delivery_files(api, pdfs)
+      bridge_params = pdfs.map { |pdf| get_delivery_file_bridge_params(api, pdf) }
+      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params)
+    end
+
+    def self.get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
       delivery_files_response =
         api.bridge_remote_and_retry!("getPodcastDeliveryFiles",
                                      get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries))
@@ -214,21 +217,21 @@ module Apple
       } }
     end
 
-    def self.upsert_podcast_delivery_file(episode, row)
+    def self.upsert_podcast_delivery_file(podcast_delivery, row)
       external_id = row.dig("api_response", "val", "data", "id")
-      podcast_delivery_id = row.dig("request_metadata", "podcast_delivery_id")
+      podcast_delivery_id = row.dig("request_metadata", PODCAST_DELIVERY_ID_ATTR)
 
       pdf =
-        if delivery_file = where(episode_id: episode.feeder_id,
+        if delivery_file = where(episode_id: podcast_delivery.episode.id,
                                  external_id: external_id,
                                  podcast_delivery_id: podcast_delivery_id).first
 
-          Rails.logger.info("Updating local podcast delivery file w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          Rails.logger.info("Updating local podcast delivery file w/ Apple id #{external_id} for episode #{podcast_delivery.episode.id}")
           delivery_file.update(api_response: row, updated_at: Time.now.utc)
           delivery_file
         else
-          Rails.logger.info("Creating local podcast delivery file w/ Apple id #{external_id} for episode #{episode.feeder_id}")
-          Apple::PodcastDeliveryFile.create!(episode_id: episode.feeder_id,
+          Rails.logger.info("Creating local podcast delivery file w/ Apple id #{external_id} for episode #{podcast_delivery.episode.id}")
+          Apple::PodcastDeliveryFile.create!(episode_id: podcast_delivery.episode.id,
                                              external_id: external_id,
                                              podcast_delivery_id: podcast_delivery_id,
                                              api_response: row)

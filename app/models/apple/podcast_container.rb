@@ -172,5 +172,9 @@ module Apple
     def podcast_deliveries_url
       apple_data.dig("relationships", "podcastDeliveries", "links", "related")
     end
+
+    def podcast_container_id
+      id
+    end
   end
 end

@@ -12,18 +12,27 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
 
     let(:podcast_delivery_json) { { val: { data: { id: "123" } } } }
 
+    let(:podcast_container) do
+      pc = Apple::PodcastContainer.new
+      pc.episode = episode
+      pc.vendor_id = "123"
+      pc.apple_episode_id = "123"
+      pc.save!
+      pc
+    end
+
     it "should create logs based on a returned row value" do
       assert_equal SyncLog.count, 0
       assert_equal Apple::PodcastDelivery.count, 0
 
-      Apple::PodcastDelivery.upsert_podcast_delivery(apple_episode,
+      Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container,
                                                      api_response: podcast_delivery_json)
 
       assert_equal SyncLog.count, 1
       assert_equal Apple::PodcastDelivery.count, 1
 
       # Now upsert existing record
-      Apple::PodcastDelivery.upsert_podcast_delivery(apple_episode,
+      Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container,
                                                      api_response: podcast_delivery_json)
 
       assert_equal SyncLog.count, 2
@@ -31,13 +40,13 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     end
 
     it "should update timestamps" do
-      pd = Apple::PodcastDelivery.upsert_podcast_delivery(apple_episode,
+      pd = Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container,
                                                           api_response: podcast_delivery_json)
 
       # Now upsert existing record and overwrite timestamps
       pd.update(updated_at: Time.now - 1.year)
       # modify the json so that the podcast_delivery_changes
-      pd2 = Apple::PodcastDelivery.upsert_podcast_delivery(apple_episode,
+      pd2 = Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container,
                                                            api_response: podcast_delivery_json)
       assert pd2.updated_at > pd.updated_at
     end
