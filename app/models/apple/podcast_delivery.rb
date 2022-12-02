@@ -89,7 +89,7 @@ module Apple
     def self.create_podcast_deliveries_bridge_params(api, episodes_to_sync)
       episodes_to_sync.map do |episode|
         {
-          apple_episode_id: episode.apple_id,
+          request_metadata: { apple_episode_id: episode.apple_id },
           api_url: api.join_url("podcastDeliveries").to_s,
           api_parameters: podcast_delivery_create_parameters(episode)
         }
