@@ -19,7 +19,16 @@ module Apple
     }
 
     def self.update_podcast_deliveries_state(api, episodes)
-      results = get_podcast_deliveries_via_containers(api, episodes.map(&:podcast_container))
+      podcast_containers = episodes.map do |ep|
+        if ep.podcast_container.present?
+          ep.podcast_container
+        else
+          Rails.logger.error("Missing podcast container for episode #{ep.feeder_id}")
+          nil
+        end
+      end.compact
+
+      results = get_podcast_deliveries_via_containers(api, podcast_containers)
 
       join_on_apple_episode_id(episodes, results).map do |(episode, delivery_row)|
         upsert_podcast_delivery(episode, delivery_row)
