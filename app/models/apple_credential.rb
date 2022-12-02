@@ -6,6 +6,8 @@ class AppleCredential < ActiveRecord::Base
   validates_presence_of :apple_key_id
   validates_presence_of :apple_key_pem_b64
   validate :podcast_and_prx_account_uri_not_both_set
+  validates :podcast_id, uniqueness: true
+  validates :prx_account_uri, uniqueness: true
 
   def podcast_and_prx_account_uri_not_both_set
     if podcast.present? && prx_account_uri.present?

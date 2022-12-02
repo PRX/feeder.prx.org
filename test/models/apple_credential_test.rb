@@ -33,63 +33,18 @@ describe AppleCredential do
     end
 
     it 'is unique to a podcast' do
-      c1 = build(:apple_credential, podcast: p, podcast_id: 'foo')
-      c2 = build(:apple_credential, podcast_id: c1.podcast_id)
+      p = create(:podcast)
+      c1 = create(:apple_credential, podcast: p)
+      c2 = build(:apple_credential, podcast: p)
+      assert c1.valid?
       refute c2.valid?
     end
 
-
     it 'is unique to an account uri' do
+      c1 = create(:apple_credential, prx_account_uri: 't')
+      c2 = build(:apple_credential, prx_account_uri: 't')
+      assert c1.valid?
+      refute c2.valid?
     end
-
-
-
-
-
-
-
-    # it 'validates unique slugs' do
-    #   assert feed2.valid?
-    #   assert feed3.valid?
-
-    #   feed3.slug = 'adfree'
-    #   refute feed3.valid?
-
-    #   feed3.slug = 'adfree2'
-    #   assert feed3.valid?
-    # end
-
-    # it 'only allows 1 default feed per podcast' do
-    #   assert feed1.valid?
-    #   assert feed2.valid?
-
-    #   feed2.slug = nil
-    #   assert feed2.default?
-    #   refute feed2.valid?
-
-    #   feed2.podcast_id = 999999
-    #   assert feed2.default?
-    #   assert feed2.valid?
-    # end
   end
 end
-
-
-# 1::::
-# it 'is unique to a podcast' do
-#   # c1 = create(:apple_credential, podcast: 'podcast_id')
-#   # c2 = build(:apple_credential, podcast: 'podcast_id', podcast: c1.podcast)
-#   # assert e1.valid?
-#   # refute e2.valid?
-#   end
-
-#   # e1 = create(:episode, original_guid: 'original')
-#   # e2 = build(:episode, original_guid: 'original', podcast: e1.podcast)
-#   # assert e1.valid?
-#   # refute e2.valid?
-
-# //////
-# c1 = build(:apple_key_id, podcast: p, podcast_id: 'foo')
-# c2 = build(:apple_key_id, podcast_id: c1.podcast_id)
-# assert c1.valid?
-# refute c2.valid?

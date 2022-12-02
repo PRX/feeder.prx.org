@@ -85,4 +85,17 @@ describe Podcast do
       assert_equal podcast.feed_episodes.count, 5
     end
   end
+
+  describe '#get_apple_credential' do
+    it 'gets apple credential from either podcast or account uri' do
+      assert_nil podcast.get_apple_credential
+
+      c1 = create(:apple_credential, prx_account_uri: podcast.prx_account_uri)
+      assert_equal podcast.get_apple_credential, c1
+
+      c2 = create(:apple_credential, podcast: podcast)
+      assert_equal podcast.reload.get_apple_credential, c2
+
+    end
+  end
 end
