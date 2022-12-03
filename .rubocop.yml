@@ -1,233 +1,384 @@
+# from https://github.com/thoughtbot/hound/blob/114d4dfff8365e906d8b389f82d3ff9e0a47f747/config/style_guides/ruby.yml
+
+require:
+  - rubocop-performance
+
 AllCops:
   Exclude:
-    - "vendor/**/*"
-    - "db/schema.rb"
-  UseCache: false
-Style/CollectionMethods:
-  Description: Preferred collection methods.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#map-find-select-reduce-size
-  Enabled: true
-  PreferredMethods:
-    collect: map
-    collect!: map!
-    find: detect
-    find_all: select
-    reduce: inject
-Style/DotPosition:
-  Description: Checks the position of the dot in multi-line method calls.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#consistent-multi-line-chains
-  Enabled: true
-  EnforcedStyle: trailing
-  SupportedStyles:
-  - leading
-  - trailing
-Style/FileName:
-  Description: Use snake_case for source file names.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#snake-case-files
+    - db/schema.rb
+
+Naming/AccessorMethodName:
   Enabled: false
-  Exclude: []
-Style/GuardClause:
-  Description: Check for conditionals that can be replaced with guard clauses
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#no-nested-conditionals
-  Enabled: false
-  MinBodyLength: 1
-Style/IfUnlessModifier:
-  Description: Favor modifier if/unless usage when you have a single-line body.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#if-as-a-modifier
-  Enabled: false
-  MaxLineLength: 80
-Style/OptionHash:
-  Description: Don't use option hashes when you can use keyword arguments.
-  Enabled: false
-Style/PercentLiteralDelimiters:
-  Description: Use `%`-literal delimiters consistently
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#percent-literal-braces
-  Enabled: false
-  PreferredDelimiters:
-    "%": "()"
-    "%i": "()"
-    "%q": "()"
-    "%Q": "()"
-    "%r": "{}"
-    "%s": "()"
-    "%w": "()"
-    "%W": "()"
-    "%x": "()"
-Style/PredicateName:
-  Description: Check the names of predicate methods.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#bool-methods-qmark
-  Enabled: true
-  NamePrefix:
-  - is_
-  - has_
-  - have_
-  NamePrefixBlacklist:
-  - is_
-  Exclude:
-  - spec/**/*
-Style/RaiseArgs:
-  Description: Checks the arguments passed to raise/fail.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#exception-class-messages
-  Enabled: false
-  EnforcedStyle: exploded
-  SupportedStyles:
-  - compact
-  - exploded
-Style/SignalException:
-  Description: Checks for proper usage of fail and raise.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#fail-method
-  Enabled: false
-  EnforcedStyle: semantic
-  SupportedStyles:
-  - only_raise
-  - only_fail
-  - semantic
-Style/SingleLineBlockParams:
-  Description: Enforces the names of some block params.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#reduce-blocks
-  Enabled: false
-  Methods:
-  - reduce:
-    - a
-    - e
-  - inject:
-    - a
-    - e
-Style/SingleLineMethods:
-  Description: Avoid single-line methods.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#no-single-line-methods
-  Enabled: false
-  AllowIfMethodIsEmpty: true
-Style/StringLiterals:
-  Description: Checks if uses of quotes match the configured preference.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#consistent-string-literals
-  Enabled: true
-  EnforcedStyle: double_quotes
-  SupportedStyles:
-  - single_quotes
-  - double_quotes
-Style/StringLiteralsInInterpolation:
-  Description: Checks if uses of quotes inside expressions in interpolated strings
-    match the configured preference.
-  Enabled: true
-  EnforcedStyle: single_quotes
-  SupportedStyles:
-  - single_quotes
-  - double_quotes
-Style/TrailingComma:
-  Description: Checks for trailing comma in parameter lists and literals.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#no-trailing-array-commas
-  Enabled: false
-  EnforcedStyleForMultiline: no_comma
-  SupportedStyles:
-  - comma
-  - no_comma
-Metrics/AbcSize:
-  Description: A calculated magnitude based on number of assignments, branches, and
-    conditions.
-  Enabled: false
-  Max: 15
-Metrics/ClassLength:
-  Description: Avoid classes longer than 100 lines of code.
-  Enabled: false
-  CountComments: false
-  Max: 100
-Metrics/ModuleLength:
-  CountComments: false
-  Max: 100
-  Description: Avoid modules longer than 100 lines of code.
-  Enabled: false
-Metrics/CyclomaticComplexity:
-  Description: A complexity metric that is strongly correlated to the number of test
-    cases needed to validate a method.
-  Enabled: false
-  Max: 6
-Metrics/MethodLength:
-  Description: Avoid methods longer than 10 lines of code.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#short-methods
-  Enabled: false
-  CountComments: false
-  Max: 10
-Metrics/ParameterLists:
-  Description: Avoid parameter lists longer than three or four parameters.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#too-many-params
-  Enabled: false
-  Max: 5
-  CountKeywordArgs: true
-Metrics/PerceivedComplexity:
-  Description: A complexity metric geared towards measuring complexity for a human
-    reader.
-  Enabled: false
-  Max: 7
-Lint/AssignmentInCondition:
-  Description: Don't use assignment in conditions.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#safe-assignment-in-condition
-  Enabled: false
-  AllowSafeAssignment: true
-Style/InlineComment:
-  Description: Avoid inline comments.
-  Enabled: false
-Style/AccessorMethodName:
-  Description: Check the naming of accessor methods for get_/set_.
-  Enabled: false
+
 Style/Alias:
-  Description: Use alias_method instead of alias.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#alias-method
   Enabled: false
+
+Style/ArrayJoin:
+  Enabled: false
+
+Style/AsciiComments:
+  Enabled: false
+
+Naming/AsciiIdentifiers:
+  Enabled: false
+
+Style/Attr:
+  Enabled: false
+
+Metrics/BlockNesting:
+  Enabled: false
+
+Style/CaseEquality:
+  Enabled: false
+
+Style/CharacterLiteral:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Style/ClassVars:
+  Enabled: false
+
+Style/CollectionMethods:
+  PreferredMethods:
+    find: detect
+    reduce: inject
+    collect: map
+    find_all: select
+
+Style/ColonMethodCall:
+  Enabled: false
+
+Style/CommentAnnotation:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+Style/PreferredHashMethods:
+  Enabled: false
+
 Style/Documentation:
-  Description: Document classes and non-namespace modules.
   Enabled: false
+
+Layout/DotPosition:
+  EnforcedStyle: trailing
+
 Style/DoubleNegation:
-  Description: Checks for uses of double negation (!!).
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#no-bang-bang
   Enabled: false
+
 Style/EachWithObject:
-  Description: Prefer `each_with_object` over `inject` or `reduce`.
   Enabled: false
+
+Layout/EmptyLinesAroundBlockBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
+
 Style/EmptyLiteral:
-  Description: Prefer literals to Array.new/Hash.new/String.new.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#literal-array-hash
   Enabled: false
-Style/ModuleFunction:
-  Description: Checks for usage of `extend self` in modules.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#module-function
+
+Style/Encoding:
   Enabled: false
-Style/OneLineConditional:
-  Description: Favor the ternary operator(?:) over if/then/else/end constructs.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#ternary-operator
+
+Style/EvenOdd:
   Enabled: false
-Style/PerlBackrefs:
-  Description: Avoid Perl-style regex back references.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#no-perl-regexp-last-matchers
+
+Naming/FileName:
   Enabled: false
-Style/Send:
-  Description: Prefer `Object#__send__` or `Object#public_send` to `send`, as `send`
-    may overlap with existing methods.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#prefer-public-send
+
+Lint/FlipFlop:
   Enabled: false
-Style/SpecialGlobalVars:
-  Description: Avoid Perl-style global variables.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#no-cryptic-perlisms
+
+Style/FormatString:
   Enabled: false
-Style/VariableInterpolation:
-  Description: Don't interpolate global, instance and class variables directly in
-    strings.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#curlies-interpolate
-  Enabled: false
-Style/WhenThen:
-  Description: Use when x then ... for one-line cases.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#one-line-cases
-  Enabled: false
-Lint/EachWithObjectArgument:
-  Description: Check for immutable argument given to each_with_object.
+
+Style/FrozenStringLiteralComment:
   Enabled: true
-Lint/HandleExceptions:
-  Description: Don't suppress exception.
-  StyleGuide: https://github.com/bbatsov/ruby-style-guide#dont-hide-exceptions
+
+Style/GlobalVars:
   Enabled: false
-Lint/LiteralInCondition:
-  Description: Checks of literals used in conditions.
+
+Style/GuardClause:
   Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/IfWithSemicolon:
+  Enabled: false
+
+Style/InlineComment:
+  Enabled: false
+
+Style/Lambda:
+  Enabled: false
+
+Style/LambdaCall:
+  Enabled: false
+
+Style/LineEndConcatenation:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 125
+  Exclude:
+    - spec/**/*
+
+Metrics/MethodLength:
+  Enabled: false
+
+Style/ModuleFunction:
+  Enabled: false
+
+Style/NegatedIf:
+  Enabled: false
+
+Style/NegatedWhile:
+  Enabled: false
+
+Style/Next:
+  Enabled: false
+
+Style/NilComparison:
+  Enabled: false
+
+Style/Not:
+  Enabled: false
+
+Style/NumericLiterals:
+  Enabled: false
+
+Style/OneLineConditional:
+  Enabled: false
+
+Naming/BinaryOperatorParameterName:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  Enabled: false
+
+Style/PerlBackrefs:
+  Enabled: false
+
+Naming/PredicateName:
+  ForbiddenPrefixes:
+    - is_
+
+Style/Proc:
+  Enabled: false
+
+Style/RaiseArgs:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Style/SelfAssignment:
+  Enabled: false
+
+Style/SingleLineBlockParams:
+  Enabled: false
+
+Style/SingleLineMethods:
+  Enabled: false
+
+Style/SignalException:
+  Enabled: false
+
+Style/SpecialGlobalVars:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/VariableInterpolation:
+  Enabled: false
+
+Style/TrailingCommaInArrayLiteral:
+  Enabled: false
+
+Style/TrailingCommaInHashLiteral:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
+  Enabled: false
+
+Style/TrivialAccessors:
+  Enabled: false
+
+Style/WhenThen:
+  Enabled: false
+
+Style/WhileUntilModifier:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false
+
+# Lint
+
+Lint/AmbiguousOperator:
+  Enabled: false
+
+Lint/AmbiguousRegexpLiteral:
+  Enabled: false
+
+Lint/AssignmentInCondition:
+  Enabled: false
+
+Layout/ConditionPosition:
+  Enabled: false
+
+Lint/DeprecatedClassMethods:
+  Enabled: false
+
+Lint/ElseLayout:
+  Enabled: false
+
+Lint/SuppressedException:
+  Enabled: false
+
 Lint/LiteralInInterpolation:
-  Description: Checks for literals used in interpolation.
   Enabled: false
+
+Lint/Loop:
+  Enabled: false
+
+Lint/ParenthesesAsGroupedExpression:
+  Enabled: false
+
+Lint/RequireParentheses:
+  Enabled: false
+
+Lint/UnderscorePrefixedVariableName:
+  Enabled: false
+
+Lint/Void:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: false
+
+Layout/FirstHashElementIndentation:
+  Enabled: false
+
+Style/SymbolArray:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Style/MultilineIfModifier:
+  Enabled: false
+
+Metrics/AbcSize:
+    Description: >-
+      A calculated magnitude based on number of assignments,
+      branches, and conditions.
+    Enabled: false
+
+Style/HashSyntax:
+  Enabled: true
+  Exclude:
+    - spec/**/*
+
+Layout/SpaceAroundOperators:
+  Enabled: true
+  Exclude:
+    - spec/**/*
+
+Layout/FirstArrayElementIndentation:
+  Enabled: true
+  EnforcedStyle: consistent
+
+Bundler/OrderedGems:
+  Enabled: false
+
+Layout/SpaceBeforeBrackets: # (new in 1.7)
+  Enabled: true
+Lint/AmbiguousAssignment: # (new in 1.7)
+  Enabled: true
+Lint/DeprecatedConstants: # (new in 1.8)
+  Enabled: true
+Lint/DuplicateBranch: # (new in 1.3)
+  Enabled: true
+Lint/DuplicateRegexpCharacterClassElement: # (new in 1.1)
+  Enabled: true
+Lint/EmptyBlock: # (new in 1.1)
+  Enabled: true
+Lint/EmptyClass: # (new in 1.3)
+  Enabled: true
+Lint/LambdaWithoutLiteralBlock: # (new in 1.8)
+  Enabled: true
+Lint/NoReturnInBeginEndBlocks: # (new in 1.2)
+  Enabled: true
+Lint/RedundantDirGlobSort: # (new in 1.8)
+  Enabled: true
+Lint/ToEnumArguments: # (new in 1.1)
+  Enabled: true
+Lint/UnexpectedBlockArity: # (new in 1.5)
+  Enabled: true
+Lint/UnmodifiedReduceAccumulator: # (new in 1.1)
+  Enabled: true
+Style/ArgumentsForwarding: # (new in 1.1)
+  Enabled: true
+Style/CollectionCompact: # (new in 1.2)
+  Enabled: true
+Style/DocumentDynamicEvalDefinition: # (new in 1.1)
+  Enabled: true
+Style/EndlessMethod: # (new in 1.8)
+  Enabled: true
+Style/HashExcept: # (new in 1.7)
+  Enabled: true
+Style/NegatedIfElseCondition: # (new in 1.2)
+  Enabled: true
+Style/NilLambda: # (new in 1.3)
+  Enabled: true
+Style/RedundantArgument: # (new in 1.4)
+  Enabled: true
+Style/SwapValues: # (new in 1.1)
+  Enabled: true
+Performance/AncestorsInclude: # (new in 1.7)
+  Enabled: true
+Performance/BigDecimalWithNumericArgument: # (new in 1.7)
+  Enabled: true
+Performance/BlockGivenWithExplicitBlock: # (new in 1.9)
+  Enabled: true
+Performance/CollectionLiteralInLoop: # (new in 1.8)
+  Enabled: true
+Performance/ConstantRegexp: # (new in 1.9)
+  Enabled: true
+Performance/MethodObjectAsBlock: # (new in 1.9)
+  Enabled: true
+Performance/RedundantSortBlock: # (new in 1.7)
+  Enabled: true
+Performance/RedundantStringChars: # (new in 1.7)
+  Enabled: true
+Performance/ReverseFirst: # (new in 1.7)
+  Enabled: true
+Performance/SortReverse: # (new in 1.7)
+  Enabled: true
+Performance/Squeeze: # (new in 1.7)
+  Enabled: true
+Performance/StringInclude: # (new in 1.7)
+  Enabled: true
+Performance/Sum: # (new in 1.8)
+  Enabled: true
