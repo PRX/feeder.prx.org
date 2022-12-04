@@ -1,8 +1,8 @@
 require 'prx_access'
 
 class FeedEntryUpdateJob < ApplicationJob
-  include Announce::Subscriber
-  include PRXAccess
+  # include Announce::Subscriber
+  include PrxAccess
 
   queue_as :feeder_default
 
@@ -23,14 +23,16 @@ class FeedEntryUpdateJob < ApplicationJob
 
   def create_podcast
     return unless feed
+
     self.podcast = PodcastFeedHandler.create_from_feed!(feed).tap do |p|
       if update_sent && (!p.source_updated_at || update_sent > p.source_updated_at)
         p.update_attribute(:source_updated_at, update_sent)
       end
     end
-  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
     self.podcast = Podcast.find_by(source_url: feed.feed_url)
-    raise ex unless podcast
+    raise e unless podcast
+
     update_podcast
   end
 
@@ -66,9 +68,10 @@ class FeedEntryUpdateJob < ApplicationJob
         e.update_attribute(:source_updated_at, update_sent)
       end
     end
-  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => ex
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
     self.episode = podcast.episodes.find_by(original_guid: entry.guid, podcast_id: podcast.id) if podcast
-    raise ex unless episode
+    raise e unless episode
+
     update_episode
   end
 
@@ -79,7 +82,7 @@ class FeedEntryUpdateJob < ApplicationJob
   end
 
   def update_sent
-    @_update_sent ||= Time.parse(message[:sent_at])
+    @update_sent ||= Time.parse(message[:sent_at])
   end
 
   def load_resources(data)

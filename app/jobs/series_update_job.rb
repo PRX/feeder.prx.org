@@ -1,12 +1,12 @@
 require 'prx_access'
 
 class SeriesUpdateJob < ApplicationJob
-  include Announce::Subscriber
-  include PRXAccess
+  # include Announce::Subscriber
+  include PrxAccess
 
   queue_as :feeder_default
 
-  subscribe_to :series, [:create, :update, :delete]
+  # subscribe_to :series, [:create, :update, :delete]
 
   attr_accessor :body, :podcast, :series
 
@@ -23,7 +23,7 @@ class SeriesUpdateJob < ApplicationJob
 
   def receive_series_delete(data)
     load_resources(data)
-    podcast.destroy if podcast
+    podcast&.destroy
   end
 
   def load_resources(data)

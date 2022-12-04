@@ -1,14 +1,14 @@
 require 'prx_access'
 
 class StoryUpdateJob < ApplicationJob
-  include Announce::Subscriber
-  include PRXAccess
+  # include Announce::Subscriber
+  include PrxAccess
 
   queue_as :feeder_default
 
-  subscribe_to :story, [:create, :update, :delete, :publish, :unpublish]
+  # subscribe_to :story, [:create, :update, :delete, :publish, :unpublish]
 
-  attr_accessor :body, :episode, :podcast, :story
+  attr_accessor :body
 
   def receive_story_update(data)
     parse_message(data)
@@ -58,7 +58,8 @@ class StoryUpdateJob < ApplicationJob
   end
 
   def create_episode
-    return unless story && story.try(:series)
+    return unless story&.series
+
     self.episode = EpisodeStoryHandler.create_from_story!(story)
     self.podcast = episode.podcast if episode
   end
@@ -88,7 +89,7 @@ class StoryUpdateJob < ApplicationJob
 
   def story_auth_url(url)
     result = url
-    if result && !result.match(/authorization/)
+    if result && !result.include?('authorization')
       result = result.gsub('/stories/', '/authorization/stories/')
     end
     result
