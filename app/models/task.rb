@@ -1,8 +1,8 @@
 require 'hash_serializer'
 require 'prx_access'
 
-class Task < BaseModel
-  include PRXAccess
+class Task < ApplicationRecord
+  include PrxAccess
   include PorterParser
   include PorterEncoder
 
@@ -18,7 +18,7 @@ class Task < BaseModel
     self[:result] ||= {}
   end
 
-  belongs_to :owner, polymorphic: true
+  belongs_to :owner, polymorphic: true, optional: true
 
   before_validation { self.status ||= :started }
 
@@ -34,7 +34,7 @@ class Task < BaseModel
 
       task = where(job_id: job_id).lock(true).first
       if task && status && time && (task.logged_at.nil? || (time >= task.logged_at))
-        task.update_attributes!(status: status, logged_at: time, result: msg)
+        task.update!(status: status, logged_at: time, result: msg)
       end
     end
   end

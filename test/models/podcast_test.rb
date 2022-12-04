@@ -3,7 +3,7 @@ require 'prx_access'
 
 describe Podcast do
 
-  include PRXAccess
+  include PrxAccess
 
   let(:podcast) { create(:podcast) }
 
@@ -12,7 +12,7 @@ describe Podcast do
   end
 
   it 'has a default feed' do
-    podcast = Podcast.new.tap {|p| p.valid? }
+    podcast = Podcast.new.tap(&:valid?)
     assert podcast.default_feed.present?
     assert podcast.default_feed.private? == false
     assert podcast.default_feed.slug == nil
@@ -25,13 +25,13 @@ describe Podcast do
 
   it 'is episodic or serial' do
     assert_match(/episodic/, podcast.itunes_type)
-    podcast.update_attributes(serial_order: true)
+    podcast.update(serial_order: true)
     assert_match(/serial/, podcast.itunes_type)
   end
 
   it 'updates last build date after update' do
     Timecop.freeze
-    podcast.update_attributes(managing_editor: 'Brian Fernandez')
+    podcast.update(managing_editor: 'Brian Fernandez')
 
     assert_equal podcast.last_build_date, Time.now
 
@@ -43,7 +43,7 @@ describe Podcast do
     pub_at = podcast.reload.published_at
     refute_nil podcast.published_at
 
-    ep.update_attributes(published_at: 1.week.from_now)
+    ep.update(published_at: 1.week.from_now)
     podcast.reload
     refute_nil podcast.published_at
     refute_equal podcast.published_at, ep.published_at
@@ -55,14 +55,14 @@ describe Podcast do
 
   it 'sets the itunes block to false by default' do
     refute podcast.itunes_block
-    podcast.update_attribute(:itunes_block, true)
+    podcast.update(itunes_block: true)
     assert podcast.itunes_block
   end
 
   describe 'publishing' do
 
     it 'creates a publish job on publish' do
-      podcast.stub(:create_publish_job, "published!") do
+      podcast.stub(:create_publish_job, 'published!') do
         assert_equal podcast.publish!, 'published!'
       end
     end

@@ -1,5 +1,5 @@
-class FeedToken < BaseModel
-  belongs_to :feed, touch: true
+class FeedToken < ApplicationRecord
+  belongs_to :feed, touch: true, optional: true
 
   validates :token, presence: true, uniqueness: { scope: :feed_id }
   validates_format_of :token, with: /\A[0-9a-zA-Z_.-]+\z/

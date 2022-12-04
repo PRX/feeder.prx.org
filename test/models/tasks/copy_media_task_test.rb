@@ -23,7 +23,7 @@ describe Tasks::CopyMediaTask do
   it 'remove query string from audio url' do
     refute_nil task.media_resource
     original = task.media_resource.original_url
-    task.media_resource.original_url = original + '?remove=this'
+    task.media_resource.original_url = "#{original}?remove=this"
     assert_equal task.task_options[:source], original
   end
 
@@ -42,7 +42,7 @@ describe Tasks::CopyMediaTask do
     episode.expect(:guid, 'guid')
     episode.expect(:url, 'http://test-f.prxu.org/path/guid/audio.mp3')
     url = task.destination_url(episode)
-    assert_equal url, "s3://test-prx-feed/path/guid/audio.mp3"
+    assert_equal url, 's3://test-prx-feed/path/guid/audio.mp3'
   end
 
   it 'use original url as the source url' do
@@ -52,7 +52,7 @@ describe Tasks::CopyMediaTask do
   it 'updates status before save' do
     assert_equal task.status, 'complete'
     assert_equal task.media_resource.status, 'complete'
-    task.update_attributes(status: 'processing')
+    task.update(status: 'processing')
     assert_equal task.status, 'processing'
     assert_equal task.media_resource.status, 'processing'
   end
@@ -63,13 +63,13 @@ describe Tasks::CopyMediaTask do
 
     task.media_resource.stub(:replace_resources!, replace) do
       task.episode.podcast.stub(:publish!, publish) do
-        task.update_attributes(status: 'created')
+        task.update(status: 'created')
         replace.verify
         publish.verify
 
         replace.expect(:call, nil)
         publish.expect(:call, nil)
-        task.update_attributes(status: 'complete')
+        task.update(status: 'complete')
         replace.verify
         publish.verify
       end
@@ -79,15 +79,15 @@ describe Tasks::CopyMediaTask do
   it 'updates audio metadata on complete' do
     task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = '999000'
 
-    task.update_attributes(status: 'created')
+    task.update(status: 'created')
     refute_equal task.media_resource.bit_rate, 999
 
-    task.update_attributes(status: 'complete')
+    task.update(status: 'complete')
     assert_equal task.media_resource.bit_rate, 999
   end
 
   it 'does not throw errors when owner is missing on callback' do
     task.owner = nil
-    task.update_attributes(status: 'complete')
+    task.update(status: 'complete')
   end
 end

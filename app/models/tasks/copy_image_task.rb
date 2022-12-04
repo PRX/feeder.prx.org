@@ -2,9 +2,9 @@ class Tasks::CopyImageTask < ::Task
 
   before_save do
     if image_resource && status_changed?
-      image_resource.update_attributes!(status: status)
+      image_resource.update!(status: status)
       if complete?
-        image_resource.update_attributes!(url: image_resource.published_url)
+        image_resource.update!(url: image_resource.published_url)
         image_resource.try(:replace_resources!)
         podcast.try(:publish!)
       end
@@ -29,7 +29,7 @@ class Tasks::CopyImageTask < ::Task
 
   def image_path(image_resource)
     if !image_resource
-      logger.info("in CopyImageTask#image_path and image_resource is nil. self is #{self.inspect}")
+      logger.info("in CopyImageTask#image_path and image_resource is nil. self is #{inspect}")
     end
     URI.parse(image_resource.published_url).path
   end
