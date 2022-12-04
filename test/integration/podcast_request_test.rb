@@ -20,7 +20,7 @@ describe 'RSS feed Integration Test' do
 
   it 'returns an rss feed with correct podcast information' do
     assert_equal response.status, 200
-    assert_equal response.content_type.to_s, 'application/rss+xml'
+    assert_equal response.content_type.to_s, 'application/rss+xml; charset=utf-8'
 
     assert_equal @feed.at_css('link').text, @podcast.link
     assert_equal @feed.at_css('title').text, @podcast.title
@@ -57,7 +57,7 @@ describe 'RSS feed Integration Test' do
   end
 
   it 'displays correct episode titles' do
-    @feed.css('item').each_with_index do |node, i|
+    @feed.css('item').each_with_index do |node, _i|
       assert_match(/Episode \d+/, node.css('title').text)
       assert_equal node.at_css('enclosure').attributes['length'].value, '774059'
       assert_equal node.css('itunes|duration').text, '0:48'
@@ -66,26 +66,26 @@ describe 'RSS feed Integration Test' do
 
   it 'displays plaintext and richtext descriptions' do
     node = @feed.css('item')[0]
-    assert_equal node.css('description').text.strip[0..4], "<div>"
-    assert_equal node.css('itunes|summary').text.strip[0..6], "<a href"
+    assert_equal node.css('description').text.strip[0..4], '<div>'
+    assert_equal node.css('itunes|summary').text.strip[0..6], '<a href'
   end
 
   it 'returns limited number of episodes' do
-    @podcast.update_attributes(display_episodes_count: 1)
+    @podcast.update(display_episodes_count: 1)
     get "/podcasts/#{@podcast.id}"
     @feed = Nokogiri::XML(response.body).css('channel')
     assert_equal @feed.css('item').count, 1
   end
 
   it 'returns episodes wih minimal tags' do
-    @podcast.update_attributes(display_full_episodes_count: 1)
+    @podcast.update(display_full_episodes_count: 1)
     get "/podcasts/#{@podcast.id}"
     @feed = Nokogiri::XML(response.body).css('channel')
     assert_equal @feed.xpath('//item/itunes:author').count, 1
   end
 
   it 'defaults owner to author if owner email not set' do
-    @podcast.update_attributes(owner_email: '')
+    @podcast.update(owner_email: '')
     get "/podcasts/#{@podcast.id}"
     assert_equal @feed.at_css('itunes|owner').css('itunes|email').text, @podcast.author_email
     assert_equal @feed.at_css('itunes|owner').css('itunes|name').text, @podcast.author_name
@@ -93,19 +93,19 @@ describe 'RSS feed Integration Test' do
 
   it 'supports iTunes tags new in iOS11' do
     @episodes.each_with_index do |e, i|
-      e.update_attributes(season_number: i + 1,
-                          episode_number: i + 1,
-                          title: 'Season 2 Episode 3 Stripped-down title',
-                          clean_title: 'Stripped-down title')
+      e.update(season_number: i + 1,
+               episode_number: i + 1,
+               title: 'Season 2 Episode 3 Stripped-down title',
+               clean_title: 'Stripped-down title')
     end
-    @podcast.update_attributes(serial_order: false)
+    @podcast.update(serial_order: false)
     get "/podcasts/#{@podcast.id}"
     @feed = Nokogiri::XML(response.body).css('channel')
 
     assert_equal @feed.at_css('itunes|type').text, @podcast.itunes_type
     @feed.css('item').reverse.each_with_index do |node, ind|
       assert_match(/Season \d+ Episode \d+/, node.css('title').text)
-      assert_equal node.css('itunes|title').text, "Stripped-down title"
+      assert_equal node.css('itunes|title').text, 'Stripped-down title'
       assert_equal node.css('itunes|season').text.to_i, ind + 1
       assert_equal node.css('itunes|episode').text.to_i, ind + 1
       assert_match('full', node.css('itunes|episodeType').text)
@@ -129,7 +129,7 @@ describe 'RSS feed Integration Test' do
 
     it 'does not display episode author without email' do
       @ep = create(:episode, podcast: @podcast, author_name: 'Foo Bar')
-      @podcast.update_attributes(author_email: '')
+      @podcast.update(author_email: '')
       get "/podcasts/#{@podcast.id}"
       @feed = Nokogiri::XML(response.body).css('channel')
       assert_equal @feed.at_css('item').css('author').count, 0
