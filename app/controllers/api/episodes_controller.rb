@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 class Api::EpisodesController < Api::BaseController
   include ApiUpdatedSince
 
@@ -69,14 +67,14 @@ class Api::EpisodesController < Api::BaseController
   end
 
   def sorted(res)
-    res.order('published_at DESC, id DESC')
+    res.order(Arel.sql('published_at DESC, id DESC'))
   end
 
   def process_media
-    resource.copy_media if resource
+    resource&.copy_media
   end
 
   def publish
-    resource.podcast.publish! if resource && resource.podcast
+    resource&.podcast&.publish!
   end
 end

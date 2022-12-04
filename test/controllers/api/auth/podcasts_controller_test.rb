@@ -4,8 +4,10 @@ describe Api::Auth::PodcastsController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", published_at: nil) }
   let(:published_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'pod2') }
-  let(:other_account_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/9876", path: 'pod3') }
-  let(:deleted_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'pod4', deleted_at: Time.now) }
+  let(:other_account_podcast) { create(:podcast, prx_account_uri: '/api/v1/accounts/9876', path: 'pod3') }
+  let(:deleted_podcast) do
+    create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'pod4', deleted_at: Time.now)
+  end
   let(:token) { StubToken.new(account_id, ['feeder:read-private']) }
 
   before do
@@ -17,18 +19,18 @@ describe Api::Auth::PodcastsController do
   it 'should show the unpublished podcast' do
     refute_nil podcast.id
     assert_nil podcast.published_at
-    get(:show, { api_version: 'v1', format: 'json', id: podcast.id } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: podcast.id })
     assert_response :success
   end
 
   it 'should not show unowned podcast' do
-    get(:show, { api_version: 'v1', format: 'json', id: other_account_podcast.id } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: other_account_podcast.id })
     assert_response :not_found
   end
 
   it 'should only index account podcasts' do
     podcast && published_podcast && other_account_podcast && deleted_podcast
-    get(:index, api_version: 'v1')
+    get(:index, params: { api_version: 'v1' })
     assert_response :success
     assert_not_nil assigns[:podcasts]
     assert_includes assigns[:podcasts], podcast
@@ -42,7 +44,7 @@ describe Api::Auth::PodcastsController do
 
     it 'includes all podcasts' do
       podcast && published_podcast && other_account_podcast && deleted_podcast
-      get(:index, api_version: 'v1')
+      get(:index, params: { api_version: 'v1' })
       assert_response :success
       assert_not_nil assigns[:podcasts]
       assert_includes assigns[:podcasts], podcast

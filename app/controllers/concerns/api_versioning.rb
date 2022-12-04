@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'active_support/concern'
 
 # expects underlying model to have filename, class, and id attributes
@@ -24,7 +22,7 @@ module ApiVersioning
 
     def api_versions(*versions)
       self.understood_api_versions = versions.map(&:to_s)
-      before_filter :check_api_version
+      before_action :check_api_version
     end
   end
 end
