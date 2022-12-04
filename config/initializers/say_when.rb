@@ -26,11 +26,11 @@ begin
       job_method: 'release_episodes!'
     )
   end
-rescue ActiveRecord::StatementInvalid => ex
-  puts "Failed to init say_when job: #{ex.inspect}"
+rescue ActiveRecord::StatementInvalid => e
+  puts "Failed to init say_when job: #{e.inspect}"
 end
 
-# # for use with Shoryuken >= 3.x
-# require 'say_when/poller/concurrent_poller'
-# poller = SayWhen::Poller::ConcurrentPoller.new(5)
-# poller.start
+# for use with Shoryuken >= 3.x
+require 'say_when/poller/concurrent_poller'
+poller = SayWhen::Poller::ConcurrentPoller.new(5)
+poller.start
