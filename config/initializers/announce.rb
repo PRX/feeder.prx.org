@@ -1,1 +1,0 @@
-Announce::configure
