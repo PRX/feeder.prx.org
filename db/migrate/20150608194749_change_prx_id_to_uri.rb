@@ -1,4 +1,4 @@
-class ChangePRXIdToUri < ActiveRecord::Migration[4.2]
+class ChangePrxIdToUri < ActiveRecord::Migration[4.2]
   def change
     add_column :episodes, :prx_uri, :string
     add_index :episodes, :prx_uri, unique: true
