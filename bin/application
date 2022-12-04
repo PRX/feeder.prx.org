@@ -4,7 +4,7 @@ PROCESS=
 CMD_ARGS=
 
 ApplicationUsage () {
-  echo "usage: application [ help | web | worker | console | migrate | test | guard | sqs | rake | rails | release_episodes | -- ]"
+  echo "usage: application [ help | web | worker | console | migrate | test | guard | rake | rails | release_episodes | -- ]"
 }
 
 ApplicationParseOpts () {
@@ -14,7 +14,7 @@ ApplicationParseOpts () {
 }
 
 ApplicationUpdate () {
-  bundle exec rake -vt announce:verify_config db:create db:migrate
+  bundle exec rake -vt db:create db:migrate
 }
 
 SetWorkerDatabasePoolSize(){
@@ -52,8 +52,6 @@ ApplicationRun () {
     CMD="bundle exec guard"
   elif [ "$PROCESS" = "migrate" ] ; then
     CMD="bundle exec rake -vt db:create db:migrate"
-  elif [ "$PROCESS" = "sqs" ] ; then
-    CMD="bundle exec rake -vt sqs:create announce:configure_broker"
   elif [ "$PROCESS" = "release_episodes" ] ; then
     CMD="bundle exec rake -vt feeder:release_episodes"
   elif [ "$PROCESS" = "rails" ] ; then
