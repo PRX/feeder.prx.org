@@ -17,14 +17,17 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  # For details on connection pooling, see Rails configuration guide
-  # https://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: <%= ENV['DATABASE_POOL_SIZE'] %>
-  user: <%= ENV['DB_ENV_POSTGRES_USER'] %>
-  password: <%= ENV['DB_ENV_POSTGRES_PASSWORD'] %>
-  host: <%= ENV['DB_PORT_5432_TCP_ADDR'] %>
-  port: <%= ENV['DB_PORT_5432_TCP_PORT'] %>
-  database: <%= ENV['DB_ENV_POSTGRES_DATABASE'] %>
+  pool:     <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  database: <%= ENV.fetch("POSTGRES_DATABASE", "feeder-db") %>
+  username: <%= ENV.fetch("POSTGRES_USER", "feeder-user") %>
+  password: <%= ENV.fetch("POSTGRES_PASSWORD", "feeder-pass") %>
+  host:     <%= ENV.fetch("POSTGRES_HOST", "127.0.0.1") %>
+  port:     <%= ENV.fetch("POSTGRES_PORT", "5432") %>
+  variables:
+    # Set a default timeout of 1 hour (for e.g. TTD flights running on the slow queue)
+    # On the web side, this should be something close to the default request timeout
+    # ~ 1 minute
+    statement_timeout: <%= ENV.fetch("POSTGRES_STATEMENT_TIMEOUT", 60 * 60 * 1000) %>
 
 development:
   <<: *default

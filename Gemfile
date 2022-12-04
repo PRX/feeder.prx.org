@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.2'
+ruby '2.7.5'
 
 ##### app gems
 gem 'prx_auth-rails', github: 'PRX/prx_auth-rails', branch: 'feat/rails_7'
