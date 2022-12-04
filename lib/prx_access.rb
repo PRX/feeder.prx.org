@@ -1,6 +1,6 @@
-module PRXAccess
+module PrxAccess
 
-  class PRXHyperResource < HyperResource
+  class PrxHyperResource < HyperResource
     def incoming_body_filter(hash)
       super(hash.deep_transform_keys { |key| key.to_s.underscore })
     end
@@ -89,14 +89,14 @@ module PRXAccess
       opts[:headers]['Authorization'] = "Bearer #{token}"
     end
 
-    PRXHyperResource.new(opts)
+    PrxHyperResource.new(opts)
   end
 
   def api_resource(body, root = cms_root)
     href = body.dig(:_links, :self, :href)
     resource = api(root: root)
-    link = PRXHyperResource::Link.new(resource, href: href)
-    PRXHyperResource.new_from(body: body, resource: resource, link: link)
+    link = PrxHyperResource::Link.new(resource, href: href)
+    PrxHyperResource.new_from(body: body, resource: resource, link: link)
   end
 
   def get_account_token(account)
