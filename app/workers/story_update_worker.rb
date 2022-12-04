@@ -3,7 +3,7 @@ class StoryUpdateWorker < ApplicationWorker
                     auto_delete: true
 
   attr_accessor :body
-  attr_writer :episode, :podcast
+  attr_writer :episode, :podcast, :story
 
   def perform(_sqs_msg, event)
     announce_perform(event)
