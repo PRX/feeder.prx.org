@@ -1,4 +1,4 @@
-class CreateMediaResources < ActiveRecord::Migration
+class CreateMediaResources < ActiveRecord::Migration[4.2]
   def change
     create_table :media_resources do |t|
       t.references :episode, index: true

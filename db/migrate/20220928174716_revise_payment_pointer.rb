@@ -1,4 +1,4 @@
-class RevisePaymentPointer < ActiveRecord::Migration
+class RevisePaymentPointer < ActiveRecord::Migration[4.2]
   def change
     remove_column :feeds, :payment_pointer
     add_column :podcasts, :payment_pointer, :string

@@ -1,4 +1,4 @@
-class SimplerDates < ActiveRecord::Migration
+class SimplerDates < ActiveRecord::Migration[4.2]
   def up
     execute 'update podcasts set published_at = pub_date where pub_date is not null and pub_date > published_at'
     execute 'update podcasts set updated_at = last_build_date where last_build_date is not null and last_build_date > updated_at'

@@ -1,4 +1,4 @@
-class ChangeExplicitToString < ActiveRecord::Migration
+class ChangeExplicitToString < ActiveRecord::Migration[4.2]
   def up
     rename_column :podcasts, :explicit, :explicit_boolean
     add_column :podcasts, :explicit, :string

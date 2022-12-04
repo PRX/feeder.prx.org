@@ -1,4 +1,4 @@
-class ChangeExplicitAllowedValues < ActiveRecord::Migration
+class ChangeExplicitAllowedValues < ActiveRecord::Migration[4.2]
   NOT_EXPLICITS = [nil, '', 'no', 'clean', 'false'].freeze
   EXPLICITS = %w(yes explicit true).freeze
 
