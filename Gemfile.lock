@@ -31,6 +31,14 @@ GIT
       test_xml (>= 0.1.6)
       uber (< 0.2.0)
 
+GIT
+  remote: https://github.com/kookster/say_when.git
+  revision: 7c5030fc493d4de433c625117e40257fd613c28e
+  branch: feat/rails_7
+  specs:
+    say_when (2.1.1)
+      activesupport
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -357,8 +365,6 @@ GEM
     sanitize (6.0.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
-    say_when (2.1.1)
-      activesupport
     selenium-webdriver (4.6.1)
       childprocess (>= 0.5, < 5.0)
       rexml (~> 3.2, >= 3.2.5)
@@ -466,7 +472,7 @@ DEPENDENCIES
   rubocop
   rubocop-performance (~> 1.4)
   sanitize
-  say_when
+  say_when!
   selenium-webdriver
   shoryuken
   spring
