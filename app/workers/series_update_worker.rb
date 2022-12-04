@@ -1,14 +1,12 @@
-require 'prx_access'
-
-class SeriesUpdateJob < ApplicationJob
-  # include Announce::Subscriber
-  include PrxAccess
-
-  queue_as :feeder_default
-
-  # subscribe_to :series, [:create, :update, :delete]
+class SeriesUpdateWorker < ApplicationWorker
+  shoryuken_options queue: announce_queues(:series, [:create, :update, :delete]),
+                    auto_delete: true
 
   attr_accessor :body, :podcast, :series
+
+  def perform(_sqs_msg, event)
+    announce_perform(event)
+  end
 
   def receive_series_update(data)
     load_resources(data)
