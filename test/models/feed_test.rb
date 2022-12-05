@@ -33,191 +33,191 @@ describe Feed do
     end
   end
 
-  # describe '#valid?' do
-  #   it 'validates unique slugs' do
-  #     assert feed2.valid?
-  #     assert feed3.valid?
+  describe '#valid?' do
+    it 'validates unique slugs' do
+      assert feed2.valid?
+      assert feed3.valid?
 
-  #     feed3.slug = 'adfree'
-  #     refute feed3.valid?
+      feed3.slug = 'adfree'
+      refute feed3.valid?
 
-  #     feed3.slug = 'adfree2'
-  #     assert feed3.valid?
-  #   end
+      feed3.slug = 'adfree2'
+      assert feed3.valid?
+    end
 
-  #   it 'only allows 1 default feed per podcast' do
-  #     assert feed1.valid?
-  #     assert feed2.valid?
+    it 'only allows 1 default feed per podcast' do
+      assert feed1.valid?
+      assert feed2.valid?
 
-  #     feed2.slug = nil
-  #     assert feed2.default?
-  #     refute feed2.valid?
+      feed2.slug = nil
+      assert feed2.default?
+      refute feed2.valid?
 
-  #     feed2.podcast_id = 999999
-  #     assert feed2.default?
-  #     assert feed2.valid?
-  #   end
+      feed2.podcast_id = 999999
+      assert feed2.default?
+      assert feed2.valid?
+    end
 
-  #   it 'restricts slug characters' do
-  #     ['', 'n@-ats', 'no/slash', 'nospace ', 'no.dots'].each do |s|
-  #       feed1.slug = s
-  #       refute feed1.valid?
-  #     end
-  #   end
+    it 'restricts slug characters' do
+      ['', 'n@-ats', 'no/slash', 'nospace ', 'no.dots'].each do |s|
+        feed1.slug = s
+        refute feed1.valid?
+      end
+    end
 
-  #   it 'restricts some slugs already used in S3' do
-  #     assert feed1.valid?
+    it 'restricts some slugs already used in S3' do
+      assert feed1.valid?
 
-  #     feed1.slug = 'images'
-  #     refute feed1.valid?
+      feed1.slug = 'images'
+      refute feed1.valid?
 
-  #     feed1.slug = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
-  #     refute feed1.valid?
-  #   end
+      feed1.slug = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+      refute feed1.valid?
+    end
 
-  #   it 'restricts file name characters' do
-  #     ['', 'n@-ats', 'no/slash', 'nospace '].each do |s|
-  #       feed1.file_name = s
-  #       refute feed1.valid?
-  #     end
-  #   end
+    it 'restricts file name characters' do
+      ['', 'n@-ats', 'no/slash', 'nospace '].each do |s|
+        feed1.file_name = s
+        refute feed1.valid?
+      end
+    end
 
-  #   it 'has a default enclosure template' do
-  #     feed = Podcast.new.tap { |p| p.valid? }
-  #     assert_match(/^http/, Feed.enclosure_template_default)
-  #     assert_equal feed.enclosure_template, Feed.enclosure_template_default
-  #   end
-  # end
+    it 'has a default enclosure template' do
+      feed = Podcast.new.tap { |p| p.valid? }
+      assert_match(/^http/, Feed.enclosure_template_default)
+      assert_equal feed.enclosure_template, Feed.enclosure_template_default
+    end
+  end
 
-  # describe '#published_url' do
-  #   it 'returns default feed path' do
-  #     assert_equal feed1.published_path, "feed-rss.xml"
-  #     assert_equal feed2.published_path, "adfree/feed-rss.xml"
-  #     assert_equal feed3.published_path, "other/something"
-  #   end
+  describe '#published_url' do
+    it 'returns default feed path' do
+      assert_equal feed1.published_path, 'feed-rss.xml'
+      assert_equal feed2.published_path, 'adfree/feed-rss.xml'
+      assert_equal feed3.published_path, 'other/something'
+    end
 
-  #   it 'returns default feed urls' do
-  #     assert_equal feed1.published_url, "#{podcast.base_published_url}/feed-rss.xml"
-  #   end
+    it 'returns default feed urls' do
+      assert_equal feed1.published_url, "#{podcast.base_published_url}/feed-rss.xml"
+    end
 
-  #   it 'returns slugged feed urls' do
-  #     assert_equal feed2.published_url, "#{podcast.base_published_url}/adfree/feed-rss.xml"
-  #     assert_equal feed3.published_url, "#{podcast.base_published_url}/other/something"
-  #   end
+    it 'returns slugged feed urls' do
+      assert_equal feed2.published_url, "#{podcast.base_published_url}/adfree/feed-rss.xml"
+      assert_equal feed3.published_url, "#{podcast.base_published_url}/other/something"
+    end
 
-  #   it 'returns templated private feed urls' do
-  #     feed1.private = true
-  #     feed2.private = true
-  #     feed3.private = true
+    it 'returns templated private feed urls' do
+      feed1.private = true
+      feed2.private = true
+      feed3.private = true
 
-  #     assert_equal feed1.published_url, "#{podcast.base_private_url}/feed-rss.xml{?auth}"
-  #     assert_equal feed2.published_url, "#{podcast.base_private_url}/adfree/feed-rss.xml{?auth}"
-  #     assert_equal feed3.published_url, "#{podcast.base_private_url}/other/something{?auth}"
-  #   end
-  # end
+      assert_equal feed1.published_url, "#{podcast.base_private_url}/feed-rss.xml{?auth}"
+      assert_equal feed2.published_url, "#{podcast.base_private_url}/adfree/feed-rss.xml{?auth}"
+      assert_equal feed3.published_url, "#{podcast.base_private_url}/other/something{?auth}"
+    end
+  end
 
-  # describe '#filtered_episodes' do
+  describe '#filtered_episodes' do
 
-  #   let(:ep) { create(:episode, podcast: feed1.podcast) }
+    let(:ep) { create(:episode, podcast: feed1.podcast) }
 
-  #   it 'should include episodes based on a tag' do
-  #     feed1.update!(include_tags: ['foo'])
+    it 'should include episodes based on a tag' do
+      feed1.update!(include_tags: ['foo'])
 
-  #     assert_equal feed1.reload.filtered_episodes, []
-  #     ep.update!(categories: ['foo'])
-  #     assert_equal feed1.reload.filtered_episodes, [ep]
-  #   end
+      assert_equal feed1.reload.filtered_episodes, []
+      ep.update!(categories: ['foo'])
+      assert_equal feed1.reload.filtered_episodes, [ep]
+    end
 
-  #   it 'should exclude episodes based on a tag' do
-  #     feed1.update!(exclude_tags: ['foo'])
+    it 'should exclude episodes based on a tag' do
+      feed1.update!(exclude_tags: ['foo'])
 
-  #     ep = create(:episode, podcast: feed1.podcast)
+      ep = create(:episode, podcast: feed1.podcast)
 
-  #     # Add the episode category so we can match the feed "exclude_tags"
-  #     # Using the same tag based include scheme.
-  #     assert_equal feed1.reload.filtered_episodes, [ep]
-  #     ep.update!(categories: ['foo'])
-  #     assert_equal feed1.reload.filtered_episodes, []
-  #   end
-  # end
+      # Add the episode category so we can match the feed "exclude_tags"
+      # Using the same tag based include scheme.
+      assert_equal feed1.reload.filtered_episodes, [ep]
+      ep.update!(categories: ['foo'])
+      assert_equal feed1.reload.filtered_episodes, []
+    end
+  end
 
-  # describe "#feed_image_file" do
-  #   it 'replaces images' do
-  #     refute_nil feed1.feed_image_file
-  #     refute_nil feed1.feed_image
-  #     refute_empty feed1.feed_images
+  describe '#feed_image_file' do
+    it 'replaces images' do
+      refute_nil feed1.feed_image_file
+      refute_nil feed1.feed_image
+      refute_empty feed1.feed_images
 
-  #     feed1.feed_image_file = 'test/fixtures/transistor300.png'
-  #     feed1.save!
-  #     assert_equal feed1.reload.feed_images.count, 2
-  #     assert_equal feed1.feed_image_file.original_url, 'test/fixtures/transistor300.png'
-  #     assert_equal feed1.feed_image_file.status, 'created'
+      feed1.feed_image_file = 'test/fixtures/transistor300.png'
+      feed1.save!
+      assert_equal feed1.reload.feed_images.count, 2
+      assert_equal feed1.feed_image_file.original_url, 'test/fixtures/transistor300.png'
+      assert_equal feed1.feed_image_file.status, 'created'
 
-  #     # feed_image is still the completed one
-  #     refute_equal feed1.feed_image, feed1.feed_image_file
-  #     assert_equal feed1.feed_image.status, 'complete'
-  #   end
+      # feed_image is still the completed one
+      refute_equal feed1.feed_image, feed1.feed_image_file
+      assert_equal feed1.feed_image.status, 'complete'
+    end
 
-  #   it 'ignores existing images' do
-  #     feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
-  #     feed2.save!
-  #     assert_equal feed2.feed_images.count, 1
-  #     assert_equal feed2.feed_image_file.original_url, 'test/fixtures/transistor300.png'
-  #     assert_equal feed2.feed_image_file.status, 'created'
-  #     assert_nil feed2.reload.feed_image
+    it 'ignores existing images' do
+      feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
+      feed2.save!
+      assert_equal feed2.feed_images.count, 1
+      assert_equal feed2.feed_image_file.original_url, 'test/fixtures/transistor300.png'
+      assert_equal feed2.feed_image_file.status, 'created'
+      assert_nil feed2.reload.feed_image
 
-  #     feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
-  #     feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
-  #     feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
-  #     feed2.save!
-  #     assert_equal feed2.feed_images.count, 1
-  #   end
+      feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
+      feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
+      feed2.feed_image_file = { original_url: 'test/fixtures/transistor300.png' }
+      feed2.save!
+      assert_equal feed2.feed_images.count, 1
+    end
 
-  #   it 'deletes images' do
-  #     refute_empty feed1.feed_images
+    it 'deletes images' do
+      refute_empty feed1.feed_images
 
-  #     feed1.feed_image_file = nil
-  #     assert_empty feed1.reload.feed_images
-  #   end
-  # end
+      feed1.feed_image_file = nil
+      assert_empty feed1.reload.feed_images
+    end
+  end
 
-  # describe "#itunes_image_file" do
-  #   it 'replaces images' do
-  #     refute_nil feed1.itunes_image_file
-  #     refute_nil feed1.itunes_image
-  #     refute_empty feed1.itunes_images
+  describe '#itunes_image_file' do
+    it 'replaces images' do
+      refute_nil feed1.itunes_image_file
+      refute_nil feed1.itunes_image
+      refute_empty feed1.itunes_images
 
-  #     feed1.itunes_image_file = 'test/fixtures/transistor1400.jpg'
-  #     feed1.save!
-  #     assert_equal feed1.reload.itunes_images.count, 2
-  #     assert_equal feed1.itunes_image_file.original_url, 'test/fixtures/transistor1400.jpg'
-  #     assert_equal feed1.itunes_image_file.status, 'created'
+      feed1.itunes_image_file = 'test/fixtures/transistor1400.jpg'
+      feed1.save!
+      assert_equal feed1.reload.itunes_images.count, 2
+      assert_equal feed1.itunes_image_file.original_url, 'test/fixtures/transistor1400.jpg'
+      assert_equal feed1.itunes_image_file.status, 'created'
 
-  #     # itunes_image is still the completed one
-  #     refute_equal feed1.itunes_image, feed1.itunes_image_file
-  #     assert_equal feed1.itunes_image.status, 'complete'
-  #   end
+      # itunes_image is still the completed one
+      refute_equal feed1.itunes_image, feed1.itunes_image_file
+      assert_equal feed1.itunes_image.status, 'complete'
+    end
 
-  #   it 'ignores existing images' do
-  #     feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
-  #     feed2.save!
-  #     assert_equal feed2.itunes_images.count, 1
-  #     assert_equal feed2.itunes_image_file.original_url, 'test/fixtures/transistor1400.jpg'
-  #     assert_equal feed2.itunes_image_file.status, 'created'
-  #     assert_nil feed2.reload.itunes_image
+    it 'ignores existing images' do
+      feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      feed2.save!
+      assert_equal feed2.itunes_images.count, 1
+      assert_equal feed2.itunes_image_file.original_url, 'test/fixtures/transistor1400.jpg'
+      assert_equal feed2.itunes_image_file.status, 'created'
+      assert_nil feed2.reload.itunes_image
 
-  #     feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
-  #     feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
-  #     feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
-  #     feed2.save!
-  #     assert_equal feed2.itunes_images.count, 1
-  #   end
+      feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      feed2.itunes_image_file = { original_url: 'test/fixtures/transistor1400.jpg' }
+      feed2.save!
+      assert_equal feed2.itunes_images.count, 1
+    end
 
-  #   it 'deletes images' do
-  #     refute_empty feed1.itunes_images
+    it 'deletes images' do
+      refute_empty feed1.itunes_images
 
-  #     feed1.itunes_image_file = nil
-  #     assert_empty feed1.reload.itunes_images
-  #   end
-  # end
+      feed1.itunes_image_file = nil
+      assert_empty feed1.reload.itunes_images
+    end
+  end
 end
