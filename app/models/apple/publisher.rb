@@ -2,22 +2,24 @@
 
 module Apple
   class Publisher
-    attr_reader :feed,
+    attr_reader :subscriber_feed,
+                :source_feed,
                 :api,
                 :show
 
-    def initialize(feed)
-      @feed = feed
-      @api = Apple::Api.from_env
-      @show = Apple::Show.new(@feed)
+    def initialize(apple_credentials, subscriber_feed, source_feed)
+      @subscriber_feed = subscriber_feed
+      @source_feed = source_feed
+      @api = Apple::Api.from_apple_credentials(apple_credentials)
+      @show = Apple::Show.new(@subscriber_feed)
     end
 
     def podcast
-      feed.podcast
+      subscriber_feed.podcast
     end
 
     def episodes_to_sync
-      @episodes ||= feed.
+      @episodes ||= source_feed.
                     apple_filtered_episodes.map do |ep|
         Apple::Episode.new(show: show, feeder_episode: ep)
       end
