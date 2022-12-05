@@ -11,6 +11,7 @@ class FeedToken < BaseModel
   end
 
   def feed_published_url_with_token
-    feed.published_url + '?auth=' + token
+    # use the feed's published_url, but replace the path with the token using substitution
+    feed.published_url.sub("{?auth}", "?auth=#{token}")
   end
 end
