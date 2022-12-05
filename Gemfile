@@ -4,11 +4,11 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '2.7.5'
 
 ##### app gems
-gem 'prx_auth-rails', github: 'PRX/prx_auth-rails', branch: 'feat/rails_7'
+gem 'prx_auth-rails', '~> 3.0.1'
 gem 'prx_auth'
 
 gem 'roar-rails', github: 'PRX/roar-rails', branch: 'feat/rails_7'
-gem 'hal_api-rails', github: 'PRX/hal_api-rails', branch: 'feat/ruby_upgrade'
+gem 'hal_api-rails', '~> 1.2.0'
 
 # auth
 gem 'rack-cors'
@@ -24,7 +24,7 @@ gem 'actionpack-action_caching'
 gem 'shoryuken'
 
 # Use SayWhen for scheduling tasks
-gem 'say_when', github: 'kookster/say_when', branch: 'feat/rails_7'
+gem 'say_when', '~> 2.2.0'
 
 # Use HyperResource for handling HAL APIs
 gem 'hyperresource'

@@ -1,24 +1,4 @@
 GIT
-  remote: https://github.com/PRX/hal_api-rails.git
-  revision: ba339f3d3936ca617111c2742240d895325a514c
-  branch: feat/ruby_upgrade
-  specs:
-    hal_api-rails (1.2.0)
-      activemodel
-      activesupport
-      multi_json
-      roar-rails
-
-GIT
-  remote: https://github.com/PRX/prx_auth-rails.git
-  revision: 9a7bbbe67df78ea380ac831a80231c3de830625a
-  branch: feat/rails_7
-  specs:
-    prx_auth-rails (3.0.0)
-      actionpack
-      prx_auth (>= 1.7.0)
-
-GIT
   remote: https://github.com/PRX/roar-rails.git
   revision: bd93d7f75f2fc91fac35137dcf0c2d5783889acc
   branch: feat/rails_7
@@ -30,14 +10,6 @@ GIT
       roar (~> 1.1.0)
       test_xml (>= 0.1.6)
       uber (< 0.2.0)
-
-GIT
-  remote: https://github.com/kookster/say_when.git
-  revision: 7c5030fc493d4de433c625117e40257fd613c28e
-  branch: feat/rails_7
-  specs:
-    say_when (2.1.1)
-      activesupport
 
 GEM
   remote: https://rubygems.org/
@@ -183,6 +155,11 @@ GEM
     fuzzyurl (0.2.2)
     globalid (1.0.0)
       activesupport (>= 5.0)
+    hal_api-rails (1.2.0)
+      activemodel
+      activesupport
+      multi_json
+      roar-rails
     hashdiff (1.0.1)
     hashie (5.0.0)
     hyperresource (0.9.4)
@@ -279,6 +256,9 @@ GEM
       json (>= 1.8.1)
       json-jwt (~> 1.12.0)
       rack (>= 1.5.2)
+    prx_auth-rails (3.0.1)
+      actionpack
+      prx_auth (>= 1.7.0)
     pry (0.14.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -365,6 +345,8 @@ GEM
     sanitize (6.0.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
+    say_when (2.2.0)
+      activesupport
     selenium-webdriver (4.6.1)
       childprocess (>= 0.5, < 5.0)
       rexml (~> 3.2, >= 3.2.5)
@@ -444,7 +426,7 @@ DEPENDENCIES
   excon
   factory_bot_rails
   fastimage
-  hal_api-rails!
+  hal_api-rails (~> 1.2.0)
   hyperresource
   importmap-rails
   jbuilder
@@ -459,7 +441,7 @@ DEPENDENCIES
   paranoia
   pg (~> 1.1)
   prx_auth
-  prx_auth-rails!
+  prx_auth-rails (~> 3.0.1)
   pry
   pry-byebug
   puma (~> 5.0)
@@ -472,7 +454,7 @@ DEPENDENCIES
   rubocop
   rubocop-performance (~> 1.4)
   sanitize
-  say_when!
+  say_when (~> 2.2.0)
   selenium-webdriver
   shoryuken
   spring
