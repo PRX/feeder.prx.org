@@ -115,7 +115,7 @@ module Feeder
     end
 
     config.log_tags = [:request_id]
-    config.active_record.schema_format = :sql
+    config.active_record.schema_format = :ruby
 
   end
 end
