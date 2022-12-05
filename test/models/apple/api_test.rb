@@ -106,4 +106,15 @@ describe Apple::Api do
       end
     end
   end
+
+  describe ".from_apple_credentials" do
+    it "creates an api from apple credentials" do
+      creds = build(:apple_api_credentials)
+      api = Apple::Api.from_apple_credentials(creds)
+
+      assert_equal api.provider_id, creds.provider_id
+      assert_equal api.key_id, creds.key_id
+      assert_equal api.key, creds.key
+    end
+  end
 end

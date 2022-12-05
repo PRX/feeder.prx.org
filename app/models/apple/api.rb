@@ -19,6 +19,12 @@ module Apple
           key: apple_key_pem)
     end
 
+    def self.from_apple_credentials(apple_credentials)
+      new(provider_id: apple_credentials.provider_id,
+          key_id: apple_credentials.key_id,
+          key: apple_credentials.key)
+    end
+
     def initialize(**attributes)
       attributes = attributes.with_indifferent_access
       @provider_id = attributes[:provider_id]
