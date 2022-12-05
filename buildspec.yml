@@ -3,6 +3,7 @@ env:
   variables:
     PRX_ECR_CONFIG_PARAMETERS: "FeederEcrImageTag"
     PRX_SPIRE_ECR_PKG_PARAMETERS: RAILS_APP=/prx/stag/Spire/Dovetail-Feeder/pkg/docker-image-tag
+    PRX_CI_PRERELEASE: "true"
   parameter-store:
     DOCKERHUB_USERNAME: /prx/DOCKERHUB_USERNAME
     DOCKERHUB_PASSWORD: /prx/DOCKERHUB_PASSWORD
