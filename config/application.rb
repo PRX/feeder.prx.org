@@ -35,6 +35,8 @@ module Feeder
     config.active_job.queue_name_prefix = ENV['ANNOUNCE_RESOURCE_PREFIX'] || ENV['RAILS_ENV']
     config.active_job.queue_name_delimiter = '_'
 
+    config.cache_store = :memory_store, { size: 128.megabytes }
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
