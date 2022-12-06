@@ -30,7 +30,7 @@ gem 'say_when', '~> 2.2.0'
 gem 'hyperresource'
 
 # Use OAuth2 for client authentication and authorization
-gem 'oauth2'
+gem 'oauth2', '~> 1.4.7'
 gem 'excon'
 
 # Monitor app performance with NewRelic
@@ -139,5 +139,6 @@ group :test do
   gem 'minitest-spec-rails'
   gem 'minitest-around'
   gem 'webmock'
+  gem 'simplecov', require: false
   gem 'timecop'
 end
