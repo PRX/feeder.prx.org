@@ -28,14 +28,14 @@ class ITunesCategoryValidator < ActiveModel::Validator
     if category?(record.name)
       validate_subcategories(record)
     else
-      record.errors.add :name, :not_listed, message: "#{record.name} is not a valid iTunes category"
+      record.errors.add :name, :invalid, message: "#{record.name} is not a valid iTunes category"
     end
   end
 
   def validate_subcategories(record)
     record.subcategories.each do |subcat|
       unless subcategory?(subcat, record.name)
-        record.errors.add :subcategories, :not_listed, message: "#{subcat} is not a valid subcategory"
+        record.errors.add :subcategories, :invalid, message: "#{subcat} is not a valid subcategory"
       end
     end
   end
