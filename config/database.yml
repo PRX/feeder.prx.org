@@ -23,11 +23,6 @@ default: &default
   password: <%= ENV.fetch("POSTGRES_PASSWORD", "feeder-pass") %>
   host:     <%= ENV.fetch("POSTGRES_HOST", "127.0.0.1") %>
   port:     <%= ENV.fetch("POSTGRES_PORT", "5432") %>
-  variables:
-    # Set a default timeout of 1 hour (for e.g. TTD flights running on the slow queue)
-    # On the web side, this should be something close to the default request timeout
-    # ~ 1 minute
-    statement_timeout: <%= ENV.fetch("POSTGRES_STATEMENT_TIMEOUT", 60 * 60 * 1000) %>
 
 development:
   <<: *default
