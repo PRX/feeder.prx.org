@@ -43,7 +43,8 @@ class EpisodeStoryHandler
   def update_story_attributes
     sa = story.attributes
 
-    if versions = story.objects['prx:audio-versions']&.objects&.[]('prx:items')
+    versions = story.objects['prx:audio-versions']&.objects&.[]('prx:items')
+    if !versions.blank?
       version = versions.first
       episode.prx_audio_version_uri = version.href
       episode.audio_version = version.attributes[:label] # TODO: is this right?
