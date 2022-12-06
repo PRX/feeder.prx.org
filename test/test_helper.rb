@@ -1,3 +1,6 @@
+require 'simplecov'
+SimpleCov.start 'rails'
+
 ENV['CMS_HOST']        = 'cms.prx.org'
 ENV['FEEDER_HOST']     = 'feeder.prx.org'
 ENV['FEEDER_CDN_HOST'] = 'f.prxu.org'
@@ -8,6 +11,7 @@ ENV['PRX_HOST']        = 'www.prx.org'
 ENV['DOVETAIL_HOST']   = 'dovetail.prxu.org'
 ENV['FEEDER_STORAGE_BUCKET'] = 'test-prx-feed'
 ENV['PORTER_SNS_TOPIC'] = nil
+ENV['ANNOUNCE_RESOURCE_PREFIX'] = nil
 
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
