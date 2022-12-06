@@ -1,14 +1,12 @@
 <% prefix = Rails.configuration.active_job.queue_name_prefix %>
 ---
-aws:
-  access_key_id:     <%= ENV['AWS_ACCESS_KEY_ID'] %>
-  secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
-  region:            <%= ENV['AWS_REGION'] %>
-  account_id:        <%= ENV['AWS_ACCOUNT_ID'] %>
 # The number of allocated threads to process messages. Default 25
-concurrency:         <%= ENV['WORKER_COUNT'] || 25 %>
+concurrency: <%= ENV['WORKER_COUNT'] || 25 %>
+
 # The delay in seconds to pause a queue when it's empty. Default 0
-delay:               <%= ENV['WORKER_PAUSE'] || 30 %>
+delay: <%= ENV['WORKER_PAUSE'] || 30 %>
+
+# All the queues to listen for messages
 queues:
   - ["<%= prefix %>_feeder_default", 2]
   - ["<%= prefix %>_feeder_fixer_callback", 1]
