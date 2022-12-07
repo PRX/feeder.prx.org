@@ -4,8 +4,11 @@ require "test_helper"
 
 describe Apple::Show do
   let(:podcast) { create(:podcast) }
-  let(:feed) { create(:feed, podcast: podcast, private: false) }
-  let(:apple_show) { Apple::Show.new(feed) }
+  let(:apple_creds) { build(:apple_api_credentials) }
+  let(:apple_api) { Apple::Api.from_apple_credentials(apple_creds) }
+  let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+  let(:private_feed) { create(:feed, podcast: podcast, private: true) }
+  let(:apple_show) { Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed) }
 
   before do
     stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200").
@@ -38,9 +41,10 @@ describe Apple::Show do
 
   describe ".connect_existing" do
     it "should persist the apple id for a feed" do
-      Apple::Show.connect_existing(feed, "some_apple_id")
+      Apple::Show.connect_existing("some_apple_id", apple_api, public_feed, private_feed)
 
-      assert_equal Apple::Show.new(feed).apple_id, "some_apple_id"
+      assert_equal Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed).apple_id,
+                   "some_apple_id"
     end
   end
 
@@ -86,14 +90,16 @@ describe Apple::Show do
 
   describe "#feed_published_url" do
     before do
-      feed.podcast.feeds.update_all(private: true)
-      feed.podcast.feeds.map { |f| f.tokens.build.save! }
+      public_feed.podcast.feeds.update_all(private: true)
+      public_feed.podcast.feeds.map { |f| f.tokens.build.save! }
       apple_show.podcast.reload
+      public_feed.reload
+      private_feed.reload
     end
 
     it "returns an authed url if private" do
       assert_equal apple_show.feed_published_url,
-                   feed.podcast.published_url + "?auth=#{podcast.default_feed.tokens.first.token}"
+                   "https://p.prxu.org/jjgo/#{public_feed.slug}/feed-rss.xml?auth=" + public_feed.tokens.first.token
     end
 
     it "raises an error when there is no token" do

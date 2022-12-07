@@ -4,9 +4,19 @@ require "test_helper"
 
 describe Apple::Episode do
   let(:podcast) { create(:podcast) }
-  let(:feed) { create(:feed, podcast: podcast, private: false) }
+
+  let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+  let(:private_feed) { create(:feed, podcast: podcast, private: true) }
+
+  let(:apple_creds) { build(:apple_api_credentials) }
+  let(:apple_api) { Apple::Api.from_apple_credentials(apple_creds) }
+
   let(:episode) { create(:episode, podcast: podcast) }
-  let(:apple_show) { Apple::Show.new(feed) }
+  let(:apple_show) do
+    Apple::Show.new(api: apple_api,
+                    public_feed: public_feed,
+                    private_feed: private_feed)
+  end
   let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 
   before do

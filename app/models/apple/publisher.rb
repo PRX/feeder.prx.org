@@ -2,24 +2,26 @@
 
 module Apple
   class Publisher
-    attr_reader :subscriber_feed,
-                :source_feed,
+    attr_reader :public_feed,
+                :private_feed,
                 :api,
                 :show
 
-    def initialize(apple_credentials, subscriber_feed, source_feed)
-      @subscriber_feed = subscriber_feed
-      @source_feed = source_feed
-      @api = Apple::Api.from_apple_credentials(apple_credentials)
-      @show = Apple::Show.new(@subscriber_feed)
+    def initialize(api:, public_feed:, private_feed:)
+      @public_feed = public_feed
+      @private_feed = private_feed
+      @api = api
+      @show = Apple::Show.new(api: api,
+                              public_feed: public_feed,
+                              private_feed: private_feed)
     end
 
     def podcast
-      subscriber_feed.podcast
+      public_feed.podcast
     end
 
     def episodes_to_sync
-      @episodes ||= source_feed.
+      @episodes ||= private_feed.
                     apple_filtered_episodes.map do |ep|
         Apple::Episode.new(show: show, feeder_episode: ep)
       end
@@ -56,9 +58,9 @@ module Apple
       # update episodes as published
 
       # success
-      SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds, external_id: show.apple_id)
+      SyncLog.create!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id)
     rescue Apple::ApiError => e
-      SyncLog.create!(feeder_id: feed.id, feeder_type: :feeds)
+      SyncLog.create!(feeder_id: public_feed.id, feeder_type: :feeds)
       raise e
     end
 
