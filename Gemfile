@@ -31,6 +31,7 @@ gem 'hyperresource'
 
 # Use OAuth2 for client authentication and authorization
 gem 'oauth2', '~> 1.4.7'
+gem 'faraday', '~> 0.17.4'
 gem 'excon'
 
 # Monitor app performance with NewRelic
