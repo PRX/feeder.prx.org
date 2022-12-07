@@ -7,7 +7,7 @@ require 'uri'
 class Episode < BaseModel
   include TextSanitizer
 
-  APPLE_ADFREE_TAG = 'apple-adfree'
+  APPLE_FREEMIUM_TAG = 'apple-subscriber'
   APPLE_ONLY_TAG = 'apple-exclusive'
 
   serialize :categories, JSON
@@ -84,7 +84,7 @@ class Episode < BaseModel
   end
 
   def apple?
-    categories_include?([APPLE_ADFREE_TAG, APPLE_ONLY_TAG].freeze)
+    categories_include?([APPLE_FREEMIUM_TAG, APPLE_ONLY_TAG].freeze)
   end
 
   def apple_only?

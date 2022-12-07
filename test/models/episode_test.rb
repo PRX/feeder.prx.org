@@ -289,12 +289,12 @@ describe Episode do
 
   describe '#apple?' do
     it 'is set via a category' do
-      episode.update!(categories: [Episode::APPLE_ADFREE_TAG, Episode::APPLE_ONLY_TAG])
+      episode.update!(categories: [Episode::APPLE_FREEMIUM_TAG, Episode::APPLE_ONLY_TAG])
 
       assert_equal episode.apple?, true
       assert_equal episode.apple_only?, true
 
-      episode.update!(categories: [Episode::APPLE_ADFREE_TAG])
+      episode.update!(categories: [Episode::APPLE_FREEMIUM_TAG])
 
       assert_equal episode.apple?, true
       assert_equal episode.apple_only?, false
