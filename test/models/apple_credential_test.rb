@@ -2,26 +2,24 @@ require 'test_helper'
 
 describe AppleCredential do
   describe '#valid?' do
-    it 'requires a podcast or an account uri' do
-      p = create(:podcast)
+    it 'requires both a public and private feed' do
+      pub_f = create(:feed)
+      priv_f = create(:feed)
 
-      c1 = build(:apple_credential, podcast: p)
+      c1 = build(:apple_credential, public_feed: pub_f, private_feed: priv_f)
       assert c1.valid?
 
-      c2 = build(:apple_credential, prx_account_uri: '/some/uri')
-      assert c2.valid?
+      c2 = build(:apple_credential, public_feed: nil, private_feed: priv_f)
+      refute c2.valid?
 
-      c3 = build(:apple_credential, podcast: nil, prx_account_uri: nil)
+      c3 = build(:apple_credential, public_feed: pub_f, private_feed: nil)
       refute c3.valid?
-
-      c4 = build(:apple_credential, podcast: p, prx_account_uri: '/some/uri')
-      refute c4.valid?
-      assert_includes(c4.errors[:prx_account_uri], "can't set both account uri and podcast")
     end
 
     it 'requires apple key fields' do
-      p = create(:podcast)
-      c = build(:apple_credential, podcast: p)
+      pub = create(:feed, private: false)
+      priv = create(:feed, private: true)
+      c = build(:apple_credential, public_feed: pub, private_feed: priv)
       assert c.valid?
 
       c.apple_key_id = nil
@@ -32,19 +30,26 @@ describe AppleCredential do
       refute c.valid?
     end
 
-    it 'is unique to a podcast' do
-      p = create(:podcast)
-      c1 = create(:apple_credential, podcast: p)
-      c2 = build(:apple_credential, podcast: p)
-      assert c1.valid?
-      refute c2.valid?
-    end
+    it 'is unique to a public and private feed' do
+      f1 = create(:feed)
+      f2 = create(:feed)
+      f3 = create(:feed)
+      f4 = create(:feed)
 
-    it 'is unique to an account uri' do
-      c1 = create(:apple_credential, prx_account_uri: 't')
-      c2 = build(:apple_credential, prx_account_uri: 't')
+      c1 = create(:apple_credential, public_feed: f1, private_feed: f2)
       assert c1.valid?
+
+      c2 = build(:apple_credential, public_feed: f1, private_feed: f2)
       refute c2.valid?
+
+      c3 = build(:apple_credential, public_feed: f1, private_feed: f3)
+      assert c3.valid?
+
+      c4 = build(:apple_credential, public_feed: f4, private_feed: f2)
+      assert c4.valid?
+
+      c5 = build(:apple_credential, public_feed: f1, private_feed: f1)
+      refute c5.valid?
     end
   end
 end

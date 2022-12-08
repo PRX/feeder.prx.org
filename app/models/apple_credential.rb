@@ -1,18 +1,16 @@
-class AppleCredential < ActiveRecord::Base
-  belongs_to :podcast, -> { with_deleted }
+# frozen_string_literal: true
 
-  validates_associated :podcast, if: -> { prx_account_uri.blank? }
-  validates_presence_of :prx_account_uri, if: -> { podcast.blank? }
+class AppleCredential < ActiveRecord::Base
+  belongs_to :public_feed, -> { with_deleted }, class_name: "Feed"
+  belongs_to :private_feed, -> { with_deleted }, class_name: "Feed"
+
+  validates_presence_of :public_feed
+  validates_presence_of :private_feed
+  validates_associated :public_feed
+  validates_associated :private_feed
   validates_presence_of :apple_key_id
   validates_presence_of :apple_key_pem_b64
-  validate :podcast_and_prx_account_uri_not_both_set
-  validates :podcast_id, uniqueness: true
-  validates :prx_account_uri, uniqueness: true
-
-  def podcast_and_prx_account_uri_not_both_set
-    if podcast.present? && prx_account_uri.present?
-      errors.add(:prx_account_uri, "can't set both account uri and podcast")
-    end
-  end
-
+  validates :public_feed, uniqueness: { scope: :private_feed,
+                                        message: "can only have one credential per public and private feed" }
+  validates :public_feed, exclusion: { in: ->(apple_credential) { [apple_credential.private_feed] } }
 end
