@@ -84,8 +84,4 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-
-  # Allow staging subdomains
-  config.hosts << '.staging.prx.org'
-  config.hosts << '.staging.prx.tech'
 end
