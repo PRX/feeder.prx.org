@@ -33,6 +33,7 @@ gem 'hyperresource'
 gem 'oauth2', '~> 1.4.7'
 gem 'faraday', '~> 0.17.4'
 gem 'excon'
+gem 'net-http'
 
 # Monitor app performance with NewRelic
 gem 'newrelic_rpm'
