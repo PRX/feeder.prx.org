@@ -1,9 +1,12 @@
 # encoding: utf-8
+
 require 'hal_api/rails'
 require 'hal_api/errors'
 
 class Api::BaseController < ApplicationController
   include HalApi::Controller
+
+  skip_before_action :verify_authenticity_token
 
   def self.responder
     Api::ApiResponder
