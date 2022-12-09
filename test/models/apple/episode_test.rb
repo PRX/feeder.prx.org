@@ -29,6 +29,7 @@ describe Apple::Episode do
       { id: "123",
         attributes: {
           appleHostedAudioAssetVendorId: "456",
+          publishingState: "DRAFTING",
           guid: episode.item_guid
         } }.with_indifferent_access
     end
@@ -52,6 +53,7 @@ describe Apple::Episode do
         apple_show.stub(:get_episodes_json, apple_episode_list) do
           assert_equal apple_episode.apple_id, "123"
           assert_equal apple_episode.audio_asset_vendor_id, "456"
+          assert_equal apple_episode.drafting?, true
         end
       end
     end

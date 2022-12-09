@@ -30,19 +30,24 @@ module Apple
     end
 
     def self.update_audio_container_reference(api, episodes)
-      return if episodes.empty?
+      return [] if episodes.empty?
 
       episode_bridge_results = api.bridge_remote_and_retry!("updateEpisodes",
                                                             episodes.map(&:update_episode_audio_container_bridge_params))
       insert_sync_logs(episodes, episode_bridge_results)
     end
 
+    def self.publish(api, episodes)
+      return [] if episodes.empty?
+
+      api.bridge_remote_and_retry!("publishEpisodes",
+                                   episodes.map(&:publish_episode_bridge_params))
+    end
+
     def self.insert_sync_logs(episodes, results)
       episodes_by_item_guid = episodes.map { |ep| [ep.item_guid, ep] }.to_h
 
-      results.each do |res|
-        # we don't have the external ids loadded yet.
-        # save an api call and redo the join like in
+      results.map do |res|
         apple_id = res.dig("api_response", "val", "data", "id")
         guid = res.dig("api_response", "val", "data", "attributes", "guid")
         ep = episodes_by_item_guid.fetch(guid)
@@ -203,6 +208,32 @@ module Apple
       }
     end
 
+    def publish_episode_bridge_params
+      {
+        api_url: api.join_url("episodePublishingRequests").to_s,
+        api_parameters: publish_episode_parameters
+      }
+    end
+
+    def publish_episode_parameters
+      {
+        data: {
+          type: "episodePublishingRequests",
+          attributes: {
+            action: "PUBLISH"
+          },
+          relationships: {
+            episode: {
+              data: {
+                id: apple_id,
+                type: "episodes"
+              }
+            }
+          }
+        }
+      }
+    end
+
     def create_episode!
       self.class.create_apple_episodes([self])
 
@@ -213,6 +244,16 @@ module Apple
       resp = api.patch("episodes/" + apple_id, update_episode_data)
 
       api.unwrap_response(resp)
+    end
+
+    def drafting?
+      apple_json&.dig("attributes", "publishingState") == "DRAFTING"
+    end
+
+    def apple_upload_complete?
+      pdfs = feeder_episode.apple_podcast_delivery_files
+
+      pdfs.all?(&:present?) && pdfs.flatten.all?(&:apple_complete?)
     end
 
     def audio_asset_vendor_id

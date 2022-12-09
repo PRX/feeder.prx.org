@@ -53,9 +53,7 @@ module Apple
 
       wait_for_upload_processing
 
-      # wait for media to process
-      # link up data models
-      # update episodes as published
+      publish_drafting!
 
       # success
       SyncLog.create!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id)
@@ -96,9 +94,8 @@ module Apple
       Rails.logger.info("Updated local state for #{res.length} podcast containers.")
 
       eps = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
-      Rails.logger.info("Created remote / local state for #{res.length} podcast containers.")
-
       res = Apple::Episode.update_audio_container_reference(api, eps)
+      Rails.logger.info("Created remote / local state for #{eps.length} podcast containers.")
       Rails.logger.info("Updated remote container references for #{res.length} episodes.")
 
       res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, episodes_to_sync)
@@ -130,6 +127,13 @@ module Apple
       delivery_file_ids = upload_operation_result.map { |r| r["request_metadata"]["podcast_delivery_file_id"] }
       pdfs = ::Apple::PodcastDeliveryFile.where(id: delivery_file_ids)
       ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
+    end
+
+    def publish_drafting!
+      eps = episodes_to_sync.select { |ep| ep.drafting? && ep.apple_upload_complete? }
+
+      res = Apple::Episode.publish(api, eps)
+      Rails.logger.info("Published #{res.length} drafting episodes.")
     end
   end
 end
