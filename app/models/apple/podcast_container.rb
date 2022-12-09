@@ -45,6 +45,8 @@ module Apple
       join_on_apple_episode_id(episodes_to_create, new_containers_response).each do |ep, row|
         upsert_podcast_container(ep, row)
       end
+
+      episodes_to_create
     end
 
     def self.upsert_podcast_container(episode, row)

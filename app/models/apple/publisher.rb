@@ -91,11 +91,15 @@ module Apple
 
       Rails.logger.info("Starting podcast container sync")
 
+      # Scan and update for existing containers
       res = Apple::PodcastContainer.update_podcast_container_state(api, episodes_to_sync)
       Rails.logger.info("Updated local state for #{res.length} podcast containers.")
 
-      res = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
+      eps = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
       Rails.logger.info("Created remote / local state for #{res.length} podcast containers.")
+
+      res = Apple::Episode.update_audio_container_reference(api, eps)
+      Rails.logger.info("Updated remote container references for #{res.length} episodes.")
 
       res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, episodes_to_sync)
       Rails.logger.info("Updated remote state for #{res.length} podcast containers.")

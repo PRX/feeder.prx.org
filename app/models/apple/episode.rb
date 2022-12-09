@@ -29,6 +29,14 @@ module Apple
       insert_sync_logs(episodes, episode_bridge_results)
     end
 
+    def self.update_audio_container_reference(api, episodes)
+      return if episodes.empty?
+
+      episode_bridge_results = api.bridge_remote_and_retry!("updateEpisodes",
+                                                            episodes.map(&:update_episode_audio_container_bridge_params))
+      insert_sync_logs(episodes, episode_bridge_results)
+    end
+
     def self.insert_sync_logs(episodes, results)
       episodes_by_item_guid = episodes.map { |ep| [ep.item_guid, ep] }.to_h
 
@@ -172,6 +180,27 @@ module Apple
       data[:data][:relationships].delete(:show)
 
       data
+    end
+
+    def update_episode_audio_container_bridge_params
+      {
+        api_url: api.join_url("episodes/" + apple_id).to_s,
+        api_parameters: update_episode_audio_container_parameters
+      }
+    end
+
+    def update_episode_audio_container_parameters
+      {
+        data:
+        {
+          type: "episodes",
+          id: apple_id,
+          attributes: {
+            appleHostedAudioAssetContainerId: podcast_container.apple_id,
+            appleHostedAudioIsSubscriberOnly: true
+          }
+        }
+      }
     end
 
     def create_episode!
