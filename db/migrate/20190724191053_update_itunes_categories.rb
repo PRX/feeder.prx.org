@@ -1,4 +1,4 @@
-class UpdateITunesCategories < ActiveRecord::Migration
+class UpdateITunesCategories < ActiveRecord::Migration[4.2]
   def up
     ITunesCategory.find_each do |category|
       # 'Arts' sub 'Literature' -> 'Books'
@@ -52,7 +52,7 @@ class UpdateITunesCategories < ActiveRecord::Migration
       if category.name == 'Games & Hobbies' && category.subcategories.include?('Other Games')
         category.subcategories.delete_at(category.subcategories.index('Other Games'))
       end
-      
+
       # 'Games & Hobbbies' -> 'Leisure'
       if category.name == 'Games & Hobbies'
         category.name = 'Leisure'
@@ -88,7 +88,7 @@ class UpdateITunesCategories < ActiveRecord::Migration
       if category.name == 'Health' && category.subcategories.include?('Self-Help')
         category.subcategories.delete_at(category.subcategories.index('Self-Help'))
       end
-      
+
       # 'Health' sub 'Fitness & Nutrition' -> 'Fitness' and 'Nutrition'
       if category.name == 'Health' && category.subcategories.include?('Fitness & Nutrition')
         category.subcategories[category.subcategories.index('Fitness & Nutrition')] = 'Fitness'
@@ -99,7 +99,7 @@ class UpdateITunesCategories < ActiveRecord::Migration
       if category.name == 'Health'
         category.name = 'Health & Fitness'
       end
-      
+
       # 'News & Politics' -> 'News'
       if category.name == 'News & Politics'
         category.name = 'News'
@@ -209,6 +209,6 @@ class UpdateITunesCategories < ActiveRecord::Migration
   end
 
   def down
-    puts "No going back"
+    puts 'No going back'
   end
 end

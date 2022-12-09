@@ -1,4 +1,4 @@
-class PodcastStrToText < ActiveRecord::Migration
+class PodcastStrToText < ActiveRecord::Migration[4.2]
   def up
     change_column :podcasts, :title, :text
     change_column :podcasts, :subtitle, :text

@@ -1,6 +1,6 @@
 require 'hash_serializer'
 
-class Feed < BaseModel
+class Feed < ApplicationRecord
   DEFAULT_FILE_NAME = 'feed-rss.xml'.freeze
 
   AUDIO_MIME_TYPES = {
@@ -16,7 +16,7 @@ class Feed < BaseModel
   serialize :exclude_tags, JSON
   serialize :audio_format, HashSerializer
 
-  belongs_to :podcast, -> { with_deleted }
+  belongs_to :podcast, -> { with_deleted }, optional: true
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
 

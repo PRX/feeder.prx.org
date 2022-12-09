@@ -1,9 +1,13 @@
 # encoding: utf-8
+
 require 'hal_api/rails'
 require 'hal_api/errors'
 
 class Api::BaseController < ApplicationController
   include HalApi::Controller
+
+  # these API endpoints use PRX JWTs, not session based auth
+  skip_before_action :verify_authenticity_token
 
   def self.responder
     Api::ApiResponder
@@ -29,8 +33,6 @@ class Api::BaseController < ApplicationController
   def authorization
     Authorization.new(prx_auth_token) if prx_auth_token
   end
-
-  protect_from_forgery with: :null_session
 
   allow_params :show, [:api_version, :format, :zoom]
   allow_params :index, [:page, :per, :zoom]

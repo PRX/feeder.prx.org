@@ -1,7 +1,7 @@
 require 'episode'
 
 class EpisodeStoryHandler
-  include PRXAccess
+  include PrxAccess
 
   attr_accessor :episode, :story
 
@@ -35,15 +35,15 @@ class EpisodeStoryHandler
     self.story = story
     episode.prx_uri = Episode.story_uri(story)
 
-    update_attributes
+    update_story_attributes
     update_audio
     update_image
   end
 
-  def update_attributes
+  def update_story_attributes
     sa = story.attributes
 
-    versions = story.objects['prx:audio-versions'].objects['prx:items'] rescue []
+    versions = story.objects['prx:audio-versions']&.objects&.[]('prx:items')
     if !versions.blank?
       version = versions.first
       episode.prx_audio_version_uri = version.href
@@ -68,12 +68,16 @@ class EpisodeStoryHandler
 
     %w(season episode).each do |time|
       id = sa["#{time}_identifier"].to_i
-      episode["#{time}_number"] = id > 0 ? id : nil
+      episode["#{time}_number"] = id.positive? ? id : nil
     end
   end
 
   def update_audio
-    audio = story.objects['prx:audio'].objects['prx:items'] rescue []
+    audio = begin
+      story.objects['prx:audio'].objects['prx:items']
+    rescue StandardError
+      []
+    end
     audio.each do |a|
       next unless a.status == 'complete'
 
@@ -85,11 +89,15 @@ class EpisodeStoryHandler
       end
     end
     max_pos = audio.last.try(:position).to_i
-    episode.all_contents.where(['position > ?', max_pos]).delete_all if max_pos > 0
+    episode.all_contents.where(['position > ?', max_pos]).delete_all if max_pos.positive?
   end
 
   def update_image
-    image_url = story.objects['prx:image'].links['original'].href rescue nil
+    image_url = begin
+      story.objects['prx:image'].links['original'].href
+    rescue StandardError
+      nil
+    end
     episode.image_file = image_url
   end
 
@@ -97,19 +105,21 @@ class EpisodeStoryHandler
     update_content(Content.new, audio)
   end
 
-  def update_content(c, audio)
-    c.position = audio.attributes['position']
-    c.href = audio.links['prx:storage'].href
-    c.mime_type = audio.links['prx:storage'].type || audio.attributes['content_type']
-    c.file_size = audio.attributes['size']
-    c.duration = audio.attributes['duration']
-    c.bit_rate = audio.attributes['bit_rate']
-    c.sample_rate = audio.attributes['frequency'] * 1000 if audio.attributes['frequency']
-    c
+  def update_content(content, audio)
+    content.tap do |c|
+      c.position = audio.attributes['position']
+      c.href = audio.links['prx:storage'].href
+      c.mime_type = audio.links['prx:storage'].type || audio.attributes['content_type']
+      c.file_size = audio.attributes['size']
+      c.duration = audio.attributes['duration']
+      c.bit_rate = audio.attributes['bit_rate']
+      c.sample_rate = audio.attributes['frequency'] * 1000 if audio.attributes['frequency']
+    end
   end
 
   def get_story(account = nil)
     return nil unless episode.prx_uri
+
     api(account: account).tap { |a| a.href = episode.prx_uri }.get
   end
 end

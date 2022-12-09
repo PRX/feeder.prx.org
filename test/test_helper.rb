@@ -1,12 +1,5 @@
-ENV['RAILS_ENV'] = 'test'
-
 require 'simplecov'
 SimpleCov.start 'rails'
-
-if ENV['TRAVIS']
-  require 'coveralls'
-  Coveralls.wear!
-end
 
 ENV['CMS_HOST']        = 'cms.prx.org'
 ENV['FEEDER_HOST']     = 'feeder.prx.org'
@@ -17,31 +10,37 @@ ENV['META_HOST']       = 'meta.prx.org'
 ENV['PRX_HOST']        = 'www.prx.org'
 ENV['DOVETAIL_HOST']   = 'dovetail.prxu.org'
 ENV['FEEDER_STORAGE_BUCKET'] = 'test-prx-feed'
-ENV['PORTER_SNS_TOPIC'] = nil
+ENV['ANNOUNCE_RESOURCE_PREFIX'] = 'test'
 
-require File.expand_path("../../config/environment", __FILE__)
+ENV['RAILS_ENV'] ||= 'test'
+require_relative '../config/environment'
 require 'rails/test_help'
+
 require 'minitest/pride'
 require 'minitest/autorun'
-require 'factory_girl'
+require 'factory_bot'
 require 'webmock/minitest'
-require 'announce/testing'
-
-include Announce::Testing
-reset_announce
+# require 'announce/testing'
 
 class ActiveSupport::TestCase
-  include FactoryGirl::Syntax::Methods
+  # Run tests in parallel with specified workers
+  parallelize(workers: :number_of_processors)
+
+  # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
+  fixtures :all
+
+  # Add more helper methods to be used by all tests here...
+  include FactoryBot::Syntax::Methods
 end
 
 # MiniTest
 class MiniTest::Unit::TestCase
-  include FactoryGirl::Syntax::Methods
+  include FactoryBot::Syntax::Methods
 end
 
 # MiniTest::Spec
 class MiniTest::Spec
-  include FactoryGirl::Syntax::Methods
+  include FactoryBot::Syntax::Methods
 end
 
 def json_file(name)
@@ -49,7 +48,7 @@ def json_file(name)
 end
 
 def test_file(path)
-  File.read( File.dirname(__FILE__) + path)
+  File.read(File.dirname(__FILE__) + path)
 end
 
 def stub_requests_to_prx_cms
@@ -65,7 +64,7 @@ def stub_requests_to_prx_cms
   stub_request(:get, 'https://cms.prx.org/api/v1/audio_files/451642').
     to_return(status: 200, body: json_file(:prx_audio_file), headers: {})
 
-  stub_request(:get, "https://cms.prx.org/api/v1/story_images/203874").
+  stub_request(:get, 'https://cms.prx.org/api/v1/story_images/203874').
     to_return(status: 200, body: json_file(:prx_story_image), headers: {})
 end
 
@@ -86,9 +85,9 @@ class StubToken < PrxAuth::Rails::Token
   def initialize(res, scopes, explicit_user_id = nil)
     scopes = Array.wrap(scopes).map(&:to_s).join(' ')
     super(Rack::PrxAuth::TokenData.new({
-      "scope" => scopes,
-      "aur" => { res.to_s => scopes },
-      "sub" => explicit_user_id || (@@fake_user_id += 1)
+      'scope' => scopes,
+      'aur' => { res.to_s => scopes },
+      'sub' => explicit_user_id || (@@fake_user_id += 1)
     }))
   end
 end

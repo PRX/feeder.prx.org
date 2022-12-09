@@ -1,4 +1,4 @@
-class AddEpisodeTags < ActiveRecord::Migration
+class AddEpisodeTags < ActiveRecord::Migration[4.2]
   def up
     add_column :episodes, :season_number, :integer
     add_column :episodes, :episode_number, :integer

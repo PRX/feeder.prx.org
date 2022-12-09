@@ -2,7 +2,7 @@ require 'test_helper'
 require 'prx_access'
 
 describe PodcastFeedHandler do
-  include PRXAccess
+  include PrxAccess
 
   let (:entry) { api_resource(JSON.parse(json_file(:crier_entry)), crier_root) }
   let (:feed) { entry.objects['prx:feed'] }

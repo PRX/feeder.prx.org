@@ -1,4 +1,4 @@
-class FeedImage < BaseModel
+class FeedImage < ApplicationRecord
   include ImageFile
   include FeedImageFile
 

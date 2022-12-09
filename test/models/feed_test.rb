@@ -81,7 +81,7 @@ describe Feed do
         refute feed1.valid?
       end
     end
-    
+
     it 'has a default enclosure template' do
       feed = Podcast.new.tap { |p| p.valid? }
       assert_match(/^http/, Feed.enclosure_template_default)
@@ -91,9 +91,9 @@ describe Feed do
 
   describe '#published_url' do
     it 'returns default feed path' do
-      assert_equal feed1.published_path, "feed-rss.xml"
-      assert_equal feed2.published_path, "adfree/feed-rss.xml"
-      assert_equal feed3.published_path, "other/something"
+      assert_equal feed1.published_path, 'feed-rss.xml'
+      assert_equal feed2.published_path, 'adfree/feed-rss.xml'
+      assert_equal feed3.published_path, 'other/something'
     end
 
     it 'returns default feed urls' do
@@ -141,7 +141,7 @@ describe Feed do
     end
   end
 
-  describe "#feed_image_file" do
+  describe '#feed_image_file' do
     it 'replaces images' do
       refute_nil feed1.feed_image_file
       refute_nil feed1.feed_image
@@ -181,7 +181,7 @@ describe Feed do
     end
   end
 
-  describe "#itunes_image_file" do
+  describe '#itunes_image_file' do
     it 'replaces images' do
       refute_nil feed1.itunes_image_file
       refute_nil feed1.itunes_image

@@ -1,10 +1,9 @@
 # encoding: utf-8
 
-class CreateSayWhenTables < ActiveRecord::Migration
+class CreateSayWhenTables < ActiveRecord::Migration[4.2]
 
   def self.up
-
-    create_table :say_when_jobs, :force => true do |t|
+    create_table :say_when_jobs, force: true do |t|
       t.string    :group
       t.string    :name
 
@@ -32,7 +31,7 @@ class CreateSayWhenTables < ActiveRecord::Migration
     add_index :say_when_jobs, [:next_fire_at, :status]
     add_index :say_when_jobs, [:scheduled_type, :scheduled_id]
 
-    create_table :say_when_job_executions, :force => true do |t|
+    create_table :say_when_job_executions, force: true do |t|
       t.integer  :job_id
       t.string   :status
       t.text     :result

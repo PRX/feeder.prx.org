@@ -1,4 +1,4 @@
-class RemoveUnnecessaryFieldsFromEpisodes < ActiveRecord::Migration
+class RemoveUnnecessaryFieldsFromEpisodes < ActiveRecord::Migration[4.2]
   def change
     remove_column :episodes, :title, :string
     remove_column :episodes, :description, :text

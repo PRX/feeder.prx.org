@@ -1,4 +1,4 @@
-class DropOldImageTables < ActiveRecord::Migration
+class DropOldImageTables < ActiveRecord::Migration[4.2]
   def up
     drop_table :feed_images
     drop_table :itunes_images

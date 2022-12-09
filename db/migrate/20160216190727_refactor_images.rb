@@ -1,6 +1,5 @@
-class RefactorImages < ActiveRecord::Migration
+class RefactorImages < ActiveRecord::Migration[4.2]
   def change
-
     create_table :podcast_images do |t|
       t.references :podcast, index: true
       t.string :type

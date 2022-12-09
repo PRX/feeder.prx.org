@@ -1,4 +1,4 @@
-class AddUniquenessConstraints < ActiveRecord::Migration
+class AddUniquenessConstraints < ActiveRecord::Migration[4.2]
   def change
     add_index :podcasts, :path, unique: true
 

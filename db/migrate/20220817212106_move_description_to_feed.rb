@@ -1,4 +1,4 @@
-class MoveDescriptionToFeed < ActiveRecord::Migration
+class MoveDescriptionToFeed < ActiveRecord::Migration[4.2]
   def up
     add_column :feeds, :subtitle, :text
     add_column :feeds, :description, :text
@@ -6,6 +6,7 @@ class MoveDescriptionToFeed < ActiveRecord::Migration
 
     Podcast.with_deleted.each do |podcast|
       next unless feed = podcast.default_feed
+
       feed.subtitle = podcast.subtitle
       feed.description = podcast.description
       feed.summary = podcast.summary
@@ -24,6 +25,7 @@ class MoveDescriptionToFeed < ActiveRecord::Migration
 
     Podcast.with_deleted.each do |podcast|
       next unless feed = podcast.default_feed
+
       podcast.subtitle = feed.subtitle
       podcast.description = feed.description
       podcast.summary = feed.summary

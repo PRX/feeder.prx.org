@@ -1,4 +1,4 @@
-class CreateEpisodeImages < ActiveRecord::Migration
+class CreateEpisodeImages < ActiveRecord::Migration[4.2]
   def up
     create_table :episode_images do |t|
       t.references :episode, index: true

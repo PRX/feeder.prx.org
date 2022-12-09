@@ -1,8 +1,8 @@
 require 'pry'
 
-class MovePodcastImagesToFeed < ActiveRecord::Migration
-  TYPES = [FeedImage, ITunesImage]
-  FIELDS = %w(guid url link original_url description title format height width size status created_at updated_at)
+class MovePodcastImagesToFeed < ActiveRecord::Migration[4.2]
+  TYPES = [FeedImage, ITunesImage].freeze
+  FIELDS = %w(guid url link original_url description title format height width size status created_at updated_at).freeze
 
   def up
     TYPES.each do |klass|
@@ -26,7 +26,7 @@ class MovePodcastImagesToFeed < ActiveRecord::Migration
 
     execute <<-SQL.squish
       INSERT INTO feed_images (feed_id, #{FIELDS.join(', ')})
-      SELECT f.id as feed_id, #{FIELDS.map { |f| "i.#{f}" }.join(', ') }
+      SELECT f.id as feed_id, #{FIELDS.map { |f| "i.#{f}" }.join(', ')}
       FROM podcast_images i
       LEFT JOIN feeds f ON (i.podcast_id = f.podcast_id)
       WHERE i.type = 'FeedImage'
@@ -35,7 +35,7 @@ class MovePodcastImagesToFeed < ActiveRecord::Migration
 
     execute <<-SQL.squish
       INSERT INTO itunes_images (feed_id, #{FIELDS.join(', ')})
-      SELECT f.id as feed_id, #{FIELDS.map { |f| "i.#{f}" }.join(', ') }
+      SELECT f.id as feed_id, #{FIELDS.map { |f| "i.#{f}" }.join(', ')}
       FROM podcast_images i
       LEFT JOIN feeds f ON (i.podcast_id = f.podcast_id)
       WHERE i.type = 'ITunesImage'
@@ -67,7 +67,7 @@ class MovePodcastImagesToFeed < ActiveRecord::Migration
 
     execute <<-SQL.squish
       INSERT INTO podcast_images (podcast_id, type, #{FIELDS.join(', ')})
-      SELECT p.id as podcast_id, 'FeedImage', #{FIELDS.map { |f| "i.#{f}" }.join(', ') }
+      SELECT p.id as podcast_id, 'FeedImage', #{FIELDS.map { |f| "i.#{f}" }.join(', ')}
       FROM feed_images i
       LEFT JOIN feeds f ON (i.feed_id = f.id)
       LEFT JOIN podcasts p ON (f.podcast_id = p.id)
@@ -76,7 +76,7 @@ class MovePodcastImagesToFeed < ActiveRecord::Migration
 
     execute <<-SQL.squish
       INSERT INTO podcast_images (podcast_id, type, #{FIELDS.join(', ')})
-      SELECT p.id as podcast_id, 'ITunesImage', #{FIELDS.map { |f| "i.#{f}" }.join(', ') }
+      SELECT p.id as podcast_id, 'ITunesImage', #{FIELDS.map { |f| "i.#{f}" }.join(', ')}
       FROM itunes_images i
       LEFT JOIN feeds f ON (i.feed_id = f.id)
       LEFT JOIN podcasts p ON (f.podcast_id = p.id)
