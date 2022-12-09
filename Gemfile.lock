@@ -344,7 +344,7 @@ GEM
     sanitize (6.0.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
-    say_when (2.2.0)
+    say_when (2.2.1)
       activesupport
     selenium-webdriver (4.6.1)
       childprocess (>= 0.5, < 5.0)
@@ -458,7 +458,7 @@ DEPENDENCIES
   rubocop
   rubocop-performance (~> 1.4)
   sanitize
-  say_when (~> 2.2.0)
+  say_when (~> 2.2.1)
   selenium-webdriver
   shoryuken
   simplecov
