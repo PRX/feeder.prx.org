@@ -24,7 +24,7 @@ gem 'actionpack-action_caching'
 gem 'shoryuken'
 
 # Use SayWhen for scheduling tasks
-gem 'say_when', '~> 2.2.0'
+gem 'say_when', '~> 2.2.1'
 
 # Use HyperResource for handling HAL APIs
 gem 'hyperresource'
