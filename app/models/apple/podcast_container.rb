@@ -7,6 +7,7 @@ module Apple
     serialize :api_response, JSON
 
     has_many :podcast_deliveries
+    has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, class_name: "::Episode"
 
     def self.update_podcast_container_file_metadata(api, episodes)
