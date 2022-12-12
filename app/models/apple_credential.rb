@@ -14,6 +14,8 @@ class AppleCredential < ActiveRecord::Base
                                         message: "can only have one credential per public and private feed" }
   validates :public_feed, exclusion: { in: ->(apple_credential) { [apple_credential.private_feed] } }
 
+  attr_accessor :apple_provider_id
+
   def apple_key
     Base64.decode64(apple_key_pem_b64)
   end
