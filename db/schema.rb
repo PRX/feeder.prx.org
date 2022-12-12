@@ -11,11 +11,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20221010175311) do
+ActiveRecord::Schema.define(version: 20221116182526) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-  enable_extension "uuid-ossp"
+
+  create_table "apple_credentials", force: :cascade do |t|
+    t.integer  "public_feed_id"
+    t.integer  "private_feed_id"
+    t.string   "apple_key_id"
+    t.text     "apple_key_pem_b64"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "apple_credentials", ["private_feed_id"], name: "index_apple_credentials_on_private_feed_id", using: :btree
+  add_index "apple_credentials", ["public_feed_id"], name: "index_apple_credentials_on_public_feed_id", using: :btree
 
   create_table "apple_podcast_containers", force: :cascade do |t|
     t.integer  "episode_id"
@@ -177,12 +188,12 @@ ActiveRecord::Schema.define(version: 20221010175311) do
     t.datetime "updated_at",                                 null: false
     t.string   "enclosure_prefix"
     t.string   "enclosure_template"
-    t.text     "exclude_tags"
     t.text     "subtitle"
     t.text     "description"
     t.text     "summary"
     t.boolean  "include_podcast_value",       default: true
     t.boolean  "include_donation_url",        default: true
+    t.text     "exclude_tags"
   end
 
   add_index "feeds", ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)", using: :btree
@@ -346,6 +357,8 @@ ActiveRecord::Schema.define(version: 20221010175311) do
   add_index "tasks", ["owner_type", "owner_id"], name: "index_tasks_on_owner_type_and_owner_id", using: :btree
   add_index "tasks", ["status"], name: "index_tasks_on_status", using: :btree
 
+  add_foreign_key "apple_credentials", "feeds", column: "private_feed_id"
+  add_foreign_key "apple_credentials", "feeds", column: "public_feed_id"
   add_foreign_key "feed_images", "feeds"
   add_foreign_key "feed_tokens", "feeds"
   add_foreign_key "feeds", "podcasts"
