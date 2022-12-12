@@ -20,6 +20,8 @@ class Feed < BaseModel
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
 
+  has_many :apple_credentials, autosave: true, dependent: :destroy, foreign_key: :public_feed_id
+
   has_one :feed_image, -> { complete.order('created_at DESC') }, autosave: true, dependent: :destroy
   has_many :feed_images, -> { order('created_at DESC') }, autosave: true, dependent: :destroy
   has_one :itunes_image, -> { complete.order('created_at DESC') }, autosave: true, dependent: :destroy
@@ -103,6 +105,10 @@ class Feed < BaseModel
       published_by(episode_offset_seconds.to_i).
       to_a.
       select(&:apple?)
+  end
+
+  def publish_to_apple?
+    apple_credentials.present?
   end
 
   def filtered_episodes
