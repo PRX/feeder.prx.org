@@ -42,7 +42,7 @@ module Apple
         api.bridge_remote_and_retry!("createPodcastContainers",
                                      create_podcast_containers_bridge_params(api, episodes_to_create))
 
-      join_on_apple_episode_id(episodes_to_create, new_containers_response) do |ep, row|
+      join_on_apple_episode_id(episodes_to_create, new_containers_response).each do |ep, row|
         upsert_podcast_container(ep, row)
       end
     end
@@ -171,6 +171,10 @@ module Apple
 
     def podcast_deliveries_url
       apple_data.dig("relationships", "podcastDeliveries", "links", "related")
+    end
+
+    def podcast_container_id
+      id
     end
   end
 end

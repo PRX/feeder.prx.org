@@ -160,7 +160,7 @@ module Apple
     end
 
     def api_bridge_url
-      URI.parse(ENV.fetch("APPLE_API_BRIDGE_URL"))
+      URI.join(ENV.fetch("APPLE_API_BRIDGE_URL"), "/bridge")
     end
 
     def bridge_remote(bridge_resource, bridge_options)

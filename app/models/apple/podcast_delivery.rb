@@ -19,24 +19,36 @@ module Apple
     }
 
     def self.update_podcast_deliveries_state(api, episodes)
-      results = get_podcast_deliveries_via_containers(api, episodes.map(&:podcast_container))
+      podcast_containers = episodes.map do |ep|
+        if ep.podcast_container.present?
+          ep.podcast_container
+        else
+          Rails.logger.error("Missing podcast container for episode #{ep.feeder_id}")
+          nil
+        end
+      end.compact
 
-      join_on_apple_episode_id(episodes, results).map do |(episode, delivery_row)|
-        upsert_podcast_delivery(episode, delivery_row)
+      results = get_podcast_deliveries_via_containers(api, podcast_containers)
+
+      join_on("podcast_container_id", podcast_containers, results).map do |(podcast_container, delivery_row)|
+        upsert_podcast_delivery(podcast_container, delivery_row)
       end
     end
 
     def self.create_podcast_deliveries(api, episodes)
-      episodes_needing_delivery = episodes.reject do |episode|
-        episode.podcast_container.podcast_deliveries.present?
+      # TODO: Support multiple containers per episode
+      podcast_containers = episodes.map(&:podcast_container)
+
+      podcast_containers = podcast_containers.reject do |container|
+        container.podcast_deliveries.present?
       end
 
       response =
         api.bridge_remote_and_retry!("createPodcastDeliveries",
-                                     create_podcast_deliveries_bridge_params(api, episodes_needing_delivery))
+                                     create_podcast_deliveries_bridge_params(api, podcast_containers))
 
-      join_on_apple_episode_id(episodes, response) do |episode, row|
-        upsert_podcast_delivery(episode, row)
+      join_on("podcast_container_id", podcast_containers, response).map do |podcast_container, row|
+        upsert_podcast_delivery(podcast_container, row)
       end
     end
 
@@ -47,7 +59,9 @@ module Apple
                                      get_podcast_containers_deliveries_bridge_params(podcast_containers))
       # Rather than mangling and persisting the enumerated view of the deliveries
       # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
-      formatted_bridge_params = join_on_apple_episode_id(podcast_containers, deliveries_response).map do |(pc, row)|
+      formatted_bridge_params = join_on("podcast_container_id",
+                                        podcast_containers,
+                                        deliveries_response).map do |(pc, row)|
         get_urls_for_container_podcast_deliveries(api, row).map do |url|
           get_podcast_containers_deliveries_bridge_param(pc.apple_episode_id, pc.id, url)
         end
@@ -59,25 +73,25 @@ module Apple
                                    formatted_bridge_params)
     end
 
-    def self.upsert_podcast_delivery(episode, row)
+    def self.upsert_podcast_delivery(podcast_container, row)
       external_id = row.dig("api_response", "val", "data", "id")
       delivery_status = row.dig("api_response", "val", "data", "attributes", "status")
 
       pd =
-        if delivery = where(episode_id: episode.feeder_id,
+        if delivery = where(episode_id: podcast_container.episode.id,
                             external_id: external_id,
-                            podcast_container: episode.podcast_container).first
+                            podcast_container: podcast_container).first
 
-          Rails.logger.info("Updating local podcast delivery w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+          Rails.logger.info("Updating local podcast delivery w/ Apple id #{external_id} for episode #{podcast_container.episode.id}")
           delivery.update(api_response: row, updated_at: Time.now.utc)
 
           delivery
         else
-          Rails.logger.info("Creating local podcast delivery w/ Apple id #{external_id} for episode #{episode.feeder_id}")
-          Apple::PodcastDelivery.create!(episode_id: episode.feeder_id,
+          Rails.logger.info("Creating local podcast delivery w/ Apple id #{external_id} for episode #{podcast_container.episode.id}")
+          Apple::PodcastDelivery.create!(episode_id: podcast_container.episode.id,
                                          external_id: external_id,
                                          status: delivery_status,
-                                         podcast_container: episode.podcast_container,
+                                         podcast_container: podcast_container,
                                          api_response: row)
         end
 
@@ -86,17 +100,17 @@ module Apple
       pd
     end
 
-    def self.create_podcast_deliveries_bridge_params(api, episodes_to_sync)
-      episodes_to_sync.map do |episode|
+    def self.create_podcast_deliveries_bridge_params(api, podcast_containers)
+      podcast_containers.map do |container|
         {
-          apple_episode_id: episode.apple_id,
+          request_metadata: { podcast_container_id: container.id },
           api_url: api.join_url("podcastDeliveries").to_s,
-          api_parameters: podcast_delivery_create_parameters(episode)
+          api_parameters: podcast_delivery_create_parameters(container)
         }
       end
     end
 
-    def self.podcast_delivery_create_parameters(episode)
+    def self.podcast_delivery_create_parameters(podcast_container)
       {
         data: {
           type: "podcastDeliveries",
@@ -104,7 +118,7 @@ module Apple
             podcastContainer: {
               data: {
                 type: "podcastContainers",
-                id: episode.podcast_container.external_id
+                id: podcast_container.external_id
               }
             }
           }

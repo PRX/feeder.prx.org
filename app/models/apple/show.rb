@@ -30,7 +30,7 @@ module Apple
 
     def reload
       # flush memoized attrs
-      @get_episodes = nil
+      @get_episodes_json = nil
     end
 
     def podcast

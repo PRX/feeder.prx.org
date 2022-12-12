@@ -11,9 +11,11 @@ module Apple
       end
 
       def self.join_on(id_attribute_key, resources, results)
+        raise 'Resource missing join attribute' if resources.any? { |r| !r.respond_to?(id_attribute_key) }
         resources_by_id = resources.map { |resource| [resource.send(id_attribute_key), resource] }.to_h
 
         results.map do |row|
+          raise 'request_metadata is missing' unless row["request_metadata"].present?
           resource = resources_by_id.fetch(row["request_metadata"][id_attribute_key])
           [resource, row]
         end
