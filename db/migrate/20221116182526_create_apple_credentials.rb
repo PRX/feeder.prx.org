@@ -5,6 +5,7 @@ class CreateAppleCredentials < ActiveRecord::Migration
       create_table :apple_credentials do |t|
       t.references :public_feed, index: true
       t.references :private_feed, index: true
+      t,string :provider_id
       t.string :apple_key_id
       t.text :apple_key_pem_b64
       t.timestamps
