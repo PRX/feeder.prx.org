@@ -1,8 +1,8 @@
-require 'test_helper'
+require "test_helper"
 
 describe AppleCredential do
-  describe '#valid?' do
-    it 'requires both a public and private feed' do
+  describe "#valid?" do
+    it "requires both a public and private feed" do
       pub_f = create(:feed)
       priv_f = create(:feed)
 
@@ -16,7 +16,7 @@ describe AppleCredential do
       refute c3.valid?
     end
 
-    it 'requires apple key fields' do
+    it "requires apple key fields" do
       pub = create(:feed, private: false)
       priv = create(:feed, private: true)
       c = build(:apple_credential, public_feed: pub, private_feed: priv)
@@ -30,7 +30,7 @@ describe AppleCredential do
       refute c.valid?
     end
 
-    it 'is unique to a public and private feed' do
+    it "is unique to a public and private feed" do
       f1 = create(:feed)
       f2 = create(:feed)
       f3 = create(:feed)
@@ -50,6 +50,13 @@ describe AppleCredential do
 
       c5 = build(:apple_credential, public_feed: f1, private_feed: f1)
       refute c5.valid?
+    end
+  end
+
+  describe "apple_key" do
+    it "base64 decodes the apple key" do
+      c = AppleCredential.new(apple_key_pem_b64: Base64.encode64("hello"))
+      assert_equal c.apple_key, "hello"
     end
   end
 end

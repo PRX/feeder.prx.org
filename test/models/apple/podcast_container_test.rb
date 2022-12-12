@@ -6,7 +6,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   let(:podcast) { create(:podcast) }
   let(:episode) { create(:episode, podcast: podcast) }
 
-  let(:apple_creds) { build(:apple_api_credentials) }
+  let(:apple_creds) { build(:apple_credential) }
   let(:apple_api) { Apple::Api.from_apple_credentials(apple_creds) }
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
   let(:private_feed) { create(:feed, podcast: podcast, private: true) }

@@ -13,4 +13,8 @@ class AppleCredential < ActiveRecord::Base
   validates :public_feed, uniqueness: { scope: :private_feed,
                                         message: "can only have one credential per public and private feed" }
   validates :public_feed, exclusion: { in: ->(apple_credential) { [apple_credential.private_feed] } }
+
+  def apple_key
+    Base64.decode64(apple_key_pem_b64)
+  end
 end

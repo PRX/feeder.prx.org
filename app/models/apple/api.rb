@@ -20,9 +20,9 @@ module Apple
     end
 
     def self.from_apple_credentials(apple_credentials)
-      new(provider_id: apple_credentials.provider_id,
-          key_id: apple_credentials.key_id,
-          key: apple_credentials.key)
+      new(provider_id: apple_credentials.apple_provider_id,
+          key_id: apple_credentials.apple_key_id,
+          key: apple_credentials.apple_key)
     end
 
     def initialize(**attributes)
