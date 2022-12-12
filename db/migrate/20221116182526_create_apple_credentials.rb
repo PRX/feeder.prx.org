@@ -1,16 +1,12 @@
+# frozen_string_literal: true
+
 class CreateAppleCredentials < ActiveRecord::Migration
   def change
-
-    
-    create_table :apple_credentials do |t|
-
+      create_table :apple_credentials do |t|
       t.references :public_feed, index: true
       t.references :private_feed, index: true
-
-
       t.string :apple_key_id
       t.text :apple_key_pem_b64
-
       t.timestamps
     end
 

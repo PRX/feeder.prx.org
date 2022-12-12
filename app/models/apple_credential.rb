@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class AppleCredential < ActiveRecord::Base
-  belongs_to :public_feed, -> { with_deleted }, class_name: "Feed"
-  belongs_to :private_feed, -> { with_deleted }, class_name: "Feed"
+  belongs_to :public_feed, class_name: "Feed"
+  belongs_to :private_feed, class_name: "Feed"
 
   validates_presence_of :public_feed
   validates_presence_of :private_feed
