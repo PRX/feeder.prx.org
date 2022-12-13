@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 describe Apple::Publisher do
   let(:podcast) { create(:podcast) }
@@ -14,21 +14,21 @@ describe Apple::Publisher do
   end
 
   before do
-    stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200").
+    stub_request(:get, 'https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200').
       to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
 
     public_feed.exclude_tags = [Episode::APPLE_FREEMIUM_TAG, Episode::APPLE_ONLY_TAG]
     public_feed.save!
   end
 
-  describe ".initialize" do
-    it "should build a publisher with the correct feeds" do
+  describe '.initialize' do
+    it 'should build a publisher with the correct feeds' do
       assert_equal apple_publisher.public_feed, public_feed
       assert_equal apple_publisher.private_feed, private_feed
     end
   end
 
-  describe "#episodes_to_sync" do
+  describe '#episodes_to_sync' do
     let(:episode) { create(:episode, podcast: podcast) }
 
     before do
@@ -36,7 +36,7 @@ describe Apple::Publisher do
       episode.save!
     end
 
-    it "should return the episodes to sync" do
+    it 'should return the episodes to sync' do
       assert_equal apple_publisher.episodes_to_sync.map(&:feeder_id), [episode.id]
 
       # derived from the underlying feeds

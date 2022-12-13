@@ -1,8 +1,8 @@
-require "test_helper"
+require 'test_helper'
 
 describe AppleCredential do
-  describe "#valid?" do
-    it "requires both a public and private feed" do
+  describe '#valid?' do
+    it 'requires both a public and private feed' do
       pub_f = create(:feed)
       priv_f = create(:feed)
 
@@ -16,7 +16,7 @@ describe AppleCredential do
       refute c3.valid?
     end
 
-    it "requires apple key fields" do
+    it 'requires apple key fields' do
       skip 'Needs validation for presence of apple_provider_id, apple_key_id and apple_key_pem_b64'
       pub = create(:feed, private: false)
       priv = create(:feed, private: true)
@@ -26,12 +26,12 @@ describe AppleCredential do
       c.apple_key_id = nil
       refute c.valid?
 
-      c.apple_key_id = "pears are better"
+      c.apple_key_id = 'pears are better'
       c.apple_key_pem_b64 = nil
       refute c.valid?
     end
 
-    it "is unique to a public and private feed" do
+    it 'is unique to a public and private feed' do
       f1 = create(:feed)
       f2 = create(:feed)
       f3 = create(:feed)
@@ -54,10 +54,10 @@ describe AppleCredential do
     end
   end
 
-  describe "apple_key" do
-    it "base64 decodes the apple key" do
-      c = AppleCredential.new(apple_key_pem_b64: Base64.encode64("hello"))
-      assert_equal c.apple_key, "hello"
+  describe 'apple_key' do
+    it 'base64 decodes the apple key' do
+      c = AppleCredential.new(apple_key_pem_b64: Base64.encode64('hello'))
+      assert_equal c.apple_key, 'hello'
     end
   end
 end
