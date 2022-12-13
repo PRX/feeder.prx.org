@@ -2,7 +2,7 @@
 
 class CreateAppleCredentials < ActiveRecord::Migration
   def change
-      create_table :apple_credentials do |t|
+    create_table :apple_credentials do |t|
       t.references :public_feed, index: true
       t.references :private_feed, index: true
       t.string :apple_provider_id
