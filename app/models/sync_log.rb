@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class SyncLog < BaseModel
+class SyncLog < ApplicationRecord
   self.inheritance_column = nil
 
   scope :complete, -> { where("sync_completed_at IS NOT NULL AND external_id IS NOT NULL") }

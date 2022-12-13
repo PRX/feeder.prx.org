@@ -97,6 +97,10 @@ class Feed < ApplicationRecord
     (tags & cats).length > 0
   end
 
+  def normalize_category(cat)
+    cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip
+  end
+
   def use_exclude_tags?
     !exclude_tags.nil?
   end
