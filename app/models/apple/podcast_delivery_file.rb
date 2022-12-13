@@ -93,9 +93,6 @@ module Apple
     end
 
     def self.update_podcast_delivery_files_state(api, episodes)
-      # Fetch the podcast delivery files from the delivery side of the api
-      podcast_containers = episodes.map(&:podcast_container)
-
       # Assume that the delivery remote/local state is synced at this point
       podcast_deliveries =
         episodes.
