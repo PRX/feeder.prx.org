@@ -45,7 +45,7 @@ module Apple
     end
 
     def jwt_headers
-      { kid: key_id }
+      { kid: key_id, typ: 'JWT' }
     end
 
     def jwt
