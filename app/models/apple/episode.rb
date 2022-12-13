@@ -248,7 +248,7 @@ module Apple
     def apple_upload_complete?
       pdfs = feeder_episode.apple_podcast_delivery_files
 
-      pdfs.all?(&:present?) && pdfs.flatten.all?(&:apple_complete?)
+      pdfs.all?(&:present?) && pdfs.to_a.flatten.all?(&:apple_complete?)
     end
 
     def audio_asset_vendor_id
