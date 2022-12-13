@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "uri"
+require 'uri'
 
 module Apple
   class UploadOperation
@@ -20,7 +20,7 @@ module Apple
           df.upload_operations.map(&:upload_operation_patch_parameters)
         end.flatten
 
-      res = api.bridge_remote("executeUploadOperations", operation_bridge_params)
+      res = api.bridge_remote('executeUploadOperations', operation_bridge_params)
 
       api.unwrap_response(res)
     end

@@ -21,8 +21,8 @@ module Apple
     end
 
     def episodes_to_sync
-      @episodes ||= private_feed.
-                    apple_filtered_episodes.map do |ep|
+      @episodes_to_sync ||= private_feed.
+                            apple_filtered_episodes.map do |ep|
         Apple::Episode.new(show: show, feeder_episode: ep)
       end
     end
@@ -40,7 +40,7 @@ module Apple
 
     def publish!
       show.sync!
-      raise "Missing Show!" unless show.apple_id.present?
+      raise 'Missing Show!' unless show.apple_id.present?
 
       # only create if needed
       sync_episodes!
@@ -69,7 +69,7 @@ module Apple
     end
 
     def sync_episodes!
-      Rails.logger.info("Starting podcast episode sync")
+      Rails.logger.info('Starting podcast episode sync')
 
       create_apple_episodes = episodes_to_sync.select(&:apple_new?)
       Rails.logger.info("Created remote / local state for #{create_apple_episodes.length} episodes.")
@@ -87,7 +87,7 @@ module Apple
       # Apple RSS scaping means we don't need containers for freemium episode images
       # But we do need asset containers for apple-only (non-rss) images
 
-      Rails.logger.info("Starting podcast container sync")
+      Rails.logger.info('Starting podcast container sync')
 
       # Scan and update for existing containers
       res = Apple::PodcastContainer.update_podcast_container_state(api, episodes_to_sync)
@@ -103,7 +103,7 @@ module Apple
     end
 
     def sync_podcast_deliveries!
-      Rails.logger.info("Starting podcast deliveries sync")
+      Rails.logger.info('Starting podcast deliveries sync')
 
       res = Apple::PodcastDelivery.update_podcast_deliveries_state(api, episodes_to_sync)
       Rails.logger.info("Updated local state for #{res.length} podcast deliveries.")
@@ -113,7 +113,7 @@ module Apple
     end
 
     def sync_podcast_delivery_files!
-      Rails.logger.info("Starting podcast delivery files sync")
+      Rails.logger.info('Starting podcast delivery files sync')
 
       res = Apple::PodcastDeliveryFile.update_podcast_delivery_files_state(api, episodes_to_sync)
       Rails.logger.info("Updated local state for #{res.length} delivery files.")
@@ -124,7 +124,7 @@ module Apple
 
     def execute_upload_operations!
       upload_operation_result = Apple::UploadOperation.execute_upload_operations(api, episodes_to_sync)
-      delivery_file_ids = upload_operation_result.map { |r| r["request_metadata"]["podcast_delivery_file_id"] }
+      delivery_file_ids = upload_operation_result.map { |r| r['request_metadata']['podcast_delivery_file_id'] }
       pdfs = ::Apple::PodcastDeliveryFile.where(id: delivery_file_ids)
       ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
     end

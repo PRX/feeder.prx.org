@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "uri"
-require "net/http"
-require "base64"
+require 'uri'
+require 'net/http'
+require 'base64'
 
 module Apple
   class Api
@@ -12,10 +12,10 @@ module Apple
     attr_accessor :provider_id, :key_id, :key
 
     def self.from_env
-      apple_key_pem = Base64.decode64(ENV["APPLE_KEY_PEM_B64"])
+      apple_key_pem = Base64.decode64(ENV['APPLE_KEY_PEM_B64'])
 
-      new(provider_id: ENV["APPLE_PROVIDER_ID"],
-          key_id: ENV["APPLE_KEY_ID"],
+      new(provider_id: ENV['APPLE_PROVIDER_ID'],
+          key_id: ENV['APPLE_KEY_ID'],
           key: apple_key_pem)
     end
 
@@ -41,7 +41,7 @@ module Apple
 
       { iss: provider_id,
         exp: now.to_i + (60 * 15),
-        aud: "podcastsconnect-v1" }
+        aud: 'podcastsconnect-v1' }
     end
 
     def jwt_headers
@@ -49,20 +49,20 @@ module Apple
     end
 
     def jwt
-      JWT.encode(jwt_payload, ec_key, "ES256", jwt_headers)
+      JWT.encode(jwt_payload, ec_key, 'ES256', jwt_headers)
     end
 
     def api_base
-      "https://api.podcastsconnect.apple.com/v1/"
+      'https://api.podcastsconnect.apple.com/v1/'
     end
 
     def list_shows
-      get("shows")
+      get('shows')
     end
 
     def set_headers(req)
-      req["Authorization"] = "Bearer #{jwt}"
-      req["Content-Type"] = "application/json"
+      req['Authorization'] = "Bearer #{jwt}"
+      req['Content-Type'] = 'application/json'
 
       req
     end
@@ -76,9 +76,9 @@ module Apple
 
         resp = get_uri(uri)
         json = unwrap_response(resp)
-        res << json["data"]
+        res << json['data']
 
-        next_uri = json["links"]["next"]
+        next_uri = json['links']['next']
 
         uri =
           if next_uri
@@ -125,15 +125,15 @@ module Apple
     end
 
     def countries_and_regions
-      json = unwrap_response(get("countriesAndRegions?limit=200"))
-      json["data"].map { |h| h.slice("type", "id") }
+      json = unwrap_response(get('countriesAndRegions?limit=200'))
+      json['data'].map { |h| h.slice('type', 'id') }
     end
 
     def check_row(row_operation)
       return true unless row_operation.instance_of?(Hash)
 
-      if row_operation.key?("api_response") && row_operation.dig("api_response", "err")
-        raise row_operation.dig("api_response", "val").to_json
+      if row_operation.key?('api_response') && row_operation.dig('api_response', 'err')
+        raise row_operation.dig('api_response', 'val').to_json
       end
 
       true
@@ -154,10 +154,10 @@ module Apple
 
       parsed = JSON.parse(resp.body)
 
-      raise "Expected an array response" unless parsed.instance_of?(Array)
+      raise 'Expected an array response' unless parsed.instance_of?(Array)
 
       (oks, errs) = %w(ok err).map do |key|
-        parsed.select { |row_operation| row_operation["api_response"][key] == true }
+        parsed.select { |row_operation| row_operation['api_response'][key] == true }
       end
 
       (fixed_errs, remaining_errors) = yield(errs)
@@ -166,7 +166,7 @@ module Apple
     end
 
     def api_bridge_url
-      URI.join(ENV.fetch("APPLE_API_BRIDGE_URL"), "/bridge")
+      URI.join(ENV.fetch('APPLE_API_BRIDGE_URL'), '/bridge')
     end
 
     def bridge_remote(bridge_resource, bridge_options)
@@ -210,7 +210,7 @@ module Apple
       req = set_headers(req)
 
       # test if the apple_bridge_url is https
-      use_ssl = api_bridge_url.scheme == "https"
+      use_ssl = api_bridge_url.scheme == 'https'
 
       Net::HTTP.start(uri.hostname, uri.port, use_ssl: use_ssl, read_timeout: 10.minutes) do |http|
         http.request(req)
@@ -227,7 +227,7 @@ module Apple
 
       # Slice off the api response and retry the row operation
       formatted_error_operations_for_retry = row_operation_errs.map do |r|
-        r.slice("request_metadata", "api_parameters", "api_url")
+        r.slice('request_metadata', 'api_parameters', 'api_url')
       end
 
       # Working *only* on the row_operation_errs here in the call to `bridge_remote``

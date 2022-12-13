@@ -49,22 +49,22 @@ module Apple
     end
 
     def category_data
-      podcast.itunes_categories.map { |c| { id: 1511, type: "categories", attributes: { name: c.name } } }
-      [{ "type" => "categories", "id" => "1301" }]
+      podcast.itunes_categories.map { |c| { id: 1511, type: 'categories', attributes: { name: c.name } } }
+      [{ 'type' => 'categories', 'id' => '1301' }]
     end
 
     def show_data
       {
         data: {
-          type: "shows",
+          type: 'shows',
           relationships: {
             allowedCountriesAndRegions: { data: api.countries_and_regions }
           },
           attributes: {
-            kind: "RSS",
+            kind: 'RSS',
             rssUrl: feed_published_url,
-            releaseFrequency: "OPTOUT",
-            thirdPartyRights: "HAS_RIGHTS_TO_THIRD_PARTY_CONTENT"
+            releaseFrequency: 'OPTOUT',
+            thirdPartyRights: 'HAS_RIGHTS_TO_THIRD_PARTY_CONTENT'
           }
         }
       }
@@ -94,14 +94,14 @@ module Apple
       SyncLog.create!(feeder_id: public_feed.id,
                       feeder_type: :feeds,
                       sync_completed_at: Time.now.utc,
-                      external_id: apple_json["data"]["id"])
+                      external_id: apple_json['data']['id'])
     rescue Apple::ApiError => e
       puts e
       SyncLog.create!(feeder_id: public_feed.id, feeder_type: :feeds)
     end
 
     def create_show!
-      resp = api.post("shows", show_data)
+      resp = api.post('shows', show_data)
 
       api.unwrap_response(resp)
     end
@@ -109,7 +109,7 @@ module Apple
     def update_show!(sync)
       show_data_with_id = show_data
       show_data_with_id[:data][:id] = sync.external_id
-      resp = api.patch("shows/" + sync.external_id, show_data_with_id)
+      resp = api.patch("shows/#{sync.external_id}", show_data_with_id)
 
       api.unwrap_response(resp)
     end
@@ -123,13 +123,13 @@ module Apple
     end
 
     def get_show
-      raise "Missing apple show id" unless apple_id.present?
+      raise 'Missing apple show id' unless apple_id.present?
 
       self.class.get_show(api, apple_id)
     end
 
     def get_episodes_json
-      raise "Missing apple show id" unless apple_id.present?
+      raise 'Missing apple show id' unless apple_id.present?
 
       @get_episodes_json ||=
         begin
