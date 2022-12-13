@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 20221116182526) do
   create_table "apple_credentials", force: :cascade do |t|
     t.integer  "public_feed_id"
     t.integer  "private_feed_id"
+    t.string   "apple_provider_id"
     t.string   "apple_key_id"
     t.text     "apple_key_pem_b64"
     t.datetime "created_at"
