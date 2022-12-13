@@ -13,7 +13,7 @@ module ApiUpdatedSince
 
   def resources_base
     if updated_since?
-      super.where('updated_at >= ?', updated_since).order('updated_at asc')
+      super.where('updated_at >= ?', updated_since).order(updated_at: :asc)
     else
       super
     end
@@ -25,7 +25,7 @@ module ApiUpdatedSince
 
   def updated_since
     DateTime.parse(params[:since])
-  rescue
+  rescue StandardError
     nil
   end
 end

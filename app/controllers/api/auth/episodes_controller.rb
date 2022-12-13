@@ -26,10 +26,10 @@ class Api::Auth::EpisodesController < Api::EpisodesController
   end
 
   def sorted(res)
-    res.order('COALESCE(published_at, released_at) DESC NULLS LAST, id DESC')
+    res.order(Arel.sql('COALESCE(published_at, released_at) DESC NULLS LAST, id DESC'))
   end
 
   def resources_base
-    @episodes ||= super.merge(authorization.token_auth_episodes)
+    @resources_base ||= super.merge(authorization.token_auth_episodes)
   end
 end

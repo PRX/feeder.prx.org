@@ -1,6 +1,6 @@
 require 'hash_serializer'
 
-class Feed < BaseModel
+class Feed < ApplicationRecord
   DEFAULT_FILE_NAME = 'feed-rss.xml'.freeze
 
   AUDIO_MIME_TYPES = {
@@ -16,7 +16,7 @@ class Feed < BaseModel
   serialize :exclude_tags, JSON
   serialize :audio_format, HashSerializer
 
-  belongs_to :podcast, -> { with_deleted }
+  belongs_to :podcast, -> { with_deleted }, optional: true
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
 
@@ -91,8 +91,10 @@ class Feed < BaseModel
     include_in_feed
   end
 
-  def use_include_tags?
-    !include_tags.nil?
+  def episode_categories_include?(ep, match_tags)
+    tags = match_tags.map { |cat| normalize_category(cat) }
+    cats = (ep || []).categories.map { |cat| normalize_category(cat) }
+    (tags & cats).length > 0
   end
 
   def use_exclude_tags?
@@ -111,18 +113,26 @@ class Feed < BaseModel
     apple_credentials.present?
   end
 
+  def use_include_tags?
+    !include_tags.blank?
+  end
+
+  def use_exclude_tags?
+    !exclude_tags.blank?
+  end
+
   def filtered_episodes
     eps = podcast.episodes.published_by(episode_offset_seconds.to_i)
 
     eps =
       if use_include_tags?
-        eps.select { |ep| include_tags.nil? || ep.categories_include?(include_tags) }
+        eps.select { |ep| episode_categories_include?(ep, include_tags) }
       else
         eps
       end
 
     if use_exclude_tags?
-      eps.reject { |ep| ep.categories_include?(exclude_tags) }
+      eps.reject { |ep| episode_categories_include?(ep, exclude_tags) }
     else
       eps
     end

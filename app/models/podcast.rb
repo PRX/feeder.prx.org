@@ -1,4 +1,6 @@
-class Podcast < BaseModel
+require 'text_sanitizer'
+
+class Podcast < ApplicationRecord
   FEED_GETTERS = %i(subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image)
   FEED_SETTERS = %i(subtitle= description= summary= url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template= feed_image= itunes_image=)
 

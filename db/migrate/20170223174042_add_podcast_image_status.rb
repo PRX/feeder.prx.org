@@ -1,4 +1,4 @@
-class AddPodcastImageStatus < ActiveRecord::Migration
+class AddPodcastImageStatus < ActiveRecord::Migration[4.2]
   def up
     add_column :podcast_images, :status, :integer
     add_column :podcast_images, :created_at, :datetime

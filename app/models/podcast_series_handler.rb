@@ -1,5 +1,5 @@
 class PodcastSeriesHandler
-  include PRXAccess
+  include PrxAccess
 
   attr_accessor :podcast, :default_feed, :series
 
@@ -33,11 +33,11 @@ class PodcastSeriesHandler
     podcast.prx_uri = series.links['self'].href
     podcast.prx_account_uri = series.links['account'].href
 
-    update_attributes
+    update_series_attributes
     update_images
   end
 
-  def update_attributes
+  def update_series_attributes
     sa = series.attributes
     updated = Time.parse(sa[:updated_at]) if sa[:updated_at]
     if updated && (podcast.source_updated_at.nil? || updated > podcast.source_updated_at)

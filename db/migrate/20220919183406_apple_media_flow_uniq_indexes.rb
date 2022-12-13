@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AppleMediaFlowUniqIndexes < ActiveRecord::Migration
+class AppleMediaFlowUniqIndexes < ActiveRecord::Migration[7.0]
   def change
     add_index :apple_podcast_containers, :external_id, unique: true
 

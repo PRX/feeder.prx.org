@@ -1,4 +1,4 @@
-class ChangeImageTables < ActiveRecord::Migration
+class ChangeImageTables < ActiveRecord::Migration[4.2]
   def change
     drop_table :images do |t|
     end

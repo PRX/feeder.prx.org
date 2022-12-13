@@ -2,16 +2,11 @@ require 'test_helper'
 
 describe PublishFeedJob do
 
-  let(:episode) { create(:episode, prx_uri: "/api/v1/stories/87683") }
+  let(:episode) { create(:episode, prx_uri: '/api/v1/stories/87683') }
   let(:podcast) { episode.podcast }
   let(:feed) { create(:feed, podcast: podcast, slug: 'adfree') }
 
   let(:job) { PublishFeedJob.new }
-
-  it 'gets an aws client' do
-    refute_nil job.client
-    assert_instance_of Aws::S3::Client, job.client
-  end
 
   it 'knows the right bucket to write to' do
     assert_equal job.feeder_storage_bucket, 'test-prx-feed'

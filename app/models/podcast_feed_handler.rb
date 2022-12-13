@@ -1,7 +1,7 @@
 class PodcastFeedHandler
   FEED_ATTRS = %w( complete copyright description explicit keywords language
-    subtitle summary title update_frequency update_period
-    author managing_editor new_feed_url owners ).freeze
+                   subtitle summary title update_frequency update_period
+                   author managing_editor new_feed_url owners ).freeze
 
   attr_accessor :podcast, :default_feed, :feed
 
@@ -30,16 +30,16 @@ class PodcastFeedHandler
 
   def update_from_feed(feed)
     self.feed = feed
-    update_attributes
+    update_feed_attributes
     update_images
     update_categories
   end
 
-  def update_attributes
+  def update_feed_attributes
     fa = feed.attributes.with_indifferent_access
     podcast.attributes = fa.slice(*FEED_ATTRS).with_indifferent_access
 
-    {feed_url: :source_url, url: :link}.each do |k,v|
+    {feed_url: :source_url, url: :link}.each do |k, v|
       podcast.send("#{v}=", fa[k.to_s])
     end
 
@@ -56,9 +56,9 @@ class PodcastFeedHandler
     itunes_cats = {}
     cats = []
     feed.categories.each do |cat|
-      if ITunesCategoryValidator.is_category?(cat)
+      if ITunesCategoryValidator.category?(cat)
         itunes_cats[cat] ||= []
-      elsif parent_cat = ITunesCategoryValidator.is_subcategory?(cat)
+      elsif parent_cat = ITunesCategoryValidator.subcategory?(cat)
         itunes_cats[parent_cat] ||= []
         itunes_cats[parent_cat] << cat
       else
@@ -70,14 +70,14 @@ class PodcastFeedHandler
     podcast.itunes_categories.each do |icat|
       if itunes_cats.key?(icat.name)
         subs = itunes_cats.delete(icat.name).sort.uniq
-        icat.update_attributes!(subcategories: subs)
+        icat.update!(subcategories: subs)
       else
         icat.destroy!
       end
     end
 
     # create missing itunes_categories
-    itunes_cats.keys.each do |cat|
+    itunes_cats.each_key do |cat|
       subs = itunes_cats[cat].sort.uniq
       podcast.itunes_categories.build(name: cat, subcategories: subs)
     end

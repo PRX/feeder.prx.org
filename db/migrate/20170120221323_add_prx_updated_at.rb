@@ -1,4 +1,4 @@
-class AddPRXUpdatedAt < ActiveRecord::Migration
+class AddPrxUpdatedAt < ActiveRecord::Migration[4.2]
   def up
     add_column :podcasts, :source_updated_at, :datetime
     execute 'UPDATE podcasts SET source_updated_at = updated_at'

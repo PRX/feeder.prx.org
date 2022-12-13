@@ -2,7 +2,7 @@ require 'test_helper'
 require 'prx_access'
 
 describe PodcastSeriesHandler do
-  include PRXAccess
+  include PrxAccess
 
   let(:podcast) { create(:podcast) }
 
@@ -12,9 +12,9 @@ describe PodcastSeriesHandler do
     msg = json_file(:prx_series)
     body = JSON.parse(msg)
     href = body.dig(:_links, :self, :href)
-    resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
-    link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
-    PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
+    resource = PrxAccess::PrxHyperResource.new(root: 'https://cms.prx.org/api/vi/')
+    link = PrxAccess::PrxHyperResource::Link.new(resource, href: href)
+    PrxAccess::PrxHyperResource.new_from(body: body, resource: resource, link: link)
   end
 
   before {

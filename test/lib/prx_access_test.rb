@@ -1,13 +1,13 @@
 require 'prx_access'
 
-class PRXAccessTest
-  include PRXAccess
+class PrxAccessTest
+  include PrxAccess
 end
 
-describe PRXAccess do
-  let(:prx_access) { PRXAccessTest.new }
+describe PrxAccess do
+  let(:prx_access) { PrxAccessTest.new }
   let(:crier_entry) { JSON.parse(json_file(:crier_entry)) }
-  let(:resource) { PRXAccess::PRXHyperResource.new }
+  let(:resource) { PrxAccess::PrxHyperResource.new }
 
   it 'returns an api' do
     refute_nil prx_access.api

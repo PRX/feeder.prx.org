@@ -1,22 +1,18 @@
 source 'https://rubygems.org'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 4.2.11.3'
-gem 'rails-html-sanitizer', '~> 1.4.3'
+ruby '2.7.5'
 
-# JWS
-gem 'prx_auth-rails', '~> 1.2.0'
+##### app gems
+gem 'prx_auth-rails', '~> 3.0.1'
+gem 'prx_auth'
 
-# TODO merge this into PRX auth rails
-gem 'jwt'
-
-# Controller
-gem 'responders'
-gem 'hal_api-rails', '~> 0.3.7'
+gem 'roar-rails', github: 'PRX/roar-rails', branch: 'feat/rails_7'
+gem 'hal_api-rails', '~> 1.2.0'
 
 # auth
-gem 'rack-cors', require: 'rack/cors'
-gem 'pundit'
+gem 'rack-cors'
+gem 'pundit', '~> 2.0.0'
 
 # paging
 gem 'kaminari'
@@ -24,41 +20,20 @@ gem 'kaminari'
 # caching
 gem 'actionpack-action_caching'
 
-
-## View
-# json handling
-gem 'roar'
-gem 'roar-rails'
-# gem 'oj'
-# gem 'oj_mimic_json'
-
 # Use Shoryuken for processing SQS jobs
 gem 'shoryuken'
-# Use Announce for event subscriptions
-gem 'announce', '~> 0.3.0'
 
-gem 'say_when', '~> 2.0'
-
-# Load local environment variables with dotenv
-gem 'dotenv-rails'
-
-
-# Use Postresql as the database for Active Record
-gem 'pg'
-
-# Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.0'
-# bundle exec rake doc:rails generates the API under doc/api.
-gem 'sdoc', '~> 0.4.0', group: :doc
-
-gem 'rake'
+# Use SayWhen for scheduling tasks
+gem 'say_when', '~> 2.2.1'
 
 # Use HyperResource for handling HAL APIs
 gem 'hyperresource'
 
 # Use OAuth2 for client authentication and authorization
-gem 'oauth2'
+gem 'oauth2', '~> 1.4.7'
+gem 'faraday', '~> 0.17.4'
 gem 'excon'
+gem 'net-http'
 
 # Monitor app performance with NewRelic
 gem 'newrelic_rpm'
@@ -78,69 +53,94 @@ gem 'addressable'
 # for validating media:restriction codes
 gem 'countries'
 
-gem 'aws-sdk'
+gem 'aws-sdk-sns'
+gem 'aws-sdk-sqs'
+gem 'aws-sdk-s3'
+
+gem 'ougai'
+gem 'ougai-formatters-customizable'
+gem 'lograge'
+gem 'amazing_print'
+
+#####
+
+# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
+gem 'rails', '~> 7.0.0'
+
+# The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
+gem 'sprockets-rails'
+
+# Use postgresql as the database for Active Record
+gem 'pg', '~> 1.1'
+
+# Use the Puma web server [https://github.com/puma/puma]
+gem 'puma', '~> 5.0'
+
+# Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
+gem 'importmap-rails'
+
+# Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
+gem 'turbo-rails'
+
+# Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
+gem 'stimulus-rails'
+
+# Build JSON APIs with ease [https://github.com/rails/jbuilder]
+gem 'jbuilder'
+
+# Use Redis adapter to run Action Cable in production
+gem 'redis', '~> 4.0'
+
+# Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
+# gem "kredis"
+
+# Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
+# gem "bcrypt", "~> 3.1.7"
+
+# # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+# gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
+
+# Reduces boot times through caching; required in config/boot.rb
+gem 'bootsnap', require: false
+
+# Use Sass to process CSS
+# gem "sassc-rails"
+
+# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
+# gem "image_processing", "~> 1.2"
 
 group :development, :test do
-  # Pry is an IRB alternative and runtime developer console
-  gem 'pry-rails'
+  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+  gem 'debug', platforms: %i[mri mingw x64_mingw]
+  gem 'dotenv-rails', '~> 2.0'
+  gem 'pry'
   gem 'pry-byebug'
-
-  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
-
-  # Use JSON Web Token for signing and encrypting
-  gem 'json-jwt'
+  gem 'rubocop'
+  gem 'rubocop-performance', '~> 1.4'
 end
 
 group :development do
-  # Use Capistrano for deployment
-  # gem 'capistrano-rails', '~> 1.1.0'
-  # Add NewRelic support to Capistrano deployments
-  # gem 'capistrano-newrelic'
+  # Use console on exceptions pages [https://github.com/rails/web-console]
+  gem 'web-console'
 
-  # HighLine is a higher level command-line oriented interface
-  gem 'highline'
+  # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
+  # gem "rack-mini-profiler"
 
-  # Guard handles events on file system modifications
-  gem 'guard'
-  # Automatically run your tests with Minitest framework
-  gem 'guard-minitest'
-  # Automatically install/update your gem bundle when needed
-  gem 'guard-bundler'
-
-  gem 'm'
+  # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
+  gem "spring"
 end
 
 group :test do
-  # Add rspec behaviour to minitest
+  # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
+  gem 'capybara'
+  gem 'selenium-webdriver'
+  gem 'webdrivers'
+
+  gem 'rails-controller-testing'
+  gem 'factory_bot_rails'
   gem 'minitest-spec-rails'
   gem 'minitest-around'
-
-  # factory_girl provides a DSL for defining and using factories
-  gem 'factory_girl_rails'
-
-  # SimpleCov is a code coverage analysis tool for Ruby
-  gem 'simplecov', require: false
-
-  # Coveralls is a service that tracks test coverage
-  gem 'coveralls', require: false
-
-  # Use Nokogiri for XML and HTML parsing
-  gem 'nokogiri', '>= 1.10.4'
-
-  # WebMock allows stubbing HTTP requests
   gem 'webmock'
-
-  # Making it dead simple to test time-dependent code
+  gem 'simplecov', require: false
   gem 'timecop'
-
-  gem 'rubocop', require: false
-end
-
-group :development, :staging, :production do
-  # Include 'rails_12factor' gem so all logs go to stdout, etc.
-  gem 'rails_12factor'
-
-  # Use puma as the HTTP server
-  gem 'puma'
 end

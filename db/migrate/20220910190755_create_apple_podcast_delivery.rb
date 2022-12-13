@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateApplePodcastDelivery < ActiveRecord::Migration
+class CreateApplePodcastDelivery < ActiveRecord::Migration[7.0]
   def change
     create_table :apple_podcast_deliveries do |t|
       t.integer :episode_id

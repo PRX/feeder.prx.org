@@ -1,4 +1,4 @@
-class AddEpisodeTemplate < ActiveRecord::Migration
+class AddEpisodeTemplate < ActiveRecord::Migration[4.2]
   def change
     add_column :episodes, :prx_audio_version_uri, :string
     add_column :episodes, :audio_version, :string

@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :apple_credential do
     apple_key_id { "some_key_id" }
     apple_provider_id { SecureRandom.uuid }

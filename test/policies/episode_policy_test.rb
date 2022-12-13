@@ -1,11 +1,11 @@
 require 'test_helper'
 
 describe EpisodePolicy do
-  let(:account_id) { 123 }
-  let(:podcast) { build_stubbed(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}")}
-  let(:episode) { build_stubbed(:episode, podcast: podcast)}
+  let(:podcast) { create(:podcast, path: 'policytest') }
+  let(:episode) { create(:episode, podcast: podcast) }
+  let(:account_id) { podcast.prx_account_uri.split('/').last.to_i }
 
-  def token(scopes, set_account_id=account_id)
+  def token(scopes, set_account_id = account_id)
     StubToken.new(set_account_id, scopes)
   end
 
@@ -46,7 +46,8 @@ describe EpisodePolicy do
     let (:draft_token) { token('feeder:episode-draft') }
 
     it 'allows creating a new draft epsiode' do
-      episode = build(:episode, published_at: nil, podcast: build(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}"))
+      episode = build(:episode, published_at: nil,
+                                podcast: build(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}"))
       assert EpisodePolicy.new(draft_token, episode).create?
     end
 
@@ -64,7 +65,8 @@ describe EpisodePolicy do
     end
 
     it 'does not allow editing a published episode (even to make it a draft)' do
-      episode = create(:episode, published_at: 5.days.from_now, podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}"))
+      episode = create(:episode, published_at: 5.days.from_now,
+                                 podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}"))
 
       episode.published_at = nil
       refute EpisodePolicy.new(draft_token, episode).update?
@@ -77,7 +79,8 @@ describe EpisodePolicy do
     end
 
     it 'does not allow deleting a non-draft episode' do
-      episode = create(:episode, published_at: 25.years.ago, podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}"))
+      episode = create(:episode, published_at: 25.years.ago,
+                                 podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}"))
 
       refute EpisodePolicy.new(draft_token, episode).destroy?
     end

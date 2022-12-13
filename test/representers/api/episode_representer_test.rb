@@ -6,8 +6,8 @@ describe Api::EpisodeRepresenter do
   let(:json) { JSON.parse(representer.to_json) }
 
   it 'includes basic properties' do
-    assert_match(%r{\/api\/v1\/stories\/}, json['prxUri'])
-    assert_match(%r{<a href="\/tina">Tina<\/a>}, json['summary'])
+    assert_match(%r{/api/v1/stories/}, json['prxUri'])
+    assert_match(%r{<a href="/tina">Tina</a>}, json['summary'])
   end
 
   it 'includes clean title, season, episode, and ep type info' do
@@ -29,7 +29,7 @@ describe Api::EpisodeRepresenter do
   end
 
   it 'indicates if the episode media is not ready' do
-    episode.enclosure.update_attributes(status: 'error')
+    episode.enclosure.update(status: 'error')
     assert_equal json['isFeedReady'], false
   end
 

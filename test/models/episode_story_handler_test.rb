@@ -2,7 +2,7 @@ require 'test_helper'
 require 'prx_access'
 
 describe EpisodeStoryHandler do
-  include PRXAccess
+  include PrxAccess
 
   let(:episode) { create(:episode) }
 
@@ -10,9 +10,9 @@ describe EpisodeStoryHandler do
     msg = json_file(:prx_story_all)
     body = JSON.parse(msg)
     href = body.dig(:_links, :self, :href)
-    resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
-    link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
-    PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
+    resource = PrxAccess::PrxHyperResource.new(root: 'https://cms.prx.org/api/vi/')
+    link = PrxAccess::PrxHyperResource::Link.new(resource, href: href)
+    PrxAccess::PrxHyperResource.new_from(body: body, resource: resource, link: link)
   end
 
   before {
@@ -48,18 +48,18 @@ describe EpisodeStoryHandler do
       msg = json_file(:prx_story_zero_identifiers)
       body = JSON.parse(msg)
       href = body.dig(:_links, :self, :href)
-      resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
-      link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
-      PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
+      resource = PrxAccess::PrxHyperResource.new(root: 'https://cms.prx.org/api/vi/')
+      link = PrxAccess::PrxHyperResource::Link.new(resource, href: href)
+      PrxAccess::PrxHyperResource.new_from(body: body, resource: resource, link: link)
     end
 
     let(:invalid_identifiers_story) do
       msg = json_file(:prx_story_invalid_identifiers)
       body = JSON.parse(msg)
       href = body.dig(:_links, :self, :href)
-      resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
-      link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
-      PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
+      resource = PrxAccess::PrxHyperResource.new(root: 'https://cms.prx.org/api/vi/')
+      link = PrxAccess::PrxHyperResource::Link.new(resource, href: href)
+      PrxAccess::PrxHyperResource.new_from(body: body, resource: resource, link: link)
     end
 
     it 'sets episode and season numbers from identifiers' do

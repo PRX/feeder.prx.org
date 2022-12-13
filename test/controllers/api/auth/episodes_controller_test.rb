@@ -3,9 +3,15 @@ require 'test_helper'
 describe Api::Auth::EpisodesController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
-  let(:member_token) { StubToken.new(account_id, ['member feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft']) }
+  let(:member_token) do
+    StubToken.new(account_id,
+                  ['member feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft'])
+  end
   let(:limited_token) { StubToken.new(account_id, ['member feeder:read-private']) }
-  let(:admin_token) { StubToken.new(account_id, ['admin feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft']) }
+  let(:admin_token) do
+    StubToken.new(account_id,
+                  ['admin feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft'])
+  end
   let(:episode) { create(:episode, podcast: podcast) }
 
   let(:different_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'diff') }
@@ -34,25 +40,25 @@ describe Api::Auth::EpisodesController do
   it 'should show the unpublished episode' do
     refute_nil episode_unpublished.id
     assert_nil episode_unpublished.published_at
-    get(:show, { api_version: 'v1', format: 'json', id: episode_unpublished.guid } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode_unpublished.guid })
     assert_response :success
   end
 
   it 'should show' do
     refute_nil episode.id
-    get(:show, { api_version: 'v1', format: 'json', id: episode.guid } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode.guid })
     assert_response :success
   end
 
   it 'should return resource gone for deleted resource' do
     refute_nil episode_deleted.id
-    get(:show, { api_version: 'v1', format: 'json', id: episode_deleted.guid } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode_deleted.guid })
     assert_response 410
   end
 
   it 'should return not found for unknown resource' do
     refute_nil episode_deleted.id
-    get(:show, { api_version: 'v1', format: 'json', id: 'thisismadeup' } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: 'thisismadeup' })
     assert_response 404
   end
 
@@ -61,10 +67,10 @@ describe Api::Auth::EpisodesController do
     refute_nil episode_unpublished.id
     assert_nil episode_unpublished.published_at
     refute_nil episode_deleted.id
-    get(:index, { api_version: 'v1', format: 'json' } )
+    get(:index, params: { api_version: 'v1', format: 'json' })
     assert_response :success
     list = JSON.parse(response.body)
-    ids = list.dig('_embedded', 'prx:items').map{ |i| i['id'] }
+    ids = list.dig('_embedded', 'prx:items').map { |i| i['id'] }
     assert_includes ids, episode.guid
     assert_includes ids, episode_unpublished.guid
     refute_includes ids, episode_deleted.guid
@@ -74,7 +80,7 @@ describe Api::Auth::EpisodesController do
     refute_nil episode.id
     refute_nil podcast.id
     refute_nil episode_different_podcast.id
-    get(:index, { api_version: 'v1', format: 'json', podcast_id: podcast.id } )
+    get(:index, params: { api_version: 'v1', format: 'json', podcast_id: podcast.id })
     assert_response :success
     body = JSON.parse(response.body)
     ids = body['_embedded']['prx:items'].map { |s| s['id'] }
@@ -97,7 +103,8 @@ describe Api::Auth::EpisodesController do
     it 'can create a new episode' do
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
-          post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
+          post(:create, body: episode_hash.to_json, as: :json,
+                        params: { api_version: 'v1', format: 'json', podcast_id: podcast.id })
         end
       end
       assert_response :success
@@ -118,7 +125,8 @@ describe Api::Auth::EpisodesController do
 
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
-          put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+          put(:update, body: update_hash.to_json, as: :json,
+                       params: { id: episode_update.guid, api_version: 'v1', format: 'json' })
         end
       end
       assert_response :success
@@ -128,7 +136,8 @@ describe Api::Auth::EpisodesController do
       # updating with a dupe should insert it, with the same position value of 1
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
-          put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+          put(:update, body: update_hash.to_json, as: :json,
+                       params: { id: episode_update.guid, api_version: 'v1', format: 'json' })
         end
       end
       assert_response :success
@@ -146,17 +155,18 @@ describe Api::Auth::EpisodesController do
 
     it 'includes all episodes (including unpublished and deleted)' do
       guids = [episode_unpublished.guid, other_unpublished_episode.guid, episode_deleted.guid]
-      get(:index, { api_version: 'v1', format: 'json' } )
+      get(:index, params: { api_version: 'v1', format: 'json' })
       assert_response :success
       list = JSON.parse(response.body)
-      ids = list.dig('_embedded', 'prx:items').map{ |i| i['id'] }
+      ids = list.dig('_embedded', 'prx:items').map { |i| i['id'] }
       guids.each do |guid|
         assert_includes ids, guid
       end
     end
 
     it 'cannot create a new episode' do
-      post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
+      post(:create, body: episode_hash.to_json, as: :json,
+                    params: { api_version: 'v1', format: 'json', podcast_id: podcast.id })
       assert_response :unauthorized
     end
 

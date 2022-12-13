@@ -1,6 +1,6 @@
 require 'test_helper'
 
-describe SeriesUpdateJob do
+describe SeriesUpdateWorker do
 
   let(:podcast) { create(:podcast, prx_uri: '/api/v1/series/20829') }
 
@@ -19,34 +19,34 @@ describe SeriesUpdateJob do
     }
   end
 
-  let(:job) do
-    SeriesUpdateJob.new
+  let(:worker) do
+    SeriesUpdateWorker.new
   end
 
-  before {
+  before do
     stub_request(:get, profile).
       to_return(status: 200, body: test_file('/fixtures/transistor1400.jpg'), headers: {})
-  }
+  end
 
   before do
     stub_request(:get, 'https://cms.prx.org/api/v1/series/149726').
-      with(headers: { 'Accept' => 'application/json' } ).
+      with(headers: { 'Accept' => 'application/json' }).
       to_return(status: 200, body: body, headers: {})
   end
 
   it 'creates a series resource' do
-    series = job.api_resource(JSON.parse(body).with_indifferent_access)
-    assert_instance_of PRXAccess::PRXHyperResource, series
+    series = worker.api_resource(JSON.parse(body).with_indifferent_access)
+    assert_instance_of PrxAccess::PrxHyperResource, series
   end
 
-  it 'can update an podcast' do
+  it 'can update a podcast' do
     podcast.stub(:copy_media, true) do
+      lbd = podcast.last_build_date
+      uat = podcast.updated_at
       Podcast.stub(:by_prx_series, podcast) do
-        lbd = podcast.last_build_date
-        uat = podcast.updated_at
-        job.perform(msg)
-        assert_operator job.podcast.last_build_date, :>, lbd
-        assert_operator job.podcast.updated_at, :>, uat
+        worker.perform(nil, msg)
+        assert_operator worker.podcast.last_build_date, :>, lbd
+        assert_operator worker.podcast.updated_at, :>, uat
       end
     end
   end
@@ -56,8 +56,8 @@ describe SeriesUpdateJob do
     assert podcast.deleted?
     podcast.stub(:copy_media, true) do
       Podcast.stub(:by_prx_series, podcast) do
-        job.perform(msg)
-        assert job.podcast.deleted?
+        worker.perform(nil, msg)
+        assert worker.podcast.deleted?
       end
     end
   end
@@ -65,8 +65,8 @@ describe SeriesUpdateJob do
   it 'can delete an podcast' do
     podcast = create(:podcast, prx_uri: '/api/v1/series/32832')
     Podcast.stub(:by_prx_series, podcast) do
-      job.perform(msg.tap { |m| m[:action] = 'delete'} )
-      refute_nil job.podcast.deleted_at
+      worker.perform(nil, msg.tap { |m| m[:action] = 'delete' })
+      refute_nil worker.podcast.deleted_at
     end
   end
 end

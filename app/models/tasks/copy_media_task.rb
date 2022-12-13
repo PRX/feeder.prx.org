@@ -2,11 +2,11 @@ class Tasks::CopyMediaTask < ::Task
 
   before_save do
     if media_resource && status_changed?
-      media_resource.update_attributes!(status: status)
+      media_resource.update!(status: status)
       if complete?
         meta = porter_callback_media_meta
         if meta
-          media_resource.update_attributes!(meta)
+          media_resource.update!(meta)
         else
           Rails.logger.warn("No audio meta found in result: #{JSON.generate(result)}")
         end

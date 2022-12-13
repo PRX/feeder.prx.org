@@ -1,4 +1,4 @@
-class AddEpisodeAttributes < ActiveRecord::Migration
+class AddEpisodeAttributes < ActiveRecord::Migration[4.2]
   def up
     add_column :episodes, :url, :string
     add_column :episodes, :author_name, :string

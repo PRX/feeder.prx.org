@@ -1,4 +1,4 @@
-class ITunesImage < BaseModel
+class ITunesImage < ApplicationRecord
   include ImageFile
   include FeedImageFile
 

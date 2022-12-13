@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateAppleCredentials < ActiveRecord::Migration
+class CreateAppleCredentials < ActiveRecord::Migration[7.0]
   def change
     create_table :apple_credentials do |t|
       t.references :public_feed, index: true

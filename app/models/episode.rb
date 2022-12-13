@@ -4,7 +4,7 @@ require 'hash_serializer'
 require 'text_sanitizer'
 require 'uri'
 
-class Episode < BaseModel
+class Episode < ApplicationRecord
   include TextSanitizer
 
   APPLE_FREEMIUM_TAG = 'apple-subscriber'
@@ -52,7 +52,7 @@ class Episode < BaseModel
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
-  after_save :publish_updated, if: ->(e) { e.published_at_changed? }
+  after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 

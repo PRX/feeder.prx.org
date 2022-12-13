@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :apple_api, class: Apple::Api do
     provider_id { SecureRandom.uuid }
 

@@ -7,13 +7,13 @@ describe Api::AuthorizationsController do
 
   it 'shows the user with a valid token' do
     @controller.stub(:prx_auth_token, token) do
-      get(:show, api_version: 'v1')
+      get(:show, params: { api_version: 'v1' })
       assert_response :success
     end
   end
 
   it 'returns unauthorized with no token' do
-    get(:show, api_version: 'v1')
+    get(:show, params: { api_version: 'v1' })
     assert_response :unauthorized
   end
 end

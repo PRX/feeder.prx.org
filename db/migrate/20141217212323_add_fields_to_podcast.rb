@@ -1,4 +1,4 @@
-class AddFieldsToPodcast < ActiveRecord::Migration
+class AddFieldsToPodcast < ActiveRecord::Migration[4.2]
   def change
     add_column :podcasts, :author, :string
     add_column :podcasts, :owner_name, :string
