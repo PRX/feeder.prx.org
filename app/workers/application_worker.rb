@@ -47,4 +47,8 @@ class ApplicationWorker
   def delegate_method(message)
     ['receive', message[:subject], message[:action]].join('_')
   end
+
+  def logger
+    Shoryuken.logger
+  end
 end
