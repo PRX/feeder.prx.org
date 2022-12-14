@@ -52,19 +52,21 @@ describe AppleCredential do
       refute c5.valid?
     end
 
-    it 'requires all apple credentials to have a value or be blank' do
-      a1 = create(:apple_credential)
-      a2 = create(:apple_credential)
-      a3 = create(:apple_credential)
+    it 'requires all apple credentials to have a value or be nil' do
+      f1 = create(:feed)
+      f2 = create(:feed)
 
-      v1 = build(:apple_credential, apple_provider_id.blank?, apple_key_id.present?, apple_key_pem_b64.present?)
+      v1 = build(:apple_credential, public_feed: f1, private_feed: f2, apple_provider_id: nil, apple_key_id: 'blood', apple_key_pem_b64: 'orange')
       refute v1.valid?
 
-      v2 = build(:apple_credential, apple_provider_id.present?, apple_key_id.blank?, apple_key_pem_b64.present?)
+      v2 = build(:apple_credential, public_feed: f1, private_feed: f2, apple_provider_id: 'barlett', apple_key_id: nil, apple_key_pem_b64: 'pear')
       refute v2.valid?
 
-      v3 = build(:apple_credential, apple_provider_id.present?, apple_key_id.present?, apple_key_pem_b64.blank?)
+      v3 = build(:apple_credential, public_feed: f1, private_feed: f2, apple_provider_id: 'cotton candy', apple_key_id: 'grapes', apple_key_pem_b64: nil)
       refute v3.valid?
+
+      v4 = build(:apple_credential, public_feed: f1, private_feed: f2,apple_provider_id: nil, apple_key_id: nil, apple_key_pem_b64: nil)
+      assert v4.valid?
     end
   end
 end
