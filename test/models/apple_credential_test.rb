@@ -51,5 +51,20 @@ describe AppleCredential do
       c5 = build(:apple_credential, public_feed: f1, private_feed: f1)
       refute c5.valid?
     end
+
+    it 'requires all apple credentials to have a value or be blank' do
+      a1 = create(:apple_credential)
+      a2 = create(:apple_credential)
+      a3 = create(:apple_credential)
+
+      v1 = build(:apple_credential, apple_provider_id.blank?, apple_key_id.present?, apple_key_pem_b64.present?)
+      refute v1.valid?
+
+      v2 = build(:apple_credential, apple_provider_id.present?, apple_key_id.blank?, apple_key_pem_b64.present?)
+      refute v2.valid?
+
+      v3 = build(:apple_credential, apple_provider_id.present?, apple_key_id.present?, apple_key_pem_b64.blank?)
+      refute v3.valid?
+    end
   end
 end
