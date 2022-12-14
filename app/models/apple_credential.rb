@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AppleCredential < BaseModel
+class AppleCredential < ApplicationRecord
   belongs_to :public_feed, class_name: "Feed"
   belongs_to :private_feed, class_name: "Feed"
 
