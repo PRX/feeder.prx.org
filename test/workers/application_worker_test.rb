@@ -17,4 +17,9 @@ describe ApplicationWorker do
   it 'determines the delegate method' do
     assert_equal worker.delegate_method(msg), 'receive_foo_bar'
   end
+
+  it 'has a logger' do
+    assert_not_nil worker.logger
+    assert worker.logger.is_a?(::Logger)
+  end
 end
