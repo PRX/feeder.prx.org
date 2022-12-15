@@ -115,5 +115,16 @@ describe Apple::Api do
       assert_equal api.key_id, creds.apple_key_id
       assert_equal api.key, creds.apple_key
     end
+
+    it 'falls back on the environment if the apple credential attributes are not set' do
+      creds = build(:apple_credential, apple_provider_id: nil, apple_key_id: nil, apple_key_pem_b64: nil)
+      api = Apple::Api.from_apple_credentials(creds)
+      assert_equal api.key_id, 'apple key id from env'
+
+      assert_equal api.key_id, ENV['APPLE_KEY_ID']
+      assert_equal api.key, Base64.decode64(ENV['APPLE_KEY_PEM_B64'])
+      assert_equal api.provider_id, ENV['APPLE_PROVIDER_ID']
+    end
+
   end
 end
