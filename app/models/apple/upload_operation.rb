@@ -34,7 +34,7 @@ module Apple
         request_metadata: {
           podcast_delivery_file_id: delivery_file.id
         },
-        api_url: delivery_file.episode.enclosure_url,
+        api_url: delivery_file.podcast_delivery.podcast_container.source_url,
         api_parameters: operation
       }
     end

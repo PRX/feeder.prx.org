@@ -6,6 +6,7 @@ module Apple
 
     serialize :api_response, JSON
 
+    has_one :podcast_container, through: :podcast_delivery, class_name: '::Apple::PodcastContainer'
     belongs_to :podcast_delivery
     belongs_to :episode, class_name: '::Episode'
 
