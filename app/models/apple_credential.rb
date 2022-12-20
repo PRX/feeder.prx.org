@@ -20,6 +20,10 @@ class AppleCredential < ApplicationRecord
     apple_provider_id.present? || apple_key_id.present? || apple_key_pem_b64.present?
   end
 
+  def no_apple_credentials?
+    !any_apple_credentials_exist?
+  end
+
   def apple_key
     Base64.decode64(apple_key_pem_b64)
   end
