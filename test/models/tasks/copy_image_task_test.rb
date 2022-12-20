@@ -18,7 +18,7 @@ describe Tasks::CopyImageTask do
   it 'updates status before save' do
     assert_equal task.status, 'complete'
     assert_equal task.image_resource.status, 'complete'
-    task.update_attributes(status: 'processing')
+    task.update(status: 'processing')
     assert_equal task.status, 'processing'
     assert_equal task.image_resource.status, 'processing'
   end
@@ -29,13 +29,13 @@ describe Tasks::CopyImageTask do
 
     task.image_resource.stub(:replace_resources!, replace) do
       task.podcast.stub(:publish!, publish) do
-        task.update_attributes(status: 'created')
+        task.update(status: 'created')
         replace.verify
         publish.verify
 
         replace.expect(:call, nil)
         publish.expect(:call, nil)
-        task.update_attributes(status: 'complete')
+        task.update(status: 'complete')
         replace.verify
         publish.verify
       end
@@ -43,14 +43,14 @@ describe Tasks::CopyImageTask do
   end
 
   it 'updates the image url on complete' do
-    task.image_resource.update_attributes(url: 'what/ever')
+    task.image_resource.update(url: 'what/ever')
 
-    task.update_attributes(status: 'created')
+    task.update(status: 'created')
     assert_equal task.image_resource[:url], 'what/ever'
     refute_equal task.image_resource.url, 'what/ever'
     assert_equal task.image_resource.url, task.image_resource.original_url
 
-    task.update_attributes(status: 'complete')
+    task.update(status: 'complete')
     refute_equal task.image_resource[:url], 'what/ever'
     assert_equal task.image_resource[:url], task.image_resource.published_url
     refute_equal task.image_resource.url, 'what/ever'

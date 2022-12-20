@@ -7,17 +7,18 @@ module Apple
     serialize :api_response, JSON
 
     has_many :podcast_deliveries
-    belongs_to :episode, class_name: "::Episode"
+    has_many :podcast_delivery_files, through: :podcast_deliveries
+    belongs_to :episode, class_name: '::Episode'
 
     def self.update_podcast_container_file_metadata(api, episodes)
       containers = Apple::PodcastContainer.where(episode_id: episodes.map(&:feeder_id))
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
 
-      api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params)).
+      api.bridge_remote_and_retry!('headFileSizes', containers.map(&:head_file_size_bridge_params)).
         map do |row|
-        content_length = row.dig("api_response", "val", "data", "content-length")
+        content_length = row.dig('api_response', 'val', 'data', 'content-length')
 
-        podcast_container_id = row["request_metadata"]["podcast_container_id"]
+        podcast_container_id = row['request_metadata']['podcast_container_id']
 
         container = containers_by_id.fetch(podcast_container_id)
         container.source_size = content_length
@@ -39,16 +40,18 @@ module Apple
       episodes_to_create = episodes.reject { |ep| ep.podcast_container.present? }
 
       new_containers_response =
-        api.bridge_remote_and_retry!("createPodcastContainers",
+        api.bridge_remote_and_retry!('createPodcastContainers',
                                      create_podcast_containers_bridge_params(api, episodes_to_create))
 
-      join_on_apple_episode_id(episodes_to_create, new_containers_response).each do |ep, row|
+      join_on_apple_episode_id(episodes_to_create, new_containers_response).map do |ep, row|
         upsert_podcast_container(ep, row)
       end
+
+      episodes_to_create
     end
 
     def self.upsert_podcast_container(episode, row)
-      external_id = row.dig("api_response", "val", "data", "id")
+      external_id = row.dig('api_response', 'val', 'data', 'id')
 
       pc =
         if pc = where(episode_id: episode.feeder_id,
@@ -77,7 +80,7 @@ module Apple
     def self.get_podcast_containers_via_episodes(api, episodes)
       # Fetch the podcast containers from the episodes side of the API
       response =
-        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes))
+        api.bridge_remote_and_retry!('getPodcastContainers', get_podcast_containers_bridge_params(api, episodes))
 
       # Rather than mangling and persisting the enumerated view of the deliveries
       # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
@@ -90,12 +93,12 @@ module Apple
 
       formatted_bridge_params = formatted_bridge_params.flatten
 
-      api.bridge_remote_and_retry!("getPodcastContainers",
+      api.bridge_remote_and_retry!('getPodcastContainers',
                                    formatted_bridge_params)
     end
 
     def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)
-      containers_json = episode_podcast_containers_json["api_response"]["val"]["data"]
+      containers_json = episode_podcast_containers_json['api_response']['val']['data']
       # TODO: support > 1 podcast container per feeder episode
       raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if containers_json.length > 1
 
@@ -123,39 +126,39 @@ module Apple
         map do |ep|
         {
           request_metadata: { apple_episode_id: ep.apple_id },
-          api_url: api.join_url("podcastContainers").to_s,
+          api_url: api.join_url('podcastContainers').to_s,
           api_parameters: podcast_container_create_parameters(ep)
         }
       end
     end
 
-    def self.podcast_container_create_parameters(ep)
+    def self.podcast_container_create_parameters(episode)
       {
         data: {
-          type: "podcastContainers",
+          type: 'podcastContainers',
           attributes: {
-            vendorId: ep.audio_asset_vendor_id
+            vendorId: episode.audio_asset_vendor_id
           }
         }
       }
     end
 
-    def self.podcast_containers_parameters(ep)
+    def self.podcast_containers_parameters(episode)
       {
         data: {
-          type: "podcastContainers",
+          type: 'podcastContainers',
           attributes: {
-            vendorId: ep.audio_asset_vendor_id,
-            id: ep.podcast_container.external_id
+            vendorId: episode.audio_asset_vendor_id,
+            id: episode.podcast_container.external_id
           }
         }
       }
     end
 
     def self.podcast_container_url(api, episode)
-      raise "Missing episode audio vendor id" unless episode.audio_asset_vendor_id.present?
+      raise 'Missing episode audio vendor id' unless episode.audio_asset_vendor_id.present?
 
-      api.join_url("podcastContainers?filter[vendorId]=" + episode.audio_asset_vendor_id).to_s
+      api.join_url("podcastContainers?filter[vendorId]=#{episode.audio_asset_vendor_id}").to_s
     end
 
     def head_file_size_bridge_params
@@ -170,7 +173,7 @@ module Apple
     end
 
     def podcast_deliveries_url
-      apple_data.dig("relationships", "podcastDeliveries", "links", "related")
+      apple_data.dig('relationships', 'podcastDeliveries', 'links', 'related')
     end
 
     def podcast_container_id

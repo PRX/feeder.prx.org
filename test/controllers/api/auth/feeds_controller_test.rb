@@ -24,7 +24,8 @@ describe Api::Auth::FeedsController do
     end
 
     it 'can create a new feed' do
-      post :create, feed_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
+      post(:create, body: feed_hash.to_json, as: :json,
+                    params: { api_version: 'v1', format: 'json', podcast_id: podcast.id })
       assert_response :success
       id = JSON.parse(response.body)['id']
       new_feed = Feed.find(id)
@@ -35,7 +36,8 @@ describe Api::Auth::FeedsController do
       fua = feed.updated_at
       update_hash = { title: 'new title', slug: 'somesluggy1' }
 
-      put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+      put(:update, body: update_hash.to_json, as: :json,
+                   params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id })
       assert_response :success
 
       _(feed.reload.updated_at).must_be :>, fua
@@ -47,17 +49,18 @@ describe Api::Auth::FeedsController do
         feed.tokens.create!(label: 'something', token: 'tok1')
         feed.tokens.create!(token: 'tok2')
       end
-  
+
       it 'can create a new feed with tokens' do
         token_hash = {
           slug: 'token-slug',
-          tokens: [ 
+          tokens: [
             { token: 'tok3', label: 'tok3', expires: '2023-02-01' },
             { token: 'tok4' }
           ]
         }
-    
-        post :create, token_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
+
+        post(:create, body: token_hash.to_json, as: :json,
+                      params: { api_version: 'v1', format: 'json', podcast_id: podcast.id })
 
         assert_response :success
         id = JSON.parse(response.body)['id']
@@ -68,9 +71,10 @@ describe Api::Auth::FeedsController do
       it 'can update nested tokens' do
         update_tok1 = { token: 'tok1', label: 'else', expires: '2023-02-01' }
         create_tok3 = { token: 'tok3' }
-        update_hash = { tokens: [ update_tok1, create_tok3 ] }
+        update_hash = { tokens: [update_tok1, create_tok3] }
 
-        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        put(:update, body: update_hash.to_json, as: :json,
+                     params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id })
 
         assert_response :success
         _(feed.reload.tokens.count).must_equal 2
@@ -79,7 +83,8 @@ describe Api::Auth::FeedsController do
       it 'can delete nested tokens' do
         update_hash = { tokens: [] }
 
-        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        put(:update, body: update_hash.to_json, as: :json,
+                     params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id })
 
         assert_response :success
         _(feed.reload.tokens.count).must_equal 0
@@ -98,7 +103,8 @@ describe Api::Auth::FeedsController do
         fua = feed.updated_at
 
         update_hash = { feedImage: { href: url1, description: 'd1' } }
-        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        put(:update, body: update_hash.to_json, as: :json,
+                     params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id })
         assert_response :success
 
         _(feed.reload.updated_at).must_be :>, fua
@@ -108,9 +114,11 @@ describe Api::Auth::FeedsController do
         fua = feed.updated_at
 
         update_hash = { feedImage: { href: url2, description: 'd2' }, itunesImage: { href: url1, description: 'd3' } }
-        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        put(:update, body: update_hash.to_json, as: :json,
+                     params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id })
         assert_response :success
-        put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+        put(:update, body: update_hash.to_json, as: :json,
+                     params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id })
         assert_response :success
 
         _(feed.reload.updated_at).must_be :>, fua
@@ -120,16 +128,14 @@ describe Api::Auth::FeedsController do
         _(feed.itunes_images.count).must_equal 1
         _(feed.itunes_images.last.description).must_equal 'd3'
       end
-
-      it 'replaces images' do
-      end
     end
 
     it 'ignores updating invalid overrides' do
       fua = feed.updated_at
       update_hash = { title: 'new title2', slug: 'somesluggy2', display_episodes_count: 1 }
 
-      put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+      put(:update, body: update_hash.to_json, as: :json,
+                   params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id })
       assert_response :success
 
       feed.reload
@@ -141,19 +147,20 @@ describe Api::Auth::FeedsController do
       @controller.prx_auth_token = bad_token
       update_hash = { title: 'new title3', slug: 'somesluggy3', display_episodes_count: 1 }
 
-      put :update, update_hash.to_json, api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id
+      put(:update, body: update_hash.to_json, as: :json,
+                   params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id })
       assert_response 401
     end
   end
 
   it 'should show' do
-    get(:show, { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id } )
+    get(:show, params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id, id: feed.id })
     assert_response :success
   end
 
   it 'should list' do
     _(feed.id).wont_be_nil
-    get(:index, { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id } )
+    get(:index, params: { api_version: 'v1', format: 'json', podcast_id: feed.podcast_id })
     assert_response :success
     ids = JSON.parse(response.body)['_embedded']['prx:items'].map { |p| p['id'] }
     _(ids).must_include(feed.id)

@@ -1,10 +1,11 @@
 # encoding: utf-8
+require 'api'
 require 'hal_api/representer'
 require 'prx_access'
 require 'text_sanitizer'
 
 class Api::BaseRepresenter < HalApi::Representer
-  include PRXAccess
+  include PrxAccess
   include TextSanitizer
 
   self.alternate_host = ENV['PRX_HOST'] || 'www.prx.org'

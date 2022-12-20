@@ -1,5 +1,5 @@
-class CreateFeeds < ActiveRecord::Migration
-  DEFAULT_FILE_NAME = 'feed-rss.xml'
+class CreateFeeds < ActiveRecord::Migration[4.2]
+  DEFAULT_FILE_NAME = 'feed-rss.xml'.freeze
 
   def up
     create_table :feeds do |t|

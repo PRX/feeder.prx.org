@@ -7,11 +7,11 @@ module Apple
     serialize :api_response, JSON
 
     belongs_to :podcast_delivery
-    belongs_to :episode, class_name: "::Episode"
+    belongs_to :episode, class_name: '::Episode'
 
     delegate :apple_episode_id, to: :podcast_delivery
 
-    PODCAST_DELIVERY_ID_ATTR = "podcast_delivery_id"
+    PODCAST_DELIVERY_ID_ATTR = 'podcast_delivery_id'
 
     def self.wait_for_delivery_files(api, pdfs)
       wait_for_delivery(api, pdfs)
@@ -20,14 +20,14 @@ module Apple
 
     def self.wait_for_processing(api, pdfs)
       wait_for(api, pdfs) do |updated_pdfs|
-        Rails.logger.info("Probing for file processing")
+        Rails.logger.info('Probing for file processing')
         updated_pdfs.all? { |pdf| pdf.processed? || pdf.processed_errors? }
       end
     end
 
     def self.wait_for_delivery(api, pdfs)
       wait_for(api, pdfs) do |updated_pdfs|
-        Rails.logger.info("Probing for file delivery")
+        Rails.logger.info('Probing for file delivery')
         updated_pdfs.all?(&:delivered?)
       end
     end
@@ -52,8 +52,8 @@ module Apple
       unwrapped = get_podcast_delivery_files(api, pdfs)
 
       pdfs.each do |pdf|
-        matched = unwrapped.detect { |r| r["request_metadata"]["podcast_delivery_file_id"] == pdf.id }
-        raise "Missing response for podcast delivery file" unless matched.present?
+        matched = unwrapped.detect { |r| r['request_metadata']['podcast_delivery_file_id'] == pdf.id }
+        raise 'Missing response for podcast delivery file' unless matched.present?
 
         pdf.api_response = matched
       end
@@ -62,8 +62,8 @@ module Apple
     def self.mark_uploaded(api, pdfs)
       bridge_params = pdfs.map { |pdf| mark_uploaded_delivery_file_bridge_params(api, pdf) }
 
-      api.bridge_remote_and_retry!("updateDeliveryFiles", bridge_params).map do |row|
-        pd_id = row["request_metadata"]["podcast_delivery_file_id"]
+      api.bridge_remote_and_retry!('updateDeliveryFiles', bridge_params).map do |row|
+        pd_id = row['request_metadata']['podcast_delivery_file_id']
         Apple::PodcastDeliveryFile.find(pd_id).update!(api_response: row, uploaded: true)
       end
     end
@@ -74,7 +74,7 @@ module Apple
       # TODO: handle multiple containers
       podcast_containers = episodes.map(&:podcast_container)
       podcast_deliveries = podcast_containers.map do |pc|
-        raise("Missing podcast deliveries") if pc.podcast_deliveries.empty?
+        raise('Missing podcast deliveries') if pc.podcast_deliveries.empty?
 
         pc.podcast_deliveries
       end
@@ -84,7 +84,7 @@ module Apple
       podcast_deliveries = podcast_deliveries.select { |pd| pd.podcast_delivery_files.empty? }
 
       result =
-        api.bridge_remote_and_retry!("createPodcastDeliveryFiles",
+        api.bridge_remote_and_retry!('createPodcastDeliveryFiles',
                                      podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd) })
 
       join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, result).each do |(podcast_delivery, row)|
@@ -93,9 +93,6 @@ module Apple
     end
 
     def self.update_podcast_delivery_files_state(api, episodes)
-      # Fetch the podcast delivery files from the delivery side of the api
-      podcast_containers = episodes.map(&:podcast_container)
-
       # Assume that the delivery remote/local state is synced at this point
       podcast_deliveries =
         episodes.
@@ -112,12 +109,12 @@ module Apple
 
     def self.get_podcast_delivery_files(api, pdfs)
       bridge_params = pdfs.map { |pdf| get_delivery_file_bridge_params(api, pdf) }
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params)
+      api.bridge_remote_and_retry!('getPodcastDeliveryFiles', bridge_params)
     end
 
     def self.get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
       delivery_files_response =
-        api.bridge_remote_and_retry!("getPodcastDeliveryFiles",
+        api.bridge_remote_and_retry!('getPodcastDeliveryFiles',
                                      get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries))
 
       # Rather than mangling and persisting the enumerated view of the delivery files
@@ -131,12 +128,12 @@ module Apple
 
       formatted_bridge_params = formatted_bridge_params.flatten
 
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles",
+      api.bridge_remote_and_retry!('getPodcastDeliveryFiles',
                                    formatted_bridge_params)
     end
 
     def self.get_urls_for_delivery_podcast_delivery_files(api, delivery_podcast_delivery_files_json)
-      delivery_podcast_delivery_files_json["api_response"]["val"]["data"].map do |podcast_delivery_file_data|
+      delivery_podcast_delivery_files_json['api_response']['val']['data'].map do |podcast_delivery_file_data|
         api.join_url("podcastDeliveryFiles/#{podcast_delivery_file_data['id']}").to_s
       end
     end
@@ -168,7 +165,7 @@ module Apple
           podcast_delivery_file_id: podcast_delivery_file.id,
           podcast_delivery_id: podcast_delivery_file.podcast_delivery.id
         },
-        api_url: api.join_url("podcastDeliveryFiles/" + podcast_delivery_file.apple_id).to_s
+        api_url: api.join_url("podcastDeliveryFiles/#{podcast_delivery_file.apple_id}").to_s
       }
     end
 
@@ -178,7 +175,7 @@ module Apple
           podcast_delivery_file_id: podcast_delivery_file.id,
           podcast_delivery_id: podcast_delivery_file.podcast_delivery.id
         },
-        api_url: api.join_url("podcastDeliveryFiles/" + podcast_delivery_file.apple_id).to_s,
+        api_url: api.join_url("podcastDeliveryFiles/#{podcast_delivery_file.apple_id}").to_s,
         api_parameters: podcast_delivery_file.mark_uploaded_parameters
       }
     end
@@ -189,7 +186,7 @@ module Apple
           apple_episode_id: podcast_delivery.apple_episode_id,
           podcast_delivery_id: podcast_delivery.id
         },
-        api_url: api.join_url("podcastDeliveryFiles").to_s,
+        api_url: api.join_url('podcastDeliveryFiles').to_s,
         api_parameters: podcast_delivery_file_create_parameters(podcast_delivery)
       }
     end
@@ -198,18 +195,18 @@ module Apple
       podcast_container = podcast_delivery.podcast_container
 
       { "data": {
-        "type": "podcastDeliveryFiles",
+        "type": 'podcastDeliveryFiles',
         "attributes": {
-          "assetType": "ASSET",
-          "assetRole": "PodcastSourceAudio",
+          "assetType": 'ASSET',
+          "assetRole": 'PodcastSourceAudio',
           "fileSize": podcast_container.source_size,
           "fileName": podcast_container.source_filename,
-          "uti": "public.json"
+          "uti": 'public.json'
         },
         "relationships": {
           "podcastDelivery": {
             "data": {
-              "type": "podcastDeliveries",
+              "type": 'podcastDeliveries',
               "id": podcast_delivery.external_id
             }
           }
@@ -218,8 +215,8 @@ module Apple
     end
 
     def self.upsert_podcast_delivery_file(podcast_delivery, row)
-      external_id = row.dig("api_response", "val", "data", "id")
-      podcast_delivery_id = row.dig("request_metadata", PODCAST_DELIVERY_ID_ATTR)
+      external_id = row.dig('api_response', 'val', 'data', 'id')
+      podcast_delivery_id = row.dig('request_metadata', PODCAST_DELIVERY_ID_ATTR)
 
       pdf =
         if delivery_file = where(episode_id: podcast_delivery.episode.id,
@@ -247,7 +244,7 @@ module Apple
       {
         data: {
           id: apple_id,
-          type: "podcastDeliveryFiles",
+          type: 'podcastDeliveryFiles',
           attributes: {
             uploaded: true
           }
@@ -256,7 +253,7 @@ module Apple
     end
 
     def upload_operations
-      (apple_attributes["uploadOperations"] || []).map do |operation_fragment|
+      (apple_attributes['uploadOperations'] || []).map do |operation_fragment|
         Apple::UploadOperation.new(self, operation_fragment)
       end
     end
@@ -268,29 +265,29 @@ module Apple
     def delivered?
       return false unless asset_delivery_state.present?
 
-      asset_delivery_state["state"] == "COMPLETE" ||
-        asset_delivery_state["state"] == "COMPLETED"
+      asset_delivery_state['state'] == 'COMPLETE' ||
+        asset_delivery_state['state'] == 'COMPLETED'
     end
 
     def processed_errors?
       return false unless asset_processing_state.present?
 
-      apple_attributes["assetProcessingState"]["state"] == "VALIDATION_FAILED"
+      apple_attributes['assetProcessingState']['state'] == 'VALIDATION_FAILED'
     end
 
     def processed?
       return false unless asset_processing_state.present?
 
-      asset_processing_state["state"] == "COMPLETE" ||
-        apple_attributes["assetProcessingState"]["state"] == "COMPLETED"
+      asset_processing_state['state'] == 'COMPLETE' ||
+        apple_attributes['assetProcessingState']['state'] == 'COMPLETED'
     end
 
     def asset_processing_state
-      apple_attributes["assetProcessingState"]
+      apple_attributes['assetProcessingState']
     end
 
     def asset_delivery_state
-      apple_attributes["assetDeliveryState"]
+      apple_attributes['assetDeliveryState']
     end
   end
 end

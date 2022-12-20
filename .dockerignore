@@ -38,3 +38,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# make sure tmp/pids directory exists for puma
+!/tmp/pids/.keep

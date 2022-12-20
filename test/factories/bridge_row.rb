@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :bridge_row, class: Hash do
 
     request_metadata { {} }

@@ -2,7 +2,7 @@ require 'test_helper'
 require 'prx_access'
 
 describe Episode do
-  include PRXAccess
+  include PrxAccess
 
   let(:episode) { create(:episode) }
 
@@ -28,9 +28,9 @@ describe Episode do
   end
 
   it 'leaves title ampersands alone' do
-    episode.title = "Hear & Now"
+    episode.title = 'Hear & Now'
     episode.save!
-    assert_equal episode.title, "Hear & Now"
+    assert_equal episode.title, 'Hear & Now'
   end
 
   it 'must belong to a podcast' do
@@ -90,7 +90,7 @@ describe Episode do
     episode = build(:episode)
     video_enclosure = create(:enclosure, episode: episode, status: 'complete', mime_type: 'video/mp4')
     episode.enclosures = [video_enclosure]
-    
+
     assert_equal video_enclosure.mime_type, 'video/mp4'
     assert_equal episode.first_media_resource.mime_type, 'video/mp4'
     assert_equal episode.content_type(feed), 'video/mp4'
@@ -132,12 +132,13 @@ describe Episode do
     episode.run_callbacks :save do
       episode.update_attribute(:published_at, now)
     end
+    assert_not_equal podcast.reload.published_at.to_i, orig.to_i
     assert_equal podcast.reload.published_at.to_i, now.to_i
   end
 
   it 'sets one unique identifying episode keyword for tracking purposes' do
     orig_keyword = episode.keyword_xid
-    episode.update_attributes(published_at: 1.day.from_now, title: 'A different title')
+    episode.update(published_at: 1.day.from_now, title: 'A different title')
     episode.run_callbacks :save do
       episode.save
     end
@@ -146,7 +147,7 @@ describe Episode do
   end
 
   it 'strips non-alphanumeric characters from identifying keyword' do
-    episode.update_attributes(keyword_xid: nil, title: '241: It\'s a TITLE, yAy!')
+    episode.update(keyword_xid: nil, title: '241: It\'s a TITLE, yAy!')
     episode.run_callbacks :save do
       episode.save
     end
@@ -155,12 +156,12 @@ describe Episode do
   end
 
   it 'strips non-alphanumeric characters from all keywords' do
-    episode.update_attributes(keywords: ["Here's John,ny!?"])
+    episode.update(keywords: ["Here's John,ny!?"])
     episode.run_callbacks :save do
       episode.save
     end
     refute_nil episode.reload.keywords
-    episode.keywords.each { |k| refute_match(/['?!,']/, k) }
+    episode.keywords.each { |k| refute_match(/['?!,]/, k) }
   end
 
   it 'has a valid itunes episode type' do
@@ -216,12 +217,12 @@ describe Episode do
     podcast = episode.podcast
     episode.explicit = nil
 
-    ["explicit", "yes", true].each do |val|
+    ['explicit', 'yes', true].each do |val|
       podcast.explicit = val
       assert_equal episode.explicit_content, true
     end
 
-    ["clean", "no", false].each do |val|
+    ['clean', 'no', false].each do |val|
       podcast.explicit = val
       assert_equal episode.explicit_content, false
     end
@@ -231,13 +232,13 @@ describe Episode do
     podcast = episode.podcast
 
     podcast.explicit = false
-    ["explicit", "yes", true].each do |val|
+    ['explicit', 'yes', true].each do |val|
       episode.explicit = val
       assert_equal episode.explicit_content, true
     end
 
     podcast.explicit = true
-    ["clean", "no", false].each do |val|
+    ['clean', 'no', false].each do |val|
       episode.explicit = val
       assert_equal episode.explicit_content, false
     end
@@ -275,9 +276,9 @@ describe Episode do
       msg = json_file(:prx_story_small)
       body = JSON.parse(msg)
       href = body.dig(:_links, :self, :href)
-      resource = PRXAccess::PRXHyperResource.new(root: 'https://cms.prx.org/api/vi/')
-      link = PRXAccess::PRXHyperResource::Link.new(resource, href: href)
-      PRXAccess::PRXHyperResource.new_from(body: body, resource: resource, link: link)
+      resource = PrxAccess::PrxHyperResource.new(root: 'https://cms.prx.org/api/vi/')
+      link = PrxAccess::PrxHyperResource::Link.new(resource, href: href)
+      PrxAccess::PrxHyperResource.new_from(body: body, resource: resource, link: link)
     end
 
     it 'can be found by story' do
@@ -289,12 +290,12 @@ describe Episode do
 
   describe '#apple?' do
     it 'is set via a category' do
-      episode.update!(categories: [Episode::APPLE_ADFREE_TAG, Episode::APPLE_ONLY_TAG])
+      episode.update!(categories: [Episode::APPLE_FREEMIUM_TAG, Episode::APPLE_ONLY_TAG])
 
       assert_equal episode.apple?, true
       assert_equal episode.apple_only?, true
 
-      episode.update!(categories: [Episode::APPLE_ADFREE_TAG])
+      episode.update!(categories: [Episode::APPLE_FREEMIUM_TAG])
 
       assert_equal episode.apple?, true
       assert_equal episode.apple_only?, false
@@ -316,7 +317,7 @@ describe Episode do
     end
   end
 
-  describe "#image" do
+  describe '#image' do
     it 'replaces images' do
       refute_nil episode.image_file
       refute_nil episode.image

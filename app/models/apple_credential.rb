@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
-class AppleCredential < BaseModel
+class AppleCredential < ApplicationRecord
   belongs_to :public_feed, class_name: "Feed"
   belongs_to :private_feed, class_name: "Feed"
 
   validates_presence_of :public_feed
   validates_presence_of :private_feed
+
   validates_associated :public_feed
   validates_associated :private_feed
   validates_presence_of :apple_provider_id, if: :any_apple_credentials_exist?
@@ -17,5 +18,9 @@ class AppleCredential < BaseModel
 
   def any_apple_credentials_exist?
     apple_provider_id.present? || apple_key_id.present? || apple_key_pem_b64.present?
+  end
+
+  def apple_key
+    Base64.decode64(apple_key_pem_b64)
   end
 end

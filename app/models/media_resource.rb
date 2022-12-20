@@ -1,8 +1,8 @@
-class MediaResource < BaseModel
+class MediaResource < ApplicationRecord
   has_one :task, -> { order('id desc') }, as: :owner
   has_many :tasks, as: :owner
 
-  belongs_to :episode, -> { with_deleted }, touch: true
+  belongs_to :episode, -> { with_deleted }, touch: true, optional: true
 
   enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
 

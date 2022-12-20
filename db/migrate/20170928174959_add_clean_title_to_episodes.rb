@@ -1,4 +1,4 @@
-class AddCleanTitleToEpisodes < ActiveRecord::Migration
+class AddCleanTitleToEpisodes < ActiveRecord::Migration[4.2]
   def up
     add_column :episodes, :clean_title, :text
   end

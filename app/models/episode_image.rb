@@ -1,5 +1,5 @@
 class EpisodeImage < ActiveRecord::Base
-  belongs_to :episode, touch: true
+  belongs_to :episode, touch: true, optional: true
 
   include ImageFile
 
@@ -17,7 +17,7 @@ class EpisodeImage < ActiveRecord::Base
 
   def replace_resources!
     episode.with_lock do
-      episode.images.where("created_at < ? AND id != ?", created_at, id).destroy_all
+      episode.images.where('created_at < ? AND id != ?', created_at, id).destroy_all
     end
   end
 end

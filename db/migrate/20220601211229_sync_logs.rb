@@ -1,4 +1,4 @@
-class SyncLogs < ActiveRecord::Migration
+class SyncLogs < ActiveRecord::Migration[7.0]
   def change
     create_table :sync_logs do |t|
 

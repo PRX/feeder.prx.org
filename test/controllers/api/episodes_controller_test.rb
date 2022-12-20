@@ -20,32 +20,32 @@ describe Api::EpisodesController do
 
   it 'should show' do
     refute_nil episode.id
-    get(:show, { api_version: 'v1', format: 'json', id: episode.guid } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode.guid })
     assert_response :success
   end
 
   it 'should return resource gone for deleted resource' do
     refute_nil episode_deleted.id
-    get(:show, { api_version: 'v1', format: 'json', id: episode_deleted.guid } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode_deleted.guid })
     assert_response 410
   end
 
   it 'should return resource unknown for unpublished resource' do
     refute_nil episode_unpublished.id
-    get(:show, { api_version: 'v1', format: 'json', id: episode_unpublished.guid } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode_unpublished.guid })
     assert_response 404
   end
 
   it 'should return not found for unknown resource' do
     refute_nil episode_deleted.id
-    get(:show, { api_version: 'v1', format: 'json', id: 'thisismadeup' } )
+    get(:show, params: { api_version: 'v1', format: 'json', id: 'thisismadeup' })
     assert_response 404
   end
 
   it 'should list' do
     refute_nil episode.id
     refute_nil episode_deleted.id
-    get(:index, { api_version: 'v1', format: 'json' } )
+    get(:index, params: { api_version: 'v1', format: 'json' })
     assert_response :success
     guids = JSON.parse(response.body)['_embedded']['prx:items'].map { |p| p['id'] }
     assert_includes guids, episode.guid
@@ -56,10 +56,10 @@ describe Api::EpisodesController do
     refute_nil episode_unpublished.id
     refute_nil episode_prepublished.id
     refute_nil episode.id
-    get(:index, { api_version: 'v1', format: 'json' } )
+    get(:index, params: { api_version: 'v1', format: 'json' })
     assert_response :success
     list = JSON.parse(response.body)
-    ids = list.dig('_embedded', 'prx:items').map{ |i| i['id'] }
+    ids = list.dig('_embedded', 'prx:items').map { |i| i['id'] }
     assert_includes ids, episode.guid
     refute_includes ids, episode_prepublished.guid
     refute_includes ids, episode_unpublished.guid
@@ -69,7 +69,7 @@ describe Api::EpisodesController do
     refute_nil episode.id
     refute_nil episode_deleted.id
     refute_nil podcast.id
-    get(:index, { api_version: 'v1', format: 'json', podcast_id: podcast.id } )
+    get(:index, params: { api_version: 'v1', format: 'json', podcast_id: podcast.id })
     assert_response :success
     guids = JSON.parse(response.body)['_embedded']['prx:items'].map { |p| p['id'] }
     assert_includes guids, episode.guid
@@ -81,7 +81,10 @@ describe Api::EpisodesController do
     let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
     let(:episode_redirect) { create(:episode, podcast: podcast, published_at: nil) }
     let(:episode_update) { create(:episode, podcast: podcast, published_at: nil) }
-    let(:token) { StubToken.new(account_id, ['member feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft']) }
+    let(:token) do
+      StubToken.new(account_id,
+                    ['member feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft'])
+    end
 
     around do |test|
       class << @controller; attr_accessor :prx_auth_token; end
@@ -92,15 +95,15 @@ describe Api::EpisodesController do
       end
     end
 
-
     it 'should redirect for authorized request of unpublished resource' do
       refute_nil episode_redirect.id
-      get(:show, { api_version: 'v1', format: 'json', id: episode_redirect.guid } )
+      get(:show, params: { api_version: 'v1', format: 'json', id: episode_redirect.guid })
       assert_response :redirect
     end
 
     it 'can create a new episode' do
-      post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
+      post(:create, body: episode_hash.to_json, as: :json,
+                    params: { api_version: 'v1', format: 'json', podcast_id: podcast.id })
       assert_response :success
       id = JSON.parse(response.body)['id']
       new_episode = Episode.find_by_guid(id)
@@ -113,7 +116,8 @@ describe Api::EpisodesController do
 
     it 'can update on create of a new episode' do
       ep = create(:episode, published_at: (Time.now + 1.week), podcast: podcast, prx_uri: '/api/v1/stories/123')
-      post :create, episode_hash.to_json, api_version: 'v1', format: 'json', podcast_id: podcast.id
+      post(:create, body: episode_hash.to_json, as: :json,
+                    params: { api_version: 'v1', format: 'json', podcast_id: podcast.id })
       assert_response :success
       id = JSON.parse(response.body)['id']
       new_episode = Episode.find_by_guid(id)
@@ -136,7 +140,8 @@ describe Api::EpisodesController do
 
       assert_equal episode_update.all_contents.size, 0
 
-      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+      put(:update, body: update_hash.to_json, as: :json,
+                   params: { id: episode_update.guid, api_version: 'v1', format: 'json' })
       assert_response :success
 
       contents = episode_update.reload.all_contents
@@ -148,7 +153,8 @@ describe Api::EpisodesController do
 
       # updating with a dupe should insert it
       update_hash = { media: [{ href: update_hash[:media][0][:href] }] }
-      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+      put(:update, body: update_hash.to_json, as: :json,
+                   params: { id: episode_update.guid, api_version: 'v1', format: 'json' })
       assert_response :success
 
       contents = episode_update.reload.all_contents
@@ -168,13 +174,15 @@ describe Api::EpisodesController do
 
       # updating without media does nothing
       update_hash = { title: 'a new title' }
-      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+      put(:update, body: update_hash.to_json, as: :json,
+                   params: { id: episode_update.guid, api_version: 'v1', format: 'json' })
       assert_response :success
       assert_equal episode_update.reload.all_contents.size, 2
 
       # updating with an empty array deletes
       update_hash = { media: [] }
-      put :update, update_hash.to_json, id: episode_update.guid, api_version: 'v1', format: 'json'
+      put(:update, body: update_hash.to_json, as: :json,
+                   params: { id: episode_update.guid, api_version: 'v1', format: 'json' })
       assert_response :success
       assert_equal episode_update.reload.all_contents.size, 0
     end

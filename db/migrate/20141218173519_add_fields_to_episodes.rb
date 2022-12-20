@@ -1,4 +1,4 @@
-class AddFieldsToEpisodes < ActiveRecord::Migration
+class AddFieldsToEpisodes < ActiveRecord::Migration[4.2]
   def change
     remove_column :episodes, :author, :string
     add_column :episodes, :author_name, :string

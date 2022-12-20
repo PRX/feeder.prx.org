@@ -1,14 +1,13 @@
-require 'prx_access'
+class StoryUpdateWorker < ApplicationWorker
+  shoryuken_options queue: announce_queues(:story, [:create, :update, :delete, :publish, :unpublish]),
+                    auto_delete: true
 
-class StoryUpdateJob < ApplicationJob
-  include Announce::Subscriber
-  include PRXAccess
+  attr_accessor :body
+  attr_writer :episode, :podcast, :story
 
-  queue_as :feeder_default
-
-  subscribe_to :story, [:create, :update, :delete, :publish, :unpublish]
-
-  attr_accessor :body, :episode, :podcast, :story
+  def perform(_sqs_msg, event)
+    announce_perform(event)
+  end
 
   def receive_story_update(data)
     parse_message(data)
@@ -17,9 +16,9 @@ class StoryUpdateJob < ApplicationJob
     return if episode.try(:published?) && action == 'update' && story.status != 'complete'
 
     episode ? update_episode : create_episode
-    episode.try(:copy_media)
-    podcast.try(:copy_media)
-    podcast.try(:publish!)
+    episode&.copy_media
+    podcast&.copy_media
+    podcast&.publish!
   end
 
   alias receive_story_create receive_story_update
@@ -58,13 +57,10 @@ class StoryUpdateJob < ApplicationJob
   end
 
   def create_episode
-    return unless story && story.try(:series)
+    return unless story&.series
+
     self.episode = EpisodeStoryHandler.create_from_story!(story)
     self.podcast = episode.podcast if episode
-  end
-
-  def parse_message(data)
-    self.body = data.is_a?(String) ? JSON.parse(data) : data
   end
 
   def episode
@@ -88,9 +84,13 @@ class StoryUpdateJob < ApplicationJob
 
   def story_auth_url(url)
     result = url
-    if result && !result.match(/authorization/)
+    if result && !result.include?('authorization')
       result = result.gsub('/stories/', '/authorization/stories/')
     end
     result
+  end
+
+  def parse_message(data)
+    self.body = data.is_a?(String) ? JSON.parse(data) : data
   end
 end

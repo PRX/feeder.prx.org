@@ -1,5 +1,5 @@
 class FeedsController < ApplicationController
-  before_filter :authenticate_feeds_token!
+  before_action :authenticate_feeds_token!
 
   def index
     max_updated_at = Feed.maximum(:updated_at)
@@ -41,7 +41,7 @@ class FeedsController < ApplicationController
     feed.
       slice(:private, :include_zones, :audio_format).
       transform_keys { |k| k.camelize(:lower) }.
-      merge(tokens: feed.tokens.map { |t| token_json(t) } )
+      merge(tokens: feed.tokens.map { |t| token_json(t) })
   end
 
   def token_json(token)

@@ -4,10 +4,10 @@ require 'hash_serializer'
 require 'text_sanitizer'
 require 'uri'
 
-class Episode < BaseModel
+class Episode < ApplicationRecord
   include TextSanitizer
 
-  APPLE_ADFREE_TAG = 'apple-adfree'
+  APPLE_FREEMIUM_TAG = 'apple-subscriber'
   APPLE_ONLY_TAG = 'apple-exclusive'
 
   serialize :categories, JSON
@@ -52,7 +52,7 @@ class Episode < BaseModel
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
-  after_save :publish_updated, if: ->(e) { e.published_at_changed? }
+  after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
@@ -84,7 +84,7 @@ class Episode < BaseModel
   end
 
   def apple?
-    categories_include?([APPLE_ADFREE_TAG, APPLE_ONLY_TAG].freeze)
+    categories_include?([APPLE_FREEMIUM_TAG, APPLE_ONLY_TAG].freeze)
   end
 
   def apple_only?

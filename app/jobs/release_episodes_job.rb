@@ -3,12 +3,10 @@ class ReleaseEpisodesJob < ApplicationJob
   queue_as :feeder_default
 
   def perform(reschedule = false)
-    begin
-      Episode.release_episodes!
-    ensure
-      if reschedule
-        ReleaseEpisodesJob.set(wait: release_check_delay).perform_later(true)
-      end
+    Episode.release_episodes!
+  ensure
+    if reschedule
+      ReleaseEpisodesJob.set(wait: release_check_delay).perform_later(true)
     end
   end
 

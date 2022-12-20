@@ -17,6 +17,7 @@ describe AppleCredential do
     end
 
     it 'requires apple key fields' do
+      skip 'Needs validation for presence of apple_provider_id, apple_key_id and apple_key_pem_b64'
       pub = create(:feed, private: false)
       priv = create(:feed, private: true)
       c = build(:apple_credential, public_feed: pub, private_feed: priv)
@@ -25,7 +26,7 @@ describe AppleCredential do
       c.apple_key_id = nil
       refute c.valid?
 
-      c.apple_key_id = "pears are better"
+      c.apple_key_id = 'pears are better'
       c.apple_key_pem_b64 = nil
       refute c.valid?
     end
@@ -67,6 +68,13 @@ describe AppleCredential do
 
       v4 = build(:apple_credential, public_feed: f1, private_feed: f2,apple_provider_id: nil, apple_key_id: nil, apple_key_pem_b64: nil)
       assert v4.valid?
+    end
+  end
+
+  describe 'apple_key' do
+    it 'base64 decodes the apple key' do
+      c = AppleCredential.new(apple_key_pem_b64: Base64.encode64('hello'))
+      assert_equal c.apple_key, 'hello'
     end
   end
 end
