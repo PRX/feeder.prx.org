@@ -96,7 +96,6 @@ module Apple
                       sync_completed_at: Time.now.utc,
                       external_id: apple_json['data']['id'])
     rescue Apple::ApiError => e
-      puts e
       SyncLog.create!(feeder_id: public_feed.id, feeder_type: :feeds)
     end
 
