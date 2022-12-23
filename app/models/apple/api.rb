@@ -9,7 +9,7 @@ module Apple
     ERROR_RETRIES = 3
     SUCCESS_CODES = %w(200 201).freeze
 
-    attr_accessor :provider_id, :key_id, :key
+    attr_accessor :provider_id, :key_id, :key, :bridge_url
 
     def self.from_env
       apple_key_pem = Base64.decode64(ENV['APPLE_KEY_PEM_B64'])
@@ -30,11 +30,13 @@ module Apple
       end
     end
 
-    def initialize(**attributes)
-      attributes = attributes.with_indifferent_access
-      @provider_id = attributes[:provider_id]
-      @key_id = attributes[:key_id]
-      @key = attributes[:key]
+    def initialize(provider_id:, key_id:, key:, bridge_url: nil)
+      bridge_url = ENV.fetch('APPLE_API_BRIDGE_URL') unless bridge_url.present?
+
+      @provider_id = provider_id
+      @key_id = key_id
+      @key = key
+      @bridge_url = URI(bridge_url)
     end
 
     def ec_key
@@ -170,12 +172,8 @@ module Apple
       [oks + fixed_errs, remaining_errors]
     end
 
-    def api_bridge_url
-      URI.join(ENV.fetch('APPLE_API_BRIDGE_URL'), '/bridge')
-    end
-
     def bridge_remote(bridge_resource, bridge_options)
-      url = api_bridge_url
+      url = bridge_url
       Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge")
 
       body = {
@@ -207,6 +205,14 @@ module Apple
       oks
     end
 
+    def development_bridge_url?
+      localhost_bridge_url?
+    end
+
+    def localhost_bridge_url?
+      bridge_url.hostname == 'localhost'
+    end
+
     private
 
     def make_bridge_request(uri, body)
@@ -215,7 +221,7 @@ module Apple
       req = set_headers(req)
 
       # test if the apple_bridge_url is https
-      use_ssl = api_bridge_url.scheme == 'https'
+      use_ssl = bridge_url.scheme == 'https'
 
       Net::HTTP.start(uri.hostname, uri.port, use_ssl: use_ssl, read_timeout: 10.minutes) do |http|
         http.request(req)

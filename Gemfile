@@ -62,6 +62,8 @@ gem 'ougai-formatters-customizable'
 gem 'lograge'
 gem 'amazing_print'
 
+gem 'parallel'
+
 #####
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
