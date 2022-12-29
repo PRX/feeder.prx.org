@@ -57,9 +57,6 @@ module Apple
 
       # success
       SyncLog.create!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id)
-    rescue Apple::ApiError => e
-      SyncLog.create!(feeder_id: public_feed.id, feeder_type: :feeds)
-      raise e
     end
 
     def wait_for_upload_processing
