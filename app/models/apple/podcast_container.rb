@@ -57,7 +57,7 @@ module Apple
         if pc = where(apple_episode_id: episode.apple_id,
                       external_id: external_id,
                       episode_id: episode.feeder_id,
-                      vendor_id: episode.audio_asset_vendor_id,).first
+                      vendor_id: episode.audio_asset_vendor_id).first
           Rails.logger.info("Updating local podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
           pc.update(api_response: row,
                     source_url: episode.enclosure_url,
