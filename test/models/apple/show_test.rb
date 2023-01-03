@@ -65,11 +65,13 @@ describe Apple::Show do
     end
 
     it 'logs an incomplete sync record if the upsert fails' do
-      raises_exception = ->(arg) { raise Apple::ApiError.new(arg) }
+      raises_exception = ->(_arg) { raise Apple::ApiError.new('Error', OpenStruct.new(code: 200, body: 'body')) }
       apple_show.stub(:create_or_update_show, raises_exception) do
-        sync = apple_show.sync!
-
-        assert_equal sync.complete?, false
+        sync = nil
+        assert_raises(Apple::ApiError) do
+          sync = apple_show.sync!
+        end
+        assert_nil apple_show.completed_sync_log
       end
     end
   end
