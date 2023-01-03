@@ -144,13 +144,13 @@ module Apple
     end
 
     def unwrap_response(resp)
-      raise Apple::ApiError.new("Apple returning #{resp.code}"), resp.body unless ok_code(resp)
+      raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp)
 
       JSON.parse(resp.body)
     end
 
     def unwrap_bridge_response(resp)
-      raise Apple::ApiError.new("Bridge returning #{resp.code}"), resp.body unless ok_code(resp)
+      raise Apple::ApiError.new("Apple Api Bridge Error", resp) unless ok_code(resp)
 
       parsed = JSON.parse(resp.body)
 
