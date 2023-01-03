@@ -13,7 +13,7 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_feed(podcast, feed)
-    publish_apple(feed) if feed.publish_to_apple?
+    publish_apple(feed)
     publish_rss(podcast, feed)
   end
 
