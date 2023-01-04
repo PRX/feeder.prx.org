@@ -20,7 +20,7 @@ module Apple
           df.upload_operations.map(&:upload_operation_patch_parameters)
         end.flatten
 
-      res = api.bridge_remote('executeUploadOperations', operation_bridge_params)
+      res = api.bridge_remote_and_retry!('executeUploadOperations', operation_bridge_params)
 
       api.unwrap_response(res)
     end
@@ -34,7 +34,7 @@ module Apple
         request_metadata: {
           podcast_delivery_file_id: delivery_file.id
         },
-        api_url: delivery_file.episode.enclosure_url,
+        api_url: delivery_file.podcast_container.source_url,
         api_parameters: operation
       }
     end
