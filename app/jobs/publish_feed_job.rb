@@ -13,15 +13,17 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_feed(podcast, feed)
-    publish_apple(feed) if feed.publish_to_apple?
+    publish_apple(feed)
     publish_rss(podcast, feed)
   end
 
   def publish_apple(feed)
-    return unless feed.publish_to_apple?
-
-    creds = feed.apple_credentials
-    Apple::Publisher.from_apple_credentials(creds).publish!
+    feed.apple_credentials.each do |creds|
+      if feed.publish_to_apple?(creds)
+        publisher = Apple::Publisher.from_apple_credentials(creds)
+        publisher.publish!
+      end
+    end
   end
 
   def publish_rss(podcast, feed)

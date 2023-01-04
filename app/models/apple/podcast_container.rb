@@ -43,7 +43,7 @@ module Apple
         api.bridge_remote_and_retry!('createPodcastContainers',
                                      create_podcast_containers_bridge_params(api, episodes_to_create))
 
-      join_on_apple_episode_id(episodes_to_create, new_containers_response).map do |ep, row|
+      join_on_apple_episode_id(episodes_to_create, new_containers_response).each do |ep, row|
         upsert_podcast_container(ep, row)
       end
 
@@ -54,22 +54,25 @@ module Apple
       external_id = row.dig('api_response', 'val', 'data', 'id')
 
       pc =
-        if pc = where(episode_id: episode.feeder_id,
-                      apple_episode_id: episode.apple_id,
-                      vendor_id: episode.audio_asset_vendor_id,
-                      external_id: external_id).first
+        if pc = where(apple_episode_id: episode.apple_id,
+                      external_id: external_id,
+                      episode_id: episode.feeder_id,
+                      vendor_id: episode.audio_asset_vendor_id).first
           Rails.logger.info("Updating local podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
-          pc.update(api_response: row, updated_at: Time.now.utc)
+          pc.update(api_response: row,
+                    source_url: episode.enclosure_url,
+                    source_filename: episode.enclosure_filename,
+                    updated_at: Time.now.utc)
           pc
         else
           Rails.logger.info("Creating local podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
-          create!(episode_id: episode.feeder_id,
-                  external_id: external_id,
-                  vendor_id: episode.audio_asset_vendor_id,
+          create!(api_response: row,
                   apple_episode_id: episode.apple_id,
-                  source_url: episode.enclosure_url,
+                  external_id: external_id,
                   source_filename: episode.enclosure_filename,
-                  api_response: row)
+                  source_url: episode.enclosure_url,
+                  vendor_id: episode.audio_asset_vendor_id,
+                  episode_id: episode.feeder_id,)
         end
 
       SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id)
