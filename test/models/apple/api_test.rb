@@ -127,4 +127,14 @@ describe Apple::Api do
     end
 
   end
+
+  describe '#localhost_bridge_url' do
+    it 'returns true when the env is configured with a localhost bridge url' do
+      api = Apple::Api.new(provider_id: 'asdf', key_id: 'asdf', key: 'asdf', bridge_url: 'http://localhost:3000')
+      assert api.localhost_bridge_url?
+
+      api = Apple::Api.new(provider_id: 'asdf', key_id: 'asdf', key: 'asdf', bridge_url: 'http://amazon-aws.biz:3000')
+      refute api.localhost_bridge_url?
+    end
+  end
 end

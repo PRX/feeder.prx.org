@@ -20,9 +20,34 @@ module Apple
           df.upload_operations.map(&:upload_operation_patch_parameters)
         end.flatten
 
-      res = api.bridge_remote_and_retry!('executeUploadOperations', operation_bridge_params)
+      res = do_upload(api, operation_bridge_params)
 
-      api.unwrap_response(res)
+      api.unwrap_response(res.flatten)
+    end
+
+    def self.do_uploads(api, operation_bridge_params)
+      res =
+        if api.development_bridge_url?
+          serial_upload(api, operation_bridge_params)
+        else
+          parallel_upload(api, operation_bridge_params)
+        end
+
+      res.flatten
+    end
+
+    def self.serial_upload(api, operation_bridge_params)
+      operation_bridge_params.map do |op|
+        api.bridge_remote_and_retry!('executeUploadOperations', [op])
+      end
+    end
+
+    def self.parallel_upload(api, operation_bridge_params)
+      chunked_slices = operation_bridge_params.each_slice(2).to_a
+
+      Parallel.map(chunked_slices, in_threads: chunked_slices.length) do |ops|
+        api.bridge_remote_and_retry!('executeUploadOperations', ops)
+      end
     end
 
     def podcast_delivery
