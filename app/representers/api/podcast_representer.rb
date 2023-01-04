@@ -68,6 +68,13 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
     } if represented.id
   end
 
+  link :guid do
+    {
+      href: api_podcast_guid_path_template(podcast_id: represented.id.to_s, id: '{guid}'),
+      templated: true
+    } if represented.id
+  end
+
   link :series do
     URI.join(cms_root, represented.prx_uri).to_s if represented.prx_uri
   end
