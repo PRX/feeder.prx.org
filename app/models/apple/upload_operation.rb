@@ -25,7 +25,7 @@ module Apple
       res.flatten
     end
 
-    def self.do_uploads(api, operation_bridge_params)
+    def self.do_upload(api, operation_bridge_params)
       res =
         if api.development_bridge_url?
           serial_upload(api, operation_bridge_params)
