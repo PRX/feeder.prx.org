@@ -63,6 +63,10 @@ module Apple
       @api = api || Apple::Api.from_env
     end
 
+    def item_guid
+      feeder_episode.item_guid
+    end
+
     def feeder_id
       feeder_episode.id
     end
@@ -90,22 +94,6 @@ module Apple
         latest.
         where(feeder_id: feeder_episode.id, feeder_type: :episodes).
         first
-    end
-
-    def item_guid
-      feeder_episode.item_guid
-    end
-
-    def create_or_update_episode!
-      raise 'Not for apple!' unless apple_only?
-
-      if apple_new?
-        create_episode!
-      elsif apple_only?
-        update_episode!
-      end
-
-      sync
     end
 
     def get_episode_bridge_params
