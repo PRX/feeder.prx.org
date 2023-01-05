@@ -22,7 +22,7 @@ module Apple
 
       res = do_upload(api, operation_bridge_params)
 
-      api.unwrap_response(res.flatten)
+      res.flatten
     end
 
     def self.do_uploads(api, operation_bridge_params)
