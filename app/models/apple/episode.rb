@@ -57,11 +57,10 @@ module Apple
       end
     end
 
-    def initialize(**kwargs)
-      kwargs = kwargs.with_indifferent_access
-      @show = kwargs['show']
-      @feeder_episode = kwargs['feeder_episode']
-      @api = kwargs['api'] || Apple::Api.from_env
+    def initialize(show:, feeder_episode:, api: nil)
+      @show = show
+      @feeder_episode = feeder_episode
+      @api = api || Apple::Api.from_env
     end
 
     def feeder_id
