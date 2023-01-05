@@ -40,6 +40,9 @@ module Apple
       podcast_containers = episodes.map(&:podcast_container)
 
       podcast_containers = podcast_containers.reject do |container|
+        # Don't create deliveries for containers that already have deliveries.
+        # An alternative workflow would be to swap out the existing delivery and
+        # upload different audio.
         container.podcast_deliveries.present?
       end
 
@@ -57,7 +60,7 @@ module Apple
       deliveries_response =
         api.bridge_remote_and_retry!('getPodcastDeliveries',
                                      get_podcast_containers_deliveries_bridge_params(podcast_containers))
-      # Rather than mangling and persisting the enumerated view of the deliveries
+      # Rather than mangling and persisting the enumerated view of the deliveries from the containers endpoint,
       # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
       formatted_bridge_params = join_on('podcast_container_id',
                                         podcast_containers,

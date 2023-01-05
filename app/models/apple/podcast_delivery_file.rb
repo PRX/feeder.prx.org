@@ -37,6 +37,7 @@ module Apple
       t_beg = Time.now.utc
       loop_res =
         loop do
+          # TODO: handle timeout
           break false if Time.now.utc - t_beg > 5.minutes
           break true if yield(pdfs)
 
@@ -118,7 +119,7 @@ module Apple
         api.bridge_remote_and_retry!('getPodcastDeliveryFiles',
                                      get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries))
 
-      # Rather than mangling and persisting the enumerated view of the delivery files
+      # Rather than mangling and persisting the enumerated view of the delivery files from the podcast delivery
       # Instead, re-fetch the podcast delivery file from the non-list podcast delivery file resource
       formatted_bridge_params = join_on_apple_episode_id(podcast_deliveries, delivery_files_response).map do |(pd, row)|
         # get the urls to fetch delivery files belonging to this podcast delivery (pd)
@@ -139,7 +140,7 @@ module Apple
       end
     end
 
-    # Query from the podcast delivery side of the api
+    # Plural: Map across the deliveries and get the set of bridge params
     def self.get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries)
       podcast_deliveries.map do |delivery|
         get_delivery_podcast_delivery_files_bridge_param(delivery.apple_episode_id,
@@ -148,7 +149,7 @@ module Apple
       end
     end
 
-    # Query from the podcast delivery side of the api
+    # Singular: Build up the bridge params for a single podcast delivery
     def self.get_delivery_podcast_delivery_files_bridge_param(apple_episode_id, podcast_delivery_id, api_url)
       {
         request_metadata: {
