@@ -23,8 +23,8 @@ describe Apple::UploadOperation do
     it('should serialize when using a developmnt bridge') do
       Apple::UploadOperation.stub(:serial_upload, ['serial']) do
         Apple::UploadOperation.stub(:parallel_upload, ['parallel']) do
-          assert_equal ['serial'], Apple::UploadOperation.do_uploads(localhost_bridge, [])
-          assert_equal ['parallel'], Apple::UploadOperation.do_uploads(prod_bridge, [])
+          assert_equal ['serial'], Apple::UploadOperation.do_upload(localhost_bridge, [])
+          assert_equal ['parallel'], Apple::UploadOperation.do_upload(prod_bridge, [])
         end
       end
     end
