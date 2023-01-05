@@ -200,7 +200,7 @@ module Apple
 
     def bridge_remote_and_retry!(bridge_resource, bridge_options)
       (oks, errs) = bridge_remote_and_retry(bridge_resource, bridge_options)
-      raise Apple::ApiError.new(errs.to_json) if errs.present?
+      raise Apple::ApiError.new(errs.to_json, errs.to_json) if errs.present?
 
       oks
     end
