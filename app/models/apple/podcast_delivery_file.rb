@@ -111,7 +111,7 @@ module Apple
 
     def self.get_podcast_delivery_files(api, pdfs)
       bridge_params = pdfs.map do |pdf|
-        api_url = api.join_url("podcastDeliveryFiles/#{podcast_delivery_file.apple_id}").to_s
+        api_url = api.join_url("podcastDeliveryFiles/#{pdf.apple_id}").to_s
         get_delivery_file_bridge_params(api, pdf, api_url)
       end
       api.bridge_remote_and_retry!('getPodcastDeliveryFiles', bridge_params)
