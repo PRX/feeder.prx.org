@@ -1,7 +1,7 @@
 require 'test_helper'
 
 class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
-  describe 'get_podcast_delivery_deliveries_bridge_param' do
+  describe '.get_delivery_file_bridge_params' do
     it 'should format a single bridge param row' do
       assert_equal({
                      request_metadata: {
@@ -10,9 +10,9 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
                      },
                      api_url: 'http://apple', api_parameters: {}
                    },
-                   Apple::PodcastDeliveryFile.get_delivery_podcast_delivery_files_bridge_param('some-apple-id',
-                                                                                               'podcast-delivery-id',
-                                                                                               'http://apple'))
+                   Apple::PodcastDeliveryFile.get_delivery_file_bridge_params('some-apple-id',
+                                                                              'podcast-delivery-id',
+                                                                              'http://apple'))
     end
   end
 

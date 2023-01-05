@@ -110,7 +110,10 @@ module Apple
     end
 
     def self.get_podcast_delivery_files(api, pdfs)
-      bridge_params = pdfs.map { |pdf| get_delivery_file_bridge_params(api, pdf) }
+      bridge_params = pdfs.map do |pdf|
+        api_url = api.join_url("podcastDeliveryFiles/#{podcast_delivery_file.apple_id}").to_s
+        get_delivery_file_bridge_params(api, pdf, api_url)
+      end
       api.bridge_remote_and_retry!('getPodcastDeliveryFiles', bridge_params)
     end
 
@@ -124,7 +127,7 @@ module Apple
       formatted_bridge_params = join_on_apple_episode_id(podcast_deliveries, delivery_files_response).map do |(pd, row)|
         # get the urls to fetch delivery files belonging to this podcast delivery (pd)
         get_urls_for_delivery_podcast_delivery_files(api, row).map do |url|
-          get_delivery_podcast_delivery_files_bridge_param(pd.apple_episode_id, pd.id, url)
+          get_delivery_file_bridge_params(pd.apple_episode_id, pd.id, url)
         end
       end
 
@@ -140,17 +143,19 @@ module Apple
       end
     end
 
-    # Plural: Map across the deliveries and get the set of bridge params
+    # Map across the podcast deliveries and get the bridge params for each
+    # delivery file via the podcast delivery api endpoint.
     def self.get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries)
       podcast_deliveries.map do |delivery|
-        get_delivery_podcast_delivery_files_bridge_param(delivery.apple_episode_id,
-                                                         delivery.id,
-                                                         delivery.podcast_delivery_files_url)
+        get_delivery_file_bridge_params(delivery.apple_episode_id,
+                                        delivery.id,
+                                        delivery.podcast_delivery_files_url)
       end
     end
 
-    # Singular: Build up the bridge params for a single podcast delivery
-    def self.get_delivery_podcast_delivery_files_bridge_param(apple_episode_id, podcast_delivery_id, api_url)
+    # Build up the bridge params for a single podcast delivery file
+    # The api_url is agnostic as to which endpoint to hit, so we can use the same method
+    def self.get_delivery_file_bridge_params(apple_episode_id, podcast_delivery_id, api_url)
       {
         request_metadata: {
           apple_episode_id: apple_episode_id,
@@ -158,16 +163,6 @@ module Apple
         },
         api_url: api_url,
         api_parameters: {}
-      }
-    end
-
-    def self.get_delivery_file_bridge_params(api, podcast_delivery_file)
-      {
-        request_metadata: {
-          podcast_delivery_file_id: podcast_delivery_file.id,
-          podcast_delivery_id: podcast_delivery_file.podcast_delivery.id
-        },
-        api_url: api.join_url("podcastDeliveryFiles/#{podcast_delivery_file.apple_id}").to_s
       }
     end
 
