@@ -4,7 +4,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '2.7.5'
 
 ##### app gems
-gem 'prx_auth-rails', '~> 3.0.1'
+gem 'prx_auth-rails', github: 'PRX/prx_auth-rails', branch: 'feat/configure_cert_host'
 gem 'prx_auth'
 
 gem 'roar-rails', github: 'PRX/roar-rails', branch: 'feat/rails_7'
