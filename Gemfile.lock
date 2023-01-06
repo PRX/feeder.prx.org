@@ -1,13 +1,4 @@
 GIT
-  remote: https://github.com/PRX/prx_auth-rails.git
-  revision: 580ac2f596c7ba5d059fda59005f863bf6eebb64
-  branch: feat/configure_cert_host
-  specs:
-    prx_auth-rails (4.0.0)
-      actionpack
-      prx_auth (>= 1.7.0)
-
-GIT
   remote: https://github.com/PRX/roar-rails.git
   revision: bd93d7f75f2fc91fac35137dcf0c2d5783889acc
   branch: feat/rails_7
@@ -265,6 +256,9 @@ GEM
       json (>= 1.8.1)
       json-jwt (~> 1.12.0)
       rack (>= 1.5.2)
+    prx_auth-rails (4.0.0)
+      actionpack
+      prx_auth (>= 1.7.0)
     pry (0.14.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -451,7 +445,7 @@ DEPENDENCIES
   paranoia
   pg (~> 1.1)
   prx_auth
-  prx_auth-rails!
+  prx_auth-rails (~> 4.0.0)
   pry
   pry-byebug
   puma (~> 5.0)
