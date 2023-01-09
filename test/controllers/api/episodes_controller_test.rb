@@ -24,6 +24,19 @@ describe Api::EpisodesController do
     assert_response :success
   end
 
+  it 'should show by item guid' do
+    refute_nil episode.id
+
+    # mock request path to be /guids/ (actual values don't matter for tests)
+    request.path = '/api/v1/podcasts/1234/guids/abcd1234'
+
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode.item_guid })
+    assert_response :success
+
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode.guid })
+    assert_response 404
+  end
+
   it 'should return resource gone for deleted resource' do
     refute_nil episode_deleted.id
     get(:show, params: { api_version: 'v1', format: 'json', id: episode_deleted.guid })
