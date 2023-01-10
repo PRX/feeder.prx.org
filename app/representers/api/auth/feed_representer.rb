@@ -31,7 +31,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
              decorator: Api::FeedTokenRepresenter,
              class: FeedToken
 
-  def self_url(feed)    
+  def self_url(feed)
     api_authorization_podcast_feed_path(podcast_id: feed.podcast_id, id: feed.id)
   end
 
@@ -41,17 +41,9 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
 
   link :private_feed do
     {
-      href: represented.published_url + auth_param_format,
+      href: represented.published_url,
       templated: true,
       type: 'application/rss+xml'
     }
-  end
-
-  def auth_param_format
-    if represented.private?
-      '{?auth}'
-    else
-      ''
-    end
   end
 end
