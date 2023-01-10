@@ -72,18 +72,6 @@ class Episode < ApplicationRecord
     (story.links['self'].href || '').gsub('/authorization/', '/')
   end
 
-  def self.generate_item_guid(podcast_id, episode_guid)
-    "prx_#{podcast_id}_#{episode_guid}"
-  end
-
-  def self.decode_item_guid(item_guid)
-    item_guid.sub(/^prx_[0-9]+_/, '') if item_guid&.starts_with?('prx_')
-  end
-
-  def self.find_by_item_guid(guid)
-    where(original_guid: guid).or(where(original_guid: nil, guid: decode_item_guid(guid))).first
-  end
-
   def publish_updated
     podcast.publish_updated if podcast
   end
@@ -143,7 +131,7 @@ class Episode < ApplicationRecord
   end
 
   def item_guid
-    original_guid || self.class.generate_item_guid(podcast_id, guid)
+    original_guid || "prx_#{podcast_id}_#{guid}"
   end
 
   def item_guid=(new_guid)

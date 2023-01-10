@@ -22,15 +22,6 @@ class Api::AuthorizationRepresenter < Api::BaseRepresenter
     }
   end
 
-  link :guid do
-    {
-      title: 'Get a single episode by item guid',
-      profile: profile_url(:episode),
-      href: api_authorization_podcast_guid_path_template(podcast_id: '{id}', id: '{guid}'),
-      templated: true
-    }
-  end
-
   link :podcasts do
     {
       title: 'Get a paged collection of authorized podcasts',

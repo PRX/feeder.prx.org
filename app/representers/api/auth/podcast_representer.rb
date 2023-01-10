@@ -14,14 +14,6 @@ class Api::Auth::PodcastRepresenter < Api::PodcastRepresenter
     } if represented.id
   end
 
-  # point to authorized item guids (including unpublished)
-  link :guid do
-    {
-      href: api_authorization_podcast_guid_path_template(podcast_id: represented.id.to_s, id: '{guid}'),
-      templated: true
-    } if represented.id
-  end
-
   # point to authorized feeds (including private)
   link :feeds do
     {
