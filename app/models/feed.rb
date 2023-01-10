@@ -20,7 +20,8 @@ class Feed < ApplicationRecord
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
 
-  has_many :apple_credentials, autosave: true, dependent: :destroy, foreign_key: :public_feed_id
+  has_many :apple_credentials, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
+                               class_name: '::Apple::Credential'
 
   has_one :feed_image, -> { complete.order('created_at DESC') }, autosave: true, dependent: :destroy
   has_many :feed_images, -> { order('created_at DESC') }, autosave: true, dependent: :destroy
@@ -158,6 +159,7 @@ class Feed < ApplicationRecord
 
   # API updates for feed_image=
   def feed_image_file; feed_images.first; end
+
   def feed_image_file=(file)
     img = FeedImage.build(file)
     if img && img.original_url != feed_image_file.try(:original_url)
@@ -169,6 +171,7 @@ class Feed < ApplicationRecord
 
   # API updates for itunes_image=
   def itunes_image_file; itunes_images.first; end
+
   def itunes_image_file=(file)
     img = ITunesImage.build(file)
     if img && img.original_url != itunes_image_file.try(:original_url)
