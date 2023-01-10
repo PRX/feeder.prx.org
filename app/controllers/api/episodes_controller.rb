@@ -3,9 +3,9 @@ class Api::EpisodesController < Api::BaseController
 
   api_versions :v1
   represent_with Api::EpisodeRepresenter
-  find_method :find_by_guid
   filter_resources_by :podcast_id
 
+  before_action :set_find_method
   after_action :process_media, only: [:create, :update]
   after_action :publish, only: [:create, :update, :destroy]
 
@@ -68,6 +68,16 @@ class Api::EpisodesController < Api::BaseController
 
   def sorted(res)
     res.order(Arel.sql('published_at DESC, id DESC'))
+  end
+
+  # alter find_by to search by guid OR item_guid
+  def set_find_method
+    self.class.find_method =
+      if request.path.include?('/guids/')
+        :find_by_item_guid
+      else
+        :find_by_guid
+      end
   end
 
   def process_media
