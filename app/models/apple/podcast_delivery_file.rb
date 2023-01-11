@@ -73,7 +73,6 @@ module Apple
     def self.create_podcast_delivery_files(api, episodes)
       return [] if episodes.empty?
 
-      # TODO: handle multiple containers
       podcast_containers = episodes.map(&:podcast_container)
       podcast_deliveries = podcast_containers.map do |pc|
         raise('Missing podcast deliveries') if pc.podcast_deliveries.empty?

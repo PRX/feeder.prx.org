@@ -36,7 +36,7 @@ module Apple
     end
 
     def self.create_podcast_deliveries(api, episodes)
-      # TODO: Support multiple containers per episode
+      # TODO: Support multiple deliveries per episode
       podcast_containers = episodes.map(&:podcast_container)
 
       podcast_containers = podcast_containers.reject do |container|

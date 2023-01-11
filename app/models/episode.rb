@@ -35,11 +35,11 @@ class Episode < ApplicationRecord
            -> { order('created_at DESC') },
            autosave: true, dependent: :destroy
 
-  has_many :apple_podcast_containers, class_name: "Apple::PodcastContainer"
-  has_many :apple_podcast_deliveries, through: :apple_podcast_containers, source: :podcast_deliveries,
-                                      class_name: "Apple::PodcastDelivery"
+  has_one :apple_podcast_container, class_name: 'Apple::PodcastContainer'
+  has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
+                                      class_name: 'Apple::PodcastDelivery'
   has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
-                                          class_name: "Apple::PodcastDeliveryFile"
+                                          class_name: 'Apple::PodcastDeliveryFile'
 
   validates :podcast_id, :guid, presence: true
   validates :original_guid, uniqueness: { scope: :podcast_id, allow_nil: true }

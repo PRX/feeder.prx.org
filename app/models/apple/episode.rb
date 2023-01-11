@@ -251,8 +251,7 @@ module Apple
     end
 
     def podcast_container
-      # TODO: differentiate these by container type: audio versus images
-      Apple::PodcastContainer.find_by(episode_id: feeder_episode.id)
+      feeder_episode.podcast_container
     end
 
     def podcast_deliveries

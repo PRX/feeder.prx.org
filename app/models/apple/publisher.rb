@@ -88,9 +88,9 @@ module Apple
     end
 
     def sync_podcast_containers!
-      # TODO: right now we only create one container,
-      # Apple RSS scaping means we don't need containers for freemium episode images
-      # But we do need asset containers for apple-only (non-rss) images
+      # TODO: right now we only create one delivery per container,
+      # Apple RSS scaping means we don't need deliveries for freemium episode images
+      # But we do need asset deliveries for apple-only (non-rss) images
 
       Rails.logger.info('Starting podcast container sync')
 
