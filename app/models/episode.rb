@@ -56,13 +56,13 @@ class Episode < ApplicationRecord
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
-  scope :published_by, -> (offset) { where('published_at IS NOT NULL AND published_at <= ?', Time.now + offset) }
+  scope :published_by, ->(offset) { where('published_at IS NOT NULL AND published_at <= ?', Time.now + offset) }
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
-  alias_method :podcast_containers, :apple_podcast_containers
+  alias_method :podcast_container, :apple_podcast_container
 
-  def self.release_episodes!(options = {})
+  def self.release_episodes!(_options = {})
     podcasts = []
     episodes_to_release.each do |e|
       podcasts << e.podcast
@@ -100,7 +100,7 @@ class Episode < ApplicationRecord
   def apple_delivery_file_errors
     # TODO: for now these are all considered audio files
 
-    apple_delivery_files.map { |p| p.asset_processing_state["errors"] }.flatten
+    apple_delivery_files.map { |p| p.asset_processing_state['errors'] }.flatten
   end
 
   def categories_include?(match_tags)
@@ -145,6 +145,7 @@ class Episode < ApplicationRecord
 
   # API updates for image=
   def image_file; images.first; end
+
   def image_file=(file)
     img = EpisodeImage.build(file)
     if img && img.original_url != image_file.try(:original_url)
@@ -286,7 +287,7 @@ class Episode < ApplicationRecord
 
   # used in the API, both read and write
   def media_files
-    !contents.blank? ? contents : Array(enclosure)
+    contents.blank? ? Array(enclosure) : contents
   end
 
   # API updates for media= ... just append new files and reprocess
@@ -305,6 +306,7 @@ class Episode < ApplicationRecord
   # find existing content by the last 2 segments of the url
   def find_existing_content(pos, url)
     return nil if url.blank?
+
     content_file = URI.parse(url || '').path.split('/')[-2, 2].join('/')
     content_file = "/#{content_file}" unless content_file[0] == '/'
     all_contents.where(position: pos).where(
@@ -315,11 +317,12 @@ class Episode < ApplicationRecord
 
   def find_existing_image(url)
     return nil if url.blank?
+
     images.where(original_url: url).order(created_at: :desc).first
   end
 
   def all_media_files
-    !all_contents.blank? ? all_contents : Array(enclosures)
+    all_contents.blank? ? Array(enclosures) : all_contents
   end
 
   def audio_files
@@ -328,9 +331,10 @@ class Episode < ApplicationRecord
 
   def set_external_keyword
     return unless !published_at.nil? && keyword_xid.nil?
+
     identifiers = []
     %i[published_at guid].each do |attr|
-      identifiers << sanitize_keyword(self.send(attr), 10)
+      identifiers << sanitize_keyword(send(attr), 10)
     end
     identifiers << sanitize_keyword(title || 'undefined', 20)
     self.keyword_xid = identifiers.join('_')
