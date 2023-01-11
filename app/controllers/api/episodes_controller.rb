@@ -64,7 +64,7 @@ class Api::EpisodesController < Api::BaseController
       respond_with_error(ResourceGone.new)
     elsif !show_resource.published?
       if EpisodePolicy.new(pundit_user, show_resource).update?
-        redirect_to api_authorization_episode_path(api_version, show_resource)
+        redirect_to api_authorization_episode_path(api_version, show_resource.guid)
       else
         respond_with_error(HalApi::Errors::NotFound.new)
       end
