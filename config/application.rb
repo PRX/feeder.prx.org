@@ -74,14 +74,6 @@ module Feeder
       end
     end
 
-    # prx_auth-rails
-    if ENV['ID_HOST'].present?
-      protocol = ENV['ID_HOST'].include?('.docker') ? 'http' : 'https'
-      config.middleware.insert_after Rack::Head, Rack::PrxAuth,
-                                     cert_location: "#{protocol}://#{ENV['ID_HOST']}/api/v1/certs",
-                                     issuer: ENV['ID_HOST']
-    end
-
     config.representer.represented_formats = [:hal, :json]
     config.representer.default_url_options = { host: (ENV['FEEDER_HOST'] || 'feeder.prx.org') }
 

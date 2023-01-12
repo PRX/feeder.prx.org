@@ -24,6 +24,16 @@ describe Api::EpisodesController do
     assert_response :success
   end
 
+  it 'should show by item guid' do
+    refute_nil episode.id
+
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode.item_guid, guid_resource: true })
+    assert_response :success
+
+    get(:show, params: { api_version: 'v1', format: 'json', id: episode.guid, guid_resource: true })
+    assert_response 404
+  end
+
   it 'should return resource gone for deleted resource' do
     refute_nil episode_deleted.id
     get(:show, params: { api_version: 'v1', format: 'json', id: episode_deleted.guid })

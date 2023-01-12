@@ -3,11 +3,12 @@ class Api::EpisodesController < Api::BaseController
 
   api_versions :v1
   represent_with Api::EpisodeRepresenter
-  find_method :find_by_guid
   filter_resources_by :podcast_id
 
+  find_method :find_by_guid
   after_action :process_media, only: [:create, :update]
   after_action :publish, only: [:create, :update, :destroy]
+  allow_params :show, [:id, :podcast_id, :guid_resource, :api_version, :format, :zoom]
 
   def included(relation)
     if action_name == 'index'
@@ -42,6 +43,17 @@ class Api::EpisodesController < Api::BaseController
 
   def show
     super if visible?
+  end
+
+  def show_resource
+    if params[:guid_resource]
+      resource = Episode.find_by_item_guid(params[:id])
+      raise HalApi::Errors::NotFound.new if resource.nil?
+
+      @episode = resource
+    end
+
+    super
   end
 
   def visible?

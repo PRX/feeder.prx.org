@@ -50,6 +50,28 @@ describe Episode do
   it 'returns a guid to use in the channel item' do
     episode.guid = 'guid'
     assert_equal episode.item_guid, "prx_#{episode.podcast_id}_guid"
+    assert_equal Episode.generate_item_guid(123, 'abc'), 'prx_123_abc'
+  end
+
+  it 'decodes guids from channel item guids' do
+    assert_equal Episode.decode_item_guid('prx_123_abc'), 'abc'
+    assert_equal Episode.decode_item_guid('prx_123_abc_def_ghi'), 'abc_def_ghi'
+    assert_nil Episode.decode_item_guid('anything')
+  end
+
+  it 'finds episodes by item guid' do
+    episode = create(:episode)
+    generated_guid = "prx_#{episode.podcast_id}_#{episode.guid}"
+
+    assert_nil episode.original_guid
+    assert_equal episode.item_guid, generated_guid
+    assert_equal Episode.find_by_item_guid(generated_guid), episode
+    assert_nil Episode.find_by_item_guid('anything-else')
+
+    episode.update!(original_guid: 'something-original')
+    assert_equal episode.item_guid, 'something-original'
+    assert_equal Episode.find_by_item_guid('something-original'), episode
+    assert_nil Episode.find_by_item_guid(generated_guid)
   end
 
   it 'is ready to add to a feed' do

@@ -200,7 +200,7 @@ GEM
       activesupport (>= 4)
       railties (>= 4)
       request_store (~> 1.0)
-    loofah (2.19.0)
+    loofah (2.19.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.7.1)
@@ -232,7 +232,7 @@ GEM
       net-protocol
     newrelic_rpm (8.13.1)
     nio4r (2.5.8)
-    nokogiri (1.13.9)
+    nokogiri (1.13.10)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
     oauth2 (1.4.11)
@@ -256,7 +256,7 @@ GEM
       json (>= 1.8.1)
       json-jwt (~> 1.12.0)
       rack (>= 1.5.2)
-    prx_auth-rails (3.0.1)
+    prx_auth-rails (4.0.0)
       actionpack
       prx_auth (>= 1.7.0)
     pry (0.14.1)
@@ -270,7 +270,7 @@ GEM
       nio4r (~> 2.0)
     pundit (2.0.1)
       activesupport (>= 3.0.0)
-    racc (1.6.0)
+    racc (1.6.1)
     rack (2.2.4)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
@@ -297,8 +297,8 @@ GEM
     rails-dom-testing (2.0.3)
       activesupport (>= 4.2.0)
       nokogiri (>= 1.6)
-    rails-html-sanitizer (1.4.3)
-      loofah (~> 2.3)
+    rails-html-sanitizer (1.4.4)
+      loofah (~> 2.19, >= 2.19.1)
     railties (7.0.4)
       actionpack (= 7.0.4)
       activesupport (= 7.0.4)
@@ -446,7 +446,7 @@ DEPENDENCIES
   paranoia
   pg (~> 1.1)
   prx_auth
-  prx_auth-rails (~> 3.0.1)
+  prx_auth-rails (~> 4.0.0)
   pry
   pry-byebug
   puma (~> 5.0)

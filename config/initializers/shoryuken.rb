@@ -10,7 +10,5 @@ Shoryuken.default_worker_options = {
 }
 
 Shoryuken.configure_server do |_config|
-  Rails.logger = Shoryuken::Logging.logger
-  ActiveJob::Base.logger = Shoryuken::Logging.logger
-  ActiveRecord::Base.logger = Shoryuken::Logging.logger
+  Shoryuken::Logging.logger = Rails.logger
 end
