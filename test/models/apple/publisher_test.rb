@@ -17,7 +17,6 @@ describe Apple::Publisher do
     stub_request(:get, 'https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200').
       to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
 
-    public_feed.exclude_tags = [Episode::APPLE_FREEMIUM_TAG, Episode::APPLE_ONLY_TAG]
     public_feed.save!
   end
 
@@ -32,7 +31,9 @@ describe Apple::Publisher do
     let(:episode) { create(:episode, podcast: podcast) }
 
     before do
-      episode.categories = [Episode::APPLE_FREEMIUM_TAG]
+      episode.categories = ['bonus']
+      public_feed.exclude_tags = ['bonus']
+      public_feed.save!
       episode.save!
     end
 

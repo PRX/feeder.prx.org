@@ -310,25 +310,6 @@ describe Episode do
     end
   end
 
-  describe '#apple?' do
-    it 'is set via a category' do
-      episode.update!(categories: [Episode::APPLE_FREEMIUM_TAG, Episode::APPLE_ONLY_TAG])
-
-      assert_equal episode.apple?, true
-      assert_equal episode.apple_only?, true
-
-      episode.update!(categories: [Episode::APPLE_FREEMIUM_TAG])
-
-      assert_equal episode.apple?, true
-      assert_equal episode.apple_only?, false
-
-      episode.update!(categories: ['unrelated'])
-
-      assert_equal episode.apple?, false
-      assert_equal episode.apple_only?, false
-    end
-  end
-
   describe '#normalize_category' do
     it 'converts multiple spaces to a single space' do
       assert_equal episode.normalize_category('asdf      qwer'), 'asdf qwer'

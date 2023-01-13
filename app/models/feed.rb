@@ -106,14 +106,6 @@ class Feed < ApplicationRecord
     !exclude_tags.nil?
   end
 
-  def apple_filtered_episodes
-    podcast.
-      episodes.
-      published_by(episode_offset_seconds.to_i).
-      to_a.
-      select(&:apple?)
-  end
-
   def publish_to_apple?(creds)
     creds.present? && creds.public_feed == self
   end

@@ -7,9 +7,6 @@ require 'uri'
 class Episode < ApplicationRecord
   include TextSanitizer
 
-  APPLE_FREEMIUM_TAG = 'adfree'
-  APPLE_ONLY_TAG = 'apple-exclusive'
-
   serialize :categories, JSON
   serialize :keywords, JSON
 
@@ -81,14 +78,6 @@ class Episode < ApplicationRecord
 
   def self.story_uri(story)
     (story.links['self'].href || '').gsub('/authorization/', '/')
-  end
-
-  def apple?
-    categories_include?([APPLE_FREEMIUM_TAG, APPLE_ONLY_TAG].freeze)
-  end
-
-  def apple_only?
-    categories_include?([APPLE_ONLY_TAG].freeze)
   end
 
   def apple_file_errors?
