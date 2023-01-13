@@ -7,7 +7,7 @@ require 'uri'
 class Episode < ApplicationRecord
   include TextSanitizer
 
-  APPLE_FREEMIUM_TAG = 'apple-subscriber'
+  APPLE_FREEMIUM_TAG = 'adfree'
   APPLE_ONLY_TAG = 'apple-exclusive'
 
   serialize :categories, JSON
