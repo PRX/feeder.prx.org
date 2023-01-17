@@ -11,7 +11,9 @@ module Apple
     belongs_to :episode, class_name: '::Episode'
 
     def self.update_podcast_container_file_metadata(api, episodes)
-      containers = Apple::PodcastContainer.where(episode_id: episodes.map(&:feeder_id))
+      containers = episodes.map(&:podcast_container)
+      raise 'Missing podcast container for episode' if containers.any?(&:nil?)
+
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
 
       api.bridge_remote_and_retry!('headFileSizes', containers.map(&:head_file_size_bridge_params)).
