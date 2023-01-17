@@ -37,22 +37,11 @@ gem 'fastimage'
 gem 'paranoia'
 gem 'sanitize'
 
-# views
-gem 'actionpack-action_caching' # for hal_api-rails
-gem 'hal_api-rails', '~> 1.2.0'
-gem 'importmap-rails'
-gem 'jbuilder'
-gem 'kaminari'
-gem 'roar-rails', github: 'PRX/roar-rails', branch: 'feat/rails_7'
-gem 'sprockets-rails'
-gem 'stimulus-rails'
-gem 'turbo-rails'
-
 # monitoring/logging
+gem 'lograge'
 gem 'newrelic_rpm'
 gem 'ougai'
 gem 'ougai-formatters-customizable'
-gem 'lograge'
 
 # background workers
 gem 'say_when', '~> 2.2.1'
