@@ -40,11 +40,11 @@ describe 'RSS feed Integration Test' do
     image_xml = @feed.css('image')
 
     assert_equal image_xml.css('url').text, @channel_image.url
-    assert_equal image_xml.css('title').text, @channel_image.title
-    assert_equal image_xml.css('link').text, @channel_image.link
+    assert_equal image_xml.css('title').text, @podcast.title
+    assert_equal image_xml.css('link').text, @podcast.link
     assert_equal image_xml.css('width').text, @channel_image.width.to_s
     assert_equal image_xml.css('height').text, @channel_image.height.to_s
-    assert_equal image_xml.css('description').text, @channel_image.description
+    assert_equal image_xml.css('description').text, @podcast.subtitle
   end
 
   it 'displays iTunes categories correctly' do
