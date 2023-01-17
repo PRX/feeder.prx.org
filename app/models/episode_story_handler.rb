@@ -94,15 +94,14 @@ class EpisodeStoryHandler
   end
 
   def update_image
-    image = story.objects['prx:image'] rescue nil
-    href = image.links['original'].href rescue nil
+    cms_image = story.objects['prx:image'] rescue nil
+    cms_href = cms_image.links['original'].href rescue nil
 
-    episode.image_file = href
+    episode.image_file = cms_href
+
     if episode.image_file
-      episode.image_file.caption = image.attributes['caption']
-      episode.image_file.credit = image.attributes['credit']
-    else
-      episode.image_file = nil
+      episode.image_file.caption = cms_image.attributes['caption']
+      episode.image_file.credit = cms_image.attributes['credit']
     end
   end
 
