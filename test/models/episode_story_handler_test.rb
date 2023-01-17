@@ -16,7 +16,7 @@ describe EpisodeStoryHandler do
   end
 
   before {
-    stub_request(:get, 'https://cms.prx.org/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/lindsay.png').
+    stub_request(:get, 'https://cms.prx.org/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/transistor1400.jpg').
       to_return(status: 200, body: test_file('/fixtures/transistor1400.jpg'), headers: {})
   }
 
@@ -37,9 +37,23 @@ describe EpisodeStoryHandler do
     assert_equal episode.season_number, 2
     assert_equal episode.episode_number, 4
     assert_equal episode.clean_title, 'Stripped-down title'
+    assert_equal episode.production_notes, 'Some production notes'
     assert_equal episode.prx_audio_version_uri, '/api/v1/audio_versions/35397'
     assert_equal episode.audio_version, 'Audio Version'
     assert_equal episode.segment_count, 4
+
+    # should have one unprocessed image
+    assert_nil episode.image
+    assert_equal 1, episode.images.count
+    assert_equal episode.images.first, episode.image_file
+    assert_equal 'created', episode.image_file.status
+    assert_equal 'transistor1400.jpg', episode.image_file.file_name
+    assert_equal 'jpeg', episode.image_file.format
+    assert_equal 36, episode.image_file.guid.length
+    assert_equal 1400, episode.image_file.height
+    assert_equal 1400, episode.image_file.width
+    assert_equal 'some-caption', episode.image_file.caption
+    assert_equal 'some-credit', episode.image_file.credit
   end
 
   describe 'with episode identifiers' do
