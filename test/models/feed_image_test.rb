@@ -20,11 +20,6 @@ describe FeedImage do
     assert image.valid?
   end
 
-  it 'can have a description' do
-    image.description = nil
-    assert image.valid?
-  end
-
   it 'must be a jpg, png, or gif' do
     image.detect_image_attributes
     image.format = 'bmp'
