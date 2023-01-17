@@ -75,6 +75,9 @@ module Apple
                   episode_id: episode.feeder_id,)
         end
 
+      # reset the episode's podcast container cached value
+      episode.feeder_episode.reload_apple_podcast_container
+
       SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id)
 
       pc

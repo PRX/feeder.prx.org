@@ -46,6 +46,26 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
 
+    it 'should reload the feeder episodes apple_podcast_container attribute' do
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+
+          # show that the call to upsert_podcast_container will reload the
+          # feeder episode's apple_podcast_container attribute
+
+          # Set the apple_podcast_container to a value that is not the pc1 result
+          apple_episode.feeder_episode.build_apple_podcast_container(vendor_id: 'not this one!')
+          assert_equal 'not this one!', apple_episode.podcast_container.vendor_id
+
+          pc1 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+                                                                 podcast_container_json_row)
+          # The apple_podcast_container should be reloaded
+          # it reflects the stubbed apple_audio_assed_vendor_id, now upserted as a col in pc1
+          assert_equal 'apple-vendor-id', apple_episode.podcast_container.vendor_id
+        end
+      end
+    end
+
     it 'should update timestamps when upserting' do
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
