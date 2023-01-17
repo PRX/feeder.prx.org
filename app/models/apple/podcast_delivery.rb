@@ -98,6 +98,9 @@ module Apple
                                          api_response: row)
         end
 
+      # Flush the cache on the podcast container
+      podcast_container.podcast_deliveries.reset
+
       SyncLog.create!(feeder_id: pd.id, feeder_type: :podcast_deliveries, external_id: external_id)
 
       pd
