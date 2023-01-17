@@ -11,7 +11,7 @@ module Apple
 
     def format_message(message, response)
       "#{message}\n" +
-        "HTTP resp code:#{response.code}\n" +
+        "HTTP resp code:#{response.try(:code)}\n" +
         response.body.to_s
     end
   end
