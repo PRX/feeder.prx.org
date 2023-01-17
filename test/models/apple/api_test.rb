@@ -137,4 +137,11 @@ describe Apple::Api do
       refute api.localhost_bridge_url?
     end
   end
+
+  describe '#set_headers' do
+    it 'sets a User-Agent header' do
+      headers = api.set_headers({})
+      assert_equal headers['User-Agent'], 'PRX-Feeder-Apple/1.0 (Rails-test)'
+    end
+  end
 end

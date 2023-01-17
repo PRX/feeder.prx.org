@@ -70,6 +70,7 @@ module Apple
     def set_headers(req)
       req['Authorization'] = "Bearer #{jwt}"
       req['Content-Type'] = 'application/json'
+      req['User-Agent'] = "PRX-Feeder-Apple/1.0 (Rails-#{Rails.env})"
 
       req
     end
