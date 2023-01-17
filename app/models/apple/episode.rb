@@ -228,10 +228,6 @@ module Apple
       !apple_persisted?
     end
 
-    def apple_only?
-      feeder_episode.apple_only?
-    end
-
     def apple_persisted?
       apple_json.present?
     end

@@ -79,7 +79,7 @@ module Apple
       create_apple_episodes = episodes_to_sync.select(&:apple_new?)
       Rails.logger.info("Created remote / local state for #{create_apple_episodes.length} episodes.")
 
-      update_apple_episodes = episodes_to_sync.select { |ep| ep.apple_persisted? && ep.apple_only? }
+      update_apple_episodes = episodes_to_sync.select { |ep| ep.apple_persisted? }
       Rails.logger.info("Updated remote / local state for #{update_apple_episodes.length} episodes.")
 
       Apple::Episode.create_episodes(api, create_apple_episodes)
