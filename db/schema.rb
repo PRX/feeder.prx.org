@@ -128,10 +128,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_13_203943) do
     t.datetime "updated_at", precision: nil, null: false
     t.string "enclosure_prefix"
     t.string "enclosure_template"
+    t.text "exclude_tags"
     t.text "subtitle"
     t.text "description"
     t.text "summary"
-    t.text "exclude_tags"
     t.boolean "include_podcast_value", default: true
     t.boolean "include_donation_url", default: true
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
