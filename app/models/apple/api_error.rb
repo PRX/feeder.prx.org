@@ -10,9 +10,17 @@ module Apple
     end
 
     def format_message(message, response)
-      "#{message}\n" +
-        "HTTP resp code:#{response.try(:code)}\n" +
+      resp = "#{message}\n"
+
+      if response.try(:code).present?
+        resp += "HTTP resp code:#{response.try(:code)}\n"
+      end
+
+      if response.try(:body).present?
         response.body.to_s
+      end
+
+      resp
     end
   end
 end
