@@ -17,7 +17,7 @@ module Apple
       end
 
       if response.try(:body).present?
-        response.body.to_s
+        resp += response.body.to_s
       end
 
       resp
