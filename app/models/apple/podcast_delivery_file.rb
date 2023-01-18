@@ -54,7 +54,7 @@ module Apple
       unwrapped = get_podcast_delivery_files(api, pdfs)
 
       pdfs.each do |pdf|
-        matched = unwrapped.detect { |r| r['request_metadata']['podcast_delivery_id'] == pdf.delivery_file_id }
+        matched = unwrapped.detect { |r| r['request_metadata']['podcast_delivery_id'] == pdf.podcast_delivery_id }
         raise 'Missing response for podcast delivery file' unless matched.present?
 
         pdf.api_response = matched
