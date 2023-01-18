@@ -310,16 +310,6 @@ describe Episode do
     end
   end
 
-  describe '#normalize_category' do
-    it 'converts multiple spaces to a single space' do
-      assert_equal episode.normalize_category('asdf      qwer'), 'asdf qwer'
-    end
-
-    it 'converts to lower case' do
-      assert_equal episode.normalize_category('AsDf'), 'asdf'
-    end
-  end
-
   describe '#image' do
     it 'replaces images' do
       refute_nil episode.image_file

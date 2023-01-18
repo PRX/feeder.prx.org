@@ -92,16 +92,6 @@ class Episode < ApplicationRecord
     apple_delivery_files.map { |p| p.asset_processing_state['errors'] }.flatten
   end
 
-  def categories_include?(match_tags)
-    tags = match_tags.map { |cat| normalize_category(cat) }
-    cats = categories.map { |cat| normalize_category(cat) }
-    (tags & cats).length > 0
-  end
-
-  def normalize_category(cat)
-    cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip
-  end
-
   def self.generate_item_guid(podcast_id, episode_guid)
     "prx_#{podcast_id}_#{episode_guid}"
   end
