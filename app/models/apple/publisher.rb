@@ -63,8 +63,26 @@ module Apple
 
       publish_drafting!
 
+      log_delivery_processing_errors
+
       # success
       SyncLog.create!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id)
+    end
+
+    def log_delivery_processing_errors
+      episodes_to_sync.each do |ep|
+        ep.podcast_delivery_files.each do |pdf|
+          if pdf.processed_errors?
+            Rails.logger.error('Episode has processing errors',
+                               {episode_id: ep.feeder_id,
+                                podcast_delivery_file_id: pdf.id,
+                                assert_processing_state: pdf.asset_processing_state,
+                                asset_delivery_state: pdf.asset_delivery_state, })
+          end
+        end
+      end
+
+      true
     end
 
     def wait_for_upload_processing
