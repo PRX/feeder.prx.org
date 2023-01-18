@@ -2,7 +2,6 @@ require 'addressable/uri'
 require 'addressable/template'
 require 'hash_serializer'
 require 'text_sanitizer'
-require 'uri'
 
 class Episode < ApplicationRecord
   include TextSanitizer

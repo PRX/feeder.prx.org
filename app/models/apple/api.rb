@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require 'uri'
-require 'net/http'
-require 'base64'
-
 module Apple
   class Api
     ERROR_RETRIES = 3

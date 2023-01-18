@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'uri'
-
 module Apple
   class UploadOperation
     attr_reader :delivery_file, :api, :operation

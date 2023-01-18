@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'uri'
-
 module Apple
   class Episode
     attr_accessor :show, :feeder_episode, :api
