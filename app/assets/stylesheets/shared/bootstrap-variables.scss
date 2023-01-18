@@ -1,0 +1,75 @@
+// custom bootstrap variables overrides
+// NOTE: this file gets included _before_ the default bootstrap variables
+// https://github.com/twbs/bootstrap-rubygem/blob/master/assets/stylesheets/bootstrap/_variables.scss
+$font-family-base: 'Roboto',
+sans-serif;
+
+$white: #fff;
+$black: #000;
+
+$gray-100: #f5f5f5;
+$gray-200: #e9e9ec;
+$gray-300: #dddde0;
+$gray-400: #bebec2;
+$gray-500: #98989c;
+$gray-600: #727276;
+$gray-700: #535355;
+$gray-800: #323233;
+$gray-900: #1a1a1a;
+
+$blue: #0072A3;
+$indigo: #6610f2;
+$purple: #6f42c1;
+$pink: #d63384;
+$ltpink: #ffdbed;
+$red: #dc3545;
+$orange: #ff9600;
+$yellow: #ffc107;
+$green: #198754;
+$teal: #20c997;
+$cyan: #0dcaf0;
+
+
+$primary: $blue;
+$secondary: $gray-700;
+$success: $green;
+$info: $cyan;
+$warning: $yellow;
+$danger: $red;
+$light: $gray-100;
+$dark: $gray-900;
+
+$text-muted: $gray-700;
+
+$line-height-base: 2.0;
+$line-height-sm: 1.5;
+$line-height-lg: 2.5;
+
+$font-size-base: 1rem;
+$h1-font-size: $font-size-base * 1.75;
+$h2-font-size: $font-size-base * 1.5;
+$h3-font-size: $font-size-base * 1.15;
+$h4-font-size: $font-size-base * 1.1;
+$h5-font-size: $font-size-base * 1;
+$h6-font-size: $font-size-base;
+
+$headings-line-height: 1.5;
+
+// bit complicated, but this is 2*line-height + 2*padding-y + 2px-border
+$input-height: calc(3.5em + 2px);
+$input-btn-padding-y: .75rem;
+$input-btn-padding-x: .75rem;
+
+$input-color: $gray-800;
+$input-border-color: $gray-200;
+$input-disabled-bg: #eee;
+
+$form-select-disabled-bg: $input-disabled-bg;
+
+$form-floating-height: $input-height;
+$form-floating-padding-x: $input-btn-padding-x;
+$form-floating-padding-y: $input-btn-padding-y;
+$form-floating-input-padding-t: $input-btn-padding-y;
+$form-floating-input-padding-b: $input-btn-padding-y;
+$form-floating-label-opacity: 1;
+$form-floating-label-transform: scale(.85) translateY(-1.75rem) translateX(.15rem);
