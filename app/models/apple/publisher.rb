@@ -79,11 +79,13 @@ module Apple
       create_apple_episodes = episodes_to_sync.select(&:apple_new?)
       Rails.logger.info("Created remote / local state for #{create_apple_episodes.length} episodes.")
 
-      update_apple_episodes = episodes_to_sync.select { |ep| ep.apple_persisted? }
-      Rails.logger.info("Updated remote / local state for #{update_apple_episodes.length} episodes.")
-
+      # Note: We don't attempt to update the remote state of episodes. Once
+      # apple has parsed the feed, it will not allow changing any attributes.
+      #
+      # It's assumed that the episodes are created solely by the PRX web UI (not
+      # on Podcasts Connect).
       Apple::Episode.create_episodes(api, create_apple_episodes)
-      Apple::Episode.update_episodes(api, update_apple_episodes)
+
       show.reload
     end
 

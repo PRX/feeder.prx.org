@@ -19,14 +19,6 @@ module Apple
       insert_sync_logs(episodes, episode_bridge_results)
     end
 
-    def self.update_episodes(api, episodes)
-      return if episodes.empty?
-
-      episode_bridge_results = api.bridge_remote_and_retry!('updateEpisodes',
-                                                            episodes.map(&:update_episode_bridge_params))
-      insert_sync_logs(episodes, episode_bridge_results)
-    end
-
     def self.update_audio_container_reference(api, episodes)
       return [] if episodes.empty?
 
@@ -140,23 +132,6 @@ module Apple
           }
         }
       }
-    end
-
-    def update_episode_bridge_params
-      {
-        api_url: api.join_url("episodes/#{apple_id}").to_s,
-        api_parameters: update_episode_parameters
-      }
-    end
-
-    def update_episode_parameters
-      data = episode_create_parameters
-
-      data[:data][:id] = apple_id
-      data[:data][:attributes].delete(:guid)
-      data[:data][:relationships].delete(:show)
-
-      data
     end
 
     def update_episode_audio_container_bridge_params
