@@ -1,0 +1,111 @@
+.sidetabs {
+  position: relative;
+  background: #f5f5f5;
+  padding: 0;
+  margin: 0;
+
+  .list-group {
+    border-bottom: none;
+    position: relative;
+
+    .list-group-item {
+      transition: border-left .1s ease-out 0ms;
+      background: #eee;
+      color: $primary;
+      margin: 0;
+      padding: 10px 30px 15px 15px;
+      border-right: none;
+      border-top: 1px solid $white;
+      border-left: 4px solid transparent;
+      border-bottom: none;
+      border-radius: 0;
+      display: block;
+      word-break: break-word;
+
+      &:hover {
+        border-color: transparent;
+        border-left: 4px solid $primary;
+      }
+
+      &.active {
+        background: $white;
+        color: $primary;
+        border-right: none;
+        border-top: none;
+        border-bottom: 1px solid $white;
+        border-left: 4px solid $primary;
+      }
+
+      &.disabled {
+        color: $list-group-disabled-color;
+      }
+
+      .flight-name {
+        display: block;
+      }
+    }
+
+    .context-menu {
+      display: none;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      right: 0;
+      z-index: 10;
+
+      .btn {
+        padding: 0;
+        border-radius: 0;
+
+        .material-icons {
+          vertical-align: middle;
+        }
+      }
+
+      .dropdown-menu .material-icons {
+        vertical-align: middle;
+      }
+    }
+
+    .list-group-item.active+.context-menu {
+      display: block;
+    }
+  }
+}
+
+.layout-dashboard {
+  .nav-tabs {
+    border: none;
+
+    .nav-link {
+      background: none;
+      font-weight: bold;
+      color: black;
+
+      border: none;
+      border-bottom: 3px solid $gray-300;
+
+      height: 48px;
+      padding: 0 24px;
+      cursor: pointer;
+      box-sizing: border-box;
+      opacity: .6;
+      min-width: 160px;
+      text-align: center;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      white-space: nowrap;
+      vertical-align: top;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+
+
+      &.active {
+        border-color: $primary;
+      }
+    }
+  }
+}

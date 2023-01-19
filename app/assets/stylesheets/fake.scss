@@ -1,0 +1,10 @@
+@import 'shared/bootstrap-variables';
+
+.fake-page {
+  h1 {
+    color: $blue;
+    border: 1px solid $red;
+    padding: 10px;
+    margin: 10px;
+  }
+}
