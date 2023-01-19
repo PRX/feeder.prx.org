@@ -12,19 +12,20 @@
   </head>
 
   <body>
-    <%= render 'layouts/header' %>
+    <%= render 'layouts/nav' %>
+    <%= render 'layouts/subnav' %>
 
-    <main>
-      <article>
-        <div class="row gx-0">
-          <% if content_for :tabs %>
-            <aside class="sidetabs col-sm-12 col-md-3 col-xl-2"><%= yield :tabs %></aside>
-            <section class="tab-content col-sm-12 col-md-9 col-xl-10 bg-white"><%= yield %></section>
-          <% else %>
-            <%= yield %>
-          <% end %>
+    <% if content_for :tabs %>
+      <div class="container-fluid">
+        <div class="row">
+          <aside class="sidetabs col-2"><%= yield :tabs %></aside>
+          <section class="tab-content col-10 bg-white"><%= yield %></section>
         </div>
-      </article>
-    </main>
+      </div>
+    <% else %>
+      <div class="container-xl">
+        <%= yield %>
+      </div>
+    <% end %>
   </body>
 </html>

@@ -1,0 +1,8 @@
+<% if content_for :subnav %>
+  <nav class="navbar navbar-dark bg-secondary">
+    <div class="container">
+      <%= link_to 'Subnav', fake_index_path, class: 'navbar-brand' %>
+      <%= yield :subnav %>
+    </div>
+  </nav>
+<% end %>

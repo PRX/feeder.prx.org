@@ -1,5 +1,11 @@
+<% content_for :title, 'Fake Index Page' %>
+
 <div class="fake-page">
   <h1>this is fake</h1>
 
   <%= image_tag "prx_logo.svg", width: 100 %>
+
+  <h2 data-controller="fake">Replace this text, stimulus!</h2>
+
+  <p>Click <b><%= link_to 'HERE', fake_path(123) %></b> to go to the show page</p>
 </div>
