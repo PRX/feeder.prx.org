@@ -8,6 +8,8 @@
     font-weight: bold;
     border-bottom: 3px solid transparent;
     border-top: 3px solid transparent;
+    padding: 10px 15px;
+    color: $blue;
 
     &.active {
       border-bottom: 3px solid $orange;
@@ -24,13 +26,6 @@
         font-size: 30px;
       }
     }
-  }
-}
-
-.prx-dovetail-nav,
-.prx-app-nav {
-  .nav-link {
-    padding: 10px;
   }
 }
 
