@@ -1,24 +1,16 @@
-<% content_for :title, 'Fake Show Page' %>
+<% content_for :title, 'Fake ~Show~ PODCAST Page' %>
 
 <% content_for :subnav do %>
   <a class="navbar-brand">content FOR THE SUBNAV</a>
 <% end %>
 
 <% content_for :tabs do %>
-  <ul class="nav flex-column">
-    <li class="nav-item">
-      <a class="nav-link active" aria-current="page" href="#">Hey</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="#">Look</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="#">it's</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">TABS</a>
-    </li>
-  </ul>
+<div class="list-group">
+  <a class="list-group-item active" aria-current="page" href="#">Hey</a>
+  <a class="list-group-item" href="#">Look</a>
+</div>
+<a class="btn btn-secondary-link" href="#">New Something Button</a>
+
 <% end %>
 
 <div class="row mt-4">
