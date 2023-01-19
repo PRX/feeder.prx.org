@@ -1,88 +1,84 @@
 /*
  * PRX header component
  */
-prx-header {
-  header {
-    border-bottom: 1px solid #e6e6e6;
-    background: $gray-900;
-    padding: 0;
-    z-index: 9999;
-  }
+ .navbar-brand {
+  display: block;
+  width: 152px;
+  height: 30px;
+  background-image: image-url("dovetail_logo.svg");
+  background-position: center center;
+  background-repeat: no-repeat;
+  text-indent: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
 
-  h1 {
+.nav-avatar {
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid $blue-light;
+  height: 30px;
+  width: 30px;
+}
+
+.prx-dovetail-nav {
+  background: $blue-dark;
+
+  .dropdown-menu {
+    background: $blue-dark;
     margin: 0;
-  }
+    padding: 0;
+    border-radius: 0;
 
-  h1 a {
-    display: block;
-    width: 72px;
-    height: 50px;
-    background-image: image-url("prx_logo.svg");
-    background-position: center center;
-    background-repeat: no-repeat;
-    text-indent: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-  }
+    .dropdown-item {
+      color: $white;
+      text-transform: uppercase;
+      font-weight: bold;
+      padding: 0.25rem 1.5rem;
+      min-width: 240px;
 
-  /*
-   * Navigation
-   */
-  nav {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    height: 100%;
+      &:hover {
+        color: $white;
+        background: $blue;
+      }
+    }
 
-    text-align: right;
-  }
+    .dropdown-divider {
+      color: $cyan;
+    }
 
-  @media screen and (min-width: 768px) {
-    h1 a {
-      width: 113px;
-      height: 73px;
+    .dropdown-header {
+      font-size: 16px;
+      color: $orange;
+    }
+
+    .dropdown-username {
+      font-size: 24px;
+      color: $white;
+      padding: .5em 0;
+    }
+
+    .btn-info {
+      background: $blue-light;
+      font-weight: bold;
+      border-radius: 0;
+      padding: .25em 1.25em;
+    }
+
+    .dropdown-link {
+      font-weight: bold;
+      text-decoration: none;
+      padding: .5em 1.25em;
+      color: $blue-light;
     }
   }
 }
 
-.prxoffcanvas {
-  background: $gray-900;
+.prx-app-nav {
+  border-bottom: 1px solid $gray-300;
+}
 
-  .btn-light {
-    background: transparent;
-    border: none;
-
-    .material-icons {
-      color: white;
-    }
-  }
-
-  h2 {
-    color: $white;
-    text-transform: uppercase;
-    font-weight: bold;
-    font-size: 1em;
-    margin-bottom: 0;
-    padding: 0.5rem 1rem;
-
-  }
-
-  .list-group {
-    margin-bottom: 2em;
-  }
-
-  .list-group-item {
-    background: transparent;
-    padding: 0 1rem;
-
-    a {
-      color: #fff;
-      text-decoration: none;
-
-      &:hover {
-        color: $orange;
-      }
-    }
-  }
-
+.prx-podcast-switcher {
+  border-right: 1px solid $gray-300;
+  min-width: 350px;
 }

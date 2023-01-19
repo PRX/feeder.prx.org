@@ -5,4 +5,39 @@
       <%= yield :subnav %>
     </div>
   </nav>
+
+  <nav class="prx-app-nav navbar bg-white d-flex flex-row flex-wrap justify-content-start m-0 p-0">
+    <div class="prx-podcast-switcher dropdown">
+      <button class="btn btn-white dropdown-toggle d-flex align-items-center" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="material-icons">square</span> <em>Select a podcast</em>
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+        <li class="search-filter">
+          <input type="email" class="form-control" id="podcastSearch" aria-describedby="podcastSearch" placeholder="Search Podcasts">
+        </li>
+        <% @inventory.take(5).each do |i| %>
+          <li><%= link_to i.podcast_title, inventory_path(i) %></li>
+        <% end %>
+          <li><hr class="dropdown-divider" /></li>
+          <li><a href="#">View all my Podcasts (<% @inventory.size %>) ></a></li>
+          <li><hr class="dropdown-divider" /></li>
+          <li><a href="#">Create a Podcast ></a></li>
+          <li><hr class="dropdown-divider" /></li>
+      </ul>
+    </div>
+    <ul class="navbar-nav d-flex flex-row flex-wrap m-0 p-0">
+      <li class="nav-item">
+        <%= link_to 'Campaigns', default_flights_path, class: 'nav-link' %>
+      </li>
+      <li class="nav-item">
+        <%= link_to 'Series', main_app.inventory_index_path, class: 'nav-link' %>
+      </li>
+      <li class="nav-item">
+        <%= link_to 'Advertisers', main_app.advertisers_path, class: 'nav-link' %>
+      </li>
+      <li class="nav-item">
+        <%= link_to 'Creatives', main_app.creatives_path, class: 'nav-link' %>
+      </li>
+    </ul>
+  </nav>
 <% end %>
