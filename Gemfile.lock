@@ -152,7 +152,7 @@ GEM
       multipart-post (>= 1.2, < 3)
     fastimage (2.2.6)
     fuzzyurl (0.2.2)
-    globalid (1.0.0)
+    globalid (1.0.1)
       activesupport (>= 5.0)
     hal_api-rails (1.2.0)
       activemodel
@@ -210,7 +210,7 @@ GEM
     method_source (1.0.0)
     mini_mime (1.1.2)
     mini_portile2 (2.8.0)
-    minitest (5.16.3)
+    minitest (5.17.0)
     minitest-around (0.5.0)
       minitest (~> 5.0)
     minitest-spec-rails (6.2.0)
