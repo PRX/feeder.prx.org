@@ -15,7 +15,7 @@
     <%= render 'layouts/nav' %>
     <%= render 'layouts/subnav' %>
 
-    <% if content_for :tabs %>
+    <% if content_for? :tabs %>
       <div class="container-fluid">
         <div class="row">
           <aside class="sidetabs col-2"><%= yield :tabs %></aside>
