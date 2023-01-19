@@ -10,6 +10,7 @@
     border-top: 3px solid transparent;
     padding: 10px 15px;
     color: $blue;
+    justify-self: start;
 
     &.active {
       border-bottom: 3px solid $orange;
@@ -25,6 +26,10 @@
       .material-icons {
         font-size: 30px;
       }
+    }
+
+    @media (min-width: 576px) {
+      justify-self: end;
     }
   }
 }

@@ -30,7 +30,9 @@
     <% if content_for :subnav %>
     <ul class="navbar-nav col d-flex flex-row flex-wrap m-0 p-0">
       <li class="nav-item"><%= link_to 'Subnav', fake_index_path, class: 'nav-link' %></li>
-      <%= yield :subnav %>
+      <li class="nav-item"><%= link_to 'Subnav 2', fake_index_path, class: 'nav-link' %></li>
+      <li class="nav-item"><%= link_to 'Subnav 3', fake_index_path, class: 'nav-link' %></li>
+      <li class="nav-item"><%= link_to 'Subnav 4', fake_index_path, class: 'nav-link' %></li>
     </ul>
     <% end %>
 </nav>
