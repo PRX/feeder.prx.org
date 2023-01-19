@@ -44,13 +44,15 @@
 
       &:hover {
         border-left: 1px solid transparent;
-        border-top: 3px solid transparent;
+        border-top: 3px solid $blue-light;
         border-right: 1px solid $white;
         border-bottom: 1px solid $gray-200;
 
         @media (min-width: 768px) {
-          border-color: transparent;
-          border-left: 4px solid $primary;
+          border-left: 4px solid $blue-light;
+          border-top: 1px solid $white;
+          border-right: none;
+          border-bottom: none;
 
         }
       }
