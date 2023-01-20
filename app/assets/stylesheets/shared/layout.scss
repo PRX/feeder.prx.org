@@ -5,7 +5,7 @@ body {
   max-width: 100%;
   margin: 0;
   font-family: "Roboto", 'Helvetica Neue', sans-serif;
-  background-color: $gray-100;
+  background: image-url('prx-mark-outlined.svg') repeat top left $gray-100;
 }
 
 html,
@@ -17,4 +17,8 @@ main {
   display: block;
   min-height: 200px;
   position: relative;
+}
+
+.full-vertical-height {
+  min-height: calc(100vh - 116px);
 }
