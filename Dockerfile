@@ -18,6 +18,7 @@ RUN bundle config set --without 'development test' \
     && rm -rf $GEM_HOME/cache/*
 
 ADD . ./
+RUN ASSET_PRECOMPILE=true bundle exec rake assets:precompile
 RUN chown -R nobody:nogroup /app
 USER root
 
