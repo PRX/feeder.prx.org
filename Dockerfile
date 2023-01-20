@@ -18,6 +18,7 @@ RUN bundle config set --without 'development test' \
     && rm -rf $GEM_HOME/cache/*
 
 ADD . ./
+RUN ASSET_PRECOMPILE=1 SECRET_KEY_BASE=1 bin/rails assets:precompile
 RUN chown -R nobody:nogroup /app
 USER root
 

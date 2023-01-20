@@ -9,7 +9,25 @@ class PublishFeedJob < ApplicationJob
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   def perform(podcast)
-    podcast.feeds.each { |feed| save_file(podcast, feed) }
+    podcast.feeds.each { |feed| publish_feed(podcast, feed) }
+  end
+
+  def publish_feed(podcast, feed)
+    publish_apple(feed)
+    publish_rss(podcast, feed)
+  end
+
+  def publish_apple(feed)
+    feed.apple_credentials.each do |creds|
+      if feed.publish_to_apple?(creds)
+        publisher = Apple::Publisher.from_apple_credentials(creds)
+        publisher.publish!
+      end
+    end
+  end
+
+  def publish_rss(podcast, feed)
+    save_file(podcast, feed)
   end
 
   def save_file(podcast, feed, options = {})

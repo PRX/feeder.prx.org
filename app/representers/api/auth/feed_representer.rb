@@ -31,7 +31,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
              decorator: Api::FeedTokenRepresenter,
              class: FeedToken
 
-  def self_url(feed)    
+  def self_url(feed)
     api_authorization_podcast_feed_path(podcast_id: feed.podcast_id, id: feed.id)
   end
 

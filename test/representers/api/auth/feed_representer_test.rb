@@ -27,7 +27,7 @@ describe Api::Auth::FeedRepresenter do
   end
 
   it 'has a feed rss link' do
-    _(json['_links']['prx:private-feed']['href']).must_equal feed.published_url
+    _(json['_links']['prx:private-feed']['href']).must_equal "#{feed.published_url}"
     _(json['_links']['prx:private-feed']['templated']).must_equal true
     _(json['_links']['prx:private-feed']['type']).must_equal 'application/rss+xml'
   end
