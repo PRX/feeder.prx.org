@@ -63,6 +63,7 @@ gem "parallel"
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
   gem "dotenv-rails", "~> 2.0"
+  gem "erb_lint", require: false
   gem "pry"
   gem "pry-byebug"
   gem "standard"

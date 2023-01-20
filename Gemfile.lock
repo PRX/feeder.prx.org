@@ -113,6 +113,13 @@ GEM
       aws-sigv4 (~> 1.1)
     aws-sigv4 (1.5.2)
       aws-eventstream (~> 1, >= 1.0.2)
+    better_html (2.0.1)
+      actionview (>= 6.0)
+      activesupport (>= 6.0)
+      ast (~> 2.0)
+      erubi (~> 1.4)
+      parser (>= 2.4)
+      smart_properties
     bindata (2.4.14)
     bindex (0.8.1)
     bootsnap (1.15.0)
@@ -150,6 +157,13 @@ GEM
     dotenv-rails (2.8.1)
       dotenv (= 2.8.1)
       railties (>= 3.2)
+    erb_lint (0.3.1)
+      activesupport
+      better_html (>= 2.0.1)
+      parser (>= 2.7.1.4)
+      rainbow
+      rubocop
+      smart_properties
     erubi (1.11.0)
     excon (0.94.0)
     execjs (2.8.1)
@@ -382,6 +396,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
+    smart_properties (1.17.0)
     spring (2.1.1)
     sprockets (4.1.1)
       concurrent-ruby (~> 1.0)
@@ -453,6 +468,7 @@ DEPENDENCIES
   countries
   debug
   dotenv-rails (~> 2.0)
+  erb_lint
   excon
   factory_bot_rails
   faraday (~> 0.17.4)
