@@ -1,4 +1,4 @@
-require 'newrelic_rpm'
+require "newrelic_rpm"
 
 class ApplicationJob < ActiveJob::Base
   # Automatically retry jobs that encountered a deadlock

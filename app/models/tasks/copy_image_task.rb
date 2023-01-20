@@ -1,5 +1,4 @@
 class Tasks::CopyImageTask < ::Task
-
   before_save do
     if image_resource && status_changed?
       image_resource.update!(status: status)
@@ -13,7 +12,7 @@ class Tasks::CopyImageTask < ::Task
 
   def task_options
     super.merge({
-      job_type: 'file',
+      job_type: "file",
       source: image_resource.original_url,
       destination: destination_url(image_resource)
     }).with_indifferent_access
@@ -21,9 +20,9 @@ class Tasks::CopyImageTask < ::Task
 
   def destination_url(image_resource)
     URI::Generic.build(
-      scheme: 's3',
+      scheme: "s3",
       host: feeder_storage_bucket,
-      path: image_path(image_resource),
+      path: image_path(image_resource)
     ).to_s
   end
 

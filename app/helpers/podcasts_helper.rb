@@ -1,4 +1,4 @@
-require 'text_sanitizer'
+require "text_sanitizer"
 
 module PodcastsHelper
   include TextSanitizer
@@ -15,7 +15,7 @@ module PodcastsHelper
   end
 
   def first_nonblank(type, items)
-    items.find { |item| !item.send("#{type}").blank? }
+    items.find { |item| !item.send(type.to_s).blank? }
   end
 
   def show_itunes_summary?(model)
@@ -26,7 +26,7 @@ module PodcastsHelper
     if model.summary.present?
       model.summary
     else
-      sanitize_links_only(model.description || '')
+      sanitize_links_only(model.description || "")
     end
   end
 end

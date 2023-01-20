@@ -1,4 +1,4 @@
-require 'builder'
+require "builder"
 
 class FeedBuilder
   include PodcastsHelper
@@ -20,7 +20,7 @@ class FeedBuilder
   end
 
   def rss_template
-    p = File.join(Rails.root, 'app', 'views', 'podcasts', 'show.rss.builder')
+    p = File.join(Rails.root, "app", "views", "podcasts", "show.rss.builder")
     File.read(p)
   end
 end

@@ -11,7 +11,7 @@ class Api::EpisodesController < Api::BaseController
   allow_params :show, [:id, :podcast_id, :guid_resource, :api_version, :format, :zoom]
 
   def included(relation)
-    if action_name == 'index'
+    if action_name == "index"
       relation.includes(:podcast, :images, :all_contents, :contents, :enclosures)
     else
       relation
@@ -22,7 +22,7 @@ class Api::EpisodesController < Api::BaseController
     res = create_resource
     consume! res, create_options
 
-    if !res.prx_uri.blank? && existing_res = Episode.find_by(prx_uri: res.prx_uri)
+    if !res.prx_uri.blank? && (existing_res = Episode.find_by(prx_uri: res.prx_uri))
       res = existing_res
       consume! res, create_options
     end
@@ -79,7 +79,7 @@ class Api::EpisodesController < Api::BaseController
   end
 
   def sorted(res)
-    res.order(Arel.sql('published_at DESC, id DESC'))
+    res.order(Arel.sql("published_at DESC, id DESC"))
   end
 
   def process_media

@@ -10,7 +10,7 @@ class FeederLogger < Ougai::Logger
       formatter = Ougai::Formatters::Customizable.new(
         format_msg: proc do |severity, datetime, _progname, data|
           format(
-            '%<severity>s %<datetime>s: %<msg>s %<data>s',
+            "%<severity>s %<datetime>s: %<msg>s %<data>s",
             severity: color_config.color(:severity, severity, severity),
             datetime: color_config.color(:datetime, datetime, severity),
             msg: color_config.color(:msg, data.delete(:msg).try(:squish), severity),
@@ -18,20 +18,20 @@ class FeederLogger < Ougai::Logger
           )
         end,
         # this appears to be redundant with format_msg, so just no-op
-        format_data: proc { |_data| nil }
+        format_data: proc { |_data| }
       )
-      formatter.datetime_format = '%H:%M:%S.%L'
+      formatter.datetime_format = "%H:%M:%S.%L"
       formatter
     else
       Ougai::Formatters::Bunyan.new
     end
   end
 
-  def elapsed(msg = '', args = {}, &block)
+  def elapsed(msg = "", args = {}, &block)
     measure(:info, msg, args, &block)
   end
 
-  def debug_elapsed(msg = '', args = {}, &block)
+  def debug_elapsed(msg = "", args = {}, &block)
     measure(:debug, msg, args, &block)
   end
 

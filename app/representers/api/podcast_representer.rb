@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 class Api::PodcastRepresenter < Api::BaseRepresenter
   property :id, writeable: false
   property :created_at, writeable: false
@@ -62,17 +60,21 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :display_full_episodes_count
 
   link :episodes do
-    {
-      href: api_podcast_episodes_path(represented),
-      count: represented.episodes.published.count
-    } if represented.id
+    if represented.id
+      {
+        href: api_podcast_episodes_path(represented),
+        count: represented.episodes.published.count
+      }
+    end
   end
 
   link :guid do
-    {
-      href: api_podcast_guid_path_template(podcast_id: represented.id.to_s, id: '{guid}'),
-      templated: true
-    } if represented.id
+    if represented.id
+      {
+        href: api_podcast_guid_path_template(podcast_id: represented.id.to_s, id: "{guid}"),
+        templated: true
+      }
+    end
   end
 
   link :series do

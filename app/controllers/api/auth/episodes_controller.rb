@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 class Api::Auth::EpisodesController < Api::EpisodesController
   include ApiAuthenticated
   include ApiUpdatedSince
@@ -26,7 +24,7 @@ class Api::Auth::EpisodesController < Api::EpisodesController
   end
 
   def sorted(res)
-    res.order(Arel.sql('COALESCE(published_at, released_at) DESC NULLS LAST, id DESC'))
+    res.order(Arel.sql("COALESCE(published_at, released_at) DESC NULLS LAST, id DESC"))
   end
 
   def resources_base

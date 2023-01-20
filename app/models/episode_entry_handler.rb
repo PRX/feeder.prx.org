@@ -1,10 +1,10 @@
-require 'episode'
+require "episode"
 
 class EpisodeEntryHandler
-  ENTRY_ATTRIBUTES = %w(author block categories content description explicit
+  ENTRY_ATTRIBUTES = %w[author block categories content description explicit
     feedburner_orig_enclosure_link feedburner_orig_link is_closed_captioned
     is_perma_link keywords position subtitle summary title url
-    season_number episode_number clean_title).freeze
+    season_number episode_number clean_title].freeze
 
   attr_accessor :episode
   delegate :overrides, to: :episode
@@ -49,18 +49,18 @@ class EpisodeEntryHandler
   end
 
   def update_guid
-    self.episode.original_guid = overrides[:guid]
+    episode.original_guid = overrides[:guid]
   end
 
   def update_dates
-    self.episode.published_at = Time.parse(overrides[:published]) if overrides[:published]
-    self.episode.updated_at = Time.parse(overrides[:updated]) if overrides[:updated]
+    episode.published_at = Time.parse(overrides[:published]) if overrides[:published]
+    episode.updated_at = Time.parse(overrides[:updated]) if overrides[:updated]
   end
 
   def update_link
-    self.episode.url = overrides[:feedburner_orig_link] || overrides[:url] || overrides[:link]
+    episode.url = overrides[:feedburner_orig_link] || overrides[:url] || overrides[:link]
     # libsyn sets link to the libsyn mp3; nil it out (in rss, will fallback on the enclosure url)
-    self.episode.url = nil if episode.url && episode.url.match(/libsyn\.com/)
+    episode.url = nil if episode.url&.match(/libsyn\.com/)
   end
 
   def update_enclosure
@@ -70,8 +70,8 @@ class EpisodeEntryHandler
     end
 
     if overrides[:enclosure]
-      enclosure_file = URI.parse(enclosure_hash[:url] || '').path.split('/').last
-      if !episode.enclosures.where('original_url like ?', "%/#{enclosure_file}").exists?
+      enclosure_file = URI.parse(enclosure_hash[:url] || "").path.split("/").last
+      if !episode.enclosures.where("original_url like ?", "%/#{enclosure_file}").exists?
         episode.enclosures << Enclosure.build_from_enclosure(episode, enclosure_hash)
       end
     else
@@ -93,7 +93,7 @@ class EpisodeEntryHandler
 
     new_contents.each do |c|
       # If there is an existing file with the same filename, then update
-      if existing_content = episode.find_existing_content(c[:position], c[:url])
+      if (existing_content = episode.find_existing_content(c[:position], c[:url]))
         existing_content.update_with_content!(c)
       # else if there is no file, or the filename in the url is different
       # then make a new content to be or replace content for that position
@@ -105,6 +105,6 @@ class EpisodeEntryHandler
 
     # find all contents with a greater position than last file and whack them
     max_pos = new_contents.last[:position]
-    episode.all_contents.where(['position > ?', max_pos]).delete_all
+    episode.all_contents.where(["position > ?", max_pos]).delete_all
   end
 end

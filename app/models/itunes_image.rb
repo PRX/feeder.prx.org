@@ -7,7 +7,7 @@ class ITunesImage < ApplicationRecord
     greater_than_or_equal_to: 1400
   }, if: ->(i) { i.height && i.width }
 
-  validates :height, numericality: { equal_to: -> (image) { image.width } }, if: ->(i) { i.height }
+  validates :height, numericality: {equal_to: ->(image) { image.width }}, if: ->(i) { i.height }
 
   def replace_resources!
     feed.with_lock do

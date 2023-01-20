@@ -36,7 +36,7 @@ module Apple
 
     def self.serial_upload(api, operation_bridge_params)
       operation_bridge_params.map do |op|
-        api.bridge_remote_and_retry!('executeUploadOperations', [op])
+        api.bridge_remote_and_retry!("executeUploadOperations", [op])
       end
     end
 
@@ -44,7 +44,7 @@ module Apple
       chunked_slices = operation_bridge_params.each_slice(2).to_a
 
       Parallel.map(chunked_slices, in_threads: chunked_slices.length) do |ops|
-        api.bridge_remote_and_retry!('executeUploadOperations', ops)
+        api.bridge_remote_and_retry!("executeUploadOperations", ops)
       end
     end
 

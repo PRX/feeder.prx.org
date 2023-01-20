@@ -1,7 +1,7 @@
-require 'addressable/uri'
-require 'addressable/template'
-require 'hash_serializer'
-require 'text_sanitizer'
+require "addressable/uri"
+require "addressable/template"
+require "hash_serializer"
+require "text_sanitizer"
 
 class Episode < ApplicationRecord
   include TextSanitizer
@@ -16,43 +16,43 @@ class Episode < ApplicationRecord
   belongs_to :podcast, -> { with_deleted }, touch: true
 
   has_many :images,
-           -> { order('created_at DESC') },
-           class_name: 'EpisodeImage', autosave: true, dependent: :destroy
+    -> { order("created_at DESC") },
+    class_name: "EpisodeImage", autosave: true, dependent: :destroy
 
   has_many :all_contents,
-           -> { order('position ASC, created_at DESC') },
-           class_name: 'Content', autosave: true, dependent: :destroy
+    -> { order("position ASC, created_at DESC") },
+    class_name: "Content", autosave: true, dependent: :destroy
 
   has_many :contents,
-           -> { order('position ASC, created_at DESC').complete },
-           autosave: true, dependent: :destroy
+    -> { order("position ASC, created_at DESC").complete },
+    autosave: true, dependent: :destroy
 
   has_many :enclosures,
-           -> { order('created_at DESC') },
-           autosave: true, dependent: :destroy
+    -> { order("created_at DESC") },
+    autosave: true, dependent: :destroy
 
-  has_one :apple_podcast_container, class_name: 'Apple::PodcastContainer'
+  has_one :apple_podcast_container, class_name: "Apple::PodcastContainer"
   has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
-                                      class_name: 'Apple::PodcastDelivery'
+    class_name: "Apple::PodcastDelivery"
   has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
-                                          class_name: 'Apple::PodcastDeliveryFile'
+    class_name: "Apple::PodcastDeliveryFile"
 
   validates :podcast_id, :guid, presence: true
-  validates :original_guid, uniqueness: { scope: :podcast_id, allow_nil: true }
-  validates :itunes_type, inclusion: { in: %w[full trailer bonus] }
+  validates :original_guid, uniqueness: {scope: :podcast_id, allow_nil: true}
+  validates :itunes_type, inclusion: {in: %w[full trailer bonus]}
   validates :episode_number,
-            numericality: { only_integer: true }, allow_nil: true
+    numericality: {only_integer: true}, allow_nil: true
   validates :season_number,
-            numericality: { only_integer: true }, allow_nil: true
-  validates :explicit, inclusion: { in: %w[true false] }, allow_nil: true
+    numericality: {only_integer: true}, allow_nil: true
+  validates :explicit, inclusion: {in: %w[true false]}, allow_nil: true
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
 
-  scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
+  scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
 
-  scope :published_by, ->(offset) { where('published_at IS NOT NULL AND published_at <= ?', Time.now + offset) }
+  scope :published_by, ->(offset) { where("published_at IS NOT NULL AND published_at <= ?", Time.now + offset) }
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -68,7 +68,7 @@ class Episode < ApplicationRecord
   end
 
   def self.episodes_to_release
-    where('published_at > updated_at AND published_at <= now()').all
+    where("published_at > updated_at AND published_at <= now()").all
   end
 
   def self.by_prx_story(story)
@@ -76,7 +76,7 @@ class Episode < ApplicationRecord
   end
 
   def self.story_uri(story)
-    (story.links['self'].href || '').gsub('/authorization/', '/')
+    (story.links["self"].href || "").gsub("/authorization/", "/")
   end
 
   def apple_file_errors?
@@ -88,7 +88,7 @@ class Episode < ApplicationRecord
   def apple_delivery_file_errors
     # TODO: for now these are all considered audio files
 
-    apple_delivery_files.map { |p| p.asset_processing_state['errors'] }.flatten
+    apple_delivery_files.map { |p| p.asset_processing_state["errors"] }.flatten
   end
 
   def self.generate_item_guid(podcast_id, episode_guid)
@@ -96,7 +96,7 @@ class Episode < ApplicationRecord
   end
 
   def self.decode_item_guid(item_guid)
-    item_guid.sub(/^prx_[0-9]+_/, '') if item_guid&.starts_with?('prx_')
+    item_guid.sub(/^prx_[0-9]+_/, "") if item_guid&.starts_with?("prx_")
   end
 
   def self.find_by_item_guid(guid)
@@ -104,7 +104,7 @@ class Episode < ApplicationRecord
   end
 
   def publish_updated
-    podcast.publish_updated if podcast
+    podcast&.publish_updated
   end
 
   def published?
@@ -121,8 +121,8 @@ class Episode < ApplicationRecord
 
   def author=(a)
     author = a || {}
-    self.author_name = author['name']
-    self.author_email = author['email']
+    self.author_name = author["name"]
+    self.author_email = author["email"]
   end
 
   def enclosure
@@ -134,7 +134,9 @@ class Episode < ApplicationRecord
   end
 
   # API updates for image=
-  def image_file; images.first; end
+  def image_file
+    images.first
+  end
 
   def image_file=(file)
     img = EpisodeImage.build(file)
@@ -159,7 +161,7 @@ class Episode < ApplicationRecord
   end
 
   def explicit_content
-    (explicit || podcast&.explicit) == 'true'
+    (explicit || podcast&.explicit) == "true"
   end
 
   def item_guid
@@ -188,10 +190,10 @@ class Episode < ApplicationRecord
 
   def content_type(feed = nil)
     media_content_type = first_media_resource.try(:mime_type)
-    if (media_content_type || '').starts_with?('video')
+    if (media_content_type || "").starts_with?("video")
       media_content_type
     else
-      feed.try(:mime_type) || media_content_type || 'audio/mpeg'
+      feed.try(:mime_type) || media_content_type || "audio/mpeg"
     end
   end
 
@@ -240,11 +242,11 @@ class Episode < ApplicationRecord
   def media_status
     states = all_media_files.map(&:status).uniq
     if !(%w[started created processing retrying] & states).empty?
-      'processing'
-    elsif states.any? { |s| s == 'error' }
-      'error'
+      "processing"
+    elsif states.any? { |s| s == "error" }
+      "error"
     elsif media_ready?
-      'complete'
+      "complete"
     end
   end
 
@@ -290,17 +292,17 @@ class Episode < ApplicationRecord
     end
 
     # find all contents with a greater position and whack them
-    all_contents.where(['position > ?', files.count]).destroy_all
+    all_contents.where(["position > ?", files.count]).destroy_all
   end
 
   # find existing content by the last 2 segments of the url
   def find_existing_content(pos, url)
     return nil if url.blank?
 
-    content_file = URI.parse(url || '').path.split('/')[-2, 2].join('/')
-    content_file = "/#{content_file}" unless content_file[0] == '/'
+    content_file = URI.parse(url || "").path.split("/")[-2, 2].join("/")
+    content_file = "/#{content_file}" unless content_file[0] == "/"
     all_contents.where(position: pos).where(
-      'original_url like ?',
+      "original_url like ?",
       "%#{content_file}"
     ).order(created_at: :desc).first
   end
@@ -326,12 +328,12 @@ class Episode < ApplicationRecord
     %i[published_at guid].each do |attr|
       identifiers << sanitize_keyword(send(attr), 10)
     end
-    identifiers << sanitize_keyword(title || 'undefined', 20)
-    self.keyword_xid = identifiers.join('_')
+    identifiers << sanitize_keyword(title || "undefined", 20)
+    self.keyword_xid = identifiers.join("_")
   end
 
   def sanitize_keyword(kw, length)
-    kw.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip.slice(
+    kw.to_s.downcase.gsub(/[^ a-z0-9_-]/, "").gsub(/\s+/, " ").strip.slice(
       0,
       length
     )
@@ -347,6 +349,6 @@ class Episode < ApplicationRecord
   end
 
   def feeder_cdn_host
-    ENV['FEEDER_CDN_HOST']
+    ENV["FEEDER_CDN_HOST"]
   end
 end

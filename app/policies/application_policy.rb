@@ -11,7 +11,6 @@ class ApplicationPolicy < Struct.new(:token, :resource)
     update?
   end
 
-
   private
 
   def authorized?(scope)

@@ -1,5 +1,4 @@
 module PrxAccess
-
   class PrxHyperResource < HyperResource
     def incoming_body_filter(hash)
       super(hash.deep_transform_keys { |key| key.to_s.underscore })
@@ -18,8 +17,8 @@ module PrxAccess
 
       def initialize(resource, link_spec = {})
         super
-        self.type = link_spec['type']
-        self.profile = link_spec['profile']
+        self.type = link_spec["type"]
+        self.profile = link_spec["profile"]
       end
 
       def where(params)
@@ -78,16 +77,16 @@ module PrxAccess
 
   def default_headers
     {
-      'Content-Type' => 'application/json',
-      'Accept' => 'application/json'
+      "Content-Type" => "application/json",
+      "Accept" => "application/json"
     }
   end
 
   def api(options = {})
-    opts = { root: cms_root, headers: default_headers }.merge(options)
-    if account = opts.delete(:account)
+    opts = {root: cms_root, headers: default_headers}.merge(options)
+    if (account = opts.delete(:account))
       token = get_account_token(account)
-      opts[:headers]['Authorization'] = "Bearer #{token}"
+      opts[:headers]["Authorization"] = "Bearer #{token}"
     end
 
     PrxHyperResource.new(opts)
@@ -101,35 +100,35 @@ module PrxAccess
   end
 
   def get_account_token(account)
-    id = ENV['PRX_CLIENT_ID']
-    se = ENV['PRX_SECRET']
-    oauth_options = { site: id_root, token_url: '/token' }
+    id = ENV["PRX_CLIENT_ID"]
+    se = ENV["PRX_SECRET"]
+    oauth_options = {site: id_root, token_url: "/token"}
     client = OAuth2::Client.new(id, se, oauth_options) do |faraday|
-      faraday.request  :url_encoded
-      faraday.adapter  :excon
+      faraday.request :url_encoded
+      faraday.adapter :excon
     end
     client.client_credentials.get_token(account: account).token
   end
 
   def id_root
-    root_uri ENV['ID_HOST']
+    root_uri ENV["ID_HOST"]
   end
 
   private
 
   def method_missing(method, *args)
     if /_root$/.match?(method)
-      root_uri ENV[method.to_s.sub(/_root$/, '_HOST').upcase], '/api/v1'
+      root_uri ENV[method.to_s.sub(/_root$/, "_HOST").upcase], "/api/v1"
     else
       super
     end
   end
 
   def respond_to_missing?(method, include_private = false)
-    method.to_s.ends_with?('_root') || super
+    method.to_s.ends_with?("_root") || super
   end
 
-  def root_uri(host, path = '')
+  def root_uri(host, path = "")
     if /\.org|\.tech/.match?(host)
       URI::HTTPS.build(host: host, path: path).to_s
     else

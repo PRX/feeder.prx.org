@@ -1,60 +1,60 @@
-require 'test_helper'
+require "test_helper"
 
 describe Api::PodcastsController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
-  let(:podcast_deleted) { create(:podcast, path: 'deleted', deleted_at: Time.now) }
+  let(:podcast_deleted) { create(:podcast, path: "deleted", deleted_at: Time.now) }
   let(:podcast_redirect) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", published_at: nil) }
-  let(:member_token) { StubToken.new(account_id, ['member feeder:read-private feeder:podcast-edit feeder:podcast-create']) }
-  let(:limited_token) { StubToken.new(account_id + 100, ['member feeder:episode']) }
+  let(:member_token) { StubToken.new(account_id, ["member feeder:read-private feeder:podcast-edit feeder:podcast-create"]) }
+  let(:limited_token) { StubToken.new(account_id + 100, ["member feeder:episode"]) }
   let(:admin_token) do
-    StubToken.new(account_id, ['admin feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:podcast-delete'])
+    StubToken.new(account_id, ["admin feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:podcast-delete"])
   end
 
   let(:podcast_hash) do
     {
-      path: 'testcast',
-      prxUri: '/api/v1/series/123',
+      path: "testcast",
+      prxUri: "/api/v1/series/123",
       prxAccountUri: "/api/v1/accounts/#{account_id}",
-      itunesCategories: [{ name: 'Arts', subcategories: ['Design', 'Fashion & Beauty'] }]
+      itunesCategories: [{name: "Arts", subcategories: ["Design", "Fashion & Beauty"]}]
     }
   end
 
-  describe 'with a valid token' do
+  describe "with a valid token" do
     before do
       class << @controller; attr_accessor :prx_auth_token; end
       @controller.prx_auth_token = member_token
-      @request.env['CONTENT_TYPE'] = 'application/json'
+      @request.env["CONTENT_TYPE"] = "application/json"
     end
 
-    it 'should redirect for authorized request of unpublished resource' do
+    it "should redirect for authorized request of unpublished resource" do
       refute_nil podcast_redirect.id
-      get(:show, params: { api_version: 'v1', format: 'json', id: podcast_redirect.id })
+      get(:show, params: {api_version: "v1", format: "json", id: podcast_redirect.id})
       assert_response :redirect
     end
 
-    it 'can create a new podcast' do
+    it "can create a new podcast" do
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
-          post :create, body: podcast_hash.to_json, as: :json, params: { api_version: 'v1', format: 'json' }
+          post :create, body: podcast_hash.to_json, as: :json, params: {api_version: "v1", format: "json"}
         end
       end
       assert_response :success
-      id = JSON.parse(response.body)['id']
+      id = JSON.parse(response.body)["id"]
       new_podcast = Podcast.find(id)
-      assert_equal new_podcast.itunes_categories.first.name, 'Arts'
+      assert_equal new_podcast.itunes_categories.first.name, "Arts"
       assert_equal new_podcast.feeds.count, 1
       assert new_podcast.default_feed.present?
     end
 
-    it 'can update a podcast' do
+    it "can update a podcast" do
       pua = podcast.updated_at
       assert_operator podcast.itunes_categories.size, :>, 0
-      update_hash = { itunesCategories: [] }
+      update_hash = {itunesCategories: []}
 
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
-          put :update, body: update_hash.to_json, as: :json, params: { id: podcast.id, api_version: 'v1', format: 'json' }
+          put :update, body: update_hash.to_json, as: :json, params: {id: podcast.id, api_version: "v1", format: "json"}
         end
       end
       assert_response :success
@@ -64,94 +64,94 @@ describe Api::PodcastsController do
       assert_equal podcast.feeds.count, 1
     end
 
-    it 'cannot delete a podcast with a member token' do
-      delete :destroy, params: { id: podcast.id, api_version: 'v1', format: 'json' }
+    it "cannot delete a podcast with a member token" do
+      delete :destroy, params: {id: podcast.id, api_version: "v1", format: "json"}
       assert_response :unauthorized
     end
 
-    it 'can delete a podcast with an admin token' do
+    it "can delete a podcast with an admin token" do
       @controller.prx_auth_token = admin_token
-      delete :destroy, params: { id: podcast.id, api_version: 'v1', format: 'json' }
+      delete :destroy, params: {id: podcast.id, api_version: "v1", format: "json"}
       assert_response :no_content
     end
 
-    it 'returns errors for any errors' do
+    it "returns errors for any errors" do
       # create a podcast with a specific path so it will cause dupe path error
-      create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: 'dupe')
-      update_hash = { path: 'dupe' }
+      create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}", path: "dupe")
+      update_hash = {path: "dupe"}
       @controller.stub(:publish, true) do
-        put :update, body: update_hash.to_json, as: :json, params: { id: podcast.id, api_version: 'v1', format: 'json' }
+        put :update, body: update_hash.to_json, as: :json, params: {id: podcast.id, api_version: "v1", format: "json"}
       end
       assert_response :error
     end
 
-    it 'ignores updating readonly attribute' do
+    it "ignores updating readonly attribute" do
       pua = podcast.updated_at
-      update_hash = { published_url: 'this is read only', title: 'new title' }
+      update_hash = {published_url: "this is read only", title: "new title"}
 
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
-          put :update, body: update_hash.to_json, as: :json, params: { id: podcast.id, api_version: 'v1', format: 'json' }
+          put :update, body: update_hash.to_json, as: :json, params: {id: podcast.id, api_version: "v1", format: "json"}
         end
       end
       assert_response :success
       assert_operator podcast.reload.updated_at, :>, pua
       res = JSON.parse(response.body)
-      refute_equal res['published_url'], 'this is read only'
-      assert_equal res['title'], 'new title'
+      refute_equal res["published_url"], "this is read only"
+      assert_equal res["title"], "new title"
     end
 
-    it 'rejects update for unauthorizd token' do
+    it "rejects update for unauthorizd token" do
       @controller.prx_auth_token = limited_token
       assert_operator podcast.itunes_categories.size, :>, 0
-      update_hash = { itunesCategories: [] }
+      update_hash = {itunesCategories: []}
 
       @controller.stub(:publish, true) do
-        put :update, body: update_hash.to_json, as: :json, params: { id: podcast.id, api_version: 'v1', format: 'json' }
+        put :update, body: update_hash.to_json, as: :json, params: {id: podcast.id, api_version: "v1", format: "json"}
       end
       assert_response 401
     end
 
-    it 'rejects create without valid token' do
+    it "rejects create without valid token" do
       @controller.prx_auth_token = nil
-      post :create, body: podcast_hash.to_json, as: :json, params: { api_version: 'v1', format: 'json' }
+      post :create, body: podcast_hash.to_json, as: :json, params: {api_version: "v1", format: "json"}
       assert_response 401
     end
   end
 
-  it 'should show' do
-    get(:show, params: { api_version: 'v1', format: 'json', id: podcast.id })
+  it "should show" do
+    get(:show, params: {api_version: "v1", format: "json", id: podcast.id})
     assert_response :success
   end
 
-  it 'should return resource gone for deleted resource' do
+  it "should return resource gone for deleted resource" do
     refute_nil podcast_deleted.id
-    get(:show, params: { api_version: 'v1', format: 'json', id: podcast_deleted.id })
+    get(:show, params: {api_version: "v1", format: "json", id: podcast_deleted.id})
     assert_response 410
   end
 
-  it 'should list' do
+  it "should list" do
     refute_nil podcast_deleted.id
     refute_nil podcast.id
-    get(:index, params: { api_version: 'v1', format: 'json' })
+    get(:index, params: {api_version: "v1", format: "json"})
     assert_response :success
-    ids = JSON.parse(response.body)['_embedded']['prx:items'].map { |p| p['id'] }
+    ids = JSON.parse(response.body)["_embedded"]["prx:items"].map { |p| p["id"] }
     refute_includes ids, podcast_deleted.id
   end
 
-  it 'should list podcasts for an account' do
+  it "should list podcasts for an account" do
     refute_nil podcast.id
-    get(:index, params: { api_version: 'v1', format: 'json', prx_account_uri: "/api/v1/accounts/#{account_id}" })
+    get(:index, params: {api_version: "v1", format: "json", prx_account_uri: "/api/v1/accounts/#{account_id}"})
     assert_response :success
-    podcasts = JSON.parse(response.body)['_embedded']['prx:items']
+    podcasts = JSON.parse(response.body)["_embedded"]["prx:items"]
     assert_equal podcasts.count, 1
   end
 
-  it 'should not list podcasts for a different account' do
+  it "should not list podcasts for a different account" do
     refute_nil podcast.id
-    get(:index, params: { api_version: 'v1', format: 'json', prx_account_uri: "/api/v1/accounts/#{account_id}99" })
+    get(:index, params: {api_version: "v1", format: "json", prx_account_uri: "/api/v1/accounts/#{account_id}99"})
     assert_response :success
-    podcasts = JSON.parse(response.body)['_embedded']['prx:items']
+    podcasts = JSON.parse(response.body)["_embedded"]["prx:items"]
     assert_equal podcasts.count, 0
   end
 end

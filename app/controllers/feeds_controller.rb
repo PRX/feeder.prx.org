@@ -15,10 +15,10 @@ class FeedsController < ApplicationController
   private
 
   def authenticate_feeds_token!
-    token = (request.headers['HTTP_AUTHORIZATION'] || '').split('Token ').last
-    feeds_token = ENV['FEEDS_TOKEN']
+    token = (request.headers["HTTP_AUTHORIZATION"] || "").split("Token ").last
+    feeds_token = ENV["FEEDS_TOKEN"]
     if token.blank? || feeds_token.blank? || token != feeds_token
-      render plain: 'No auth token provided', status: :unauthorized
+      render plain: "No auth token provided", status: :unauthorized
     end
   end
 
@@ -27,10 +27,10 @@ class FeedsController < ApplicationController
   end
 
   def podcast_json(podcast)
-    podcast.
-      slice(:id, :title).
-      merge(defaultFeed: feed_json(podcast.feeds.find(&:default?))).
-      merge(feeds: feeds_json(podcast.feeds.reject(&:default?)))
+    podcast
+      .slice(:id, :title)
+      .merge(defaultFeed: feed_json(podcast.feeds.find(&:default?)))
+      .merge(feeds: feeds_json(podcast.feeds.reject(&:default?)))
   end
 
   def feeds_json(feeds)
@@ -38,15 +38,15 @@ class FeedsController < ApplicationController
   end
 
   def feed_json(feed)
-    feed.
-      slice(:private, :include_zones, :audio_format).
-      transform_keys { |k| k.camelize(:lower) }.
-      merge(tokens: feed.tokens.map { |t| token_json(t) })
+    feed
+      .slice(:private, :include_zones, :audio_format)
+      .transform_keys { |k| k.camelize(:lower) }
+      .merge(tokens: feed.tokens.map { |t| token_json(t) })
   end
 
   def token_json(token)
-    token.
-      slice(:label, :token, :expires_at).
-      transform_keys { |k| k.camelize(:lower) }
+    token
+      .slice(:label, :token, :expires_at)
+      .transform_keys { |k| k.camelize(:lower) }
   end
 end

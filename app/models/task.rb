@@ -1,12 +1,12 @@
-require 'hash_serializer'
-require 'prx_access'
+require "hash_serializer"
+require "prx_access"
 
 class Task < ApplicationRecord
   include PrxAccess
   include PorterParser
   include PorterEncoder
 
-  enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
+  enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
 
   serialize :options, HashSerializer
   def options
@@ -22,12 +22,12 @@ class Task < ApplicationRecord
 
   before_validation { self.status ||= :started }
 
-  scope :copy_media, -> { where(type: 'Tasks::CopyMediaTask') }
-  scope :copy_image, -> { where(type: 'Tasks::CopyImageTask') }
+  scope :copy_media, -> { where(type: "Tasks::CopyMediaTask") }
+  scope :copy_image, -> { where(type: "Tasks::CopyImageTask") }
 
   def self.callback(msg)
     Task.transaction do
-      if job_id = porter_callback_job_id(msg)
+      if (job_id = porter_callback_job_id(msg))
         status = porter_callback_status(msg)
         time = porter_callback_time(msg)
       end
@@ -52,16 +52,16 @@ class Task < ApplicationRecord
   end
 
   def feeder_storage_bucket
-    ENV['FEEDER_STORAGE_BUCKET']
+    ENV["FEEDER_STORAGE_BUCKET"]
   end
 
   def callback_queue
     q = "#{Rails.configuration.active_job.queue_name_prefix}_feeder_fixer_callback"
-    r = ENV['AWS_REGION'] || 'us-east-1'
+    r = ENV["AWS_REGION"] || "us-east-1"
     "sqs://#{r}/#{q}"
   end
 
   def porter_enabled?
-    ENV['PORTER_SNS_TOPIC'].present?
+    ENV["PORTER_SNS_TOPIC"].present?
   end
 end

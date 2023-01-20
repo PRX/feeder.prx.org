@@ -3,7 +3,7 @@ class AddPodcastImageStatus < ActiveRecord::Migration[4.2]
     add_column :podcast_images, :status, :integer
     add_column :podcast_images, :created_at, :datetime
     add_column :podcast_images, :updated_at, :datetime
-    execute 'UPDATE podcast_images set created_at = now(), updated_at = now(), status = 3'
+    execute "UPDATE podcast_images set created_at = now(), updated_at = now(), status = 3"
   end
 
   def down

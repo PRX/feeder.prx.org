@@ -1,8 +1,8 @@
-require 'test_helper'
+require "test_helper"
 
 describe Content do
   let(:episode) { create(:episode) }
-  let(:content) { Content.create(original_url: 'u', file_size: 10, mime_type: 'mt', episode: episode) }
+  let(:content) { Content.create(original_url: "u", file_size: 10, mime_type: "mt", episode: episode) }
   let(:crier_content) {
     {
       "position" => 1,
@@ -19,7 +19,7 @@ describe Content do
     }
   }
 
-  it 'can be constructed from feed content' do
+  it "can be constructed from feed content" do
     c = Content.build_from_content(episode, crier_content)
     refute c.is_default
     assert_equal c.bit_rate, 64
@@ -34,10 +34,10 @@ describe Content do
     assert_equal c.original_url, "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3"
   end
 
-  it 'can be updated' do
+  it "can be updated" do
     content.update_with_content!(crier_content)
     assert_equal content.original_url, "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3"
     assert_equal content.file_size, 26017749
-    assert_equal content.mime_type, 'audio/mpeg'
+    assert_equal content.mime_type, "audio/mpeg"
   end
 end

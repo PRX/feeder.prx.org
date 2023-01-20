@@ -1,4 +1,4 @@
-require 'time_formats'
+require "time_formats"
 
 class Numeric
   include TimeFormats

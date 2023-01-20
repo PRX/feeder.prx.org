@@ -1,8 +1,7 @@
-require 'addressable/uri'
-require 'addressable/template'
+require "addressable/uri"
+require "addressable/template"
 
 class EnclosureUrlBuilder
-
   def podcast_episode_url(podcast, episode, feed = nil)
     feed ||= podcast.default_feed
     template = feed.try(:enclosure_template)
@@ -14,11 +13,11 @@ class EnclosureUrlBuilder
   def podcast_episode_expansions(podcast, episode, feed)
     media = episode.first_media_resource
 
-    original_url = media.try(:original_url) || ''
+    original_url = media.try(:original_url) || ""
     original = Addressable::URI.parse(original_url).to_hash
-    original = Hash[original.map { |k,v| ["original_#{k}".to_sym, v] }]
+    original = original.map { |k, v| ["original_#{k}".to_sym, v] }.to_h
 
-    base_url = media.try(:media_url) || ''
+    base_url = media.try(:media_url) || ""
     base = Addressable::URI.parse(base_url).to_hash
 
     orig_fn = File.basename(original[:original_path].to_s)
@@ -46,10 +45,9 @@ class EnclosureUrlBuilder
     format ? ".#{format}" : nil
   end
 
-  def enclosure_url(template, expansions, prefix=nil)
+  def enclosure_url(template, expansions, prefix = nil)
     url = enclosure_template_url(template, expansions)
-    url = enclosure_prefix_url(url, prefix)
-    url
+    enclosure_prefix_url(url, prefix)
   end
 
   def enclosure_template_url(template, expansions)

@@ -1,9 +1,9 @@
-require 'test_helper'
+require "test_helper"
 
 describe TagListValidator do
   let(:feed) { build(:feed) }
 
-  it 'allows nil' do
+  it "allows nil" do
     feed.include_tags = nil
     assert feed.valid?
 
@@ -14,14 +14,14 @@ describe TagListValidator do
     refute feed.valid?
   end
 
-  it 'validates string tags' do
-    feed.include_tags = ['anything', 333]
+  it "validates string tags" do
+    feed.include_tags = ["anything", 333]
     refute feed.valid?
 
-    feed.include_tags = ['tag', 'tag', Object.new]
+    feed.include_tags = ["tag", "tag", Object.new]
     refute feed.valid?
 
-    feed.include_tags = ['tag', 'tag with spaces ', '1234']
+    feed.include_tags = ["tag", "tag with spaces ", "1234"]
     assert feed.valid?
   end
 end

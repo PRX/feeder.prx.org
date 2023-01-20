@@ -1,10 +1,10 @@
 class MediaResource < ApplicationRecord
-  has_one :task, -> { order('id desc') }, as: :owner
+  has_one :task, -> { order("id desc") }, as: :owner
   has_many :tasks, as: :owner
 
   belongs_to :episode, -> { with_deleted }, touch: true, optional: true
 
-  enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
+  enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
 
   before_validation :initialize_attributes, on: :create
 
@@ -49,9 +49,8 @@ class MediaResource < ApplicationRecord
   end
 
   def media_url_for_base(base_published_url)
-    ext = File.extname(original_url || '')
-    ext = '.mp3' if ext.blank?
+    ext = File.extname(original_url || "")
+    ext = ".mp3" if ext.blank?
     "#{base_published_url}/#{guid}#{ext}"
   end
-
 end

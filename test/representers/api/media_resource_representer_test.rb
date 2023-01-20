@@ -1,30 +1,30 @@
-require 'test_helper'
+require "test_helper"
 
 describe Api::MediaResourceRepresenter do
   let(:media_resource) { MediaResource.new }
   let(:representer) { Api::MediaResourceRepresenter.new(media_resource) }
 
-  it 'includes the href' do
-    media_resource.stub(:href, 'url') do
-      assert_equal representer.as_json['href'], 'url'
+  it "includes the href" do
+    media_resource.stub(:href, "url") do
+      assert_equal representer.as_json["href"], "url"
     end
   end
 
-  it 'includes the type' do
-    media_resource.stub(:mime_type, 'audio/taco') do
-      assert_equal representer.as_json['type'], 'audio/taco'
+  it "includes the type" do
+    media_resource.stub(:mime_type, "audio/taco") do
+      assert_equal representer.as_json["type"], "audio/taco"
     end
   end
 
-  it 'includes the size' do
+  it "includes the size" do
     media_resource.stub(:file_size, 123456) do
-      assert_equal representer.as_json['size'], 123456
+      assert_equal representer.as_json["size"], 123456
     end
   end
 
-  it 'includes the duration' do
+  it "includes the duration" do
     media_resource.stub(:duration, 1234) do
-      assert_equal representer.as_json['duration'], 1234
+      assert_equal representer.as_json["duration"], 1234
     end
   end
 end

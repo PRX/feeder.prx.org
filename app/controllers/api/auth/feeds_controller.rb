@@ -6,6 +6,6 @@ class Api::Auth::FeedsController < Api::BaseController
   after_action :publish, only: [:create, :update, :destroy]
 
   def publish
-    resource.podcast.publish! if resource && resource.podcast
+    resource.podcast.publish! if resource&.podcast
   end
 end
