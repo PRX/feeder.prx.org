@@ -16,7 +16,7 @@ SayWhen.configure do |options|
 end
 
 begin
-  unless Rails.env.test?
+  unless Rails.env.test? || ENV['ASSET_PRECOMPILE'].present?
     SayWhen.schedule(
       group: 'application',
       name: 'release_episodes',

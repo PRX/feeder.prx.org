@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  resources :fake, only: [:index, :show]
   resources :podcasts, only: [:show], defaults: { format: 'rss' }
   resources :feeds, only: [:index]
 
