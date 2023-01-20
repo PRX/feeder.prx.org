@@ -1,0 +1,41 @@
+/*
+ * Navigation items
+ */
+ header {
+  .nav-link {
+    text-transform: uppercase;
+    font-size: 1em;
+    font-weight: bold;
+    border-bottom: 3px solid transparent;
+    border-top: 3px solid transparent;
+    padding: 10px 15px;
+    color: $blue;
+    justify-self: start;
+
+    &.active {
+      border-bottom: 3px solid $orange;
+    }
+
+    &.dropdown-toggle {
+      border-left: 1px solid $blue;
+
+      &::after {
+        display: none;
+      }
+
+      .material-icons {
+        font-size: 30px;
+      }
+    }
+
+    @media (min-width: 576px) {
+      justify-self: end;
+    }
+  }
+}
+
+.navbar-dark .navbar-nav {
+  .nav-link {
+    color: rgba(255,255,255,1);
+  }
+}

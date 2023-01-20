@@ -1,0 +1,24 @@
+/**
+ * General layout stylings - some copied from Styleguide
+ */
+body {
+  max-width: 100%;
+  margin: 0;
+  font-family: "Roboto", 'Helvetica Neue', sans-serif;
+  background: image-url('prx-mark-outlined.svg') repeat top left $gray-100;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+main {
+  display: block;
+  min-height: 200px;
+  position: relative;
+}
+
+.full-vertical-height {
+  min-height: calc(100vh - 116px);
+}

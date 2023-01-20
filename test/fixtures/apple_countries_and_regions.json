@@ -1,0 +1,20 @@
+{
+  "data" : [ {
+    "type" : "countriesAndRegions",
+    "id" : "AA",
+    "attributes" : {
+      "name" : "AA country"
+    },
+    "links" : {
+      "self" : "https://api.podcastsconnect.apple.com/v1/countriesAndRegions/AA"
+    }
+  } ],
+  "links" : {
+    "self" : "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200"
+  },
+  "meta" : {
+    "paging" : {
+      "limit" : 200
+    }
+  }
+}

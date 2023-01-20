@@ -1,16 +1,35 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Feeder</title>
+    <title><%= content_for?(:title) ? content_for(:title) : "Feeder" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%= favicon_link_tag asset_path("favicon.ico") %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+    <header>
+      <%= render 'layouts/nav' %>
+      <%= render 'layouts/subnav' %>
+    </header>
+
+    <% if content_for? :tabs %>
+      <div class="container-fluid">
+        <div class="row full-vertical-height">
+          <aside class="sidetabs col-sm-12 col-md-3 col-xl-2">
+            <%= yield :tabs %>
+          </aside>
+          <main class="tab-content col-sm-12 col-md-9 col-xl-10 bg-white"><%= yield %></main>
+        </div>
+      </div>
+    <% else %>
+      <main class="container-xl">
+        <%= yield %>
+      </main>
+    <% end %>
   </body>
 </html>

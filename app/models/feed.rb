@@ -20,6 +20,9 @@ class Feed < ApplicationRecord
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
 
+  has_many :apple_credentials, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
+                               class_name: '::Apple::Credential'
+
   has_one :feed_image, -> { complete.order('created_at DESC') }, autosave: true, dependent: :destroy
   has_many :feed_images, -> { order('created_at DESC') }, autosave: true, dependent: :destroy
   has_one :itunes_image, -> { complete.order('created_at DESC') }, autosave: true, dependent: :destroy
@@ -81,6 +84,7 @@ class Feed < ApplicationRecord
   def feed_episodes
     include_in_feed = []
     feed_max = display_episodes_count.to_i
+
     filtered_episodes.each do |ep|
       include_in_feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (include_in_feed.size >= feed_max)
@@ -96,6 +100,14 @@ class Feed < ApplicationRecord
 
   def normalize_category(cat)
     cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip
+  end
+
+  def use_exclude_tags?
+    !exclude_tags.nil?
+  end
+
+  def publish_to_apple?(creds)
+    creds.present? && creds.public_feed == self
   end
 
   def use_include_tags?
@@ -139,6 +151,7 @@ class Feed < ApplicationRecord
 
   # API updates for feed_image=
   def feed_image_file; feed_images.first; end
+
   def feed_image_file=(file)
     img = FeedImage.build(file)
     if img && img.original_url != feed_image_file.try(:original_url)
@@ -150,6 +163,7 @@ class Feed < ApplicationRecord
 
   # API updates for itunes_image=
   def itunes_image_file; itunes_images.first; end
+
   def itunes_image_file=(file)
     img = ITunesImage.build(file)
     if img && img.original_url != itunes_image_file.try(:original_url)

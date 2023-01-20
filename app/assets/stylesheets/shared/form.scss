@@ -1,0 +1,173 @@
+// material style floating form labels
+.form-floating {
+  >label {
+    color: $gray-700;
+    height: auto;
+    font-size: 1rem;
+
+    &.is-invalid {
+      color: $form-feedback-invalid-color;
+    }
+  }
+
+  // cover up the input border in back of the label text
+  >label::before {
+    content: '';
+    z-index: -1;
+    background: $input-bg;
+    position: absolute;
+    height: 10px;
+    bottom: 46%;
+    width: 80%;
+    left: 10%;
+  }
+
+  // manually applied "blank" class (when the placeholder trick won't work)
+  >.form-control-blank:not(:focus)~label {
+    opacity: 1;
+    transform: none;
+  }
+
+  // hide 'mm/dd/yyyy' placeholder on date fields
+  >.form-control-blank[type=date]:not(:focus) {
+    color: transparent;
+  }
+
+  > textarea.form-control {
+    height: 100%;
+  }
+}
+
+// make simpleselect look more bootstrap-ish
+.ss-main {
+  &.form-select {
+    padding: 0;
+    min-height: $input-height;
+    height: auto;
+  }
+
+  .ss-single-selected,
+  .ss-multi-selected {
+    padding: $input-btn-padding-y $input-btn-padding-x;
+    line-height: $line-height-base;
+    border: 0;
+    border-radius: $input-border-radius;
+    color: $input-color;
+
+    &.ss-disabled {
+      background: $input-disabled-bg;
+      border-color: $input-disabled-border-color;
+      cursor: default;
+    }
+  }
+
+  .ss-single-selected {
+    height: 3.5rem;
+    background: transparent;
+  }
+
+  .ss-arrow {
+    visibility: hidden;
+  }
+
+  &.form-select.is-invalid:not([multiple]):not([size]) {
+    padding-right: 0;
+  }
+
+  .ss-search input {
+    border-radius: $input-border-radius;
+    padding: $input-btn-padding-y $input-btn-padding-x;
+    height: 3rem;
+  }
+
+  // more x-ish deselect
+  .ss-single-selected .ss-deselect {
+    color: transparent;
+    position: relative;
+    transform: rotate(45deg);
+
+    &::before {
+      background: #666;
+      content: "";
+      position: absolute;
+      height: 10px;
+      width: 2px;
+      left: 4px;
+      top: 12px;
+    }
+
+    &::after {
+      background: #666;
+      content: "";
+      position: absolute;
+      height: 2px;
+      width: 10px;
+      left: 0px;
+      top: 16px;
+    }
+  }
+
+  // faster!
+  .ss-content {
+    transition-duration: 0.1s;
+
+    .ss-list {
+      .ss-option, .ss-optgroup-label {
+        line-height: 2;
+      }
+
+      .ss-option.ss-highlighted,
+      .ss-option:hover,
+      .ss-optgroup-label.ss-highlighted,
+      .ss-optgroup-label:hover {
+        background-color: $primary;
+      }
+    }
+  }
+
+  // selection colors
+  .ss-multi-selected .ss-values .ss-value {
+    animation: none;
+    background-color: $primary;
+    margin: 2px 5px 0 0;
+  }
+
+  .ss-multi-selected .ss-add {
+    margin-top: 12px;
+    margin-right: 8px;
+  }
+
+  // undo bootstrap placeholder class
+  .placeholder {
+    display: flex;
+    min-height: auto;
+    vertical-align: baseline;
+    cursor: pointer;
+    background-color: transparent;
+    opacity: 1;
+  }
+}
+
+// maybe a bad idea ... but hide options on multiselects, so things don't
+// flicker as simpleselect is init-ing them
+select[multiple] option {
+  visibility: hidden;
+}
+
+// help text
+small {
+  &.invalid-feedback,
+  &.form-text {
+    font-size: 0.75em;
+    line-height: $line-height-sm;
+  }
+}
+
+.form-check-label {
+  color: black;
+  white-space: nowrap;
+}
+
+.table .form-check-input {
+  font-size: 1rem;
+}
