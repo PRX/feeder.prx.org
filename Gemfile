@@ -18,6 +18,7 @@ gem 'pundit', '~> 2.0.0'
 gem 'rack-cors'
 
 # html views
+gem 'active_link_to'
 gem 'bootstrap', '~> 5.2.2'
 gem 'importmap-rails'
 gem 'kaminari'

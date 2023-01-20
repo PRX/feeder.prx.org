@@ -23,13 +23,13 @@
           <aside class="sidetabs col-sm-12 col-md-3 col-xl-2">
             <%= yield :tabs %>
           </aside>
-          <section class="tab-content col-sm-12 col-md-9 col-xl-10 bg-white"><%= yield %></section>
+          <main class="tab-content col-sm-12 col-md-9 col-xl-10 bg-white"><%= yield %></main>
         </div>
       </div>
     <% else %>
-      <div class="container-xl">
+      <main class="container-xl">
         <%= yield %>
-      </div>
+      </main>
     <% end %>
   </body>
 </html>

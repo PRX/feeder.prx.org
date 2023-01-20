@@ -1,41 +1,44 @@
-<% content_for :title, 'Fake ~Show~ PODCAST Page' %>
+<% content_for :title, "Fake ~Show~ PODCAST Page #{@fake}" %>
 
 <% content_for :subnav do %>
   <a class="navbar-brand">content FOR THE SUBNAV</a>
 <% end %>
 
 <% content_for :tabs do %>
-<div class="list-group d-flex col">
-  <a class="list-group-item active" aria-current="page" href="#">Hey</a>
-  <a class="list-group-item" href="#">Look</a>
-  <a class="list-group-item" href="#">Look</a>
-  <a class="list-group-item" href="#">Look</a>
-  <a class="list-group-item" href="#">Look</a>
-  <a class="list-group-item" href="#">Look</a>
-</div>
-<a class="btn btn-secondary-link align-self-center flex-shrink-1" href="#">New Something Button</a>
-
+  <div class="list-group d-flex col">
+    <%= tab_link_to 'Hey', fake_path(123) %>
+    <%= tab_link_to 'Look', fake_path(456) %>
+    <%= tab_link_to 'Look', fake_path(7) %>
+    <%= tab_link_to 'ALERT', fake_path(8888) %>
+    <%= tab_link_to 'Look', fake_path(9) %>
+    <%= tab_link_to 'Look', fake_path(10) %>
+  </div>
+  <a class="btn btn-secondary-link align-self-center flex-shrink-1" href="#">New Something Button</a>
 <% end %>
 
-<div class="row mt-4">
+<%= turbo_frame_tag @fake do %>
 
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Look a card</h5>
-        <p class="card-text">Some card text.</p>
-        <%= link_to 'Back to index', fake_index_path, class: 'btn btn-primary' %>
+  <div class="row mt-4">
+
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">On Fake = <%= @fake %></h5>
+          <p class="card-text">Some card text.</p>
+          <%= link_to 'Back to index', fake_index_path, class: 'btn btn-primary' %>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-lg-4">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Look a card</h5>
-        <p class="card-text">Some card text.</p>
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Look a card</h5>
+          <p class="card-text">Some card text.</p>
+        </div>
       </div>
     </div>
+
   </div>
 
-</div>
+<% end %>
