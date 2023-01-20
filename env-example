@@ -44,5 +44,3 @@ FEEDER_HOST=feeder.prx.docker
 # FEEDER_WEB_MASTER=
 FEEDS_TOKEN=
 ID_HOST=id-staging.prx.tech
-
-RAILS_SERVE_STATIC_FILES=enabled
