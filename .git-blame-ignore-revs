@@ -1,0 +1,5 @@
+# .git-blame-ignore-revs
+# bundle exec standardrb --fix
+128d8b43db58cc316119bf57d06d938d098442ca
+# bundle exec erblint --lint-all --autocorrect
+cc3b8ea0b95298b575a466dd129aa00fc9b1cc27
