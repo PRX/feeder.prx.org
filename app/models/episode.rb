@@ -31,6 +31,12 @@ class Episode < ApplicationRecord
            -> { order('created_at DESC') },
            autosave: true, dependent: :destroy
 
+  has_one :apple_podcast_container, class_name: 'Apple::PodcastContainer'
+  has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
+                                      class_name: 'Apple::PodcastDelivery'
+  has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
+                                          class_name: 'Apple::PodcastDeliveryFile'
+
   validates :podcast_id, :guid, presence: true
   validates :original_guid, uniqueness: { scope: :podcast_id, allow_nil: true }
   validates :itunes_type, inclusion: { in: %w[full trailer bonus] }
@@ -46,12 +52,13 @@ class Episode < ApplicationRecord
 
   scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
 
-  scope :published_by, -> (offset) { where('published_at IS NOT NULL AND published_at <= ?', Time.now + offset) }
+  scope :published_by, ->(offset) { where('published_at IS NOT NULL AND published_at <= ?', Time.now + offset) }
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
+  alias_method :podcast_container, :apple_podcast_container
 
-  def self.release_episodes!(options = {})
+  def self.release_episodes!(_options = {})
     podcasts = []
     episodes_to_release.each do |e|
       podcasts << e.podcast
@@ -70,6 +77,18 @@ class Episode < ApplicationRecord
 
   def self.story_uri(story)
     (story.links['self'].href || '').gsub('/authorization/', '/')
+  end
+
+  def apple_file_errors?
+    # TODO: for now these are all considered audio files
+
+    apple_delivery_file_errors.present?
+  end
+
+  def apple_delivery_file_errors
+    # TODO: for now these are all considered audio files
+
+    apple_delivery_files.map { |p| p.asset_processing_state['errors'] }.flatten
   end
 
   def self.generate_item_guid(podcast_id, episode_guid)
@@ -116,6 +135,7 @@ class Episode < ApplicationRecord
 
   # API updates for image=
   def image_file; images.first; end
+
   def image_file=(file)
     img = EpisodeImage.build(file)
     if img && img.original_url != image_file.try(:original_url)
@@ -229,7 +249,7 @@ class Episode < ApplicationRecord
   end
 
   def media_ready?
-    # if this episode has enclosores, media is ready if there is a complete one
+    # if this episode has enclosures, media is ready if there is a complete one
     if !enclosures.blank?
       !!enclosure
       # if this episode has contents, ready when each position is ready
@@ -250,9 +270,14 @@ class Episode < ApplicationRecord
     EnclosureUrlBuilder.new.podcast_episode_url(podcast, self, feed)
   end
 
+  def enclosure_filename
+    uri = URI.parse(enclosure_url)
+    File.basename(uri.path)
+  end
+
   # used in the API, both read and write
   def media_files
-    !contents.blank? ? contents : Array(enclosure)
+    contents.blank? ? Array(enclosure) : contents
   end
 
   # API updates for media= ... just append new files and reprocess
@@ -271,6 +296,7 @@ class Episode < ApplicationRecord
   # find existing content by the last 2 segments of the url
   def find_existing_content(pos, url)
     return nil if url.blank?
+
     content_file = URI.parse(url || '').path.split('/')[-2, 2].join('/')
     content_file = "/#{content_file}" unless content_file[0] == '/'
     all_contents.where(position: pos).where(
@@ -281,11 +307,12 @@ class Episode < ApplicationRecord
 
   def find_existing_image(url)
     return nil if url.blank?
+
     images.where(original_url: url).order(created_at: :desc).first
   end
 
   def all_media_files
-    !all_contents.blank? ? all_contents : Array(enclosures)
+    all_contents.blank? ? Array(enclosures) : all_contents
   end
 
   def audio_files
@@ -294,9 +321,10 @@ class Episode < ApplicationRecord
 
   def set_external_keyword
     return unless !published_at.nil? && keyword_xid.nil?
+
     identifiers = []
     %i[published_at guid].each do |attr|
-      identifiers << sanitize_keyword(self.send(attr), 10)
+      identifiers << sanitize_keyword(send(attr), 10)
     end
     identifiers << sanitize_keyword(title || 'undefined', 20)
     self.keyword_xid = identifiers.join('_')

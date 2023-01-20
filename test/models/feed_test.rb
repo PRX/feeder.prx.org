@@ -220,4 +220,49 @@ describe Feed do
       assert_empty feed1.reload.itunes_images
     end
   end
+
+  describe '#filtered_episodes' do
+
+    let(:ep) { create(:episode, podcast: feed1.podcast) }
+
+    it 'should include episodes based on a tag' do
+      feed1.update!(include_tags: ['foo'])
+
+      assert_equal feed1.reload.filtered_episodes, []
+      ep.update!(categories: ['foo'])
+      assert_equal feed1.reload.filtered_episodes, [ep]
+    end
+
+    it 'should exclude episodes based on a tag' do
+      feed1.update!(exclude_tags: ['foo'])
+
+      ep = create(:episode, podcast: feed1.podcast)
+
+      # Add the episode category so we can match the feed "exclude_tags"
+      # Using the same tag based include scheme.
+      assert_equal feed1.reload.filtered_episodes, [ep]
+      ep.update!(categories: ['foo'])
+      assert_equal feed1.reload.filtered_episodes, []
+    end
+  end
+
+  describe '#apple_credentials' do
+    it 'has apple credentials' do
+      creds = create(:apple_credential, public_feed: feed1, private_feed: feed2)
+      assert_equal feed1.apple_credentials, [creds]
+      assert_equal feed1.apple_credentials.first.private_feed, feed2
+    end
+  end
+
+  describe '#publish_to_apple?' do
+    it 'returns true if the feed has apple credentials' do
+      creds = create(:apple_credential, public_feed: feed1, private_feed: feed2)
+      assert feed1.publish_to_apple?(creds)
+      refute feed2.publish_to_apple?(creds)
+    end
+
+    it 'returns false if the feed does not have apple credentials' do
+      refute feed1.publish_to_apple?(create(:apple_credential, public_feed: create(:feed), private_feed: create(:feed)))
+    end
+  end
 end

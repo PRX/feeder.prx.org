@@ -57,6 +57,7 @@ gem 'excon'
 gem 'faraday', '~> 0.17.4'
 gem 'hyperresource'
 gem 'net-http'
+gem 'parallel'
 
 group :development, :test do
   gem 'debug', platforms: %i[mri mingw x64_mingw]

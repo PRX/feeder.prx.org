@@ -461,6 +461,7 @@ DEPENDENCIES
   oauth2 (~> 1.4.7)
   ougai
   ougai-formatters-customizable
+  parallel
   paranoia
   pg (~> 1.1)
   prx_auth
