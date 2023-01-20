@@ -65,8 +65,7 @@ group :development, :test do
   gem 'dotenv-rails', '~> 2.0'
   gem 'pry'
   gem 'pry-byebug'
-  gem 'rubocop'
-  gem 'rubocop-performance', '~> 1.4'
+  gem 'standard'
 end
 
 group :development do
