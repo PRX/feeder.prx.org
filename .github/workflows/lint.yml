@@ -10,7 +10,9 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
-      - name: Install Node and dependencies
+      - name: Install Node
         uses: actions/setup-node@v3
+      - name: Install npm dependencies
+        run: npm install
       - name: Lint everything
         run: bin/rails lint
