@@ -7,6 +7,8 @@ class FakeController < ApplicationController
 
     if params[:id] == "8888"
       flash.now[:notice] = "This is a notice, okay?"
+    elsif params[:id] == "9999"
+      authorize Podcast.new, :create?
     end
   end
 end

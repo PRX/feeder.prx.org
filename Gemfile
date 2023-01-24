@@ -14,7 +14,7 @@ gem "redis", "~> 4.0"
 gem "oauth2", "~> 1.4.7"
 gem "prx_auth"
 gem "prx_auth-rails", "~> 4.0.0"
-gem "pundit", "~> 2.0.0"
+gem "pundit", "~> 2.3.0"
 gem "rack-cors"
 
 # html views
