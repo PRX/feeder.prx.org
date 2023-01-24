@@ -1,5 +1,4 @@
 class ITunesCategoryValidator < ActiveModel::Validator
-  # rubocop:disable Layout/LineLength
   CATEGORIES = {
     "Arts" => ["Books", "Design", "Fashion & Beauty", "Food", "Performing Arts", "Visual Arts"],
     "Business" => ["Careers", "Entrepreneurship", "Investing", "Management", "Marketing", "Non-Profit"],
@@ -21,7 +20,6 @@ class ITunesCategoryValidator < ActiveModel::Validator
     "True Crime" => [],
     "TV & Film" => ["After Shows", "Film History", "Film Interviews", "Film Reviews", "TV Reviews"]
   }.freeze
-  # rubocop:enable Layout/LineLength
 
   def validate(record)
     if category?(record.name)
