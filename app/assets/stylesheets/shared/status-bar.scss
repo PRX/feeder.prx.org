@@ -30,7 +30,8 @@ prx-status-bar {
     }
   }
 
-  .status-bar-label, .status-bar-title {
+  .status-bar-label,
+  .status-bar-title {
     border-left: 1px solid $gray-200;
     padding: 0 14px;
     white-space: nowrap;
