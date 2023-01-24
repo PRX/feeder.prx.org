@@ -1,5 +1,4 @@
 class ReleaseEpisodesJob < ApplicationJob
-
   queue_as :feeder_default
 
   def perform(reschedule = false)
@@ -11,6 +10,6 @@ class ReleaseEpisodesJob < ApplicationJob
   end
 
   def release_check_delay
-    (ENV['FEEDER_RELEASE_CHECK_DELAY'] || 300).to_i
+    (ENV["FEEDER_RELEASE_CHECK_DELAY"] || 300).to_i
   end
 end

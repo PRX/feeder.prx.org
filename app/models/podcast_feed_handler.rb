@@ -1,7 +1,7 @@
 class PodcastFeedHandler
-  FEED_ATTRS = %w( complete copyright description explicit keywords language
-                   subtitle summary title update_frequency update_period
-                   author managing_editor new_feed_url owners ).freeze
+  FEED_ATTRS = %w[ complete copyright description explicit keywords language
+    subtitle summary title update_frequency update_period
+    author managing_editor new_feed_url owners ].freeze
 
   attr_accessor :podcast, :default_feed, :feed
 
@@ -43,7 +43,7 @@ class PodcastFeedHandler
       podcast.send("#{v}=", fa[k.to_s])
     end
 
-    podcast.path ||= fa['feedburner_name']
+    podcast.path ||= fa["feedburner_name"]
   end
 
   def update_images
@@ -58,7 +58,7 @@ class PodcastFeedHandler
     feed.categories.each do |cat|
       if ITunesCategoryValidator.category?(cat)
         itunes_cats[cat] ||= []
-      elsif parent_cat = ITunesCategoryValidator.subcategory?(cat)
+      elsif (parent_cat = ITunesCategoryValidator.subcategory?(cat))
         itunes_cats[parent_cat] ||= []
         itunes_cats[parent_cat] << cat
       else

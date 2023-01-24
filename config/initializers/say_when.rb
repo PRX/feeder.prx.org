@@ -1,4 +1,4 @@
-require 'say_when'
+require "say_when"
 
 # Specify a logger for SayWhen
 SayWhen.logger = Rails.logger
@@ -16,23 +16,23 @@ SayWhen.configure do |options|
 end
 
 begin
-  unless Rails.env.test? || ENV['ASSET_PRECOMPILE'].present?
+  unless Rails.env.test? || ENV["ASSET_PRECOMPILE"].present?
     SayWhen.schedule(
-      group: 'application',
-      name: 'release_episodes',
-      trigger_strategy: 'cron',
-      trigger_options: { expression: '0 0/5 * * * ?', time_zone: 'UTC' },
-      job_class: 'Episode',
-      job_method: 'release_episodes!'
+      group: "application",
+      name: "release_episodes",
+      trigger_strategy: "cron",
+      trigger_options: {expression: "0 0/5 * * * ?", time_zone: "UTC"},
+      job_class: "Episode",
+      job_method: "release_episodes!"
     )
   end
 rescue ActiveRecord::StatementInvalid => e
   puts "Failed to init say_when job: #{e.inspect}"
 end
 
-if ENV['START_SAY_WHEN'].present?
+if ENV["START_SAY_WHEN"].present?
   # for use with Shoryuken >= 3.x
-  require 'say_when/poller/concurrent_poller'
+  require "say_when/poller/concurrent_poller"
   poller = SayWhen::Poller::ConcurrentPoller.new(5)
   poller.start
 end

@@ -1,6 +1,4 @@
-# encoding: utf-8
-
-require 'active_support/concern'
+require "active_support/concern"
 
 module ApiUpdatedSince
   extend ActiveSupport::Concern
@@ -13,7 +11,7 @@ module ApiUpdatedSince
 
   def resources_base
     if updated_since?
-      super.where('updated_at >= ?', updated_since).order(updated_at: :asc)
+      super.where("updated_at >= ?", updated_since).order(updated_at: :asc)
     else
       super
     end
@@ -25,7 +23,7 @@ module ApiUpdatedSince
 
   def updated_since
     DateTime.parse(params[:since])
-  rescue StandardError
+  rescue
     nil
   end
 end

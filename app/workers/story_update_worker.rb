@@ -1,6 +1,6 @@
 class StoryUpdateWorker < ApplicationWorker
   shoryuken_options queue: announce_queues(:story, [:create, :update, :delete, :publish, :unpublish]),
-                    auto_delete: true
+    auto_delete: true
 
   attr_accessor :body
   attr_writer :episode, :podcast, :story
@@ -13,7 +13,7 @@ class StoryUpdateWorker < ApplicationWorker
     parse_message(data)
 
     # don't allow incomplete stories to alter a published episode
-    return if episode.try(:published?) && action == 'update' && story.status != 'complete'
+    return if episode.try(:published?) && action == "update" && story.status != "complete"
 
     episode ? update_episode : create_episode
     episode&.copy_media
@@ -21,9 +21,9 @@ class StoryUpdateWorker < ApplicationWorker
     podcast&.publish!
   end
 
-  alias receive_story_create receive_story_update
-  alias receive_story_publish receive_story_update
-  alias receive_story_unpublish receive_story_update
+  alias_method :receive_story_create, :receive_story_update
+  alias_method :receive_story_publish, :receive_story_update
+  alias_method :receive_story_unpublish, :receive_story_update
 
   def receive_story_delete(data)
     parse_message(data)
@@ -84,8 +84,8 @@ class StoryUpdateWorker < ApplicationWorker
 
   def story_auth_url(url)
     result = url
-    if result && !result.include?('authorization')
-      result = result.gsub('/stories/', '/authorization/stories/')
+    if result && !result.include?("authorization")
+      result = result.gsub("/stories/", "/authorization/stories/")
     end
     result
   end

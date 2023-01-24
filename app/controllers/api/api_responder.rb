@@ -1,4 +1,4 @@
-require 'roar/rails/responder'
+require "roar/rails/responder"
 
 class Api::ApiResponder < Roar::Rails::Responder
   def api_behavior

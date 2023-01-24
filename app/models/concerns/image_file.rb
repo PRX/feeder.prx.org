@@ -1,11 +1,11 @@
-require 'newrelic_rpm'
-require 'active_support/concern'
+require "newrelic_rpm"
+require "active_support/concern"
 
 module ImageFile
   extend ActiveSupport::Concern
 
   included do
-    has_one :task, -> { order('id desc') }, as: :owner
+    has_one :task, -> { order("id desc") }, as: :owner
     has_many :tasks, as: :owner
 
     before_validation :initialize_attributes, on: :create
@@ -14,18 +14,18 @@ module ImageFile
 
     validates :original_url, presence: true
 
-    validates :format, inclusion: { in: ['jpeg', 'png', 'gif', nil] }
+    validates :format, inclusion: {in: ["jpeg", "png", "gif", nil]}
 
-    enum status: [ :started, :created, :processing, :complete, :error, :retrying, :cancelled ]
+    enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
   end
 
   class_methods do
     def build(file)
       img =
-        if file && file.is_a?(Hash)
-          self.new(file)
-        elsif file && file.is_a?(String)
-          self.new(original_url: file)
+        if file&.is_a?(Hash)
+          new(file)
+        elsif file&.is_a?(String)
+          new(original_url: file)
         else
           file
         end
@@ -101,7 +101,7 @@ module ImageFile
       fastimage_options = {
         timeout: 10,
         raise_on_failure: true,
-        http_header: { 'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X) PRX Feeder/1.0' }
+        http_header: {"User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X) PRX Feeder/1.0"}
       }
       info = FastImage.new(original_url, fastimage_options)
     rescue FastImage::FastImageException => err

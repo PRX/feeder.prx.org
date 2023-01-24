@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 class Api::MediaResourceRepresenter < Roar::Decorator
   include Roar::JSON
   include HalApi::Representer::FormatKeys

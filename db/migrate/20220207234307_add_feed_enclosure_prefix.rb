@@ -4,7 +4,7 @@ class AddFeedEnclosurePrefix < ActiveRecord::Migration[4.2]
     add_column :feeds, :enclosure_template, :string
 
     Podcast.with_deleted.each do |podcast|
-      next unless feed = podcast.default_feed
+      next unless (feed = podcast.default_feed)
 
       feed.enclosure_prefix = podcast.enclosure_prefix
       feed.enclosure_template = podcast.enclosure_template
@@ -20,7 +20,7 @@ class AddFeedEnclosurePrefix < ActiveRecord::Migration[4.2]
     add_column :podcasts, :enclosure_template, :string
 
     Podcast.with_deleted.each do |podcast|
-      next unless feed = podcast.default_feed
+      next unless (feed = podcast.default_feed)
 
       podcast.enclosure_prefix = feed.enclosure_prefix
       podcast.enclosure_template = feed.enclosure_template

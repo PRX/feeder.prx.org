@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 class Authorization
   include HalApi::RepresentedModel
 
@@ -22,8 +20,8 @@ class Authorization
   end
 
   def cache_key
-    token_key = OpenSSL::Digest::MD5.hexdigest([token.scopes, token.resources].map(&:to_s).join(''))
-    ActiveSupport::Cache.expand_cache_key(['PRX::Authorization', token_key])
+    token_key = OpenSSL::Digest::MD5.hexdigest([token.scopes, token.resources].map(&:to_s).join(""))
+    ActiveSupport::Cache.expand_cache_key(["PRX::Authorization", token_key])
   end
 
   def token_auth_account_ids
@@ -35,7 +33,7 @@ class Authorization
   end
 
   def token_auth_podcasts
-    if token.globally_authorized?('read-private')
+    if token.globally_authorized?("read-private")
       Podcast.with_deleted.all
     else
       Podcast.where(prx_account_uri: token_auth_account_uris)
@@ -44,7 +42,7 @@ class Authorization
 
   # avoid joining podcasts here, as it breaks a bunch of other queries
   def token_auth_episodes
-    if token.globally_authorized?('read-private')
+    if token.globally_authorized?("read-private")
       Episode.with_deleted.all
     else
       Episode.where(podcast_id: token_auth_podcasts.pluck(:id))

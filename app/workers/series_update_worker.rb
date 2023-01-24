@@ -1,6 +1,6 @@
 class SeriesUpdateWorker < ApplicationWorker
   shoryuken_options queue: announce_queues(:series, [:create, :update, :delete]),
-                    auto_delete: true
+    auto_delete: true
 
   attr_accessor :body, :podcast, :series
 
@@ -17,7 +17,7 @@ class SeriesUpdateWorker < ApplicationWorker
     end
   end
 
-  alias receive_series_create receive_series_update
+  alias_method :receive_series_create, :receive_series_update
 
   def receive_series_delete(data)
     load_resources(data)

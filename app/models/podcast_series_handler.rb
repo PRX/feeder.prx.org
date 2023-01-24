@@ -30,8 +30,8 @@ class PodcastSeriesHandler
 
   def update_from_series(series)
     self.series = series
-    podcast.prx_uri = series.links['self'].href
-    podcast.prx_account_uri = series.links['account'].href
+    podcast.prx_uri = series.links["self"].href
+    podcast.prx_account_uri = series.links["account"].href
 
     update_series_attributes
     update_images
@@ -49,12 +49,16 @@ class PodcastSeriesHandler
   end
 
   def update_images
-    images = series.objects['prx:images'].objects['prx:items'] rescue []
+    images = begin
+      series.objects["prx:images"].objects["prx:items"]
+    rescue
+      []
+    end
 
-    feed_image = images.find { |i| i.attributes['purpose'] == 'thumbnail' }
+    feed_image = images.find { |i| i.attributes["purpose"] == "thumbnail" }
     default_feed.feed_image_file = feed_image.try(:links).try(:original).try(:href)
 
-    itunes_image = images.find { |i| i.attributes['purpose'] == 'profile' }
+    itunes_image = images.find { |i| i.attributes["purpose"] == "profile" }
     default_feed.itunes_image_file = itunes_image.try(:links).try(:original).try(:href)
   end
 

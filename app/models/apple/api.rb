@@ -3,16 +3,16 @@
 module Apple
   class Api
     ERROR_RETRIES = 3
-    SUCCESS_CODES = %w(200 201).freeze
+    SUCCESS_CODES = %w[200 201].freeze
 
     attr_accessor :provider_id, :key_id, :key, :bridge_url
 
     def self.from_env
-      apple_key_pem = Base64.decode64(ENV['APPLE_KEY_PEM_B64'])
+      apple_key_pem = Base64.decode64(ENV["APPLE_KEY_PEM_B64"])
 
-      new(provider_id: ENV['APPLE_PROVIDER_ID'],
-          key_id: ENV['APPLE_KEY_ID'],
-          key: apple_key_pem)
+      new(provider_id: ENV["APPLE_PROVIDER_ID"],
+        key_id: ENV["APPLE_KEY_ID"],
+        key: apple_key_pem)
     end
 
     def self.from_apple_credentials(apple_credentials)
@@ -21,13 +21,13 @@ module Apple
         from_env
       else
         new(provider_id: apple_credentials.apple_provider_id,
-            key_id: apple_credentials.apple_key_id,
-            key: apple_credentials.apple_key)
+          key_id: apple_credentials.apple_key_id,
+          key: apple_credentials.apple_key)
       end
     end
 
     def initialize(provider_id:, key_id:, key:, bridge_url: nil)
-      bridge_url = ENV.fetch('APPLE_API_BRIDGE_URL') unless bridge_url.present?
+      bridge_url = ENV.fetch("APPLE_API_BRIDGE_URL") unless bridge_url.present?
 
       @provider_id = provider_id
       @key_id = key_id
@@ -42,31 +42,31 @@ module Apple
     def jwt_payload
       now = Time.now.utc
 
-      { iss: provider_id,
-        exp: now.to_i + (60 * 15),
-        aud: 'podcastsconnect-v1' }
+      {iss: provider_id,
+       exp: now.to_i + (60 * 15),
+       aud: "podcastsconnect-v1"}
     end
 
     def jwt_headers
-      { kid: key_id, typ: 'JWT' }
+      {kid: key_id, typ: "JWT"}
     end
 
     def jwt
-      JWT.encode(jwt_payload, ec_key, 'ES256', jwt_headers)
+      JWT.encode(jwt_payload, ec_key, "ES256", jwt_headers)
     end
 
     def api_base
-      'https://api.podcastsconnect.apple.com/v1/'
+      "https://api.podcastsconnect.apple.com/v1/"
     end
 
     def list_shows
-      get('shows')
+      get("shows")
     end
 
     def set_headers(req)
-      req['Authorization'] = "Bearer #{jwt}"
-      req['Content-Type'] = 'application/json'
-      req['User-Agent'] = "PRX-Feeder-Apple/1.0 (Rails-#{Rails.env})"
+      req["Authorization"] = "Bearer #{jwt}"
+      req["Content-Type"] = "application/json"
+      req["User-Agent"] = "PRX-Feeder-Apple/1.0 (Rails-#{Rails.env})"
 
       req
     end
@@ -80,9 +80,9 @@ module Apple
 
         resp = get_uri(uri)
         json = unwrap_response(resp)
-        res << json['data']
+        res << json["data"]
 
-        next_uri = json['links']['next']
+        next_uri = json["links"]["next"]
 
         uri =
           if next_uri
@@ -129,15 +129,15 @@ module Apple
     end
 
     def countries_and_regions
-      json = unwrap_response(get('countriesAndRegions?limit=200'))
-      json['data'].map { |h| h.slice('type', 'id') }
+      json = unwrap_response(get("countriesAndRegions?limit=200"))
+      json["data"].map { |h| h.slice("type", "id") }
     end
 
     def check_row(row_operation)
       return true unless row_operation.instance_of?(Hash)
 
-      if row_operation.key?('api_response') && row_operation.dig('api_response', 'err')
-        raise row_operation.dig('api_response', 'val').to_json
+      if row_operation.key?("api_response") && row_operation.dig("api_response", "err")
+        raise row_operation.dig("api_response", "val").to_json
       end
 
       true
@@ -148,20 +148,20 @@ module Apple
     end
 
     def unwrap_response(resp)
-      raise Apple::ApiError.new('Apple Api Error', resp) unless ok_code(resp)
+      raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp)
 
       JSON.parse(resp.body)
     end
 
     def unwrap_bridge_response(resp)
-      raise Apple::ApiError.new('Apple Api Bridge Error', resp) unless ok_code(resp)
+      raise Apple::ApiError.new("Apple Api Bridge Error", resp) unless ok_code(resp)
 
       parsed = JSON.parse(resp.body)
 
-      raise 'Expected an array response' unless parsed.instance_of?(Array)
+      raise "Expected an array response" unless parsed.instance_of?(Array)
 
-      (oks, errs) = %w(ok err).map do |key|
-        parsed.select { |row_operation| row_operation['api_response'][key] == true }
+      (oks, errs) = %w[ok err].map do |key|
+        parsed.select { |row_operation| row_operation["api_response"][key] == true }
       end
 
       (fixed_errs, remaining_errors) = yield(errs)
@@ -207,7 +207,7 @@ module Apple
     end
 
     def localhost_bridge_url?
-      bridge_url.hostname == 'localhost'
+      bridge_url.hostname == "localhost"
     end
 
     private
@@ -218,7 +218,7 @@ module Apple
       req = set_headers(req)
 
       # test if the apple_bridge_url is https
-      use_ssl = bridge_url.scheme == 'https'
+      use_ssl = bridge_url.scheme == "https"
 
       Net::HTTP.start(uri.hostname, uri.port, use_ssl: use_ssl, read_timeout: 10.minutes) do |http|
         http.request(req)
@@ -235,21 +235,21 @@ module Apple
 
       # Slice off the api response and retry the row operation
       formatted_error_operations_for_retry = row_operation_errs.map do |r|
-        r.slice('request_metadata', 'api_parameters', 'api_url')
+        r.slice("request_metadata", "api_parameters", "api_url")
       end
 
       # Working *only* on the row_operation_errs here in the call to `bridge_remote``
       # So `former_errors_now_ok`, and `repeated_errs` here are derivative solely of `row_operation_errs`
       (former_errors_now_ok, repeated_errs) =
         bridge_remote_and_unwrap(bridge_resource,
-                                 formatted_error_operations_for_retry) do |additional_row_operation_errs|
+          formatted_error_operations_for_retry) do |additional_row_operation_errs|
         if additional_row_operation_errs.empty?
           [[],
-           []]
+            []]
         else
           # Keep working on the errors if there are any
           retry_bridge_api_operation(bridge_resource, [],
-                                     additional_row_operation_errs, attempts + 1)
+            additional_row_operation_errs, attempts + 1)
         end
       end
 

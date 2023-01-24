@@ -1,30 +1,30 @@
-require 'simplecov'
-SimpleCov.start 'rails'
+require "simplecov"
+SimpleCov.start "rails"
 
-ENV['CMS_HOST']        = 'cms.prx.org'
-ENV['FEEDER_HOST']     = 'feeder.prx.org'
-ENV['FEEDER_CDN_HOST'] = 'f.prxu.org'
-ENV['FEEDER_CDN_PRIVATE_HOST'] = 'p.prxu.org'
-ENV['ID_HOST']         = 'id.prx.org'
-ENV['META_HOST']       = 'meta.prx.org'
-ENV['PRX_HOST']        = 'www.prx.org'
-ENV['DOVETAIL_HOST']   = 'dovetail.prxu.org'
-ENV['FEEDER_STORAGE_BUCKET'] = 'test-prx-feed'
-ENV['ANNOUNCE_RESOURCE_PREFIX'] = 'test'
-ENV['APPLE_PROVIDER_ID'] = '433f5f09-80f9-43d4-8cee-67bc549c28c5'
-ENV['APPLE_KEY_ID']      = 'apple key id from env'
-ENV['APPLE_KEY_PEM_B64'] =
-  'LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUhHWUUvUVBZVWtkVUFmczcyZ1FUQkE5aTVBNkRndklFOGlpV3RrQzFScDdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFaHFJSFVZUDN3QmxMdnMvQVpLM1ZHdW0vai8rMkhnVVF6dDc4TFQ0blMrckkxSlZJT0ZyVQpSVUZ6NmtSZ0pFeGxyZjdvSGZxZkxZanZGM0JvT3pmbWx3PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQ=='
-ENV['APPLE_API_BRIDGE_URL'] = 'http://localhost:3000'
+ENV["CMS_HOST"] = "cms.prx.org"
+ENV["FEEDER_HOST"] = "feeder.prx.org"
+ENV["FEEDER_CDN_HOST"] = "f.prxu.org"
+ENV["FEEDER_CDN_PRIVATE_HOST"] = "p.prxu.org"
+ENV["ID_HOST"] = "id.prx.org"
+ENV["META_HOST"] = "meta.prx.org"
+ENV["PRX_HOST"] = "www.prx.org"
+ENV["DOVETAIL_HOST"] = "dovetail.prxu.org"
+ENV["FEEDER_STORAGE_BUCKET"] = "test-prx-feed"
+ENV["ANNOUNCE_RESOURCE_PREFIX"] = "test"
+ENV["APPLE_PROVIDER_ID"] = "433f5f09-80f9-43d4-8cee-67bc549c28c5"
+ENV["APPLE_KEY_ID"] = "apple key id from env"
+ENV["APPLE_KEY_PEM_B64"] =
+  "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUhHWUUvUVBZVWtkVUFmczcyZ1FUQkE5aTVBNkRndklFOGlpV3RrQzFScDdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFaHFJSFVZUDN3QmxMdnMvQVpLM1ZHdW0vai8rMkhnVVF6dDc4TFQ0blMrckkxSlZJT0ZyVQpSVUZ6NmtSZ0pFeGxyZjdvSGZxZkxZanZGM0JvT3pmbWx3PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQ=="
+ENV["APPLE_API_BRIDGE_URL"] = "http://localhost:3000"
 
-ENV['RAILS_ENV'] ||= 'test'
-require_relative '../config/environment'
-require 'rails/test_help'
+ENV["RAILS_ENV"] ||= "test"
+require_relative "../config/environment"
+require "rails/test_help"
 
-require 'minitest/pride'
-require 'minitest/autorun'
-require 'factory_bot'
-require 'webmock/minitest'
+require "minitest/pride"
+require "minitest/autorun"
+require "factory_bot"
+require "webmock/minitest"
 # require 'announce/testing'
 
 class ActiveSupport::TestCase
@@ -57,20 +57,20 @@ def test_file(path)
 end
 
 def stub_requests_to_prx_cms
-  stub_request(:get, 'https://cms.prx.org/api/v1').
-    to_return(status: 200, body: json_file(:prx_root), headers: {})
+  stub_request(:get, "https://cms.prx.org/api/v1")
+    .to_return(status: 200, body: json_file(:prx_root), headers: {})
 
-  stub_request(:get, 'https://cms.prx.org/api/v1/stories/87683').
-    to_return(status: 200, body: json_file(:prx_story), headers: {})
+  stub_request(:get, "https://cms.prx.org/api/v1/stories/87683")
+    .to_return(status: 200, body: json_file(:prx_story), headers: {})
 
-  stub_request(:get, 'https://cms.prx.org/api/v1/accounts/45139').
-    to_return(status: 200, body: json_file(:prx_account), headers: {})
+  stub_request(:get, "https://cms.prx.org/api/v1/accounts/45139")
+    .to_return(status: 200, body: json_file(:prx_account), headers: {})
 
-  stub_request(:get, 'https://cms.prx.org/api/v1/audio_files/451642').
-    to_return(status: 200, body: json_file(:prx_audio_file), headers: {})
+  stub_request(:get, "https://cms.prx.org/api/v1/audio_files/451642")
+    .to_return(status: 200, body: json_file(:prx_audio_file), headers: {})
 
-  stub_request(:get, 'https://cms.prx.org/api/v1/story_images/203874').
-    to_return(status: 200, body: json_file(:prx_story_image), headers: {})
+  stub_request(:get, "https://cms.prx.org/api/v1/story_images/203874")
+    .to_return(status: 200, body: json_file(:prx_story_image), headers: {})
 end
 
 class SnsMock
@@ -79,7 +79,7 @@ class SnsMock
   def publish(params)
     self.message = JSON.parse(params[:message]).with_indifferent_access
     {
-      message_id: 'whatever'
+      message_id: "whatever"
     }
   end
 end
@@ -88,11 +88,11 @@ class StubToken < PrxAuth::Rails::Token
   @@fake_user_id = 0
 
   def initialize(res, scopes, explicit_user_id = nil)
-    scopes = Array.wrap(scopes).map(&:to_s).join(' ')
+    scopes = Array.wrap(scopes).map(&:to_s).join(" ")
     super(Rack::PrxAuth::TokenData.new({
-      'scope' => scopes,
-      'aur' => { res.to_s => scopes },
-      'sub' => explicit_user_id || (@@fake_user_id += 1)
+      "scope" => scopes,
+      "aur" => {res.to_s => scopes},
+      "sub" => explicit_user_id || (@@fake_user_id += 1)
     }))
   end
 end

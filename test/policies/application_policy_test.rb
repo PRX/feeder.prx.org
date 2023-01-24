@@ -1,18 +1,18 @@
-require 'test_helper'
+require "test_helper"
 
 describe ApplicationPolicy do
-  let(:token) { 'token' }
-  let(:resource) { 'resource' }
+  let(:token) { "token" }
+  let(:resource) { "resource" }
 
-  it 'prevents create' do
+  it "prevents create" do
     refute ApplicationPolicy.new(token, resource).create?
   end
 
-  it 'prevents update' do
+  it "prevents update" do
     refute ApplicationPolicy.new(token, resource).update?
   end
 
-  it 'prevents destroy' do
+  it "prevents destroy" do
     refute ApplicationPolicy.new(token, resource).destroy?
   end
 end

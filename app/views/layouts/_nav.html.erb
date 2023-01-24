@@ -1,6 +1,6 @@
 <nav class="prx-dovetail-nav navbar navbar-expand-sm navbar-dark m-0 p-0">
   <div class="container-fluid pe-0">
-    <%= link_to 'Dovetail', fake_index_path, class: 'navbar-brand' %>
+    <%= link_to "Dovetail", fake_index_path, class: "navbar-brand" %>
     <ul class="navbar-nav d-flex flex-row justify-content-end align-items-center">
       <li class="nav-item">
         <a class="nav-link active" href="/">Podcasts</a>
@@ -25,7 +25,7 @@
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
           <% if current_user_image_url.present? %>
-            <img src="<%= current_user_image_url %>" class="nav-avatar" alt="<%= current_user_name %>'s avatar" />
+            <img src="<%= current_user_image_url %>" class="nav-avatar" alt="<%= current_user_name %>'s avatar">
           <% else %>
             <span class="material-icons align-middle" aria-label="PRX Account">account_circle</span>
           <% end %>
@@ -36,15 +36,15 @@
             <a class="dropdown-button btn btn-info" href="https://id.prx.org/profile">Manage Account</a>
           </li>
           <li class="text-center">
-            <%= link_to 'Reload', main_app.refresh_path, data: { turbo: false }, class: 'dropdown-link' %>
+            <%= link_to "Reload", main_app.refresh_path, data: {turbo: false}, class: "dropdown-link" %>
           </li>
           <li class="text-center">
-            <%= link_to 'Logout', main_app.logout_path, data: { turbo: false }, class: 'dropdown-link' %>
+            <%= link_to "Logout", main_app.logout_path, data: {turbo: false}, class: "dropdown-link" %>
           </li>
-          <li><hr class="dropdown-divider" /></li>
+          <li><hr class="dropdown-divider"></li>
           <li class="dropdown-header text-center">My PRX Apps</li>
           <% current_user_apps.each do |name, url| %>
-            <li><%= link_to name, url, class: 'dropdown-item' %></li>
+            <li><%= link_to name, url, class: "dropdown-item" %></li>
           <% end %>
           </li>
         </ul>

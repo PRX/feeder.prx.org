@@ -1,4 +1,4 @@
-require 'prx_access'
+require "prx_access"
 
 class ApplicationWorker
   include PrxAccess
@@ -7,17 +7,17 @@ class ApplicationWorker
   attr_accessor :message
 
   def self.prefix_name(name)
-    [prefix, application, name].join('_')
+    [prefix, application, name].join("_")
   end
 
   def self.announce_queues(model, actions)
     actions.map do |action|
-      [prefix, 'announce', application, model, action].join('_')
+      [prefix, "announce", application, model, action].join("_")
     end
   end
 
   def self.application
-    'feeder'
+    "feeder"
   end
 
   def self.prefix
@@ -45,7 +45,7 @@ class ApplicationWorker
   end
 
   def delegate_method(message)
-    ['receive', message[:subject], message[:action]].join('_')
+    ["receive", message[:subject], message[:action]].join("_")
   end
 
   def logger

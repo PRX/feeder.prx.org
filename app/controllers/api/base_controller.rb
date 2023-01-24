@@ -1,7 +1,5 @@
-# encoding: utf-8
-
-require 'hal_api/rails'
-require 'hal_api/errors'
+require "hal_api/rails"
+require "hal_api/errors"
 
 class Api::BaseController < ApplicationController
   include HalApi::Controller
@@ -19,7 +17,7 @@ class Api::BaseController < ApplicationController
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
   def user_not_authorized(exception = nil)
-    message = { status: 401, message: 'You are not authorized to perform this action' }
+    message = {status: 401, message: "You are not authorized to perform this action"}
     if exception && Rails.configuration.try(:consider_all_requests_local)
       message[:backtrace] = exception.backtrace
     end
@@ -40,7 +38,7 @@ class Api::BaseController < ApplicationController
   cache_api_action :show, if: :cache_show?
   cache_api_action :index, if: :cache_index?
 
-  caches_action :entrypoint, cache_path: ->(_c) { { _c: Api.version(api_version).cache_key } }
+  caches_action :entrypoint, cache_path: ->(_c) { {_c: Api.version(api_version).cache_key} }
 
   def entrypoint
     respond_with Api.version(api_version)
@@ -61,12 +59,12 @@ end
 
 class ResourceGone < HalApi::Errors::ApiError
   def initialize(message = nil)
-    super(message || 'Resource gone', 410)
+    super(message || "Resource gone", 410)
   end
 end
 
 class NotAuthorized < HalApi::Errors::ApiError
   def initialize(message = nil)
-    super(message || 'You are not authorized to perform this action', 401)
+    super(message || "You are not authorized to perform this action", 401)
   end
 end

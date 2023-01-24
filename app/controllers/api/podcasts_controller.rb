@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 class Api::PodcastsController < Api::BaseController
   include ApiUpdatedSince
 
@@ -44,10 +42,10 @@ class Api::PodcastsController < Api::BaseController
   end
 
   def process_media
-    resource.copy_media if resource
+    resource&.copy_media
   end
 
   def publish
-    resource.publish! if resource
+    resource&.publish!
   end
 end

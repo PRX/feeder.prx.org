@@ -13,15 +13,15 @@ class Enclosure < MediaResource
   end
 
   def update_enclosure_attributes(enclosure)
-    self.file_size = enclosure['length'].to_i
-    self.mime_type = enclosure['type']
-    self.href = enclosure['url']
+    self.file_size = enclosure["length"].to_i
+    self.mime_type = enclosure["type"]
+    self.href = enclosure["url"]
     self
   end
 
   def replace_resources!
     episode.with_lock do
-      episode.enclosures.where('created_at < ? AND id != ?', created_at, id).destroy_all
+      episode.enclosures.where("created_at < ? AND id != ?", created_at, id).destroy_all
     end
   end
 end

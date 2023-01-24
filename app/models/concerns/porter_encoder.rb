@@ -1,4 +1,4 @@
-require 'active_support/concern'
+require "active_support/concern"
 
 module PorterEncoder
   extend ActiveSupport::Concern
@@ -20,12 +20,12 @@ module PorterEncoder
       Callbacks: [porter_callback(opts[:callback])]
     }
 
-    if opts[:job_type] == 'audio'
-      job[:Tasks] << {Type: 'Inspect'}
+    if opts[:job_type] == "audio"
+      job[:Tasks] << {Type: "Inspect"}
     end
 
     porter_sns_client.publish({
-      topic_arn: ENV['PORTER_SNS_TOPIC'],
+      topic_arn: ENV["PORTER_SNS_TOPIC"],
       message: JSON.generate({Job: job})
     })
 
@@ -35,38 +35,38 @@ module PorterEncoder
   private
 
   def porter_source(url)
-    if url.starts_with?('s3://')
-      parts = url.sub('s3://', '').split('/', 2)
-      {Mode: 'AWS/S3', BucketName: parts[0], ObjectKey: parts[1]}
-    elsif url.starts_with?('http')
-      {Mode: 'HTTP', URL: url}
+    if url.starts_with?("s3://")
+      parts = url.sub("s3://", "").split("/", 2)
+      {Mode: "AWS/S3", BucketName: parts[0], ObjectKey: parts[1]}
+    elsif url.starts_with?("http")
+      {Mode: "HTTP", URL: url}
     else
       raise "Invalid porter source: #{url}"
     end
   end
 
   def porter_copy(url, src_url)
-    if url.starts_with?('s3://')
-      parts = url.sub('s3://', '').split('/', 2)
+    if url.starts_with?("s3://")
+      parts = url.sub("s3://", "").split("/", 2)
       s3_bucket = parts[0]
       s3_path = parts[1]
       filename = File.basename(src_url)
 
       # NOTE: for HTTP sources (NOT S3) - make sure the eventual encoding of
       # the CloudFront filename matches the source HTTP url
-      if src_url.starts_with?('http')
+      if src_url.starts_with?("http")
         s3_path = CGI.unescape(s3_path)
         filename = CGI.unescape(filename)
       end
 
       {
-        Type: 'Copy',
-        Mode: 'AWS/S3',
+        Type: "Copy",
+        Mode: "AWS/S3",
         BucketName: s3_bucket,
         ObjectKey: s3_path,
-        ContentType: 'REPLACE',
+        ContentType: "REPLACE",
         Parameters: {
-          CacheControl: 'max-age=86400',
+          CacheControl: "max-age=86400",
           ContentDisposition: "attachment; filename=\"#{filename}\""
         }
       }
@@ -76,10 +76,10 @@ module PorterEncoder
   end
 
   def porter_callback(url)
-    if url.starts_with?('sqs://')
-      parts = url.sub('sqs://', '').split('/', 2)
-      account_id = ENV['AWS_ACCOUNT_ID']
-      {Type: 'AWS/SQS', Queue: "https://sqs.#{parts[0]}.amazonaws.com/#{account_id}/#{parts[1]}"}
+    if url.starts_with?("sqs://")
+      parts = url.sub("sqs://", "").split("/", 2)
+      account_id = ENV["AWS_ACCOUNT_ID"]
+      {Type: "AWS/SQS", Queue: "https://sqs.#{parts[0]}.amazonaws.com/#{account_id}/#{parts[1]}"}
     else
       raise "Invalid porter callback: #{url}"
     end

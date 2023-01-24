@@ -1,4 +1,4 @@
-require 'episode'
+require "episode"
 
 class EpisodeStoryHandler
   include PrxAccess
@@ -10,8 +10,8 @@ class EpisodeStoryHandler
   end
 
   def self.create_from_story!(story)
-    series_uri = story.links['series'].href
-    if podcast = Podcast.find_by(prx_uri: series_uri)
+    series_uri = story.links["series"].href
+    if (podcast = Podcast.find_by(prx_uri: series_uri))
       episode = Episode.new(podcast: podcast)
       update_from_story!(episode, story)
     end
@@ -43,7 +43,7 @@ class EpisodeStoryHandler
   def update_story_attributes
     sa = story.attributes
 
-    versions = story.objects['prx:audio-versions']&.objects&.[]('prx:items')
+    versions = story.objects["prx:audio-versions"]&.objects&.[]("prx:items")
     if !versions.blank?
       version = versions.first
       episode.prx_audio_version_uri = version.href
@@ -66,7 +66,7 @@ class EpisodeStoryHandler
     episode.published_at = sa[:published_at] ? Time.parse(sa[:published_at]) : nil
     episode.released_at = sa[:released_at] ? Time.parse(sa[:released_at]) : nil
 
-    %w(season episode).each do |time|
+    %w[season episode].each do |time|
       id = sa["#{time}_identifier"].to_i
       episode["#{time}_number"] = id.positive? ? id : nil
     end
@@ -74,14 +74,14 @@ class EpisodeStoryHandler
 
   def update_audio
     audio = begin
-      story.objects['prx:audio'].objects['prx:items']
-    rescue StandardError
+      story.objects["prx:audio"].objects["prx:items"]
+    rescue
       []
     end
     audio.each do |a|
-      next unless a.status == 'complete'
+      next unless a.status == "complete"
 
-      existing_content = episode.find_existing_content(a.position, a.links['prx:storage'].href)
+      existing_content = episode.find_existing_content(a.position, a.links["prx:storage"].href)
       if existing_content
         update_content(existing_content, a)
       else
@@ -89,13 +89,13 @@ class EpisodeStoryHandler
       end
     end
     max_pos = audio.last.try(:position).to_i
-    episode.all_contents.where(['position > ?', max_pos]).delete_all if max_pos.positive?
+    episode.all_contents.where(["position > ?", max_pos]).delete_all if max_pos.positive?
   end
 
   def update_image
     image_url = begin
-      story.objects['prx:image'].links['original'].href
-    rescue StandardError
+      story.objects["prx:image"].links["original"].href
+    rescue
       nil
     end
     episode.image_file = image_url
@@ -107,13 +107,13 @@ class EpisodeStoryHandler
 
   def update_content(content, audio)
     content.tap do |c|
-      c.position = audio.attributes['position']
-      c.href = audio.links['prx:storage'].href
-      c.mime_type = audio.links['prx:storage'].type || audio.attributes['content_type']
-      c.file_size = audio.attributes['size']
-      c.duration = audio.attributes['duration']
-      c.bit_rate = audio.attributes['bit_rate']
-      c.sample_rate = audio.attributes['frequency'] * 1000 if audio.attributes['frequency']
+      c.position = audio.attributes["position"]
+      c.href = audio.links["prx:storage"].href
+      c.mime_type = audio.links["prx:storage"].type || audio.attributes["content_type"]
+      c.file_size = audio.attributes["size"]
+      c.duration = audio.attributes["duration"]
+      c.bit_rate = audio.attributes["bit_rate"]
+      c.sample_rate = audio.attributes["frequency"] * 1000 if audio.attributes["frequency"]
     end
   end
 
