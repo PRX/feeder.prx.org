@@ -4,5 +4,9 @@ class FakeController < ApplicationController
 
   def show
     @fake = "some/fake/model/#{params[:id]}"
+
+    if params[:id] == "8888"
+      flash.now[:notice] = "This is a notice, okay?"
+    end
   end
 end
