@@ -12,3 +12,11 @@ document.addEventListener("turbo:frame-missing", function (event) {
   //   err => console.log('GOT ERR:', err)
   // )
 })
+
+// prevent flickering toasts in the turbo cache
+document.addEventListener("turbo:before-cache", function () {
+  const toasts = document.getElementById("toast-alerts")
+  if (toasts) {
+    toasts.innerHTML = ""
+  }
+})

@@ -1,4 +1,14 @@
 module ApplicationHelper
+  def toast_class(level)
+    classes = {
+      "notice" => "toast bg-success",
+      "success" => "toast bg-success",
+      "error" => "toast bg-danger",
+      "alert" => "toast bg-danger"
+    }
+    classes[level]
+  end
+
   def tab_link_to(*args, &block)
     name = block ? capture(&block) : args.shift
     options = args.shift || {}
