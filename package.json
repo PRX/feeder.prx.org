@@ -1,0 +1,11 @@
+{
+  "name": "feeder.prx.org",
+  "devDependencies": {
+    "prettier": "2.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PRX/feeder.prx.org.git"
+  },
+  "license": "SEE LICENSE IN LICENSE"
+}
