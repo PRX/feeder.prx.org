@@ -1,4 +1,5 @@
 # Feeder
+
 [![License](https://img.shields.io/badge/license-AGPL-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
 [![Build Status](https://travis-ci.org/PRX/feeder.prx.org.svg)](https://travis-ci.org/PRX/feeder.prx.org)
 [![Code Climate](https://codeclimate.com/github/PRX/feeder.prx.org/badges/gpa.svg)](https://codeclimate.com/github/PRX/feeder.prx.org)
@@ -6,6 +7,7 @@
 [![Dependency Status](https://gemnasium.com/PRX/feeder.prx.org.svg)](https://gemnasium.com/PRX/feeder.prx.org)
 
 ## Description
+
 This Rails app provides the Feeder service.
 It follows the [standards for PRX services](https://github.com/PRX/docs.prx.org/blob/master/team/Project-Standards.md#services).
 
@@ -14,6 +16,7 @@ It can also generate RSS feeds based on existing (Media)RSS feeds.
 It provides an API for information about feed items.
 
 ## Integrations & Dependencies
+
 - postgres - main database
 - cms.prx.org - get data about episodes
 - id.prx.org - get token for protected cms requests
@@ -22,9 +25,11 @@ It provides an API for information about feed items.
 - dovetail.prxu.org - calls feeder for info about episodes
 
 ## Installation
+
 These instructions are written assuming Mac OS X install.
 
 ### Basics
+
 ```
 # Homebrew - http://brew.sh/
 ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
@@ -34,17 +39,21 @@ brew install git
 ```
 
 ### Docker Development
+
 You can now build and run the feeder application using docker.
 We're using Docker for deployment, so this is also a good way to make sure
 Development and production environments match as much as possible.
 
 #### Prerequisites
+
 [Install Dinghy and related projects](https://github.com/codekitchen/dinghy)
 Notes:
-* Using 'VirtualBox' is recommended.
-* Also be sure to install `docker-compose` along with the toolbox
+
+- Using 'VirtualBox' is recommended.
+- Also be sure to install `docker-compose` along with the toolbox
 
 #### Install Feeder
+
 ```
 # Get the code
 git clone git@github.com:PRX/feeder.prx.org.git
@@ -77,7 +86,9 @@ docker-compose up
 ```
 
 ### Local Rails/Ruby Development
+
 If docker is not your style, you can also run as a regular local Rails application.
+
 ```
 # Pow to serve the app - http://pow.cx/
 curl get.pow.cx | sh
@@ -98,7 +109,9 @@ gem install bundler powder
 ```
 
 ### Rails Project
+
 Consider forking the repo if you plan to make changes, otherwise you can clone it:
+
 ```
 # ssh repo syntax (or https `git clone https://github.com/PRX/feeder.prx.org.git feeder.prx.org`)
 git clone git@github.com:PRX/feeder.prx.org.git feeder.prx.org
@@ -126,11 +139,14 @@ open http://feeder.prx.dev
 ```
 
 ## Build and Deploy Scripts
+
 The scripts will not create the entire deployment environment, but they will
 help in a few ways.
 
 ### Prerequisites
+
 You will need to copy and will out the deploy-example file:
+
 ```
 cp deploy-example .deploy
 vi .deploy
@@ -139,6 +155,7 @@ vi .deploy
 When building and deploying a new version, you'll need to increment the version.
 
 You also need to install the AWS CLI and `jq`:
+
 ```
 pip install awscli
 brew install jq
@@ -152,8 +169,9 @@ For each resource, a copy task is created to add the files to the s3 bucket for 
 When an episode file has a new original url, that is considered a new file. When this happens, the old file is left in place, and a new resource inserted for the new original url. Once the new resource has processed (e.g. been copied), it is marked as complete, and the old resource is deleted.
 
 ## License
+
 [AGPL License](https://www.gnu.org/licenses/agpl-3.0.html)
 
 ## Contributing
-Completing a Contributor License Agreement (CLA) is required for PRs to be accepted.
 
+Completing a Contributor License Agreement (CLA) is required for PRs to be accepted.

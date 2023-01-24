@@ -89,8 +89,7 @@
     },
     "prx:distributions": {
       "_embedded": {
-        "prx:items": [
-        ]
+        "prx:items": []
       },
       "_links": {
         "profile": {

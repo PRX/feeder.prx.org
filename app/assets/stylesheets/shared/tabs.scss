@@ -1,6 +1,6 @@
 .sidetabs {
   position: relative;
-  background: image-url('prx-mark-outlined.svg') repeat top left $gray-100;
+  background: image-url("prx-mark-outlined.svg") repeat top left $gray-100;
   padding: 0;
   margin: 0;
   display: flex;
@@ -9,7 +9,6 @@
   @media (min-width: 768px) {
     flex-direction: column;
   }
-
 
   .list-group {
     border-bottom: none;
@@ -22,13 +21,13 @@
     }
 
     .list-group-item {
-      transition: border-left .1s ease-out 0ms;
+      transition: border-left 0.1s ease-out 0ms;
       background: #eee;
       color: $primary;
       margin: 0;
       padding: 10px 30px 15px 15px;
       border-left: 1px solid transparent;
-      border-top: 3px solid transparent;;
+      border-top: 3px solid transparent;
       border-right: 1px solid $white;
       border-bottom: 1px solid $gray-200;
       border-radius: 0;
@@ -53,7 +52,6 @@
           border-top: 1px solid $white;
           border-right: none;
           border-bottom: none;
-
         }
       }
 
@@ -104,7 +102,7 @@
       }
     }
 
-    .list-group-item.active+.context-menu {
+    .list-group-item.active + .context-menu {
       display: block;
     }
   }
@@ -126,7 +124,7 @@
       padding: 0 24px;
       cursor: pointer;
       box-sizing: border-box;
-      opacity: .6;
+      opacity: 0.6;
       min-width: 160px;
       text-align: center;
       display: inline-flex;
@@ -138,7 +136,6 @@
       position: relative;
       overflow: hidden;
       -webkit-tap-highlight-color: transparent;
-
 
       &.active {
         border-color: $primary;

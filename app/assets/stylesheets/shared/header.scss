@@ -1,7 +1,7 @@
 /*
  * PRX header component
  */
- .navbar-brand {
+.navbar-brand {
   display: block;
   width: 152px;
   height: 30px;
@@ -60,20 +60,20 @@
     .dropdown-username {
       font-size: 24px;
       color: $white;
-      padding: .5em 0;
+      padding: 0.5em 0;
     }
 
     .btn-info {
       background: $blue-light;
       font-weight: bold;
       border-radius: 0;
-      padding: .25em 1.25em;
+      padding: 0.25em 1.25em;
     }
 
     .dropdown-link {
       font-weight: bold;
       text-decoration: none;
-      padding: .5em 1.25em;
+      padding: 0.5em 1.25em;
       color: $blue-light;
     }
   }
@@ -91,7 +91,6 @@
     width: auto;
     border-right: 1px solid $gray-300;
     border-bottom: none;
-
   }
 
   @media (min-width: 992px) {
