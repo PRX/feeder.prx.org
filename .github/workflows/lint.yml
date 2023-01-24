@@ -10,7 +10,5 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
-      - name: Run standard
-        run: bundle exec standardrb
-      - name: Run erb-lint
-        run: bundle exec erblint --lint-all --format compact
+      - name: Lint everything
+        run: bin/rails lint
