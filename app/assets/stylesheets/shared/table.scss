@@ -6,7 +6,7 @@
     th {
       background: #e0e0e0;
       border: #fff;
-      padding: 0 .5rem;
+      padding: 0 0.5rem;
       line-height: 3rem;
       white-space: nowrap;
       color: $gray-700;
@@ -38,7 +38,7 @@
 
   td,
   th {
-    border-bottom-color: rgba(0, 0, 0, .12);
+    border-bottom-color: rgba(0, 0, 0, 0.12);
     color: $gray-700;
     font-weight: 400;
     vertical-align: top;
@@ -61,7 +61,7 @@
   left: 0;
   height: 100%;
   width: 100%;
-  background-color: rgba(0, 0, 0, .08);
+  background-color: rgba(0, 0, 0, 0.08);
   display: flex;
   justify-content: center;
   align-items: center;

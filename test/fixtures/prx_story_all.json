@@ -10,10 +10,7 @@
   "publishedAt": "2016-09-29T22:14:13.000Z",
   "releasedAt": "2016-09-29T11:11:11.000Z",
   "shortDescription": "With a teaser of the story",
-  "tags": [
-    "Business",
-    "Careers"
-  ],
+  "tags": ["Business", "Careers"],
   "title": "Here is a new story in my brand new series",
   "clean_title": "Stripped-down title",
   "updatedAt": "2016-10-18T22:16:40.000Z",
@@ -355,8 +352,7 @@
     },
     "prx:promos": {
       "_embedded": {
-        "prx:items": [
-        ]
+        "prx:items": []
       },
       "_links": {
         "profile": {
@@ -550,8 +546,7 @@
                   },
                   "prx:promos": {
                     "_embedded": {
-                      "prx:items": [
-                      ]
+                      "prx:items": []
                     },
                     "_links": {
                       "profile": {

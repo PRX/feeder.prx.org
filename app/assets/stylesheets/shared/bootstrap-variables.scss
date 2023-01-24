@@ -1,8 +1,7 @@
 // custom bootstrap variables overrides
 // NOTE: this file gets included _before_ the default bootstrap variables
 // https://github.com/twbs/bootstrap-rubygem/blob/master/assets/stylesheets/bootstrap/_variables.scss
-$font-family-base: 'Roboto',
-sans-serif;
+$font-family-base: "Roboto", sans-serif;
 
 $white: #fff;
 $black: #000;
@@ -17,9 +16,9 @@ $gray-700: #535355;
 $gray-800: #323233;
 $gray-900: #1a1a1a;
 
-$blue: #0072A3;
-$blue-dark: #003A57;
-$blue-light: #8CD2F4;
+$blue: #0072a3;
+$blue-dark: #003a57;
+$blue-light: #8cd2f4;
 $indigo: #6610f2;
 $purple: #6f42c1;
 $pink: #d63384;
@@ -30,7 +29,6 @@ $yellow: #ffc107;
 $green: #198754;
 $teal: #20c997;
 $cyan: #0dcaf0;
-
 
 $primary: $blue;
 $secondary: $gray-700;
@@ -43,7 +41,7 @@ $dark: $gray-900;
 
 $text-muted: $gray-700;
 
-$line-height-base: 2.0;
+$line-height-base: 2;
 $line-height-sm: 1.5;
 $line-height-lg: 2.5;
 
@@ -59,8 +57,8 @@ $headings-line-height: 1.5;
 
 // bit complicated, but this is 2*line-height + 2*padding-y + 2px-border
 $input-height: calc(3.5em + 2px);
-$input-btn-padding-y: .75rem;
-$input-btn-padding-x: .75rem;
+$input-btn-padding-y: 0.75rem;
+$input-btn-padding-x: 0.75rem;
 
 $input-color: $gray-800;
 $input-border-color: $gray-200;
@@ -74,4 +72,4 @@ $form-floating-padding-y: $input-btn-padding-y;
 $form-floating-input-padding-t: $input-btn-padding-y;
 $form-floating-input-padding-b: $input-btn-padding-y;
 $form-floating-label-opacity: 1;
-$form-floating-label-transform: scale(.85) translateY(-1.75rem) translateX(.15rem);
+$form-floating-label-transform: scale(0.85) translateY(-1.75rem) translateX(0.15rem);
