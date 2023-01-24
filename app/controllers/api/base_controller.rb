@@ -11,7 +11,6 @@ class Api::BaseController < ApplicationController
     Api::ApiResponder
   end
 
-  include Pundit
   include ApiVersioning
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized

@@ -1,0 +1,4 @@
+<h5 class="text-center p-5"><%= t 'pundit.title' %></h5>
+<% if I18n.exists? "pundit.#{@policy}.#{@query}" %>
+  <p class="text-center"><%= t "pundit.#{@policy}.#{@query}" %></p>
+<% end %>
