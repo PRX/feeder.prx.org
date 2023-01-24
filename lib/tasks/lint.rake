@@ -5,7 +5,10 @@ task :lint do
   puts "\n---------- linting erblint -------------\n".blue
   exit2 = system("bundle exec erblint --lint-all --format compact")
 
-  abort unless exit1 && exit2
+  puts "\n---------- linting prettier ------------\n".blue
+  exit3 = system("npx prettier --check .")
+
+  abort unless exit1 && exit2 && exit3
 end
 
 namespace "lint" do
@@ -16,6 +19,9 @@ namespace "lint" do
     puts "\n---------- fixing erblint -------------\n".blue
     exit2 = system("bundle exec erblint --lint-all --autocorrect")
 
-    abort unless exit1 && exit2
+    puts "\n---------- fixing prettier ------------\n".blue
+    exit3 = system("npx prettier --write --list-different .")
+
+    abort unless exit1 && exit2 && exit3
   end
 end
