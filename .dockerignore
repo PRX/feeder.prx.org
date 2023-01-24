@@ -41,3 +41,6 @@ Temporary Items
 
 # make sure tmp/pids directory exists for puma
 !/tmp/pids/.keep
+
+# node_modules for prettier
+node_modules
