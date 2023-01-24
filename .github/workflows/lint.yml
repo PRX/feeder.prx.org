@@ -14,4 +14,3 @@ jobs:
         run: bundle exec standardrb
       - name: Run erb-lint
         run: bundle exec erblint --lint-all --format compact
-      - name: Run prettier
