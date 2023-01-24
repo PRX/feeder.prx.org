@@ -1,3 +1,6 @@
+// Load fonts first
+@import 'fonts';
+
 // bootstrap theme
 @import 'bootstrap-variables';
 @import 'bootstrap';
@@ -7,7 +10,6 @@
 // global layout
 @import 'button';
 @import 'card';
-@import 'fonts';
 @import 'form';
 @import 'header';
 @import 'icon';
