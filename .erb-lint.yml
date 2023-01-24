@@ -1,9 +1,8 @@
 EnableDefaultLinters: true
 exclude:
-  - ".git/**/*",
-  - "**/vendor/**/*"
   - "**/node_modules/**/*"
-  - "tmp/**/*"
+  - "**/tmp/**/*"
+  - "**/vendor/**/*"
 linters:
   Rubocop:
     enabled: true
