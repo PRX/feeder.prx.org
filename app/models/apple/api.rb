@@ -178,7 +178,7 @@ module Apple
         bridge_parameters: bridge_options
       }
 
-      make_bridge_request(url, **body)
+      make_bridge_request(body, url)
     end
 
     def bridge_remote_and_unwrap(bridge_resource, bridge_options, &block)
@@ -212,7 +212,7 @@ module Apple
 
     private
 
-    def make_bridge_request(uri, body)
+    def make_bridge_request(body, uri)
       req = Net::HTTP::Post.new(uri)
       req.body = body.to_json
       req = set_headers(req)
