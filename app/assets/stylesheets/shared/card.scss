@@ -3,13 +3,18 @@
 
   .card-header {
     background-color: transparent;
-    border-bottom: none;
+    // border-bottom: none;
     // padding-top: 1em;
 
     .badge {
       vertical-align: text-bottom;
       margin-left: 0.5em;
     }
+  }
+
+  .card-footer {
+    background-color: transparent;
+    border-bottom: none;
   }
 
   .table {

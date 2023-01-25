@@ -22,9 +22,13 @@
 
     <div class="col-lg-8">
       <div class="card">
-        <div class="card-body">
+        <div class="card-header">
           <h5 class="card-title">On Fake = <%= @fake %></h5>
+        </div>
+        <div class="card-body">
           <p class="card-text">Some card text.</p>
+        </div>
+        <div class="card-footer">
           <%= link_to "Back to index", fake_index_path, class: "btn btn-primary" %>
         </div>
       </div>
@@ -32,32 +36,30 @@
 
     <div class="col-lg-4">
       <div class="card">
-        <div class="card-header bg-info p-0 m-0">
-          <h5 class="card-title px-3 py-2 m-0 fw-bold text-uppercase text-black">Card Title</h5>
+        <div class="card-header bg-info">
+          <h5 class="card-title">Card Title</h5>
         </div>
         <div class="card-body">
           <%= image_tag "prx_logo.svg", width: 135, class: "d-flex mx-auto mb-2" %>
           <p class="card-text fw-bold mb-0 text-black">Include in Feeds:</p>
-          <div class="form-check mb-0">
+          <div class="form-check">
             <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
             <label class="form-check-label" for="flexCheckDefault">
               Default checkbox
             </label>
           </div>
-          <div class="form-check mb-0">
+          <div class="form-check">
             <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" checked>
             <label class="form-check-label" for="flexCheckChecked">
               Checked checkbox
             </label>
           </div>
         </div>
-        <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-          <div class="status-text">
-            <p class="mb-0 lh-1"><small><strong>Last Saved</strong> <br>1/25/2023, 12:25pm</small></p>
-          </div>
-          <div class="btn-group align-self-end">
-            <button type="button" class="btn btn-primary py-1">Action</button>
-            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split border-start border-color-white py-1" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="card-footer">
+          <p class="status-text"><strong>Last Saved</strong> <br>1/25/2023, 12:25pm</p>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary">Action</button>
+            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
               <span class="visually-hidden">Toggle Dropdown</span>
             </button>
             <ul class="dropdown-menu">
