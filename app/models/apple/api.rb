@@ -178,7 +178,7 @@ module Apple
         bridge_parameters: bridge_options
       }
 
-      make_bridge_request(url, body)
+      make_bridge_request(url, **body)
     end
 
     def bridge_remote_and_unwrap(bridge_resource, bridge_options, &block)
