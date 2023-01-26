@@ -7,19 +7,21 @@ export default class extends Controller {
   connect() {
     this.select = new SlimSelect({
       select: this.element,
-      selectByGroup: this.groupSelectValue,
-      placeholder: " ",
-      allowDeselect: this.hasEmpty(this.element),
-      showSearch: this.showSearch(this.element),
-      onChange: function (info) {
-        const val = Array.isArray(info) ? info.length > 0 : info.value
-        if (val) {
-          this.select.element.classList.remove("form-control-blank")
-          this.slim.container.classList.remove("form-control-blank")
-        } else {
-          this.select.element.classList.add("form-control-blank")
-          this.slim.container.classList.add("form-control-blank")
-        }
+      settings: {
+        selectByGroup: this.groupSelectValue,
+        placeholder: " ",
+        allowDeselect: this.hasEmpty(this.element),
+        showSearch: this.showSearch(this.element),
+        onChange: function (info) {
+          const val = Array.isArray(info) ? info.length > 0 : info.value
+          if (val) {
+            this.select.element.classList.remove("form-control-blank")
+            this.slim.container.classList.remove("form-control-blank")
+          } else {
+            this.select.element.classList.add("form-control-blank")
+            this.slim.container.classList.add("form-control-blank")
+          }
+        },
       },
     })
   }
