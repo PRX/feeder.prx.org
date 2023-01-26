@@ -1,19 +1,10 @@
 #!/usr/bin/env bash
+# These scripts expect to be in `feeder.prx.org/ops/bin`
 set -e
 set -u
 
-# These scripts expect to be in `feeder.prx.org/ops/bin`
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-TMP_FOLDER="$DIR/../../tmp"
-LINK_NAME="feeder-dump.out"
-LINK_FILE="$TMP_FOLDER/$LINK_NAME"
-
-CLONE_DB_NAME="feeder_clone"
-
-DOTENV_PATH="$DIR/../../.env"
-set -a
-source $DOTENV_PATH
-set +a
+. $DIR/_env.sh
 
 echo "Dropping clone database"
 dropdb $CLONE_DB_NAME || true

@@ -3,7 +3,8 @@
 set -u
 set -e
 
-. ./_env.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+. $DIR/_env.sh
 
 load_db () {
   # drop all the open connections
