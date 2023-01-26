@@ -15,6 +15,5 @@ echo "Running pg_restore ..."
 pg_restore --verbose -j 16 -d $CLONE_DB_NAME $LINK_FILE
 echo ""
 echo "DONE"
-echo "Please ignore errors about missing roles."
 echo ""
 echo "You may now run 'load_db.sh'"
