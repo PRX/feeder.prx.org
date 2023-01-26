@@ -11,7 +11,4 @@ set -a
 source $DOTENV_PATH
 set +a
 
-NAME="$REMOTE_DATABASE-dump-`date "+%m%d%H%M%Y%S"`.out"
-OUTPUT_FILE="$TMP_FOLDER/$NAME"
-
 
