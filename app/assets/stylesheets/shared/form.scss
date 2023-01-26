@@ -39,115 +39,130 @@
   }
 }
 
-// TODO: these don't really with with slimselect v2
+// These styles work with Slim Select v2, not tested with v1
 .ss-main {
   &.form-select {
-    padding: 0;
+    padding: 0.75rem 0.75rem;
     min-height: $input-height;
     height: auto;
   }
 
-  .ss-single-selected,
-  .ss-multi-selected {
-    padding: $input-btn-padding-y $input-btn-padding-x;
-    line-height: $line-height-base;
-    border: 0;
-    border-radius: $input-border-radius;
-    color: $input-color;
-
-    &.ss-disabled {
-      background: $input-disabled-bg;
-      border-color: $input-disabled-border-color;
-      cursor: default;
-    }
-  }
-
-  .ss-single-selected {
-    height: 3.5rem;
-    background: transparent;
-  }
-
-  .ss-arrow {
-    visibility: hidden;
-  }
-
-  &.form-select.is-invalid:not([multiple]):not([size]) {
-    padding-right: 0;
-  }
-
-  .ss-search input {
-    border-radius: $input-border-radius;
-    padding: $input-btn-padding-y $input-btn-padding-x;
-    height: 3rem;
-  }
-
-  // more x-ish deselect
-  .ss-single-selected .ss-deselect {
-    color: transparent;
-    position: relative;
-    transform: rotate(45deg);
-
-    &::before {
-      background: #666;
-      content: "";
-      position: absolute;
-      height: 10px;
-      width: 2px;
-      left: 4px;
-      top: 12px;
-    }
-
-    &::after {
-      background: #666;
-      content: "";
-      position: absolute;
-      height: 2px;
-      width: 10px;
-      left: 0px;
-      top: 16px;
-    }
-  }
-
-  // faster!
-  .ss-content {
-    transition-duration: 0.1s;
-
-    .ss-list {
-      .ss-option,
-      .ss-optgroup-label {
-        line-height: 2;
-      }
-
-      .ss-option.ss-highlighted,
-      .ss-option:hover,
-      .ss-optgroup-label.ss-highlighted,
-      .ss-optgroup-label:hover {
-        background-color: $primary;
-      }
-    }
-  }
-
   // selection colors
-  .ss-multi-selected .ss-values .ss-value {
+  .ss-values .ss-value {
     animation: none;
     background-color: $primary;
     margin: 2px 5px 0 0;
+
+    .ss-value-delete,
+    .ss-value-delete svg {
+      width: 16px;
+      height: 16px;
+      border-left: none;
+    }
   }
 
   .ss-multi-selected .ss-add {
     margin-top: 12px;
     margin-right: 8px;
   }
+}
 
-  // undo bootstrap placeholder class
-  .placeholder {
-    display: flex;
-    min-height: auto;
-    vertical-align: baseline;
-    cursor: pointer;
-    background-color: transparent;
-    opacity: 1;
+.ss-single-selected,
+.ss-multi-selected {
+  padding: $input-btn-padding-y $input-btn-padding-x;
+  line-height: $line-height-base;
+  border: 0;
+  border-radius: $input-border-radius;
+  color: $input-color;
+
+  &.ss-disabled {
+    background: $input-disabled-bg;
+    border-color: $input-disabled-border-color;
+    cursor: default;
   }
+}
+
+.ss-single-selected {
+  height: 3.5rem;
+  background: transparent;
+}
+
+.ss-arrow {
+  visibility: hidden;
+}
+
+.ss-main.form-select.is-invalid:not([multiple]):not([size]) {
+  padding-right: 0;
+}
+
+.ss-search input {
+  border-radius: $input-border-radius;
+  padding: $input-btn-padding-y $input-btn-padding-x;
+  height: 3rem;
+}
+
+// more x-ish deselect
+.ss-single-selected .ss-deselect {
+  color: transparent;
+  position: relative;
+  transform: rotate(45deg);
+
+  &::before {
+    background: #666;
+    content: "";
+    position: absolute;
+    height: 10px;
+    width: 2px;
+    left: 4px;
+    top: 12px;
+  }
+
+  &::after {
+    background: #666;
+    content: "";
+    position: absolute;
+    height: 2px;
+    width: 10px;
+    left: 0px;
+    top: 16px;
+  }
+}
+
+// faster!
+.ss-content {
+  transition-duration: 0.1s;
+
+  &.form-select {
+    padding: 0;
+    border-radius: 0;
+    box-shadow: $box-shadow;
+    background-image: none;
+  }
+
+  .ss-list {
+    .ss-option,
+    .ss-optgroup-label {
+      line-height: 2;
+    }
+
+    .ss-option.ss-selected:not(.ss-disabled),
+    .ss-option.ss-highlighted,
+    .ss-option:hover,
+    .ss-optgroup-label.ss-highlighted,
+    .ss-optgroup-label:hover {
+      background-color: $primary;
+    }
+  }
+}
+
+// undo bootstrap placeholder class
+.placeholder {
+  display: flex;
+  min-height: auto;
+  vertical-align: baseline;
+  cursor: pointer;
+  background-color: transparent;
+  opacity: 1;
 }
 
 // maybe a bad idea ... but hide options on multiselects, so things don't

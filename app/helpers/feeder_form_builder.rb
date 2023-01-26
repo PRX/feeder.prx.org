@@ -125,8 +125,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def add_slim_select_controller(opts)
-    # TODO: slimselect 2 styles messed up at the moment
-    # add_data(opts, :controller, SLIM_SELECT_CONTROLLER)
+    add_data(opts, :controller, SLIM_SELECT_CONTROLLER)
   end
 
   def add_flatpickr_controller(opts)
