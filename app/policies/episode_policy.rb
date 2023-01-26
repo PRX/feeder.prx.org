@@ -22,6 +22,6 @@ class EpisodePolicy < ApplicationPolicy
       Podcast.find(resource.podcast_id_was)
     else
       resource.podcast
-    end.account_id_was
+    end&.account_id_was
   end
 end

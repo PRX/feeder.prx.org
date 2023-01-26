@@ -1,4 +1,4 @@
-<% content_for :title, "Fake ~Show~ PODCAST Page #{@fake}" %>
+<% content_for :title, "Fake ~Show~ Episode #{@episode.title}" %>
 
 <% content_for :subnav do %>
   <a class="navbar-brand">content FOR THE SUBNAV</a>
@@ -16,22 +16,38 @@
   <a class="btn btn-secondary-link align-self-center flex-shrink-1" href="#">New Something Button</a>
 <% end %>
 
-<%= turbo_frame_tag @fake do %>
+<%= form_with(model: @episode, url: fake_index_path) do |form| %>
 
   <div class="row mt-4">
 
     <div class="col-lg-8">
       <div class="card">
         <div class="card-header">
-          <h5 class="card-title">On Fake = <%= @fake %></h5>
+          <h5 class="card-title">On Fake = <%= @episode.title %></h5>
         </div>
-        <div class="card-body">
-          <p class="card-text">Some card text.</p>
+        <div class="card-body row">
+
+          <div class="col-xl-6 mb-4">
+            <div class="form-floating">
+              <%= form.text_field :title %>
+              <%= form.label :title %>
+            </div>
+          </div>
+
+          <div class="col-xl-6 mb-4">
+            <div class="form-floating">
+              <%= form.select :itunes_type, [["Full", "full"], ["Bonus", "bonus"], ["Invalid", "invalid"]], include_blank: true %>
+              <%= form.label :itunes_type %>
+            </div>
+          </div>
+
         </div>
         <div class="card-footer">
-          <%= link_to "Back to index", fake_index_path, class: "btn btn-primary" %>
+          <%= form.submit class: "btn btn-primary" %>
         </div>
       </div>
+
+      <%= link_to "Back to index", fake_index_path %>
     </div>
 
     <div class="col-lg-4">

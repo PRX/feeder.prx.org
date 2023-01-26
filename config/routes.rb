@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  resources :fake, only: [:index, :show]
+  resources :fake, only: [:index, :show, :create]
   resources :podcasts, only: [:show], defaults: {format: "rss"}
   resources :feeds, only: [:index]
 
