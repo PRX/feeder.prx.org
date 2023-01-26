@@ -27,6 +27,6 @@ class FakeController < ApplicationController
   private
 
   def fake_params
-    params.require(:episode).permit(:title, :itunes_type)
+    params.require(:episode).permit(:title, :itunes_type, :released_at, categories: [])
   end
 end

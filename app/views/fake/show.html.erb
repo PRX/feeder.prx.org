@@ -41,6 +41,20 @@
             </div>
           </div>
 
+          <div class="col-xl-6 mb-4">
+            <div class="form-floating">
+              <%= form.select :categories, [["One", "one"], ["Two", "two"], ["Three", "three"]], {}, multiple: true %>
+              <%= form.label :categories %>
+            </div>
+          </div>
+
+          <div class="col-xl-6 mb-4">
+            <div class="form-floating">
+              <%= form.time_field :released_at %>
+              <%= form.label :released_at %>
+            </div>
+          </div>
+
         </div>
         <div class="card-footer">
           <%= form.submit class: "btn btn-primary" %>
