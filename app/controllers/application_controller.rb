@@ -5,6 +5,8 @@ class ApplicationController < ActionController::Base
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
+  default_form_builder FeederFormBuilder
+
   protected
 
   def user_not_authorized(exception)

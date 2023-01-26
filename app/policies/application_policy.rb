@@ -7,6 +7,10 @@ class ApplicationPolicy < Struct.new(:token, :resource)
     false
   end
 
+  def create_or_update?
+    resource&.new_record? ? create? : update?
+  end
+
   def destroy?
     update?
   end
