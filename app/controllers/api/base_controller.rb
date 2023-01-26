@@ -7,6 +7,9 @@ class Api::BaseController < ApplicationController
   # these API endpoints use PRX JWTs, not session based auth
   skip_before_action :verify_authenticity_token
 
+  # default to public API (unless including ApiAuthenticated)
+  skip_before_action :authenticate!
+
   def self.responder
     Api::ApiResponder
   end
