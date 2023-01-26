@@ -1,6 +1,6 @@
 <nav class="prx-dovetail-nav navbar navbar-expand-sm navbar-dark m-0 p-0">
   <div class="container-fluid pe-0">
-    <%= link_to "Dovetail", fake_index_path, class: "navbar-brand" %>
+    <%= link_to "Dovetail", main_app.fake_index_path, class: "navbar-brand" %>
     <ul class="navbar-nav d-flex flex-row justify-content-end align-items-center">
       <li class="nav-item">
         <a class="nav-link active" href="/">Podcasts</a>
@@ -24,8 +24,8 @@
       <% if current_user %>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <% if current_user_image_url.present? %>
-            <img src="<%= current_user_image_url %>" class="nav-avatar" alt="<%= current_user_name %>'s avatar">
+          <% if current_user_info['image_href'].present? %>
+            <img src="<%= current_user_info["image_href"] %>" class="nav-avatar" alt="<%= current_user_name %>'s avatar">
           <% else %>
             <span class="material-icons align-middle" aria-label="PRX Account">account_circle</span>
           <% end %>

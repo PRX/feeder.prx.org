@@ -5,6 +5,10 @@ Rails.application.routes.draw do
   # feeder frontend dev
   unless Rails.env.production?
     resources :fake, only: [:index, :show, :create]
+
+    mount PrxAuth::Rails::Engine => "/auth", :as => "prx_auth_engine"
+    get "sessions/logout", to: "application#logout", as: :logout
+    get "sessions/refresh", to: "application#refresh", as: :refresh
   end
 
   namespace :api do
