@@ -10,7 +10,7 @@ usage() {
 }
 
 # It takes a single argument
-if [ $# -eq 0 ]
+if [ $# -ne 1 ]
   then
   usage
 fi
