@@ -4,6 +4,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby "2.7.7"
 
 # core
+gem "activerecord-session_store"
 gem "bootsnap", require: false
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.0"
@@ -13,7 +14,7 @@ gem "redis", "~> 4.0"
 # authorization
 gem "oauth2", "~> 1.4.7"
 gem "prx_auth"
-gem "prx_auth-rails", "~> 4.0.0"
+gem "prx_auth-rails", "~> 4.1.0"
 gem "pundit", "~> 2.3.0"
 gem "rack-cors"
 
