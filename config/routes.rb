@@ -1,7 +1,11 @@
 Rails.application.routes.draw do
-  resources :fake, only: [:index, :show, :create]
   resources :podcasts, only: [:show], defaults: {format: "rss"}
   resources :feeds, only: [:index]
+
+  # feeder frontend dev
+  unless Rails.env.production?
+    resources :fake, only: [:index, :show, :create]
+  end
 
   namespace :api do
     scope ":api_version", api_version: "v1", defaults: {format: "hal"} do
