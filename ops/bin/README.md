@@ -1,7 +1,5 @@
 ---
-
 FEEDER DATABASE DUMPING SCRIPTS
-
 ---
 
 ### Set up the environment
