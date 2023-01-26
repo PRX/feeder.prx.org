@@ -1,4 +1,4 @@
-require 'active_support/concern'
+require "active_support/concern"
 
 module PorterParser
   extend ActiveSupport::Concern
@@ -10,14 +10,14 @@ module PorterParser
 
     def porter_callback_status(msg)
       key = porter_key(msg).to_s
-      if key == 'JobReceived'
-        'processing'
-      elsif key == 'JobResult' && porter_failed(msg).any?
-        'error'
-      elsif key == 'JobResult' && porter_parsed(msg)[:State] != 'DONE'
-        'error'
-      elsif key == 'JobResult'
-        'complete'
+      if key == "JobReceived"
+        "processing"
+      elsif key == "JobResult" && porter_failed(msg).any?
+        "error"
+      elsif key == "JobResult" && porter_parsed(msg)[:State] != "DONE"
+        "error"
+      elsif key == "JobResult"
+        "complete"
       end
     end
 
@@ -31,23 +31,23 @@ module PorterParser
     end
 
     def porter_callback_copy(msg)
-      porter_result(msg, 'Copy')
+      porter_result(msg, "Copy")
     end
 
     def porter_callback_inspect(msg)
-      porter_result(msg, 'Inspect')
+      porter_result(msg, "Inspect")
     end
 
     protected
 
     def porter_result(msg, task = nil)
       results = porter_parsed(msg).try(:[], :TaskResults) || []
-      task ? results.detect {|t| t[:Task] == task} : results
+      task ? results.detect { |t| t[:Task] == task } : results
     end
 
     def porter_failed(msg, type = nil)
       failed = porter_parsed(msg).try(:[], :FailedTasks) || []
-      type ? failed.detect {|t| t[:Type] == type} : failed
+      type ? failed.detect { |t| t[:Type] == type } : failed
     end
 
     def porter_parsed(msg)
@@ -56,7 +56,7 @@ module PorterParser
 
     def porter_key(msg)
       (msg.try(:keys) || []).find do |key|
-        %w(JobReceived TaskResult JobResult).include?(key.to_s)
+        %w[JobReceived TaskResult JobResult].include?(key.to_s)
       end
     end
   end
@@ -67,7 +67,7 @@ module PorterParser
       mime = porter_callback_mime(info)
       meta = {
         mime_type: mime,
-        medium: (mime || '').split('/').first,
+        medium: (mime || "").split("/").first,
         file_size: info[:Size].to_i
       }
       audio_meta = porter_callback_audio_meta(mime, info)
@@ -81,9 +81,7 @@ module PorterParser
     if info[:MIME]
       info[:MIME]
     elsif info[:Audio]
-      'audio/mpeg'
-    else
-      nil
+      "audio/mpeg"
     end
   end
 
@@ -102,7 +100,7 @@ module PorterParser
 
   def porter_callback_video_meta(mime, info)
     # only return for actual videos - not detected images in id3 tags
-    if info[:Video] && mime.starts_with?('video')
+    if info[:Video] && mime.starts_with?("video")
       {
         duration: info[:Video][:Duration].to_f / 1000,
         bit_rate: info[:Video][:Bitrate].to_i / 1000,
@@ -118,7 +116,7 @@ module PorterParser
   # note: frame_rate is an integer in the schema, so just round it
   def porter_callback_video_framerate(fraction_str)
     Rational(fraction_str).to_f.round
-  rescue StandardError
+  rescue
     nil
   end
 end

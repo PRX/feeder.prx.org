@@ -1,9 +1,10 @@
 // material style floating form labels
 .form-floating {
-  >label {
+  > label {
     color: $gray-700;
     height: auto;
     font-size: 1rem;
+    width: auto;
 
     &.is-invalid {
       color: $form-feedback-invalid-color;
@@ -11,8 +12,8 @@
   }
 
   // cover up the input border in back of the label text
-  >label::before {
-    content: '';
+  > label::before {
+    content: "";
     z-index: -1;
     background: $input-bg;
     position: absolute;
@@ -23,13 +24,13 @@
   }
 
   // manually applied "blank" class (when the placeholder trick won't work)
-  >.form-control-blank:not(:focus)~label {
+  > .form-control-blank:not(:focus) ~ label {
     opacity: 1;
     transform: none;
   }
 
   // hide 'mm/dd/yyyy' placeholder on date fields
-  >.form-control-blank[type=date]:not(:focus) {
+  > .form-control-blank[type="date"]:not(:focus) {
     color: transparent;
   }
 
@@ -38,7 +39,7 @@
   }
 }
 
-// make simpleselect look more bootstrap-ish
+// TODO: these don't really with with slimselect v2
 .ss-main {
   &.form-select {
     padding: 0;
@@ -112,7 +113,8 @@
     transition-duration: 0.1s;
 
     .ss-list {
-      .ss-option, .ss-optgroup-label {
+      .ss-option,
+      .ss-optgroup-label {
         line-height: 2;
       }
 

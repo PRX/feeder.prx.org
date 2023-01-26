@@ -1,0 +1,15 @@
+EnableDefaultLinters: true
+exclude:
+  - "**/node_modules/**/*"
+  - "**/tmp/**/*"
+  - "**/vendor/**/*"
+linters:
+  Rubocop:
+    enabled: true
+    rubocop_config:
+      require: standard
+      inherit_gem:
+        standard: config/base.yml
+      inherit_from: .erb-lint-rubocop.yml
+      AllCops:
+        DisabledByDefault: true

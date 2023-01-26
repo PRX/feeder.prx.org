@@ -41,3 +41,7 @@ Temporary Items
 
 # make sure tmp/pids directory exists for puma
 !/tmp/pids/.keep
+
+# nodejs for linting
+node_modules
+package-lock.json

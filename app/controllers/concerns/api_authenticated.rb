@@ -1,6 +1,4 @@
-# encoding: utf-8
-
-require 'active_support/concern'
+require "active_support/concern"
 
 module ApiAuthenticated
   extend ActiveSupport::Concern

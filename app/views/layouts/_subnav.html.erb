@@ -9,30 +9,30 @@
       </button>
       <ul class="dropdown-menu p-2 shadow" aria-labelledby="dropdownMenuButton1">
         <li class="search-filter mb-2">
-          <input type="email" class="form-control" id="podcastSearch" aria-describedby="podcastSearch" placeholder="Search Podcasts">
+          <input type="text" class="form-control" id="podcastSearch" aria-describedby="podcastSearch" placeholder="Search Podcasts" autocomplete="off">
         </li>
         <!-- Show 5 podcast links OR Show all and include only 5 visible -->
-        <li><%= link_to 'Fake Podcast', fake_path(123), class: 'dropdown-item' %></li>
+        <li><%= link_to "Fake Podcast", fake_path(123), class: "dropdown-item" %></li>
         <li><a href="#" class="dropdown-item">Podcast Title</a></li>
         <li><a href="#" class="dropdown-item">Podcast Title</a></li>
         <li><a href="#" class="dropdown-item">Podcast Title</a></li>
         <li><a href="#" class="dropdown-item">Podcast Title</a></li>
         <!-- end -->
-        <li><hr class="dropdown-divider" /></li>
+        <li><hr class="dropdown-divider"></li>
         <li><a href="#" class="dropdown-item">View all my Podcasts (12<!-- Show Total # of Podcasts -->) &gt;</a></li>
-        <li><hr class="dropdown-divider" /></li>
+        <li><hr class="dropdown-divider"></li>
         <li><a href="#" class="dropdown-item">Create a New Podcast &gt;</a></li>
-        <li><hr class="dropdown-divider" /></li>
+        <li><hr class="dropdown-divider"></li>
       </ul>
     </div>
     <!-- END PODCAST SWITCHER -->
 
     <% if content_for :subnav %>
     <ul class="navbar-nav col d-flex flex-row flex-wrap m-0 p-0">
-      <li class="nav-item"><%= link_to 'Subnav', fake_index_path, class: 'nav-link' %></li>
-      <li class="nav-item"><%= link_to 'Subnav 2', fake_index_path, class: 'nav-link' %></li>
-      <li class="nav-item"><%= link_to 'Subnav 3', fake_index_path, class: 'nav-link' %></li>
-      <li class="nav-item"><%= link_to 'Subnav 4', fake_index_path, class: 'nav-link' %></li>
+      <li class="nav-item"><%= link_to "Subnav", fake_index_path, class: "nav-link" %></li>
+      <li class="nav-item"><%= link_to "Subnav 2", fake_index_path, class: "nav-link" %></li>
+      <li class="nav-item"><%= link_to "Subnav 3", fake_index_path, class: "nav-link" %></li>
+      <li class="nav-item"><%= link_to "Subnav 4", fake_index_path, class: "nav-link" %></li>
     </ul>
     <% end %>
 </nav>

@@ -1,5 +1,4 @@
 class Tasks::CopyMediaTask < ::Task
-
   before_save do
     if media_resource && status_changed?
       media_resource.update!(status: status)
@@ -18,21 +17,21 @@ class Tasks::CopyMediaTask < ::Task
 
   def task_options
     super.merge({
-      job_type: 'audio',
+      job_type: "audio",
       source: source_url(media_resource),
       destination: destination_url(media_resource)
     }).with_indifferent_access
   end
 
   def source_url(media_resource)
-    media_resource.original_url.sub(/\?.*$/, '')
+    media_resource.original_url.sub(/\?.*$/, "")
   end
 
   def destination_url(media_resource)
     URI::Generic.build(
-      scheme: 's3',
+      scheme: "s3",
       host: feeder_storage_bucket,
-      path: destination_path(media_resource),
+      path: destination_path(media_resource)
     ).to_s
   end
 

@@ -27,9 +27,9 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :itunes_image_file, as: :itunes_image, decorator: Api::ImageRepresenter, class: ITunesImage
 
   collection :feed_tokens,
-             as: :tokens,
-             decorator: Api::FeedTokenRepresenter,
-             class: FeedToken
+    as: :tokens,
+    decorator: Api::FeedTokenRepresenter,
+    class: FeedToken
 
   def self_url(feed)
     api_authorization_podcast_feed_path(podcast_id: feed.podcast_id, id: feed.id)
@@ -43,7 +43,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
     {
       href: represented.published_url,
       templated: true,
-      type: 'application/rss+xml'
+      type: "application/rss+xml"
     }
   end
 end

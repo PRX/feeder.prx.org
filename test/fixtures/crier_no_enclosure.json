@@ -16,31 +16,34 @@
   "position": 12,
   "block": false,
   "published": "2014-12-18T10:30:00.000Z",
-  "contents": [{
-    "position": 1,
-    "url": "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3",
-    "type": "audio/mpeg",
-    "file_size": 26017749,
-    "medium": "audio",
-    "expression": "sample",
-    "bitrate": 64,
-    "samplingrate": "44.1",
-    "channels": 1,
-    "duration": "3252.19",
-    "lang": "en"
-  }, {
-    "position": 2,
-    "url": "https://s3.amazonaws.com/prx-dovetail/testserial/serial_credits.mp3",
-    "type": "audio/mpeg",
-    "file_size": 162376,
-    "medium": "audio",
-    "expression": "sample",
-    "bitrate": 64,
-    "samplingrate": "44.1",
-    "channels": 1,
-    "duration": "20.27",
-    "lang": "en"
-  }],
+  "contents": [
+    {
+      "position": 1,
+      "url": "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3",
+      "type": "audio/mpeg",
+      "file_size": 26017749,
+      "medium": "audio",
+      "expression": "sample",
+      "bitrate": 64,
+      "samplingrate": "44.1",
+      "channels": 1,
+      "duration": "3252.19",
+      "lang": "en"
+    },
+    {
+      "position": 2,
+      "url": "https://s3.amazonaws.com/prx-dovetail/testserial/serial_credits.mp3",
+      "type": "audio/mpeg",
+      "file_size": 162376,
+      "medium": "audio",
+      "expression": "sample",
+      "bitrate": 64,
+      "samplingrate": "44.1",
+      "channels": 1,
+      "duration": "20.27",
+      "lang": "en"
+    }
+  ],
   "keywords": [],
   "_embedded": {
     "prx:feed": {
@@ -51,10 +54,12 @@
       "title": "Serial",
       "subtitle": "A new podcast from the creators of This American Life",
       "description": "Serial is a new podcast from the creators of This American Life, hosted by Sarah Koenig. Serial unfolds one story - a true story - over the course of a whole season. The show follows the plot and characters wherever they lead, through\n      many surprising twists and turns. Sarah won't know what happens at the end of the story until she gets there, not long before you get there with her. Each week she'll bring you the latest chapter, so it's important to listen in, starting with Episode\n      1. New episodes are released on Thursday mornings.",
-      "owners": [{
-        "name": null,
-        "email": "rich@strangebirdlabs.com"
-      }],
+      "owners": [
+        {
+          "name": null,
+          "email": "rich@strangebirdlabs.com"
+        }
+      ],
       "managing_editor": {
         "name": "This American Life",
         "email": "chad@thislife.org"
@@ -83,11 +88,13 @@
     }
   },
   "_links": {
-    "curies": [{
-      "name": "prx",
-      "href": "http://meta.prx.org/relation/{rel}",
-      "templated": true
-    }],
+    "curies": [
+      {
+        "name": "prx",
+        "href": "http://meta.prx.org/relation/{rel}",
+        "templated": true
+      }
+    ],
     "self": {
       "href": "/api/v1/feeds/11/entries/145"
     },

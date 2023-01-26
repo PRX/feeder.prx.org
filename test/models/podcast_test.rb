@@ -1,44 +1,43 @@
-require 'test_helper'
-require 'prx_access'
+require "test_helper"
+require "prx_access"
 
 describe Podcast do
-
   include PrxAccess
 
   let(:podcast) { create(:podcast) }
 
-  it 'has episodes' do
+  it "has episodes" do
     assert_respond_to podcast, :episodes
   end
 
-  it 'has a default feed' do
+  it "has a default feed" do
     podcast = Podcast.new.tap(&:valid?)
     assert podcast.default_feed.present?
     assert podcast.default_feed.private? == false
-    assert podcast.default_feed.slug == nil
+    assert podcast.default_feed.slug.nil?
     assert podcast.default_feed.file_name == Feed::DEFAULT_FILE_NAME
   end
 
-  it 'has iTunes categories' do
+  it "has iTunes categories" do
     assert_respond_to podcast, :itunes_categories
   end
 
-  it 'is episodic or serial' do
+  it "is episodic or serial" do
     assert_match(/episodic/, podcast.itunes_type)
     podcast.update(serial_order: true)
     assert_match(/serial/, podcast.itunes_type)
   end
 
-  it 'updates last build date after update' do
+  it "updates last build date after update" do
     Timecop.freeze
-    podcast.update(managing_editor: 'Brian Fernandez')
+    podcast.update(managing_editor: "Brian Fernandez")
 
     assert_equal podcast.last_build_date, Time.now
 
     Timecop.return
   end
 
-  it 'wont nil out podcast published_at' do
+  it "wont nil out podcast published_at" do
     ep = podcast.episodes.create(published_at: 1.week.ago)
     pub_at = podcast.reload.published_at
     refute_nil podcast.published_at
@@ -53,32 +52,31 @@ describe Podcast do
     refute_nil podcast.reload.published_at
   end
 
-  it 'sets the itunes block to false by default' do
+  it "sets the itunes block to false by default" do
     refute podcast.itunes_block
     podcast.update(itunes_block: true)
     assert podcast.itunes_block
   end
 
-  describe 'publishing' do
-
-    it 'creates a publish job on publish' do
-      podcast.stub(:create_publish_job, 'published!') do
-        assert_equal podcast.publish!, 'published!'
+  describe "publishing" do
+    it "creates a publish job on publish" do
+      podcast.stub(:create_publish_job, "published!") do
+        assert_equal podcast.publish!, "published!"
       end
     end
 
-    it 'wont create a publish job when podcast is locked' do
-      podcast.stub(:create_publish_job, 'published!') do
+    it "wont create a publish job when podcast is locked" do
+      podcast.stub(:create_publish_job, "published!") do
         podcast.locked = true
-        refute_equal podcast.publish!, 'published!'
+        refute_equal podcast.publish!, "published!"
       end
     end
   end
 
-  describe 'episode limit' do
+  describe "episode limit" do
     let(:episodes) { create_list(:episode, 10, podcast: podcast).reverse }
 
-    it 'returns only limited number of episodes' do
+    it "returns only limited number of episodes" do
       assert_equal episodes.count, podcast.episodes.count
       assert_equal podcast.feed_episodes.count, 10
       podcast.display_episodes_count = 5

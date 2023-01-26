@@ -1,8 +1,8 @@
-require 'text_sanitizer'
+require "text_sanitizer"
 
 class Podcast < ApplicationRecord
-  FEED_GETTERS = %i(subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image)
-  FEED_SETTERS = %i(subtitle= description= summary= url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template= feed_image= itunes_image=)
+  FEED_GETTERS = %i[subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image]
+  FEED_SETTERS = %i[subtitle= description= summary= url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template= feed_image= itunes_image=]
 
   include TextSanitizer
 
@@ -10,42 +10,42 @@ class Podcast < ApplicationRecord
   serialize :keywords, JSON
   serialize :restrictions, JSON
 
-  has_one :default_feed, -> { default }, class_name: 'Feed', validate: true, autosave: true
+  has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true
   has_many :feeds, dependent: :destroy
 
-  has_many :episodes, -> { order('published_at desc') }
+  has_many :episodes, -> { order("published_at desc") }
   has_many :itunes_categories, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
 
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
-  validates :explicit, inclusion: { in: %w(true false) }, allow_nil: false
+  validates :explicit, inclusion: {in: %w[true false]}, allow_nil: false
 
   # these keep changing - so just translate to the current accepted values
   EXPLICIT_ALIASES = {
-    '' => 'false',
-    'no' => 'false',
-    'clean' => 'false',
-    false => 'false',
-    'yes' => 'true',
-    'explicit' => 'true',
-    true => 'true'
+    "" => "false",
+    "no" => "false",
+    "clean" => "false",
+    false => "false",
+    "yes" => "true",
+    "explicit" => "true",
+    true => "true"
   }.freeze
 
   acts_as_paranoid
 
   before_validation :set_defaults, :sanitize_text
 
-  scope :published, -> { where('published_at IS NOT NULL AND published_at <= now()') }
+  scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
 
   def self.by_prx_series(series)
-    series_uri = series.links['self'].href
+    series_uri = series.links["self"].href
     Podcast.find_by(prx_uri: series_uri)
   end
 
   def set_defaults
     self.default_feed ||= feeds.new(private: false)
-    self.explicit ||= 'false'
+    self.explicit ||= "false"
   end
 
   def explicit=(value)
@@ -73,7 +73,7 @@ class Podcast < ApplicationRecord
   end
 
   def account_id(uri = prx_account_uri)
-    URI.parse(uri || '').path.split('/').last.to_i
+    URI.parse(uri || "").path.split("/").last.to_i
   end
 
   def account_id_was
@@ -90,24 +90,24 @@ class Podcast < ApplicationRecord
 
   def owners=(os)
     owner = Array(os).first || {}
-    self.owner_name = owner['name']
-    self.owner_email = owner['email']
+    self.owner_name = owner["name"]
+    self.owner_email = owner["email"]
   end
 
   def author=(a)
     author = a || {}
-    self.author_name = author['name']
-    self.author_email = author['email']
+    self.author_name = author["name"]
+    self.author_email = author["email"]
   end
 
   def managing_editor=(me)
     managing_editor = me || {}
-    self.managing_editor_name = managing_editor['name']
-    self.managing_editor_email = managing_editor['email']
+    self.managing_editor_name = managing_editor["name"]
+    self.managing_editor_email = managing_editor["email"]
   end
 
   def managing_editor
-    return nil unless (managing_editor_name || managing_editor_email)
+    return nil unless managing_editor_name || managing_editor_email
     "#{managing_editor_email} (#{managing_editor_name})"
   end
 
@@ -128,11 +128,11 @@ class Podcast < ApplicationRecord
   end
 
   def web_master
-    ENV['FEEDER_WEB_MASTER']
+    ENV["FEEDER_WEB_MASTER"]
   end
 
   def generator
-    ENV['FEEDER_GENERATOR']
+    ENV["FEEDER_GENERATOR"]
   end
 
   def base_published_url
@@ -148,7 +148,7 @@ class Podcast < ApplicationRecord
   end
 
   def itunes_type
-    serial_order ? 'serial' : 'episodic'
+    serial_order ? "serial" : "episodic"
   end
 
   def sanitize_text
@@ -156,11 +156,11 @@ class Podcast < ApplicationRecord
   end
 
   def feeder_cdn_host
-    ENV['FEEDER_CDN_HOST']
+    ENV["FEEDER_CDN_HOST"]
   end
 
   def feeder_cdn_private_host
-    ENV['FEEDER_CDN_PRIVATE_HOST']
+    ENV["FEEDER_CDN_PRIVATE_HOST"]
   end
 
   def default_feed_settings?

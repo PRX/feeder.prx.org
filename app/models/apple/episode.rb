@@ -7,14 +7,14 @@ module Apple
     def self.get_episodes(api, episodes)
       return if episodes.empty?
 
-      api.bridge_remote_and_retry!('getEpisodes', episodes.map(&:get_episode_bridge_params))
+      api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
 
     def self.create_episodes(api, episodes)
       return if episodes.empty?
 
-      episode_bridge_results = api.bridge_remote_and_retry!('createEpisodes',
-                                                            episodes.map(&:create_episode_bridge_params))
+      episode_bridge_results = api.bridge_remote_and_retry!("createEpisodes",
+        episodes.map(&:create_episode_bridge_params))
 
       insert_sync_logs(episodes, episode_bridge_results)
     end
@@ -22,35 +22,35 @@ module Apple
     def self.update_audio_container_reference(api, episodes)
       return [] if episodes.empty?
 
-      episode_bridge_results = api.bridge_remote_and_retry!('updateEpisodes',
-                                                            episodes.map(&:update_episode_audio_container_bridge_params))
+      episode_bridge_results = api.bridge_remote_and_retry!("updateEpisodes",
+        episodes.map(&:update_episode_audio_container_bridge_params))
       insert_sync_logs(episodes, episode_bridge_results)
     end
 
     def self.publish(api, episodes)
       return [] if episodes.empty?
 
-      api.bridge_remote_and_retry!('publishEpisodes',
-                                   episodes.map(&:publish_episode_bridge_params))
+      api.bridge_remote_and_retry!("publishEpisodes",
+        episodes.map(&:publish_episode_bridge_params))
     end
 
     def self.insert_sync_logs(episodes, results)
       episodes_by_item_guid = episodes.map { |ep| [ep.item_guid, ep] }.to_h
 
       results.map do |res|
-        apple_id = res.dig('api_response', 'val', 'data', 'id')
-        guid = res.dig('api_response', 'val', 'data', 'attributes', 'guid')
+        apple_id = res.dig("api_response", "val", "data", "id")
+        guid = res.dig("api_response", "val", "data", "attributes", "guid")
         ep = episodes_by_item_guid.fetch(guid)
 
-        SyncLog.
-          create(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id)
+        SyncLog
+          .create(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id)
       end
     end
 
     def self.add_no_imp_param(url)
       # use the URI class to add a 'noImp' query param
       url = URI.parse(url)
-      decoded_query = URI.decode_www_form(url.query.to_s) << ['noImp', '1']
+      decoded_query = URI.decode_www_form(url.query.to_s) << ["noImp", "1"]
       url.query = URI.encode_www_form(decoded_query)
       url.to_s
     end
@@ -82,16 +82,16 @@ module Apple
 
       eps = show.get_episodes_json
 
-      eps.detect { |ep| ep['attributes']['guid'] == feeder_episode.item_guid }
+      eps.detect { |ep| ep["attributes"]["guid"] == feeder_episode.item_guid }
     end
 
     def completed_sync_log
-      SyncLog.
-        episodes.
-        complete.
-        latest.
-        where(feeder_id: feeder_episode.id, feeder_type: :episodes).
-        first
+      SyncLog
+        .episodes
+        .complete
+        .latest
+        .where(feeder_id: feeder_episode.id, feeder_type: :episodes)
+        .first
     end
 
     def get_episode_bridge_params
@@ -103,18 +103,18 @@ module Apple
 
     def create_episode_bridge_params
       {
-        api_url: api.join_url('episodes').to_s,
+        api_url: api.join_url("episodes").to_s,
         api_parameters: episode_create_parameters
       }
     end
 
     def episode_create_parameters
-      explicit = feeder_episode.explicit.present? && feeder_episode.explicit == 'true'
+      explicit = feeder_episode.explicit.present? && feeder_episode.explicit == "true"
 
       {
         data:
         {
-          type: 'episodes',
+          type: "episodes",
           attributes: {
             guid: feeder_episode.item_guid,
             title: feeder_episode.title,
@@ -128,7 +128,7 @@ module Apple
             appleHostedAudioIsSubscriberOnly: true
           },
           relationships: {
-            show: { data: { type: 'shows', id: show.apple_id } }
+            show: {data: {type: "shows", id: show.apple_id}}
           }
         }
       }
@@ -145,7 +145,7 @@ module Apple
       {
         data:
         {
-          type: 'episodes',
+          type: "episodes",
           id: apple_id,
           attributes: {
             appleHostedAudioAssetContainerId: podcast_container.apple_id,
@@ -157,7 +157,7 @@ module Apple
 
     def publish_episode_bridge_params
       {
-        api_url: api.join_url('episodePublishingRequests').to_s,
+        api_url: api.join_url("episodePublishingRequests").to_s,
         api_parameters: publish_episode_parameters
       }
     end
@@ -165,15 +165,15 @@ module Apple
     def publish_episode_parameters
       {
         data: {
-          type: 'episodePublishingRequests',
+          type: "episodePublishingRequests",
           attributes: {
-            action: 'PUBLISH'
+            action: "PUBLISH"
           },
           relationships: {
             episode: {
               data: {
                 id: apple_id,
-                type: 'episodes'
+                type: "episodes"
               }
             }
           }
@@ -206,7 +206,7 @@ module Apple
     end
 
     def drafting?
-      apple_json&.dig('attributes', 'publishingState') == 'DRAFTING'
+      apple_json&.dig("attributes", "publishingState") == "DRAFTING"
     end
 
     def apple_upload_complete?
@@ -216,11 +216,11 @@ module Apple
     end
 
     def audio_asset_vendor_id
-      apple_json&.dig('attributes', 'appleHostedAudioAssetVendorId')
+      apple_json&.dig("attributes", "appleHostedAudioAssetVendorId")
     end
 
     def apple_id
-      apple_json&.dig('id')
+      apple_json&.dig("id")
     end
 
     def apple_episode_id

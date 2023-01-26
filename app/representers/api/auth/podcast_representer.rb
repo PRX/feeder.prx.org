@@ -7,27 +7,33 @@ class Api::Auth::PodcastRepresenter < Api::PodcastRepresenter
 
   # point to authorized episodes (including unpublished)
   link :episodes do
-    {
-      href: api_authorization_podcast_episodes_path(represented) + '{?page,per,zoom,since}',
-      count: represented.episodes.count,
-      templated: true
-    } if represented.id
+    if represented.id
+      {
+        href: api_authorization_podcast_episodes_path(represented) + "{?page,per,zoom,since}",
+        count: represented.episodes.count,
+        templated: true
+      }
+    end
   end
 
   # point to authorized item guids (including unpublished)
   link :guid do
-    {
-      href: api_authorization_podcast_guid_path_template(podcast_id: represented.id.to_s, id: '{guid}'),
-      templated: true
-    } if represented.id
+    if represented.id
+      {
+        href: api_authorization_podcast_guid_path_template(podcast_id: represented.id.to_s, id: "{guid}"),
+        templated: true
+      }
+    end
   end
 
   # point to authorized feeds (including private)
   link :feeds do
-    {
-      href: api_authorization_podcast_feeds_path(represented) + '{?page,per,zoom,since}',
-      count: represented.feeds.count,
-      templated: true
-    } if represented.id
+    if represented.id
+      {
+        href: api_authorization_podcast_feeds_path(represented) + "{?page,per,zoom,since}",
+        count: represented.feeds.count,
+        templated: true
+      }
+    end
   end
 end

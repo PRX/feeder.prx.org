@@ -30,8 +30,8 @@ class PodcastSeriesHandler
 
   def update_from_series(series)
     self.series = series
-    podcast.prx_uri = series.links['self'].href
-    podcast.prx_account_uri = series.links['account'].href
+    podcast.prx_uri = series.links["self"].href
+    podcast.prx_account_uri = series.links["account"].href
 
     update_series_attributes
     update_images
@@ -49,18 +49,26 @@ class PodcastSeriesHandler
   end
 
   def update_images
-    cms_images = series.objects['prx:images'].objects['prx:items'] rescue []
-    purposes = {feed_image_file: 'thumbnail', itunes_image_file: 'profile'}
+    cms_images = begin
+      series.objects["prx:images"].objects["prx:items"]
+    rescue
+      []
+    end
+    purposes = {feed_image_file: "thumbnail", itunes_image_file: "profile"}
 
     purposes.each do |name, purpose|
-      cms_image = cms_images.find { |i| i.attributes['purpose'] == purpose }
-      cms_href = cms_image.links['original'].href rescue nil
+      cms_image = cms_images.find { |i| i.attributes["purpose"] == purpose }
+      cms_href = begin
+        cms_image.links["original"].href
+      rescue
+        nil
+      end
 
       default_feed.public_send("#{name}=", cms_href)
 
       if default_feed.public_send(name)
-        default_feed.public_send(name).caption = cms_image.attributes['caption']
-        default_feed.public_send(name).credit = cms_image.attributes['credit']
+        default_feed.public_send(name).caption = cms_image.attributes["caption"]
+        default_feed.public_send(name).credit = cms_image.attributes["credit"]
       end
     end
   end

@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 class SyncLog < ApplicationRecord
-  scope :complete, -> { where('sync_completed_at IS NOT NULL AND external_id IS NOT NULL') }
+  scope :complete, -> { where("sync_completed_at IS NOT NULL AND external_id IS NOT NULL") }
 
   enum feeder_type: {
-    feeds: 'feeds',
-    episodes: 'episodes',
-    podcast_containers: 'containers',
-    podcast_deliveries: 'deliveries',
-    podcast_delivery_files: 'delivery_files'
+    feeds: "feeds",
+    episodes: "episodes",
+    podcast_containers: "containers",
+    podcast_deliveries: "deliveries",
+    podcast_delivery_files: "delivery_files"
   }
 
   scope :latest, -> do

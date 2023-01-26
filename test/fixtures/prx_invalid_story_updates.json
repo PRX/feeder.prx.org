@@ -4,11 +4,13 @@
   "status": "invalid",
   "status_message": "Audio Version 1 has no audio",
   "_links": {
-    "curies": [{
-      "href": "http://meta.prx.org/relation/{rel}",
-      "name": "prx",
-      "templated": true
-    }],
+    "curies": [
+      {
+        "href": "http://meta.prx.org/relation/{rel}",
+        "name": "prx",
+        "templated": true
+      }
+    ],
     "prx:account": {
       "href": "/api/v1/accounts/124",
       "title": "KUFM - Montana Public Radio",

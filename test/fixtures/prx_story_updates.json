@@ -4,11 +4,13 @@
   "status": "complete",
   "title": "Big Data Shows How We Live and Die",
   "_links": {
-    "curies": [{
-      "href": "http://meta.prx.org/relation/{rel}",
-      "name": "prx",
-      "templated": true
-    }],
+    "curies": [
+      {
+        "href": "http://meta.prx.org/relation/{rel}",
+        "name": "prx",
+        "templated": true
+      }
+    ],
     "prx:account": {
       "href": "/api/v1/accounts/124",
       "title": "KUFM - Montana Public Radio",

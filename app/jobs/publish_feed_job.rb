@@ -1,7 +1,6 @@
-require 'builder'
+require "builder"
 
 class PublishFeedJob < ApplicationJob
-
   queue_as :feeder_default
 
   include PodcastsHelper
@@ -40,7 +39,7 @@ class PublishFeedJob < ApplicationJob
   end
 
   def feeder_storage_bucket
-    ENV['FEEDER_STORAGE_BUCKET']
+    ENV["FEEDER_STORAGE_BUCKET"]
   end
 
   def key(podcast, feed)
@@ -49,16 +48,16 @@ class PublishFeedJob < ApplicationJob
 
   def default_options
     {
-      content_type: 'application/rss+xml; charset=UTF-8',
-      cache_control: 'max-age=60'
+      content_type: "application/rss+xml; charset=UTF-8",
+      cache_control: "max-age=60"
     }
   end
 
   def client
-    if Rails.env.test? || ENV['AWS_ACCESS_KEY_ID'].present?
+    if Rails.env.test? || ENV["AWS_ACCESS_KEY_ID"].present?
       Aws::S3::Client.new(
-        credentials: Aws::Credentials.new(ENV['AWS_ACCESS_KEY_ID'], ENV['AWS_SECRET_ACCESS_KEY']),
-        region: ENV['AWS_REGION']
+        credentials: Aws::Credentials.new(ENV["AWS_ACCESS_KEY_ID"], ENV["AWS_SECRET_ACCESS_KEY"]),
+        region: ENV["AWS_REGION"]
       )
     else
       Aws::S3::Client.new

@@ -11,11 +11,13 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body data-controller="blank-field">
     <header>
-      <%= render 'layouts/nav' %>
-      <%= render 'layouts/subnav' %>
+      <%= render "layouts/nav" %>
+      <%= render "layouts/subnav" %>
     </header>
+
+    <%= render "layouts/alerts" %>
 
     <% if content_for? :tabs %>
       <div class="container-fluid">

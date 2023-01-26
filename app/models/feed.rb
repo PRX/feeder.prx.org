@@ -1,12 +1,12 @@
-require 'hash_serializer'
+require "hash_serializer"
 
 class Feed < ApplicationRecord
-  DEFAULT_FILE_NAME = 'feed-rss.xml'.freeze
+  DEFAULT_FILE_NAME = "feed-rss.xml".freeze
 
   AUDIO_MIME_TYPES = {
-    'mp3' => 'audio/mpeg',
-    'flac' => 'audio/flac',
-    'wav' => 'audio/wav'
+    "mp3" => "audio/mpeg",
+    "flac" => "audio/flac",
+    "wav" => "audio/wav"
   }.freeze
 
   include TextSanitizer
@@ -21,17 +21,17 @@ class Feed < ApplicationRecord
   alias_attribute :tokens, :feed_tokens
 
   has_many :apple_credentials, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
-                               class_name: '::Apple::Credential'
+    class_name: "::Apple::Credential"
 
-  has_one :feed_image, -> { complete.order('created_at DESC') }, autosave: true, dependent: :destroy
-  has_many :feed_images, -> { order('created_at DESC') }, autosave: true, dependent: :destroy
-  has_one :itunes_image, -> { complete.order('created_at DESC') }, autosave: true, dependent: :destroy
-  has_many :itunes_images, -> { order('created_at DESC') }, autosave: true, dependent: :destroy
+  has_one :feed_image, -> { complete.order("created_at DESC") }, autosave: true, dependent: :destroy
+  has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
+  has_one :itunes_image, -> { complete.order("created_at DESC") }, autosave: true, dependent: :destroy
+  has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
 
-  validates :slug, allow_nil: true, uniqueness: { scope: :podcast_id, allow_nil: false }
+  validates :slug, allow_nil: true, uniqueness: {scope: :podcast_id, allow_nil: false}
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
   validates_format_of :slug, without: /\A(images|\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\z/
-  validates :file_name, presence: true, format: { with: /\A[0-9a-zA-Z_.-]+\z/ }
+  validates :file_name, presence: true, format: {with: /\A[0-9a-zA-Z_.-]+\z/}
   validates :include_zones, placement_zones: true
   validates :include_tags, tag_list: true
   validates :audio_format, audio_format: true
@@ -42,7 +42,7 @@ class Feed < ApplicationRecord
   scope :default, -> { where(slug: nil) }
 
   def self.enclosure_template_default
-    "https://#{ENV['DOVETAIL_HOST']}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
+    "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
   end
 
   def set_defaults
@@ -99,11 +99,7 @@ class Feed < ApplicationRecord
   end
 
   def normalize_category(cat)
-    cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, '').gsub(/\s+/, ' ').strip
-  end
-
-  def use_exclude_tags?
-    !exclude_tags.nil?
+    cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, "").gsub(/\s+/, " ").strip
   end
 
   def publish_to_apple?(creds)
@@ -140,7 +136,7 @@ class Feed < ApplicationRecord
   end
 
   def mime_type
-    f = (audio_format || {})[:f] || 'mp3'
+    f = (audio_format || {})[:f] || "mp3"
     AUDIO_MIME_TYPES[f]
   end
 
@@ -150,7 +146,9 @@ class Feed < ApplicationRecord
   end
 
   # API updates for feed_image=
-  def feed_image_file; feed_images.first; end
+  def feed_image_file
+    feed_images.first
+  end
 
   def feed_image_file=(file)
     img = FeedImage.build(file)
@@ -162,7 +160,9 @@ class Feed < ApplicationRecord
   end
 
   # API updates for itunes_image=
-  def itunes_image_file; itunes_images.first; end
+  def itunes_image_file
+    itunes_images.first
+  end
 
   def itunes_image_file=(file)
     img = ITunesImage.build(file)

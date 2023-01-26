@@ -1,5 +1,5 @@
 class CreateFeeds < ActiveRecord::Migration[4.2]
-  DEFAULT_FILE_NAME = 'feed-rss.xml'.freeze
+  DEFAULT_FILE_NAME = "feed-rss.xml".freeze
 
   def up
     create_table :feeds do |t|
@@ -26,8 +26,8 @@ class CreateFeeds < ActiveRecord::Migration[4.2]
       t.timestamps null: false
     end
 
-    add_index :feeds, :podcast_id, unique: true, where: 'slug IS NULL', name: :index_feeds_on_podcast_id_default
-    add_index :feeds, [:podcast_id, :slug], unique: true, where: 'slug IS NOT NULL'
+    add_index :feeds, :podcast_id, unique: true, where: "slug IS NULL", name: :index_feeds_on_podcast_id_default
+    add_index :feeds, [:podcast_id, :slug], unique: true, where: "slug IS NOT NULL"
 
     create_table :feed_tokens do |t|
       t.references :feed, index: true, foreign_key: true
