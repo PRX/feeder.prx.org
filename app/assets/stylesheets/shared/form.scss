@@ -4,6 +4,7 @@
     color: $gray-700;
     height: auto;
     font-size: 1rem;
+    width: auto;
 
     &.is-invalid {
       color: $form-feedback-invalid-color;
