@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-. ./_env.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+. $DIR/_env.sh
 
 export PGPASSWORD=$POSTGRES_PASSWORD
 export PGUSER=$POSTGRES_USER
