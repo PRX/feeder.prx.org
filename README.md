@@ -79,10 +79,28 @@ If you're cool with a blank database, just run the migrations!
 bin/rails db:migrate
 ```
 
-Otherwise, it can be helpful to have a staging or production database to get started:
+Otherwise, it can be helpful to have a staging or production database to get started. First
+off, make sure you have our [homebrew dev tools](https://github.com/PRX/homebrew-dev-tools) installed,
+and you can successfully connect to the stag/prod environments via `awstunnel`.
+
+Then, set `DUMP_REMOTE_POSTGRES_USER` and `DUMP_REMOTE_POSTGRES_DATABASE` in your `.env`, for the
+staging or prod database you're copying.
 
 ```sh
-TODO
+# start staging tunnel
+awstunnel stag
+
+# in another tab, dump the database
+ops/bin/dump_db.sh stag
+
+# restore it to a clone db
+ops/bin/setup_clone_db.sh
+
+# and copy the clone to feeder_development
+ops/bin/load_db.sh
+
+# and if you ever need a fresh db, run it again
+ops/bin/load_db.sh
 ```
 
 ## Development
