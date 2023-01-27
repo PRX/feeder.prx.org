@@ -19,6 +19,7 @@ This repo follows the [standards for PRX services](https://github.com/PRX/docs.p
 - Ruby - runs all the things!
 - PostgreSQL - main database
 - AWS S3 - writing RSS files
+- AWS SQS - async job queue
 - NodeJS - for linting
 
 ### Integrations
@@ -28,6 +29,7 @@ This app additionally relies on other PRX services:
 - [id.prx.org](https://id.prx.org) - authorize PRX users/accounts
 - [Porter](https://github.com/PRX/Porter) - send tasks to analyze and manipulate audio/image files
 - [dovetail.prxu.org](https://dovetail.prxu.org) - calls feeder for info about episodes/feeds
+- [Apple API Bridge Lambda](https://github.com/PRX/api-bridge-lambda/) - for publishing subscribable podcasts to Apple
 
 ## Installation
 
@@ -80,7 +82,7 @@ bin/rails db:migrate
 Otherwise, it can be helpful to have a staging or production database to get started:
 
 ```sh
-TBD
+TODO
 ```
 
 ## Development
@@ -101,9 +103,33 @@ Run the rails development server at [localhost:3002](http://localhost:3002):
 bin/rails server
 ```
 
+At [localhost:3002/fake](http://localhost:3002/fake), you'll find the HTML user
+interface for Feeder. In addition to standard Rails, it uses [Turbo](https://turbo.hotwired.dev/),
+[Stimulus](https://stimulus.hotwired.dev/), and [Bootstrap 5](https://getbootstrap.com/docs/5.0/getting-started/introduction/).
+Whenever possible, we'd appreciate it if you stuck to this toolset!
+
+When you land on an authenticated page, you will be redirected to `ID_HOST` for authorization.
+Once you are logged in, you will be redirected back to (hopefully) your local `/auth/sessions`.
+If this is not working, you should check your `PRX_CLIENT_ID` ClientApplication and your
+`AccountApplication`s in the ID admin interface.
+
+#### HAL API
+
+At [localhost:3002/api/v1](http://localhost:3002/api/v1), you'll find the HAL API root.
+You can navigate around the public API endpoints by following the links. This is currently
+built with the [hal_api-rails](https://github.com/PRX/hal_api-rails) gem, but we have plans
+to eventually switch to [halbuilder](https://github.com/PRX/halbuilder) (an extension of Jbuilder).
+
+For `/api/v1/authorization` endpoints, you will need to provide a [JWT](https://jwt.io/) provided by
+PRX ID.
+
 ### Worker
 
-tbd
+In addition to the server, Feeder runs a worker for processing async jobs. This largely uses
+the [Shoryuken](https://github.com/ruby-shoryuken/shoryuken) gem and AWS SQS.
+
+Some jobs run completely in Ruby, while others will call out to [Porter](https://github.com/PRX/Porter)
+or the [Apple API Bridge Lambda](https://github.com/PRX/api-bridge-lambda/) to complete their work.
 
 #### File Handling
 
@@ -114,11 +140,32 @@ When an episode file has a new original url, that is considered a new file. When
 
 ### Tests
 
-tbd
+You should write/run the tests! With any PR, we expect some tests for your changes.
+
+```sh
+bin/rails test
+bin/rails test test/models/podcast_test.rb
+bin/rails test test/models/podcast_test.rb:9
+```
 
 ### Linting
 
-tbd
+This entire repo is linted using:
+
+- [standardrb](https://github.com/testdouble/standard) for ruby files
+- [erblint](https://github.com/Shopify/erb-lint) for `html.erb` files
+  - Note this _does not_ handle indentation at the moment, but you're encouraged to
+    use some other editor plugin to ensure your erb has the right indentation
+- [prettier](https://prettier.io/) for `js`, `scss`, and `md` files
+
+Your commits will be checked with these in Github, so you should lint your code before pushing.
+
+```sh
+bin/rails lint
+bin/rails lint:fix
+```
+
+TODO: editor integration. Because format-on-save is cool.
 
 ## License
 
