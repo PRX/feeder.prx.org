@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_13_203943) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -317,6 +317,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_13_203943) do
     t.datetime "updated_at", precision: nil, null: false
     t.index ["next_fire_at", "status"], name: "index_say_when_jobs_on_next_fire_at_and_status"
     t.index ["scheduled_type", "scheduled_id"], name: "index_say_when_jobs_on_scheduled_type_and_scheduled_id"
+  end
+
+  create_table "sessions", force: :cascade do |t|
+    t.string "session_id", null: false
+    t.text "data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
+    t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
 
   create_table "sync_logs", force: :cascade do |t|

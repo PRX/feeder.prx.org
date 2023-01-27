@@ -14,7 +14,7 @@ class EpisodePolicy < ApplicationPolicy
   private
 
   def account_id
-    resource.podcast.account_id
+    resource&.podcast&.account_id
   end
 
   def account_id_was

@@ -1,4 +1,7 @@
 class PodcastsController < ApplicationController
+  # TODO: move under /api or remove
+  skip_before_action :authenticate!
+
   def show
     @podcast = Podcast.find(podcast_params)
     @feed = @podcast.default_feed

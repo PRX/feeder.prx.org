@@ -1,4 +1,6 @@
 class FeedsController < ApplicationController
+  # TODO: move under /api
+  skip_before_action :authenticate!
   before_action :authenticate_feeds_token!
 
   def index
