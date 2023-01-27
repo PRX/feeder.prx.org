@@ -18,8 +18,8 @@ Also, your user should have database create/drop permissions.
 
 In order:
 
-1. ops/bin/dump_prod.sh
-2. ops/bin/setup_clone_prod.sh
+1. ops/bin/dump_db.sh
+2. ops/bin/setup_clone_db.sh
 3. ops/bin/load_db.sh
 
 Subsequently, if you need a fresh database you can run
