@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # TODO: remove after updated dovetail router
-  resources :feeds, only: [:index], to: 'api/feeds#index'
+  resources :feeds, only: [:index], to: "api/feeds#index"
 
   # feeder frontend dev
   unless Rails.env.production?
