@@ -18,11 +18,11 @@ fi
 # It takes in an argument of 'prod' or 'stag' to determine which port to connect to
 if [ $1 == "prod" ]; then
   echo "Connecting to prod"
-  PORT=5433
+  DB_DUMP_PORT=5433
   DIST_ENV="prod"
 elif [ $1 == "stag" ]; then
   echo "Connecting to stag"
-  PORT=5435
+  DB_DUMP_PORT=5435
   DIST_ENV="stag"
 else
   usage
@@ -44,7 +44,7 @@ echo "Dumping remote database $REMOTE_DATABASE with user $REMOTE_USER"
 
 echo "Feeder remote"
 time pg_dump --verbose -Fc -h 127.0.0.1 \
-  -p $PORT \
+  -p $DB_DUMP_PORT \
   --exclude-table-data 'public.say_when_job_executions' \
   --exclude-table-data 'tasks' \
   -W -d $REMOTE_DATABASE -U $REMOTE_USER -f $OUTPUT_FILE 
