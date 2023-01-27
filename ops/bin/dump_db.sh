@@ -36,7 +36,7 @@ OUTPUT_FILE="$TMP_FOLDER/$NAME"
 
 echo ""
 echo "********************************************************************************"
-echo "Make sure you're running the 'awstunnel.sh' script connected to prod!"
+echo "Make sure you're running the 'awstunnel.sh' script connected to ${DIST_ENV}!"
 echo "Make sure you've added your PRX INC developer ssh keys: 'ssh-add <path-to-key>' "
 echo "********************************************************************************"
 echo ""
