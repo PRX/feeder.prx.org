@@ -38,6 +38,9 @@ Try [asdf](https://asdf-vm.com/), or use something completely different!
 git clone git@github.com:PRX/feeder.prx.org.git
 cd feeder.prx.org
 
+# make your local git blame ignore giant linting commits
+git config --global blame.ignoreRevsFile .git-blame-ignore-revs
+
 # sane ENV defaults
 cp env-example .env
 
