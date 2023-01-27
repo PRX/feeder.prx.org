@@ -5,8 +5,9 @@ class Api::ImageRepresenter < Roar::Decorator
   property :href
   property :url, writeable: false # TODO: deprecate in favor of href ... but Castle scrapes this field
   property :original_url, writeable: false
-  property :link
-  property :description
+  property :alt_text
+  property :caption
+  property :credit
   property :format, writeable: false
   property :height, writeable: false
   property :width, writeable: false

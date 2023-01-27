@@ -49,17 +49,28 @@ class PodcastSeriesHandler
   end
 
   def update_images
-    images = begin
+    cms_images = begin
       series.objects["prx:images"].objects["prx:items"]
     rescue
       []
     end
+    purposes = {feed_image_file: "thumbnail", itunes_image_file: "profile"}
 
-    feed_image = images.find { |i| i.attributes["purpose"] == "thumbnail" }
-    default_feed.feed_image_file = feed_image.try(:links).try(:original).try(:href)
+    purposes.each do |name, purpose|
+      cms_image = cms_images.find { |i| i.attributes["purpose"] == purpose }
+      cms_href = begin
+        cms_image.links["original"].href
+      rescue
+        nil
+      end
 
-    itunes_image = images.find { |i| i.attributes["purpose"] == "profile" }
-    default_feed.itunes_image_file = itunes_image.try(:links).try(:original).try(:href)
+      default_feed.public_send("#{name}=", cms_href)
+
+      if default_feed.public_send(name)
+        default_feed.public_send(name).caption = cms_image.attributes["caption"]
+        default_feed.public_send(name).credit = cms_image.attributes["credit"]
+      end
+    end
   end
 
   def get_series(account = nil)

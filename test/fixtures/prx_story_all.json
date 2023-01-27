@@ -13,6 +13,7 @@
   "tags": ["Business", "Careers"],
   "title": "Here is a new story in my brand new series",
   "clean_title": "Stripped-down title",
+  "productionNotes": "Some production notes",
   "updatedAt": "2016-10-18T22:16:40.000Z",
   "_links": {
     "alternate": {
@@ -328,11 +329,11 @@
     "prx:image": {
       "_links": {
         "enclosure": {
-          "href": "https://cms.prx.org/pub/407692d270782e6a857df61219743752/0/web/story_image/437192/medium/lindsay.png",
+          "href": "https://cms.prx.org/pub/407692d270782e6a857df61219743752/0/web/story_image/437192/medium/transistor1400.jpg",
           "type": "image/png"
         },
         "original": {
-          "href": "https://cms.prx.org/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/lindsay.png",
+          "href": "https://cms.prx.org/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/transistor1400.jpg",
           "type": "image/png"
         },
         "profile": {
@@ -343,9 +344,9 @@
           "profile": "http://meta.prx.org/model/image/story"
         }
       },
-      "caption": "",
-      "credit": "",
-      "filename": "lindsay.png",
+      "caption": "some-caption",
+      "credit": "some-credit",
+      "filename": "transistor1400.jpg",
       "id": 437192,
       "size": 551330,
       "status": "complete"

@@ -33,10 +33,10 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
       xml.image do
         xml.url @feed_image.url
         xml.title @feed.title || @podcast.title
-        xml.link @feed_image.link || @podcast.link
+        xml.link @podcast.link
         xml.width @feed_image.width
         xml.height @feed_image.height
-        xml.description @feed_image.description unless @feed_image.description.blank?
+        xml.description @feed.subtitle || @podcast.subtitle
       end
     end
 

@@ -102,18 +102,18 @@ describe Api::Auth::FeedsController do
         _(feed.feed_images.count).must_equal 0
         fua = feed.updated_at
 
-        update_hash = {feedImage: {href: url1, description: "d1"}}
+        update_hash = {feedImage: {href: url1, caption: "d1"}}
         put(:update, body: update_hash.to_json, as: :json,
           params: {api_version: "v1", format: "json", podcast_id: feed.podcast_id, id: feed.id})
         assert_response :success
 
         _(feed.reload.updated_at).must_be :>, fua
         _(feed.feed_images.count).must_equal 1
-        _(feed.feed_images.first.description).must_equal "d1"
+        _(feed.feed_images.first.caption).must_equal "d1"
         _(feed.itunes_images.count).must_equal 0
         fua = feed.updated_at
 
-        update_hash = {feedImage: {href: url2, description: "d2"}, itunesImage: {href: url1, description: "d3"}}
+        update_hash = {feedImage: {href: url2, caption: "d2"}, itunesImage: {href: url1, caption: "d3"}}
         put(:update, body: update_hash.to_json, as: :json,
           params: {api_version: "v1", format: "json", podcast_id: feed.podcast_id, id: feed.id})
         assert_response :success
@@ -123,10 +123,10 @@ describe Api::Auth::FeedsController do
 
         _(feed.reload.updated_at).must_be :>, fua
         _(feed.feed_images.count).must_equal 2
-        _(feed.feed_images.first.description).must_equal "d2"
-        _(feed.feed_images.last.description).must_equal "d1"
+        _(feed.feed_images.first.caption).must_equal "d2"
+        _(feed.feed_images.last.caption).must_equal "d1"
         _(feed.itunes_images.count).must_equal 1
-        _(feed.itunes_images.last.description).must_equal "d3"
+        _(feed.itunes_images.last.caption).must_equal "d3"
       end
     end
 

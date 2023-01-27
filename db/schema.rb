@@ -73,16 +73,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.integer "status"
     t.string "guid"
     t.string "url"
-    t.string "link"
     t.string "original_url"
-    t.string "description"
-    t.string "title"
     t.string "format"
     t.integer "height"
     t.integer "width"
     t.integer "size"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "alt_text"
+    t.string "caption"
+    t.string "credit"
     t.index ["episode_id"], name: "index_episode_images_on_episode_id"
     t.index ["guid"], name: "index_episode_images_on_guid", unique: true
   end
@@ -125,6 +125,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.string "prx_audio_version_uri"
     t.string "audio_version"
     t.integer "segment_count"
+    t.text "production_notes"
     t.index ["guid"], name: "index_episodes_on_guid", unique: true
     t.index ["keyword_xid"], name: "index_episodes_on_keyword_xid", unique: true
     t.index ["original_guid", "podcast_id"], name: "index_episodes_on_original_guid_and_podcast_id", unique: true, where: "((deleted_at IS NULL) AND (original_guid IS NOT NULL))"
@@ -136,10 +137,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.integer "feed_id"
     t.string "guid"
     t.string "url"
-    t.string "link"
     t.string "original_url"
-    t.string "description"
-    t.string "title"
     t.string "format"
     t.integer "height"
     t.integer "width"
@@ -147,6 +145,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.integer "status"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "alt_text"
+    t.string "caption"
+    t.string "credit"
     t.index ["feed_id"], name: "index_feed_images_on_feed_id"
     t.index ["guid"], name: "index_feed_images_on_guid", unique: true
   end
@@ -203,10 +204,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.integer "feed_id"
     t.string "guid"
     t.string "url"
-    t.string "link"
     t.string "original_url"
-    t.string "description"
-    t.string "title"
     t.string "format"
     t.integer "height"
     t.integer "width"
@@ -214,6 +212,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.integer "status"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "alt_text"
+    t.string "caption"
+    t.string "credit"
     t.index ["feed_id"], name: "index_itunes_images_on_feed_id"
     t.index ["guid"], name: "index_itunes_images_on_guid", unique: true
   end

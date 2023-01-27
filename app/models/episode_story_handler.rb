@@ -63,6 +63,7 @@ class EpisodeStoryHandler
     episode.description = sa[:description]
     episode.content = sa[:description]
     episode.categories = sa[:tags]
+    episode.production_notes = sa[:production_notes]
     episode.published_at = sa[:published_at] ? Time.parse(sa[:published_at]) : nil
     episode.released_at = sa[:released_at] ? Time.parse(sa[:released_at]) : nil
 
@@ -93,12 +94,23 @@ class EpisodeStoryHandler
   end
 
   def update_image
-    image_url = begin
-      story.objects["prx:image"].links["original"].href
+    cms_image = begin
+      story.objects["prx:image"]
     rescue
       nil
     end
-    episode.image_file = image_url
+    cms_href = begin
+      cms_image.links["original"].href
+    rescue
+      nil
+    end
+
+    episode.image_file = cms_href
+
+    if episode.image_file
+      episode.image_file.caption = cms_image.attributes["caption"]
+      episode.image_file.credit = cms_image.attributes["credit"]
+    end
   end
 
   def build_content(audio)

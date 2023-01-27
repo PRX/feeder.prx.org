@@ -151,8 +151,8 @@
               }
             },
             "purpose": "profile",
-            "caption": "",
-            "credit": "",
+            "caption": "this-caption",
+            "credit": "this-credit",
             "filename": "mothradiohr-whitelogo.jpg",
             "height": 500,
             "id": 15407,
