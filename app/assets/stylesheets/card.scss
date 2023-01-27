@@ -1,3 +1,5 @@
+@import "shared/bootstrap-variables";
+
 .card {
   .card-header,
   .card-footer {
@@ -41,6 +43,57 @@
     &.btn-group {
       display: block;
     }
+  }
+}
+
+.podcast-card {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+  margin-bottom: 0;
+
+  .card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    &:hover {
+      background: rgba(140, 210, 244, 0.1);
+    }
+  }
+
+  .podcast-card-info {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+
+    img {
+      margin-right: 1rem;
+    }
+
+    .podcast-card-title {
+      margin-bottom: 0.25rem;
+      font-weight: bold;
+      font-size: 1.25rem;
+      color: $black;
+    }
+
+    p {
+      line-height: 1.1;
+      margin-bottom: 0;
+    }
+
+    .stretched-link {
+      inset: 0;
+      overflow: hidden;
+      position: absolute;
+      text-indent: -2000vw;
+    }
+  }
+
+  .podcast-card-status {
+    text-align: right;
   }
 }
 
