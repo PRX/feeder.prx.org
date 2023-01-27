@@ -7,9 +7,6 @@ FEEDER DATABASE DUMPING SCRIPTS
 Make sure to set up the `PGUSER` and `PGHOST` env vars in your dotenv
 
 ```
-PGUSER=my_local_postgres_username
-PGHOST=localhost
-
 REMOTE_USER=remote_postgres_username
 REMOTE_DATABASE=remote_database_name
 ```
