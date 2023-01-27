@@ -12,7 +12,7 @@ echo "Creating clone database"
 createdb $CLONE_DB_NAME
 
 echo "Running pg_restore ..."
-pg_restore --verbose -j 16 -d $CLONE_DB_NAME $LINK_FILE
+pg_restore --verbose -j 16 -d $CLONE_DB_NAME $LINK_FILE || true
 echo ""
 echo "DONE"
 echo ""
