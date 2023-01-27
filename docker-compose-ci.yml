@@ -12,6 +12,7 @@ services:
     environment:
       VIRTUAL_HOST: feeder.prx.docker
       RAILS_ENV: test
+      POSTGRES_HOST: db
   db:
     image: postgres
     env_file:
