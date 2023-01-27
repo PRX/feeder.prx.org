@@ -50,7 +50,7 @@ time pg_dump --verbose -Fc -h 127.0.0.1 \
   -W -d $DUMP_REMOTE_POSTGRES_DATABASE -U $DUMP_REMOTE_POSTGRES_USER -f $OUTPUT_FILE
 echo "Wrote: $OUTPUT_FILE"
 
-rm $LINK_FILE
+rm $LINK_FILE || true
 ln -s $OUTPUT_FILE $LINK_FILE
 echo "Linked: $LINK_FILE"
 
