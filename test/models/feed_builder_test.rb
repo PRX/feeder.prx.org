@@ -32,6 +32,14 @@ describe FeedBuilder do
     _(rss[0, 38]).must_equal '<?xml version="1.0" encoding="UTF-8"?>'
   end
 
+  it "contains itunes block yes when podcast itunes_block true" do
+    builder = FeedBuilder.new(podcast)
+    refute_match(/itunes:block/, builder.to_feed_xml)
+
+    podcast.update_attribute(:itunes_block, true)
+    assert_match(/itunes:block>Yes/, builder.to_feed_xml)
+  end
+
   describe "payment pointer" do
     let(:rss) { builder.to_feed_xml }
     let(:rss_feed) { Nokogiri::XML(rss).css("channel") }
