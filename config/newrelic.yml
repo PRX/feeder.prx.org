@@ -13,7 +13,7 @@ common: &default_settings # Required license key associated with your New Relic 
 
   # Your application name. Renaming here affects where data displays in New
   # Relic.  For more details, see https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/renaming-applications
-  app_name: feeder.prx.org
+  app_name: <%= ENV['NEW_RELIC_NAME'] %>
 
   # To disable the agent regardless of other settings, uncomment the following:
   # agent_enabled: false
