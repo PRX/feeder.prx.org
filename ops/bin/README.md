@@ -7,8 +7,8 @@ FEEDER DATABASE DUMPING SCRIPTS
 Make sure to set up the `PGUSER` and `PGHOST` env vars in your dotenv
 
 ```
-REMOTE_USER=remote_postgres_username
-REMOTE_DATABASE=remote_database_name
+DUMP_REMOTE_POSTGRES_USER=remote_postgres_username
+DUMP_REMOTE_POSTGRES_DATABASE=remote_database_name
 ```
 
 If you export those variables you should be able to run `psql` with no options.

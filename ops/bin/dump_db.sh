@@ -31,7 +31,7 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . $DIR/_env.sh
 
-NAME="$REMOTE_DATABASE-$DIST_ENV-dump-`date "+%m%d%H%M%Y%S"`.out"
+NAME="$DUMP_REMOTE_POSTGRES_DATABASE-$DIST_ENV-dump-`date "+%m%d%H%M%Y%S"`.out"
 OUTPUT_FILE="$TMP_FOLDER/$NAME"
 
 echo ""
@@ -40,14 +40,14 @@ echo "Make sure you're running the 'awstunnel.sh' script connected to prod!"
 echo "Make sure you've added your PRX INC developer ssh keys: 'ssh-add <path-to-key>' "
 echo "********************************************************************************"
 echo ""
-echo "Dumping remote database $REMOTE_DATABASE with user $REMOTE_USER"
+echo "Dumping remote database $DUMP_REMOTE_POSTGRES_DATABASE with user $DUMP_REMOTE_POSTGRES_USER"
 
 echo "Feeder remote"
 time pg_dump --verbose -Fc -h 127.0.0.1 \
   -p $DB_DUMP_PORT \
   --exclude-table-data 'public.say_when_job_executions' \
   --exclude-table-data 'tasks' \
-  -W -d $REMOTE_DATABASE -U $REMOTE_USER -f $OUTPUT_FILE 
+  -W -d $DUMP_REMOTE_POSTGRES_DATABASE -U $DUMP_REMOTE_POSTGRES_USER -f $OUTPUT_FILE
 echo "Wrote: $OUTPUT_FILE"
 
 rm $LINK_FILE
