@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
-  resources :podcasts, only: [:show], defaults: {format: "rss"}
-  resources :feeds, only: [:index]
+  # TODO: remove after updated dovetail router
+  resources :feeds, only: [:index], to: 'api/feeds#index'
 
   # feeder frontend dev
   unless Rails.env.production?
@@ -18,6 +18,7 @@ Rails.application.routes.draw do
         resources :guids, only: :show, controller: :episodes, id: /[^\/]+/, defaults: {guid_resource: true}
       end
       resources :episodes, except: [:new, :edit]
+      resources :feeds, only: [:index]
 
       root to: "base#entrypoint"
       match "*any", via: [:options], to: "base#options"
