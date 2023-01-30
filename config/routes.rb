@@ -1,7 +1,9 @@
 Rails.application.routes.draw do
   # feeder frontend dev
   unless Rails.env.production?
-    resources :podcasts
+    resources :podcasts do
+      resource :engagement, only: [:show, :update], controller: :podcast_engagement
+    end
 
     resources :fake, only: [:index, :show, :create]
 
