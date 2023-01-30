@@ -45,7 +45,7 @@ ApplicationRun () {
     SetWorkerDatabasePoolSize
     CMD="bundle exec shoryuken --verbose --rails --config config/shoryuken.yml"
   elif [ "$PROCESS" = "console" ] ; then
-    CMD="bundle exec rails console"
+    CMD="bundle exec rails console -- --noautocomplete"
   elif [ "$PROCESS" = "test" ] ; then
     CMD="bundle exec rake db:setup test RAILS_ENV=test"
   elif [ "$PROCESS" = "guard" ] ; then
