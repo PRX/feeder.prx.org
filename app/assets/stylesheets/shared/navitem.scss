@@ -10,7 +10,7 @@ header {
     border-top: 3px solid transparent;
     padding: 10px 15px;
     color: $blue;
-    justify-self: start;
+    justify-self: flex-start;
 
     &.active {
       border-bottom: 3px solid $orange;
@@ -29,7 +29,7 @@ header {
     }
 
     @media (min-width: 576px) {
-      justify-self: end;
+      justify-self: flex-end;
     }
   }
 }
