@@ -1,0 +1,14 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Podcasts</h1>
+
+<div id="podcasts">
+  <% @podcasts.each do |podcast| %>
+    <%= render podcast %>
+    <p>
+      <%= link_to "Show this podcast", podcast %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New podcast", new_podcast_path %>

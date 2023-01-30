@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   # feeder frontend dev
   unless Rails.env.production?
+    resources :podcasts
+
     resources :fake, only: [:index, :show, :create]
 
     mount PrxAuth::Rails::Engine => "/auth", :as => "prx_auth_engine"
