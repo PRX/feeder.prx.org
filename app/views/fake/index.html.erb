@@ -92,9 +92,9 @@
   </div>
 
   <!-- Example for the podcasts list-->
-  <div class="row mt-4">
+  <div class="row mt-4 mb-4">
     <div class="col-lg-12">
-      <div class="dashboard-header d-flex align-items-center mb-4">
+      <div class="dashboard-header">
         <div class="col d-flex align-items-center">
           <h1 class="text-black fw-bold me-4 mb-0">My Podcasts</h1>
           <div class="btn-group">
@@ -152,4 +152,87 @@
     </div>
 
   </div>
+
+  <!-- Example of Episode cards -->
+  <div class="row my-4">
+    <div class="dashboard-header">
+      <div class="flex-grow-1 d-flex align-items-center">
+        <h1 class="text-black fw-bold me-4 mb-0">Episodes</h1>
+      </div>
+      <div class="filter-group">
+        <a href="#" class="btn btn-primary d-flex align-items-center">Create Episode <span class="material-icons ms-2" aria-hidden="true">mic</span></a>
+        <a href="#" class="btn btn-primary d-flex align-items-center">Plan Episodes <span class="material-icons ms-2" aria-hidden="true">calendar_today</span></a>
+        <div class="form-floating">
+          <select class="form-select" data-action="blur->blank-field#blur" disabled="disabled" name="episode[itunes_type]" id="episode_itunes_type"><option value="" label=" "></option>
+            <option selected="selected" value="full">Episode Name</option>
+            <option value="bonus">Episode Name</option>
+            <option value="invalid">Episode Name</option></select>
+          <label for="episode_itunes_type">Filter Episodes</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="fw-bold">Draft and Scheduled Episodes</h3>
+      <div class="card episode-card border-warning">
+        <div class="card-body">
+          <div class="episode-card-info">
+            <p class="episode-card-date">1/30</p>
+            <div>
+              <h2 class="episode-card-title">Episode Name</h2>
+              <p class="card-text text-small">Episode Description</p>
+              <div>
+                <span class="badge rounded-pill text-bg-light">Category</span>
+                <span class="badge rounded-pill text-bg-light">Category</span>
+              </div>
+              <%= link_to "Go to Podcast", fake_path(123), class: "stretched-link" %>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card episode-card border-success">
+        <div class="card-body">
+          <div class="episode-card-info">
+            <p class="episode-card-date">2/2</p>
+            <div>
+              <h2 class="episode-card-title">February 2nd, 2013</h2>
+              <%= link_to "Go to Podcast", fake_path(123), class: "stretched-link" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="fw-bold">Published Episodes</h3>
+      <div class="card episode-card border-primary">
+        <div class="card-body">
+          <div class="episode-card-info">
+            <p class="episode-card-date">12/12</p>
+            <div>
+              <h2 class="episode-card-title">Episode Name</h2>
+              <p class="card-text text-small">Episode Description</p>
+              <div>
+                <span class="badge rounded-pill text-bg-light">Category</span>
+                <span class="badge rounded-pill text-bg-light">Category</span>
+              </div>
+              <%= link_to "Go to Podcast", fake_path(123), class: "stretched-link" %>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card episode-card border-primary">
+        <div class="card-body">
+          <div class="episode-card-info">
+            <p class="episode-card-date">11/11</p>
+            <div>
+              <h2 class="episode-card-title">Episode Name that happens to be long enough to cause display issues</h2>
+              <p class="card-text text-small">This is the episode description, which is also very long.</p>
+              <%= link_to "Go to Podcast", fake_path(123), class: "stretched-link" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
 </div>
