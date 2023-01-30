@@ -1,38 +1,13 @@
 <nav class="prx-app-nav navbar bg-white d-flex flex-row flex-wrap justify-content-start m-0 p-0">
 
-    <!-- PODCAST SWITCHER -->
-    <div class="prx-podcast-switcher dropdown">
-      <button class=" btn btn-white dropdown-toggle d-flex .justify-content-start align-items-center" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-          <span class="material-icons size-30 me-2" aria-label="hidden">square</span>
-          <em class="flex-grow-1 text-start">Select a podcast</em>
-          <span class="material-icons justify-self-end ms-2" aria-label="hidden">expand_more</span>
-      </button>
-      <ul class="dropdown-menu p-2 shadow" aria-labelledby="dropdownMenuButton1">
-        <li class="search-filter mb-2">
-          <input type="text" class="form-control" id="podcastSearch" aria-describedby="podcastSearch" placeholder="Search Podcasts" autocomplete="off">
-        </li>
-        <!-- Show 5 podcast links OR Show all and include only 5 visible -->
-        <li><%= link_to "Fake Podcast", main_app.fake_path(123), class: "dropdown-item" %></li>
-        <li><a href="#" class="dropdown-item">Podcast Title</a></li>
-        <li><a href="#" class="dropdown-item">Podcast Title</a></li>
-        <li><a href="#" class="dropdown-item">Podcast Title</a></li>
-        <li><a href="#" class="dropdown-item">Podcast Title</a></li>
-        <!-- end -->
-        <li><hr class="dropdown-divider"></li>
-        <li><a href="#" class="dropdown-item">View all my Podcasts (12<!-- Show Total # of Podcasts -->) &gt;</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a href="#" class="dropdown-item">Create a New Podcast &gt;</a></li>
-        <li><hr class="dropdown-divider"></li>
-      </ul>
-    </div>
-    <!-- END PODCAST SWITCHER -->
+  <%= render "layouts/switcher" %>
 
-    <% if content_for :subnav %>
+  <% if @podcast %>
     <ul class="navbar-nav col d-flex flex-row flex-wrap m-0 p-0">
-      <li class="nav-item"><%= link_to "Subnav", main_app.fake_index_path, class: "nav-link" %></li>
-      <li class="nav-item"><%= link_to "Subnav 2", main_app.fake_index_path, class: "nav-link" %></li>
-      <li class="nav-item"><%= link_to "Subnav 3", main_app.fake_index_path, class: "nav-link" %></li>
-      <li class="nav-item"><%= link_to "Subnav 4", main_app.fake_index_path, class: "nav-link" %></li>
+      <li class="nav-item"><%= active_link_to "Podcast", main_app.podcast_path(@podcast), active: :exact, class: "nav-link" %></li>
+      <li class="nav-item"><%= active_link_to "Settings", main_app.edit_podcast_path(@podcast), class: "nav-link" %></li>
+      <li class="nav-item"><%= active_link_to "Episodes", main_app.fake_index_path, class: "nav-link" %></li>
+      <li class="nav-item"><%= active_link_to "Feeds", main_app.fake_index_path, class: "nav-link" %></li>
     </ul>
-    <% end %>
+  <% end %>
 </nav>
