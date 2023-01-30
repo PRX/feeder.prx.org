@@ -3,7 +3,14 @@ Rails.application.routes.draw do
   unless Rails.env.production?
     resources :podcasts do
       resource :engagement, only: [:show, :update], controller: :podcast_engagement
+      resource :player, only: :show, controller: :podcast_player
+      resources :imports
+      resource :planner, only: [:show, :update], controller: :podcast_planner
+      resources :feeds
+      resources :episodes, only: [:index]
     end
+
+    resources :episodes
 
     resources :fake, only: [:index, :show, :create]
 
