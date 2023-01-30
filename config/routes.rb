@@ -6,11 +6,12 @@ Rails.application.routes.draw do
       resource :player, only: :show, controller: :podcast_player
       resources :imports
       resource :planner, only: [:show, :update], controller: :podcast_planner
-      resources :feeds
+      resources :feeds, only: [:index]
       resources :episodes, only: [:index]
     end
 
     resources :episodes
+    resources :feeds
 
     resources :fake, only: [:index, :show, :create]
 
