@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @episode %>
+
+<div>
+  <%= link_to "Edit this episode", edit_episode_path(@episode) %> |
+  <%= link_to "Back to episodes", episodes_path %>
+
+  <%= button_to "Destroy this episode", @episode, method: :delete %>
+</div>

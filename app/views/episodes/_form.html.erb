@@ -1,0 +1,17 @@
+<%= form_with(model: episode) do |form| %>
+  <% if episode.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(episode.errors.count, "error") %> prohibited this episode from being saved:</h2>
+
+      <ul>
+        <% episode.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

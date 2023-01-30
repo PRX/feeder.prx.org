@@ -6,7 +6,7 @@
     <ul class="navbar-nav col d-flex flex-row flex-wrap m-0 p-0">
       <li class="nav-item"><%= active_link_to "Podcast", main_app.podcast_path(@podcast), active: :exact, class: "nav-link" %></li>
       <li class="nav-item"><%= active_link_to "Settings", main_app.edit_podcast_path(@podcast), class: "nav-link" %></li>
-      <li class="nav-item"><%= active_link_to "Episodes", main_app.fake_index_path, class: "nav-link" %></li>
+      <li class="nav-item"><%= active_link_to "Episodes", main_app.podcast_episodes_path(@podcast), class: "nav-link" %></li>
       <li class="nav-item"><%= active_link_to "Feeds", main_app.fake_index_path, class: "nav-link" %></li>
     </ul>
   <% end %>
