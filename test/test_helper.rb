@@ -96,3 +96,19 @@ class StubToken < PrxAuth::Rails::Token
     }))
   end
 end
+
+ActionDispatch::IntegrationTest.extend(FactoryBot::Syntax::Methods)
+
+class ActionDispatch::IntegrationTest
+  def self.setup_current_user(user = nil)
+    user ||= block_given? ? yield : FactoryBot.build(:user)
+
+    around do |test|
+      ApplicationController.stub_any_instance(:prx_auth_token, user) do
+        ApplicationController.stub_any_instance(:current_user_info, {}) do
+          test.call
+        end
+      end
+    end
+  end
+end
