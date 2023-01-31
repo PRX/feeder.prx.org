@@ -41,4 +41,8 @@ class ApplicationController < ActionController::Base
       super(jwt_ttl)
     end
   end
+
+  def skip_session
+    request.session_options[:drop] = true
+  end
 end

@@ -59,10 +59,6 @@ class Api::BaseController < ApplicationController
   def options
     head :no_content
   end
-
-  def skip_session
-    request.session_options[:drop] = true
-  end
 end
 
 class ResourceGone < HalApi::Errors::ApiError
