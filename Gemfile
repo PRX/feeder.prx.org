@@ -80,6 +80,7 @@ group :test do
   gem "factory_bot_rails"
   gem "minitest-around"
   gem "minitest-spec-rails"
+  gem "minitest-stub_any_instance"
   gem "rails-controller-testing"
   gem "selenium-webdriver"
   gem "simplecov", require: false

@@ -1,0 +1,17 @@
+<%= form_with(model: podcast_engagement) do |form| %>
+  <% if podcast_engagement.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(podcast_engagement.errors.count, "error") %> prohibited this podcast_engagement from being saved:</h2>
+
+      <ul>
+        <% podcast_engagement.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
