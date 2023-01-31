@@ -1,172 +1,189 @@
 # Feeder
 
+![GitHub branch checks state](https://img.shields.io/github/checks-status/PRX/feeder.prx.org/main)
 [![License](https://img.shields.io/badge/license-AGPL-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
-[![Build Status](https://travis-ci.org/PRX/feeder.prx.org.svg)](https://travis-ci.org/PRX/feeder.prx.org)
-[![Code Climate](https://codeclimate.com/github/PRX/feeder.prx.org/badges/gpa.svg)](https://codeclimate.com/github/PRX/feeder.prx.org)
-[![Coverage Status](https://coveralls.io/repos/PRX/feeder.prx.org/badge.svg)](https://coveralls.io/r/PRX/feeder.prx.org)
-[![Dependency Status](https://gemnasium.com/PRX/feeder.prx.org.svg)](https://gemnasium.com/PRX/feeder.prx.org)
+[![Lint](https://github.com/PRX/feeder.prx.org/actions/workflows/lint.yml/badge.svg)](https://github.com/PRX/feeder.prx.org/actions/workflows/lint.yml?query=branch%3Amain)
 
 ## Description
 
-This Rails app provides the Feeder service.
-It follows the [standards for PRX services](https://github.com/PRX/docs.prx.org/blob/master/team/Project-Standards.md#services).
+Rails app to manage PRX podcasts and generate RSS feeds.
 
-It generates RSS feeds based on stories and their podcast specific data.
-It can also generate RSS feeds based on existing (Media)RSS feeds.
-It provides an API for information about feed items.
+Includes both an HTML user interface and a [HAL API](https://en.wikipedia.org/wiki/Hypertext_Application_Language).
 
-## Integrations & Dependencies
+This repo follows the [standards for PRX services](https://github.com/PRX/docs.prx.org/blob/master/team/Project-Standards.md#services).
 
-- postgres - main database
-- cms.prx.org - get data about episodes
-- id.prx.org - get token for protected cms requests
-- Porter - send tasks to analyze and manipulate audio files
-- crier.prx.org - receive updates about podcasts and episodes
-- dovetail.prxu.org - calls feeder for info about episodes
+## Dependencies
+
+### Tech
+
+- Ruby - runs all the things!
+- PostgreSQL - main database
+- AWS S3 - writing RSS files
+- AWS SQS - async job queue
+- NodeJS - for linting
+
+### Integrations
+
+This app additionally relies on other PRX services:
+
+- [id.prx.org](https://id.prx.org) - authorize PRX users/accounts
+- [Porter](https://github.com/PRX/Porter) - send tasks to analyze and manipulate audio/image files
+- [dovetail.prxu.org](https://dovetail.prxu.org) - calls feeder for info about episodes/feeds
+- [Apple API Bridge Lambda](https://github.com/PRX/api-bridge-lambda/) - for publishing subscribable podcasts to Apple
 
 ## Installation
 
-These instructions are written assuming Mac OS X install.
+First off, clone the repo and get ruby/nodejs installed.
+Try [asdf](https://asdf-vm.com/), or use something completely different!
 
-### Basics
-
-```
-# Homebrew - http://brew.sh/
-ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
-
-# Git - http://git-scm.com/
-brew install git
-```
-
-### Docker Development
-
-You can now build and run the feeder application using docker.
-We're using Docker for deployment, so this is also a good way to make sure
-Development and production environments match as much as possible.
-
-#### Prerequisites
-
-[Install Dinghy and related projects](https://github.com/codekitchen/dinghy)
-Notes:
-
-- Using 'VirtualBox' is recommended.
-- Also be sure to install `docker-compose` along with the toolbox
-
-#### Install Feeder
-
-```
-# Get the code
+```sh
 git clone git@github.com:PRX/feeder.prx.org.git
 cd feeder.prx.org
 
-# Make .env, start with the example and edit to include AWS & other credentials
+# make your local git blame ignore giant linting commits
+git config --global blame.ignoreRevsFile .git-blame-ignore-revs
+
+# sane ENV defaults
 cp env-example .env
-vim .env
 
-# Build the `feeder` container, it will be used for `web` and `worker`
-docker-compose build
+# install tools
+asdf install
 
-# Start the postgres `db`
-docker-compose start db
-
-# ... and run migrations against it
-docker-compose run feeder migrate
-
-# Create SQS (and SNS) configuration
-docker-compose run feeder sqs
-
-# Test
-docker-compose run feeder test
-
-# Guard
-docker-compose run feeder guard
-
-# Run the web, worker, and db
-docker-compose up
-```
-
-### Local Rails/Ruby Development
-
-If docker is not your style, you can also run as a regular local Rails application.
-
-```
-# Pow to serve the app - http://pow.cx/
-curl get.pow.cx | sh
-
-brew update
-
-# rbenv and ruby-build - https://github.com/sstephenson/rbenv
-brew install rbenv ruby-build
-echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
-echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
-source ~/.bash_profile
-
-# ruby (.ruby-version default)
-rbenv install
-
-# bundler and powder gem - http://bundler.io/
-gem install bundler powder
-```
-
-### Rails Project
-
-Consider forking the repo if you plan to make changes, otherwise you can clone it:
-
-```
-# ssh repo syntax (or https `git clone https://github.com/PRX/feeder.prx.org.git feeder.prx.org`)
-git clone git@github.com:PRX/feeder.prx.org.git feeder.prx.org
-cd feeder.prx.org
-
-# bundle to install gems dependencies
+# rubygems
 bundle install
 
-# copy the env-example, change values if necessary
-cp env-example .env
-
-# create databases
-be rake db:create
-be rake db:create RAILS_ENV=test
-bundle exec rake db:migrate
-
-# run tests
-bundle exec rake
-
-# pow set-up
-powder link
-
-# see the development status page
-open http://feeder.prx.dev
+# node packages
+npm install
 ```
 
-## Build and Deploy Scripts
+You'll also want a postgres server running. Try [DBngin](https://dbngin.com/), or you know,
+do your own thing.
 
-The scripts will not create the entire deployment environment, but they will
-help in a few ways.
+### Configuration
 
-### Prerequisites
+The `env-example` file has some sane defaults, but you'll need to change a few values in your `.env`:
 
-You will need to copy and will out the deploy-example file:
+1. `POSTGRES_DATABASE` - leave as `feeder_development`, but ensure it already exists or your db user has create privileges (and run `bin/rails db:create`)
+2. `POSTGRES_PASSWORD` - set to your local db user's password
+3. `POSTGRES_USER` - set to your local db username
+4. `PRX_CLIENT_ID` - set to a valid PRX client_application for `localhost:3002` development, in whatever `ID_HOST` you're using
 
+There are a bunch of other ENVs you may want to set, depending on what you're developming.
+But these are the minumum.
+
+### Database Setup
+
+If you're cool with a blank database, just run the migrations!
+
+```sh
+bin/rails db:migrate
 ```
-cp deploy-example .deploy
-vi .deploy
+
+Otherwise, it can be helpful to have a staging or production database to get started. First
+off, make sure you have our [homebrew dev tools](https://github.com/PRX/homebrew-dev-tools) installed,
+and you can successfully connect to the stag/prod environments via `awstunnel`.
+
+Then, set `DUMP_REMOTE_POSTGRES_USER` and `DUMP_REMOTE_POSTGRES_DATABASE` in your `.env`, for the
+staging or prod database you're copying.
+
+```sh
+# start staging tunnel
+awstunnel stag
+
+# in another tab, dump the database
+ops/bin/dump_db.sh stag
+
+# restore it to a clone db
+ops/bin/setup_clone_db.sh
+
+# and copy the clone to feeder_development
+ops/bin/load_db.sh
+
+# and if you ever need a fresh db, run it again
+ops/bin/load_db.sh
 ```
 
-When building and deploying a new version, you'll need to increment the version.
+## Development
 
-You also need to install the AWS CLI and `jq`:
+Create a branch and/or fork the repo if you plan to make changes.
 
+Branch names should start with `feat/` `fix/` `chore/`, depending on the kind of changes you'll be making.
+
+```sh
+git checkout -b feat/this_is_my_new_feature
 ```
-pip install awscli
-brew install jq
+
+### Server
+
+Run the rails development server at [localhost:3002](http://localhost:3002):
+
+```sh
+bin/rails server
 ```
 
-## File Handling
+At [localhost:3002/fake](http://localhost:3002/fake), you'll find the HTML user
+interface for Feeder. In addition to standard Rails, it uses [Turbo](https://turbo.hotwired.dev/),
+[Stimulus](https://stimulus.hotwired.dev/), and [Bootstrap 5](https://getbootstrap.com/docs/5.0/getting-started/introduction/).
+Whenever possible, we'd appreciate it if you stuck to this toolset!
+
+When you land on an authenticated page, you will be redirected to `ID_HOST` for authorization.
+Once you are logged in, you will be redirected back to (hopefully) your local `/auth/sessions`.
+If this is not working, you should check your `PRX_CLIENT_ID` ClientApplication and your
+`AccountApplication`s in the ID admin interface.
+
+#### HAL API
+
+At [localhost:3002/api/v1](http://localhost:3002/api/v1), you'll find the HAL API root.
+You can navigate around the public API endpoints by following the links. This is currently
+built with the [hal_api-rails](https://github.com/PRX/hal_api-rails) gem, but we have plans
+to eventually switch to [halbuilder](https://github.com/PRX/halbuilder) (an extension of Jbuilder).
+
+For `/api/v1/authorization` endpoints, you will need to provide a [JWT](https://jwt.io/) provided by
+PRX ID.
+
+### Worker
+
+In addition to the server, Feeder runs a worker for processing async jobs. This largely uses
+the [Shoryuken](https://github.com/ruby-shoryuken/shoryuken) gem and AWS SQS.
+
+Some jobs run completely in Ruby, while others will call out to [Porter](https://github.com/PRX/Porter)
+or the [Apple API Bridge Lambda](https://github.com/PRX/api-bridge-lambda/) to complete their work.
+
+#### File Handling
 
 When an episode is created or updated, the image and audio files (either from `enclosure` or `media:content` tags) are also inserted as `podcast_image`, `episode_image`, and `media_resource` records.
 For each resource, a copy task is created to add the files to the s3 bucket for CDN serving.
 
 When an episode file has a new original url, that is considered a new file. When this happens, the old file is left in place, and a new resource inserted for the new original url. Once the new resource has processed (e.g. been copied), it is marked as complete, and the old resource is deleted.
+
+### Tests
+
+You should write/run the tests! With any PR, we expect some tests for your changes.
+
+```sh
+bin/rails test
+bin/rails test test/models/podcast_test.rb
+bin/rails test test/models/podcast_test.rb:9
+```
+
+### Linting
+
+This entire repo is linted using:
+
+- [standardrb](https://github.com/testdouble/standard) for ruby files
+- [erblint](https://github.com/Shopify/erb-lint) for `html.erb` files
+  - Note this _does not_ handle indentation at the moment, but you're encouraged to
+    use some other editor plugin to ensure your erb has the right indentation
+- [prettier](https://prettier.io/) for `js`, `scss`, and `md` files
+
+Your commits will be checked with these in Github, so you should lint your code before pushing.
+
+```sh
+bin/rails lint
+bin/rails lint:fix
+```
+
+TODO: editor integration. Because format-on-save is cool.
 
 ## License
 

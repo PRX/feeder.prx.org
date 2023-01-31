@@ -1,53 +1,55 @@
-LOCAL_ENV=true
+PORT=3002
 RAILS_ENV=development
 SECRET_KEY_BASE=rake-secret-here
 
 # local database
-POSTGRES_DATABASE=feeder
-POSTGRES_HOST=db
+DATABASE_POOL_SIZE=16
+POSTGRES_DATABASE=feeder_development
+POSTGRES_HOST=localhost
 POSTGRES_PASSWORD=password
-DATABASE_POOL_SIZE=10
 POSTGRES_PORT=5432
 POSTGRES_USER=feeder
 
-WORKER_DATABASE_POOL_SIZE=10
-WORKER_COUNT=10
-
-LANG=en_US.UTF-8
-NEW_RELIC_KEY=
+# async jobs
 PORTER_SNS_TOPIC=
+START_SAY_WHEN=
+WORKER_COUNT=
+WORKER_PAUSE=
 
+# AWS credentials
 AWS_ACCESS_KEY_ID=
 AWS_ACCOUNT_ID=
 AWS_REGION=
 AWS_SECRET_ACCESS_KEY=
 
+# monitoring
+NEW_RELIC_KEY=
+NEW_RELIC_NAME=
+
+# authentication
 PRX_CLIENT_ID=
-PRX_HOST=beta.prx.org
 PRX_SECRET=
 
+# prx hosts
 CMS_HOST=cms-staging.prx.tech
-CRIER_HOST=crier-staging.prx.tech
-DATABASE_POOL_SIZE=16
 DOVETAIL_HOST=dovetail-staging.prxu.org
+FEEDER_HOST=feeder.staging.prx.tech
 FEEDER_CDN_HOST=f-staging.prxu.org
 FEEDER_CDN_PRIVATE_HOST=p.staging.prxu.org
-# defaults to feeder.prx.org
-FEEDER_HOST=feeder.prx.docker
-# defaults to "PRX Feeder v#{Feeder::VERSION}"
-# FEEDER_GENERATOR=
-# defaults to 300
-# FEEDER_RELEASE_CHECK_DELAY=
-# defaults to prx-feed in production, otherwise {env}-prx-feed
-# FEEDER_STORAGE_BUCKET=
-# defaults to 'help@prx.org (PRX)'
-# FEEDER_WEB_MASTER=
-FEEDS_TOKEN=
 ID_HOST=id-staging.prx.tech
+PRX_HOST=beta.staging.prx.tech
 
+# RSS settings
+# FEEDER_GENERATOR=
+# FEEDER_RELEASE_CHECK_DELAY=
+# FEEDER_STORAGE_BUCKET=
+# FEEDER_WEB_MASTER=
+
+# auth token access for dovetail-router
+FEEDS_TOKEN=
+
+# apple API
 APPLE_PROVIDER_ID=
 APPLE_KEY_ID=
 APPLE_KEY_PEM_B64=
 APPLE_API_BRIDGE_URL=
-
-RAILS_SERVE_STATIC_FILES=enabled

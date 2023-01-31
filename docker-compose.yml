@@ -16,7 +16,6 @@ services:
     command: web
     environment:
       VIRTUAL_HOST: feeder.prx.docker
-      LOCAL_ENV: "true"
     networks:
       - feeder-net
   worker:
