@@ -2,6 +2,8 @@ class Api::FeedsController < ApplicationController
   skip_before_action :authenticate!
   before_action :authenticate_feeds_token!
 
+  before_action :skip_session
+
   def index
     max_updated_at = Feed.maximum(:updated_at)
 

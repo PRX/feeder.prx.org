@@ -10,6 +10,8 @@ class Api::BaseController < ApplicationController
   # default to public API (unless including ApiAuthenticated)
   skip_before_action :authenticate!
 
+  before_action :skip_session
+
   def self.responder
     Api::ApiResponder
   end
