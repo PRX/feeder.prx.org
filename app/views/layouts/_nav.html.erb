@@ -7,15 +7,15 @@
         <%= link_to t(".feeder"), main_app.podcasts_path, class: "nav-link active" %>
       </li>
 
-      <% if current_user_app?("augury") %>
-        <li class="nav-item">
-          <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
-        </li>
-      <% end %>
-
       <% if current_user_app?("metrics") %>
         <li class="nav-item">
           <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
+        </li>
+      <% end %>
+
+      <% if current_user_app?("augury") %>
+        <li class="nav-item">
+          <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
         </li>
       <% end %>
 
@@ -42,17 +42,16 @@
               <span class="material-icons align-middle" aria-label="<%= t(".account") %>">account_circle</span>
             <% end %>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="nav-user-dropdown">
-            <li class="dropdown-username text-center"><%= current_user_name %></li>
-            <li class="text-center">
+          <ul class="dropdown-menu dropdown-menu-end shadow pb-2" aria-labelledby="nav-user-dropdown">
+            <li class="dropdown-username"><%= current_user_name %></li>
+            <li class="text-center mb-2">
               <%= link_to t(".id"), current_user_id_profile, class: "dropdown-button btn btn-info" %>
             </li>
             <li class="text-center">
-              <%= link_to "Reload", main_app.refresh_path, data: {turbo: false}, class: "dropdown-link" %>
+              <%= link_to "Reload", main_app.refresh_path, data: {turbo: false}, class: "dropdown-item dropdown-item-account dropdown-link" %>
             </li>
             <li class="text-center">
-              <%= link_to "Logout", main_app.logout_path, data: {turbo: false}, class: "dropdown-link" %>
-            </li>
+              <%= link_to "Logout", main_app.logout_path, data: {turbo: false}, class: "dropdown-item dropdown-item-account  dropdown-link" %>
             </li>
           </ul>
         </li>
