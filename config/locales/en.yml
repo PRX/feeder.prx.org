@@ -30,6 +30,20 @@
 # available at https://guides.rubyonrails.org/i18n.html.
 
 en:
+  layouts:
+    nav:
+      account: PRX Account
+      attribution: Attribution
+      augury: Inventory
+      dovetail: Dovetail
+      feeder: Podcasts
+      help: Help Docs
+      home: PRX
+      id: Manage Account
+      metrics: Metrics
+      privacy: Privacy
+      status: Status
+      terms: Terms
   pundit:
     title: "Not Authorized"
     podcast_policy:
