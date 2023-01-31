@@ -11,6 +11,7 @@ POSTGRES_PORT=5432
 POSTGRES_USER=feeder
 
 # async jobs
+ANNOUNCE_RESOURCE_PREFIX=
 PORTER_SNS_TOPIC=
 START_SAY_WHEN=
 WORKER_COUNT=
@@ -31,12 +32,12 @@ PRX_CLIENT_ID=
 PRX_SECRET=
 
 # prx hosts
-CMS_HOST=cms-staging.prx.tech
-DOVETAIL_HOST=dovetail-staging.prxu.org
+CMS_HOST=cms.staging.prx.tech
+DOVETAIL_HOST=dovetail.staging.prxu.org
 FEEDER_HOST=feeder.staging.prx.tech
 FEEDER_CDN_HOST=f-staging.prxu.org
 FEEDER_CDN_PRIVATE_HOST=p.staging.prxu.org
-ID_HOST=id-staging.prx.tech
+ID_HOST=id.staging.prx.tech
 PRX_HOST=beta.staging.prx.tech
 
 # RSS settings
