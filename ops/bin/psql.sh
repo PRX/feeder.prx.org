@@ -8,4 +8,4 @@ export PGPASSWORD=$POSTGRES_PASSWORD
 export PGUSER=$POSTGRES_USER
 export PGHOST=$POSTGRES_HOST
 
-psql
+psql feeder_development
