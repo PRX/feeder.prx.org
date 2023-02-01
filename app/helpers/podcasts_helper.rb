@@ -29,4 +29,11 @@ module PodcastsHelper
       sanitize_links_only(model.description || "")
     end
   end
+
+  def podcast_settings_active?
+    parts = request.path.split("/").select(&:present?)
+
+    # don't include podcast#show, or any episodes/feeds paths
+    parts[0] == "podcasts" && parts[2] && parts[2] != "episodes" && parts[2] != "feeds"
+  end
 end
