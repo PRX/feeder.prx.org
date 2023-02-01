@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :feed_image do
-    url { "test/fixtures/valid_feed_image.png" }
+    url { "http://some.where/test/fixtures/valid_feed_image.png" }
     original_url { "test/fixtures/valid_feed_image.png" }
     alt_text { "valid feed image" }
     caption { "just look at those things" }
