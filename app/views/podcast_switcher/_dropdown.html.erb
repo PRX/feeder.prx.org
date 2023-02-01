@@ -2,10 +2,8 @@
 
   <button class="btn btn-white dropdown-toggle" type="button" id="podcast-switcher" data-bs-toggle="dropdown" aria-expanded="false" data-action="focus#focus">
     <% if @podcast %>
-      <% if @podcast.feed_image %>
-        <img src="<%= @podcast.feed_image.url %>" width=30/>
-      <% elsif @podcast.itunes_image %>
-        <img src="<%= @podcast.itunes_image.url %>" width=30/>
+      <% if img = (@podcast.feed_image || @podcast.itunes_image) %>
+        <%= image_tag(img.url, size: 30, alt: img.alt_text, class: "me-2") %>
       <% else %>
         <span class="material-icons size-30 me-2" aria-label="hidden">square</span>
       <% end %>
