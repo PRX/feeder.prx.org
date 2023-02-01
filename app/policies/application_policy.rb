@@ -32,4 +32,17 @@ class ApplicationPolicy < Struct.new(:token, :resource)
   def account_id_was
     nil
   end
+
+  class Scope
+    attr_reader :token, :scope
+
+    def initialize(token, scope)
+      @token = token
+      @scope = scope
+    end
+
+    def resolve
+      scope.none
+    end
+  end
 end

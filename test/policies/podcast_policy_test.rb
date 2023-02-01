@@ -8,6 +8,17 @@ describe PodcastPolicy do
     StubToken.new(set_account_id, scopes)
   end
 
+  describe "#new?" do
+    it "returns false if token is not present" do
+      refute PodcastPolicy.new(nil, podcast).new?
+    end
+
+    it "returns true if you have any podcast create scopes" do
+      refute PodcastPolicy.new(token("feeder:podcast-edit"), podcast).new?
+      assert PodcastPolicy.new(token("feeder:podcast-create"), podcast).new?
+    end
+  end
+
   describe "#update?" do
     it "returns false if token is not present" do
       refute PodcastPolicy.new(nil, podcast).update?
@@ -66,6 +77,23 @@ describe PodcastPolicy do
 
     it "returns false if token lacks destroy scope" do
       refute PodcastPolicy.new(token("feeder:podcast-create feeder:podcast-edit"), podcast).destroy?
+    end
+  end
+
+  describe "Scope" do
+    let(:p1) { create(:podcast, prx_account_uri: "/api/v1/accounts/123") }
+    let(:p2) { create(:podcast, prx_account_uri: "/api/v1/accounts/456") }
+    let(:query) { Podcast.where(id: [p1.id, p2.id]) }
+
+    it "scopes queries" do
+      podcasts = PodcastPolicy::Scope.new(token("feeder:read-private", 123), query).resolve
+      assert_equal [p1], podcasts
+
+      podcasts = PodcastPolicy::Scope.new(token("feeder:read-private", 456), query).resolve
+      assert_equal [p2], podcasts
+
+      podcasts = PodcastPolicy::Scope.new(token("feeder:nothing", 123), query).resolve
+      assert_equal [], podcasts
     end
   end
 end
