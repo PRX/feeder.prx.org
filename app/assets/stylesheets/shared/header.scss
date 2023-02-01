@@ -121,6 +121,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    gap: map-get($spacers, 2);
 
     &:after {
       display: none;
@@ -144,6 +145,13 @@
     &:hover {
       text-decoration: underline;
     }
+  }
+}
+
+.prx-podcast-switcher-indicator {
+  transition: transform 150ms ease-in-out;
+  .show & {
+    transform: rotate(180deg);
   }
 }
 
