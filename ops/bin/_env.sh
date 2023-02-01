@@ -9,4 +9,6 @@ set -a
 source $DOTENV_PATH
 set +a
 
-
+export PGPASSWORD=$POSTGRES_PASSWORD
+export PGUSER=$POSTGRES_USER
+export PGHOST=$POSTGRES_HOST
