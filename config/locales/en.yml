@@ -30,6 +30,20 @@
 # available at https://guides.rubyonrails.org/i18n.html.
 
 en:
+  layouts:
+    nav:
+      account: PRX Account
+      attribution: Attribution
+      augury: Inventory
+      dovetail: Dovetail
+      feeder: Podcasts
+      help: Help Docs
+      home: PRX
+      id: Manage Account
+      metrics: Metrics
+      privacy: Privacy
+      status: Status
+      terms: Terms
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
@@ -38,6 +52,6 @@ en:
       search: Search Podcasts
       select: Select a podcast
   pundit:
-    title: "Not Authorized"
+    title: Not Authorized
     podcast_policy:
-      create?: "You are not authorized to create a podcast"
+      create?: You are not authorized to create a podcast

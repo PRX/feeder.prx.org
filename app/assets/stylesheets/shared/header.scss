@@ -57,19 +57,13 @@
       }
     }
 
-    .dropdown-divider {
-      color: $cyan;
-    }
-
-    .dropdown-header {
-      font-size: 16px;
-      color: $orange;
-    }
-
     .dropdown-username {
       font-size: 24px;
       color: $white;
-      padding: 0.5em 0;
+      padding: 0.5rem 1.5rem;
+      min-width: 240px;
+      font-weight: normal;
+      text-align: center;
     }
 
     .btn-info {
@@ -77,6 +71,7 @@
       font-weight: bold;
       border-radius: 0;
       padding: 0.25em 1.25em;
+      white-space: nowrap;
     }
 
     .dropdown-link {
