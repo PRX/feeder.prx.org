@@ -1,4 +1,6 @@
 class PodcastSwitcherController < ApplicationController
+  layout false
+
   # GET /podcast_switcher
   # lazy initial loading of podcast switcher
   def show
