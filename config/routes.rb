@@ -12,6 +12,7 @@ Rails.application.routes.draw do
 
     resources :episodes
     resources :feeds
+    resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
 
     resources :fake, only: [:index, :show, :create]
 

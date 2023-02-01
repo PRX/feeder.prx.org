@@ -30,6 +30,13 @@
 # available at https://guides.rubyonrails.org/i18n.html.
 
 en:
+  podcast_switcher:
+    dropdown:
+      all: View all my Podcasts
+      create: Create a New Podcast
+      empty: NOPE no results
+      search: Search Podcasts
+      select: Select a podcast
   pundit:
     title: "Not Authorized"
     podcast_policy:
