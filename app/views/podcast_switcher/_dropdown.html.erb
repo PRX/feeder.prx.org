@@ -21,7 +21,7 @@
   <ul class="dropdown-menu p-2 shadow" aria-labelledby="podcast-switcher">
     <%# turbo-stream search form %>
     <li class="search-filter mb-2">
-      <%= form_with(url: main_app.podcast_switcher_path, data: {controller: "search"}) do |f| %>
+      <%= form_with(url: main_app.podcast_switcher_path, html: {autocomplete: "off"}, data: {controller: "search"}) do |f| %>
         <div class="form-floating">
           <%= f.search_text_field :q, {}, data: {focus_target: "field"} %>
           <%= f.label :q, t(".search") %>
