@@ -6,7 +6,7 @@ describe Api::PodcastRepresenter do
   let(:json) { JSON.parse(representer.to_json) }
 
   it "includes basic properties" do
-    assert_equal json["path"], "jjgo"
+    assert_equal json["path"], podcast.path
     assert_match(/\/api\/v1\/series\//, json["prxUri"])
   end
 

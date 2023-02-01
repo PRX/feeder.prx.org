@@ -1,7 +1,7 @@
 require "test_helper"
 
 describe MediaResource do
-  let(:episode) { create(:episode) }
+  let(:episode) { media_resource.episode }
   let(:media_resource) { create(:media_resource, task_count: 0) }
 
   it "initializes attributes" do
@@ -41,6 +41,6 @@ describe MediaResource do
   end
 
   it "provides audio url based on guid" do
-    assert_match(/https:\/\/f.prxu.org\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/, media_resource.media_url)
+    assert_match(/https:\/\/f.prxu.org\/#{episode.podcast.path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/, media_resource.media_url)
   end
 end

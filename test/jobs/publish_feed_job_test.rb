@@ -15,8 +15,8 @@ describe PublishFeedJob do
   end
 
   it "knows the right key to write to" do
-    assert_equal job.key(podcast, podcast.default_feed), "jjgo/feed-rss.xml"
-    assert_equal job.key(podcast, feed), "jjgo/adfree/feed-rss.xml"
+    assert_equal job.key(podcast, podcast.default_feed), "#{podcast.path}/feed-rss.xml"
+    assert_equal job.key(podcast, feed), "#{podcast.path}/adfree/feed-rss.xml"
   end
 
   describe "saving the rss file" do

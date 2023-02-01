@@ -15,11 +15,11 @@ describe EpisodeImage do
     let(:episode) { image.episode }
 
     it "has a path" do
-      assert_equal image.destination_path, "jjgo/#{image.episode.guid}/images/#{image.guid}/image.png"
+      assert_equal image.destination_path, "#{episode.podcast.path}/#{image.episode.guid}/images/#{image.guid}/image.png"
     end
 
     it "has a published url" do
-      assert_equal image.published_url, "https://f.prxu.org/jjgo/#{image.episode.guid}/images/#{image.guid}/image.png"
+      assert_equal image.published_url, "https://f.prxu.org/#{episode.podcast.path}/#{image.episode.guid}/images/#{image.guid}/image.png"
     end
 
     it "has a path for episode images" do

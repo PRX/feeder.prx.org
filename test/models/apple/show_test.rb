@@ -101,7 +101,7 @@ describe Apple::Show do
 
     it "returns an authed url if private" do
       assert_equal apple_show.feed_published_url,
-        "https://p.prxu.org/jjgo/#{public_feed.slug}/feed-rss.xml?auth=" + public_feed.tokens.first.token
+        "https://p.prxu.org/#{public_feed.podcast.path}/#{public_feed.slug}/feed-rss.xml?auth=" + public_feed.tokens.first.token
     end
 
     it "raises an error when there is no token" do
