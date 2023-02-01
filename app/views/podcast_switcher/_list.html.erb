@@ -4,8 +4,8 @@
       <li><%= link_to p.title, podcast_path(p), class: "dropdown-item", data: {turbo: false} %></li>
     <% end %>
   <% else %>
-    <li class="d-flex justify-content-center">
-      <h1><%= t("podcast_switcher.dropdown.empty") %></h1>
+    <li class="text-center text-secondary">
+      <%= t("podcast_switcher.dropdown.empty") %>
     </li>
   <% end %>
 

@@ -34,7 +34,7 @@ en:
     dropdown:
       all: View all my Podcasts
       create: Create a New Podcast
-      empty: NOPE no results
+      empty: No results found
       search: Search Podcasts
       select: Select a podcast
   pundit:
