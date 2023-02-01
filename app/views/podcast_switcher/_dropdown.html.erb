@@ -5,12 +5,12 @@
       <% if img = (@podcast.feed_image || @podcast.itunes_image) %>
         <%= image_tag(img.url, size: 30, alt: img.alt_text, class: "me-2") %>
       <% else %>
-        <span class="material-icons size-30 me-2" aria-label="hidden">square</span>
+        <span class="img-placeholder me-2" aria-label="hidden"></span>
       <% end %>
       <em class="flex-grow-1 text-start"><%= @podcast.title %></em>
       <span class="material-icons justify-self-end ms-2" aria-label="hidden">expand_more</span>
     <% else %>
-      <span class="material-icons size-30 me-2" aria-label="hidden">square</span>
+      <span class="img-placeholder me-2" aria-label="hidden"></span>
       <em class="flex-grow-1 text-start"><%= t(".select") %></em>
       <span class="material-icons justify-self-end ms-2" aria-label="hidden">expand_more</span>
     <% end %>
