@@ -2,13 +2,18 @@
 
 <h1>Podcasts</h1>
 
-<div id="podcasts">
-  <% @podcasts.each do |podcast| %>
-    <%= render podcast %>
-    <p>
-      <%= link_to "Show this podcast", podcast %>
-    </p>
-  <% end %>
+<h2>Doing our best</h2>
+
+<div class="col-lg-12 card podcast-card">
+  <div class="card shadow">
+    <h5 class="card-body">Title</h5>
+    <p>Believe in the heart of the cards</p>
+
+    <div class="podcast-card-status">
+    <h5>Latest Activity</h5>
+    <span>Date</span>
+  </div>
+  </div>
 </div>
 
 <%= link_to "New podcast", new_podcast_path %>
