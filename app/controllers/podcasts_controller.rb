@@ -12,11 +12,12 @@ class PodcastsController < ApplicationController
 
   # GET /podcasts/new
   def new
-    @podcast = Podcast.new
+    @podcast = Podcast.new(podcast_params)
   end
 
   # GET /podcasts/1/edit
   def edit
+    authorize @podcast, :show?
   end
 
   # POST /podcasts
@@ -54,13 +55,11 @@ class PodcastsController < ApplicationController
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
   def set_podcast
     @podcast = Podcast.find(params[:id])
   end
 
-  # Only allow a list of trusted parameters through.
   def podcast_params
-    params.fetch(:podcast, {})
+    params.fetch(:podcast, {}).permit(:title, :itunes_category)
   end
 end
