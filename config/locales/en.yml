@@ -55,8 +55,10 @@ en:
       terms: Terms
   podcasts:
     create:
+      error: Unable to create
       notice: Podcast created
     destroy:
+      error: Cannot delete a podcast with published episodes
       notice: Podcast deleted
     form_feed_image:
       title: Thumbnail Image
@@ -69,6 +71,7 @@ en:
       update: Save
       updated_at_hint: Last Saved
     update:
+      error: Unable to save
       notice: Podcast updated
   podcast_switcher:
     dropdown:

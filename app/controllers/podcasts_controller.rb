@@ -30,6 +30,7 @@ class PodcastsController < ApplicationController
       if @podcast.save
         format.html { redirect_to podcast_url(@podcast), notice: t(".notice") }
       else
+        flash.now[:error] = t(".error")
         format.html { render :new, status: :unprocessable_entity }
       end
     end
@@ -53,10 +54,16 @@ class PodcastsController < ApplicationController
   # DELETE /podcasts/1
   def destroy
     authorize @podcast
-    @podcast.destroy
 
     respond_to do |format|
-      format.html { redirect_to podcasts_url, notice: t(".notice") }
+      # TODO: better/real validation?
+      if @podcast.episodes.published_by(10.years).any?
+        flash.now[:error] = t(".error")
+        format.html { render :edit, status: :unprocessable_entity }
+      else
+        @podcast.destroy
+        format.html { redirect_to podcasts_url, notice: t(".notice") }
+      end
     end
   end
 
