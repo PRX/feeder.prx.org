@@ -17,9 +17,9 @@ class Podcast < ApplicationRecord
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
 
-  validates :title, presence: true, length: {minimum: 3}
-  validates :subtitle, presence: true, length: {minimum: 3}
-  validates :link, presence: true, http_url: true
+  validates :title, presence: true
+  validates :subtitle, presence: true
+  validates :link, http_url: true
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
 
