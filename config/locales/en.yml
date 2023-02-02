@@ -62,8 +62,30 @@ en:
       notice: Podcast deleted
     form_feed_image:
       title: Thumbnail Image
+      help: Optionally provide an alternate image to use for smaller display purposes. If not provided, a rescaled thumbnail of the profile image will be used.
+    form_main:
+      help:
+        author_email: Set the author email for this podcast.
+        author_name: Set the author name for this podcast.
+        complete: Checking the box indicates that the podcast is complete and you will not post any more episodes in the future.
+        copyright: Copyright notice for content in the podcast.
+        description: A full description of this podcast.
+        explicit: In accordance with [the requirements for iTunes podcast content](https://help.apple.com/itc/podcasts_connect/#/itc1723472cb), do any of your podcast episodes contain explicit material?
+        itunes_category: Select the [iTunes category and subcategory](https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12), if applicable, that best describe this podcast.
+        language: Select which language your podcast is in.
+        link: A link to the homepage for your podcast.
+        managing_editor_email: Set the managing editor name for this podcast.
+        managing_editor_name: Set the managing editor email for this podcast.
+        owner_email: Set the iTunes owner email for this podcast.
+        owner_name: Set the iTunes owner name for this podcast.
+        prx_account_uri: Who is the owner of this podcast?
+        serial_order: Select how your episodes should be ordered. *Episodic*- when you want your episodes to be presented and recommended last-to-first; this is the default and most common order for podcasts. *Serial* - when you want your episodes presented and recommended first-to-last).
+        subtitle: A short description of this podcast.
+        summary: Unless otherwise specified, the summary is created from the description of your podcast as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
+        title: What's the name of this podcast?
     form_itunes_image:
       title: Profile Image
+      help: This image will be used as the cover image for this series. Image dimensions must be square.
     form_status:
       create: Create
       new_hint: Unsaved
