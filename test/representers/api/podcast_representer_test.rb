@@ -29,7 +29,7 @@ describe Api::PodcastRepresenter do
   end
 
   it "includes itunes image" do
-    assert_equal json["itunesImage"]["url"], "test/fixtures/valid_series_image.jpg"
+    assert_equal json["itunesImage"]["url"], "http://some.where/test/fixtures/valid_series_image.jpg"
   end
 
   it "includes feed image" do

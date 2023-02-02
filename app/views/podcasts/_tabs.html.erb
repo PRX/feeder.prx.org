@@ -1,10 +1,9 @@
 <% content_for :tabs do %>
   <div class="list-group d-flex col">
-    <%= tab_link_to "Metadata", edit_podcast_path(@podcast) %>
+    <%= tab_link_to "Metadata", edit_podcast_path(@podcast), active: podcast_metadata_active? %>
     <%= tab_link_to "Engagement Settings", podcast_engagement_path(@podcast) %>
     <%= tab_link_to "Embeddable Player", podcast_player_path(@podcast) %>
     <%= tab_link_to "Import", podcast_imports_path(@podcast) %>
     <%= tab_link_to "Plan Episodes", podcast_planner_path(@podcast) %>
   </div>
-  <a class="btn btn-secondary-link align-self-center flex-shrink-1" href="#">New Something Button</a>
 <% end %>

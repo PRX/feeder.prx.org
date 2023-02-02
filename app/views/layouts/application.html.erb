@@ -14,7 +14,7 @@
   <body data-controller="blank-field">
     <header>
       <%= render "layouts/nav" %>
-      <%= render "layouts/subnav" %>
+      <%= render "layouts/subnav" if current_user %>
     </header>
 
     <%= render "layouts/alerts" %>

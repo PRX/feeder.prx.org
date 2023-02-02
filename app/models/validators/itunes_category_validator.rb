@@ -22,6 +22,8 @@ class ITunesCategoryValidator < ActiveModel::Validator
   }.freeze
 
   def validate(record)
+    return unless record.name.present?
+
     if category?(record.name)
       validate_subcategories(record)
     else
