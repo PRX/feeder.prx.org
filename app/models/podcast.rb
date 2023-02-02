@@ -59,9 +59,9 @@ class Podcast < ApplicationRecord
 
   def itunes_category=(value)
     if itunes_categories.first
-      if itunes_category.first.name != value
-        itunes_category.first.name = value
-        itunes_category.first.subcategories = []
+      if itunes_categories.first.name != value
+        itunes_categories.first.name = value
+        itunes_categories.first.subcategories = []
       end
     else
       itunes_categories.build(name: value)

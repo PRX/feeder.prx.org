@@ -8,6 +8,7 @@ class PodcastsController < ApplicationController
 
   # GET /podcasts/1
   def show
+    authorize @podcast
   end
 
   # GET /podcasts/new
@@ -23,10 +24,11 @@ class PodcastsController < ApplicationController
   # POST /podcasts
   def create
     @podcast = Podcast.new(podcast_params)
+    authorize @podcast
 
     respond_to do |format|
       if @podcast.save
-        format.html { redirect_to podcast_url(@podcast), notice: "Podcast was successfully created." }
+        format.html { redirect_to podcast_url(@podcast), notice: t(".notice") }
       else
         format.html { render :new, status: :unprocessable_entity }
       end
@@ -35,9 +37,12 @@ class PodcastsController < ApplicationController
 
   # PATCH/PUT /podcasts/1
   def update
+    @podcast.assign_attributes(podcast_params)
+    authorize @podcast
+
     respond_to do |format|
-      if @podcast.update(podcast_params)
-        format.html { redirect_to podcast_url(@podcast), notice: "Podcast was successfully updated." }
+      if @podcast.save
+        format.html { redirect_to edit_podcast_url(@podcast), notice: t(".notice") }
       else
         format.html { render :edit, status: :unprocessable_entity }
       end
@@ -46,10 +51,11 @@ class PodcastsController < ApplicationController
 
   # DELETE /podcasts/1
   def destroy
+    authorize @podcast
     @podcast.destroy
 
     respond_to do |format|
-      format.html { redirect_to podcasts_url, notice: "Podcast was successfully destroyed." }
+      format.html { redirect_to podcasts_url, notice: t(".notice") }
     end
   end
 

@@ -53,6 +53,23 @@ en:
       privacy: Privacy
       status: Status
       terms: Terms
+  podcasts:
+    create:
+      notice: Podcast created
+    destroy:
+      notice: Podcast deleted
+    form_feed_image:
+      title: Thumbnail Image
+    form_itunes_image:
+      title: Profile Image
+    form_status:
+      create: Create
+      new_hint: Unsaved
+      title: Status
+      update: Save
+      updated_at_hint: Last Saved
+    update:
+      notice: Podcast updated
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
