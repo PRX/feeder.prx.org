@@ -3,7 +3,7 @@ FactoryBot.define do
     sequence(:prx_uri) { |n| "/api/v1/series/#{n}" }
     sequence(:prx_account_uri) { |n| "/api/v1/accounts/#{n}" }
     sequence(:published_at) { |n| Date.today - n.days }
-    path { "jjgo" }
+    sequence(:path) { |n| "jjgo#{n}" }
     link { "http://www.maximumfun.org/jjgo" }
     title { "Jordan, Jesse GO!" }
     copyright { "Copyright © 2014 Jordan, Jesse GO!. All rights reserved." }

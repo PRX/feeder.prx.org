@@ -1,0 +1,21 @@
+<%= turbo_frame_tag "podcast-switcher-list" do %>
+  <% if @podcast_switcher_podcasts.present? %>
+    <% @podcast_switcher_podcasts.each do |p| %>
+      <li><%= link_to p.title, podcast_path(p), class: "dropdown-item", data: {turbo: false} %></li>
+    <% end %>
+  <% else %>
+    <li class="text-center text-secondary">
+      <%= t("podcast_switcher.dropdown.empty") %>
+    </li>
+  <% end %>
+
+  <li><hr class="dropdown-divider"></li>
+
+  <li>
+    <%= link_to main_app.podcasts_path, class: "dropdown-item", data: {turbo: false} do %>
+      <%= t("podcast_switcher.dropdown.all") %> (<%= @podcast_switcher_count %>) &gt;
+    <% end %>
+  </li>
+
+  <li><hr class="dropdown-divider"></li>
+<% end %>

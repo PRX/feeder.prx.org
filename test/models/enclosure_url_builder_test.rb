@@ -39,7 +39,7 @@ describe EnclosureUrlBuilder do
     _(expansions[:original_path]).must_equal "/test/audio.mp3"
     _(expansions[:scheme]).must_equal "https"
     _(expansions[:host]).must_equal "f.prxu.org"
-    _(expansions[:path]).must_match(/\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/)
+    _(expansions[:path]).must_match(/\/#{podcast.path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/)
   end
 
   it "can make an enclosure url for a podcast and episode with template" do
@@ -63,7 +63,7 @@ describe EnclosureUrlBuilder do
     podcast.enclosure_prefix = nil
     podcast.enclosure_template = "http://foo.com/r{extension}/b/n/{host}{+path}"
     url = builder.podcast_episode_url(podcast, episode)
-    _(url).must_match(/http:\/\/foo\.com\/r\.mp3\/b\/n\/f\.prxu\.org\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+)\.mp3/)
+    _(url).must_match(/http:\/\/foo\.com\/r\.mp3\/b\/n\/f\.prxu\.org\/#{podcast.path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+)\.mp3/)
   end
 
   it "can make an enclosure url for a specific feed" do

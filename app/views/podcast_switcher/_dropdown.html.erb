@@ -1,0 +1,60 @@
+<div class="prx-podcast-switcher | dropdown" data-controller="focus">
+
+  <button class="btn btn-white dropdown-toggle" type="button" id="podcast-switcher" data-bs-toggle="dropdown" aria-expanded="false" data-action="focus#focus">
+    <% if @podcast %>
+      <% if img = (@podcast.feed_image || @podcast.itunes_image) %>
+        <%= image_tag(img.url, size: 30, alt: img.alt_text) %>
+      <% else %>
+        <span class="img-placeholder" aria-label="hidden"></span>
+      <% end %>
+      <em class="flex-grow-1 text-start"><%= @podcast.title %></em>
+    <% else %>
+      <span class="img-placeholder" aria-label="hidden"></span>
+      <em class="flex-grow-1 text-start"><%= t(".select") %></em>
+    <% end %>
+    <span class="prx-podcast-switcher-indicator | material-icons" aria-label="hidden">expand_more</span>
+  </button>
+
+  <ul class="dropdown-menu p-2 shadow" aria-labelledby="podcast-switcher">
+    <%# turbo-stream search form %>
+    <li class="search-filter mb-2">
+      <%= form_with(url: main_app.podcast_switcher_path, html: {autocomplete: "off"}, data: {controller: "search"}) do |f| %>
+        <div class="form-floating">
+          <%= f.search_text_field :q, {}, data: {focus_target: "field"} %>
+          <%= f.label :q, t(".search") %>
+        </div>
+        <%= f.submit class: "d-none", data: {search_target: "submit"} %>
+      <% end %>
+    </li>
+
+    <%# lazy-loaded list of podcasts %>
+    <%= turbo_frame_tag "podcast-switcher-list", src: main_app.podcast_switcher_path, loading: "lazy" do %>
+      <li class="d-flex justify-content-center">
+        <div class="spinner-border text-primary m-5" role="status"></div>
+      </li>
+
+      <li><hr class="dropdown-divider"></li>
+
+      <li>
+        <%= link_to main_app.podcasts_path, class: "dropdown-item" do %>
+          <%= t(".all") %> &gt;
+        <% end %>
+      </li>
+
+      <li><hr class="dropdown-divider"></li>
+    <% end %>
+
+    <%# optional new podcast link %>
+    <% if policy(Podcast.new).new? %>
+      <li>
+        <%= link_to main_app.new_podcast_path, class: "dropdown-item"  do %>
+          <%= t(".create") %> &gt;
+        <% end %>
+      </li>
+
+      <li><hr class="dropdown-divider"></li>
+    <% end %>
+
+  </ul>
+
+</div>

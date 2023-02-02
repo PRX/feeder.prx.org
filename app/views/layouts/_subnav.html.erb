@@ -1,6 +1,6 @@
 <nav class="prx-app-nav navbar bg-white">
 
-  <%= render "layouts/switcher" %>
+  <%= render "podcast_switcher/dropdown" %>
 
   <% if @podcast %>
     <ul class="navbar-nav col">
@@ -8,7 +8,7 @@
         <li class="nav-item"><%= active_link_to "Settings", main_app.new_podcast_path, class: "nav-link" %></li>
       <% else %>
         <li class="nav-item"><%= active_link_to "Podcast", main_app.podcast_path(@podcast), active: :exact, class: "nav-link" %></li>
-        <li class="nav-item"><%= active_link_to "Settings", main_app.edit_podcast_path(@podcast), class: "nav-link" %></li>
+        <li class="nav-item"><%= active_link_to "Settings", main_app.edit_podcast_path(@podcast), active: podcast_settings_active?, class: "nav-link" %></li>
         <li class="nav-item"><%= active_link_to "Episodes", main_app.podcast_episodes_path(@podcast), class: "nav-link" %></li>
         <li class="nav-item"><%= active_link_to "Feeds", main_app.podcast_feeds_path(@podcast), class: "nav-link" %></li>
       <% end %>

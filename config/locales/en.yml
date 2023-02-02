@@ -44,7 +44,14 @@ en:
       privacy: Privacy
       status: Status
       terms: Terms
+  podcast_switcher:
+    dropdown:
+      all: View all my Podcasts
+      create: Create a New Podcast
+      empty: No results found
+      search: Search Podcasts
+      select: Select a podcast
   pundit:
-    title: "Not Authorized"
+    title: Not Authorized
     podcast_policy:
-      create?: "You are not authorized to create a podcast"
+      create?: You are not authorized to create a podcast

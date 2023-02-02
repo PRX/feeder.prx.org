@@ -3,16 +3,17 @@ require "test_helper"
 describe Tasks::CopyImageTask do
   let(:task) { create(:copy_image_task) }
   let(:image) { task.owner }
+  let(:path) { image.episode.podcast.path }
 
   it "has task options" do
     opts = task.task_options
     assert_equal opts[:job_type], "file"
     assert_equal opts[:source], image.original_url
-    assert_match(/s3:\/\/test-prx-feed\/jjgo\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/images\/4e745a8c-77ee-481c-a72b-fd868dfd1c9(\d+)\/image\.png/, opts[:destination])
+    assert_match(/s3:\/\/test-prx-feed\/#{path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/images\/4e745a8c-77ee-481c-a72b-fd868dfd1c9(\d+)\/image\.png/, opts[:destination])
   end
 
   it "gets the image path" do
-    assert_equal task.image_path(image), "/jjgo/#{image.episode.guid}/images/#{image.guid}/image.png"
+    assert_equal task.image_path(image), "/#{path}/#{image.episode.guid}/images/#{image.guid}/image.png"
   end
 
   it "updates status before save" do

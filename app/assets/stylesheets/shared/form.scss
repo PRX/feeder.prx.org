@@ -17,10 +17,8 @@
     z-index: -1;
     background: $input-bg;
     position: absolute;
-    height: 10px;
-    bottom: 46%;
-    width: 80%;
-    left: 10%;
+    inset: 35% 0.25rem 1rem;
+    border-radius: $input-border-radius;
   }
 
   // manually applied "blank" class (when the placeholder trick won't work)
