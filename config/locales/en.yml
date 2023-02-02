@@ -10,6 +10,27 @@ en:
   # form/model helpers
   helpers:
     label:
+      episode:
+        author_email: Author Email
+        author_name: Author Name
+        add_itunes_summary: Add an alternate itunes:summary
+        clean_title: Clean Title
+        description: Description
+        episode_number: Episode Number
+        explicit: Explicit
+        explicits:
+          false: Clean
+          true: Explicit
+        itunes_type: Episode Type
+        itunes_types:
+          full: Full
+          trailer: Trailer
+          bonus: Bonus
+        production_notes: Production Notes
+        season_number: Season Number
+        subtitle: Subtitle
+        summary: iTunes Summary
+        title: Title
       podcast:
         add_itunes_summary: Add an alternate itunes:summary
         author_email: Author Email

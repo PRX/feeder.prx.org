@@ -38,8 +38,11 @@ class Episode < ApplicationRecord
     class_name: "Apple::PodcastDeliveryFile"
 
   validates :podcast_id, :guid, presence: true
+  validates :title, presence: true
+  validates :subtitle, presence: true
   validates :original_guid, uniqueness: {scope: :podcast_id, allow_nil: true}
-  validates :itunes_type, inclusion: {in: %w[full trailer bonus]}
+  VALID_ITUNES_TYPES = %w[full trailer bonus]
+  validates :itunes_type, inclusion: {in: VALID_ITUNES_TYPES}
   validates :episode_number,
     numericality: {only_integer: true}, allow_nil: true
   validates :season_number,
@@ -162,7 +165,7 @@ class Episode < ApplicationRecord
   end
 
   def explicit=(value)
-    super(Podcast::EXPLICIT_ALIASES[value] || value)
+    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
   end
 
   def explicit_content
