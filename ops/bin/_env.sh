@@ -1,12 +1,14 @@
-TMP_FOLDER="$DIR/../../tmp"
-LINK_NAME="feeder-dump.out"
-LINK_FILE="$TMP_FOLDER/$LINK_NAME"
+export TMP_FOLDER="$DIR/../../tmp"
+export LINK_NAME="feeder-dump.out"
+export LINK_FILE="$TMP_FOLDER/$LINK_NAME"
+export CLONE_DB_NAME="feeder_clone"
+export DOTENV_PATH="$DIR/../../.env"
 
-CLONE_DB_NAME="feeder_clone"
-
-DOTENV_PATH="$DIR/../../.env"
 set -a
-source $DOTENV_PATH
+# shellcheck source=/dev/null
+source "$DOTENV_PATH"
 set +a
 
-
+export PGPASSWORD=$POSTGRES_PASSWORD
+export PGUSER=$POSTGRES_USER
+export PGHOST=$POSTGRES_HOST
