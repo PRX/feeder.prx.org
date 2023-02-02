@@ -1,19 +1,18 @@
-<div class="prx-podcast-switcher dropdown" data-controller="focus">
+<div class="prx-podcast-switcher | dropdown" data-controller="focus">
 
   <button class="btn btn-white dropdown-toggle" type="button" id="podcast-switcher" data-bs-toggle="dropdown" aria-expanded="false" data-action="focus#focus">
     <% if @podcast %>
       <% if img = (@podcast.feed_image || @podcast.itunes_image) %>
-        <%= image_tag(img.url, size: 30, alt: img.alt_text, class: "me-2") %>
+        <%= image_tag(img.url, size: 30, alt: img.alt_text) %>
       <% else %>
-        <span class="img-placeholder me-2" aria-label="hidden"></span>
+        <span class="img-placeholder" aria-label="hidden"></span>
       <% end %>
       <em class="flex-grow-1 text-start"><%= @podcast.title %></em>
-      <span class="material-icons justify-self-end ms-2" aria-label="hidden">expand_more</span>
     <% else %>
-      <span class="img-placeholder me-2" aria-label="hidden"></span>
+      <span class="img-placeholder" aria-label="hidden"></span>
       <em class="flex-grow-1 text-start"><%= t(".select") %></em>
-      <span class="material-icons justify-self-end ms-2" aria-label="hidden">expand_more</span>
     <% end %>
+    <span class="prx-podcast-switcher-indicator | material-icons" aria-label="hidden">expand_more</span>
   </button>
 
   <ul class="dropdown-menu p-2 shadow" aria-labelledby="podcast-switcher">

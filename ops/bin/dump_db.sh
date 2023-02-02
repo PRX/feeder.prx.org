@@ -16,11 +16,11 @@ if [ $# -ne 1 ]
 fi
 
 # It takes in an argument of 'prod' or 'stag' to determine which port to connect to
-if [ $1 == "prod" ]; then
+if [ "$1" == "prod" ]; then
   echo "Connecting to prod"
   DB_DUMP_PORT=5433
   DIST_ENV="prod"
-elif [ $1 == "stag" ]; then
+elif [ "$1" == "stag" ]; then
   echo "Connecting to stag"
   DB_DUMP_PORT=5435
   DIST_ENV="stag"
@@ -29,9 +29,9 @@ else
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-. $DIR/_env.sh
+. "$DIR/_env.sh"
 
-NAME="$DUMP_REMOTE_POSTGRES_DATABASE-$DIST_ENV-dump-`date "+%m%d%H%M%Y%S"`.out"
+NAME="$DUMP_REMOTE_POSTGRES_DATABASE-$DIST_ENV-dump-$(date "+%m%d%H%M%Y%S").out"
 OUTPUT_FILE="$TMP_FOLDER/$NAME"
 
 echo ""
@@ -44,15 +44,15 @@ echo "Dumping remote database $DUMP_REMOTE_POSTGRES_DATABASE with user $DUMP_REM
 
 echo "Feeder remote"
 time pg_dump --verbose -Fc -h 127.0.0.1 \
-  -p $DB_DUMP_PORT \
+  -p "$DB_DUMP_PORT" \
   --exclude-table-data 'public.say_when_job_executions' \
   --exclude-table-data 'sessions' \
   --exclude-table-data 'tasks' \
-  -W -d $DUMP_REMOTE_POSTGRES_DATABASE -U $DUMP_REMOTE_POSTGRES_USER -f $OUTPUT_FILE
+  -W -d "${DUMP_REMOTE_POSTGRES_DATABASE}" -U "$DUMP_REMOTE_POSTGRES_USER" -f "$OUTPUT_FILE"
 echo "Wrote: $OUTPUT_FILE"
 
-rm $LINK_FILE || true
-ln -s $OUTPUT_FILE $LINK_FILE
+rm "$LINK_FILE" || true
+ln -s "$OUTPUT_FILE" "$LINK_FILE"
 echo "Linked: $LINK_FILE"
 
 echo ""

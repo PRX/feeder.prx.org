@@ -13,6 +13,8 @@ describe Api::PodcastsController do
 
   let(:podcast_hash) do
     {
+      title: "testcast",
+      subtitle: "testcast",
       path: "testcast",
       prxUri: "/api/v1/series/123",
       prxAccountUri: "/api/v1/accounts/#{account_id}",
