@@ -1,7 +1,7 @@
 // material style floating form labels
 .form-floating {
   > label {
-    color: $gray-700;
+    color: $gray-600;
     height: auto;
     font-size: 1rem;
     width: auto;
@@ -21,6 +21,10 @@
     bottom: 46%;
     width: 80%;
     left: 10%;
+  }
+
+  .form-control {
+    color: #000;
   }
 
   // manually applied "blank" class (when the placeholder trick won't work)
@@ -126,6 +130,10 @@
     left: 0px;
     top: 16px;
   }
+}
+
+.ss-values {
+  color: #000;
 }
 
 // faster!
