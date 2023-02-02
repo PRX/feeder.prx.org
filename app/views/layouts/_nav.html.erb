@@ -3,18 +3,18 @@
     <%= link_to t(".dovetail"), main_app.podcasts_path, class: "navbar-brand" %>
 
     <ul class="navbar-nav">
-      <li class="nav-item">
+      <li class="nav-item d-none d-md-block">
         <%= link_to t(".feeder"), main_app.podcasts_path, class: "nav-link active" %>
       </li>
 
       <% if current_user_app?("metrics") %>
-        <li class="nav-item">
+        <li class="nav-item d-none d-md-block">
           <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
         </li>
       <% end %>
 
       <% if current_user_app?("augury") %>
-        <li class="nav-item">
+        <li class="nav-item d-none d-md-block">
           <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
         </li>
       <% end %>
