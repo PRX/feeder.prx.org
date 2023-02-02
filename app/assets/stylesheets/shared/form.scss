@@ -180,7 +180,8 @@ small {
   }
 }
 
-.form-check-label {
+.form-check-label,
+.form-check > label {
   color: black;
   white-space: nowrap;
 }
