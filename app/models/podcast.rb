@@ -19,9 +19,9 @@ class Podcast < ApplicationRecord
 
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
-  validates :explicit, inclusion: {in: %w[true false]}, allow_nil: false
 
   # these keep changing - so just translate to the current accepted values
+  VALID_EXPLICITS = %w[true false]
   EXPLICIT_ALIASES = {
     "" => "false",
     "no" => "false",
@@ -31,6 +31,7 @@ class Podcast < ApplicationRecord
     "explicit" => "true",
     true => "true"
   }.freeze
+  validates :explicit, inclusion: {in: VALID_EXPLICITS}, allow_nil: false
 
   acts_as_paranoid
 
@@ -50,6 +51,33 @@ class Podcast < ApplicationRecord
 
   def explicit=(value)
     super(EXPLICIT_ALIASES[value] || value)
+  end
+
+  def itunes_category
+    itunes_categories.first&.name
+  end
+
+  def itunes_category=(value)
+    if itunes_categories.first
+      if itunes_category.first.name != value
+        itunes_category.first.name = value
+        itunes_category.first.subcategories = []
+      end
+    else
+      itunes_categories.build(name: value)
+    end
+  end
+
+  def itunes_subcategory
+    itunes_categories.first&.subcategories&.first
+  end
+
+  def itunes_subcategory=(value)
+    if itunes_categories.first
+      itunes_category.first.subcategories = [value]
+    else
+      itunes_categories.build(subcategories: [value])
+    end
   end
 
   def publish_updated
