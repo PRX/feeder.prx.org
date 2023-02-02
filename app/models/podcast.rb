@@ -14,9 +14,12 @@ class Podcast < ApplicationRecord
   has_many :feeds, dependent: :destroy
 
   has_many :episodes, -> { order("published_at desc") }
-  has_many :itunes_categories, autosave: true, dependent: :destroy
+  has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
 
+  validates :title, presence: true, length: {minimum: 3}
+  validates :subtitle, presence: true, length: {minimum: 3}
+  validates :link, presence: true, http_url: true
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
 
@@ -58,10 +61,10 @@ class Podcast < ApplicationRecord
   end
 
   def itunes_category=(value)
-    if itunes_categories.first
-      if itunes_categories.first.name != value
-        itunes_categories.first.name = value
-        itunes_categories.first.subcategories = []
+    if (cat = itunes_categories[0])
+      if cat.name != value
+        cat.name = value
+        cat.subcategories = []
       end
     else
       itunes_categories.build(name: value)
@@ -73,8 +76,8 @@ class Podcast < ApplicationRecord
   end
 
   def itunes_subcategory=(value)
-    if itunes_categories.first
-      itunes_category.first.subcategories = [value]
+    if (cat = itunes_categories[0])
+      cat.subcategories = [value]
     else
       itunes_categories.build(subcategories: [value])
     end

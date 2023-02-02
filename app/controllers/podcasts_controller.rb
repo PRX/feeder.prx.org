@@ -44,6 +44,7 @@ class PodcastsController < ApplicationController
       if @podcast.save
         format.html { redirect_to edit_podcast_url(@podcast), notice: t(".notice") }
       else
+        flash.now[:error] = t(".error")
         format.html { render :edit, status: :unprocessable_entity }
       end
     end
@@ -66,6 +67,26 @@ class PodcastsController < ApplicationController
   end
 
   def podcast_params
-    params.fetch(:podcast, {}).permit(:title, :itunes_category)
+    params.fetch(:podcast, {}).permit(
+      :title,
+      :prx_account_uri,
+      :subtitle,
+      :description,
+      :summary,
+      :link,
+      :explicit,
+      :itunes_category,
+      :itunes_subcategory,
+      :serial_order,
+      :language,
+      :owner_name,
+      :owner_email,
+      :author_name,
+      :author_email,
+      :managing_editor_name,
+      :managing_editor_email,
+      :copyright,
+      :complete
+    )
   end
 end

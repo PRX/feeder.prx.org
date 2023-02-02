@@ -10,7 +10,7 @@ export default class extends Controller {
   }
 
   changeField() {
-    if (!this.fieldTarget.value || this.fieldTarget.value != " ") {
+    if (!this.fieldTarget.value) {
       this.fieldTarget.value = ""
       this.fieldTarget.parentElement.classList.add("d-none")
       this.checkTarget.checked = false

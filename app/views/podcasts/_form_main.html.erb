@@ -1,6 +1,6 @@
 <div class="col-12 mb-4">
   <div class="form-floating">
-    <%= form.text_field :title, required: true %>
+    <%= form.text_field :title %>
     <%= form.label :title %>
   </div>
 </div>
@@ -47,21 +47,27 @@
 
 <div class="col-6 mb-4">
   <div class="form-floating">
-    <%= form.text_field :link, required: true %>
+    <%= form.text_field :link %>
     <%= form.label :link %>
   </div>
 </div>
 
 <div class="col-6 mb-4">
   <div class="form-floating">
-    <%= form.select :explicit, podcast_explicit_options, {}, required: true %>
+    <%= form.select :explicit, podcast_explicit_options %>
     <%= form.label :explicit %>
   </div>
 </div>
 
 <div class="col-6 mb-4">
+# HACK: display nested validation errors
+    nested_errors = podcast.errors.full_messages_for("itunes_categories.name").join(", ")
+    error_class = nested_errors.present? ? "is-invalid form-select" : "form-select"
+  %>
+
   <div class="form-floating" data-controller="dynamic-form">
-    <%= form.select :itunes_category, itunes_category_options, {include_blank: true}, required: true, data: {action: "dynamic-form#change"} %>
+    <%= form.select :itunes_category, itunes_category_options, {include_blank: true}, class: error_class, data: {action: "dynamic-form#change"} %>
+    <% if nested_errors.present? %><div class="invalid-feedback"><%= nested_errors %></div><% end %>
     <%= form.label :itunes_category %>
 
     <%# update subcategory turbo-frame when category changes %>
