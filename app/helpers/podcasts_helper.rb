@@ -37,6 +37,13 @@ module PodcastsHelper
     parts[0] == "podcasts" && parts[2] && parts[2] != "episodes" && parts[2] != "feeds"
   end
 
+  def podcast_metadata_active?
+    parts = request.path.split("/").select(&:present?)
+
+    # either on #edit OR updating #show
+    parts[0] == "podcasts" && (parts[2] == "edit" || (parts.count == 2 && action_name == "update"))
+  end
+
   def podcast_explicit_options
     Podcast::VALID_EXPLICITS.map { |val| [I18n.t("helpers.label.podcast.explicits.#{val}"), val] }
   end
