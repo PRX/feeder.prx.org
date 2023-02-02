@@ -1,17 +1,14 @@
-<%= form_with(model: episode) do |form| %>
-  <% if episode.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(episode.errors.count, "error") %> prohibited this episode from being saved:</h2>
-
-      <ul>
-        <% episode.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+<%= form_with(model: episode, html: {autocomplete: "off"}) do |form| %>
+  <div class="row mt-4">
+    <div class="col-lg-8">
+      <div class="row">
+        <%= render "form_main", episode: episode, form: form %>
+      </div>
     </div>
-  <% end %>
-
-  <div>
-    <%= form.submit %>
+    <div class="col-lg-4">
+      <%= render "form_status", episode: episode, form: form %>
+      <%= render "form_distribution", episode: episode, form: form %>
+      <%= render "form_image", episode: episode, form: form %>
+    </div>
   </div>
 <% end %>

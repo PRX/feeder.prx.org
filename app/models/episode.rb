@@ -79,6 +79,11 @@ class Episode < ApplicationRecord
     (story.links["self"].href || "").gsub("/authorization/", "/")
   end
 
+  # use guid rather than id for episode routes
+  def to_param
+    guid
+  end
+
   def apple_file_errors?
     # TODO: for now these are all considered audio files
 

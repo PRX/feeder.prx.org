@@ -39,6 +39,25 @@ en:
         summary: iTunes Summary
         title: Title
   # specific pages/views
+  episodes:
+    create:
+      error: Unable to create
+      notice: Episode created
+    destroy:
+      notice: Episode deleted
+    form_distribution:
+      title: Distribution
+    form_image:
+      title: Cover Image
+    form_status:
+      create: Create
+      new_hint: Unsaved
+      title: Status
+      update: Save
+      updated_at_hint: Last Saved
+    update:
+      error: Unable to save
+      notice: Episode updated
   layouts:
     nav:
       account: PRX Account

@@ -1,0 +1,14 @@
+<div class="card">
+  <div class="card-header bg-primary">
+    <h5 class="card-title"><%= t(".title") %></h5>
+  </div>
+  <div class="card-footer">
+    <% if episode.persisted? %>
+      <p class="status-text"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(episode.updated_at) %></p>
+      <%= form.submit t(".update"), class: "btn btn-primary" %>
+    <% else %>
+      <p class="status-text"><strong><%= t(".new_hint") %></strong></p>
+      <%= form.submit t(".create"), class: "btn btn-primary" %>
+    <% end %>
+  </div>
+</div>
