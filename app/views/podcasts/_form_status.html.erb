@@ -1,0 +1,13 @@
+<div class="card">
+  <div class="card-header bg-primary">
+    <h5 class="card-title">Status</h5>
+  </div>
+  <div class="card-footer">
+    <% if podcast.persisted? %>
+      <p class="status-text"><strong>Last Saved</strong> <br><%= l(podcast.updated_at) %></p>
+    <% else %>
+      <p class="status-text"><strong>Unsaved</strong></p>
+    <% end %>
+    <%= form.submit class: "btn btn-primary" %>
+  </div>
+</div>
