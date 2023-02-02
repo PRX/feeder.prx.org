@@ -106,7 +106,9 @@ class ActionDispatch::IntegrationTest
     around do |test|
       ApplicationController.stub_any_instance(:prx_auth_token, user) do
         ApplicationController.stub_any_instance(:current_user_info, {}) do
-          test.call
+          ApplicationController.stub_any_instance(:account_name_for, "Stubbed Account") do
+            test.call
+          end
         end
       end
     end
