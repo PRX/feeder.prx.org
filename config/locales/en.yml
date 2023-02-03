@@ -81,11 +81,13 @@ en:
     form_image:
       title: Cover Image
     form_status:
-      create: Create
+      create: Create Draft
+      destroy: Delete
       new_hint: Unsaved
       title_draft: Draft
       title_published: Published
       title_scheduled: Scheduled
+      toggle_dropdown: Toggle Dropdown
       update: Save
       updated_at_hint: Last Saved
     form_tags:

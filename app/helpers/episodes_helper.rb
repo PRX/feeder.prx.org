@@ -7,12 +7,12 @@ module EpisodesHelper
 
   def episode_status_class(episode)
     case episode.publishing_status_was
-    when 'draft'
-      'warning'
-    when 'scheduled'
-      'success text-white'
+    when "draft"
+      "warning"
+    when "scheduled"
+      "success text-white"
     else
-      'primary text-white'
+      "primary text-white"
     end
   end
 
