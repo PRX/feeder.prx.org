@@ -54,6 +54,9 @@ bundle install
 
 # node packages
 npm install
+
+# Configure puma-dev
+echo 3002 > ~/.puma-dev/feeder.prx
 ```
 
 You'll also want a postgres server running. Try [DBngin](https://dbngin.com/), or you know,
@@ -115,13 +118,13 @@ git checkout -b feat/this_is_my_new_feature
 
 ### Server
 
-Run the rails development server at [localhost:3002](http://localhost:3002):
+Run the rails development server at [feeder.prx.test](http://feeder.prx.test):
 
 ```sh
 bin/rails server
 ```
 
-At [localhost:3002/fake](http://localhost:3002/fake), you'll find the HTML user
+At [feeder.prx.test/fake](http://feeder.prx.test/fake), you'll find the HTML user
 interface for Feeder. In addition to standard Rails, it uses [Turbo](https://turbo.hotwired.dev/),
 [Stimulus](https://stimulus.hotwired.dev/), and [Bootstrap 5](https://getbootstrap.com/docs/5.0/getting-started/introduction/).
 Whenever possible, we'd appreciate it if you stuck to this toolset!
@@ -133,7 +136,7 @@ If this is not working, you should check your `PRX_CLIENT_ID` ClientApplication 
 
 #### HAL API
 
-At [localhost:3002/api/v1](http://localhost:3002/api/v1), you'll find the HAL API root.
+At [feeder.prx.test/api/v1](http://feeder.prx.test/api/v1), you'll find the HAL API root.
 You can navigate around the public API endpoints by following the links. This is currently
 built with the [hal_api-rails](https://github.com/PRX/hal_api-rails) gem, but we have plans
 to eventually switch to [halbuilder](https://github.com/PRX/halbuilder) (an extension of Jbuilder).
