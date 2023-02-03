@@ -1,34 +1,30 @@
-  <p style="color: green"><%= notice %></p>
+  <% content_for :title, "Podcast List" %>
+    <p style="color: green"><%= notice %></p>
 
-  <h1>Podcasts</h1>
+    <h1>Podcasts</h1>
 
-  <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-    Sort
-  </button>
+    <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+      Sort <span class="material-icons" aria-hidden="true">sort</span>
+    </button>
 
-  <button>
-    Filter
+    <button>
+      Filter
+    </button>
 
-  </button>
+    <h2>Doing our best</h2>
 
-  <h2>Doing our best</h2>
+  <div id="podcasts">
+    <% @podcasts.each do |podcast| %>
+    <%= render podcast %>
 
-  <div class="row mt-4 mb-4">
-
-    <div class="col-lg-12">
-      <div class="card shadow card-body">
-        <h5>Title</h5>
-        <p class="card-text text-small">Believe in the heart of the cards</p>
-
-        <div class="podcast-card-status">
-
-          <h5>Latest Activity</h5>
-
-          <span>Date</span>
-        </div>
-      </div>
-    </div>
-
+    <% end %>
   </div>
 
-<%= link_to "New podcast", new_podcast_path %>
+<!-- # <div id="podcasts">
+#   <% @podcasts.each do |podcast| %>
+#     <%= render podcast %>
+#     <p>
+#       <%= link_to "Show this podcast", podcast %>
+#     </p>
+#   <% end %>
+# </div> -->

@@ -13,26 +13,25 @@
 ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-  enable_extension "uuid-ossp"
 
-  create_table "apple_credentials", force: :cascade do |t|
-    t.bigint "public_feed_id"
-    t.bigint "private_feed_id"
+  create_table "apple_credentials", id: :serial, force: :cascade do |t|
+    t.integer "public_feed_id"
+    t.integer "private_feed_id"
     t.string "apple_provider_id"
     t.string "apple_key_id"
     t.text "apple_key_pem_b64"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil
+    t.datetime "updated_at", precision: nil
     t.index ["private_feed_id"], name: "index_apple_credentials_on_private_feed_id"
     t.index ["public_feed_id"], name: "index_apple_credentials_on_public_feed_id"
   end
 
-  create_table "apple_podcast_containers", force: :cascade do |t|
+  create_table "apple_podcast_containers", id: :serial, force: :cascade do |t|
     t.integer "episode_id"
     t.string "external_id"
     t.string "api_response"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "vendor_id", null: false
     t.string "apple_episode_id", null: false
     t.string "source_url"
@@ -42,26 +41,26 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.index ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true
   end
 
-  create_table "apple_podcast_deliveries", force: :cascade do |t|
+  create_table "apple_podcast_deliveries", id: :serial, force: :cascade do |t|
     t.integer "episode_id"
     t.integer "podcast_container_id"
     t.string "external_id"
     t.string "status"
     t.string "api_response"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["episode_id"], name: "index_apple_podcast_deliveries_on_episode_id", unique: true
     t.index ["external_id"], name: "index_apple_podcast_deliveries_on_external_id", unique: true
     t.index ["podcast_container_id"], name: "index_apple_podcast_deliveries_on_podcast_container_id", unique: true
   end
 
-  create_table "apple_podcast_delivery_files", force: :cascade do |t|
+  create_table "apple_podcast_delivery_files", id: :serial, force: :cascade do |t|
     t.integer "episode_id"
     t.integer "podcast_delivery_id"
     t.string "external_id"
     t.string "api_response"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "uploaded", default: false
     t.index ["external_id"], name: "index_apple_podcast_delivery_files_on_external_id", unique: true
     t.index ["podcast_delivery_id"], name: "index_apple_podcast_delivery_files_on_podcast_delivery_id", unique: true
@@ -328,12 +327,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
 
-  create_table "sync_logs", force: :cascade do |t|
+  create_table "sync_logs", id: :serial, force: :cascade do |t|
     t.string "feeder_type", null: false
     t.bigint "feeder_id", null: false
     t.string "external_id"
-    t.datetime "sync_completed_at"
-    t.datetime "created_at"
+    t.datetime "sync_completed_at", precision: nil
+    t.datetime "created_at", precision: nil
   end
 
   create_table "tasks", id: :serial, force: :cascade do |t|
