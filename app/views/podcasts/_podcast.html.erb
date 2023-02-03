@@ -2,17 +2,21 @@
   <div class="row mt-4 mb-4">
     <div class="col-lg-12">
       <div class="card shadow card-body">
+      <% if podcast.itunes_image %>
+      <%= image_tag(podcast.itunes_image.url, width: 135, alt: podcast.itunes_image.alt_text, class: "d-flex mx-auto mb-2") %>
+    <% else %>
+      <h3>No image here</h3>
+    <% end %>
         <h5 class="text-black fw-bold me-4 mb-0"><%= podcast.title %></h5>
         <p class="card-text text-small">
           <%= podcast.episodes.published.count %> Published Episodes |
-          <%= podcast.episodes.scheduled.count %> Scheduled Episodes | 
-          <%= podcast.episodes.drafted.count %> Drafted Episodes
-
+          <%= podcast.episodes.scheduled.count %> Scheduled | 
+          <%= podcast.episodes.drafted.count %> Drafts
         </p>
         <div class="podcast-card-status">
           <div class="text-end">
             <h5 class="text-end">Latest Activity</h5>
-            <span class="text-end">Date</span>
+            <span class="text-end"> <%= podcast.updated_at.strftime("%-m/%-d/%Y, %-l:%M %p") %></span>
             <p>
             <%= link_to "Look at this dog", new_podcast_path, class:"stretched-link" %>
           </p>
