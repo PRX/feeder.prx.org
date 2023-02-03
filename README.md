@@ -69,10 +69,10 @@ The `env-example` file has some sane defaults, but you'll need to change a few v
 1. `POSTGRES_DATABASE` - leave as `feeder_development`, but ensure it already exists or your db user has create privileges (and run `bin/rails db:create`)
 2. `POSTGRES_PASSWORD` - set to your local db user's password
 3. `POSTGRES_USER` - set to your local db username
-4. `PRX_CLIENT_ID` - set to a valid PRX client_application for `localhost:3002` development, in whatever `ID_HOST` you're using
+4. `PRX_CLIENT_ID` - a valid **client application** key from ID. If `ID_HOST`, for example, is set to `id.staging.prx.tech`, get this key from [there](https://id.staging.prx.tech/admin/client_applications). The `Url` should match the domain you plan to use to access the site locally (e.g., `feeder.prx.test`).
 
-There are a bunch of other ENVs you may want to set, depending on what you're developming.
-But these are the minumum.
+There are a bunch of other ENVs you may want to set, depending on what you're developing.
+But these are the minimum.
 
 ### Database Setup
 
