@@ -97,6 +97,8 @@ class EpisodesController < ApplicationController
       :author_name,
       :author_email,
       :segment_count,
+      :released_at,
+      :publishing_status,
       categories: []
     )
   end

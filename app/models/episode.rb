@@ -4,6 +4,7 @@ require "hash_serializer"
 require "text_sanitizer"
 
 class Episode < ApplicationRecord
+  include PublishingStatus
   include TextSanitizer
 
   serialize :categories, JSON
