@@ -6,7 +6,12 @@
   <div class="card-body row">
     <div class="col-12 mb-4">
       <div class="form-floating">
-        <%= form.select :publishing_status, episode_publishing_status_options %>
+        <% if episode.publishing_status_was == 'published' %>
+          <%= form.hidden_field :publishing_status, value: "published" %>
+          <div class="form-control d-table"><p class="d-table-cell align-middle"><%= t("helpers.label.episode.publishing_statuses.published") %></p></div>
+        <% else %>
+          <%= form.select :publishing_status, episode_publishing_status_options %>
+        <% end %>
         <%= form.label :publishing_status %>
       </div>
     </div>
@@ -23,24 +28,31 @@
     <% if episode.persisted? %>
       <p class="status-text"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(episode.updated_at) %></p>
 
-      <div class="btn-group">
-        <%= form.submit t(".update"), class: "btn btn-#{episode_status_class(episode)}" %>
+      <% if policy(episode).update? %>
+        <div class="btn-group">
+          <%= form.submit t(".update"), class: "btn btn-#{episode_status_class(episode)}" %>
 
-        <button type="button" class="btn btn-<%= episode_status_class(episode) %> dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
-          <span class="visually-hidden">Toggle Dropdown</span>
-        </button>
-        <ul class="dropdown-menu">
-          <% if episode.published? %>
-            <li><a class="dropdown-item bg-danger text-white" href="#">Unpublish</a></li>
-          <% else %>
-            <li><a class="dropdown-item bg-danger text-white" href="#">Delete</a></li>
+          <% if episode.published? || policy(episode).destroy? %>
+            <button type="button" class="btn btn-<%= episode_status_class(episode) %> dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="visually-hidden"><%= t(".toggle_dropdown") %></span>
+            </button>
+            <ul class="dropdown-menu">
+              <% if episode.published? %>
+                <li><a class="dropdown-item bg-danger text-white" href="#">Unpublish</a></li>
+              <% else %>
+                <li><%= button_to t(".destroy"), episode, method: :delete, class: "dropdown-item bg-danger text-white" %></li>
+              <% end %>
+            </ul>
           <% end %>
-        </ul>
-      </div>
+        </div>
+      <% end %>
+
     <% else %>
       <p class="status-text"><strong><%= t(".new_hint") %></strong></p>
 
-      <%= form.submit t(".create"), class: "btn btn-warning" %>
+      <% if policy(episode).create? %>
+        <%= form.submit t(".create"), class: "btn btn-warning" %>
+      <% end %>
     <% end %>
   </div>
 </div>
