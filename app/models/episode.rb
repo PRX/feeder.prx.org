@@ -188,6 +188,10 @@ class Episode < ApplicationRecord
     self[:categories] ||= []
   end
 
+  def categories=(cats)
+    self[:categories] = Array(cats).reject(&:blank?)
+  end
+
   def keywords
     self[:keywords] ||= []
   end

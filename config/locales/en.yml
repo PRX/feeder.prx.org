@@ -14,6 +14,7 @@ en:
         author_email: Author Email
         author_name: Author Name
         add_itunes_summary: Add an alternate itunes:summary
+        categories: Categories
         clean_title: Clean Title
         description: Description
         episode_number: Episode Number
@@ -28,6 +29,7 @@ en:
           bonus: Bonus
         production_notes: Production Notes
         season_number: Season Number
+        segment_count: Number of Segments
         subtitle: Subtitle
         summary: iTunes Summary
         title: Title
@@ -66,6 +68,8 @@ en:
       notice: Episode created
     destroy:
       notice: Episode deleted
+    form_audio:
+      title: Audio Files
     form_distribution:
       title: Distribution
     form_image:
@@ -76,6 +80,8 @@ en:
       title: Status
       update: Save
       updated_at_hint: Last Saved
+    form_tags:
+      title: Categories
     update:
       error: Unable to save
       notice: Episode updated

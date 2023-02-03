@@ -95,7 +95,9 @@ class EpisodesController < ApplicationController
       :season_number,
       :episode_number,
       :author_name,
-      :author_email
+      :author_email,
+      :segment_count,
+      categories: []
     )
   end
 end

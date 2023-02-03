@@ -1,1 +1,8 @@
-the audio
+<h2><%= t(".title") %></h2>
+
+<div class="col-4 mb-4">
+  <div class="form-floating">
+    <%= form.number_field :segment_count, min: 1, max: 10 %>
+    <%= form.label :segment_count %>
+  </div>
+</div>
