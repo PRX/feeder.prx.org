@@ -90,6 +90,7 @@ en:
       toggle_dropdown: Toggle Dropdown
       update: Save
       updated_at_hint: Last Saved
+      unpublish: Unpublish
     form_tags:
       title: Categories
     update:

@@ -38,7 +38,7 @@
             </button>
             <ul class="dropdown-menu">
               <% if episode.published? %>
-                <li><a class="dropdown-item bg-danger text-white" href="#">Unpublish</a></li>
+                <li><%= link_to t(".unpublish"), episode_path(episode, episode: {publishing_status: "draft"}), method: :put, class: "dropdown-item bg-danger text-white" %></li>
               <% else %>
                 <li><%= button_to t(".destroy"), episode, method: :delete, class: "dropdown-item bg-danger text-white" %></li>
               <% end %>
