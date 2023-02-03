@@ -4,33 +4,30 @@ class PodcastsController < ApplicationController
   # GET /podcasts
   def index
     @podcasts = Podcast.all.limit(10)
+    @podcasts = get_podcasts
   end
 
   # GET /podcasts/1
   def show
-    authorize @podcast
   end
 
   # GET /podcasts/new
   def new
-    @podcast = Podcast.new(podcast_params)
+    @podcast = Podcast.new
   end
 
   # GET /podcasts/1/edit
   def edit
-    authorize @podcast, :show?
   end
 
   # POST /podcasts
   def create
     @podcast = Podcast.new(podcast_params)
-    authorize @podcast
 
     respond_to do |format|
       if @podcast.save
-        format.html { redirect_to podcast_url(@podcast), notice: t(".notice") }
+        format.html { redirect_to podcast_url(@podcast), notice: "Podcast was successfully created." }
       else
-        flash.now[:error] = t(".error")
         format.html { render :new, status: :unprocessable_entity }
       end
     end
@@ -38,14 +35,10 @@ class PodcastsController < ApplicationController
 
   # PATCH/PUT /podcasts/1
   def update
-    @podcast.assign_attributes(podcast_params)
-    authorize @podcast
-
     respond_to do |format|
-      if @podcast.save
-        format.html { redirect_to edit_podcast_url(@podcast), notice: t(".notice") }
+      if @podcast.update(podcast_params)
+        format.html { redirect_to podcast_url(@podcast), notice: "Podcast was successfully updated." }
       else
-        flash.now[:error] = t(".error")
         format.html { render :edit, status: :unprocessable_entity }
       end
     end
@@ -53,47 +46,26 @@ class PodcastsController < ApplicationController
 
   # DELETE /podcasts/1
   def destroy
-    authorize @podcast
+    @podcast.destroy
 
     respond_to do |format|
-      # TODO: better/real validation?
-      if @podcast.episodes.published_by(10.years).any?
-        flash.now[:error] = t(".error")
-        format.html { render :edit, status: :unprocessable_entity }
-      else
-        @podcast.destroy
-        format.html { redirect_to podcasts_url, notice: t(".notice") }
-      end
+      format.html { redirect_to podcasts_url, notice: "Podcast was successfully destroyed." }
     end
   end
 
   private
 
+  # Use callbacks to share common setup or constraints between actions.
+  def get_podcasts
+    policy_scope(Podcast).order(updated_at: :desc).limit(10)
+  end
+  
   def set_podcast
     @podcast = Podcast.find(params[:id])
   end
-
+  
+  # Only allow a list of trusted parameters through.
   def podcast_params
-    params.fetch(:podcast, {}).permit(
-      :title,
-      :prx_account_uri,
-      :subtitle,
-      :description,
-      :summary,
-      :link,
-      :explicit,
-      :itunes_category,
-      :itunes_subcategory,
-      :serial_order,
-      :language,
-      :owner_name,
-      :owner_email,
-      :author_name,
-      :author_email,
-      :managing_editor_name,
-      :managing_editor_email,
-      :copyright,
-      :complete
-    )
+    params.fetch(:podcast, {})
   end
 end

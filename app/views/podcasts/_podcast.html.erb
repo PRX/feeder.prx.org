@@ -1,2 +1,24 @@
 <div id="<%= dom_id podcast %>">
+  <div class="row mt-4 mb-4">
+    <div class="col-lg-12">
+      <div class="card shadow card-body">
+        <h5 class="text-black fw-bold me-4 mb-0"><%= podcast.title %></h5>
+        <p class="card-text text-small">
+          <%= podcast.episodes.published.count %> Published Episodes |
+          <%= podcast.episodes.scheduled.count %> Scheduled Episodes | 
+          <%= podcast.episodes.drafted.count %> Drafted Episodes
+
+        </p>
+        <div class="podcast-card-status">
+          <div class="text-end">
+            <h5 class="text-end">Latest Activity</h5>
+            <span class="text-end">Date</span>
+            <p>
+            <%= link_to "Look at this dog", new_podcast_path, class:"stretched-link" %>
+          </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
