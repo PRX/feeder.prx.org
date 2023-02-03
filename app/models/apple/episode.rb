@@ -47,14 +47,6 @@ module Apple
       end
     end
 
-    def self.add_no_imp_param(url)
-      # use the URI class to add a 'noImp' query param
-      url = URI.parse(url)
-      decoded_query = URI.decode_www_form(url.query.to_s) << ["noImp", "1"]
-      url.query = URI.encode_www_form(decoded_query)
-      url.to_s
-    end
-
     def initialize(show:, feeder_episode:, api: nil)
       @show = show
       @feeder_episode = feeder_episode
@@ -69,8 +61,18 @@ module Apple
       feeder_episode.id
     end
 
+    def private_feed
+      show.private_feed
+    end
+
+    def podcast
+      show.podcast
+    end
+
     def enclosure_url
-      self.class.add_no_imp_param(feeder_episode.enclosure_url)
+      url = EnclosureUrlBuilder.new.base_enclosure_url(podcast, feeder_episode, private_feed)
+      url = EnclosureUrlBuilder.mark_no_imp(url)
+      EnclosureUrlBuilder.mark_authorized(url, show.private_feed)
     end
 
     def enclosure_filename
