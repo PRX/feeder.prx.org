@@ -14,11 +14,19 @@ describe EnclosureUrlBuilder do
     podcast.enclosure_template = template
   }
 
-  it "can make an enclosure url with template, prefix, and expansions" do
+  it "can make a base enclosure url with template and expansions" do
     template = "https://test.prx.tech/{a}/{b}{c}"
     expansions = {a: "path", b: "file", c: ".mp3"}
+
+    url = builder.enclosure_url(template, expansions)
+    _(url).must_equal "https://test.prx.tech/path/file.mp3"
+  end
+
+  it "can add a prefix to a base enclosure url" do
+    base_enclosure_url = "https://test.prx.tech/path/file.mp3"
     prefix = "https://prefix.prx.tech/pre"
-    url = builder.enclosure_url(template, expansions, prefix)
+    url = builder.enclosure_prefix_url(base_enclosure_url, prefix)
+
     _(url).must_equal "https://prefix.prx.tech/pre/test.prx.tech/path/file.mp3"
   end
 
@@ -69,5 +77,36 @@ describe EnclosureUrlBuilder do
   it "can make an enclosure url for a specific feed" do
     url = builder.podcast_episode_url(podcast, episode, feed)
     _(url).must_match(/#{podcast.id}\/no-ads-pls\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/audio\.flac/)
+  end
+
+  describe "a set of class methods to mark (annotate) enclosure urls" do
+    describe ".mark_no_imp" do
+      it "should add a noImp query param" do
+        assert_equal "http://example.com?noImp=1", EnclosureUrlBuilder.mark_no_imp("http://example.com")
+      end
+
+      it "should preserve existing query params" do
+        assert_equal "http://example.com?foo=bar&noImp=1", EnclosureUrlBuilder.mark_no_imp("http://example.com?foo=bar")
+      end
+    end
+
+    describe ".mark_authorized" do
+      let(:private_feed) { create(:feed, podcast: podcast, tokens: [FeedToken.new]) }
+      let(:feed_tok) { private_feed.tokens.first }
+
+      it "should add an authorized query param" do
+        assert_equal "http://example.com?auth=#{feed_tok.token}", EnclosureUrlBuilder.mark_authorized("http://example.com", private_feed)
+      end
+
+      it "should preserve existing query params" do
+        assert_equal "http://example.com?foo=bar&auth=#{feed_tok.token}", EnclosureUrlBuilder.mark_authorized("http://example.com?foo=bar", private_feed)
+      end
+
+      it "should raise an exception if the private feed has no tokens" do
+        private_feed.tokens = []
+        err = assert_raises(StandardError) { EnclosureUrlBuilder.mark_authorized("http://example.com", private_feed) }
+        assert_equal err.message, "Missing tokens for private feed #{private_feed.id}"
+      end
+    end
   end
 end

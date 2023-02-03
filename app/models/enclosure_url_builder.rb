@@ -2,12 +2,32 @@ require "addressable/uri"
 require "addressable/template"
 
 class EnclosureUrlBuilder
+  def self.mark_authorized(enclosure_url, feed)
+    return enclosure_url unless feed.private?
+    raise "Missing tokens for private feed #{feed.id}" if feed.private? && !feed.tokens.any?
+
+    token = feed.tokens.first.token
+    add_query_param(enclosure_url, "auth", token)
+  end
+
+  # Marks the url as a `noImp`
+  # Used by Dovetail to skip the impression tracking
+  def self.mark_no_imp(enclosure_url)
+    add_query_param(enclosure_url, "noImp", "1")
+  end
+
   def podcast_episode_url(podcast, episode, feed = nil)
     feed ||= podcast.default_feed
-    template = feed.try(:enclosure_template)
     prefix = feed.try(:enclosure_prefix)
+
+    url = base_enclosure_url(podcast, episode, feed)
+    enclosure_prefix_url(url, prefix)
+  end
+
+  def base_enclosure_url(podcast, episode, feed)
+    template = feed.try(:enclosure_template)
     expansions = podcast_episode_expansions(podcast, episode, feed)
-    enclosure_url(template, expansions, prefix)
+    enclosure_url(template, expansions)
   end
 
   def podcast_episode_expansions(podcast, episode, feed)
@@ -45,9 +65,8 @@ class EnclosureUrlBuilder
     format ? ".#{format}" : nil
   end
 
-  def enclosure_url(template, expansions, prefix = nil)
-    url = enclosure_template_url(template, expansions)
-    enclosure_prefix_url(url, prefix)
+  def enclosure_url(template, expansions)
+    enclosure_template_url(template, expansions)
   end
 
   def enclosure_template_url(template, expansions)
@@ -63,5 +82,14 @@ class EnclosureUrlBuilder
     orig.scheme = pre.scheme
     orig.host = pre.host
     orig.to_s
+  end
+
+  private
+
+  def self.add_query_param(url, key, value)
+    url = URI.parse(url)
+    decoded_query = URI.decode_www_form(url.query.to_s) << [key, value]
+    url.query = URI.encode_www_form(decoded_query)
+    url.to_s
   end
 end
