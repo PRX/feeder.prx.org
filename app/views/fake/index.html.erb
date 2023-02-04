@@ -13,39 +13,39 @@
 
   <div class="row mt-4">
 
-    <div class="col-lg-8">
-      <div class="card shadow">
-        <div class="card-header">
-          <h5 class="card-title">Look a card</h5>
-          <a href="#" class="btn btn-primary">Action <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span></a>
-        </div>
-        <div class="card-body">
+    <div class="col-lg-8 d-grid gap-3">
+      <section class="card shadow">
+        <header class="card-header position-sticky top-0 d-flex justify-content-between align-items-center bg-white">
+          <h1 class="card-title fs-5">Look a card</h1>
+          <a href="#" class="btn btn-primary d-flex gap-1 align-items-center">Action <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span></a>
+        </header>
+        <main class="card-body">
           <p class="card-text">Some card text.</p>
           <p>Click <b><%= link_to "HERE", fake_path(123) %></b> to go to the show page</p>
-        </div>
-        <div class="card-footer">
-          <p>footer content</p>
-        </div>
-      </div>
+        </main>
+        <footer class="card-footer">
+          footer content
+        </footer>
+      </section>
 
-      <div class="card shadow">
-        <div class="card-header">
-          <h5 class="card-title">Look a card</h5>
-          <a href="#" class="btn"><span class="material-icons">delete</span></a>
-        </div>
-        <div class="card-body">
+      <section class="card shadow">
+        <header class="card-header d-flex justify-content-between align-items-center">
+          <h1 class="card-title fs-5">Look another card</h1>
+          <a href="#" class="btn btn-icon"><span class="material-icons">delete</span></a>
+        </header>
+        <main class="card-body">
           <p class="card-text">Some card text.</p>
           <p>Click <b><%= link_to "HERE", fake_path(123) %></b> to go to the show page</p>
-        </div>
-        <div class="card-footer justify-content-end">
-          <a href="#" class="btn btn-success">Go <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span></a>
-        </div>
-      </div>
+        </main>
+        <footer class="card-footer d-flex justify-content-end">
+          <a href="#" class="btn btn-success d-flex gap-1 align-items-center">Go <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span></a>
+        </footer>
+      </section>
     </div>
 
-    <div class="col-lg-4">
-      <div class="card shadow">
-        <div class="card-header bg-info">
+    <div class="col-lg-4 d-grid gap-3">
+      <section class="card shadow">
+        <div class="card-header-info">
           <h5 class="card-title">Card Title</h5>
         </div>
         <div class="card-body">
@@ -77,10 +77,10 @@
             </ul>
           </div>
         </div>
-      </div>
+      </section>
 
       <div class="card shadow">
-        <div class="card-header bg-success">
+        <div class="card-header-success">
           <h5 class="card-title">Look a card</h5>
         </div>
         <div class="card-body">
@@ -93,12 +93,12 @@
 
   <!-- Example for the podcasts list-->
   <div class="row mt-4 mb-4">
-    <div class="col-lg-12">
+    <section class="col-lg-12">
       <div class="dashboard-header">
         <div class="col d-flex align-items-center">
           <h1 class="text-black fw-bold me-4 mb-0">My Podcasts</h1>
           <div class="btn-group">
-            <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Sort <span class="material-icons" aria-hidden="true">sort</span>
             </button>
             <ul class="dropdown-menu">
@@ -118,38 +118,42 @@
         </div>
       </div>
       <div class="dashboard-list mb-4 shadow">
-        <div class="card podcast-card">
-          <div class="card-body">
-            <div class="podcast-card-info">
+        <div class="prx-podcast | card">
+          <div class="d-flex g-2 p-3 align-items-center">
+            <div class="card-image">
               <%= image_tag "fake-podcast.png", width: 80 %>
-              <div>
-                <h2 class="podcast-card-title">Podcast Name</h2>
-                <p class="card-text text-small">38 Published Episodes | 2 Scheduled | 68 Drafts.</p>
-                <%= link_to "Go to Podcast", fake_path(123), class: "stretched-link" %>
-              </div>
             </div>
-            <div class="podcast-card-status">
-              <p class="status-text text-end"><strong>Last Saved</strong> <br>1/25/2023, 12:25pm</p>
+            <div class="card-body flex-grow-1 ">
+              <h2 class="card-title">Podcast Name</h2>
+              <p class="card-text m-0 lh-xs fs-sm">38 Published Episodes | 2 Scheduled | 68 Drafts.</p>
+              <%= link_to "Go to Podcast", fake_path(123), class: "card-link" %>
+            </div>
+            <div class="card-footer d-grid g-1 lh-sm fs-sm text-end">
+              <strong>Last Saved</strong>
+              <datetime>1/25/2023, 12:25pm</datetime>
             </div>
           </div>
         </div>
-        <div class="card podcast-card">
-          <div class="card-body">
-            <div class="podcast-card-info">
+
+        <div class="prx-podcast | card">
+          <div class="d-flex g-2 p-3 align-items-center">
+            <div class="card-image">
               <%= image_tag "fake-podcast.png", width: 80 %>
-              <div>
-                <h2 class="podcast-card-title">Podcast Name</h2>
-                <p class="card-text text-small">38 Published Episodes | 2 Scheduled | 68 Drafts.</p>
-                <%= link_to "Go to Podcast", fake_path(123), class: "stretched-link" %>
-              </div>
             </div>
-            <div class="podcast-card-status">
-              <p class="status-text text-end"><strong>Last Saved</strong> <br>1/25/2023, 12:25pm</p>
+            <div class="card-body flex-grow-1 ">
+              <h2 class="card-title">Podcast Name</h2>
+              <p class="card-text m-0 lh-xs fs-sm">38 Published Episodes | 2 Scheduled | 68 Drafts.</p>
+              <%= link_to "Go to Podcast", fake_path(123), class: "card-link" %>
+            </div>
+            <div class="card-footer d-grid g-1 lh-sm fs-sm text-end">
+              <strong>Last Saved</strong>
+              <datetime>1/25/2023, 12:25pm</datetime>
             </div>
           </div>
         </div>
+        
       </div>
-    </div>
+    </section>
 
   </div>
 

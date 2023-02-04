@@ -1,145 +1,74 @@
-.sidetabs {
-  position: relative;
-  background: image-url("prx-mark-outlined.svg") repeat top left $gray-100;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: row;
+:root {
+  --prx-tab-bg-rgb: #{to-rgb($gray-200)};
+  --prx-tab-bg-opacity: 1;
+  --prx-tabs-gap: 1px;
+}
 
-  @media (min-width: 768px) {
-    flex-direction: column;
-  }
+.prx-tabs {
+  --#{$prefix}gutter-x: 0;
+}
 
-  .list-group {
-    border-bottom: none;
-    position: relative;
-    display: flex;
-    flex-direction: row;
+.prx-tabs-nav {
+  --#{$prefix}nav-link-padding-x: #{map-get($spacers, 3)};
+  --#{$prefix}nav-link-padding-y: #{map-get($spacers, 2)};
+  --#{$prefix}nav-link-hover-color: #{$link-color};
+  --#{$prefix}nav-tabs-link-active-color: #{$link-color};
+  --#{$prefix}nav-tabs-link-hover-border-color: #{$blue-light};
+  --#{$prefix}nav-tabs-link-active-border-color: #{$primary};
+  --#{$prefix}nav-tabs-border-width: 0;
+  --#{$prefix}nav-tabs-border-radius: 0;
 
-    @media (min-width: 768px) {
-      flex-direction: column;
-    }
+  gap: var(--prx-tabs-gap);
 
-    .list-group-item {
-      transition: border-left 0.1s ease-out 0ms;
-      background: #eee;
-      color: $primary;
-      margin: 0;
-      padding: 10px 30px 15px 15px;
-      border-left: 1px solid transparent;
-      border-top: 3px solid transparent;
-      border-right: 1px solid $white;
-      border-bottom: 1px solid $gray-200;
+  .context-menu {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 0;
+    z-index: 10;
+
+    .btn {
+      padding: 0;
       border-radius: 0;
-      display: block;
-      word-break: break-word;
 
-      @media (min-width: 768px) {
-        border-left: 4px solid transparent;
-        border-top: 1px solid $white;
-        border-right: none;
-        border-bottom: none;
-      }
-
-      &:hover {
-        border-left: 1px solid transparent;
-        border-top: 3px solid $blue-light;
-        border-right: 1px solid $white;
-        border-bottom: 1px solid $gray-200;
-
-        @media (min-width: 768px) {
-          border-left: 4px solid $blue-light;
-          border-top: 1px solid $white;
-          border-right: none;
-          border-bottom: none;
-        }
-      }
-
-      &.active {
-        background: $white;
-        color: $primary;
-        border-left: 1px solid transparent;
-        border-top: 3px solid $blue;
-        border-right: 1px solid $white;
-        border-bottom: 1px solid $white;
-
-        @media (min-width: 768px) {
-          border-right: none;
-          border-top: none;
-          border-bottom: 1px solid $white;
-          border-left: 4px solid $primary;
-        }
-      }
-
-      &.disabled {
-        color: $list-group-disabled-color;
-      }
-
-      .flight-name {
-        display: block;
-      }
-    }
-
-    .context-menu {
-      display: none;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      right: 0;
-      z-index: 10;
-
-      .btn {
-        padding: 0;
-        border-radius: 0;
-
-        .material-icons {
-          vertical-align: middle;
-        }
-      }
-
-      .dropdown-menu .material-icons {
+      .material-icons {
         vertical-align: middle;
       }
     }
 
-    .list-group-item.active + .context-menu {
-      display: block;
+    .dropdown-menu .material-icons {
+      vertical-align: middle;
     }
+  }
+
+  .list-group-item.active + .context-menu {
+    display: block;
   }
 }
 
-.layout-dashboard {
-  .nav-tabs {
-    border: none;
+.prx-tab {
+  &:is(.nav-link, .nav-link.disable, .nav-link.active) {
+    border-inline-start-width: map-get($spacers, 1);
+    background-color: rgba(var(--prx-tab-bg-rgb), var(--prx-tab-bg-opacity));
+  }
 
-    .nav-link {
-      background: none;
-      font-weight: bold;
-      color: black;
+  &.active {
+    --prx-tab-bg-opacity: 0;
+  }
 
-      border: none;
-      border-bottom: 3px solid $gray-300;
+  &:hover:not(.active) {
+    --prx-tab-bg-opacity: 0.6;
+  }
+}
 
-      height: 48px;
-      padding: 0 24px;
-      cursor: pointer;
-      box-sizing: border-box;
-      opacity: 0.6;
-      min-width: 160px;
-      text-align: center;
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      white-space: nowrap;
-      vertical-align: top;
-      text-decoration: none;
-      position: relative;
-      overflow: hidden;
-      -webkit-tap-highlight-color: transparent;
+.prx-tabs-actions {
+  [class*="btn-outline"] {
+    --#{$prefix}btn-padding-x: #{map-get($spacers, 2)};
+    --#{$prefix}btn-padding-y: #{map-get($spacers, 2)};
+    --#{$prefix}btn-bg: #{$white};
+    --#{$prefix}btn-disabled-bg: #{$white};
 
-      &.active {
-        border-color: $primary;
-      }
-    }
+    border-style: dashed;
   }
 }
