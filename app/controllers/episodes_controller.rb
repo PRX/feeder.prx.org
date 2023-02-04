@@ -60,10 +60,15 @@ class EpisodesController < ApplicationController
   # DELETE /episodes/1
   def destroy
     authorize @episode
-    @episode.destroy
 
     respond_to do |format|
-      format.html { redirect_to episodes_url, notice: t(".notice") }
+      if @episode.published?
+        flash.now[:error] = t(".error")
+        format.html { render :edit, status: :unprocessable_entity }
+      else
+        @episode.destroy
+        format.html { redirect_to podcast_episodes_url(@episode.podcast_id), notice: t(".notice") }
+      end
     end
   end
 

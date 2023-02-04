@@ -40,7 +40,11 @@
               <% if episode.published? %>
                 <li><%= link_to t(".unpublish"), episode_path(episode, episode: {publishing_status: "draft"}), method: :put, class: "dropdown-item bg-danger text-white" %></li>
               <% else %>
-                <li><%= button_to t(".destroy"), episode, method: :delete, class: "dropdown-item bg-danger text-white" %></li>
+                <li>
+                  <button type="button" class="dropdown-item bg-danger text-white" data-bs-toggle="modal" data-bs-target="#confirm-destroy">
+                    <%= t(".destroy") %>
+                  </button>
+                </li>
               <% end %>
             </ul>
           <% end %>
@@ -56,3 +60,22 @@
     <% end %>
   </div>
 </div>
+
+<% if policy(episode).destroy? %>
+  <div class="modal fade" id="confirm-destroy" tabindex="-1" aria-labelledby="confirm-destroy-title" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirm-destroy-title"><%= t(".destroy_confirm_title") %></h5>
+        </div>
+        <div class="modal-body">
+          <p><%= t(".destroy_confirm_body") %></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal"><%= t(".destroy_confirm_no") %></button>
+          <%= link_to t(".destroy_confirm_yes"), episode, method: :delete, class: "btn btn-danger" %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

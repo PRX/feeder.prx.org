@@ -16,4 +16,3 @@ pin "bootstrap5-tags", preload: true # @1.5.4
 pin "slim-select", preload: true # @2.4.1
 
 pin_all_from "app/javascript/controllers", under: "controllers"
-
