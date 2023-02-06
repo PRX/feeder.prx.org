@@ -40,7 +40,6 @@ class Episode < ApplicationRecord
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
-  validates :subtitle, presence: true
   validates :original_guid, uniqueness: {scope: :podcast_id, allow_nil: true}
   VALID_ITUNES_TYPES = %w[full trailer bonus]
   validates :itunes_type, inclusion: {in: VALID_ITUNES_TYPES}
