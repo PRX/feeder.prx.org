@@ -44,7 +44,7 @@ module PublishingStatus
   end
 
   def validate_publishing_status
-    return if @publishing_status == "draft"
+    return if @publishing_status.nil? || @publishing_status == "draft"
 
     # check desired status vs timestamp
     if published_at.blank?

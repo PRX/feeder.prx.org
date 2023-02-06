@@ -27,9 +27,10 @@ class EpisodesController < ApplicationController
     authorize @episode, :show?
   end
 
-  # POST /episodes
+  # POST /podcasts/1/episodes
   def create
     @episode = Episode.new(episode_params)
+    @episode.podcast = @podcast
     authorize @episode
 
     respond_to do |format|
