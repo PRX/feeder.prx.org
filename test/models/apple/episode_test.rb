@@ -6,7 +6,7 @@ describe Apple::Episode do
   let(:podcast) { create(:podcast) }
 
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
-  let(:private_feed) { create(:feed, podcast: podcast, private: true) }
+  let(:private_feed) { create(:feed, podcast: podcast, private: true, tokens: [FeedToken.new]) }
 
   let(:apple_creds) { build(:apple_credential) }
   let(:apple_api) { Apple::Api.from_apple_credentials(apple_creds) }
