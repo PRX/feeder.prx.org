@@ -9,6 +9,7 @@ describe Api::EpisodesController do
 
   let(:episode_hash) do
     {
+      title: "title",
       prxUri: "/api/v1/stories/123",
       media: [
         {href: "https://s3.amazonaws.com/prx-testing/test/audio1.mp3"},

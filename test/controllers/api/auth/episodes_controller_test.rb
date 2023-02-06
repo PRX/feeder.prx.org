@@ -21,6 +21,7 @@ describe Api::Auth::EpisodesController do
   let(:episode_deleted) { create(:episode, deleted_at: Time.now, podcast: podcast) }
   let(:episode_hash) do
     {
+      title: "title",
       releasedAt: "2020-03-12T18:02:03.000Z",
       prxUri: "/api/v1/stories/123",
       media: [
