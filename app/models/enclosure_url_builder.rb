@@ -76,6 +76,7 @@ class EnclosureUrlBuilder
 
   def enclosure_prefix_url(u, prefix)
     return u if prefix.blank?
+
     pre = Addressable::URI.parse(prefix)
     orig = Addressable::URI.parse(u)
     orig.path = File.join(pre.path, orig.host, orig.path)
@@ -83,8 +84,6 @@ class EnclosureUrlBuilder
     orig.host = pre.host
     orig.to_s
   end
-
-  private
 
   def self.add_query_param(url, key, value)
     url = URI.parse(url)
