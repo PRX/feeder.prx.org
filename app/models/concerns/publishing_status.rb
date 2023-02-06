@@ -51,13 +51,15 @@ module PublishingStatus
       errors.add(:published_at, "can't be blank")
       errors.add(:released_at, "can't be blank")
     elsif @publishing_status == "scheduled" && published_at <= Time.now
+      errors.add(:published_at, "can't be in the past")
       errors.add(:released_at, "can't be in the past")
     elsif @publishing_status == "published" && published_at > Time.now
+      errors.add(:published_at, "can't be in the future")
       errors.add(:released_at, "can't be in the future")
     end
 
     # check media is ready (TODO: more?)
-    if !segment_count&.positive? || segment_count != media_files.count
+    if !segment_count&.positive? || segment_count != media_files.size
       errors.add(:publishing_status, "audio not ready")
     elsif !media_ready?
       errors.add(:publishing_status, "audio not ready")
