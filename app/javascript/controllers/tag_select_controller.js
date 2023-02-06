@@ -28,10 +28,8 @@ export default class extends Controller {
 
   change(event) {
     if (this.element.value) {
-      console.log("change - remove", this.element.value)
       this.tagContainer.classList.remove("form-control-blank")
     } else {
-      console.log("change - add", this.element.value)
       this.tagContainer.classList.add("form-control-blank")
     }
   }
