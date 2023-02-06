@@ -9,6 +9,8 @@ class PodcastsController < ApplicationController
   # GET /podcasts/1
   def show
     authorize @podcast
+
+    @recently_published = @podcast.episodes.published.first
   end
 
   # GET /podcasts/new

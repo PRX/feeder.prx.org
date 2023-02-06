@@ -2,9 +2,63 @@
 
 <%= render @podcast %>
 
-<div>
-  <%= link_to "Edit this podcast", edit_podcast_path(@podcast) %> |
-  <%= link_to "Back to podcasts", podcasts_path %>
+<div class="col-lg-4">
+  <div class="card shadow">
+    <div class="card-header">
+      <h1 class="card-title h5">Latest Published</h1>
+      <%= link_to "All Episodes", podcast_episodes_path(@podcast.id), class: 'btn btn-primary' %>
+    </div>
+    <div class="card-body">
+      <% if @recently_published.present? %>
+        <div class="row">
+          <p><%= @recently_published.published_at.to_date %></p>
+          <div>
+            <h2 class="h5"><%= link_to @recently_published.title, episode_path(@recently_published.id) %></h2>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
 
-  <%= button_to "Destroy this podcast", @podcast, method: :delete %>
+  <div class="card shadow">
+    <div class="card-header">
+      <h1 class="card-title h5">Next Scheduled</h1>
+    </div>
+    <div class="card-body">
+      <% if @recently_published.present? %>
+        <div class="row">
+          <p><%= 'Scheduled Date' %></p>
+          <div>
+            <h2 class="h5"><%= 'Scheduled Title' %></h2>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-6">
+    <div class="card shadow">
+      <div class="card-header">
+        <h1 class="card-title h5">Feeds</h1>
+        <%= link_to "Manage Feeds", podcast_feeds_path(@podcast.id), class: 'btn btn-primary' %>
+      </div>
+      <div class="card-body">
+
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow">
+      <div class="card-header">
+        <h1 class="card-title h5">Settings</h1>
+        <%= link_to "Manage Settings", podcast_path(@podcast.id), class: 'btn btn-primary' %>
+      </div>
+      <div class="card-body">
+
+      </div>
+    </div>
+  </div>
 </div>
