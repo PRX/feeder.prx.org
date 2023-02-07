@@ -10,6 +10,35 @@ en:
   # form/model helpers
   helpers:
     label:
+      episode:
+        author_email: Author Email
+        author_name: Author Name
+        add_itunes_summary: Add an alternate itunes:summary
+        categories: Categories
+        clean_title: Clean Title
+        description: Description
+        episode_number: Episode Number
+        explicit: Explicit
+        explicits:
+          false: Clean
+          true: Explicit
+        itunes_type: Episode Type
+        itunes_types:
+          full: Full
+          trailer: Trailer
+          bonus: Bonus
+        released_at: Dropdate
+        production_notes: Production Notes
+        publishing_status: Status
+        publishing_statuses:
+          draft: Draft
+          published: Published
+          scheduled: Scheduled
+        season_number: Season Number
+        segment_count: Number of Segments
+        subtitle: Subtitle
+        summary: iTunes Summary
+        title: Title
       podcast:
         add_itunes_summary: Add an alternate itunes:summary
         author_email: Author Email
@@ -39,6 +68,39 @@ en:
         summary: iTunes Summary
         title: Title
   # specific pages/views
+  episodes:
+    create:
+      error: Unable to create
+      notice: Episode created
+    destroy:
+      error: Cannot delete a published episode
+      notice: Episode deleted
+    form_audio:
+      title: Audio Files
+    form_distribution:
+      title: Distribution
+    form_image:
+      title: Cover Image
+    form_status:
+      create: Create Draft
+      destroy: Delete
+      destroy_confirm_title: Really Delete?
+      destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
+      destroy_confirm_yes: Delete
+      destroy_confirm_no: Cancel
+      new_hint: Unsaved
+      title_draft: Draft
+      title_published: Published
+      title_scheduled: Scheduled
+      toggle_dropdown: Toggle Dropdown
+      update: Save
+      updated_at_hint: Last Saved
+      unpublish: Unpublish
+    form_tags:
+      title: Categories
+    update:
+      error: Unable to save
+      notice: Episode updated
   layouts:
     nav:
       account: PRX Account

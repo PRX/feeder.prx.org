@@ -1,4 +1,6 @@
 class FeederFormBuilder < ActionView::Helpers::FormBuilder
+  alias_method :super_select, :select
+
   INPUT_CLASS = "form-control"
   CHECK_CLASS = "form-check-input"
   SELECT_CLASS = "form-select"
@@ -6,6 +8,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   BLANK_ACTION = "blur->blank-field#blur"
   SEARCH_ACTION = "search#submit"
   SLIM_SELECT_CONTROLLER = "slim-select"
+  TAG_SELECT_CONTROLLER = "tag-select"
   FLATPICKR_CONTROLLER = "flatpickr"
   FLATPICKR_ACTION = "keydown->flatpickr#keydown keyup->flatpickr#keyup"
   SELECT_BY_GROUP = "slim-select-group-select-value"
@@ -50,14 +53,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def time_field(method, options = {})
     value = options[:value] || object&.public_send(method)
-
-    # end timestamps are fudged 1-minute to look inclusive
-    if options[:fudge] && value && value == value.beginning_of_day
-      value -= 1.minute
-    end
-    options[:value] = value.try(:strftime, "%Y-%m-%d %H:%M") || value
-
-    add_data(options, :fudge, true) if options[:fudge]
+    options[:value] = value.try(:strftime, "%Y-%m-%d %H:%M:%S") || value
     add_data(options, :timestamp, true)
     add_flatpickr_controller(options)
     text_field(method, options)
@@ -71,6 +67,17 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     add_disabled(html_options)
     add_select_by_group(html_options) if html_options[:group_select]
     super(method, choices, options, html_options, &block)
+  end
+
+  def tag_select(method, choices, options = {}, html_options = {}, &block)
+    options[:include_blank] = true
+    html_options[:class] = SELECT_CLASS unless html_options.key?(:class)
+    html_options[:multiple] = true
+    add_blank_class(html_options) if blank?(method, options)
+    add_blank_action(html_options)
+    add_tag_select_controller(html_options)
+    add_disabled(html_options)
+    super_select(method, choices, options, html_options, &block)
   end
 
   def search_text_field(method, params, options = {})
@@ -126,6 +133,10 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def add_slim_select_controller(opts)
     add_data(opts, :controller, SLIM_SELECT_CONTROLLER)
+  end
+
+  def add_tag_select_controller(opts)
+    add_data(opts, :controller, TAG_SELECT_CONTROLLER)
   end
 
   def add_flatpickr_controller(opts)

@@ -41,6 +41,25 @@
   }
 }
 
+// bootstrap5-tags need help
+.form-floating {
+  > .form-tag-select ~ label {
+    opacity: $form-floating-label-opacity !important;
+    transform: $form-floating-label-transform !important;
+  }
+  > .form-tag-select.form-control-blank:not(.form-control-focus) ~ label {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+.form-tag-select.form-control-focus {
+  color: $input-focus-color;
+  background-color: $input-focus-bg;
+  border-color: $input-focus-border-color;
+  outline: 0;
+  box-shadow: $input-focus-box-shadow;
+}
+
 // These styles work with Slim Select v2, not tested with v1
 .ss-main {
   &.form-select {

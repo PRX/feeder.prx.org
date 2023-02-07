@@ -4,6 +4,7 @@ require "hash_serializer"
 require "text_sanitizer"
 
 class Episode < ApplicationRecord
+  include PublishingStatus
   include TextSanitizer
 
   serialize :categories, JSON
@@ -38,8 +39,10 @@ class Episode < ApplicationRecord
     class_name: "Apple::PodcastDeliveryFile"
 
   validates :podcast_id, :guid, presence: true
+  validates :title, presence: true
   validates :original_guid, uniqueness: {scope: :podcast_id, allow_nil: true}
-  validates :itunes_type, inclusion: {in: %w[full trailer bonus]}
+  VALID_ITUNES_TYPES = %w[full trailer bonus]
+  validates :itunes_type, inclusion: {in: VALID_ITUNES_TYPES}
   validates :episode_number,
     numericality: {only_integer: true}, allow_nil: true
   validates :season_number,
@@ -77,6 +80,11 @@ class Episode < ApplicationRecord
 
   def self.story_uri(story)
     (story.links["self"].href || "").gsub("/authorization/", "/")
+  end
+
+  # use guid rather than id for episode routes
+  def to_param
+    guid
   end
 
   def apple_file_errors?
@@ -157,7 +165,7 @@ class Episode < ApplicationRecord
   end
 
   def explicit=(value)
-    super(Podcast::EXPLICIT_ALIASES[value] || value)
+    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
   end
 
   def explicit_content
@@ -178,6 +186,10 @@ class Episode < ApplicationRecord
 
   def categories
     self[:categories] ||= []
+  end
+
+  def categories=(cats)
+    self[:categories] = Array(cats).reject(&:blank?)
   end
 
   def keywords

@@ -3,6 +3,9 @@ import "@hotwired/turbo-rails"
 import "controllers"
 import "popper"
 import "bootstrap"
+import Rails from "@rails/ujs"
+
+Rails.start()
 
 // debugging turbo
 document.addEventListener("turbo:frame-missing", function (event) {
