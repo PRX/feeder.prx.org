@@ -1,4 +1,4 @@
-<%= form_with(model: episode, html: {autocomplete: "off"}) do |form| %>
+<%= form_with(model: episode, html: {autocomplete: "off"}, data: {controller: "unsaved", unsaved_changed_value: episode.changed?, unsaved_confirm_value: t(".confirm")}) do |form| %>
   <div class="row mt-4">
     <div class="col-lg-8">
       <div class="row">

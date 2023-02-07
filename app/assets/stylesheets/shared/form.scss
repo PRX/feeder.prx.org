@@ -55,6 +55,12 @@
     color: $orange;
   }
 }
+.btn-discard-changed {
+  border-color: $orange;
+  &:hover {
+    border-color: $orange;
+  }
+}
 
 // bootstrap5-tags need help
 .form-floating {
@@ -66,6 +72,9 @@
     opacity: 1 !important;
     transform: none !important;
   }
+}
+.is-changed ~ .form-tag-select {
+  border-color: $orange;
 }
 .form-tag-select.form-control-focus {
   color: $input-focus-color;

@@ -47,8 +47,8 @@ export default class extends Controller {
       event.target.classList.remove("is-changed")
     }
 
-    // scan for changes in form
-    this.setChanged(!!this.element.querySelector(".is-changed"))
+    // scan for changes in form (ignoring slim select, which takes a bit to update)
+    this.setChanged(!!this.element.querySelector(".is-changed:not(.ss-main)"))
   }
 
   discard(event) {
@@ -80,6 +80,8 @@ export default class extends Controller {
   getValue(element) {
     if (element.type === "checkbox") {
       return element.checked.toString()
+    } else if (element.type === "select-multiple") {
+      return JSON.stringify(Array.from(element.selectedOptions).map((o) => o.value))
     } else {
       return element.value
     }
