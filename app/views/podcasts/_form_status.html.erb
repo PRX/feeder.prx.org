@@ -5,6 +5,7 @@
   <div class="card-footer">
     <% if podcast.persisted? %>
       <p class="status-text"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(podcast.updated_at) %></p>
+      <%= link_to t(".discard"), edit_podcast_path(podcast), class: "btn btn-light me-2 invisible", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
       <%= form.submit t(".update"), class: "btn btn-primary" %>
     <% else %>
       <p class="status-text"><strong><%= t(".new_hint") %></strong></p>

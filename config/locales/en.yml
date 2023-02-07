@@ -63,6 +63,8 @@ en:
     form_feed_image:
       title: Thumbnail Image
       help: Optionally provide an alternate image to use for smaller display purposes. If not provided, a rescaled thumbnail of the profile image will be used.
+    form:
+      confirm: Discard unsaved changes?
     form_main:
       help:
         author_email: Set the author email for this podcast.
