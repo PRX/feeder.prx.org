@@ -2,6 +2,13 @@ require "addressable/uri"
 require "addressable/template"
 
 class EnclosureUrlBuilder
+  def self.add_query_param(url, key, value)
+    url = URI.parse(url)
+    decoded_query = URI.decode_www_form(url.query.to_s) << [key, value]
+    url.query = URI.encode_www_form(decoded_query)
+    url.to_s
+  end
+
   def self.mark_authorized(enclosure_url, feed)
     return enclosure_url unless feed.private?
     raise "Missing tokens for private feed #{feed.id}" if feed.private? && !feed.tokens.any?
@@ -83,12 +90,5 @@ class EnclosureUrlBuilder
     orig.scheme = pre.scheme
     orig.host = pre.host
     orig.to_s
-  end
-
-  def self.add_query_param(url, key, value)
-    url = URI.parse(url)
-    decoded_query = URI.decode_www_form(url.query.to_s) << [key, value]
-    url.query = URI.encode_www_form(decoded_query)
-    url.to_s
   end
 end
