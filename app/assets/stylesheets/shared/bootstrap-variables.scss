@@ -39,6 +39,19 @@ $danger:      $red;
 $light:       $gray-100;
 $dark:        $gray-900;
 
+$theme-colors: (
+  "primary":        $primary,
+  "primary-dark":   $blue-dark,
+  "primary-light":  $blue-light,
+  "secondary":      $secondary,
+  "success":        $success,
+  "info":           $info,
+  "warning":        $warning,
+  "danger":         $danger,
+  "light":          $light,
+  "dark":           $dark
+);
+
 // Typography
 
 $text-muted: $gray-700;

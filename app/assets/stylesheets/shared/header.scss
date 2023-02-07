@@ -1,106 +1,10 @@
 /*
  * PRX header component
  */
-.navbar-brand {
-  display: block;
-  width: 152px;
-  height: 30px;
-  background-image: image-url("dovetail_logo.svg");
-  background-position: center center;
-  background-repeat: no-repeat;
-  text-indent: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-top: 50px;
 
-  @media (min-width: 576px) {
-    padding-top: 0;
-  }
-}
+@import 'header-nav';
+@import 'header-subnav';
 
-.nav-avatar {
-  object-fit: cover;
-  border-radius: 50%;
-  border: 1px solid $blue-light;
-  height: 30px;
-  width: 30px;
-}
-
-.prx-dovetail-nav {
-  background: $blue-dark;
-  margin: 0;
-  padding: 0;
-
-  .navbar-nav {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-  }
-
-  .dropdown-menu {
-    position: absolute;
-    background: $blue-dark;
-    margin: 0;
-    padding: 0;
-    border-radius: 0;
-
-    .dropdown-item {
-      color: $white;
-      text-transform: uppercase;
-      font-weight: bold;
-      padding: 0.25rem 1.5rem;
-      min-width: 240px;
-
-      &:hover {
-        color: $white;
-        background: $blue;
-      }
-    }
-
-    .dropdown-username {
-      font-size: 24px;
-      color: $white;
-      padding: 0.5rem 1.5rem;
-      min-width: 240px;
-      font-weight: normal;
-      text-align: center;
-    }
-
-    .btn-info {
-      background: $blue-light;
-      font-weight: bold;
-      border-radius: 0;
-      padding: 0.25em 1.25em;
-      white-space: nowrap;
-    }
-
-    .dropdown-link {
-      font-weight: bold;
-      text-decoration: none;
-      padding: 0.5em 1.25em;
-      color: $blue-light;
-    }
-  }
-}
-
-.prx-app-nav {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  margin: 0;
-  padding: 0;
-  border-bottom: 1px solid $gray-300;
-
-  .navbar-nav {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    margin: 0;
-    padding: 0;
-  }
-}
 
 .prx-podcast-switcher {
   width: 100%;
