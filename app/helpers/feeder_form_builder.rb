@@ -4,6 +4,9 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   SELECT_CLASS = "form-select"
   BLANK_CLASS = "form-control-blank"
   BLANK_ACTION = "blur->blank-field#blur"
+  CHANGED_CLASS = "is-changed"
+  CHANGED_ACTION = "change->unsaved#change keyup->unsaved#change"
+  CHANGED_DATA_VALUE_WAS = :value_was
   SEARCH_ACTION = "search#submit"
   SLIM_SELECT_CONTROLLER = "slim-select"
   FLATPICKR_CONTROLLER = "flatpickr"
@@ -14,6 +17,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     options[:class] = INPUT_CLASS unless options.key?(:class)
     add_blank_class(options) if blank?(method, options)
     add_blank_action(options)
+    add_changed(method, options)
     add_disabled(options)
     super(method, options)
   end
@@ -22,6 +26,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     options[:class] = INPUT_CLASS unless options.key?(:class)
     add_blank_class(options) if blank?(method, options)
     add_blank_action(options)
+    add_changed(method, options)
     add_disabled(options)
     super(method, options)
   end
@@ -30,12 +35,14 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     options[:class] = INPUT_CLASS unless options.key?(:class)
     add_blank_class(options) if blank?(method, options)
     add_blank_action(options)
+    add_changed(method, options)
     add_disabled(options)
     super(method, options)
   end
 
   def check_box(method, options = {})
     options[:class] = CHECK_CLASS unless options.key?(:class)
+    add_changed(method, options)
     add_disabled(options)
     super(method, options)
   end
@@ -67,6 +74,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     html_options[:class] = SELECT_CLASS unless html_options.key?(:class)
     add_blank_class(html_options) if blank?(method, options) && options[:include_blank]
     add_blank_action(html_options)
+    add_changed(method, html_options)
     add_slim_select_controller(html_options)
     add_disabled(html_options)
     add_select_by_group(html_options) if html_options[:group_select]
@@ -113,11 +121,25 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def add_blank_class(opts)
-    opts[:class] = [opts[:class], BLANK_CLASS].compact.join(" ").strip
+    add_class(opts, BLANK_CLASS)
   end
 
   def add_blank_action(opts)
     add_data(opts, :action, BLANK_ACTION)
+  end
+
+  def add_changed(method, opts)
+    add_data(opts, :action, CHANGED_ACTION)
+
+    if object.present?
+      if object.respond_to?("#{method}_changed?")
+        add_class(opts, CHANGED_CLASS) if object.public_send("#{method}_changed?")
+      end
+
+      if object.respond_to?("#{method}_was")
+        add_data(opts, CHANGED_DATA_VALUE_WAS, object.public_send("#{method}_was"))
+      end
+    end
   end
 
   def add_search_action(opts)
@@ -141,6 +163,10 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     if !opts.key?(:disabled) && object && !@template.policy(object).create_or_update?
       opts[:disabled] = true
     end
+  end
+
+  def add_class(opts, cls)
+    opts[:class] = [opts[:class], cls].compact.join(" ").strip
   end
 
   def add_data(opts, key, val)

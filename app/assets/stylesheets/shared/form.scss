@@ -41,6 +41,21 @@
   }
 }
 
+// changed field stylez
+.form-check-input.is-changed:not(.is-invalid),
+.form-control.is-changed:not(.is-invalid),
+.form-select.is-changed:not(.is-invalid) {
+  border-color: $orange;
+
+  &:focus {
+    box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
+  }
+
+  ~ label {
+    color: $orange;
+  }
+}
+
 // These styles work with Slim Select v2, not tested with v1
 .ss-main {
   &.form-select {
