@@ -27,7 +27,7 @@ class Podcast < ApplicationRecord
   # these keep changing - so just translate to the current accepted values
   VALID_EXPLICITS = %w[true false]
   EXPLICIT_ALIASES = {
-    "" => "false",
+    "" => nil,
     "no" => "false",
     "clean" => "false",
     false => "false",
@@ -54,7 +54,7 @@ class Podcast < ApplicationRecord
   end
 
   def explicit=(value)
-    super(EXPLICIT_ALIASES[value] || value)
+    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
   end
 
   def itunes_category
