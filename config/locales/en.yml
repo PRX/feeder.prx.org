@@ -75,6 +75,8 @@ en:
     destroy:
       error: Cannot delete a published episode
       notice: Episode deleted
+    form:
+      confirm: Discard unsaved changes?
     form_audio:
       title: Audio Files
     form_distribution:
@@ -88,6 +90,7 @@ en:
       destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
       destroy_confirm_yes: Delete
       destroy_confirm_no: Cancel
+      discard: Discard
       new_hint: Unsaved
       title_draft: Draft
       title_published: Published
@@ -125,6 +128,8 @@ en:
     form_feed_image:
       title: Thumbnail Image
       help: Optionally provide an alternate image to use for smaller display purposes. If not provided, a rescaled thumbnail of the profile image will be used.
+    form:
+      confirm: Discard unsaved changes?
     form_main:
       help:
         author_email: Set the author email for this podcast.
@@ -150,6 +155,7 @@ en:
       help: This image will be used as the cover image for this series. Image dimensions must be square.
     form_status:
       create: Create
+      discard: Discard
       new_hint: Unsaved
       title: Status
       update: Save

@@ -41,6 +41,27 @@
   }
 }
 
+// changed field stylez
+.form-check-input.is-changed:not(.is-invalid),
+.form-control.is-changed:not(.is-invalid),
+.form-select.is-changed:not(.is-invalid) {
+  border-color: $orange;
+
+  &:focus {
+    box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
+  }
+
+  ~ label {
+    color: $orange;
+  }
+}
+.btn-discard-changed {
+  border-color: $orange;
+  &:hover {
+    border-color: $orange;
+  }
+}
+
 // bootstrap5-tags need help
 .form-floating {
   > .form-tag-select ~ label {
@@ -51,6 +72,9 @@
     opacity: 1 !important;
     transform: none !important;
   }
+}
+.is-changed ~ .form-tag-select {
+  border-color: $orange;
 }
 .form-tag-select.form-control-focus {
   color: $input-focus-color;
