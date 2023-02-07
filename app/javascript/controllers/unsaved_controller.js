@@ -85,21 +85,6 @@ export default class extends Controller {
     }
   }
 
-  // setChanged(element, isChanged) {
-  //   this.isChanged = isChanged
-  //   if (isChanged) {
-  //     element.classList.add("is-changed")
-  //     if (this.hasDiscardTarget) {
-  //       this.discardTarget.classList.remove("invisible")
-  //     }
-  //   } else {
-  //     element.classList.remove("is-changed")
-  //     if (this.hasDiscardTarget) {
-  //       this.discardTarget.classList.add("invisible")
-  //     }
-  //   }
-  // }
-
   setChanged(changed) {
     this.isChanged = changed
 
