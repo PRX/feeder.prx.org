@@ -81,7 +81,7 @@ module Apple
         {podcast_container_id: pc.id,
          action: action,
          external_id: external_id,
-         feeder_id: episode.feeder_id})
+         feeder_episode_id: episode.feeder_id})
 
       # reset the episode's podcast container cached value
       episode.feeder_episode.reload_apple_podcast_container
