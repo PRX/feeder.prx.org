@@ -49,6 +49,7 @@ module Apple
     def poll!
       poll_episodes!
       poll_podcast_containers!
+      poll_podcast_deliveries!
     end
 
     def publish!
@@ -147,11 +148,15 @@ module Apple
       Rails.logger.info("Updated remote state for #{res.length} podcast containers.")
     end
 
+    def poll_podcast_deliveries!
+      res = Apple::PodcastDelivery.poll_podcast_deliveries_state(api, episodes_to_sync)
+      Rails.logger.info("Updated local state for #{res.length} podcast deliveries.")
+    end
+
     def sync_podcast_deliveries!
       Rails.logger.info("Starting podcast deliveries sync")
 
-      res = Apple::PodcastDelivery.update_podcast_deliveries_state(api, episodes_to_sync)
-      Rails.logger.info("Updated local state for #{res.length} podcast deliveries.")
+      poll_podcast_deliveries!
 
       res = Apple::PodcastDelivery.create_podcast_deliveries(api, episodes_to_sync)
       Rails.logger.info("Created remote / local state for #{res.length} podcast deliveries.")
