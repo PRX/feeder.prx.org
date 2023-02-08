@@ -88,9 +88,7 @@ module Apple
         next_uri = json["links"]["next"]
 
         uri =
-          if next_uri
-            URI.join(next_uri)
-          end
+          (URI.join(next_uri) if next_uri)
       end
 
       res.flatten
