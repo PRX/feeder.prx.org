@@ -30,7 +30,7 @@ module Apple
       end
     end
 
-    def self.update_podcast_container_state(api, episodes)
+    def self.poll_podcast_container_state(api, episodes)
       results = get_podcast_containers_via_episodes(api, episodes)
 
       join_on_apple_episode_id(episodes, results).each do |(ep, row)|
@@ -55,27 +55,33 @@ module Apple
     def self.upsert_podcast_container(episode, row)
       external_id = row.dig("api_response", "val", "data", "id")
 
-      pc =
+      (pc, action) =
         if (pc = where(apple_episode_id: episode.apple_id,
           external_id: external_id,
           episode_id: episode.feeder_id,
           vendor_id: episode.audio_asset_vendor_id).first)
-          Rails.logger.info("Updating local podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
+
           pc.update(api_response: row,
             source_url: episode.enclosure_url,
             source_filename: episode.enclosure_filename,
             updated_at: Time.now.utc)
-          pc
+          [pc, :updated]
         else
-          Rails.logger.info("Creating local podcast container w/ Apple id #{external_id} for episode #{episode.feeder_id}")
-          create!(api_response: row,
+          pc = create!(api_response: row,
             apple_episode_id: episode.apple_id,
             external_id: external_id,
             source_filename: episode.enclosure_filename,
             source_url: episode.enclosure_url,
             vendor_id: episode.audio_asset_vendor_id,
             episode_id: episode.feeder_id)
+          [pc, :created]
         end
+
+      Rails.logger.info("#{action} local podcast container",
+        {podcast_container_id: pc.id,
+         action: action,
+         external_id: external_id,
+         feeder_id: episode.feeder_id})
 
       # reset the episode's podcast container cached value
       episode.feeder_episode.reload_apple_podcast_container

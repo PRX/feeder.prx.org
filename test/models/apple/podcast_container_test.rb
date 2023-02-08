@@ -112,14 +112,14 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
   end
 
-  describe ".update_podcast_container_state(api, episodes)" do
+  describe ".poll_podcast_container_state(api, episodes)" do
     it "creates new records if they dont exist" do
       assert_equal SyncLog.count, 0
 
       Apple::PodcastContainer.stub(:get_podcast_containers_via_episodes, [podcast_container_json_row]) do
         apple_episode.stub(:apple_id, apple_episode_id) do
           apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-            Apple::PodcastContainer.update_podcast_container_state(nil, [apple_episode])
+            Apple::PodcastContainer.poll_podcast_container_state(nil, [apple_episode])
           end
         end
       end

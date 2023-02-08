@@ -123,6 +123,11 @@ module Apple
       show.reload
     end
 
+    def poll_podcast_containers!
+      res = Apple::PodcastContainer.poll_podcast_container_state(api, episodes_to_sync)
+      Rails.logger.info("Updated local state for podcast containers.", {count: res.length})
+    end
+
     def sync_podcast_containers!
       # TODO: right now we only create one delivery per container,
       # Apple RSS scaping means we don't need deliveries for freemium episode images
@@ -130,9 +135,7 @@ module Apple
 
       Rails.logger.info("Starting podcast container sync")
 
-      # Scan and update for existing containers
-      res = Apple::PodcastContainer.update_podcast_container_state(api, episodes_to_sync)
-      Rails.logger.info("Updated local state for #{res.length} podcast containers.")
+      poll_podcast_containers!
 
       eps = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
       res = Apple::Episode.update_audio_container_reference(api, eps)
