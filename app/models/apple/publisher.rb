@@ -50,6 +50,7 @@ module Apple
       poll_episodes!
       poll_podcast_containers!
       poll_podcast_deliveries!
+      poll_podcast_delivery_files!
     end
 
     def publish!
@@ -163,11 +164,15 @@ module Apple
       Rails.logger.info("Created remote and local state for podcast deliveries.", {count: res.length})
     end
 
+    def poll_podcast_delivery_files!
+      res = Apple::PodcastDeliveryFile.poll_podcast_delivery_files_state(api, episodes_to_sync)
+      Rails.logger.info("Modified local state for podcast delivery files.", {count: res.length})
+    end
+
     def sync_podcast_delivery_files!
       Rails.logger.info("Starting podcast delivery files sync")
 
-      res = Apple::PodcastDeliveryFile.update_podcast_delivery_files_state(api, episodes_to_sync)
-      Rails.logger.info("Updated local state for #{res.length} delivery files.")
+      poll_podcast_delivery_files!
 
       res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, episodes_to_sync)
       Rails.logger.info("Created remote/local state for #{res.length} podcast delivery files.")
