@@ -140,17 +140,18 @@ module Apple
       poll_podcast_containers!
 
       eps = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
+      Rails.logger.info("Created remote and local state for podcast containers.", {count: eps.length})
+
       res = Apple::Episode.update_audio_container_reference(api, eps)
-      Rails.logger.info("Created remote / local state for #{eps.length} podcast containers.")
-      Rails.logger.info("Updated remote container references for #{res.length} episodes.")
+      Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
 
       res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, episodes_to_sync)
-      Rails.logger.info("Updated remote state for #{res.length} podcast containers.")
+      Rails.logger.info("Updated remote file metadata on podcast containers.", {count: res.length})
     end
 
     def poll_podcast_deliveries!
       res = Apple::PodcastDelivery.poll_podcast_deliveries_state(api, episodes_to_sync)
-      Rails.logger.info("Updated local state for #{res.length} podcast deliveries.")
+      Rails.logger.info("Modified local state for podcast deliveries.", {count: res.length})
     end
 
     def sync_podcast_deliveries!
@@ -159,7 +160,7 @@ module Apple
       poll_podcast_deliveries!
 
       res = Apple::PodcastDelivery.create_podcast_deliveries(api, episodes_to_sync)
-      Rails.logger.info("Created remote / local state for #{res.length} podcast deliveries.")
+      Rails.logger.info("Created remote and local state for podcast deliveries.", {count: res.length})
     end
 
     def sync_podcast_delivery_files!
