@@ -6,7 +6,10 @@
   <div class="card shadow">
     <div class="card-header">
       <h1 class="card-title h5">Latest Published</h1>
-      <%= link_to "All Episodes", podcast_episodes_path(@podcast.id), class: 'btn btn-primary' %>
+      <%= link_to podcast_episodes_path(@podcast.id), class: "btn btn-primary" do %>
+        All Episodes
+        <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
+      <% end %>
     </div>
     <div class="card-body">
       <% if @recently_published.present? %>
@@ -27,9 +30,9 @@
     <div class="card-body">
       <% if @recently_published.present? %>
         <div class="row">
-          <p><%= 'Scheduled Date' %></p>
+          <p><%= "Scheduled Date" %></p>
           <div>
-            <h2 class="h5"><%= 'Scheduled Title' %></h2>
+            <h2 class="h5"><%= "Scheduled Title" %></h2>
           </div>
         </div>
       <% end %>
@@ -42,10 +45,15 @@
     <div class="card shadow">
       <div class="card-header">
         <h1 class="card-title h5">Feeds</h1>
-        <%= link_to "Manage Feeds", podcast_feeds_path(@podcast.id), class: 'btn btn-primary' %>
+        <%= link_to podcast_feeds_path(@podcast.id), class: "btn btn-primary" do %>
+          Manage Feeds
+          <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
+        <% end %>
       </div>
       <div class="card-body">
-
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%= link_to "Default RSS Feed", @podcast.default_feed %></li>
+        </ul>
       </div>
     </div>
   </div>
@@ -54,10 +62,16 @@
     <div class="card shadow">
       <div class="card-header">
         <h1 class="card-title h5">Settings</h1>
-        <%= link_to "Manage Settings", podcast_path(@podcast.id), class: 'btn btn-primary' %>
+        <%= link_to edit_podcast_path(@podcast.id), class: "btn btn-primary" do %>
+          Manage Settings
+          <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
+        <% end %>
       </div>
       <div class="card-body">
-
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%= link_to "Engagement Settings", podcast_engagement_path(@podcast.id) %></li>
+          <li class="list-group-item"><%= link_to "Import", podcast_imports_path(@podcast.id) %></li>
+        </ul>
       </div>
     </div>
   </div>
