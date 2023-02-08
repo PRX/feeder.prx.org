@@ -48,6 +48,7 @@ module Apple
 
     def poll!
       poll_episodes!
+      poll_podcast_containers!
     end
 
     def publish!
