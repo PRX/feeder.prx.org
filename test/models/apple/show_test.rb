@@ -40,11 +40,19 @@ describe Apple::Show do
   end
 
   describe ".connect_existing" do
-    it "should persist the apple id for a feed" do
-      Apple::Show.connect_existing("some_apple_id", apple_api, public_feed, private_feed)
+    let(:apple_creds) { create(:apple_credential, public_feed: public_feed, private_feed: private_feed) }
 
-      assert_equal Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed).apple_id,
-        "some_apple_id"
+    it "should take in the apple show id an apple credentials object" do
+      apple_creds.save!
+      apple_show = Apple::Show.connect_existing("some_apple_id", apple_creds)
+
+      assert_equal apple_show.apple_id, "some_apple_id"
+      assert_equal apple_show.public_feed, apple_creds.public_feed
+      assert_equal apple_show.private_feed, apple_creds.private_feed
+
+      # it can be reloaded from the db
+      apple_publisher = Apple::Publisher.from_apple_credential(apple_creds.reload)
+      assert_equal apple_publisher.show.apple_id, "some_apple_id"
     end
   end
 
