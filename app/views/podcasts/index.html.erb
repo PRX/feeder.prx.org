@@ -3,8 +3,16 @@
 
 <h1>Podcasts</h1>
 
-<button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+<button>
+<a class="btn btn-light btn-sm dropdown-toggle" id= type="button" data-bs-toggle="dropdown">
   Sort <span class="material-icons" aria-hidden="true">sort</span>
+  <ul class="dropdown-menu"
+    <li><a class="dropdown-item active" href="<%= podcasts_path(sort: 'Recent') %>">Recent Activity</a></li>
+    <li><%= link_to '# of Episodes', podcasts_path, class: "dropdown-item"%></li>
+    <li><%= link_to 'A-Z', podcasts_path(sort:"A-Z"), class: "dropdown-item" %></li>
+    <li><%= link_to 'Z-A', podcasts_path(sort:"Z-A"), class: "dropdown-item" %></li>
+  </ul>
+</a>
 </button>
 
 <button>

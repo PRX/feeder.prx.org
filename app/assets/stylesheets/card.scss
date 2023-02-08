@@ -48,7 +48,7 @@
   }
 }
 
-.podcast-card {
+.prx-podcast-card {
   border-top: none;
   border-left: none;
   border-right: none;
@@ -65,7 +65,7 @@
     }
   }
 
-  .podcast-card-info {
+  .prx-podcast-card-info {
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -74,7 +74,7 @@
       margin-right: 1rem;
     }
 
-    .podcast-card-title {
+    .prx-podcast-card-title {
       margin-bottom: 0.25rem;
       font-weight: bold;
       font-size: 1.25rem;
@@ -94,7 +94,7 @@
     }
   }
 
-  .podcast-card-status {
+  .prx-podcast-card-status {
     text-align: right;
   }
 }
