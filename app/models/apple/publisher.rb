@@ -125,7 +125,7 @@ module Apple
 
     def poll_podcast_containers!
       res = Apple::PodcastContainer.poll_podcast_container_state(api, episodes_to_sync)
-      Rails.logger.info("Updated local state for podcast containers.", {count: res.length})
+      Rails.logger.info("Modified local state for podcast containers.", {count: res.length})
     end
 
     def sync_podcast_containers!

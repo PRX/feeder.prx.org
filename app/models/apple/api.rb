@@ -17,7 +17,10 @@ module Apple
 
     def self.from_apple_credentials(apple_credentials)
       if apple_credentials.no_apple_credentials?
-        Rails.logger.info("No Apple credentials found via creds #{apple_credentials.id}, falling back to environment")
+        Rails.logger.info("No Apple API keys in credentials object, falling back to environment default keys",
+          {apple_credential_id: apple_credentials.id,
+           podcast_id: apple_credentials.podcast_id,
+           podcast_title: apple_credentials.podcast_title})
         from_env
       else
         new(provider_id: apple_credentials.apple_provider_id,
