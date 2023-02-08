@@ -92,9 +92,24 @@ en:
       title: Status
       update: Save
       updated_at_hint: Last Saved
+    podcast:
+      no_image: No image here
+      create_episode: Create Episode
+      plan_episodes: Plan Episodes
     update:
       error: Unable to save
       notice: Podcast updated
+    show:
+      latest_published: Latest Published
+      all_episodes: All Episodes
+      next_scheduled: Next Scheduled or Draft
+      feeds: Feeds
+      manage_feeds: Manage Feeds
+      default_feed: Default RSS Feed
+      settings: Settings
+      manage_settings: Manage Settings
+      engagement_settings: Engagement Settings
+      import: Import
   podcast_switcher:
     dropdown:
       all: View all my Podcasts

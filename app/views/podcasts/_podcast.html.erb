@@ -4,7 +4,7 @@
       <% if podcast.feed_image %>
         <%= image_tag(podcast.feed_image.url, width: 135, alt: podcast.feed_image.alt_text, class: "d-flex mx-auto mb-2") %>
       <% else %>
-        <h1 class="h3">No image here</h1>
+        <h1 class="h3"><%= t ".no_image" %></h1>
       <% end %>
     </div>
     <div class="col-sm-6">
@@ -13,11 +13,11 @@
     </div>
     <div class="col-sm-5 d-flex align-items-center">
       <%= link_to new_episode_path, class: "btn btn-primary btn-sm d-flex align-items-center m-2" do %>
-        <span>Create Episode</span>
+        <%= t ".create_episode" %>
         <span class="material-icons ms-2" aria-hidden="true">mic</span>
       <% end %>
       <%= link_to podcast_path(podcast.id), class: "btn btn-primary btn-sm d-flex align-items-center m-2" do %>
-        Plan Episodes
+        <%= t ".plan_episodes" %>
         <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
       <% end %>
     </div>
