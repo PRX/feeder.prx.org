@@ -1,6 +1,6 @@
 //
 // Header nav styles
-// 
+//
 
 .prx-header-bar {
   --#{$prefix}dropdown-item-padding-x: #{map-get($spacers, 4)};
@@ -57,7 +57,7 @@
     --#{$prefix}nav-link-color: #{$white};
     --#{$prefix}nav-link-font-weight: #{$font-weight-bold};
     --#{$prefix}nav-link-padding-x: #{map-get($spacers, 3)};
-    --#{$prefix}nav-link-padding-y: #{map-get($spacers, 0)};
+    --#{$prefix}nav-link-padding-y: #{map-get($spacers, 2)};
 
     display: grid;
     align-items: center;
@@ -65,9 +65,9 @@
 
     &:not(.dropdown-toggle) {
       --prx-nav-link-active-border-color: #{transparent};
-  
+
       border-block-end: 3px solid var(--prx-nav-link-active-border-color);
-  
+
       &.active {
         --prx-nav-link-active-border-color: #{$orange};
       }

@@ -1,8 +1,7 @@
 <div class="prx-header-bar | navbar navbar-dark align-items-stretch p-0 bg-primary-dark">
   <div class="container-fluid align-items-stretch pe-0">
     <header class="flex-grow-1">
-      <h1 class="visually-hidden">PRX Dovetail</h1>
-      <%= link_to image_tag("dovetail_logo.svg", width: 152, height: 40, alt: "Dovetail"), main_app.podcasts_path, class: "navbar-brand" %>
+      <%= link_to image_tag("dovetail_logo.svg", width: 152, height: 30, alt: "Dovetail from PRX"), main_app.podcasts_path, class: "navbar-brand d-flex mt-2 mb-2" %>
     </header>
 
     <nav class="navbar-nav d-none d-md-flex flex-row align-items-stretch">
@@ -18,13 +17,13 @@
         <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
       <% end %>
     </nav>
-      
+
     <nav class="navbar-nav dropdown">
       <h2 class="visually-hidden">Help Menu</h2>
       <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-help-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
         <span class="material-icons align-middle">help</span>
       </a>
-      <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute bg-primary-dark shadow" aria-labelledby="nav-help-dropdown">
+      <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute bg-primary-dark shadow m-0" aria-labelledby="nav-help-dropdown">
         <%= link_to t(".help"), "https://help.prx.org", class: "dropdown-item" %>
         <%= link_to t(".status"), "https://status.prx.org", class: "dropdown-item" %>
         <%= link_to t(".terms"), "https://exchange.prx.org/terms-of-use", class: "dropdown-item" %>
@@ -44,7 +43,7 @@
             <span class="material-icons align-middle" aria-label="<%= t(".account") %>">account_circle</span>
           <% end %>
         </a>
-        <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute bg-primary-dark shadow pb-2 text-center" aria-labelledby="nav-user-dropdown">
+        <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute bg-primary-dark shadow pb-2 text-center m-0" aria-labelledby="nav-user-dropdown">
           <div class="h2 py-3 px-4 text-nowrap"><%= current_user_name %></div>
           <%= link_to t(".id"), current_user_id_profile, class: "btn btn-primary-light mb-2" %>
           <%= link_to "Reload", main_app.refresh_path, data: {turbo: false}, class: "dropdown-item text-primary-light" %>
