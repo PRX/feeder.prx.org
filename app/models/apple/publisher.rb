@@ -76,13 +76,13 @@ module Apple
     def log_delivery_processing_errors
       episodes_to_sync.each do |ep|
         ep.podcast_delivery_files.each do |pdf|
-          if pdf.processed_errors?
-            Rails.logger.error("Episode has processing errors",
-              {episode_id: ep.feeder_id,
-               podcast_delivery_file_id: pdf.id,
-               assert_processing_state: pdf.asset_processing_state,
-               asset_delivery_state: pdf.asset_delivery_state})
-          end
+          next unless pdf.processed_errors?
+
+          Rails.logger.error("Episode has processing errors",
+            {episode_id: ep.feeder_id,
+             podcast_delivery_file_id: pdf.id,
+             assert_processing_state: pdf.asset_processing_state,
+             asset_delivery_state: pdf.asset_delivery_state})
         end
       end
 
