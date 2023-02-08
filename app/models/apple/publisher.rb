@@ -46,6 +46,10 @@ module Apple
       @find_episode.fetch(id)
     end
 
+    def poll!
+      poll_episodes!
+    end
+
     def publish!
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
@@ -91,18 +95,30 @@ module Apple
       Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
     end
 
+    def poll_episodes!
+      local_episodes = episodes_to_sync
+
+      local_guids = local_episodes.map(&:item_guid)
+      remote_guids = show.apple_episode_guids
+
+      Rails.logger.info("Polling remote / local episode state", {local_count: local_guids.length,
+                                                                  remote_count: remote_guids.length,
+                                                                  local_missing_remote: local_guids - remote_guids,
+                                                                  remote_missing_local: remote_guids - local_guids})
+    end
+
     def sync_episodes!
       Rails.logger.info("Starting podcast episode sync")
 
       create_apple_episodes = episodes_to_sync.select(&:apple_new?)
-      Rails.logger.info("Created remote / local state for #{create_apple_episodes.length} episodes.")
-
-      # Note: We don't attempt to update the remote state of episodes. Once
+      # NOTE: We don't attempt to update the remote state of episodes. Once
       # apple has parsed the feed, it will not allow changing any attributes.
       #
       # It's assumed that the episodes are created solely by the PRX web UI (not
       # on Podcasts Connect).
       Apple::Episode.create_episodes(api, create_apple_episodes)
+
+      Rails.logger.info("Created remote episodes", {count: create_apple_episodes.length})
 
       show.reload
     end

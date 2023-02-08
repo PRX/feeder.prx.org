@@ -142,5 +142,9 @@ module Apple
     def apple_episodes_json
       get_episodes_json
     end
+
+    def apple_episode_guids
+      apple_episodes_json.map { |e| e["attributes"]["guid"] }
+    end
   end
 end
