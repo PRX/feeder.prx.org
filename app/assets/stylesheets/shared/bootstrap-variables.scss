@@ -16,54 +16,54 @@ $gray-700: #535355;
 $gray-800: #323233;
 $gray-900: #1a1a1a;
 
-$blue:        #0072a3;
-$blue-dark:   #003a57;
-$blue-light:  #8cd2f4;
-$indigo:      #6610f2;
-$purple:      #6f42c1;
-$pink:        #d63384;
-$ltpink:      #ffdbed;
-$red:         #dc3545;
-$orange:      #ff9600;
-$yellow:      #ffc107;
-$green:       #198754;
-$teal:        #20c997;
-$cyan:        #0dcaf0;
+$blue: #0072a3;
+$blue-dark: #003a57;
+$blue-light: #8cd2f4;
+$indigo: #6610f2;
+$purple: #6f42c1;
+$pink: #d63384;
+$ltpink: #ffdbed;
+$red: #dc3545;
+$orange: #ff9600;
+$yellow: #ffc107;
+$green: #198754;
+$teal: #20c997;
+$cyan: #0dcaf0;
 
-$primary:     $blue;
-$secondary:   $gray-700;
-$success:     $green;
-$info:        $cyan;
-$warning:     $yellow;
-$danger:      $red;
-$light:       $gray-100;
-$dark:        $gray-900;
+$primary: $blue;
+$secondary: $gray-700;
+$success: $green;
+$info: $cyan;
+$warning: $yellow;
+$danger: $red;
+$light: $gray-100;
+$dark: $gray-900;
 
 $theme-colors: (
-  "primary":        $primary,
-  "primary-dark":   $blue-dark,
-  "primary-light":  $blue-light,
-  "secondary":      $secondary,
-  "success":        $success,
-  "info":           $info,
-  "warning":        $warning,
-  "danger":         $danger,
-  "light":          $light,
-  "dark":           $dark
+  "primary": $primary,
+  "primary-dark": $blue-dark,
+  "primary-light": $blue-light,
+  "secondary": $secondary,
+  "success": $success,
+  "info": $info,
+  "warning": $warning,
+  "danger": $danger,
+  "light": $light,
+  "dark": $dark,
 );
 
 // Typography
 
 $text-muted: $gray-700;
 
-$line-height-base:  2;
-$line-height-xs:    1.1;
-$line-height-sm:    1.5;
-$line-height-lg:    2.5;
+$line-height-base: 2;
+$line-height-xs: 1.1;
+$line-height-sm: 1.5;
+$line-height-lg: 2.5;
 
-$font-size-base:    1rem; // Assumes the browser default, typically `16px`
-$font-size-sm:      $font-size-base * .875;
-$font-size-lg:      $font-size-base * 1.25;
+$font-size-base: 1rem; // Assumes the browser default, typically `16px`
+$font-size-sm: $font-size-base * 0.875;
+$font-size-lg: $font-size-base * 1.25;
 
 $h1-font-size: $font-size-base * 1.75;
 $h2-font-size: $font-size-base * 1.5;
@@ -80,7 +80,7 @@ $font-sizes: (
   5: $h5-font-size,
   6: $h6-font-size,
   sm: $font-size-sm,
-  lg: $font-size-lg
+  lg: $font-size-lg,
 );
 
 $headings-line-height: 1.5;
@@ -88,43 +88,43 @@ $headings-line-height: 1.5;
 // Button + Form
 
 // bit complicated, but this is 2*line-height + 2*padding-y + 2px-border
-$input-height:        calc(3.5em + 2px);
+$input-height: calc(3.5em + 2px);
 $input-btn-padding-y: 0.75rem;
 $input-btn-padding-x: 0.75rem;
 
-$input-color:         $gray-800;
-$input-border-color:  $gray-200;
-$input-disabled-bg:   #eee;
+$input-color: $gray-800;
+$input-border-color: $gray-200;
+$input-disabled-bg: #eee;
 
 // Buttons
 
-$btn-icon-padding:      0.375rem;
-$btn-icon-font-size:    $font-size-base * 1.5;
+$btn-icon-padding: 0.375rem;
+$btn-icon-font-size: $font-size-base * 1.5;
 
-$btn-icon-padding-sm:   0.25rem;
+$btn-icon-padding-sm: 0.25rem;
 $btn-icon-font-size-sm: $font-size-base * 1.25;
 
-$btn-icon-padding-lg:   0.5rem;
+$btn-icon-padding-lg: 0.5rem;
 $btn-icon-font-size-lg: $font-size-base * 2;
 
 // Forms
 
-$form-select-disabled-bg:       $input-disabled-bg;
+$form-select-disabled-bg: $input-disabled-bg;
 
-$form-floating-height:          $input-height;
-$form-floating-padding-x:       $input-btn-padding-x;
-$form-floating-padding-y:       $input-btn-padding-y;
+$form-floating-height: $input-height;
+$form-floating-padding-x: $input-btn-padding-x;
+$form-floating-padding-y: $input-btn-padding-y;
 $form-floating-input-padding-t: $input-btn-padding-y;
 $form-floating-input-padding-b: $input-btn-padding-y;
-$form-floating-label-opacity:   1;
+$form-floating-label-opacity: 1;
 $form-floating-label-transform: scale(0.85) translateY(-1.75rem) translateX(0.15rem);
 
 $border-radius: 0.1875rem;
 
 // Cards
 
-$card-border-radius:  0;
-$card-cap-bg:         transparent;
+$card-border-radius: 0;
+$card-cap-bg: transparent;
 
 // Utilities
 
@@ -138,6 +138,6 @@ $utilities: (
       sm: $line-height-sm,
       base: $line-height-base,
       lg: $line-height-lg,
-    )
-  )
+    ),
+  ),
 );

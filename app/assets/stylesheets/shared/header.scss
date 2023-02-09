@@ -2,9 +2,8 @@
  * PRX header component
  */
 
-@import 'header-nav';
-@import 'header-subnav';
-
+@import "header-nav";
+@import "header-subnav";
 
 .prx-podcast-switcher {
   width: 100%;
@@ -31,7 +30,7 @@
 
     &:after {
       @extend .material-icons;
-      content: 'expand_more';
+      content: "expand_more";
       border: none;
       transition: transform 150ms ease-in-out;
     }

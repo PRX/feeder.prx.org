@@ -1,6 +1,6 @@
-// 
+//
 // Header subnav styles
-// 
+//
 
 .prx-app-bar {
   border-bottom: 1px solid $gray-300;
@@ -33,9 +33,9 @@
 
     &:not(.dropdown-toggle) {
       --prx-nav-link-active-border-color: #{transparent};
-  
+
       border-block-end: 3px solid var(--prx-nav-link-active-border-color);
-  
+
       &.active {
         --prx-nav-link-active-border-color: #{$orange};
       }
