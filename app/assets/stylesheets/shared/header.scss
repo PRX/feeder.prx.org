@@ -35,6 +35,12 @@
       transition: transform 150ms ease-in-out;
     }
 
+    .img-placeholder {
+      width: 30px;
+      height: 30px;
+      background: $gray-200;
+    }
+
     &.show {
       &::after {
         transform: rotate(180deg);

@@ -7,21 +7,6 @@
 }
 
 .prx-app-nav {
-  // display: flex;
-  // flex-direction: row;
-  // justify-content: flex-start;
-  // align-items: center;
-  // margin: 0;
-  // padding: 0;
-
-  // .navbar-nav {
-  //   display: flex;
-  //   flex-direction: row;
-  //   flex-wrap: wrap;
-  //   margin: 0;
-  //   padding: 0;
-  // }
-
   .nav-link {
     --#{$prefix}nav-link-font-weight: #{$font-weight-bold};
     --#{$prefix}nav-link-padding-x: #{map-get($spacers, 3)};
