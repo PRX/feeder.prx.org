@@ -3,7 +3,13 @@
 //
 
 .prx-header-bar {
+  $bg-show: shift-color($blue-dark, 20%);
+
   --#{$prefix}dropdown-item-padding-x: #{map-get($spacers, 4)};
+
+  &.navbar {
+    --#{$prefix}navbar-brand-padding-y: 0.75rem;
+  }
 
   .dropdown-menu {
     --#{$prefix}dropdown-border-radius: 0;
@@ -11,6 +17,7 @@
   }
 
   .dropdown-menu-dark {
+    --#{$prefix}dropdown-bg: #{$bg-show};
     --#{$prefix}dropdown-link-hover-bg: #{$blue};
   }
 
@@ -26,16 +33,7 @@
     }
 
     &.show {
-      &:before {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        height: 10px;
-        z-index: $zindex-dropdown;
-        background-color: $blue-dark;
-      }
+      background-color: $bg-show;
     }
   }
 
@@ -80,6 +78,7 @@
     --#{$prefix}nav-link-padding-y: #{map-get($spacers, 2)};
 
     line-height: 0;
+    align-self: stretch;
 
     .material-icons {
       font-size: inherit;
