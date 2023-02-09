@@ -16,24 +16,29 @@
   </head>
 
   <body data-controller="blank-field tooltip">
-    <header>
-      <%= render "layouts/nav" %>
-      <%= render "layouts/subnav" if current_user %>
-    </header>
+    <%= render "layouts/nav" %>
+    <%= render "layouts/subnav" if current_user %>
 
     <%= render "layouts/alerts" %>
 
     <% if content_for? :tabs %>
-      <div class="container-fluid">
-        <div class="row full-vertical-height">
-          <aside class="sidetabs col-sm-12 col-md-3 col-xl-2">
-            <%= yield :tabs %>
+      <div class="prx-main | container-fluid d-grid">
+        <div class="row">
+          <aside class="prx-tabs | d-flex flex-column justify-content-between col-sm-12 col-md-3 col-xl-2">
+            <nav class="prx-tabs-nav | nav nav-tabs flex-column bg-white">
+              <%= yield :tabs %>
+            </nav>
+            <% if content_for? :actions %>
+              <nav class="prx-tabs-actions | d-grid gap-3 px-2 py-3">
+                <%= yield :actions %>
+              </nav>
+            <% end %>
           </aside>
-          <main class="tab-content col-sm-12 col-md-9 col-xl-10 bg-white"><%= yield %></main>
+          <main class="prx-tab-content | col-sm-12 col-md-9 col-xl-10 bg-white"><%= yield %></main>
         </div>
       </div>
     <% else %>
-      <main class="container-xl">
+      <main class="prx-main | container-xl">
         <%= yield %>
       </main>
     <% end %>
