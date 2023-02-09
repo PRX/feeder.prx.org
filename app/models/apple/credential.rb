@@ -5,6 +5,11 @@ module Apple
     belongs_to :public_feed, class_name: "Feed"
     belongs_to :private_feed, class_name: "Feed"
 
+    has_one :podcast, through: :public_feed
+
+    delegate :title, to: :podcast, prefix: "podcast"
+    delegate :id, to: :podcast, prefix: "podcast"
+
     validates_presence_of :public_feed
     validates_presence_of :private_feed
 
@@ -27,14 +32,6 @@ module Apple
 
     def apple_key
       Base64.decode64(apple_key_pem_b64)
-    end
-
-    def podcast_id
-      public_feed.podcast_id
-    end
-
-    def podcast_title
-      public_feed.podcast.title
     end
   end
 end
