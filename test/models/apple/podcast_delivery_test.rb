@@ -104,8 +104,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
       podcast_container1.stub(:needs_delivery?, true) do
         podcast_container2.stub(:needs_delivery?, false) do
           assert_equal [podcast_container1],
-            Apple::PodcastDelivery.select_containers_for_delivery([podcast_container1,
-              podcast_container2])
+            Apple::PodcastDelivery.select_containers_for_delivery([podcast_container1, podcast_container2])
         end
       end
     end
