@@ -155,4 +155,35 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe "#has_podcast_audio?" do
+    let(:file) do
+      {"fileName" => "SomeName.flac",
+       "fileType" => "audio",
+       "status" => "In Asset Repository",
+       "assetRole" => "PodcastSourceAudio"}
+    end
+
+    let(:container) { Apple::PodcastContainer.new }
+
+    it "returns true if the podcast container has a podcast audio file" do
+      container.stub(:apple_attributes, {"files" => [file]}) do
+        assert container.has_podcast_audio?
+      end
+    end
+
+    it "returns false if the status is not in asset repository" do
+      file["status"] = "Not In Asset Repository"
+      container.stub(:apple_attributes, {"files" => [file]}) do
+        refute container.has_podcast_audio?
+      end
+    end
+
+    it "returns false if the assetRole is not podcast source audio" do
+      file["assetRole"] = "Not Podcast Source Audio"
+      container.stub(:apple_attributes, {"files" => [file]}) do
+        refute container.has_podcast_audio?
+      end
+    end
+  end
 end

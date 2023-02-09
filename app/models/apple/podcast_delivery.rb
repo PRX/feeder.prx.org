@@ -40,8 +40,13 @@ module Apple
       end
     end
 
+    def self.select_containers_for_delivery(podcast_containers)
+      podcast_containers
+        .select(&:needs_delivery?)
+        .compact
+    end
+
     def self.create_podcast_deliveries(api, episodes)
-      # TODO: Support multiple deliveries per episode
       podcast_containers = episodes.map do |ep|
         if ep.podcast_container.nil?
           missing_container_for_episode(ep)
@@ -51,12 +56,14 @@ module Apple
         ep.podcast_container
       end.compact
 
-      podcast_containers = podcast_containers.reject do |container|
-        # Don't create deliveries for containers that already have deliveries.
-        # An alternative workflow would be to swap out the existing delivery and
-        # upload different audio.
-        container.podcast_deliveries.present?
-      end
+      # Don't create deliveries for containers that already have deliveries.
+      # An alternative workflow would be to swap out the existing delivery and
+      # upload different audio.
+      #
+      # The overall publishing workflow dependes on the assumption that there is
+      # a delivery present. If we don't create a delivery here, we short-circuit
+      # subsequent steps (no uploads, no audio linking).
+      podcast_containers = select_containers_for_delivery(podcast_containers)
 
       response =
         api.bridge_remote_and_retry!("createPodcastDeliveries",

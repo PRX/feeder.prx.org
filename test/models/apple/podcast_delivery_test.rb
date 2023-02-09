@@ -95,4 +95,19 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
           podcast_container_deliveries_json)
     end
   end
+
+  describe ".select_containers_for_delivery" do
+    let(:podcast_container1) { Apple::PodcastContainer.new }
+    let(:podcast_container2) { Apple::PodcastContainer.new }
+
+    it "should filter/select podcasts that need delivery" do
+      podcast_container1.stub(:needs_delivery?, true) do
+        podcast_container2.stub(:needs_delivery?, false) do
+          assert_equal [podcast_container1],
+            Apple::PodcastDelivery.select_containers_for_delivery([podcast_container1,
+              podcast_container2])
+        end
+      end
+    end
+  end
 end

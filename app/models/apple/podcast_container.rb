@@ -10,6 +10,9 @@ module Apple
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, class_name: "::Episode"
 
+    FILE_STATUS_SUCCESS = "In Asset Repository"
+    FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"
+
     def self.update_podcast_container_file_metadata(api, episodes)
       containers = episodes.map(&:podcast_container)
       raise "Missing podcast container for episode" if containers.any?(&:nil?)
@@ -191,6 +194,28 @@ module Apple
 
     def podcast_container_id
       id
+    end
+
+    def files
+      apple_attributes.dig("files")
+    end
+
+    def has_podcast_audio?
+      return false if files.blank?
+
+      files.any? do |file|
+        # Retrieve the file status from the podcast container's files attribute
+        file["status"] == FILE_STATUS_SUCCESS && file["assetRole"] == FILE_ASSET_ROLE_PODCAST_AUDIO
+      end
+    end
+
+    def missing_podcast_audio?
+      !has_podcast_audio?
+    end
+
+    def needs_delivery?
+      # TODO: Overwriting the podcast audio with another file
+      missing_podcast_audio? && podcast_deliveries.empty?
     end
   end
 end
