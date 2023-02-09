@@ -1,0 +1,25 @@
+//
+// Podcast card styles.
+//
+
+.prx-podcast.card {
+  --#{$prefix}card-border-width: 0;
+  --#{$prefix}card-spacer-y: #{map-get($spacers, 0)};
+  --#{$prefix}card-title-spacer-y: #{map-get($spacers, 0)};
+
+  --prx-card-hover-bg: #{tint-color($link-color, 95%)};
+
+  .card-title {
+    color: $black;
+    font-size: $h3-font-size;
+    font-weight: $font-weight-bold;
+  }
+
+  &:hover {
+    background-color: var(--prx-card-hover-bg);
+  }
+
+  & + & {
+    border-top-width: 1px;
+  }
+}
