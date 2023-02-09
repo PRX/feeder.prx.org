@@ -7,6 +7,10 @@ class PodcastPolicy < ApplicationPolicy
     authorized?(:podcast_create)
   end
 
+  def show?
+    authorized?(:read_private)
+  end
+
   def update?
     authorized?(:podcast_edit)
   end

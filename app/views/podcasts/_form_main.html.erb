@@ -1,0 +1,157 @@
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :title %>
+    <%= form.label :title %>
+    <a class="help-text" href="#" data-bs-toggle="tooltip" data-bs-title="<%= t(".help.explicit") %>"><span class="material-icons">help</span></a>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.select :prx_account_uri, podcast_account_name_options(podcast.prx_account_uri) %>
+    <%= form.label :prx_account_uri %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :id, disabled: true %>
+    <%= form.label :id %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :subtitle %>
+    <%= form.label :subtitle %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_area :description %>
+    <%= form.label :description %>
+  </div>
+</div>
+
+<div class="col-12 mb-4" data-controller="toggle-field">
+  <div class="form-check <%= "d-none" if podcast.summary.present? %>">
+    <%= form.check_box :add_itunes_summary, class: "form-check-input", name: nil, checked: false, data: {toggle_field_target: "check", action: "toggle-field#changeCheck"} %>
+    <%= form.label :add_itunes_summary %>
+  </div>
+
+  <div class="form-floating <%= "d-none" unless podcast.summary.present? %>">
+    <%= form.text_area :summary, data: {toggle_field_target: "field", action: "blur->toggle-field#changeField"} %>
+    <%= form.label :summary %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :link %>
+    <%= form.label :link %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.select :explicit, podcast_explicit_options %>
+    <%= form.label :explicit %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <%# HACK: display nested validation errors %>
+  <% nested_errors = podcast.errors.full_messages_for("itunes_categories.name").join(", ") %>
+  <% klass = nested_errors.present? ? "is-invalid form-select" : "form-select" %>
+
+  <div class="form-floating" data-controller="dynamic-form">
+    <%= form.select :itunes_category, itunes_category_options, {include_blank: true}, class: klass, data: {action: "dynamic-form#change"} %>
+    <% if nested_errors.present? %><div class="invalid-feedback"><%= nested_errors %></div><% end %>
+    <%= form.label :itunes_category %>
+
+    <%# update subcategory turbo-frame when category changes %>
+    <a hidden href="<%= new_podcast_path %>" data-dynamic-form-target="link" data-turbo-frame="itunes-subcategory"></a>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <%= turbo_frame_tag "itunes-subcategory" do %>
+    <div class="form-floating">
+      <% opts = itunes_subcategory_options(podcast.itunes_category) %>
+      <%= form.select :itunes_subcategory, opts, {include_blank: true}, disabled: opts.blank? %>
+      <%= form.label :itunes_subcategory %>
+    </div>
+  <% end %>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.select :serial_order, podcast_serial_order_options %>
+    <%= form.label :serial_order %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%# TODO: make this a select, but where to get the options? %>
+    <%= form.text_field :language %>
+    <%= form.label :language %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :owner_name %>
+    <%= form.label :owner_name %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :owner_email %>
+    <%= form.label :owner_email %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :author_name %>
+    <%= form.label :author_name %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :author_email %>
+    <%= form.label :author_email %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :managing_editor_name %>
+    <%= form.label :managing_editor_name %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :managing_editor_email %>
+    <%= form.label :managing_editor_email %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :copyright %>
+    <%= form.label :copyright %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-check">
+    <%= form.check_box :complete, class: "form-check-input" %>
+    <%= form.label :complete %>
+  </div>
+</div>

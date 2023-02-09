@@ -1,17 +1,26 @@
-<%= form_with(model: podcast) do |form| %>
-  <% if podcast.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(podcast.errors.count, "error") %> prohibited this podcast from being saved:</h2>
-
-      <ul>
-        <% podcast.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+<%= form_with(model: podcast, html: {autocomplete: "off"}, data: {controller: "unsaved", unsaved_changed_value: podcast.changed?, unsaved_confirm_value: t(".confirm")}) do |form| %>
+  <div class="row mt-4">
+    <div class="col-lg-8">
+      <div class="row">
+        <%= render "form_main", podcast: podcast, form: form %>
+      </div>
     </div>
-  <% end %>
-
-  <div>
-    <%= form.submit %>
+    <div class="col-lg-4 d-grid align-content-start gap-3">
+      <div class="row">
+        <div class="col-12">
+          <%= render "form_status", podcast: podcast, form: form %>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <%= render "form_itunes_image", podcast: podcast, form: form %>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <%= render "form_feed_image", podcast: podcast, form: form %>
+        </div>
+      </div>
+    </div>
   </div>
 <% end %>

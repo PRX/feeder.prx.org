@@ -36,4 +36,27 @@ module PodcastsHelper
     # don't include podcast#show, or any episodes/feeds paths
     parts[0] == "podcasts" && parts[2] && parts[2] != "episodes" && parts[2] != "feeds"
   end
+
+  def podcast_metadata_active?
+    parts = request.path.split("/").select(&:present?)
+
+    # either on #edit OR updating #show
+    parts[0] == "podcasts" && (parts[2] == "edit" || (parts.count == 2 && action_name == "update"))
+  end
+
+  def podcast_explicit_options
+    Podcast::VALID_EXPLICITS.map { |val| [I18n.t("helpers.label.podcast.explicits.#{val}"), val] }
+  end
+
+  def itunes_category_options
+    ITunesCategoryValidator::CATEGORIES.keys
+  end
+
+  def itunes_subcategory_options(cat = nil)
+    ITunesCategoryValidator::CATEGORIES[cat] || []
+  end
+
+  def podcast_serial_order_options
+    [false, true].map { |val| [I18n.t("helpers.label.podcast.serial_orders.#{val}"), val] }
+  end
 end

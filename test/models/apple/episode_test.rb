@@ -6,7 +6,7 @@ describe Apple::Episode do
   let(:podcast) { create(:podcast) }
 
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
-  let(:private_feed) { create(:feed, podcast: podcast, private: true) }
+  let(:private_feed) { create(:feed, podcast: podcast, private: true, tokens: [FeedToken.new]) }
 
   let(:apple_creds) { build(:apple_credential) }
   let(:apple_api) { Apple::Api.from_apple_credentials(apple_creds) }
@@ -83,16 +83,6 @@ describe Apple::Episode do
   describe "#enclosure_url" do
     it "should add a noImp query param" do
       assert_match(/noImp=1/, apple_episode.enclosure_url)
-    end
-  end
-
-  describe ".add_no_imp_param" do
-    it "should add a noImp query param" do
-      assert_equal "http://example.com?noImp=1", Apple::Episode.add_no_imp_param("http://example.com")
-    end
-
-    it "should preserve existing query params" do
-      assert_equal "http://example.com?foo=bar&noImp=1", Apple::Episode.add_no_imp_param("http://example.com?foo=bar")
     end
   end
 end

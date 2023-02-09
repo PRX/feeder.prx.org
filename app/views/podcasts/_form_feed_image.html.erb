@@ -1,0 +1,14 @@
+<div class="card">
+  <div class="card-header-info">
+    <h5 class="card-title"><%= t(".title") %></h5>
+  </div>
+  <div class="card-body">
+    <% if podcast.feed_image %>
+      <%= image_tag(podcast.feed_image.url, width: 135, alt: podcast.feed_image.alt_text, class: "d-flex mx-auto mb-2") %>
+    <% else %>
+      <h3>No image here</h3>
+    <% end %>
+
+    <p>tktktk</p>
+  </div>
+</div>

@@ -1,12 +1,5 @@
+<% content_for :title, "#{@podcast.title} - Settings" %>
+
 <%= render "tabs" %>
 
-<h1>Editing podcast</h1>
-
 <%= render "form", podcast: @podcast %>
-
-<br>
-
-<div>
-  <%= link_to "Show this podcast", @podcast %> |
-  <%= link_to "Back to podcasts", podcasts_path %>
-</div>

@@ -7,10 +7,10 @@ Rails.application.routes.draw do
       resources :imports
       resource :planner, only: [:show, :update], controller: :podcast_planner
       resources :feeds, only: [:index]
-      resources :episodes, only: [:index]
+      resources :episodes, only: [:index, :create]
     end
 
-    resources :episodes
+    resources :episodes, except: [:create]
     resources :feeds
     resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
 

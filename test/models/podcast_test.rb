@@ -38,7 +38,7 @@ describe Podcast do
   end
 
   it "wont nil out podcast published_at" do
-    ep = podcast.episodes.create(published_at: 1.week.ago)
+    ep = podcast.episodes.create(title: "title", published_at: 1.week.ago)
     pub_at = podcast.reload.published_at
     refute_nil podcast.published_at
 
@@ -56,6 +56,21 @@ describe Podcast do
     refute podcast.itunes_block
     podcast.update(itunes_block: true)
     assert podcast.itunes_block
+  end
+
+  it "gets and sets itunes categories" do
+    assert_equal 1, podcast.itunes_categories.count
+    assert_equal 2, podcast.itunes_categories.first.subcategories.count
+    assert_equal "Leisure", podcast.itunes_category
+    assert_equal "Aviation", podcast.itunes_subcategory
+
+    podcast.itunes_category = "Arts"
+    podcast.itunes_subcategory = "Books"
+
+    assert_equal 1, podcast.itunes_categories.count
+    assert_equal 1, podcast.itunes_categories.first.subcategories.count
+    assert_equal "Arts", podcast.itunes_category
+    assert_equal "Books", podcast.itunes_subcategory
   end
 
   describe "publishing" do

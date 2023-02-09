@@ -1,0 +1,15 @@
+<div class="card">
+  <div class="card-header-primary">
+    <h5 class="card-title"><%= t(".title") %></h5>
+  </div>
+  <div class="card-footer">
+    <% if podcast.persisted? %>
+      <p class="status-text"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(podcast.updated_at) %></p>
+      <%= link_to t(".discard"), edit_podcast_path(podcast), class: "btn btn-discard-changed invisible me-2", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
+      <%= form.submit t(".update"), class: "btn btn-primary" %>
+    <% else %>
+      <p class="status-text"><strong><%= t(".new_hint") %></strong></p>
+      <%= form.submit t(".create"), class: "btn btn-primary" %>
+    <% end %>
+  </div>
+</div>

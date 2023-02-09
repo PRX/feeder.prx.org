@@ -2,16 +2,14 @@ import { Controller } from "@hotwired/stimulus"
 import flatpickr from "flatpickr"
 
 const invalidClass = "is-invalid"
-const timeValidator = /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$/
+const timeValidator = /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/
 const dateValidator = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/
 
 export default class extends Controller {
   connect() {
     this.isTimestamp = !!this.element.dataset.timestamp
-    this.isFudged = !!this.element.dataset.fudge
-    this.dateFormat = this.isTimestamp ? "Y-m-d H:i" : "Y-m-d"
+    this.dateFormat = this.isTimestamp ? "Y-m-d H:i:S" : "Y-m-d"
     this.validator = this.isTimestamp ? timeValidator : dateValidator
-    this.submitButton = document.querySelector(`input[type="submit"][form="${this.element.form.id}"]`)
 
     this.picker = flatpickr(this.element, {
       allowInput: true,
@@ -68,9 +66,6 @@ export default class extends Controller {
 
   formatDate(date) {
     const str = flatpickr.formatDate(date, this.dateFormat)
-    if (this.isTimestamp && this.isFudged && str && str.endsWith("00:00")) {
-      return str.replace("00:00", "23:59")
-    }
     return str
   }
 }
