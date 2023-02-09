@@ -41,11 +41,11 @@
           <h1 class="card-title h5"><%= t ".next_scheduled" %></h1>
         </div>
         <div class="card-body">
-          <% if @recently_published.present? %>
+          <% if @next_scheduled.present? %>
             <div class="row">
-              <p><%= "Scheduled Date" %></p>
+              <p><%= @next_scheduled.released_at.to_date %></p>
               <div>
-                <h2 class="h5"><%= "Scheduled Title" %></h2>
+                <h2 class="h5"><%= link_to @next_scheduled.title, episode_path(@next_scheduled.id) %></h2>
               </div>
             </div>
           <% end %>
