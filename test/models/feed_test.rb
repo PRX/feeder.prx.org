@@ -254,9 +254,14 @@ describe Feed do
 
   describe "#publish_to_apple?" do
     it "returns true if the feed has apple credentials" do
-      creds = create(:apple_credential, public_feed: feed1, private_feed: feed2)
+      creds = create(:apple_credential, public_feed: feed1, private_feed: feed2, publish_enabled: true)
       assert feed1.publish_to_apple?(creds)
       refute feed2.publish_to_apple?(creds)
+    end
+
+    it "returns false if the creds are not marked publish_enabled?" do
+      creds = create(:apple_credential, public_feed: feed1, private_feed: feed2, publish_enabled: false)
+      refute feed1.publish_to_apple?(creds)
     end
 
     it "returns false if the feed does not have apple credentials" do

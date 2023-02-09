@@ -103,7 +103,9 @@ class Feed < ApplicationRecord
   end
 
   def publish_to_apple?(creds)
-    creds.present? && creds.public_feed == self
+    creds.present? &&
+      creds.public_feed == self &&
+      creds.publish_enabled?
   end
 
   def use_include_tags?
