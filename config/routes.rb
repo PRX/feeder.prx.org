@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     resources :episodes, except: [:create]
     resources :feeds
     resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
+    get "/uploads/signature", to: "uploads#signature", as: :uploads_signature
 
     resources :fake, only: [:index, :show, :create]
 
