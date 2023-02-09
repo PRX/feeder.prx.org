@@ -1,7 +1,7 @@
 :root {
+  --prx-tabs-nav-gap: 1px;
   --prx-tab-bg-rgb: #{to-rgb($gray-200)};
   --prx-tab-bg-opacity: 1;
-  --prx-tabs-gap: 1px;
 }
 
 .prx-tabs {
@@ -18,7 +18,7 @@
   --#{$prefix}nav-tabs-border-width: 0;
   --#{$prefix}nav-tabs-border-radius: 0;
 
-  gap: var(--prx-tabs-gap);
+  gap: var(--prx-tabs-nav-gap);
 
   .context-menu {
     display: none;
