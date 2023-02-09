@@ -15,4 +15,11 @@ pin "bootstrap5-tags", preload: true # @1.5.4
 # NOTE: this one seems a bit broken, so appended `export default window.SlimSelect;` to the file
 pin "slim-select", preload: true # @2.4.1
 
+# evaporate multipart uploads
+pin "evaporate" # @2.1.4
+pin "spark-md5" # @3.0.2
+pin "sha256" # @0.2.0
+pin "convert-hex" # @0.1.0
+pin "convert-string" # @0.1.0
+
 pin_all_from "app/javascript/controllers", under: "controllers"
