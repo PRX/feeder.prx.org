@@ -6,8 +6,8 @@ describe Apple::Publisher do
   let(:podcast) { create(:podcast) }
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
   let(:private_feed) { create(:feed, podcast: podcast, private: true) }
-  let(:apple_creds) { build(:apple_credential) }
-  let(:apple_api) { Apple::Api.from_apple_credentials(apple_creds) }
+  let(:apple_config) { build(:apple_config) }
+  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
 
   let(:apple_publisher) do
     Apple::Publisher.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
