@@ -1,25 +1,13 @@
-<div id="<%= dom_id podcast %>" class="container">
-  <div class="grid row">
-    <div class="col-sm-1">
-      <% if podcast.feed_image %>
-        <%= image_tag(podcast.feed_image.url, width: 135, alt: podcast.feed_image.alt_text, class: "d-flex mx-auto mb-2") %>
-      <% else %>
-        <h1 class="h3"><%= t ".no_image" %></h1>
-      <% end %>
-    </div>
-    <div class="col-sm-6">
-      <h1><%= podcast.title %></h1>
-      <p>Podcast description</p>
-    </div>
-    <div class="col-sm-5 d-flex align-items-center">
-      <%= link_to new_episode_path, class: "btn btn-primary btn-sm d-flex align-items-center m-2" do %>
-        <%= t ".create_episode" %>
-        <span class="material-icons ms-2" aria-hidden="true">mic</span>
-      <% end %>
-      <%= link_to podcast_path(podcast.id), class: "btn btn-primary btn-sm d-flex align-items-center m-2" do %>
-        <%= t ".plan_episodes" %>
-        <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
-      <% end %>
-    </div>
+<div id="<%= dom_id podcast %>" class="row col-sm-7">
+  <div class="col-sm-1 m-2">
+    <% if podcast.feed_image %>
+      <%= image_tag(podcast.feed_image.url, width: 135, alt: podcast.feed_image.alt_text, class: "d-flex mx-auto mb-2") %>
+    <% else %>
+      <h1 class="h3"><%= t ".no_image" %></h1>
+    <% end %>
+  </div>
+  <div class="col-sm-6 m-2">
+    <h1><%= podcast.title %></h1>
+    <p>Podcast description</p>
   </div>
 </div>
