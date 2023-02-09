@@ -10,14 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_09_151612) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_09_162324) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
 
   create_table "apple_credentials", force: :cascade do |t|
-    t.bigint "public_feed_id"
-    t.bigint "private_feed_id"
+    t.bigint "public_feed_id", null: false
+    t.bigint "private_feed_id", null: false
     t.string "apple_provider_id"
     t.string "apple_key_id"
     t.text "apple_key_pem_b64"
