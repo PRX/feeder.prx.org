@@ -22,11 +22,8 @@ module UploadsHelper
   def uploads_key_id
     if ENV["UPLOAD_SIGNING_SERVICE_KEY_ID"].present?
       ENV["UPLOAD_SIGNING_SERVICE_KEY_ID"]
-    elsif ENV["AWS_ACCESS_KEY_ID"].present?
-      ENV["AWS_ACCESS_KEY_ID"]
-    elsif Rails.env.development?
-      # allow signing uploads locally in dev only
-      Aws::S3::Client.new.config.credentials.credentials.access_key_id
+    elsif Rails.env.development? && ENV["UPLOAD_BUCKET_NAME"].present?
+      uploads_resolve_dev_credentials
     end
   end
 
@@ -34,7 +31,32 @@ module UploadsHelper
     if ENV["UPLOAD_SIGNING_SERVICE_URL"].present?
       ENV["UPLOAD_SIGNING_SERVICE_URL"]
     elsif Rails.env.development?
-      uploads_signature_path
+      main_app.uploads_signature_path
+    end
+  end
+
+  def uploads_resolve_dev_credentials
+    Aws::CredentialProviderChain.new.resolve.credentials.access_key_id
+  rescue Aws::STS::Errors::AccessDenied => e
+    if e.message.include?("MultiFactorAuthentication failed")
+
+      # prompt for code
+      config = Aws.shared_config
+      puts "\n\n\n#{"MultiFactorAuthentication REQUIRED!".red}"
+      puts "\n\nEnter MFA code for #{config.profile_name}:\n\n>".green
+      code = $stdin.getpass
+
+      # fetch and set temporary credentials (60 minutes)
+      opts = {token_code: code.strip, duration_seconds: 3600}
+      creds = config.assume_role_credentials_from_config(opts).credentials
+
+      ENV["AWS_ACCESS_KEY_ID"] = creds.access_key_id
+      ENV["AWS_SECRET_ACCESS_KEY"] = creds.secret_access_key
+      ENV["AWS_SESSION_TOKEN"] = creds.session_token
+
+      creds.access_key_id
+    else
+      raise e
     end
   end
 end
