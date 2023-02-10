@@ -1,13 +1,11 @@
-<div id="<%= dom_id podcast %>" class="row col-sm-7">
-  <div class="col-sm-1 m-2">
+<div id="<%= dom_id podcast %>" class="d-flex align-items-center flex-fill my-4">
+  <div>
     <% if podcast.feed_image %>
-      <%= image_tag(podcast.feed_image.url, width: 135, alt: podcast.feed_image.alt_text, class: "d-flex mx-auto mb-2") %>
-    <% else %>
-      <h1 class="h3"><%= t ".no_image" %></h1>
+      <%= image_tag(podcast.feed_image.url, width: 135, alt: podcast.feed_image.alt_text, class: "d-flex me-4") %>
     <% end %>
   </div>
-  <div class="col-sm-6 m-2">
-    <h1><%= podcast.title %></h1>
+  <div class="flex-fill">
+    <h1 class="fw-bold"><%= podcast.title %></h1>
     <p>Podcast description</p>
   </div>
 </div>
