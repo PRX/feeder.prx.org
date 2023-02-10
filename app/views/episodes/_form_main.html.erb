@@ -1,0 +1,88 @@
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :title %>
+    <%= form.label :title %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :clean_title %>
+    <%= form.label :clean_title %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :subtitle %>
+    <%= form.label :subtitle %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_area :description %>
+    <%= form.label :description %>
+  </div>
+</div>
+
+<div class="col-12 mb-4" data-controller="toggle-field">
+  <div class="form-check <%= "d-none" if episode.summary.present? %>">
+    <%= form.check_box :add_itunes_summary, class: "form-check-input", name: nil, checked: false, data: {toggle_field_target: "check", action: "toggle-field#changeCheck"} %>
+    <%= form.label :add_itunes_summary %>
+  </div>
+
+  <div class="form-floating <%= "d-none" unless episode.summary.present? %>">
+    <%= form.text_area :summary, data: {toggle_field_target: "field", action: "blur->toggle-field#changeField"} %>
+    <%= form.label :summary %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :production_notes %>
+    <%= form.label :production_notes %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.select :explicit, podcast_explicit_options, {include_blank: true} %>
+    <%= form.label :explicit %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.select :itunes_type, episode_itunes_type_options %>
+    <%= form.label :itunes_type %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.number_field :season_number %>
+    <%= form.label :season_number %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.number_field :episode_number %>
+    <%= form.label :episode_number %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :author_name %>
+    <%= form.label :author_name %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :author_email %>
+    <%= form.label :author_email %>
+  </div>
+</div>

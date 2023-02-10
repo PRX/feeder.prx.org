@@ -1,61 +1,55 @@
-<nav class="prx-dovetail-nav navbar navbar-expand-sm navbar-dark">
-  <div class="container-fluid pe-0">
-    <%= link_to t(".dovetail"), main_app.podcasts_path, class: "navbar-brand" %>
+<div class="prx-header-bar | navbar navbar-dark align-items-stretch p-0 bg-primary-dark">
+  <div class="container-fluid align-items-stretch pe-0">
+    <header class="flex-grow-1 d-flex align-items-center">
+      <%= link_to image_tag("dovetail_logo.svg", width: 152, height: 30, alt: "Dovetail from PRX"), main_app.podcasts_path, class: "navbar-brand d-inline-flex" %>
+    </header>
 
-    <ul class="navbar-nav">
-      <li class="nav-item d-none d-md-block">
-        <%= link_to t(".feeder"), main_app.podcasts_path, class: "nav-link active" %>
-      </li>
+    <nav class="navbar-nav d-none d-md-flex flex-row align-items-stretch">
+      <h2 class="visually-hidden">Your Applications</h2>
+
+      <%= link_to t(".feeder"), main_app.podcasts_path, class: "nav-link active" %>
 
       <% if current_user_app?("metrics") %>
-        <li class="nav-item d-none d-md-block">
-          <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
-        </li>
+        <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
       <% end %>
 
       <% if current_user_app?("augury") %>
-        <li class="nav-item d-none d-md-block">
-          <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
-        </li>
+        <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
       <% end %>
+    </nav>
 
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="nav-help-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <span class="material-icons align-middle">help</span>
+    <nav class="navbar-nav dropdown">
+      <h2 class="visually-hidden">Help Menu</h2>
+      <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-help-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="material-icons align-middle">help</span>
+      </a>
+      <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute shadow m-0" aria-labelledby="nav-help-dropdown">
+        <%= link_to t(".help"), "https://help.prx.org", class: "dropdown-item" %>
+        <%= link_to t(".status"), "https://status.prx.org", class: "dropdown-item" %>
+        <%= link_to t(".terms"), "https://exchange.prx.org/terms-of-use", class: "dropdown-item" %>
+        <%= link_to t(".attribution"), "https://dovetail.prx.org/attribution", class: "dropdown-item" %>
+        <%= link_to t(".privacy"), "https://exchange.prx.org/privacy-policy", class: "dropdown-item" %>
+        <%= link_to t(".home"), "https://prx.org/", class: "dropdown-item" %>
+      </div>
+    </nav>
+
+    <% if current_user %>
+      <nav class="navbar-nav dropdown">
+        <h2 class="visually-hidden">User Menu</h2>
+        <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-user-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <% if current_user_image? %>
+            <img src="<%= current_user_image %>" class="prx-header-nav-avatar" alt="<%= current_user_name %>'s avatar">
+          <% else %>
+            <span class="material-icons align-middle" aria-label="<%= t(".account") %>">account_circle</span>
+          <% end %>
         </a>
-        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="nav-help-dropdown">
-          <li><%= link_to t(".help"), "https://help.prx.org", class: "dropdown-item" %></li>
-          <li><%= link_to t(".status"), "https://status.prx.org", class: "dropdown-item" %></li>
-          <li><%= link_to t(".terms"), "https://exchange.prx.org/terms-of-use", class: "dropdown-item" %></li>
-          <li><%= link_to t(".attribution"), "https://dovetail.prx.org/attribution", class: "dropdown-item" %></li>
-          <li><%= link_to t(".privacy"), "https://exchange.prx.org/privacy-policy", class: "dropdown-item" %></li>
-          <li><%= link_to t(".home"), "https://prx.org/", class: "dropdown-item" %></li>
-        </ul>
-      </li>
-
-      <% if current_user %>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="nav-user-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <% if current_user_image? %>
-              <img src="<%= current_user_image %>" class="nav-avatar" alt="<%= current_user_name %>'s avatar">
-            <% else %>
-              <span class="material-icons align-middle" aria-label="<%= t(".account") %>">account_circle</span>
-            <% end %>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end shadow pb-2" aria-labelledby="nav-user-dropdown">
-            <li class="dropdown-username"><%= current_user_name %></li>
-            <li class="text-center mb-2">
-              <%= link_to t(".id"), current_user_id_profile, class: "dropdown-button btn btn-info" %>
-            </li>
-            <li class="text-center">
-              <%= link_to "Reload", main_app.refresh_path, data: {turbo: false}, class: "dropdown-item dropdown-item-account dropdown-link" %>
-            </li>
-            <li class="text-center">
-              <%= link_to "Logout", main_app.logout_path, data: {turbo: false}, class: "dropdown-item dropdown-item-account  dropdown-link" %>
-            </li>
-          </ul>
-        </li>
-      <% end %>
-    </ul>
+        <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute shadow pb-2 text-center m-0" aria-labelledby="nav-user-dropdown">
+          <div class="h2 py-3 px-4 text-nowrap"><%= current_user_name %></div>
+          <%= link_to t(".id"), current_user_id_profile, class: "btn btn-primary-light mb-2" %>
+          <%= link_to "Reload", main_app.refresh_path, data: {turbo: false}, class: "dropdown-item text-primary-light" %>
+          <%= link_to "Logout", main_app.logout_path, data: {turbo: false}, class: "dropdown-item text-primary-light" %>
+        </div>
+      </nav>
+    <% end %>
   </div>
-</nav>
+</div>

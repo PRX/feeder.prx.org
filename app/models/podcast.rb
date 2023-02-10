@@ -1,8 +1,9 @@
 require "text_sanitizer"
 
 class Podcast < ApplicationRecord
-  FEED_GETTERS = %i[subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image]
-  FEED_SETTERS = %i[subtitle= description= summary= url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template= feed_image= itunes_image=]
+  FEED_ATTRS = %i[subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image]
+  FEED_GETTERS = FEED_ATTRS.map { |s| [s, "#{s}_was".to_sym, "#{s}_changed?".to_sym] }.flatten
+  FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
 
   include TextSanitizer
 
@@ -26,7 +27,7 @@ class Podcast < ApplicationRecord
   # these keep changing - so just translate to the current accepted values
   VALID_EXPLICITS = %w[true false]
   EXPLICIT_ALIASES = {
-    "" => "false",
+    "" => nil,
     "no" => "false",
     "clean" => "false",
     false => "false",
@@ -53,7 +54,7 @@ class Podcast < ApplicationRecord
   end
 
   def explicit=(value)
-    super(EXPLICIT_ALIASES[value] || value)
+    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
   end
 
   def itunes_category

@@ -1,25 +1,24 @@
 /**
- * General layout stylings - some copied from Styleguide
+ * General layout
  */
+
 body {
-  max-width: 100%;
-  margin: 0;
-  font-family: "Roboto", "Helvetica Neue", sans-serif;
-  background: image-url("prx-mark-outlined.svg") repeat top left $gray-100;
-  color: $gray-600;
+  --#{$prefix}body-font-family: "Roboto", "Helvetica Neue", sans-serif;
+  --#{$prefix}body-bg: #{$gray-100};
+  --#{$prefix}body-color: #{$gray-600};
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  background-image: image-url("prx-mark-outlined.svg");
+  background-repeat: repeat;
+  background-position: top left;
 }
 
-html,
-body {
-  height: 100%;
-}
-
-main {
-  display: block;
-  min-height: 200px;
+.prx-main {
   position: relative;
-}
-
-.full-vertical-height {
-  min-height: calc(100vh - 118px);
+  display: grid;
+  flex-grow: 1;
 }

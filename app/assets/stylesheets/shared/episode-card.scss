@@ -1,0 +1,57 @@
+//
+// Episode card styles.
+//
+
+.episode-card {
+  border-top: none;
+  border-left: 5px solid $primary;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 0;
+  margin-bottom: 0.25rem;
+  height: 100px;
+
+  .card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0;
+    padding-bottom: 0;
+
+    &:hover {
+      background: rgba(140, 210, 244, 0.1);
+    }
+  }
+
+  .episode-card-info {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+
+    .episode-card-date {
+      font-size: 1.5rem;
+      margin-right: 1rem;
+    }
+
+    .episode-card-title {
+      margin-bottom: 0.25rem;
+      font-weight: bold;
+      font-size: 1rem;
+      line-height: 1.2;
+      color: $primary;
+    }
+
+    p {
+      font-size: 0.875rem;
+      line-height: 1.2;
+      margin-bottom: 0;
+    }
+
+    .stretched-link {
+      inset: 0;
+      overflow: hidden;
+      position: absolute;
+      text-indent: -2000vw;
+    }
+  }
+}

@@ -3,8 +3,8 @@
     <h5 class="card-title"><%= t(".title") %></h5>
   </div>
   <div class="card-body">
-    <% if podcast.itunes_image %>
-      <%= image_tag(podcast.itunes_image.url, width: 135, alt: podcast.itunes_image.alt_text, class: "d-flex mx-auto mb-2") %>
+    <% if episode.image %>
+      <%= image_tag(episode.image.url, width: 135, alt: episode.image.alt_text, class: "d-flex mx-auto mb-2") %>
     <% else %>
       <h3>No image here</h3>
     <% end %>

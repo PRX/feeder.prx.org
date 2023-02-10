@@ -3,6 +3,10 @@ class EpisodePolicy < ApplicationPolicy
     update?
   end
 
+  def show?
+    authorized?(:read_private)
+  end
+
   def update?
     authorized?(:episode) || (authorized?(:episode_draft) && resource.draft? && resource.was_draft?)
   end
