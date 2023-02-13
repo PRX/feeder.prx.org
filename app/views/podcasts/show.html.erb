@@ -32,7 +32,7 @@
             <div class="episode-card-info">
               <p class="episode-card-date"><%= @recently_published.published_at.to_date.strftime("%m/%d") %></p>
               <div>
-                <h2 class="h5 episode-card-title"><%= link_to @recently_published.title, episode_path(@recently_published.id) %></h2>
+                <h2 class="h5 episode-card-title m-0"><%= link_to @recently_published.title, episode_path(@recently_published.id) %></h2>
               </div>
             </div>
           <% end %>
@@ -78,7 +78,7 @@
         </div>
         <div class="card-body">
           <ul class="list-group list-group-flush">
-            <li class="list-group-item"><%= link_to (t ".default_feed"), @podcast.default_feed %></li>
+            <li class="list-group-item p-0"><%= link_to (t ".default_feed"), @podcast.default_feed %></li>
           </ul>
         </div>
       </div>
@@ -95,8 +95,8 @@
         </div>
         <div class="card-body">
           <ul class="list-group list-group-flush">
-            <li class="list-group-item border-bottom-0"><%= link_to (t ".engagement_settings"), podcast_engagement_path(@podcast.id) %></li>
-            <li class="list-group-item"><%= link_to (t ".import"), podcast_imports_path(@podcast.id) %></li>
+            <li class="list-group-item border-bottom-0 p-0"><%= link_to (t ".engagement_settings"), podcast_engagement_path(@podcast.id) %></li>
+            <li class="list-group-item p-0"><%= link_to (t ".import"), podcast_imports_path(@podcast.id) %></li>
           </ul>
         </div>
       </div>
