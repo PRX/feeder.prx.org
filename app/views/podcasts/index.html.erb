@@ -1,10 +1,9 @@
 <% content_for :title, "Podcast List" %>
 <p style="color: green"><%= notice %></p>
 
-<h1>Podcasts</h1>
+<h1 class="text-black fw-bold me-4 mb-0">Podcasts</h1>
 
-<button>
-<a class="btn btn-light btn-sm dropdown-toggle" id= type="button" data-bs-toggle="dropdown">
+<a class="btn btn-primary" type="button" data-bs-toggle="dropdown">
   Sort <span class="material-icons" aria-hidden="true">sort</span>
   <ul class="dropdown-menu"
     <li><a class="dropdown-item active" href="<%= podcasts_path(sort: 'Recent') %>">Recent Activity</a></li>
@@ -13,13 +12,10 @@
     <li><%= link_to 'Z-A', podcasts_path(sort:"Z-A"), class: "dropdown-item" %></li>
   </ul>
 </a>
-</button>
 
 <button>
   Filter
 </button>
-
-<h2>Doing our best</h2>
 
 <div id="podcasts">
 <% @podcasts.each do |podcast| %>
