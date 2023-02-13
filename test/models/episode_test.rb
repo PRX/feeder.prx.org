@@ -13,7 +13,7 @@ describe Episode do
   end
 
   it "sets updated_at when soft deleting episodes with no content" do
-    minimal_episode = Episode.create!(podcast: episode.podcast, updated_at: 1.day.ago)
+    minimal_episode = Episode.create!(podcast: episode.podcast, title: "title", updated_at: 1.day.ago)
     assert minimal_episode.updated_at < 10.minutes.ago
 
     minimal_episode.destroy!

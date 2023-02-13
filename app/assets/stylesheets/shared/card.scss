@@ -1,63 +1,30 @@
-.card {
-  margin-bottom: 1em;
+//
+// Cards style overrides.
+//
 
-  .card-header {
-    background-color: transparent;
-    // border-bottom: none;
-    // padding-top: 1em;
+.card-header {
+  --#{$prefix}card-title-spacer-y: #{map-get($spacers, 0)};
 
-    .badge {
-      vertical-align: text-bottom;
-      margin-left: 0.5em;
-    }
-  }
-
-  .card-footer {
-    background-color: transparent;
-    border-bottom: none;
-  }
-
-  .table {
-    // margin: 0 1em 1em;
-    box-shadow: none;
-    border: 1px solid $gray-200;
-    // width: calc(100% - 2em);
+  .card-title {
+    text-transform: uppercase;
   }
 }
 
-.collapsible_card {
-  .card-header {
-    background: $gray-200;
-    color: $dark;
+// Create theme colored card header classes.
+@each $color, $value in $theme-colors {
+  .card-header-#{$color} {
+    @extend .card-header;
 
-    a {
-      color: inherit;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      .material-icons {
-        padding: 5px;
-      }
-
-      .collapsed_icon {
-        display: none;
-      }
-
-      .expanded_icon {
-        display: block;
-      }
-
-      &.collapsed {
-        .collapsed_icon {
-          display: block;
-        }
-
-        .expanded_icon {
-          display: none;
-        }
-      }
-    }
+    --#{$prefix}card-border-width: 0;
+    --#{$prefix}card-cap-bg: #{$value};
+    --#{$prefix}card-cap-color: #{color-contrast($value)};
   }
+}
+
+// Add to link within card body to make whole card clickable.
+.card-link {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+  text-indent: -2000vw;
 }

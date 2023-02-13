@@ -1,0 +1,8 @@
+<h2><%= t(".title") %></h2>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.tag_select :categories, episode.categories, {}, data: {allow_new: true, allow_clear: true} %>
+    <%= form.label :categories %>
+  </div>
+</div>
