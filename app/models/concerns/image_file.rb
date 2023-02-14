@@ -8,6 +8,8 @@ module ImageFile
     has_one :task, -> { order("id desc") }, as: :owner
     has_many :tasks, as: :owner
 
+    acts_as_paranoid
+
     before_validation :initialize_attributes, on: :create
 
     before_validation :detect_image_attributes

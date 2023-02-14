@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_14_185645) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -83,6 +83,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.string "alt_text"
     t.string "caption"
     t.string "credit"
+    t.time "deleted_at"
     t.index ["episode_id"], name: "index_episode_images_on_episode_id"
     t.index ["guid"], name: "index_episode_images_on_guid", unique: true
   end
@@ -148,6 +149,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.string "alt_text"
     t.string "caption"
     t.string "credit"
+    t.time "deleted_at"
     t.index ["feed_id"], name: "index_feed_images_on_feed_id"
     t.index ["guid"], name: "index_feed_images_on_guid", unique: true
   end
@@ -187,6 +189,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.boolean "include_podcast_value", default: true
     t.boolean "include_donation_url", default: true
     t.text "exclude_tags"
+    t.time "deleted_at"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)"
@@ -215,6 +218,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.string "alt_text"
     t.string "caption"
     t.string "credit"
+    t.time "deleted_at"
     t.index ["feed_id"], name: "index_itunes_images_on_feed_id"
     t.index ["guid"], name: "index_itunes_images_on_guid", unique: true
   end
@@ -242,6 +246,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_26_214239) do
     t.string "original_url"
     t.string "guid"
     t.integer "status"
+    t.time "deleted_at"
     t.index ["episode_id"], name: "index_media_resources_on_episode_id"
     t.index ["guid"], name: "index_media_resources_on_guid", unique: true
     t.index ["original_url"], name: "index_media_resources_on_original_url"

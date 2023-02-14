@@ -28,6 +28,8 @@ class Feed < ApplicationRecord
   has_one :itunes_image, -> { complete.order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
 
+  acts_as_paranoid
+
   validates :slug, allow_nil: true, uniqueness: {scope: :podcast_id, allow_nil: false}
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
   validates_format_of :slug, without: /\A(images|\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\z/

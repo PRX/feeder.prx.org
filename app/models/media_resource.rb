@@ -4,6 +4,8 @@ class MediaResource < ApplicationRecord
 
   belongs_to :episode, -> { with_deleted }, touch: true, optional: true
 
+  acts_as_paranoid
+
   enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
 
   before_validation :initialize_attributes, on: :create
