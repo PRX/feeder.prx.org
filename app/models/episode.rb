@@ -57,6 +57,8 @@ class Episode < ApplicationRecord
 
   scope :published_by, ->(offset) { where("published_at IS NOT NULL AND published_at <= ?", Time.now + offset) }
 
+  scope :scheduled, -> { where("released_at > ?", Time.now) }
+
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
   alias_method :podcast_container, :apple_podcast_container

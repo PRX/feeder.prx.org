@@ -1,7 +1,3 @@
-<% if notice %>
-  <p style="color: green"><%= notice %></p>
-<% end %>
-
 <div class="container my-4">
   <div class="d-grid d-sm-flex align-items-center">
     <%= render @podcast %>
@@ -10,7 +6,7 @@
         <%= t ".create_episode" %>
         <span class="material-icons ms-2" aria-hidden="true">mic</span>
       <% end %>
-      <%= link_to podcast_path(@podcast.id), class: "btn btn-primary btn-sm" do %>
+      <%= link_to podcast_planner_path(@podcast.id), class: "btn btn-primary btn-sm" do %>
         <%= t ".plan_episodes" %>
         <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
       <% end %>
