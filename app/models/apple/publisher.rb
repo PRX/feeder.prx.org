@@ -7,12 +7,12 @@ module Apple
       :api,
       :show
 
-    def self.from_apple_credential(apple_credential)
-      api = Apple::Api.from_apple_credentials(apple_credential)
+    def self.from_apple_config(apple_config)
+      api = Apple::Api.from_apple_config(apple_config)
 
       new(api: api,
-        public_feed: apple_credential.public_feed,
-        private_feed: apple_credential.private_feed)
+        public_feed: apple_config.public_feed,
+        private_feed: apple_config.private_feed)
     end
 
     def initialize(api:, public_feed:, private_feed:)

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Apple
-  class Credential < ApplicationRecord
+  class Config < ApplicationRecord
     belongs_to :public_feed, class_name: "Feed"
     belongs_to :private_feed, class_name: "Feed"
 
