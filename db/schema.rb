@@ -84,6 +84,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_14_185645) do
     t.string "caption"
     t.string "credit"
     t.time "deleted_at"
+    t.time "replaced_at"
     t.index ["episode_id"], name: "index_episode_images_on_episode_id"
     t.index ["guid"], name: "index_episode_images_on_guid", unique: true
   end
@@ -150,6 +151,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_14_185645) do
     t.string "caption"
     t.string "credit"
     t.time "deleted_at"
+    t.time "replaced_at"
     t.index ["feed_id"], name: "index_feed_images_on_feed_id"
     t.index ["guid"], name: "index_feed_images_on_guid", unique: true
   end
@@ -219,6 +221,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_14_185645) do
     t.string "caption"
     t.string "credit"
     t.time "deleted_at"
+    t.time "replaced_at"
     t.index ["feed_id"], name: "index_itunes_images_on_feed_id"
     t.index ["guid"], name: "index_itunes_images_on_guid", unique: true
   end
@@ -247,6 +250,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_14_185645) do
     t.string "guid"
     t.integer "status"
     t.time "deleted_at"
+    t.time "replaced_at"
     t.index ["episode_id"], name: "index_media_resources_on_episode_id"
     t.index ["guid"], name: "index_media_resources_on_guid", unique: true
     t.index ["original_url"], name: "index_media_resources_on_original_url"
