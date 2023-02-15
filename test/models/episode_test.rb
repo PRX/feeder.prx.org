@@ -311,36 +311,41 @@ describe Episode do
 
   describe "#image" do
     it "replaces images" do
-      refute_nil episode.image_file
       refute_nil episode.image
       refute_empty episode.images
 
-      episode.image_file = {original_url: "test/fixtures/transistor1400.jpg"}
+      episode.image = {original_url: "test/fixtures/transistor1400.jpg"}
       episode.save!
-      assert_equal episode.reload.images.count, 2
-      assert_equal episode.image_file.original_url, "test/fixtures/transistor1400.jpg"
-      assert_equal episode.image_file.status, "created"
+      assert_equal episode.reload.images.with_deleted.count, 2
+      assert_equal episode.reload.images.count, 1
+      assert_equal episode.image.original_url, "test/fixtures/transistor1400.jpg"
+      assert_equal episode.image.status, "created"
 
-      # image is still the completed one
-      refute_equal episode.image, episode.image_file
-      assert_equal episode.image.status, "complete"
+      # ready_image is still the completed one
+      refute_equal episode.ready_image, episode.image
+      assert_equal episode.ready_image.status, "complete"
+      refute_nil episode.ready_image.deleted_at
+      refute_nil episode.ready_image.replaced_at
     end
 
     it "ignores existing images" do
       assert_equal episode.images.count, 1
 
-      episode.image_file = {original_url: episode.image.original_url}
-      episode.image_file = episode.image.original_url
-      episode.image_file = {original_url: episode.image.original_url}
+      episode.image = {original_url: episode.image.original_url}
+      episode.image = episode.image.original_url
+      episode.image = {original_url: episode.image.original_url}
       episode.save!
-      assert_equal episode.images.count, 1
+      assert_equal episode.images.with_deleted.count, 1
     end
 
     it "deletes images" do
       refute_empty episode.images
 
-      episode.image_file = nil
+      episode.update(image: nil)
       assert_empty episode.reload.images
+
+      assert_nil episode.ready_image
+      assert_nil episode.images.with_deleted.first.replaced_at
     end
   end
 end

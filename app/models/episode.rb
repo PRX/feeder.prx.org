@@ -137,21 +137,20 @@ class Episode < ApplicationRecord
     enclosures.complete.first
   end
 
-  def image
-    images.complete.first
+  def ready_image
+    images.complete_or_replaced.first
   end
 
-  # API updates for image=
-  def image_file
+  def image
     images.first
   end
 
-  def image_file=(file)
+  def image=(file)
     img = EpisodeImage.build(file)
-    if img && img.original_url != image_file.try(:original_url)
+    if img&.replace?(image)
       images << img
     elsif !img
-      images.destroy_all
+      images.each(&:mark_for_destruction)
     end
   end
 
