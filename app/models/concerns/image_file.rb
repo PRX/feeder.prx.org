@@ -5,8 +5,6 @@ module ImageFile
   extend ActiveSupport::Concern
 
   included do
-    attr_accessor :built_from_self
-
     has_one :task, -> { order("id desc") }, as: :owner
     has_many :tasks, as: :owner
 
@@ -35,10 +33,7 @@ module ImageFile
   class_methods do
     def build(file)
       img =
-        if file&.is_a?(self)
-          file.built_from_self = true
-          file
-        elsif file&.is_a?(Hash)
+        if file&.is_a?(Hash)
           new(file)
         elsif file&.is_a?(String)
           new(original_url: file)
@@ -138,13 +133,7 @@ module ImageFile
     self.width, self.height = s
   end
 
-  # only replace an image if setter directly called with
-  # a different image, or if original_url has changed
   def replace?(img)
-    if built_from_self
-      true
-    else
-      original_url != img.try(:original_url)
-    end
+    original_url != img.try(:original_url)
   end
 end
