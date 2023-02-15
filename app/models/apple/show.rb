@@ -6,13 +6,17 @@ module Apple
       :private_feed,
       :api
 
-    def self.connect_existing(apple_show_id, api, public_feed, private_feed)
-      SyncLog.create!(feeder_id: public_feed.id,
+    def self.connect_existing(apple_show_id, apple_credentials)
+      api = Apple::Api.from_apple_credentials(apple_credentials)
+
+      SyncLog.create!(feeder_id: apple_credentials.public_feed.id,
         feeder_type: :feeds,
         sync_completed_at: Time.now.utc,
         external_id: apple_show_id)
 
-      new(api: api, public_feed: public_feed, private_feed: private_feed)
+      new(api: api,
+        public_feed: apple_credentials.public_feed,
+        private_feed: apple_credentials.private_feed)
     end
 
     def self.get_episodes_json(api, show_id)
@@ -137,6 +141,10 @@ module Apple
 
     def apple_episodes_json
       get_episodes_json
+    end
+
+    def apple_episode_guids
+      apple_episodes_json.map { |e| e["attributes"]["guid"] }
     end
   end
 end

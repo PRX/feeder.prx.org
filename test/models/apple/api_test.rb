@@ -117,7 +117,7 @@ describe Apple::Api do
     end
 
     it "falls back on the environment if the apple credential attributes are not set" do
-      creds = build(:apple_credential, apple_provider_id: nil, apple_key_id: nil, apple_key_pem_b64: nil)
+      creds = create(:apple_credential, apple_provider_id: nil, apple_key_id: nil, apple_key_pem_b64: nil)
       api = Apple::Api.from_apple_credentials(creds)
       assert_equal api.key_id, "apple key id from env"
 

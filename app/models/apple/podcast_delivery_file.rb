@@ -93,7 +93,7 @@ module Apple
       end
     end
 
-    def self.update_podcast_delivery_files_state(api, episodes)
+    def self.poll_podcast_delivery_files_state(api, episodes)
       # Assume that the delivery remote/local state is synced at this point
       podcast_deliveries =
         episodes
@@ -214,22 +214,29 @@ module Apple
       external_id = row.dig("api_response", "val", "data", "id")
       podcast_delivery_id = row.dig("request_metadata", PODCAST_DELIVERY_ID_ATTR)
 
-      pdf =
+      (pdf, action) =
         if (delivery_file = where(episode_id: podcast_delivery.episode.id,
           external_id: external_id,
           podcast_delivery_id: podcast_delivery_id).first)
 
-          Rails.logger.info("Updating local podcast delivery file w/ Apple id #{external_id} for episode #{podcast_delivery.episode.id}")
           delivery_file.update(api_response: row, updated_at: Time.now.utc)
-          delivery_file
+          [delivery_file, :update]
         else
-          Rails.logger.info("Creating local podcast delivery file w/ Apple id #{external_id} for episode #{podcast_delivery.episode.id}")
-          Apple::PodcastDeliveryFile.create!(episode_id: podcast_delivery.episode.id,
-            external_id: external_id,
-            podcast_delivery_id: podcast_delivery_id,
-            api_response: row)
+          delivery_file =
+            Apple::PodcastDeliveryFile.create!(episode_id: podcast_delivery.episode.id,
+              external_id: external_id,
+              podcast_delivery_id: podcast_delivery_id,
+              api_response: row)
 
+          [delivery_file, :create]
         end
+
+      Rails.logger.info("#{action} local podcast delivery file",
+        {podcast_container_id: pdf.podcast_container.id,
+         action: action,
+         external_id: external_id,
+         feeder_episode_id: pdf.episode.id,
+         podcast_delivery_file_id: pdf.podcast_delivery.id})
 
       SyncLog.create!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id)
 
