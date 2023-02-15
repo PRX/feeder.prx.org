@@ -39,21 +39,53 @@ $danger: $red;
 $light: $gray-100;
 $dark: $gray-900;
 
+$theme-colors: (
+  "primary": $primary,
+  "primary-dark": $blue-dark,
+  "primary-light": $blue-light,
+  "secondary": $secondary,
+  "success": $success,
+  "info": $info,
+  "warning": $warning,
+  "danger": $danger,
+  "light": $light,
+  "dark": $dark,
+);
+
+// Typography
+
 $text-muted: $gray-700;
 
 $line-height-base: 2;
+$line-height-xs: 1.1;
 $line-height-sm: 1.5;
 $line-height-lg: 2.5;
 
-$font-size-base: 1rem;
+$font-size-base: 1rem; // Assumes the browser default, typically `16px`
+$font-size-sm: $font-size-base * 0.875;
+$font-size-lg: $font-size-base * 1.25;
+
 $h1-font-size: $font-size-base * 1.75;
 $h2-font-size: $font-size-base * 1.5;
 $h3-font-size: $font-size-base * 1.15;
 $h4-font-size: $font-size-base * 1.1;
-$h5-font-size: $font-size-base * 1;
+$h5-font-size: $font-size-base;
 $h6-font-size: $font-size-base;
 
+$font-sizes: (
+  1: $h1-font-size,
+  2: $h2-font-size,
+  3: $h3-font-size,
+  4: $h4-font-size,
+  5: $h5-font-size,
+  6: $h6-font-size,
+  sm: $font-size-sm,
+  lg: $font-size-lg,
+);
+
 $headings-line-height: 1.5;
+
+// Button + Form
 
 // bit complicated, but this is 2*line-height + 2*padding-y + 2px-border
 $input-height: calc(3.5em + 2px);
@@ -63,6 +95,19 @@ $input-btn-padding-x: 0.75rem;
 $input-color: $gray-800;
 $input-border-color: $gray-200;
 $input-disabled-bg: #eee;
+
+// Buttons
+
+$btn-icon-padding: 0.375rem;
+$btn-icon-font-size: $font-size-base * 1.5;
+
+$btn-icon-padding-sm: 0.25rem;
+$btn-icon-font-size-sm: $font-size-base * 1.25;
+
+$btn-icon-padding-lg: 0.5rem;
+$btn-icon-font-size-lg: $font-size-base * 2;
+
+// Forms
 
 $form-select-disabled-bg: $input-disabled-bg;
 
@@ -75,3 +120,24 @@ $form-floating-label-opacity: 1;
 $form-floating-label-transform: scale(0.85) translateY(-1.75rem) translateX(0.15rem);
 
 $border-radius: 0.1875rem;
+
+// Cards
+
+$card-border-radius: 0;
+$card-cap-bg: transparent;
+
+// Utilities
+
+$utilities: (
+  "line-height": (
+    property: line-height,
+    class: lh,
+    values: (
+      1: 1,
+      xs: $line-height-xs,
+      sm: $line-height-sm,
+      base: $line-height-base,
+      lg: $line-height-lg,
+    ),
+  ),
+);
