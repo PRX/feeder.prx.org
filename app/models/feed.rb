@@ -23,9 +23,7 @@ class Feed < ApplicationRecord
   has_many :apple_credentials, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
     class_name: "::Apple::Credential"
 
-  has_one :feed_image, -> { complete.order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
-  has_one :itunes_image, -> { complete.order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
 
   acts_as_paranoid
@@ -147,31 +145,37 @@ class Feed < ApplicationRecord
     itunes_images.each { |i| i.copy_media(force) }
   end
 
-  # API updates for feed_image=
-  def feed_image_file
+  def ready_feed_image
+    feed_images.complete_or_replaced.first
+  end
+
+  def feed_image
     feed_images.first
   end
 
-  def feed_image_file=(file)
+  def feed_image=(file)
     img = FeedImage.build(file)
-    if img && img.original_url != feed_image_file.try(:original_url)
+    if img&.replace?(feed_image)
       feed_images << img
     elsif !img
-      feed_images.destroy_all
+      feed_images.each(&:mark_for_destruction)
     end
   end
 
-  # API updates for itunes_image=
-  def itunes_image_file
+  def ready_itunes_image
+    itunes_images.complete_or_replaced.first
+  end
+
+  def itunes_image
     itunes_images.first
   end
 
-  def itunes_image_file=(file)
+  def itunes_image=(file)
     img = ITunesImage.build(file)
-    if img && img.original_url != itunes_image_file.try(:original_url)
+    if img&.replace?(itunes_image)
       itunes_images << img
     elsif !img
-      itunes_images.destroy_all
+      itunes_images.each(&:mark_for_destruction)
     end
   end
 end
