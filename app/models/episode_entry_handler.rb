@@ -80,7 +80,7 @@ class EpisodeEntryHandler
   end
 
   def update_image
-    episode.image_file = overrides[:image_url]
+    episode.image = overrides[:image_url]
   end
 
   def update_contents

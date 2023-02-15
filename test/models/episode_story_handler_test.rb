@@ -43,17 +43,17 @@ describe EpisodeStoryHandler do
     assert_equal episode.segment_count, 4
 
     # should have one unprocessed image
-    assert_nil episode.image
+    assert_nil episode.ready_image
     assert_equal 1, episode.images.count
-    assert_equal episode.images.first, episode.image_file
-    assert_equal "created", episode.image_file.status
-    assert_equal "transistor1400.jpg", episode.image_file.file_name
-    assert_equal "jpeg", episode.image_file.format
-    assert_equal 36, episode.image_file.guid.length
-    assert_equal 1400, episode.image_file.height
-    assert_equal 1400, episode.image_file.width
-    assert_equal "some-caption", episode.image_file.caption
-    assert_equal "some-credit", episode.image_file.credit
+    assert_equal episode.images.first, episode.image
+    assert_equal "created", episode.image.status
+    assert_equal "transistor1400.jpg", episode.image.file_name
+    assert_equal "jpeg", episode.image.format
+    assert_equal 36, episode.image.guid.length
+    assert_equal 1400, episode.image.height
+    assert_equal 1400, episode.image.width
+    assert_equal "some-caption", episode.image.caption
+    assert_equal "some-credit", episode.image.credit
   end
 
   describe "with episode identifiers" do

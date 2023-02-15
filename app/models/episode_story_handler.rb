@@ -105,11 +105,11 @@ class EpisodeStoryHandler
       nil
     end
 
-    episode.image_file = cms_href
+    episode.image = cms_href
 
-    if episode.image_file
-      episode.image_file.caption = cms_image.attributes["caption"]
-      episode.image_file.credit = cms_image.attributes["credit"]
+    if cms_href.present?
+      episode.image.caption = cms_image.attributes["caption"]
+      episode.image.credit = cms_image.attributes["credit"]
     end
   end
 

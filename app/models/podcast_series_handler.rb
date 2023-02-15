@@ -54,7 +54,7 @@ class PodcastSeriesHandler
     rescue
       []
     end
-    purposes = {feed_image_file: "thumbnail", itunes_image_file: "profile"}
+    purposes = {feed_image: "thumbnail", itunes_image: "profile"}
 
     purposes.each do |name, purpose|
       cms_image = cms_images.find { |i| i.attributes["purpose"] == purpose }
@@ -66,7 +66,7 @@ class PodcastSeriesHandler
 
       default_feed.public_send("#{name}=", cms_href)
 
-      if default_feed.public_send(name)
+      if cms_href.present?
         default_feed.public_send(name).caption = cms_image.attributes["caption"]
         default_feed.public_send(name).credit = cms_image.attributes["credit"]
       end
