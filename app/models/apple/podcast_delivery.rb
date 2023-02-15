@@ -47,14 +47,14 @@ module Apple
     end
 
     def self.create_podcast_deliveries(api, episodes)
-      podcast_containers = episodes.map do |ep|
+      podcast_containers = episodes.filter_map do |ep|
         if ep.podcast_container.nil?
           missing_container_for_episode(ep)
           next
         end
 
         ep.podcast_container
-      end.compact
+      end
 
       # Don't create deliveries for containers that already have deliveries.
       # An alternative workflow would be to swap out the existing delivery and
