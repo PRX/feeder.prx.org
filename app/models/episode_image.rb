@@ -16,8 +16,6 @@ class EpisodeImage < ActiveRecord::Base
   end
 
   def replace_resources!
-    episode&.with_lock do
-      EpisodeImage.where(episode_id: episode_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
-    end
+    EpisodeImage.where(episode_id: episode_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
   end
 end

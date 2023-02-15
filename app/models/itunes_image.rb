@@ -10,8 +10,6 @@ class ITunesImage < ApplicationRecord
   validates :height, numericality: {equal_to: ->(image) { image.width }}, if: ->(i) { i.height }
 
   def replace_resources!
-    feed&.with_lock do
-      ITunesImage.where(feed_id: feed_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
-    end
+    ITunesImage.where(feed_id: feed_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
   end
 end
