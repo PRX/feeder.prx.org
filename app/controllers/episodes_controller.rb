@@ -8,7 +8,7 @@ class EpisodesController < ApplicationController
       if params[:podcast_id]
         Podcast.find(params[:podcast_id]).episodes.all.limit(10)
       else
-        Episode.published.limit(10)
+        Episode.published.page(params[:page]).per(10)
       end
 
     @scheduled_episodes =

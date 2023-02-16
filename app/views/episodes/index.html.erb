@@ -7,13 +7,18 @@
     <% @published_episodes.each do |episode| %>
       <%= render episode %>
     <% end %>
+    
+    <%= paginate @published_episodes %>
   </div>
 
   <div class="col">
     <% @scheduled_episodes.each do |episode| %>
       <%= render episode %>
     <% end %>
+    
+    <%= paginate @scheduled_episodes %>
   </div>
 </div>
+
 
 <%= link_to "New episode", new_episode_path %>

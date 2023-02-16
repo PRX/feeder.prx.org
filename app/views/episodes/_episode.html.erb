@@ -14,8 +14,8 @@
         <h2 class="episode-card-title"><%= episode.title %></h2>
         <p class="card-text text-small"><%= episode.subtitle %></p>
         <div>
-          <% episode.categories do |category| %>
-          <span class="badge rounded-pill text-bg-light"><%= category %></span>
+          <% episode.categories.each do |category| %>
+            <span class="badge rounded-pill text-bg-light"><%= category %></span>
           <% end %>
         </div>
         <%= link_to "Go to Podcast", episode_path(episode.guid), class: "stretched-link" %>
