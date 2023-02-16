@@ -59,6 +59,8 @@ class Episode < ApplicationRecord
 
   scope :scheduled, -> { where("released_at > ?", Time.now) }
 
+  scope :match_text, ->(text) { where('episodes.title ILIKE ?', "%#{text}%") }
+
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
   alias_method :podcast_container, :apple_podcast_container

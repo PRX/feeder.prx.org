@@ -2,6 +2,12 @@
 
 <h1>Episodes</h1>
 
+<form class="pb-4 input-group">
+<input class="form-control" placeholder="Filter..." name="q" value="<%= params[:q] %>" aria-label="Filter results" autofocus onfocus="this.value = this.value;">
+<button type="submit" class="btn btn-primary" type="button">Submit</button>
+</form>
+
+
 <div class="row">
   <div class="col">
     <% @published_episodes.each do |episode| %>
@@ -15,8 +21,6 @@
     <% @scheduled_episodes.each do |episode| %>
       <%= render episode %>
     <% end %>
-    
-    <%= paginate @scheduled_episodes %>
   </div>
 </div>
 
