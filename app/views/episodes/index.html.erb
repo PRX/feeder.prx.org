@@ -2,13 +2,18 @@
 
 <h1>Episodes</h1>
 
-<div id="episodes">
-  <% @episodes.each do |episode| %>
-    <%= render episode %>
-    <p>
-      <%= link_to "Show this episode", episode %>
-    </p>
-  <% end %>
+<div class="row">
+  <div class="col">
+    <% @published_episodes.each do |episode| %>
+      <%= render episode %>
+    <% end %>
+  </div>
+
+  <div class="col">
+    <% @scheduled_episodes.each do |episode| %>
+      <%= render episode %>
+    <% end %>
+  </div>
 </div>
 
 <%= link_to "New episode", new_episode_path %>
