@@ -1,0 +1,60 @@
+<% content_for :tabs do %>
+  <%= tab_link_to "Metadata", fake_path(123) %>
+  <%= tab_link_to "Ad Locations", fake_path("ad-locations") %>
+<% end %>
+
+<div data-controller="ad-locations"
+  data-ad-locations-label-prefix-value="Mid Roll"
+  data-ad-locations-segment-count-value="4"
+  data-ad-locations-markers-value="[[148.723809],[153.29814058956916,157.19909297052155]]"
+  data-action="waveform-inspector:marker.update->ad-locations#updateAdMarker">
+  <header class="prx-content-header | mx-4 px-2 py-3">
+    <h2 class="h1 fw-bold">Ad Locations</h2>
+  </header>
+
+  <input type="hidden" data-ad-locations-target="markersInput">
+
+  <div class="prx-waveform-inspector | d-grid gap-2 m-4"
+    data-controller="waveform-inspector"
+    data-waveform-inspector-playing-class="player--playing"
+    data-waveform-inspector-audio-url-value="/audio/TOL_6min_720p_download.mp3"
+    data-waveform-inspector-waveform-url-value="/audio/TOL_6min_720p_download.json"
+    data-ad-locations-target="waveformInspector"
+    data-action="resize@window->waveform-inspector#updateLayout ad-locations:markers.update->waveform-inspector#updateMarkers">
+    <div class="prx-waveform-inspector-container">
+      <div class="prx-waveform-inspector-view-container" data-waveform-inspector-target="overview"></div>
+      <div class="prx-waveform-inspector-scrollbar-wrapper">
+        <div data-waveform-inspector-target="scrollbar"></div>
+      </div>
+      <div class="prx-waveform-inspector-view-container" data-waveform-inspector-target="zoom"></div>
+    </div>
+    <div class="prx-waveform-inspector-footer | d-flex justify-content-between align-items-start">
+      <div class="prx-waveform-inspector-player-controls | d-flex gap-3 align-items-center">
+        <button class="btn btn-icon btn-icon-lg btn-icon-round btn-primary" data-action="click->waveform-inspector#togglePlaying">
+          <span class="material-icons playing-hide" aria-label="Play">play_arrow</span>
+          <span class="material-icons playing-show" aria-label="Pause">pause</span>
+        </button>
+        <div class="input-group">
+          <input class="form-control form-control-sm" placeholder="00:00"
+            data-waveform-inspector-target="seekInput"
+            data-action="keypress.enter->waveform-inspector#seekSubmit"
+            data-bs-toggle="tooltip"
+            data-bs-title="Enter time to seek to">
+          <button class="btn btn-icon btn-primary btn-sm" data-action="waveform-inspector#seekToInputValue">
+            <span class="material-icons">skip_next</span>
+          </button>
+        </div>
+      </div>
+      <div class="prx-waveform-inspector-zoom-controls">
+        <div class="btn-group">
+          <button class="btn btn-icon btn-primary btn-sm" data-action="waveform-inspector#zoomIn">
+            <span class="material-icons">zoom_in</span>
+          </button>
+          <button class="btn btn-icon btn-primary btn-sm" data-action="waveform-inspector#zoomOut">
+            <span class="material-icons">zoom_out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -31,6 +31,10 @@
   @include button-size($btn-icon-padding-lg, $btn-icon-padding-lg, $btn-icon-font-size-lg, $btn-border-radius-lg);
 }
 
+.btn-icon-round {
+  --#{$prefix}btn-border-radius: 50%;
+}
+
 .btn-fab {
   position: fixed;
   right: 20px;
