@@ -3,12 +3,12 @@
 require "test_helper"
 
 describe Apple::Show do
-  let(:podcast) { create(:podcast) }
-  let(:apple_config) { build(:apple_config) }
+  let(:podcast) { create(:episode).podcast }
   let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
   let(:private_feed) { create(:feed, podcast: podcast, private: true) }
-  let(:apple_show) { Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed) }
+  let(:apple_config) { build(:apple_config, public_feed: public_feed, private_feed: private_feed) }
+  let(:apple_show) { Apple::Show.connect_existing("123", apple_config) }
 
   before do
     stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200")
@@ -17,9 +17,9 @@ describe Apple::Show do
 
   describe "#reload" do
     it "flushes memoized attrs" do
-      apple_show.instance_variable_set(:@get_episodes_json, "foo")
+      apple_show.instance_variable_set(:@feeder_episodes, "foo")
       apple_show.reload
-      assert_nil apple_show.instance_variable_get(:@get_episodes_json)
+      assert_nil apple_show.instance_variable_get(:@feeder_episodes)
     end
 
     it "doesn't raise an error if the attr isn't memoized" do
@@ -27,15 +27,49 @@ describe Apple::Show do
     end
 
     it "doesn't raise an error if the attr is nil" do
-      apple_show.instance_variable_set(:@get_episodes_json, nil)
+      apple_show.instance_variable_set(:@feeder_episodes, nil)
       apple_show.reload
-      assert_nil apple_show.instance_variable_get(:@get_episodes_json)
+      assert_nil apple_show.instance_variable_get(:@feeder_episodes)
     end
 
     it "doesn't raise an error if the attr is false" do
-      apple_show.instance_variable_set(:@get_episodes_json, false)
+      apple_show.instance_variable_set(:@feeder_episodes, false)
       apple_show.reload
-      assert_nil apple_show.instance_variable_get(:@get_episodes_json)
+      assert_nil apple_show.instance_variable_get(:@feeder_episodes)
+    end
+  end
+
+  describe "#episodes" do
+    before do
+      Apple::Show.connect_existing("123", apple_config)
+    end
+
+    it "returns an array of Apple::Episode" do
+      Apple::Episode.stub(:get_episodes_via_show, []) do
+        assert_equal 1, apple_show.episodes.count
+        assert_equal Apple::Episode, apple_show.episodes.first.class
+        assert_equal apple_show, apple_show.episodes.first.show
+      end
+    end
+
+    it "returns new instances of Apple::Episode" do
+      Apple::Episode.stub(:get_episodes_via_show, []) do
+        obj_id = apple_show.episodes.first.object_id
+        # These are not the same objects
+        refute_equal apple_show.episodes.first.object_id, obj_id
+      end
+    end
+
+    it "returns the same base Feeder Episode" do
+      Apple::Episode.stub(:get_episodes_via_show, []) do
+        obj_id = apple_show.episodes.first.feeder_episode.object_id
+        # These feeder episodes are the same
+        assert_equal apple_show.episodes.first.feeder_episode.object_id, obj_id
+
+        # now reload
+        apple_show.reload
+        refute_equal apple_show.episodes.first.feeder_episode.object_id, obj_id
+      end
     end
   end
 
@@ -58,6 +92,8 @@ describe Apple::Show do
 
   describe "#apple_id" do
     it "should return nil if not set" do
+      apple_show.completed_sync_log.delete
+
       assert_nil apple_show.apple_id
     end
   end
@@ -74,6 +110,9 @@ describe Apple::Show do
 
     it "logs an incomplete sync record if the upsert fails" do
       raises_exception = ->(_arg) { raise Apple::ApiError.new("Error", OpenStruct.new(code: 200, body: "body")) }
+
+      apple_show.completed_sync_log.delete
+
       apple_show.stub(:create_or_update_show, raises_exception) do
         sync = nil
         assert_raises(Apple::ApiError) do
@@ -87,7 +126,9 @@ describe Apple::Show do
   describe "#get_show" do
     it "raises an error if called without an apple_id" do
       assert_raises(RuntimeError) do
-        apple_show.get_show
+        apple_show.stub(:apple_id, nil) do
+          apple_show.get_show
+        end
       end
     end
   end

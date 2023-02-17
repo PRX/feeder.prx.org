@@ -34,28 +34,37 @@ describe Apple::Episode do
        }}.with_indifferent_access
     end
 
+    let(:apple_episode_json_api_result) do
+      {"request_metadata" => {"apple_episode_id" => "123", "item_guid" => episode.item_guid},
+       "api_url" => "http://the-api-url.com/v1/episodes/123",
+       "api_parameters" => {},
+       "api_response" => {"ok" => true,
+                          "err" => false,
+                          "val" => {"data" => apple_episode_json}}}
+    end
+
     let(:apple_episode_list) do
       [
         apple_episode_json
       ]
     end
 
-    it "fetches the apple json via the show" do
-      apple_show.stub(:apple_id, "apple_id") do
-        apple_show.stub(:get_episodes_json, apple_episode_list) do
-          assert_equal apple_episode.apple_json, apple_episode_json
-        end
-      end
+    it "instantiates with an api_response" do
+      ep = build(:apple_episode, show: apple_show, feeder_episode: episode, api_response: apple_episode_json_api_result)
+      assert_equal apple_episode.apple_id, "123"
+      assert_equal apple_episode.audio_asset_vendor_id, "456"
+      assert_equal apple_episode.drafting?, true
+      assert_equal apple_episode.guid, episode.item_guid
     end
 
-    it "lets you access various attributes" do
-      apple_show.stub(:apple_id, "apple_id") do
-        apple_show.stub(:get_episodes_json, apple_episode_list) do
-          assert_equal apple_episode.apple_id, "123"
-          assert_equal apple_episode.audio_asset_vendor_id, "456"
-          assert_equal apple_episode.drafting?, true
-        end
-      end
+    it "instantiates with a nil api_response" do
+      ep = build(:apple_episode, show: apple_show, feeder_episode: episode, api_response: nil)
+      assert_nil ep.apple_id
+      assert_nil ep.audio_asset_vendor_id
+      # It does not exists yet, so it is not drafting
+      assert_equal false, ep.drafting?
+      # Comes from the feeder model
+      assert_equal episode.item_guid, ep.guid
     end
   end
 

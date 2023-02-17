@@ -36,8 +36,7 @@ module Apple
     end
 
     def reload
-      # flush memoized attrs
-      @get_episodes_json = nil
+      @feeder_episodes = nil
     end
 
     def podcast
@@ -129,18 +128,35 @@ module Apple
       self.class.get_show(api, apple_id)
     end
 
-    def get_episodes_json
-      raise "Missing apple show id" unless apple_id.present?
-
-      @get_episodes_json ||=
-        begin
-          external_id = completed_sync_log&.external_id
-          self.class.get_episodes_json(api, external_id)
-        end
+    def feeder_episodes
+      @feeder_episodes ||= private_feed.feed_episodes
     end
 
-    def apple_episodes_json
-      get_episodes_json
+    def episodes
+      raise "Missing apple show id" unless apple_id.present?
+
+      eps = feeder_episodes.map do |ep|
+        Apple::Episode.new(show: self, feeder_episode: ep, api: api)
+      end
+
+      results = Apple::Episode.get_episodes_via_show(api, apple_id)
+      results_by_guid = results.map { |e| [e["api_response"]["val"]["data"]["attributes"]["guid"], e] }.to_h
+
+      eps.map do |ep|
+        ep.api_response = results_by_guid[ep.guid]
+        ep
+      end
+    end
+
+    def episode_ids
+      @episode_ids ||= episodes.map(&:id).sort
+    end
+
+    def find_episode(id)
+      @find_episode ||=
+        episodes.map { |e| [e.id, e] }.to_h
+
+      @find_episode.fetch(id)
     end
 
     def apple_episode_guids

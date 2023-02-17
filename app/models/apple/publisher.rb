@@ -29,21 +29,7 @@ module Apple
     end
 
     def episodes_to_sync
-      @episodes_to_sync ||= private_feed
-        .feed_episodes.map do |ep|
-        Apple::Episode.new(show: show, feeder_episode: ep)
-      end
-    end
-
-    def episode_ids
-      @episode_ids ||= episodes_to_sync.map(&:id).sort
-    end
-
-    def find_episode(id)
-      @find_episode ||=
-        episodes_to_sync.map { |e| [e.id, e] }.to_h
-
-      @find_episode.fetch(id)
+      @episodes_to_sync ||= show.episodes
     end
 
     def poll!
