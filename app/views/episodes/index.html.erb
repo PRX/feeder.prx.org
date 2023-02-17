@@ -9,19 +9,21 @@
 
 <div class="row">
   <div class="col">
-    <% @published_episodes.each do |episode| %>
-      <%= render episode %>
+    <h2>Draft or Scheduled Episodes </h2>
+    <% @scheduled_episodes.each do |episode| %>
+      <%= render episode, border_color: episode_border_color(episode) %>
     <% end %>
 
-    <%= paginate @published_episodes, param_name: 'published_page' %>
+    <%= paginate @scheduled_episodes, param_name: "scheduled_page" %>
   </div>
 
   <div class="col">
-    <% @scheduled_episodes.each do |episode| %>
-      <%= render episode %>
+    <h2>Published Episodes</h2>
+    <% @published_episodes.each do |episode| %>
+      <%= render episode, border_color: episode_border_color(episode) %>
     <% end %>
 
-    <%= paginate @scheduled_episodes, param_name: 'scheduled_page' %>
+    <%= paginate @published_episodes, param_name: "published_page" %>
   </div>
 </div>
 

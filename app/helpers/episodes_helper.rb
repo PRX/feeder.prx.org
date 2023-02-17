@@ -16,6 +16,17 @@ module EpisodesHelper
     end
   end
 
+  def episode_border_color(episode)
+    case episode.publishing_status_was
+    when "draft"
+      "warning"
+    when "scheduled"
+      "success"
+    else
+      "primary"
+    end
+  end
+
   def episode_publishing_status_options
     PublishingStatus::STATUSES.map { |val| [I18n.t("helpers.label.episode.publishing_statuses.#{val}"), val] }
   end
