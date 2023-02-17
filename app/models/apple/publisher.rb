@@ -53,6 +53,7 @@ module Apple
       execute_upload_operations!
 
       wait_for_upload_processing
+      wait_for_asset_state
 
       publish_drafting!
 
@@ -82,6 +83,11 @@ module Apple
       pdfs = episodes_to_sync.map(&:podcast_delivery_files).flatten
 
       Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
+    end
+
+    def wait_for_asset_state
+      eps = episodes_to_sync.filter { |e| e.podcast_delivery_files.any?(&:uploaded?) }
+      Apple::Episode.wait_for_asset_state(api, eps)
     end
 
     def poll_episodes!

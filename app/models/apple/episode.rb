@@ -2,7 +2,42 @@
 
 module Apple
   class Episode
+    include Apple::ApiWaiting
+    include Apple::ApiResponse
     attr_accessor :show, :feeder_episode, :api, :api_response
+
+    AUDIO_ASSET_FAILURE = "FAILURE"
+    AUDIO_ASSET_SUCCESS = "SUCCESS"
+
+    def self.wait_for_asset_state(api, eps)
+      wait_for(eps) do |remaining_eps|
+        Rails.logger.info("Probing for episode audio asset state")
+        unwrapped = get_episodes(api, remaining_eps)
+
+        remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["guid"], row] }.to_h
+        remaining_eps.each { |ep| ep.api_response = remote_ep_by_id[ep.guid] }
+
+        rem =
+          remaining_eps.filter do |ep|
+            if ep.waiting_for_asset_state?
+              Rails.logger.info("Waiting for audio asset state", {episode_id: ep.feeder_id,
+                                                                      delivery_file_count: ep.podcast_delivery_files.count,
+                                                                      delivery_files_processed_errors: ep.podcast_delivery_files.all?(&:processed_errors?),
+                                                                      delivery_files_processed: ep.podcast_delivery_files.all?(&:processed?),
+                                                                      delivery_files_delivered: ep.podcast_delivery_files.all?(&:delivered?),
+                                                                      asset_state: ep.audio_asset_state,
+                                                                      has_podcast_audio: ep&.podcast_container&.has_podcast_audio?})
+              true
+            end
+          end
+
+        if rem.length > 0
+          Rails.logger.info("Waiting for asset state processing", {audio_asset_states: rem.map(&:audio_asset_state).uniq})
+        end
+
+        rem
+      end
+    end
 
     def self.get_episodes(api, episodes)
       return if episodes.empty?
@@ -211,7 +246,7 @@ module Apple
     end
 
     def apple_json
-      return nil unless show.apple_id.present?
+      return nil unless api_response.present?
 
       apple_data
     end
@@ -236,6 +271,30 @@ module Apple
 
     def audio_asset_vendor_id
       apple_json&.dig("attributes", "appleHostedAudioAssetVendorId")
+    end
+
+    def audio_asset_state
+      apple_attributes["appleHostedAudioAssetState"]
+    end
+
+    def audio_asset_state_finished?
+      audio_asset_state_error? || audio_asset_state_success?
+    end
+
+    def audio_asset_state_error?
+      audio_asset_state == AUDIO_ASSET_FAILURE
+    end
+
+    def audio_asset_state_success?
+      audio_asset_state == AUDIO_ASSET_SUCCESS
+    end
+
+    def waiting_for_asset_state?
+      (podcast_delivery_files.length > 0 &&
+        podcast_delivery_files.all?(&:delivered?) &&
+        podcast_delivery_files.all?(&:processed?) &&
+        !podcast_delivery_files.all?(&:processed_errors?) &&
+        !audio_asset_state_finished?)
     end
 
     def apple_id

@@ -51,10 +51,10 @@ describe Apple::Episode do
 
     it "instantiates with an api_response" do
       ep = build(:apple_episode, show: apple_show, feeder_episode: episode, api_response: apple_episode_json_api_result)
-      assert_equal apple_episode.apple_id, "123"
-      assert_equal apple_episode.audio_asset_vendor_id, "456"
-      assert_equal apple_episode.drafting?, true
-      assert_equal apple_episode.guid, episode.item_guid
+      assert_equal "123", ep.apple_id
+      assert_equal "456", ep.audio_asset_vendor_id
+      assert_equal true, ep.drafting?, true
+      assert_equal episode.item_guid, ep.guid
     end
 
     it "instantiates with a nil api_response" do
@@ -92,6 +92,73 @@ describe Apple::Episode do
   describe "#enclosure_url" do
     it "should add a noImp query param" do
       assert_match(/noImp=1/, apple_episode.enclosure_url)
+    end
+  end
+
+  describe "#waiting_for_asset_state?" do
+    let(:container) { create(:apple_podcast_container, episode: episode, apple_episode_id: "123") }
+
+    let(:delivery) do
+      pd = Apple::PodcastDelivery.new(episode: episode, podcast_container: container)
+      pd.save!
+      pd
+    end
+
+    let(:delivery_file) do
+      pdf = Apple::PodcastDeliveryFile.new(episode: episode, podcast_delivery: delivery)
+      pdf.update(**build(:podcast_delivery_file_api_response))
+      pdf.save!
+      pdf
+    end
+
+    before do
+      assert_equal [delivery_file], apple_episode.podcast_delivery_files
+      apple_episode.api_response =
+        {"request_metadata" => {},
+         "api_response" =>
+         {"ok" => true,
+          "err" => false,
+          "val" =>
+           {"data" =>
+             {"attributes" => {"appleHostedAudioAssetState" => "COMPLETE"}}}}}
+    end
+
+    it "should be true if all the conditions are met" do
+      assert_equal true, apple_episode.waiting_for_asset_state?
+    end
+
+    it "should be false if there are no podcast delivery files" do
+      apple_episode.stub(:podcast_delivery_files, []) do
+        assert_equal false, apple_episode.waiting_for_asset_state?
+      end
+    end
+
+    it "should be false if the delivery file is not delivered" do
+      delivery_file.update(**build(:podcast_delivery_file_api_response, asset_delivery_state: "AWAITING_UPLOAD"))
+      apple_episode.podcast_delivery_files.reset
+
+      assert_equal false, apple_episode.waiting_for_asset_state?
+    end
+
+    it "should be false if the delivery file has asset processing errors" do
+      delivery_file.update(**build(:podcast_delivery_file_api_response, asset_processing_state: "VALIDATION_FAILED"))
+      apple_episode.podcast_delivery_files.reset
+
+      assert_equal false, apple_episode.waiting_for_asset_state?
+    end
+
+    it "should be false if the delivery file has errors" do
+      delivery_file.update(**build(:podcast_delivery_file_api_response, asset_processing_state: "VALIDATION_FAILED"))
+      apple_episode.podcast_delivery_files.reset
+
+      assert_equal false, apple_episode.waiting_for_asset_state?
+    end
+
+    it "should be false if the episode has a non complete apple hosted audio asset state" do
+      apple_episode.api_response["api_response"]["val"]["data"]["attributes"]["appleHostedAudioAssetState"] = Apple::Episode::AUDIO_ASSET_FAILURE
+      apple_episode.podcast_delivery_files.reset
+
+      assert_equal false, apple_episode.waiting_for_asset_state?
     end
   end
 end
