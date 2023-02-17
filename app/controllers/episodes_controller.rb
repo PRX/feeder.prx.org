@@ -17,7 +17,6 @@ class EpisodesController < ApplicationController
       else
         Episode.scheduled.limit(10).match_text(params[:q])
       end
-
   end
 
   # GET /episodes/1

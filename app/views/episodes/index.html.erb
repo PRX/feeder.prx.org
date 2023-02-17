@@ -7,13 +7,12 @@
 <button type="submit" class="btn btn-primary" type="button">Submit</button>
 </form>
 
-
 <div class="row">
   <div class="col">
     <% @published_episodes.each do |episode| %>
       <%= render episode %>
     <% end %>
-    
+
     <%= paginate @published_episodes %>
   </div>
 
@@ -23,6 +22,5 @@
     <% end %>
   </div>
 </div>
-
 
 <%= link_to "New episode", new_episode_path %>
