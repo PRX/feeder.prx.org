@@ -3,6 +3,7 @@
 module Apple
   class PodcastDeliveryFile < ActiveRecord::Base
     include Apple::ApiResponse
+    include Apple::ApiWaiting
 
     serialize :api_response, JSON
 
@@ -20,34 +21,25 @@ module Apple
     end
 
     def self.wait_for_processing(api, pdfs)
-      wait_for(api, pdfs) do |updated_pdfs|
+      wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file processing")
-        updated_pdfs.all? { |pdf| pdf.processed? || pdf.processed_errors? }
+        updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
+
+        finished = updated_pdfs.group_by { |pdf| pdf.processed? || pdf.processed_errors? }
+        (finished[true] || []).map(&:save!)
+        (finished[false] || [])
       end
     end
 
     def self.wait_for_delivery(api, pdfs)
-      wait_for(api, pdfs) do |updated_pdfs|
+      wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file delivery")
-        updated_pdfs.all?(&:delivered?)
+        updated_pdfs = get_and_update_api_response(api, pdfs)
+
+        finished = updated_pdfs.group_by(&:delivered?)
+        (finished[true] || []).map(&:save!)
+        (finished[false] || [])
       end
-    end
-
-    def self.wait_for(api, pdfs)
-      t_beg = Time.now.utc
-      loop_res =
-        loop do
-          # TODO: handle timeout
-          break false if Time.now.utc - t_beg > 5.minutes
-          break true if yield(pdfs)
-
-          get_and_update_api_response(api, pdfs)
-          sleep(2)
-        end
-
-      pdfs.map(&:save!)
-
-      loop_res
     end
 
     def self.get_and_update_api_response(api, pdfs)
