@@ -34,13 +34,13 @@
           <span class="material-icons playing-hide" aria-label="Play">play_arrow</span>
           <span class="material-icons playing-show" aria-label="Pause">pause</span>
         </button>
-        <div class="input-group">
-          <input class="form-control form-control-sm" placeholder="00:00"
+        <div class="prx-input-group input-group-sm">
+          <input class="form-control" placeholder="00:00"
             data-waveform-inspector-target="seekInput"
             data-action="keypress.enter->waveform-inspector#seekSubmit"
             data-bs-toggle="tooltip"
             data-bs-title="Enter time to seek to">
-          <button class="btn btn-icon btn-primary btn-sm" data-action="waveform-inspector#seekToInputValue">
+          <button class="btn btn-icon btn-icon-borderless btn-primary" data-action="waveform-inspector#seekToInputValue">
             <span class="material-icons">skip_next</span>
           </button>
         </div>
@@ -57,4 +57,80 @@
       </div>
     </div>
   </div>
+  <div class="row">
+    <div class="col-12 p-0 my-4">
+      <table class="prx-ad-locations-table">
+        <thead>
+          <th><!-- Placeholder Cell --></th>
+          <th>Name</th>
+          <th width="100%">Timestamps</th>
+          <th><!-- Placeholder Cell --></th>
+        </thead>
+        <tbody data-ad-locations-target="controls">
+          <!-- Control rows will be cloned here. -->
+          <tr data-controller="ad-location" data-ad-location-completed-class="status--completed">
+            <td>
+              <span class="completed-show | material-icons text-success">check_circle</span>
+              <span class="completed-hide | material-icons text-danger">error</span>
+            </td>
+            <td>
+              <span data-ad-location-target="label">Label Text</span>
+            </td>
+            <td>
+              <button class="btn btn-primary text-nowrap">
+                Insert At Playhead <span class="material-icons" aria-hidden="true">my_location</span>
+              </button>
+              <div class="prx-input-group input-group-sm flex-shrink-1">
+                <input class="form-control" placeholder="00:00"
+                  data-ad-location-target="startTime"
+                  data-action=""
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Edit Start Time">
+                <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-action="">
+                  <span class="material-icons">done</span>
+                </button>
+                <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="">
+                  <span class="material-icons">my_location</span>
+                </button>
+                <button class="btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Add End Time" data-action="">
+                  <span class="material-icons rotate-90">expand</span>
+                </button>
+              </div>
+              <span class="material-icons rotate-90">expand</span>
+              <div class="prx-input-group input-group-sm flex-shrink-1">
+                <input class="form-control" placeholder="00:00"
+                  data-ad-location-target="endTime"
+                  data-action=""
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Edit End Time">
+                <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-action="">
+                  <span class="material-icons">done</span>
+                </button>
+                <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="">
+                  <span class="material-icons">my_location</span>
+                </button>
+                <button class="btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Remove End Time" data-action="">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-icon btn-icon-round btn-primary">
+                <span class="material-icons">play_arrow</span>
+              </button>
+              <button class="btn btn-icon btn-icon-round btn-primary">
+                <span class="material-icons">skip_next</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <template data-ad-locations-target="controlsTemplate">
+    <tr data-controller="ad-location" data-ad-location-completed-class="status--completed">
+      <span class="completed--show | material-icons text-success">check_circle</span>
+      <span class="completed--hide | material-icons text-success">alert_circle</span>
+    </tr>
+  </template>
 </div>

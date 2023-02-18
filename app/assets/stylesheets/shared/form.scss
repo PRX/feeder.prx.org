@@ -1,3 +1,58 @@
+.prx-input-group {
+  @extend .input-group;
+
+  @include border-radius($input-border-radius);
+  border: $input-border-width solid $input-border-color;
+
+  &:focus-within {
+    box-shadow: $input-focus-box-shadow;
+  }
+
+  & > :is(.form-control, .input-group-text, .btn) {
+    border: none;
+
+    &:is(:focus) {
+      box-shadow: none;
+    }
+
+    &:is(:first-child) {
+      border-inline-start: none;
+    }
+
+    &:is(:last-child) {
+      border-inline-end: none;
+    }
+  }
+
+  & > .btn-icon {
+    @include font-size(1.75rem);
+  }
+
+  &.input-group-sm {
+    @include border-radius($input-border-radius-sm);
+
+    & > .btn-icon {
+      @include font-size(1.5rem);
+    }
+  }
+
+  &.input-group-lg {
+    @include border-radius($input-border-radius-lg);
+
+    & > .btn-icon {
+      @include font-size(2rem);
+    }
+  }
+
+  & > :is(.form-control:placeholder-shown) ~ .prx-input-confirm {
+    display: none;
+  }
+  
+  & > :is(.form-control:not(:placeholder-shown)) ~ .prx-input-confirm-hidden {
+    display: none;
+  }
+}
+
 // material style floating form labels
 .form-floating {
   > label {
