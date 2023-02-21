@@ -11,7 +11,7 @@
   <div class="col">
     <h2>Draft or Scheduled Episodes </h2>
     <% @scheduled_episodes.each do |episode| %>
-      <%= render episode, border_color: episode_border_color(episode) %>
+      <%= render episode %>
     <% end %>
 
     <%= paginate @scheduled_episodes, param_name: "scheduled_page" %>
@@ -20,7 +20,7 @@
   <div class="col">
     <h2>Published Episodes</h2>
     <% @published_episodes.each do |episode| %>
-      <%= render episode, border_color: episode_border_color(episode) %>
+      <%= render episode %>
     <% end %>
 
     <%= paginate @published_episodes, param_name: "published_page" %>
