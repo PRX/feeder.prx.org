@@ -13,11 +13,6 @@ export default function convertSecondsToDuration(inputSeconds) {
   // Sanitize string input to expected characters.
   const sanitizedStringInput = typeof inputSeconds === "string" && inputSeconds.replaceAll(/[^0-9:.]/g, "")
 
-  // Directly return string in valid format.
-  if (sanitizedStringInput && /^([0-9]{2})+(\.[0-9]+)?$/.test(sanitizedStringInput)) {
-    return inputSeconds
-  }
-
   // Convert sanitized string input to number.
   const totalSeconds = sanitizedStringInput ? parseFloat(sanitizedStringInput) : inputSeconds
 
@@ -26,6 +21,7 @@ export default function convertSecondsToDuration(inputSeconds) {
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
     const seconds = (totalSeconds % 60).toFixed(2)
+
     duration = [
       ...(hours ? [hours] : []),
       String(minutes).padStart(2, "0"),
