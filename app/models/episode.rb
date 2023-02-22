@@ -287,7 +287,7 @@ class Episode < ApplicationRecord
   end
 
   def include_in_feed?
-    media_ready? || (segment_count.nil? && media_resources.empty?)
+    (segment_count.nil? && !media?) || media_ready?
   end
 
   def media_resources

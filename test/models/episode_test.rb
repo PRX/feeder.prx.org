@@ -74,6 +74,21 @@ describe Episode do
     assert_nil Episode.find_by_item_guid(generated_guid)
   end
 
+  it "includes items in feed" do
+    episode = create(:episode, segment_count: nil, contents: [], enclosures: [])
+    episode.enclosures.destroy_all
+    assert episode.include_in_feed?
+
+    episode.update(segment_count: 1)
+    refute episode.reload.include_in_feed?
+
+    content = create(:content, episode: episode, status: "processing")
+    refute episode.reload.include_in_feed?
+
+    content.update(status: "complete")
+    assert episode.reload.include_in_feed?
+  end
+
   it "knows if enclosure audio is ready" do
     e1 = episode.enclosures.first
     assert_equal "complete", e1.status
