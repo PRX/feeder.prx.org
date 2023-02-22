@@ -10,6 +10,30 @@ class MediaResource < ApplicationRecord
 
   before_validation :initialize_attributes, on: :create
 
+  after_create :replace_resources!
+
+  scope :complete_or_replaced, -> do
+    with_deleted
+      .complete
+      .where("deleted_at IS NULL OR replaced_at IS NOT NULL")
+      .order("created_at DESC")
+  end
+
+  def self.build(file, position = nil)
+    media =
+      if file&.is_a?(Hash)
+        new(file)
+      elsif file&.is_a?(String)
+        new(original_url: file)
+      else
+        file
+      end
+
+    media.try(:position=, position)
+
+    media.try(:original_url).try(:present?) ? media : nil
+  end
+
   def initialize_attributes
     self.status ||= :created
     guid
@@ -54,5 +78,13 @@ class MediaResource < ApplicationRecord
     ext = File.extname(original_url || "")
     ext = ".mp3" if ext.blank?
     "#{base_published_url}/#{guid}#{ext}"
+  end
+
+  def replace?(res)
+    original_url != res.try(:original_url)
+  end
+
+  def update(res)
+    # NOTE: media_resources have no user settable fields
   end
 end

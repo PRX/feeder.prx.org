@@ -20,10 +20,6 @@ class Episode < ApplicationRecord
     -> { order("created_at DESC") },
     class_name: "EpisodeImage", autosave: true, dependent: :destroy
 
-  has_many :all_contents,
-    -> { order("position ASC, created_at DESC") },
-    class_name: "Content", autosave: true, dependent: :destroy
-
   has_many :contents,
     -> { order("position ASC, created_at DESC").complete },
     autosave: true, dependent: :destroy
@@ -133,10 +129,6 @@ class Episode < ApplicationRecord
     self.author_email = author["email"]
   end
 
-  def enclosure
-    enclosures.complete.first
-  end
-
   def ready_image
     images.complete_or_replaced.first
   end
@@ -152,6 +144,62 @@ class Episode < ApplicationRecord
     elsif !img
       images.each(&:mark_for_destruction)
     end
+  end
+
+  def ready_enclosure
+    enclosures.complete_or_replaced.first
+  end
+
+  def enclosure
+    enclosures.first
+  end
+
+  def enclosure=(file)
+    enc = Enclosure.build(file)
+
+    if enc&.update?(enclosure)
+      enc.update(enclosure)
+    elsif enc&.replace?(enclosure)
+      enclosures << enc
+    elsif !enc
+      enclosures.each(&:mark_for_destruction)
+    end
+  end
+
+  def ready_contents
+    current_max_pos = contents.maximum(:position)
+    return unless current_max_pos&.positive?
+
+    # return nil unless every position has a complete file
+    by_position = contents.complete_or_replaced.group(:position)
+    return unless by_position.keys.count == current_max_pos
+
+    (1..current_max_pos).map { |p| by_position[p] }
+  end
+
+  def contents=(files)
+    existing = contents.group_by(&:position)
+
+    files&.each_with_index do |file, idx|
+      position = idx + 1
+      con = Content.build(file, position)
+
+      if !con
+        existing[position]&.each(&:mark_for_destruction)
+      elsif con.replace?(existing[position]&.first)
+        contents << con
+      else
+        con.update(existing[position].first)
+      end
+    end
+
+    # destroy unused positions
+    positions = 1..(files&.count.to_i)
+    existing.each do |position, contents|
+      contents.each(&:mark_for_destruction) unless positions.include?(position)
+    end
+
+    contents
   end
 
   def initialize_guid
@@ -226,7 +274,7 @@ class Episode < ApplicationRecord
 
   def copy_media(force = false)
     enclosures.each { |e| e.copy_media(force) }
-    all_contents.each { |c| c.copy_media(force) }
+    contents.each { |c| c.copy_media(force) }
     images.each { |i| i.copy_media(force) }
   end
 
@@ -262,14 +310,12 @@ class Episode < ApplicationRecord
   end
 
   def media_ready?
-    # if this episode has enclosures, media is ready if there is a complete one
-    if !enclosures.blank?
-      !!enclosure
-      # if this episode has contents, ready when each position is ready
-    elsif !all_contents.blank?
-      max_pos = all_contents.map(&:position).max
-      contents.size == max_pos
-      # if this episode has no audio, the media can't be ready, and `media?` will be false
+    if contents.blank?
+      ready_enclosure.present?
+    elsif segment_count.nil?
+      ready_contents.count == contents.maximum(:position)
+    elsif segment_count.positive?
+      ready_contents.count == segment_count
     else
       false
     end
@@ -288,7 +334,6 @@ class Episode < ApplicationRecord
     File.basename(uri.path)
   end
 
-  # used in the API, both read and write
   def media_files
     contents.blank? ? Array(enclosure) : contents
   end
@@ -299,37 +344,17 @@ class Episode < ApplicationRecord
     files.each_with_index do |f, index|
       file = f.attributes.with_indifferent_access.except(*ignore)
       file[:position] = index + 1
-      all_contents << Content.new(file)
+      contents << Content.new(file)
     end
 
     # find all contents with a greater position and whack them
-    all_contents.where(["position > ?", files.count]).destroy_all
-  end
+    contents.where("position > ?", files.count).each(&:mark_for_destruction)
 
-  # find existing content by the last 2 segments of the url
-  def find_existing_content(pos, url)
-    return nil if url.blank?
-
-    content_file = URI.parse(url || "").path.split("/")[-2, 2].join("/")
-    content_file = "/#{content_file}" unless content_file[0] == "/"
-    all_contents.where(position: pos).where(
-      "original_url like ?",
-      "%#{content_file}"
-    ).order(created_at: :desc).first
-  end
-
-  def find_existing_image(url)
-    return nil if url.blank?
-
-    images.where(original_url: url).order(created_at: :desc).first
+    # TODO: should this call super?
   end
 
   def all_media_files
     all_contents.blank? ? Array(enclosures) : all_contents
-  end
-
-  def audio_files
-    media_files
   end
 
   def set_external_keyword

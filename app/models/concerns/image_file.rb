@@ -136,4 +136,10 @@ module ImageFile
   def replace?(img)
     original_url != img.try(:original_url)
   end
+
+  def update(img)
+    %i[alt_text caption credit].each do |key|
+      img[key] = self[key]
+    end
+  end
 end
