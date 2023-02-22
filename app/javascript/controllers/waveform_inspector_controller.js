@@ -41,6 +41,7 @@ export default class extends Controller {
           highlightOpacity: 0.1,
           segmentOptions: {
             overlayOffset: 0,
+            overlayFontSize: 0,
           },
         },
       }),
