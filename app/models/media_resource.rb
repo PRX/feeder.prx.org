@@ -49,6 +49,9 @@ class MediaResource < ApplicationRecord
     self[:url] ||= media_url
   end
 
+  def replace_resources!
+  end
+
   def href
     complete? ? url : original_url
   end
