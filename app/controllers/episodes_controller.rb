@@ -8,7 +8,7 @@ class EpisodesController < ApplicationController
       if params[:podcast_id]
         Podcast.find(params[:podcast_id]).episodes
       else
-        Episode.all
+        policy_scope(Episode).all
       end
 
     filtered_episodes = episodes.filter_by_title(params[:q])

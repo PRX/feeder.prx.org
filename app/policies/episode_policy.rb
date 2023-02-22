@@ -28,4 +28,12 @@ class EpisodePolicy < ApplicationPolicy
       resource.podcast
     end&.account_id_was
   end
+
+  class Scope < Scope
+    def resolve
+      # TODO: this is hacky
+      uris = token.authorized_account_ids(:read_private).map { |id| "/api/v1/accounts/#{id}" }
+      scope.where(prx_account_uri: uris)
+    end
+  end
 end
