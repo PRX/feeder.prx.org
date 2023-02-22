@@ -161,7 +161,7 @@ class Feed < ApplicationRecord
     elsif img&.replace?(feed_image)
       feed_images << img
     else
-      img.update(feed_image)
+      img.update_image(feed_image)
     end
   end
 
@@ -181,7 +181,7 @@ class Feed < ApplicationRecord
     elsif img&.replace?(itunes_image)
       itunes_images << img
     else
-      img.update(itunes_image)
+      img.update_image(itunes_image)
     end
   end
 end

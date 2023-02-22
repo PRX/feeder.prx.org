@@ -145,7 +145,7 @@ class Episode < ApplicationRecord
     elsif img&.replace?(image)
       images << img
     else
-      img.update(image)
+      img.update_image(image)
     end
   end
 
@@ -165,7 +165,7 @@ class Episode < ApplicationRecord
     elsif enc&.replace?(enclosure)
       enclosures << enc
     else
-      enc.update(enclosure)
+      enc.update_resource(enclosure)
     end
   end
 
@@ -192,7 +192,7 @@ class Episode < ApplicationRecord
       elsif con.replace?(existing[position]&.first)
         contents << con
       else
-        con.update(existing[position].first)
+        con.update_resource(existing[position].first)
       end
     end
 

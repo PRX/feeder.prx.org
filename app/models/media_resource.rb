@@ -84,7 +84,7 @@ class MediaResource < ApplicationRecord
     original_url != res.try(:original_url)
   end
 
-  def update(res)
+  def update_resource(res)
     # NOTE: media_resources have no user settable fields
   end
 end
