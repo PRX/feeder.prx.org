@@ -308,7 +308,7 @@ class Episode < ApplicationRecord
   end
 
   def first_media_resource
-    media_resources.first
+    ready_media_resources.first || media_resources.first
   end
 
   def media_status
