@@ -21,7 +21,7 @@ class Episode < ApplicationRecord
     class_name: "EpisodeImage", autosave: true, dependent: :destroy
 
   has_many :contents,
-    -> { order("position ASC, created_at DESC").complete },
+    -> { order("position ASC, created_at DESC") },
     autosave: true, dependent: :destroy
 
   has_many :enclosures,
@@ -143,7 +143,7 @@ class Episode < ApplicationRecord
     if !img
       images.each(&:mark_for_destruction)
     elsif img&.replace?(image)
-      images << img
+      images.build(img.attributes)
     else
       img.update_image(image)
     end
@@ -163,21 +163,14 @@ class Episode < ApplicationRecord
     if !enc
       enclosures.each(&:mark_for_destruction)
     elsif enc&.replace?(enclosure)
-      enclosures << enc
+      enclosures.build(enc.attributes)
     else
       enc.update_resource(enclosure)
     end
   end
 
   def ready_contents
-    current_max_pos = contents.maximum(:position)
-    return unless current_max_pos&.positive?
-
-    # return nil unless every position has a complete file
-    by_position = contents.complete_or_replaced.group(:position)
-    return unless by_position.keys.count == current_max_pos
-
-    (1..current_max_pos).map { |p| by_position[p] }
+    contents.complete_or_replaced.group_by(&:position).values.map(&:first)
   end
 
   def contents=(files)
@@ -190,7 +183,7 @@ class Episode < ApplicationRecord
       if !con
         existing[position]&.each(&:mark_for_destruction)
       elsif con.replace?(existing[position]&.first)
-        contents << con
+        contents.build(con.attributes)
       else
         con.update_resource(existing[position].first)
       end
@@ -294,15 +287,27 @@ class Episode < ApplicationRecord
   end
 
   def include_in_feed?
-    !media? || media_ready?
+    media_ready? || (segment_count.nil? && media_resources.empty?)
   end
 
-  def media?
-    !all_media_files.blank?
+  def media_resources
+    contents.blank? ? Array(enclosure) : contents
+  end
+
+  def ready_media_resources
+    contents.blank? ? Array(ready_enclosure) : ready_contents
+  end
+
+  def media_resources?
+    media_resources.any?
+  end
+
+  def first_media_resource
+    media_resources.first
   end
 
   def media_status
-    states = all_media_files.map(&:status).uniq
+    states = media_resources.map(&:status).uniq
     if !(%w[started created processing retrying] & states).empty?
       "processing"
     elsif states.any? { |s| s == "error" }
@@ -324,10 +329,6 @@ class Episode < ApplicationRecord
     end
   end
 
-  def first_media_resource
-    all_media_files.first
-  end
-
   def enclosure_url(feed = nil)
     EnclosureUrlBuilder.new.podcast_episode_url(podcast, self, feed)
   end
@@ -335,29 +336,6 @@ class Episode < ApplicationRecord
   def enclosure_filename
     uri = URI.parse(enclosure_url)
     File.basename(uri.path)
-  end
-
-  def media_files
-    contents.blank? ? Array(enclosure) : contents
-  end
-
-  # API updates for media= ... just append new files and reprocess
-  def media_files=(files)
-    ignore = %i[id type episode_id guid position status created_at updated_at]
-    files.each_with_index do |f, index|
-      file = f.attributes.with_indifferent_access.except(*ignore)
-      file[:position] = index + 1
-      contents << Content.new(file)
-    end
-
-    # find all contents with a greater position and whack them
-    contents.where("position > ?", files.count).each(&:mark_for_destruction)
-
-    # TODO: should this call super?
-  end
-
-  def all_media_files
-    all_contents.blank? ? Array(enclosures) : all_contents
   end
 
   def set_external_keyword

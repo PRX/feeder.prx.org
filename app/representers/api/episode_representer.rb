@@ -49,8 +49,14 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
 
   property :audio_version
   property :segment_count
-  collection :media_files,
+
+  collection :media_resources,
     as: :media,
+    decorator: Api::MediaResourceRepresenter,
+    class: MediaResource
+
+  collection :ready_media_resources,
+    as: :ready_media,
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
@@ -61,7 +67,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   end
 
   link :enclosure do
-    if represented.podcast && represented.media?
+    if represented.podcast && represented.media_resources?
       {
         href: represented.enclosure_url,
         type: represented.content_type,

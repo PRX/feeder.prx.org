@@ -24,8 +24,10 @@ FactoryBot.define do
       include_podcast_value { true }
       include_donation_url { true }
 
-      feed_image
-      itunes_image
+      after(:build) do |feed, _evaluator|
+        feed.feed_image = build(:feed_image)
+        feed.itunes_image = build(:itunes_image)
+      end
     end
   end
 end

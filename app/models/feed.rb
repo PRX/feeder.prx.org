@@ -86,7 +86,7 @@ class Feed < ApplicationRecord
     feed_max = display_episodes_count.to_i
 
     filtered_episodes.each do |ep|
-      include_in_feed << ep if ep.include_in_feed?
+      include_in_feed << ep if ep.media_ready?
       break if (feed_max > 0) && (include_in_feed.size >= feed_max)
     end
     include_in_feed
@@ -159,7 +159,7 @@ class Feed < ApplicationRecord
     if !img
       feed_images.each(&:mark_for_destruction)
     elsif img&.replace?(feed_image)
-      feed_images << img
+      feed_images.build(img.attributes.compact)
     else
       img.update_image(feed_image)
     end
@@ -179,7 +179,7 @@ class Feed < ApplicationRecord
     if !img
       itunes_images.each(&:mark_for_destruction)
     elsif img&.replace?(itunes_image)
-      itunes_images << img
+      itunes_images.build(img.attributes.compact)
     else
       img.update_image(itunes_image)
     end
