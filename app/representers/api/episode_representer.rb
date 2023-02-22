@@ -67,7 +67,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   end
 
   link :enclosure do
-    if represented.podcast && represented.media_resources?
+    if represented.podcast && represented.media?
       {
         href: represented.enclosure_url,
         type: represented.content_type,

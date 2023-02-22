@@ -29,8 +29,8 @@ describe EpisodeStoryHandler do
     assert_equal episode.published_at, Time.parse(story.attributes[:published_at])
     refute_nil episode.released_at
     assert_equal episode.released_at, Time.parse(story.attributes[:released_at])
-    first_audio = episode.all_contents.first.original_url
-    last_audio = episode.all_contents.last.original_url
+    first_audio = episode.contents.first.original_url
+    last_audio = episode.contents.last.original_url
     assert_equal first_audio, "s3://mediajoint.production.prx.org/public/audio_files/1200648/lcs_spring16_act1.mp3"
     assert_equal last_audio, "s3://mediajoint.production.prx.org/public/audio_files/1200657/broadcast/t01.mp3"
     assert_equal episode.description, "this is a description"

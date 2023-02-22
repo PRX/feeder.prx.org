@@ -298,7 +298,7 @@ class Episode < ApplicationRecord
     contents.blank? ? Array(ready_enclosure) : ready_contents
   end
 
-  def media_resources?
+  def media?
     media_resources.any?
   end
 

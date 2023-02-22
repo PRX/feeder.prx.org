@@ -79,18 +79,10 @@ class EpisodeStoryHandler
     rescue
       []
     end
-    audio.each do |a|
-      next unless a.status == "complete"
 
-      existing_content = episode.find_existing_content(a.position, a.links["prx:storage"].href)
-      if existing_content
-        update_content(existing_content, a)
-      else
-        episode.all_contents << build_content(a)
-      end
+    episode.contents = audio.map do |a|
+      Content.build(a.links["prx:storage"].href, a.position)
     end
-    max_pos = audio.last.try(:position).to_i
-    episode.all_contents.where(["position > ?", max_pos]).delete_all if max_pos.positive?
   end
 
   def update_image
