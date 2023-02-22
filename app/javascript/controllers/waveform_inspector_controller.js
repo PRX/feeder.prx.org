@@ -1,52 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 import Peaks from "peaks.js"
 import _ from "lodash"
-
-function convertToSeconds(value) {
-  if (!value) return NaN
-
-  if (typeof value === "number") return value
-
-  if (value.indexOf(":") != -1) {
-    // Convert duration string to seconds.
-    const parts = value
-      .replaceAll(/[^0-9.:]/gi) // Keep only characters used in duration string.
-      .split(":") // Split into duration segments.
-      .map((v) => parseFloat(v)) // Parse segments into numbers.
-      .reduce((a, c) => [c, ...a], []) // Flip the order so less common segments (e.g. hours) will be undefined.
-    const [seconds, minutes, hours] = parts
-    return seconds + (minutes || 0) * 60 + (hours || 0) * 360
-  } else {
-    // Convert string to number.
-    const numericValue = value.replaceAll(/[^0-9.]/gi)
-    return parseFloat(numericValue)
-  }
-}
-
-function convertSecondsToDuration(inputSeconds) {
-  let duration = "00:00"
-
-  if (["number", "string"].indexOf(typeof inputSeconds) === -1) return duration
-
-  if (typeof inputSeconds === "string" && inputSeconds.indexOf(":") > -1) {
-    return inputSeconds
-  }
-
-  const totalSeconds = typeof inputSeconds === "string" ? parseFloat(inputSeconds) : inputSeconds
-
-  if (typeof totalSeconds === "number" && totalSeconds > 0) {
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = (totalSeconds % 60).toFixed(2)
-    duration = [
-      ...(hours ? [hours] : []),
-      String(minutes).padStart(2, "0"),
-      seconds > 9 ? seconds : `0${seconds}`,
-    ].join(":")
-  }
-
-  return duration
-}
+import convertToSeconds from "../util/convertToSeconds"
+import convertSecondsToDuration from "../util/convertSecondsToDuration"
 
 export default class extends Controller {
   static targets = ["overview", "zoom", "scrollbar", "seekInput"]

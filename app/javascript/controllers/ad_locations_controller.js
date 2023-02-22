@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["waveformInspector", "markersInput"]
+  static targets = ["waveformInspector", "markersInput", "controls", "controlTemplate"]
 
   static values = {
     labelPrefix: { type: String, default: "Ad Position" },
@@ -10,7 +10,7 @@ export default class extends Controller {
   }
 
   connect() {
-    console.log("connect >> markersValue", this.markersValue)
+    console.log("ad-locations#connect >> markersValue", this.markersValue)
   }
 
   /**
@@ -79,7 +79,7 @@ export default class extends Controller {
     // Convert ad markers to markers array.
     const markers = this.getMarkers()
 
-    console.log("ad-locations#renderMarkers", markers, this.adMarkers)
+    console.log("ad-locations#renderMarkers", markers, this.adMarkers, this.hasControlsTarget, this.hasControlTemplateTarget)
 
     // Updated markers form input value.
     this.markersInputTarget.value = JSON.stringify(markers)
@@ -87,6 +87,11 @@ export default class extends Controller {
     // Update waveform inspector.
     if (this.hasWaveformInspectorTarget) {
       this.waveformInspectorTarget.dataset.waveformInspectorMarkersValue = JSON.stringify(this.adMarkers)
+    }
+
+    // Update controls
+    if (this.hasControlsTarget && this.hasControlTemplateTarget) {
+      this.renderAdMarkerControls()
     }
   }
 
@@ -113,5 +118,34 @@ export default class extends Controller {
       (a, { startTime, endTime }) => (startTime ? [...a, [startTime, ...(endTime ? [endTime] : [])]] : a),
       []
     )
+  }
+
+  renderAdMarkerControls() {
+    console.log("ad-locations#renderAdMarkerControls >> adMakers", this.adMarkers)
+
+    const controls = [];
+
+    this.adMarkers.forEach((marker) => {
+      const template = this.controlTemplateTarget.content.cloneNode(true)
+      const control = template.querySelector('[data-controller="ad-location"');
+      const { id, labelText, startTime, endTime } = marker;
+
+      console.log(control);
+
+      control.dataset.adLocationIdValue = id;
+      control.dataset.adLocationLabelValue = labelText;
+
+      if (startTime) {
+        control.dataset.adLocationStartTimeValue = startTime;
+      }
+
+      if (endTime) {
+        control.dataset.adLocationEndTimeValue = endTime || null;
+      }
+
+      controls.push(control)
+    })
+
+    this.controlsTarget.replaceChildren(...controls)
   }
 }
