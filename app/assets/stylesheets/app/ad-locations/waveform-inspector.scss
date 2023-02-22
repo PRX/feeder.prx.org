@@ -23,7 +23,7 @@ $module: "prx-waveform-inspector";
     display: none;
   }
 
-  &.player--playing {
+  .player--playing & {
     .playing-hide {
       display: none;
     }

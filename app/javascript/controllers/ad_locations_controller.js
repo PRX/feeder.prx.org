@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import convertToSeconds from "../util/convertToSeconds"
 
 export default class extends Controller {
   static targets = ["waveformInspector", "markersInput", "controls", "controlTemplate"]
@@ -51,11 +52,13 @@ export default class extends Controller {
   updateAdMarker({ detail: { id, startTime, endTime } }) {
     const adMarkerIndex = this.adMarkers.findIndex((marker) => marker.id === id)
     const adMarker = this.adMarkers[adMarkerIndex]
+    const newStartTime = convertToSeconds(startTime)
+    const newEndTime = endTime && convertToSeconds(endTime)
 
     this.adMarkers[adMarkerIndex] = {
       ...adMarker,
-      startTime,
-      endTime,
+      startTime: newEndTime ? Math.min(newStartTime, newEndTime) : newStartTime,
+      endTime: newEndTime ? Math.max(newStartTime, newEndTime) : newEndTime,
     }
 
     this.updateAdMarkers()
@@ -127,7 +130,7 @@ export default class extends Controller {
 
     this.adMarkers.forEach((marker) => {
       const template = this.controlTemplateTarget.content.cloneNode(true)
-      const control = template.querySelector('[data-controller="ad-location"');
+      const control = template.querySelector('[data-controller*="ad-location"');
       const { id, labelText, startTime, endTime } = marker;
 
       console.log(control);

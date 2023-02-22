@@ -279,11 +279,35 @@ export default class extends Controller {
     this.seekInputTarget.value = ""
   }
 
+  seekToMarker({ detail }) {
+    const { id } = detail || {}
+    const marker = this.getMarker(id);
+
+    if (marker) {
+      const { startTime } = marker
+      this.seekTo(startTime)
+    }
+  }
+
+  playMarker({ detail }) {
+    const { id } = detail || {}
+    const marker = this.getMarker(id);
+    
+    if (marker) {
+      const { startTime, endTime } = marker
+      this.peaks.player.playSegment({ startTime, endTime })
+    }
+  }
+
   zoomIn() {
     this.peaks.zoom.zoomIn()
   }
 
   zoomOut() {
     this.peaks.zoom.zoomOut()
+  }
+
+  getMarker(id) {
+    return this.markersValue.find((marker) => marker.id === id)
   }
 }

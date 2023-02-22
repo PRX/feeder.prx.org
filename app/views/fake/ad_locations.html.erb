@@ -11,7 +11,7 @@
   data-waveform-inspector-playing-class="player--playing"
   data-waveform-inspector-audio-url-value="/audio/TOL_6min_720p_download.mp3"
   data-waveform-inspector-waveform-url-value="/audio/TOL_6min_720p_download.json"
-  data-action="resize@window->waveform-inspector#updateLayout ad-locations:markers.update->waveform-inspector#updateMarkers waveform-inspector:marker.update->ad-locations#updateAdMarker">
+  data-action="resize@window->waveform-inspector#updateLayout ad-locations:markers.update->waveform-inspector#updateMarkers waveform-inspector:marker.update->ad-locations#updateAdMarker ad-location:marker.update->ad-locations#updateAdMarker ad-location:play->waveform-inspector#playMarker ad-location:seekTo->waveform-inspector#seekToMarker">
   <header class="prx-content-header | mx-4 px-2 py-3">
     <h2 class="h1 fw-bold">Ad Locations</h2>
   </header>
@@ -71,7 +71,7 @@
     </div>
   </div>
   <template data-ad-locations-target="controlTemplate">
-    <tr data-controller="ad-location" data-ad-location-completed-class="status--completed">
+    <tr data-controller="ad-location tooltip" data-ad-location-completed-class="status--completed">
       <td>
         <span class="completed-show | material-icons text-success">check_circle</span>
         <span class="completed-hide | material-icons text-danger">error</span>
@@ -80,22 +80,22 @@
         <span data-ad-location-target="label">Label Text</span>
       </td>
       <td>
-        <button class="has-start-time-hide | btn btn-sm btn-primary text-nowrap">
+        <button class="has-start-time-hide | btn btn-sm btn-primary text-nowrap" data-action="ad-location#updateStartTimeToPlayhead">
           Insert At Playhead <span class="material-icons" aria-hidden="true">my_location</span>
         </button>
         <div class="has-start-time-show | prx-input-group input-group-sm">
           <input class="form-control" placeholder="00:00"
             data-ad-location-target="startTime"
-            data-action=""
+            data-action="keypress.enter->ad-location#updateStartTime"
             data-bs-toggle="tooltip"
             data-bs-title="Edit Start Time">
-          <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-action="">
+          <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="ad-location#updateStartTime">
             <span class="material-icons">done</span>
           </button>
-          <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="">
+          <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="ad-location#updateStartTimeToPlayhead">
             <span class="material-icons">my_location</span>
           </button>
-          <button class="has-end-time-hide | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Add End Time" data-action="">
+          <button class="has-end-time-hide | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Add End Time" data-action="ad-location#addEndTime">
             <span class="material-icons rotate-90">expand</span>
           </button>
         </div>
@@ -103,25 +103,25 @@
         <div class="has-end-time-show | prx-input-group input-group-sm">
           <input class="form-control" placeholder="00:00"
             data-ad-location-target="endTime"
-            data-action=""
+            data-action="keypress.enter->ad-location#updateEndTime"
             data-bs-toggle="tooltip"
             data-bs-title="Edit End Time">
-          <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-action="">
+          <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="ad-location#updateEndTime">
             <span class="material-icons">done</span>
           </button>
-          <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="">
+          <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="ad-location#updateEndTimeToPlayhead">
             <span class="material-icons">my_location</span>
           </button>
-          <button class="btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Remove End Time" data-action="">
+          <button class="btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Remove End Time" data-action="ad-location#removeEndTime">
             <span class="material-icons">close</span>
           </button>
         </div>
       </td>
       <td class="justify-content-end">
-        <button class="has-end-time-show | btn btn-icon btn-icon-round btn-primary">
+        <button class="has-end-time-show | btn btn-icon btn-icon-round btn-primary" data-action="ad-location#play">
           <span class="material-icons">play_arrow</span>
         </button>
-        <button class="has-start-time-show | btn btn-icon btn-icon-round btn-primary">
+        <button class="has-start-time-show | btn btn-icon btn-icon-round btn-primary" data-action="ad-location#seekTo">
           <span class="material-icons">skip_next</span>
         </button>
       </td>
