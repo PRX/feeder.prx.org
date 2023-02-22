@@ -69,7 +69,6 @@ describe Api::EpisodeRepresenter do
   end
 
   it "has ready media" do
-    e1 = episode.enclosure
     e2 = create(:enclosure, episode: episode, status: "complete")
 
     assert_equal json["readyMedia"].size, 1
