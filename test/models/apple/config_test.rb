@@ -1,25 +1,25 @@
 require "test_helper"
 
-describe Apple::Credential do
+describe Apple::Config do
   describe "#valid?" do
     it "requires both a public and private feed" do
       pub_f = create(:feed)
       priv_f = create(:feed)
 
-      c1 = build(:apple_credential, public_feed: pub_f, private_feed: priv_f)
+      c1 = build(:apple_config, public_feed: pub_f, private_feed: priv_f)
       assert c1.valid?
 
-      c2 = build(:apple_credential, public_feed: nil, private_feed: priv_f)
+      c2 = build(:apple_config, public_feed: nil, private_feed: priv_f)
       refute c2.valid?
 
-      c3 = build(:apple_credential, public_feed: pub_f, private_feed: nil)
+      c3 = build(:apple_config, public_feed: pub_f, private_feed: nil)
       refute c3.valid?
     end
 
     it "requires apple key fields" do
       pub = create(:feed, private: false)
       priv = create(:feed, private: true)
-      c = build(:apple_credential, public_feed: pub, private_feed: priv)
+      c = build(:apple_config, public_feed: pub, private_feed: priv)
       assert c.valid?
 
       c.apple_key_id = nil
@@ -36,19 +36,19 @@ describe Apple::Credential do
       f3 = create(:feed)
       f4 = create(:feed)
 
-      c1 = create(:apple_credential, public_feed: f1, private_feed: f2)
+      c1 = create(:apple_config, public_feed: f1, private_feed: f2)
       assert c1.valid?
 
-      c2 = build(:apple_credential, public_feed: f1, private_feed: f2)
+      c2 = build(:apple_config, public_feed: f1, private_feed: f2)
       refute c2.valid?
 
-      c3 = build(:apple_credential, public_feed: f1, private_feed: f3)
+      c3 = build(:apple_config, public_feed: f1, private_feed: f3)
       assert c3.valid?
 
-      c4 = build(:apple_credential, public_feed: f4, private_feed: f2)
+      c4 = build(:apple_config, public_feed: f4, private_feed: f2)
       assert c4.valid?
 
-      c5 = build(:apple_credential, public_feed: f1, private_feed: f1)
+      c5 = build(:apple_config, public_feed: f1, private_feed: f1)
       refute c5.valid?
     end
 
@@ -56,19 +56,19 @@ describe Apple::Credential do
       f1 = create(:feed)
       f2 = create(:feed)
 
-      v1 = build(:apple_credential, public_feed: f1, private_feed: f2, apple_provider_id: nil, apple_key_id: "blood",
+      v1 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: nil, apple_key_id: "blood",
         apple_key_pem_b64: "orange")
       refute v1.valid?
 
-      v2 = build(:apple_credential, public_feed: f1, private_feed: f2, apple_provider_id: "barlett", apple_key_id: nil,
+      v2 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: "barlett", apple_key_id: nil,
         apple_key_pem_b64: "pear")
       refute v2.valid?
 
-      v3 = build(:apple_credential, public_feed: f1, private_feed: f2, apple_provider_id: "cotton candy",
+      v3 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: "cotton candy",
         apple_key_id: "grapes", apple_key_pem_b64: nil)
       refute v3.valid?
 
-      v4 = build(:apple_credential, public_feed: f1, private_feed: f2, apple_provider_id: nil, apple_key_id: nil,
+      v4 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: nil, apple_key_id: nil,
         apple_key_pem_b64: nil)
       assert v4.valid?
     end
@@ -76,7 +76,7 @@ describe Apple::Credential do
 
   describe "apple_key" do
     it "base64 decodes the apple key" do
-      c = Apple::Credential.new(apple_key_pem_b64: Base64.encode64("hello"))
+      c = Apple::Config.new(apple_key_pem_b64: Base64.encode64("hello"))
       assert_equal c.apple_key, "hello"
     end
   end

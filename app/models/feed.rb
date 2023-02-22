@@ -20,8 +20,8 @@ class Feed < ApplicationRecord
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
 
-  has_many :apple_credentials, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
-    class_name: "::Apple::Credential"
+  has_many :apple_configs, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
+    class_name: "::Apple::Config"
 
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
@@ -102,8 +102,10 @@ class Feed < ApplicationRecord
     cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, "").gsub(/\s+/, " ").strip
   end
 
-  def publish_to_apple?(creds)
-    creds.present? && creds.public_feed == self
+  def publish_to_apple?(apple_config)
+    apple_config.present? &&
+      apple_config.public_feed == self &&
+      apple_config.publish_enabled?
   end
 
   def use_include_tags?

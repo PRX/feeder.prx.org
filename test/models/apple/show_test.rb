@@ -4,8 +4,8 @@ require "test_helper"
 
 describe Apple::Show do
   let(:podcast) { create(:podcast) }
-  let(:apple_creds) { build(:apple_credential) }
-  let(:apple_api) { Apple::Api.from_apple_credentials(apple_creds) }
+  let(:apple_config) { build(:apple_config) }
+  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
   let(:private_feed) { create(:feed, podcast: podcast, private: true) }
   let(:apple_show) { Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed) }
@@ -40,11 +40,19 @@ describe Apple::Show do
   end
 
   describe ".connect_existing" do
-    it "should persist the apple id for a feed" do
-      Apple::Show.connect_existing("some_apple_id", apple_api, public_feed, private_feed)
+    let(:apple_config) { create(:apple_config, public_feed: public_feed, private_feed: private_feed) }
 
-      assert_equal Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed).apple_id,
-        "some_apple_id"
+    it "should take in the apple show id an apple credentials object" do
+      apple_config.save!
+      apple_show = Apple::Show.connect_existing("some_apple_id", apple_config)
+
+      assert_equal apple_show.apple_id, "some_apple_id"
+      assert_equal apple_show.public_feed, apple_config.public_feed
+      assert_equal apple_show.private_feed, apple_config.private_feed
+
+      # it can be reloaded from the db
+      apple_publisher = Apple::Publisher.from_apple_config(apple_config.reload)
+      assert_equal apple_publisher.show.apple_id, "some_apple_id"
     end
   end
 

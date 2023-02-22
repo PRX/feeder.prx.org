@@ -6,8 +6,8 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   let(:podcast) { create(:podcast) }
   let(:episode) { create(:episode, podcast: podcast) }
 
-  let(:apple_creds) { build(:apple_credential) }
-  let(:apple_api) { Apple::Api.from_apple_credentials(apple_creds) }
+  let(:apple_config) { build(:apple_config) }
+  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
   let(:private_feed) { create(:feed, podcast: podcast, private: true, tokens: [FeedToken.new]) }
   let(:apple_show) { Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed) }
@@ -112,14 +112,14 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
   end
 
-  describe ".update_podcast_container_state(api, episodes)" do
+  describe ".poll_podcast_container_state(api, episodes)" do
     it "creates new records if they dont exist" do
       assert_equal SyncLog.count, 0
 
       Apple::PodcastContainer.stub(:get_podcast_containers_via_episodes, [podcast_container_json_row]) do
         apple_episode.stub(:apple_id, apple_episode_id) do
           apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-            Apple::PodcastContainer.update_podcast_container_state(nil, [apple_episode])
+            Apple::PodcastContainer.poll_podcast_container_state(nil, [apple_episode])
           end
         end
       end
@@ -152,6 +152,37 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     it "raises an error if the vendor id is missing" do
       assert_raises(RuntimeError, "incomplete api response") do
         Apple::PodcastContainer.podcast_container_url(api, OpenStruct.new)
+      end
+    end
+  end
+
+  describe "#has_podcast_audio?" do
+    let(:file) do
+      {"fileName" => "SomeName.flac",
+       "fileType" => "audio",
+       "status" => "In Asset Repository",
+       "assetRole" => "PodcastSourceAudio"}
+    end
+
+    let(:container) { Apple::PodcastContainer.new }
+
+    it "returns true if the podcast container has a podcast audio file" do
+      container.stub(:apple_attributes, {"files" => [file]}) do
+        assert container.has_podcast_audio?
+      end
+    end
+
+    it "returns false if the status is not in asset repository" do
+      file["status"] = "Not In Asset Repository"
+      container.stub(:apple_attributes, {"files" => [file]}) do
+        refute container.has_podcast_audio?
+      end
+    end
+
+    it "returns false if the assetRole is not podcast source audio" do
+      file["assetRole"] = "Not Podcast Source Audio"
+      container.stub(:apple_attributes, {"files" => [file]}) do
+        refute container.has_podcast_audio?
       end
     end
   end
