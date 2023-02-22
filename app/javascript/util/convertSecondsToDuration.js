@@ -1,3 +1,5 @@
+import convertToSeconds from "./convertToSeconds"
+
 /**
  * Convert a number into string in duration format ([HH:]MM:SS[.ss]).
  * @param {Number} inputSeconds Number of seconds to convert to duration format.
@@ -14,13 +16,15 @@ export default function convertSecondsToDuration(inputSeconds) {
   const sanitizedStringInput = typeof inputSeconds === "string" && inputSeconds.replaceAll(/[^0-9:.]/g, "")
 
   // Convert sanitized string input to number.
-  const totalSeconds = sanitizedStringInput ? parseFloat(sanitizedStringInput) : inputSeconds
+  const totalSeconds = sanitizedStringInput ? convertToSeconds(sanitizedStringInput) : inputSeconds
 
   // Ensure we are working with a number greater than zero.
   if (!Number.isNaN(totalSeconds) && totalSeconds > 0) {
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
     const seconds = (totalSeconds % 60).toFixed(2)
+
+    console.log(hours, minutes, seconds);
 
     duration = [
       ...(hours ? [hours] : []),
