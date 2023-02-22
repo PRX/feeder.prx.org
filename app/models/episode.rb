@@ -143,7 +143,7 @@ class Episode < ApplicationRecord
     if !img
       images.each(&:mark_for_destruction)
     elsif img&.replace?(image)
-      images.build(img.attributes)
+      images.build(img.attributes.compact)
     else
       img.update_image(image)
     end
@@ -163,7 +163,7 @@ class Episode < ApplicationRecord
     if !enc
       enclosures.each(&:mark_for_destruction)
     elsif enc&.replace?(enclosure)
-      enclosures.build(enc.attributes)
+      enclosures.build(enc.attributes.compact)
     else
       enc.update_resource(enclosure)
     end
@@ -183,7 +183,7 @@ class Episode < ApplicationRecord
       if !con
         existing[position]&.each(&:mark_for_destruction)
       elsif con.replace?(existing[position]&.first)
-        contents.build(con.attributes)
+        contents.build(con.attributes.compact)
       else
         con.update_resource(existing[position].first)
       end
@@ -292,6 +292,11 @@ class Episode < ApplicationRecord
 
   def media_resources
     contents.blank? ? Array(enclosure) : contents
+  end
+
+  # NOTE: API updates ignore nil attributes
+  def media_resources=(files)
+    self.contents = files unless files.nil?
   end
 
   def ready_media_resources

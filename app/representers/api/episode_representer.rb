@@ -58,7 +58,8 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   collection :ready_media_resources,
     as: :ready_media,
     decorator: Api::MediaResourceRepresenter,
-    class: MediaResource
+    class: MediaResource,
+    writeable: false
 
   property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
 
