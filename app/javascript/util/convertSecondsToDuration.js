@@ -24,8 +24,6 @@ export default function convertSecondsToDuration(inputSeconds) {
     const minutes = Math.floor((totalSeconds % 3600) / 60)
     const seconds = (totalSeconds % 60).toFixed(2)
 
-    console.log(hours, minutes, seconds);
-
     duration = [
       ...(hours ? [hours] : []),
       String(minutes).padStart(2, "0"),
