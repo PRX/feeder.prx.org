@@ -139,10 +139,13 @@ class Episode < ApplicationRecord
 
   def image=(file)
     img = EpisodeImage.build(file)
-    if img&.replace?(image)
-      images << img
-    elsif !img
+
+    if !img
       images.each(&:mark_for_destruction)
+    elsif img&.replace?(image)
+      images << img
+    else
+      img.update(image)
     end
   end
 
@@ -157,12 +160,12 @@ class Episode < ApplicationRecord
   def enclosure=(file)
     enc = Enclosure.build(file)
 
-    if enc&.update?(enclosure)
-      enc.update(enclosure)
+    if !enc
+      enclosures.each(&:mark_for_destruction)
     elsif enc&.replace?(enclosure)
       enclosures << enc
-    elsif !enc
-      enclosures.each(&:mark_for_destruction)
+    else
+      enc.update(enclosure)
     end
   end
 

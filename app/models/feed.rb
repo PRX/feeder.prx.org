@@ -155,10 +155,13 @@ class Feed < ApplicationRecord
 
   def feed_image=(file)
     img = FeedImage.build(file)
-    if img&.replace?(feed_image)
-      feed_images << img
-    elsif !img
+
+    if !img
       feed_images.each(&:mark_for_destruction)
+    elsif img&.replace?(feed_image)
+      feed_images << img
+    else
+      img.update(feed_image)
     end
   end
 
@@ -172,10 +175,13 @@ class Feed < ApplicationRecord
 
   def itunes_image=(file)
     img = ITunesImage.build(file)
-    if img&.replace?(itunes_image)
-      itunes_images << img
-    elsif !img
+
+    if !img
       itunes_images.each(&:mark_for_destruction)
+    elsif img&.replace?(itunes_image)
+      itunes_images << img
+    else
+      img.update(itunes_image)
     end
   end
 end
