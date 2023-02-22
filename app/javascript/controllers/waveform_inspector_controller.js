@@ -21,8 +21,6 @@ export default class extends Controller {
   }, 500)
 
   connect() {
-    console.log("waveform-inspector#connect >> markers", this.markersValue)
-
     this.audioElement = new Audio()
     this.audioElement.preload = "metadata"
     this.audioElement.src = this.audioUrlValue
@@ -106,22 +104,16 @@ export default class extends Controller {
 
       // Player Events
       peaksInstance.on("player.pause", () => {
-        console.log("player.pause")
-
         // Remove playing classes.
         self.element.classList.remove(...this.playingClasses)
       })
 
       peaksInstance.on("player.playing", () => {
-        console.log("player.playing")
-
         // Apply playing classes.
         self.element.classList.add(...this.playingClasses)
       })
 
       peaksInstance.on("player.timeupdate", (time) => {
-        console.log("player.timeupdate", time)
-
         // Update currentTime input placeholder.
         self.seekInputTarget.placeholder = convertSecondsToDuration(time)
 
@@ -130,13 +122,7 @@ export default class extends Controller {
       })
 
       // Points Events
-      peaksInstance.on("points.dragstart", ({ point }) => {
-        console.log("points.dragstart", point)
-      })
-
       peaksInstance.on("points.dragend", ({ point }) => {
-        console.log("points.dragend", point)
-
         const { id, time } = point
         let newTime = time
 
@@ -167,13 +153,7 @@ export default class extends Controller {
       })
 
       // Segment Events
-      peaksInstance.on("segments.dragstart", ({ segment }) => {
-        console.log("segments.dragstart", segment)
-      })
-
       peaksInstance.on("segments.dragend", ({ segment }) => {
-        console.log("segments.dragend", segment)
-
         const { id, startTime, endTime } = segment
 
         // Dispatch marker update event.
@@ -196,8 +176,6 @@ export default class extends Controller {
   }
 
   initMarkers() {
-    console.log("waveform-inspector#initMarkers >> peaks", this.peaks)
-
     if (!this.peaks) return
 
     const segments = []
@@ -235,16 +213,11 @@ export default class extends Controller {
       }
     })
 
-    console.log("waveform-inspector#initMarkers >> points", points)
-    console.log("waveform-inspector#initMarkers >> segments", segments)
-
     this.peaks?.points.add(points)
     this.peaks?.segments.add(segments)
   }
 
   markersValueChanged() {
-    console.log("waveform-inspector#markersValueChanged >> markers", this.markersValue, this.peaks)
-
     this.clearMarkers()
     this.initMarkers()
   }
@@ -281,7 +254,7 @@ export default class extends Controller {
 
   seekToMarker({ detail }) {
     const { id } = detail || {}
-    const marker = this.getMarker(id);
+    const marker = this.getMarker(id)
 
     if (marker) {
       const { startTime } = marker
@@ -291,8 +264,8 @@ export default class extends Controller {
 
   playMarker({ detail }) {
     const { id } = detail || {}
-    const marker = this.getMarker(id);
-    
+    const marker = this.getMarker(id)
+
     if (marker) {
       const { startTime, endTime } = marker
       this.peaks.player.playSegment({ startTime, endTime })

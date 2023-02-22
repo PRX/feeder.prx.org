@@ -9,9 +9,9 @@ export default class extends Controller {
   }
 
   disconnect() {
-    this.tooltipList.forEach(tooltip => {
+    this.tooltipList.forEach((tooltip) => {
       tooltip.dispose()
-    });
+    })
     delete this.tooltipList
   }
 }

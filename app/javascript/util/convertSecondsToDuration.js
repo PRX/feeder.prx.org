@@ -11,8 +11,8 @@ export default function convertSecondsToDuration(inputSeconds) {
   if (["number", "string"].indexOf(typeof inputSeconds) === -1) return duration
 
   // Sanitize string input to expected characters.
-  const sanitizedStringInput = typeof inputSeconds === 'string' && inputSeconds.replaceAll(/[^0-9:.]/g, '')
-  
+  const sanitizedStringInput = typeof inputSeconds === "string" && inputSeconds.replaceAll(/[^0-9:.]/g, "")
+
   // Directly return string in valid format.
   if (sanitizedStringInput && /^([0-9]{2})+(\.[0-9]+)?$/.test(sanitizedStringInput)) {
     return inputSeconds

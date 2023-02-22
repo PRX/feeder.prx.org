@@ -11,12 +11,10 @@ export default class extends Controller {
     id: String,
     label: String,
     startTime: String,
-    endTime: String
+    endTime: String,
   }
 
   connect() {
-    console.log("ad-location#connect", this.idValue, this.labelValue, this.startTimeValue, this.endTimeValue)
-
     if (this.startTimeValue) {
       this.element.classList.add(...this.completedClasses)
     }
@@ -28,30 +26,29 @@ export default class extends Controller {
   }
 
   labelValueChanged() {
-    console.log("ad-location#labelValueChanged >> labelValue", this.labelValue)
     this.labelTarget.textContent = this.labelValue
   }
 
   startTimeValueChanged() {
-    console.log("ad-location#startTimeValueChanged >> startTimeValue", this.startTimeValue)
     this.startTimeTarget.placeholder = convertSecondsToDuration(this.startTimeValue)
   }
 
   endTimeValueChanged() {
-    console.log("ad-location#endTimeValueChanged >> endTimeValue", this.endTimeValue)
     this.endTimeTarget.placeholder = convertSecondsToDuration(this.endTimeValue)
   }
 
   updateStartTime(newTime) {
-    this.dispatch('marker.update', { detail: { id: this.idValue, startTime: newTime || this.startTimeValue, endTime: this.endTimeValue }})
+    this.dispatch("marker.update", {
+      detail: { id: this.idValue, startTime: newTime || this.startTimeValue, endTime: this.endTimeValue },
+    })
   }
 
   updateEndTime(newTime) {
-    this.dispatch('marker.update', { detail: { id: this.idValue, startTime: this.startTimeValue, endTime: newTime }})
+    this.dispatch("marker.update", { detail: { id: this.idValue, startTime: this.startTimeValue, endTime: newTime } })
   }
 
   updateStartTimeToPlayhead() {
-    const playheadTime = this.getPlayheadTime();
+    const playheadTime = this.getPlayheadTime()
 
     if (playheadTime) {
       this.updateStartTime(playheadTime)
@@ -59,7 +56,7 @@ export default class extends Controller {
   }
 
   updateEndTimeToPlayhead() {
-    const playheadTime = this.getPlayheadTime();
+    const playheadTime = this.getPlayheadTime()
 
     if (playheadTime) {
       this.updateEndTime(playheadTime)
@@ -67,13 +64,13 @@ export default class extends Controller {
   }
 
   changeStartTime({ target }) {
-    const { value } = target || {};
-    this.updateStartTime(value);
+    const { value } = target || {}
+    this.updateStartTime(value)
   }
 
   changeEndTime({ target }) {
-    const { value } = target || {};
-    this.updateEndTime(value);
+    const { value } = target || {}
+    this.updateEndTime(value)
   }
 
   addEndTime() {
@@ -87,16 +84,14 @@ export default class extends Controller {
   getPlayheadTime() {
     const playerContainer = this.element.closest("[data-playhead-time]")
 
-    console.log("ad-location#getPlayheadTime", playerContainer?.dataset.playheadTime)
-
-    return playerContainer ? playerContainer.dataset.playheadTime : 0;
+    return playerContainer ? playerContainer.dataset.playheadTime : 0
   }
 
   play() {
-    this.dispatch("play", { detail: { id: this.idValue }})
+    this.dispatch("play", { detail: { id: this.idValue } })
   }
 
   seekTo() {
-    this.dispatch("seekTo", { detail: { id: this.idValue }})
+    this.dispatch("seekTo", { detail: { id: this.idValue } })
   }
 }

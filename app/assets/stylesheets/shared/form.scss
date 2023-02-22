@@ -50,7 +50,7 @@
   & > :is(.form-control:placeholder-shown) ~ .prx-input-confirm {
     display: none;
   }
-  
+
   & > :is(.form-control:not(:placeholder-shown)) ~ .prx-input-confirm-hidden {
     display: none;
   }

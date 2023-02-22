@@ -1,6 +1,6 @@
-// 
+//
 // Add locations table syles.
-// 
+//
 
 .prx-ad-locations-table {
   --#{$prefix}table-border-color: #{$table-border-color};
@@ -30,7 +30,7 @@
 
   :is(tbody tr) {
     &::after {
-      content: '';
+      content: "";
       display: block;
       grid-column: 1 / -1;
       height: $table-border-width;
@@ -41,15 +41,13 @@
   :is(tr) {
     &:first-of-type {
       &::before {
-        content: '';
+        content: "";
         display: block;
         grid-column: 1 / -1;
         height: $table-border-width * 2;
         background-color: var(--#{$prefix}table-border-color);
       }
     }
-
-
   }
 
   .completed-show {

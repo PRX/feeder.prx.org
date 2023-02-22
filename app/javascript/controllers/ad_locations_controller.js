@@ -10,10 +10,6 @@ export default class extends Controller {
     markers: Array,
   }
 
-  connect() {
-    console.log("ad-locations#connect >> markersValue", this.markersValue)
-  }
-
   /**
    * Handle external changes to incoming marker values.
    * Should only run when controller initializes, or we need to edit ad locations for a different episode.
@@ -27,8 +23,6 @@ export default class extends Controller {
    * Initial render of ad markers.
    */
   initMarkers() {
-    console.log("ad-locations#updateAdMarkers >> markersValue", this.markersValue)
-
     this.adMarkers = [...Array(this.segmentCountValue - 1).keys()]
       .map((key) => this.markersValue?.[key] || [])
       .map(([startTime, endTime], index) => ({
@@ -37,8 +31,6 @@ export default class extends Controller {
         startTime,
         endTime,
       }))
-
-    console.log("ad-locations#updateAdMarkers >> adMarkers", this.adMarkers)
 
     this.sortAdMarkers()
 
@@ -68,8 +60,6 @@ export default class extends Controller {
    * Update ad markers after a change and rerender.
    */
   updateAdMarkers() {
-    console.log("ad-locations#updateAdMarkers >> adMakers", this.adMarkers)
-
     this.sortAdMarkers()
 
     this.renderMarkers()
@@ -81,8 +71,6 @@ export default class extends Controller {
   renderMarkers() {
     // Convert ad markers to markers array.
     const markers = this.getMarkers()
-
-    console.log("ad-locations#renderMarkers", markers, this.adMarkers, this.hasControlsTarget, this.hasControlTemplateTarget)
 
     // Updated markers form input value.
     this.markersInputTarget.value = JSON.stringify(markers)
@@ -108,8 +96,6 @@ export default class extends Controller {
         ...marker,
         labelText: `${this.labelPrefixValue} ${index + 1}`,
       }))
-
-    console.log("ad-locations#sortAdMarkers >> adMakers", this.adMarkers)
   }
 
   /**
@@ -124,26 +110,22 @@ export default class extends Controller {
   }
 
   renderAdMarkerControls() {
-    console.log("ad-locations#renderAdMarkerControls >> adMakers", this.adMarkers)
-
-    const controls = [];
+    const controls = []
 
     this.adMarkers.forEach((marker) => {
       const template = this.controlTemplateTarget.content.cloneNode(true)
-      const control = template.querySelector('[data-controller*="ad-location"');
-      const { id, labelText, startTime, endTime } = marker;
+      const control = template.querySelector('[data-controller*="ad-location"')
+      const { id, labelText, startTime, endTime } = marker
 
-      console.log(control);
-
-      control.dataset.adLocationIdValue = id;
-      control.dataset.adLocationLabelValue = labelText;
+      control.dataset.adLocationIdValue = id
+      control.dataset.adLocationLabelValue = labelText
 
       if (startTime) {
-        control.dataset.adLocationStartTimeValue = startTime;
+        control.dataset.adLocationStartTimeValue = startTime
       }
 
       if (endTime) {
-        control.dataset.adLocationEndTimeValue = endTime || null;
+        control.dataset.adLocationEndTimeValue = endTime || null
       }
 
       controls.push(control)
