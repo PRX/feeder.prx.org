@@ -1,0 +1,11 @@
+@import "shared/bootstrap-variables";
+
+.prx-uploads-audio {
+  .progress {
+    height: 28px;
+    // margin-top: calc($form-floating-padding-x + ($form-floating-height - 25px / 2));
+    // margin-bottom: calc($form-floating-padding-y + ($form-floating-height - 25px / 2));
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+}

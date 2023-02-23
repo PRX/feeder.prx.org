@@ -25,6 +25,10 @@
     color: #000;
   }
 
+  .form-control[type="file"] {
+    line-height: $line-height-base;
+  }
+
   // manually applied "blank" class (when the placeholder trick won't work)
   > .form-control-blank:not(:focus) ~ label {
     opacity: 1;
