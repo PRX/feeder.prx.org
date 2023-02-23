@@ -68,15 +68,22 @@ describe Api::EpisodeRepresenter do
       episode.enclosure.original_url
   end
 
+  it "has ready media" do
+    e2 = create(:enclosure, episode: episode, status: "complete")
+
+    assert_equal json["readyMedia"].size, 1
+    assert_equal json["readyMedia"].first["href"], e2.url
+    assert_equal json["readyMedia"].first["originalUrl"], e2.original_url
+  end
+
   it "has an audio version" do
     assert_equal json["audioVersion"], "One segment audio"
     assert_equal json["segmentCount"], 1
   end
 
   it "has image" do
-    assert_equal json["images"].size, 1
-    assert_equal json["images"].first["url"], episode.image.url
-    assert_equal json["images"].first["originalUrl"], episode.image.original_url
+    assert_equal json["image"]["url"], episode.image.url
+    assert_equal json["image"]["originalUrl"], episode.image.original_url
   end
 
   it "has enclosure" do

@@ -102,50 +102,22 @@ describe EpisodeEntryHandler do
     episode.enclosure.update(original_url: "https://test.com")
     first_enclosure = episode.enclosure
     EpisodeEntryHandler.update_from_entry!(episode, entry)
-    assert_equal episode.enclosures.size, 2
+    assert_equal episode.enclosures.with_deleted.size, 2
     replacement_enclosure = episode.enclosures.first
 
-    assert_equal episode.enclosure, first_enclosure
+    assert_equal episode.ready_enclosure, first_enclosure
     assert_equal first_enclosure.original_url, "https://test.com"
     assert_equal replacement_enclosure.original_url, "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
 
     replacement_enclosure.complete!
-    replacement_enclosure.replace_resources!
     assert_equal episode.enclosures.reload.size, 1
-    assert_equal episode.enclosure, replacement_enclosure
-  end
-
-  it "will not changes enclosure when file name same" do
-    podcast = create(:podcast)
-    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
-    episode.enclosures.first.complete!
-    first_enclosure = episode.enclosure
-
-    assert_equal first_enclosure.original_url, "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
-    first_enclosure.update(original_url: "http://www.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3")
-    EpisodeEntryHandler.update_from_entry!(episode, entry)
-    assert_equal episode.enclosures.reload.size, 1
-    assert_equal episode.enclosures.first.original_url, "http://www.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
-  end
-
-  it "updates enclosure when only file name changes" do
-    podcast = create(:podcast)
-    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
-    episode.enclosures.first.complete!
-    first_enclosure = episode.enclosure
-
-    assert_equal first_enclosure.original_url, "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
-    first_enclosure.update(original_url: "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12_original.mp3")
-    EpisodeEntryHandler.update_from_entry!(episode, entry)
-    assert_equal episode.enclosures.reload.size, 2
-    assert_equal episode.enclosures.first.original_url, "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
-    assert_equal episode.enclosures.last.original_url, "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12_original.mp3"
+    assert_equal episode.ready_enclosure, replacement_enclosure
   end
 
   it "creates contents from entry" do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
-    assert_equal episode.all_contents.size, 2
+    assert_equal episode.contents.size, 2
   end
 
   it "updates contents from entry" do
@@ -153,38 +125,38 @@ describe EpisodeEntryHandler do
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
 
     # complete just one of them
-    episode.all_contents.first.complete!
+    episode.contents.first.complete!
     episode.reload
-    first_content = episode.all_contents.first
-    last_content = episode.all_contents.last
+    first_content = episode.contents.first
+    last_content = episode.contents.last
 
     EpisodeEntryHandler.update_from_entry!(episode, entry)
     episode.reload
-    assert_equal episode.all_contents.first, first_content
-    assert_equal episode.all_contents.last, last_content
+    assert_equal episode.contents.first, first_content
+    assert_equal episode.contents.last, last_content
 
     first_content = episode.contents.first
     assert_equal first_content.original_url, "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3"
     first_content.update(original_url: "https://prx-dovetail.amazonaws.com/testserial/serial_audio.mp3")
     EpisodeEntryHandler.update_from_entry!(episode, entry)
-    assert_equal episode.all_contents.reload.size, 2
+    assert_equal episode.contents.reload.size, 2
 
     first_content.update(original_url: "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio_original.mp3")
     EpisodeEntryHandler.update_from_entry!(episode, entry)
-    assert_equal episode.all_contents.reload.size, 3
-    assert_equal episode.all_contents.group_by(&:position)[first_content.position].size, 2
+    assert_equal episode.contents.with_deleted.reload.size, 3
+    assert_equal episode.contents.size, 2
   end
 
   it "creates contents with no enclosure" do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
-    assert_equal episode.all_contents.size, 2
+    assert_equal episode.contents.size, 2
   end
 
   it "uses first content url when there is no enclosure" do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
-    episode.all_contents.first.complete!
+    episode.contents.first.complete!
     episode.reload
     assert_match(/#{episode.contents.first.guid}.mp3$/, episode.media_url)
   end
@@ -192,16 +164,15 @@ describe EpisodeEntryHandler do
   it "returns nil for media_url when there is no audio" do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
-    episode.all_contents.clear
+    episode.contents.clear
     assert_nil episode.media_url
   end
 
   it "return include in feed and has_media false when no audio" do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
-    episode.all_contents.clear
+    episode.contents.clear
     refute episode.media?
     refute episode.media_ready?
-    assert episode.include_in_feed?
   end
 end

@@ -4,7 +4,6 @@ class Tasks::CopyImageTask < ::Task
       image_resource.update!(status: status)
       if complete?
         image_resource.update!(url: image_resource.published_url)
-        image_resource.try(:replace_resources!)
         podcast.try(:publish!)
       end
     end
