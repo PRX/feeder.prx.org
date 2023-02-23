@@ -53,9 +53,9 @@ class Episode < ApplicationRecord
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
 
-  scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
-  scope :published_by, ->(offset) { where("published_at IS NOT NULL AND published_at <= ?", Time.now + offset) }
-  scope :scheduled, -> { where("released_at > ?", Time.now) }
+  scope :published, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at <= now()") }
+  scope :published_by, ->(offset) { where("episodes.published_at IS NOT NULL AND episodes.published_at <= ?", Time.now + offset) }
+  scope :scheduled, -> { where("episodes.released_at > ?", Time.now) }
 
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
 
