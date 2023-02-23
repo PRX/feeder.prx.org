@@ -6,7 +6,7 @@ class EpisodesController < ApplicationController
   def index
     episodes =
       if params[:podcast_id]
-        Podcast.find(params[:podcast_id]).episodes
+        policy_scope(Podcast).find(params[:podcast_id]).episodes
       else
         policy_scope(Episode).all
       end
