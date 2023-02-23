@@ -4,6 +4,21 @@ import SparkMD5 from "spark-md5"
 import sha256 from "sha256"
 
 export default class extends Controller {
+  static targets = [
+    "audioFile",
+    "originalUrl",
+    "fileName",
+    "fileSize",
+    "fileType",
+    "picker",
+    "progress",
+    "progressBar",
+    "progressBytes",
+    "progressPercent",
+    "error",
+    "cancel",
+  ]
+
   connect() {
     this.uploadBucketName = this.getMeta("upload_bucket_name")
     this.uploadBucketPrefix = this.getMeta("upload_bucket_prefix")
@@ -15,11 +30,15 @@ export default class extends Controller {
   async upload(event) {
     const config = this.getUploadConfig(event.target.files[0])
     try {
-      const evaporate = await this.getEvaporate()
-      const result = await evaporate.add(config)
-      console.log("got result i guess?", result)
+      this.evaporate = this.evaporate || (await this.getEvaporate())
+      this.startUpload(config)
+      const path = await this.evaporate.add(config)
+      this.originalUrlTarget.value = `s3://${this.uploadBucketName}/${path}`
+      this.show("picker", true)
     } catch (err) {
-      console.error("got error i guess?", err)
+      if (!`${err}`.includes("aborted")) {
+        console.log(err)
+      }
     }
   }
 
@@ -30,10 +49,9 @@ export default class extends Controller {
     const name = this.addPrefix(cleanName)
     const notSignedHeadersAtInitiate = { "Content-Disposition": `attachment; filename=${cleanName}` }
     const progress = this.onProgress.bind(this)
-    const cancelled = this.onCancelled.bind(this)
     const error = this.onError.bind(this)
 
-    return { name, file, contentType, notSignedHeadersAtInitiate, progress, cancelled, error }
+    return { name, file, cleanName, contentType, notSignedHeadersAtInitiate, progress, error }
   }
 
   getEvaporate() {
@@ -61,34 +79,63 @@ export default class extends Controller {
     })
   }
 
-  onProgress(percent) {
-    console.log("progress", percent)
-    // if (percent < 1) {
-    //   el.find(".status").text("Uploading")
-    // } else {
-    //   el.find(".status").text("Complete")
-    //   el.find(".cancel").hide()
-    //   el.delay(1000).fadeOut(300, function () {
-    //     el.remove()
-    //   })
-    // }
-    // evaporate_progress(percent)
-  }
-
-  onCancelled() {
-    console.log("canceled")
-    // el.find(".status").text("Canceled")
-    // el.find(".cancel").hide()
-    // el.fadeOut(300, function () {
-    //   el.remove()
-    // })
-    // evaporate_progress(0, true)
+  onProgress(percent, speed) {
+    const bytes = speed ? speed.totalUploaded : 0
+    this.progressBarTargets.forEach((t) => {
+      t.style.width = `${percent * 100}%`
+      t.ariaValueNow = `${percent * 100}`
+    })
+    this.progressBytesTargets.forEach((t) => (t.innerHTML = percent >= 0.1 ? this.humanFileSize(bytes) : ""))
+    this.progressPercentTargets.forEach((t) => (t.innerHTML = `${percent & 100}%`))
   }
 
   onError(err) {
-    console.log("error", err)
-    // el.find(".status").text("Error")
-    // evaporate_error(err)
+    this.errorTargets.forEach((t) => (t.innerHTML = err.message || `${err}`))
+    this.show("error", true)
+  }
+
+  startUpload(config) {
+    this.fileNameTargets.forEach((t) => (t.innerHTML = config.cleanName))
+    this.fileSizeTargets.forEach((t) => {
+      if (t.value === undefined) {
+        t.innerHTML = this.humanFileSize(config.file.size)
+      } else {
+        t.value = config.file.size
+      }
+    })
+    this.fileTypeTargets.forEach((t) => (t.innerHTML = config.contentType))
+
+    this.onProgress(0)
+    this.show("progress", true)
+  }
+
+  async cancelUpload(event) {
+    event.preventDefault()
+
+    // safely attempt to cancel
+    if (this.evaporate) {
+      try {
+        await this.evaporate.cancel()
+      } catch (err) {
+        if (!`${err}`.includes("No files")) {
+          console.error(err)
+        }
+      }
+    }
+
+    this.audioFileTarget.value = ""
+    this.audioFileTarget.dispatchEvent(new Event("change"))
+    this.show("picker", false)
+  }
+
+  show(type, showCancel = false) {
+    const toggle = (arr, show) =>
+      arr.forEach((el) => (show ? el.classList.remove("d-none") : el.classList.add("d-none")))
+
+    toggle(this.pickerTargets, type === "picker")
+    toggle(this.progressTargets, type === "progress")
+    toggle(this.errorTargets, type === "error")
+    toggle(this.cancelTargets, showCancel)
   }
 
   getMeta(name) {
@@ -107,26 +154,15 @@ export default class extends Controller {
     }
   }
 
-  // humanFileSize(bytes) {
-  //   if (bytes) {
-  //     const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  //     const units = ["B", "kB", "MB", "GB", "TB"][i]
-  //     return (bytes / Math.pow(1024, i)).toFixed(2) * 1 + " " + units
-  //   } else {
-  //     return "0 B"
-  //   }
-  // }
-
-  // humanFileDate(date) {
-  //   if (typeof date === "number") {
-  //     date = new Date(date)
-  //   }
-  //   if (date) {
-  //     return date.toLocaleString()
-  //   } else {
-  //     return "(unknown)"
-  //   }
-  // }
+  humanFileSize(bytes) {
+    if (bytes) {
+      const i = Math.floor(Math.log(bytes) / Math.log(1024))
+      const units = ["B", "kB", "MB", "GB", "TB"][i]
+      return (bytes / Math.pow(1024, i)).toFixed(2) * 1 + " " + units
+    } else {
+      return "0 B"
+    }
+  }
 
   guessMimeType(name) {
     const ext = (name || "").split(".").pop()

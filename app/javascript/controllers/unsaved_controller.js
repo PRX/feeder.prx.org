@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static values = { changed: Boolean, confirm: String }
-  static targets = ["discard"]
+  static targets = ["discard", "changed"]
 
   connect() {
     this.isSubmitting = false
@@ -32,6 +32,10 @@ export default class extends Controller {
     this.element.removeEventListener("submit", this.bindSubmit)
     window.removeEventListener("beforeunload", this.bindLeaving)
     window.removeEventListener("turbo:before-visit", this.bindLeaving)
+  }
+
+  changedTargetConnected(target) {
+    this.change({ target })
   }
 
   change(event) {

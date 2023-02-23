@@ -19,4 +19,10 @@ module EpisodesHelper
   def episode_publishing_status_options
     PublishingStatus::STATUSES.map { |val| [I18n.t("helpers.label.episode.publishing_statuses.#{val}"), val] }
   end
+
+  def episode_filled_contents(episode)
+    positions = @episode.contents.reject(&:marked_for_destruction?).map(&:position)
+    missing = (episode.segment_range.to_a - positions).map { |p| Content.new(position: p) }
+    (@episode.contents + missing).sort_by(&:position).group_by(&:position)
+  end
 end

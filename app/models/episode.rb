@@ -24,6 +24,8 @@ class Episode < ApplicationRecord
     -> { order("position ASC, created_at DESC") },
     autosave: true, dependent: :destroy
 
+  accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:original_url].blank? }
+
   has_many :enclosures,
     -> { order("created_at DESC") },
     autosave: true, dependent: :destroy
@@ -372,5 +374,9 @@ class Episode < ApplicationRecord
 
   def feeder_cdn_host
     ENV["FEEDER_CDN_HOST"]
+  end
+
+  def segment_range
+    1..segment_count.to_i
   end
 end

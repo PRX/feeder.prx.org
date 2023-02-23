@@ -9,6 +9,13 @@ module UploadsHelper
     ].join("\n    ").html_safe
   end
 
+  def uploads_destroy_params(form)
+    {
+      "#{form.object_name}[id]": form.object.id,
+      "#{form.object_name}[_destroy]": "1"
+    }
+  end
+
   private
 
   def uploads_prefix

@@ -24,6 +24,7 @@ class EpisodesController < ApplicationController
 
   # GET /episodes/1/edit
   def edit
+    @episode.assign_attributes(episode_params)
     authorize @episode, :show?
   end
 
@@ -105,7 +106,8 @@ class EpisodesController < ApplicationController
       :segment_count,
       :released_at,
       :publishing_status,
-      categories: []
+      categories: [],
+      contents_attributes: %i[id position original_url file_size replaced_at _destroy]
     )
   end
 end

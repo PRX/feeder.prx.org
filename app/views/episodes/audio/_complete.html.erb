@@ -1,0 +1,12 @@
+<div class="d-flex align-items-center">
+  <audio class="flex-grow-1 me-3" src="<%= content.href %>" controls preload="metadata"></audio>
+
+  <h5 class="m-0">
+    <strong><%= content.file_name %></strong>
+    <small class="text-muted">(<%= number_to_human_size(content.file_size) %>)</small>
+  </h5>
+
+  <%= link_to edit_episode_path(content.episode, uploads_destroy_params(form)), class: "btn" do %>
+    <span class="material-icons">delete</span>
+  <% end %>
+</div>

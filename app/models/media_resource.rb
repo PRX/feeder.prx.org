@@ -65,6 +65,13 @@ class MediaResource < ApplicationRecord
     original_url
   end
 
+  def file_name
+    if original_url.present?
+      uri = URI.parse(original_url)
+      File.basename(uri.path)
+    end
+  end
+
   def copy_media(force = false)
     if !task || force
       Tasks::CopyMediaTask.create! do |task|
