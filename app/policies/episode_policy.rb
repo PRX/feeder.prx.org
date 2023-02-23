@@ -36,7 +36,7 @@ class EpisodePolicy < ApplicationPolicy
         scope.all
       else
         uris = token.authorized_account_ids(:read_private).map { |id| "/api/v1/accounts/#{id}" }
-        scope.joins(:podcast).where(podcasts: {prx_account_uri: uris} )
+        scope.joins(:podcast).where(podcasts: {prx_account_uri: uris})
       end
     end
   end

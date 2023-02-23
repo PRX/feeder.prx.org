@@ -1,9 +1,27 @@
 <h1>Episodes</h1>
 
-<form class="pb-4 input-group">
-  <input class="form-control" placeholder="Filter..." name="q" value="<%= params[:q] %>" aria-label="Filter results" autofocus onfocus="this.value = this.value;">
-  <button type="submit" class="btn btn-primary" type="button">Submit</button>
-</form>
+<%= form_with(
+      url: episodes_path,
+      method: :get,
+      class: "row",
+      data: {
+        controller: "search",
+        "turbo-frame": "episodes",
+        "turbo-action": "replace"
+      }
+    ) do |form| %>
+
+    <div class="col-md-4 mb-4">
+    <div class="form-floating">
+      <%= form.search_text_field :q, params, autofocus: true %>
+      <%= form.label :q, "Search" %>
+    </div>
+  </div>
+
+  <%= form.submit class: "d-none", data: {search_target: "submit"} %>
+<% end %>
+
+<%= turbo_frame_tag "episodes", target: "_top" do %>
 
 <div class="row">
   <div class="col">
@@ -24,3 +42,5 @@
     <%= paginate @published_episodes, param_name: "published_page" %>
   </div>
 </div>
+
+<% end %>
