@@ -11,7 +11,7 @@ class PodcastsController < ApplicationController
     authorize @podcast
 
     @recently_published = @podcast.episodes.published.first
-    @next_scheduled = @podcast.episodes.scheduled.order(:released_at).first
+    @next_scheduled = @podcast.episodes.draft_or_scheduled.order(:released_at).first
   end
 
   # GET /podcasts/new
