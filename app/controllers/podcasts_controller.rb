@@ -9,6 +9,9 @@ class PodcastsController < ApplicationController
   # GET /podcasts/1
   def show
     authorize @podcast
+
+    @recently_published = @podcast.episodes.published.first
+    @next_scheduled = @podcast.episodes.draft_or_scheduled.order(:released_at).first
   end
 
   # GET /podcasts/new
