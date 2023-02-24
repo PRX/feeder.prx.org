@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 
 module Apple
-  class Credential < ApplicationRecord
+  class Config < ApplicationRecord
     belongs_to :public_feed, class_name: "Feed"
     belongs_to :private_feed, class_name: "Feed"
+
+    has_one :podcast, through: :public_feed
+
+    delegate :title, to: :podcast, prefix: "podcast"
+    delegate :id, to: :podcast, prefix: "podcast"
 
     validates_presence_of :public_feed
     validates_presence_of :private_feed

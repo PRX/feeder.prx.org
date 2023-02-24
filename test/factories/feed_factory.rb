@@ -27,5 +27,10 @@ FactoryBot.define do
       feed_image
       itunes_image
     end
+
+    factory :private_feed do
+      private { true }
+      tokens { [FeedToken.new(label: "my-tok")] }
+    end
   end
 end

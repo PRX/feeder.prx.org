@@ -9,6 +9,7 @@
   justify-content: center;
   align-items: center;
   gap: #{map-get($spacers, 2)};
+  white-space: nowrap;
 }
 
 .btn-icon {

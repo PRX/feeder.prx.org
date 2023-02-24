@@ -15,14 +15,17 @@ module Apple
         key: apple_key_pem)
     end
 
-    def self.from_apple_credentials(apple_credentials)
-      if apple_credentials.no_apple_credentials?
-        Rails.logger.info("No Apple credentials found via creds #{apple_credentials.id}, falling back to environment")
+    def self.from_apple_config(apple_config)
+      if apple_config.no_apple_credentials?
+        Rails.logger.info("No Apple API keys in config object, falling back to environment default keys",
+          {apple_credential_id: apple_config.id,
+           podcast_id: apple_config.podcast_id,
+           podcast_title: apple_config.podcast_title})
         from_env
       else
-        new(provider_id: apple_credentials.apple_provider_id,
-          key_id: apple_credentials.apple_key_id,
-          key: apple_credentials.apple_key)
+        new(provider_id: apple_config.apple_provider_id,
+          key_id: apple_config.apple_key_id,
+          key: apple_config.apple_key)
       end
     end
 
@@ -85,9 +88,7 @@ module Apple
         next_uri = json["links"]["next"]
 
         uri =
-          if next_uri
-            URI.join(next_uri)
-          end
+          (URI.join(next_uri) if next_uri)
       end
 
       res.flatten
