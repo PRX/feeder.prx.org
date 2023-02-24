@@ -1,22 +1,25 @@
 <% content_for :tabs do %>
   <%= tab_link_to "Metadata", fake_path(123) %>
-  <%= tab_link_to "Ad Locations", fake_path("ad-locations") %>
+  <%= tab_link_to "Audio Segmenter", fake_path("audio-segmenter") %>
 <% end %>
 
-<div data-controller="ad-locations waveform-inspector"
-  data-ad-locations-label-prefix-value="Mid Roll"
-  data-ad-locations-segment-count-value="4"
-  data-ad-locations-markers-value="[[148.723809],[153.29814058956916,157.19909297052155]]"
-  data-ad-locations-target="waveformInspector"
+<div data-controller="audio-breakpoints waveform-inspector"
+  data-audio-breakpoints-label-prefix-value="Mid Roll"
+  data-audio-breakpoints-segment-count-value="4"
+  data-audio-breakpoints-markers-value="[[148.723809],[153.29814058956916,157.19909297052155]]"
+  data-audio-breakpoints-target="waveformInspector"
   data-waveform-inspector-playing-class="player--playing"
   data-waveform-inspector-audio-url-value="/audio/TOL_6min_720p_download.mp3"
   data-waveform-inspector-waveform-url-value="/audio/TOL_6min_720p_download.json"
-  data-action="resize@window->waveform-inspector#updateLayout ad-locations:markers.update->waveform-inspector#updateMarkers waveform-inspector:marker.update->ad-locations#updateAdMarker ad-location:marker.update->ad-locations#updateAdMarker ad-location:play->waveform-inspector#playMarker ad-location:seekTo->waveform-inspector#seekToMarker">
-  <header class="prx-content-header | mx-4 px-2 py-3">
-    <h2 class="h1 fw-bold">Ad Locations</h2>
+  data-action="resize@window->waveform-inspector#updateLayout audio-breakpoints:markers.update->waveform-inspector#updateMarkers waveform-inspector:marker.update->audio-breakpoints#updateBreakpointMarker audio-breakpoint:marker.update->audio-breakpoints#updateBreakpointMarker audio-breakpoint:play->waveform-inspector#playMarker audio-breakpoint:seekTo->waveform-inspector#seekToMarker">
+  <header class="prx-content-header | d-flex justify-content-end mx-4 px-2 py-3">
+    <h2 class="h1 fw-bold visually-hidden">Audio Segmenter</h2>
+    <div class="">
+      <button class="btn btn-primary">Save</button>
+    </div>
   </header>
 
-  <input type="hidden" data-ad-locations-target="markersInput">
+  <input type="hidden" data-audio-breakpoints-target="markersInput">
 
   <div class="prx-waveform-inspector | d-grid gap-2 m-4">
     <div class="prx-waveform-inspector-container">
@@ -57,71 +60,71 @@
   </div>
   <div class="row">
     <div class="col-12 p-0 my-4">
-      <table class="prx-ad-locations-table">
+      <table class="prx-audio-breakpoints-table">
         <thead>
           <th><!-- Placeholder Cell --></th>
           <th>Name</th>
           <th width="100%">Timestamps</th>
           <th><!-- Placeholder Cell --></th>
         </thead>
-        <tbody data-ad-locations-target="controls">
+        <tbody data-audio-breakpoints-target="controls">
           <!-- Control rows will be cloned here. -->
         </tbody>
       </table>
     </div>
   </div>
-  <template data-ad-locations-target="controlTemplate">
-    <tr data-controller="ad-location tooltip" data-ad-location-completed-class="status--completed">
+  <template data-audio-breakpoints-target="controlTemplate">
+    <tr data-controller="audio-breakpoint tooltip" data-audio-breakpoint-completed-class="status--completed">
       <td>
         <span class="completed-show | material-icons text-success">check_circle</span>
         <span class="completed-hide | material-icons text-danger">error</span>
       </td>
       <td>
-        <span data-ad-location-target="label">Label Text</span>
+        <span data-audio-breakpoint-target="label">Label Text</span>
       </td>
       <td>
-        <button class="has-start-time-hide | btn btn-sm btn-primary text-nowrap" data-action="ad-location#updateStartTimeToPlayhead">
+        <button class="has-start-time-hide | btn btn-sm btn-primary text-nowrap" data-action="audio-breakpoint#updateStartTimeToPlayhead">
           Insert At Playhead <span class="material-icons" aria-hidden="true">my_location</span>
         </button>
         <div class="has-start-time-show | prx-input-group input-group-sm">
           <input class="form-control" placeholder="00:00"
-            data-ad-location-target="startTime"
-            data-action="keypress.enter->ad-location#updateStartTime"
+            data-audio-breakpoint-target="startTime"
+            data-action="keypress.enter->audio-breakpoint#updateStartTime"
             data-bs-toggle="tooltip"
             data-bs-title="Edit Start Time">
-          <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="ad-location#updateStartTime">
+          <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="audio-breakpoint#updateStartTime">
             <span class="material-icons">done</span>
           </button>
-          <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="ad-location#updateStartTimeToPlayhead">
+          <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="audio-breakpoint#updateStartTimeToPlayhead">
             <span class="material-icons">my_location</span>
           </button>
-          <button class="has-end-time-hide | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Add End Time" data-action="ad-location#addEndTime">
+          <button class="has-end-time-hide | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Add End Time" data-action="audio-breakpoint#addEndTime">
             <span class="material-icons rotate-90">expand</span>
           </button>
         </div>
         <span class="has-end-time-show | material-icons rotate-90">expand</span>
         <div class="has-end-time-show | prx-input-group input-group-sm">
           <input class="form-control" placeholder="00:00"
-            data-ad-location-target="endTime"
-            data-action="keypress.enter->ad-location#updateEndTime"
+            data-audio-breakpoint-target="endTime"
+            data-action="keypress.enter->audio-breakpoint#updateEndTime"
             data-bs-toggle="tooltip"
             data-bs-title="Edit End Time">
-          <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="ad-location#updateEndTime">
+          <button class="prx-input-confirm | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="audio-breakpoint#updateEndTime">
             <span class="material-icons">done</span>
           </button>
-          <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="ad-location#updateEndTimeToPlayhead">
+          <button class="prx-input-confirm-hidden | btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="audio-breakpoint#updateEndTimeToPlayhead">
             <span class="material-icons">my_location</span>
           </button>
-          <button class="btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Remove End Time" data-action="ad-location#removeEndTime">
+          <button class="btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Remove End Time" data-action="audio-breakpoint#removeEndTime">
             <span class="material-icons">close</span>
           </button>
         </div>
       </td>
       <td class="justify-content-end">
-        <button class="has-end-time-show | btn btn-icon btn-icon-round btn-primary" data-action="ad-location#play">
+        <button class="has-end-time-show | btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#play">
           <span class="material-icons">play_arrow</span>
         </button>
-        <button class="has-start-time-show | btn btn-icon btn-icon-round btn-primary" data-action="ad-location#seekTo">
+        <button class="has-start-time-show | btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#seekTo">
           <span class="material-icons">skip_next</span>
         </button>
       </td>

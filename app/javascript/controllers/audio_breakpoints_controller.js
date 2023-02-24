@@ -5,7 +5,7 @@ export default class extends Controller {
   static targets = ["waveformInspector", "markersInput", "controls", "controlTemplate"]
 
   static values = {
-    labelPrefix: { type: String, default: "Ad Position" },
+    labelPrefix: { type: String, default: "Breakpoint" },
     segmentCount: { type: Number, default: 1 },
     markers: Array,
   }
@@ -23,7 +23,7 @@ export default class extends Controller {
    * Initial render of ad markers.
    */
   initMarkers() {
-    this.adMarkers = [...Array(this.segmentCountValue - 1).keys()]
+    this.breakpointMarkers = [...Array(this.segmentCountValue - 1).keys()]
       .map((key) => this.markersValue?.[key] || [])
       .map(([startTime, endTime], index) => ({
         id: Math.random().toString(16).split(".")[1],
@@ -32,35 +32,35 @@ export default class extends Controller {
         endTime,
       }))
 
-    this.sortAdMarkers()
+    this.sortBreakpointMarkers()
 
     this.renderMarkers()
   }
 
   /**
-   * Handle changes to an ad marker.
+   * Handle changes to a breakpoint marker.
    * @param CustomEvent Event containing changed marker data.
    */
-  updateAdMarker({ detail: { id, startTime, endTime } }) {
-    const adMarkerIndex = this.adMarkers.findIndex((marker) => marker.id === id)
-    const adMarker = this.adMarkers[adMarkerIndex]
+  updateBreakpointMarker({ detail: { id, startTime, endTime } }) {
+    const breakpointMarkerIndex = this.breakpointMarkers.findIndex((marker) => marker.id === id)
+    const breakpointMarker = this.breakpointMarkers[breakpointMarkerIndex]
     const newStartTime = convertToSeconds(startTime)
     const newEndTime = endTime && convertToSeconds(endTime)
 
-    this.adMarkers[adMarkerIndex] = {
-      ...adMarker,
+    this.breakpointMarkers[breakpointMarkerIndex] = {
+      ...breakpointMarker,
       startTime: newEndTime ? Math.min(newStartTime, newEndTime) : newStartTime,
       endTime: newEndTime ? Math.max(newStartTime, newEndTime) : newEndTime,
     }
 
-    this.updateAdMarkers()
+    this.updateBreakpointMarkers()
   }
 
   /**
-   * Update ad markers after a change and rerender.
+   * Update breakpoint markers after a change and rerender.
    */
-  updateAdMarkers() {
-    this.sortAdMarkers()
+  updateBreakpointMarkers() {
+    this.sortBreakpointMarkers()
 
     this.renderMarkers()
   }
@@ -77,7 +77,7 @@ export default class extends Controller {
 
     // Update waveform inspector.
     if (this.hasWaveformInspectorTarget) {
-      this.waveformInspectorTarget.dataset.waveformInspectorMarkersValue = JSON.stringify(this.adMarkers)
+      this.waveformInspectorTarget.dataset.waveformInspectorMarkersValue = JSON.stringify(this.breakpointMarkers)
     }
 
     // Update controls
@@ -89,8 +89,8 @@ export default class extends Controller {
   /**
    * Sort ad markers by start time, in ascending order, and update label text.
    */
-  sortAdMarkers() {
-    this.adMarkers = this.adMarkers
+  sortBreakpointMarkers() {
+    this.breakpointMarkers = this.breakpointMarkers
       .sort((a, b) => a.startTime - b.startTime)
       .map((marker, index) => ({
         ...marker,
@@ -103,7 +103,7 @@ export default class extends Controller {
    * @returns Array of arrays containing start and end times for markers.
    */
   getMarkers() {
-    return this.adMarkers.reduce(
+    return this.breakpointMarkers.reduce(
       (a, { startTime, endTime }) => (startTime ? [...a, [startTime, ...(endTime ? [endTime] : [])]] : a),
       []
     )
@@ -112,20 +112,20 @@ export default class extends Controller {
   renderAdMarkerControls() {
     const controls = []
 
-    this.adMarkers.forEach((marker) => {
+    this.breakpointMarkers.forEach((marker) => {
       const template = this.controlTemplateTarget.content.cloneNode(true)
-      const control = template.querySelector('[data-controller*="ad-location"')
+      const control = template.querySelector('[data-controller*="audio-breakpoint"')
       const { id, labelText, startTime, endTime } = marker
 
-      control.dataset.adLocationIdValue = id
-      control.dataset.adLocationLabelValue = labelText
+      control.dataset.audioBreakpointIdValue = id
+      control.dataset.audioBreakpointLabelValue = labelText
 
       if (startTime) {
-        control.dataset.adLocationStartTimeValue = startTime
+        control.dataset.audioBreakpointStartTimeValue = startTime
       }
 
       if (endTime) {
-        control.dataset.adLocationEndTimeValue = endTime || null
+        control.dataset.audioBreakpointEndTimeValue = endTime || null
       }
 
       controls.push(control)

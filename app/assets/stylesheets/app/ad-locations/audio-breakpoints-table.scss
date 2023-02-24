@@ -1,8 +1,8 @@
 //
-// Add locations table syles.
+// Audio breakpoints table styles.
 //
 
-.prx-ad-locations-table {
+.prx-audio-breakpoints-table {
   --#{$prefix}table-border-color: #{$table-border-color};
 
   display: grid;
@@ -76,11 +76,11 @@
     display: flex;
   }
 
-  [data-ad-location-start-time-value] .has-start-time-show {
+  [data-audio-breakpoint-start-time-value] .has-start-time-show {
     display: flex;
   }
 
-  [data-ad-location-start-time-value] .has-start-time-hide {
+  [data-audio-breakpoint-start-time-value] .has-start-time-hide {
     display: none;
   }
 
@@ -92,11 +92,11 @@
     display: flex;
   }
 
-  [data-ad-location-end-time-value] .has-end-time-show {
+  [data-audio-breakpoint-end-time-value] .has-end-time-show {
     display: flex;
   }
 
-  [data-ad-location-end-time-value] .has-end-time-hide {
+  [data-audio-breakpoint-end-time-value] .has-end-time-hide {
     display: none;
   }
 

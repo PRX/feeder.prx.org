@@ -3,6 +3,8 @@ import Peaks from "peaks.js"
 import _ from "lodash"
 import convertToSeconds from "../util/convertToSeconds"
 import convertSecondsToDuration from "../util/convertSecondsToDuration"
+import PrxPointMarker from "../custom/PrxPointMarker"
+import PrxSegmentMarker from "../custom/PrxSegmentMarker"
 
 export default class extends Controller {
   static targets = ["overview", "zoom", "scrollbar", "seekInput"]
@@ -30,6 +32,10 @@ export default class extends Controller {
         zoomview: {
           container: this.zoomTarget,
           fontSize: 12,
+
+          pointOptions: {
+            labelTextColor: "#fff",
+          },
         },
       }),
       ...(this.hasOverviewTarget && {
@@ -37,9 +43,10 @@ export default class extends Controller {
           container: this.overviewTarget,
           highlightOffset: 0,
           highlightBorderRadius: 0,
-          highlightColor: "#0072a3",
+          highlightColor: "#8cd2f4",
           highlightOpacity: 0.1,
           segmentOptions: {
+            overlayOpacity: 0.3,
             overlayOffset: 0,
             overlayFontSize: 0,
           },
@@ -60,8 +67,12 @@ export default class extends Controller {
       emitCueEvents: true,
       showPlayheadTime: true,
 
-      waveformColor: "#ddd",
-      playedWaveformColor: "#aaa",
+      waveformColor: "rgba(0, 114, 163, 0.3)",
+      playedWaveformColor: "rgba(0, 114, 163, 1)",
+
+      createPointMarker: (options) => new PrxPointMarker(options),
+      createSegmentMarker: (options) => (options.view === "zoomview" ? new PrxSegmentMarker(options) : null),
+      createSegmentLabel: () => null,
 
       pointMarkerColor: "#ff9600",
 
@@ -72,9 +83,11 @@ export default class extends Controller {
         overlay: true,
         overlayOffset: 0,
         overlayColor: "#ff9600",
-        overlayOpacity: 0.3,
+        overlayOpacity: 0.1,
         overlayBorderWidth: 0,
         overlayCornerRadius: 0,
+        overlayFontSize: 0,
+        overlayLabelColor: "rgba(0, 0, 0, 0,)",
       },
     }
 

@@ -16,7 +16,7 @@ Rails.application.routes.draw do
 
     resources :fake, only: [:index, :show, :create] do
       collection do
-        get "ad-locations"
+        get "audio-segmenter"
       end
     end
 

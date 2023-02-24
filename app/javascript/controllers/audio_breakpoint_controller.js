@@ -21,8 +21,8 @@ export default class extends Controller {
   }
 
   idValueChange() {
-    this.playBtnTarget.dataset.adLocationIdParam = this.idValue
-    this.seekBtnTarget.dataset.adLocationIdParam = this.idValue
+    this.playBtnTarget.dataset.audioBreakpointIdParam = this.idValue
+    this.seekBtnTarget.dataset.audioBreakpointIdParam = this.idValue
   }
 
   labelValueChanged() {
