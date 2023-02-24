@@ -101,6 +101,12 @@ en:
       unpublish: Unpublish
     form_tags:
       title: Categories
+    index:
+      title: PRX Dovetail - Episodes
+      episodes: Episodes
+      search: Search
+      draft_or_scheduled: Draft or Scheduled Episodes
+      published: Published Episodes
     update:
       error: Unable to save
       notice: Episode updated

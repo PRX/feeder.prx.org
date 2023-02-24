@@ -1,46 +1,58 @@
-<h1>Episodes</h1>
+<% content_for :title, t(".title") %>
 
-<%= form_with(
-      url: episodes_path_or_podcast_episodes_path(@podcast),
-      method: :get,
-      class: "row",
-      data: {
-        controller: "search",
-        "turbo-frame": "episodes",
-        "turbo-action": "replace"
-      }
-    ) do |form| %>
+<div class="container my-4">
+  <div class="d-grid d-sm-flex align-items-center w-auto">
+    <h1 class="text-black fw-bold d-flex flex-fill my-4"><%= t(".episodes") %></h1>
+    <div class="d-grid d-lg-flex gap-2 align-items-center">
+      <% if @podcast.present? %>
+          <%= link_to new_episode_path, class: "btn btn-primary btn-sm" do %>
+            <%= t ".create_episode" %>
+            <span class="material-icons ms-2" aria-hidden="true">mic</span>
+          <% end %>
+          <%= link_to podcast_planner_path(@podcast.id), class: "btn btn-primary btn-sm" do %>
+            <%= t ".plan_episodes" %>
+            <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
+          <% end %>
+      <% end %>
+      <%= form_with(
+            url: episodes_path_or_podcast_episodes_path(@podcast),
+            method: :get,
+            data: {
+              controller: "search",
+              "turbo-frame": "episodes",
+              "turbo-action": "replace"
+            }
+          ) do |form| %>
 
-    <div class="col-md-4 mb-4">
-    <div class="form-floating">
-      <%= form.search_text_field :q, params, autofocus: true %>
-      <%= form.label :q, "Search" %>
+          <div class="form-floating">
+            <%= form.search_text_field :q, params, autofocus: true %>
+            <%= form.label :q, t(".search") %>
+          </div>
+
+          <%= form.submit class: "d-none", data: {search_target: "submit"} %>
+      <% end %>
     </div>
   </div>
 
-  <%= form.submit class: "d-none", data: {search_target: "submit"} %>
-<% end %>
+  <%= turbo_frame_tag "episodes", target: "_top" do %>
+    <div class="row my-4">
+      <div class="col-md-6">
+        <h2 class="fw-bold"><%= t(".draft_or_scheduled") %></h2>
+        <% @scheduled_episodes.each do |episode| %>
+          <%= render episode %>
+        <% end %>
 
-<%= turbo_frame_tag "episodes", target: "_top" do %>
+        <%= paginate @scheduled_episodes, param_name: "scheduled_page" %>
+      </div>
 
-<div class="row">
-  <div class="col">
-    <h2>Draft or Scheduled Episodes </h2>
-    <% @scheduled_episodes.each do |episode| %>
-      <%= render episode %>
-    <% end %>
+      <div class="col-md-6">
+        <h2 class="fw-bold"><%= t(".published") %></h2>
+        <% @published_episodes.each do |episode| %>
+          <%= render episode %>
+        <% end %>
 
-    <%= paginate @scheduled_episodes, param_name: "scheduled_page" %>
-  </div>
-
-  <div class="col">
-    <h2>Published Episodes</h2>
-    <% @published_episodes.each do |episode| %>
-      <%= render episode %>
-    <% end %>
-
-    <%= paginate @published_episodes, param_name: "published_page" %>
-  </div>
+        <%= paginate @published_episodes, param_name: "published_page" %>
+      </div>
+    </div>
+  <% end %>
 </div>
-
-<% end %>

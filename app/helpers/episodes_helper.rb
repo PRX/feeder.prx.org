@@ -32,10 +32,10 @@ module EpisodesHelper
   end
 
   def episodes_path_or_podcast_episodes_path(podcast_id = nil)
-    unless podcast_id.present?
-      episodes_path
-    else
+    if podcast_id.present?
       podcast_episodes_path(podcast_id)
+    else
+      episodes_path
     end
   end
 end
