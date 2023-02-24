@@ -14,7 +14,6 @@ class EpisodesController < ApplicationController
     filtered_episodes = episodes.filter_by_title(params[:q])
 
     @published_episodes = filtered_episodes.published.order(published_at: :desc).page(params[:published_page]).per(10)
-
     @scheduled_episodes = filtered_episodes.draft_or_scheduled.order(released_at: :asc).page(params[:scheduled_page]).per(10)
   end
 

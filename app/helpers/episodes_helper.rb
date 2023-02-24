@@ -17,7 +17,7 @@ module EpisodesHelper
   end
 
   def episode_border_color(episode)
-    case episode.publishing_status_was
+    case episode.publishing_status
     when "draft"
       "warning"
     when "scheduled"
@@ -29,5 +29,13 @@ module EpisodesHelper
 
   def episode_publishing_status_options
     PublishingStatus::STATUSES.map { |val| [I18n.t("helpers.label.episode.publishing_statuses.#{val}"), val] }
+  end
+
+  def episodes_path_or_podcast_episodes_path(podcast_id = nil)
+    unless podcast_id.present?
+      episodes_path
+    else
+      podcast_episodes_path(podcast_id)
+    end
   end
 end

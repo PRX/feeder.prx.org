@@ -1,7 +1,7 @@
 <h1>Episodes</h1>
 
 <%= form_with(
-      url: episodes_path,
+      url: episodes_path_or_podcast_episodes_path(@podcast),
       method: :get,
       class: "row",
       data: {
