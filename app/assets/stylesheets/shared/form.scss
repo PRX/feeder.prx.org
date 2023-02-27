@@ -1,5 +1,15 @@
 // material style floating form labels
 .form-floating {
+  display: flex;
+  align-items: center;
+  border: 1px solid $gray-200;
+  border-radius: 0.1875rem;
+
+  &:focus-within {
+    border-color: $blue-light;
+    box-shadow: 0 0 0 0.25rem rgba(0,114,163,0.25);
+  }
+
   > label {
     color: $gray-600;
     height: auto;
@@ -23,7 +33,14 @@
 
   .form-control {
     color: #000;
+    border: none;
+
+    &:focus {
+      box-shadow: none;
+      border-color: transparent;
+    }
   }
+
 
   // manually applied "blank" class (when the placeholder trick won't work)
   > .form-control-blank:not(:focus) ~ label {
@@ -41,55 +58,18 @@
   }
 }
 
-// changed field stylez
-.form-check-input.is-changed:not(.is-invalid),
-.form-control.is-changed:not(.is-invalid),
-.form-select.is-changed:not(.is-invalid) {
-  border-color: $orange;
-
-  &:focus {
-    box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
-  }
-
-  ~ label {
-    color: $orange;
-  }
-}
-.btn-discard-changed {
-  border-color: $orange;
-  &:hover {
-    border-color: $orange;
-  }
-}
-
-// bootstrap5-tags need help
-.form-floating {
-  > .form-tag-select ~ label {
-    opacity: $form-floating-label-opacity !important;
-    transform: $form-floating-label-transform !important;
-  }
-  > .form-tag-select.form-control-blank:not(.form-control-focus) ~ label {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-.is-changed ~ .form-tag-select {
-  border-color: $orange;
-}
-.form-tag-select.form-control-focus {
-  color: $input-focus-color;
-  background-color: $input-focus-bg;
-  border-color: $input-focus-border-color;
-  outline: 0;
-  box-shadow: $input-focus-box-shadow;
-}
-
 // These styles work with Slim Select v2, not tested with v1
 .ss-main {
   &.form-select {
-    padding: 0.75rem 0.75rem;
+    padding: 0.75rem;
     min-height: $input-height;
     height: auto;
+    border: none;
+
+    &:focus {
+      box-shadow: none;
+      border-color: transparent;
+    }
   }
 
   // selection colors
@@ -237,4 +217,26 @@ small {
 
 .table .form-check-input {
   font-size: 1rem;
+}
+
+.help-text-field {
+  position: absolute;
+  right: 0.5rem;
+  top: 1rem;
+}
+
+.tooltip-inner {
+  line-height: 1.3;
+  padding: 0.5rem;
+}
+
+.help-text {
+  display: flex;
+  margin-right: 0.5rem;
+  color: $gray-600;
+
+  &:hover {
+    text-decoration: none;
+    color: $primary;
+  }
 }
