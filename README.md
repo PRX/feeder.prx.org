@@ -152,6 +152,17 @@ the [Shoryuken](https://github.com/ruby-shoryuken/shoryuken) gem and AWS SQS.
 Some jobs run completely in Ruby, while others will call out to [Porter](https://github.com/PRX/Porter)
 or the [Apple API Bridge Lambda](https://github.com/PRX/api-bridge-lambda/) to complete their work.
 
+To start the worker in development:
+
+```sh
+bin/rails worker
+
+# or shorthand
+bin/rails w
+```
+
+Note that a blank `ANNOUNCE_RESOURCE_PREFIX` will make Rails
+
 #### File Handling
 
 When an episode is created or updated, the image and audio files (either from `enclosure` or `media:content` tags) are also inserted as `podcast_image`, `episode_image`, and `media_resource` records.
