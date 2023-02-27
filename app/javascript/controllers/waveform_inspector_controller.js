@@ -140,32 +140,9 @@ export default class extends Controller {
       // Points Events
       peaksInstance.on("points.dragend", ({ point }) => {
         const { id, time } = point
-        let newTime = time
-
-        // Prevent point from being dropped into any segment ranges.
-        const segments = peaksInstance.segments.getSegments()
-        const intersectingSegment = segments.find(({ startTime, endTime }) => newTime > startTime && newTime < endTime)
-
-        if (intersectingSegment) {
-          const { startTime, endTime } = intersectingSegment
-          const midTime = (startTime + endTime) / 2
-          newTime = time > midTime ? endTime + 0.1 : startTime - 0.1
-
-          point.update({
-            time: newTime,
-          })
-        }
-
-        // Update placeholder segment
-        const placeholder = peaksInstance.segments.getSegment(`placeholder.segments.${id}`)
-
-        placeholder.update({
-          startTime: newTime,
-          endTime: newTime,
-        })
 
         // Dispatch marker update event.
-        self.dispatch("marker.update", { detail: { id, startTime: newTime } })
+        self.dispatch("marker.update", { detail: { id, startTime: time } })
       })
 
       // Segment Events

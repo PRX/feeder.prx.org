@@ -46,12 +46,53 @@ export default class extends Controller {
     const breakpointMarker = this.breakpointMarkers[breakpointMarkerIndex]
     const newStartTime = convertToSeconds(startTime)
     const newEndTime = endTime && convertToSeconds(endTime)
-
-    this.breakpointMarkers[breakpointMarkerIndex] = {
+    const isSegment = !!newStartTime && !!newEndTime
+    let newBreakpointMarker = {
       ...breakpointMarker,
       startTime: newEndTime ? Math.min(newStartTime, newEndTime) : newStartTime,
-      endTime: newEndTime ? Math.max(newStartTime, newEndTime) : newEndTime,
+      endTime: newEndTime && Math.max(newStartTime, newEndTime),
     }
+
+    if (isSegment) {
+      const previousBreakpointMarker = this.breakpointMarkers[breakpointMarkerIndex - 1]
+      const nextBreakpointMarker = this.breakpointMarkers[breakpointMarkerIndex + 1]
+
+      // Prevent marker from starting before previous marker's end time.
+      if (previousBreakpointMarker) {
+        newBreakpointMarker = {
+          ...newBreakpointMarker,
+          startTime: Math.max(
+            newBreakpointMarker.startTime,
+            previousBreakpointMarker.endTime || previousBreakpointMarker.startTime
+          ),
+        }
+      }
+
+      // Prevent marker from ending after next marker's start time.
+      if (nextBreakpointMarker?.startTime) {
+        newBreakpointMarker = {
+          ...newBreakpointMarker,
+          endTime: Math.min(newBreakpointMarker.endTime, nextBreakpointMarker.startTime),
+        }
+      }
+    } else {
+      const intersectingSegment = this.breakpointMarkers.find(
+        ({ startTime, endTime }) => newStartTime > startTime && newStartTime < endTime
+      )
+
+      // Prevent point marker from being dropped in a segment.
+      if (intersectingSegment) {
+        const midTime = (intersectingSegment.startTime + intersectingSegment.endTime) / 2
+
+        // Place marker along the edge it is closest to.
+        newBreakpointMarker = {
+          ...newBreakpointMarker,
+          startTime: newStartTime > midTime ? intersectingSegment.endTime + 0.1 : intersectingSegment.startTime - 0.1,
+        }
+      }
+    }
+
+    this.breakpointMarkers[breakpointMarkerIndex] = newBreakpointMarker
 
     this.updateBreakpointMarkers()
   }

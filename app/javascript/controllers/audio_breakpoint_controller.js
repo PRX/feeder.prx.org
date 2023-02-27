@@ -63,13 +63,13 @@ export default class extends Controller {
     }
   }
 
-  changeStartTime({ target }) {
-    const { value } = target || {}
+  changeStartTime() {
+    const { value } = this.startTimeTarget
     this.updateStartTime(value)
   }
 
-  changeEndTime({ target }) {
-    const { value } = target || {}
+  changeEndTime() {
+    const { value } = this.endTimeTarget
     this.updateEndTime(value)
   }
 
