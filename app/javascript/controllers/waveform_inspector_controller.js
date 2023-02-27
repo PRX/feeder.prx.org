@@ -44,7 +44,7 @@ export default class extends Controller {
           highlightOffset: 0,
           highlightBorderRadius: 0,
           highlightColor: "#8cd2f4",
-          highlightOpacity: 0.1,
+          highlightOpacity: 0.3,
           segmentOptions: {
             overlayOpacity: 0.3,
             overlayOffset: 0,
