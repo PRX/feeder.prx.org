@@ -27,18 +27,34 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    overflow: hidden;
 
     .episode-card-date {
       font-size: 1.5rem;
       margin-right: 1rem;
     }
 
+    .episode-card-inner {
+      display: flex;
+      flex-wrap: wrap;
+      overflow: hidden;
+    }
+
     .episode-card-title {
-      margin-bottom: 0.25rem;
+      margin-bottom: 0;
       font-weight: bold;
       font-size: 1rem;
       line-height: 1.2;
       color: $primary;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .card-text {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
 
     p {
