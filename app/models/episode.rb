@@ -367,4 +367,12 @@ class Episode < ApplicationRecord
   def feeder_cdn_host
     ENV["FEEDER_CDN_HOST"]
   end
+
+  def localized_episode_date_short
+    if published_at.present?
+      I18n.l(published_at, format: :short)
+    elsif released_at.present?
+      I18n.l(released_at, format: :short)
+    end
+  end
 end
