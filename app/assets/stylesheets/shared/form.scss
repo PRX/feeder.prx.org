@@ -2,12 +2,12 @@
 .form-floating {
   display: flex;
   align-items: center;
-  border: 1px solid $gray-200;
-  border-radius: 0.1875rem;
+  border: $input-border-width $border-style $input-border-color;
+  border-radius: $input-border-radius;
 
   &:focus-within {
     border-color: $blue-light;
-    box-shadow: 0 0 0 0.25rem rgba(0,114,163,0.25);
+    box-shadow: $input-focus-box-shadow;
   }
 
   &.textarea-help {
@@ -46,7 +46,6 @@
       border-color: transparent;
     }
   }
-
 
   // manually applied "blank" class (when the placeholder trick won't work)
   > .form-control-blank:not(:focus) ~ label {
