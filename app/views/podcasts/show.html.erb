@@ -42,7 +42,11 @@
         <div class="card-body episode-card h-auto border-start-0">
           <% if @next_scheduled.present? %>
             <div class="episode-card-info">
-              <p class="episode-card-date"><%= l(@next_scheduled.published_or_released_date, format: :short) %></p>
+              <p class="episode-card-date">
+                <% if @next_scheduled.published_or_released_date.present? %>
+                  <%= l(@next_scheduled.published_or_released_date, format: :short) %>
+                <% end %>
+              </p>
               <div class="episode-card-inner">
                 <h2 class="h5 episode-card-title"><%= link_to @next_scheduled.title, episode_path(@next_scheduled.id) %></h2>
               </div>
