@@ -368,11 +368,11 @@ class Episode < ApplicationRecord
     ENV["FEEDER_CDN_HOST"]
   end
 
-  def localized_episode_date_short
+  def published_or_released_date
     if published_at.present?
-      I18n.l(published_at, format: :short)
+      published_at
     elsif released_at.present?
-      I18n.l(released_at, format: :short)
+      released_at
     end
   end
 end

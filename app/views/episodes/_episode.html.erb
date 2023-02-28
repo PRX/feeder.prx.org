@@ -1,9 +1,7 @@
 <div id="<%= dom_id episode %>" class="card episode-card border-<%= episode_border_color(episode) %>">
   <div class="card-body">
     <div class="episode-card-info">
-      <p class="episode-card-date">
-        <%= episode.localized_episode_date_short %>
-      </p>
+      <p class="episode-card-date"><%= l(episode.published_or_released_date, format: :short) %></p>
       <div class="episode-card-inner">
         <h2 class="episode-card-title"><%= episode.title %></h2>
         <% if episode.subtitle.present? %>

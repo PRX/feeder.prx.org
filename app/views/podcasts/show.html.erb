@@ -26,7 +26,7 @@
         <div class="card-body episode-card h-auto border-start-0">
           <% if @recently_published.present? %>
             <div class="episode-card-info">
-              <p class="episode-card-date"><%= @recently_published.localized_episode_date_short %></p>
+              <p class="episode-card-date"><%= l(@recently_published.published_at, format: :short) %></p>
               <div class="episode-card-inner">
                 <h2 class="h5 episode-card-title m-0"><%= link_to @recently_published.title, episode_path(@recently_published.id) %></h2>
               </div>
@@ -42,9 +42,7 @@
         <div class="card-body episode-card h-auto border-start-0">
           <% if @next_scheduled.present? %>
             <div class="episode-card-info">
-              <p class="episode-card-date">
-                <%= @next_scheduled.localized_episode_date_short %>
-              </p>
+              <p class="episode-card-date"><%= l(@next_scheduled.published_or_released_date, format: :short) %></p>
               <div class="episode-card-inner">
                 <h2 class="h5 episode-card-title"><%= link_to @next_scheduled.title, episode_path(@next_scheduled.id) %></h2>
               </div>
