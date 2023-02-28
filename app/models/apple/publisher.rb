@@ -31,7 +31,7 @@ module Apple
     def episodes_to_sync
       @episodes_to_sync ||= private_feed
         .feed_episodes.map do |ep|
-        Apple::Episode.new(show: show, feeder_episode: ep)
+        Apple::Episode.new(show: show, feeder_episode: ep, api: api)
       end
     end
 
