@@ -230,15 +230,14 @@ small {
   top: 1rem;
 }
 
-.tooltip-inner {
-  line-height: 1.3;
-  padding: 0.5rem;
-}
-
 .help-text {
   display: flex;
-  margin-right: 0.5rem;
   color: $gray-600;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0.5rem 0 0;
+  text-decoration: none;
 
   &:hover {
     text-decoration: none;
