@@ -39,7 +39,10 @@
 <div class="col-12 mb-4" data-controller="toggle-field">
   <div class="form-check <%= "d-none" if podcast.summary.present? %>">
     <%= form.check_box :add_itunes_summary, class: "form-check-input", name: nil, checked: false, data: {toggle_field_target: "check", action: "toggle-field#changeCheck"} %>
-    <%= form.label :add_itunes_summary %>
+    <div class="d-flex align-items-center">
+      <%= form.label :add_itunes_summary %>
+      <a class="help-text ms-1" href="#" data-bs-toggle="tooltip" data-bs-title="<%= t(".help.summary") %>"><span class="material-icons">help</span></a>
+    </div>
   </div>
 
   <div class="form-floating <%= "d-none" unless podcast.summary.present? %>">
