@@ -2,7 +2,7 @@
   <div class="form-floating">
     <%= form.text_field :title %>
     <%= form.label :title %>
-    <a class="help-text" href="#" data-bs-toggle="tooltip" data-bs-title="<%= t(".help.explicit") %>"><span class="material-icons">help</span></a>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.title") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -24,20 +24,25 @@
   <div class="form-floating">
     <%= form.text_field :subtitle %>
     <%= form.label :subtitle %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.subtitle") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
 <div class="col-12 mb-4">
-  <div class="form-floating">
+  <div class="form-floating textarea-help">
     <%= form.text_area :description %>
     <%= form.label :description %>
+    <button type="button" class="help-text help-textarea" data-bs-toggle="popover" data-bs-content="<%= t(".help.description") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
 <div class="col-12 mb-4" data-controller="toggle-field">
   <div class="form-check <%= "d-none" if podcast.summary.present? %>">
     <%= form.check_box :add_itunes_summary, class: "form-check-input", name: nil, checked: false, data: {toggle_field_target: "check", action: "toggle-field#changeCheck"} %>
-    <%= form.label :add_itunes_summary %>
+    <div class="d-flex align-items-center">
+      <%= form.label :add_itunes_summary %>
+      <button type="button" class="help-text ms-1" data-bs-toggle="popover" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></button>
+    </div>
   </div>
 
   <div class="form-floating <%= "d-none" unless podcast.summary.present? %>">
@@ -50,6 +55,7 @@
   <div class="form-floating">
     <%= form.text_field :link %>
     <%= form.label :link %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.link") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -57,6 +63,7 @@
   <div class="form-floating">
     <%= form.select :explicit, podcast_explicit_options %>
     <%= form.label :explicit %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.explicit") %>" data-bs-html="true"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -69,6 +76,7 @@
     <%= form.select :itunes_category, itunes_category_options, {include_blank: true}, class: klass, data: {action: "dynamic-form#change"} %>
     <% if nested_errors.present? %><div class="invalid-feedback"><%= nested_errors %></div><% end %>
     <%= form.label :itunes_category %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.itunes_category") %>" data-bs-html="true"><span class="material-icons">help</span></button>
 
     <%# update subcategory turbo-frame when category changes %>
     <a hidden href="<%= new_podcast_path %>" data-dynamic-form-target="link" data-turbo-frame="itunes-subcategory"></a>
@@ -89,6 +97,7 @@
   <div class="form-floating">
     <%= form.select :serial_order, podcast_serial_order_options %>
     <%= form.label :serial_order %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.serial_order") %>" data-bs-html="true"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -97,6 +106,7 @@
     <%# TODO: make this a select, but where to get the options? %>
     <%= form.text_field :language %>
     <%= form.label :language %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.language") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -104,6 +114,7 @@
   <div class="form-floating">
     <%= form.text_field :owner_name %>
     <%= form.label :owner_name %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.owner_name") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -111,6 +122,7 @@
   <div class="form-floating">
     <%= form.text_field :owner_email %>
     <%= form.label :owner_email %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.owner_email") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -118,6 +130,7 @@
   <div class="form-floating">
     <%= form.text_field :author_name %>
     <%= form.label :author_name %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.author_name") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -125,6 +138,7 @@
   <div class="form-floating">
     <%= form.text_field :author_email %>
     <%= form.label :author_email %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.author_email") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -132,6 +146,7 @@
   <div class="form-floating">
     <%= form.text_field :managing_editor_name %>
     <%= form.label :managing_editor_name %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.managing_editor_name") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -139,6 +154,7 @@
   <div class="form-floating">
     <%= form.text_field :managing_editor_email %>
     <%= form.label :managing_editor_email %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.managing_editor_email") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -146,12 +162,16 @@
   <div class="form-floating">
     <%= form.text_field :copyright %>
     <%= form.label :copyright %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.copyright") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
-<div class="col-6 mb-4">
+<div class="col-6 mb-4 d-flex align-items-center">
   <div class="form-check">
     <%= form.check_box :complete, class: "form-check-input" %>
-    <%= form.label :complete %>
+    <div class="d-flex align-items-center">
+      <%= form.label :complete %>
+      <button type="button" class="help-text ms-1" data-bs-toggle="popover" data-bs-content="<%= t(".help.complete") %>"><span class="material-icons">help</span></button>
+    </div>
   </div>
 </div>

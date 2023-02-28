@@ -10,6 +10,10 @@
   align-items: center;
   gap: #{map-get($spacers, 2)};
   white-space: nowrap;
+
+  &:hover {
+    text-decoration: none;
+  }
 }
 
 .btn-icon {

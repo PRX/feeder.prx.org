@@ -1,3 +1,21 @@
-<div id="<%= dom_id episode %>">
-  <%= episode.title %>
+<div id="<%= dom_id episode %>" class="card episode-card border-<%= episode_border_color(episode) %>">
+  <div class="card-body">
+    <div class="episode-card-info">
+      <p class="episode-card-date">
+        <% if episode.published_at.present? %>
+          <%= episode.published_at.to_date.strftime("%m/%d") %>
+        <% elsif episode.released_at.present? %>
+          <%= episode.released_at.to_date.strftime("%m/%d") %>
+        <% end %>
+      </p>
+      <div class="episode-card-inner">
+        <h2 class="episode-card-title"><%= episode.title %></h2>
+        <% if episode.subtitle.present? %>
+          <p class="card-text text-small mt-1"><%= episode.subtitle %></p>
+        <% end %>
+
+        <%= link_to "Go to Podcast", episode_path(episode.guid), class: "stretched-link" %>
+      </div>
+    </div>
+  </div>
 </div>

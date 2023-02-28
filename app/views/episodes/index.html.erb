@@ -1,14 +1,64 @@
-<p style="color: green"><%= notice %></p>
+<% content_for :title, t(".title") %>
 
-<h1>Episodes</h1>
+<div class="container my-4">
+  <div class="d-grid d-sm-flex align-items-center w-auto">
+    <h1 class="text-black fw-bold d-flex flex-fill my-4"><%= t(".episodes") %></h1>
+    <div class="d-grid d-lg-flex gap-2 align-items-center">
+      <% if @podcast.present? %>
+          <%= link_to new_episode_path, class: "btn btn-primary btn-sm" do %>
+            <%= t ".create_episode" %>
+            <span class="material-icons ms-2" aria-hidden="true">mic</span>
+          <% end %>
+          <%= link_to podcast_planner_path(@podcast.id), class: "btn btn-primary btn-sm" do %>
+            <%= t ".plan_episodes" %>
+            <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
+          <% end %>
+      <% end %>
+      <%= form_with(
+            url: episodes_path_or_podcast_episodes_path(@podcast),
+            method: :get,
+            data: {
+              controller: "search",
+              "turbo-frame": "episodes",
+              "turbo-action": "replace"
+            }
+          ) do |form| %>
 
-<div id="episodes">
-  <% @episodes.each do |episode| %>
-    <%= render episode %>
-    <p>
-      <%= link_to "Show this episode", episode %>
-    </p>
+          <div class="">
+            <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm", placeholder: (t ".search") %>
+            <%= form.label :q, t(".search"), class: "visually-hidden" %>
+          </div>
+
+          <%= form.submit class: "d-none", data: {search_target: "submit"} %>
+      <% end %>
+    </div>
+  </div>
+
+  <%= turbo_frame_tag "episodes", target: "_top" do %>
+    <div class="row my-4">
+      <div class="col-md-6">
+        <h2 class="fw-bold"><%= t(".draft_or_scheduled") %></h2>
+        <% @scheduled_episodes.each do |episode| %>
+          <%= render episode %>
+        <% end %>
+
+        <div class="mt-2">
+          <%= paginate @scheduled_episodes, param_name: "scheduled_page", window: 2, outer_window: 1 %>
+          <%= page_entries_info @scheduled_episodes %>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <h2 class="fw-bold"><%= t(".published") %></h2>
+        <% @published_episodes.each do |episode| %>
+          <%= render episode %>
+        <% end %>
+
+        <div class="mt-2">
+          <%= paginate @published_episodes, param_name: "published_page", window: 2, outer_window: 1 %>
+          <%= page_entries_info @published_episodes %>
+        </div>
+      </div>
+    </div>
   <% end %>
 </div>
-
-<%= link_to "New episode", new_episode_path %>
