@@ -1,16 +1,14 @@
 <%= form_with(model: episode, html: {autocomplete: "off"}, data: {controller: "unsaved", unsaved_changed_value: episode.changed?, unsaved_confirm_value: t(".confirm")}) do |form| %>
-  <div class="row mt-4">
+  <div class="row my-4">
     <div class="col-lg-8">
-      <div class="row">
-        <div class="card shadow">
-          <div class="card-body mt-4">
-            <div class="row">
-              <%= render "form_main", episode: episode, form: form %>
-              <hr>
-              <%= render "form_tags", episode: episode, form: form %>
-              <hr>
-              <%= render "form_audio", episode: episode, form: form %>
-            </div>
+      <div class="card shadow pt-3 border-none">
+        <div class="card-body">
+          <div class="row">
+            <%= render "form_main", episode: episode, form: form %>
+            <hr>
+            <%= render "form_tags", episode: episode, form: form %>
+            <hr>
+            <%= render "form_audio", episode: episode, form: form %>
           </div>
         </div>
       </div>

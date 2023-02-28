@@ -79,10 +79,30 @@ en:
       confirm: Discard unsaved changes?
     form_audio:
       title: Audio Files
+      help:
+        segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
     form_distribution:
       title: Distribution
     form_image:
       title: Cover Image
+      help:
+        cover_image: Provide an image for your episode, if desired. Image dimensions must be square.
+    form_main:
+      help:
+        author_email: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
+        author_name: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
+        add_itunes_summary: Add an alternate itunes:summary
+        clean_title: If the title above contains any extraneous identifying information about your episode (like season number), provide a clean version of the title alone here.
+        description: Write a full description of your episode, including keywords, names of interviewees, places and topics. Feel free to incorporate links, images, and any of the other provided rich text formatting options.
+        episode_number: If your episode is part of has a specific number add it here.
+        episode_url: If you have a public URL for this podcast episode, enter it here.
+        explicit: In accordance with <a href='https://help.apple.com/itc/podcasts_connect/#/itc1723472cb'>the requirements for iTunes podcast content</a>, does this episode contain explicit material?
+        itunes_type: <p>Select the type of episode.</p> <p><strong>Full</strong> default and most common;</p> <p><strong>Trailer</strong> a short, promotional piece of content that represents a preview of a show;</p> <p><strong>Bonus</strong> extra content like behind-the-scenes information or interviews.</p>
+        production_notes: Helpful information for the production and/or ad sales teams. Example 'Descriptions of violence in segment 2.'
+        season_number: If your episode is part of a season add it here.
+        subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
+        summary: Unless otherwise specified, the summary is created from the description of your episode as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
+        title: Write a short, Tweetable title. Think newspaper headline.
     form_status:
       create: Create Draft
       destroy: Delete
@@ -101,12 +121,14 @@ en:
       unpublish: Unpublish
     form_tags:
       title: Categories
+      help:
+        categories: Enter categories relevant to the content of your episode. Type the category and press Enter to set it.
     index:
       title: PRX Dovetail - Episodes
       episodes: Episodes
       create_episode: Create Episode
       plan_episodes: Plan Episodes
-      search: Search
+      search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
     update:

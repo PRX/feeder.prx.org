@@ -2,6 +2,7 @@
   <div class="form-floating">
     <%= form.text_field :title %>
     <%= form.label :title %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.title") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -9,6 +10,7 @@
   <div class="form-floating">
     <%= form.text_field :clean_title %>
     <%= form.label :clean_title %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.clean_title") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -16,20 +18,25 @@
   <div class="form-floating">
     <%= form.text_field :subtitle %>
     <%= form.label :subtitle %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.subtitle") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
 <div class="col-12 mb-4">
-  <div class="form-floating">
+  <div class="form-floating textarea-help">
     <%= form.text_area :description %>
     <%= form.label :description %>
+    <button type="button" class="help-text help-textarea" data-bs-toggle="popover" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
 <div class="col-12 mb-4" data-controller="toggle-field">
   <div class="form-check <%= "d-none" if episode.summary.present? %>">
     <%= form.check_box :add_itunes_summary, class: "form-check-input", name: nil, checked: false, data: {toggle_field_target: "check", action: "toggle-field#changeCheck"} %>
-    <%= form.label :add_itunes_summary %>
+    <div class="d-flex align-items-center">
+      <%= form.label :add_itunes_summary %>
+      <button type="button" class="help-text ms-1" data-bs-toggle="popover" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></button>
+    </div>
   </div>
 
   <div class="form-floating <%= "d-none" unless episode.summary.present? %>">
@@ -42,6 +49,7 @@
   <div class="form-floating">
     <%= form.text_field :production_notes %>
     <%= form.label :production_notes %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.production_notes") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -49,6 +57,7 @@
   <div class="form-floating">
     <%= form.select :explicit, podcast_explicit_options, {include_blank: true} %>
     <%= form.label :explicit %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.explicit") %>" data-bs-html="true"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -56,6 +65,7 @@
   <div class="form-floating">
     <%= form.select :itunes_type, episode_itunes_type_options %>
     <%= form.label :itunes_type %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.itunes_type") %>" data-bs-html="true"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -63,6 +73,7 @@
   <div class="form-floating">
     <%= form.number_field :season_number %>
     <%= form.label :season_number %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.season_number") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -70,6 +81,7 @@
   <div class="form-floating">
     <%= form.number_field :episode_number %>
     <%= form.label :episode_number %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.episode_number") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -77,6 +89,7 @@
   <div class="form-floating">
     <%= form.text_field :author_name %>
     <%= form.label :author_name %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.author_name") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -84,5 +97,6 @@
   <div class="form-floating">
     <%= form.text_field :author_email %>
     <%= form.label :author_email %>
+    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.author_email") %>"><span class="material-icons">help</span></button>
   </div>
 </div>

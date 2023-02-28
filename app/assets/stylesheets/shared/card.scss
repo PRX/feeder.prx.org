@@ -7,15 +7,17 @@
 
   .card-title {
     text-transform: uppercase;
-  }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  }
+}
+
+.card-footer {
+  padding: 1rem;
+
+  .status-text {
+    line-height: 1.5;
     margin-bottom: 0;
+    font-size: .875rem;
   }
 }
 
@@ -27,6 +29,15 @@
     --#{$prefix}card-border-width: 0;
     --#{$prefix}card-cap-bg: #{$value};
     --#{$prefix}card-cap-color: #{color-contrast($value)};
+
+    .help-text {
+      color: #{color-contrast($value)};
+      margin-right: 0;
+
+      &:hover {
+        color: #{color-contrast($value)};
+      }
+    }
   }
 }
 
