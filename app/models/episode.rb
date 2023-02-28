@@ -367,4 +367,12 @@ class Episode < ApplicationRecord
   def feeder_cdn_host
     ENV["FEEDER_CDN_HOST"]
   end
+
+  def published_or_released_date
+    if published_at.present?
+      published_at
+    elsif released_at.present?
+      released_at
+    end
+  end
 end
