@@ -27,6 +27,12 @@ describe Apple::Publisher do
     end
   end
 
+  describe "#show" do
+    it "should be initialized with the publishers api reference" do
+      assert_equal apple_publisher.show.api.object_id, apple_api.object_id
+    end
+  end
+
   describe "#episodes_to_sync" do
     let(:episode) { create(:episode, podcast: podcast) }
 
@@ -43,6 +49,10 @@ describe Apple::Publisher do
       # derived from the underlying feeds
       assert_equal public_feed.filtered_episodes.map(&:id), []
       assert_equal private_feed.filtered_episodes.map(&:id), [episode.id]
+    end
+
+    it "should be initialized with the publishers api reference" do
+      assert_equal apple_publisher.episodes_to_sync.first.api.object_id, apple_api.object_id
     end
   end
 end
