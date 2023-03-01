@@ -33,6 +33,13 @@ module Apple
     end
 
     def poll!
+      if show.apple_id.nil?
+        Rails.logger.warn "No connected Apple Podcasts show. Skipping polling!", {public_feed_id: public_feed.id,
+                                                                                  private_feed_id: private_feed.id,
+                                                                                  podcast_id: podcast.id}
+        return
+      end
+
       poll_episodes!
       poll_podcast_containers!
       poll_podcast_deliveries!
