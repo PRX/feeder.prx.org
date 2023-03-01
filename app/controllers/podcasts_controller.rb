@@ -57,21 +57,21 @@ class PodcastsController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def get_podcasts
-    if params[:sort] == '# of Episodes'
+    if params[:sort] == "# of Episodes"
       policy_scope(Podcast).order(updated_at: :asc).limit(10)
-    elsif params[:sort] == 'A-Z'
+    elsif params[:sort] == "A-Z"
       policy_scope(Podcast).order(title: :asc).limit(10)
-    elsif params[:sort] == 'Z-A'
+    elsif params[:sort] == "Z-A"
       policy_scope(Podcast).order(title: :desc).limit(10)
     else
       policy_scope(Podcast).order(updated_at: :desc).limit(10)
     end
   end
-  
+
   def set_podcast
     @podcast = Podcast.find(params[:id])
   end
-  
+
   # Only allow a list of trusted parameters through.
   def podcast_params
     params.fetch(:podcast, {})
