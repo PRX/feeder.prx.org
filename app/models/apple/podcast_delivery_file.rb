@@ -248,8 +248,8 @@ module Apple
     end
 
     def upload_operations
-      (apple_attributes["uploadOperations"] || []).map do |operation_fragment|
-        Apple::UploadOperation.new(self, operation_fragment)
+      (apple_attributes["uploadOperations"] || []).map do |frag|
+        Apple::UploadOperation.new(delivery_file: self, operation_fragment: frag)
       end
     end
 
