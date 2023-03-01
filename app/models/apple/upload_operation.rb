@@ -4,9 +4,8 @@ module Apple
   class UploadOperation
     attr_reader :delivery_file, :api, :operation
 
-    def initialize(delivery_file, operation_fragment)
+    def initialize(delivery_file:, operation_fragment:)
       @delivery_file = delivery_file
-      @api = Apple::Api.from_env
       @operation = operation_fragment
     end
 

@@ -44,15 +44,23 @@ describe Apple::Publisher do
     end
 
     it "should return the episodes to sync" do
-      assert_equal apple_publisher.episodes_to_sync.map(&:feeder_id), [episode.id]
+      Apple::Episode.stub(:get_episodes_via_show, []) do
+        apple_publisher.show.stub(:apple_id, "123") do
+          assert_equal apple_publisher.episodes_to_sync.map(&:feeder_id), [episode.id]
 
-      # derived from the underlying feeds
-      assert_equal public_feed.filtered_episodes.map(&:id), []
-      assert_equal private_feed.filtered_episodes.map(&:id), [episode.id]
+          # derived from the underlying feeds
+          assert_equal public_feed.filtered_episodes.map(&:id), []
+          assert_equal private_feed.filtered_episodes.map(&:id), [episode.id]
+        end
+      end
     end
 
     it "should be initialized with the publishers api reference" do
-      assert_equal apple_publisher.episodes_to_sync.first.api.object_id, apple_api.object_id
+      Apple::Episode.stub(:get_episodes_via_show, []) do
+        apple_publisher.show.stub(:apple_id, "123") do
+          assert_equal apple_publisher.episodes_to_sync.first.api.object_id, apple_api.object_id
+        end
+      end
     end
   end
 end
