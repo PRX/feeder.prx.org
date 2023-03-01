@@ -9,6 +9,11 @@
   justify-content: center;
   align-items: center;
   gap: #{map-get($spacers, 1)};
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: none;
+  }
 }
 
 .btn-icon {
