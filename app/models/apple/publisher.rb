@@ -93,7 +93,7 @@ module Apple
     def poll_episodes!
       local_episodes = episodes_to_sync
 
-      local_guids = local_episodes.map(&:item_guid)
+      local_guids = local_episodes.map(&:guid)
       remote_guids = show.apple_episode_guids
 
       Rails.logger.info("Polling remote / local episode state", {local_count: local_guids.length,
