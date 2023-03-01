@@ -17,8 +17,10 @@ describe Apple::Show do
 
   describe "#reload" do
     it "flushes memoized attrs" do
+      apple_show.instance_variable_set(:@apple_episode_json, "foo")
       apple_show.instance_variable_set(:@feeder_episodes, "foo")
       apple_show.reload
+      assert_nil apple_show.instance_variable_get(:@apple_episode_json)
       assert_nil apple_show.instance_variable_get(:@feeder_episodes)
     end
 
@@ -27,15 +29,19 @@ describe Apple::Show do
     end
 
     it "doesn't raise an error if the attr is nil" do
+      apple_show.instance_variable_set(:@apple_episode_json, nil)
       apple_show.instance_variable_set(:@feeder_episodes, nil)
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@feeder_episodes)
+      assert_nil apple_show.instance_variable_get(:@apple_episode_json)
     end
 
     it "doesn't raise an error if the attr is false" do
+      apple_show.instance_variable_set(:@apple_episode_json, false)
       apple_show.instance_variable_set(:@feeder_episodes, false)
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@feeder_episodes)
+      assert_nil apple_show.instance_variable_get(:@apple_episode_json)
     end
   end
 

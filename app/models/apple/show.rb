@@ -6,6 +6,10 @@ module Apple
       :private_feed,
       :api
 
+    def self.apple_episode_json(api, show_id)
+      api.get_paged_collection("shows/#{show_id}/episodes")
+    end
+
     def self.connect_existing(apple_show_id, apple_config)
       api = Apple::Api.from_apple_config(apple_config)
 
@@ -17,10 +21,6 @@ module Apple
       new(api: api,
         public_feed: apple_config.public_feed,
         private_feed: apple_config.private_feed)
-    end
-
-    def self.get_episodes_json(api, show_id)
-      api.get_paged_collection("shows/#{show_id}/episodes")
     end
 
     def self.get_show(api, show_id)
@@ -37,6 +37,7 @@ module Apple
 
     def reload
       @feeder_episodes = nil
+      @apple_episode_json = nil
     end
 
     def podcast
@@ -139,8 +140,7 @@ module Apple
         Apple::Episode.new(show: self, feeder_episode: ep, api: api)
       end
 
-      results = Apple::Episode.get_episodes_via_show(api, apple_id)
-      results_by_guid = results.map { |e| [e["api_response"]["val"]["data"]["attributes"]["guid"], e] }.to_h
+      results_by_guid = apple_episode_json.map { |e| [e["api_response"]["val"]["data"]["attributes"]["guid"], e] }.to_h
 
       eps.map do |ep|
         ep.api_response = results_by_guid[ep.guid]
@@ -159,8 +159,12 @@ module Apple
       @find_episode.fetch(id)
     end
 
+    def apple_episode_json
+      @apple_episode_json = Apple::Episode.get_episodes_via_show(api, apple_id)
+    end
+
     def apple_episode_guids
-      apple_episodes_json.map { |e| e["attributes"]["guid"] }
+      apple_episode_json.map { |e| e["api_response"]["val"]["data"]["attributes"]["guid"] }
     end
   end
 end

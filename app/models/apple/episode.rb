@@ -46,7 +46,7 @@ module Apple
     end
 
     def self.get_episodes_via_show(api, show_id)
-      bridge_params = Apple::Show.get_episodes_json(api, show_id).map do |ep_json|
+      bridge_params = Apple::Show.apple_episode_json(api, show_id).map do |ep_json|
         id = ep_json["id"]
         guid = ep_json["attributes"]["guid"]
         Episode.get_episode_bridge_params(api, id, guid)
