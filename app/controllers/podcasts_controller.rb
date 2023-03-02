@@ -3,7 +3,7 @@ class PodcastsController < ApplicationController
 
   # GET /podcasts
   def index
-    @podcasts = Podcast.all.limit(10)
+    @podcasts = get_podcasts
   end
 
   # GET /podcasts/1
@@ -98,5 +98,18 @@ class PodcastsController < ApplicationController
       :copyright,
       :complete
     )
+  end
+
+  # Use callbacks to share common setup or constraints between actions.
+  def get_podcasts
+    if params[:sort] == "# of Episodes"
+      policy_scope(Podcast).order(updated_at: :asc).limit(10)
+    elsif params[:sort] == "A-Z"
+      policy_scope(Podcast).order(title: :asc).limit(10)
+    elsif params[:sort] == "Z-A"
+      policy_scope(Podcast).order(title: :desc).limit(10)
+    else
+      policy_scope(Podcast).order(updated_at: :desc).limit(10)
+    end
   end
 end
