@@ -1,22 +1,11 @@
-<div id="<%= dom_id podcast %>" class="card prx-podcast-card">
-  <div class="card-body">
-    <div class="prx-podcast-card-info">
-      <% if podcast.itunes_image %>
-          <%= image_tag(podcast.itunes_image.url, width: 80, alt: podcast.itunes_image.alt_text) %>
-          <% else %>
-            <h3>No image here</h3>
-          <% end %>
-      <div>
-        <h2 class="prx-podcast-card-title">Podcast Name</h2>
-        <p class="card-text text-small">38 Published Episodes | 2 Scheduled | 68 Drafts.</p>
-        <%= link_to "Go to Podcast", fake_path(123), class: "stretched-link" %>
-      </div>
-    </div>
-    <div class="prx-podcast-card-status">
-      <p class="status-text text-end"><strong>Last Saved</strong> <br>1/25/2023, 12:25pm</p>
-    </div>
+<div id="<%= dom_id podcast %>" class="d-flex align-items-center flex-fill my-4">
+  <div>
+    <% if podcast.feed_image %>
+      <%= image_tag(podcast.feed_image.url, width: 135, alt: podcast.feed_image.alt_text, class: "d-flex me-4") %>
+    <% end %>
   </div>
-</div>
-    </div>
+  <div class="flex-fill">
+    <h1 class="fw-bold lh-1"><%= podcast.title %></h1>
+    <%= podcast.subtitle %>
   </div>
 </div>

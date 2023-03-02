@@ -6,17 +6,21 @@ module Apple
       :private_feed,
       :api
 
-    def self.connect_existing(apple_show_id, api, public_feed, private_feed)
-      SyncLog.create!(feeder_id: public_feed.id,
+    def self.apple_episode_json(api, show_id)
+      api.get_paged_collection("shows/#{show_id}/episodes")
+    end
+
+    def self.connect_existing(apple_show_id, apple_config)
+      api = Apple::Api.from_apple_config(apple_config)
+
+      SyncLog.create!(feeder_id: apple_config.public_feed.id,
         feeder_type: :feeds,
         sync_completed_at: Time.now.utc,
         external_id: apple_show_id)
 
-      new(api: api, public_feed: public_feed, private_feed: private_feed)
-    end
-
-    def self.get_episodes_json(api, show_id)
-      api.get_paged_collection("shows/#{show_id}/episodes")
+      new(api: api,
+        public_feed: apple_config.public_feed,
+        private_feed: apple_config.private_feed)
     end
 
     def self.get_show(api, show_id)
@@ -32,8 +36,8 @@ module Apple
     end
 
     def reload
-      # flush memoized attrs
-      @get_episodes_json = nil
+      @feeder_episodes = nil
+      @apple_episode_json = nil
     end
 
     def podcast
@@ -125,18 +129,42 @@ module Apple
       self.class.get_show(api, apple_id)
     end
 
-    def get_episodes_json
-      raise "Missing apple show id" unless apple_id.present?
-
-      @get_episodes_json ||=
-        begin
-          external_id = completed_sync_log&.external_id
-          self.class.get_episodes_json(api, external_id)
-        end
+    def feeder_episodes
+      @feeder_episodes ||= private_feed.feed_episodes
     end
 
-    def apple_episodes_json
-      get_episodes_json
+    def episodes
+      raise "Missing apple show id" unless apple_id.present?
+
+      eps = feeder_episodes.map do |ep|
+        Apple::Episode.new(show: self, feeder_episode: ep, api: api)
+      end
+
+      results_by_guid = apple_episode_json.map { |e| [e["api_response"]["val"]["data"]["attributes"]["guid"], e] }.to_h
+
+      eps.map do |ep|
+        ep.api_response = results_by_guid[ep.guid]
+        ep
+      end
+    end
+
+    def episode_ids
+      @episode_ids ||= episodes.map(&:id).sort
+    end
+
+    def find_episode(id)
+      @find_episode ||=
+        episodes.map { |e| [e.id, e] }.to_h
+
+      @find_episode.fetch(id)
+    end
+
+    def apple_episode_json
+      @apple_episode_json = Apple::Episode.get_episodes_via_show(api, apple_id)
+    end
+
+    def apple_episode_guids
+      apple_episode_json.map { |e| e["api_response"]["val"]["data"]["attributes"]["guid"] }
     end
   end
 end

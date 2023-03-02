@@ -18,13 +18,18 @@ module Apple
       failed: "FAILED"
     }
 
-    def self.update_podcast_deliveries_state(api, episodes)
+    def self.missing_container_for_episode(ep)
+      Rails.logger.warn("Missing podcast container for episode",
+        {feeder_episode_id: ep.feeder_id})
+    end
+
+    def self.poll_podcast_deliveries_state(api, episodes)
       podcast_containers = episodes.map do |ep|
         if ep.podcast_container.present?
           ep.podcast_container
         else
-          Rails.logger.error("Missing podcast container for episode #{ep.feeder_id}")
-          nil
+          missing_container_for_episode(ep)
+          next
         end
       end.compact
 
@@ -35,16 +40,30 @@ module Apple
       end
     end
 
-    def self.create_podcast_deliveries(api, episodes)
-      # TODO: Support multiple deliveries per episode
-      podcast_containers = episodes.map(&:podcast_container)
+    def self.select_containers_for_delivery(podcast_containers)
+      podcast_containers
+        .select(&:needs_delivery?)
+        .compact
+    end
 
-      podcast_containers = podcast_containers.reject do |container|
-        # Don't create deliveries for containers that already have deliveries.
-        # An alternative workflow would be to swap out the existing delivery and
-        # upload different audio.
-        container.podcast_deliveries.present?
+    def self.create_podcast_deliveries(api, episodes)
+      podcast_containers = episodes.filter_map do |ep|
+        if ep.podcast_container.nil?
+          missing_container_for_episode(ep)
+          next
+        end
+
+        ep.podcast_container
       end
+
+      # Don't create deliveries for containers that already have deliveries.
+      # An alternative workflow would be to swap out the existing delivery and
+      # upload different audio.
+      #
+      # The overall publishing workflow dependes on the assumption that there is
+      # a delivery present. If we don't create a delivery here, we short-circuit
+      # subsequent steps (no uploads, no audio linking).
+      podcast_containers = select_containers_for_delivery(podcast_containers)
 
       response =
         api.bridge_remote_and_retry!("createPodcastDeliveries",
@@ -80,23 +99,30 @@ module Apple
       external_id = row.dig("api_response", "val", "data", "id")
       delivery_status = row.dig("api_response", "val", "data", "attributes", "status")
 
-      pd =
+      (pd, action) =
         if (delivery = where(episode_id: podcast_container.episode.id,
           external_id: external_id,
           podcast_container: podcast_container).first)
 
-          Rails.logger.info("Update local podcast delivery w/ Apple id #{external_id} for episode #{podcast_container.episode.id}")
           delivery.update(api_response: row, updated_at: Time.now.utc)
 
-          delivery
+          [delivery, :updated]
         else
-          Rails.logger.info("Creating local podcast delivery w/ Apple id #{external_id} for episode #{podcast_container.episode.id}")
-          Apple::PodcastDelivery.create!(episode_id: podcast_container.episode.id,
-            external_id: external_id,
-            status: delivery_status,
-            podcast_container: podcast_container,
-            api_response: row)
+          delivery =
+            Apple::PodcastDelivery.create!(episode_id: podcast_container.episode.id,
+              external_id: external_id,
+              status: delivery_status,
+              podcast_container: podcast_container,
+              api_response: row)
+          [delivery, :created]
         end
+
+      Rails.logger.info("#{action} local podcast delivery",
+        {podcast_container_id: podcast_container.id,
+         action: action,
+         external_id: external_id,
+         feeder_episode_id: podcast_container.episode.id,
+         podcast_delivery_id: delivery.id})
 
       # Flush the cache on the podcast container
       podcast_container.podcast_deliveries.reset

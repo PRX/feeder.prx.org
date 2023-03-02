@@ -32,8 +32,12 @@ class PodcastPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
       # TODO: this is hacky
-      uris = token.authorized_account_ids(:read_private).map { |id| "/api/v1/accounts/#{id}" }
-      scope.where(prx_account_uri: uris)
+      if token.globally_authorized?("read-private")
+        scope.all
+      else
+        uris = token.authorized_account_ids(:read_private).map { |id| "/api/v1/accounts/#{id}" }
+        scope.where(prx_account_uri: uris)
+      end
     end
   end
 end

@@ -3,6 +3,7 @@
 module Apple
   class PodcastDeliveryFile < ActiveRecord::Base
     include Apple::ApiResponse
+    include Apple::ApiWaiting
 
     serialize :api_response, JSON
 
@@ -20,34 +21,25 @@ module Apple
     end
 
     def self.wait_for_processing(api, pdfs)
-      wait_for(api, pdfs) do |updated_pdfs|
+      wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file processing")
-        updated_pdfs.all? { |pdf| pdf.processed? || pdf.processed_errors? }
+        updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
+
+        finished = updated_pdfs.group_by { |pdf| pdf.processed? || pdf.processed_errors? }
+        (finished[true] || []).map(&:save!)
+        (finished[false] || [])
       end
     end
 
     def self.wait_for_delivery(api, pdfs)
-      wait_for(api, pdfs) do |updated_pdfs|
+      wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file delivery")
-        updated_pdfs.all?(&:delivered?)
+        updated_pdfs = get_and_update_api_response(api, pdfs)
+
+        finished = updated_pdfs.group_by(&:delivered?)
+        (finished[true] || []).map(&:save!)
+        (finished[false] || [])
       end
-    end
-
-    def self.wait_for(api, pdfs)
-      t_beg = Time.now.utc
-      loop_res =
-        loop do
-          # TODO: handle timeout
-          break false if Time.now.utc - t_beg > 5.minutes
-          break true if yield(pdfs)
-
-          get_and_update_api_response(api, pdfs)
-          sleep(2)
-        end
-
-      pdfs.map(&:save!)
-
-      loop_res
     end
 
     def self.get_and_update_api_response(api, pdfs)
@@ -93,7 +85,7 @@ module Apple
       end
     end
 
-    def self.update_podcast_delivery_files_state(api, episodes)
+    def self.poll_podcast_delivery_files_state(api, episodes)
       # Assume that the delivery remote/local state is synced at this point
       podcast_deliveries =
         episodes
@@ -214,22 +206,29 @@ module Apple
       external_id = row.dig("api_response", "val", "data", "id")
       podcast_delivery_id = row.dig("request_metadata", PODCAST_DELIVERY_ID_ATTR)
 
-      pdf =
+      (pdf, action) =
         if (delivery_file = where(episode_id: podcast_delivery.episode.id,
           external_id: external_id,
           podcast_delivery_id: podcast_delivery_id).first)
 
-          Rails.logger.info("Updating local podcast delivery file w/ Apple id #{external_id} for episode #{podcast_delivery.episode.id}")
           delivery_file.update(api_response: row, updated_at: Time.now.utc)
-          delivery_file
+          [delivery_file, :update]
         else
-          Rails.logger.info("Creating local podcast delivery file w/ Apple id #{external_id} for episode #{podcast_delivery.episode.id}")
-          Apple::PodcastDeliveryFile.create!(episode_id: podcast_delivery.episode.id,
-            external_id: external_id,
-            podcast_delivery_id: podcast_delivery_id,
-            api_response: row)
+          delivery_file =
+            Apple::PodcastDeliveryFile.create!(episode_id: podcast_delivery.episode.id,
+              external_id: external_id,
+              podcast_delivery_id: podcast_delivery_id,
+              api_response: row)
 
+          [delivery_file, :create]
         end
+
+      Rails.logger.info("#{action} local podcast delivery file",
+        {podcast_container_id: pdf.podcast_container.id,
+         action: action,
+         external_id: external_id,
+         feeder_episode_id: pdf.episode.id,
+         podcast_delivery_file_id: pdf.podcast_delivery.id})
 
       SyncLog.create!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id)
 
@@ -249,8 +248,8 @@ module Apple
     end
 
     def upload_operations
-      (apple_attributes["uploadOperations"] || []).map do |operation_fragment|
-        Apple::UploadOperation.new(self, operation_fragment)
+      (apple_attributes["uploadOperations"] || []).map do |frag|
+        Apple::UploadOperation.new(delivery_file: self, operation_fragment: frag)
       end
     end
 

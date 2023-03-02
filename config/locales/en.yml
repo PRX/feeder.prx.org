@@ -7,6 +7,7 @@ en:
   time:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
+      short: "%m/%d"
   # form/model helpers
   helpers:
     label:
@@ -101,6 +102,14 @@ en:
       unpublish: Unpublish
     form_tags:
       title: Categories
+    index:
+      title: PRX Dovetail - Episodes
+      episodes: Episodes
+      create_episode: Create Episode
+      plan_episodes: Plan Episodes
+      search: Search
+      draft_or_scheduled: Draft or Scheduled Episodes
+      published: Published Episodes
     update:
       error: Unable to save
       notice: Episode updated
@@ -137,16 +146,16 @@ en:
         complete: Checking the box indicates that the podcast is complete and you will not post any more episodes in the future.
         copyright: Copyright notice for content in the podcast.
         description: A full description of this podcast.
-        explicit: In accordance with [the requirements for iTunes podcast content](https://help.apple.com/itc/podcasts_connect/#/itc1723472cb), do any of your podcast episodes contain explicit material?
-        itunes_category: Select the [iTunes category and subcategory](https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12), if applicable, that best describe this podcast.
+        explicit: In accordance with <a href='https://help.apple.com/itc/podcasts_connect/#/itc1723472cb'>the requirements for iTunes podcast content</a>, do any of your podcast episodes contain explicit material?
+        itunes_category: Select the <a href='https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12'>iTunes category and subcategory</a>, if applicable, that best describe this podcast.
         language: Select which language your podcast is in.
         link: A link to the homepage for your podcast.
-        managing_editor_email: Set the managing editor name for this podcast.
-        managing_editor_name: Set the managing editor email for this podcast.
+        managing_editor_email: Set the managing editor email for this podcast.
+        managing_editor_name: Set the managing editor name for this podcast.
         owner_email: Set the iTunes owner email for this podcast.
         owner_name: Set the iTunes owner name for this podcast.
         prx_account_uri: Who is the owner of this podcast?
-        serial_order: Select how your episodes should be ordered. *Episodic*- when you want your episodes to be presented and recommended last-to-first; this is the default and most common order for podcasts. *Serial* - when you want your episodes presented and recommended first-to-last).
+        serial_order: <p>Select how your episodes should be ordered.</p> <p><strong>Episodic:</strong> episodes to be presented and recommended last-to-first; this is the default and most common order for podcasts.</p> <p><strong>Serial:</strong> Episodes presented and recommended first-to-last.</p>
         subtitle: A short description of this podcast.
         summary: Unless otherwise specified, the summary is created from the description of your podcast as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
         title: What's the name of this podcast?
@@ -160,9 +169,24 @@ en:
       title: Status
       update: Save
       updated_at_hint: Last Saved
+    podcast:
+      no_image: No image here
+      create_episode: Create Episode
+      plan_episodes: Plan Episodes
     update:
       error: Unable to save
       notice: Podcast updated
+    show:
+      latest_published: Latest Published
+      all_episodes: All Episodes
+      next_scheduled: Next Scheduled or Draft
+      feeds: Feeds
+      manage_feeds: Manage Feeds
+      default_feed: Default RSS Feed
+      settings: Settings
+      manage_settings: Manage Settings
+      engagement_settings: Engagement Settings
+      import: Import
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
