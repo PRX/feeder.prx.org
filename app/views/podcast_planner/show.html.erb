@@ -10,34 +10,37 @@
     </header>
 
     <%= form_with() do |form| %>
-      <section class="recurring">
-        <h2 class="fw-bold">How long should episodes recur?</h2>
-        <p>This helps us to know how many drafts to create.</p>
-        <div class="form-check form-check-inline">
-          <%= form.check_box :end_condition, class: "form-check-input", checked: false %>
-          <%= form.label "by number of episodes" %>
-        </div>
-        <div class="form-check form-check-inline">
-          <%= form.check_box :end_condition, class: "form-check-input", checked: false %>
-          <%= form.label "by end date" %>
-        </div>
-
+      <section data-controller="switch-field">
+        <h2 class="fw-bold">How many episodes should be in this batch?</h2>
         <div class="col-lg-4">
           <div class="form-floating">
             <%= form.date_field :start_at %>
             <%= form.label :start_at %>
           </div>
         </div>
-        <div class="col-lg-4">
-          <div class="form-floating">
-            <%= form.date_field :end_at %>
-            <%= form.label :end_at %>
+        <p>Calculate the end of the batch by...</p>
+
+        <div>
+          <div class="form-check form-check-inline">
+            <%= form.check_box :end_condition, class: "form-check-input", checked: true, data: {switch_field_target: "option", action: "switch-field#changeOption", switch_field_idx_param: 0} %>
+            <%= form.label "...number of episodes" %>
+          </div>
+          <div class="form-check form-check-inline">
+            <%= form.check_box :end_condition, class: "form-check-input", checked: false, data: {switch_field_target: "option", action: "switch-field#changeOption", switch_field_idx_param: 1} %>
+            <%= form.label "...end date" %>
           </div>
         </div>
-        <div class="col-lg-4">
+
+        <div class="col-lg-4" data-switch-field-target="field">
           <div class="form-floating">
             <%= form.number_field :number_of_episodes, {min: 1, max: 100, step: 1} %>
             <%= form.label :number_of_episodes %>
+          </div>
+        </div>
+        <div class="col-lg-4 d-none" data-switch-field-target="field">
+          <div class="form-floating">
+            <%= form.date_field :end_at %>
+            <%= form.label :end_at %>
           </div>
         </div>
       </section>
