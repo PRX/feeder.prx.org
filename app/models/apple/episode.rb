@@ -67,9 +67,21 @@ module Apple
     def self.update_audio_container_reference(api, episodes)
       return [] if episodes.empty?
 
-      episode_bridge_results = api.bridge_remote_and_retry!("updateEpisodes",
-        episodes.map(&:update_episode_audio_container_bridge_params))
+      # Make sure that we only update episodes that have a podcast container
+      # And that the episode needs to be updated
+      episodes = episodes.filter { |ep| ep.podcast_container.present? && ep.audio_hosted_audio_asset_container_id.blank? }
+
+      (episode_bridge_results, errs) =
+        api.bridge_remote_and_retry(
+          "updateEpisodes",
+          episodes.map(&:update_episode_audio_container_bridge_params)
+        )
+
       insert_sync_logs(episodes, episode_bridge_results)
+
+      api.raise_bridge_api_error(errs) if errs.present?
+
+      episode_bridge_results
     end
 
     def self.publish(api, episodes)
@@ -271,6 +283,10 @@ module Apple
 
     def audio_asset_vendor_id
       apple_json&.dig("attributes", "appleHostedAudioAssetVendorId")
+    end
+
+    def audio_hosted_audio_asset_container_id
+      apple_json&.dig("attributes", "appleHostedAudioAssetContainerId")
     end
 
     def audio_asset_state

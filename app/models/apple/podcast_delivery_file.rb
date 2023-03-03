@@ -54,12 +54,22 @@ module Apple
     end
 
     def self.mark_uploaded(api, pdfs)
+      # These still need to be marked as uploaded
+      pdfs = pdfs.reject { |pdf| pdf.api_marked_as_uploaded? }
+
       bridge_params = pdfs.map { |pdf| mark_uploaded_delivery_file_bridge_params(api, pdf) }
 
-      api.bridge_remote_and_retry!("updateDeliveryFiles", bridge_params).map do |row|
+      # return results alongside potential errors
+      (episode_bridge_results, errs) = api.bridge_remote_and_retry("updateDeliveryFiles", bridge_params)
+
+      episode_bridge_results.map do |row|
         pd_id = row["request_metadata"]["podcast_delivery_file_id"]
-        Apple::PodcastDeliveryFile.find(pd_id).update!(api_response: row, uploaded: true)
+        Apple::PodcastDeliveryFile.find(pd_id).update!(api_response: row, api_marked_as_uploaded: true)
       end
+
+      api.raise_bridge_api_error(errs) if errs.present?
+
+      episode_bridge_results
     end
 
     def self.create_podcast_delivery_files(api, episodes)

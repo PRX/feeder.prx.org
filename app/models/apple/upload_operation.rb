@@ -10,7 +10,10 @@ module Apple
     end
 
     def self.execute_upload_operations(api, episodes)
-      delivery_files = Apple::PodcastDeliveryFile.where(episode_id: episodes.map(&:feeder_id), uploaded: false)
+      delivery_files = Apple::PodcastDeliveryFile.where(
+        episode_id: episodes.map(&:feeder_id),
+        upload_operations_complete: false
+      )
 
       operation_bridge_params =
         delivery_files.map do |df|
@@ -18,6 +21,8 @@ module Apple
         end.flatten
 
       res = do_upload(api, operation_bridge_params)
+
+      Apple::PodcastDeliveryFile.where(id: delivery_files.map(&:id)).update_all(upload_operations_complete: true)
 
       res.flatten
     end

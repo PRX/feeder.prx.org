@@ -58,6 +58,7 @@ module Apple
 
       # upload and mark as uploaded
       execute_upload_operations!
+      mark_delivery_files_uploaded!
 
       wait_for_upload_processing
       wait_for_asset_state
@@ -139,10 +140,10 @@ module Apple
 
       poll_podcast_containers!
 
-      eps = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
-      Rails.logger.info("Created remote and local state for podcast containers.", {count: eps.length})
+      res = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
+      Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})
 
-      res = Apple::Episode.update_audio_container_reference(api, eps)
+      res = Apple::Episode.update_audio_container_reference(api, episodes_to_sync)
       Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
 
       res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, episodes_to_sync)
@@ -178,9 +179,11 @@ module Apple
     end
 
     def execute_upload_operations!
-      upload_operation_result = Apple::UploadOperation.execute_upload_operations(api, episodes_to_sync)
-      delivery_file_ids = upload_operation_result.map { |r| r["request_metadata"]["podcast_delivery_file_id"] }
-      pdfs = ::Apple::PodcastDeliveryFile.where(id: delivery_file_ids)
+      Apple::UploadOperation.execute_upload_operations(api, episodes_to_sync)
+    end
+
+    def mark_delivery_files_uploaded!
+      pdfs = episodes_to_sync.map(&:podcast_delivery_files).flatten
       ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
     end
 
