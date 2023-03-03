@@ -282,11 +282,11 @@ module Apple
     end
 
     def audio_asset_vendor_id
-      apple_json&.dig("attributes", "appleHostedAudioAssetVendorId")
+      apple_attributes["appleHostedAudioAssetVendorId"]
     end
 
     def audio_hosted_audio_asset_container_id
-      apple_json&.dig("attributes", "appleHostedAudioAssetContainerId")
+      apple_attributes["appleHostedAudioAssetContainerId"]
     end
 
     def audio_asset_state
