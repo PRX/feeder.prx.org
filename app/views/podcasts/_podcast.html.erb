@@ -14,7 +14,7 @@
   <h5 class="text-black fw-bold me-4 mb-0"><%= podcast.title %></h5>
   <p class="card-text text-small">
     <%= podcast.episodes.published.count %> Published Episodes |
-    <%= podcast.episodes.scheduled.count %> Scheduled | 
+    <%= podcast.episodes.scheduled.count %> Scheduled |
     <%= podcast.episodes.draft.count %> Drafts
   </p>
   <div class="prx-podcast-card-status">
@@ -22,7 +22,7 @@
       <h5 class="text-end">Latest Activity</h5>
       <span class="text-end"> <%= podcast.updated_at.strftime("%-m/%-d/%Y, %-l:%M %p") %></span>
       <p>
-      <%= link_to "Look at this dog", new_podcast_path, class:"stretched-link" %>
+      <%= link_to "Look at this dog", new_podcast_path, class: "stretched-link" %>
     </p>
     </div>
   </div>

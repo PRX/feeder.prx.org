@@ -1,33 +1,29 @@
-<% content_for :title, 'My Podcasts' %>
+<% content_for :title, "My Podcasts" %>
 
 <p style="color: green"><%= notice %></p>
 
 <h1>Podcasts</h1>
 
-
-
-<a class="btn btn-light btn-sm dropdown-toggle" id= type="button" data-bs-toggle="dropdown">
+<a class="btn btn-light btn-sm dropdown-toggle" id=type="button" data-bs-toggle="dropdown">
   Sort <span class="material-icons" aria-hidden="true">sort</span>
-  <ul class="dropdown-menu"
-    <li><a class="dropdown-item active" href="<%= podcasts_path(sort: 'Recent') %>">Recent Activity</a></li>
-    <li><%= link_to '# of Episodes', podcasts_path, class: "dropdown-item"%></li>
-    <li><%= link_to 'A-Z', podcasts_path(sort:"A-Z"), class: "dropdown-item" %></li>
-    <li><%= link_to 'Z-A', podcasts_path(sort:"Z-A"), class: "dropdown-item" %></li>
+  <ul class="dropdown-menu"><a class="dropdown-item active" href="<%= podcasts_path(sort: "Recent") %>">Recent Activity</a></li>
+    <li><%= link_to "# of Episodes", podcasts_path, class: "dropdown-item" %></li>
+    <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
+    <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
   </ul>
 </a>
 
 <div id="podcasts">
   <% @podcasts.each do |podcast| %>
 
-
     <%= render "podcast_page" %>
-    
+
     <p class="card-text text-small">
     <%= podcast.episodes.published.count %> Published Episodes |
-    <%= podcast.episodes.scheduled.count %> Scheduled Episodes | 
+    <%= podcast.episodes.scheduled.count %> Scheduled Episodes |
     <%= podcast.episodes.draft.count %> Drafted Episodes
 
-    <%= podcast.episodes.scheduled.count %> Scheduled | 
+    <%= podcast.episodes.scheduled.count %> Scheduled |
     <%= podcast.episodes.draft.count %> Drafts
   </p>
     <span class="text-end"> <%= podcast.updated_at.strftime("%-m/%-d/%Y, %-l:%M %p") %></span>
