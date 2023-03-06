@@ -15,6 +15,24 @@ module Apple
 
     PODCAST_DELIVERY_ID_ATTR = "podcast_delivery_id"
 
+    # Apple: ProcessingState
+    processing_state = %w[PROCESSING VALIDATED VALIDATION_FAILED DUPLICATE REPLACED COMPLETED].freeze
+    processing_state.map do |state|
+      define_method("processed_#{state.downcase}?") do
+        return false unless asset_processing_state.present?
+        asset_processing_state["state"] == state
+      end
+    end
+
+    # Apple: AppMediaAssetState
+    delivery_state = %W[AWAITING_UPLOAD UPLOAD_COMPLETE COMPLETE FAILED].freeze
+    delivery_state.map do |state|
+      define_method("delivery_#{state.downcase}?") do
+        return false unless asset_delivery_state.present?
+        asset_delivery_state["state"] == state
+      end
+    end
+
     def self.wait_for_delivery_files(api, pdfs)
       wait_for_delivery(api, pdfs)
       wait_for_processing(api, pdfs)
@@ -25,7 +43,7 @@ module Apple
         Rails.logger.info("Probing for file processing")
         updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
 
-        finished = updated_pdfs.group_by { |pdf| pdf.processed? || pdf.processed_errors? }
+        finished = updated_pdfs.group_by { |pdf| pdf.processed? }
         (finished[true] || []).map(&:save!)
         (finished[false] || [])
       end
@@ -55,7 +73,7 @@ module Apple
 
     def self.mark_uploaded(api, pdfs)
       # These still need to be marked as uploaded
-      pdfs = pdfs.reject { |pdf| pdf.api_marked_as_uploaded? }
+      pdfs = pdfs.filter { |pdf| pdf.delivery_awaiting_upload? }
 
       bridge_params = pdfs.map { |pdf| mark_uploaded_delivery_file_bridge_params(api, pdf) }
 
@@ -264,27 +282,25 @@ module Apple
     end
 
     def apple_complete?
-      delivered? && processed?
+      delivery_complete? && processed_completed?
     end
 
     def delivered?
       return false unless asset_delivery_state.present?
 
-      asset_delivery_state["state"] == "COMPLETE" ||
-        asset_delivery_state["state"] == "COMPLETED"
+      delivery_complete? || delivery_failed?
     end
 
     def processed_errors?
       return false unless asset_processing_state.present?
 
-      apple_attributes["assetProcessingState"]["state"] == "VALIDATION_FAILED"
+      processed_validation_failed? || processed_duplicate?
     end
 
     def processed?
       return false unless asset_processing_state.present?
 
-      asset_processing_state["state"] == "COMPLETE" ||
-        apple_attributes["assetProcessingState"]["state"] == "COMPLETED"
+      processed_completed? || processed_errors?
     end
 
     def asset_processing_state
