@@ -35,8 +35,12 @@ module Apple
 
       results = get_podcast_deliveries_via_containers(api, podcast_containers)
 
-      join_on("podcast_container_id", podcast_containers, results).map do |(podcast_container, delivery_row)|
-        upsert_podcast_delivery(podcast_container, delivery_row)
+      join_many_on("podcast_container_id", podcast_containers, results, left_join: true).map do |(podcast_container, delivery_rows)|
+        next if delivery_rows.nil?
+
+        delivery_rows.each do |delivery_row|
+          upsert_podcast_delivery(podcast_container, delivery_row)
+        end
       end
     end
 
@@ -65,27 +69,35 @@ module Apple
       # subsequent steps (no uploads, no audio linking).
       podcast_containers = select_containers_for_delivery(podcast_containers)
 
-      response =
-        api.bridge_remote_and_retry!("createPodcastDeliveries",
+      (response, errs) =
+        api.bridge_remote_and_retry("createPodcastDeliveries",
           create_podcast_deliveries_bridge_params(api, podcast_containers))
 
       join_on("podcast_container_id", podcast_containers, response).map do |podcast_container, row|
         upsert_podcast_delivery(podcast_container, row)
       end
+
+      api.raise_bridge_api_error(errs) if errs.present?
+
+      response
     end
 
     def self.get_podcast_deliveries_via_containers(api, podcast_containers)
       # Fetch the podcast deliveries from the containers side of the api
+      bridge_params = podcast_containers.map do |pc|
+        get_podcast_containers_deliveries_bridge_param(pc)
+      end
+
       deliveries_response =
-        api.bridge_remote_and_retry!("getPodcastDeliveries",
-          get_podcast_containers_deliveries_bridge_params(podcast_containers))
+        api.bridge_remote_and_retry!("getPodcastDeliveries", bridge_params)
+
       # Rather than mangling and persisting the enumerated view of the deliveries from the containers endpoint,
       # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
-      formatted_bridge_params = join_on("podcast_container_id",
-        podcast_containers,
-        deliveries_response).map do |(pc, row)|
-        get_urls_for_container_podcast_deliveries(api, row).map do |url|
-          get_podcast_containers_deliveries_bridge_param(pc.apple_episode_id, pc.id, url)
+      formatted_bridge_params = join_many_on("podcast_container_id", podcast_containers, deliveries_response).map do |(pc, rows)|
+        rows.map do |row|
+          get_urls_for_container_podcast_deliveries(api, row).map do |url|
+            get_podcast_deliveries_bridge_param(pc.apple_episode_id, pc.id, url)
+          end
         end
       end
 
@@ -166,16 +178,19 @@ module Apple
     end
 
     # Query from the podcast container side of the api
-    def self.get_podcast_containers_deliveries_bridge_params(podcast_containers)
-      podcast_containers.map do |container|
-        get_podcast_containers_deliveries_bridge_param(container.apple_episode_id,
-          container.id,
-          container.podcast_deliveries_url)
-      end
+    def self.get_podcast_containers_deliveries_bridge_param(container)
+      {
+        request_metadata: {
+          apple_episode_id: container.apple_episode_id,
+          podcast_container_id: container.id
+        },
+        api_url: container.podcast_deliveries_url,
+        api_parameters: {}
+      }
     end
 
     # Query from the podcast delivery side of the api
-    def self.get_podcast_containers_deliveries_bridge_param(apple_episode_id, podcast_container_id, api_url)
+    def self.get_podcast_deliveries_bridge_param(apple_episode_id, podcast_container_id, api_url)
       {
         request_metadata: {
           apple_episode_id: apple_episode_id,

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_03_221518) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_03_230552) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -51,9 +51,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_03_221518) do
     t.string "api_response"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["episode_id"], name: "index_apple_podcast_deliveries_on_episode_id", unique: true
+    t.index ["episode_id"], name: "index_apple_podcast_deliveries_on_episode_id"
     t.index ["external_id"], name: "index_apple_podcast_deliveries_on_external_id", unique: true
-    t.index ["podcast_container_id"], name: "index_apple_podcast_deliveries_on_podcast_container_id", unique: true
+    t.index ["podcast_container_id"], name: "index_apple_podcast_deliveries_on_podcast_container_id"
   end
 
   create_table "apple_podcast_delivery_files", force: :cascade do |t|
@@ -66,7 +66,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_03_221518) do
     t.boolean "api_marked_as_uploaded", default: false
     t.boolean "upload_operations_complete", default: false
     t.index ["external_id"], name: "index_apple_podcast_delivery_files_on_external_id", unique: true
-    t.index ["podcast_delivery_id"], name: "index_apple_podcast_delivery_files_on_podcast_delivery_id", unique: true
+    t.index ["podcast_delivery_id"], name: "index_apple_podcast_delivery_files_on_podcast_delivery_id"
   end
 
   create_table "episode_images", id: :serial, force: :cascade do |t|

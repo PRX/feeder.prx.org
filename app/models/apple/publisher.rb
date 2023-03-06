@@ -94,7 +94,7 @@ module Apple
     end
 
     def wait_for_asset_state
-      eps = episodes_to_sync.filter { |e| e.podcast_delivery_files.any?(&:uploaded?) }
+      eps = episodes_to_sync.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
       Apple::Episode.wait_for_asset_state(api, eps)
     end
 

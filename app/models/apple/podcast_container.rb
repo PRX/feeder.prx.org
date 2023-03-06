@@ -36,7 +36,9 @@ module Apple
     def self.poll_podcast_container_state(api, episodes)
       results = get_podcast_containers_via_episodes(api, episodes)
 
-      join_on_apple_episode_id(episodes, results).each do |(ep, row)|
+      join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
+        next if row.nil?
+
         upsert_podcast_container(ep, row)
       end
     end

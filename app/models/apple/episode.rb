@@ -40,7 +40,7 @@ module Apple
     end
 
     def self.get_episodes(api, episodes)
-      return if episodes.empty?
+      return [] if episodes.empty?
 
       api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
