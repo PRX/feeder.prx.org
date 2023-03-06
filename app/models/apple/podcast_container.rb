@@ -57,6 +57,7 @@ module Apple
 
     def self.upsert_podcast_container(episode, row)
       external_id = row.dig("api_response", "val", "data", "id")
+      raise "Missing external_id in response" if external_id.blank?
 
       (pc, action) =
         if (pc = where(apple_episode_id: episode.apple_id,

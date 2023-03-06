@@ -43,6 +43,8 @@ module Apple
     end
 
     def apple_id
+      raise "missing apple id" unless apple_data["id"].present?
+
       apple_data["id"]
     end
   end

@@ -98,6 +98,7 @@ module Apple
     def self.upsert_podcast_delivery(podcast_container, row)
       external_id = row.dig("api_response", "val", "data", "id")
       delivery_status = row.dig("api_response", "val", "data", "attributes", "status")
+      raise "Missing external_id" if external_id.blank?
 
       (pd, action) =
         if (delivery = where(episode_id: podcast_container.episode.id,

@@ -233,6 +233,7 @@ module Apple
     def self.upsert_podcast_delivery_file(podcast_delivery, row)
       external_id = row.dig("api_response", "val", "data", "id")
       podcast_delivery_id = row.dig("request_metadata", PODCAST_DELIVERY_ID_ATTR)
+      raise "Missing request metadata" unless external_id && podcast_delivery_id
 
       (pdf, action) =
         if (delivery_file = where(episode_id: podcast_delivery.episode.id,
