@@ -29,7 +29,7 @@ module Apple
     end
 
     def episodes_to_sync
-      @episodes_to_sync ||= show.episodes
+      show.episodes
     end
 
     def poll!
