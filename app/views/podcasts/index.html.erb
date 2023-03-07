@@ -2,16 +2,28 @@
 
 <p style="color: green"><%= notice %></p>
 
-<h1>My Podcasts</h1>
+<div class="dashboard header">
+  <h1>My Podcasts</h1>
 
-<a class="btn btn-light btn-sm dropdown-toggle" id=type="button" data-bs-toggle="dropdown">
-  Sort <span class="material-icons" aria-hidden="true">sort</span>
-  <ul class="dropdown-menu"><a class="dropdown-item active" href="<%= podcasts_path(sort: "Recent") %>">Recent Activity</a></li>
-    <li><%= link_to "# of Episodes", podcasts_path, class: "dropdown-item" %></li>
-    <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
-    <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
-  </ul>
-</a>
+  <div class="col-sm-6 col-md-4 col-lg-3  form-floating">
+    <select class="form-select" data-action="blur->blank-field#blur" disabled="disabled" name="episode[itunes_type]" id="episode_itunes_type"><option value="" label=" "></option>
+      <option selected="selected" value="full">Podcast Name</option>
+      <option value="bonus">Podcast Name</option>
+      <option value="invalid">Podcast Name</option>
+    </select>
+    <label for="episode_itunes_type">Filter Podcasts</label>
+  </div>
+
+  <a class="btn btn-light btn-sm dropdown-toggle" id=type="button" data-bs-toggle="dropdown">
+    Sort <span class="material-icons" aria-hidden="true">sort</span>
+    <ul class="dropdown-menu"><a class="dropdown-item active" href="<%= podcasts_path(sort: "Recent") %>">Recent Activity</a></li>
+      <li><%= link_to "# of Episodes", podcasts_path, class: "dropdown-item" %></li>
+      <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
+      <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
+    </ul>
+  </a>
+
+</div>
 
 <div id="podcasts">
 <%= render "podcast_page" %>
