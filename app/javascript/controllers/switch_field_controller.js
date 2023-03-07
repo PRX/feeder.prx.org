@@ -22,7 +22,7 @@ export default class extends Controller {
   }
 
   changeOption(event) {
-    this.uncheckOtherOptions(event.params['idx'])
-    this.displayOnlyThisField(event.params['idx'])
+    this.uncheckOtherOptions(event.params["idx"])
+    this.displayOnlyThisField(event.params["idx"])
   }
 }

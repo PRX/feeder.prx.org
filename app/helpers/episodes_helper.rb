@@ -40,6 +40,6 @@ module EpisodesHelper
   end
 
   def episode_publish_time_options
-    [Time.new('12:00'), Time.new('12:30')]
+    [Time.new("12:00"), Time.new("12:30")]
   end
 end

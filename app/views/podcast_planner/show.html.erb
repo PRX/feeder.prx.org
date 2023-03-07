@@ -9,7 +9,7 @@
       </p>
     </header>
 
-    <%= form_with() do |form| %>
+    <%= form_with do |form| %>
       <section data-controller="switch-field">
         <h2 class="fw-bold">How many episodes should be in this batch?</h2>
         <div class="col-lg-4">
@@ -146,7 +146,7 @@
         <h2 class="fw-bold">Audio Segments</h2>
         <p>
           Make sure you choose a template associated with your series
-          <a [routerLink]="['/series', seriesId, 'podcast']">Podcast Info</a>.
+          Podcast Info.
           This will help us forecast ad inventory available in each episode.
         </p>
 
