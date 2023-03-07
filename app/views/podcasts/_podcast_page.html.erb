@@ -1,34 +1,24 @@
-
-
-<div>
-  <div>
-  <div class="row mt-4 mb-4">
-    <section class="col-lg-12">
-      <div class="dashboard-header">
-        <div class="col d-flex align-items-center">
-          <div class="btn-group">
+<div class="prx-podcast card col-lg-12">
+        <div class="d-flex g-2 p-3 align-items-center">
+          <div class="card-body flex-grow-1 dashboard-list mb-4 shadow">
+            <% @podcasts.each do |podcast| %>
+              <div>
+              <% if podcast.feed_image %>
+                <%= image_tag(podcast.feed_image.url, width: 135, alt: podcast.feed_image.alt_text, class: "d-flex me-4") %>
+              <% end %>
+            </div>
+              <p class="card-text text-small">
+                <%= podcast.episodes.published.count %> Published Episodes |
+                <%= podcast.episodes.scheduled.count %> Scheduled Episodes |
+                <%= podcast.episodes.draft.count %> Drafted Episodes
+              </p>
+              <span class="text-end"> <%= podcast.updated_at.strftime("%-m/%-d/%Y, %-l:%M %p") %></span>
+            <% end %>
+            <%= link_to "Go to Podcast", podcasts_path, class: "card-link" %>
+           
           </div>
-        </div>
-
-      </div>
-      <div class="dashboard-list mb-4 shadow">
-        <div class="prx-podcast | card">
-          <div class="d-flex g-2 p-3 align-items-center">
-            <div class="card-image">
-            </div>
-            <div class="card-body flex-grow-1 ">
-              <h2 class="card-title">Podcast Name</h2>
-
-              <%= link_to "Go to Podcast", podcasts_path, class: "card-link" %>
-            </div>
             <div class="card-footer d-grid g-1 lh-sm fs-sm text-end">
               <strong>Last Saved</strong>
             </div>
-          </div>
         </div>
-      </div>
-    </section>
-
-  </div>
-  </div>
 </div>
