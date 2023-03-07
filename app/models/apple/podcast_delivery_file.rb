@@ -43,7 +43,9 @@ module Apple
         Rails.logger.info("Probing for file processing")
         updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
 
-        finished = updated_pdfs.group_by { |pdf| pdf.processed? }
+        # Try to work around the fact that the API sometimes returns 'nil' for processing state
+        # Check the podcast delivery status to see if it's complete
+        finished = updated_pdfs.group_by { |pdf| pdf.processed? || (pdf.asset_processing_state.nil? && pdf.podcast_delivery.completed?) }
         (finished[true] || []).map(&:save!)
         (finished[false] || [])
       end
@@ -313,6 +315,7 @@ module Apple
     end
 
     def processed?
+      # FIXME: sometimes we get a nil assetProcessingState, but the file is uploaded
       return false unless asset_processing_state.present?
 
       processed_completed? || processed_errors?
