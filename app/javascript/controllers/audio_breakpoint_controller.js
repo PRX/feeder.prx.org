@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import convertSecondsToDuration from "../util/convertSecondsToDuration"
-import convertToSeconds from "../util/convertToSeconds"
+import convertSecondsToDuration from "util/convertSecondsToDuration"
+import convertToSeconds from "util/convertToSeconds"
 
 export default class extends Controller {
   static targets = ["label", "startTime", "endTime"]

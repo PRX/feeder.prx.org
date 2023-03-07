@@ -1,10 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 import Peaks from "peaks.js"
 import _ from "lodash"
-import convertToSeconds from "../util/convertToSeconds"
-import convertSecondsToDuration from "../util/convertSecondsToDuration"
-import PrxPointMarker from "../custom/PrxPointMarker"
-import PrxSegmentMarker from "../custom/PrxSegmentMarker"
+import convertToSeconds from "util/convertToSeconds"
+import convertSecondsToDuration from "util/convertSecondsToDuration"
+import PrxPointMarker from "custom/PrxPointMarker"
+import PrxSegmentMarker from "custom/PrxSegmentMarker"
 
 export default class extends Controller {
   static targets = ["overview", "zoom", "scrollbar", "seekInput"]

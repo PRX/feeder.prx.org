@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import convertToSeconds from "../util/convertToSeconds"
+import convertToSeconds from "util/convertToSeconds"
 
 export default class extends Controller {
   static targets = ["waveformInspector", "markersInput", "controls", "controlTemplate"]
