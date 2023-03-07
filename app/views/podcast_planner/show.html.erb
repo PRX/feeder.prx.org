@@ -45,73 +45,52 @@
         </div>
       </section>
 
-      <section>
+      <section data-controller="date-selection switch-field">
         <h2 class="fw-bold">Which day of the week do you plan to publish your episodes?</h2>
         <p>
           Publish will automatically create an episode draft for each day selected on the weeks provided below. Select all that apply.
         </p>
         <div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "sunday" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "monday" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "tuesday" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "wednesday" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "thursday" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "friday" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "saturday" %>
-          </div>
+          <% DateTime::ABBR_DAYNAMES.each_with_index do |day, i| %>
+            <div class="form-check form-check-inline">
+              <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectDay", date_selection_day_param: [day, i]} %>
+              <%= form.label day %>
+            </div>
+          <% end %>
         </div>
-      </section>
 
-      <section>
         <h2 class="fw-bold">Which weeks of each month do you plan to publish?</h2>
         <p>
           Publish will create episode drafts during these weeks every month.
           Select all that apply.
         </p>
-        <div class="horizontal-checkboxes">
+
+        <div>
           <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "first week" %>
+            <%= form.check_box :week_selection, class: "form-check-input", checked: true, data: {switch_field_target: "option", action: "switch-field#changeOption", switch_field_idx_param: 0} %>
+            <%= form.label "...recurring weeks" %>
+          <div class="form-check form-check-inline">
+            <%= form.check_box :week_selection, class: "form-check-input", checked: false, data: {switch_field_target: "option", action: "switch-field#changeOption", switch_field_idx_param: 1} %>
+            <%= form.label "...numbered weeks" %>
           </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "second week" %>
           </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "third week" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "fourth week" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "fifth week" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :date, class: "form-check-input", checked: false %>
-            <%= form.label "every other" %>
+        </div>
+
+        <div class="col-lg-4" data-switch-field-target="field">
+          <% recurring_weeks_options.each do |week| %>
+            <div class="form-check form-check-inline">
+              <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectWeek", date_selection_week_param: week} %>
+              <%= form.label week %>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-lg-4 d-none" data-switch-field-target="field">
+          <% numbered_weeks_options.each do |week| %>
+            <div class="form-check form-check-inline">
+              <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectWeek", date_selection_week_param: week} %>
+              <%= form.label week %>
+            </div>
+          <% end %>
         </div>
       </section>
 
