@@ -23,7 +23,7 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
     let(:asset_delivery_state) { "COMPLETE" }
 
     let(:pdf_resp_container) { build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: asset_processing_state) }
-    let(:pdf) { Apple::PodcastDeliveryFile.new(api_response: pdf_resp_container["json"]) }
+    let(:pdf) { Apple::PodcastDeliveryFile.new(**pdf_resp_container) }
 
     describe "#delivery_awaiting_upload?" do
       it "should be false if the status is delivery_status is false" do
@@ -37,12 +37,12 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       end
 
       it "will not be complete if either of the two state statues are not complete" do
-        json = build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: "VALIDATION_FAILED")["json"]
-        pdf = Apple::PodcastDeliveryFile.new(api_response: json)
+        pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: "VALIDATION_FAILED")
+        pdf = Apple::PodcastDeliveryFile.new(**pdf_resp_container)
         assert_equal false, pdf.apple_complete?
 
-        json = build(:podcast_delivery_file_api_response, asset_delivery_state: "FAILED", asset_processing_state: asset_processing_state)["json"]
-        pdf = Apple::PodcastDeliveryFile.new(api_response: json)
+        pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: "FAILED", asset_processing_state: asset_processing_state)
+        pdf = Apple::PodcastDeliveryFile.new(**pdf_resp_container)
         assert_equal false, pdf.apple_complete?
       end
     end
