@@ -25,3 +25,5 @@ pin "lodash", to: "https://ga.jspm.io/npm:lodash@4.17.21/lodash.js"
 pin "slim-select", preload: true # @2.4.1
 
 pin_all_from "app/javascript/controllers", under: "controllers"
+pin_all_from "app/javascript/custom", under: "custom"
+pin_all_from "app/javascript/util", under: "util"

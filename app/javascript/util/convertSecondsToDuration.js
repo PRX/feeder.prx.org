@@ -1,4 +1,4 @@
-import convertToSeconds from "./convertToSeconds"
+import convertToSeconds from "util/convertToSeconds"
 
 /**
  * Convert a number into string in duration format ([HH:]MM:SS[.ss]).
