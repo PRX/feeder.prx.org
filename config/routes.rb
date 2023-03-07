@@ -14,7 +14,11 @@ Rails.application.routes.draw do
     resources :feeds
     resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
 
-    resources :fake, only: [:index, :show, :create]
+    resources :fake, only: [:index, :show, :create] do
+      collection do
+        get "audio-segmenter"
+      end
+    end
 
     mount PrxAuth::Rails::Engine => "/auth", :as => "prx_auth_engine"
     get "sessions/logout", to: "application#logout", as: :logout

@@ -1,0 +1,106 @@
+//
+// Audio breakpoints table styles.
+//
+
+.prx-audio-breakpoints-table {
+  --#{$prefix}table-border-color: #{$table-border-color};
+
+  display: grid;
+  grid-template-columns: min-content minmax(max-content, 15ch) 1fr min-content;
+  gap: map-get($spacers, 2);
+  align-items: center;
+
+  :is(thead, tbody, tr) {
+    display: contents;
+  }
+
+  :is(th, td) {
+    display: flex;
+    align-items: center;
+    gap: map-get($spacers, 1);
+
+    &:first-of-type {
+      padding-inline-start: map-get($spacers, 4);
+    }
+
+    &:last-of-type {
+      padding-inline-end: map-get($spacers, 4);
+    }
+  }
+
+  :is(tbody tr) {
+    &::after {
+      content: "";
+      display: block;
+      grid-column: 1 / -1;
+      height: $table-border-width;
+      background-color: var(--#{$prefix}table-border-color);
+    }
+  }
+
+  :is(tr) {
+    &:first-of-type {
+      &::before {
+        content: "";
+        display: block;
+        grid-column: 1 / -1;
+        height: $table-border-width * 2;
+        background-color: var(--#{$prefix}table-border-color);
+      }
+    }
+  }
+
+  .completed-show {
+    display: none;
+  }
+
+  .completed-hide {
+    display: initial;
+  }
+
+  .status--completed {
+    .completed-show {
+      display: initial;
+    }
+
+    .completed-hide {
+      display: none;
+    }
+  }
+
+  .has-start-time-show {
+    display: none;
+  }
+
+  .has-start-time-hide {
+    display: flex;
+  }
+
+  [data-audio-breakpoint-start-time-value] .has-start-time-show {
+    display: flex;
+  }
+
+  [data-audio-breakpoint-start-time-value] .has-start-time-hide {
+    display: none;
+  }
+
+  .has-end-time-show {
+    display: none;
+  }
+
+  .has-end-time-hide {
+    display: flex;
+  }
+
+  [data-audio-breakpoint-end-time-value] .has-end-time-show {
+    display: flex;
+  }
+
+  [data-audio-breakpoint-end-time-value] .has-end-time-hide {
+    display: none;
+  }
+
+  [class*="input-group"] {
+    width: auto;
+  }
+}
