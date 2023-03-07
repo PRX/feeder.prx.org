@@ -87,7 +87,8 @@ describe Apple::ApiResponse do
 
         assert_equal zipped[0][1].length, 2
         # The resource not an array
-        assert_equal zipped[0][0].length, 1
+        assert_equal zipped[0][0].apple_episode_id, "1"
+        assert_equal zipped[0][0].bar, "111"
 
         # Can return more than one api result per resource
         assert_equal zipped[0][1].map { |r| r["api_response"]["foo"] }, ["111", "999"]
