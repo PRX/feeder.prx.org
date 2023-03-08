@@ -17,4 +17,16 @@ export default class extends Controller {
       this.checkTarget.parentElement.classList.remove("d-none")
     }
   }
+
+  displayOnlyThisField(event) {
+    const matchingIndex = parseInt(event.target.value)
+
+    this.fieldTargets.forEach((el, idx) => {
+      if (matchingIndex !== idx) {
+        el.classList.add("d-none")
+      } else {
+        el.classList.remove("d-none")
+      }
+    })
+  }
 }

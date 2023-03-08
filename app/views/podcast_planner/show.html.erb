@@ -9,88 +9,97 @@
       </p>
     </header>
 
-    <%= form_with do |form| %>
-      <section data-controller="switch-field">
-        <h2 class="fw-bold">How many episodes should be in this batch?</h2>
-        <div class="col-lg-4">
-          <div class="form-floating">
-            <%= form.date_field :start_at %>
-            <%= form.label :start_at %>
-          </div>
-        </div>
-        <p>Calculate the end of the batch by...</p>
-
-        <div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :end_condition, class: "form-check-input", checked: true, data: {switch_field_target: "option", action: "switch-field#changeOption", switch_field_idx_param: 0} %>
-            <%= form.label "...number of episodes" %>
-          </div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :end_condition, class: "form-check-input", checked: false, data: {switch_field_target: "option", action: "switch-field#changeOption", switch_field_idx_param: 1} %>
-            <%= form.label "...end date" %>
-          </div>
+  <%= form_with(url: podcast_planner_path(@podcast), html: {method: :put}) do |form| %>
+      <section>
+        <div class="mb-4">
+          <h2 class="fw-bold">Date Calculation of Draft Batch</h2>
+          <p>
+            Calculate release dates for your drafts by selecting which days and weeks you plan to publish, and then select a date range.
+          </p>
         </div>
 
-        <div class="col-lg-4" data-switch-field-target="field">
-          <div class="form-floating">
-            <%= form.number_field :number_of_episodes, {min: 1, max: 100, step: 1} %>
-            <%= form.label :number_of_episodes %>
-          </div>
-        </div>
-        <div class="col-lg-4 d-none" data-switch-field-target="field">
-          <div class="form-floating">
-            <%= form.date_field :end_at %>
-            <%= form.label :end_at %>
-          </div>
-        </div>
-      </section>
-
-      <section data-controller="date-selection switch-field">
-        <h2 class="fw-bold">Which day of the week do you plan to publish your episodes?</h2>
-        <p>
-          Publish will automatically create an episode draft for each day selected on the weeks provided below. Select all that apply.
-        </p>
-        <div>
-          <% DateTime::ABBR_DAYNAMES.each_with_index do |day, i| %>
-            <div class="form-check form-check-inline">
-              <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectDay", date_selection_day_param: [day, i]} %>
-              <%= form.label day %>
+        <div data-controller="toggle-field date-selection">
+          <div class="mb-4">
+            <h3 class="fw-bold">Day selection</h3>
+            <p>Which day of the week do you plan to publish your episodes? Select all that apply.</p>
+            <div>
+              <% DateTime::ABBR_DAYNAMES.each_with_index do |day, i| %>
+                <div class="form-check form-check-inline">
+                  <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectDay", date_selection_day_param: [day, i]} %>
+                  <%= form.label day %>
+                </div>
+              <% end %>
             </div>
-          <% end %>
-        </div>
-
-        <h2 class="fw-bold">Which weeks of each month do you plan to publish?</h2>
-        <p>
-          Publish will create episode drafts during these weeks every month.
-          Select all that apply.
-        </p>
-
-        <div>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :week_selection, class: "form-check-input", checked: true, data: {switch_field_target: "option", action: "switch-field#changeOption", switch_field_idx_param: 0} %>
-            <%= form.label "...recurring weeks" %>
-          <div class="form-check form-check-inline">
-            <%= form.check_box :week_selection, class: "form-check-input", checked: false, data: {switch_field_target: "option", action: "switch-field#changeOption", switch_field_idx_param: 1} %>
-            <%= form.label "...numbered weeks" %>
           </div>
+
+          <div class="mb-4">
+            <h3 class="fw-bold">Week selection</h3>
+            <p>
+              Which weeks of each month do you plan to publish? Select all that apply.
+            </p>
+
+            <div class="mb-4">
+              <p>Calculate the weeks by:</p>
+              <div class="col-lg-4">
+                <div class="form-floating">
+                  <%= form.toggle_field_select :week_condition, week_condition_options, params, class: "form-select form-select-sm" %>
+                  <%= form.label :week_condition %>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4" data-toggle-field-target="field">
+              <% recurring_weeks_options.each do |week| %>
+                <div class="form-check form-check-inline">
+                  <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectWeek", date_selection_week_param: week} %>
+                  <%= form.label week %>
+                </div>
+              <% end %>
+            </div>
+            <div class="col-lg-4 d-none" data-toggle-field-target="field">
+              <% numbered_weeks_options.each do |week| %>
+                <div class="form-check form-check-inline">
+                  <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectWeek", date_selection_week_param: week} %>
+                  <%= form.label week %>
+                </div>
+              <% end %>
+            </div>
           </div>
         </div>
 
-        <div class="col-lg-4" data-switch-field-target="field">
-          <% recurring_weeks_options.each do |week| %>
-            <div class="form-check form-check-inline">
-              <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectWeek", date_selection_week_param: week} %>
-              <%= form.label week %>
+        <div data-controller="toggle-field">
+          <h3 class="fw-bold">Date Range selection</h3>
+          <div class="mb-4">
+            <p>How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.</p>
+            <p>Calculate the end of the batch by:</p>
+            <div class="col-lg-4">
+              <div class="form-floating">
+                <%= form.toggle_field_select :end_condition, end_condition_options, params, class: "form-select form-select-sm" %>
+                <%= form.label :end_condition %>
+              </div>
             </div>
-          <% end %>
-        </div>
-        <div class="col-lg-4 d-none" data-switch-field-target="field">
-          <% numbered_weeks_options.each do |week| %>
-            <div class="form-check form-check-inline">
-              <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectWeek", date_selection_week_param: week} %>
-              <%= form.label week %>
+          </div>
+
+          <div class="row mb-4 g-3">
+            <div class="col-lg-6">
+              <div class="form-floating">
+                <%= form.date_field :start_date %>
+                <%= form.label :start_date %>
+              </div>
             </div>
-          <% end %>
+            <div class="col-lg-6" data-toggle-field-target="field">
+              <div class="form-floating">
+                <%= form.number_field :number_of_episodes, {min: 1, max: 100, step: 1} %>
+                <%= form.label :number_of_episodes %>
+              </div>
+            </div>
+            <div class="col-lg-6 d-none" data-toggle-field-target="field">
+              <div class="form-floating">
+                <%= form.date_field :end_date %>
+                <%= form.label :end_date %>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -111,17 +120,6 @@
       </section>
 
       <section>
-        <h2 class="fw-bold">Categories</h2>
-
-        <div class="col-12 mb-4">
-          <div class="form-floating">
-            <%= form.tag_select :categories, {}, {}, data: {allow_new: true, allow_clear: true} %>
-            <%= form.label :categories %>
-          </div>
-        </div>
-      </section>
-
-      <section>
         <h2 class="fw-bold">Audio Segments</h2>
         <p>
           Make sure you choose a template associated with your series
@@ -131,15 +129,23 @@
 
         <div class="col-lg-4">
           <div class="form-floating">
-            <%= form.number_field :audio_segments %>
-            <%= form.label :audio_segments %>
+            <%= form.number_field :segment_count %>
+            <%= form.label :segment_count %>
           </div>
         </div>
       </section>
-    <% end %>
   </div>
 
   <div class="col-lg-4">
-    Placeholder for submit, and draft list
+    <div class="card">
+      <div class="card-header-primary">
+        <h5 class="card-title">Title</h5>
+      </div>
+      <div class="card-footer">
+        <p class="status-text"><strong>hint</strong></p>
+        <%= form.submit "create", class: "btn btn-primary" %>
+      </div>
+    </div>
   </div>
+  <% end %>
 </div>
