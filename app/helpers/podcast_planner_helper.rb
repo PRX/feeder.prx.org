@@ -11,11 +11,11 @@ module PodcastPlannerHelper
   end
 
   def end_condition_options
-    [["number of episodes", 0], ["end date", 1]]
+    [["number of episodes", "episodes"], ["end date", "date"]]
   end
 
   def week_condition_options
-    [["periodic", 0], ["monthly", 1]]
+    ["periodic", "monthly"]
   end
 
   def episode_publish_time_options

@@ -19,14 +19,26 @@ export default class extends Controller {
   }
 
   displayOnlyThisField(event) {
-    const matchingIndex = parseInt(event.target.value)
+    const field = event.target.value
 
-    this.fieldTargets.forEach((el, idx) => {
-      if (matchingIndex !== idx) {
+    this.fieldTargets.forEach(el => {
+      if (field !== el.getAttribute("field")) {
         el.classList.add("d-none")
+        this.clearUntargetedFields(el)
       } else {
         el.classList.remove("d-none")
       }
+    })
+  }
+
+  clearUntargetedFields(el) {
+    const checks = Array.from(el.querySelectorAll(".form-check-input"))
+    checks.forEach(check => {
+      check.checked = false
+    })
+    const inputs = Array.from(el.querySelectorAll(".form-control"))
+    inputs.forEach(input => {
+      input.value = ""
     })
   }
 }
