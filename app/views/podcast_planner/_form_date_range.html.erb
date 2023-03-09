@@ -1,0 +1,34 @@
+<div data-controller="toggle-field">
+  <h3 class="fw-bold">Date Range selection</h3>
+  <div class="mb-4">
+    <p>How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.</p>
+    <p>Calculate the end of the batch by:</p>
+    <div class="col-lg-4">
+      <div class="form-floating">
+        <%= form.toggle_field_select :end_condition, end_condition_options, params, class: "form-select form-select-sm" %>
+        <%= form.label :end_condition %>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 g-3">
+    <div class="col-lg-6">
+      <div class="form-floating">
+        <%= form.date_field :start_date %>
+        <%= form.label :start_date %>
+      </div>
+    </div>
+    <div class="col-lg-6" data-toggle-field-target="field" field="episodes">
+      <div class="form-floating">
+        <%= form.number_field :number_of_episodes, {min: 1, max: 100, step: 1} %>
+        <%= form.label :number_of_episodes %>
+      </div>
+    </div>
+    <div class="col-lg-6 d-none" data-toggle-field-target="field" field="date">
+      <div class="form-floating">
+        <%= form.date_field :end_date %>
+        <%= form.label :end_date %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,12 @@
+<div class="mb-4">
+  <h3 class="fw-bold">Day selection</h3>
+  <p>Which day of the week do you plan to publish your episodes? Select all that apply.</p>
+  <div>
+    <% DateTime::ABBR_DAYNAMES.each_with_index do |day, i| %>
+      <div class="form-check form-check-inline">
+        <%= form.check_box :date, class: "form-check-input", checked: false, data: {action: "date-selection#selectDay", date_selection_day_param: [day, i]} %>
+        <%= form.label day %>
+      </div>
+    <% end %>
+  </div>
+</div>
