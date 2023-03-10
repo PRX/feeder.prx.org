@@ -6,7 +6,78 @@
     </p>
   </div>
 
-  <%= render 'form_date_day', form: form %>
-  <%= render 'form_date_week', form: form %>
-  <%= render 'form_date_range', form: form %>
+  <div class="mb-4">
+    <h3 class="fw-bold">Day selection</h3>
+    <p>Which day of the week do you plan to publish your episodes? Select all that apply.</p>
+    <div class="col-lg-12">
+      <div class="form-floating">
+        <%= form.select :day, day_options, {}, multiple: true %>
+        <%= form.label :day %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-4" data-controller="toggle-field">
+    <h3 class="fw-bold">Week selection</h3>
+    <div class="mb-4">
+      <p>Which weeks of each month do you plan to publish? Select all that apply.</p>
+      <div class="col-lg-12" data-toggle-field-target="field" field="periodic">
+        <div class="form-floating">
+          <%= form.select :periodic_weeks, periodic_weeks_options, {}, multiple: true %>
+          <%= form.label :periodic_weeks %>
+        </div>
+      </div>
+      <div class="col-lg-12 d-none" data-toggle-field-target="field" field="monthly">
+        <div class="form-floating">
+          <%= form.select :monthly_weeks, monthly_weeks_options, {}, multiple: true %>
+          <%= form.label :monthly_weeks %>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <p>Calculate the weeks by:</p>
+      <div class="col-lg-4">
+        <div class="form-floating">
+          <%= form.toggle_field_select :week_condition, week_condition_options, params, class: "form-select form-select-sm" %>
+          <%= form.label :week_condition %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-4" data-controller="toggle-field">
+    <h3 class="fw-bold">Date Range selection</h3>
+    <div class="row mb-4 g-3">
+      <p>How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.</p>
+      <div class="col-lg-6">
+        <div class="form-floating">
+          <%= form.date_field :start_date, value: l(DateTime.tomorrow) %>
+          <%= form.label :start_date %>
+        </div>
+      </div>
+      <div class="col-lg-6" data-toggle-field-target="field" field="episodes">
+        <div class="form-floating">
+          <%= form.number_field :number_of_episodes, {min: 1, max: 100, step: 1, value: 10} %>
+          <%= form.label :number_of_episodes %>
+        </div>
+      </div>
+      <div class="col-lg-6 d-none" data-toggle-field-target="field" field="date">
+        <div class="form-floating">
+          <%= form.date_field :end_date %>
+          <%= form.label :end_date %>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <p>Calculate the end of the batch by:</p>
+      <div class="col-lg-4">
+        <div class="form-floating">
+          <%= form.toggle_field_select :end_condition, end_condition_options, params, class: "form-select form-select-sm" %>
+          <%= form.label :end_condition %>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>

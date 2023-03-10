@@ -9,7 +9,7 @@
 
     <div class="col-lg-4">
       <div class="form-floating">
-        <%= form.select :publish_time, episode_publish_time_options %>
+        <%= form.select :publish_time, time_options %>
         <%= form.label :publish_time %>
       </div>
     </div>
@@ -25,7 +25,7 @@
 
     <div class="col-lg-4">
       <div class="form-floating">
-        <%= form.number_field :segment_count %>
+        <%= form.number_field :segment_count, {min: 1, max: 10, step: 1, value: 2} %>
         <%= form.label :segment_count %>
       </div>
     </div>

@@ -8,6 +8,7 @@ en:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
       short: "%m/%d"
+      time_12_hour: "%l:%M %p %Z"
   # form/model helpers
   helpers:
     label:
