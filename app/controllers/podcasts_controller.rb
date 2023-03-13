@@ -2,9 +2,17 @@ class PodcastsController < ApplicationController
   before_action :set_podcast, only: %i[show edit update destroy]
 
   # GET /podcasts
+
   def index
-    @podcasts = get_podcasts
+    @podcasts = Podcast.order(:id).page params[:page]
+
+      if params[:podcast_params]
+        policy_scope(Podcast).find(params[:podcast_params]).get_podcasts.paginate(page: params[:page], per_page: 10)
+      else
+        policy_scope(Podcast).all
+      end
   end
+end
 
   # GET /podcasts/1
   def show
@@ -112,4 +120,3 @@ class PodcastsController < ApplicationController
       policy_scope(Podcast).order(updated_at: :desc).limit(10)
     end
   end
-end
