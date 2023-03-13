@@ -4,8 +4,9 @@ class PodcastsController < ApplicationController
   # GET /podcasts
 
   def index
-    @podcasts = Podcast.order(:id).page params[:page]
+    @podcasts = Podcast.order(updated_at: :desc).page params[:page]
 
+    podcasts =
       if params[:podcast_params]
         policy_scope(Podcast).find(params[:podcast_params]).get_podcasts.paginate(page: params[:page], per_page: 10)
       else
