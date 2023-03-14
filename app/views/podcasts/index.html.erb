@@ -26,14 +26,11 @@
 </div>
 
 <div id="podcasts">
-<% @podcasts.each do | podcast | %>
-<%= render "podcast_page" %>
-<div class="mt-2">
-<%= paginate @podcasts, param_name: "podcast_page", window: 2, outer_window: 1 %>
-<%= page_entries_info @podcasts %>
+  <%= render "podcast_page" %>
+  <div class="mt-2">
+  <%= paginate @podcasts, window: 2, outer_window: 1 %>
+  <%= page_entries_info @podcasts %>
+  </div>
 </div>
-
-</div>
-<% end %> 
 
 <%= link_to "New podcast", new_podcast_path %>
