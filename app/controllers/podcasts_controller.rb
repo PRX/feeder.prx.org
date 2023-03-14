@@ -3,8 +3,13 @@ class PodcastsController < ApplicationController
 
   # GET /podcasts
 
+  DISPLAY_ORDER = {"# of Episodes" => {updated_at: :asc},
+                   "A-Z" => {title: :asc},
+                   "Z-A" => {title: :desc},
+                   "" => {updated_at: :desc}}.freeze
+
   def index
-    @podcasts = policy_scope(Podcast).page(params[:page]).per(10)
+    @podcasts = policy_scope(Podcast).page(params[:page]).per(10).order(DISPLAY_ORDER[params[:sort]])
   end
 end
 
@@ -100,17 +105,4 @@ def podcast_params
     :copyright,
     :complete
   )
-end
-
-# Use callbacks to share common setup or constraints between actions.
-def get_podcasts
-  if params[:sort] == "# of Episodes"
-    policy_scope(Podcast).order(updated_at: :asc)
-  elsif params[:sort] == "A-Z"
-    policy_scope(Podcast).order(title: :asc)
-  elsif params[:sort] == "Z-A"
-    policy_scope(Podcast).order(title: :desc)
-  else
-    policy_scope(Podcast).order(updated_at: :desc)
-  end
 end
