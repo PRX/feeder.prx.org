@@ -17,7 +17,7 @@
   <a class="btn btn-light btn-sm dropdown-toggle" id=type="button" data-bs-toggle="dropdown">
     Sort <span class="material-icons" aria-hidden="true">sort</span>
     <ul class="dropdown-menu"><a class="dropdown-item active" href="<%= podcasts_path(sort: "Recent") %>">Recent Activity</a></li>
-      <li><%= link_to "# of Episodes", podcasts_path, class: "dropdown-item" %></li>
+      <li><%= link_to "# of Episodes", podcasts_path(sort: "episode_count"), class: "dropdown-item" %></li>
       <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
       <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
     </ul>
@@ -26,8 +26,16 @@
 </div>
 
 <div id="podcasts">
-  <%= render "podcast_page" %>
-  <div class="mt-2">
+  <section class="col-lg-12">
+    <div class="dashboard-list mb-4 shadow">
+      <% @podcasts.each do |podcast| %>
+
+    <%= render "podcast_page", podcast: podcast %>
+    <div class="mt-2">
+
+    <% end %>
+    </div>
+</section>
   <%= paginate @podcasts, window: 2, outer_window: 1 %>
   <%= page_entries_info @podcasts %>
   </div>
