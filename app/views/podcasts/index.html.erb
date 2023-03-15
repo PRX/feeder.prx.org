@@ -1,21 +1,23 @@
 <% content_for :title, "My Podcasts" %>
 
 <p style="color: green"><%= notice %></p>
+<div class="row mt-4 mb-4">
+  <div class="dashboard header">
+    <div class="col d-flex align-items-center ">
+      <h1 class="text-black fw-bold me-4 mb-0">My Podcasts</h1>
 
-<div class="dashboard header">
-  <h1 class="text-black fw-bold me-4 mb-0">My Podcasts</h1>
-
-  <a class="btn btn-light btn-sm dropdown-toggle" id=type="button" data-bs-toggle="dropdown">
-  <button class="btn btn-outline-light btn-sm dropdown-toggle">
-    Sort <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
-  </button>
-    <ul class="dropdown-menu"><a class="dropdown-item active" href="<%= podcasts_path(sort: "Recent") %>">Recent Activity</a></li>
-      <li><%= link_to "# of Episodes", podcasts_path(sort: "episode_count"), class: "dropdown-item" %></li>
-      <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
-      <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
-    </ul>
-  </a>
-
+      <a data-bs-toggle="dropdown">
+      <button class="btn btn-outline-light btn-sm dropdown-toggle">
+        Sort <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
+      </button>
+        <ul class="dropdown-menu"><a class="dropdown-item active" href="<%= podcasts_path(sort: "Recent") %>">Recent Activity</a></li>
+          <li><%= link_to "# of Episodes", podcasts_path(sort: "episode_count"), class: "dropdown-item" %></li>
+          <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
+          <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
+        </ul>
+      </a>
+    </div>
+  </div>
 </div>
 
 <div id="podcasts">
@@ -29,9 +31,14 @@
     <% end %>
     </div>
 </section>
-  <%= paginate @podcasts, window: 2, outer_window: 1 %>
+
+<%= paginate @podcasts, window: 2, outer_window: 1 %>
+<div class="text-end">
+</div>
   <%= page_entries_info @podcasts %>
   </div>
-</div>
 
-<%= link_to "New podcast", new_podcast_path %>
+  <div class="">
+  <%= link_to "New podcast", new_podcast_path %>
+</div>
+</div>
