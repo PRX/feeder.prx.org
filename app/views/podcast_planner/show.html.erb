@@ -1,6 +1,6 @@
 <%= render "podcasts/tabs" %>
 
-<%= form_with(url: podcast_planner_path(@podcast), html: {method: :put}) do |form| %>
+<%= form_with(url: podcast_planner_path(@podcast), html: {method: :get}) do |form| %>
   <div class="row mt-4">
     <%= render "form_main", form: form %>
     <%= render "form_side", form: form %>

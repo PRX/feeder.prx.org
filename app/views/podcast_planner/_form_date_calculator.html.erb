@@ -11,8 +11,8 @@
     <p>Which day of the week do you plan to publish your episodes? Select all that apply.</p>
     <div class="col-lg-12">
       <div class="form-floating">
-        <%= form.select :day, day_options, {}, multiple: true %>
-        <%= form.label :day %>
+        <%= form.select :days, day_options, {}, multiple: true %>
+        <%= form.label :days %>
       </div>
     </div>
   </div>
@@ -23,8 +23,8 @@
       <p>Which weeks of each month do you plan to publish? Select all that apply.</p>
       <div class="col-lg-12" data-toggle-field-target="field" field="periodic">
         <div class="form-floating">
-          <%= form.select :periodic_weeks, periodic_weeks_options %>
-          <%= form.label :periodic_weeks %>
+          <%= form.select :period, periodic_weeks_options %>
+          <%= form.label :period %>
         </div>
       </div>
       <div class="col-lg-12 d-none" data-toggle-field-target="field" field="monthly">
@@ -74,8 +74,8 @@
       <p>Calculate the end of the batch by:</p>
       <div class="col-lg-4">
         <div class="form-floating">
-          <%= form.toggle_field_select :end_condition, end_condition_options, params, class: "form-select form-select-sm" %>
-          <%= form.label :end_condition %>
+          <%= form.toggle_field_select :date_range_condition, end_condition_options, params, class: "form-select form-select-sm" %>
+          <%= form.label :date_range_condition %>
         </div>
       </div>
     </div>
