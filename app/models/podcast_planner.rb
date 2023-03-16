@@ -1,5 +1,5 @@
 class PodcastPlanner
-  attr_accessor :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date
+  attr_accessor :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count
 
   def initialize(params = {})
     @dates = []
@@ -11,6 +11,8 @@ class PodcastPlanner
     @week_condition = params[:week_condition]
     @number_of_episodes = params[:number_of_episodes].try(:to_i)
     @end_date = params[:end_date].try(:to_date)
+    @publish_time = params[:publish_time].try(:to_time)
+    @segment_count = params[:segment_count].try(:to_i)
   end
 
   def date_range_ends_by_episodes?
@@ -25,8 +27,8 @@ class PodcastPlanner
     @dates.length < @number_of_episodes
   end
 
-  def end_date_reached?(date)
-    date >= @end_date
+  def end_date_passed?(date)
+    date > @end_date
   end
 
   def periodic?
@@ -37,16 +39,47 @@ class PodcastPlanner
     @week_condition == "monthly"
   end
 
-  def generate_dates!
-    @dates = []
-    if date_range_ends_by_episodes?
-      calculate_dates_by_remaining_episodes
-    elsif date_range_ends_by_end_date?
-      calculate_dates_by_end_date
+  def ready_to_select_weeks?
+    if periodic?
+      @period.present?
+    elsif monthly?
+      @monthly_weeks.present?
+    else
+      false
     end
   end
 
-  def calculate_days_of_week(current_day)
+  def ready_to_select_date_range?
+    if date_range_ends_by_episodes?
+      @number_of_episodes.present?
+    elsif date_range_ends_by_end_date?
+      @end_date.present? && @end_date > @start_date
+    else
+      false
+    end
+  end
+
+  def ready_to_generate_dates?
+    @selected_days.present? &&
+    ready_to_select_weeks? &&
+    ready_to_select_date_range?
+  end
+
+  def generate_dates!
+    return unless ready_to_generate_dates?
+
+    if date_range_ends_by_episodes?
+      generate_dates_by_remaining_episodes
+    elsif date_range_ends_by_end_date?
+      generate_dates_by_end_date
+    end
+  end
+
+  def clear_dates!
+    @dates = []
+  end
+
+  def select_days_of_week_to_add(current_day)
     dates_to_add = []
     7.times do |day|
       dates_to_add.push(current_day) if @selected_days.include?(current_day.wday)
@@ -55,11 +88,11 @@ class PodcastPlanner
     dates_to_add
   end
 
-  def calculate_dates_by_remaining_episodes
+  def generate_dates_by_remaining_episodes
     current_day = @start_date
 
     while episodes_remain?
-      next_days = calculate_days_of_week(current_day)
+      next_days = select_days_of_week_to_add(current_day)
       if periodic?
         @dates.concat(next_days)
         current_day += @period.weeks
@@ -70,14 +103,14 @@ class PodcastPlanner
       end
     end
 
-    @dates = @dates.slice!(0, @number_of_episodes)
+    @dates = @dates.slice(0, @number_of_episodes)
   end
 
-  def calculate_dates_by_end_date
+  def generate_dates_by_end_date
     current_day = @start_date
 
-    until end_date_reached?(current_day)
-      next_days = calculate_days_of_week(current_day)
+    until end_date_passed?(current_day)
+      next_days = select_days_of_week_to_add(current_day)
       if periodic?
         @dates.concat(next_days)
         current_day += @period.weeks
@@ -88,7 +121,7 @@ class PodcastPlanner
       end
     end
 
-    @dates = @dates.select { |date| date <= @end_date }
+    @dates.select! { |date| date <= @end_date }
   end
 
   def week_of_the_month(date)

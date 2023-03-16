@@ -5,7 +5,12 @@
       Save yourself some time by automatically creating multiple episode drafts to create a production schedule, it may also help your revenue as our sales teams will have access to dropdates to sell against. If you only wish to add a single episode, <a>go here</a>.
     </p>
   </header>
+  <%= form_with(url: podcast_planner_path(@podcast), html: {method: :get}) do |form| %>
+    <%= render "form_date_calculator", form: form %>
+    <%= render "form_options", form: form %>
 
-  <%= render "form_date_calculator", form: form %>
-  <%= render "form_options", form: form %>
+    <div class="mb-4">
+      <%= form.submit "generate schedule", class: "btn btn-primary" %>
+    </div>
+  <% end %>
 </div>

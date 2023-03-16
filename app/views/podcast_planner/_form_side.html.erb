@@ -1,11 +1,23 @@
 <div class="col-lg-4">
-  <div class="card">
-    <div class="card-header-primary">
-      <h5 class="card-title">THIS IS THE SIDE PANEL</h5>
-    </div>
-    <div class="card-footer">
-      <p class="status-text"><strong>hint</strong></p>
-      <%= form.submit "create", class: "btn btn-primary" %>
-    </div>
-  </div>
+  <% if @planner.dates.present? %>
+    <%= form_with(url: podcast_planner_path(@podcast), html: {method: :put}) do |form| %>
+      <div class="card">
+        <div class="card-header-primary">
+          <h5 class="card-title">Schedule Preview</h5>
+        </div>
+        <div class="card-body">
+          <p><%= "Publish Time: #{l(@planner.publish_time, format: :time_12_hour)}" %></p>
+          <p><%= "Number of Segments: #{@planner.segment_count}" %></p>
+          <ul class="list-group">
+            <% @planner.dates.each_with_index do |date, i| %>
+              <li class="list-group-item"><%= "# #{i + 1} - #{date}" %></li>
+            <% end %>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <%= form.submit "create drafts", class: "btn btn-primary" %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
 </div>
