@@ -1,23 +1,26 @@
 <div class="col-lg-4">
-  <% if @planner.dates.present? %>
-    <%= form_with(url: podcast_planner_path(@podcast), html: {method: :put}) do |form| %>
-      <div class="card">
-        <div class="card-header-primary">
-          <h5 class="card-title">Schedule Preview</h5>
+  <%= turbo_frame_tag "preview" do %>
+    <% if @planner.dates.present? %>
+      <%= form_with(url: podcast_planner_path(@podcast), html: {method: :put}) do |form| %>
+        <div class="card">
+          <div class="card-header-primary">
+            <h5 class="card-title">Schedule Preview</h5>
+          </div>
+          <div class="card-body">
+            <p><%= "Publish Time: #{l(@planner.publish_time, format: :time_12_hour)}" %></p>
+            <p><%= "Number of Segments: #{@planner.segment_count}" %></p>
+            <p><%= "Number of Drafts: #{@planner.dates.count}" %></p>
+            <ul class="list-group list-group-numbered">
+              <% @planner.dates.each do |date| %>
+                <li class="list-group-item"><%= l(date, format: :day_and_date) %></li>
+              <% end %>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <%= form.submit "create drafts", class: "btn btn-primary" %>
+          </div>
         </div>
-        <div class="card-body">
-          <p><%= "Publish Time: #{l(@planner.publish_time, format: :time_12_hour)}" %></p>
-          <p><%= "Number of Segments: #{@planner.segment_count}" %></p>
-          <ul class="list-group">
-            <% @planner.dates.each_with_index do |date, i| %>
-              <li class="list-group-item"><%= "# #{i + 1} - #{date}" %></li>
-            <% end %>
-          </ul>
-        </div>
-        <div class="card-footer">
-          <%= form.submit "create drafts", class: "btn btn-primary" %>
-        </div>
-      </div>
+      <% end %>
     <% end %>
   <% end %>
 </div>

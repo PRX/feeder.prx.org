@@ -11,7 +11,7 @@
     <p>Which day of the week do you plan to publish your episodes? Select all that apply.</p>
     <div class="col-lg-12">
       <div class="form-floating">
-        <%= form.select :days, day_options, {}, multiple: true %>
+        <%= form.select :days, day_options, {}, data: {action: "podcast-planner#preview"}, multiple: true %>
         <%= form.label :days %>
       </div>
     </div>
@@ -23,13 +23,13 @@
       <p>Which weeks of each month do you plan to publish? Select all that apply.</p>
       <div class="col-lg-12" data-toggle-field-target="field" field="periodic">
         <div class="form-floating">
-          <%= form.select :period, periodic_weeks_options %>
+          <%= form.select :period, periodic_weeks_options, {}, data: {action: "podcast-planner#preview"} %>
           <%= form.label :period %>
         </div>
       </div>
       <div class="col-lg-12 d-none" data-toggle-field-target="field" field="monthly">
         <div class="form-floating">
-          <%= form.select :monthly_weeks, monthly_weeks_options, {}, multiple: true %>
+          <%= form.select :monthly_weeks, monthly_weeks_options, {}, data: {action: "podcast-planner#preview"}, multiple: true %>
           <%= form.label :monthly_weeks %>
         </div>
       </div>
@@ -39,7 +39,7 @@
       <p>Calculate the weeks by:</p>
       <div class="col-lg-4">
         <div class="form-floating">
-          <%= form.toggle_field_select :week_condition, week_condition_options, params, class: "form-select form-select-sm" %>
+          <%= form.toggle_field_select :week_condition, week_condition_options, params, class: "form-select form-select-sm", data: {action: "podcast-planner#preview"} %>
           <%= form.label :week_condition %>
         </div>
       </div>
@@ -52,19 +52,19 @@
       <p>How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.</p>
       <div class="col-lg-6">
         <div class="form-floating">
-          <%= form.date_field :start_date, value: l(DateTime.tomorrow) %>
+          <%= form.date_field :start_date, value: l(DateTime.tomorrow), data: {action: "podcast-planner#preview"} %>
           <%= form.label :start_date %>
         </div>
       </div>
       <div class="col-lg-6" data-toggle-field-target="field" field="episodes">
         <div class="form-floating">
-          <%= form.number_field :number_of_episodes, {min: 1, max: 100, step: 1, value: 10} %>
+          <%= form.number_field :number_of_episodes, {min: 1, max: 100, step: 1, value: 10, data: {action: "podcast-planner#preview"}} %>
           <%= form.label :number_of_episodes %>
         </div>
       </div>
       <div class="col-lg-6 d-none" data-toggle-field-target="field" field="date">
         <div class="form-floating">
-          <%= form.date_field :end_date %>
+          <%= form.date_field :end_date, data: {action: "podcast-planner#preview"} %>
           <%= form.label :end_date %>
         </div>
       </div>
@@ -74,7 +74,7 @@
       <p>Calculate the end of the batch by:</p>
       <div class="col-lg-4">
         <div class="form-floating">
-          <%= form.toggle_field_select :date_range_condition, end_condition_options, params, class: "form-select form-select-sm" %>
+          <%= form.toggle_field_select :date_range_condition, end_condition_options, params, class: "form-select form-select-sm", data: {action: "podcast-planner#preview"} %>
           <%= form.label :date_range_condition %>
         </div>
       </div>

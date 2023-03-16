@@ -61,8 +61,8 @@ class PodcastPlanner
 
   def ready_to_generate_dates?
     @selected_days.present? &&
-    ready_to_select_weeks? &&
-    ready_to_select_date_range?
+      ready_to_select_weeks? &&
+      ready_to_select_date_range?
   end
 
   def generate_dates!

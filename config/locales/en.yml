@@ -4,6 +4,7 @@ en:
     formats:
       default: "%F"
       short: "%-m/%-e"
+      day_and_date: "%A, %m/%d"
   time:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
