@@ -15,7 +15,7 @@ class PodcastsController < ApplicationController
   end
 
   def add_sorting(query)
-    if params[:sort] == "# of Episodes"
+    if params[:sort] == "episode_count"
       query.left_joins(:episodes).group(:id).order("COUNT(episodes.id) DESC")
     else
       query.order(DISPLAY_ORDER[params[:sort].to_s])
