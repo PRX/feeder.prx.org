@@ -52,7 +52,7 @@
       <p>How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.</p>
       <div class="col-lg-6">
         <div class="form-floating">
-          <%= form.date_field :start_date, value: l(DateTime.tomorrow), data: {action: "podcast-planner#preview"} %>
+          <%= form.date_field :start_date, min: DateTime.tomorrow, max: DateTime.tomorrow + 6.months, value: DateTime.tomorrow, data: {action: "podcast-planner#preview"} %>
           <%= form.label :start_date %>
         </div>
       </div>
@@ -64,7 +64,7 @@
       </div>
       <div class="col-lg-6 d-none" data-toggle-field-target="field" field="date">
         <div class="form-floating">
-          <%= form.date_field :end_date, data: {action: "podcast-planner#preview"} %>
+          <%= form.date_field :end_date, min: DateTime.tomorrow + 1.day, max: DateTime.tomorrow + 6.months, data: {action: "podcast-planner#preview"} %>
           <%= form.label :end_date %>
         </div>
       </div>
