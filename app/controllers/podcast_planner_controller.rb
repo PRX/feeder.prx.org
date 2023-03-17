@@ -5,6 +5,7 @@ class PodcastPlannerController < ApplicationController
   def show
     @planner = PodcastPlanner.new(planner_params)
     @planner.generate_dates!
+    @planner.generate_drafts!
   end
 
   # PATCH/PUT /podcasts/1/planner

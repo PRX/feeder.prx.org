@@ -1,16 +1,18 @@
 class PodcastPlanner
-  attr_accessor :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count
+  attr_accessor :podcast_id, :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :drafts
 
   def initialize(params = {})
     @dates = []
-    @start_date = params[:start_date].try(:to_date)
+    @drafts = []
+    @podcast_id = params[:podcast_id]
+    @start_date = params[:start_date].try(:to_datetime)
     @selected_days = params[:days].try { reject!(&:blank?) }.try { map { |day| day.to_i } }
     @period = params[:period].try(:to_i)
     @monthly_weeks = params[:monthly_weeks].try { reject!(&:blank?) }.try { map { |week| week.to_i } }
     @date_range_condition = params[:date_range_condition]
     @week_condition = params[:week_condition]
     @number_of_episodes = params[:number_of_episodes].try(:to_i)
-    @end_date = params[:end_date].try(:to_date)
+    @end_date = params[:end_date].try(:to_datetime)
     @publish_time = params[:publish_time].try(:to_time)
     @segment_count = params[:segment_count].try(:to_i)
   end
@@ -126,5 +128,26 @@ class PodcastPlanner
 
   def week_of_the_month(date)
     (date.day.to_f / 7).ceil
+  end
+
+  def ready_to_generate_drafts?
+    @dates.present? &&
+      @publish_time.present? &&
+      @segment_count.present?
+  end
+
+  def generate_drafts!
+    return unless ready_to_generate_dates?
+    return unless ready_to_generate_drafts?
+    @drafts = []
+
+    @dates.each do |date|
+      @drafts.push({
+        podcast_id: @podcast_id,
+        released_at: date.change(hour: @publish_time.hour, min: @publish_time.min),
+        title: I18n.l(date, format: :day_and_date).to_s,
+        segment_count: @segment_count
+      })
+    end
   end
 end

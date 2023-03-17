@@ -1,24 +1,19 @@
-<div class="col-lg-8">
-  <header>
+<%= form_with(
+      url: podcast_planner_path(@podcast),
+      method: :get,
+      data: {
+        controller: "podcast-planner",
+        "turbo-frame": "preview",
+        "turbo-action": "replace"
+      }
+    ) do |form| %>
     <h1 class="text-black fw-bold d-flex flex-fill">Plan Episodes</h1>
     <p>
       Save yourself some time by automatically creating multiple episode drafts to create a production schedule, it may also help your revenue as our sales teams will have access to dropdates to sell against. If you only wish to add a single episode, <a>go here</a>.
     </p>
-  </header>
-  <%= form_with(
-        url: podcast_planner_path(@podcast),
-        method: :get,
-        data: {
-          controller: "podcast-planner",
-          "turbo-frame": "preview",
-          "turbo-action": "replace"
-        }
-      ) do |form| %>
-      <%= render "form_date_calculator", form: form %>
-      <%= render "form_options", form: form %>
 
-      <div class="mb-4">
-        <%= form.submit class: "d-none", data: {podcast_planner_target: "submit"} %>
-      </div>
-  <% end %>
-</div>
+    <%= render "form_date_calculator", form: form %>
+    <%= render "form_options", form: form %>
+
+    <%= form.submit class: "d-none", data: {podcast_planner_target: "submit"} %>
+<% end %>
