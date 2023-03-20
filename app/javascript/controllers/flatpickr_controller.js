@@ -19,8 +19,8 @@ export default class extends Controller {
       parseDate: (str) => this.parseDate(str),
       formatDate: (date) => this.formatDate(date),
       onValueUpdate: () => this.validate(),
-      minDate: this.element["min"],
-      maxDate: this.element["max"],
+      minDate: this.element.min,
+      maxDate: this.element.max,
     })
   }
 
