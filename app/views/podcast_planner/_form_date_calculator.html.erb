@@ -11,8 +11,8 @@
     <p>Which day of the week do you plan to publish your episodes? Select all that apply.</p>
     <div class="col-lg-12">
       <div class="form-floating">
-        <%= form.select :days, day_options, {}, data: {action: "podcast-planner#preview"}, multiple: true %>
-        <%= form.label :days %>
+        <%= form.select :selected_days, day_options, {}, data: {action: "podcast-planner#preview"}, multiple: true %>
+        <%= form.label :selected_days %>
       </div>
     </div>
   </div>

@@ -6,9 +6,9 @@ class PodcastPlanner
     @drafts = []
     @podcast_id = params[:podcast_id]
     @start_date = params[:start_date].try(:to_datetime)
-    @selected_days = params[:days].try { reject!(&:blank?) }.try { map { |day| day.to_i } }
+    @selected_days = params[:selected_days].try { reject(&:blank?) }.try { map { |day| day.to_i } }
     @period = params[:period].try(:to_i)
-    @monthly_weeks = params[:monthly_weeks].try { reject!(&:blank?) }.try { map { |week| week.to_i } }
+    @monthly_weeks = params[:monthly_weeks].try { reject(&:blank?) }.try { map { |week| week.to_i } }
     @date_range_condition = params[:date_range_condition]
     @week_condition = params[:week_condition]
     @number_of_episodes = params[:number_of_episodes].try(:to_i)
@@ -139,7 +139,6 @@ class PodcastPlanner
   def generate_drafts!
     return unless ready_to_generate_dates?
     return unless ready_to_generate_drafts?
-    @drafts = []
 
     @dates.each do |date|
       @drafts.push({

@@ -2,8 +2,8 @@
   <div class="card-header-primary">
     <h5 class="card-title">Schedule Preview</h5>
   </div>
-  <%= turbo_frame_tag "preview" do %>
-    <% if @planner.drafts.present? %>
+  <%= turbo_frame_tag "preview", target: "_top" do %>
+    <% if @planner.dates.present? %>
       <%= form_with(
             url: podcast_planner_path(@podcast),
             method: :put
@@ -11,14 +11,28 @@
           <div class="card-body">
             <p><%= "Publish Time: #{l(@planner.publish_time, format: :time_12_hour)}" %></p>
             <p><%= "Number of Segments: #{@planner.segment_count}" %></p>
-            <p><%= "Number of Drafts: #{@planner.drafts.count}" %></p>
+            <p><%= "Number of Drafts: #{@planner.dates.count}" %></p>
             <ul class="list-group list-group-numbered">
-              <% @planner.drafts.each do |draft| %>
-                <li class="list-group-item"><%= draft[:title] %></li>
+              <% @planner.dates.each do |date| %>
+                <li class="list-group-item"><%= l(date, format: :day_and_date) %></li>
               <% end %>
             </ul>
           </div>
           <div class="card-footer">
+            <%= form.hidden_field :week_condition, value: @planner.week_condition %>
+            <%= form.hidden_field :period, value: @planner.period %>
+            <%= form.hidden_field :start_date, value: @planner.start_date %>
+            <%= form.hidden_field :date_range_condition, value: @planner.date_range_condition %>
+            <%= form.hidden_field :number_of_episodes, value: @planner.number_of_episodes %>
+            <%= form.hidden_field :end_date, value: @planner.end_date %>
+            <%= form.hidden_field :publish_time, value: @planner.publish_time %>
+            <%= form.hidden_field :segment_count, value: @planner.segment_count %>
+            <% @planner.selected_days.each do |day| %>
+              <%= form.hidden_field :selected_days, multiple: true, value: day %>
+            <% end %>
+            <% @planner.monthly_weeks.each do |week| %>
+              <%= form.hidden_field :monthly_weeks, multiple: true, value: week %>
+            <% end %>
             <%= form.submit "create drafts", class: "btn btn-primary" %>
           </div>
       <% end %>
