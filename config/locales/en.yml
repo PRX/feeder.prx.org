@@ -69,6 +69,12 @@ en:
         summary: iTunes Summary
         title: Title
   # specific pages/views
+  podcast_page:
+    my_podcasts: My Podcasts
+    published_episodes: Published Episodes
+    scheduled_episodes: Scheduled Episodes
+    drafted_episodes: Drafted Episodes
+    last_saved: Last Saved
   episodes:
     create:
       error: Unable to create
