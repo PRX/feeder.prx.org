@@ -10,8 +10,14 @@ class PodcastsController < ApplicationController
 
   # GET /podcasts
   def index
-    base_query = policy_scope(Podcast).page(params[:page]).per(DEFAULT_PAGE_SIZE)
+    base_query = policy_scope(Podcast).page(params[:page]).per(DEFAULT_PAGE_SIZE).includes(default_feed: :feed_image)
     @podcasts = add_sorting(base_query)
+
+    @published_episodes_counts = Episode.where(podcasts: @podcasts).published.group(:podcast_id).count
+    @scheduled_episodes_counts = Episode.where(podcasts: @podcasts).scheduled.group(:podcast_id).count
+    @drafted_episodes_counts = Episode.where(podcasts: @podcasts).draft.group(:podcast_id).count
+
+    @DISPLAY_ORDER = DISPLAY_ORDER
   end
 
   def add_sorting(query)

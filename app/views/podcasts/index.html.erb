@@ -10,12 +10,12 @@
       <button class="btn btn-outline-light btn-sm dropdown-toggle">
         Sort <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
       </button>
-        <ul class="dropdown-menu"><a class="dropdown-item active" href="<%= podcasts_path(sort: "Recent") %>">Recent Activity</a></li>
-          <li><%= link_to "# of Episodes", podcasts_path(sort: "episode_count"), class: "dropdown-item" %></li>
-          <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
-          <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
-        </ul>
-      </a>
+      <ul class="dropdown-menu">
+        <li><%= link_to "Recent Activity", podcasts_path(sort: "Recent"), class: "dropdown-item active" %></li>
+        <li><%= link_to "# of Episodes", podcasts_path(sort: "episode_count"), class: "dropdown-item" %></li>
+        <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
+        <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
+      </ul>
     </div>
   </div>
 </div>

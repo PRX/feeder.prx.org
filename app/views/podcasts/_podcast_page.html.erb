@@ -8,18 +8,15 @@
     <div class="card-body flex-grow-1 ">
       <h2 class="card-title"><%= podcast.title %></h2>
       <p class="card-text m-0 lh-xs fs-sm">
-        <%= podcast.episodes.published.count %>
-          <%= t('.published_episodes')%> |
-        <%= podcast.episodes.scheduled.count %>
-        <%= t('.scheduled_episodes')%> |
-        <%= podcast.episodes.draft.count %>
-        <%= t('.drafted_episodes')%>
+        <%= t('.published_episodes', count: @published_episodes_counts[podcast.id].to_i)%> |
+        <%= t('.scheduled_episodes', count: @scheduled_episodes_counts[podcast.id].to_i)%> |
+        <%= t('.drafted_episodes', count: @drafted_episodes_counts[podcast.id].to_i)%>
       </p>
       <%= link_to "Go to Podcast", podcast_path(podcast), class: "card-link" %>
     </div>
     <div class="card-footer d-grid g-1 lh-sm fs-sm text-end">
       <strong><%= t('.last_saved')%></strong>
-      <datetime><%= podcast.updated_at.strftime("%-m/%-d/%Y, %-l:%M %p") %></datetime>
+      <datetime><%= l(podcast.updated_at) %></datetime>
     </div>
   </div>
 </div>

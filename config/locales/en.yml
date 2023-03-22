@@ -69,12 +69,6 @@ en:
         summary: iTunes Summary
         title: Title
   # specific pages/views
-  podcast_page:
-    my_podcasts: My Podcasts
-    published_episodes: Published Episodes
-    scheduled_episodes: Scheduled Episodes
-    drafted_episodes: Drafted Episodes
-    last_saved: Last Saved
   episodes:
     create:
       error: Unable to create
@@ -179,6 +173,18 @@ en:
       no_image: No image here
       create_episode: Create Episode
       plan_episodes: Plan Episodes
+    podcast_page:
+      my_podcasts: My Podcasts
+      published_episodes:
+        other: "%{count} Published Episodes"
+        one: 1 Published Episode
+      scheduled_episodes:
+        other: "%{count} Scheduled Episodes"
+        one: "1 Scheduled Episode"
+      drafted_episodes:
+        other: "%{count} Drafted Episodes"
+        one: 1 Drafted Episode
+      last_saved: Last Saved
     update:
       error: Unable to save
       notice: Podcast updated
