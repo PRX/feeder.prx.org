@@ -1,14 +1,12 @@
 <section>
   <div class="mb-4">
-    <h2 class="fw-bold">Date Calculation of Draft Batch</h2>
-    <p>
-      Calculate release dates for your drafts by selecting which days and weeks you plan to publish, and then select a date range.
-    </p>
+    <h2 class="fw-bold"><%= t('.header.date_calculation') %></h2>
+    <p><%= t('.help.date_calculation') %></p>
   </div>
 
   <div class="mb-4">
-    <h3 class="fw-bold">Day selection</h3>
-    <p>Which day of the week do you plan to publish your episodes? Select all that apply.</p>
+    <h3 class="fw-bold"><%= t('.header.day_select') %></h3>
+    <p><%= t('.help.day_select') %></p>
     <div class="col-lg-12">
       <div class="form-floating">
         <%= form.select :selected_days, day_options, {}, data: {action: "podcast-planner#preview"}, multiple: true %>
@@ -18,9 +16,9 @@
   </div>
 
   <div class="mb-4" data-controller="toggle-field">
-    <h3 class="fw-bold">Week selection</h3>
+    <h3 class="fw-bold"><%= t('.header.week_select') %></h3>
     <div class="mb-4">
-      <p>Which weeks of each month do you plan to publish? Select all that apply.</p>
+      <p><%= t('.help.week_select') %></p>
       <div class="col-lg-12" data-toggle-field-target="field" field="periodic">
         <div class="form-floating">
           <%= form.select :period, periodic_weeks_options, {}, data: {action: "podcast-planner#preview"} %>
@@ -36,7 +34,7 @@
     </div>
 
     <div class="mb-4">
-      <p>Calculate the weeks by:</p>
+      <p><%= t('.help.calculate_weeks') %></p>
       <div class="col-lg-4">
         <div class="form-floating">
           <%= form.toggle_field_select :week_condition, week_condition_options, params, class: "form-select form-select-sm", data: {action: "podcast-planner#preview"} %>
@@ -47,9 +45,9 @@
   </div>
 
   <div class="mb-4" data-controller="toggle-field">
-    <h3 class="fw-bold">Date Range selection</h3>
+    <h3 class="fw-bold"><%= t('.header.range_select') %></h3>
     <div class="row mb-4 g-3">
-      <p>How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.</p>
+      <p><%= t('.help.range_select') %></p>
       <div class="col-lg-6">
         <div class="form-floating">
           <%= form.date_field :start_date, min: DateTime.tomorrow, max: DateTime.tomorrow + 6.months, value: DateTime.tomorrow, data: {action: "podcast-planner#preview"} %>
@@ -71,7 +69,7 @@
     </div>
 
     <div class="mb-4">
-      <p>Calculate the end of the batch by:</p>
+      <p><%= t('.help.calculate_range') %></p>
       <div class="col-lg-4">
         <div class="form-floating">
           <%= form.toggle_field_select :date_range_condition, end_condition_options, params, class: "form-select form-select-sm", data: {action: "podcast-planner#preview"} %>

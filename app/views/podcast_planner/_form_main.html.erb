@@ -7,10 +7,8 @@
         "turbo-action": "replace"
       }
     ) do |form| %>
-    <h1 class="text-black fw-bold d-flex flex-fill">Plan Episodes</h1>
-    <p>
-      Save yourself some time by automatically creating multiple episode drafts to create a production schedule, it may also help your revenue as our sales teams will have access to dropdates to sell against. If you only wish to add a single episode, <a>go here</a>.
-    </p>
+    <h1 class="text-black fw-bold d-flex flex-fill"><%= t('.header')%></h1>
+    <p><%= t('.help_html', url: new_episode_path) %></p>
 
     <%= render "form_date_calculator", form: form %>
     <%= render "form_options", form: form %>

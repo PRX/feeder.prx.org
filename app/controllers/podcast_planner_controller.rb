@@ -15,7 +15,7 @@ class PodcastPlannerController < ApplicationController
 
     respond_to do |format|
       if Episode.insert_all(@planner.drafts)
-        format.html { redirect_to podcast_episodes_path(@podcast), notice: "Episode Drafts generated." }
+        format.html { redirect_to podcast_episodes_path(@podcast), notice: t('.success') }
       else
         format.html { render :show, status: :unprocessable_entity }
       end

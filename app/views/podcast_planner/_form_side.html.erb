@@ -1,6 +1,6 @@
 <div class="card">
   <div class="card-header-primary">
-    <h5 class="card-title">Schedule Preview</h5>
+    <h5 class="card-title"><%= t('.header.preview') %></h5>
   </div>
   <%= turbo_frame_tag "preview", target: "_top" do %>
     <% if @planner.dates.present? %>
@@ -38,7 +38,7 @@
       <% end %>
     <% else %>
       <div class="card-body">
-        <p>Select more options to get a schedule preview.</p>
+        <p><%= t('.help.preview') %></p>
       </div>
     <% end %>
   <% end %>
