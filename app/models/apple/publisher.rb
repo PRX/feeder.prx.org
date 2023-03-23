@@ -29,24 +29,17 @@ module Apple
     end
 
     def episodes_to_sync
-      @episodes_to_sync ||= private_feed
-        .feed_episodes.map do |ep|
-        Apple::Episode.new(show: show, feeder_episode: ep, api: api)
-      end
-    end
-
-    def episode_ids
-      @episode_ids ||= episodes_to_sync.map(&:id).sort
-    end
-
-    def find_episode(id)
-      @find_episode ||=
-        episodes_to_sync.map { |e| [e.id, e] }.to_h
-
-      @find_episode.fetch(id)
+      @episodes_to_sync ||= show.episodes
     end
 
     def poll!
+      if show.apple_id.nil?
+        Rails.logger.warn "No connected Apple Podcasts show. Skipping polling!", {public_feed_id: public_feed.id,
+                                                                                  private_feed_id: private_feed.id,
+                                                                                  podcast_id: podcast.id}
+        return
+      end
+
       poll_episodes!
       poll_podcast_containers!
       poll_podcast_deliveries!
@@ -67,6 +60,7 @@ module Apple
       execute_upload_operations!
 
       wait_for_upload_processing
+      wait_for_asset_state
 
       publish_drafting!
 
@@ -98,10 +92,15 @@ module Apple
       Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
     end
 
+    def wait_for_asset_state
+      eps = episodes_to_sync.filter { |e| e.podcast_delivery_files.any?(&:uploaded?) }
+      Apple::Episode.wait_for_asset_state(api, eps)
+    end
+
     def poll_episodes!
       local_episodes = episodes_to_sync
 
-      local_guids = local_episodes.map(&:item_guid)
+      local_guids = local_episodes.map(&:guid)
       remote_guids = show.apple_episode_guids
 
       Rails.logger.info("Polling remote / local episode state", {local_count: local_guids.length,
