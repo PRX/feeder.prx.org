@@ -16,8 +16,6 @@ class PodcastsController < ApplicationController
     @published_episodes_counts = Episode.where(podcasts: @podcasts).published.group(:podcast_id).count
     @scheduled_episodes_counts = Episode.where(podcasts: @podcasts).scheduled.group(:podcast_id).count
     @drafted_episodes_counts = Episode.where(podcasts: @podcasts).draft.group(:podcast_id).count
-
-    @DISPLAY_ORDER = DISPLAY_ORDER
   end
 
   def add_sorting(query)

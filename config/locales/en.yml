@@ -173,18 +173,6 @@ en:
       no_image: No image here
       create_episode: Create Episode
       plan_episodes: Plan Episodes
-    podcast_page:
-      my_podcasts: My Podcasts
-      published_episodes:
-        other: "%{count} Published Episodes"
-        one: 1 Published Episode
-      scheduled_episodes:
-        other: "%{count} Scheduled Episodes"
-        one: "1 Scheduled Episode"
-      drafted_episodes:
-        other: "%{count} Drafted Episodes"
-        one: 1 Drafted Episode
-      last_saved: Last Saved
     update:
       error: Unable to save
       notice: Podcast updated
@@ -199,6 +187,18 @@ en:
       manage_settings: Manage Settings
       engagement_settings: Engagement Settings
       import: Import
+    podcast_page:
+      my_podcasts: My Podcasts
+      drafted_episodes:
+        one: 1 Drafted Episode
+        other: "%{count} Drafted Episodes"
+      last_saved: Last Saved
+      published_episodes:
+        one: 1 Published Episode
+        other: "%{count} Published Episodes"
+      scheduled_episodes:
+        one: "1 Scheduled Episode"
+        other: "%{count} Scheduled Episodes"
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
