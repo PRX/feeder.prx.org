@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_03_230552) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_23_211452) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -39,6 +39,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_03_230552) do
     t.string "source_url"
     t.string "source_filename"
     t.bigint "source_size"
+    t.text "enclosure_url"
     t.index ["episode_id"], name: "index_apple_podcast_containers_on_episode_id", unique: true
     t.index ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true
   end
