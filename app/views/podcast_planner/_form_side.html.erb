@@ -1,6 +1,6 @@
 <div class="card">
   <div class="card-header-primary">
-    <h5 class="card-title"><%= t('.header.preview') %></h5>
+    <h5 class="card-title"><%= t(".header.preview") %></h5>
   </div>
   <%= turbo_frame_tag "preview", target: "_top" do %>
     <% if @planner.dates.present? %>
@@ -9,14 +9,30 @@
             method: :put
           ) do |form| %>
           <div class="card-body">
-            <p><%= "Publish Time: #{l(@planner.publish_time, format: :time_12_hour)}" %></p>
-            <p><%= "Number of Segments: #{@planner.segment_count}" %></p>
-            <p><%= "Number of Drafts: #{@planner.dates.count}" %></p>
-            <ul class="list-group list-group-numbered">
-              <% @planner.dates.each do |date| %>
-                <li class="list-group-item"><%= l(date, format: :day_and_date) %></li>
-              <% end %>
-            </ul>
+            <div class="col mb-2">
+              <h3 class="fw-bold"><%= t(".header.publish_time") %></h3>
+              <div class="form-floating">
+                <%= form.select :publish_time, time_options %>
+                <%= form.label :publish_time %>
+              </div>
+            </div>
+
+            <div class="col mb-2">
+              <h3 class="fw-bold"><%= t(".header.audio_segments") %></h3>
+              <div class="form-floating">
+                <%= form.number_field :segment_count, {min: 1, max: 10, step: 1, value: 2} %>
+                <%= form.label :segment_count %>
+              </div>
+            </div>
+
+            <div class="col">
+              <p><%= t(".header.number_of_drafts", count: @planner.dates.count) %></p>
+              <ul class="list-group list-group-numbered">
+                <% @planner.dates.each do |date| %>
+                  <li class="list-group-item"><%= l(date, format: :day_and_date) %></li>
+                <% end %>
+              </ul>
+            </div>
           </div>
           <div class="card-footer">
             <%= form.hidden_field :week_condition, value: @planner.week_condition %>
@@ -25,20 +41,19 @@
             <%= form.hidden_field :date_range_condition, value: @planner.date_range_condition %>
             <%= form.hidden_field :number_of_episodes, value: @planner.number_of_episodes %>
             <%= form.hidden_field :end_date, value: @planner.end_date %>
-            <%= form.hidden_field :publish_time, value: @planner.publish_time %>
-            <%= form.hidden_field :segment_count, value: @planner.segment_count %>
+
             <% @planner.selected_days.each do |day| %>
               <%= form.hidden_field :selected_days, multiple: true, value: day %>
             <% end %>
             <% @planner.monthly_weeks.each do |week| %>
               <%= form.hidden_field :monthly_weeks, multiple: true, value: week %>
             <% end %>
-            <%= form.submit "create drafts", class: "btn btn-primary" %>
+            <%= form.submit t(".label.submit"), class: "btn btn-primary" %>
           </div>
       <% end %>
     <% else %>
       <div class="card-body">
-        <p><%= t('.help.preview') %></p>
+        <p><%= t(".help.preview") %></p>
       </div>
     <% end %>
   <% end %>

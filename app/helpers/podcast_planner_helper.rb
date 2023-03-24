@@ -2,7 +2,7 @@
 
 module PodcastPlannerHelper
   PERIODIC_WEEKS = ["Every week", "Every two weeks", "Every three weeks", "Every four weeks"].freeze
-  MONTHLY_WEEKS = ["First week of the month", "Second week of the month", "Third week of the month", "Fourth week of the month", "Fifth week of the month"].freeze
+  MONTHLY_WEEKS = ["First", "Second", "Third", "Fourth", "Fifth"].freeze
 
   def day_options
     DateTime::DAYNAMES.map.with_index { |day, i| [day, i] }
@@ -21,7 +21,7 @@ module PodcastPlannerHelper
   end
 
   def week_condition_options
-    ["periodic", "monthly"]
+    ["monthly", "periodic"]
   end
 
   def time_options
