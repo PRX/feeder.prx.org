@@ -22,7 +22,7 @@
       <div class="col-lg-6">
         <p><%= t(".help.calculate_weeks") %></p>
         <div class="form-floating">
-          <%= form.toggle_field_select :week_condition, week_condition_options, params, data: {action: "podcast-planner#preview"} %>
+          <%= form.select :week_condition, week_condition_options, {}, data: {action: "toggle-field#displayOnlyThisField podcast-planner#preview"} %>
           <%= form.label :week_condition %>
         </div>
       </div>
@@ -53,7 +53,7 @@
         <p><%= t(".help.calculate_range") %></p>
         <div>
           <div class="form-floating">
-            <%= form.toggle_field_select :date_range_condition, end_condition_options, params, data: {action: "podcast-planner#preview"} %>
+            <%= form.select :date_range_condition, end_condition_options, {}, data: {action: "toggle-field#displayOnlyThisField podcast-planner#preview"} %>
             <%= form.label :date_range_condition %>
           </div>
         </div>

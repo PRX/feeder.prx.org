@@ -15,7 +15,6 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   FLATPICKR_CONTROLLER = "flatpickr"
   FLATPICKR_ACTION = "keydown->flatpickr#keydown keyup->flatpickr#keyup"
   SELECT_BY_GROUP = "slim-select-group-select-value"
-  TOGGLE_ACTION = "change->toggle-field#displayOnlyThisField"
 
   def text_field(method, options = {})
     options[:class] = INPUT_CLASS unless options.key?(:class)
@@ -114,11 +113,6 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     select(method, choices, {include_blank: true, selected: selected}, add_search_action(html_options))
   end
 
-  def toggle_field_select(method, choices, params, html_options = {})
-    selected = html_options[:selected] || params[method]
-    select(method, choices, {include_blank: false, selected: selected}, add_toggle_action(html_options))
-  end
-
   private
 
   def blank?(method, opts)
@@ -157,10 +151,6 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def add_search_action(opts)
     add_data(opts, :action, SEARCH_ACTION)
-  end
-
-  def add_toggle_action(opts)
-    add_data(opts, :action, TOGGLE_ACTION)
   end
 
   def add_slim_select_controller(opts)
