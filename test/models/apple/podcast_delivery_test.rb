@@ -10,7 +10,8 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     let(:apple_show) { Apple::Show.new(feed) }
     let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 
-    let(:podcast_delivery_json) { {val: {data: {id: "123"}}} }
+    let(:podcast_delivery_json) { {data: {id: "123"}} }
+    let(:podcast_delivery_json_api_response) { {api_response: {val: podcast_delivery_json}}.with_indifferent_access }
 
     let(:podcast_container) do
       pc = Apple::PodcastContainer.new
@@ -25,29 +26,25 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
       assert_equal SyncLog.count, 0
       assert_equal Apple::PodcastDelivery.count, 0
 
-      Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container,
-        api_response: podcast_delivery_json)
+      Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container, podcast_delivery_json_api_response)
 
       assert_equal SyncLog.count, 1
       assert_equal Apple::PodcastDelivery.count, 1
 
       # Now upsert existing record
-      Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container,
-        api_response: podcast_delivery_json)
+      Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container, podcast_delivery_json_api_response)
 
       assert_equal SyncLog.count, 2
       assert_equal Apple::PodcastDelivery.count, 1
     end
 
     it "should update timestamps" do
-      pd = Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container,
-        api_response: podcast_delivery_json)
+      pd = Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container, podcast_delivery_json_api_response)
 
       # Now upsert existing record and overwrite timestamps
       pd.update(updated_at: Time.now - 1.year)
       # modify the json so that the podcast_delivery_changes
-      pd2 = Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container,
-        api_response: podcast_delivery_json)
+      pd2 = Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container, podcast_delivery_json_api_response)
       assert pd2.updated_at > pd.updated_at
     end
   end
@@ -70,9 +67,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
         },
         api_url: "http://apple", api_parameters: {}
       },
-        Apple::PodcastDelivery.get_podcast_containers_deliveries_bridge_param("some-apple-id",
-          "podcast-container-id",
-          "http://apple"))
+        Apple::PodcastDelivery.get_podcast_containers_deliveries_bridge_param(OpenStruct.new(apple_episode_id: "some-apple-id", id: "podcast-container-id", podcast_deliveries_url: "http://apple")))
     end
   end
 

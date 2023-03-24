@@ -6,33 +6,45 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       assert_equal({
         request_metadata: {
           apple_episode_id: "some-apple-id",
-          podcast_delivery_id: "podcast-delivery-id"
+          podcast_delivery_id: "podcast-delivery-id",
+          apple_podcast_delivery_file_id: "podcast-delivery-file-id"
         },
         api_url: "http://apple", api_parameters: {}
       },
         Apple::PodcastDeliveryFile.get_delivery_file_bridge_params("some-apple-id",
           "podcast-delivery-id",
+          "podcast-delivery-file-id",
           "http://apple"))
     end
   end
 
-  describe ".get_urls_for_delivery_podcast_delivery_files" do
-    let(:podcast_delivery_json) do
-      {"request_metadata" => {"apple_episode_id" => "apple-episode-id", "podcast_container_id" => 1},
-       "api_url" => "https://api.podcastsconnect.apple.com/v1/podcastDeliveries/fd178589-6c75-4439-931b-813ac5ae4ff0/podcastDeliveryFiles",
-       "api_parameters" => {},
-       "api_response" => {"ok" => true,
-                          "err" => false,
-                          "val" =>
-                        {"data" => [{"type" => "podcastDeliveryFiles",
-                                     "id" => "1111111111111111111111111"}]}}}
-    end
-    let(:apple_api) { build(:apple_api) }
+  describe "delivery and processing state methods" do
+    let(:asset_processing_state) { "COMPLETED" }
+    let(:asset_delivery_state) { "COMPLETE" }
 
-    it "should format a new set of podcast delivery urls" do
-      assert_equal ["https://api.podcastsconnect.apple.com/v1/podcastDeliveryFiles/1111111111111111111111111"],
-        Apple::PodcastDeliveryFile.get_urls_for_delivery_podcast_delivery_files(apple_api,
-          podcast_delivery_json)
+    let(:pdf_resp_container) { build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: asset_processing_state) }
+    let(:pdf) { Apple::PodcastDeliveryFile.new(**pdf_resp_container) }
+
+    describe "#delivery_awaiting_upload?" do
+      it "should be false if the status is delivery_status is false" do
+        assert_equal false, pdf.delivery_awaiting_upload?
+      end
+    end
+
+    describe "#apple_complete?" do
+      it "should be true if the the two statuses is complete" do
+        assert_equal true, pdf.apple_complete?
+      end
+
+      it "will not be complete if either of the two state statues are not complete" do
+        pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: "VALIDATION_FAILED")
+        pdf = Apple::PodcastDeliveryFile.new(**pdf_resp_container)
+        assert_equal false, pdf.apple_complete?
+
+        pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: "FAILED", asset_processing_state: asset_processing_state)
+        pdf = Apple::PodcastDeliveryFile.new(**pdf_resp_container)
+        assert_equal false, pdf.apple_complete?
+      end
     end
   end
 end
