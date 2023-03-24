@@ -78,53 +78,60 @@ class PodcastPlanner
     end
   end
 
-  def select_days_of_week_to_add(current_day)
-    dates_to_add = []
-    7.times do |day|
-      dates_to_add.push(current_day) if @selected_days.include?(current_day.wday)
-      current_day += 1.day
+  def week_of_the_month(date)
+    (date.day.to_f / 7).ceil
+  end
+
+  def days_between(start_date, end_date)
+    (end_date - start_date).to_i
+  end
+
+  def valid_day_to_add?(current_day)
+    @selected_days.include?(current_day.wday)
+  end
+
+  def valid_week_to_add?(current_day)
+    @monthly_weeks.include?(week_of_the_month(current_day))
+  end
+
+  def valid_period?(current_day)
+    (days_between(@start_date, current_day) / 7) % @period == 0
+  end
+
+  def add_date(current_day)
+    if valid_day_to_add?(current_day)
+      if periodic? && valid_period?(current_day)
+        @dates.push(current_day)
+      elsif monthly? && valid_week_to_add?(current_day)
+        @dates.push(current_day)
+      end
     end
-    dates_to_add
+  end
+
+  def past_max_date?(current_day)
+    current_day.after?(@start_date + 730.days)
   end
 
   def generate_dates_by_remaining_episodes
     current_day = @start_date
 
     while episodes_remain?
-      next_days = select_days_of_week_to_add(current_day)
-      if periodic?
-        @dates.concat(next_days)
-        current_day += @period.weeks
-      elsif monthly?
-        valid_next_days = next_days.select { |day| @monthly_weeks.include?(week_of_the_month(day)) }
-        @dates.concat(valid_next_days)
-        current_day += 1.week
-      end
-    end
+      return if past_max_date?(current_day)
 
-    @dates = @dates.slice(0, @number_of_episodes)
+      add_date(current_day)
+      current_day += 1.day
+    end
   end
 
   def generate_dates_by_end_date
     current_day = @start_date
 
     until end_date_passed?(current_day)
-      next_days = select_days_of_week_to_add(current_day)
-      if periodic?
-        @dates.concat(next_days)
-        current_day += @period.weeks
-      elsif monthly?
-        valid_next_days = next_days.select { |day| @monthly_weeks.include?(week_of_the_month(day)) }
-        @dates.concat(valid_next_days)
-        current_day += 1.week
-      end
+      return if past_max_date?(current_day)
+
+      add_date(current_day)
+      current_day += 1.day
     end
-
-    @dates.select! { |date| date <= @end_date }
-  end
-
-  def week_of_the_month(date)
-    (date.day.to_f / 7).ceil
   end
 
   def ready_to_generate_drafts?
