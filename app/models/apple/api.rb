@@ -98,10 +98,10 @@ module Apple
       URI.join(api_base, api_frag)
     end
 
-    def local_api_retry_errors
+    def local_api_retry_errors(tries: ERROR_RETRIES)
       count = 0
       last_resp = nil
-      while count < ERROR_RETRIES
+      while count < tries
         count += 1
         last_resp = yield
         break if ok_code(last_resp)
@@ -110,22 +110,31 @@ module Apple
       last_resp
     end
 
-    def get(api_frag)
+    def get(api_frag, tries: ERROR_RETRIES)
       uri = join_url(api_frag)
-      local_api_retry_errors do
+      local_api_retry_errors(tries: tries) do
         get_uri(uri)
       end
     end
 
-    def patch(api_frag, data_body)
-      local_api_retry_errors do
-        update_remote(Net::HTTP::Patch, api_frag, data_body)
+    def patch(api_frag, data_body, tries: ERROR_RETRIES)
+      uri = join_url(api_frag)
+      local_api_retry_errors(tries: tries) do
+        update_remote(Net::HTTP::Patch, uri, data_body)
       end
     end
 
-    def post(api_frag, data_body)
-      local_api_retry_errors do
-        update_remote(Net::HTTP::Post, api_frag, data_body)
+    def post(api_frag, data_body, tries: ERROR_RETRIES)
+      uri = join_url(api_frag)
+      local_api_retry_errors(tries: tries) do
+        update_remote(Net::HTTP::Post, uri, data_body)
+      end
+    end
+
+    def delete(api_frag, tries: ERROR_RETRIES)
+      uri = join_url(api_frag)
+      local_api_retry_errors(tries: tries) do
+        update_remote(Net::HTTP::Delete, uri, {})
       end
     end
 
