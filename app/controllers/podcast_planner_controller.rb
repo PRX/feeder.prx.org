@@ -10,11 +10,10 @@ class PodcastPlannerController < ApplicationController
   # PATCH/PUT /podcasts/1/planner
   def update
     @planner = PodcastPlanner.new(planner_params)
-    @planner.generate_dates!
     @planner.generate_drafts!
 
     respond_to do |format|
-      if Episode.insert_all(@planner.drafts)
+      if @planner.drafts.each { |episode| episode.save! }
         format.html { redirect_to podcast_episodes_path(@podcast), notice: t(".success") }
       else
         format.html { render :show, status: :unprocessable_entity }
@@ -42,7 +41,8 @@ class PodcastPlannerController < ApplicationController
       :publish_time,
       :segment_count,
       selected_days: [],
-      monthly_weeks: []
+      monthly_weeks: [],
+      generated_dates: []
     )
   end
 end

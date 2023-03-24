@@ -1,8 +1,8 @@
 class PodcastPlanner
-  attr_accessor :podcast_id, :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :drafts
+  attr_accessor :podcast_id, :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :generated_dates, :drafts
 
   def initialize(params = {})
-    @dates = []
+    @dates = params[:generated_dates].try { map { |date| date.to_datetime } }
     @drafts = []
     @podcast_id = params[:podcast_id]
     @start_date = params[:start_date].try(:to_datetime)
@@ -69,16 +69,13 @@ class PodcastPlanner
 
   def generate_dates!
     return unless ready_to_generate_dates?
+    @dates = []
 
     if date_range_ends_by_episodes?
       generate_dates_by_remaining_episodes
     elsif date_range_ends_by_end_date?
       generate_dates_by_end_date
     end
-  end
-
-  def clear_dates!
-    @dates = []
   end
 
   def select_days_of_week_to_add(current_day)
@@ -137,16 +134,23 @@ class PodcastPlanner
   end
 
   def generate_drafts!
-    return unless ready_to_generate_dates?
     return unless ready_to_generate_drafts?
 
     @dates.each do |date|
-      @drafts.push({
+      @drafts.push(Episode.new(
         podcast_id: @podcast_id,
-        released_at: date.change(hour: @publish_time.hour, min: @publish_time.min),
-        title: I18n.l(date, format: :day_and_date).to_s,
+        released_at: apply_publish_time(date),
+        title: generate_default_title(date),
         segment_count: @segment_count
-      })
+      ))
     end
+  end
+
+  def apply_publish_time(date)
+    date.change(hour: @publish_time.hour, min: @publish_time.min)
+  end
+
+  def generate_default_title(date)
+    I18n.l(date, format: :day_and_date).to_s
   end
 end
