@@ -6,7 +6,7 @@
     <% if @planner.dates.present? %>
       <%= form_with(
             url: podcast_planner_path(@podcast),
-            method: :put
+            method: :post
           ) do |form| %>
           <div class="card-body">
             <div class="col mb-2">

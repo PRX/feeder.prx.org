@@ -224,7 +224,7 @@ en:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
   podcast_planner:
-    update:
+    create:
       success: Episode drafts generated.
     form_main:
       header: Plan Episodes
