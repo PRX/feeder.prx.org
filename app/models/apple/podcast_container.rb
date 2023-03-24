@@ -6,7 +6,7 @@ module Apple
 
     serialize :api_response, JSON
 
-    has_many :podcast_deliveries
+    has_many :podcast_deliveries, dependent: :destroy
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, class_name: "::Episode"
 
@@ -42,6 +42,8 @@ module Apple
 
       join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         next if row.nil?
+        apple_id = row.dig("api_response", "val", "data", "id")
+        raise "missing apple id!" unless apple_id.present?
 
         upsert_podcast_container(ep, row)
       end

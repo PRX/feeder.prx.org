@@ -47,4 +47,23 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe "#destroy" do
+    let(:podcast_container) { create(:apple_podcast_container) }
+    let(:podcast_delivery) {
+      Apple::PodcastDelivery.create!(podcast_container: podcast_container,
+        episode: podcast_container.episode)
+    }
+
+    it "should soft delete the delivery" do
+      pdf_resp_container = build(:podcast_delivery_file_api_response)
+      pdf = Apple::PodcastDeliveryFile.create!(**pdf_resp_container.merge(podcast_delivery: podcast_delivery, episode: podcast_container.episode))
+
+      assert_equal [pdf], podcast_delivery.podcast_delivery_files.reset
+
+      pdf.destroy
+
+      assert_equal [], podcast_delivery.podcast_delivery_files.reset
+    end
+  end
 end
