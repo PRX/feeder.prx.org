@@ -6,7 +6,7 @@ module Apple
 
     serialize :api_response, JSON
 
-    has_many :podcast_delivery_files
+    has_many :podcast_delivery_files, dependent: :destroy
     belongs_to :episode, class_name: "::Episode"
     belongs_to :podcast_container, class_name: "::Apple::PodcastContainer"
 

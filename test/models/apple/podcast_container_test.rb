@@ -186,4 +186,21 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe "#destroy" do
+    it "should destroy the podcast container and cascade to the delivery and delivery file" do
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          pc = Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row)
+          pd = pc.podcast_deliveries.create!(episode: pc.episode)
+          pdf = pd.podcast_delivery_files.create!(episode: pc.episode)
+
+          pc.destroy
+
+          assert_raises(ActiveRecord::RecordNotFound) { pd.reload }
+          assert_raises(ActiveRecord::RecordNotFound) { pdf.reload }
+        end
+      end
+    end
+  end
 end
