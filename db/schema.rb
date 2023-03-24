@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_23_211452) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -52,6 +52,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_23_211452) do
     t.string "api_response"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "deleted_at", precision: nil
     t.index ["episode_id"], name: "index_apple_podcast_deliveries_on_episode_id"
     t.index ["external_id"], name: "index_apple_podcast_deliveries_on_external_id", unique: true
     t.index ["podcast_container_id"], name: "index_apple_podcast_deliveries_on_podcast_container_id"
@@ -66,6 +67,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_23_211452) do
     t.datetime "updated_at", null: false
     t.boolean "api_marked_as_uploaded", default: false
     t.boolean "upload_operations_complete", default: false
+    t.datetime "deleted_at", precision: nil
     t.index ["external_id"], name: "index_apple_podcast_delivery_files_on_external_id", unique: true
     t.index ["podcast_delivery_id"], name: "index_apple_podcast_delivery_files_on_podcast_delivery_id"
   end

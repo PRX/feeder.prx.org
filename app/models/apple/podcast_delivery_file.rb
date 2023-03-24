@@ -5,6 +5,8 @@ module Apple
     include Apple::ApiResponse
     include Apple::ApiWaiting
 
+    acts_as_paranoid
+
     serialize :api_response, JSON
 
     belongs_to :podcast_delivery
@@ -104,7 +106,7 @@ module Apple
       podcast_deliveries = podcast_deliveries.flatten
 
       # filter for only the podcast deliveries that have missing podcast delivery files
-      # TODO: replace assets on an episode
+      # podcast_delivery_files are soft deleted in rails when they are replaced
       podcast_deliveries = podcast_deliveries.select { |pd| pd.podcast_delivery_files.empty? }
 
       (result, errs) =
@@ -252,7 +254,7 @@ module Apple
       raise "Missing request metadata" unless external_id && podcast_delivery_id
 
       (pdf, action) =
-        if (delivery_file = where(episode_id: podcast_delivery.episode.id,
+        if (delivery_file = with_deleted.where(episode_id: podcast_delivery.episode.id,
           external_id: external_id,
           podcast_delivery_id: podcast_delivery_id).first)
 

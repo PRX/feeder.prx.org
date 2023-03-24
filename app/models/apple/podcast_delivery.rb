@@ -4,6 +4,8 @@ module Apple
   class PodcastDelivery < ActiveRecord::Base
     include Apple::ApiResponse
 
+    acts_as_paranoid
+
     serialize :api_response, JSON
 
     has_many :podcast_delivery_files, dependent: :destroy
@@ -113,7 +115,7 @@ module Apple
       raise "Missing external_id" if external_id.blank?
 
       (pd, action) =
-        if (delivery = where(episode_id: podcast_container.episode.id,
+        if (delivery = with_deleted.where(episode_id: podcast_container.episode.id,
           external_id: external_id,
           podcast_container: podcast_container).first)
 

@@ -3,15 +3,14 @@
 require "test_helper"
 
 class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
+  let(:podcast_delivery_json) { {data: {id: "123"}} }
+  let(:podcast_delivery_json_api_response) { {api_response: {val: podcast_delivery_json}}.with_indifferent_access }
   describe ".upsert_podcast_delivery" do
     let(:podcast) { create(:podcast) }
     let(:feed) { create(:feed, podcast: podcast, private: false) }
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_show) { Apple::Show.new(feed) }
     let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
-
-    let(:podcast_delivery_json) { {data: {id: "123"}} }
-    let(:podcast_delivery_json_api_response) { {api_response: {val: podcast_delivery_json}}.with_indifferent_access }
 
     let(:podcast_container) do
       pc = Apple::PodcastContainer.new
@@ -102,6 +101,29 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
             Apple::PodcastDelivery.select_containers_for_delivery([podcast_container1, podcast_container2])
         end
       end
+    end
+  end
+
+  describe "#destroy" do
+    let(:podcast_container) { create(:apple_podcast_container) }
+    let(:podcast_delivery) {
+      Apple::PodcastDelivery.create!(podcast_container: podcast_container,
+        episode: podcast_container.episode,
+        api_response: podcast_delivery_json_api_response)
+    }
+
+    it "should soft delete the delivery" do
+      assert podcast_container.persisted?
+      assert_equal [podcast_delivery], podcast_container.podcast_deliveries
+
+      podcast_container.stub(:missing_podcast_audio?, true) do
+        assert_equal false, podcast_container.needs_delivery?
+      end
+
+      podcast_delivery.destroy
+
+      assert_equal [], podcast_container.podcast_deliveries.reset
+      assert_equal [podcast_delivery], podcast_container.podcast_deliveries.with_deleted
     end
   end
 end

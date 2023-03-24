@@ -42,6 +42,8 @@ module Apple
 
       join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         next if row.nil?
+        apple_id = row.dig("api_response", "val", "data", "id")
+        raise "missing apple id!" unless apple_id.present?
 
         upsert_podcast_container(ep, row)
       end

@@ -3,7 +3,7 @@ class DeliveryFilesHaveUploadedState < ActiveRecord::Migration[7.0]
     rename_column :apple_podcast_delivery_files, :uploaded, :api_marked_as_uploaded
     add_column :apple_podcast_delivery_files, :upload_operations_complete, :boolean, default: false
 
-    Apple::PodcastDeliveryFile.where(api_marked_as_uploaded: true).update_all(upload_operations_complete: true)
+    Apple::PodcastDeliveryFile.with_deleted.where(api_marked_as_uploaded: true).update_all(upload_operations_complete: true)
   end
 
   def down
