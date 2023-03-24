@@ -2,7 +2,7 @@
       url: podcast_planner_path(@podcast),
       method: :get,
       data: {
-        controller: "podcast-planner",
+        controller: "click",
         "turbo-frame": "preview",
         "turbo-action": "replace"
       }
@@ -12,5 +12,5 @@
 
     <%= render "form_date_calculator", form: form %>
 
-    <%= form.submit class: "d-none", data: {podcast_planner_target: "submit"} %>
+    <%= form.submit class: "d-none", data: {click_target: "submit"} %>
 <% end %>
