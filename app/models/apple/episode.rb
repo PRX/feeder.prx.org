@@ -59,7 +59,7 @@ module Apple
       return if episodes.empty?
 
       episode_bridge_results = api.bridge_remote_and_retry!("createEpisodes",
-        episodes.map(&:create_episode_bridge_params))
+        episodes.map(&:create_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
       insert_sync_logs(episodes, episode_bridge_results)
     end

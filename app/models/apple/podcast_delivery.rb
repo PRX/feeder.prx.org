@@ -73,7 +73,7 @@ module Apple
 
       (response, errs) =
         api.bridge_remote_and_retry("createPodcastDeliveries",
-          create_podcast_deliveries_bridge_params(api, podcast_containers))
+          create_podcast_deliveries_bridge_params(api, podcast_containers), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
       join_on("podcast_container_id", podcast_containers, response).map do |podcast_container, row|
         upsert_podcast_delivery(podcast_container, row)
@@ -91,7 +91,7 @@ module Apple
       end
 
       deliveries_response =
-        api.bridge_remote_and_retry!("getPodcastDeliveries", bridge_params)
+        api.bridge_remote_and_retry!("getPodcastDeliveries", bridge_params, batch_size: 1)
 
       # Rather than mangling and persisting the enumerated view of the deliveries from the containers endpoint,
       # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
@@ -106,7 +106,7 @@ module Apple
       formatted_bridge_params = formatted_bridge_params.flatten
 
       api.bridge_remote_and_retry!("getPodcastDeliveries",
-        formatted_bridge_params)
+        formatted_bridge_params, batch_size: 1)
     end
 
     def self.upsert_podcast_delivery(podcast_container, row)

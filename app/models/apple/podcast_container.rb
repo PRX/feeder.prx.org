@@ -54,7 +54,7 @@ module Apple
 
       new_containers_response =
         api.bridge_remote_and_retry!("createPodcastContainers",
-          create_podcast_containers_bridge_params(api, episodes_to_create))
+          create_podcast_containers_bridge_params(api, episodes_to_create), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
       join_on_apple_episode_id(episodes_to_create, new_containers_response).each do |ep, row|
         upsert_podcast_container(ep, row)
@@ -106,7 +106,7 @@ module Apple
     def self.get_podcast_containers_via_episodes(api, episodes)
       # Fetch the podcast containers from the episodes side of the API
       response =
-        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes))
+        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes), batch_size: 1)
 
       # Rather than mangling and persisting the enumerated view of the containers in the episodes,
       # just re-fetch the podcast containers from the non-list podcast container endpoint
@@ -119,8 +119,7 @@ module Apple
 
       formatted_bridge_params = formatted_bridge_params.flatten
 
-      api.bridge_remote_and_retry!("getPodcastContainers",
-        formatted_bridge_params)
+      api.bridge_remote_and_retry!("getPodcastContainers", formatted_bridge_params, batch_size: 2)
     end
 
     def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)
