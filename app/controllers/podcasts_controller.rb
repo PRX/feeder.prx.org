@@ -1,5 +1,6 @@
 class PodcastsController < ApplicationController
   before_action :set_podcast, only: %i[show edit update destroy]
+  helper_method :sort_podcasts_by
 
   # Translate the user selected sort to a query order argument
   DISPLAY_ORDER = {"A-Z" => {title: :asc},
@@ -60,6 +61,19 @@ class PodcastsController < ApplicationController
   end
 
   # PATCH/PUT /podcasts/1
+
+  def sort_podcasts_by
+    if params[:sort] == "Recent"
+        "Recent Activity"
+      elsif params[:sort] == "A-Z"
+        "A-Z"
+      elsif params[:sort] == "Z-A"
+        "Z-A"
+      elsif params[:sort] == "episode_count"
+        "Episode Count"
+    end
+  end
+
   def update
     @podcast.assign_attributes(podcast_params)
     authorize @podcast
