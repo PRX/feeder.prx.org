@@ -365,5 +365,59 @@ describe PodcastPlanner do
         end
       end
     end
+
+    describe "generate_drafts!" do
+      before do
+        planner.dates = [
+          # Monday, March 5
+          DateTime.new(2001, 3, 5),
+          # Wednesday, March 7
+          DateTime.new(2001, 3, 7),
+          # Monday, April 2
+          DateTime.new(2001, 4, 2),
+          # Wednesday, April 4
+          DateTime.new(2001, 4, 4),
+          # Wednesday, May 2
+          DateTime.new(2001, 5, 2),
+          # Monday, May 7
+          DateTime.new(2001, 5, 7),
+          # Monday, June 4
+          DateTime.new(2001, 6, 4),
+          # Wednesday, June 6
+          DateTime.new(2001, 6, 6),
+          # Monday, July 2
+          DateTime.new(2001, 7, 2),
+          # Wednesday, July 4
+          DateTime.new(2001, 7, 4)
+        ]
+        # 9:30 AM
+        planner.publish_time = DateTime.new(2001, 2, 3, 9, 30)
+        planner.segment_count = 2
+      end
+
+      describe "Episodes" do
+        before do
+          assert_empty planner.drafts
+          assert_empty Episode.all
+          planner.generate_drafts!
+          planner.drafts.each do |episode|
+            episode.save!
+          end
+        end
+
+        it "are associated with the podcast_id from the planner" do
+          assert_equal Episode.first.podcast.id, planner.podcast_id
+        end
+
+        it "have a released_at time equal to the planner publish time" do
+          assert_equal Episode.first.released_at.hour, 9
+          assert_equal Episode.first.released_at.min, 30
+        end
+
+        it "have a segment count equal to the planner segment count" do
+          assert_equal Episode.first.segment_count, 2
+        end
+      end
+    end
   end
 end
