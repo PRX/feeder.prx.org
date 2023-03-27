@@ -49,7 +49,7 @@ module Apple
       chunk_size = operation_bridge_params.size / num_threads
       chunk_size = [chunk_size, 1].max
 
-      chunked_slices = operation_bridge_params.each_slice(num_threads).to_a
+      chunked_slices = operation_bridge_params.each_slice(chunk_size).to_a
 
       Parallel.map(chunked_slices, in_threads: num_threads) do |ops|
         api.bridge_remote_and_retry!("executeUploadOperations", ops, batch_size: 1)
