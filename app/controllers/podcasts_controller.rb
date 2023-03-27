@@ -5,7 +5,7 @@ class PodcastsController < ApplicationController
   # Translate the user selected sort to a query order argument
   DISPLAY_ORDER = {"A-Z" => {title: :asc},
                    "Z-A" => {title: :desc},
-                   "" => {updated_at: :desc}}.freeze
+                   "Recent Activity" => {updated_at: :desc}}.freeze
 
   DEFAULT_PAGE_SIZE = 10
 
@@ -63,14 +63,14 @@ class PodcastsController < ApplicationController
   # PATCH/PUT /podcasts/1
 
   def sort_podcasts_by
-    if params[:sort] == "Recent"
-        "Recent Activity"
-      elsif params[:sort] == "A-Z"
-        "A-Z"
-      elsif params[:sort] == "Z-A"
-        "Z-A"
-      elsif params[:sort] == "episode_count"
-        "Episode Count"
+    if params[:sort] == "Recent Activity"
+      "Recent Activity"
+    elsif params[:sort] == "A-Z"
+      "A-Z"
+    elsif params[:sort] == "Z-A"
+      "Z-A"
+    elsif params[:sort] == "episode_count"
+      "Episode Count"
     end
   end
 
