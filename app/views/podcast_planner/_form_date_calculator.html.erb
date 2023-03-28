@@ -61,7 +61,7 @@
       <div class="col-lg-6">
         <p><%= t(".help.select_range") %></p>
           <div class="form-floating mb-2">
-            <%= form.date_field :start_date, min: DateTime.tomorrow, max: DateTime.tomorrow + 6.months, value: DateTime.tomorrow, data: {action: "click#submit"} %>
+            <%= form.date_field :start_date, min: DateTime.tomorrow, max: DateTime.tomorrow + 1.years, value: DateTime.tomorrow, data: {action: "click#submit"} %>
             <%= form.label :start_date %>
           </div>
 
@@ -73,7 +73,7 @@
         </div>
         <div class="d-none" data-toggle-field-target="field" field="date">
           <div class="form-floating">
-            <%= form.date_field :end_date, min: DateTime.tomorrow + 1.day, max: DateTime.tomorrow + 6.months, data: {action: "click#submit"} %>
+            <%= form.date_field :end_date, min: DateTime.tomorrow + 1.day, max: DateTime.tomorrow + 2.years, data: {action: "click#submit"} %>
             <%= form.label :end_date %>
           </div>
         </div>
