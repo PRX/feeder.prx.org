@@ -241,12 +241,15 @@ en:
         week_select: Which weeks of the month do you plan to publish? Select all that apply.
         calculate_weeks: Calculate the weeks by
         select_weeks: Select weeks
-        select_period: Select period
+        select_period: Select interval
         range_select: How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.
         calculate_range: Calculate the end of the batch by
         select_range: Select range
       label:
+        week_condition: Weekly rhythm
         week_of_month: Week of the month
+        period: Interval
+        date_range_condition: End range
     form_side:
       header:
         preview: Schedule Preview
@@ -257,6 +260,22 @@ en:
         preview: Select more options to get a schedule preview.
       label:
         submit: Create drafts
+    helper:
+      period_options:
+        every_one: Every week
+        every_two: Every two weeks
+        every_three: Every three weeks
+        every_four: Every four weeks
+      monthly_options:
+        first: First
+        second: Second
+        third: Third
+        fourth: Fourth
+        fifth: Fifth
+      episodes: number of episodes
+      end_date: end date
+      month: month
+      period: interval
   podcast_switcher:
     dropdown:
       all: View all my Podcasts

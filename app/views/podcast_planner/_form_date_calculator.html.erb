@@ -23,7 +23,7 @@
         <p><%= t(".help.calculate_weeks") %></p>
         <div class="form-floating">
           <%= form.select :week_condition, week_condition_options, {}, data: {action: "toggle-field#displayOnlyThisField click#submit"} %>
-          <%= form.label :week_condition %>
+          <%= form.label t(".label.week_condition") %>
         </div>
       </div>
       <div class="col-lg-6">
@@ -38,7 +38,7 @@
           <p><%= t(".help.select_period") %></p>
           <div class="form-floating">
             <%= form.select :period, periodic_weeks_options, {}, data: {action: "click#submit"} %>
-            <%= form.label :period %>
+            <%= form.label t(".label.period") %>
           </div>
         </div>
       </div>
@@ -54,7 +54,7 @@
         <div>
           <div class="form-floating">
             <%= form.select :date_range_condition, end_condition_options, {}, data: {action: "toggle-field#displayOnlyThisField click#submit"} %>
-            <%= form.label :date_range_condition %>
+            <%= form.label t(".label.date_range_condition") %>
           </div>
         </div>
       </div>

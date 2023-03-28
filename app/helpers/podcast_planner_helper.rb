@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module PodcastPlannerHelper
-  PERIODIC_WEEKS = ["Every week", "Every two weeks", "Every three weeks", "Every four weeks"].freeze
-  MONTHLY_WEEKS = ["First", "Second", "Third", "Fourth", "Fifth"].freeze
+  PERIODIC_WEEKS = I18n.t([:every_one, :every_two, :every_three, :every_four], scope: ".podcast_planner.helper.period_options").freeze
+  MONTHLY_WEEKS = I18n.t([:first, :second, :third, :fourth, :fifth], scope: ".podcast_planner.helper.monthly_options").freeze
 
   def day_options
     DateTime::DAYNAMES.map.with_index { |day, i| [day, i] }
@@ -17,11 +17,11 @@ module PodcastPlannerHelper
   end
 
   def end_condition_options
-    [["number of episodes", "episodes"], ["end date", "date"]]
+    [[I18n.t(".podcast_planner.helper.episodes"), "episodes"], [I18n.t(".podcast_planner.helper.end_date"), "date"]]
   end
 
   def week_condition_options
-    ["monthly", "periodic"]
+    [[I18n.t(".podcast_planner.helper.month"), "monthly"], [I18n.t(".podcast_planner.helper.period"), "periodic"]]
   end
 
   def time_options
