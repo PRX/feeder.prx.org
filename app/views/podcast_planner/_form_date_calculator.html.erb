@@ -9,7 +9,7 @@
     <p><%= t(".help.day_select") %></p>
     <div class="col-lg-12">
       <div class="form-floating">
-        <%= form.select :selected_days, day_options, {}, data: {action: "click#submit"}, multiple: true %>
+        <%= form.select :selected_days, day_options, {include_blank: true}, data: {action: "click#submit"}, multiple: true %>
         <%= form.label :selected_days %>
       </div>
     </div>
@@ -30,7 +30,7 @@
         <div class="" data-toggle-field-target="field" field="monthly">
           <p><%= t(".help.select_weeks") %></p>
           <div class="form-floating">
-            <%= form.select :monthly_weeks, monthly_weeks_options, {}, data: {action: "click#submit"}, multiple: true %>
+            <%= form.select :monthly_weeks, monthly_weeks_options, {include_blank: true}, data: {action: "click#submit"}, multiple: true %>
             <%= form.label t(".label.week_of_month") %>
           </div>
         </div>
