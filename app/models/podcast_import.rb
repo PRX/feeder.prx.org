@@ -1,10 +1,8 @@
-require "prx_access"
-require "announce"
 require "addressable/uri"
 require "loofah"
 require "hash_serializer"
 
-class PodcastImport < BaseModel
+class PodcastImport < ActiveRecord::Base
   include ImportUtils
 
   serialize :config, HashSerializer

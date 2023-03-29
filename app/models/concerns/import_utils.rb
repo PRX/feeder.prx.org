@@ -6,8 +6,6 @@ module ImportUtils
   extend ActiveSupport::Concern
 
   included do
-    include Announce::Publisher
-    include PRXAccess
     include Rails.application.routes.url_helpers
   end
 
@@ -101,6 +99,10 @@ module ImportUtils
       filename = URI.parse(url || "").path.split("/").last
       file.filename == filename
     end
+  end
+
+  def announce(type, action, msg)
+    Rails.logger.error("announce #{type} #{action} #{msg}")
   end
 
   def announce_image(image)

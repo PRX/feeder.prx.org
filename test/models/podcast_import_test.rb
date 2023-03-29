@@ -3,8 +3,6 @@ require "prx_access"
 require "ostruct"
 
 describe PodcastImport do
-  include PRXAccess
-
   let(:user) { create(:user) }
   let(:account) { create(:account, id: 8, opener: user) }
   let(:series) { create(:series, account: account) }
@@ -13,17 +11,18 @@ describe PodcastImport do
 
   before do
     # stub to prevent network access
-    def importer.enqueue_episode_import_jobs(*)
-      nil
-    end
+    # def importer.enqueue_episode_import_jobs(*)
+    #  nil
+    # end
     stub_requests
   end
 
-  around do |test|
-    ENV["PORTER_SNS_TOPIC_ARN"] = "anything"
-    Portered.stub(:sns_client, StubSns.new) { test.call }
-    ENV["PORTER_SNS_TOPIC_ARN"] = ""
-  end
+  # around do |test|
+  # ENV["PORTER_SNS_TOPIC_ARN"] = "anything"
+  # Portered.stub(:sns_client, StubSns.new) { test.call }
+  # ENV["PORTER_SNS_TOPIC_ARN"] = ""
+  # test.call
+  # end
 
   let(:feed) { Feedjira::Feed.parse(test_file("/fixtures/transistor_two.xml")) }
   let(:template) { create(:audio_version_template, series: series) }
