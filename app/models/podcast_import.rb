@@ -1,8 +1,6 @@
 require "prx_access"
 require "announce"
 require "addressable/uri"
-require "feedjira"
-require "itunes_category_validator"
 require "loofah"
 require "hash_serializer"
 
