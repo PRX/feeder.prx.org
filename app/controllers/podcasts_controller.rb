@@ -1,10 +1,10 @@
 class PodcastsController < ApplicationController
   before_action :set_podcast, only: %i[show edit update destroy]
-  helper_method :sort_podcasts_by
 
   # Translate the user selected sort to a query order argument
   DISPLAY_ORDER = {"A-Z" => {title: :asc},
                    "Z-A" => {title: :desc},
+                   "" => {updated_at: :desc},
                    "Recent Activity" => {updated_at: :desc}}.freeze
 
   DEFAULT_PAGE_SIZE = 10
@@ -12,11 +12,13 @@ class PodcastsController < ApplicationController
   # GET /podcasts
   def index
     base_query = policy_scope(Podcast).page(params[:page]).per(DEFAULT_PAGE_SIZE).includes(default_feed: :feed_image)
-    @podcasts = add_sorting(base_query)
+    filtered_podcasts = base_query.filter_by_title(params[:q])
+    @podcasts = add_sorting(filtered_podcasts)
 
     @published_episodes_counts = Episode.where(podcasts: @podcasts).published.group(:podcast_id).count
     @scheduled_episodes_counts = Episode.where(podcasts: @podcasts).scheduled.group(:podcast_id).count
     @drafted_episodes_counts = Episode.where(podcasts: @podcasts).draft.group(:podcast_id).count
+
   end
 
   def add_sorting(query)
@@ -61,18 +63,6 @@ class PodcastsController < ApplicationController
   end
 
   # PATCH/PUT /podcasts/1
-
-  def sort_podcasts_by
-    if params[:sort] == "Recent Activity"
-      render html: '<span class="material-icons">timer</span>'.html_safe
-    elsif params[:sort] == "A-Z"
-      render html: '<span class="material-icons">sort_by_alpha</span>'.html_safe
-    elsif params[:sort] == "Z-A"
-      render html: '<span class="material-icons">sort_by_alpha</span>'.html_safe
-    elsif params[:sort] == "episode_count"
-      render html: '<span class="material-icons">123</span>'.html_safe
-    end
-  end
 
   def update
     @podcast.assign_attributes(podcast_params)

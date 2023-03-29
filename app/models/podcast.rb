@@ -17,12 +17,14 @@ class Podcast < ApplicationRecord
   has_many :episodes, -> { order("published_at desc") }
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
-
+  
   validates :title, presence: true
   validates :subtitle, presence: true
   validates :link, http_url: true
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
+  
+  scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") }
 
   # these keep changing - so just translate to the current accepted values
   VALID_EXPLICITS = %w[true false]
