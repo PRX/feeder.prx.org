@@ -64,13 +64,13 @@ class PodcastsController < ApplicationController
 
   def sort_podcasts_by
     if params[:sort] == "Recent Activity"
-      "Recent Activity"
+      render html: '<span class="material-icons">timer</span>'.html_safe
     elsif params[:sort] == "A-Z"
-      "A-Z"
+      render html: '<span class="material-icons">sort_by_alpha</span>'.html_safe
     elsif params[:sort] == "Z-A"
-      "Z-A"
+      render html: '<span class="material-icons">sort_by_alpha</span>'.html_safe
     elsif params[:sort] == "episode_count"
-      "Episode Count"
+      render html: '<span class="material-icons">123</span>'.html_safe
     end
   end
 

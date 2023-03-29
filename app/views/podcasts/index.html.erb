@@ -8,10 +8,11 @@
 
       <div class="mb-4">
       <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-      <%= sort_podcasts_by %>
-      <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
+        <span class="material-icons" style="color: green" aria-hidden="true">sort</span>
+        <%= sort_podcasts_by %>
       </button>
       <ul class="dropdown-menu">
+
         <li><%= active_link_to "Recent Activity", podcasts_path(sort: "Recent Activity"), active: :exact, class: "dropdown-item active" %></li>
         <li><%= active_link_to "# of Episodes", podcasts_path(sort: "episode_count"), active: :exact, class: "dropdown-item" %></li>
         <li><%= active_link_to "A-Z", podcasts_path(sort: "A-Z"), active: :exact, class: "dropdown-item" %></li>
