@@ -40,7 +40,7 @@ class EpisodeImport < ActiveRecord::Base
   end
 
   def retry!
-    update_attributes(status: RETRYING)
+    update(status: RETRYING)
     import_later
   end
 
@@ -56,21 +56,21 @@ class EpisodeImport < ActiveRecord::Base
 
   def import
     update_episode_audio!
-    update_attributes!(status: AUDIO_SAVED)
+    update!(status: AUDIO_SAVED)
     create_or_update_story!
-    update_attributes!(status: STORY_SAVED, piece_id: story.id)
+    update!(status: STORY_SAVED, piece_id: story.id)
     create_or_update_episode!
-    update_attributes!(status: EPISODE_SAVED)
+    update!(status: EPISODE_SAVED)
     story.save!
     update_search_index!
-    update_attributes!(status: COMPLETE)
+    update!(status: COMPLETE)
 
     announce(:story, :update, Api::Msg::StoryRepresenter.new(story).to_json)
     unlock_podcast
 
     story
   rescue => err
-    update_attributes(status: FAILED)
+    update(status: FAILED)
     raise err
   end
 
@@ -80,7 +80,7 @@ class EpisodeImport < ActiveRecord::Base
 
   def update_episode_audio!
     audio_files = entry_audio_files(entry)
-    update_attributes!(audio: audio_files)
+    update!(audio: audio_files)
   end
 
   def entry_audio_files(entry)

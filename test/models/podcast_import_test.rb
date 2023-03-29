@@ -264,8 +264,8 @@ describe PodcastImport do
 
       importer.status.must_equal PodcastImport::IMPORTING
 
-      ep1.update_attributes! status: EpisodeImport::COMPLETE
-      ep2.update_attributes! status: EpisodeImport::COMPLETE
+      ep1.update! status: EpisodeImport::COMPLETE
+      ep2.update! status: EpisodeImport::COMPLETE
 
       importer.reload
 
@@ -282,8 +282,8 @@ describe PodcastImport do
       ep1 = importer.episode_imports[0]
       ep2 = importer.episode_imports[1]
 
-      ep1.update_attributes! status: EpisodeImport::FAILED
-      ep2.update_attributes! status: EpisodeImport::COMPLETE
+      ep1.update! status: EpisodeImport::FAILED
+      ep2.update! status: EpisodeImport::COMPLETE
 
       importer.reload
 
@@ -297,14 +297,14 @@ describe PodcastImport do
       importer.import
 
       # simulate a more imports than currently created
-      importer.update_attributes(feed_episode_count: 3)
+      importer.update(feed_episode_count: 3)
       importer.episode_imports.length.must_equal 2
 
       ep1 = importer.episode_imports[0]
       ep2 = importer.episode_imports[1]
 
-      ep1.update_attributes! status: EpisodeImport::FAILED
-      ep2.update_attributes! status: EpisodeImport::FAILED
+      ep1.update! status: EpisodeImport::FAILED
+      ep2.update! status: EpisodeImport::FAILED
 
       importer.reload
 
@@ -323,8 +323,8 @@ describe PodcastImport do
       ep1 = importer.episode_imports[0]
       ep2 = importer.episode_imports[1]
 
-      ep1.update_attributes! status: EpisodeImport::FAILED
-      ep2.update_attributes! status: EpisodeImport::STORY_SAVED
+      ep1.update! status: EpisodeImport::FAILED
+      ep2.update! status: EpisodeImport::STORY_SAVED
 
       importer.reload
 
@@ -340,8 +340,8 @@ describe PodcastImport do
       ep1 = importer.episode_imports[0]
       ep2 = importer.episode_imports[1]
 
-      ep1.update_attributes! status: EpisodeImport::COMPLETE
-      ep2.update_attributes! status: EpisodeImport::FAILED
+      ep1.update! status: EpisodeImport::COMPLETE
+      ep2.update! status: EpisodeImport::FAILED
 
       ep1.stub :podcast_import, importer do
         podcast_distribution_mock = MiniTest::Mock.new

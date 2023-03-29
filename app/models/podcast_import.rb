@@ -85,7 +85,7 @@ class PodcastImport < ActiveRecord::Base
   end
 
   def retry!
-    update_attributes(status: RETRYING)
+    update(status: RETRYING)
     import_later
   end
 
@@ -94,17 +94,17 @@ class PodcastImport < ActiveRecord::Base
   end
 
   def import_series!
-    update_attributes!(status: STARTED)
+    update!(status: STARTED)
 
     # Request the RSS feed
     get_feed
-    update_attributes!(status: FEED_RETRIEVED)
+    update!(status: FEED_RETRIEVED)
 
     # Create the series
     create_or_update_series!
-    update_attributes!(status: SERIES_CREATED)
+    update!(status: SERIES_CREATED)
   rescue => err
-    update_attributes(status: FAILED)
+    update(status: FAILED)
     raise err
   end
 
@@ -114,13 +114,13 @@ class PodcastImport < ActiveRecord::Base
 
     # Update podcast attributes
     create_or_update_podcast!
-    update_attributes!(status: PODCAST_CREATED)
+    update!(status: PODCAST_CREATED)
 
     # Create the episodes
-    update_attributes!(status: IMPORTING)
+    update!(status: IMPORTING)
     create_or_update_episode_imports!
   rescue => err
-    update_attributes(status: FAILED)
+    update(status: FAILED)
     raise err
   end
 
@@ -130,7 +130,7 @@ class PodcastImport < ActiveRecord::Base
   end
 
   def create_or_update_episode_imports!
-    update_attributes(feed_episode_count: feed.entries.count)
+    update(feed_episode_count: feed.entries.count)
 
     feed_entries, entries_with_dupe_guids = parse_feed_entries_for_dupe_guids
 
@@ -182,7 +182,7 @@ class PodcastImport < ActiveRecord::Base
     entry_hash = feed_entry_to_hash(entry)
 
     if ei = episode_imports.where(guid: entry_hash[:entry_id]).first
-      ei.update_attributes!(entry: entry_hash, has_duplicate_guid: has_duplicate_guid)
+      ei.update!(entry: entry_hash, has_duplicate_guid: has_duplicate_guid)
     else
       ei = episode_imports.create!(
         guid: entry_hash[:entry_id],
@@ -232,7 +232,7 @@ class PodcastImport < ActiveRecord::Base
     }
 
     if series
-      series.update_attributes!(series_attributes)
+      series.update!(series_attributes)
     else
       self.series = create_series!(series_attributes)
       save!
