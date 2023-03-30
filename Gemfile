@@ -26,6 +26,7 @@ gem "kaminari"
 gem "sprockets-rails"
 gem "stimulus-rails"
 gem "turbo-rails"
+gem "simple_calendar", "~> 2.4"
 
 # api views
 gem "actionpack-action_caching" # for hal_api-rails

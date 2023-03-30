@@ -1,10 +1,15 @@
 class PodcastPlannerController < ApplicationController
   before_action :set_podcast
+  before_action :set_beginning_of_week
 
   # GET /podcasts/1/planner
   def show
     @planner = PodcastPlanner.new(planner_params)
     @planner.generate_dates!
+
+    if @planner.dates.present?
+      @planner_months = @planner.dates_by_month
+    end
   end
 
   # POST /podcasts/1/planner
@@ -26,6 +31,10 @@ class PodcastPlannerController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
+  end
+
+  def set_beginning_of_week
+    Date.beginning_of_week = :sunday
   end
 
   # Only allow a list of trusted parameters through.

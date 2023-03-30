@@ -27,12 +27,22 @@
 
             <div class="col">
               <p><%= t(".header.number_of_drafts", count: @planner.dates.count) %></p>
-              <ul class="list-group list-group-numbered">
-                <% @planner.dates.each do |date| %>
-                  <li class="list-group-item"><%= l(date, format: :day_and_date) %></li>
-                  <%= form.hidden_field :generated_dates, multiple: true, value: date %>
+              <% @planner_months.each do |dates_in_month| %>
+                <%= month_calendar(start_date: dates_in_month.first) do |date| %>
+                  <% if date.month == dates_in_month.first.month %>
+                    <%= date.day %>
+                    <% dates_in_month.each do |d| %>
+                      <% if d.day == date.day %>
+                        <p class="fw-bold">DING</p>
+                      <% end %>
+                    <% end %>
+                  <% end %>
                 <% end %>
-              </ul>
+              <% end %>
+
+              <% @planner.dates.each do |date| %>
+                <%= form.hidden_field :generated_dates, multiple: true, value: date %>
+              <% end %>
             </div>
           </div>
           <div class="card-footer">

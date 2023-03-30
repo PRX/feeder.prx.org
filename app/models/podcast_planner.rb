@@ -160,4 +160,23 @@ class PodcastPlanner
   def generate_default_title(date)
     I18n.l(date, format: :day_and_date).to_s
   end
+
+  def unique_months
+    @dates.map { |d| d.month }.uniq
+  end
+
+  def dates_by_month
+    res = []
+    unique_months.each do |mo|
+      dates_in_month = []
+      @dates.each do |date|
+        if date.month == mo
+          dates_in_month.push(date)
+        end
+      end
+      res.push(dates_in_month)
+    end
+
+    res
+  end
 end
