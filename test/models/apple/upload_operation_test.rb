@@ -3,7 +3,19 @@
 require "test_helper"
 
 describe Apple::UploadOperation do
-  describe "do_upload" do
+  describe "#new" do
+    it "takes in a delivery file and a operation api response fragment" do
+      delivery_file = Apple::PodcastDeliveryFile.new
+      operation = {"foo" => "bar"}
+
+      upload_operation = Apple::UploadOperation.new(delivery_file: delivery_file, operation_fragment: operation)
+
+      assert_equal delivery_file, upload_operation.delivery_file
+      assert_equal operation, upload_operation.operation
+    end
+  end
+
+  describe ".do_upload" do
     let(:localhost_bridge) do
       Apple::Api.new(provider_id: "asdf",
         key_id: "asdf",

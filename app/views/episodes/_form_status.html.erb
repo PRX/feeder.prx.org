@@ -1,4 +1,4 @@
-<div class="card">
+<div class="card shadow border-0">
   <div class="card-header-<%= episode_status_class(episode) %>">
     <h5 class="card-title"><%= t(".title_#{episode.publishing_status_was}") %></h5>
   </div>
@@ -24,32 +24,34 @@
     </div>
   </div>
 
-  <div class="card-footer">
+  <div class="card-footer d-flex align-items-center justify-content-between">
     <% if episode.persisted? %>
       <p class="status-text"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(episode.updated_at) %></p>
 
       <% if policy(episode).update? %>
-        <%= link_to t(".discard"), edit_episode_path(episode), class: "btn btn-discard-changed invisible me-2", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
+        <div>
+          <%= link_to t(".discard"), edit_episode_path(episode), class: "btn btn-danger btn-discard-changed invisible", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
 
-        <div class="btn-group">
-          <%= form.submit t(".update"), class: "btn btn-#{episode_status_class(episode)}" %>
+          <div class="btn-group">
+            <%= form.submit t(".update"), class: "btn btn-#{episode_status_class(episode)}" %>
 
-          <% if episode.published? || policy(episode).destroy? %>
-            <button type="button" class="btn btn-<%= episode_status_class(episode) %> dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
-              <span class="visually-hidden"><%= t(".toggle_dropdown") %></span>
-            </button>
-            <ul class="dropdown-menu">
-              <% if episode.published? %>
-                <li><%= link_to t(".unpublish"), episode_path(episode, episode: {publishing_status: "draft"}), method: :put, class: "dropdown-item bg-danger text-white" %></li>
-              <% else %>
-                <li>
-                  <button type="button" class="dropdown-item bg-danger text-white" data-bs-toggle="modal" data-bs-target="#confirm-destroy">
-                    <%= t(".destroy") %>
-                  </button>
-                </li>
-              <% end %>
-            </ul>
-          <% end %>
+            <% if episode.published? || policy(episode).destroy? %>
+              <button type="button" class="btn btn-<%= episode_status_class(episode) %> dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="visually-hidden"><%= t(".toggle_dropdown") %></span>
+              </button>
+              <ul class="dropdown-menu">
+                <% if episode.published? %>
+                  <li><%= link_to t(".unpublish"), episode_path(episode, episode: {publishing_status: "draft"}), method: :put, class: "dropdown-item bg-danger text-white" %></li>
+                <% else %>
+                  <li>
+                    <button type="button" class="dropdown-item bg-danger text-white" data-bs-toggle="modal" data-bs-target="#confirm-destroy">
+                      <%= t(".destroy") %>
+                    </button>
+                  </li>
+                <% end %>
+              </ul>
+            <% end %>
+          </div>
         </div>
       <% end %>
 

@@ -24,6 +24,9 @@ class FakeController < ApplicationController
     end
   end
 
+  def ad_locations
+  end
+
   private
 
   def fake_params

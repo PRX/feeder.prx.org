@@ -80,9 +80,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   end
 
   link rel: :podcast, writeable: true do
-    if represented.id && represented.podcast
-      api_podcast_path(represented.podcast)
-    end
+    api_podcast_path(represented.podcast) if represented.id && represented.podcast
   end
 
   link :story do
@@ -90,14 +88,16 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   end
 
   link :audio_version do
-    if represented.prx_audio_version_uri
-      URI.join(cms_root, represented.prx_audio_version_uri).to_s
-    end
+    URI.join(cms_root, represented.prx_audio_version_uri).to_s if represented.prx_audio_version_uri
   end
 
   link :podcast_feed do
     if represented.podcast_feed_url
-      {href: represented.podcast_feed_url, type: "application/rss+xml"}
+      {
+        href: represented.podcast_feed_url,
+        type: "application/rss+xml",
+        title: represented.podcast.title
+      }
     end
   end
 end

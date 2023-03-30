@@ -95,6 +95,8 @@ describe Api::EpisodeRepresenter do
       episode.podcast_feed_url
     assert_equal json["_links"]["prx:podcast-feed"]["type"],
       "application/rss+xml"
+    assert_equal json["_links"]["prx:podcast-feed"]["title"],
+      episode.podcast.title
   end
 
   it "has a default podcast-feed link when no podcast url set" do

@@ -49,9 +49,13 @@ class Episode < ApplicationRecord
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
 
-  scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
+  scope :published, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at <= now()") }
+  scope :published_by, ->(offset) { where("episodes.published_at IS NOT NULL AND episodes.published_at <= ?", Time.now + offset) }
+  scope :draft, -> { where("episodes.published_at IS NULL") }
+  scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
+  scope :draft_or_scheduled, -> { draft.or(scheduled) }
 
-  scope :published_by, ->(offset) { where("published_at IS NOT NULL AND published_at <= ?", Time.now + offset) }
+  scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -372,5 +376,13 @@ class Episode < ApplicationRecord
 
   def feeder_cdn_host
     ENV["FEEDER_CDN_HOST"]
+  end
+
+  def published_or_released_date
+    if published_at.present?
+      published_at
+    elsif released_at.present?
+      released_at
+    end
   end
 end

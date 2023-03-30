@@ -29,24 +29,17 @@ module Apple
     end
 
     def episodes_to_sync
-      @episodes_to_sync ||= private_feed
-        .feed_episodes.map do |ep|
-        Apple::Episode.new(show: show, feeder_episode: ep)
-      end
-    end
-
-    def episode_ids
-      @episode_ids ||= episodes_to_sync.map(&:id).sort
-    end
-
-    def find_episode(id)
-      @find_episode ||=
-        episodes_to_sync.map { |e| [e.id, e] }.to_h
-
-      @find_episode.fetch(id)
+      show.episodes
     end
 
     def poll!
+      if show.apple_id.nil?
+        Rails.logger.warn "No connected Apple Podcasts show. Skipping polling!", {public_feed_id: public_feed.id,
+                                                                                  private_feed_id: private_feed.id,
+                                                                                  podcast_id: podcast.id}
+        return
+      end
+
       poll_episodes!
       poll_podcast_containers!
       poll_podcast_deliveries!
@@ -65,8 +58,10 @@ module Apple
 
       # upload and mark as uploaded
       execute_upload_operations!
+      mark_delivery_files_uploaded!
 
       wait_for_upload_processing
+      wait_for_asset_state
 
       publish_drafting!
 
@@ -98,10 +93,15 @@ module Apple
       Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
     end
 
+    def wait_for_asset_state
+      eps = episodes_to_sync.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
+      Apple::Episode.wait_for_asset_state(api, eps)
+    end
+
     def poll_episodes!
       local_episodes = episodes_to_sync
 
-      local_guids = local_episodes.map(&:item_guid)
+      local_guids = local_episodes.map(&:guid)
       remote_guids = show.apple_episode_guids
 
       Rails.logger.info("Polling remote / local episode state", {local_count: local_guids.length,
@@ -140,10 +140,10 @@ module Apple
 
       poll_podcast_containers!
 
-      eps = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
-      Rails.logger.info("Created remote and local state for podcast containers.", {count: eps.length})
+      res = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
+      Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})
 
-      res = Apple::Episode.update_audio_container_reference(api, eps)
+      res = Apple::Episode.update_audio_container_reference(api, episodes_to_sync)
       Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
 
       res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, episodes_to_sync)
@@ -179,9 +179,11 @@ module Apple
     end
 
     def execute_upload_operations!
-      upload_operation_result = Apple::UploadOperation.execute_upload_operations(api, episodes_to_sync)
-      delivery_file_ids = upload_operation_result.map { |r| r["request_metadata"]["podcast_delivery_file_id"] }
-      pdfs = ::Apple::PodcastDeliveryFile.where(id: delivery_file_ids)
+      Apple::UploadOperation.execute_upload_operations(api, episodes_to_sync)
+    end
+
+    def mark_delivery_files_uploaded!
+      pdfs = episodes_to_sync.map(&:podcast_delivery_files).flatten
       ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
     end
 
