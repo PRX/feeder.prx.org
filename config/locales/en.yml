@@ -228,7 +228,7 @@ en:
       success: Episode drafts generated.
     form_main:
       header: Plan Episodes
-      help_html: Save yourself some time by automatically creating multiple episode drafts to create a production schedule, it may also help your revenue as our sales teams will have access to dropdates to sell against. If you only wish to add a single episode, <a href="%{url}">go here</a>.
+      help_html: Add multiple episode drafts to create a production schedule. Episode drafts improve the accuracy of your podcast's forecasts. If you only need to add a single episode, <a href="%{url}">go here</a>.
     form_date_calculator:
       header:
         date_calculation: Date Calculation of Draft Batch
@@ -239,23 +239,22 @@ en:
         date_calculation: Calculate release dates for your drafts by selecting which days and weeks you plan to publish, and then select a date range.
         day_select: Which day of the week do you plan to publish your episodes? Select all that apply.
         week_select: Which weeks of the month do you plan to publish? Select all that apply.
-        calculate_weeks: Calculate the weeks by
-        select_weeks: Select weeks
-        select_period: Select interval
         range_select: How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.
         calculate_range: Calculate the end of the batch by
         select_range: Select range
       label:
-        week_condition: Weekly rhythm
-        week_of_month: Week of the month
-        period: Interval
+        week_condition: Calculate the weeks by
+        week_of_month: Select Week of the Month
+        period: Select Weekly Interval
         date_range_condition: End range
     form_side:
       header:
         preview: Schedule Preview
         publish_time: Publish Time
-        audio_segments: Audio Segments
+        segment_count: Number of Segments
         number_of_drafts: "Number of Draft Episodes: %{count}"
+        help:
+          segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
       help:
         preview: Select more options to get a schedule preview.
       label:

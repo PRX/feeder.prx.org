@@ -9,19 +9,18 @@
             method: :post
           ) do |form| %>
           <div class="card-body">
-            <div class="col mb-2">
-              <h3 class="fw-bold"><%= t(".header.publish_time") %></h3>
+            <div class="mb-4">
               <div class="form-floating">
                 <%= form.select :publish_time, time_options %>
                 <%= form.label :publish_time %>
               </div>
             </div>
 
-            <div class="col mb-2">
-              <h3 class="fw-bold"><%= t(".header.audio_segments") %></h3>
+            <div class="mb-4">
               <div class="form-floating">
                 <%= form.number_field :segment_count, {min: 1, max: 10, step: 1, value: 2} %>
-                <%= form.label :segment_count %>
+                <%= form.label t(".header.segment_count") %>
+                <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".header.help.segment_count") %>"><span class="material-icons">help</span></button>
               </div>
             </div>
 
