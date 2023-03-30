@@ -1,4 +1,3 @@
-require "addressable/uri"
 require "loofah"
 require "hash_serializer"
 
@@ -7,15 +6,14 @@ class PodcastImport < ActiveRecord::Base
 
   serialize :config, HashSerializer
 
-  attr_accessor :feed, :feed_raw_doc, :templates, :podcast
+  attr_accessor :feed, :feed_raw_doc, :templates
 
-  belongs_to :user, -> { with_deleted }
-  belongs_to :account, -> { with_deleted }
-  belongs_to :series, -> { with_deleted }
+  belongs_to :podcast, -> { with_deleted }, touch: true
+  has_many :episode_imports, dependent: :destroy
 
   before_validation :set_defaults, on: :create
 
-  validates :user_id, :account_id, :url, presence: true
+  validates :account_id, :url, :podcast, presence: true
 
   COMPLETE = "complete".freeze
   FAILED = "failed".freeze
@@ -46,7 +44,7 @@ class PodcastImport < ActiveRecord::Base
     self.status ||= CREATED
     self.config ||= {
       audio: {},            # map of guids to array of audio file urls
-      episodes_only: false  # indicates if podcast and series should be updated
+      episodes_only: false  # indicates if podcast should be updated
     }
   end
 
@@ -89,20 +87,22 @@ class PodcastImport < ActiveRecord::Base
     import_later
   end
 
-  def import_later(import_series = true)
-    PodcastImportJob.perform_later(self, import_series)
+  def import_later(import_podcast = true)
+    PodcastImportJob.perform_later(self, import_podcast)
   end
 
-  def import_series!
+  def import_podcast!
     update!(status: STARTED)
 
     # Request the RSS feed
     get_feed
     update!(status: FEED_RETRIEVED)
 
-    # Create the series
-    create_or_update_series!
+    # Create the podcast
+    create_or_update_podcast!
+
     update!(status: SERIES_CREATED)
+    update!(status: PODCAST_CREATED)
   rescue => err
     update(status: FAILED)
     raise err
@@ -125,7 +125,7 @@ class PodcastImport < ActiveRecord::Base
   end
 
   def import
-    import_series!
+    import_podcast!
     import_episodes!
   end
 
@@ -217,63 +217,46 @@ class PodcastImport < ActiveRecord::Base
     clean_text(result)
   end
 
-  def create_or_update_series!(feed = self.feed)
+  def create_or_update_podcast!(feed = self.feed)
     if config[:episodes_only]
-      raise "No series for import of episodes only" if !series
-      return series
+      raise "No podcast for import of episodes only" if !podcast
+      podcast
     end
+  end
 
-    series_attributes = {
-      app_version: PRX::APP_VERSION,
-      account: account,
-      title: clean_string(feed.title),
-      short_description: clean_string(podcast_short_desc(feed)),
-      description_html: feed_description(feed)
-    }
-
-    if series
-      series.update!(series_attributes)
-    else
-      self.series = create_series!(series_attributes)
-      save!
-    end
-
-    if !podcast_distribution
-      self.distribution = Distributions::PodcastDistribution.create!(distributable: series)
-    end
-
-    new_images = update_images(feed)
-
-    series.save!
-
-    new_images.each { |i| announce_image(i) }
-
-    series
+  def announce_image(*args)
+    Rails.logger.error("PodcastImport#announce_image deprecated")
+    nil
   end
 
   def update_images(feed)
-    [[Image::PROFILE, feed.itunes_image], [Image::THUMBNAIL, feed.image.try(:url)]].map do |p, u|
-      update_image(p, u)
-    end.flatten
+    Rails.logger.error("PodcastImport#update_images not feeder implemented")
+    []
+    # [[Image::PROFILE, feed.itunes_image], [Image::THUMBNAIL, feed.image.try(:url)]].map do |p, u|
+    #  update_image(p, u)
+    # end.flatten
   end
 
   def update_image(purpose, image_url)
+    Rails.logger.error("PodcastImport#update_image not feeder implemented")
+    return []
+
     if image_url.blank?
-      series.images.where(purpose: purpose).destroy_all
+      podcast.images.where(purpose: purpose).destroy_all
       return []
     end
 
     to_destroy = []
     to_insert = []
 
-    existing_image = series.images.send(purpose)
+    existing_image = podcast.images.send(purpose)
     if existing_image && !files_match?(existing_image, image_url)
       to_destroy << existing_image
       existing_image = nil
     end
 
     if !existing_image
-      to_insert << series.images.build(upload: clean_string(image_url), purpose: purpose)
+      to_insert << podcast.images.build(upload: clean_string(image_url), purpose: purpose)
     end
 
     to_insert
@@ -282,23 +265,19 @@ class PodcastImport < ActiveRecord::Base
   attr_writer :distribution
 
   def distribution
-    @distribution ||= series.distributions.where(type: "Distributions::PodcastDistribution").first
-  end
-
-  def podcast_distribution
-    distribution
+    Rails.logger.error("PodcastImport#distribution not feeder implemented")
+    []
   end
 
   def create_or_update_podcast!
     if config[:episodes_only]
-      raise "No podcast distribution for import of episodes only" if !podcast_distribution
-      raise "No podcast distribution url for import of episodes only" if !podcast_distribution.url
-      self.podcast = podcast_distribution.get_podcast
+      raise "No podcast for import of episodes only" unless podcast.persisted?
       raise "No podcast for import of episodes only" if !podcast
       return podcast
     end
 
     podcast_attributes = {}
+
     %w[copyright language update_frequency update_period].each do |atr|
       podcast_attributes[atr.to_sym] = clean_string(feed.send(atr))
     end
@@ -313,7 +292,10 @@ class PodcastImport < ActiveRecord::Base
 
     podcast_attributes[:author] = person(feed.itunes_author)
     podcast_attributes[:managing_editor] = person(feed.managing_editor)
-    podcast_attributes[:owner] = owner(feed.itunes_owners)
+
+    owner = owner(feed.itunes_owners)
+    podcast_attributes[:owner_name] = owner[:name]
+    podcast_attributes[:owner_email] = owner[:email]
 
     podcast_attributes[:itunes_categories] = parse_itunes_categories(feed)
     podcast_attributes[:categories] = parse_categories(feed)
@@ -323,7 +305,16 @@ class PodcastImport < ActiveRecord::Base
     podcast_attributes[:serial_order] = feed.itunes_type && !!feed.itunes_type.match(/serial/i)
     podcast_attributes[:locked] = true # won't publish feed until this is set to false
 
-    self.podcast = podcast_distribution.create_or_update_podcast!(podcast_attributes)
+    podcast_attributes[:title] = clean_string(feed.title)
+    podcast_attributes[:subtitle] = clean_string(podcast_short_desc(feed))
+    podcast_attributes[:description] = feed_description(feed)
+
+    podcast.update!(**podcast_attributes)
+    # TODO handle podcast policy
+
+    # new_images = update_images(feed)
+    # new_images.each { |i| announce_image(i) }
+
     podcast
   end
 
@@ -367,7 +358,7 @@ class PodcastImport < ActiveRecord::Base
       end
     end
 
-    [itunes_cats.keys.map { |n| {name: n, subcategories: itunes_cats[n]} }.first].compact
+    [itunes_cats.keys.map { |n| ITunesCategory.new(name: n, subcategories: itunes_cats[n]) }.first].compact
   end
 
   def parse_categories(feed)
@@ -388,8 +379,8 @@ class PodcastImport < ActiveRecord::Base
     contains_video = enclosure_type&.starts_with?("video/")
     content_type = contains_video ? AudioFile::VIDEO_CONTENT_TYPE : AudioFile::MP3_CONTENT_TYPE
 
-    series.with_lock do
-      template = series.audio_version_templates
+    podcast.with_lock do
+      template = podcast.audio_version_templates
         .where(segment_count: num_segments, content_type: content_type).first
       if !template
         template = series.audio_version_templates.create!(
@@ -411,6 +402,7 @@ class PodcastImport < ActiveRecord::Base
           )
         end
 
+        # TODO
         podcast_distribution.distribution_templates.create!(
           distribution: podcast_distribution,
           audio_version_template: template

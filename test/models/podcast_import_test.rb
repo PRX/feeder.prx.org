@@ -4,10 +4,10 @@ require "ostruct"
 
 describe PodcastImport do
   let(:user) { create(:user) }
-  let(:account) { create(:account, id: 8, opener: user) }
-  let(:series) { create(:series, account: account) }
+  let(:account_id) { user.authorized_account_ids(:podcast_edit).first }
   let(:podcast_url) { "http://feeds.prx.org/transistor_stem" }
-  let(:importer) { PodcastImport.create(user: user, account: account, url: podcast_url) }
+  let(:podcast) { create(:podcast) }
+  let(:importer) { PodcastImport.create(podcast: podcast, account_id: account_id, url: podcast_url) }
 
   before do
     # stub to prevent network access
@@ -17,21 +17,7 @@ describe PodcastImport do
     stub_requests
   end
 
-  # around do |test|
-  # ENV["PORTER_SNS_TOPIC_ARN"] = "anything"
-  # Portered.stub(:sns_client, StubSns.new) { test.call }
-  # ENV["PORTER_SNS_TOPIC_ARN"] = ""
-  # test.call
-  # end
-
   let(:feed) { Feedjira::Feed.parse(test_file("/fixtures/transistor_two.xml")) }
-  let(:template) { create(:audio_version_template, series: series) }
-
-  let(:podcast) do
-    api_resource(JSON.parse(json_file("transistor_podcast_basic")), feeder_root).tap do |r|
-      r.headers = r.headers.merge("Authorization" => "Bearer thisisnotatoken")
-    end
-  end
 
   it "retrieves a valid feed" do
     importer.get_feed
@@ -49,57 +35,42 @@ describe PodcastImport do
     -> { importer.get_feed }.must_raise(RuntimeError)
   end
 
-  it "creates a series" do
+  it "updates a podcast" do
     importer.feed = feed
-    importer.create_or_update_series!
-    importer.series.wont_be_nil
-    importer.series.account_id.wont_be_nil
-    importer.series.title.must_equal "Transistor"
-    importer.series.short_description.must_equal "A podcast of scientific questions and " \
+    importer.create_or_update_podcast!
+    importer.podcast.wont_be_nil
+    importer.podcast.account_id.wont_be_nil
+    importer.podcast.title.must_equal "Transistor"
+    importer.podcast.subtitle.must_equal "A podcast of scientific questions and " \
       "stories featuring guest hosts and reporters."
-    importer.series.description.must_equal "Transistor is a podcast of scientific curiosities " \
+    importer.podcast.description.must_equal "Transistor is a podcast of scientific curiosities " \
       "and current events, featuring guest hosts, " \
       "scientists, and story-driven reporters. Presented " \
       "by radio and podcast powerhouse PRX, with support " \
       "from the Sloan Foundation."
-    importer.distribution.wont_be_nil
-    importer.distribution.distributable.must_equal importer.series
+
+    # TODO
+    # Portered.sns_client.messages.count.must_equal 2
+    # Portered.sns_client.messages[0]["Job"]["Id"].must_equal images[0].to_global_id.to_s
+    # Portered.sns_client.messages[1]["Job"]["Id"].must_equal images[1].to_global_id.to_s
 
     # images must be processing
-    images = importer.series.images
-    images.count.must_equal 2
-    Portered.sns_client.messages.count.must_equal 2
-    Portered.sns_client.messages[0]["Job"]["Id"].must_equal images[0].to_global_id.to_s
-    Portered.sns_client.messages[1]["Job"]["Id"].must_equal images[1].to_global_id.to_s
-  end
-
-  it "creates a podcast" do
-    importer.feed = feed
-    importer.series = series
-
-    distribution = create(:podcast_distribution,
-      distributable: series,
-      url: "https://feeder.prx.org/api/v1/podcasts/51")
-
-    importer.distribution = distribution.tap { |d| d.url = nil }
-    importer.create_or_update_podcast!
-    importer.podcast.wont_be_nil
-    importer.podcast.title.must_equal "Transistor"
-    importer.podcast.serial_order.must_equal false
-    importer.podcast.locked.must_equal true
+    # images = importer.podcast.images
+    # images.count.must_equal 2
   end
 
   it "creates podcast episode imports" do
     importer.config_url = "http://test.prx.org/transistor_import_config.json"
     importer.feed = feed
-    importer.series = series
-    series.audio_version_templates.clear
     importer.podcast = podcast
+
+    # TODO audio version templates
+    # podcast.audio_version_templates.clear
 
     importer.import
     importer.episode_imports.map(&:import)
 
-    importer.series.audio_version_templates.count.must_equal 2
+    importer.podcast.audio_version_templates.count.must_equal 2
     importer.distribution.audio_version_templates.count.must_equal 2
   end
 
@@ -113,9 +84,9 @@ describe PodcastImport do
     importer.import
     importer.episode_imports.map(&:import)
 
-    importer.series.audio_version_templates.count.must_equal 2
+    importer.podcast.audio_version_templates.count.must_equal 2
     importer.distribution.audio_version_templates.count.must_equal 2
-    importer.series.audio_version_templates
+    importer.podcast.audio_version_templates
       .count { |avt| avt.content_type == AudioFile::VIDEO_CONTENT_TYPE }.must_equal 1
   end
 
@@ -124,20 +95,14 @@ describe PodcastImport do
       importer.config[:episodes_only] = true
     }
 
-    it "must have series set" do
-      exception = -> { importer.import }.must_raise(RuntimeError)
-      exception.message.must_be :start_with?, "No series"
+    it "must have podcast set" do
+      importer.podcast = nil
+      exception = -> { importer.import }.must_raise(ActiveRecord::RecordInvalid)
+      _(exception.message).must_equal "Validation failed: Podcast must exist, Podcast can't be blank"
     end
 
-    it "must have podcast distribution" do
-      series.distributions.delete_all
-      importer.series = series
-      exception = -> { importer.import }.must_raise(RuntimeError)
-      exception.message.must_be :start_with?, "No podcast distribution"
-    end
-
-    it "imports with a series and podcast" do
-      importer.series = series
+    it "imports with a podcast" do
+      importer.podcast = podcast
       importer.import
     end
   end
@@ -211,7 +176,7 @@ describe PodcastImport do
 
     it("should delete all import placeholders with each import") do
       importer.url = "http://feeds.prx.org/transistor_stem_duped"
-      importer.import_series!
+      importer.import_podcast!
       # invoke the creation of placeholders
       importer.import_episodes!
       importer.create_or_update_episode_imports!
@@ -250,7 +215,7 @@ describe PodcastImport do
       importer.feed_episode_count.must_equal 2
       importer.episode_imports.count.must_equal 2
 
-      importer.series.stories.count.must_equal 0
+      importer.podcast.episodes.count.must_equal 0
     end
   end
 
@@ -343,14 +308,8 @@ describe PodcastImport do
       ep1.update! status: EpisodeImport::COMPLETE
       ep2.update! status: EpisodeImport::FAILED
 
-      ep1.stub :podcast_import, importer do
-        podcast_distribution_mock = MiniTest::Mock.new
-        podcast_distribution_mock.expect :call, true, [{locked: false}]
-        importer.podcast_distribution.stub :update_podcast!, podcast_distribution_mock do
-          ep1.import
-        end
-        podcast_distribution_mock.verify
-      end
+      ep1.import
+      _(importer.podcast.locked).must_equal false
     end
   end
 end

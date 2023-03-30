@@ -10,7 +10,7 @@ class EpisodeImport < ActiveRecord::Base
   serialize :entry, HashSerializer
   serialize :audio, HashSerializer
 
-  belongs_to :story, -> { with_deleted }, class_name: "Story", foreign_key: "piece_id", touch: true
+  belongs_to :story, -> { with_deleted }, class_name: Episode.to_s, foreign_key: "episode_id", touch: true, optional: true
   belongs_to :podcast_import
   has_one :series, through: :podcast_import
   delegate :config, to: :podcast_import
@@ -35,7 +35,7 @@ class EpisodeImport < ActiveRecord::Base
 
   def unlock_podcast
     if podcast_import.finished?
-      podcast_import.podcast_distribution.update_podcast!(locked: false)
+      podcast_import.podcast.update(locked: false)
     end
   end
 
@@ -55,7 +55,9 @@ class EpisodeImport < ActiveRecord::Base
   end
 
   def import
-    update_episode_audio!
+    # TODO
+    # update_episode_audio!
+
     update!(status: AUDIO_SAVED)
     create_or_update_story!
     update!(status: STORY_SAVED, piece_id: story.id)
