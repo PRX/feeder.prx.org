@@ -7,25 +7,21 @@
       <h1 class="text-black fw-bold me-4 mb-4"><%= t(".my_podcasts") %></h1>
 
       <div class="mb-4">
-      <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="sort by">
         <span class="material-icons" style="color: green" aria-hidden="true">sort</span>
 
         <% if params[:sort] == 'episode_count' %>
-          <span class="material-icons" aria-hidden="true">123</span>
-          <span>Episode Count</span>
-        <% elsif params[:sort] == 'A-Z'%>
-          <span class="material-icons" aria-hidden="true">sort_by_alpha</span>
-          <span>A-Z</span>
+          <span class="material-icons" aria-hidden="true" aria-label="Number of Episodes">123</span>
+        <% elsif params[:sort] == 'A-Z' %>
+          <span aria-hidden="true" aria-label="A to Z">A-Z</span>
         <% elsif params[:sort] == 'Z-A' %>
-          <span class="material-icons" aria-hidden="true">sort_by_alpha</span>
-          <span>Z-A</span>
+          <span aria-hidden="true" aria-label="Z to A">Z-A</span>
         <% else %>
-          <span class="material-icons" aria-hidden="true">timer</span>
-          <span>Recent Activity</span>
+          <span class="material-icons" aria-hidden="true" aria-label="Recent Activity">timer</span>
         <% end %>
 
       </button>
-      <ul class="dropdown-menu">
+      <ul class="dropdown-menu"">
         <li><%= active_link_to "Recent Activity", podcasts_path(sort: "Recent Activity"), active: :exact, class: "dropdown-item" %></li>
         <li><%= active_link_to "# of Episodes", podcasts_path(sort: "episode_count"), active: :exact, class: "dropdown-item" %></li>
         <li><%= active_link_to "A-Z", podcasts_path(sort: "A-Z"), active: :exact, class: "dropdown-item" %></li>
@@ -36,12 +32,12 @@
 </div>
 
 <%= form_with(
-  url: podcasts_path,
+      url: podcasts_path,
   method: :get,
   data: {
-    controller: "search"
-  }
-) do |form| %>
+        controller: "search"
+      }
+        ) do |form| %>
 
 <div class="">
   <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm", placeholder: "Search" %>
