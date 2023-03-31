@@ -6,7 +6,7 @@ module Apple
 
     serialize :api_response, JSON
 
-    has_many :podcast_deliveries
+    has_many :podcast_deliveries, dependent: :destroy
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, class_name: "::Episode"
 
@@ -21,12 +21,16 @@ module Apple
 
       api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params))
         .map do |row|
-        content_length = row.dig("api_response", "val", "data", "content-length")
+        content_length = row.dig("api_response", "val", "data", "headers", "content-length")
+        cdn_url = row.dig("api_response", "val", "data", "redirect_chain_end_url")
+        raise "Missing content-length in response" if content_length.blank?
+        raise "Missing cdn_url in response" if cdn_url.blank?
 
         podcast_container_id = row["request_metadata"]["podcast_container_id"]
 
         container = containers_by_id.fetch(podcast_container_id)
         container.source_size = content_length
+        container.source_url = cdn_url
 
         container.save!
         container
@@ -38,6 +42,8 @@ module Apple
 
       join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         next if row.nil?
+        apple_id = row.dig("api_response", "val", "data", "id")
+        raise "missing apple id!" unless apple_id.present?
 
         upsert_podcast_container(ep, row)
       end
@@ -68,7 +74,7 @@ module Apple
           vendor_id: episode.audio_asset_vendor_id).first)
 
           pc.update(api_response: row,
-            source_url: episode.enclosure_url,
+            enclosure_url: episode.enclosure_url,
             source_filename: episode.enclosure_filename,
             updated_at: Time.now.utc)
           [pc, :updated]
@@ -77,7 +83,7 @@ module Apple
             apple_episode_id: episode.apple_id,
             external_id: external_id,
             source_filename: episode.enclosure_filename,
-            source_url: episode.enclosure_url,
+            enclosure_url: episode.enclosure_url,
             vendor_id: episode.audio_asset_vendor_id,
             episode_id: episode.feeder_id)
           [pc, :created]
@@ -186,7 +192,7 @@ module Apple
           apple_episode_id: apple_episode_id,
           podcast_container_id: id
         },
-        api_url: source_url,
+        api_url: source_url || enclosure_url,
         api_parameters: {}
       }
     end

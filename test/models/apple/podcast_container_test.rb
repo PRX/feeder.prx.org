@@ -90,7 +90,8 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
             apple_episode.stub(:enclosure_filename, "1234") do
               pc1 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
                 podcast_container_json_row)
-              assert_equal pc1.source_url, "https://podcast.source/1234"
+              assert_equal pc1.enclosure_url, "https://podcast.source/1234"
+              assert_nil pc1.source_url
               assert_equal pc1.source_filename, "1234"
             end
           end
@@ -105,7 +106,8 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
           assert pc1 == pc2
 
-          assert_equal pc2.source_url, "https://another.source/5678"
+          assert_equal pc2.enclosure_url, "https://another.source/5678"
+          assert_nil pc2.source_url
           assert_equal pc2.source_filename, "5678"
         end
       end
@@ -183,6 +185,24 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       file["assetRole"] = "Not Podcast Source Audio"
       container.stub(:apple_attributes, {"files" => [file]}) do
         refute container.has_podcast_audio?
+      end
+    end
+  end
+
+  describe "#destroy" do
+    it "should destroy the podcast container and cascade to the delivery and delivery file" do
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          pc = Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row)
+          pd = pc.podcast_deliveries.create!(episode: pc.episode)
+          pdf = pd.podcast_delivery_files.create!(episode: pc.episode)
+
+          pc.podcast_deliveries.destroy_all
+          pc.podcast_delivery_files.destroy_all
+
+          assert_not_nil pd.reload.deleted_at
+          assert_not_nil pdf.reload.deleted_at
+        end
       end
     end
   end
