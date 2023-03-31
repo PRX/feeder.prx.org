@@ -152,20 +152,7 @@ class PodcastImport < ActiveRecord::Base
   def enqueue_episode_import_jobs(created_imports)
     # TODO port these jobs to a shoryuken worker
     messages = created_imports.map do |ei|
-      job = EpisodeImportJob.new(ei)
-      msg = {}
-      msg[:message_body] = job.serialize
-      msg[:message_attributes] = {
-        "shoryuken_class" => {
-          string_value: ActiveJob::QueueAdapters::ShoryukenAdapter::JobWrapper.to_s,
-          data_type: "String"
-        }
-      }
-      msg
-    end
-    queue_name = EpisodeImportJob.queue_name
-    messages.in_groups_of(10, false) do |msg_group|
-      Shoryuken::Client.queues(queue_name).send_messages(msg_group)
+      EpisodeImportJob.perform_later(ei)
     end
   end
 
