@@ -1,5 +1,5 @@
 class PodcastImportJob < ApplicationJob
-  queue_as :cms_podcast_import
+  queue_as :podcast_import
 
   def perform(podcast_import, import_podcast = true)
     if import_podcast
