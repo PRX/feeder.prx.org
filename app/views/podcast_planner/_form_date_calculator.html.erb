@@ -1,83 +1,176 @@
 <section>
-  <div class="mb-4">
-    <h2 class="fw-bold"><%= t(".header.date_calculation") %></h2>
-    <p><%= t(".help.date_calculation") %></p>
-  </div>
 
   <div class="mb-4">
-    <h3 class="fw-bold"><%= t(".header.day_select") %></h3>
-    <p><%= t(".help.day_select") %></p>
     <div class="col-lg-12">
       <div class="form-floating">
-        <%= form.select :selected_days, day_options, {include_blank: true}, data: {action: "click#submit"}, multiple: true %>
-        <%= form.label :selected_days %>
+        <%= form.select :time, [["9 AM", "days"],["10 AM", "weeks"]], {include_blank: true}, data: {action: "click#submit"}, multiple: false %>
+        <%= form.label :time %>
+      </div>
+    </div>
+  </div>
+  <div class="mb-4">
+    <div class="col-lg-12">
+      <div class="form-floating">
+        <%= form.select :structure, [["2-Segment", "days"],["3-Segment", "weeks"]], {include_blank: true}, data: {action: "click#submit"}, multiple: false %>
+        <%= form.label :structure %>
       </div>
     </div>
   </div>
 
-  <div class="mb-4" data-controller="toggle-field">
-    <h3 class="fw-bold"><%= t(".header.week_select") %></h3>
-    <p><%= t(".help.week_select") %></p>
-    <div class="row">
-      <div class="col-lg-6">
-        <p><%= t(".help.calculate_weeks") %></p>
-        <div class="form-floating">
-          <%= form.select :week_condition, week_condition_options, {}, data: {action: "toggle-field#displayOnlyThisField click#submit"} %>
-          <%= form.label t(".label.week_condition") %>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="" data-toggle-field-target="field" field="monthly">
-          <p><%= t(".help.select_weeks") %></p>
-          <div class="form-floating">
-            <%= form.select :monthly_weeks, monthly_weeks_options, {include_blank: true}, data: {action: "click#submit"}, multiple: true %>
-            <%= form.label t(".label.week_of_month") %>
-          </div>
-        </div>
-        <div class="d-none" data-toggle-field-target="field" field="periodic">
-          <p><%= t(".help.select_period") %></p>
-          <div class="form-floating">
-            <%= form.select :period, periodic_weeks_options, {}, data: {action: "click#submit"} %>
-            <%= form.label t(".label.period") %>
-          </div>
-        </div>
-      </div>
+  <div class="mb-4">
+    <div class="col-lg-12">
+      <p>Click dates in the caledar.</p>
+      <p>You can also add recurring dates all at once below.</p>
     </div>
   </div>
 
-  <div class="mb-4" data-controller="toggle-field">
-    <h3 class="fw-bold"><%= t(".header.range_select") %></h3>
-    <p><%= t(".help.range_select") %></p>
-    <div class="row mb-4">
-      <div class="col-lg-6">
-        <p><%= t(".help.calculate_range") %></p>
-        <div>
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">By Frequency</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">By Week</button>
+    </li>
+  </ul>
+
+
+  <div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+      <div class="mb-4">
+        <div class="col-lg-12">
           <div class="form-floating">
-            <%= form.select :date_range_condition, end_condition_options, {}, data: {action: "toggle-field#displayOnlyThisField click#submit"} %>
-            <%= form.label t(".label.date_range_condition") %>
+            <%= form.select :frequency, [["Daily", "days"],["Weekly", "weeks"],["Monthly", "months"]], {include_blank: true}, data: {action: "click#submit"}, multiple: false %>
+            <%= form.label :frequency %>
           </div>
         </div>
       </div>
-      <div class="col-lg-6">
-        <p><%= t(".help.select_range") %></p>
-          <div class="form-floating mb-2">
-            <%= form.date_field :start_date, min: DateTime.tomorrow, max: DateTime.tomorrow + 1.years, value: DateTime.tomorrow, data: {action: "click#submit"} %>
-            <%= form.label :start_date %>
+      <div class="mb-4">
+        <div class="col-lg-12">
+          Every <input style="width: 30px; text-align: center;" id="exampleInputEmail1"> <span id=_f1>weeks</span>
+        </div>
+      </div>
+      <div class="mb-4">
+        <div class="col-lg-12" id=_f2 style="display:none">
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">S</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">M</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">T</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">W</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">T</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">F</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">S</button>
+        </div>
+        <div class="col-lg-12" id=_f3 style="display:none">
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">1</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">2</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">3</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">4</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">5</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">6</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">7</button>
+          <br>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">8</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">9</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">10</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">11</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">12</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">13</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">14</button>
+          <br>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">15</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">16</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">17</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">18</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">19</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">20</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">21</button>
+          <br>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">22</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">23</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">24</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">25</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">26</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">27</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">28</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+      <div class="mb-4">
+        <div class="col-lg-12">
+          <div class="form-floating">
+            <%= form.select :week_format, [["Complete week", 1],["7 day blocks", 2]], {include_blank: false}, data: {action: "click#submit"}, multiple: false %>
+            <%= form.label :week_format %>
           </div>
 
-        <div data-toggle-field-target="field" field="episodes">
-          <div class="form-floating">
-            <%= form.number_field :number_of_episodes, {min: 1, max: 100, step: 1, value: 10, data: {action: "click#submit"}} %>
-            <%= form.label :number_of_episodes %>
+          <div class="form-floating" id=wso>
+            <%= form.select :week_start, [["Sunday", 1],["Monday", 2]], {include_blank: false}, data: {action: "click#submit"}, multiple: false %>
+            <%= form.label :week_start %>
           </div>
         </div>
-        <div class="d-none" data-toggle-field-target="field" field="date">
-          <div class="form-floating">
-            <%= form.date_field :end_date, min: DateTime.tomorrow + 1.day, max: DateTime.tomorrow + 2.years, data: {action: "click#submit"} %>
-            <%= form.label :end_date %>
-          </div>
+        <div class="col-lg-12" id=_f4>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">1st</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">2nd</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">3rd</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">4th</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">5th</button>
+        </div>
+        <div class="col-lg-12" id=_f5>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">S</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">M</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">T</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">W</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">T</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">F</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">S</button>
         </div>
       </div>
+
     </div>
   </div>
+
+  <div class="mb-4">
+    <div class="col-lg-12">
+      <button type="button" class="btn btn-outline-primary" data-bs-toggle="button" id=add>Add Dates</button>
+      <button type="button" class="btn btn-outline-primary" data-bs-toggle="button">Replace Dates</button>
+    </div>
+  </div>
+
+
+  <script>
+    (() => {
+      const w = document.getElementById('week_format');
+      const ws = document.getElementById('week_start');
+      const wso = document.getElementById('wso');
+      w.addEventListener('change', e => {
+        console.log(w.value);
+        if (w.value === '1') {
+          wso.style.display = 'block';
+        } else {
+          wso.style.display = 'none';
+        }
+      });
+
+
+      const f = document.getElementById('frequency');
+      const fl = document.getElementById('_f1');
+      const f2 = document.getElementById('_f2');
+      const f3 = document.getElementById('_f3');
+      f.addEventListener('change', e => {
+        fl.innerText = f.value;
+
+        if (f.value === 'days') {
+          f2.style.display = 'none';
+          f3.style.display = 'none';
+        } else if (f.value === 'weeks') {
+          f2.style.display = 'block';
+          f3.style.display = 'none';
+        } else {
+          f2.style.display = 'none';
+          f3.style.display = 'block';
+        }
+      });
+    })();
+  </script>
 </section>

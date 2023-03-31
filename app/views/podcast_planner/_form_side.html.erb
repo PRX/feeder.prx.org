@@ -1,48 +1,80 @@
-<div class="card">
-  <div class="card-header-primary">
-    <h5 class="card-title"><%= t(".header.preview") %></h5>
-  </div>
-  <%= turbo_frame_tag "preview", target: "_top" do %>
-    <% if @planner.dates.present? %>
-      <%= form_with(
-            url: podcast_planner_path(@podcast),
-            method: :post
-          ) do |form| %>
-          <div class="card-body">
-            <div class="col mb-2">
-              <h3 class="fw-bold"><%= t(".header.publish_time") %></h3>
-              <div class="form-floating">
-                <%= form.select :publish_time, time_options %>
-                <%= form.label :publish_time %>
-              </div>
-            </div>
-
-            <div class="col mb-2">
-              <h3 class="fw-bold"><%= t(".header.audio_segments") %></h3>
-              <div class="form-floating">
-                <%= form.number_field :segment_count, {min: 1, max: 10, step: 1, value: 2} %>
-                <%= form.label :segment_count %>
-              </div>
-            </div>
-
-            <div class="col">
-              <p><%= t(".header.number_of_drafts", count: @planner.dates.count) %></p>
-              <ul class="list-group list-group-numbered">
-                <% @planner.dates.each do |date| %>
-                  <li class="list-group-item"><%= l(date, format: :day_and_date) %></li>
-                  <%= form.hidden_field :generated_dates, multiple: true, value: date %>
-                <% end %>
-              </ul>
-            </div>
-          </div>
-          <div class="card-footer">
-            <%= form.submit t(".label.submit"), class: "btn btn-primary" %>
-          </div>
-      <% end %>
-    <% else %>
-      <div class="card-body">
-        <p><%= t(".help.preview") %></p>
+<div id=cal>
+  <div class="row my-4 px-2">
+    <% 3.times do %>
+      <div class="col-lg-4">
+        <table style="width: 100%">
+          <tr><th colspan=7 style="text-align:center">May</th></tr>
+          <tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr>
+          <tr><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
+          <tr><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td></tr>
+          <tr><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td></tr>
+          <tr><td>22</td><td>23</td><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td></tr>
+        </table>
       </div>
     <% end %>
-  <% end %>
+  </div>
+  <div class="row my-4 px-2">
+    <% 3.times do %>
+      <div class="col-lg-4">
+        <table style="width: 100%">
+          <tr><th colspan=7 style="text-align:center">May</th></tr>
+          <tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr>
+          <tr><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
+          <tr><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td></tr>
+          <tr><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td></tr>
+          <tr><td>22</td><td>23</td><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td></tr>
+        </table>
+      </div>
+    <% end %>
+  </div>
 </div>
+
+<style>
+  td,th {text-align:center;}
+  td{cursor:pointer;}
+  td.preview { background: rgba(255, 0, 0, 0.2) }
+  td.on { background: rgba(255, 0, 0, 0.6) }
+</style>
+
+<script>
+  (() => {
+    function getRandomSubarray(arr, size) {
+        var shuffled = arr.slice(0), i = arr.length, temp, index;
+        while (i--) {
+            index = Math.floor((i + 1) * Math.random());
+            temp = shuffled[index];
+            shuffled[index] = shuffled[i];
+            shuffled[i] = temp;
+        }
+        return shuffled.slice(0, size);
+    }
+
+    const cells = [...document.querySelectorAll('table td')];
+    for (const cell of cells) {
+      cell.addEventListener('click', e => {
+        e.target.classList.toggle('on');
+      });
+    }
+
+    const add = document.getElementById('add');
+    add.addEventListener('mouseover', e => {
+      const cells = [...document.querySelectorAll('table td')];
+      const somecells = getRandomSubarray(cells, 10);
+
+      for (const cell of somecells) {
+        cell.classList.add('preview')
+      }
+    });
+
+
+    add.addEventListener('click', e => {
+      const cells = [...document.querySelectorAll('table td.preview')];
+      for (const cell of cells) {
+        cell.classList.remove('preview')
+        cell.classList.add('on')
+      }
+    });
+
+    const cal = document.getElementById('cal');
+  })();
+</script>
