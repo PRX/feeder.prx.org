@@ -87,7 +87,7 @@ class EpisodeStoryHandler
 
   def update_image
     cms_image = begin
-      story.objects["prx:image"] || story.links["prx:image"]
+      story.objects["prx:image"]
     rescue
       nil
     end
