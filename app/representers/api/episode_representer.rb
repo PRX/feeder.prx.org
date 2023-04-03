@@ -59,7 +59,8 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     as: :ready_media,
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource,
-    writeable: false
+    writeable: false,
+    if: ->(_o) { !media_resources&.all?(&:complete?) }
 
   property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
 
