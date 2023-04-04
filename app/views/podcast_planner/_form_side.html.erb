@@ -27,18 +27,22 @@
 
             <div class="col">
               <p><%= t(".header.number_of_drafts", count: @planner.dates.count) %></p>
-              <% @planner_months.each do |dates_in_month| %>
-                <%= month_calendar(start_date: dates_in_month.first) do |date| %>
-                  <% if date.month == dates_in_month.first.month %>
-                    <%= date.day %>
-                    <% dates_in_month.each do |d| %>
-                      <% if d.day == date.day %>
-                        <p class="fw-bold">DING</p>
+              <div class="row row-cols-3">
+                <% @planner_months.each do |dates_in_month| %>
+                  <div class="col">
+                    <%= month_calendar(start_date: dates_in_month.first) do |date| %>
+                      <% if date.month == dates_in_month.first.month %>
+                        <%= date.day %>
+                        <% dates_in_month.each do |d| %>
+                          <% if d.day == date.day %>
+                            <%# selected date needs stimulus for selection and coloring %>
+                          <% end %>
+                        <% end %>
                       <% end %>
                     <% end %>
-                  <% end %>
+                  </div>
                 <% end %>
-              <% end %>
+              </div>
 
               <% @planner.dates.each do |date| %>
                 <%= form.hidden_field :generated_dates, multiple: true, value: date %>
