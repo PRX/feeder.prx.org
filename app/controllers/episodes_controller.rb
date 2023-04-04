@@ -4,12 +4,17 @@ class EpisodesController < ApplicationController
 
   # GET /episodes
   def index
-    @episodes =
+    episodes =
       if params[:podcast_id]
-        Podcast.find(params[:podcast_id]).episodes.all.limit(10)
+        policy_scope(Podcast).find(params[:podcast_id]).episodes
       else
-        Episode.all.limit(10)
+        policy_scope(Episode).all
       end
+
+    filtered_episodes = episodes.filter_by_title(params[:q])
+
+    @published_episodes = filtered_episodes.published.order(published_at: :desc).page(params[:published_page]).per(10)
+    @scheduled_episodes = filtered_episodes.draft_or_scheduled.order(released_at: :asc).page(params[:scheduled_page]).per(10)
   end
 
   # GET /episodes/1

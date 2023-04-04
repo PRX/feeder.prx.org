@@ -8,7 +8,12 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: #{map-get($spacers, 1)};
+  gap: #{map-get($spacers, 2)};
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: none;
+  }
 }
 
 .btn-icon {
@@ -29,6 +34,29 @@
 
 .btn-icon-lg {
   @include button-size($btn-icon-padding-lg, $btn-icon-padding-lg, $btn-icon-font-size-lg, $btn-border-radius-lg);
+}
+
+.btn-icon-round {
+  --#{$prefix}btn-border-radius: 50%;
+}
+
+.btn-icon-borderless {
+  --#{$prefix}btn-bg: transparent;
+  --#{$prefix}btn-border-color: transparent;
+  --#{$prefix}btn-border-width: 0;
+  --#{$prefix}btn-hover-bg: transparent;
+  --#{$prefix}btn-hover-border-color: transparent;
+  --#{$prefix}btn-active-bg: transparent;
+  --#{$prefix}btn-active-border-color: transparent;
+  --#{$prefix}btn-active-shadow: none;
+  --#{$prefix}btn-disabled-bg: transparent;
+  --#{$prefix}btn-disabled-border-color: transparent;
+
+  @each $color, $value in $theme-colors {
+    &.btn-#{$color} {
+      @include button-borderless-variant($value);
+    }
+  }
 }
 
 .btn-fab {

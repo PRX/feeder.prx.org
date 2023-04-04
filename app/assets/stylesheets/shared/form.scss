@@ -1,5 +1,79 @@
+.prx-input-group {
+  @extend .input-group;
+  flex-shrink: 1;
+  align-items: center;
+
+  @include border-radius($input-border-radius);
+  border: $input-border-width solid $input-border-color;
+
+  &:focus-within {
+    box-shadow: $input-focus-box-shadow;
+  }
+
+  & > :is(.form-control, .input-group-text, .btn) {
+    border: none;
+
+    &:is(:focus) {
+      box-shadow: none;
+    }
+
+    &:is(:first-child) {
+      border-inline-start: none;
+    }
+
+    &:is(:last-child) {
+      border-inline-end: none;
+    }
+  }
+
+  & > .btn-icon {
+    @include font-size(1.75rem);
+  }
+
+  &.input-group-sm {
+    @include border-radius($input-border-radius-sm);
+
+    & > .btn-icon {
+      @include font-size(1.5rem);
+      padding-inline: map-get($spacers, 1);
+    }
+  }
+
+  &.input-group-lg {
+    @include border-radius($input-border-radius-lg);
+
+    & > .btn-icon {
+      @include font-size(2rem);
+    }
+  }
+
+  & > :is(.form-control:placeholder-shown) ~ .prx-input-confirm {
+    display: none;
+  }
+
+  & > :is(.form-control:not(:placeholder-shown)) ~ .prx-input-confirm-hidden {
+    display: none;
+  }
+}
+
 // material style floating form labels
 .form-floating {
+  display: flex;
+  align-items: center;
+  border: $input-border-width $border-style $input-border-color;
+  border-radius: $input-border-radius;
+
+  &:focus-within {
+    border-color: $blue-light;
+    box-shadow: $input-focus-box-shadow;
+  }
+
+  &.textarea-help {
+    .form-control {
+      padding-right: 2.5rem;
+    }
+  }
+
   > label {
     color: $gray-600;
     height: auto;
@@ -23,6 +97,12 @@
 
   .form-control {
     color: #000;
+    border: none;
+
+    &:focus {
+      box-shadow: none;
+      border-color: transparent;
+    }
   }
 
   .form-control[type="file"] {
@@ -45,55 +125,18 @@
   }
 }
 
-// changed field stylez
-.form-check-input.is-changed:not(.is-invalid),
-.form-control.is-changed:not(.is-invalid),
-.form-select.is-changed:not(.is-invalid) {
-  border-color: $orange;
-
-  &:focus {
-    box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
-  }
-
-  ~ label {
-    color: $orange;
-  }
-}
-.btn-discard-changed {
-  border-color: $orange;
-  &:hover {
-    border-color: $orange;
-  }
-}
-
-// bootstrap5-tags need help
-.form-floating {
-  > .form-tag-select ~ label {
-    opacity: $form-floating-label-opacity !important;
-    transform: $form-floating-label-transform !important;
-  }
-  > .form-tag-select.form-control-blank:not(.form-control-focus) ~ label {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-.is-changed ~ .form-tag-select {
-  border-color: $orange;
-}
-.form-tag-select.form-control-focus {
-  color: $input-focus-color;
-  background-color: $input-focus-bg;
-  border-color: $input-focus-border-color;
-  outline: 0;
-  box-shadow: $input-focus-box-shadow;
-}
-
 // These styles work with Slim Select v2, not tested with v1
 .ss-main {
   &.form-select {
-    padding: 0.75rem 0.75rem;
+    padding: 0.75rem;
     min-height: $input-height;
     height: auto;
+    border: none;
+
+    &:focus {
+      box-shadow: none;
+      border-color: transparent;
+    }
   }
 
   // selection colors
@@ -241,4 +284,31 @@ small {
 
 .table .form-check-input {
   font-size: 1rem;
+}
+
+.help-text-field {
+  position: absolute;
+  right: 0.5rem;
+  top: 1rem;
+}
+
+.help-text {
+  display: flex;
+  color: $gray-600;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0.5rem 0 0;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+    color: $primary;
+  }
+
+  &.help-textarea {
+    position: absolute;
+    right: 0;
+    top: 1rem;
+  }
 }

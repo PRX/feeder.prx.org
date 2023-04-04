@@ -34,7 +34,12 @@ module Feeder
     config.action_controller.forgery_protection_origin_check = false
 
     config.active_job.queue_adapter = :shoryuken
-    config.active_job.queue_name_prefix = ENV["ANNOUNCE_RESOURCE_PREFIX"].present? ? ENV["ANNOUNCE_RESOURCE_PREFIX"] : ENV["RAILS_ENV"]
+    config.active_job.queue_name_prefix =
+      if ENV["ANNOUNCE_RESOURCE_PREFIX"].present?
+        ENV["ANNOUNCE_RESOURCE_PREFIX"]
+      else
+        ENV["RAILS_ENV"]
+      end
     config.active_job.queue_name_delimiter = "_"
 
     config.cache_store = :memory_store, {size: 128.megabytes}

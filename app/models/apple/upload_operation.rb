@@ -4,14 +4,16 @@ module Apple
   class UploadOperation
     attr_reader :delivery_file, :api, :operation
 
-    def initialize(delivery_file, operation_fragment)
+    def initialize(delivery_file:, operation_fragment:)
       @delivery_file = delivery_file
-      @api = Apple::Api.from_env
       @operation = operation_fragment
     end
 
     def self.execute_upload_operations(api, episodes)
-      delivery_files = Apple::PodcastDeliveryFile.where(episode_id: episodes.map(&:feeder_id), uploaded: false)
+      delivery_files = Apple::PodcastDeliveryFile.where(
+        episode_id: episodes.map(&:feeder_id),
+        upload_operations_complete: false
+      )
 
       operation_bridge_params =
         delivery_files.map do |df|
@@ -19,6 +21,8 @@ module Apple
         end.flatten
 
       res = do_upload(api, operation_bridge_params)
+
+      Apple::PodcastDeliveryFile.where(id: delivery_files.map(&:id)).update_all(upload_operations_complete: true)
 
       res.flatten
     end
@@ -41,10 +45,14 @@ module Apple
     end
 
     def self.parallel_upload(api, operation_bridge_params)
-      chunked_slices = operation_bridge_params.each_slice(2).to_a
+      num_threads = 10
+      chunk_size = operation_bridge_params.size / num_threads
+      chunk_size = [chunk_size, 1].max
 
-      Parallel.map(chunked_slices, in_threads: chunked_slices.length) do |ops|
-        api.bridge_remote_and_retry!("executeUploadOperations", ops)
+      chunked_slices = operation_bridge_params.each_slice(chunk_size).to_a
+
+      Parallel.map(chunked_slices, in_threads: num_threads) do |ops|
+        api.bridge_remote_and_retry!("executeUploadOperations", ops, batch_size: 1)
       end
     end
 

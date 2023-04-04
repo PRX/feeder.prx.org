@@ -98,6 +98,9 @@ $input-disabled-bg: #eee;
 
 // Buttons
 
+$btn-borderless-hover-tint-amount: -20%;
+$btn-borderless-active-tint-amount: 20%;
+
 $btn-icon-padding: 0.375rem;
 $btn-icon-font-size: $font-size-base * 1.5;
 
@@ -138,6 +141,19 @@ $utilities: (
       sm: $line-height-sm,
       base: $line-height-base,
       lg: $line-height-lg,
+    ),
+  ),
+  "rotate": (
+    property: transform,
+    class: rotate,
+    values: (
+      45: rotate(45deg),
+      90: rotate(90deg),
+      135: rotate(135deg),
+      180: rotate(180deg),
+      225: rotate(225deg),
+      270: rotate(270deg),
+      315: rotate(315deg),
     ),
   ),
 );

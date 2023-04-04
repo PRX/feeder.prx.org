@@ -18,8 +18,8 @@ class EpisodeStoryHandler
   end
 
   def self.update_from_story!(episode, story = nil)
-    story ||= get_story
-    new(episode).update_from_story!(story)
+    handler = new(episode)
+    handler.update_from_story!(story || handler.get_story)
   end
 
   def update_from_story!(story)
