@@ -29,8 +29,8 @@ describe EpisodeStoryHandler do
     assert_equal episode.published_at, Time.parse(story.attributes[:published_at])
     refute_nil episode.released_at
     assert_equal episode.released_at, Time.parse(story.attributes[:released_at])
-    first_audio = episode.all_contents.first.original_url
-    last_audio = episode.all_contents.last.original_url
+    first_audio = episode.contents.first.original_url
+    last_audio = episode.contents.last.original_url
     assert_equal first_audio, "s3://mediajoint.production.prx.org/public/audio_files/1200648/lcs_spring16_act1.mp3"
     assert_equal last_audio, "s3://mediajoint.production.prx.org/public/audio_files/1200657/broadcast/t01.mp3"
     assert_equal episode.description, "this is a description"
@@ -43,17 +43,17 @@ describe EpisodeStoryHandler do
     assert_equal episode.segment_count, 4
 
     # should have one unprocessed image
-    assert_nil episode.image
+    assert_nil episode.ready_image
     assert_equal 1, episode.images.count
-    assert_equal episode.images.first, episode.image_file
-    assert_equal "created", episode.image_file.status
-    assert_equal "transistor1400.jpg", episode.image_file.file_name
-    assert_equal "jpeg", episode.image_file.format
-    assert_equal 36, episode.image_file.guid.length
-    assert_equal 1400, episode.image_file.height
-    assert_equal 1400, episode.image_file.width
-    assert_equal "some-caption", episode.image_file.caption
-    assert_equal "some-credit", episode.image_file.credit
+    assert_equal episode.images.first, episode.image
+    assert_equal "created", episode.image.status
+    assert_equal "transistor1400.jpg", episode.image.file_name
+    assert_equal "jpeg", episode.image.format
+    assert_equal 36, episode.image.guid.length
+    assert_equal 1400, episode.image.height
+    assert_equal 1400, episode.image.width
+    assert_equal "some-caption", episode.image.caption
+    assert_equal "some-credit", episode.image.credit
   end
 
   describe "with episode identifiers" do

@@ -88,6 +88,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.string "alt_text"
     t.string "caption"
     t.string "credit"
+    t.datetime "deleted_at", precision: nil
+    t.datetime "replaced_at", precision: nil
     t.index ["episode_id"], name: "index_episode_images_on_episode_id"
     t.index ["guid"], name: "index_episode_images_on_guid", unique: true
   end
@@ -153,6 +155,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.string "alt_text"
     t.string "caption"
     t.string "credit"
+    t.datetime "deleted_at", precision: nil
+    t.datetime "replaced_at", precision: nil
     t.index ["feed_id"], name: "index_feed_images_on_feed_id"
     t.index ["guid"], name: "index_feed_images_on_guid", unique: true
   end
@@ -192,6 +196,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.boolean "include_podcast_value", default: true
     t.boolean "include_donation_url", default: true
     t.text "exclude_tags"
+    t.datetime "deleted_at", precision: nil
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)"
@@ -220,6 +225,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.string "alt_text"
     t.string "caption"
     t.string "credit"
+    t.datetime "deleted_at", precision: nil
+    t.datetime "replaced_at", precision: nil
     t.index ["feed_id"], name: "index_itunes_images_on_feed_id"
     t.index ["guid"], name: "index_itunes_images_on_guid", unique: true
   end
@@ -247,6 +254,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.string "original_url"
     t.string "guid"
     t.integer "status"
+    t.datetime "deleted_at", precision: nil
+    t.datetime "replaced_at", precision: nil
     t.index ["episode_id"], name: "index_media_resources_on_episode_id"
     t.index ["guid"], name: "index_media_resources_on_guid", unique: true
     t.index ["original_url"], name: "index_media_resources_on_original_url"

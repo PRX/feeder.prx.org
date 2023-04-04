@@ -59,9 +59,7 @@ module PublishingStatus
     end
 
     # check media is ready (TODO: more?)
-    if !segment_count&.positive? || segment_count != media_files.size
-      errors.add(:publishing_status, "audio not ready")
-    elsif !media_ready?
+    if !include_in_feed?
       errors.add(:publishing_status, "audio not ready")
     end
   end
