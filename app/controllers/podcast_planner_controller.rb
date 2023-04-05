@@ -51,7 +51,7 @@ class PodcastPlannerController < ApplicationController
       :segment_count,
       selected_days: [],
       monthly_weeks: [],
-      generated_dates: []
+      selected_dates: []
     )
   end
 end
