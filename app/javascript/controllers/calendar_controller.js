@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = [ "date", "selected" ]
+  static targets = ["date"]
 
   connect() {
     this.dateTargets.forEach((date) => {

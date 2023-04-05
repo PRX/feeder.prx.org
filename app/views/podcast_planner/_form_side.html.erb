@@ -31,7 +31,7 @@
               <p><%= t(".header.number_of_drafts", count: @planner.dates.count) %></p>
               <div class="row row-cols-3">
                 <% @planner_months.each do |month| %>
-                  <%= render 'calendar', form: form, month: month %>
+                  <%= render "calendar", form: form, month: month %>
                 <% end %>
               </div>
             </div>

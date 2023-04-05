@@ -1,13 +1,13 @@
 <div class="simple-calendar">
   <div class="calendar-heading">
-    <span class="calendar-title"><%= t('date.month_names')[start_date.month] %> <%= start_date.year %></span>
+    <span class="calendar-title"><%= t("date.month_names")[start_date.month] %> <%= start_date.year %></span>
   </div>
 
   <table class="table table-striped">
     <thead>
       <tr>
         <% date_range.slice(0, 7).each do |day| %>
-          <th><%= t('date.abbr_day_names')[day.wday] %></th>
+          <th><%= t("date.abbr_day_names")[day.wday] %></th>
         <% end %>
       </tr>
     </thead>
