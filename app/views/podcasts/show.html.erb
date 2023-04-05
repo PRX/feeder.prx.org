@@ -2,7 +2,7 @@
   <div class="d-grid d-sm-flex align-items-center">
     <%= render @podcast %>
     <div class="d-grid d-lg-flex gap-2 align-items-center">
-      <%= link_to new_episode_path, class: "btn btn-primary btn-sm" do %>
+      <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary btn-sm" do %>
         <%= t ".create_episode" %>
         <span class="material-icons ms-2" aria-hidden="true">mic</span>
       <% end %>
