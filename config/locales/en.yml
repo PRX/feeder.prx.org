@@ -82,8 +82,8 @@ en:
       confirm: Discard unsaved changes?
     form_audio:
       title: Audio Files
-      help:
-        segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
+    form_audio_segment_count:
+      help: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
     form_distribution:
       title: Distribution
     form_image:

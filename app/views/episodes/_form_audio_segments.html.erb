@@ -1,0 +1,47 @@
+<%= turbo_frame_tag "episode-audio", class: "row prx-uploads-audio" do %>
+  <% if episode.segment_count.blank? %>
+    <div class="alert mt-4" role="alert">
+      Select a number of segments
+    </div>
+  <% elsif episode.errors[:segment_count].present? %>
+    <div class="alert alert-danger mt-4" role="alert">
+      <%= episode.errors.full_messages_for(:segment_count).join(", ") %>
+    </div>
+  <% else %>
+    <div class="d-table col-12 mb-4">
+      <% episode_filled_contents(episode).each do |position, contents| %>
+        <%= turbo_frame_tag "episode-audio-#{position}", class: "d-table-row" do %>
+          <% contents.each do |content| %>
+            <%= form.fields_for :contents, content, child_index: rand.to_s[2..] do |fields| %>
+              <% if episode.segment_range.exclude?(position) %>
+                <%= render "episodes/audio/destroy", form: fields, content: content %>
+              <% elsif content.marked_for_destruction? %>
+                <%= render "episodes/audio/destroy", form: fields, content: content, replaced: contents.any?(&:new_record?) %>
+              <% else %>
+                <div class="d-table-cell pb-2">
+                  <h2 class="m-0"><%= position %></h2>
+                </div>
+
+                <div class="d-table-cell pb-2">
+                  <% if content.new_record? %>
+                    <%= render "episodes/audio/new", form: fields, content: content, replacing: contents.any?(&:persisted?) %>
+                  <% elsif content.complete? %>
+                    <%= render "episodes/audio/complete", form: fields, content: content %>
+                  <% elsif content.started? || content.created? || content.processing? || content.retrying? %>
+                    <%= render "episodes/audio/processing", form: fields, content: content %>
+                  <% elsif content.error? %>
+                    <%= render "episodes/audio/error", form: fields, content: content %>
+                  <% elsif content.cancelled? %>
+                    <%= render "episodes/audio/cancelled", form: fields, content: content %>
+                  <% else %>
+                    <%= render "episodes/audio/unknown", form: fields, content: content %>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
