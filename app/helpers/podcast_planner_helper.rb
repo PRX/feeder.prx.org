@@ -36,4 +36,16 @@ module PodcastPlannerHelper
 
     opts.map { |opt| [I18n.l(opt, format: :time_12_hour), opt] }
   end
+
+  def date_is_within_month(date, month)
+    date.month == month.first.month
+  end
+
+  def days_in_month(month)
+    month.map { |d| d.day }
+  end
+
+  def is_preselected_date?(date, month)
+    days_in_month(month).include?(date.day)
+  end
 end

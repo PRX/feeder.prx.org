@@ -1,0 +1,13 @@
+<div class="col" data-controller="calendar">
+  <%= month_calendar(start_date: month.first) do |date| %>
+    <% if date_is_within_month(date, month) %>
+      <%= date.day %>
+
+      <% if is_preselected_date?(date, month) %>
+        <%= form.hidden_field :selected_dates, multiple: true, data: { calendar_target: "date" }, value: date.to_datetime, selected: true %>
+      <% else %>
+        <%= form.hidden_field :selected_dates, multiple: true, data: { calendar_target: "date" }, value: date.to_datetime, disabled: true %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

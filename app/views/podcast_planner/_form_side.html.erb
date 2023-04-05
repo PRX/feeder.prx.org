@@ -30,19 +30,8 @@
             <div class="col-lg">
               <p><%= t(".header.number_of_drafts", count: @planner.dates.count) %></p>
               <div class="row row-cols-3">
-                <% @planner_months.each do |dates_in_month| %>
-                  <div class="col" data-controller="calendar">
-                    <%= month_calendar(start_date: dates_in_month.first) do |date| %>
-                      <% if date.month == dates_in_month.first.month %>
-                        <%= date.day %>
-                        <% if dates_in_month.map { |d| d.day }.include?(date.day) %>
-                          <%= form.hidden_field :selected_dates, multiple: true, data: { calendar_target: "date" }, value: date.to_datetime, selected: true %>
-                        <% else %>
-                          <%= form.hidden_field :selected_dates, multiple: true, data: { calendar_target: "date" }, value: date.to_datetime, disabled: true %>
-                        <% end %>
-                      <% end %>
-                    <% end %>
-                  </div>
+                <% @planner_months.each do |month| %>
+                  <%= render 'calendar', form: form, month: month %>
                 <% end %>
               </div>
             </div>
