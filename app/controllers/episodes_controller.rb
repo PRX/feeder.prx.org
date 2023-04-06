@@ -31,6 +31,10 @@ class EpisodesController < ApplicationController
   def edit
     @episode.assign_attributes(episode_params)
     authorize @episode, :show?
+    respond_to do |format|
+      format.turbo_stream
+      format.html
+    end
   end
 
   # POST /podcasts/1/episodes

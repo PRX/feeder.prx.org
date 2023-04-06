@@ -39,6 +39,36 @@ module EpisodesHelper
     end
   end
 
+  def episode_audio_segment_positions(episode)
+    # TODO: is this fine? faking that segment_count is required, just for the feeder UI
+    if episode.valid? && episode.segment_count.blank?
+      episode.errors.add(:segment_count, "Can't be blank")
+    end
+
+    positions =
+      if episode.errors[:segment_count].present?
+        []
+      elsif params.dig(:episode, :prev_segment_count).blank?
+        1..Episode::MAX_SEGMENT_COUNT
+      else
+        # turbo stream: only refresh subset of positions
+        prev = params.dig(:episode, :prev_segment_count).to_i
+        curr = episode.segment_count
+        ([prev, curr].compact.min + 1)..Episode::MAX_SEGMENT_COUNT
+      end
+
+    # find/build contents for each in-range position
+    positions.map do |p|
+      if p <= episode.segment_count.to_i
+        c = episode.contents.find { |c| c.position == p }
+        c ||= episode.contents.new(position: p)
+        [p, c]
+      else
+        [p, nil]
+      end
+    end.to_h
+  end
+
   def episode_filled_contents(episode)
     positions = @episode.contents.reject(&:marked_for_destruction?).map(&:position)
     missing = (episode.segment_range.to_a - positions).map { |p| Content.new(position: p) }

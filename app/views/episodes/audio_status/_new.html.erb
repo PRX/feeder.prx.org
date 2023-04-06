@@ -1,4 +1,4 @@
-<div class="d-flex align-items-center" data-controller="upload">
+<div class="col-12 mb-4 d-flex align-items-center" data-controller="upload">
   <%= form.hidden_field :original_url, data: {upload_target: "originalUrl"} %>
   <%= form.hidden_field :file_size, data: {upload_target: "fileSize"} %>
   <%= form.hidden_field :position %>
@@ -6,7 +6,7 @@
   <div class="form-floating flex-grow-1" data-upload-target="picker">
     <%# NOTE: name is nil, so we don't submit the actual file to Rails %>
     <% data = {action: "change->unsaved#change upload#upload", upload_target: "audioFile"} %>
-    <% data[:unsaved_target] = "changed" if replacing %>
+    <% data[:unsaved_target] = "changed" if defined?(replacing) && replacing %>
     <%= form.file_field :audio_file, class: "form-control", accept: "audio/*", name: nil, data: data %>
     <%= form.label :audio_file, class: "visually-hidden" %>
   </div>

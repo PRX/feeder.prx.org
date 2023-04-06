@@ -1,0 +1,5 @@
+<% if episode.segment_count.blank? || episode.errors[:segment_count].present? %>
+  <div class="alert alert-danger mt-4" role="alert">
+    <%= episode.errors.full_messages_for(:segment_count).join(", ") %>
+  </div>
+<% end %>

@@ -4,12 +4,12 @@
       <h5 class="card-title"><%= t(".title") %></h5>
     </div>
     <div class="card-body">
-      <%= render "form_audio_segment_count", episode: episode, form: form %>
-      <%= render "form_audio_segments", episode: episode, form: form %>
+      <%= turbo_frame_tag "episode-form-audio" do %>
+        <div class="row">
+          <%= render "episodes/audio_segments/count", episode: episode, form: form %>
+          <%= render "episodes/audio_segments/index", episode: episode, form: form %>
+        </div>
+      <% end %>
     </div>
   </div>
-</div>
-
-<div class="col-4 mb-4">
-
 </div>

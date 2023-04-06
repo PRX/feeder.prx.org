@@ -72,6 +72,9 @@ en:
         title: Title
   # specific pages/views
   episodes:
+    audio_segments:
+      count:
+        help: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
     create:
       error: Unable to create
       notice: Episode created
@@ -82,8 +85,6 @@ en:
       confirm: Discard unsaved changes?
     form_audio:
       title: Audio Files
-    form_audio_segment_count:
-      help: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
     form_distribution:
       title: Distribution
     form_image:
