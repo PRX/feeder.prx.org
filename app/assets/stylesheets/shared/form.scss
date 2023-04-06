@@ -94,47 +94,47 @@
   }
 
   // changed field stylez
-.form-check-input.is-changed:not(.is-invalid),
-.form-control.is-changed:not(.is-invalid),
-.form-select.is-changed:not(.is-invalid) {
-  border-color: $orange;
+  .form-check-input.is-changed:not(.is-invalid),
+  .form-control.is-changed:not(.is-invalid),
+  .form-select.is-changed:not(.is-invalid) {
+    border-color: $orange;
 
-  &:focus {
-    box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
+    &:focus {
+      box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
+    }
+
+    ~ label {
+      color: $orange;
+    }
+  }
+  .btn-discard-changed {
+    border-color: $orange;
+    &:hover {
+      border-color: $orange;
+    }
   }
 
-  ~ label {
-    color: $orange;
+  // bootstrap5-tags need help
+  .form-floating {
+    > .form-tag-select ~ label {
+      opacity: $form-floating-label-opacity !important;
+      transform: $form-floating-label-transform !important;
+    }
+    > .form-tag-select.form-control-blank:not(.form-control-focus) ~ label {
+      opacity: 1 !important;
+      transform: none !important;
+    }
   }
-}
-.btn-discard-changed {
-  border-color: $orange;
-  &:hover {
+  .is-changed ~ .form-tag-select {
     border-color: $orange;
   }
-}
-
-// bootstrap5-tags need help
-.form-floating {
-  > .form-tag-select ~ label {
-    opacity: $form-floating-label-opacity !important;
-    transform: $form-floating-label-transform !important;
+  .form-tag-select.form-control-focus {
+    color: $input-focus-color;
+    background-color: $input-focus-bg;
+    border-color: $input-focus-border-color;
+    outline: 0;
+    box-shadow: $input-focus-box-shadow;
   }
-  > .form-tag-select.form-control-blank:not(.form-control-focus) ~ label {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-.is-changed ~ .form-tag-select {
-  border-color: $orange;
-}
-.form-tag-select.form-control-focus {
-  color: $input-focus-color;
-  background-color: $input-focus-bg;
-  border-color: $input-focus-border-color;
-  outline: 0;
-  box-shadow: $input-focus-box-shadow;
-}
 
   // manually applied "blank" class (when the placeholder trick won't work)
   > .form-control-blank:not(:focus) ~ label {
@@ -320,7 +320,6 @@ small {
   .form-floating {
     grid-row: 1 / span 2;
   }
-
 }
 
 .prx-btn-help {
