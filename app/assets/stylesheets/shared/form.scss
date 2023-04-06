@@ -315,6 +315,10 @@ small {
   .form-floating {
     flex: 1 0 auto;
   }
+
+  .help-text {
+    margin-top: 1.1rem;
+  }
 }
 
 .help-text {
@@ -323,7 +327,7 @@ small {
   background: none;
   border: none;
   padding: 0;
-  margin: 1.1rem 0 0 0.5rem;
+  margin: 0 0 0 0.5rem;
   text-decoration: none;
 
   &:hover {
