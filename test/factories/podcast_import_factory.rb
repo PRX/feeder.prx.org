@@ -1,10 +1,9 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :podcast_import do
-    account
-    user
-    series
-    feed_episode_count 10
+    account_id { 123 }
+    podcast
+    feed_episode_count { 10 }
 
-    url "http://feeds.prx.org/transistor_stem"
+    url { "http://feeds.prx.org/transistor_stem" }
   end
 end

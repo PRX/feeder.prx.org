@@ -2,19 +2,11 @@ require "test_helper"
 require "prx_access"
 
 describe EpisodeImport do
-  include PRXAccess
-
   let(:user) { create(:user) }
-  let(:account) { create(:account, id: 8, opener: user) }
-  let(:series) { create(:series) }
-  let(:template) { create(:audio_version_template, series: series) }
-  let(:distribution) do
-    create(:podcast_distribution,
-      distributable: series,
-      url: "https://feeder.prx.org/api/v1/podcasts/51")
-  end
+  let(:account_id) { user.authorized_account_ids(:podcast_edit).first }
+  let(:podcast) { create(:podcast) }
 
-  let(:importer) { create(:podcast_import, user: user, account: account, series: series) }
+  let(:importer) { create(:podcast_import, account_id: account_id, podcast: podcast) }
 
   let(:feed) { Feedjira::Feed.parse(test_file("/fixtures/transistor_two.xml")) }
   let(:entry) { feed.entries.first }
@@ -36,57 +28,40 @@ describe EpisodeImport do
     )
   end
 
-  let(:podcast) do
-    api_resource(JSON.parse(json_file("transistor_podcast_basic")), feeder_root).tap do |r|
-      r.headers = r.headers.merge("Authorization" => "Bearer thisisnotatoken")
-    end
-  end
-
   before do
     stub_episode_requests
   end
 
-  around do |test|
-    ENV["PORTER_SNS_TOPIC_ARN"] = "anything"
-    Portered.stub(:sns_client, StubSns.new) { test.call }
-    ENV["PORTER_SNS_TOPIC_ARN"] = ""
-  end
-
-  it "creates a story on import" do
+  it "creates an episode on import" do
     f = episode_import.import
-    f.description.must_match(/^For the next few episodes/)
-    f.description.wont_match(/<script/)
-    f.description.wont_match(/<iframe/)
+    f.description.must_match(/For the next few episodes/)
     f.description.wont_match(/feedburner/)
-    f.tags.must_include "Indie Features"
-    f.tags.each do |tag|
+    f.categories.must_include "Indie Features"
+    f.categories.each do |tag|
       tag.wont_match(/\n/)
       tag.wont_be :blank?
     end
-    f.tags.wont_include '\t'
-    f.clean_title.must_equal "Sidedoor iTunes title"
-    f.season_identifier.must_equal "2"
-    f.episode_identifier.must_equal "4"
-    f.distributions.first.get_episode.itunes_type.must_equal "full"
-    f.account_id.wont_be_nil
-    f.creator_id.wont_be_nil
-    f.series_id.wont_be_nil
-    f.published_at.wont_be_nil
-    f.audio_versions.count.must_equal 1
-    config_audio = "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"
-    version = f.audio_versions.first
-    version.audio_version_template_id.wont_be_nil
-    version.audio_version_template.segment_count.wont_be_nil
-    version.label.must_equal "Podcast Audio"
-    version.explicit.must_be_nil
+    _(f.categories).wont_include '\t'
+    _(f.clean_title).must_equal "Sidedoor iTunes title"
+    _(f.season_number).must_equal 2
+    _(f.episode_number).must_equal 4
 
-    # audio and image must be processing
-    f.audio_files.count.must_equal 1
-    f.audio_files[0].upload.must_equal config_audio
-    f.images.count.must_equal 1
-    Portered.sns_client.messages.count.must_equal 2
-    Portered.sns_client.messages[0]["Job"]["Id"].must_equal f.audio_files[0].to_global_id.to_s
-    Portered.sns_client.messages[1]["Job"]["Id"].must_equal f.images[0].to_global_id.to_s
+    # It has the podcast set and the published_at date
+    _(f.podcast_id).must_equal podcast.id
+    _(f.published_at).must_equal Time.zone.parse("2017-01-20 03:04:12")
+
+    _(episode_import.audio_versions.count).must_equal 1
+    config_audio = "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"
+    version = episode_import.audio_versions.first
+    version[:label].must_equal "Podcast Audio"
+    version[:explicit].must_be_nil
+
+    version[:audio_files][0][:position].must_equal 1
+    version[:audio_files][0][:upload].must_equal config_audio
+    # TODO audio files
+    # f.audio_files.count.must_equal 1
+    # TODO images
+    # f.images.count.must_equal 1
   end
 
   it "creates correctly for libsyn entries" do

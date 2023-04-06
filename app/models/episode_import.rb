@@ -10,9 +10,9 @@ class EpisodeImport < ActiveRecord::Base
   serialize :entry, HashSerializer
   serialize :audio, HashSerializer
 
-  belongs_to :story, -> { with_deleted }, class_name: Episode.to_s, foreign_key: "episode_id", touch: true, optional: true
+  belongs_to :episode, -> { with_deleted }, touch: true, optional: true
   belongs_to :podcast_import
-  has_one :series, through: :podcast_import
+  has_one :podcast, through: :podcast_import
   delegate :config, to: :podcast_import
 
   scope :having_duplicate_guids, -> do
@@ -32,6 +32,13 @@ class EpisodeImport < ActiveRecord::Base
   RETRYING = "retrying".freeze
   STORY_SAVED = "story saved".freeze
   EPISODE_SAVED = "episode saved".freeze
+
+  def audio_versions
+    @audio_versions ||= []
+    @audio_versions
+  end
+
+  attr_writer :audio_versions
 
   def unlock_podcast
     if podcast_import.finished?
@@ -56,28 +63,23 @@ class EpisodeImport < ActiveRecord::Base
 
   def import
     # TODO
-    # update_episode_audio!
+    update_episode_audio!
 
     update!(status: AUDIO_SAVED)
-    create_or_update_story!
-    update!(status: STORY_SAVED, piece_id: story.id)
     create_or_update_episode!
+    update!(status: STORY_SAVED)
     update!(status: EPISODE_SAVED)
-    story.save!
-    update_search_index!
+    episode.save!
+    # update_search_index!
     update!(status: COMPLETE)
 
-    announce(:story, :update, Api::Msg::StoryRepresenter.new(story).to_json)
+    # announce(:story, :update, Api::Msg::StoryRepresenter.new(story).to_json)
     unlock_podcast
 
-    story
+    episode
   rescue => err
     update(status: FAILED)
     raise err
-  end
-
-  def update_search_index!
-    SearchIndexerJob.set(wait: 5.minutes).perform_later(story)
   end
 
   def update_episode_audio!
@@ -93,37 +95,42 @@ class EpisodeImport < ActiveRecord::Base
     end
   end
 
-  def create_or_update_story!
-    story ? update_story_with_entry! : create_story_with_entry!
+  def create_or_update_episode!
+    self.episode ||= Episode.new(podcast: podcast)
+
+    update_episode_with_entry!
+
+    episode.save!
   end
 
-  def create_story_with_entry!
-    self.story = Story.create!(series: series, skip_searchable: true)
-    update_story_with_entry!
-  end
+  def update_episode_with_entry!
+    episode.clean_title = entry[:itunes_title]
+    episode.description = entry_description(entry)
+    episode.episode_number = entry[:itunes_episode]
+    episode.published_at = entry[:published]
+    episode.season_number = entry[:itunes_season]
+    episode.subtitle = clean_string(episode_short_desc(entry))
+    episode.categories = Array(entry[:categories]).map(&:strip).reject(&:blank?)
+    episode.title = clean_title(entry[:title])
 
-  def update_story_with_entry!(story = self.story)
-    story.app_version = PRX::APP_VERSION
-    story.creator_id = podcast_import.user_id
-    story.account_id = series.account_id
-    story.title = clean_title(entry[:title])
-    story.short_description = clean_string(episode_short_desc(entry))
-    story.description_html = entry_description(entry)
-    story.tags = Array(entry[:categories]).map(&:strip).reject(&:blank?)
-    story.published_at = entry[:published]
-    story.season_identifier = entry[:itunes_season]
-    story.episode_identifier = entry[:itunes_episode]
-    story.clean_title = entry[:itunes_title]
+    if entry[:itunes_summary] && entry_description_attribute(entry) != :itunes_summary
+      episode.summary = clean_text(entry[:itunes_summary])
+    end
+    episode.author = person(entry[:itunes_author] || entry[:author] || entry[:creator])
+    episode.block = (clean_string(entry[:itunes_block]) == "yes")
+    episode.explicit = explicit(entry[:itunes_explicit])
+    episode.original_guid = clean_string(entry[:entry_id])
+    episode.is_closed_captioned = closed_captioned?(entry)
+    episode.is_perma_link = entry[:is_perma_link]
+    episode.keywords = (entry[:itunes_keywords] || "").split(",").map(&:strip)
+    episode.position = entry[:itunes_order]
+    episode.url = episode_url(entry) || default_episode_url(episode)
+    episode.itunes_type = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
 
     new_audio = update_audio
-    new_images = update_image
+    # new_images = update_image
 
-    story.skip_searchable = true
-    story.save!
-
-    new_audio.each { |a| announce_audio(a) }
-    new_images.each { |i| announce_image(i) }
-    story
+    episode
   end
 
   def update_image
@@ -158,22 +165,24 @@ class EpisodeImport < ActiveRecord::Base
 
   def update_audio
     if audio.blank? || audio[:files].blank?
-      story.audio_versions.destroy_all
+      audio_versions.clear
       return []
     end
 
-    if story.audio_versions.blank?
+    if audio_versions.blank?
       template = get_or_create_template(audio, entry["enclosure"]["type"])
-      version = story.audio_versions.build(
+      version = {
         audio_version_template: template,
         label: "Podcast Audio",
-        explicit: explicit(entry[:itunes_explicit])
-      )
+        explicit: explicit(entry[:itunes_explicit]),
+        audio_files: []
+      }
+      audio_versions << version
     else
-      version = story.audio_versions.first
+      version = audio_versions.first
     end
 
-    audio_files = version.audio_files || []
+    audio_files = version[:audio_files] || []
     to_insert = []
     to_destroy = []
 
@@ -190,18 +199,18 @@ class EpisodeImport < ActiveRecord::Base
       end
 
       if !existing_audio
-        new_audio = version.audio_files.build(
+        new_audio = {
           upload: audio_url.gsub(" ", "%20"),
           label: "Segment #{i + 1}",
           position: (i + 1)
-        )
+        }
         to_insert << new_audio
       end
     end
 
-    version.audio_files.destroy(to_destroy) if to_destroy.size > 0
+    version.audio_files.reject { |i| to_destroy.any? { |d| d.equal?(id) } } if to_destroy.size > 0
 
-    to_insert.each { |af| version.audio_files << af }
+    to_insert.each { |af| version[:audio_files] << af }
 
     to_insert
   end
@@ -217,35 +226,6 @@ class EpisodeImport < ActiveRecord::Base
 
   def get_or_create_template(segments, enclosure)
     podcast_import.get_or_create_template(segments, enclosure)
-  end
-
-  def create_or_update_episode!
-    episode_attributes = {}
-    if entry[:itunes_summary] && entry_description_attribute(entry) != :itunes_summary
-      episode_attributes[:summary] = clean_text(entry[:itunes_summary])
-    end
-    episode_attributes[:author] = person(entry[:itunes_author] || entry[:author] || entry[:creator])
-    episode_attributes[:block] = (clean_string(entry[:itunes_block]) == "yes")
-    episode_attributes[:explicit] = explicit(entry[:itunes_explicit])
-    episode_attributes[:guid] = clean_string(entry[:entry_id])
-    episode_attributes[:is_closed_captioned] = closed_captioned?(entry)
-    episode_attributes[:is_perma_link] = entry[:is_perma_link]
-    episode_attributes[:keywords] = (entry[:itunes_keywords] || "").split(",").map(&:strip)
-    episode_attributes[:position] = entry[:itunes_order]
-    episode_attributes[:url] = episode_url(entry) || default_story_url(story)
-    episode_attributes[:itunes_type] = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
-
-    # if there is a distro, and an episode, then announce will sync changes
-    if !distro = story.distributions.where(type: "StoryDistributions::EpisodeDistribution").first
-      # create the distro from the story
-      distro = StoryDistributions::EpisodeDistribution.create!(
-        distribution: series.distributions.first,
-        story: story,
-        guid: entry[:entry_id]
-      )
-    end
-
-    distro.create_or_update_episode(episode_attributes)
   end
 
   def episode_url(entry)

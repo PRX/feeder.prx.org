@@ -9,7 +9,7 @@ class PodcastImport < ActiveRecord::Base
   attr_accessor :feed, :feed_raw_doc, :templates
 
   belongs_to :podcast, -> { with_deleted }, touch: true
-  has_many :episode_imports, dependent: :destroy
+  has_many :episode_imports, -> { where(has_duplicate_guid: false).includes(:podcast_import) }, dependent: :destroy
 
   before_validation :set_defaults, on: :create
 
@@ -26,9 +26,15 @@ class PodcastImport < ActiveRecord::Base
   IMPORTING = "importing".freeze
   PODCAST_CREATED = "podcast created".freeze
 
-  def episode_imports
-    EpisodeImport.where(podcast_import_id: id, has_duplicate_guid: false)
+  MP3_CONTENT_TYPE = "audio/mpeg".freeze
+  VIDEO_CONTENT_TYPE = "video/mpeg".freeze
+
+  def audio_version_templates
+    @audio_versions ||= []
+    @audio_versions
   end
+
+  attr_writer :audio_version_templates
 
   def episode_import_placeholders
     EpisodeImport.where(podcast_import_id: id).having_duplicate_guids
@@ -364,36 +370,35 @@ class PodcastImport < ActiveRecord::Base
     num_segments = [audio_files[:files].count, 1].max
     template = nil
     contains_video = enclosure_type&.starts_with?("video/")
-    content_type = contains_video ? AudioFile::VIDEO_CONTENT_TYPE : AudioFile::MP3_CONTENT_TYPE
+    content_type = contains_video ? VIDEO_CONTENT_TYPE : MP3_CONTENT_TYPE
 
     podcast.with_lock do
-      template = podcast.audio_version_templates
-        .where(segment_count: num_segments, content_type: content_type).first
+      template = audio_version_templates
+        .find { |avt| avt[:segment_count] == num_segments && avt[:content_type] == content_type }
       if !template
-        template = series.audio_version_templates.create!(
-          label: podcast_label(contains_video, num_segments),
-          content_type: content_type,
-          segment_count: num_segments,
-          promos: false,
-          length_minimum: 0,
-          length_maximum: 0
-        )
+        template =
+          {
+            label: podcast_label(contains_video, num_segments),
+            content_type: content_type,
+            segment_count: num_segments,
+            promos: false,
+            length_minimum: 0,
+            length_maximum: 0,
+            audio_file_templates: []
+          }
+
+        audio_version_templates << template
 
         num_segments.times do |x|
           num = x + 1
-          template.audio_file_templates.create!(
-            position: num,
-            label: "Segment #{num}",
-            length_minimum: 0,
-            length_maximum: 0
-          )
+          template[:audio_file_templates] <<
+            {
+              position: num,
+              label: "Segment #{num}",
+              length_minimum: 0,
+              length_maximum: 0
+            }
         end
-
-        # TODO
-        podcast_distribution.distribution_templates.create!(
-          distribution: podcast_distribution,
-          audio_version_template: template
-        )
       end
     end
 

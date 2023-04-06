@@ -61,17 +61,16 @@ describe PodcastImport do
 
   it "creates podcast episode imports" do
     importer.config_url = "http://test.prx.org/transistor_import_config.json"
-    importer.feed = feed
-    importer.podcast = podcast
-
-    # TODO audio version templates
-    # podcast.audio_version_templates.clear
-
     importer.import
-    importer.episode_imports.map(&:import)
 
-    importer.podcast.audio_version_templates.count.must_equal 2
-    importer.distribution.audio_version_templates.count.must_equal 2
+    eps = importer.episode_imports.reset
+    eps.map(&:import)
+    importer = eps.first.podcast_import
+
+    # get the memoized importer
+    pi = importer.episode_imports.first.podcast_import
+    _(pi.episode_imports.count).must_equal 2
+    _(pi.audio_version_templates.count).must_equal 2
   end
 
   it "imports a feed" do
