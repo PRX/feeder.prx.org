@@ -29,7 +29,7 @@
     --#{$prefix}card-cap-bg: #{$value};
     --#{$prefix}card-cap-color: #{color-contrast($value)};
 
-    .help-text {
+    .prx-btn-help {
       color: #{color-contrast($value)};
       margin-right: 0;
 
