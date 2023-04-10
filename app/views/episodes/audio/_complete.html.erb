@@ -1,4 +1,41 @@
-<div class="col-12 mb-4 d-flex align-items-center">
+<div class="col-12 mb-4 prx-field-group">
+  <div class="form-floating">
+    <div class="form-control d-flex align-items-center prx-audio-player" data-controller="audio-player">
+
+      <button type="button" class="btn p-0 prx-play" data-action="audio-player#play">
+        <span class="material-icons text-primary mx-2 my-1">play_arrow</span>
+      </button>
+
+      <button type="button" class="btn p-0 prx-pause" data-action="audio-player#pause">
+        <span class="material-icons text-primary mx-2 my-1">pause</span>
+      </button>
+
+      <div class="text-secondary me-2"><%= content.file_name %></div>
+
+      <div class="flex-grow-1 me-2 py-2 prx-scrub" data-action="mousedown->audio-player#mouseDown" data-audio-player-target="scrubber">
+        <div class="progress" data-audio-player-target="progress">
+          <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-audio-player-target="progressBar"></div>
+        </div>
+      </div>
+
+      <audio class="d-none" src="<%= content.href %>" preload="none" data-audio-player-target="audio" data-action="timeupdate->audio-player#audioTimeUpdate ended->audio-player#audioEnded"></audio>
+
+      <small class="text-muted" data-audio-player-target="duration">(<%= episode_content_duration(content) %>)</small>
+
+      <%= link_to edit_episode_path(content.episode, uploads_destroy_params(form)), class: "btn" do %>
+        <span class="material-icons">delete</span>
+      <% end %>
+    </div>
+
+    <label>Segment <%= content.position %></label>
+  </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-html="true" data-bs-content="TODO: audio file info">
+    <span class="material-icons">info</span>
+  </button>
+</div>
+
+<div class="col-12 mb-4 d-flex align-items-center d-none">
   <audio class="flex-grow-1 me-3" src="<%= content.href %>" controls preload="metadata"></audio>
 
   <h5 class="m-0">
