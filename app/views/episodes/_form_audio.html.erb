@@ -22,19 +22,23 @@
           </div>
 
           <%= form.fields_for :contents, episode.build_contents do |fields| %>
-            <% begin %>
-              <% if fields.object.new_record? %>
-                <%= render "episodes/audio_status/new", form: fields, episode: episode, content: fields.object %>
-              <% elsif fields.object.marked_for_destruction? %>
-                <%= render "episodes/audio_status/destroy", form: fields, episode: episode, content: fields.object %>
+            <% content = fields.object %>
+
+            <% if content.new_record? %>
+              <%= render "episodes/audio/new", form: fields, episode: episode, content: content %>
+            <% elsif content.marked_for_destruction? %>
+              <%= render "episodes/audio/destroy", form: fields, episode: episode, content: content %>
+            <% else %>
+              <% case content.status %>
+              <% when "started", "created", "processing", "retrying" %>
+                <%= render "episodes/audio/processing", form: fields, episode: episode, content: content %>
+              <% when "complete" %>
+                <%= render "episodes/audio/complete", form: fields, episode: episode, content: content %>
               <% else %>
-                <%= render "episodes/audio_status/#{fields.object.status}", form: fields, episode: episode, content: fields.object %>
+                <%= render "episodes/audio/error", form: fields, episode: episode, content: content %>
               <% end %>
-            <% rescue ActionView::MissingTemplate %>
-              <%= render "episodes/audio_status/unknown", form: fields, episode: episode, content: fields.object %>
             <% end %>
           <% end %>
-
         </div>
       <% end %>
     </div>

@@ -1,5 +1,4 @@
 <div class="col-12 mb-4" data-controller="upload">
-  <% is_replacing = episode.contents.select(&:marked_for_destruction?).map(&:position).include?(content.position) %>
 
   <%# step 1: file field %>
   <div class="form-floating" data-upload-target="picker">
@@ -10,7 +9,7 @@
     <%= form.file_field :audio_file, class: cls, accept: "audio/*", name: nil, data: data %>
 
     <%# fake display field; real text area is opacity-0 on top of it %>
-    <div class="form-control d-flex align-items-center <%= "is-changed" if is_replacing %>">
+    <div class="form-control d-flex align-items-center <%= "is-changed" if episode_replacing_content?(episode, content) %>">
       <span class="material-icons text-primary ms-2">upload</span>
       <div class="text-secondary mx-2">Upload a file</div>
     </div>
