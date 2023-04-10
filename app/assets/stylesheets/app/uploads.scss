@@ -1,0 +1,9 @@
+@import "shared/bootstrap-variables";
+
+.prx-uploads {
+  // match spinner to material icons size
+  .spinner-border {
+    height: 24px;
+    width: 24px;
+  }
+}
