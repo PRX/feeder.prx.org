@@ -16,14 +16,15 @@ export default class extends Controller {
   clickLinks(element) {
     for (const link of this.linkTargets) {
       const oldHref = link.href
+      const params = new URLSearchParams(link.search)
 
       // combine element with (optional) extra form fields
-      const params = { [element.name]: element.value }
+      params.set(element.name, element.value)
       for (const f of this.extraTargets) {
-        params[f.name] = f.value
+        params.set(f.name, f.value)
       }
 
-      link.search = new URLSearchParams(params)
+      link.search = params
       if (link.href !== oldHref) {
         link.click()
       }

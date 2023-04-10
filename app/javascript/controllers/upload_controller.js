@@ -15,8 +15,8 @@ export default class extends Controller {
     "progressBar",
     "progressBytes",
     "progressPercent",
+    "success",
     "error",
-    "cancel",
   ]
 
   connect() {
@@ -128,14 +128,14 @@ export default class extends Controller {
     this.show("picker", false)
   }
 
-  show(type, showCancel = false) {
+  show(type) {
     const toggle = (arr, show) =>
       arr.forEach((el) => (show ? el.classList.remove("d-none") : el.classList.add("d-none")))
 
     toggle(this.pickerTargets, type === "picker")
     toggle(this.progressTargets, type === "progress")
+    toggle(this.successTargets, type === "success")
     toggle(this.errorTargets, type === "error")
-    toggle(this.cancelTargets, showCancel)
   }
 
   getMeta(name) {

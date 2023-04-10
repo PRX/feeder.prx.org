@@ -1,5 +1,0 @@
-<% episode_audio_segment_positions(episode).each do |position, content| %>
-  <%= turbo_stream.replace "episode-form-audio-segments-#{position}" do %>
-    <%= render "episodes/audio_segments/show", form: form, episode: episode, content: content, position: position %>
-  <% end %>
-<% end %>

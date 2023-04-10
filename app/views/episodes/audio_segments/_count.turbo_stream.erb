@@ -1,5 +1,0 @@
-<% if episode_audio_segment_positions(episode).present? %>
-  <%= turbo_stream.replace :episode_prev_segment_count do %>
-    <%= form.hidden_field :prev_segment_count, value: episode.segment_count, data: {dynamic_form_target: "extra"} %>
-  <% end %>
-<% end %>

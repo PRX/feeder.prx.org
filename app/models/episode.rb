@@ -180,6 +180,19 @@ class Episode < ApplicationRecord
     contents.complete_or_replaced.group_by(&:position).values.map(&:first)
   end
 
+  def build_contents
+    positions = contents.reject do |c|
+      c.mark_for_destruction if segment_count.present? && c.position > segment_count
+      c.marked_for_destruction?
+    end.map(&:position)
+
+    # fill in missing/deleted positions
+    (segment_range.to_a - positions).each { |p| contents.build(position: p) }
+
+    # re-sort
+    contents.sort_by(&:position)
+  end
+
   def contents=(files)
     existing = contents.group_by(&:position)
 

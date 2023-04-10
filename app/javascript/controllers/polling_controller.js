@@ -6,12 +6,12 @@ export default class extends Controller {
   static values = { debounce: Number }
 
   connect() {
-    this.timeout = setTimeout(() => {
+    this.interval = setInterval(() => {
       this.element.click()
     }, this.debounceValue || DEFAULT_DEBOUNCE)
   }
 
   disconnect() {
-    clearTimeout(this.timeout)
+    clearTimeout(this.interval)
   }
 }
