@@ -13,9 +13,16 @@ export default class extends Controller {
 
   // morph turbo-frames, instead of replacing
   beforeFrameRender(event) {
-    console.log("beforeFrameRender")
     event.detail.render = (currentElement, newElement) => {
-      morphdom(currentElement, newElement, { childrenOnly: true })
+      morphdom(currentElement, newElement, { childrenOnly: true, onBeforeElUpdated: this.onBeforeElUpdated })
+    }
+  }
+
+  onBeforeElUpdated(fromEl, toEl) {
+    if (toEl.dataset.controller === "upload") {
+      return false
+    } else {
+      return true
     }
   }
 }

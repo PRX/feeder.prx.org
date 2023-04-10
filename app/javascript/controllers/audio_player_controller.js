@@ -5,6 +5,8 @@ export default class extends Controller {
   static targets = ["audio", "duration", "progress", "progressBar"]
 
   connect() {
+    this.playing = false
+    this.seeking = false
     this.originalDuration = this.durationTarget.innerHTML
     this.bindMouseMove = this.mouseMove.bind(this)
     this.bindMouseUp = this.mouseUp.bind(this)
@@ -15,17 +17,27 @@ export default class extends Controller {
     window.removeEventListener("mouseup", this.bindMouseUp)
   }
 
-  play() {
+  async play() {
+    this.playing = true
     if (!this.audioTarget.duration) {
       this.setProgress(0, 1) // initial render
     }
-    this.audioTarget.play()
     this.element.classList.add("prx-playing")
+    this.element.classList.remove("prx-errored")
+
+    try {
+      await this.audioTarget.play()
+    } catch (err) {
+      this.element.classList.add("prx-errored")
+      console.error(err)
+    }
   }
 
   pause() {
     this.audioTarget.pause()
+    this.playing = false
     this.element.classList.remove("prx-playing")
+    this.durationTarget.innerHTML = this.originalDuration
   }
 
   mouseDown(event) {
@@ -57,7 +69,6 @@ export default class extends Controller {
   audioEnded() {
     this.pause()
     this.setProgress(0, 1)
-    this.durationTarget.innerHTML = this.originalDuration
   }
 
   setProgress(currentTime, totalDuration) {
@@ -66,14 +77,16 @@ export default class extends Controller {
     }
 
     // TODO: convertSecondsToDuration is similar, but a different format
-    const time = Math.floor(currentTime)
-    const hours = String(Math.floor(time / 3600)).padStart(2, "0")
-    const minutes = String(Math.floor((time % 3600) / 60)).padStart(2, "0")
-    const seconds = String(time % 60).padStart(2, "0")
-    if (hours === "00") {
-      this.durationTarget.innerHTML = `(0:${minutes}:${seconds})`
-    } else {
-      this.durationTarget.innerHTML = `(${hours}:${minutes}:${seconds})`
+    if (this.playing) {
+      const time = Math.floor(currentTime)
+      const hours = String(Math.floor(time / 3600)).padStart(2, "0")
+      const minutes = String(Math.floor((time % 3600) / 60)).padStart(2, "0")
+      const seconds = String(time % 60).padStart(2, "0")
+      if (hours === "00") {
+        this.durationTarget.innerHTML = `(0:${minutes}:${seconds})`
+      } else {
+        this.durationTarget.innerHTML = `(${hours}:${minutes}:${seconds})`
+      }
     }
   }
 

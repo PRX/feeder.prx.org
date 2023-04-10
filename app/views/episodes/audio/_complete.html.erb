@@ -12,6 +12,8 @@
 
       <div class="text-secondary me-2"><%= content.file_name %></div>
 
+      <small class="text-danger flex-grow-1 me-2">Unable to play file</small>
+
       <div class="flex-grow-1 me-2 py-2 prx-scrub" data-action="mousedown->audio-player#mouseDown" data-audio-player-target="scrubber">
         <div class="progress" data-audio-player-target="progress">
           <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-audio-player-target="progressBar"></div>
@@ -33,17 +35,4 @@
   <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-html="true" data-bs-content="TODO: audio file info">
     <span class="material-icons">info</span>
   </button>
-</div>
-
-<div class="col-12 mb-4 d-flex align-items-center d-none">
-  <audio class="flex-grow-1 me-3" src="<%= content.href %>" controls preload="metadata"></audio>
-
-  <h5 class="m-0">
-    <strong><%= content.file_name %></strong>
-    <small class="text-muted">(<%= number_to_human_size(content.file_size) %>)</small>
-  </h5>
-
-  <%= link_to edit_episode_path(content.episode, uploads_destroy_params(form)), class: "btn" do %>
-    <span class="material-icons">delete</span>
-  <% end %>
 </div>

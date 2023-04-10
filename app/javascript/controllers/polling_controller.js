@@ -12,6 +12,6 @@ export default class extends Controller {
   }
 
   disconnect() {
-    clearTimeout(this.interval)
+    clearInterval(this.interval)
   }
 }

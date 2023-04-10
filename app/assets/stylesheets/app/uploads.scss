@@ -19,6 +19,10 @@
     display: none;
   }
 
+  .text-danger {
+    display: none;
+  }
+
   .prx-scrub {
     visibility: hidden;
     cursor: pointer;
@@ -61,6 +65,21 @@
       &::after {
         display: none;
       }
+    }
+  }
+
+  &.prx-errored {
+    .prx-play {
+      display: inherit;
+    }
+    .prx-pause {
+      display: none;
+    }
+    .prx-scrub {
+      display: none;
+    }
+    .text-danger {
+      display: inherit;
     }
   }
 }
