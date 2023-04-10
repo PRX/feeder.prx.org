@@ -17,6 +17,7 @@ export default class extends Controller {
     "progressPercent",
     "success",
     "error",
+    "errorMessage",
   ]
 
   connect() {
@@ -34,7 +35,7 @@ export default class extends Controller {
       this.startUpload(config)
       const path = await this.evaporate.add(config)
       this.originalUrlTarget.value = `s3://${this.uploadBucketName}/${path}`
-      this.show("picker", true)
+      this.show("success")
     } catch (err) {
       if (!`${err}`.includes("aborted")) {
         console.log(err)
@@ -90,8 +91,8 @@ export default class extends Controller {
   }
 
   onError(err) {
-    this.errorTargets.forEach((t) => (t.innerHTML = err.message || `${err}`))
-    this.show("error", true)
+    this.errorMessageTargets.forEach((t) => (t.innerHTML = err.message || `${err}`))
+    this.show("error")
   }
 
   startUpload(config) {
@@ -106,7 +107,7 @@ export default class extends Controller {
     this.fileTypeTargets.forEach((t) => (t.innerHTML = config.contentType))
 
     this.onProgress(0)
-    this.show("progress", true)
+    this.show("progress")
   }
 
   async cancelUpload(event) {
@@ -125,7 +126,7 @@ export default class extends Controller {
 
     this.audioFileTarget.value = ""
     this.audioFileTarget.dispatchEvent(new Event("change"))
-    this.show("picker", false)
+    this.show("picker")
   }
 
   show(type) {
