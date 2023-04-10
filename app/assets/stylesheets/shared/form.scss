@@ -58,22 +58,6 @@
 
 // material style floating form labels
 .form-floating {
-  display: flex;
-  align-items: center;
-  border: $input-border-width $border-style $input-border-color;
-  border-radius: $input-border-radius;
-
-  &:focus-within {
-    border-color: $blue-light;
-    box-shadow: $input-focus-box-shadow;
-  }
-
-  &.textarea-help {
-    .form-control {
-      padding-right: 2.5rem;
-    }
-  }
-
   > label {
     color: $gray-600;
     height: auto;
@@ -97,12 +81,59 @@
 
   .form-control {
     color: #000;
-    border: none;
+    border: $input-border-width $border-style $input-border-color;
 
-    &:focus {
+    &.is-invalid {
+      border-color: $red;
+    }
+
+    /*&:focus {
       box-shadow: none;
       border-color: transparent;
+    }*/
+  }
+
+  // changed field stylez
+  .form-check-input.is-changed:not(.is-invalid),
+  .form-control.is-changed:not(.is-invalid),
+  .form-select.is-changed:not(.is-invalid) {
+    border-color: $orange;
+
+    &:focus {
+      box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
     }
+
+    ~ label {
+      color: $orange;
+    }
+  }
+  .btn-discard-changed {
+    border-color: $orange;
+    &:hover {
+      border-color: $orange;
+    }
+  }
+
+  // bootstrap5-tags need help
+  .form-floating {
+    > .form-tag-select ~ label {
+      opacity: $form-floating-label-opacity !important;
+      transform: $form-floating-label-transform !important;
+    }
+    > .form-tag-select.form-control-blank:not(.form-control-focus) ~ label {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+  .is-changed ~ .form-tag-select {
+    border-color: $orange;
+  }
+  .form-tag-select.form-control-focus {
+    color: $input-focus-color;
+    background-color: $input-focus-bg;
+    border-color: $input-focus-border-color;
+    outline: 0;
+    box-shadow: $input-focus-box-shadow;
   }
 
   .form-control[type="file"] {
@@ -131,12 +162,7 @@
     padding: 0.75rem;
     min-height: $input-height;
     height: auto;
-    border: none;
-
-    &:focus {
-      box-shadow: none;
-      border-color: transparent;
-    }
+    // border: none;
   }
 
   // selection colors
@@ -286,29 +312,31 @@ small {
   font-size: 1rem;
 }
 
-.help-text-field {
-  position: absolute;
-  right: 0.5rem;
-  top: 1rem;
+/* TODO: Apply prx prefix */
+
+.prx-field-group {
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  grid-template-rows: $input-height;
+  grid-auto-rows: auto;
+  align-items: center;
+
+  .form-floating {
+    grid-row: 1 / span 2;
+  }
 }
 
-.help-text {
+.prx-btn-help {
   display: flex;
   color: $gray-600;
   background: none;
   border: none;
   padding: 0;
-  margin: 0 0.5rem 0 0;
+  margin: 0 0 0 0.5rem;
   text-decoration: none;
 
   &:hover {
     text-decoration: none;
     color: $primary;
-  }
-
-  &.help-textarea {
-    position: absolute;
-    right: 0;
-    top: 1rem;
   }
 }

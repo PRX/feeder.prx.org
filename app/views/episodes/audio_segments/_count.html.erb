@@ -3,14 +3,14 @@
     <%= form.number_field :segment_count, min: 1, max: Episode::MAX_SEGMENT_COUNT, data: {action: "dynamic-form#change"} %>
     <%= form.label :segment_count %>
 
-    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help") %>">
-      <span class="material-icons">help</span>
-    </button>
-
     <%# the previous segment_count (used in turbo-streams) %>
     <%= form.hidden_field :prev_segment_count, value: episode.segment_count, data: {dynamic_form_target: "extra"} %>
 
     <%# update segments via turbo-stream when count changes %>
     <a hidden href="<%= edit_episode_path(episode) %>" data-dynamic-form-target="link" data-turbo-stream data-turbo-frame=false></a>
   </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.segment_count") %>">
+    <span class="material-icons">help</span>
+  </button>
 </div>
