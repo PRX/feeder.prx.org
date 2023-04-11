@@ -1,17 +1,20 @@
 <div class="col-12 mb-4" data-controller="upload">
 
+  <%# step 0: destroying content (will be nulled out if we actually replace it) %>
+  <%= form.hidden_field :id, data: {upload_target: "replace"} %>
+  <%= form.hidden_field :_destroy, value: true, data: {upload_target: "replace"} %>
+
   <%# step 1: file field %>
   <div class="form-floating" data-upload-target="picker">
     <% cls = "form-control position-absolute opacity-0 z-1" %>
     <% data = {action: "change->unsaved#change upload#upload", upload_target: "audioFile"} %>
-    <% replacing = episode_replacing_content?(episode, content) %>
-    <% data[:unsaved_target] = "changed" if replacing %>
+    <% data[:unsaved_target] = "changed" if content.marked_for_destruction? %>
 
     <%# NOTE: name is nil, so we don't submit the actual file to Rails %>
     <%= form.file_field :audio_file, class: cls, accept: "audio/*", name: nil, data: data %>
 
     <%# fake display field; real text area is opacity-0 on top of it %>
-    <div class="form-control d-flex align-items-center <%= "is-changed" if replacing %>">
+    <div class="form-control d-flex align-items-center <%= "is-changed" if content.marked_for_destruction? %>">
       <span class="material-icons text-primary ms-2">upload</span>
       <div class="text-secondary mx-2">Upload a file</div>
     </div>
@@ -41,8 +44,8 @@
 
   <%# step 3a: hidden original_url field pointing to the uploaded temporary s3 file %>
   <div class="form-floating d-none" data-upload-target="success">
-    <%= form.hidden_field :original_url, data: {upload_target: "originalUrl"} %>
-    <%= form.hidden_field :file_size, data: {upload_target: "fileSize"} %>
+    <%= form.hidden_field :original_url, value: nil, data: {upload_target: "originalUrl"} %>
+    <%= form.hidden_field :file_size, value: nil, data: {upload_target: "fileSize"} %>
     <%= form.hidden_field :position %>
 
     <div class="form-control d-flex align-items-center is-changed">

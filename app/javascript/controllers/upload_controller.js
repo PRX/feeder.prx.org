@@ -7,6 +7,7 @@ export default class extends Controller {
   static targets = [
     "audioFile",
     "originalUrl",
+    "replace",
     "fileName",
     "fileSize",
     "fileType",
@@ -39,6 +40,8 @@ export default class extends Controller {
     } catch (err) {
       if (!`${err}`.includes("aborted")) {
         console.log(err)
+        this.errorMessageTargets.forEach((t) => (t.innerHTML = err.message || `${err}`))
+        this.show("error")
       }
     }
   }
@@ -137,6 +140,9 @@ export default class extends Controller {
     toggle(this.progressTargets, type === "progress")
     toggle(this.successTargets, type === "success")
     toggle(this.errorTargets, type === "error")
+
+    // disable id/_destroy fields if we're replacing that file
+    this.replaceTargets.forEach((el) => (el.disabled = type === "success"))
   }
 
   getMeta(name) {

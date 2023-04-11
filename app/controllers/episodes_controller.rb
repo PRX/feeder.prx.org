@@ -25,18 +25,22 @@ class EpisodesController < ApplicationController
   # GET /episodes/new
   def new
     @episode = Episode.new(episode_params)
+    @episode.strict_validations = true
+    @episode.valid? if turbo_frame_request?
   end
 
   # GET /episodes/1/edit
   def edit
     @episode.assign_attributes(episode_params)
     authorize @episode, :show?
+    @episode.valid? if turbo_frame_request?
   end
 
   # POST /podcasts/1/episodes
   def create
     @episode = Episode.new(episode_params)
     @episode.podcast = @podcast
+    @episode.strict_validations = true
     authorize @episode
 
     respond_to do |format|
@@ -85,6 +89,7 @@ class EpisodesController < ApplicationController
 
   def set_episode
     @episode = Episode.find_by_guid!(params[:id])
+    @episode.strict_validations = true
   end
 
   def set_podcast
@@ -116,5 +121,10 @@ class EpisodesController < ApplicationController
       categories: [],
       contents_attributes: %i[id position original_url file_size replaced_at _destroy]
     )
+  end
+
+  # TODO: hacky, but this method is private in turbo-rails
+  def turbo_frame_request?
+    request.headers["Turbo-Frame"].present?
   end
 end

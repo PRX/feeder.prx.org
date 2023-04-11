@@ -21,21 +21,21 @@
             </button>
           </div>
 
-          <%= form.fields_for :contents, episode.build_contents do |fields| %>
+          <%= form.fields_for :contents, episode.build_contents, include_id: false do |fields| %>
             <% content = fields.object %>
 
-            <% if content.new_record? %>
-              <%= render "episodes/audio/new", form: fields, episode: episode, content: content %>
-            <% elsif content.marked_for_destruction? %>
-              <%= render "episodes/audio/destroy", form: fields, episode: episode, content: content %>
-            <% else %>
-              <% case content.status %>
-              <% when "started", "created", "processing", "retrying" %>
-                <%= render "episodes/audio/processing", form: fields, episode: episode, content: content %>
-              <% when "complete" %>
-                <%= render "episodes/audio/complete", form: fields, episode: episode, content: content %>
+            <%= turbo_frame_tag "episode-form-audio-#{content.position}" do %>
+              <% if content.new_record? || content.marked_for_destruction? %>
+                <%= render "episodes/audio/new", form: fields, episode: episode, content: content %>
               <% else %>
-                <%= render "episodes/audio/error", form: fields, episode: episode, content: content %>
+                <% case content.status %>
+                <% when "started", "created", "processing", "retrying" %>
+                  <%= render "episodes/audio/processing", form: fields, episode: episode, content: content %>
+                <% when "complete" %>
+                  <%= render "episodes/audio/complete", form: fields, episode: episode, content: content %>
+                <% else %>
+                  <%= render "episodes/audio/error", form: fields, episode: episode, content: content %>
+                <% end %>
               <% end %>
             <% end %>
           <% end %>

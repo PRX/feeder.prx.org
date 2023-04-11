@@ -11,18 +11,36 @@ export default class extends Controller {
     this.element.removeEventListener("turbo:before-frame-render", this.bindBeforeFrameRender)
   }
 
-  // morph turbo-frames, instead of replacing
+  // skip some updates/deletes for segment_count changes
   beforeFrameRender(event) {
+    const childrenOnly = true
+    const onBeforeElUpdated = this.skipSegmentChanges
+    const onBeforeNodeDiscarded = this.skipSegmentChanges
+
     event.detail.render = (currentElement, newElement) => {
-      morphdom(currentElement, newElement, { childrenOnly: true, onBeforeElUpdated: this.onBeforeElUpdated })
+      if (this.isParentTurboFrame(event.target)) {
+        if (this.isInvalidSegmentCount(event.detail.newFrame)) {
+          morphdom(currentElement, newElement, { childrenOnly, onBeforeElUpdated, onBeforeNodeDiscarded })
+        } else {
+          morphdom(currentElement, newElement, { childrenOnly, onBeforeElUpdated })
+        }
+      } else {
+        morphdom(currentElement, newElement, { childrenOnly })
+      }
     }
   }
 
-  onBeforeElUpdated(fromEl, toEl) {
-    if (toEl.dataset.controller === "upload") {
-      return false
-    } else {
-      return true
-    }
+  // skip changes to segment turbo-frames (they update themselves)
+  skipSegmentChanges(el) {
+    return (el.id || "").match(/episode-form-audio-[0-9]+/) ? false : true
+  }
+
+  isParentTurboFrame(el) {
+    return el.id === "episode-form-audio"
+  }
+
+  isInvalidSegmentCount(el) {
+    const field = el.querySelector('[name="episode[segment_count]"]')
+    return field && field.classList.contains("is-invalid")
   }
 }

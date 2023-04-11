@@ -10,10 +10,10 @@ module UploadsHelper
   end
 
   def uploads_destroy_params(form)
-    request.query_parameters.merge({
+    {
       "#{form.object_name}[id]": form.object.id,
       "#{form.object_name}[_destroy]": "1"
-    })
+    }
   end
 
   private

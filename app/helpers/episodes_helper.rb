@@ -39,12 +39,6 @@ module EpisodesHelper
     end
   end
 
-  def episode_replacing_content?(episode, content)
-    episode.contents.reject(&:new_record?).select(&:marked_for_destruction?).any? do |c|
-      c.position == content.position
-    end
-  end
-
   def episode_content_duration(content)
     Time.at(content.duration || 0).utc.strftime("%H:%M:%S").sub(/^00:/, "0:")
   end
