@@ -19,7 +19,7 @@ class EpisodesController < ApplicationController
 
   # GET /episodes/1
   def show
-    authorize @episode
+    redirect_to edit_episode_url(@episode)
   end
 
   # GET /episodes/new
@@ -46,7 +46,7 @@ class EpisodesController < ApplicationController
     respond_to do |format|
       if @episode.save
         @episode.copy_media
-        format.html { redirect_to episode_url(@episode), notice: t(".notice") }
+        format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
         format.html { render :new, status: :unprocessable_entity }
