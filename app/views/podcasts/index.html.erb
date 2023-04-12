@@ -19,7 +19,7 @@
     </div>
   </div>
 
-  <%= turbo_frame_tag "episodes", target: "_top" do %>
+  
           <%= form_with(
             url: podcasts_path,
             method: :get,
@@ -38,13 +38,11 @@
           <%= form.submit class: "d-none", data: {search_target: "submit"} %>
           
           <% end %>
-        <% end %>
     </div>
   </div>
 </div>
 
-
-<div id="podcasts">
+<%= turbo_frame_tag "podcasts", target: "_top" do %>
   <section class="col-lg-12">
     <div class="dashboard-list mb-4 shadow">
       <% @podcasts.each do |podcast| %>
@@ -57,4 +55,4 @@
 
   <%= paginate @podcasts, window: 2, outer_window: 1 %>
   <%= page_entries_info @podcasts %>
-</div>
+<% end %>
