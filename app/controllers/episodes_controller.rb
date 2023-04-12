@@ -25,6 +25,8 @@ class EpisodesController < ApplicationController
   # GET /episodes/new
   def new
     @episode = Episode.new(episode_params)
+    @episode.podcast = @podcast
+    @episode.clear_attribute_changes(%i[podcast_id])
     @episode.strict_validations = true
     @episode.valid? if turbo_frame_request?
   end

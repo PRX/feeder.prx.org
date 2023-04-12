@@ -140,7 +140,10 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
     if object.present?
       if object.respond_to?("#{method}_changed?")
-        add_class(opts, CHANGED_CLASS) if object.public_send("#{method}_changed?")
+        # ignore nils being set to blanks by text fields
+        if !object.respond_to?("#{method}_was") || (object.public_send("#{method}_was").nil? && object.public_send(method) == "")
+          add_class(opts, CHANGED_CLASS) if object.public_send("#{method}_changed?")
+        end
       end
 
       if object.respond_to?("#{method}_was")

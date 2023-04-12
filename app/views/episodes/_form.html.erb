@@ -1,4 +1,7 @@
-<%= form_with(model: episode, html: {autocomplete: "off"}, data: {controller: "unsaved", unsaved_changed_value: episode.changed?, unsaved_confirm_value: t(".confirm")}) do |form| %>
+<% model = episode.new_record? ? [episode.podcast, episode] : episode %>
+<% data = {controller: "unsaved", unsaved_changed_value: episode.changed?, unsaved_confirm_value: t(".confirm")} %>
+
+<%= form_with(model: model, html: {autocomplete: "off"}, data: data) do |form| %>
   <div class="row my-4">
     <div class="col-lg-8">
       <div class="card shadow pt-3 border-0">
