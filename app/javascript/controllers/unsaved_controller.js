@@ -104,7 +104,7 @@ export default class extends Controller {
 
   hasChangedFields() {
     // scan for changes in form (ignoring slim select, which takes a bit to update)
-    const changed = this.element.querySelectorAll(".is-changed:not(.ss-main):not([style='display:none'])")
+    const changed = this.element.querySelectorAll(".is-changed")
     for (const el of changed) {
       if (el.classList.contains("ss-main")) {
         // ignore slimselect, which takes a bit to update
