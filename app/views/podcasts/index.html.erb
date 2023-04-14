@@ -33,11 +33,11 @@
 
 <%= form_with(
       url: podcasts_path,
-  method: :get,
-  data: {
+      method: :get,
+      data: {
         controller: "search"
       }
-        ) do |form| %>
+    ) do |form| %>
 
 <div class="">
   <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm", placeholder: "Search" %>
@@ -49,13 +49,13 @@
 <%= form.submit class: "d-none", data: {search_target: "submit"} %>
 <% end %>
 
-<div id="podcasts">
-  <section class="col-lg-12">
-    <div class="dashboard-list mb-4 shadow">
+<div id=" podcasts ">
+  <section class=" col-lg-12 ">
+    <div class=" dashboard-list mb-4 shadow ">
       <% @podcasts.each do |podcast| %>
         <%= render "podcast_page", podcast: podcast %>
        <% end %>
-        <div class="mt-2">
+        <div class=" mt-2 ">
       </div>
     </div>
   </section>
