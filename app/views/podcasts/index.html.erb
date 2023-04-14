@@ -1,43 +1,47 @@
 <% content_for :title, "My Podcasts" %>
 
-<p style="color: green"><%= notice %></p>
-<div class="row mt-4 mb-4">
-  <div class="dashboard header">
-    <div class="col d-flex align-items-center ">
-      <h1 class="text-black fw-bold me-4 mb-0"><%= t(".my_podcasts") %></h1>
 
-      <a data-bs-toggle="dropdown">
-      <button class="btn btn-outline-light btn-sm dropdown-toggle">
-        Sort <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
-      </button>
-      <ul class="dropdown-menu">
-        <li><%= link_to "Recent Activity", podcasts_path(sort: "Recent"), class: "dropdown-item active" %></li>
-        <li><%= link_to "# of Episodes", podcasts_path(sort: "episode_count"), class: "dropdown-item" %></li>
-        <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
-        <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
-      </ul>
+<div class="container my-4">
+  <p style="color: green"><%= notice %></p>
+  <div class="d-grid d-sm-flex align-items-center w-auto">
+    <div class="dashboard header">
+      <div class="d-grid d-lg-flex gap-2 align-items-center">
+        <h1 class="text-black fw-bold d-flex flex-fill my-4"><%= t(".my_podcasts") %></h1>
+
+        <a data-bs-toggle="dropdown">
+        <button class="btn btn-outline-light btn-sm dropdown-toggle">
+          Sort <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><%= link_to "Recent Activity", podcasts_path(sort: "Recent"), class: "dropdown-item active" %></li>
+          <li><%= link_to "# of Episodes", podcasts_path(sort: "episode_count"), class: "dropdown-item" %></li>
+          <li><%= link_to "A-Z", podcasts_path(sort: "A-Z"), class: "dropdown-item" %></li>
+          <li><%= link_to "Z-A", podcasts_path(sort: "Z-A"), class: "dropdown-item" %></li>
+        </ul>
+      </div>
     </div>
-  </div>
 
-  
-          <%= form_with(
-            url: podcasts_path,
-            method: :get,
-            data: {
-              controller: "search",
-              "turbo-frame": "podcasts",
-              "turbo-action": "replace"
-            }
-          ) do |form| %>
-          
-          <div class="">
-            <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm", placeholder: (t ".search") %>
-            <%= form.label :q, t(".search"), class: "visually-hidden" %>
-          </div>
-          
-          <%= form.submit class: "d-none", data: {search_target: "submit"} %>
-          
-          <% end %>
+    <div class="row-reverse col-6">
+        <%= form_with(
+          url: podcasts_path,
+          method: :get,
+          data: {
+            controller: "search",
+            "turbo-frame": "podcasts",
+            "turbo-action": "replace"
+          }
+        ) do |form| %>
+        
+        <div class="">
+          <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm", placeholder: (t ".search") %>
+          <%= form.label :q, t(".search"), class: "visually-hidden" %>
+        </div>
+        
+        <%= form.submit class: "d-none", data: {search_target: "submit"} %>
+        
+        <% end %>
+        </div>
+      </div>
     </div>
   </div>
 </div>
