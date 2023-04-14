@@ -152,16 +152,50 @@ the [Shoryuken](https://github.com/ruby-shoryuken/shoryuken) gem and AWS SQS.
 Some jobs run completely in Ruby, while others will call out to [Porter](https://github.com/PRX/Porter)
 or the [Apple API Bridge Lambda](https://github.com/PRX/api-bridge-lambda/) to complete their work.
 
-To start the worker in development:
+First, make sure you have [awsso](https://github.com/PRX/internal/wiki/AWS:-Developer-Access-%E2%80%93-CLI#sso-via-iam-identity-center)
+installed and working, along with an AWS profile for the prx-shared-development account (`sso_account_id = 556402616001`).
+
+Then you'll need to set a few ENVs to make this all work:
+
+```
+# use prx-shared-development account
+AWS_ACCOUNT_ID=556402616001
+
+# and SQS that start with your name
+ANNOUNCE_RESOURCE_PREFIX=<yourname>
+
+# and staging Porter
+PORTER_SNS_TOPIC=<get from legacy SNS web console>
+
+# configure EvaporateJS uploads
+UPLOAD_BUCKET_NAME=prx-feed-development
+UPLOAD_BUCKET_PREFIX=uploads
+UPLOAD_SIGNING_SERVICE_KEY_ID=<get this from prx-shared-development IAM web console>
+UPLOAD_SIGNING_SERVICE_URL=<get this from prx-shared-development Lambda web console>
+
+# use the development S3/CloudFront for that same bucket
+FEEDER_CDN_HOST=f.development.prxu.org
+FEEDER_STORAGE_BUCKET=prx-feed-development
+```
+
+This will set you up to use the `prx-feed-development` bucket for both uploads and the final destination
+for processed files. Then, to start the worker in development:
 
 ```sh
+# use the prx-shared-development account - both for running workers and webs
+export AWS_PROFILE=prx-shared-development
+
+# you'll need to create the SQS queues the first time
+bin/rails sqs:create
+
+# now you can start the web/worker in different terminals
+bin/rails web
 bin/rails worker
 
 # or shorthand
+bin/rails s
 bin/rails w
 ```
-
-Note that a blank `ANNOUNCE_RESOURCE_PREFIX` will make Rails
 
 #### File Handling
 
