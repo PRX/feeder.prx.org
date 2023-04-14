@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.7"
+ruby "2.7.8"
 
 # core
 gem "activerecord-session_store"

@@ -19,9 +19,11 @@ describe Apple::Show do
     it "flushes memoized attrs" do
       apple_show.instance_variable_set(:@apple_episode_json, "foo")
       apple_show.instance_variable_set(:@feeder_episodes, "foo")
+      apple_show.instance_variable_set(:@episodes, "foo")
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
       assert_nil apple_show.instance_variable_get(:@feeder_episodes)
+      assert_nil apple_show.instance_variable_get(:@episodes)
     end
 
     it "doesn't raise an error if the attr isn't memoized" do
@@ -31,17 +33,21 @@ describe Apple::Show do
     it "doesn't raise an error if the attr is nil" do
       apple_show.instance_variable_set(:@apple_episode_json, nil)
       apple_show.instance_variable_set(:@feeder_episodes, nil)
+      apple_show.instance_variable_set(:@episodes, nil)
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@feeder_episodes)
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
+      assert_nil apple_show.instance_variable_get(:@episodes)
     end
 
     it "doesn't raise an error if the attr is false" do
       apple_show.instance_variable_set(:@apple_episode_json, false)
       apple_show.instance_variable_set(:@feeder_episodes, false)
+      apple_show.instance_variable_set(:@episodes, false)
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@feeder_episodes)
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
+      assert_nil apple_show.instance_variable_get(:@episodes)
     end
   end
 
@@ -58,11 +64,11 @@ describe Apple::Show do
       end
     end
 
-    it "returns new instances of Apple::Episode" do
+    it "returns memoized instances of Apple::Episode" do
       Apple::Episode.stub(:get_episodes_via_show, []) do
         obj_id = apple_show.episodes.first.object_id
         # These are not the same objects
-        refute_equal apple_show.episodes.first.object_id, obj_id
+        assert_equal apple_show.episodes.first.object_id, obj_id
       end
     end
 

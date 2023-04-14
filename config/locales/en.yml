@@ -8,6 +8,8 @@ en:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
       short: "%m/%d"
+      time_12_hour: "%l:%M %p %Z"
+      day_and_date: "%A, %m/%d"
   # form/model helpers
   helpers:
     label:
@@ -80,10 +82,30 @@ en:
       confirm: Discard unsaved changes?
     form_audio:
       title: Audio Files
+      help:
+        segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
     form_distribution:
       title: Distribution
     form_image:
       title: Cover Image
+      help:
+        cover_image: Provide an image for your episode, if desired. Image dimensions must be square.
+    form_main:
+      help:
+        author_email: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
+        author_name: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
+        add_itunes_summary: Add an alternate itunes:summary
+        clean_title: If the title above contains any extraneous identifying information about your episode (like season number), provide a clean version of the title alone here.
+        description: Write a full description of your episode, including keywords, names of interviewees, places and topics. Feel free to incorporate links, images, and any of the other provided rich text formatting options.
+        episode_number: If your episode is part of has a specific number add it here.
+        episode_url: If you have a public URL for this podcast episode, enter it here.
+        explicit: In accordance with <a href='https://help.apple.com/itc/podcasts_connect/#/itc1723472cb'>the requirements for iTunes podcast content</a>, does this episode contain explicit material?
+        itunes_type: <p>Select the type of episode.</p> <p><strong>Full</strong> default and most common;</p> <p><strong>Trailer</strong> a short, promotional piece of content that represents a preview of a show;</p> <p><strong>Bonus</strong> extra content like behind-the-scenes information or interviews.</p>
+        production_notes: Helpful information for the production and/or ad sales teams. Example 'Descriptions of violence in segment 2.'
+        season_number: If your episode is part of a season add it here.
+        subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
+        summary: Unless otherwise specified, the summary is created from the description of your episode as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
+        title: Write a short, Tweetable title. Think newspaper headline.
     form_status:
       create: Create Draft
       destroy: Delete
@@ -102,12 +124,14 @@ en:
       unpublish: Unpublish
     form_tags:
       title: Categories
+      help:
+        categories: Enter categories relevant to the content of your episode. Type the category and press Enter to set it.
     index:
       title: PRX Dovetail - Episodes
       episodes: Episodes
       create_episode: Create Episode
       plan_episodes: Plan Episodes
-      search: Search
+      search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
     update:
@@ -201,6 +225,59 @@ en:
       scheduled_episodes:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
+  podcast_planner:
+    create:
+      success: Episode drafts generated.
+    form_main:
+      header: Plan Episodes
+      help_html: Save yourself some time by automatically creating multiple episode drafts to create a production schedule, it may also help your revenue as our sales teams will have access to dropdates to sell against. If you only wish to add a single episode, <a href="%{url}">go here</a>.
+    form_date_calculator:
+      header:
+        date_calculation: Date Calculation of Draft Batch
+        day_select: Day Selection
+        week_select: Week Selection
+        range_select: Date Range Selection
+      help:
+        date_calculation: Calculate release dates for your drafts by selecting which days and weeks you plan to publish, and then select a date range.
+        day_select: Which day of the week do you plan to publish your episodes? Select all that apply.
+        week_select: Which weeks of the month do you plan to publish? Select all that apply.
+        calculate_weeks: Calculate the weeks by
+        select_weeks: Select weeks
+        select_period: Select interval
+        range_select: How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.
+        calculate_range: Calculate the end of the batch by
+        select_range: Select range
+      label:
+        week_condition: Weekly rhythm
+        week_of_month: Week of the month
+        period: Interval
+        date_range_condition: End range
+    form_side:
+      header:
+        preview: Schedule Preview
+        publish_time: Publish Time
+        audio_segments: Audio Segments
+        number_of_drafts: "Number of Draft Episodes: %{count}"
+      help:
+        preview: Select more options to get a schedule preview.
+      label:
+        submit: Create drafts
+    helper:
+      period_options:
+        every_one: Every week
+        every_two: Every two weeks
+        every_three: Every three weeks
+        every_four: Every four weeks
+      monthly_options:
+        first: First
+        second: Second
+        third: Third
+        fourth: Fourth
+        fifth: Fifth
+      episodes: number of episodes
+      end_date: end date
+      month: month
+      period: interval
   podcast_switcher:
     dropdown:
       all: View all my Podcasts

@@ -1,7 +1,5 @@
 FactoryBot.define do
   factory :podcast_delivery_file_api_response, class: OpenStruct do
-    api_response { nil }
-
     transient do
       podcast_delivery_id { "podcast-delivery-id" }
       podcast_delivery_file_id { "podcast-delivery-file-id" }
@@ -43,6 +41,7 @@ FactoryBot.define do
               "assetDeliveryState" => {"errors" => evaluator.asset_delivery_errors,
                                        "warnings" => [],
                                        "state" => evaluator.asset_delivery_state}}}}}}
+      response_container
     end
 
     initialize_with { attributes }

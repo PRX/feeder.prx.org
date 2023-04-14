@@ -74,22 +74,65 @@ describe Episode do
     assert_nil Episode.find_by_item_guid(generated_guid)
   end
 
-  it "is ready to add to a feed" do
+  it "includes items in feed" do
+    episode = create(:episode, segment_count: nil, contents: [], enclosures: [])
+    episode.enclosures.destroy_all
     assert episode.include_in_feed?
+
+    episode.update(segment_count: 1)
+    refute episode.reload.include_in_feed?
+
+    content = create(:content, episode: episode, status: "processing")
+    refute episode.reload.include_in_feed?
+
+    content.update(status: "complete")
+    assert episode.reload.include_in_feed?
   end
 
-  it "knows if audio is ready" do
-    episode.enclosures = [create(:enclosure, episode: episode)]
-    assert_equal episode.enclosures.first.status, "created"
-    refute episode.enclosures.first.complete?
-    assert episode.media?
-    refute episode.media_ready?
-    assert_equal episode.media_status, "processing"
-    episode.enclosures.first.complete!
-    assert episode.enclosure.complete?
-    assert episode.media?
+  it "knows if enclosure audio is ready" do
+    e1 = episode.enclosures.first
+    assert_equal "complete", e1.status
+    assert_equal [e1], episode.media_resources
+    assert_equal [e1], episode.ready_media_resources
     assert episode.media_ready?
-    assert_equal episode.media_status, "complete"
+
+    # replace with an incomplete enclosure
+    e2 = create(:enclosure, episode: episode)
+    assert_equal "created", episode.enclosures.first.status
+    assert_equal [e2], episode.media_resources
+    assert_equal [e1], episode.ready_media_resources
+    assert episode.media_ready?
+
+    # set first (replaced) enclosure back to processing
+    e1.update(status: "processing")
+    assert_equal [e2], episode.media_resources
+    assert_equal [], episode.ready_media_resources
+    refute episode.media_ready?
+  end
+
+  it "knows if contents audio is ready" do
+    c1 = create(:content, episode: episode, status: "complete", position: 1)
+    assert_equal [c1], episode.media_resources
+    assert_equal [c1], episode.ready_media_resources
+    assert episode.media_ready?
+
+    # explicit segment_count
+    episode.update(segment_count: 2)
+    assert_equal [c1], episode.media_resources
+    assert_equal [c1], episode.ready_media_resources
+    refute episode.media_ready?
+
+    # with all positions complete
+    c2 = create(:content, episode: episode, status: "complete", position: 2)
+    assert_equal [c1, c2], episode.media_resources.reload
+    assert_equal [c1, c2], episode.ready_media_resources
+    assert episode.media_ready?
+
+    # replace with an incomplete content
+    c3 = create(:content, episode: episode, status: "processing", position: 1)
+    assert_equal [c3, c2], episode.media_resources.reload
+    assert_equal [c1, c2], episode.ready_media_resources
+    assert episode.media_ready?
   end
 
   it "returns an audio content_type by default" do
@@ -120,12 +163,12 @@ describe Episode do
 
   it "has no audio file until processed" do
     episode = build_stubbed(:episode)
-    assert_equal episode.media_files.length, 0
+    assert_equal episode.media_resources.length, 0
   end
 
   it "has one audio file once processed" do
     episode = create(:episode)
-    assert_equal episode.media_files.length, 1
+    assert_equal episode.media_resources.length, 1
   end
 
   it "has a 0 duration when unprocessed" do
@@ -198,41 +241,35 @@ describe Episode do
     assert episode.itunes_block
   end
 
-  it "sets media files by adding new ones" do
-    assert_equal episode.all_contents.count, 0
+  it "sets contents by adding new ones" do
+    assert_equal episode.contents.count, 0
 
-    episode.media_files = [build(:content, episode: episode)]
-    assert_equal episode.all_contents.count, 1
+    c1 = build(:content, episode: episode)
+    episode.update!(contents: [c1])
+    assert_equal episode.contents.count, 1
 
-    episode.media_files = [build(:content, episode: episode), build(:content, episode: episode)]
-    assert_equal episode.all_contents.count, 3
+    c2 = build(:content, episode: episode)
+    episode.update!(contents: [c1.original_url, c2])
+    assert_equal episode.contents.count, 2
+    assert_equal episode.contents.with_deleted.count, 2
   end
 
   it "deletes media files" do
-    assert_equal episode.all_contents.count, 0
+    assert_equal episode.contents.count, 0
 
-    episode.media_files = [build(:content, episode: episode), build(:content, episode: episode)]
-    assert_equal episode.all_contents.count, 2
+    c1 = build(:content, episode: episode)
+    c2 = build(:content, episode: episode)
+    episode.update!(contents: [c1, c2])
+    assert_equal episode.contents.count, 2
+    assert_equal episode.contents.with_deleted.count, 2
 
-    episode.media_files = [build(:content, episode: episode)]
-    assert_equal episode.all_contents.count, 2
+    episode.update!(contents: [c1])
+    assert_equal episode.contents.count, 1
+    assert_equal episode.contents.with_deleted.count, 2
 
-    episode.media_files = []
-    assert_equal episode.all_contents.count, 0
-  end
-
-  it "finds existing content based on the last 2 segments of the url" do
-    episode.all_contents << build(:content, episode: episode, position: 1)
-    assert_equal episode.all_contents.first.href, "s3://prx-testing/test/audio.mp3"
-
-    refute_nil episode.find_existing_content(1, "s3://prx-testing/test/audio.mp3")
-    refute_nil episode.find_existing_content(1, "s3://change-this/test/audio.mp3")
-    refute_nil episode.find_existing_content(1, "http://prx-testing/any/thing/here/test/audio.mp3")
-
-    assert_nil episode.find_existing_content(1, nil)
-    assert_nil episode.find_existing_content(1, "s3://prx-testing/changed/audio.mp3")
-    assert_nil episode.find_existing_content(1, "s3://prx-testing/test/changed.mp3")
-    assert_nil episode.find_existing_content(2, "s3://prx-testing/test/audio.mp3")
+    episode.update!(contents: nil)
+    assert_equal episode.contents.count, 0
+    assert_equal episode.contents.with_deleted.count, 2
   end
 
   it "returns explicit_content based on the podcast" do
@@ -311,36 +348,41 @@ describe Episode do
 
   describe "#image" do
     it "replaces images" do
-      refute_nil episode.image_file
       refute_nil episode.image
       refute_empty episode.images
 
-      episode.image_file = {original_url: "test/fixtures/transistor1400.jpg"}
+      episode.image = {original_url: "test/fixtures/transistor1400.jpg"}
       episode.save!
-      assert_equal episode.reload.images.count, 2
-      assert_equal episode.image_file.original_url, "test/fixtures/transistor1400.jpg"
-      assert_equal episode.image_file.status, "created"
+      assert_equal episode.reload.images.with_deleted.count, 2
+      assert_equal episode.reload.images.count, 1
+      assert_equal episode.image.original_url, "test/fixtures/transistor1400.jpg"
+      assert_equal episode.image.status, "created"
 
-      # image is still the completed one
-      refute_equal episode.image, episode.image_file
-      assert_equal episode.image.status, "complete"
+      # ready_image is still the completed one
+      refute_equal episode.ready_image, episode.image
+      assert_equal episode.ready_image.status, "complete"
+      refute_nil episode.ready_image.deleted_at
+      refute_nil episode.ready_image.replaced_at
     end
 
     it "ignores existing images" do
       assert_equal episode.images.count, 1
 
-      episode.image_file = {original_url: episode.image.original_url}
-      episode.image_file = episode.image.original_url
-      episode.image_file = {original_url: episode.image.original_url}
+      episode.image = {original_url: episode.image.original_url}
+      episode.image = episode.image.original_url
+      episode.image = {original_url: episode.image.original_url}
       episode.save!
-      assert_equal episode.images.count, 1
+      assert_equal episode.images.with_deleted.count, 1
     end
 
     it "deletes images" do
       refute_empty episode.images
 
-      episode.image_file = nil
+      episode.update(image: nil)
       assert_empty episode.reload.images
+
+      assert_nil episode.ready_image
+      assert_nil episode.images.with_deleted.first.replaced_at
     end
   end
 end

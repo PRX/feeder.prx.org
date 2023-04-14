@@ -4,6 +4,8 @@ module Apple
   class Api
     ERROR_RETRIES = 3
     SUCCESS_CODES = %w[200 201].freeze
+    DEFAULT_BATCH_SIZE = 5
+    DEFAULT_WRITE_BATCH_SIZE = 1
 
     attr_accessor :provider_id, :key_id, :key, :bridge_url
 
@@ -98,10 +100,10 @@ module Apple
       URI.join(api_base, api_frag)
     end
 
-    def local_api_retry_errors
+    def local_api_retry_errors(tries: ERROR_RETRIES)
       count = 0
       last_resp = nil
-      while count < ERROR_RETRIES
+      while count < tries
         count += 1
         last_resp = yield
         break if ok_code(last_resp)
@@ -110,22 +112,31 @@ module Apple
       last_resp
     end
 
-    def get(api_frag)
+    def get(api_frag, tries: ERROR_RETRIES)
       uri = join_url(api_frag)
-      local_api_retry_errors do
+      local_api_retry_errors(tries: tries) do
         get_uri(uri)
       end
     end
 
-    def patch(api_frag, data_body)
-      local_api_retry_errors do
-        update_remote(Net::HTTP::Patch, api_frag, data_body)
+    def patch(api_frag, data_body, tries: ERROR_RETRIES)
+      uri = join_url(api_frag)
+      local_api_retry_errors(tries: tries) do
+        update_remote(Net::HTTP::Patch, uri, data_body)
       end
     end
 
-    def post(api_frag, data_body)
-      local_api_retry_errors do
-        update_remote(Net::HTTP::Post, api_frag, data_body)
+    def post(api_frag, data_body, tries: ERROR_RETRIES)
+      uri = join_url(api_frag)
+      local_api_retry_errors(tries: tries) do
+        update_remote(Net::HTTP::Post, uri, data_body)
+      end
+    end
+
+    def delete(api_frag, tries: ERROR_RETRIES)
+      uri = join_url(api_frag)
+      local_api_retry_errors(tries: tries) do
+        update_remote(Net::HTTP::Delete, uri, {})
       end
     end
 
@@ -170,11 +181,12 @@ module Apple
       [oks + fixed_errs, remaining_errors]
     end
 
-    def bridge_remote(bridge_resource, bridge_options)
+    def bridge_remote(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE)
       url = bridge_url
       Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge")
 
       body = {
+        batch_size: batch_size,
         bridge_resource: bridge_resource,
         bridge_parameters: bridge_options
       }
@@ -182,25 +194,29 @@ module Apple
       make_bridge_request(body, url)
     end
 
-    def bridge_remote_and_unwrap(bridge_resource, bridge_options, &block)
-      resp = bridge_remote(bridge_resource, bridge_options)
+    def bridge_remote_and_unwrap(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE, &block)
+      resp = bridge_remote(bridge_resource, bridge_options, batch_size: batch_size)
 
       unwrap_bridge_response(resp, &block)
     end
 
-    def bridge_remote_and_retry(bridge_resource, bridge_options)
-      resp = bridge_remote(bridge_resource, bridge_options)
+    def bridge_remote_and_retry(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE)
+      resp = bridge_remote(bridge_resource, bridge_options, batch_size: batch_size)
 
       unwrap_bridge_response(resp) do |row_operation_errors|
         retry_bridge_api_operation(bridge_resource, [], row_operation_errors)
       end
     end
 
-    def bridge_remote_and_retry!(bridge_resource, bridge_options)
-      (oks, errs) = bridge_remote_and_retry(bridge_resource, bridge_options)
-      raise Apple::ApiError.new(JSON.pretty_generate(errs), nil) if errs.present?
+    def bridge_remote_and_retry!(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE)
+      (oks, errs) = bridge_remote_and_retry(bridge_resource, bridge_options, batch_size: batch_size)
+      raise_bridge_api_error(errs) if errs.present?
 
       oks
+    end
+
+    def raise_bridge_api_error(err)
+      raise Apple::ApiError.new(JSON.pretty_generate(err), nil)
     end
 
     def development_bridge_url?
@@ -229,7 +245,7 @@ module Apple
     # Takes in a bridge resource and a list of oks (successful requests) and
     # errs (failed requests).  Retries errs and adds any former_errors_now_ok to
     # the oks and recurses on the remaining errs.
-    def retry_bridge_api_operation(bridge_resource, row_operations_ok, row_operation_errs, attempts = 1)
+    def retry_bridge_api_operation(bridge_resource, row_operations_ok, row_operation_errs, attempts = 1, batch_size: DEFAULT_BATCH_SIZE)
       return [row_operations_ok, row_operation_errs] if attempts >= ERROR_RETRIES || row_operation_errs.empty?
 
       row_operation_errs.map { |err| Rails.logger.error("Retrying: #{err.to_json}") }
@@ -242,15 +258,14 @@ module Apple
       # Working *only* on the row_operation_errs here in the call to `bridge_remote``
       # So `former_errors_now_ok`, and `repeated_errs` here are derivative solely of `row_operation_errs`
       (former_errors_now_ok, repeated_errs) =
-        bridge_remote_and_unwrap(bridge_resource,
-          formatted_error_operations_for_retry) do |additional_row_operation_errs|
+        bridge_remote_and_unwrap(bridge_resource, formatted_error_operations_for_retry, batch_size: batch_size) do |additional_row_operation_errs|
         if additional_row_operation_errs.empty?
           [[],
             []]
         else
           # Keep working on the errors if there are any
           retry_bridge_api_operation(bridge_resource, [],
-            additional_row_operation_errs, attempts + 1)
+            additional_row_operation_errs, attempts + 1, batch_size: batch_size)
         end
       end
 

@@ -48,8 +48,8 @@ class PodcastFeedHandler
 
   def update_images
     fa = feed.attributes.with_indifferent_access
-    default_feed.feed_image_file = fa[:thumb_url]
-    default_feed.itunes_image_file = fa[:image_url]
+    default_feed.feed_image = fa[:thumb_url]
+    default_feed.itunes_image = fa[:image_url]
   end
 
   def update_categories

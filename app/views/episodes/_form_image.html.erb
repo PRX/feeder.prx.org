@@ -1,6 +1,7 @@
-<div class="card">
-  <div class="card-header-info">
+<div class="card shadow border-0">
+  <div class="card-header card-header-info d-flex justify-content-between">
     <h5 class="card-title"><%= t(".title") %></h5>
+    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.cover_image") %>"><span class="material-icons">help</span></button>
   </div>
   <div class="card-body">
     <% if episode.image %>

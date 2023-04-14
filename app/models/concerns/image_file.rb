@@ -8,6 +8,8 @@ module ImageFile
     has_one :task, -> { order("id desc") }, as: :owner
     has_many :tasks, as: :owner
 
+    acts_as_paranoid
+
     before_validation :initialize_attributes, on: :create
 
     before_validation :detect_image_attributes
@@ -17,6 +19,15 @@ module ImageFile
     validates :format, inclusion: {in: ["jpeg", "png", "gif", nil]}
 
     enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
+
+    scope :complete_or_replaced, -> do
+      with_deleted
+        .complete
+        .where("deleted_at IS NULL OR replaced_at IS NOT NULL")
+        .order("created_at DESC")
+    end
+
+    after_create :replace_resources!
   end
 
   class_methods do
@@ -120,5 +131,15 @@ module ImageFile
 
   def dimensions=(s)
     self.width, self.height = s
+  end
+
+  def replace?(img)
+    original_url != img.try(:original_url)
+  end
+
+  def update_image(img)
+    %i[alt_text caption credit].each do |key|
+      img[key] = self[key]
+    end
   end
 end
