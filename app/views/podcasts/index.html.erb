@@ -1,9 +1,9 @@
 <% content_for :title, "My Podcasts" %>
 
 
-<div class="container my-4">
+<div class="container p-0">
   <p style="color: green"><%= notice %></p>
-  <div class="d-grid d-sm-flex align-items-center w-auto">
+  <div class="d-flex align-items-center justify-content-between">
     <div class="dashboard header">
       <div class="d-grid d-lg-flex gap-2 align-items-center">
         <h1 class="text-black fw-bold d-flex flex-fill my-4"><%= t(".my_podcasts") %></h1>
@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <div class="row-reverse col-6">
+    <div class="row-reverse col-4">
         <%= form_with(
           url: podcasts_path,
           method: :get,
