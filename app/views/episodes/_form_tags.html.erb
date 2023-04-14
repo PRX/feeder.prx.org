@@ -1,9 +1,10 @@
 <h2><%= t(".title") %></h2>
 
-<div class="col-12 mb-4">
+<div class="col-12 mb-4 prx-field-group">
   <div class="form-floating">
     <%= form.tag_select :categories, episode.categories, {}, data: {allow_new: true, allow_clear: true} %>
     <%= form.label :categories %>
-    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.categories") %>"><span class="material-icons">help</span></button>
   </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.categories") %>"><span class="material-icons">help</span></button>
 </div>

@@ -38,6 +38,7 @@ module Apple
     def reload
       @feeder_episodes = nil
       @apple_episode_json = nil
+      @episodes = nil
     end
 
     def podcast
@@ -136,15 +137,17 @@ module Apple
     def episodes
       raise "Missing apple show id" unless apple_id.present?
 
-      eps = feeder_episodes.map do |ep|
-        Apple::Episode.new(show: self, feeder_episode: ep, api: api)
-      end
+      @episodes ||= begin
+        eps = feeder_episodes.map do |ep|
+          Apple::Episode.new(show: self, feeder_episode: ep, api: api)
+        end
 
-      results_by_guid = apple_episode_json.map { |e| [e["api_response"]["val"]["data"]["attributes"]["guid"], e] }.to_h
+        results_by_guid = apple_episode_json.map { |e| [e["api_response"]["val"]["data"]["attributes"]["guid"], e] }.to_h
 
-      eps.map do |ep|
-        ep.api_response = results_by_guid[ep.guid]
-        ep
+        eps.map do |ep|
+          ep.api_response = results_by_guid[ep.guid]
+          ep
+        end
       end
     end
 

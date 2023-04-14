@@ -60,7 +60,7 @@ describe Apple::Episode do
     it "instantiates with a nil api_response" do
       ep = build(:apple_episode, show: apple_show, feeder_episode: episode, api_response: nil)
       assert_nil ep.apple_id
-      assert_nil ep.audio_asset_vendor_id
+      assert_raises(RuntimeError, "incomplete api response") { ep.audio_asset_vendor_id }
       # It does not exists yet, so it is not drafting
       assert_equal false, ep.drafting?
       # Comes from the feeder model
@@ -156,6 +156,8 @@ describe Apple::Episode do
 
     it "should be false if the episode has a non complete apple hosted audio asset state" do
       apple_episode.api_response["api_response"]["val"]["data"]["attributes"]["appleHostedAudioAssetState"] = Apple::Episode::AUDIO_ASSET_FAILURE
+
+      delivery_file.update(**build(:podcast_delivery_file_api_response))
       apple_episode.podcast_delivery_files.reset
 
       assert_equal false, apple_episode.waiting_for_asset_state?

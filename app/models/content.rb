@@ -28,9 +28,6 @@ class Content < MediaResource
   end
 
   def replace_resources!
-    episode.with_lock do
-      # delete enclosures in the same episode created before this
-      episode.all_contents.where("position = ? AND created_at < ? AND id != ?", position, created_at, id).destroy_all
-    end
+    Content.where(episode_id: episode_id, position: position).where.not(id: id).touch_all(:replaced_at, :deleted_at)
   end
 end

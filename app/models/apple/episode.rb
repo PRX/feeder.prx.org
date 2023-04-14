@@ -40,7 +40,7 @@ module Apple
     end
 
     def self.get_episodes(api, episodes)
-      return if episodes.empty?
+      return [] if episodes.empty?
 
       api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
@@ -59,7 +59,7 @@ module Apple
       return if episodes.empty?
 
       episode_bridge_results = api.bridge_remote_and_retry!("createEpisodes",
-        episodes.map(&:create_episode_bridge_params))
+        episodes.map(&:create_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
       insert_sync_logs(episodes, episode_bridge_results)
     end
@@ -67,9 +67,44 @@ module Apple
     def self.update_audio_container_reference(api, episodes)
       return [] if episodes.empty?
 
-      episode_bridge_results = api.bridge_remote_and_retry!("updateEpisodes",
-        episodes.map(&:update_episode_audio_container_bridge_params))
+      # Make sure that we only update episodes that have a podcast container
+      # And that the episode needs to be updated
+      episodes = episodes.filter { |ep| ep.podcast_container.present? && ep.audio_hosted_audio_asset_container_id.blank? }
+
+      (episode_bridge_results, errs) =
+        api.bridge_remote_and_retry(
+          "updateEpisodes",
+          episodes.map(&:update_episode_audio_container_bridge_params)
+        )
+
       insert_sync_logs(episodes, episode_bridge_results)
+
+      api.raise_bridge_api_error(errs) if errs.present?
+
+      episode_bridge_results
+    end
+
+    def self.remove_audio_container_reference(api, show, episodes)
+      return [] if episodes.empty?
+
+      (episode_bridge_results, errs) =
+        api.bridge_remote_and_retry(
+          "updateEpisodes",
+          episodes.map(&:remove_episode_audio_container_bridge_params)
+        )
+
+      insert_sync_logs(episodes, episode_bridge_results)
+
+      join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
+        ep.podcast_container.podcast_delivery_files.each(&:destroy)
+        ep.podcast_container.podcast_deliveries.each(&:destroy)
+      end
+
+      show.reload
+
+      api.raise_bridge_api_error(errs) if errs.present?
+
+      episode_bridge_results
     end
 
     def self.publish(api, episodes)
@@ -184,6 +219,10 @@ module Apple
 
     def update_episode_audio_container_bridge_params
       {
+        request_metadata: {
+          apple_episode_id: apple_id,
+          guid: guid
+        },
         api_url: api.join_url("episodes/#{apple_id}").to_s,
         api_parameters: update_episode_audio_container_parameters
       }
@@ -198,6 +237,30 @@ module Apple
           attributes: {
             appleHostedAudioAssetContainerId: podcast_container.apple_id,
             appleHostedAudioIsSubscriberOnly: true
+          }
+        }
+      }
+    end
+
+    def remove_episode_audio_container_bridge_params
+      {
+        request_metadata: {
+          apple_episode_id: apple_id,
+          guid: guid
+        },
+        api_url: api.join_url("episodes/#{apple_id}").to_s,
+        api_parameters: remove_episode_audio_container_parameters
+      }
+    end
+
+    def remove_episode_audio_container_parameters
+      {
+        data:
+        {
+          type: "episodes",
+          id: apple_id,
+          attributes: {
+            appleHostedAudioAssetContainerId: nil
           }
         }
       }
@@ -266,11 +329,15 @@ module Apple
     def apple_upload_complete?
       pdfs = feeder_episode.apple_podcast_delivery_files
 
-      pdfs.all?(&:present?) && pdfs.to_a.flatten.all?(&:apple_complete?)
+      pdfs.present? && pdfs.to_a.flatten.all?(&:apple_complete?)
     end
 
     def audio_asset_vendor_id
-      apple_json&.dig("attributes", "appleHostedAudioAssetVendorId")
+      apple_attributes["appleHostedAudioAssetVendorId"]
+    end
+
+    def audio_hosted_audio_asset_container_id
+      apple_attributes["appleHostedAudioAssetContainerId"]
     end
 
     def audio_asset_state

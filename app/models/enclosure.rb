@@ -20,8 +20,6 @@ class Enclosure < MediaResource
   end
 
   def replace_resources!
-    episode.with_lock do
-      episode.enclosures.where("created_at < ? AND id != ?", created_at, id).destroy_all
-    end
+    Enclosure.where(episode_id: episode_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
   end
 end
