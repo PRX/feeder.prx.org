@@ -34,12 +34,12 @@ describe EpisodeImport do
 
   it "creates an episode on import" do
     f = episode_import.import
-    f.description.must_match(/For the next few episodes/)
-    f.description.wont_match(/feedburner/)
-    f.categories.must_include "Indie Features"
+    _(f.description).must_match(/For the next few episodes/)
+    _(f.description).wont_match(/feedburner/)
+    _(f.categories).must_include "Indie Features"
     f.categories.each do |tag|
-      tag.wont_match(/\n/)
-      tag.wont_be :blank?
+      _(tag).wont_match(/\n/)
+      _(tag).wont_be :blank?
     end
     _(f.categories).wont_include '\t'
     _(f.clean_title).must_equal "Sidedoor iTunes title"
@@ -53,20 +53,21 @@ describe EpisodeImport do
     _(episode_import.audio_versions.count).must_equal 1
     config_audio = "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"
     version = episode_import.audio_versions.first
-    version[:label].must_equal "Podcast Audio"
-    version[:explicit].must_be_nil
+    _(version[:label]).must_equal "Podcast Audio"
+    _(version[:explicit]).must_be_nil
 
-    version[:audio_files][0][:position].must_equal 1
-    version[:audio_files][0][:upload].must_equal config_audio
+    _(version[:audio_files][0][:position]).must_equal 1
+    _(version[:audio_files][0][:upload]).must_equal config_audio
     # TODO audio files
-    # f.audio_files.count.must_equal 1
+    # _(f.audio_files.count).must_equal 1
     # TODO images
-    # f.images.count.must_equal 1
+    # _(f.images.count).must_equal 1
   end
 
   it "creates correctly for libsyn entries" do
-    s = libsyn_episode_import.import
-    s.distributions.count.must_equal 1
+    e = libsyn_episode_import.import
+    e.reload
+    assert e.valid?
   end
 
   it "creates audio entries" do
@@ -76,11 +77,11 @@ describe EpisodeImport do
       guid: "https://transistor.prx.org/?p=1286"
     )
 
-    ei.audio["files"].present?.must_equal(false)
+    _(ei.audio["files"].present?).must_equal(false)
 
     ei.import
 
-    ei.audio["files"].present?.must_equal(true)
+    _(ei.audio["files"].present?).must_equal(true)
   end
 
   describe "helper methods" do
@@ -99,40 +100,40 @@ describe EpisodeImport do
 
     it "can substitute for a missing short description" do
       e = entry.to_h.with_indifferent_access
-      episode_import.episode_short_desc(e).must_equal "An astronomer has turned the night sky into a symphony."
+      _(episode_import.episode_short_desc(e)).must_equal "An astronomer has turned the night sky into a symphony."
 
       e[:itunes_subtitle] = ""
-      episode_import.episode_short_desc(e).wont_equal ""
+      _(episode_import.episode_short_desc(e)).wont_equal ""
 
       e[:itunes_subtitle] = nil
-      episode_import.episode_short_desc(e).must_equal "Sidedoor from the Smithsonian: Shake it Up"
+      _(episode_import.episode_short_desc(e)).must_equal "Sidedoor from the Smithsonian: Shake it Up"
 
       e[:description] = "Some text that's under 50 words"
-      episode_import.episode_short_desc(e).must_equal "Some text that's under 50 words"
+      _(episode_import.episode_short_desc(e)).must_equal "Some text that's under 50 words"
     end
 
     it "can substitute for a missing description" do
       entry.description = nil
       entry.itunes_summary = nil
       entry.content = nil
-      episode_import.entry_description(entry.to_h.with_indifferent_access).wont_be :blank?
+      _(episode_import.entry_description(entry.to_h.with_indifferent_access)).wont_be :blank?
     end
 
     it "can remove feedburner tracking pixels" do
       desc = 'desc <img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" ' \
         'height="1" width="1" alt=""/>'
-      episode_import.remove_feedburner_tracker(desc).must_equal "desc"
+      _(episode_import.remove_feedburner_tracker(desc)).must_equal "desc"
     end
 
     it "can remove unsafe tags" do
       desc = 'desc <iframe src="/"></iframe><script src="/"></script>'
-      episode_import.sanitize_html(desc).must_equal "desc"
+      _(episode_import.sanitize_html(desc)).must_equal "desc"
     end
 
     it "can interpret explicit values" do
-      %w[Yes TRUE Explicit].each { |x| episode_import.explicit(x).must_equal "true" }
-      %w[NO False Clean].each { |x| episode_import.explicit(x).must_equal "false" }
-      %w[UnClean y N 1 0].each { |x| episode_import.explicit(x).must_equal nil }
+      %w[Yes TRUE Explicit].each { |x| _(episode_import.explicit(x)).must_equal "true" }
+      %w[NO False Clean].each { |x| _(episode_import.explicit(x)).must_equal "false" }
+      %w[UnClean y N 1 0].each { |x| _(episode_import.explicit(x)).must_be_nil }
     end
   end
 end

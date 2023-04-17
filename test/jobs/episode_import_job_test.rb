@@ -7,6 +7,6 @@ describe EpisodeImportJob do
   it "import that episode" do
     episode_import = MiniTest::Mock.new
     episode_import.expect(:import, true)
-    job.perform(episode_import).must_equal true
+    _(job.perform(episode_import)).must_equal true
   end
 end
