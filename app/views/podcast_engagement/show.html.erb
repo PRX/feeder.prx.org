@@ -1,7 +1,53 @@
+<% content_for :title, "#{@podcast.title}" %>
+
 <%= render "podcasts/tabs" %>
 
-<h1>Editing podcast engagement</h1>
+    <h1>Editing podcast engagement</h1>
+<div class="container col p-3">
+<div class="col-6  form-floating">
+    <%= form_with(model: @episode, url: fake_index_path) do |form| %>
+        <form class="form-floating">
+            <label for="floatingInputValue">Donation link</label>
+            <input type="email" class="form-control" id="floatingInputValue" placeholder="name@example.com" value="">
+        </form>
+    <% end %>
+    </div>
+    <h2>Micropayments</h2>
 
-<%= render "form", podcast_engagement: @podcast %>
+    <div class="col-6  form-floating">
+        <%= form_with(model: @episode, url: fake_index_path) do |form| %>
+            <form class="form-floating">
+                <label for="floatingInputValue">Coil link</label>
+                <input type="email" class="form-control" id="floatingInputValue" placeholder="name@example.com" value="Except not coil because that's going away">
+            </form>
+        <% end %>
+    </div>
 
-<br>
+
+
+    <h3>Subscribe and Follow Links</h3>
+    <div class="col-6  form-floating">
+    <%= form_with(model: @episode, url: fake_index_path) do |form| %>
+        <form class="form-floating">
+            <label for="floatingInputValue">Coil link</label>
+            <input type="email" class="form-control" id="floatingInputValue" placeholder="name@example.com" value="Except not coil because that's going away">
+        </form>
+    <% end %>
+</div>
+
+<div class="card shadow">
+    <div class="card-header-success">
+      <h5 class="card-title fw-bold">Look a card</h5>
+    </div>
+    <div class="card-body">
+      <p class="card-text">Some card text.</p>
+    </div>
+    </div>
+</div>
+
+    <%= render "form", podcast_engagement: @podcast %>
+    
+
+
+    <br>
+</div>
