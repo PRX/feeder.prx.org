@@ -143,13 +143,13 @@ class PodcastImport < ActiveRecord::Base
     episode_imports.having_duplicate_guids.destroy_all
 
     created_imports = feed_entries.map do |entry|
-      episode_import = create_or_update_episode_import!(entry)
+      create_or_update_episode_import!(entry)
     end
 
     enqueue_episode_import_jobs(created_imports)
 
     created_imports += entries_with_dupe_guids.map do |entry|
-      create_or_update_episode_import!(entry, has_duplicate_guid = true)
+      create_or_update_episode_import!(entry, true)
     end
 
     created_imports
@@ -157,7 +157,7 @@ class PodcastImport < ActiveRecord::Base
 
   def enqueue_episode_import_jobs(created_imports)
     # TODO port these jobs to a shoryuken worker
-    messages = created_imports.map do |ei|
+    created_imports.map do |ei|
       EpisodeImportJob.perform_later(ei)
     end
   end
@@ -174,7 +174,7 @@ class PodcastImport < ActiveRecord::Base
   def create_or_update_episode_import!(entry, has_duplicate_guid = false)
     entry_hash = feed_entry_to_hash(entry)
 
-    if ei = episode_imports.where(guid: entry_hash[:entry_id]).first
+    if (ei = episode_imports.where(guid: entry_hash[:entry_id]).first)
       ei.update!(entry: entry_hash, has_duplicate_guid: has_duplicate_guid)
     else
       ei = episode_imports.create!(
@@ -318,13 +318,13 @@ class PodcastImport < ActiveRecord::Base
       podcast_item.media_contents.first.try(:url)].find do |url|
       url.try(:match, /podtrac/) || url.try(:match, /blubrry/)
     end
-    if scheme = link.try(:match, /^https?:\/\//)
+    if (scheme = link.try(:match, /^https?:\/\//))
       prefix += scheme.to_s
     end
-    if podtrac = link.try(:match, /\/(\w+\.podtrac.com\/.+?\.mp3\/)/)
+    if (podtrac = link.try(:match, /\/(\w+\.podtrac.com\/.+?\.mp3\/)/))
       prefix += podtrac[1]
     end
-    if blubrry = link.try(:match, /\/(media\.blubrry\.com\/[^\/]+\/)/)
+    if (blubrry = link.try(:match, /\/(media\.blubrry\.com\/[^\/]+\/)/))
       prefix += blubrry[1]
     end
     prefix
@@ -335,7 +335,7 @@ class PodcastImport < ActiveRecord::Base
   end
 
   def owner(itunes_owners)
-    if o = itunes_owners.try(:first)
+    if (o = itunes_owners.try(:first))
       {name: clean_string(o.name), email: clean_string(o.email)}
     end
   end
@@ -345,7 +345,7 @@ class PodcastImport < ActiveRecord::Base
     Array(feed.itunes_categories).map(&:strip).select { |c| !c.blank? }.each do |cat|
       if ITunesCategoryValidator.category?(cat)
         itunes_cats[cat] ||= []
-      elsif parent_cat = ITunesCategoryValidator.subcategory?(cat)
+      elsif (parent_cat = ITunesCategoryValidator.subcategory?(cat))
         itunes_cats[parent_cat] ||= []
         itunes_cats[parent_cat] << cat
       end

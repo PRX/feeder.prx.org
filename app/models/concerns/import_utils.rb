@@ -52,7 +52,7 @@ module ImportUtils
       name = clean_string(arg[:name])
     else
       s = clean_string(arg)
-      if match = s.match(/(.+) \((.+)\)/)
+      if (match = s.match(/(.+) \((.+)\)/))
         email = match[1]
         name = match[2]
       else
