@@ -14,8 +14,11 @@ module ImportUtils
     clean_string(url)
   end
 
-  def default_story_url(story)
-    StoryDistributions::EpisodeDistribution.default_story_url(story)
+  def default_episode_url(episode)
+    # TODO no access to the story id here, so we can't build the url
+    # path = "#{story.class.name.underscore.pluralize}/#{story.id}"
+    #  ENV['PRX_HOST'].nil? ? nil : "https://#{ENV['PRX_HOST']}/#{path}"
+    nil
   end
 
   def clean_title(str)

@@ -124,6 +124,7 @@ class EpisodeImport < ActiveRecord::Base
     episode.is_perma_link = entry[:is_perma_link]
     episode.keywords = (entry[:itunes_keywords] || "").split(",").map(&:strip)
     episode.position = entry[:itunes_order]
+    # TODO: beta.prx.org urls
     episode.url = episode_url(entry) || default_episode_url(episode)
     episode.itunes_type = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
 
