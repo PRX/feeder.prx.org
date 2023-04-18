@@ -193,6 +193,8 @@ en:
       title: Status
       update: Save
       updated_at_hint: Last Saved
+    index:
+      search_podcasts: Search Podcasts
     podcast:
       no_image: No image here
       create_episode: Create Episode
