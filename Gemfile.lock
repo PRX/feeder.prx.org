@@ -253,6 +253,7 @@ GEM
     multi_json (1.15.0)
     multi_xml (0.6.0)
     multipart-post (2.2.3)
+    mysql2 (0.5.5)
     net-http (0.3.1)
       uri
     net-imap (0.3.1)
@@ -355,6 +356,8 @@ GEM
     responders (3.0.1)
       actionpack (>= 5.0)
       railties (>= 5.0)
+    reverse_markdown (2.1.1)
+      nokogiri
     rexml (3.2.5)
     roar (1.1.1)
       representable (~> 3.0)
@@ -490,6 +493,7 @@ DEPENDENCIES
   minitest-around
   minitest-spec-rails
   minitest-stub_any_instance
+  mysql2
   net-http
   newrelic_rpm
   oauth2 (~> 1.4.7)
@@ -508,6 +512,7 @@ DEPENDENCIES
   rails (~> 7.0.0)
   rails-controller-testing
   redis (~> 4.0)
+  reverse_markdown
   roar-rails!
   sanitize
   say_when (~> 2.2.1)

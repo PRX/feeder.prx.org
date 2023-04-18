@@ -54,3 +54,6 @@ APPLE_PROVIDER_ID=
 APPLE_KEY_ID=
 APPLE_KEY_PEM_B64=
 APPLE_API_BRIDGE_URL=
+
+# sync cms
+CMS_STORAGE_BUCKET=development.mediajoint.prx.org
