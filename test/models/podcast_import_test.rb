@@ -10,10 +10,6 @@ describe PodcastImport do
   let(:importer) { PodcastImport.create(podcast: podcast, account_id: account_id, url: podcast_url) }
 
   before do
-    # stub to prevent network access
-    # def importer.enqueue_episode_import_jobs(*)
-    #  nil
-    # end
     stub_requests
   end
 
@@ -59,7 +55,7 @@ describe PodcastImport do
     # images.count.must_equal 2
   end
 
-  it "creates podcast episode imports" do
+  it "creates podcast episode imports using a config" do
     importer.config_url = "http://test.prx.org/transistor_import_config.json"
     importer.import
 
@@ -68,9 +64,9 @@ describe PodcastImport do
     importer = eps.first.podcast_import
 
     # get the memoized importer
-    pi = importer.episode_imports.first.podcast_import
-    _(pi.episode_imports.count).must_equal 2
-    _(pi.audio_version_templates.count).must_equal 2
+    importer = importer.episode_imports.first.podcast_import
+    _(importer.episode_imports.count).must_equal 2
+    _(importer.audio_version_templates.count).must_equal 2
   end
 
   it "imports a feed" do
@@ -81,8 +77,7 @@ describe PodcastImport do
     importer.url = "http://feeds.prx.org/feed_with_video"
     importer.import
 
-    # Make sure we have the same reference to the importer
-    eps = importer.episode_imports.includes(:podcast_import)
+    eps = importer.episode_imports.reset
     eps.map(&:import)
     importer = eps.first.podcast_import
 
@@ -370,4 +365,13 @@ def stub_requests
 
   stub_request(:get, "http://feeds.prx.org/feed_with_video")
     .to_return(status: 200, body: test_file("/fixtures/99pi-feed-rss.xml"), headers: {})
+
+  stub_request(:get, "https://cdn-transistor.prx.org/transistor1400.jpg")
+    .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
+
+  stub_request(:get, "https://f.prxu.org/99pi/images/6a748676-76e8-45fd-8de2-a868a58f6b8b/99-1400.png")
+    .to_return(status: 200, body: test_file("/fixtures/99-1400.png"), headers: {})
+
+  stub_request(:get, "https://cdn-transistor.prx.org/shake.jpg")
+    .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
 end

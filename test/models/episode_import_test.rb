@@ -58,10 +58,11 @@ describe EpisodeImport do
 
     _(version[:audio_files][0][:position]).must_equal 1
     _(version[:audio_files][0][:upload]).must_equal config_audio
-    # TODO audio files
-    # _(f.audio_files.count).must_equal 1
-    # TODO images
-    # _(f.images.count).must_equal 1
+
+    _(f.contents.count).must_equal 1
+    _(f.contents.first.status).must_equal "created"
+
+    _(f.images.count).must_equal 1
   end
 
   it "creates correctly for libsyn entries" do
@@ -169,4 +170,7 @@ def stub_episode_requests
   stub_request(:get, "https://feeder.prx.org/api/v1/authorization/episodes/153e6ea8-6485-4d53-9c22-bd996d0b3b03")
     .with(headers: {"Authorization" => "Bearer thisisnotatoken"})
     .to_return(status: 200, body: json_file("transistor_episode"), headers: {})
+
+  stub_request(:get, "https://cdn-transistor.prx.org/shake.jpg")
+    .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
 end

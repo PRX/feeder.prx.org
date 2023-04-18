@@ -210,49 +210,9 @@ class PodcastImport < ActiveRecord::Base
     clean_text(result)
   end
 
-  def create_or_update_podcast!(feed = self.feed)
-    if config[:episodes_only]
-      raise "No podcast for import of episodes only" if !podcast
-      podcast
-    end
-  end
-
-  def announce_image(*args)
-    Rails.logger.error("PodcastImport#announce_image deprecated")
-    nil
-  end
-
   def update_images(feed)
-    Rails.logger.error("PodcastImport#update_images not feeder implemented")
-    []
-    # [[Image::PROFILE, feed.itunes_image], [Image::THUMBNAIL, feed.image.try(:url)]].map do |p, u|
-    #  update_image(p, u)
-    # end.flatten
-  end
-
-  def update_image(purpose, image_url)
-    Rails.logger.error("PodcastImport#update_image not feeder implemented")
-    return []
-
-    if image_url.blank?
-      podcast.images.where(purpose: purpose).destroy_all
-      return []
-    end
-
-    to_destroy = []
-    to_insert = []
-
-    existing_image = podcast.images.send(purpose)
-    if existing_image && !files_match?(existing_image, image_url)
-      to_destroy << existing_image
-      existing_image = nil
-    end
-
-    if !existing_image
-      to_insert << podcast.images.build(upload: clean_string(image_url), purpose: purpose)
-    end
-
-    to_insert
+    podcast.default_feed.itunes_image = feed.itunes_image
+    podcast.default_feed.feed_image = feed.image
   end
 
   attr_writer :distribution
@@ -305,8 +265,7 @@ class PodcastImport < ActiveRecord::Base
     podcast.update!(**podcast_attributes)
     # TODO handle podcast policy
 
-    # new_images = update_images(feed)
-    # new_images.each { |i| announce_image(i) }
+    update_images(feed)
 
     podcast
   end

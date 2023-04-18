@@ -63,17 +63,19 @@ class EpisodeImport < ActiveRecord::Base
 
   def import
     # TODO
-    update_episode_audio!
-
+    set_audio_metadata!
     update!(status: AUDIO_SAVED)
+
     create_or_update_episode!
-    update!(status: STORY_SAVED)
+    # Set the feeder audio
+    episode.contents = audio_content_params
+    episode.image = image_contents_params
     update!(status: EPISODE_SAVED)
+
     episode.save!
-    # update_search_index!
+
     update!(status: COMPLETE)
 
-    # announce(:story, :update, Api::Msg::StoryRepresenter.new(story).to_json)
     unlock_podcast
 
     episode
@@ -82,7 +84,19 @@ class EpisodeImport < ActiveRecord::Base
     raise err
   end
 
-  def update_episode_audio!
+  def audio_content_params
+    audio&.fetch("files")&.each_with_index&.map do |url, index|
+      {position: index, original_url: url}
+    end
+  end
+
+  def image_contents_params
+    if (image = entry[:itunes_image])
+      {original_url: image}
+    end
+  end
+
+  def set_audio_metadata!
     audio_files = entry_audio_files(entry)
     update!(audio: audio_files)
   end
@@ -90,7 +104,7 @@ class EpisodeImport < ActiveRecord::Base
   def entry_audio_files(entry)
     if config[:audio] && config[:audio][entry[:entry_id]]
       {files: (config[:audio][entry[:entry_id]] || [])}
-    elsif enclosure = enclosure_url(entry)
+    elsif (enclosure = enclosure_url(entry))
       {files: [enclosure]}
     end
   end
@@ -128,8 +142,7 @@ class EpisodeImport < ActiveRecord::Base
     episode.url = episode_url(entry) || default_episode_url(episode)
     episode.itunes_type = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
 
-    new_audio = update_audio
-    # new_images = update_image
+    update_audio
 
     episode
   end
