@@ -20,7 +20,7 @@
     </div>
 
     <div class="row-reverse col-4">
-      <%= form_with(url: podcasts_path, method: :get, data: { controller: "search", turbo_frame: "podcasts" }) do |form| %>
+      <%= form_with(url: podcasts_path, method: :get, data: {controller: "search", turbo_frame: "podcasts"}) do |form| %>
       <div class="form-floating">
         <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm" %>
         <%= form.label :q, t(".search_podcasts") %>
