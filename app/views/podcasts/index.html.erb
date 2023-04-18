@@ -1,7 +1,6 @@
 <% content_for :title, "My Podcasts" %>
 
 <div class="container p-0">
-  <p style="color: green"><%= notice %></p>
   <div class="d-flex align-items-center justify-content-between">
     <div class="dashboard header">
       <div class="d-grid d-lg-flex gap-2 align-items-center">
@@ -21,26 +20,19 @@
     </div>
 
     <div class="row-reverse col-4">
-        <%= form_with(
-              url: podcasts_path,
-              method: :get,
-              data: {
-                controller: "search",
-                "turbo-frame": "podcasts",
-                "turbo-action": "replace"
-              }
-            ) do |form| %>
-
-        <div class="">
-          <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm", placeholder: (t ".search") %>
-          <%= form.label :q, t(".search"), class: "visually-hidden" %>
-        </div>
-
-        <%= form.submit class: "d-none", data: {search_target: "submit"} %>
-
-        <% end %>
-        </div>
+      <%= form_with(
+            url: podcasts_path,
+            data: {
+              controller: "filter_by_title",
+              turbo_frame: "podcasts"
+            }
+          ) do |form| %>
+      <div class="form-floating">
+        <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm" %>
+        <%= form.label :q, t(".search_podcasts") %>
       </div>
+      <%= form.submit class: "d-none", data: {search_target: "submit"} %>
+      <% end %>
     </div>
   </div>
 </div>
