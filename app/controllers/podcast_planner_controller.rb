@@ -6,10 +6,6 @@ class PodcastPlannerController < ApplicationController
   def show
     @planner = PodcastPlanner.new(planner_params)
     @planner.generate_dates!
-
-    if @planner.dates.present?
-      @planner_months = @planner.dates_by_month
-    end
   end
 
   # POST /podcasts/1/planner

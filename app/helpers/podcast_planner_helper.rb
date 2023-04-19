@@ -42,8 +42,12 @@ module PodcastPlannerHelper
     month.map { |d| d.day }
   end
 
-  def is_preselected_date?(date, month)
-    days_in_month(month).include?(date.day)
+  def is_preselected_date?(date, dates)
+    if dates.present?
+      dates.include?(date)
+    else
+      false
+    end
   end
 
   def date_is_in_month?(date, month)
