@@ -36,6 +36,9 @@ class ActiveSupport::TestCase
 
   # Add more helper methods to be used by all tests here...
   include FactoryBot::Syntax::Methods
+
+  # reset prefix (set by config/application.rb)
+  Rails.application.config.active_job.queue_name_prefix = "test"
 end
 
 # MiniTest
