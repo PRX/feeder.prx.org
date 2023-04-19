@@ -121,7 +121,7 @@ class EpisodesController < ApplicationController
       :released_at,
       :publishing_status,
       categories: [],
-      contents_attributes: %i[id position original_url file_size replaced_at _destroy]
+      contents_attributes: %i[id position original_url file_size _destroy]
     )
   end
 
