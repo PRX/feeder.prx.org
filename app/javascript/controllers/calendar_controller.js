@@ -33,4 +33,19 @@ export default class extends Controller {
       event.target.firstElementChild.removeAttribute("disabled")
     }
   }
+
+  highlight(event) {
+    event.target.classList.add("bg-secondary", "text-light")
+  }
+
+  unhighlight(event) {
+    event.target.classList.remove("bg-secondary")
+
+    if (
+      event.target.firstElementChild.getAttribute("disabled") === "true" ||
+      event.target.firstElementChild.getAttribute("disabled") === "disabled"
+    ) {
+      event.target.classList.remove("text-light")
+    }
+  }
 }
