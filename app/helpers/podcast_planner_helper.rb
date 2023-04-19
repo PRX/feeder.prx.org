@@ -1,9 +1,10 @@
 # frozen_string_literal: true
+
 module PodcastPlannerHelper
   PERIODIC_WEEKS = I18n.t([:every_one, :every_two, :every_three, :every_four], scope: [:podcast_planner, :helper, :period_options]).freeze
   MONTHLY_WEEKS = I18n.t([:first, :second, :third, :fourth, :fifth], scope: [:podcast_planner, :helper, :monthly_options]).freeze
-  CALENDAR_CONTROLLER = "calendar".freeze
-  CALENDAR_ACTION = "click->calendar#toggleSelect".freeze
+  CALENDAR_CONTROLLER = "calendar"
+  CALENDAR_ACTION = "click->calendar#toggleSelect"
 
   def day_options
     DateTime::DAYNAMES.map.with_index { |day, i| [day, i] }
