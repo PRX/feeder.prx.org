@@ -17,11 +17,13 @@ class PodcastsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should create podcast" do
-    assert_difference("Podcast.count") do
-      post podcasts_url, params: {podcast: params}
-    end
+    Podcast.stub_any_instance(:copy_media, true) do
+      assert_difference("Podcast.count") do
+        post podcasts_url, params: {podcast: params}
+      end
 
-    assert_redirected_to podcast_url(Podcast.last)
+      assert_redirected_to podcast_url(Podcast.last)
+    end
   end
 
   test "authorizes creating podcasts" do
@@ -58,8 +60,10 @@ class PodcastsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update podcast" do
-    patch podcast_url(podcast), params: {podcast: params}
-    assert_redirected_to edit_podcast_url(podcast)
+    Podcast.stub_any_instance(:copy_media, true) do
+      patch podcast_url(podcast), params: {podcast: params}
+      assert_redirected_to edit_podcast_url(podcast)
+    end
   end
 
   test "authorizes updating podcasts" do

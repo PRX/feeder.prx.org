@@ -1,0 +1,31 @@
+<div class="card prx-uploads">
+  <div class="card-header-info d-flex justify-content-between align-items-center">
+    <h5 class="card-title"><%= t(".title") %></h5>
+
+    <%= link_to delete_path, class: "btn btn-icon p-0" do %>
+      <span class="material-icons">delete</span>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <div class="form-floating mb-4">
+      <div class="form-control d-flex align-items-center">
+        <div class="spinner-border text-primary ms-2" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+
+        <div class="text-secondary mx-2"><%= image.file_name %></div>
+        <small class="text-muted flex-grow-1">(Processing)</small>
+        <small class="text-muted">(<%= number_to_human_size(image.size) %>)</small>
+      </div>
+
+      <label>Image File</label>
+    </div>
+
+    <%# just keep polling until the file finishes processing %>
+    <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+
+    <%= form.hidden_field :id %>
+    <%= render "images/meta", form: form %>
+  </div>
+</div>

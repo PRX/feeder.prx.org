@@ -1,0 +1,26 @@
+<div class="card prx-uploads">
+  <div class="card-header-info d-flex justify-content-between align-items-center">
+    <h5 class="card-title"><%= t(".title") %></h5>
+
+    <%= link_to delete_path, class: "btn btn-icon p-0" do %>
+      <span class="material-icons">delete</span>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <div class="form-floating mb-4">
+      <div class="form-control d-flex align-items-center is-invalid">
+        <span class="material-icons text-primary mx-2">image</span>
+        <div class="text-secondary mx-2 flex-grow-1"><%= image.file_name %></div>
+        <small class="text-muted">(<%= number_to_human_size(image.size) %>)</small>
+      </div>
+
+      <div class="invalid-feedback">There was a problem processing your image</div>
+
+      <label class="is-invalid">Image File</label>
+    </div>
+
+    <%= form.hidden_field :id %>
+    <%= render "images/meta", form: form %>
+  </div>
+</div>

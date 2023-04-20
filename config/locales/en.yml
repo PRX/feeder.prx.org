@@ -42,6 +42,14 @@ en:
         subtitle: Subtitle
         summary: iTunes Summary
         title: Title
+      feed_image:
+        alt_text: Alt Text
+        caption: Caption
+        credit: Credit
+      itunes_image:
+        alt_text: Alt Text
+        caption: Caption
+        credit: Credit
       podcast:
         add_itunes_summary: Add an alternate itunes:summary
         author_email: Author Email
