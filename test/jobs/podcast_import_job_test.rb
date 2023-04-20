@@ -6,7 +6,7 @@ describe PodcastImportJob do
 
   it "import that podcast" do
     importer = MiniTest::Mock.new
-    importer.expect(:import_series!, true)
+    importer.expect(:import_podcast!, true)
     importer.expect(:import_episodes!, true)
     _(job.perform(importer)).must_equal true
   end
