@@ -1,15 +1,20 @@
-<div class="card shadow border-0">
-  <div class="card-header card-header-info d-flex justify-content-between">
-    <h5 class="card-title"><%= t(".title") %></h5>
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.cover_image") %>"><span class="material-icons">help</span></button>
-  </div>
-  <div class="card-body">
-    <% if episode.image %>
-      <%= image_tag(episode.image.url, width: 135, alt: episode.image.alt_text, class: "d-flex mx-auto mb-2") %>
-    <% else %>
-      <h3>No image here</h3>
-    <% end %>
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-info d-flex justify-content-between">
+      <h5 class="card-title"><%= t(".title") %></h5>
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.cover_image") %>">
+        <span class="material-icons">help</span>
+      </button>
+    </div>
 
-    <p>tktktk</p>
+    <div class="card-body">
+      <% if episode.image %>
+        <%= image_tag(episode.image.url, width: 135, alt: episode.image.alt_text, class: "d-flex mx-auto mb-2") %>
+      <% else %>
+        <h3>No image here</h3>
+      <% end %>
+
+      <p>tktktk</p>
+    </div>
   </div>
 </div>

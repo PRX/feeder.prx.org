@@ -11,4 +11,5 @@ Shoryuken.default_worker_options = {
 
 Shoryuken.configure_server do |_config|
   Shoryuken::Logging.logger = Rails.logger
+  Shoryuken::Logging.logger.level = :info
 end

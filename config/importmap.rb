@@ -20,9 +20,17 @@ pin "konva/lib/shapes/Line", to: "https://ga.jspm.io/npm:konva@8.4.2/lib/shapes/
 pin "konva/lib/shapes/Rect", to: "https://ga.jspm.io/npm:konva@8.4.2/lib/shapes/Rect.js", preload: true
 pin "konva/lib/shapes/Text", to: "https://ga.jspm.io/npm:konva@8.4.2/lib/shapes/Text.js", preload: true
 pin "lodash", to: "https://ga.jspm.io/npm:lodash@4.17.21/lodash.js"
+pin "morphdom", to: "https://ga.jspm.io/npm:morphdom@2.7.0/dist/morphdom.js"
 
 # NOTE: this one seems a bit broken, so appended `export default window.SlimSelect;` to the file
 pin "slim-select", preload: true # @2.4.1
+
+# evaporate multipart uploads
+pin "evaporate" # @2.1.4
+pin "spark-md5" # @3.0.2
+pin "sha256" # @0.2.0
+pin "convert-hex" # @0.1.0
+pin "convert-string" # @0.1.0
 
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin_all_from "app/javascript/custom", under: "custom"

@@ -2,11 +2,11 @@
   <div class="d-grid d-sm-flex align-items-center">
     <%= render @podcast %>
     <div class="d-grid d-lg-flex gap-2 align-items-center">
-      <%= link_to new_episode_path, class: "btn btn-primary btn-sm" do %>
+      <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary btn-sm" do %>
         <%= t ".create_episode" %>
         <span class="material-icons ms-2" aria-hidden="true">mic</span>
       <% end %>
-      <%= link_to podcast_planner_path(@podcast.id), class: "btn btn-primary btn-sm" do %>
+      <%= link_to podcast_planner_path(@podcast), class: "btn btn-primary btn-sm" do %>
         <%= t ".plan_episodes" %>
         <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
       <% end %>
@@ -18,7 +18,7 @@
       <div class="card shadow mb-4">
         <div class="card-header d-flex gap-4 align-items-center">
           <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".latest_published" %></h1>
-          <%= link_to podcast_episodes_path(@podcast.id), class: "btn btn-primary btn-sm" do %>
+          <%= link_to podcast_episodes_path(@podcast), class: "btn btn-primary btn-sm" do %>
             <%= t ".all_episodes" %>
             <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
           <% end %>
@@ -28,7 +28,7 @@
             <div class="episode-card-info">
               <p class="episode-card-date"><%= l(@recently_published.published_at, format: :short) %></p>
               <div class="episode-card-inner">
-                <h2 class="h5 episode-card-title m-0"><%= link_to @recently_published.title, episode_path(@recently_published.id) %></h2>
+                <h2 class="h5 episode-card-title m-0"><%= link_to @recently_published.title, episode_path(@recently_published) %></h2>
               </div>
             </div>
           <% end %>
@@ -48,7 +48,7 @@
                 <% end %>
               </p>
               <div class="episode-card-inner">
-                <h2 class="h5 episode-card-title"><%= link_to @next_scheduled.title, episode_path(@next_scheduled.id) %></h2>
+                <h2 class="h5 episode-card-title"><%= link_to @next_scheduled.title, episode_path(@next_scheduled) %></h2>
               </div>
             </div>
           <% end %>
@@ -71,7 +71,7 @@
       <div class="card shadow">
         <div class="card-header d-flex align-items-center">
           <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".feeds" %></h1>
-          <%= link_to podcast_feeds_path(@podcast.id), class: "btn btn-primary btn-sm" do %>
+          <%= link_to podcast_feeds_path(@podcast), class: "btn btn-primary btn-sm" do %>
             <%= t ".manage_feeds" %>
             <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
           <% end %>
@@ -88,15 +88,15 @@
       <div class="card shadow">
         <div class="card-header d-flex align-items-center">
           <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".settings" %></h1>
-          <%= link_to edit_podcast_path(@podcast.id), class: "btn btn-primary btn-sm" do %>
+          <%= link_to edit_podcast_path(@podcast), class: "btn btn-primary btn-sm" do %>
             <%= t ".manage_settings" %>
             <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
           <% end %>
         </div>
         <div class="card-body">
           <ul class="list-group list-group-flush">
-            <li class="list-group-item border-bottom-0 p-0"><%= link_to (t ".engagement_settings"), podcast_engagement_path(@podcast.id) %></li>
-            <li class="list-group-item p-0"><%= link_to (t ".import"), podcast_imports_path(@podcast.id) %></li>
+            <li class="list-group-item border-bottom-0 p-0"><%= link_to (t ".engagement_settings"), podcast_engagement_path(@podcast) %></li>
+            <li class="list-group-item p-0"><%= link_to (t ".import"), podcast_imports_path(@podcast) %></li>
           </ul>
         </div>
       </div>

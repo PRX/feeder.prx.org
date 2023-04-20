@@ -139,12 +139,24 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     add_data(opts, :action, CHANGED_ACTION)
 
     if object.present?
-      if object.respond_to?("#{method}_changed?")
-        add_class(opts, CHANGED_CLASS) if object.public_send("#{method}_changed?")
+      changed = object.try("#{method}_changed?")
+      has_value_was = object.respond_to?("#{method}_was")
+      value_was = object.try("#{method}_was")
+      value_is = object.try(method)
+
+      # add changed class to changed fields
+      if changed
+        # but ignore nils being set to blanks by text fields
+        if has_value_was && value_was.nil? && value_is == ""
+          return
+        else
+          add_class(opts, CHANGED_CLASS)
+        end
       end
 
-      if object.respond_to?("#{method}_was")
-        add_data(opts, CHANGED_DATA_VALUE_WAS, object.public_send("#{method}_was"))
+      # save previous value as a data attribute
+      if has_value_was
+        add_data(opts, CHANGED_DATA_VALUE_WAS, value_was)
       end
     end
   end

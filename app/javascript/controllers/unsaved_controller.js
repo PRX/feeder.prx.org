@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static values = { changed: Boolean, confirm: String }
-  static targets = ["discard"]
+  static targets = ["discard", "changed"]
 
   connect() {
     this.isSubmitting = false
@@ -34,6 +34,10 @@ export default class extends Controller {
     window.removeEventListener("turbo:before-visit", this.bindLeaving)
   }
 
+  changedTargetConnected(target) {
+    this.change({ target })
+  }
+
   change(event) {
     if (this.isSubmitting) {
       return
@@ -47,8 +51,7 @@ export default class extends Controller {
       event.target.classList.remove("is-changed")
     }
 
-    // scan for changes in form (ignoring slim select, which takes a bit to update)
-    this.setChanged(!!this.element.querySelector(".is-changed:not(.ss-main)"))
+    this.setChanged(this.hasChangedFields())
   }
 
   discard(event) {
@@ -97,5 +100,23 @@ export default class extends Controller {
         this.discardTarget.classList.add("invisible")
       }
     }
+  }
+
+  hasChangedFields() {
+    // scan for changes in form (ignoring slim select, which takes a bit to update)
+    const changed = this.element.querySelectorAll(".is-changed")
+    for (const el of changed) {
+      if (el.classList.contains("ss-main")) {
+        // ignore slimselect, which takes a bit to update
+        continue
+      } else if (!el.offsetParent) {
+        // ignore non-visible (offset parent will be null)
+        continue
+      } else {
+        return true
+      }
+    }
+
+    return false
   }
 }

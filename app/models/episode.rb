@@ -7,6 +7,11 @@ class Episode < ApplicationRecord
   include PublishingStatus
   include TextSanitizer
 
+  MAX_SEGMENT_COUNT = 10
+  VALID_ITUNES_TYPES = %w[full trailer bonus]
+
+  attr_accessor :strict_validations
+
   serialize :categories, JSON
   serialize :keywords, JSON
 
@@ -24,6 +29,8 @@ class Episode < ApplicationRecord
     -> { order("position ASC, created_at DESC") },
     autosave: true, dependent: :destroy
 
+  accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:original_url].blank? }
+
   has_many :enclosures,
     -> { order("created_at DESC") },
     autosave: true, dependent: :destroy
@@ -37,17 +44,17 @@ class Episode < ApplicationRecord
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
   validates :original_guid, uniqueness: {scope: :podcast_id, allow_nil: true}
-  VALID_ITUNES_TYPES = %w[full trailer bonus]
   validates :itunes_type, inclusion: {in: VALID_ITUNES_TYPES}
-  validates :episode_number,
-    numericality: {only_integer: true}, allow_nil: true
-  validates :season_number,
-    numericality: {only_integer: true}, allow_nil: true
+  validates :episode_number, numericality: {only_integer: true}, allow_nil: true
+  validates :season_number, numericality: {only_integer: true}, allow_nil: true
   validates :explicit, inclusion: {in: %w[true false]}, allow_nil: true
+  validates :segment_count, presence: true, if: :strict_validations
+  validates :segment_count, numericality: {only_integer: true, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
+  after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
 
   scope :published, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at <= now()") }
   scope :published_by, ->(offset) { where("episodes.published_at IS NOT NULL AND episodes.published_at <= ?", Time.now + offset) }
@@ -376,6 +383,22 @@ class Episode < ApplicationRecord
 
   def feeder_cdn_host
     ENV["FEEDER_CDN_HOST"]
+  end
+
+  def segment_range
+    1..segment_count.to_i
+  end
+
+  def build_contents
+    segment_range.map do |p|
+      contents.find { |c| c.position == p } || contents.build(position: p)
+    end
+  end
+
+  def destroy_out_of_range_contents
+    if segment_count.present? && segment_count.positive?
+      contents.where.not(position: segment_range.to_a).destroy_all
+    end
   end
 
   def published_or_released_date

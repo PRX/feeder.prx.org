@@ -1,0 +1,22 @@
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <div class="form-control d-flex align-items-center">
+      <div class="spinner-border text-primary ms-2" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+
+      <div class="text-secondary mx-2"><%= content.file_name %></div>
+      <small class="text-muted flex-grow-1">(Processing)</small>
+      <small class="text-muted">(<%= number_to_human_size(content.file_size) %>)</small>
+
+      <%= link_to edit_episode_path(content.episode, uploads_destroy_params(form)), class: "btn" do %>
+        <span class="material-icons">delete</span>
+      <% end %>
+    </div>
+
+    <label>Segment <%= content.position %></label>
+  </div>
+
+  <%# just keep polling until the file finishes processing %>
+  <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+</div>

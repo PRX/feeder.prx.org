@@ -1,15 +1,18 @@
 class Tasks::CopyMediaTask < ::Task
   before_save do
     if media_resource && status_changed?
-      media_resource.update!(status: status)
       if complete?
         meta = porter_callback_media_meta
         if meta
-          media_resource.update!(meta)
+          media_resource.update!(meta.merge(status: status))
         else
+          # TODO: should non-audio be an error or something?
+          media_resource.update!(status: status)
           Rails.logger.warn("No audio meta found in result: #{JSON.generate(result)}")
         end
         episode.try(:podcast).try(:publish!)
+      else
+        media_resource.update!(status: status)
       end
     end
   end

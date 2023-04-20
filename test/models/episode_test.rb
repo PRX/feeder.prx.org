@@ -385,4 +385,48 @@ describe Episode do
       assert_nil episode.images.with_deleted.first.replaced_at
     end
   end
+
+  describe "#segment_range" do
+    it "returns a range of positions" do
+      e = Episode.new(segment_count: nil)
+      assert_equal [], e.segment_range.to_a
+
+      e.segment_count = 1
+      assert_equal [1], e.segment_range.to_a
+
+      e.segment_count = 4
+      assert_equal [1, 2, 3, 4], e.segment_range.to_a
+    end
+  end
+
+  describe "#build_contents" do
+    it "builds contents for missing positions" do
+      e = Episode.new(segment_count: 3)
+      c1 = e.contents.build(position: 2)
+      _c2 = e.contents.build(position: 4)
+
+      built = e.build_contents
+      assert_equal 3, built.length
+      assert_equal 1, built[0].position
+      assert_equal c1, built[1]
+      assert_equal 3, built[2].position
+    end
+  end
+
+  describe "#destroy_out_of_range_contents" do
+    it "marks contents for destruction" do
+      c1 = episode.contents.create!(position: 2)
+      c2 = episode.contents.create!(position: 4)
+
+      episode.segment_count = nil
+      episode.destroy_out_of_range_contents
+      assert_nil c1.reload.deleted_at
+      assert_nil c2.reload.deleted_at
+
+      episode.segment_count = 3
+      episode.destroy_out_of_range_contents
+      assert_nil c1.reload.deleted_at
+      refute_nil c2.reload.deleted_at
+    end
+  end
 end
