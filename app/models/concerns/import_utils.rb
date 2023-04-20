@@ -104,28 +104,6 @@ module ImportUtils
     end
   end
 
-  def announce(type, action, msg)
-    Rails.logger.error("announce #{type} #{action} #{msg}")
-  end
-
-  def announce_image(image)
-    announce("image", "create", Api::Msg::ImageRepresenter.new(image).to_json)
-    image.process!
-  end
-
-  def announce_audio(audio)
-    announce("audio", "create", Api::Msg::AudioFileRepresenter.new(audio).to_json)
-    audio.process!
-  end
-
-  def remind_to_unlock(title)
-    unless Rails.env.test?
-      puts "################################"
-      puts "Reminder: #{title} is LOCKED. Unlock in Feeder to publish feed."
-      puts "################################"
-    end
-  end
-
   private
 
   def enclosure_url_from_entry(entry)
