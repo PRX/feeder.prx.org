@@ -1,12 +1,10 @@
-# encoding: utf-8
-
-require 'prx_access'
-require 'announce'
-require 'addressable/uri'
-require 'feedjira'
-require 'itunes_category_validator'
-require 'loofah'
-require 'hash_serializer'
+require "prx_access"
+require "announce"
+require "addressable/uri"
+require "feedjira"
+require "itunes_category_validator"
+require "loofah"
+require "hash_serializer"
 
 class PodcastImport < BaseModel
   include ImportUtils
@@ -23,23 +21,23 @@ class PodcastImport < BaseModel
 
   validates :user_id, :account_id, :url, presence: true
 
-  COMPLETE        = 'complete'.freeze
-  FAILED          = 'failed'.freeze
+  COMPLETE = "complete".freeze
+  FAILED = "failed".freeze
 
-  CREATED         = 'created'.freeze
-  STARTED         = 'started'.freeze
-  FEED_RETRIEVED  = 'feed retrieved'.freeze
-  RETRYING        = 'retrying'.freeze
-  SERIES_CREATED  = 'series created'.freeze
-  IMPORTING       = 'importing'.freeze
-  PODCAST_CREATED = 'podcast created'.freeze
+  CREATED = "created".freeze
+  STARTED = "started".freeze
+  FEED_RETRIEVED = "feed retrieved".freeze
+  RETRYING = "retrying".freeze
+  SERIES_CREATED = "series created".freeze
+  IMPORTING = "importing".freeze
+  PODCAST_CREATED = "podcast created".freeze
 
   def episode_imports
-    EpisodeImport.where(podcast_import_id: self.id, has_duplicate_guid: false)
+    EpisodeImport.where(podcast_import_id: id, has_duplicate_guid: false)
   end
 
   def episode_import_placeholders
-    EpisodeImport.where(podcast_import_id: self.id).having_duplicate_guids
+    EpisodeImport.where(podcast_import_id: id).having_duplicate_guids
   end
 
   def config_url=(config_url)
@@ -109,7 +107,7 @@ class PodcastImport < BaseModel
     # Create the series
     create_or_update_series!
     update_attributes!(status: SERIES_CREATED)
-  rescue StandardError => err
+  rescue => err
     update_attributes(status: FAILED)
     raise err
   end
@@ -125,7 +123,7 @@ class PodcastImport < BaseModel
     # Create the episodes
     update_attributes!(status: IMPORTING)
     create_or_update_episode_imports!
-  rescue StandardError => err
+  rescue => err
     update_attributes(status: FAILED)
     raise err
   end
@@ -162,9 +160,9 @@ class PodcastImport < BaseModel
       msg = {}
       msg[:message_body] = job.serialize
       msg[:message_attributes] = {
-        'shoryuken_class' => {
+        "shoryuken_class" => {
           string_value: ActiveJob::QueueAdapters::ShoryukenAdapter::JobWrapper.to_s,
-          data_type: 'String'
+          data_type: "String"
         }
       }
       msg
@@ -185,7 +183,6 @@ class PodcastImport < BaseModel
   end
 
   def create_or_update_episode_import!(entry, has_duplicate_guid = false)
-
     entry_hash = feed_entry_to_hash(entry)
 
     if ei = episode_imports.where(guid: entry_hash[:entry_id]).first
@@ -210,7 +207,11 @@ class PodcastImport < BaseModel
 
   def validate_feed(podcast_feed)
     if !podcast_feed.is_a?(Feedjira::Parser::Podcast)
-      parser = podcast_feed.class.name.demodulize.underscore.humanize rescue ''
+      parser = begin
+        podcast_feed.class.name.demodulize.underscore.humanize
+      rescue
+        ""
+      end
       raise "Failed to retrieve #{url}, not a podcast feed: #{parser}"
     end
   end
@@ -282,12 +283,10 @@ class PodcastImport < BaseModel
     to_insert
   end
 
-  def distribution=(dist)
-    @distribution = dist
-  end
+  attr_writer :distribution
 
   def distribution
-    @distribution ||= series.distributions.where(type: 'Distributions::PodcastDistribution').first
+    @distribution ||= series.distributions.where(type: "Distributions::PodcastDistribution").first
   end
 
   def podcast_distribution
@@ -304,13 +303,13 @@ class PodcastImport < BaseModel
     end
 
     podcast_attributes = {}
-    %w(copyright language update_frequency update_period).each do |atr|
+    %w[copyright language update_frequency update_period].each do |atr|
       podcast_attributes[atr.to_sym] = clean_string(feed.send(atr))
     end
 
     podcast_attributes[:summary] = clean_text(feed.itunes_summary)
     podcast_attributes[:link] = clean_string(feed.url)
-    podcast_attributes[:explicit] = explicit(feed.itunes_explicit, 'false')
+    podcast_attributes[:explicit] = explicit(feed.itunes_explicit, "false")
     podcast_attributes[:new_feed_url] = clean_string(feed.itunes_new_feed_url)
     podcast_attributes[:enclosure_prefix] ||= enclosure_prefix(feed.entries.first)
     podcast_attributes[:feedburner_url] ||= feedburner_url(feed.feedburner_name)
@@ -322,7 +321,7 @@ class PodcastImport < BaseModel
 
     podcast_attributes[:itunes_categories] = parse_itunes_categories(feed)
     podcast_attributes[:categories] = parse_categories(feed)
-    podcast_attributes[:complete] = (clean_string(feed.itunes_complete) == 'yes')
+    podcast_attributes[:complete] = (clean_string(feed.itunes_complete) == "yes")
     podcast_attributes[:copyright] ||= clean_string(feed.media_copyright)
     podcast_attributes[:keywords] = parse_keywords(feed)
     podcast_attributes[:serial_order] = feed.itunes_type && !!feed.itunes_type.match(/serial/i)
@@ -333,12 +332,12 @@ class PodcastImport < BaseModel
   end
 
   def enclosure_prefix(podcast_item)
-    prefix = ''
+    prefix = ""
     link = [podcast_item.feedburner_orig_enclosure_link,
-            podcast_item.enclosure.try(:url),
-            podcast_item.media_contents.first.try(:url)].find do |url|
-              url.try(:match, /podtrac/) || url.try(:match, /blubrry/)
-            end
+      podcast_item.enclosure.try(:url),
+      podcast_item.media_contents.first.try(:url)].find do |url|
+      url.try(:match, /podtrac/) || url.try(:match, /blubrry/)
+    end
     if scheme = link.try(:match, /^https?:\/\//)
       prefix += scheme.to_s
     end
@@ -357,7 +356,7 @@ class PodcastImport < BaseModel
 
   def owner(itunes_owners)
     if o = itunes_owners.try(:first)
-      { name: clean_string(o.name), email: clean_string(o.email) }
+      {name: clean_string(o.name), email: clean_string(o.email)}
     end
   end
 
@@ -372,7 +371,7 @@ class PodcastImport < BaseModel
       end
     end
 
-    [itunes_cats.keys.map { |n| { name: n, subcategories: itunes_cats[n] } }.first].compact
+    [itunes_cats.keys.map { |n| {name: n, subcategories: itunes_cats[n]} }.first].compact
   end
 
   def parse_categories(feed)
@@ -390,12 +389,12 @@ class PodcastImport < BaseModel
   def get_or_create_template(audio_files, enclosure_type = nil)
     num_segments = [audio_files[:files].count, 1].max
     template = nil
-    contains_video = enclosure_type && enclosure_type.starts_with?('video/')
+    contains_video = enclosure_type&.starts_with?("video/")
     content_type = contains_video ? AudioFile::VIDEO_CONTENT_TYPE : AudioFile::MP3_CONTENT_TYPE
 
-    self.series.with_lock do
-      template = series.audio_version_templates.
-                 where(segment_count: num_segments, content_type: content_type).first
+    series.with_lock do
+      template = series.audio_version_templates
+        .where(segment_count: num_segments, content_type: content_type).first
       if !template
         template = series.audio_version_templates.create!(
           label: podcast_label(contains_video, num_segments),
@@ -427,8 +426,8 @@ class PodcastImport < BaseModel
   end
 
   def podcast_label(contains_video, num_segments)
-    label = contains_video ? 'Podcast Video' : 'Podcast Audio'
-    label += " #{num_segments} #{'segment'.pluralize(num_segments)}"
+    label = contains_video ? "Podcast Video" : "Podcast Audio"
+    label += " #{num_segments} #{"segment".pluralize(num_segments)}"
     label
   end
 
@@ -445,7 +444,7 @@ class PodcastImport < BaseModel
   def connection(u = uri)
     conn_uri = "#{u.scheme}://#{u.host}:#{u.port}"
     Faraday.new(conn_uri) { |stack| stack.adapter :excon }.tap do |c|
-      c.headers[:user_agent] = 'PRX CMS FeedValidator'
+      c.headers[:user_agent] = "PRX CMS FeedValidator"
     end
   end
 

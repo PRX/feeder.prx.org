@@ -1,12 +1,10 @@
-# encoding: utf-8
-
-require 'prx_access'
-require 'announce'
-require 'addressable/uri'
-require 'feedjira'
-require 'itunes_category_validator'
-require 'loofah'
-require 'hash_serializer'
+require "prx_access"
+require "announce"
+require "addressable/uri"
+require "feedjira"
+require "itunes_category_validator"
+require "loofah"
+require "hash_serializer"
 
 class EpisodeImport < BaseModel
   include ImportUtils
@@ -14,7 +12,7 @@ class EpisodeImport < BaseModel
   serialize :entry, HashSerializer
   serialize :audio, HashSerializer
 
-  belongs_to :story, -> { with_deleted }, class_name: 'Story', foreign_key: 'piece_id', touch: true
+  belongs_to :story, -> { with_deleted }, class_name: "Story", foreign_key: "piece_id", touch: true
   belongs_to :podcast_import
   has_one :series, through: :podcast_import
   delegate :config, to: :podcast_import
@@ -28,14 +26,14 @@ class EpisodeImport < BaseModel
 
   validates :entry, :guid, presence: true
 
-  COMPLETE = 'complete'.freeze
-  FAILED = 'failed'.freeze
+  COMPLETE = "complete".freeze
+  FAILED = "failed".freeze
 
-  CREATED = 'created'.freeze
-  AUDIO_SAVED = 'audio saved'.freeze
-  RETRYING = 'retrying'.freeze
-  STORY_SAVED = 'story saved'.freeze
-  EPISODE_SAVED = 'episode saved'.freeze
+  CREATED = "created".freeze
+  AUDIO_SAVED = "audio saved".freeze
+  RETRYING = "retrying".freeze
+  STORY_SAVED = "story saved".freeze
+  EPISODE_SAVED = "episode saved".freeze
 
   def unlock_podcast
     if podcast_import.finished?
@@ -50,7 +48,7 @@ class EpisodeImport < BaseModel
 
   def set_defaults
     self.status ||= CREATED
-    self.audio ||= { files: [] }
+    self.audio ||= {files: []}
   end
 
   def import_later
@@ -73,7 +71,7 @@ class EpisodeImport < BaseModel
     unlock_podcast
 
     story
-  rescue StandardError => err
+  rescue => err
     update_attributes(status: FAILED)
     raise err
   end
@@ -89,9 +87,9 @@ class EpisodeImport < BaseModel
 
   def entry_audio_files(entry)
     if config[:audio] && config[:audio][entry[:entry_id]]
-      { files: (config[:audio][entry[:entry_id]] || []) }
+      {files: (config[:audio][entry[:entry_id]] || [])}
     elsif enclosure = enclosure_url(entry)
-      { files: [enclosure] }
+      {files: [enclosure]}
     end
   end
 
@@ -138,7 +136,7 @@ class EpisodeImport < BaseModel
     to_insert = []
 
     if story.images.size > 1
-      to_destroy = story.images[1..- 1]
+      to_destroy = story.images[1..]
     end
 
     existing_image = story.images.first
@@ -165,10 +163,10 @@ class EpisodeImport < BaseModel
     end
 
     if story.audio_versions.blank?
-      template = get_or_create_template(audio, entry['enclosure']['type'])
+      template = get_or_create_template(audio, entry["enclosure"]["type"])
       version = story.audio_versions.build(
         audio_version_template: template,
-        label: 'Podcast Audio',
+        label: "Podcast Audio",
         explicit: explicit(entry[:itunes_explicit])
       )
     else
@@ -193,7 +191,7 @@ class EpisodeImport < BaseModel
 
       if !existing_audio
         new_audio = version.audio_files.build(
-          upload: audio_url.gsub(' ', '%20'),
+          upload: audio_url.gsub(" ", "%20"),
           label: "Segment #{i + 1}",
           position: (i + 1)
         )
@@ -223,22 +221,22 @@ class EpisodeImport < BaseModel
 
   def create_or_update_episode!
     episode_attributes = {}
-    if entry[:itunes_summary] && :itunes_summary != entry_description_attribute(entry)
+    if entry[:itunes_summary] && entry_description_attribute(entry) != :itunes_summary
       episode_attributes[:summary] = clean_text(entry[:itunes_summary])
     end
     episode_attributes[:author] = person(entry[:itunes_author] || entry[:author] || entry[:creator])
-    episode_attributes[:block] = (clean_string(entry[:itunes_block]) == 'yes')
+    episode_attributes[:block] = (clean_string(entry[:itunes_block]) == "yes")
     episode_attributes[:explicit] = explicit(entry[:itunes_explicit])
     episode_attributes[:guid] = clean_string(entry[:entry_id])
     episode_attributes[:is_closed_captioned] = closed_captioned?(entry)
     episode_attributes[:is_perma_link] = entry[:is_perma_link]
-    episode_attributes[:keywords] = (entry[:itunes_keywords] || '').split(',').map(&:strip)
+    episode_attributes[:keywords] = (entry[:itunes_keywords] || "").split(",").map(&:strip)
     episode_attributes[:position] = entry[:itunes_order]
     episode_attributes[:url] = episode_url(entry) || default_story_url(story)
     episode_attributes[:itunes_type] = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
 
     # if there is a distro, and an episode, then announce will sync changes
-    if !distro = story.distributions.where(type: 'StoryDistributions::EpisodeDistribution').first
+    if !distro = story.distributions.where(type: "StoryDistributions::EpisodeDistribution").first
       # create the distro from the story
       distro = StoryDistributions::EpisodeDistribution.create!(
         distribution: series.distributions.first,
@@ -252,14 +250,14 @@ class EpisodeImport < BaseModel
 
   def episode_url(entry)
     url = clean_string(entry[:feedburner_orig_link] || entry[:url] || entry[:link])
-    if url =~ /libsyn\.com/
+    if /libsyn\.com/.match?(url)
       url = nil
     end
     url
   end
 
   def closed_captioned?(entry)
-    (clean_string(entry[:itunes_is_closed_captioned]) == 'yes')
+    (clean_string(entry[:itunes_is_closed_captioned]) == "yes")
   end
 
   def episode_short_desc(item)
@@ -275,7 +273,7 @@ class EpisodeImport < BaseModel
   def connection(u = uri)
     conn_uri = "#{u.scheme}://#{u.host}:#{u.port}"
     Faraday.new(conn_uri) { |stack| stack.adapter :excon }.tap do |c|
-      c.headers[:user_agent] = 'PRX CMS FeedValidator'
+      c.headers[:user_agent] = "PRX CMS FeedValidator"
     end
   end
 

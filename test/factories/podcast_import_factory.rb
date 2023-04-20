@@ -5,6 +5,6 @@ FactoryGirl.define do
     series
     feed_episode_count 10
 
-    url 'http://feeds.prx.org/transistor_stem'
+    url "http://feeds.prx.org/transistor_stem"
   end
 end

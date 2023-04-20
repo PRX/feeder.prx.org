@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 class EpisodeImportJob < ApplicationJob
   queue_as :cms_podcast_import
 

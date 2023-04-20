@@ -1,6 +1,4 @@
-# encoding: utf-8
-
-require 'aws-sdk'
+require "aws-sdk"
 
 module Portered
   extend ActiveSupport::Concern
@@ -16,18 +14,18 @@ module Portered
     def format_callback(callback)
       if callback[:sqs].present?
         {
-          Type: 'AWS/SQS',
+          Type: "AWS/SQS",
           Queue: URI::HTTPS.build(
-            host: "sqs.#{ENV['AWS_REGION']}.amazonaws.com",
-            path: "/#{ENV['AWS_ACCOUNT_ID']}/#{callback[:sqs]}"
+            host: "sqs.#{ENV["AWS_REGION"]}.amazonaws.com",
+            path: "/#{ENV["AWS_ACCOUNT_ID"]}/#{callback[:sqs]}"
           ).to_s
         }
       elsif callback[:s3].present?
         uri = URI(callback[:s3])
         {
-          Type: 'AWS/S3',
+          Type: "AWS/S3",
           BucketName: uri.host,
-          ObjectPrefix: uri.path.sub(/^\//, '')
+          ObjectPrefix: uri.path.sub(/^\//, "")
         }
       else
         callback
@@ -57,20 +55,19 @@ module Portered
   def source_from_uri(url)
     uri = URI(url)
     case uri.scheme
-    when 's3' then { Mode: 'AWS/S3', BucketName: uri.host, ObjectKey: uri.path.sub(/^\//, '') }
-    else { Mode: 'HTTP', URL: url }
+    when "s3" then {Mode: "AWS/S3", BucketName: uri.host, ObjectKey: uri.path.sub(/^\//, "")}
+    else {Mode: "HTTP", URL: url}
     end
   end
 
   def publish_porter_sns(message)
-    if ENV['PORTER_SNS_TOPIC_ARN'].present?
+    if ENV["PORTER_SNS_TOPIC_ARN"].present?
       Portered.sns_client.publish(
-        topic_arn: ENV['PORTER_SNS_TOPIC_ARN'],
+        topic_arn: ENV["PORTER_SNS_TOPIC_ARN"],
         message: message.to_json
       )
     else
-      Rails.logger.warn('No Porter SNS topic provided - Porter jobs will be skipped.')
+      Rails.logger.warn("No Porter SNS topic provided - Porter jobs will be skipped.")
     end
   end
-
 end

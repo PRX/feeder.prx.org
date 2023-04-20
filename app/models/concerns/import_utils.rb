@@ -1,6 +1,5 @@
-# encoding: utf-8
-require 'active_support/concern'
-require 'prx_access'
+require "active_support/concern"
+require "prx_access"
 
 # an uploaded file is moved from temp location to final dest via fixer
 module ImportUtils
@@ -37,10 +36,10 @@ module ImportUtils
   def explicit(str, default = nil)
     explicit = clean_string(str).try(:downcase)
 
-    if %w(true yes explicit).include?(explicit)
-      'true'
-    elsif %w(false no clean).include?(explicit)
-      'false'
+    if %w[true yes explicit].include?(explicit)
+      "true"
+    elsif %w[false no clean].include?(explicit)
+      "false"
     else
       default
     end
@@ -63,7 +62,7 @@ module ImportUtils
       end
     end
 
-    { name: name, email: email }
+    {name: name, email: email}
   end
 
   def clean_string(str)
@@ -80,13 +79,13 @@ module ImportUtils
   end
 
   def remove_utf8_4byte(str)
-    str.each_char.select { |char| char.bytesize < 4 }.join('')
+    str.each_char.select { |char| char.bytesize < 4 }.join("")
   end
 
   def remove_feedburner_tracker(str)
     return nil if str.blank?
     regex = /<img src="http:\/\/feeds\.feedburner\.com.+" height="1" width="1" alt=""\/>/
-    str.sub(regex, '').strip
+    str.sub(regex, "").strip
   end
 
   def sanitize_html(text)
@@ -99,26 +98,26 @@ module ImportUtils
     if file.upload_path
       file.upload_path == url
     else
-      filename = URI.parse(url || '').path.split('/').last
+      filename = URI.parse(url || "").path.split("/").last
       file.filename == filename
     end
   end
 
   def announce_image(image)
-    announce('image', 'create', Api::Msg::ImageRepresenter.new(image).to_json)
+    announce("image", "create", Api::Msg::ImageRepresenter.new(image).to_json)
     image.process!
   end
 
   def announce_audio(audio)
-    announce('audio', 'create', Api::Msg::AudioFileRepresenter.new(audio).to_json)
+    announce("audio", "create", Api::Msg::AudioFileRepresenter.new(audio).to_json)
     audio.process!
   end
 
   def remind_to_unlock(title)
     unless Rails.env.test?
-      puts '################################'
+      puts "################################"
       puts "Reminder: #{title} is LOCKED. Unlock in Feeder to publish feed."
-      puts '################################'
+      puts "################################"
     end
   end
 
@@ -128,5 +127,4 @@ module ImportUtils
     return nil unless entry.key?(:enclosure)
     entry[:enclosure][:url]
   end
-
 end

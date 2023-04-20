@@ -1,9 +1,9 @@
-require 'feedjira'
-require 'feedjira/parser/media_content'
-require 'feedjira/parser/media_group'
-require 'feedjira/parser/podcast_image'
-require 'feedjira/parser/podcast_item_enclosure'
-require 'feedjira/parser/podcast_item'
+require "feedjira"
+require "feedjira/parser/media_content"
+require "feedjira/parser/media_group"
+require "feedjira/parser/podcast_image"
+require "feedjira/parser/podcast_item_enclosure"
+require "feedjira/parser/podcast_item"
 
 module Feedjira
   module Parser
@@ -47,8 +47,8 @@ module Feedjira
       element :"sy:updateFrequency", as: :update_frequency
       element :"feedburner:info", as: :feedburner_name, value: :uri
 
-      elements :link, as: :hubs, value: :href, with: { rel: 'hub' }
-      elements :"atom10:link", as: :hubs, value: :href, with: { rel: 'hub' }
+      elements :link, as: :hubs, value: :href, with: {rel: "hub"}
+      elements :"atom10:link", as: :hubs, value: :href, with: {rel: "hub"}
 
       elements :item, as: :entries, class: PodcastItem
 
@@ -75,8 +75,8 @@ module Feedjira
         nil
       end
 
-      def self.able_to_parse?(xml) #:nodoc:
-        (/\<rss|\<rdf/ =~ xml)
+      def self.able_to_parse?(xml) # :nodoc:
+        (/<rss|<rdf/ =~ xml)
       end
     end
   end
