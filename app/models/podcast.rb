@@ -12,14 +12,15 @@ class Podcast < ApplicationRecord
   serialize :restrictions, JSON
 
   has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true
-  has_many :feeds, dependent: :destroy
 
   has_many :episodes, -> { order("published_at desc") }
+  has_many :feeds, dependent: :destroy
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
 
+  accepts_nested_attributes_for :default_feed
+
   validates :title, presence: true
-  validates :subtitle, presence: true
   validates :link, http_url: true
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
@@ -49,8 +50,12 @@ class Podcast < ApplicationRecord
   end
 
   def set_defaults
-    self.default_feed ||= feeds.new(private: false)
+    set_default_feed
     self.explicit ||= "false"
+  end
+
+  def set_default_feed
+    self.default_feed ||= feeds.new(private: false)
   end
 
   def explicit=(value)

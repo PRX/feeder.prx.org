@@ -26,6 +26,9 @@ class Feed < ApplicationRecord
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
 
+  accepts_nested_attributes_for :feed_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
+  accepts_nested_attributes_for :itunes_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
+
   acts_as_paranoid
 
   validates :slug, allow_nil: true, uniqueness: {scope: :podcast_id, allow_nil: false}
