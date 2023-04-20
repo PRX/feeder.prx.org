@@ -42,4 +42,12 @@ module EpisodesHelper
   def episode_content_duration(content)
     Time.at(content.duration || 0).utc.strftime("%H:%M:%S").sub(/^00:/, "0:")
   end
+
+  def episode_destroy_image_path(episode, form)
+    if episode.new_record?
+      new_podcast_episode_path episode.podcast_id, uploads_destroy_params(form)
+    else
+      edit_episode_path episode, uploads_destroy_params(form)
+    end
+  end
 end

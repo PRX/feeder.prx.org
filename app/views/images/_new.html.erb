@@ -1,7 +1,7 @@
 <div class="card prx-uploads" data-controller="upload">
 
-  <div class="card-header-info d-flex justify-content-between align-items-center">
-    <h5 class="card-title"><%= t("images.title.#{image.model_name.singular}") %></h5>
+  <div class="card-header-info d-flex align-items-center">
+    <h5 class="card-title flex-grow-1"><%= t("images.title.#{image.model_name.singular}") %></h5>
 
     <button type="button" class="prx-btn-help me-1" data-bs-toggle="popover" data-bs-content="<%= t("images.help.#{image.model_name.singular}") %>">
       <span class="material-icons">help</span>
