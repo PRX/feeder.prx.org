@@ -3,7 +3,7 @@
     <% if date_is_in_month?(date, month.month) %>
       <%= date.day %>
 
-      <%= form.hidden_field :selected_dates, multiple: true, data: {calendar_target: "date"}, value: date.to_datetime, disabled: !is_preselected_date?(date, @planner.dates), draft: is_preselected_date?(date, @draft_dates) %>
+      <%= form.hidden_field :selected_dates, multiple: true, data: {date_target: "preselected"}, value: date.to_datetime, disabled: !is_preselected_date?(date, @planner.dates), draft: is_preselected_date?(date, @draft_dates) %>
     <% end %>
   <% end %>
 </div>

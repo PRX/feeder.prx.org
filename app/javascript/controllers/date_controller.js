@@ -1,18 +1,18 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["date"]
+  static targets = ["preselected"]
 
   connect() {
-    if (!this.isDisabled(this.dateTarget)) {
-      if (this.isDraft(this.dateTarget)) {
+    if (!this.isDisabled(this.preselectedTarget)) {
+      if (this.isDraft(this.preselectedTarget)) {
         this.element.classList.add("bg-danger", "text-light")
       } else {
         this.element.classList.add("bg-primary", "text-light")
       }
     }
 
-    if (this.dateTarget.getAttribute("draft") === "true") {
+    if (this.preselectedTarget.getAttribute("draft") === "true") {
       this.element.classList.add("bg-warning")
     }
   }

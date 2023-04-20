@@ -3,10 +3,10 @@
 module PodcastPlannerHelper
   PERIODIC_WEEKS = I18n.t([:every_one, :every_two, :every_three, :every_four], scope: "podcast_planner.helper.period_options")
   MONTHLY_WEEKS = I18n.t([:first, :second, :third, :fourth, :fifth], scope: "podcast_planner.helper.monthly_options")
-  CALENDAR_CONTROLLER = "calendar"
-  TOGGLE_ACTION = "click->calendar#toggleSelect"
-  HIGHLIGHT_ACTION = "mouseover->calendar#highlight"
-  UNHIGHLIGHT_ACTION = "mouseout->calendar#unhighlight"
+  DATE_CONTROLLER = "date"
+  TOGGLE_ACTION = "click->date#toggleSelect"
+  HIGHLIGHT_ACTION = "mouseover->date#highlight"
+  UNHIGHLIGHT_ACTION = "mouseout->date#unhighlight"
 
   def day_options
     DateTime::DAYNAMES.map.with_index { |day, i| [day, i] }
@@ -60,7 +60,7 @@ module PodcastPlannerHelper
   def calendar_day_tag(day:, month:, calendar:, &block)
     data = {}
     if date_is_in_month?(day, month)
-      data[:controller] = CALENDAR_CONTROLLER
+      data[:controller] = DATE_CONTROLLER
       data[:action] = [TOGGLE_ACTION, HIGHLIGHT_ACTION, UNHIGHLIGHT_ACTION].join(" ")
     end
 
