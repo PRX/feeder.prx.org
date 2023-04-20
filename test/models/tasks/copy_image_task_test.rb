@@ -7,7 +7,7 @@ describe Tasks::CopyImageTask do
 
   it "has task options" do
     opts = task.task_options
-    assert_equal opts[:job_type], "file"
+    assert_equal opts[:job_type], "image"
     assert_equal opts[:source], image.original_url
     assert_match(/s3:\/\/test-prx-feed\/#{path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/images\/4e745a8c-77ee-481c-a72b-fd868dfd1c9(\d+)\/image\.png/, opts[:destination])
   end
@@ -50,5 +50,15 @@ describe Tasks::CopyImageTask do
     assert_equal task.image_resource[:url], task.image_resource.published_url
     refute_equal task.image_resource.url, "what/ever"
     assert_equal task.image_resource.url, task.image_resource.published_url
+  end
+
+  it "handles validation errors" do
+    task.update(status: "created")
+
+    # TODO: better async validation error handling
+    task.stub(:porter_callback_image_meta, {format: "bad"}) do
+      task.update(status: "complete")
+      assert_equal "error", task.image_resource.status
+    end
   end
 end

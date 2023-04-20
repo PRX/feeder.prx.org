@@ -106,7 +106,12 @@ module ImageFile
   end
 
   def detect_image_attributes
-    return if !original_url || (width && height && format)
+    # skip if we've already detected width/height/format
+    return if width.present? && height.present? && format.present?
+
+    # s3 urls cannot be fastimage'd - must wait for async porter inspection
+    return if original_url.blank? || original_url.starts_with?("s3://")
+
     info = nil
     begin
       fastimage_options = {

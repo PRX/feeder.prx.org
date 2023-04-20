@@ -77,6 +77,21 @@ module PorterParser
     end
   end
 
+  def porter_callback_image_meta
+    info = self.class.porter_callback_inspect(result).try(:[], :Inspection)
+    mime = porter_callback_mime(info || {})
+
+    # only return for actual images - not detected images in id3 tags
+    if info && info[:Image] && mime.starts_with?("image/")
+      {
+        format: info[:Image][:Format],
+        height: info[:Image][:Height].to_i,
+        size: info[:Size].to_i,
+        width: info[:Image][:Width].to_i
+      }
+    end
+  end
+
   def porter_callback_mime(info)
     if info[:MIME]
       info[:MIME]
