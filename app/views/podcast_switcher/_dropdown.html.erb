@@ -2,12 +2,12 @@
 
   <button class="btn btn-white dropdown-toggle" type="button" id="podcast-switcher" data-bs-toggle="dropdown" aria-expanded="false" data-action="focus#focus">
     <% if @podcast %>
-      <% if img = (@podcast.feed_image || @podcast.itunes_image) %>
+      <% if img = (@podcast.ready_feed_image || @podcast.ready_itunes_image) %>
         <%= image_tag(img.url, size: 30, alt: img.alt_text) %>
       <% else %>
         <span class="img-placeholder" aria-label="hidden"></span>
       <% end %>
-      <em class="flex-grow-1 text-start"><%= @podcast.title %></em>
+      <em class="flex-grow-1 text-start"><%= @podcast.persisted? ? @podcast.title : t(".new") %></em>
     <% else %>
       <span class="img-placeholder" aria-label="hidden"></span>
       <em class="flex-grow-1 text-start"><%= t(".select") %></em>

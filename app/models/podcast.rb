@@ -26,7 +26,7 @@ class Podcast < ApplicationRecord
   validates :restrictions, media_restrictions: true
 
   # these keep changing - so just translate to the current accepted values
-  VALID_EXPLICITS = %w[true false]
+  VALID_EXPLICITS = %w[false true]
   EXPLICIT_ALIASES = {
     "" => nil,
     "no" => "false",
