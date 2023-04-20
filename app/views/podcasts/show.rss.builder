@@ -9,7 +9,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
   xml.channel do
     xml.title @feed.title || @podcast.title
     xml.link @podcast.link
-    xml.pubDate @podcast.pub_date.utc.rfc2822
+    xml.pubDate @podcast.pub_date.utc.rfc2822 if @podcast.pub_date.present?
     xml.lastBuildDate @podcast.last_build_date.utc.rfc2822
     xml.ttl 60
     xml.language @podcast.language || "en-us"

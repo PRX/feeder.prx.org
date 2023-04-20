@@ -52,7 +52,6 @@ class Podcast < ApplicationRecord
 
   def set_defaults
     set_default_feed
-    self.published_at ||= Time.now
     self.explicit ||= "false"
   end
 
