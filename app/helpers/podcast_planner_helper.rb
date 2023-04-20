@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module PodcastPlannerHelper
-  PERIODIC_WEEKS = I18n.t([:every_one, :every_two, :every_three, :every_four], scope: "podcast_planner.helper.period_options")
-  MONTHLY_WEEKS = I18n.t([:first, :second, :third, :fourth, :fifth], scope: "podcast_planner.helper.monthly_options")
+  PERIODIC_WEEKS = I18n.t([:every_one, :every_two, :every_three, :every_four], scope: [:podcast_planner, :helper, :period_options])
+  MONTHLY_WEEKS = I18n.t([:first, :second, :third, :fourth, :fifth], scope: [:podcast_planner, :helper, :monthly_options])
   DATE_CONTROLLER = "date"
   TOGGLE_ACTION = "click->date#toggleSelect"
   HIGHLIGHT_ACTION = "mouseover->date#highlight"

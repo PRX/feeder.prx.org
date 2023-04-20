@@ -1,6 +1,6 @@
 <div class="col">
-  <%= month_calendar(start_date: month) do |date| %>
-    <% if date_is_in_month?(date, month.month) %>
+  <%= month_calendar(start_date: start_date) do |date| %>
+    <% if date_is_in_month?(date, start_date.month) %>
       <%= date.day %>
 
       <%= form.hidden_field :selected_dates, multiple: true, data: {date_target: "preselected"}, value: date.to_datetime, disabled: !is_preselected_date?(date, @planner.dates), draft: is_preselected_date?(date, @draft_dates) %>
