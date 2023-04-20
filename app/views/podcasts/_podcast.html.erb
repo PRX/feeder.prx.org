@@ -1,7 +1,7 @@
 <div id="<%= dom_id podcast %>" class="d-flex align-items-center flex-fill my-4">
   <div>
-    <% if podcast.feed_image %>
-      <%= image_tag(podcast.feed_image.url, width: 135, alt: podcast.feed_image.alt_text, class: "d-flex me-4") %>
+    <% if podcast.ready_image %>
+      <%= image_tag(podcast.ready_image.url, width: 135, alt: podcast.ready_image.alt_text, class: "d-flex me-4") %>
     <% end %>
   </div>
   <div class="flex-fill">

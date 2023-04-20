@@ -189,4 +189,8 @@ class Feed < ApplicationRecord
       img.update_image(itunes_image)
     end
   end
+
+  def ready_image
+    @ready_image ||= (ready_feed_image || ready_itunes_image)
+  end
 end
