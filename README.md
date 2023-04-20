@@ -160,18 +160,19 @@ Then you'll need to set a few ENVs to make this all work:
 ```
 # use prx-shared-development account
 AWS_ACCOUNT_ID=556402616001
+AWS_PROFILE=prx-shared-development
 
 # and SQS that start with your name
 ANNOUNCE_RESOURCE_PREFIX=<yourname>
 
 # and staging Porter
-PORTER_SNS_TOPIC=<get from legacy SNS web console>
+PORTER_SNS_TOPIC=<get ARN from legacy SNS web console>
 
 # configure EvaporateJS uploads
 UPLOAD_BUCKET_NAME=prx-feed-development
 UPLOAD_BUCKET_PREFIX=uploads
-UPLOAD_SIGNING_SERVICE_KEY_ID=<get this from prx-shared-development IAM web console>
-UPLOAD_SIGNING_SERVICE_URL=<get this from prx-shared-development Lambda web console>
+UPLOAD_SIGNING_SERVICE_KEY_ID=<get access key id from prx-shared-development IAM web console>
+UPLOAD_SIGNING_SERVICE_URL=<get invoke url from prx-shared-development Lambda web console>
 
 # use the development S3/CloudFront for that same bucket
 FEEDER_CDN_HOST=f.development.prxu.org
@@ -182,9 +183,6 @@ This will set you up to use the `prx-feed-development` bucket for both uploads a
 for processed files. Then, to start the worker in development:
 
 ```sh
-# use the prx-shared-development account - both for running workers and webs
-export AWS_PROFILE=prx-shared-development
-
 # you'll need to create the SQS queues the first time
 bin/rails sqs:create
 

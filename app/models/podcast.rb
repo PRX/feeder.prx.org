@@ -42,6 +42,7 @@ class Podcast < ApplicationRecord
 
   before_validation :set_defaults, :sanitize_text
 
+  scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") }
   scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
 
   def self.by_prx_series(series)

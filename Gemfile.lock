@@ -265,7 +265,7 @@ GEM
       net-protocol
     newrelic_rpm (8.13.1)
     nio4r (2.5.8)
-    nokogiri (1.14.0)
+    nokogiri (1.14.3)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
     oauth2 (1.4.11)
@@ -525,7 +525,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 2.7.7p221
+   ruby 2.7.8p225
 
 BUNDLED WITH
    2.1.4
