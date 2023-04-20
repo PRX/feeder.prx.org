@@ -32,8 +32,7 @@
           <% end %>
 
           <%= turbo_frame_tag "preview", target: "_top" do %>
-            <div class="row row-cols-3">
-
+            <div class="row">
               <% 6.times do |i| %>
                 <%= render "calendar", form: form, month: Date.today.beginning_of_month + i.months, planner: @planner %>
               <% end %>
