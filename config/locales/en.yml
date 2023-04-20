@@ -94,10 +94,6 @@ en:
         segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
     form_distribution:
       title: Distribution
-    form_image:
-      title: Cover Image
-      help:
-        cover_image: Provide an image for your episode, if desired. Image dimensions must be square.
     form_main:
       help:
         author_email: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
@@ -145,6 +141,15 @@ en:
     update:
       error: Unable to save
       notice: Episode updated
+  images:
+    help:
+      episode_image: Provide an image for your episode, if desired. Image dimensions must be square.
+      feed_image: Optionally provide an alternate image to use for smaller display purposes.
+      itunes_image: This image will be used as the cover image for this series. Image dimensions must be square.
+    title:
+      episode_image: Cover Image
+      feed_image: Thumbnail Image
+      itunes_image: Profile Image
   layouts:
     nav:
       account: PRX Account
@@ -166,9 +171,6 @@ en:
     destroy:
       error: Cannot delete a podcast with published episodes
       notice: Podcast deleted
-    form_feed_image:
-      title: Thumbnail Image
-      help: Optionally provide an alternate image to use for smaller display purposes. If not provided, a rescaled thumbnail of the profile image will be used.
     form:
       confirm: Discard unsaved changes?
     form_main:
@@ -191,9 +193,6 @@ en:
         subtitle: A short description of this podcast.
         summary: Unless otherwise specified, the summary is created from the description of your podcast as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
         title: What's the name of this podcast?
-    form_itunes_image:
-      title: Profile Image
-      help: This image will be used as the cover image for this series. Image dimensions must be square.
     form_status:
       create: Create
       discard: Discard
@@ -204,7 +203,6 @@ en:
     index:
       search_podcasts: Search Podcasts
     podcast:
-      no_image: No image here
       create_episode: Create Episode
       plan_episodes: Plan Episodes
     update:
