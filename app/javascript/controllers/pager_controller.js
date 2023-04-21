@@ -3,13 +3,13 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["page", "prev", "next"]
   static values = {
-    currentPosition: {type: Number, default: 0},
-    range: {type: Number, default: 6},
-    step: {type: Number, default: 1}
+    currentPosition: { type: Number, default: 0 },
+    range: { type: Number, default: 6 },
+    step: { type: Number, default: 1 },
   }
 
   currentPositionValueChanged() {
-    this.pageTargets.forEach(el => {
+    this.pageTargets.forEach((el) => {
       if (this.inRange(parseInt(el.getAttribute("index")))) {
         el.classList.remove("d-none")
       } else {

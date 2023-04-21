@@ -29,11 +29,11 @@
         <div class="col-lg">
           <div data-controller="pager" data-pager-range-value="6">
             <div class="mb-2">
-              <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: { action: "click->pager#pageBackward", pager_target: "prev" }, disabled: true do %>
+              <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: {action: "click->pager#pageBackward", pager_target: "prev"}, disabled: true do %>
                 <span class="material-icons">arrow_left</span>
                 Month
               <% end %>
-              <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: { action: "click->pager#pageForward", pager_target: "next" } do %>
+              <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: {action: "click->pager#pageForward", pager_target: "next"} do %>
                 Month
                 <span class="material-icons">arrow_right</span>
               <% end %>

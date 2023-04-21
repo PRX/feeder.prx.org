@@ -23,14 +23,14 @@ export default class extends Controller {
         this.element.classList.remove("bg-danger")
       }
       event.target.classList.remove("bg-primary", "text-light")
-      event.target.firstElementChild.setAttribute("disabled", true)
+      event.target.firstElementChild.disabled = true
     } else {
       if (this.isDraft(event.target.firstElementChild)) {
         event.target.classList.add("bg-danger", "text-light")
       } else {
         event.target.classList.add("bg-primary", "text-light")
       }
-      event.target.firstElementChild.removeAttribute("disabled")
+      event.target.firstElementChild.disabled = null
     }
   }
 
@@ -58,7 +58,7 @@ export default class extends Controller {
   }
 
   isDisabled(el) {
-    return el.getAttribute("disabled") === "true" || el.getAttribute("disabled") === "disabled"
+    return el.disabled === true
   }
 
   isDraft(el) {
