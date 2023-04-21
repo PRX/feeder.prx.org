@@ -60,7 +60,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource,
     writeable: false,
-    if: ->(_o) { !media_resources&.all?(&:complete?) }
+    if: ->(_o) { !media_resources&.all?(&:status_complete?) }
 
   property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
 

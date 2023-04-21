@@ -18,11 +18,11 @@ module ImageFile
 
     validates :format, inclusion: {in: ["jpeg", "png", "gif", nil]}
 
-    enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
+    enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled], prefix: true
 
     scope :complete_or_replaced, -> do
       with_deleted
-        .complete
+        .status_complete
         .where("deleted_at IS NULL OR replaced_at IS NOT NULL")
         .order("created_at DESC")
     end
@@ -75,11 +75,11 @@ module ImageFile
   end
 
   def url
-    complete? ? self[:url] : self[:original_url]
+    status_complete? ? self[:url] : self[:original_url]
   end
 
   def href
-    complete? ? url : original_url
+    status_complete? ? url : original_url
   end
 
   def href=(h)

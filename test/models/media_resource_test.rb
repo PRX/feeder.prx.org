@@ -13,9 +13,9 @@ describe MediaResource do
   end
 
   it "answers if it is processed" do
-    refute media_resource.complete?
-    media_resource.complete!
-    assert media_resource.complete?
+    refute media_resource.status_complete?
+    media_resource.status_complete!
+    assert media_resource.status_complete?
   end
 
   it "sets url based on href" do
@@ -30,13 +30,13 @@ describe MediaResource do
     mr = MediaResource.new(episode: episode,
       status: MediaResource.statuses[:completed],
       original_url: "http://test.prxu.org/old.mp3")
-    mr.complete!
+    mr.status_complete!
     mr.task = Task.new
 
     mr.href = "http://test.prxu.org/somefile.mp3"
     assert_equal mr.href, "http://test.prxu.org/somefile.mp3"
     assert_equal mr.original_url, "http://test.prxu.org/somefile.mp3"
-    refute mr.complete?
+    refute mr.status_complete?
     assert_nil mr.task
   end
 
