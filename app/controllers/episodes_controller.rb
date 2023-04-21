@@ -125,9 +125,4 @@ class EpisodesController < ApplicationController
       images_attributes: %i[id original_url size alt_text caption credit _destroy]
     )
   end
-
-  # TODO: hacky, but this method is private in turbo-rails
-  def turbo_frame_request?
-    request.headers["Turbo-Frame"].present?
-  end
 end
