@@ -27,17 +27,26 @@
         </div>
 
         <div class="col-lg">
-          <% if @planner.dates.present? %>
-          <p><%= t(".header.number_of_drafts", count: @planner.dates.count) %></p>
-          <% end %>
-
-          <%= turbo_frame_tag "preview", target: "_top" do %>
-            <div class="row">
-              <% 6.times do |i| %>
-                <%= render "calendar", form: form, start_date: Date.today.beginning_of_month + i.months, planner: @planner %>
+          <div data-controller="pager" data-pager-range-value="6">
+            <div class="mb-2">
+              <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: { action: "click->pager#pageBackward", pager_target: "prev" }, disabled: true do %>
+                <span class="material-icons">arrow_left</span>
+                Month
+              <% end %>
+              <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: { action: "click->pager#pageForward", pager_target: "next" } do %>
+                Month
+                <span class="material-icons">arrow_right</span>
               <% end %>
             </div>
-          <% end %>
+
+            <%= turbo_frame_tag "preview", target: "_top" do %>
+              <div class="row">
+                <% 24.times do |i| %>
+                  <%= render "calendar", form: form, start_date: Date.today.beginning_of_month + i.months, planner: @planner, index: i, range: 6 %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
         </div>
       </div>
       <div class="card-footer">
