@@ -8,7 +8,17 @@
 
         <a data-bs-toggle="dropdown">
         <button class="btn btn-outline-light btn-sm dropdown-toggle">
-          Sort <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
+        <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
+
+                    <% if params[:sort] == 'episode_count' %>
+          <span class="material-icons" aria-hidden="true">123</span>
+        <% elsif params[:sort] == 'A-Z'%>
+          <span>A-Z</span>
+        <% elsif params[:sort] == 'Z-A' %>
+          <span>Z-A</span>
+        <% else %>
+          <span class="material-icons" aria-hidden="true">timer</span>
+        <% end %>
         </button>
         <ul class="dropdown-menu">
           <li><%= link_to "Recent Activity", podcasts_path(sort: "Recent"), class: "dropdown-item active" %></li>
