@@ -12,8 +12,6 @@ module ImageFile
 
     before_validation :initialize_attributes, on: :create
 
-    before_validation :detect_image_attributes
-
     validates :original_url, presence: true
 
     validates :format, inclusion: {in: ["jpeg", "png", "gif", nil]}
@@ -103,39 +101,6 @@ module ImageFile
     self.width = nil
     self.size = nil
     self.status = :created
-  end
-
-  def detect_image_attributes
-    # skip if we've already detected width/height/format
-    return if width.present? && height.present? && format.present?
-
-    # s3 urls cannot be fastimage'd - must wait for async porter inspection
-    return if original_url.blank? || original_url.starts_with?("s3://")
-
-    info = nil
-    begin
-      fastimage_options = {
-        timeout: 10,
-        raise_on_failure: true,
-        http_header: {"User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X) PRX Feeder/1.0"}
-      }
-      info = FastImage.new(original_url, fastimage_options)
-    rescue FastImage::FastImageException => err
-      logger.error(err)
-      NewRelic::Agent.notice_error(err)
-      raise
-    end
-    self.dimensions = info.size
-    self.format = info.type
-    self.size = info.content_length
-  end
-
-  def dimensions
-    [width, height]
-  end
-
-  def dimensions=(s)
-    self.width, self.height = s
   end
 
   def replace?(img)

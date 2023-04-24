@@ -180,7 +180,6 @@ GEM
       railties (>= 5.0.0)
     faraday (0.17.6)
       multipart-post (>= 1.2, < 3)
-    fastimage (2.2.6)
     ffi (1.15.5)
     fuzzyurl (0.2.2)
     globalid (1.0.1)
@@ -480,7 +479,6 @@ DEPENDENCIES
   excon
   factory_bot_rails
   faraday (~> 0.17.4)
-  fastimage
   hal_api-rails (~> 1.2.0)
   hyperresource
   importmap-rails
