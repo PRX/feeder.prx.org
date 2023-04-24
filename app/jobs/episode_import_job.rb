@@ -1,5 +1,5 @@
 class EpisodeImportJob < ApplicationJob
-  queue_as :podcast_import
+  queue_as :feeder_podcast_import
 
   def perform(episode_import)
     episode_import.import
