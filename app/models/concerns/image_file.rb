@@ -14,9 +14,9 @@ module ImageFile
 
     validates :original_url, presence: true
 
-    validates :format, inclusion: {in: ["jpeg", "png", "gif", nil]}
+    validates :format, inclusion: {in: %w[jpeg png gif]}, if: :status_complete?
 
-    enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled], prefix: true
+    enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
 
     scope :complete_or_replaced, -> do
       with_deleted

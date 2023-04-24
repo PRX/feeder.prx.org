@@ -6,9 +6,13 @@ class MediaResource < ApplicationRecord
 
   acts_as_paranoid
 
-  enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled], prefix: true
+  enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
 
   before_validation :initialize_attributes, on: :create
+
+  validates :original_url, presence: true
+
+  validates :medium, inclusion: {in: %w[audio video]}, if: :status_complete?
 
   after_create :replace_resources!
 

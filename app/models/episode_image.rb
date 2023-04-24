@@ -1,7 +1,10 @@
 class EpisodeImage < ActiveRecord::Base
+  include ImageFile
+
   belongs_to :episode, touch: true, optional: true
 
-  include ImageFile
+  validates :height, :width, numericality: {greater_than_or_equal_to: 1400, less_than_or_equal_to: 3000}, if: :status_complete?
+  validates :height, comparison: {equal_to: :width}, if: :status_complete?
 
   def destination_path
     "#{episode.path}/#{image_path}"
