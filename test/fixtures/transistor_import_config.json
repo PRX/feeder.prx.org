@@ -1,7 +1,7 @@
 {
-  "program" : "transistor_stem",
-  "audio" : {
-    "https://transistor.prx.org/?p=1286" : [
+  "program": "transistor_stem",
+  "audio": {
+    "https://transistor.prx.org/?p=1286": [
       "https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3",
       "https://cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"
     ]
