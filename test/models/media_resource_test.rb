@@ -27,7 +27,7 @@ describe MediaResource do
   end
 
   it "resets processing when href changes" do
-    mr = MediaResource.new(episode: episode,
+    mr = build(:media_resource, episode: episode,
       status: MediaResource.statuses[:completed],
       original_url: "http://test.prxu.org/old.mp3")
     mr.status_complete!

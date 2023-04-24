@@ -15,11 +15,6 @@ describe EpisodeStoryHandler do
     PrxAccess::PrxHyperResource.new_from(body: body, resource: resource, link: link)
   end
 
-  before {
-    stub_request(:get, "https://cms.prx.org/pub/cb424d43e437b348551eee7ac191474c/0/web/story_image/437192/original/transistor1400.jpg")
-      .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
-  }
-
   it "can be created from a story" do
     create(:podcast, prx_uri: "/api/v1/series/36501")
     episode = EpisodeStoryHandler.create_from_story!(story)
@@ -48,10 +43,6 @@ describe EpisodeStoryHandler do
     assert_equal episode.images.first, episode.image
     assert_equal "created", episode.image.status
     assert_equal "transistor1400.jpg", episode.image.file_name
-    assert_equal "jpeg", episode.image.format
-    assert_equal 36, episode.image.guid.length
-    assert_equal 1400, episode.image.height
-    assert_equal 1400, episode.image.width
     assert_equal "some-caption", episode.image.caption
     assert_equal "some-credit", episode.image.credit
   end

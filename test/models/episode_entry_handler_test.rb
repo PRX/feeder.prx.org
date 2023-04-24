@@ -9,11 +9,6 @@ describe EpisodeEntryHandler do
   let(:entry_all) { api_resource(JSON.parse(json_file(:crier_all)), crier_root) }
   let(:entry_no_enclosure) { api_resource(JSON.parse(json_file(:crier_no_enclosure)), crier_root) }
 
-  before do
-    stub_request(:get, "http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99-1400.png?entry=1")
-      .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
-  end
-
   it "can update from entry" do
     EpisodeEntryHandler.update_from_entry!(episode, entry)
     assert_equal episode.title, "Episode 12: What We Know"
