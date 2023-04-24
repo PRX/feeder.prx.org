@@ -5,8 +5,8 @@ FactoryBot.define do
     alt_text { "valid episode image" }
     caption { "just look at those things" }
     credit { "feeder" }
-    width { 144 }
-    height { 144 }
+    width { 1400 }
+    height { 1400 }
     size { 14467 }
     format { "png" }
     status { "complete" }

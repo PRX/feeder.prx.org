@@ -75,7 +75,7 @@ module ImageFile
   end
 
   def url
-    self[:url] ||= media_url
+    self[:url] ||= published_url
   end
 
   def href

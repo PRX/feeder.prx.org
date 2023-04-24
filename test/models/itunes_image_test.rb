@@ -1,58 +1,59 @@
 require "test_helper"
 
 describe ITunesImage do
-  describe "associations" do
-    it "belongs to a feed" do
-      feed = create(:default_feed)
-      image = feed.itunes_image
+  let(:podcast) { build_stubbed(:podcast) }
+  let(:feed) { build_stubbed(:feed, podcast: podcast) }
+  let(:image) { build_stubbed(:itunes_image, feed: feed) }
 
-      assert_equal image.feed, feed
+  describe "#valid?" do
+    it "checks file type when complete" do
+      assert image.valid?
+
+      image.format = "bad"
+      refute image.valid?
+      assert_includes image.errors[:format], "is not included in the list"
+
+      image.status = "invalid"
+      assert image.valid?
+    end
+
+    it "checks image height when completed" do
+      assert image.valid?
+
+      image.height = 1399
+      refute image.valid?
+      assert_includes image.errors[:height], "must be greater than or equal to 1400"
+
+      image.height = 3001
+      refute image.valid?
+      assert_includes image.errors[:height], "must be less than or equal to 3000"
+
+      image.status = "invalid"
+      assert image.valid?
+    end
+
+    it "checks image squareness when completed" do
+      assert image.valid?
+      assert_equal 1400, image.height
+
+      image.width = 1401
+      refute image.valid?
+      assert_includes image.errors[:width], "must be equal to 1400"
+
+      image.status = "invalid"
+      assert image.valid?
     end
   end
 
-  describe "validations" do
-    before do
-      @image = build(:itunes_image)
+  describe "#destination_path" do
+    it "includes the podcast path" do
+      assert_equal "#{podcast.path}/images/#{image.guid}/#{image.file_name}", image.destination_path
     end
+  end
 
-    it "is valid with correct size and type" do
-      assert @image.valid?
-    end
-
-    it "is valid with no size or type" do
-      @image = ITunesImage.new(original_url: "test/fixtures/valid_series_image.png")
-      assert @image.valid?
-    end
-
-    it "is invalid without a url" do
-      @image.original_url = nil
-
-      refute @image.valid?
-    end
-
-    it "must be a jpg or png" do
-      @image.original_url = "test/fixtures/valid_series_image.png"
-      assert @image.valid?
-
-      @image.original_url = "test/fixtures/wrong_type_image.gif"
-      refute @image.valid?
-    end
-
-    it "must be under 2048x2048" do
-      @image.original_url = "test/fixtures/too_big_image.jpg"
-      refute @image.valid?
-    end
-
-    it "must be greater than 1400x1400" do
-      @image.original_url = "test/fixtures/too_small_image.jpg"
-
-      refute @image.valid?
-    end
-
-    it "must be a square" do
-      @image.original_url = "test/fixtures/wrong_proportions_image.jpg"
-
-      refute @image.valid?
+  describe "#published_url" do
+    it "includes the podcast published url" do
+      assert_equal "#{podcast.base_published_url}/images/#{image.guid}/#{image.file_name}", image.published_url
     end
   end
 end
