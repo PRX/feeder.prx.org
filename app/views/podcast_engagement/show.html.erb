@@ -1,52 +1,76 @@
-<% content_for :title, "#{@podcast.title}" %>
+<% content_for :title, @podcast.title.to_s %>
 
 <%= render "podcasts/tabs" %>
 
-<div class="row">
+<div class="row mt-4 mb-4 justify-content-center">
     <div class="col-6">
-        <h2>Micropayments</h2>
+        <h3>Micropayments</h3>
 
-        <div class="col-6 form-floating">
-            <%= form_with(model: @podcast, url: podcasts_path) do |form| %>
-                <form class="form-floating">
-                    <label for="floatingInputValue">Coil link</label>
-                    <input type="email" class="form-control" id="floatingInputValue" placeholder="name@example.com" >
-                </form>
-            <% end %>
+        <div class="form-floating">
+            <div class="form-floating mb-3">
+                <input class="form-control" id="floatingInput" aria-label="Donation Link">
+                <label for="floatingInput">Donation Link</label>
+            </div>
         </div>
 
-        <h2>Subscribe and Follow Links</h2>
+        <hr style="height:.1rem; width:100%; border-width:0; background-color:black">
 
-        <div class="col-6 form-floating">
-        <%= form_with(model: @episode, url: fake_index_path) do |form| %>
-            <form class="form-floating">
-                <label for="floatingInputValue">Coil link</label>
-                <input type="email" class="form-control" id="floatingInputValue" placeholder="name@example.com" value="Except not coil because that's going away">
-            </form>
-        <% end %>   
+        <div class="">
+            <div class="form-floating mb-4">
+                <input class="form-control" id="floatingInput" aria-label="Coil ID">
+                <label for="floatingInput">Coil ID</label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input class="form-control" id="floatingInput" aria-label="Service 2 ID">
+                <label for="floatingInput">Service 2 ID</label>
+            </div>
+        </div>
+
+            <div>
+                <h3>Subscribe and Follow Links</h3>
+
+                <div class="dropdown-center">
+                    <button class="btn btn-secondary dropdown-toggle card-title container-fluid" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Podcast Apps
+                    </button>
+                    <ul class="dropdown-menu container-fluid">
+                        <li><a class="dropdown-item" href="#">Action</a></li>
+                        <li><a class="dropdown-item" href="#">Action two</a></li>
+                        <div class="form-floating container-fluid">
+                        <input class="form-control" aria-label="Facebook">
+                        <label for="floatingInput">Facebook</label>
+                    </div>
+                    </ul>
+            </div>
+
+            <div class="dropdown-center">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Social Media Links
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Action</a></li>
+                    <li><a class="dropdown-item" href="#">Action two</a></li>
+                    <li><a class="dropdown-item" href="#">Action three</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 
-
-        <div class="col-4 d-grid gap-3">
-            <section class="card shadow">
-                <div class="card-header-info">
-                    <h5 class="card-title fw-bold">Status</h5>
-                </div>
-                    <div class="card-footer">
-                        <p class="status-text"><strong>Last Saved</strong> <br>1/25/2023, 12:25pm</p>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-primary">Save</button>
-                            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="visually-hidden">Toggle Dropdown</span>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Duplicate</a></li>
-                                <li><a class="dropdown-item bg-danger text-white" href="#">Delete</a></li>
-                        </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
+    <div class="col-4">
+    <section class="card shadow">
+        <div class="card-header-info">
+            <h5 class="card-title fw-bold">Status</h5>
         </div>
+            <div class="card-footer">
+                <div class="">
+                    <span><%= t(".last_saved") %></span>
+                    <datetime><%= l(@podcast.updated_at) %></datetime>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+    </section>
+</div>
 </div>
