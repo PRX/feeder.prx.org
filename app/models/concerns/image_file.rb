@@ -61,7 +61,9 @@ module ImageFile
   end
 
   def file_name
-    File.basename(URI.parse(original_url).path)
+    if original_url.present?
+      File.basename(URI.parse(original_url).path)
+    end
   end
 
   def copy_media(force = false)
@@ -73,7 +75,7 @@ module ImageFile
   end
 
   def url
-    status_complete? ? self[:url] : self[:original_url]
+    self[:url] ||= media_url
   end
 
   def href

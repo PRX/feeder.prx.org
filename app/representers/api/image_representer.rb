@@ -3,7 +3,6 @@ class Api::ImageRepresenter < Roar::Decorator
   include HalApi::Representer::FormatKeys
 
   property :href
-  property :url, writeable: false # TODO: deprecate in favor of href ... but Castle scrapes this field
   property :original_url, writeable: false
   property :alt_text
   property :caption
