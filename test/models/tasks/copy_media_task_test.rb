@@ -84,4 +84,14 @@ describe Tasks::CopyMediaTask do
     task.owner = nil
     task.update(status: "complete")
   end
+
+  it "handles validation errors" do
+    task.update(status: "created")
+
+    task.result[:JobResult][:TaskResults][1][:Inspection][:MIME] = "foo/bar"
+    task.update(status: "complete")
+
+    assert_equal "invalid", task.media_resource.status
+    assert_equal "foo", task.media_resource.medium
+  end
 end
