@@ -8,12 +8,12 @@ class PodcastImport < ActiveRecord::Base
 
   attr_accessor :feed, :feed_raw_doc, :templates
 
-  belongs_to :podcast, -> { with_deleted }, touch: true
+  belongs_to :podcast, -> { with_deleted }, touch: true, optional: true, autosave: true
   has_many :episode_imports, -> { where(has_duplicate_guid: false).includes(:podcast_import) }, dependent: :destroy
 
   before_validation :set_defaults, on: :create
 
-  validates :account_id, :url, :podcast, presence: true
+  validates :account_id, :url, presence: true
 
   COMPLETE = "complete".freeze
   FAILED = "failed".freeze
@@ -222,13 +222,7 @@ class PodcastImport < ActiveRecord::Base
     []
   end
 
-  def create_or_update_podcast!
-    if config[:episodes_only]
-      raise "No podcast for import of episodes only" unless podcast.persisted?
-      raise "No podcast for import of episodes only" if !podcast
-      return podcast
-    end
-
+  def build_podcast_attributes
     podcast_attributes = {}
 
     %w[copyright language update_frequency update_period].each do |atr|
@@ -262,8 +256,19 @@ class PodcastImport < ActiveRecord::Base
     podcast_attributes[:subtitle] = clean_string(podcast_short_desc(feed))
     podcast_attributes[:description] = feed_description(feed)
 
-    podcast.update!(**podcast_attributes)
-    # TODO handle podcast policy
+    podcast_attributes
+  end
+
+  def create_or_update_podcast!
+    if config[:episodes_only]
+      raise "No podcast for import of episodes only" unless podcast&.persisted?
+      raise "No podcast for import of episodes only" if !podcast
+      return podcast
+    end
+
+    self.podcast ||= Podcast.new
+    podcast.assign_attributes(**build_podcast_attributes)
+    update!(podcast: podcast)
 
     update_images(feed)
 

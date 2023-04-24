@@ -93,8 +93,7 @@ describe PodcastImport do
 
     it "must have podcast set" do
       importer.podcast = nil
-      exception = _ { importer.import }.must_raise(ActiveRecord::RecordInvalid)
-      _(exception.message).must_equal "Validation failed: Podcast must exist, Podcast can't be blank"
+      _ { importer.import }.must_raise("No podcast for import of episodes only")
     end
 
     it "imports with a podcast" do
