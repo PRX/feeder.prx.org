@@ -34,29 +34,6 @@ export default class extends Controller {
     }
   }
 
-  highlight(event) {
-    event.target.classList.add("bg-secondary", "text-light")
-    if (this.isDraft(event.target.firstElementChild)) {
-      event.target.classList.remove("bg-warning", "bg-danger")
-    }
-  }
-
-  unhighlight(event) {
-    event.target.classList.remove("bg-secondary")
-
-    if (this.isDraft(event.target.firstElementChild)) {
-      if (this.isDisabled(event.target.firstElementChild)) {
-        event.target.classList.add("bg-warning")
-      } else {
-        event.target.classList.add("bg-danger", "text-light")
-      }
-    }
-
-    if (this.isDisabled(event.target.firstElementChild)) {
-      event.target.classList.remove("text-light")
-    }
-  }
-
   isDisabled(el) {
     return el.disabled === true
   }
