@@ -74,4 +74,15 @@ module UploadsHelper
       raise e
     end
   end
+
+  def upload_invalid_messages(rec)
+    if rec.status_invalid?
+      rec.status = "complete"
+      rec.valid?
+      msgs = rec.errors.full_messages
+      rec.status = "invalid"
+      rec.valid?
+      msgs.present? && msgs.join(", ")
+    end
+  end
 end
