@@ -9,8 +9,8 @@ export default class extends Controller {
   }
 
   currentPositionValueChanged() {
-    this.pageTargets.forEach((el) => {
-      if (this.inRange(parseInt(el.getAttribute("index")))) {
+    this.pageTargets.forEach((el, index) => {
+      if (this.inRange(index)) {
         el.classList.remove("d-none")
       } else {
         el.classList.add("d-none")
