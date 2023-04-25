@@ -74,13 +74,19 @@ def stub_requests_to_prx_cms
 end
 
 class SnsMock
-  attr_accessor :message
+  attr_accessor :message, :messages
 
   def publish(params)
     self.message = JSON.parse(params[:message]).with_indifferent_access
+    messages << message
+
     {
       message_id: "whatever"
     }
+  end
+
+  def reset
+    @messages = []
   end
 end
 

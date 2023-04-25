@@ -8,6 +8,14 @@ describe PodcastImport do
   let(:podcast_url) { "http://feeds.prx.org/transistor_stem" }
   let(:podcast) { create(:podcast) }
   let(:importer) { PodcastImport.create(podcast: podcast, account_id: account_id, url: podcast_url) }
+  let(:sns) { SnsMock.new }
+
+  around do |test|
+    sns.reset
+    Task.stub :new_porter_sns_client, sns do
+      test.call
+    end
+  end
 
   before do
     stub_requests
@@ -45,14 +53,17 @@ describe PodcastImport do
       "by radio and podcast powerhouse PRX, with support " \
       "from the Sloan Foundation."
 
-    # TODO
-    # _(Portered.sns_client.messages.count).must_equal 2
-    # _(Portered.sns_client.messages[0]["Job"]["Id"]).must_equal images[0].to_global_id.to_s
-    # _(Portered.sns_client.messages[1]["Job"]["Id"]).must_equal images[1].to_global_id.to_s
+    _(sns.messages.count).must_equal 2
+    _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [1, 1]
+    _(sns.messages.map { |m| m["Job"]["Source"] })
+      .must_equal [
+        {"Mode" => "HTTP", "URL" => "http://cdn-transistor.prx.org/transistor300.png"},
+        {"Mode" => "HTTP", "URL" => "https://cdn-transistor.prx.org/transistor1400.jpg"}
+      ]
 
-    # images must be processing
-    # images = importer.podcast.images
-    # images.count.must_equal 2
+    importer.reload
+    _(importer.podcast.itunes_image.status).must_equal "created"
+    _(importer.podcast.feed_image.status).must_equal "created"
   end
 
   it "creates podcast episode imports using a config" do
@@ -373,4 +384,10 @@ def stub_requests
 
   stub_request(:get, "https://cdn-transistor.prx.org/shake.jpg")
     .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
+
+  stub_request(:get, "http://cdn-transistor.prx.org/transistor300.png")
+    .to_return(status: 200, body: test_file("/fixtures/transistor300.png"), headers: {})
+
+  stub_request(:get, "https://f.prxu.org/99pi/images/42384e27-3dd6-497f-991f-67fabb7e6e5b/99-300.png")
+    .to_return(status: 200, body: test_file("/fixtures/99-300.png"), headers: {})
 end

@@ -67,9 +67,9 @@ class EpisodeImport < ActiveRecord::Base
     update!(status: AUDIO_SAVED)
 
     create_or_update_episode!
-    # Set the feeder audio
-    episode.contents = audio_content_params
-    episode.image = image_contents_params
+
+    set_file_resources!
+
     update!(status: EPISODE_SAVED)
 
     episode.save!
@@ -99,6 +99,15 @@ class EpisodeImport < ActiveRecord::Base
   def set_audio_metadata!
     audio_files = entry_audio_files(entry)
     update!(audio: audio_files)
+  end
+
+  def set_file_resources!
+    episode.contents = audio_content_params
+    episode.image = image_contents_params
+    episode.save!
+    episode.images.reset
+    episode.contents.reset
+    episode.copy_media
   end
 
   def entry_audio_files(entry)

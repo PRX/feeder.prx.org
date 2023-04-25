@@ -28,6 +28,15 @@ describe EpisodeImport do
     )
   end
 
+  let(:sns) { SnsMock.new }
+
+  around do |test|
+    sns.reset
+    Task.stub :new_porter_sns_client, sns do
+      test.call
+    end
+  end
+
   before do
     stub_episode_requests
   end
@@ -63,6 +72,18 @@ describe EpisodeImport do
     _(f.contents.first.status).must_equal "created"
 
     _(f.images.count).must_equal 1
+
+    _(sns.messages.count).must_equal 2
+    _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 1]
+    _(sns.messages.map { |m| m["Job"]["Source"] })
+      .must_equal([
+        {"Mode" => "HTTP", "URL" => "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"},
+        {"Mode" => "HTTP", "URL" => "https://cdn-transistor.prx.org/shake.jpg"}
+      ])
+
+    importer.reload
+    _(f.image.status).must_equal "created"
+    _(f.contents.map(&:status)).must_equal ["created"]
   end
 
   it "creates correctly for libsyn entries" do
