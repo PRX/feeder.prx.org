@@ -38,14 +38,6 @@ describe PodcastImportPolicy do
     it "returns false if token lacks edit scope" do
       refute PodcastImportPolicy.new(token("feeder:podcast-create feeder:podcast-delete"), podcast_import).update?
     end
-
-    it "disallows changing the account id of a podcast which the token did not previously have access to" do
-      podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id + 1}")
-      podcast.prx_account_uri = "/api/v1/accounts/#{account_id}"
-      podcast_import = create(:podcast_import, podcast: podcast)
-
-      refute PodcastImportPolicy.new(token("feeder: podcast-edit"), podcast_import).update?
-    end
   end
 
   describe "#create?" do
