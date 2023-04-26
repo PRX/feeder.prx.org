@@ -25,6 +25,6 @@ class PodcastEngagementController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def podcast_engagement_params
-    params.fetch(:podcast_engagement, {})
+    params.fetch(:podcast, {})
   end
 end
