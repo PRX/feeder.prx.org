@@ -146,36 +146,6 @@ class EpisodeImport < ActiveRecord::Base
     episode
   end
 
-  def update_image
-    if !entry[:itunes_image]
-      story.images.destroy_all
-      return []
-    end
-
-    to_destroy = []
-    to_insert = []
-
-    if story.images.size > 1
-      to_destroy = story.images[1..]
-    end
-
-    existing_image = story.images.first
-
-    if existing_image && !files_match?(existing_image, entry[:itunes_image])
-      to_destroy << existing_image
-      existing_image = nil
-    end
-
-    if !existing_image
-      new_image = story.images.build(upload: entry[:itunes_image])
-      to_insert << new_image
-    end
-
-    story.images.destroy(to_destroy) if to_destroy.size > 0
-
-    to_insert
-  end
-
   def entry_description(entry)
     atr = entry_description_attribute(entry)
     clean_text(entry[atr])
