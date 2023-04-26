@@ -347,10 +347,6 @@ class PodcastImport < ActiveRecord::Base
     end
   end
 
-  def self.policy_class
-    PodcastImportPolicy
-  end
-
   def parse_feed_entries_for_dupe_guids
     sorted_entries = feed.entries.sort_by(&:entry_id)
 

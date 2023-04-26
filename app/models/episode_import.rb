@@ -191,8 +191,4 @@ class EpisodeImport < ActiveRecord::Base
   def account
     podcast_import.try(:account)
   end
-
-  def self.policy_class
-    AccountablePolicy
-  end
 end
