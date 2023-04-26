@@ -4,14 +4,16 @@ class PodcastsController < ApplicationController
   # Translate the user selected sort to a query order argument
   DISPLAY_ORDER = {"A-Z" => {title: :asc},
                    "Z-A" => {title: :desc},
-                   "" => {updated_at: :desc}}.freeze
+                   "" => {updated_at: :desc},
+                   "Recent Activity" => {updated_at: :desc}}.freeze
 
   DEFAULT_PAGE_SIZE = 10
 
   # GET /podcasts
   def index
     base_query = policy_scope(Podcast).page(params[:page]).per(DEFAULT_PAGE_SIZE).includes(default_feed: :feed_images)
-    @podcasts = add_sorting(base_query).filter_by_title(params[:q])
+    filtered_podcasts = base_query.filter_by_title(params[:q])
+    @podcasts = add_sorting(filtered_podcasts)
 
     @published_episodes_counts = Episode.where(podcasts: @podcasts).published.group(:podcast_id).count
     @scheduled_episodes_counts = Episode.where(podcasts: @podcasts).scheduled.group(:podcast_id).count
