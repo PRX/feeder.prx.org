@@ -25,9 +25,6 @@ class PodcastImport < ActiveRecord::Base
   IMPORTING = "importing".freeze
   PODCAST_CREATED = "podcast created".freeze
 
-  MP3_CONTENT_TYPE = "audio/mpeg".freeze
-  VIDEO_CONTENT_TYPE = "video/mpeg".freeze
-
   def episode_import_placeholders
     EpisodeImport.where(podcast_import_id: id).having_duplicate_guids
   end
