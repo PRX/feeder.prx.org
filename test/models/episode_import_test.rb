@@ -32,9 +32,12 @@ describe EpisodeImport do
 
   around do |test|
     sns.reset
+    prev_sns = ENV['PORTER_SNS_TOPIC']
+    ENV['PORTER_SNS_TOPIC'] = 'FOO'
     Task.stub :new_porter_sns_client, sns do
       test.call
     end
+    ENV['PORTER_SNS_TOPIC'] = prev_sns
   end
 
   before do
