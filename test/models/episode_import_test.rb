@@ -62,15 +62,6 @@ describe EpisodeImport do
     _(f.podcast_id).must_equal podcast.id
     _(f.published_at).must_equal Time.zone.parse("2017-01-20 03:04:12")
 
-    _(episode_import.audio_versions.count).must_equal 1
-    config_audio = "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"
-    version = episode_import.audio_versions.first
-    _(version[:label]).must_equal "Podcast Audio"
-    _(version[:explicit]).must_be_nil
-
-    _(version[:audio_files][0][:position]).must_equal 1
-    _(version[:audio_files][0][:upload]).must_equal config_audio
-
     _(f.contents.count).must_equal 1
     _(f.contents.first.status).must_equal "created"
 

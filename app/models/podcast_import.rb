@@ -28,13 +28,6 @@ class PodcastImport < ActiveRecord::Base
   MP3_CONTENT_TYPE = "audio/mpeg".freeze
   VIDEO_CONTENT_TYPE = "video/mpeg".freeze
 
-  def audio_version_templates
-    @audio_versions ||= []
-    @audio_versions
-  end
-
-  attr_writer :audio_version_templates
-
   def episode_import_placeholders
     EpisodeImport.where(podcast_import_id: id).having_duplicate_guids
   end
@@ -331,45 +324,6 @@ class PodcastImport < ActiveRecord::Base
     ikey = Array(feed.itunes_keywords).map(&:strip)
     mkey = Array(feed.media_keywords).map(&:strip)
     (ikey + mkey).compact.uniq
-  end
-
-  def get_or_create_template(audio_files, enclosure_type = nil)
-    num_segments = [audio_files[:files].count, 1].max
-    template = nil
-    contains_video = enclosure_type&.starts_with?("video/")
-    content_type = contains_video ? VIDEO_CONTENT_TYPE : MP3_CONTENT_TYPE
-
-    podcast.with_lock do
-      template = audio_version_templates
-        .find { |avt| avt[:segment_count] == num_segments && avt[:content_type] == content_type }
-      if !template
-        template =
-          {
-            label: podcast_label(contains_video, num_segments),
-            content_type: content_type,
-            segment_count: num_segments,
-            promos: false,
-            length_minimum: 0,
-            length_maximum: 0,
-            audio_file_templates: []
-          }
-
-        audio_version_templates << template
-
-        num_segments.times do |x|
-          num = x + 1
-          template[:audio_file_templates] <<
-            {
-              position: num,
-              label: "Segment #{num}",
-              length_minimum: 0,
-              length_maximum: 0
-            }
-        end
-      end
-    end
-
-    template
   end
 
   def podcast_label(contains_video, num_segments)

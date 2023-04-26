@@ -80,24 +80,23 @@ describe PodcastImport do
     # get the memoized importer
     importer = importer.episode_imports.first.podcast_import
     _(importer.episode_imports.count).must_equal 2
-    _(importer.audio_version_templates.count).must_equal 2
   end
 
   it "imports a feed" do
     importer.import
   end
 
-  it "handles audio and video templates in episodes" do
+  it "handles audio and video in episodes" do
     importer.url = "http://feeds.prx.org/feed_with_video"
     importer.import
 
     eps = importer.episode_imports.reset
     eps.map(&:import)
-    importer = eps.first.podcast_import
 
-    _(importer.audio_version_templates.count).must_equal 2
-    _(importer.audio_version_templates
-      .count { |avt| avt[:content_type] == PodcastImport::VIDEO_CONTENT_TYPE }).must_equal 1
+    _(eps.length).must_equal 2
+
+    _(eps[0].episode.contents.map(&:url).all? { |u| u =~ /\.mp4$/ }).must_equal true
+    _(eps[1].episode.contents.map(&:url).all? { |u| u =~ /\.mp3$/ }).must_equal true
   end
 
   describe "episodes only" do
@@ -298,7 +297,7 @@ describe PodcastImport do
       ep2 = importer.episode_imports[1]
 
       ep1.update! status: EpisodeImport::FAILED
-      ep2.update! status: EpisodeImport::STORY_SAVED
+      ep2.update! status: EpisodeImport::EPISODE_SAVED
 
       importer.reload
 

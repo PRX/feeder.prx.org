@@ -32,13 +32,6 @@ class EpisodeImport < ActiveRecord::Base
   RETRYING = "retrying".freeze
   EPISODE_SAVED = "episode saved".freeze
 
-  def audio_versions
-    @audio_versions ||= []
-    @audio_versions
-  end
-
-  attr_writer :audio_versions
-
   def unlock_podcast
     if podcast_import.finished?
       podcast_import.podcast.update(locked: false)
@@ -150,8 +143,6 @@ class EpisodeImport < ActiveRecord::Base
     episode.url = episode_url(entry) || default_episode_url(episode)
     episode.itunes_type = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
 
-    update_audio
-
     episode
   end
 
@@ -181,58 +172,6 @@ class EpisodeImport < ActiveRecord::Base
     end
 
     story.images.destroy(to_destroy) if to_destroy.size > 0
-
-    to_insert
-  end
-
-  def update_audio
-    if audio.blank? || audio[:files].blank?
-      audio_versions.clear
-      return []
-    end
-
-    if audio_versions.blank?
-      template = get_or_create_template(audio, entry["enclosure"]["type"])
-      version = {
-        audio_version_template: template,
-        label: "Podcast Audio",
-        explicit: explicit(entry[:itunes_explicit]),
-        audio_files: []
-      }
-      audio_versions << version
-    else
-      version = audio_versions.first
-    end
-
-    audio_files = version[:audio_files] || []
-    to_insert = []
-    to_destroy = []
-
-    if audio_files.size > audio[:files].size
-      to_destroy = audio_files[audio[:files].size..(audio[:files].size - 1)]
-    end
-
-    audio[:files].each_with_index do |audio_url, i|
-      existing_audio = audio_files[i]
-
-      if existing_audio && !files_match?(existing_audio, audio_url)
-        to_destroy << existing_audio
-        existing_audio = nil
-      end
-
-      if !existing_audio
-        new_audio = {
-          upload: audio_url.gsub(" ", "%20"),
-          label: "Segment #{i + 1}",
-          position: (i + 1)
-        }
-        to_insert << new_audio
-      end
-    end
-
-    version.audio_files.reject { |i| to_destroy.any? { |d| d.equal?(id) } } if to_destroy.size > 0
-
-    to_insert.each { |af| version[:audio_files] << af }
 
     to_insert
   end
