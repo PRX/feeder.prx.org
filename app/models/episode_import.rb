@@ -30,7 +30,6 @@ class EpisodeImport < ActiveRecord::Base
   CREATED = "created".freeze
   AUDIO_SAVED = "audio saved".freeze
   RETRYING = "retrying".freeze
-  STORY_SAVED = "story saved".freeze
   EPISODE_SAVED = "episode saved".freeze
 
   def audio_versions

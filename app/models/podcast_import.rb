@@ -22,7 +22,6 @@ class PodcastImport < ActiveRecord::Base
   STARTED = "started".freeze
   FEED_RETRIEVED = "feed retrieved".freeze
   RETRYING = "retrying".freeze
-  SERIES_CREATED = "series created".freeze
   IMPORTING = "importing".freeze
   PODCAST_CREATED = "podcast created".freeze
 
@@ -107,7 +106,6 @@ class PodcastImport < ActiveRecord::Base
     # Create the podcast
     create_or_update_podcast!
 
-    update!(status: SERIES_CREATED)
     update!(status: PODCAST_CREATED)
   rescue => err
     update(status: FAILED)
