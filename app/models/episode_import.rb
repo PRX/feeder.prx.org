@@ -71,6 +71,7 @@ class EpisodeImport < ActiveRecord::Base
 
     episode
   rescue => err
+    Rails.logger.error ([err.message]+err.backtrace).join($/)
     update(status: FAILED)
     raise err
   end

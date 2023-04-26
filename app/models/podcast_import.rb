@@ -117,6 +117,7 @@ class PodcastImport < ActiveRecord::Base
     update!(status: IMPORTING)
     create_or_update_episode_imports!
   rescue => err
+    Rails.logger.error ([err.message]+err.backtrace).join($/)
     update(status: FAILED)
     raise err
   end

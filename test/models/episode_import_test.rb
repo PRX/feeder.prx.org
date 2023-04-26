@@ -100,6 +100,20 @@ describe EpisodeImport do
     _(ei.audio["files"].present?).must_equal(true)
   end
 
+  it "sets a failed status" do
+    ei = EpisodeImport.create!(
+      podcast_import: importer,
+      entry: entry.to_h,
+      guid: "https://transistor.prx.org/?p=1286"
+    )
+
+    ei.stub(:set_audio_metadata!, -> { raise "boom" }) do
+      assert_raises(RuntimeError) { ei.import }
+    end
+
+    _(ei.status).must_equal "failed"
+  end
+
   describe "helper methods" do
     let(:sample_link1) do
       "https://www.podtrac.com/pts/redirect.mp3/audio.wnyc.org/" \

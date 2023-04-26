@@ -99,6 +99,13 @@ describe PodcastImport do
     _(eps[1].episode.contents.map(&:url).all? { |u| u =~ /\.mp3$/ }).must_equal true
   end
 
+  it "Sets a failed status with exceptions" do
+    importer.stub(:get_feed, -> { raise "foo" }) do
+      assert_raises(RuntimeError) { importer.import }
+    end
+    _(importer.status).must_equal "failed"
+  end
+
   describe "episodes only" do
     before {
       importer.config[:episodes_only] = true
