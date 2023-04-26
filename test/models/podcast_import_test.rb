@@ -11,14 +11,13 @@ describe PodcastImport do
   let(:sns) { SnsMock.new }
 
   around do |test|
-
     sns.reset
-    prev_sns = ENV['PORTER_SNS_TOPIC']
-    ENV['PORTER_SNS_TOPIC'] = 'FOO'
+    prev_sns = ENV["PORTER_SNS_TOPIC"]
+    ENV["PORTER_SNS_TOPIC"] = "FOO"
     Task.stub :new_porter_sns_client, sns do
       test.call
     end
-    ENV['PORTER_SNS_TOPIC'] = prev_sns
+    ENV["PORTER_SNS_TOPIC"] = prev_sns
   end
 
   before do
