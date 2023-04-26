@@ -1,0 +1,2 @@
+var t={};!function(n){var r={bytesToHex:function(t){return arrBytesToHex(t)},hexToBytes:function(t){if(t.length%2===1)throw new Error("hexToBytes can't have a string with an odd number of characters.");0===t.indexOf("0x")&&(t=t.slice(2));return t.match(/../g).map((function(t){return parseInt(t,16)}))}};function arrBytesToHex(t){return t.map((function(t){return padLeft(t.toString(16),2)})).join("")}function padLeft(t,n){return t.length>n?t:Array(n-t.length+1).join("0")+t}t?t=r:n.convertHex=r}(t);var n=t;export default n;
+

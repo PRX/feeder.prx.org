@@ -122,11 +122,11 @@ describe Api::Auth::FeedsController do
         assert_response :success
 
         _(feed.reload.updated_at).must_be :>, fua
-        _(feed.feed_images.count).must_equal 2
-        _(feed.feed_images.first.caption).must_equal "d2"
-        _(feed.feed_images.last.caption).must_equal "d1"
-        _(feed.itunes_images.count).must_equal 1
-        _(feed.itunes_images.last.caption).must_equal "d3"
+        _(feed.feed_images.with_deleted.count).must_equal 2
+        _(feed.feed_images.with_deleted.first.caption).must_equal "d2"
+        _(feed.feed_images.with_deleted.last.caption).must_equal "d1"
+        _(feed.itunes_images.with_deleted.count).must_equal 1
+        _(feed.itunes_images.with_deleted.last.caption).must_equal "d3"
       end
     end
 

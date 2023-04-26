@@ -49,12 +49,20 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
 
   property :audio_version
   property :segment_count
-  collection :media_files,
+
+  collection :media_resources,
     as: :media,
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
-  collection :images, decorator: Api::ImageRepresenter, class: EpisodeImage
+  collection :ready_media_resources,
+    as: :ready_media,
+    decorator: Api::MediaResourceRepresenter,
+    class: MediaResource,
+    writeable: false,
+    if: ->(_o) { !media_resources&.all?(&:complete?) }
+
+  property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
 
   def self_url(episode)
     api_episode_path(id: episode.guid)

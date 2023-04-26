@@ -19,28 +19,36 @@ class EpisodesController < ApplicationController
 
   # GET /episodes/1
   def show
-    authorize @episode
+    redirect_to edit_episode_url(@episode)
   end
 
   # GET /episodes/new
   def new
     @episode = Episode.new(episode_params)
+    @episode.podcast = @podcast
+    @episode.clear_attribute_changes(%i[podcast_id])
+    @episode.strict_validations = true
+    @episode.valid? if turbo_frame_request?
   end
 
   # GET /episodes/1/edit
   def edit
+    @episode.assign_attributes(episode_params)
     authorize @episode, :show?
+    @episode.valid? if turbo_frame_request?
   end
 
   # POST /podcasts/1/episodes
   def create
     @episode = Episode.new(episode_params)
     @episode.podcast = @podcast
+    @episode.strict_validations = true
     authorize @episode
 
     respond_to do |format|
       if @episode.save
-        format.html { redirect_to episode_url(@episode), notice: t(".notice") }
+        @episode.copy_media
+        format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
         format.html { render :new, status: :unprocessable_entity }
@@ -55,6 +63,7 @@ class EpisodesController < ApplicationController
 
     respond_to do |format|
       if @episode.save
+        @episode.copy_media
         format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
@@ -82,6 +91,7 @@ class EpisodesController < ApplicationController
 
   def set_episode
     @episode = Episode.find_by_guid!(params[:id])
+    @episode.strict_validations = true
   end
 
   def set_podcast
@@ -110,7 +120,13 @@ class EpisodesController < ApplicationController
       :segment_count,
       :released_at,
       :publishing_status,
-      categories: []
+      categories: [],
+      contents_attributes: %i[id position original_url file_size replaced_at _destroy]
     )
+  end
+
+  # TODO: hacky, but this method is private in turbo-rails
+  def turbo_frame_request?
+    request.headers["Turbo-Frame"].present?
   end
 end

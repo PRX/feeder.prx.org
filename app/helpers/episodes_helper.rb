@@ -38,4 +38,8 @@ module EpisodesHelper
       episodes_path
     end
   end
+
+  def episode_content_duration(content)
+    Time.at(content.duration || 0).utc.strftime("%H:%M:%S").sub(/^00:/, "0:")
+  end
 end

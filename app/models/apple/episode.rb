@@ -59,7 +59,7 @@ module Apple
       return if episodes.empty?
 
       episode_bridge_results = api.bridge_remote_and_retry!("createEpisodes",
-        episodes.map(&:create_episode_bridge_params))
+        episodes.map(&:create_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
       insert_sync_logs(episodes, episode_bridge_results)
     end
@@ -78,6 +78,29 @@ module Apple
         )
 
       insert_sync_logs(episodes, episode_bridge_results)
+
+      api.raise_bridge_api_error(errs) if errs.present?
+
+      episode_bridge_results
+    end
+
+    def self.remove_audio_container_reference(api, show, episodes)
+      return [] if episodes.empty?
+
+      (episode_bridge_results, errs) =
+        api.bridge_remote_and_retry(
+          "updateEpisodes",
+          episodes.map(&:remove_episode_audio_container_bridge_params)
+        )
+
+      insert_sync_logs(episodes, episode_bridge_results)
+
+      join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
+        ep.podcast_container.podcast_delivery_files.each(&:destroy)
+        ep.podcast_container.podcast_deliveries.each(&:destroy)
+      end
+
+      show.reload
 
       api.raise_bridge_api_error(errs) if errs.present?
 
@@ -196,6 +219,10 @@ module Apple
 
     def update_episode_audio_container_bridge_params
       {
+        request_metadata: {
+          apple_episode_id: apple_id,
+          guid: guid
+        },
         api_url: api.join_url("episodes/#{apple_id}").to_s,
         api_parameters: update_episode_audio_container_parameters
       }
@@ -210,6 +237,30 @@ module Apple
           attributes: {
             appleHostedAudioAssetContainerId: podcast_container.apple_id,
             appleHostedAudioIsSubscriberOnly: true
+          }
+        }
+      }
+    end
+
+    def remove_episode_audio_container_bridge_params
+      {
+        request_metadata: {
+          apple_episode_id: apple_id,
+          guid: guid
+        },
+        api_url: api.join_url("episodes/#{apple_id}").to_s,
+        api_parameters: remove_episode_audio_container_parameters
+      }
+    end
+
+    def remove_episode_audio_container_parameters
+      {
+        data:
+        {
+          type: "episodes",
+          id: apple_id,
+          attributes: {
+            appleHostedAudioAssetContainerId: nil
           }
         }
       }

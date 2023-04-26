@@ -45,10 +45,14 @@ module Apple
     end
 
     def self.parallel_upload(api, operation_bridge_params)
-      chunked_slices = operation_bridge_params.each_slice(2).to_a
+      num_threads = 10
+      chunk_size = operation_bridge_params.size / num_threads
+      chunk_size = [chunk_size, 1].max
 
-      Parallel.map(chunked_slices, in_threads: chunked_slices.length) do |ops|
-        api.bridge_remote_and_retry!("executeUploadOperations", ops)
+      chunked_slices = operation_bridge_params.each_slice(chunk_size).to_a
+
+      Parallel.map(chunked_slices, in_threads: num_threads) do |ops|
+        api.bridge_remote_and_retry!("executeUploadOperations", ops, batch_size: 1)
       end
     end
 

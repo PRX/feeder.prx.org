@@ -57,7 +57,7 @@ class Task < ApplicationRecord
 
   def callback_queue
     q = "#{Rails.configuration.active_job.queue_name_prefix}_feeder_fixer_callback"
-    r = ENV["AWS_REGION"] || "us-east-1"
+    r = ENV["AWS_REGION"].present? ? ENV["AWS_REGION"] : "us-east-1"
     "sqs://#{r}/#{q}"
   end
 

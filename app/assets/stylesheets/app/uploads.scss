@@ -1,0 +1,85 @@
+@import "shared/bootstrap-variables";
+
+.prx-uploads {
+  .spinner-border {
+    height: 24px;
+    width: 24px;
+  }
+}
+
+.prx-audio-player {
+  user-drag: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+
+  .prx-pause {
+    display: none;
+  }
+
+  .text-danger {
+    display: none;
+  }
+
+  .prx-scrub {
+    visibility: hidden;
+    cursor: pointer;
+
+    .progress {
+      height: 4px;
+      overflow: visible;
+
+      .progress-bar {
+        position: relative;
+        overflow: visible;
+
+        &::after {
+          content: "";
+          position: absolute;
+          height: 10px;
+          width: 2px;
+          right: -2px;
+          background: $primary;
+        }
+      }
+    }
+  }
+
+  &.prx-playing {
+    .prx-play {
+      display: none;
+    }
+    .prx-pause {
+      display: inherit;
+    }
+    .prx-scrub {
+      visibility: visible;
+    }
+  }
+
+  &.prx-seeking {
+    .prx-scrub .progress .progress-bar {
+      transition: none;
+      &::after {
+        display: none;
+      }
+    }
+  }
+
+  &.prx-errored {
+    .prx-play {
+      display: inherit;
+    }
+    .prx-pause {
+      display: none;
+    }
+    .prx-scrub {
+      display: none;
+    }
+    .text-danger {
+      display: inherit;
+    }
+  }
+}

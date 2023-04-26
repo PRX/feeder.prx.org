@@ -5,6 +5,8 @@ module Apple
     include Apple::ApiResponse
     include Apple::ApiWaiting
 
+    acts_as_paranoid
+
     serialize :api_response, JSON
 
     belongs_to :podcast_delivery
@@ -79,7 +81,7 @@ module Apple
 
       bridge_params = pdfs.map { |pdf| mark_uploaded_delivery_file_bridge_params(api, pdf) }
 
-      (episode_bridge_results, errs) = api.bridge_remote_and_retry("updateDeliveryFiles", bridge_params)
+      (episode_bridge_results, errs) = api.bridge_remote_and_retry("updateDeliveryFiles", bridge_params, batch_size: Apple::Api::DEFAULT_WRITE_BATCH_SIZE)
 
       episode_bridge_results.map do |row|
         pd_id = row["request_metadata"]["podcast_delivery_file_id"]
@@ -104,12 +106,12 @@ module Apple
       podcast_deliveries = podcast_deliveries.flatten
 
       # filter for only the podcast deliveries that have missing podcast delivery files
-      # TODO: replace assets on an episode
+      # podcast_delivery_files are soft deleted in rails when they are replaced
       podcast_deliveries = podcast_deliveries.select { |pd| pd.podcast_delivery_files.empty? }
 
       (result, errs) =
         api.bridge_remote_and_retry("createPodcastDeliveryFiles",
-          podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd) })
+          podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd) }, batch_size: Apple::Api::DEFAULT_WRITE_BATCH_SIZE)
 
       # Creating one podcast delivery file per podcast delivery
       res = join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, result).each do |(podcast_delivery, row)|
@@ -145,13 +147,13 @@ module Apple
         api_url = api.join_url("podcastDeliveryFiles/#{pdf.apple_id}").to_s
         get_delivery_file_bridge_params(pdf.apple_episode_id, pdf.podcast_delivery_id, pdf.apple_id, api_url)
       end
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params)
+      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params, batch_size: 1)
     end
 
     def self.get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
       delivery_files_response =
         api.bridge_remote_and_retry!("getPodcastDeliveryFiles",
-          get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries))
+          get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries), batch_size: 1)
 
       # Rather than mangling and persisting the enumerated view of the delivery files from the podcast delivery
       # Instead, re-fetch the podcast delivery file from the non-list podcast delivery file resource
@@ -170,7 +172,7 @@ module Apple
         end
           .flatten
 
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", formatted_bridge_params)
+      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", formatted_bridge_params, batch_size: 1)
     end
 
     # Map across the podcast deliveries and get the bridge params for each
@@ -252,7 +254,7 @@ module Apple
       raise "Missing request metadata" unless external_id && podcast_delivery_id
 
       (pdf, action) =
-        if (delivery_file = where(episode_id: podcast_delivery.episode.id,
+        if (delivery_file = with_deleted.where(episode_id: podcast_delivery.episode.id,
           external_id: external_id,
           podcast_delivery_id: podcast_delivery_id).first)
 

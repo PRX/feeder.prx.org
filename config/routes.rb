@@ -7,12 +7,13 @@ Rails.application.routes.draw do
       resources :imports
       resource :planner, only: [:show, :create], controller: :podcast_planner
       resources :feeds, only: [:index]
-      resources :episodes, only: [:index, :create]
+      resources :episodes, only: [:index, :create, :new]
     end
 
-    resources :episodes, except: [:create]
+    resources :episodes, except: [:create, :new]
     resources :feeds
     resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
+    get "/uploads/signature", to: "uploads#signature", as: :uploads_signature
 
     resources :fake, only: [:index, :show, :create] do
       collection do

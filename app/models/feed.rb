@@ -23,10 +23,10 @@ class Feed < ApplicationRecord
   has_many :apple_configs, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
     class_name: "::Apple::Config"
 
-  has_one :feed_image, -> { complete.order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
-  has_one :itunes_image, -> { complete.order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
+
+  acts_as_paranoid
 
   validates :slug, allow_nil: true, uniqueness: {scope: :podcast_id, allow_nil: false}
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
@@ -86,7 +86,7 @@ class Feed < ApplicationRecord
     feed_max = display_episodes_count.to_i
 
     filtered_episodes.each do |ep|
-      include_in_feed << ep if ep.include_in_feed?
+      include_in_feed << ep if ep.media_ready?
       break if (feed_max > 0) && (include_in_feed.size >= feed_max)
     end
     include_in_feed
@@ -147,31 +147,43 @@ class Feed < ApplicationRecord
     itunes_images.each { |i| i.copy_media(force) }
   end
 
-  # API updates for feed_image=
-  def feed_image_file
+  def ready_feed_image
+    feed_images.complete_or_replaced.first
+  end
+
+  def feed_image
     feed_images.first
   end
 
-  def feed_image_file=(file)
+  def feed_image=(file)
     img = FeedImage.build(file)
-    if img && img.original_url != feed_image_file.try(:original_url)
-      feed_images << img
-    elsif !img
-      feed_images.destroy_all
+
+    if !img
+      feed_images.each(&:mark_for_destruction)
+    elsif img&.replace?(feed_image)
+      feed_images.build(img.attributes.compact)
+    else
+      img.update_image(feed_image)
     end
   end
 
-  # API updates for itunes_image=
-  def itunes_image_file
+  def ready_itunes_image
+    itunes_images.complete_or_replaced.first
+  end
+
+  def itunes_image
     itunes_images.first
   end
 
-  def itunes_image_file=(file)
+  def itunes_image=(file)
     img = ITunesImage.build(file)
-    if img && img.original_url != itunes_image_file.try(:original_url)
-      itunes_images << img
-    elsif !img
-      itunes_images.destroy_all
+
+    if !img
+      itunes_images.each(&:mark_for_destruction)
+    elsif img&.replace?(itunes_image)
+      itunes_images.build(img.attributes.compact)
+    else
+      img.update_image(itunes_image)
     end
   end
 end

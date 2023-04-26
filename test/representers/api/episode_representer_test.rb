@@ -64,8 +64,26 @@ describe Api::EpisodeRepresenter do
   it "has media" do
     assert_equal json["media"].size, 1
     assert_equal json["media"].first["href"], episode.enclosure.url
-    assert_equal json["media"].first["originalUrl"],
-      episode.enclosure.original_url
+    assert_equal json["media"].first["originalUrl"], episode.enclosure.original_url
+
+    # media is ready, so there's no readyMedia
+    assert_nil json["readyMedia"]
+  end
+
+  it "has ready media when media is not complete" do
+    e1 = episode.enclosure
+    e2 = create(:enclosure, episode: episode, status: "created")
+
+    # e2 is the latest enclosure, but incomplete (href is original_url)
+    assert_equal json["media"].size, 1
+    assert_equal json["media"].first["href"], e2.original_url
+    assert_equal json["media"].first["originalUrl"], e2.original_url
+    assert_equal json["media"].first["status"], "created"
+
+    assert_equal json["readyMedia"].size, 1
+    assert_equal json["readyMedia"].first["href"], e1.url
+    assert_equal json["readyMedia"].first["originalUrl"], e1.original_url
+    assert_equal json["readyMedia"].first["status"], "complete"
   end
 
   it "has an audio version" do
@@ -74,9 +92,8 @@ describe Api::EpisodeRepresenter do
   end
 
   it "has image" do
-    assert_equal json["images"].size, 1
-    assert_equal json["images"].first["url"], episode.image.url
-    assert_equal json["images"].first["originalUrl"], episode.image.original_url
+    assert_equal json["image"]["url"], episode.image.url
+    assert_equal json["image"]["originalUrl"], episode.image.original_url
   end
 
   it "has enclosure" do

@@ -1,9 +1,47 @@
-<h2><%= t(".title") %></h2>
+<div class="prx-uploads col-12 mb-4">
+  <div class="card shadow border-0">
 
-<div class="col-4 mb-4">
-  <div class="form-floating">
-    <%= form.number_field :segment_count, min: 1, max: 10 %>
-    <%= form.label :segment_count %>
-    <button type="button" class="help-text" data-bs-toggle="popover" data-bs-content="<%= t(".help.segment_count") %>"><span class="material-icons">help</span></button>
+    <div class="card-header card-header-info d-flex justify-content-between">
+      <h5 class="card-title"><%= t(".title") %></h5>
+    </div>
+
+    <div class="card-body">
+      <%= turbo_frame_tag "episode-form-audio", data: {controller: "audio-upload"} do %>
+        <div class="row">
+
+          <div class="col-12 mb-4 prx-field-group">
+            <div class="form-floating" data-controller="dynamic-form">
+              <%= form.number_field :segment_count, min: 1, max: Episode::MAX_SEGMENT_COUNT, data: {action: "dynamic-form#change"} %>
+              <%= form.label :segment_count %>
+              <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+            </div>
+
+            <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.segment_count") %>">
+              <span class="material-icons">help</span>
+            </button>
+          </div>
+
+          <%= form.fields_for :contents, episode.build_contents, include_id: false do |fields| %>
+            <% content = fields.object %>
+
+            <%= turbo_frame_tag "episode-form-audio-#{content.position}" do %>
+              <% if content.new_record? || content.marked_for_destruction? %>
+                <%= render "episodes/audio/new", form: fields, episode: episode, content: content %>
+              <% else %>
+                <% case content.status %>
+                <% when "started", "created", "processing", "retrying" %>
+                  <%= render "episodes/audio/processing", form: fields, episode: episode, content: content %>
+                <% when "complete" %>
+                  <%= render "episodes/audio/complete", form: fields, episode: episode, content: content %>
+                <% else %>
+                  <%= render "episodes/audio/error", form: fields, episode: episode, content: content %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
   </div>
 </div>

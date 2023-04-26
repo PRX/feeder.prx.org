@@ -3,7 +3,7 @@ require "test_helper"
 class EpisodesControllerTest < ActionDispatch::IntegrationTest
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/123") }
   let(:episode) { create(:episode, podcast: podcast, published_at: nil) }
-  let(:params) { {title: "title"} }
+  let(:params) { {title: "title", segment_count: 1} }
 
   setup_current_user { build(:user, account_id: 123) }
 
@@ -13,7 +13,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get new" do
-    get new_episode_url
+    get new_podcast_episode_url(podcast)
     assert_response :success
   end
 
@@ -22,7 +22,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
       post podcast_episodes_url(podcast), params: {episode: params}
     end
 
-    assert_redirected_to episode_url(Episode.last)
+    assert_redirected_to edit_episode_url(Episode.last)
   end
 
   test "authorizes creating episodes" do
@@ -38,13 +38,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
 
   test "should show episode" do
     get episode_url(episode)
-    assert_response :success
-  end
-
-  test "authorizes showing episodes" do
-    podcast.update(prx_account_uri: "/api/v1/accounts/456")
-    get episode_url(episode)
-    assert_response :forbidden
+    assert_redirected_to edit_episode_url(episode)
   end
 
   test "should get edit" do
@@ -59,8 +53,11 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update episode" do
-    patch episode_url(episode), params: {episode: params}
-    assert_redirected_to edit_episode_url(episode)
+    Episode.stub_any_instance(:copy_media, true) do
+      patch episode_url(episode), params: {episode: params}
+
+      assert_redirected_to edit_episode_url(episode)
+    end
   end
 
   test "authorizes updating episodes" do

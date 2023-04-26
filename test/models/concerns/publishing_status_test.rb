@@ -91,7 +91,7 @@ class PublishingStatusTest < ActiveSupport::TestCase
     it "checks for scheduled in the future" do
       content = build(:content, episode: episode, status: "complete", position: 1)
       episode.contents << content
-      episode.all_contents << content
+      episode.save!
 
       episode.publishing_status = "scheduled"
       episode.published_at = 10.hours.from_now
@@ -105,7 +105,7 @@ class PublishingStatusTest < ActiveSupport::TestCase
     it "checks for published in the past" do
       content = build(:content, episode: episode, status: "complete", position: 1)
       episode.contents << content
-      episode.all_contents << content
+      episode.save!
 
       episode.publishing_status = "published"
       episode.published_at = 10.hours.ago
