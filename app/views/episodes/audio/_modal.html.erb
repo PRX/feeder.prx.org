@@ -1,0 +1,75 @@
+<div id="<%= id %>" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><%= title %></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <tbody>
+            <tr>
+              <th scope="row"><strong>File:</strong></th>
+              <td>
+                <% if content.complete? %>
+                  <%= link_to content.file_name, content.url, target: "_blank", rel: "noopener" %>
+                <% else %>
+                  <%= content.file_name %>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Status:</strong></th>
+              <td>
+                <% case content.status %>
+                <% when "started", "created", "processing", "retrying" %>
+                  <span class="badge bg-secondary"><%= content.status.capitalize %></span>
+                <% when "complete" %>
+                  <span class="badge bg-success"><%= content.status.capitalize %></span>
+                <% else %>
+                  <span class="badge bg-danger"><%= content.status.capitalize %></span>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Size:</strong></th>
+              <td><%= blank_dash(content.file_size) { number_to_human_size(content.file_size) } %></td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Duration:</strong></th>
+              <td><%= content.duration.present? ? episode_content_duration(content) : "&mdash;" %></td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Content Type:</strong></th>
+              <td><%= blank_dash(content.mime_type) %></td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Frequency:</strong></th>
+              <td><%= blank_dash(content.frame_rate) %></td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Bitrate:</strong></th>
+              <td><%= blank_dash(content.bit_rate) %></td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Channels:</strong></th>
+              <td><%= blank_dash(content.channels) %></td>
+            </tr>
+            <% if content.frame_rate.present? %>
+              <tr>
+                <th scope="row"><strong>Frame Rate:</strong></th>
+                <td><%= content.frame_rate %></td>
+              </tr>
+            <% end %>
+            <% if content.height.present? && content.width.present? %>
+              <tr>
+                <th scope="row"><strong>Dimensions:</strong></th>
+                <td><%= content.height %> x <%= content.width %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
