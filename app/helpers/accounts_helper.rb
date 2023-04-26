@@ -6,7 +6,6 @@ module AccountsHelper
   def account_name_options(scope, selected_uri = nil)
     account_ids = current_user.authorized_account_ids(scope)
 
-    # small test change
     # ensure the selected uri always has a display value
     if selected_uri
       selected_id = URI.parse(selected_uri).path.split("/").last.to_i
