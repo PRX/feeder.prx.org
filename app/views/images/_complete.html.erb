@@ -19,8 +19,8 @@
     <div class="prx-uploads-image mb-4">
       <%= image_tag image.url, alt: image.alt_text %>
 
-      <% if image.height.present? && image.width.present? %>
-        <aside><%= image.height %>x<%= image.width %></aside>
+      <% if image.width.present? && image.height.present? %>
+        <aside><%= image.width %>x<%= image.height %></aside>
       <% end %>
     </div>
 

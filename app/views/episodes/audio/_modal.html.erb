@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <table class="table">
+        <table class="table table-sm m-0">
           <tbody>
             <tr>
               <th scope="row"><strong>File:</strong></th>
@@ -40,20 +40,30 @@
               <td><%= content.duration.present? ? episode_content_duration(content) : "&mdash;" %></td>
             </tr>
             <tr>
-              <th scope="row"><strong>Content Type:</strong></th>
+              <th scope="row" class="text-nowrap"><strong>Content Type:</strong></th>
               <td><%= blank_dash(content.mime_type) %></td>
             </tr>
             <tr>
               <th scope="row"><strong>Frequency:</strong></th>
-              <td><%= blank_dash(content.frame_rate) %></td>
+              <td><%= blank_dash(content.sample_rate) { "#{content.sample_rate.to_f / 1000} kHz" } %></td>
             </tr>
             <tr>
               <th scope="row"><strong>Bitrate:</strong></th>
-              <td><%= blank_dash(content.bit_rate) %></td>
+              <td><%= blank_dash(content.bit_rate) { "#{content.bit_rate} kb/s" } %></td>
             </tr>
             <tr>
               <th scope="row"><strong>Channels:</strong></th>
-              <td><%= blank_dash(content.channels) %></td>
+              <td>
+                <%= blank_dash(content.channels) do %>
+                  <% if content.channels == 1 %>
+                    Mono
+                  <% elsif content.channels == 2 %>
+                    Stereo
+                  <% else %>
+                    <%= content.channels %> Channels
+                  <% end %>
+                <% end %>
+              </td>
             </tr>
             <% if content.frame_rate.present? %>
               <tr>
@@ -61,10 +71,10 @@
                 <td><%= content.frame_rate %></td>
               </tr>
             <% end %>
-            <% if content.height.present? && content.width.present? %>
+            <% if content.width.present? && content.height.present? %>
               <tr>
                 <th scope="row"><strong>Dimensions:</strong></th>
-                <td><%= content.height %> x <%= content.width %></td>
+                <td><%= content.width %> x <%= content.height %></td>
               </tr>
             <% end %>
           </tbody>

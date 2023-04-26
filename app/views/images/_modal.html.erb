@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <table class="table">
+        <table class="table table-sm m-0">
           <tbody>
             <tr>
               <th scope="row"><strong>File:</strong></th>
@@ -41,7 +41,7 @@
             </tr>
             <tr>
               <th scope="row"><strong>Dimensions:</strong></th>
-              <td><%= blank_dash(image.height, image.width, image.alt_text) { "#{image.height} x #{image.width}" } %></td>
+              <td><%= blank_dash(image.width, image.height) { "#{image.width} x #{image.height}" } %></td>
             </tr>
           </tbody>
         </table>
