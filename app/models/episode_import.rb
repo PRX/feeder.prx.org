@@ -54,7 +54,6 @@ class EpisodeImport < ActiveRecord::Base
   end
 
   def import
-    # TODO
     set_audio_metadata!
     update!(status: AUDIO_SAVED)
 
