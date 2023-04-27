@@ -254,11 +254,11 @@ en:
         date_range_condition: Calculate the end of the batch by
     form_side:
       header:
-        preview: 4. Preview Draft Schedule
-        publish_time: Publish Time
-        audio_segments: Audio Segments
+        preview: Preview Draft Schedule
+        publish_time: What time of day do you plan to publish the episodes?
+        audio_segments: How many audio segments?
         segment_count: Number of segments
-        number_of_drafts: "Number of Draft Episodes: %{count}"
+        number_of_drafts: "Planning %{count} drafts"
         help:
           segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
       help:
@@ -277,10 +277,10 @@ en:
         third: Third
         fourth: Fourth
         fifth: Fifth
-      episodes: number of episodes
-      end_date: end date
-      month: month
-      period: interval
+      episodes: Number of episodes
+      end_date: End date
+      month: Weeks of the Month
+      period: Weekly interval
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
