@@ -2,6 +2,9 @@
 <% data = {controller: "unsaved", unsaved_changed_value: episode.changed?, unsaved_confirm_value: t(".confirm")} %>
 
 <%= form_with(model: model, html: {autocomplete: "off"}, data: data) do |form| %>
+  <%# first button in form must be a submit, for enter key to work %>
+  <%= form.submit class: "d-none" %>
+
   <div class="row my-4">
     <div class="col-lg-8">
       <div class="card shadow pt-3 border-0">
