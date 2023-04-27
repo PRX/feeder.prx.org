@@ -5,6 +5,21 @@
 <div class="row mt-4 mb-4 p-4 justify-content-center">
     <div class="col-8">
 
+    <%= form_with(
+          url: podcast_engagement_path(@podcast),
+          data: {
+            controller: "search",
+            "turbo-frame": "podcasts",
+            "turbo-action": "replace"
+          }
+        ) do |form| %>
+        <div class="form-floating">
+        <div class="form-floating mb-3">
+            <input class="form-control" aria-label="Donation Link">
+            <label for="floatingInput">Donation Link</label>
+        </div>
+    </div>
+
         <div class="row">
             <div class="form-floating mb-3 col input-group">
                 <input class="form-control" aria-label="Owner">
@@ -33,12 +48,6 @@
                 <label for="floatingInput">Coil ID</label>
                 <span class="material-icons mb-4 justify-content-center col-1 border p-0">link</span>
             </div>
-
-            <div class="form-floating mb-3">
-                <input class="form-control" id="floatingInput" aria-label="Service 2 ID">
-                <label for="floatingInput">Service 2 ID</label>
-            </div>
-
         <div>
 
         <hr style="height:.1rem background-color:black">
@@ -101,34 +110,36 @@
                         <label for="floatingInput">CastBox</label>
                     </div>
                 </div>
-            </div>
-        <div class="accordion-item">
+</div>
+
+            <div class="accordion-item">
             <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                Social Media Links
-            </button>
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    Social Media Links
+                </button>
             </h2>
+
             <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-            <div class="accordion-body">
-            <div class="form-floating container-fluid">
-                <input class="form-control mb-4" aria-label="Facebook">
-                <label for="floatingInput">Facebook</label>
-            </div>
+                <div class="accordion-body">
+                <div class="form-floating container-fluid">
+                    <input class="form-control mb-4" aria-label="Facebook">
+                    <label for="floatingInput">Facebook</label>
+                </div>
 
-            <div class="form-floating container-fluid">
-                <input class="form-control mb-4" aria-label="Twitter">
-                <label for="floatingInput">Instagram</label>
-            </div>
+                <div class="form-floating container-fluid">
+                    <input class="form-control mb-4" aria-label="Twitter">
+                    <label for="floatingInput">Instagram</label>
+                </div>
 
-            <div class="form-floating container-fluid">
-                <input class="form-control mb-4" aria-label="Twitter">
-                <label for="floatingInput">Twitter</label>
-            </div>
+                <div class="form-floating container-fluid">
+                    <input class="form-control mb-4" aria-label="Twitter">
+                    <label for="floatingInput">Twitter</label>
+                </div>
 
-            <div class="form-floating container-fluid">
-                <input class="form-control mb-4" aria-label="Youtube">
-                <label for="floatingInput">YouTube</label>
-            </div>
+                <div class="form-floating container-fluid">
+                    <input class="form-control mb-4" aria-label="Youtube">
+                    <label for="floatingInput">YouTube</label>
+                </div>
             </div>
         </div>
   </div>
@@ -153,4 +164,5 @@
             </div>
     </section>
 </div>
+<% end %>
 </div>

@@ -1,8 +1,10 @@
 class PodcastEngagementController < ApplicationController
+  before_action :set_podcast, only: %i[show edit update]
   before_action :set_podcast
 
   # GET /podcasts/1/engagement
   def show
+    authorize @podcast
   end
 
   # PATCH/PUT /podcasts/1/engagement
@@ -24,7 +26,29 @@ class PodcastEngagementController < ApplicationController
   end
 
   # Only allow a list of trusted parameters through.
+
+  ### TODO include params for socmed and podcast apps
   def podcast_engagement_params
-    params.fetch(:podcast, {})
+    params.fetch(:podcast, {}).permit(
+      :title,
+      :prx_account_uri,
+      :subtitle,
+      :description,
+      :summary,
+      :link,
+      :explicit,
+      :itunes_category,
+      :itunes_subcategory,
+      :serial_order,
+      :language,
+      :owner_name,
+      :owner_email,
+      :author_name,
+      :author_email,
+      :managing_editor_name,
+      :managing_editor_email,
+      :copyright,
+      :complete
+    )
   end
 end
