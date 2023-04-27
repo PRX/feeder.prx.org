@@ -32,7 +32,9 @@
     <label>Segment <%= content.position %></label>
   </div>
 
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-html="true" data-bs-content="TODO: audio file info">
+  <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#audio-modal-<%= content.id %>">
     <span class="material-icons">info</span>
   </button>
 </div>
+
+<%= render "episodes/audio/modal", content: content, id: "audio-modal-#{content.id}", title: "Segment #{content.position}" %>
