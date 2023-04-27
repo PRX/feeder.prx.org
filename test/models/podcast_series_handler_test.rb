@@ -17,11 +17,6 @@ describe PodcastSeriesHandler do
     PrxAccess::PrxHyperResource.new_from(body: body, resource: resource, link: link)
   end
 
-  before {
-    stub_request(:get, profile)
-      .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
-  }
-
   it "can be created from a series" do
     podcast = PodcastSeriesHandler.create_from_series!(series)
     refute_nil podcast
@@ -43,10 +38,6 @@ describe PodcastSeriesHandler do
     assert_equal "created", podcast.default_feed.itunes_image.status
     assert_equal "mothradiohr-whitelogo.jpg", podcast.default_feed.itunes_image.file_name
     assert_equal profile, podcast.default_feed.itunes_image.original_url
-    assert_equal "jpeg", podcast.default_feed.itunes_image.format
-    assert_equal 36, podcast.default_feed.itunes_image.guid.length
-    assert_equal 1400, podcast.default_feed.itunes_image.height
-    assert_equal 1400, podcast.default_feed.itunes_image.width
     assert_equal "this-caption", podcast.default_feed.itunes_image.caption
     assert_equal "this-credit", podcast.default_feed.itunes_image.credit
   end

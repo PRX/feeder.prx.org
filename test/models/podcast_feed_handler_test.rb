@@ -7,11 +7,6 @@ describe PodcastFeedHandler do
   let(:entry) { api_resource(JSON.parse(json_file(:crier_entry)), crier_root) }
   let(:feed) { entry.objects["prx:feed"] }
 
-  before {
-    stub_request(:get, "http://serialpodcast.org/sites/all/modules/custom/serial/img/serial-itunes-logo.png")
-      .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
-  }
-
   it "create_from_feed" do
     podcast = PodcastFeedHandler.create_from_feed!(feed)
 

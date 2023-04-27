@@ -92,7 +92,7 @@ describe Api::EpisodeRepresenter do
   end
 
   it "has image" do
-    assert_equal json["image"]["url"], episode.image.url
+    assert_equal json["image"]["href"], episode.image.url
     assert_equal json["image"]["originalUrl"], episode.image.original_url
   end
 

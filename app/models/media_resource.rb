@@ -6,15 +6,19 @@ class MediaResource < ApplicationRecord
 
   acts_as_paranoid
 
-  enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
+  enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
 
   before_validation :initialize_attributes, on: :create
+
+  validates :original_url, presence: true
+
+  validates :medium, inclusion: {in: %w[audio video]}, if: :status_complete?
 
   after_create :replace_resources!
 
   scope :complete_or_replaced, -> do
     with_deleted
-      .complete
+      .status_complete
       .where("deleted_at IS NULL OR replaced_at IS NOT NULL")
       .order("created_at DESC")
   end
@@ -53,7 +57,7 @@ class MediaResource < ApplicationRecord
   end
 
   def href
-    complete? ? url : original_url
+    status_complete? ? url : original_url
   end
 
   def href=(h)

@@ -37,28 +37,26 @@ describe Tasks::CopyImageTask do
     end
   end
 
-  it "updates the image url on complete" do
-    task.image_resource.update(url: "what/ever")
-
+  it "updates image metadata on complete" do
     task.update(status: "created")
-    assert_equal task.image_resource[:url], "what/ever"
-    refute_equal task.image_resource.url, "what/ever"
-    assert_equal task.image_resource.url, task.image_resource.original_url
 
+    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Format] = "png"
+    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Height] = 1500
+    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Width] = 1500
     task.update(status: "complete")
-    refute_equal task.image_resource[:url], "what/ever"
-    assert_equal task.image_resource[:url], task.image_resource.published_url
-    refute_equal task.image_resource.url, "what/ever"
-    assert_equal task.image_resource.url, task.image_resource.published_url
+
+    assert_equal "png", task.image_resource.format
+    assert_equal 1500, task.image_resource.height
+    assert_equal 1500, task.image_resource.width
   end
 
   it "handles validation errors" do
     task.update(status: "created")
 
-    # TODO: better async validation error handling
-    task.stub(:porter_callback_image_meta, {format: "bad"}) do
-      task.update(status: "complete")
-      assert_equal "error", task.image_resource.status
-    end
+    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Format] = "bad"
+    task.update(status: "complete")
+
+    assert_equal "invalid", task.image_resource.status
+    assert_equal "bad", task.image_resource.format
   end
 end
