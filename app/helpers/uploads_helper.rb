@@ -9,11 +9,19 @@ module UploadsHelper
     ].join("\n    ").html_safe
   end
 
-  def uploads_destroy_params(form)
-    {
-      "#{form.object_name}[id]": form.object.id,
-      "#{form.object_name}[_destroy]": "1"
-    }
+  def uploads_destroy_params(form1, form2 = nil)
+    params = {}
+    params["#{form1.object_name}[id]"] = form1.object.id
+    params["#{form2.object_name}[id]"] = form2.object.id if form2
+
+    # destroy only the right-most form object
+    if form2
+      params["#{form2.object_name}[_destroy]"] = "1"
+    else
+      params["#{form1.object_name}[_destroy]"] = "1"
+    end
+
+    params
   end
 
   private

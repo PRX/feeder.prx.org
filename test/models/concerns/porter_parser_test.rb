@@ -106,4 +106,15 @@ describe PorterParser do
     assert_equal model.porter_callback_media_meta[:mime_type], "image/png"
     assert_equal model.porter_callback_media_meta[:medium], "image"
   end
+
+  it "parses porter image metadata" do
+    model = TestParser.new
+    model.result = build(:porter_image_job_results)
+    assert_equal(model.porter_callback_image_meta, {
+      format: "jpeg",
+      height: 1400,
+      size: 60572,
+      width: 1400
+    })
+  end
 end

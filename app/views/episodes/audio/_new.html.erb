@@ -7,7 +7,7 @@
   <%# step 1: file field %>
   <div class="form-floating" data-upload-target="picker">
     <% cls = "form-control position-absolute opacity-0 z-1" %>
-    <% data = {action: "change->unsaved#change upload#upload", upload_target: "audioFile"} %>
+    <% data = {action: "change->unsaved#change upload#upload", upload_target: "field"} %>
     <% data[:unsaved_target] = "changed" if content.marked_for_destruction? %>
 
     <%# NOTE: name is nil, so we don't submit the actual file to Rails %>

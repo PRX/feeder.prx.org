@@ -1,14 +1,11 @@
-<div class="card">
-  <div class="card-header-info">
-    <h5 class="card-title"><%= t(".title") %></h5>
-  </div>
-  <div class="card-body">
-    <% if podcast.itunes_image %>
-      <%= image_tag(podcast.itunes_image.url, width: 135, alt: podcast.itunes_image.alt_text, class: "d-flex mx-auto mb-2") %>
-    <% else %>
-      <h3>No image here</h3>
-    <% end %>
+<%= turbo_frame_tag "podcast-form-itunes-image", data: {controller: "morphdom"} do %>
+  <%= form.fields_for :default_feed do |f1| %>
+    <% f1.object.itunes_images.build if f1.object.itunes_images.empty? %>
 
-    <p>tktktk</p>
-  </div>
-</div>
+    <%= f1.fields_for :itunes_images, include_id: false do |f2| %>
+      <% path = podcast_destroy_image_path(podcast, f1, f2) %>
+
+      <%= render "images/form", form: f2, image: f2.object, delete_path: path %>
+    <% end %>
+  <% end %>
+<% end %>

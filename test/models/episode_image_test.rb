@@ -84,5 +84,21 @@ describe EpisodeImage do
         @image.valid?
       end
     end
+
+    it "does not fastimage s3 urls" do
+      @image.original_url = "s3://some-bucket/file.jpg"
+      assert @image.valid?
+      assert_nil @image.format
+      assert_nil @image.height
+      assert_nil @image.width
+    end
+
+    it "does not fastimage when metadata already detected" do
+      @image.original_url = "http://www.prx.org/do/not/fetch/this.jpg"
+      @image.format = "jpeg"
+      @image.height = 1400
+      @image.width = 1400
+      assert @image.valid?
+    end
   end
 end

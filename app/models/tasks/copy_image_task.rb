@@ -1,17 +1,24 @@
 class Tasks::CopyImageTask < ::Task
   before_save do
     if image_resource && status_changed?
-      image_resource.update!(status: status)
       if complete?
-        image_resource.update!(url: image_resource.published_url)
-        podcast.try(:publish!)
+        meta = porter_callback_image_meta
+        if meta
+          update_image!(meta.merge(url: image_resource.published_url))
+          podcast.try(:publish!)
+        else
+          update_image!
+          Rails.logger.warn("No image meta found in result: #{JSON.generate(result)}")
+        end
+      else
+        update_image!
       end
     end
   end
 
   def task_options
     super.merge({
-      job_type: "file",
+      job_type: "image",
       source: image_resource.original_url,
       destination: destination_url(image_resource)
     }).with_indifferent_access
@@ -38,5 +45,15 @@ class Tasks::CopyImageTask < ::Task
 
   def image_resource
     owner
+  end
+
+  private
+
+  def update_image!(attrs = {})
+    image_resource.update!(attrs.merge(status: status))
+  rescue ActiveRecord::RecordInvalid
+    # TODO: handle/display async validation issues
+    image_resource.restore_attributes
+    image_resource.update!(status: "error")
   end
 end

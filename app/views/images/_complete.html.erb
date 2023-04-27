@@ -1,0 +1,26 @@
+<div class="card prx-uploads">
+  <div class="card-header-info d-flex align-items-center">
+    <h5 class="card-title flex-grow-1"><%= t("images.title.#{image.model_name.singular}") %></h5>
+
+    <button type="button" class="prx-btn-help me-1" data-bs-toggle="popover" data-bs-content="<%= t("images.help.#{image.model_name.singular}") %>">
+      <span class="material-icons">help</span>
+    </button>
+
+    <%= link_to delete_path, class: "btn btn-icon p-0" do %>
+      <span class="material-icons">delete</span>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <div class="prx-uploads-image mb-4">
+      <%= image_tag image.url, alt: image.alt_text %>
+
+      <% if image.height.present? && image.width.present? %>
+        <aside><%= image.height %>x<%= image.width %></aside>
+      <% end %>
+    </div>
+
+    <%= form.hidden_field :id %>
+    <%= render "images/meta", form: form %>
+  </div>
+</div>

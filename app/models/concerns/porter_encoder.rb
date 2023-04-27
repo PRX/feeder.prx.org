@@ -20,7 +20,7 @@ module PorterEncoder
       Callbacks: [porter_callback(opts[:callback])]
     }
 
-    if opts[:job_type] == "audio"
+    if %w[audio video image].include?(opts[:job_type])
       job[:Tasks] << {Type: "Inspect"}
     end
 

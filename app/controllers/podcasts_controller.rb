@@ -39,10 +39,16 @@ class PodcastsController < ApplicationController
   # GET /podcasts/new
   def new
     @podcast = Podcast.new(podcast_params)
+    @podcast.set_default_feed
+
+    # TODO: get the default account from ID somehow
+    @podcast.prx_account_uri = helpers.podcast_account_name_options(@podcast).first.last
+    @podcast.clear_attribute_changes(%i[prx_account_uri])
   end
 
   # GET /podcasts/1/edit
   def edit
+    @podcast.assign_attributes(podcast_params)
     authorize @podcast, :show?
   end
 
@@ -53,6 +59,7 @@ class PodcastsController < ApplicationController
 
     respond_to do |format|
       if @podcast.save
+        @podcast.copy_media
         format.html { redirect_to podcast_url(@podcast), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
@@ -68,6 +75,7 @@ class PodcastsController < ApplicationController
 
     respond_to do |format|
       if @podcast.save
+        @podcast.copy_media
         format.html { redirect_to edit_podcast_url(@podcast), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
@@ -118,7 +126,12 @@ class PodcastsController < ApplicationController
       :managing_editor_name,
       :managing_editor_email,
       :copyright,
-      :complete
+      :complete,
+      default_feed_attributes: [
+        :id,
+        feed_images_attributes: %i[id original_url size alt_text caption credit _destroy],
+        itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy]
+      ]
     )
   end
 end
