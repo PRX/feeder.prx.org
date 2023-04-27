@@ -3,7 +3,8 @@
 
   <%= form.fields_for :images, include_id: false do |fields| %>
     <% path = episode_destroy_image_path(episode, fields) %>
+    <% rpath = episode_retry_image_path(episode, fields) %>
 
-    <%= render "images/form", form: fields, image: fields.object, delete_path: path %>
+    <%= render "images/form", form: fields, image: fields.object, delete_path: path, retry_path: rpath %>
   <% end %>
 <% end %>

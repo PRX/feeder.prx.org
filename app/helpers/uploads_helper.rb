@@ -24,6 +24,21 @@ module UploadsHelper
     params
   end
 
+  def uploads_retry_params(form1, form2 = nil)
+    params = {}
+    params["#{form1.object_name}[id]"] = form1.object.id
+    params["#{form2.object_name}[id]"] = form2.object.id if form2
+
+    # retry only the right-most form object
+    if form2
+      params["#{form2.object_name}[_retry]"] = "1"
+    else
+      params["#{form1.object_name}[_retry]"] = "1"
+    end
+
+    params
+  end
+
   private
 
   def uploads_prefix

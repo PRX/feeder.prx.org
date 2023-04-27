@@ -114,4 +114,17 @@ module ImageFile
       img[key] = self[key]
     end
   end
+
+  def retryable?
+    status_processing? && (Time.now - updated_at) > 30
+  end
+
+  def retry!
+    status_retrying!
+    copy_media(true)
+  end
+
+  def _retry=(_val)
+    retry!
+  end
 end

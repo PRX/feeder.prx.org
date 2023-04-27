@@ -15,8 +15,20 @@
         </div>
 
         <div class="text-secondary mx-2"><%= image.file_name %></div>
-        <small class="text-muted flex-grow-1">(Processing)</small>
-        <small class="text-muted">(<%= number_to_human_size(image.size) %>)</small>
+
+        <% if image.retryable? %>
+          <div class="flex-grow-1">
+            <%= link_to retry_path, class: "btn btn-sm btn-warning" do %>
+              <span class="material-icons">restart_alt</span> Retry
+            <% end %>
+          </div>
+        <% else %>
+          <small class="text-muted flex-grow-1">(Processing)</small>
+        <% end %>
+
+        <% if image.size.present? %>
+          <small class="text-muted">(<%= number_to_human_size(image.size) %>)</small>
+        <% end %>
       </div>
 
       <label>Image File</label>

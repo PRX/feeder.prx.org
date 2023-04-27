@@ -121,8 +121,8 @@ class EpisodesController < ApplicationController
       :released_at,
       :publishing_status,
       categories: [],
-      contents_attributes: %i[id position original_url file_size _destroy],
-      images_attributes: %i[id original_url size alt_text caption credit _destroy]
+      contents_attributes: %i[id position original_url file_size _destroy _retry],
+      images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
     )
   end
 end

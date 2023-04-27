@@ -29,7 +29,7 @@ class Episode < ApplicationRecord
     -> { order("position ASC, created_at DESC") },
     autosave: true, dependent: :destroy
 
-  accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:original_url].blank? }
+  accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
 
   has_many :enclosures,
