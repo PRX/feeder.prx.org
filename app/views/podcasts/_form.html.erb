@@ -1,4 +1,4 @@
-<% data = {controller: "unsaved", unsaved_changed_value: podcast.changed?, unsaved_confirm_value: t(".confirm")} %>
+<% data = {controller: "unsaved disable", unsaved_changed_value: podcast.changed?, unsaved_confirm_value: t(".confirm")} %>
 
 <%= form_with(model: podcast, html: {autocomplete: "off"}, data: data) do |form| %>
   <%# first button in form must be a submit, for enter key to work %>

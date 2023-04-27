@@ -112,6 +112,7 @@ en:
         title: Write a short, Tweetable title. Think newspaper headline.
     form_status:
       create: Create Draft
+      creating: Creating...
       destroy: Delete
       destroy_confirm_title: Really Delete?
       destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
@@ -123,9 +124,11 @@ en:
       title_published: Published
       title_scheduled: Scheduled
       toggle_dropdown: Toggle Dropdown
+      unpublish: Unpublish
       update: Save
       updated_at_hint: Last Saved
-      unpublish: Unpublish
+      updating: Saving...
+      uploading: Uploading...
     form_tags:
       title: Categories
       help:
@@ -195,11 +198,14 @@ en:
         title: What's the name of this podcast?
     form_status:
       create: Create
+      creating: Creating...
       discard: Discard
       new_hint: Unsaved
       title: Status
       update: Save
       updated_at_hint: Last Saved
+      updating: Saving...
+      uploading: Uploading...
     index:
       search_podcasts: Search Podcasts
     podcast:

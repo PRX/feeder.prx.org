@@ -33,7 +33,8 @@
           <%= link_to t(".discard"), edit_episode_path(episode), class: "btn btn-danger btn-discard-changed invisible", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
 
           <div class="btn-group">
-            <%= form.submit t(".update"), class: "btn btn-#{episode_status_class(episode)}" %>
+            <% data = {disable_with: t(".updating"), upload_with: t(".uploading")} %>
+            <%= form.submit t(".update"), class: "btn btn-#{episode_status_class(episode)}", data: data %>
 
             <% if episode.published? || policy(episode).destroy? %>
               <button type="button" class="btn btn-<%= episode_status_class(episode) %> dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
@@ -59,7 +60,8 @@
       <p class="status-text"><strong><%= t(".new_hint") %></strong></p>
 
       <% if policy(episode).create? %>
-        <%= form.submit t(".create"), class: "btn btn-warning" %>
+        <% data = {disable_with: t(".creating"), upload_with: t(".uploading")} %>
+        <%= form.submit t(".create"), class: "btn btn-warning", data: data %>
       <% end %>
     <% end %>
   </div>
