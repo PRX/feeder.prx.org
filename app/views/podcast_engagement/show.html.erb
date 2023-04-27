@@ -13,9 +13,8 @@
             "turbo-action": "replace"
           }
         ) do |form| %>
-        <div class="form-floating">
         <div class="form-floating mb-3">
-            <input class="form-control" aria-label="Donation Link">
+            <%= form.text_field :donation_url %>
             <label for="floatingInput">Donation Link</label>
         </div>
     </div>
