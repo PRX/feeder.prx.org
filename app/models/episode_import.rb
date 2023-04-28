@@ -18,19 +18,11 @@ class EpisodeImport < ActiveRecord::Base
   scope :having_duplicate_guids, -> do
     unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true)
   end
-  scope :complete, -> { where(status: COMPLETE) }
+  scope :complete, -> { where(status: PodcastImport::COMPLETE) }
 
   before_validation :set_defaults, on: :create
 
   validates :entry, :guid, presence: true
-
-  COMPLETE = "complete".freeze
-  FAILED = "failed".freeze
-
-  CREATED = "created".freeze
-  AUDIO_SAVED = "audio saved".freeze
-  RETRYING = "retrying".freeze
-  EPISODE_SAVED = "episode saved".freeze
 
   def unlock_podcast
     if podcast_import.finished?
@@ -39,12 +31,12 @@ class EpisodeImport < ActiveRecord::Base
   end
 
   def retry!
-    update(status: RETRYING)
+    update(status: PodcastImport::RETRYING)
     import_later
   end
 
   def set_defaults
-    self.status ||= CREATED
+    self.status ||= PodcastImport::CREATED
     self.audio ||= {files: []}
   end
 
@@ -55,24 +47,24 @@ class EpisodeImport < ActiveRecord::Base
 
   def import
     set_audio_metadata!
-    update!(status: AUDIO_SAVED)
+    update!(status: PodcastImport::AUDIO_SAVED)
 
     create_or_update_episode!
 
     set_file_resources!
 
-    update!(status: EPISODE_SAVED)
+    update!(status: PodcastImport::SAVED)
 
     episode.save!
 
-    update!(status: COMPLETE)
+    update!(status: PodcastImport::COMPLETE)
 
     unlock_podcast
 
     episode
   rescue => err
     Rails.logger.error ([err.message] + err.backtrace).join($/)
-    update(status: FAILED)
+    update(status: PodcastImport::FAILED)
     raise err
   end
 

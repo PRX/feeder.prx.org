@@ -15,15 +15,19 @@ class PodcastImport < ActiveRecord::Base
 
   validates :account_id, :url, presence: true
 
-  COMPLETE = "complete".freeze
-  FAILED = "failed".freeze
 
+
+
+
+  AUDIO_SAVED = "audio saved".freeze
+  COMPLETE = "complete".freeze
   CREATED = "created".freeze
-  STARTED = "started".freeze
+  SAVED = "saved".freeze
+  FAILED = "failed".freeze
   FEED_RETRIEVED = "feed retrieved".freeze
-  RETRYING = "retrying".freeze
   IMPORTING = "importing".freeze
-  PODCAST_CREATED = "podcast created".freeze
+  RETRYING = "retrying".freeze
+  STARTED = "started".freeze
 
   def episode_import_placeholders
     EpisodeImport.where(podcast_import_id: id).having_duplicate_guids
@@ -63,18 +67,18 @@ class PodcastImport < ActiveRecord::Base
   def finished?
     return false unless episode_imports.count == episode_importing_count
     episode_imports.all? do |e|
-      e.status == EpisodeImport::COMPLETE ||
-        e.status == EpisodeImport::FAILED
+      e.status == COMPLETE ||
+        e.status == FAILED
     end
   end
 
   def complete?
     return false unless episode_imports.count == episode_importing_count
-    episode_imports.all? { |e| e.status == EpisodeImport::COMPLETE }
+    episode_imports.all? { |e| e.status == COMPLETE }
   end
 
   def some_failed?
-    episode_imports.any? { |e| e.status == EpisodeImport::FAILED }
+    episode_imports.any? { |e| e.status == FAILED }
   end
 
   def retry!
@@ -96,7 +100,7 @@ class PodcastImport < ActiveRecord::Base
     # Create the podcast
     create_or_update_podcast!
 
-    update!(status: PODCAST_CREATED)
+    update!(status: CREATED)
   rescue => err
     update(status: FAILED)
     raise err
@@ -108,7 +112,7 @@ class PodcastImport < ActiveRecord::Base
 
     # Update podcast attributes
     create_or_update_podcast!
-    update!(status: PODCAST_CREATED)
+    update!(status: CREATED)
 
     # Create the episodes
     update!(status: IMPORTING)

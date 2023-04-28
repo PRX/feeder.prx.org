@@ -244,8 +244,8 @@ describe PodcastImport do
 
       _(importer.status).must_equal PodcastImport::IMPORTING
 
-      ep1.update! status: EpisodeImport::COMPLETE
-      ep2.update! status: EpisodeImport::COMPLETE
+      ep1.update! status: PodcastImport::COMPLETE
+      ep2.update! status: PodcastImport::COMPLETE
 
       importer.reload
 
@@ -262,8 +262,8 @@ describe PodcastImport do
       ep1 = importer.episode_imports[0]
       ep2 = importer.episode_imports[1]
 
-      ep1.update! status: EpisodeImport::FAILED
-      ep2.update! status: EpisodeImport::COMPLETE
+      ep1.update! status: PodcastImport::FAILED
+      ep2.update! status: PodcastImport::COMPLETE
 
       importer.reload
 
@@ -283,8 +283,8 @@ describe PodcastImport do
       ep1 = importer.episode_imports[0]
       ep2 = importer.episode_imports[1]
 
-      ep1.update! status: EpisodeImport::FAILED
-      ep2.update! status: EpisodeImport::FAILED
+      ep1.update! status: PodcastImport::FAILED
+      ep2.update! status: PodcastImport::FAILED
 
       importer.reload
 
@@ -303,8 +303,8 @@ describe PodcastImport do
       ep1 = importer.episode_imports[0]
       ep2 = importer.episode_imports[1]
 
-      ep1.update! status: EpisodeImport::FAILED
-      ep2.update! status: EpisodeImport::EPISODE_SAVED
+      ep1.update! status: PodcastImport::FAILED
+      ep2.update! status: PodcastImport::SAVED
 
       importer.reload
 
@@ -320,8 +320,8 @@ describe PodcastImport do
       ep1 = importer.episode_imports[0]
       ep2 = importer.episode_imports[1]
 
-      ep1.update! status: EpisodeImport::COMPLETE
-      ep2.update! status: EpisodeImport::FAILED
+      ep1.update! status: PodcastImport::COMPLETE
+      ep2.update! status: PodcastImport::FAILED
 
       ep1.import
       _(importer.podcast.locked).must_equal false
