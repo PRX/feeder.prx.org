@@ -4,7 +4,6 @@ class PodcastEngagementController < ApplicationController
 
   # GET /podcasts/1/engagement
   def show
-    authorize @podcast
   end
 
   # PATCH/PUT /podcasts/1/engagement
@@ -23,6 +22,7 @@ class PodcastEngagementController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
+    authorize @podcast
   end
 
   # Only allow a list of trusted parameters through.
@@ -32,25 +32,8 @@ class PodcastEngagementController < ApplicationController
     params.fetch(:podcast, {}).permit(
       :title,
       :prx_account_uri,
-      :subtitle,
-      :description,
       :donation_url,
-      :summary,
-      :link,
-      :explicit,
-      :itunes_category,
-      :itunes_subcategory,
-      :serial_order,
-      :language,
-      :owner_name,
-      :owner_email,
-      :payment_pointer,
-      :author_name,
-      :author_email,
-      :managing_editor_name,
-      :managing_editor_email,
-      :copyright,
-      :complete
+      :payment_pointer
     )
   end
 end

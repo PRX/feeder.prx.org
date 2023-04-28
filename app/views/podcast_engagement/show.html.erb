@@ -5,163 +5,50 @@
 <div class="row mt-4 mb-4 p-4 justify-content-center">
     <div class="col-8">
 
-    <%= form_with(
-          url: podcast_engagement_path(@podcast),
-          data: {
-            controller: "search",
-            "turbo-frame": "podcasts",
-            "turbo-action": "replace"
-          }
-        ) do |form| %>
-        <div class="form-floating mb-3">
-            <%= form.text_field :donation_url %>
-            <label for="floatingInput">Donation Link</label>
-        </div>
-    </div>
+        <%= form_with(model: @podcast, url: podcast_engagement_path, html: {autocomplete: "off"}, data: {controller: "unsaved", unsaved_changed_value: @podcast.changed?, unsaved_confirm_value: t(".confirm")}) do |form| %>
 
         <div class="row">
-            <div class="form-floating mb-3 col input-group">
-                <input class="form-control" aria-label="Owner">
-
-                <label for="floatingInput">Owner</label>
             </div>
-
-            <div class="form-floating mb-3 col">
-                <input class="form-control" aria-label="ID">
-                <label for="floatingInput">ID</label>
-            </div>
-        </div>
-        <div class="form-floating">
-            <div class="form-floating mb-3">
-                <input class="form-control" aria-label="Donation Link">
+                <div class="form-floating mb-3 input-group">
+                <%= form.text_field :donation_url %>
                 <label for="floatingInput">Donation Link</label>
             </div>
-        </div>
 
-        <hr style="height:.1rem background-color:black">
+            <hr style="height:.1rem background-color:black">
 
-        <h3>Micropayments</h3>
+            <h3 aria-label="Micropayments">Micropayments</h3>
 
             <div class="form-floating mx-auto input-group row">
-                <input class="form-control border-end-0 mb-4 col" id="floatingInput" aria-label="Coil ID">
-                <label for="floatingInput">Coil ID</label>
+                <%= form.text_field :payment_pointer %>
+                <label for="floatingInput">Coil</label>
                 <span class="material-icons mb-4 justify-content-center col-1 border p-0">link</span>
             </div>
         <div>
 
         <hr style="height:.1rem background-color:black">
 
-        <h3>Subscribe and Follow Links</h3>
+        <h3 aria-label="Subscribe and Follow Links">Subscribe and Follow Links</h3>
 
-        <div class="accordion">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingOne">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-label="Podcast Apps">
-                    Podcast Apps
-                </button>
-                </h2>
+        <h3 aria-label="Subscribe and Follow Links">Social Media Links</h3>
 
-                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-
-                    <div class="form-floating container-fluid">
-                        <input class="form-control mb-4 mt-4 col-4" aria-label="Apple Podcasts">
-                        <label for="floatingInput">Apple Podcasts</label>
-                        <span class="material-icons">link</span>
-                    </div>
-
-                    <div class="form-floating container-fluid">
-                        <input class="form-control mb-4 mt-4" aria-label="Spotify">
-                        <label for="floatingInput">Spotify</label>
-                    </div>
-
-                    <div class="form-floating container-fluid">
-                        <input class="form-control mb-4 mt-4" aria-label="Overcast">
-                        <label for="floatingInput">Overcast</label>
-                    </div>
-
-                    <div class="form-floating container-fluid">
-                        <input class="form-control mb-4 mt-4" aria-label="Stitcher">
-                        <label for="floatingInput">Stitcher</label>
-                    </div>
-
-                    <div class="form-floating container-fluid">
-                        <input class="form-control mb-4 mt-4" aria-label="PocketCasts">
-                        <label for="floatingInput">PocketCasts</label>
-                    </div>
-
-                    <div class="form-floating container-fluid">
-                        <input class="form-control mb-4 mt-4" aria-label="Podcast Addict">
-                        <label for="floatingInput">Podcast Addict</label>
-                    </div>
-
-                    <div class="form-floating container-fluid">
-                        <input class="form-control mb-4 mt-4" aria-label="Google Podcasts">
-                        <label for="floatingInput">Google Podcasts</label>
-                    </div>
-
-                    <div class="form-floating container-fluid">
-                        <input class="form-control mb-4 mt-4" aria-label="NPR One">
-                        <label for="floatingInput">NPR One</label>
-                    </div>
-
-                    <div class="form-floating container-fluid">
-                        <input class="form-control mb-4 mt-4" aria-label="CastBox">
-                        <label for="floatingInput">CastBox</label>
-                    </div>
-                </div>
-</div>
-
-            <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                    Social Media Links
-                </button>
-            </h2>
-
-            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                <div class="form-floating container-fluid">
-                    <input class="form-control mb-4" aria-label="Facebook">
-                    <label for="floatingInput">Facebook</label>
-                </div>
-
-                <div class="form-floating container-fluid">
-                    <input class="form-control mb-4" aria-label="Twitter">
-                    <label for="floatingInput">Instagram</label>
-                </div>
-
-                <div class="form-floating container-fluid">
-                    <input class="form-control mb-4" aria-label="Twitter">
-                    <label for="floatingInput">Twitter</label>
-                </div>
-
-                <div class="form-floating container-fluid">
-                    <input class="form-control mb-4" aria-label="Youtube">
-                    <label for="floatingInput">YouTube</label>
-                </div>
-            </div>
-        </div>
-  </div>
-</div>
-
-</div>
+        <% end %>
+    </div>
 </div>
 
     <div class="col-4">
-    <section class="card shadow">
-        <div class="card-header-info">
-            <h5 class="card-title fw-bold">Status</h5>
-        </div>
-            <div class="card-footer">
-                <div class="">
-                    <span><%= t(".last_saved") %></span>
-                    <datetime><%= l(@podcast.updated_at) %></datetime>
-                </div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-primary">Save</button>
-                </div>
+        <section class="card shadow">
+            <div class="card-header-info">
+                <h5 class="card-title fw-bold">Status</h5>
             </div>
-    </section>
-</div>
-<% end %>
+                <div class="card-footer">
+                    <div class="">
+                        <span><%= t(".last_saved") %></span>
+                        <datetime><%= l(@podcast.updated_at) %></datetime>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+        </section>
+    </div>
 </div>
