@@ -149,7 +149,6 @@ class PodcastImport < ActiveRecord::Base
   end
 
   def enqueue_episode_import_jobs(created_imports)
-    # TODO port these jobs to a shoryuken worker
     created_imports.map do |ei|
       EpisodeImportJob.perform_later(ei)
     end
