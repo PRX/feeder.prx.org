@@ -123,7 +123,7 @@ class MediaResource < ApplicationRecord
     if is_initial_publish
       status_complete?
     else
-      original_url.present?
+      original_url.present? && %w[started created processing complete].include?(status)
     end
   end
 end

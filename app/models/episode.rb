@@ -351,11 +351,13 @@ class Episode < ApplicationRecord
     return if published_at.blank?
 
     # if segment_count present, build positions so they're marked not-ready
-    build_contents if segment_count.present? && segment_count.positive?
+    if segment_count.present? && segment_count.positive? && enclosures.empty?
+      build_contents
+    end
 
     # current media must exist - and must be complete on initial publish
     media_resources.each do |mr|
-      unless mr.ready?
+      unless mr.ready?(published_at_was.blank?)
         errors.add(:base, :media_not_ready, message: "media not ready")
         mr.errors.add(:original_url, "media not ready")
       end
