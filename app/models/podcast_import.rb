@@ -157,7 +157,6 @@ class PodcastImport < ActiveRecord::Base
   def feed_entry_to_hash(entry)
     entry
       .to_h
-      .with_indifferent_access
       .as_json
       .with_indifferent_access
   end
