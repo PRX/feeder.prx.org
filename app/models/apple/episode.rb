@@ -344,8 +344,16 @@ module Apple
       apple_attributes["appleHostedAudioAssetState"]
     end
 
+    def has_container?
+      podcast_container.present?
+    end
+
     def has_unlinked_container?
-      podcast_container.present? && apple_hosted_audio_asset_container_id.blank?
+      has_container? && apple_hosted_audio_asset_container_id.blank?
+    end
+
+    def has_linked_container?
+      has_container? && apple_hosted_audio_asset_container_id.present?
     end
 
     def audio_asset_state_finished?

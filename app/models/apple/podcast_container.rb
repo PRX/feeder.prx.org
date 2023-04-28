@@ -50,7 +50,12 @@ module Apple
     end
 
     def self.create_podcast_containers(api, episodes)
-      episodes_to_create = episodes.reject { |ep| ep.podcast_container.present? }
+      # There is a 1:1 relationship between episodes and podcast containers w/
+      # key contraints on the episodes vendorId -- and you cannot destroy a
+      # podcast container.
+      # We should have a local record of the podcast container, per the poll
+      # method above.
+      episodes_to_create = episodes.reject { |ep| ep.has_container? }
 
       new_containers_response =
         api.bridge_remote_and_retry!("createPodcastContainers",
@@ -104,14 +109,18 @@ module Apple
     end
 
     def self.get_podcast_containers_via_episodes(api, episodes)
+      # Only query for episodes that don't have a podcast container
+      # The container. Assume that if we have a container record, we don't need to poll.
+      _eps_with_container, eps_without_container = episodes.partition(&:has_container?)
+
       # Fetch the podcast containers from the episodes side of the API
       response =
-        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes), batch_size: 1)
+        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, eps_without_container), batch_size: 1)
 
       # Rather than mangling and persisting the enumerated view of the containers in the episodes,
       # just re-fetch the podcast containers from the non-list podcast container endpoint
       formatted_bridge_params =
-        join_on_apple_episode_id(episodes, response).map do |(episode, row)|
+        join_on_apple_episode_id(eps_without_container, response).map do |(episode, row)|
           get_urls_for_episode_podcast_containers(api, row).map do |url|
             get_podcast_containers_bridge_param(episode.apple_id, url)
           end
