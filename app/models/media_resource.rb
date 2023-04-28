@@ -103,7 +103,11 @@ class MediaResource < ApplicationRecord
   end
 
   def retryable?
-    status_processing? && (Time.now - updated_at) > 30
+    if status_started? || status_created? || status_processing?
+      (Time.now - updated_at) > 30
+    else
+      false
+    end
   end
 
   def retry!
