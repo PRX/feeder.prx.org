@@ -35,7 +35,7 @@ class EpisodesController < ApplicationController
   def edit
     @episode.assign_attributes(episode_params)
     authorize @episode, :show?
-    @episode.valid? if turbo_frame_request?
+    @episode.valid?
   end
 
   # POST /podcasts/1/episodes
@@ -66,7 +66,13 @@ class EpisodesController < ApplicationController
         @episode.copy_media
         format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       else
-        flash.now[:error] = t(".error")
+        flash.now[:error] =
+          if @episode.errors.added?(:base, :media_not_ready)
+            t(".media_not_ready")
+          else
+            t(".error")
+          end
+
         format.html { render :edit, status: :unprocessable_entity }
       end
     end

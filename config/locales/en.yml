@@ -143,6 +143,7 @@ en:
       published: Published Episodes
     update:
       error: Unable to save
+      media_not_ready: Audio not ready
       notice: Episode updated
   images:
     help:

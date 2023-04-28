@@ -118,4 +118,12 @@ class MediaResource < ApplicationRecord
   def _retry=(_val)
     retry!
   end
+
+  def ready?(is_initial_publish = false)
+    if is_initial_publish
+      status_complete?
+    else
+      original_url.present?
+    end
+  end
 end

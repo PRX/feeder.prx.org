@@ -57,10 +57,5 @@ module PublishingStatus
       errors.add(:published_at, "can't be in the future")
       errors.add(:released_at, "can't be in the future")
     end
-
-    # check media is ready (TODO: more?)
-    if !include_in_feed?
-      errors.add(:publishing_status, "audio not ready")
-    end
   end
 end

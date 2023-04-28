@@ -6,13 +6,24 @@
   <div class="card-body row">
     <div class="col-12 mb-4">
       <div class="form-floating">
+        <% invalid_class = episode.errors[:base].present? ? "is-invalid" : "" %>
+
         <% if episode.publishing_status_was == 'published' %>
           <%= form.hidden_field :publishing_status, value: "published" %>
-          <div class="form-control d-table"><p class="d-table-cell align-middle"><%= t("helpers.label.episode.publishing_statuses.published") %></p></div>
+          <div class="form-control d-table <%= invalid_class %>">
+            <p class="d-table-cell align-middle">
+              <%= t("helpers.label.episode.publishing_statuses.published") %>
+            </p>
+          </div>
         <% else %>
-          <%= form.select :publishing_status, episode_publishing_status_options %>
+          <%= form.select :publishing_status, episode_publishing_status_options, {}, class: "form-select #{invalid_class}" %>
         <% end %>
-        <%= form.label :publishing_status %>
+
+        <%= form.label :publishing_status, class: invalid_class %>
+
+        <% if episode.errors[:base].present? %>
+          <div class="invalid-feedback"><%= episode.errors[:base].to_sentence.capitalize %></div>
+        <% end %>
       </div>
     </div>
 
@@ -41,7 +52,7 @@
                 <span class="visually-hidden"><%= t(".toggle_dropdown") %></span>
               </button>
               <ul class="dropdown-menu">
-                <% if episode.published? %>
+                <% if episode.published? && !episode.published_at_changed? %>
                   <li><%= link_to t(".unpublish"), episode_path(episode, episode: {publishing_status: "draft"}), method: :put, class: "dropdown-item bg-danger text-white" %></li>
                 <% else %>
                   <li>

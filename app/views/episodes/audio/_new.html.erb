@@ -14,12 +14,20 @@
     <%= form.file_field :audio_file, class: cls, accept: "audio/*", name: nil, data: data %>
 
     <%# fake display field; real text area is opacity-0 on top of it %>
-    <div class="form-control d-flex align-items-center <%= "is-changed" if content.marked_for_destruction? %>">
+    <% invalid_msg = upload_invalid_messages(content) %>
+    <% fake_cls = "form-control d-flex align-items-center" %>
+    <% fake_cls += " is-changed" if content.marked_for_destruction? %>
+    <% fake_cls += " is-invalid" if invalid_msg %>
+    <div class="<%= fake_cls %>">
       <span class="material-icons text-primary ms-2">upload</span>
       <div class="text-secondary mx-2">Upload a file</div>
     </div>
 
-    <%= form.label :audio_file, "Segment #{content.position}" %>
+    <% if invalid_msg %>
+      <div class="invalid-feedback"><%= invalid_msg %></div>
+    <% end %>
+
+    <%= form.label :audio_file, "Segment #{content.position}", class: "is-invalid" if invalid_msg %>
   </div>
 
   <%# step 2: upload progressbar %>

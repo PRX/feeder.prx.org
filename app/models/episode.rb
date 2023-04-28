@@ -51,6 +51,7 @@ class Episode < ApplicationRecord
   validates :explicit, inclusion: {in: %w[true false]}, allow_nil: true
   validates :segment_count, presence: true, if: :strict_validations
   validates :segment_count, numericality: {only_integer: true, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
+  validate :validate_media_ready, if: :strict_validations
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
@@ -343,6 +344,21 @@ class Episode < ApplicationRecord
       ready_contents.count == segment_count
     else
       false
+    end
+  end
+
+  def validate_media_ready
+    return if published_at.blank?
+
+    # if segment_count present, build positions so they're marked not-ready
+    build_contents if segment_count.present? && segment_count.positive?
+
+    # current media must exist - and must be complete on initial publish
+    media_resources.each do |mr|
+      unless mr.ready?
+        errors.add(:base, :media_not_ready, message: "media not ready")
+        mr.errors.add(:original_url, "media not ready")
+      end
     end
   end
 

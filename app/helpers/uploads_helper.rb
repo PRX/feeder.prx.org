@@ -91,13 +91,18 @@ module UploadsHelper
   end
 
   def upload_invalid_messages(rec)
-    if rec.status_invalid?
-      rec.status = "complete"
-      rec.valid?
-      msgs = rec.errors.full_messages
-      rec.status = "invalid"
-      rec.valid?
-      msgs.present? && msgs.join(", ")
-    end
+    msgs =
+      if rec.status_invalid?
+        rec.status = "complete"
+        rec.valid?
+        errs = rec.errors.full_messages
+        rec.status = "invalid"
+        rec.valid?
+        errs
+      else
+        rec.errors.full_messages
+      end
+
+    msgs.to_sentence.capitalize if msgs.present?
   end
 end
