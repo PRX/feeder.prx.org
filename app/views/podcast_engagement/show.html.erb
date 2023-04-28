@@ -11,7 +11,7 @@
             </div>
                 <div class="form-floating mb-3 input-group">
                 <%= form.text_field :donation_url %>
-                <label for="floatingInput">Donation Link</label>
+                <label for="floatingInput"><%= t(".donation_link") %></label>
             </div>
 
             <hr style="height:.1rem background-color:black">
@@ -20,7 +20,7 @@
 
             <div class="form-floating mx-auto input-group row">
                 <%= form.text_field :payment_pointer %>
-                <label for="floatingInput">Coil</label>
+                <label for="floatingInput"><%= t(".coil") %></label>
                 <span class="material-icons mb-4 justify-content-center col-1 border p-0">link</span>
             </div>
         <div>
@@ -31,7 +31,6 @@
 
         <h3 aria-label="Subscribe and Follow Links">Social Media Links</h3>
 
-        <% end %>
     </div>
 </div>
 
@@ -41,14 +40,15 @@
                 <h5 class="card-title fw-bold">Status</h5>
             </div>
                 <div class="card-footer">
-                    <div class="">
-                        <span><%= t(".last_saved") %></span>
-                        <datetime><%= l(@podcast.updated_at) %></datetime>
-                    </div>
+                <div class="card-footer d-grid g-1 lh-sm fs-sm text-end">
+                <strong><%= t(".last_saved") %></strong>
+                <datetime><%= l(@podcast.updated_at) %></datetime>
+              </div>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-primary">Save</button>
+                        <%= form.submit class: "btn btn-primary" %>
                     </div>
                 </div>
         </section>
     </div>
 </div>
+<% end %>

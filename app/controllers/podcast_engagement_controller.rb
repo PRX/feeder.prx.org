@@ -2,16 +2,16 @@ class PodcastEngagementController < ApplicationController
   before_action :set_podcast, only: %i[show edit update]
   before_action :set_podcast
 
-  # GET /podcasts/1/engagement
-  def show
-  end
-
   # PATCH/PUT /podcasts/1/engagement
   def update
+    @podcast.assign_attributes(podcast_engagement_params)
+    authorize @podcast
+
     respond_to do |format|
-      if @podcast.update(podcast_engagement_params)
-        format.html { redirect_to podcast_engagement_url(@podcast), notice: "Podcast engagement was successfully updated." }
+      if @podcast.save
+        format.html { redirect_to podcast_engagement_path(@podcast), notice: t(".notice") }
       else
+        flash.now[:error] = t(".error")
         format.html { render :edit, status: :unprocessable_entity }
       end
     end

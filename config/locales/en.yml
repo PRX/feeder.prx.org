@@ -211,6 +211,10 @@ en:
       manage_settings: Manage Settings
       engagement_settings: Engagement Settings
       import: Import
+    podcast_engagement:
+      donation_link: Donation Link
+      coil: Coil
+      last_saved: Last Saved
     podcast_page:
       my_podcasts: My Podcasts
       drafted_episodes:
