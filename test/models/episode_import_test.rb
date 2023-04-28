@@ -68,7 +68,8 @@ describe EpisodeImport do
     _(f.images.count).must_equal 1
 
     _(sns.messages.count).must_equal 2
-    _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 1]
+    _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 2]
+    _(sns.messages.map { |m| m["Job"]["Tasks"].map { |v| v["Type"] } }).must_equal [["Copy", "Inspect"], ["Copy", "Inspect"]]
     _(sns.messages.map { |m| m["Job"]["Source"] })
       .must_equal([
         {"Mode" => "HTTP", "URL" => "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"},

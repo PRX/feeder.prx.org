@@ -57,7 +57,8 @@ describe PodcastImport do
       "from the Sloan Foundation."
 
     _(sns.messages.count).must_equal 2
-    _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [1, 1]
+    _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 2]
+    _(sns.messages.map { |m| m["Job"]["Tasks"].map { |t| t["Type"] } }).must_equal [["Copy", "Inspect"], ["Copy", "Inspect"]]
     _(sns.messages.map { |m| m["Job"]["Source"] })
       .must_equal [
         {"Mode" => "HTTP", "URL" => "http://cdn-transistor.prx.org/transistor300.png"},
