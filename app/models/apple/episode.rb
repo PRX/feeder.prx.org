@@ -69,7 +69,7 @@ module Apple
 
       # Make sure that we only update episodes that have a podcast container
       # And that the episode needs to be updated
-      episodes = episodes.filter { |ep| ep.podcast_container.present? && ep.apple_hosted_audio_asset_container_id.blank? }
+      episodes = episodes.filter { |ep| ep.has_unlinked_container? }
 
       (episode_bridge_results, errs) =
         api.bridge_remote_and_retry(
@@ -342,6 +342,10 @@ module Apple
 
     def audio_asset_state
       apple_attributes["appleHostedAudioAssetState"]
+    end
+
+    def has_unlinked_container?
+      podcast_container.present? && apple_hosted_audio_asset_container_id.blank?
     end
 
     def audio_asset_state_finished?
