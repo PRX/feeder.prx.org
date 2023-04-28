@@ -11,7 +11,7 @@
             <tr>
               <th scope="row"><strong>File:</strong></th>
               <td>
-                <% if image.complete? %>
+                <% if image.status_complete? %>
                   <%= link_to image.file_name, image.url, target: "_blank", rel: "noopener" %>
                 <% else %>
                   <%= image.file_name %>
