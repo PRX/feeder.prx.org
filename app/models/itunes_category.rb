@@ -4,4 +4,8 @@ class ITunesCategory < ApplicationRecord
 
   validates_presence_of :name
   validates_with ITunesCategoryValidator
+
+  def subcategories=(subcats)
+    super subcats.select(&:present?)
+  end
 end

@@ -29,11 +29,11 @@ describe Api::PodcastRepresenter do
   end
 
   it "includes itunes image" do
-    assert_equal json["itunesImage"]["url"], "http://some.where/test/fixtures/valid_series_image.jpg"
+    assert_equal json["itunesImage"]["href"], "http://some.where/test/fixtures/valid_series_image.jpg"
   end
 
   it "includes feed image" do
-    assert_equal json["feedImage"]["url"], "http://some.where/test/fixtures/valid_feed_image.png"
+    assert_equal json["feedImage"]["href"], "http://some.where/test/fixtures/valid_feed_image.png"
   end
 
   it "includes serial v. episodic ordering" do

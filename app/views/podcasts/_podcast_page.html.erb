@@ -1,8 +1,8 @@
 <div class="prx-podcast | card">
   <div class="d-flex g-2 p-3 align-items-center">
     <div class="card-image">
-      <% if podcast.feed_image %>
-        <%= image_tag(podcast.feed_image.url, width: 80, alt: podcast.feed_image.alt_text, class: "d-flex") %>
+      <% if podcast.ready_image %>
+        <%= image_tag(podcast.ready_image.url, width: 80, alt: podcast.ready_image.alt_text, class: "d-flex") %>
       <% end %>
     </div>
     <div class="card-body flex-grow-1 ">

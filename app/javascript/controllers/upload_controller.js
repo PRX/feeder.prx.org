@@ -5,7 +5,7 @@ import sha256 from "sha256"
 
 export default class extends Controller {
   static targets = [
-    "audioFile",
+    "field",
     "originalUrl",
     "replace",
     "fileName",
@@ -127,8 +127,8 @@ export default class extends Controller {
       }
     }
 
-    this.audioFileTarget.value = ""
-    this.audioFileTarget.dispatchEvent(new Event("change"))
+    this.fieldTarget.value = ""
+    this.fieldTarget.dispatchEvent(new Event("change"))
     this.show("picker")
   }
 

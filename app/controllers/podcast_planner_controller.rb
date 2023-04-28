@@ -1,10 +1,12 @@
 class PodcastPlannerController < ApplicationController
   before_action :set_podcast
+  before_action :set_beginning_of_week
 
   # GET /podcasts/1/planner
   def show
     @planner = PodcastPlanner.new(planner_params)
     @planner.generate_dates!
+    @draft_dates = @podcast.episodes.draft.pluck(:released_at)
   end
 
   # POST /podcasts/1/planner
@@ -28,6 +30,10 @@ class PodcastPlannerController < ApplicationController
     @podcast = Podcast.find(params[:podcast_id])
   end
 
+  def set_beginning_of_week
+    Date.beginning_of_week = :sunday
+  end
+
   # Only allow a list of trusted parameters through.
   def planner_params
     params.permit(
@@ -42,7 +48,7 @@ class PodcastPlannerController < ApplicationController
       :segment_count,
       selected_days: [],
       monthly_weeks: [],
-      generated_dates: []
+      selected_dates: []
     )
   end
 end

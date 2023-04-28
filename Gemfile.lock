@@ -182,7 +182,6 @@ GEM
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.14.0)
       faraday (>= 0.7.4, < 1.0)
-    fastimage (2.2.6)
     feedjira (2.1.0)
       faraday (>= 0.9)
       faraday_middleware (>= 0.9)
@@ -405,6 +404,8 @@ GEM
       aws-sdk-core (>= 2)
       concurrent-ruby
       thor
+    simple_calendar (2.4.3)
+      rails (>= 3.0)
     simplecov (0.21.2)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -488,7 +489,6 @@ DEPENDENCIES
   excon
   factory_bot_rails
   faraday (~> 0.17.4)
-  fastimage
   feedjira (= 2.1.0)
   hal_api-rails (~> 1.2.0)
   hyperresource
@@ -523,6 +523,7 @@ DEPENDENCIES
   say_when (~> 2.2.1)
   selenium-webdriver
   shoryuken
+  simple_calendar (~> 2.4)
   simplecov
   spring
   sprockets-rails

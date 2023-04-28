@@ -1,0 +1,12 @@
+<% if image.new_record? || image.marked_for_destruction? %>
+  <%= render "images/new", form: form, image: image %>
+<% else %>
+  <% case image.status %>
+  <% when "started", "created", "processing", "retrying" %>
+    <%= render "images/processing", form: form, image: image, delete_path: delete_path %>
+  <% when "complete" %>
+    <%= render "images/complete", form: form, image: image, delete_path: delete_path %>
+  <% else %>
+    <%= render "images/error", form: form, image: image, delete_path: delete_path %>
+  <% end %>
+<% end %>

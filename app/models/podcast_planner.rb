@@ -1,8 +1,8 @@
 class PodcastPlanner
-  attr_accessor :podcast_id, :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :generated_dates, :drafts
+  attr_accessor :podcast_id, :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :selected_dates, :drafts
 
   def initialize(params = {})
-    @dates = params[:generated_dates].try { map { |date| date.to_datetime } }
+    @dates = params[:selected_dates].try { map { |date| date.to_datetime } }
     @drafts = []
     @podcast_id = params[:podcast_id]
     @start_date = params[:start_date].try(:to_datetime)

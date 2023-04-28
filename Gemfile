@@ -26,6 +26,7 @@ gem "kaminari"
 gem "sprockets-rails"
 gem "stimulus-rails"
 gem "turbo-rails"
+gem "simple_calendar", "~> 2.4"
 
 # api views
 gem "actionpack-action_caching" # for hal_api-rails
@@ -36,7 +37,6 @@ gem "roar-rails", github: "PRX/roar-rails", branch: "feat/rails_7"
 # models
 gem "addressable"
 gem "countries"
-gem "fastimage"
 gem "paranoia"
 gem "sanitize"
 

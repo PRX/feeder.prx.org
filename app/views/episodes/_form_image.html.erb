@@ -1,20 +1,9 @@
-<div class="col-12 mb-4">
-  <div class="card shadow border-0">
-    <div class="card-header card-header-info d-flex justify-content-between">
-      <h5 class="card-title"><%= t(".title") %></h5>
-      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.cover_image") %>">
-        <span class="material-icons">help</span>
-      </button>
-    </div>
+<%= turbo_frame_tag "episode-form-image", data: {controller: "morphdom"} do %>
+  <% episode.images.build if episode.images.empty? %>
 
-    <div class="card-body">
-      <% if episode.image %>
-        <%= image_tag(episode.image.url, width: 135, alt: episode.image.alt_text, class: "d-flex mx-auto mb-2") %>
-      <% else %>
-        <h3>No image here</h3>
-      <% end %>
+  <%= form.fields_for :images, include_id: false do |fields| %>
+    <% path = episode_destroy_image_path(episode, fields) %>
 
-      <p>tktktk</p>
-    </div>
-  </div>
-</div>
+    <%= render "images/form", form: fields, image: fields.object, delete_path: path %>
+  <% end %>
+<% end %>

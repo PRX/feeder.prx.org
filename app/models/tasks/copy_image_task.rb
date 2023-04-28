@@ -1,17 +1,21 @@
 class Tasks::CopyImageTask < ::Task
   before_save do
     if image_resource && status_changed?
-      image_resource.update!(status: status)
+      image_resource.status = status
+
       if complete?
-        image_resource.update!(url: image_resource.published_url)
-        podcast.try(:publish!)
+        image_resource.assign_attributes(porter_callback_image_meta)
+        image_resource.status = "invalid" if image_resource.invalid?
       end
+
+      image_resource.save!
+      podcast.try(:publish!) if image_resource.status_complete?
     end
   end
 
   def task_options
     super.merge({
-      job_type: "file",
+      job_type: "image",
       source: image_resource.original_url,
       destination: destination_url(image_resource)
     }).with_indifferent_access

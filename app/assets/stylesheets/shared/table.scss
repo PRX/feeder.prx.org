@@ -55,6 +55,13 @@
   }
 }
 
+.table-sm {
+  td,
+  th {
+    padding: 0.25rem 0.25rem;
+  }
+}
+
 .table-loading {
   position: absolute;
   top: 0;

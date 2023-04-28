@@ -15,6 +15,7 @@ class Enclosure < MediaResource
   def update_enclosure_attributes(enclosure)
     self.file_size = enclosure["length"].to_i
     self.mime_type = enclosure["type"]
+    self.medium = (enclosure["type"] || "").split("/").first
     self.href = enclosure["url"]
     self
   end

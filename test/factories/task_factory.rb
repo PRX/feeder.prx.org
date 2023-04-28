@@ -11,6 +11,6 @@ FactoryBot.define do
     association :owner, factory: :episode_image_with_episode
     status { :complete }
     job_id { "2345" }
-    result { build(:porter_job_results) }
+    result { build(:porter_image_job_results) }
   end
 end

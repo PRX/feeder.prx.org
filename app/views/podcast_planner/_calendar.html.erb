@@ -1,0 +1,9 @@
+<div class="col <%= "d-none" if index >= range %>" data-pager-target="page">
+  <%= month_calendar(start_date: start_date) do |date| %>
+    <% if date_is_in_month?(date, start_date.month) %>
+      <%= date.day %>
+
+      <%= form.hidden_field :selected_dates, multiple: true, data: {date_target: "preselected"}, value: date.to_datetime, disabled: !date_is_in_dates?(date, @planner.dates), draft: date_is_in_dates?(date, @draft_dates) %>
+    <% end %>
+  <% end %>
+</div>

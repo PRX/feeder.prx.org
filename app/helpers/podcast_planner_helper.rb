@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 module PodcastPlannerHelper
-  PERIODIC_WEEKS = I18n.t([:every_one, :every_two, :every_three, :every_four], scope: [:podcast_planner, :helper, :period_options]).freeze
-  MONTHLY_WEEKS = I18n.t([:first, :second, :third, :fourth, :fifth], scope: [:podcast_planner, :helper, :monthly_options]).freeze
+  PERIODIC_WEEKS = I18n.t([:every_one, :every_two, :every_three, :every_four], scope: [:podcast_planner, :helper, :period_options])
+  MONTHLY_WEEKS = I18n.t([:first, :second, :third, :fourth, :fifth], scope: [:podcast_planner, :helper, :monthly_options])
+  DATE_CONTROLLER = "date"
+  TOGGLE_ACTION = "click->date#toggleSelect"
 
   def day_options
     DateTime::DAYNAMES.map.with_index { |day, i| [day, i] }
@@ -35,5 +37,33 @@ module PodcastPlannerHelper
     end
 
     opts.map { |opt| [I18n.l(opt, format: :time_12_hour), opt] }
+  end
+
+  def days_in_month(month)
+    month.map { |d| d.day }
+  end
+
+  def date_is_in_dates?(date, dates)
+    if dates.present?
+      dates.include?(date)
+    else
+      false
+    end
+  end
+
+  def date_is_in_month?(date, month)
+    date.month == month
+  end
+
+  def calendar_day_tag(day:, month:, calendar:, &block)
+    data = {}
+    if date_is_in_month?(day, month)
+      data[:controller] = DATE_CONTROLLER
+      data[:action] = TOGGLE_ACTION
+    end
+
+    content_tag(:td, class: calendar.td_classes_for(day), data: data) do
+      block.call
+    end
   end
 end

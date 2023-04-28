@@ -83,3 +83,21 @@
     }
   }
 }
+
+.prx-uploads-image {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 160px;
+
+  img {
+    max-width: 100%;
+  }
+  aside {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    background: $gray-300;
+    font-size: 10px;
+  }
+}

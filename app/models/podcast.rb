@@ -1,7 +1,7 @@
 require "text_sanitizer"
 
 class Podcast < ApplicationRecord
-  FEED_ATTRS = %i[subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image ready_feed_image ready_itunes_image]
+  FEED_ATTRS = %i[subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image ready_feed_image ready_itunes_image ready_image]
   FEED_GETTERS = FEED_ATTRS.map { |s| [s, "#{s}_was".to_sym, "#{s}_changed?".to_sym] }.flatten
   FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
 
@@ -12,20 +12,21 @@ class Podcast < ApplicationRecord
   serialize :restrictions, JSON
 
   has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true
-  has_many :feeds, dependent: :destroy
 
   has_many :episodes, -> { order("published_at desc") }
+  has_many :feeds, dependent: :destroy
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
 
+  accepts_nested_attributes_for :default_feed
+
   validates :title, presence: true
-  validates :subtitle, presence: true
   validates :link, http_url: true
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
 
   # these keep changing - so just translate to the current accepted values
-  VALID_EXPLICITS = %w[true false]
+  VALID_EXPLICITS = %w[false true]
   EXPLICIT_ALIASES = {
     "" => nil,
     "no" => "false",
@@ -50,8 +51,12 @@ class Podcast < ApplicationRecord
   end
 
   def set_defaults
-    self.default_feed ||= feeds.new(private: false)
+    set_default_feed
     self.explicit ||= "false"
+  end
+
+  def set_default_feed
+    self.default_feed ||= feeds.new(private: false)
   end
 
   def explicit=(value)

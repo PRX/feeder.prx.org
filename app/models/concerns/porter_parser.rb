@@ -63,30 +63,52 @@ module PorterParser
 
   def porter_callback_media_meta
     info = self.class.porter_callback_inspect(result).try(:[], :Inspection)
-    if info
-      mime = porter_callback_mime(info)
-      meta = {
-        mime_type: mime,
-        medium: (mime || "").split("/").first,
-        file_size: info[:Size].to_i
-      }
-      audio_meta = porter_callback_audio_meta(mime, info)
-      video_meta = porter_callback_video_meta(mime, info)
+    mime = porter_callback_mime(info)
+    meta = {
+      mime_type: mime,
+      medium: (mime || "").split("/").first,
+      file_size: porter_callback_size(info)
+    }
+    audio_meta = porter_callback_audio_meta(mime, info)
+    video_meta = porter_callback_video_meta(mime, info)
 
-      meta.merge(audio_meta).merge(video_meta)
+    meta.merge(audio_meta).merge(video_meta)
+  end
+
+  def porter_callback_image_meta
+    info = self.class.porter_callback_inspect(result).try(:[], :Inspection)
+    mime = porter_callback_mime(info)
+    meta = {
+      size: porter_callback_size(info)
+    }
+
+    # only return for actual images - not detected images in id3 tags
+    if info && info[:Image] && mime.starts_with?("image/")
+      meta.merge(
+        format: info[:Image][:Format],
+        height: info[:Image][:Height].to_i,
+        size: info[:Size].to_i,
+        width: info[:Image][:Width].to_i
+      )
+    else
+      meta
     end
   end
 
   def porter_callback_mime(info)
-    if info[:MIME]
+    if info && info[:MIME]
       info[:MIME]
-    elsif info[:Audio]
+    elsif info && info[:Audio]
       "audio/mpeg"
     end
   end
 
+  def porter_callback_size(info)
+    info[:Size].to_i if info
+  end
+
   def porter_callback_audio_meta(mime, info)
-    if info[:Audio]
+    if info && info[:Audio]
       {
         sample_rate: info[:Audio][:Frequency].to_i,
         channels: info[:Audio][:Channels].to_i,
@@ -100,7 +122,7 @@ module PorterParser
 
   def porter_callback_video_meta(mime, info)
     # only return for actual videos - not detected images in id3 tags
-    if info[:Video] && mime.starts_with?("video")
+    if info && info[:Video] && mime.starts_with?("video")
       {
         duration: info[:Video][:Duration].to_f / 1000,
         bit_rate: info[:Video][:Bitrate].to_i / 1000,

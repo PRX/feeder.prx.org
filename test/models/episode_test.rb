@@ -415,8 +415,8 @@ describe Episode do
 
   describe "#destroy_out_of_range_contents" do
     it "marks contents for destruction" do
-      c1 = episode.contents.create!(position: 2)
-      c2 = episode.contents.create!(position: 4)
+      c1 = episode.contents.create!(original_url: "c1", position: 2)
+      c2 = episode.contents.create!(original_url: "c2", position: 4)
 
       episode.segment_count = nil
       episode.destroy_out_of_range_contents
