@@ -155,7 +155,6 @@ class PodcastImport < ActiveRecord::Base
     entry
       .to_h
       .with_indifferent_access
-      .transform_values { |x| x.is_a?(String) ? remove_utf8_4byte(x) : x }
       .as_json
       .with_indifferent_access
   end
