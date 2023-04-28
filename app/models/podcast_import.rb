@@ -283,7 +283,7 @@ class PodcastImport < ActiveRecord::Base
   end
 
   def feedburner_url(fb_name)
-    fb_name ? "http://feeds.feedburner.com/#{clean_string(fb_name)}" : nil
+    fb_name ? "https://feeds.feedburner.com/#{clean_string(fb_name)}" : nil
   end
 
   def owner(itunes_owners)
