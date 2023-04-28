@@ -205,8 +205,12 @@ class PodcastImport < ActiveRecord::Base
 
     default_feed.itunes_image = feed.itunes_image if feed.itunes_image.present?
     default_feed.feed_image = feed.image.url if feed.image.present?
-
     default_feed.save!
+
+    default_feed.itunes_images.reset
+    default_feed.feed_images.reset
+
+    default_feed.copy_media
   end
 
   def build_podcast_attributes
@@ -258,7 +262,6 @@ class PodcastImport < ActiveRecord::Base
     update!(podcast: podcast)
 
     update_images(feed)
-    podcast.copy_media
 
     podcast
   end
