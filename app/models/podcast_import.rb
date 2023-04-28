@@ -209,13 +209,6 @@ class PodcastImport < ActiveRecord::Base
     default_feed.save!
   end
 
-  attr_writer :distribution
-
-  def distribution
-    Rails.logger.error("PodcastImport#distribution not feeder implemented")
-    []
-  end
-
   def build_podcast_attributes
     podcast_attributes = {}
 
