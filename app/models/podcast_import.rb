@@ -15,10 +15,6 @@ class PodcastImport < ActiveRecord::Base
 
   validates :account_id, :url, presence: true
 
-
-
-
-
   AUDIO_SAVED = "audio saved".freeze
   COMPLETE = "complete".freeze
   CREATED = "created".freeze
