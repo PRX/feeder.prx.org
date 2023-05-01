@@ -42,11 +42,13 @@ module Apple
         return
       end
 
-      eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
-        poll_episodes!(eps)
-        poll_podcast_containers!(eps)
-        poll_podcast_deliveries!(eps)
-        poll_podcast_delivery_files!(eps)
+      Rails.logger.tagged("Apple::Publisher#poll!") do
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          poll_episodes!(eps)
+          poll_podcast_containers!(eps)
+          poll_podcast_deliveries!(eps)
+          poll_podcast_delivery_files!(eps)
+        end
       end
     end
 
@@ -54,23 +56,25 @@ module Apple
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
-      eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
-        # only create if needed
-        sync_episodes!(eps)
-        sync_podcast_containers!(eps)
-        sync_podcast_deliveries!(eps)
-        sync_podcast_delivery_files!(eps)
+      Rails.logger.tagged("Apple::Publisher#publish!") do
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          # only create if needed
+          sync_episodes!(eps)
+          sync_podcast_containers!(eps)
+          sync_podcast_deliveries!(eps)
+          sync_podcast_delivery_files!(eps)
 
-        # upload and mark as uploaded
-        execute_upload_operations!(eps)
-        mark_delivery_files_uploaded!(eps)
+          # upload and mark as uploaded
+          execute_upload_operations!(eps)
+          mark_delivery_files_uploaded!(eps)
 
-        wait_for_upload_processin(eps)
-        wait_for_asset_stat(eps)
+          wait_for_upload_processing(eps)
+          wait_for_asset_state(eps)
 
-        publish_drafting!(eps)
+          publish_drafting!(eps)
 
-        log_delivery_processing_errors(eps)
+          log_delivery_processing_errors(eps)
+        end
       end
 
       # success
@@ -94,107 +98,134 @@ module Apple
     end
 
     def wait_for_upload_processing(eps)
-      pdfs = eps.map(&:podcast_delivery_files).flatten
+      Rails.logger.tagged("##{__method__}") do
+        pdfs = eps.map(&:podcast_delivery_files).flatten
 
-      Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
+        Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
+      end
     end
 
     def wait_for_asset_state(eps)
-      eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
-      Apple::Episode.wait_for_asset_state(api, eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
+        Apple::Episode.wait_for_asset_state(api, eps)
+      end
     end
 
     def poll_episodes!(eps)
-      local_guids = eps.map(&:guid)
-      remote_guids = show.apple_episode_guids
+      Rails.logger.tagged("##{__method__}") do
+        local_guids = eps.map(&:guid)
+        remote_guids = show.apple_episode_guids
 
-      Rails.logger.info("Polling remote / local episode state", {local_count: local_guids.length,
-                                                                  remote_count: remote_guids.length})
+        Rails.logger.info("Polling remote / local episode state", {local_count: local_guids.length,
+                                                                    remote_count: remote_guids.length})
+      end
     end
 
     def sync_episodes!(eps)
-      Rails.logger.info("Starting podcast episode sync")
+      Rails.logger.tagged("##{__method__}") do
+        Rails.logger.info("Starting podcast episode sync")
 
-      create_apple_episodes = eps.select(&:apple_new?)
-      # NOTE: We don't attempt to update the remote state of episodes. Once
-      # apple has parsed the feed, it will not allow changing any attributes.
-      #
-      # It's assumed that the episodes are created solely by the PRX web UI (not
-      # on Podcasts Connect).
-      Apple::Episode.create_episodes(api, create_apple_episodes)
+        create_apple_episodes = eps.select(&:apple_new?)
+        # NOTE: We don't attempt to update the remote state of episodes. Once
+        # apple has parsed the feed, it will not allow changing any attributes.
+        #
+        # It's assumed that the episodes are created solely by the PRX web UI (not
+        # on Podcasts Connect).
+        Apple::Episode.create_episodes(api, create_apple_episodes)
 
-      Rails.logger.info("Created remote episodes", {count: create_apple_episodes.length})
+        Rails.logger.info("Created remote episodes", {count: create_apple_episodes.length})
 
-      show.reload
+        show.reload
+      end
     end
 
     def poll_podcast_containers!(eps)
-      res = Apple::PodcastContainer.poll_podcast_container_state(api, eps)
-      Rails.logger.info("Modified local state for podcast containers.", {count: res.length})
+      Rails.logger.tagged("##{__method__}") do
+        res = Apple::PodcastContainer.poll_podcast_container_state(api, eps)
+        Rails.logger.info("Modified local state for podcast containers.", {count: res.length})
+      end
     end
 
     def sync_podcast_containers!(eps)
-      # TODO: right now we only create one delivery per container,
-      # Apple RSS scaping means we don't need deliveries for freemium episode images
-      # But we do need asset deliveries for apple-only (non-rss) images
+      Rails.logger.tagged("##{__method__}") do
+        # TODO: right now we only create one delivery per container,
+        # Apple RSS scaping means we don't need deliveries for freemium episode images
+        # But we do need asset deliveries for apple-only (non-rss) images
 
-      Rails.logger.info("Starting podcast container sync")
+        Rails.logger.info("Starting podcast container sync")
 
-      poll_podcast_containers!(eps) # TODO
 
-      res = Apple::PodcastContainer.create_podcast_containers(api, eps)
-      Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})
+        poll_podcast_containers!(eps) # TODO
 
-      res = Apple::Episode.update_audio_container_reference(api, eps)
-      Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
+        res = Apple::PodcastContainer.create_podcast_containers(api, eps)
+        Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})
 
-      res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, eps)
-      Rails.logger.info("Updated remote file metadata on podcast containers.", {count: res.length})
+        res = Apple::Episode.update_audio_container_reference(api, eps)
+        Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
+
+        res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, eps)
+        Rails.logger.info("Updated remote file metadata on podcast containers.", {count: res.length})
+      end
     end
 
     def poll_podcast_deliveries!(eps)
-      res = Apple::PodcastDelivery.poll_podcast_deliveries_state(api, eps)
-      Rails.logger.info("Modified local state for podcast deliveries.", {count: res.length})
+      Rails.logger.tagged("##{__method__}") do
+        res = Apple::PodcastDelivery.poll_podcast_deliveries_state(api, eps)
+        Rails.logger.info("Modified local state for podcast deliveries.", {count: res.length})
+      end
     end
 
     def sync_podcast_deliveries!(eps)
-      Rails.logger.info("Starting podcast deliveries sync")
+      Rails.logger.tagged("##{__method__}") do
+        Rails.logger.info("Starting podcast deliveries sync")
 
-      poll_podcast_deliveries!(eps)
+        poll_podcast_deliveries!(eps)
 
-      res = Apple::PodcastDelivery.create_podcast_deliveries(api, eps)
-      Rails.logger.info("Created remote and local state for podcast deliveries.", {count: res.length})
+        res = Apple::PodcastDelivery.create_podcast_deliveries(api, eps)
+        Rails.logger.info("Created remote and local state for podcast deliveries.", {count: res.length})
+      end
     end
 
     def poll_podcast_delivery_files!(eps)
-      res = Apple::PodcastDeliveryFile.poll_podcast_delivery_files_state(api, eps)
-      Rails.logger.info("Modified local state for podcast delivery files.", {count: res.length})
+      Rails.logger.tagged("##{__method__}") do
+        res = Apple::PodcastDeliveryFile.poll_podcast_delivery_files_state(api, eps)
+        Rails.logger.info("Modified local state for podcast delivery files.", {count: res.length})
+      end
     end
 
     def sync_podcast_delivery_files!(eps)
-      Rails.logger.info("Starting podcast delivery files sync")
+      Rails.logger.tagged("##{__method__}") do
+        Rails.logger.info("Starting podcast delivery files sync")
 
-      # TODO
-      poll_podcast_delivery_files!(eps)
+        # TODO
+        poll_podcast_delivery_files!(eps)
 
-      res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, eps)
-      Rails.logger.info("Created remote/local state for #{res.length} podcast delivery files.")
+        res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, eps)
+        Rails.logger.info("Created remote/local state for #{res.length} podcast delivery files.")
+      end
     end
 
     def execute_upload_operations!(eps)
-      Apple::UploadOperation.execute_upload_operations(api, eps)
+      Rails.logger.tagged("##{__method__}") do
+        Apple::UploadOperation.execute_upload_operations(api, eps)
+      end
     end
 
     def mark_delivery_files_uploaded!(eps)
-      pdfs = eps.map(&:podcast_delivery_files).flatten
-      ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
+      Rails.logger.tagged("##{__method__}") do
+        pdfs = eps.map(&:podcast_delivery_files).flatten
+        ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
+      end
     end
 
     def publish_drafting!(eps)
-      eps = eps.select { |ep| ep.drafting? && ep.apple_upload_complete? }
+      Rails.logger.tagged("##{__method__}") do
+        eps = eps.select { |ep| ep.drafting? && ep.apple_upload_complete? }
 
-      res = Apple::Episode.publish(api, eps)
-      Rails.logger.info("Published #{res.length} drafting episodes.")
+        res = Apple::Episode.publish(api, eps)
+        Rails.logger.info("Published #{res.length} drafting episodes.")
+      end
     end
   end
 end
