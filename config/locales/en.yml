@@ -211,10 +211,6 @@ en:
       manage_settings: Manage Settings
       engagement_settings: Engagement Settings
       import: Import
-    podcast_engagement:
-      donation_link: Donation Link
-      coil: Coil
-      last_saved: Last Saved
     podcast_page:
       my_podcasts: My Podcasts
       drafted_episodes:
@@ -227,6 +223,19 @@ en:
       scheduled_episodes:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
+  podcast_engagement:
+    show:
+      donation_link: Donation Link
+      micropayments: Micropayments
+      payment_pointer: Coil
+      last_saved: Last Saved
+      subscribe: Subscribe and Follow Links
+      social_media: Social Media Links
+    update:
+      notice:
+        success: Update Successful
+        error: Unable to Save
+
   podcast_planner:
     create:
       success: Episode drafts generated.

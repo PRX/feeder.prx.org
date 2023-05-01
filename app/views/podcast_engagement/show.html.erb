@@ -16,11 +16,11 @@
 
             <hr style="height:.1rem background-color:black">
 
-            <h3 aria-label="Micropayments">Micropayments</h3>
+            <h3 aria-label="Micropayments"><%= t(".micropayments") %></h3>
 
             <div class="form-floating mx-auto input-group row">
                 <%= form.text_field :payment_pointer %>
-                <label for="floatingInput"><%= t(".coil") %></label>
+                <label for="floatingInput"><%= t(".payment_pointer") %></label>
                 <span class="material-icons mb-4 justify-content-center col-1 border p-0">link</span>
             </div>
         <div>
@@ -40,7 +40,7 @@
                 <h5 class="card-title fw-bold">Status</h5>
             </div>
                 <div class="card-footer">
-                <div class="card-footer d-grid g-1 lh-sm fs-sm text-end">
+                <div class="card-footer d-grid g-1 lh-sm fs-sm text-start">
                 <strong><%= t(".last_saved") %></strong>
                 <datetime><%= l(@podcast.updated_at) %></datetime>
               </div>
