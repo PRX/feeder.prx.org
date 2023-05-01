@@ -133,13 +133,16 @@ module Apple
 
       results = get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
 
-      join_many_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, results, left_join: true).map do |(podcast_delivery, delivery_file_rows)|
+      res = join_many_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, results, left_join: true).map do |(podcast_delivery, delivery_file_rows)|
         next if delivery_file_rows.nil?
 
         delivery_file_rows.map do |delivery_file_row|
           upsert_podcast_delivery_file(podcast_delivery, delivery_file_row)
         end
       end
+      episodes.map(&:feeder_episode).map(&:reload)
+
+      res
     end
 
     def self.get_podcast_delivery_files(api, pdfs)

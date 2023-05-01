@@ -37,13 +37,17 @@ module Apple
 
       results = get_podcast_deliveries_via_containers(api, podcast_containers)
 
-      join_many_on("podcast_container_id", podcast_containers, results, left_join: true).map do |(podcast_container, delivery_rows)|
+      res = join_many_on("podcast_container_id", podcast_containers, results, left_join: true).map do |(podcast_container, delivery_rows)|
         next if delivery_rows.nil?
 
         delivery_rows.each do |delivery_row|
           upsert_podcast_delivery(podcast_container, delivery_row)
         end
       end
+
+      episodes.map(&:feeder_episode).map(&:reload)
+
+      res
     end
 
     def self.select_containers_for_delivery(podcast_containers)
