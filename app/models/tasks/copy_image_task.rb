@@ -16,7 +16,7 @@ class Tasks::CopyImageTask < ::Task
   def task_options
     super.merge({
       job_type: "image",
-      source: image_resource.original_url,
+      source: image_resource.href,
       destination: destination_url(image_resource)
     }).with_indifferent_access
   end

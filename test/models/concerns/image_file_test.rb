@@ -56,8 +56,11 @@ describe ImageFile do
   end
 
   describe "#href" do
-    it "checks if processing is complete" do
+    it "checks if processing is complete or invalid" do
       assert_equal "complete", image.status
+      assert_equal image.url, image.href
+
+      image.status = "invalid"
       assert_equal image.url, image.href
 
       image.status = "processing"

@@ -8,8 +8,16 @@ describe Tasks::CopyImageTask do
   it "has task options" do
     opts = task.task_options
     assert_equal opts[:job_type], "image"
-    assert_equal opts[:source], image.original_url
+    assert_equal opts[:source], image.href
     assert_match(/s3:\/\/test-prx-feed\/#{path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/images\/4e745a8c-77ee-481c-a72b-fd868dfd1c9(\d+)\/image\.png/, opts[:destination])
+  end
+
+  it "uses the url as source when complete" do
+    assert_equal image.status, "complete"
+    assert_equal task.task_options[:source], image.url
+
+    image.status = "started"
+    assert_equal task.task_options[:source], image.original_url
   end
 
   it "gets the image path" do
