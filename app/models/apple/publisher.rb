@@ -155,8 +155,11 @@ module Apple
 
         Rails.logger.info("Starting podcast container sync")
 
-
         poll_podcast_containers!(eps) # TODO
+
+        # Only reset if we need delivery and the source url (pinned mp3 arrangement) is expired.
+        reset = Apple::PodcastContainer.reset_for_expired_source_urls(api, eps)
+        Rails.logger.info("Reset podcast containers for expired source urls.", {reset_count: reset.length})
 
         res = Apple::PodcastContainer.create_podcast_containers(api, eps)
         Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})

@@ -206,4 +206,34 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe "#source_url_is_expired?" do
+    it "returns true if the source_url is expired" do
+      pc = Apple::PodcastContainer.new
+      pc.source_url = "https://podcast.source/1234?exp=1682802882&foo=bar"
+      assert pc.source_url_expired?
+
+      # The year 3000
+      pc.source_url = "https://podcast.source/1234?exp=32514099388"
+      refute pc.source_url_expired?
+    end
+
+    it "has a ten minute buffer period" do
+      current_time = Time.parse("Mon, 01 May 2023 00:00:01 GMT")
+      expires_at = current_time + 10.minutes
+
+      travel_to current_time do
+        pc = Apple::PodcastContainer.new
+        pc.source_url = "https://podcast.source/1234?exp=#{expires_at.to_i}"
+        assert pc.source_url_expired?
+      end
+
+      current_time -= 1.second
+      travel_to current_time do
+        pc = Apple::PodcastContainer.new
+        pc.source_url = "https://podcast.source/1234?exp=#{expires_at.to_i}"
+        refute pc.source_url_expired?
+      end
+    end
+  end
 end
