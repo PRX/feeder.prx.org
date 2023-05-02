@@ -304,7 +304,7 @@ module Apple
     end
 
     def apple_complete?
-      delivery_complete? && processed_completed?
+      delivery_complete? && (processed_completed? || processed_duplicate?)
     end
 
     def delivered?
