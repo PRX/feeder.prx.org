@@ -300,20 +300,43 @@ class Episode < ApplicationRecord
   end
 
   def include_in_feed?
-    (segment_count.nil? && !media?) || media_ready?
+    # episodes can have no media at all
+    if medium.nil? && segment_count.nil? && !media?
+      true
+    else
+      media_ready?
+    end
   end
 
   def media_resources
-    contents.blank? ? Array(enclosure) : contents
+    if medium_audio?
+      contents
+    else
+      Array(enclosure)
+    end
   end
 
   # NOTE: API updates ignore nil attributes
   def media_resources=(files)
-    self.contents = files unless files.nil?
+    return if files.nil?
+
+    resources = Array(files).map { |f| MediaResource.build(f) }
+
+    if medium_audio?
+      self.contents = resources
+    elsif medium_video?
+      self.enclosure = resources.first
+    elsif medium.nil? && resources.all?(&:audio?)
+      # infer audio
+      self.contents = resources
+    else
+      # default to enclosure
+      self.enclosure = resources.first
+    end
   end
 
   def ready_media_resources
-    contents.blank? ? Array(ready_enclosure) : ready_contents
+    medium_audio? ? ready_contents : Array(ready_enclosure)
   end
 
   def media?
@@ -336,14 +359,16 @@ class Episode < ApplicationRecord
   end
 
   def media_ready?
-    if contents.blank?
-      ready_enclosure.present?
-    elsif segment_count.nil?
-      ready_contents.count == contents.maximum(:position)
-    elsif segment_count.positive?
-      ready_contents.count == segment_count
+    if medium_audio?
+      if ready_contents.empty?
+        false
+      elsif segment_count.nil?
+        ready_contents.count == contents.maximum(:position)
+      else
+        ready_contents.count == segment_count
+      end
     else
-      false
+      ready_enclosure.present?
     end
   end
 
