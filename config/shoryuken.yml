@@ -10,7 +10,6 @@ delay: <%= if ENV["WORKER_PAUSE"].present? then ENV["WORKER_PAUSE"] else 30 end 
 queues:
   - ["<%= prefix %>_feeder_default", 2]
   - ["<%= prefix %>_feeder_fixer_callback", 1]
-  - ["<%= prefix %>_feeder_podcast_import", 1]
   - ["<%= prefix %>_announce_feeder_series_create", 1]
   - ["<%= prefix %>_announce_feeder_series_update", 1]
   - ["<%= prefix %>_announce_feeder_series_delete", 1]
