@@ -252,9 +252,13 @@ module Apple
     end
 
     def needs_delivery?
-      # TODO: Overwriting the podcast audio with another file
-      missing_podcast_audio? && podcast_deliveries.empty?
-     end
+      # Handle the case where the podcast container *does* have podcast audio,
+      # but doesn't have any podcast deliveries / files. This is a weird edge
+      # case but it amounts to checking the deliveries to see if any are there.
+      # If there are no deliveries, then the code that polls/checks the delivery
+      # status will fail.
+      podcast_deliveries.empty?
+    end
 
     def source_url_expires_at
       return nil if source_url.blank?
