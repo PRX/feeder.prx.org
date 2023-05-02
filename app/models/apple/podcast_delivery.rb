@@ -123,7 +123,7 @@ module Apple
           external_id: external_id,
           podcast_container: podcast_container).first)
 
-          delivery.update(api_response: row, updated_at: Time.now.utc)
+          delivery.update(api_response: row, status: delivery_status, updated_at: Time.now.utc)
 
           [delivery, :updated]
         else

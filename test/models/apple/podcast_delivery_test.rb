@@ -46,6 +46,16 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
       pd2 = Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container, podcast_delivery_json_api_response)
       assert pd2.updated_at > pd.updated_at
     end
+
+    it "should update the delivery status" do
+      res = Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container, podcast_delivery_json_api_response)
+      assert_nil res.status
+
+      Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container,
+        {api_response: {val: {data: {id: "123", attributes: {status: "COMPLETED"}}}}}.with_indifferent_access)
+
+      assert_equal "completed", res.reload.status
+    end
   end
 
   describe "#podcast_delivery" do
