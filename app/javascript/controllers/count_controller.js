@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["counter", "display"]
   static values = {
-    selected: { type: Number, default: 0 }
+    selected: { type: Number, default: 0 },
   }
 
   connect() {
@@ -17,7 +17,7 @@ export default class extends Controller {
   }
 
   countSelectedTargets() {
-    const selectedTargets = this.counterTargets.filter(el => {
+    const selectedTargets = this.counterTargets.filter((el) => {
       return el.firstElementChild.disabled
     })
     return this.counterTargets.length - selectedTargets.length
