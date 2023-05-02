@@ -89,7 +89,7 @@ module Apple
           Rails.logger.error("Episode has processing errors",
             {episode_id: ep.feeder_id,
              podcast_delivery_file_id: pdf.id,
-             assert_processing_state: pdf.asset_processing_state,
+             asset_processing_state: pdf.asset_processing_state,
              asset_delivery_state: pdf.asset_delivery_state})
         end
       end
