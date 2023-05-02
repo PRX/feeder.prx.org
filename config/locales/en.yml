@@ -258,7 +258,7 @@ en:
         publish_time: What time of day do you plan to publish the episodes?
         audio_segments: How many audio segments?
         segment_count: Number of segments
-        number_of_drafts: "Planning %{count} drafts"
+        number_of_drafts: "Drafts planned: "
         help:
           segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
       help:

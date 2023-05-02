@@ -23,29 +23,31 @@
   </div>
 
   <div class="card p-4 mt-4mb-4">
-    <div data-controller="pager" data-pager-range-value="6">
-      <div class="d-flex justify-content-between">
-        <h3 class="mb-3"><%= t(".header.number_of_drafts") %></h3>
-        <div class="mb-2">
-          <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: {action: "click->pager#pageBackward", pager_target: "prev"}, disabled: true do %>
-            <span class="material-icons">arrow_left</span>
-            Month
-          <% end %>
-          <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: {action: "click->pager#pageForward", pager_target: "next"} do %>
-            Month
-            <span class="material-icons">arrow_right</span>
-          <% end %>
+    <%= turbo_frame_tag "preview", target: "_top" do %>
+      <div data-controller="pager count" data-pager-range-value="6">
+        <div class="d-flex justify-content-between">
+          <h3 class="mb-3"><%= t(".header.number_of_drafts") %>
+            <span data-count-target="display"></span>
+          </h3>
+          <div class="mb-2">
+            <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: {action: "click->pager#pageBackward", pager_target: "prev"}, disabled: true do %>
+              <span class="material-icons">arrow_left</span>
+              Month
+            <% end %>
+            <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: {action: "click->pager#pageForward", pager_target: "next"} do %>
+              Month
+              <span class="material-icons">arrow_right</span>
+            <% end %>
+          </div>
+        </div>
+          <div class="row">
+            <% 24.times do |i| %>
+              <%= render "calendar", form: form, start_date: Date.today.beginning_of_month + i.months, planner: @planner, index: i, range: 6 %>
+            <% end %>
+          </div>
         </div>
       </div>
-      <%= turbo_frame_tag "preview", target: "_top" do %>
-        <div class="row">
-          <% 24.times do |i| %>
-            <%= render "calendar", form: form, start_date: Date.today.beginning_of_month + i.months, planner: @planner, index: i, range: 6 %>
-          <% end %>
-        </div>
-      <% end %>
-      </div>
-    </div>
+    <% end %>
   </div>
   <%= form.submit t(".label.submit"), class: "btn btn-primary mb-4" %>
 <% end %>
