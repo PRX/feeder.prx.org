@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_01_194608) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -133,6 +133,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.string "audio_version"
     t.integer "segment_count"
     t.text "production_notes"
+    t.integer "medium"
     t.index ["guid"], name: "index_episodes_on_guid", unique: true
     t.index ["keyword_xid"], name: "index_episodes_on_keyword_xid", unique: true
     t.index ["original_guid", "podcast_id"], name: "index_episodes_on_original_guid_and_podcast_id", unique: true, where: "((deleted_at IS NULL) AND (original_guid IS NOT NULL))"
