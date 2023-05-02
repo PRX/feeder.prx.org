@@ -1,23 +1,15 @@
 class FeedsController < ApplicationController
-  before_action :set_feed, only: %i[show edit update destroy]
+  before_action :set_feed, only: %i[show update destroy]
   before_action :set_podcast
-
-  # GET /feeds
-  def index
-    @feeds = Feed.all.limit(10)
-  end
 
   # GET /feeds/1
   def show
+    @custom_feeds = @podcast.feeds.custom
   end
 
   # GET /feeds/new
   def new
     @feed = Feed.new
-  end
-
-  # GET /feeds/1/edit
-  def edit
   end
 
   # POST /feeds

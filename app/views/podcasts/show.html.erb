@@ -78,7 +78,7 @@
         </div>
         <div class="card-body">
           <ul class="list-group list-group-flush">
-            <li class="list-group-item p-0"><%= link_to (t ".default_feed"), @podcast.default_feed %></li>
+            <li class="list-group-item p-0"><%= link_to (t ".default_feed"), podcast_feed_path(@podcast, @podcast.default_feed) %></li>
           </ul>
         </div>
       </div>

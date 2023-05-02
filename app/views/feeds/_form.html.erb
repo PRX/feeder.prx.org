@@ -1,17 +1,5 @@
-<%= form_with(model: feed) do |form| %>
-  <% if feed.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(feed.errors.count, "error") %> prohibited this feed from being saved:</h2>
+<%= form_with(url: podcast_feed_path(podcast, feed), model: feed) do |form| %>
 
-      <ul>
-        <% feed.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
 
-  <div>
-    <%= form.submit %>
-  </div>
+
 <% end %>

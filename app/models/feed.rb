@@ -43,6 +43,7 @@ class Feed < ApplicationRecord
   before_validation :sanitize_text
 
   scope :default, -> { where(slug: nil) }
+  scope :custom, -> { where.not(slug: nil) }
 
   def self.enclosure_template_default
     "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
