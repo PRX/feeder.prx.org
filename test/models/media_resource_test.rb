@@ -43,4 +43,23 @@ describe MediaResource do
   it "provides audio url based on guid" do
     assert_match(/https:\/\/f.prxu.org\/#{episode.podcast.path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/, media_resource.media_url)
   end
+
+  it "detects audio/video mediums" do
+    mr = build_stubbed(:media_resource, status: "started", medium: nil)
+
+    # detect audio from extension
+    mr.original_url = "s3://some.where/file.mp3"
+    assert mr.audio?
+    refute mr.video?
+
+    # detect video from extension
+    mr.original_url = "s3://some.where/file.mov"
+    refute mr.audio?
+    assert mr.video?
+
+    # override via medium
+    mr.assign_attributes(status: "complete", medium: "blah")
+    refute mr.audio?
+    refute mr.video?
+  end
 end
