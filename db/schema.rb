@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_29_152910) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -94,6 +94,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.index ["guid"], name: "index_episode_images_on_guid", unique: true
   end
 
+  create_table "episode_imports", force: :cascade do |t|
+    t.integer "podcast_import_id"
+    t.integer "episode_id"
+    t.string "guid"
+    t.text "entry"
+    t.text "audio"
+    t.string "status"
+    t.boolean "has_duplicate_guid", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "episodes", id: :serial, force: :cascade do |t|
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
@@ -121,8 +133,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.string "keyword_xid"
     t.datetime "source_updated_at", precision: nil
+    t.string "keyword_xid"
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"
@@ -261,6 +273,17 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.index ["original_url"], name: "index_media_resources_on_original_url"
   end
 
+  create_table "podcast_imports", force: :cascade do |t|
+    t.integer "account_id"
+    t.integer "podcast_id"
+    t.string "url"
+    t.string "status"
+    t.integer "feed_episode_count"
+    t.text "config"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "podcasts", id: :serial, force: :cascade do |t|
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
@@ -368,8 +391,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
 
   add_foreign_key "apple_configs", "feeds", column: "private_feed_id"
   add_foreign_key "apple_configs", "feeds", column: "public_feed_id"
+  add_foreign_key "episode_imports", "podcast_imports"
   add_foreign_key "feed_images", "feeds"
   add_foreign_key "feed_tokens", "feeds"
   add_foreign_key "feeds", "podcasts"
   add_foreign_key "itunes_images", "feeds"
+  add_foreign_key "podcast_imports", "podcasts"
 end

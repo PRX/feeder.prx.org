@@ -17,6 +17,7 @@ describe PorterEncoder do
   end
 
   around do |test|
+    sns.reset
     TestEncoder.stub :new_porter_sns_client, sns do
       test.call
     end
