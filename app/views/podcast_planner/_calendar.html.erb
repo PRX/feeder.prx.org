@@ -1,4 +1,4 @@
-<div class="col <%= "d-none" if index >= range %>" data-pager-target="page">
+<div class="col col-xl-4 <%= "d-none" if index >= range %>" data-pager-target="page">
   <%= month_calendar(start_date: start_date) do |date| %>
     <% if date_is_in_month?(date, start_date.month) %>
       <%= date.day %>

@@ -40,7 +40,7 @@
             <% end %>
           </div>
         </div>
-          <div class="row">
+          <div class="row d-flex flex-wrap gx-4">
             <% 24.times do |i| %>
               <%= render "calendar", form: form, start_date: Date.today.beginning_of_month + i.months, planner: @planner, index: i, range: 6 %>
             <% end %>
