@@ -19,8 +19,9 @@
     }
 
     .day.current-month:hover {
-      background-color: $secondary !important;
+      background-color: $primary !important;
       color: $light;
+      cursor: pointer;
     }
   }
 }
