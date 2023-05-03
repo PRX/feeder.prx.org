@@ -84,7 +84,7 @@ module Apple
         break if uri.nil?
 
         resp = get_uri(uri)
-        json = unwrap_response(resp)
+        json = unwrap_response!(resp)
         res << json["data"]
 
         next_uri = json["links"]["next"]
@@ -141,7 +141,7 @@ module Apple
     end
 
     def countries_and_regions
-      json = unwrap_response(get("countriesAndRegions?limit=200"))
+      json = unwrap_response!(get("countriesAndRegions?limit=200"))
       json["data"].map { |h| h.slice("type", "id") }
     end
 
@@ -159,7 +159,7 @@ module Apple
       SUCCESS_CODES.include?(resp.code)
     end
 
-    def unwrap_response(resp)
+    def unwrap_response!(resp)
       raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp)
 
       JSON.parse(resp.body)
