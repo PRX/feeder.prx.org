@@ -15,3 +15,134 @@
     <%= form.label :file_name %>
   </div>
 </div>
+
+<% unless feed.default? %>
+  <div class="col-12">
+    <div class="mb-4">
+      <div class="form-floating">
+        <%= form.text_field :title %>
+        <%= form.label :title %>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <div class="form-floating">
+        <%= form.text_field :slug %>
+        <%= form.label :slug %>
+      </div>
+    </div>
+
+    <div>
+      <div class="form-floating">
+        <%= form.text_area :description %>
+        <%= form.label :description %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <hr>
+    <h3>Feed Visibility</h3>
+    <%= form.check_box :private %>
+    <%= form.label :private, "Private (unlisted)" %>
+
+  </div>
+
+  <div class="col-12">
+    <hr>
+    <h3>Auth Tokens</h3>
+    <%= render 'form_auth_tokens', feed: feed, form: form %>
+  </div>
+
+  <div class="col-12">
+    <hr>
+    <h3>Ad Zones to Include</h3>
+
+    <%= form.check_box :billboard, value: 0 %>
+    <%= form.label :billboard, "Billboards", class: "me-2" %>
+
+    <%= form.check_box :house, value: 0 %>
+    <%= form.label :house, "House Ads", class: "me-2" %>
+
+    <%= form.check_box :paid, value: 0 %>
+    <%= form.label :paid, "Paid Ads", class: "me-2" %>
+
+    <%= form.check_box :sonic_id, value: 0 %>
+    <%= form.label :sonic_id, "System (Sonic IDs)", class: "me-2" %>
+
+  </div>
+  <div class="col-12">
+    <hr>
+  </div>
+<% end %>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :public_feed_url, value: "" %>
+    <%= form.label :public_feed_url %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.text_field :enclosure_prefix_url, value: "" %>
+    <%= form.label :enclosure_prefix_url %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.number_field :feed_episode_limit, value: "" %>
+    <%= form.label :feed_episode_limit %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.number_field :feed_metadata_limit, value: "" %>
+    <%= form.label :feed_metadata_limit %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <%= form.number_field :episode_publish_delay, value: "" %>
+    <%= form.label :episode_publish_delay %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <hr>
+  <h3>Audio Format</h3>
+
+  <div class="row my-4">
+    <div class="col-3">
+      <div class="form-floating">
+        <%= form.select :audio_format, audio_format_options %>
+        <%= form.label :audio_format %>
+      </div>
+    </div>
+
+    <div class="col-3">
+      <div class="form-floating">
+        <%= form.select :audio_format, audio_bitrate_options %>
+        <%= form.label :audio_format %>
+      </div>
+    </div>
+
+    <div class="col-3">
+      <div class="form-floating">
+        <%= form.select :audio_format, audio_channel_options %>
+        <%= form.label :audio_format %>
+      </div>
+    </div>
+
+    <div class="col-3">
+      <div class="form-floating">
+        <%= form.select :audio_format, audio_sample_options %>
+        <%= form.label :audio_format %>
+      </div>
+    </div>
+  </div>
+
+</div>
