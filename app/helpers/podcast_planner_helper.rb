@@ -61,7 +61,6 @@ module PodcastPlannerHelper
     if date_is_in_month?(day, month)
       data[:controller] = DATE_CONTROLLER
       data[:action] = [TOGGLE_ACTION, RECOUNT_ACTION].join(" ")
-      data["count-target"] = "counter"
     end
 
     content_tag(:td, class: calendar.td_classes_for(day), data: data) do

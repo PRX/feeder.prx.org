@@ -27,7 +27,7 @@
       <div data-controller="pager count" data-pager-range-value="6">
         <div class="d-flex justify-content-between">
           <h3 class="mb-3"><%= t(".header.number_of_drafts") %>
-            <span data-count-target="display"></span>
+            <span data-count-target="display"><%= @planner.dates.present? ? @planner.dates.count : "0" %></span>
           </h3>
           <div class="mb-2">
             <%= button_tag type: "button", class: "btn btn-primary btn-sm", data: {action: "click->pager#pageBackward", pager_target: "prev"}, disabled: true do %>
