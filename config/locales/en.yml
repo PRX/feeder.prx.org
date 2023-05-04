@@ -1,3 +1,12 @@
+defaults:
+  form_status: &form_status
+    create: Create
+    discard: Discard
+    new_hint: Unsaved
+    title: Status
+    update: Save
+    updated_at_hint: Last Saved
+
 en:
   # general config
   date:
@@ -141,6 +150,9 @@ en:
     update:
       error: Unable to save
       notice: Episode updated
+  feeds:
+    form_status:
+      <<: *form_status
   images:
     help:
       episode_image: Provide an image for your episode, if desired. Image dimensions must be square.

@@ -29,7 +29,7 @@ class FeedsController < ApplicationController
   def update
     respond_to do |format|
       if @feed.update(feed_params)
-        format.html { redirect_to feed_url(@feed), notice: "Feed was successfully updated." }
+        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: "Feed was successfully updated." }
       else
         format.html { render :edit, status: :unprocessable_entity }
       end
@@ -63,6 +63,12 @@ class FeedsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def feed_params
-    params.fetch(:feed, {})
+    params.fetch(:feed, {}).permit(
+      :file_name,
+      :title,
+      :slug,
+      :description,
+      :private
+    )
   end
 end
