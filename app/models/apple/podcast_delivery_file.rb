@@ -7,13 +7,17 @@ module Apple
 
     acts_as_paranoid
 
-    serialize :api_response, JSON
+    default_scope { includes(:apple_sync_log) }
 
+    has_one :apple_sync_log, -> { podcast_delivery_files }, foreign_key: :feeder_id, class_name: "SyncLog", autosave: true
     belongs_to :podcast_delivery
     has_one :podcast_container, through: :podcast_delivery
     belongs_to :episode, class_name: "::Episode"
 
     delegate :apple_episode_id, to: :podcast_delivery
+
+    alias_attribute :delivery, :podcast_delivery
+    alias_attribute :container, :podcast_container
 
     PODCAST_DELIVERY_ID_ATTR = "podcast_delivery_id"
 
@@ -66,13 +70,20 @@ module Apple
 
     def self.get_and_update_api_response(api, pdfs)
       unwrapped = get_podcast_delivery_files(api, pdfs)
-
       pdfs.each do |pdf|
         matched = unwrapped.detect { |r| r["request_metadata"]["podcast_delivery_id"] == pdf.podcast_delivery_id }
         raise "Missing response for podcast delivery file" unless matched.present?
 
-        pdf.api_response = matched
+        pdf.sync_log.api_response = matched
       end
+    end
+
+    # Used in the case where we're re-syncing an existing podcast delivery file
+    def self.mark_existing_uploaded(episodes)
+      # Reject the episodes that are still waiting for the asset state
+      eps = episodes.reject(&:waiting_for_asset_state?)
+      pdfs = eps.map(&:podcast_delivery_files).flatten
+      pdfs.map { |pdf| pdf.update!(api_marked_as_uploaded: true) }
     end
 
     def self.mark_uploaded(api, pdfs)
@@ -261,14 +272,13 @@ module Apple
           external_id: external_id,
           podcast_delivery_id: podcast_delivery_id).first)
 
-          delivery_file.update(api_response: row, updated_at: Time.now.utc)
+          delivery_file.update(updated_at: Time.now.utc)
           [delivery_file, :update]
         else
           delivery_file =
             Apple::PodcastDeliveryFile.create!(episode_id: podcast_delivery.episode.id,
               external_id: external_id,
-              podcast_delivery_id: podcast_delivery_id,
-              api_response: row)
+              podcast_delivery_id: podcast_delivery_id)
 
           [delivery_file, :create]
         end
@@ -280,7 +290,10 @@ module Apple
          feeder_episode_id: pdf.episode.id,
          podcast_delivery_file_id: pdf.podcast_delivery.id})
 
-      SyncLog.create!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id)
+      SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
+
+      # Flush the cache on the podcast container
+      podcast_delivery.delivery_files.reset
 
       pdf
     end

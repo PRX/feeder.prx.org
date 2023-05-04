@@ -23,7 +23,7 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
     let(:asset_delivery_state) { "COMPLETE" }
 
     let(:pdf_resp_container) { build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: asset_processing_state) }
-    let(:pdf) { Apple::PodcastDeliveryFile.new(**pdf_resp_container) }
+    let(:pdf) { Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container)) }
 
     describe "#delivery_awaiting_upload?" do
       it "should be false if the status is delivery_status is false" do
@@ -38,12 +38,53 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
 
       it "will not be complete if either of the two state statues are not complete" do
         pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: "VALIDATION_FAILED")
-        pdf = Apple::PodcastDeliveryFile.new(**pdf_resp_container)
+        pdf = Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container))
         assert_equal false, pdf.apple_complete?
 
         pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: "FAILED", asset_processing_state: asset_processing_state)
-        pdf = Apple::PodcastDeliveryFile.new(**pdf_resp_container)
+        pdf = Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container))
         assert_equal false, pdf.apple_complete?
+      end
+    end
+
+    describe ".mark_existing_uploaded" do
+      let(:podcast_container) { create(:apple_podcast_container, episode: episode) }
+      let(:podcast_delivery) {
+        Apple::PodcastDelivery.create!(podcast_container: podcast_container,
+          episode: podcast_container.episode)
+      }
+      let(:podcast) { create(:podcast) }
+
+      let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+      let(:private_feed) { create(:feed, podcast: podcast, private: true, tokens: [FeedToken.new]) }
+
+      let(:apple_config) { build(:apple_config) }
+      let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+
+      let(:episode) { create(:episode, podcast: podcast) }
+      let(:apple_show) do
+        Apple::Show.new(api: apple_api,
+          public_feed: public_feed,
+          private_feed: private_feed)
+      end
+      let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
+
+      it "should mark all existing files as uploaded if the episode has ready audio" do
+        pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state)
+        pdf = Apple::PodcastDeliveryFile.create!(podcast_delivery: podcast_delivery, episode: podcast_container.episode)
+        pdf.create_apple_sync_log!(**pdf_resp_container)
+
+        pdf.update!(api_marked_as_uploaded: false)
+        apple_episode.stub(:waiting_for_asset_state?, false) do
+          Apple::PodcastDeliveryFile.mark_existing_uploaded([apple_episode])
+        end
+        assert_equal true, pdf.reload.api_marked_as_uploaded
+
+        pdf.update(api_marked_as_uploaded: false)
+        apple_episode.stub(:waiting_for_asset_state?, true) do
+          Apple::PodcastDeliveryFile.mark_existing_uploaded([apple_episode])
+        end
+        assert_equal false, pdf.reload.api_marked_as_uploaded
       end
     end
   end
@@ -57,7 +98,8 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
 
     it "should soft delete the delivery" do
       pdf_resp_container = build(:podcast_delivery_file_api_response)
-      pdf = Apple::PodcastDeliveryFile.create!(**pdf_resp_container.merge(podcast_delivery: podcast_delivery, episode: podcast_container.episode))
+      pdf = Apple::PodcastDeliveryFile.create!(podcast_delivery: podcast_delivery, episode: podcast_container.episode)
+      pdf.create_apple_sync_log!(**pdf_resp_container)
 
       assert_equal [pdf], podcast_delivery.podcast_delivery_files.reset
 

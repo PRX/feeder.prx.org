@@ -40,7 +40,8 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
           Apple::PodcastContainer.upsert_podcast_container(apple_episode,
             podcast_container_json_row)
 
-          assert_equal SyncLog.count, 2
+          # The second call should not create a new log or podcast container
+          assert_equal SyncLog.count, 1
           assert_equal Apple::PodcastContainer.count, 1
         end
       end

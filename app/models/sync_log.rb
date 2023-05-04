@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class SyncLog < ApplicationRecord
-  scope :complete, -> { where("sync_completed_at IS NOT NULL AND external_id IS NOT NULL") }
-
   enum feeder_type: {
     feeds: "feeds",
     episodes: "episodes",
@@ -18,7 +16,20 @@ class SyncLog < ApplicationRecord
                           ON id = max_id")
   end
 
+  serialize :api_response, JSON
+
   def complete?
-    sync_completed_at.present? && external_id.present?
+    updated_at.present? && external_id.present?
+  end
+
+  def self.log!(attrs)
+    feeder_type = attrs.delete(:feeder_type)
+    feeder_id = attrs.delete(:feeder_id)
+    external_id = attrs.delete(:external_id)
+    api_response = attrs.delete(:api_response)
+
+    sync_log = SyncLog.find_or_initialize_by(feeder_type: feeder_type, feeder_id: feeder_id, external_id: external_id)
+    sync_log.update!(api_response: api_response)
+    sync_log
   end
 end

@@ -4,7 +4,7 @@ module Apple
   class Episode
     include Apple::ApiWaiting
     include Apple::ApiResponse
-    attr_accessor :show, :feeder_episode, :api, :api_response
+    attr_accessor :show, :feeder_episode, :api
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
@@ -125,16 +125,29 @@ module Apple
         guid = res.dig("api_response", "val", "data", "attributes", "guid")
         ep = episodes_by_guid.fetch(guid)
 
-        SyncLog
-          .create(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id)
+        SyncLog.log!(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id, api_response: res)
       end
     end
 
     def initialize(show:, feeder_episode:, api:, api_response: nil)
       @show = show
       @feeder_episode = feeder_episode
-      @api_response = api_response
+      self.api_response = api_response
       @api = api || Apple::Api.from_env
+    end
+
+    def api_response=(api_response)
+      return if api_response.nil?
+
+      if feeder_episode.apple_sync_log.present?
+        feeder_episode.apple_sync_log.update!(api_response: api_response)
+      else
+        feeder_episode.create_apple_sync_log!(api_response: api_response)
+      end
+    end
+
+    def api_response
+      feeder_episode.apple_sync_log&.api_response
     end
 
     def guid
@@ -163,13 +176,8 @@ module Apple
       feeder_episode.enclosure_filename
     end
 
-    def completed_sync_log
-      SyncLog
-        .episodes
-        .complete
-        .latest
-        .where(feeder_id: feeder_episode.id, feeder_type: :episodes)
-        .first
+    def sync_log
+      SyncLog.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
     end
 
     def self.get_episode_bridge_params(api, apple_id, guid)
@@ -397,6 +405,18 @@ module Apple
 
     def podcast_delivery_files
       feeder_episode.apple_podcast_delivery_files
+    end
+
+    alias_method :container, :podcast_container
+    alias_method :deliveries, :podcast_deliveries
+    alias_method :delivery_files, :podcast_delivery_files
+
+    def apple_sync_log
+      feeder_episode.apple_sync_log
+    end
+
+    def apple_sync_log=(sl)
+      feeder_episode.apple_sync_log = sl
     end
   end
 end

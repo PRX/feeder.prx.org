@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_04_151854) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -49,7 +49,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.integer "podcast_container_id"
     t.string "external_id"
     t.string "status"
-    t.string "api_response"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "deleted_at", precision: nil
@@ -62,7 +61,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.integer "episode_id"
     t.integer "podcast_delivery_id"
     t.string "external_id"
-    t.string "api_response"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "api_marked_as_uploaded", default: false
@@ -346,8 +344,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_205952) do
     t.string "feeder_type", null: false
     t.bigint "feeder_id", null: false
     t.string "external_id"
-    t.datetime "sync_completed_at"
+    t.datetime "updated_at"
     t.datetime "created_at"
+    t.text "api_response"
+    t.index ["feeder_type", "feeder_id"], name: "index_sync_logs_on_feeder_type_and_feeder_id", unique: true
   end
 
   create_table "tasks", id: :serial, force: :cascade do |t|

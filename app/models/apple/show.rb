@@ -13,7 +13,7 @@ module Apple
     def self.connect_existing(apple_show_id, apple_config)
       api = Apple::Api.from_apple_config(apple_config)
 
-      SyncLog.create!(feeder_id: apple_config.public_feed.id,
+      SyncLog.log!(feeder_id: apple_config.public_feed.id,
         feeder_type: :feeds,
         sync_completed_at: Time.now.utc,
         external_id: apple_show_id)
@@ -76,30 +76,21 @@ module Apple
     end
 
     def apple_id
-      completed_sync_log&.external_id
+      sync_log&.external_id
     end
 
     def id
       apple_id
     end
 
-    def completed_sync_log
-      SyncLog
-        .feeds
-        .complete
-        .where(feeder_id: public_feed.id, feeder_type: :feeds)
-        .order(created_at: :desc).first
+    def sync_log
+      public_feed.apple_sync_log
     end
 
     def sync!
-      last_completed_sync = completed_sync_log
-
-      apple_json = create_or_update_show(last_completed_sync)
-
-      SyncLog.create!(feeder_id: public_feed.id,
-        feeder_type: :feeds,
-        sync_completed_at: Time.now.utc,
-        external_id: apple_json["data"]["id"])
+      apple_json = create_or_update_show(sync_log)
+      sync_log.update!(api_response: apple_json)
+      sync_log
     end
 
     def create_show!

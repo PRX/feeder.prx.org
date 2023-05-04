@@ -21,7 +21,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
       pc
     end
 
-    it "should create logs based on a returned row value" do
+    it "should create a single log based on a returned row value" do
       assert_equal SyncLog.count, 0
       assert_equal Apple::PodcastDelivery.count, 0
 
@@ -33,7 +33,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
       # Now upsert existing record
       Apple::PodcastDelivery.upsert_podcast_delivery(podcast_container, podcast_delivery_json_api_response)
 
-      assert_equal SyncLog.count, 2
+      assert_equal SyncLog.count, 1
       assert_equal Apple::PodcastDelivery.count, 1
     end
 
@@ -118,8 +118,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     let(:podcast_container) { create(:apple_podcast_container) }
     let(:podcast_delivery) {
       Apple::PodcastDelivery.create!(podcast_container: podcast_container,
-        episode: podcast_container.episode,
-        api_response: podcast_delivery_json_api_response)
+        episode: podcast_container.episode)
     }
 
     it "should soft delete the delivery" do

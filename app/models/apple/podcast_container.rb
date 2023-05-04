@@ -6,9 +6,15 @@ module Apple
 
     serialize :api_response, JSON
 
+    default_scope { includes(:apple_sync_log) }
+
+    has_one :apple_sync_log, -> { podcast_containers }, foreign_key: :feeder_id, class_name: "SyncLog"
     has_many :podcast_deliveries, dependent: :destroy
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, class_name: "::Episode"
+
+    alias_attribute :deliveries, :podcast_deliveries
+    alias_attribute :delivery_files, :podcast_delivery_files
 
     FILE_STATUS_SUCCESS = "In Asset Repository"
     FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"
@@ -99,14 +105,12 @@ module Apple
           episode_id: episode.feeder_id,
           vendor_id: episode.audio_asset_vendor_id).first)
 
-          pc.update(api_response: row,
-            enclosure_url: episode.enclosure_url,
+          pc.update(enclosure_url: episode.enclosure_url,
             source_filename: episode.enclosure_filename,
             updated_at: Time.now.utc)
           [pc, :updated]
         else
-          pc = create!(api_response: row,
-            apple_episode_id: episode.apple_id,
+          pc = create!(apple_episode_id: episode.apple_id,
             external_id: external_id,
             source_filename: episode.enclosure_filename,
             enclosure_url: episode.enclosure_url,
@@ -121,10 +125,11 @@ module Apple
          external_id: external_id,
          feeder_episode_id: episode.feeder_id})
 
-      # reset the episode's podcast container cached value
-      episode.feeder_episode.reload_apple_podcast_container
+      SyncLog.log!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
 
-      SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id)
+      # reset the episode's podcast container cached value
+      pc.reload if action == :updated
+      episode.feeder_episode.reload
 
       pc
     end

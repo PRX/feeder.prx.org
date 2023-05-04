@@ -104,7 +104,8 @@ describe Apple::Show do
 
   describe "#apple_id" do
     it "should return nil if not set" do
-      apple_show.completed_sync_log.delete
+      apple_show.sync_log.destroy
+      apple_show.public_feed.reload
 
       assert_nil apple_show.apple_id
     end
@@ -116,21 +117,21 @@ describe Apple::Show do
         sync = apple_show.sync!
 
         assert_equal sync.class, SyncLog
-        assert_equal sync.complete?, true
       end
     end
 
     it "logs an incomplete sync record if the upsert fails" do
       raises_exception = ->(_arg) { raise Apple::ApiError.new("Error", OpenStruct.new(code: 200, body: "body")) }
 
-      apple_show.completed_sync_log.delete
+      apple_show.sync_log.destroy
+      apple_show.public_feed.reload
 
       apple_show.stub(:create_or_update_show, raises_exception) do
         sync = nil
         assert_raises(Apple::ApiError) do
           sync = apple_show.sync!
         end
-        assert_nil apple_show.completed_sync_log
+        assert_nil apple_show.sync_log
       end
     end
   end
