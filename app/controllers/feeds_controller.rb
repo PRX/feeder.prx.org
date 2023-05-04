@@ -68,7 +68,8 @@ class FeedsController < ApplicationController
       :title,
       :slug,
       :description,
-      :private
+      :private,
+      tokens_attributes: %i[id label token]
     )
   end
 end
