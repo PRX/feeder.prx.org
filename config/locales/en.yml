@@ -232,10 +232,8 @@ en:
       subscribe: Subscribe and Follow Links
       social_media: Social Media Links
     update:
-      notice:
-        success: Update Successful
-        error: Unable to Save
-
+      error: Unable to save
+      notice: Podcast updated
   podcast_planner:
     create:
       success: Episode drafts generated.

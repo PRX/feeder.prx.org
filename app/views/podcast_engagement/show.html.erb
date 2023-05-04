@@ -2,54 +2,46 @@
 
 <%= render "podcasts/tabs" %>
 
-<div class="row mt-4 mb-4 p-4 justify-content-center">
+<%= form_with(model: @podcast, url: podcast_engagement_path, html: {autocomplete: "off"}, data: {controller: "unsaved", unsaved_changed_value: @podcast.changed?, unsaved_confirm_value: t(".confirm")}) do |form| %>
+<div class="row mt-4">
     <div class="col-8">
-
-        <%= form_with(model: @podcast, url: podcast_engagement_path, html: {autocomplete: "off"}, data: {controller: "unsaved", unsaved_changed_value: @podcast.changed?, unsaved_confirm_value: t(".confirm")}) do |form| %>
-
-        <div class="row">
-            </div>
-                <div class="form-floating mb-3 input-group">
-                <%= form.text_field :donation_url %>
-                <label for="floatingInput"><%= t(".donation_link") %></label>
-            </div>
+        <div class="form-floating input-group">
+            <%= form.text_field :donation_url %>
+            <label for="floatingInput"><%= t(".donation_link") %></label>
+        </div>
 
             <hr style="height:.1rem background-color:black">
 
             <h3 aria-label="Micropayments"><%= t(".micropayments") %></h3>
 
-            <div class="form-floating mx-auto input-group row">
+            <div class="form-floating input-group">
                 <%= form.text_field :payment_pointer %>
                 <label for="floatingInput"><%= t(".payment_pointer") %></label>
-                <span class="material-icons mb-4 justify-content-center col-1 border p-0">link</span>
+                <span class="material-icons mx-auto justify-content-center col-1 border px-auto">link</span>
             </div>
+
         <div>
-
-        <hr style="height:.1rem background-color:black">
-
-        <h3 aria-label="Subscribe and Follow Links">Subscribe and Follow Links</h3>
-
-        <h3 aria-label="Subscribe and Follow Links">Social Media Links</h3>
-
+            <hr style="height:.1rem background-color:black">
+            <h3 aria-label="Subscribe and Follow Links">Subscribe and Follow Links</h3>
+            <h3 aria-label="Subscribe and Follow Links">Social Media Links</h3>
+        </div>
     </div>
-</div>
 
-    <div class="col-4">
-        <section class="card shadow">
-            <div class="card-header-info">
-                <h5 class="card-title fw-bold">Status</h5>
+    <div class="col-lg-4">
+    <section class="card">
+        <div class="card-header-info">
+            <h5 class="card-title fw-bold">Status</h5>
+        </div>
+
+        <div class="card-footer text-start">
+            <strong><%= t(".last_saved") %></strong>
+            <datetime><%= l(@podcast.updated_at) %></datetime>
+            <div class="btn-group">
+                <%= form.submit class: "btn btn-primary" %>
             </div>
-                <div class="card-footer">
-                <div class="card-footer d-grid g-1 lh-sm fs-sm text-start">
-                <strong><%= t(".last_saved") %></strong>
-                <datetime><%= l(@podcast.updated_at) %></datetime>
-              </div>
-                    <div class="btn-group">
-                        <%= form.submit class: "btn btn-primary" %>
-
-                    </div>
-                </div>
-        </section>
+        </div>
+    </section>
     </div>
+
 </div>
 <% end %>
