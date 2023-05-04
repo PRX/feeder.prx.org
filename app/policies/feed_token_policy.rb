@@ -1,5 +1,9 @@
 class FeedTokenPolicy < ApplicationPolicy
   def update?
-    true
+    if resource.feed.present?
+      FeedPolicy.new(token, resource.feed).update?
+    else
+      false
+    end
   end
 end
