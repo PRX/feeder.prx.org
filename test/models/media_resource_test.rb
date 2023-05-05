@@ -62,4 +62,19 @@ describe MediaResource do
     refute mr.audio?
     refute mr.video?
   end
+
+  it "marks completed resources for replacement" do
+    mr = build_stubbed(:media_resource, status: "started")
+    refute mr.marked_for_replacement?
+
+    mr.mark_for_replacement
+    refute mr.marked_for_replacement?
+
+    mr.status = "complete"
+    mr.mark_for_replacement
+    assert mr.marked_for_replacement?
+
+    mr.replaced_at = nil
+    refute mr.marked_for_replacement?
+  end
 end

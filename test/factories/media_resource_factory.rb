@@ -21,11 +21,8 @@ FactoryBot.define do
       create_list(:copy_media_task, evaluator.task_count, owner: media_resource)
     end
 
-    factory :enclosure, class: Enclosure do
-      task_count { 0 }
-    end
-
     factory :content, class: Content do
+      position { 1 }
       task_count { 0 }
     end
   end

@@ -120,4 +120,13 @@ class MediaResource < ApplicationRecord
   def update_resource(res)
     # NOTE: media_resources have no user settable fields
   end
+
+  def mark_for_replacement
+    mark_for_destruction
+    self.replaced_at = Time.now if status_complete?
+  end
+
+  def marked_for_replacement?
+    marked_for_destruction? && replaced_at.present?
+  end
 end
