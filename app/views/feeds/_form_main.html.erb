@@ -78,36 +78,36 @@
 
 <div class="col-12 mb-4">
   <div class="form-floating">
-    <%= form.text_field :public_feed_url, value: "" %>
-    <%= form.label :public_feed_url %>
+    <%= form.text_field :new_feed_url %>
+    <%= form.label :new_feed_url, "Public Feed Url" %>
   </div>
 </div>
 
 <div class="col-12 mb-4">
   <div class="form-floating">
-    <%= form.text_field :enclosure_prefix_url, value: "" %>
-    <%= form.label :enclosure_prefix_url %>
+    <%= form.text_field :enclosure_prefix %>
+    <%= form.label :enclosure_prefix, "Enclosure Prefix Url" %>
   </div>
 </div>
 
 <div class="col-12 mb-4">
   <div class="form-floating">
-    <%= form.number_field :feed_episode_limit, value: "" %>
-    <%= form.label :feed_episode_limit %>
+    <%= form.number_field :display_episodes_count %>
+    <%= form.label :display_episodes_count, "Feed Episode Limit" %>
   </div>
 </div>
 
 <div class="col-12 mb-4">
   <div class="form-floating">
-    <%= form.number_field :feed_metadata_limit, value: "" %>
-    <%= form.label :feed_metadata_limit %>
+    <%= form.number_field :display_full_episodes_count %>
+    <%= form.label :display_full_episodes_count, "Feed Metadata Limit" %>
   </div>
 </div>
 
 <div class="col-12 mb-4">
   <div class="form-floating">
-    <%= form.number_field :episode_publish_delay, value: "" %>
-    <%= form.label :episode_publish_delay %>
+    <%= form.select :episode_offset_seconds, episode_offset_options %>
+    <%= form.label :episode_offset_seconds, "Episode Publish Delay" %>
   </div>
 </div>
 

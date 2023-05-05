@@ -1,8 +1,6 @@
 <% if feed.tokens.present? %>
-  <% feed.tokens.each do |token| %>
-    <%= form.fields_for :feed_tokens, token do |fields| %>
-      <%= render "form_auth_token", form: fields %>
-    <% end %>
+  <%= form.fields_for :feed_tokens, feed.tokens do |fields| %>
+    <%= render "form_auth_token", form: fields %>
   <% end %>
 <% end %>
 

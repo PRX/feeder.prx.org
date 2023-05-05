@@ -69,6 +69,11 @@ class FeedsController < ApplicationController
       :slug,
       :description,
       :private,
+      :new_feed_url,
+      :enclosure_prefix,
+      :display_episodes_count,
+      :display_full_episodes_count,
+      :episode_offset_seconds,
       feed_tokens_attributes: %i[id label token]
     )
   end
