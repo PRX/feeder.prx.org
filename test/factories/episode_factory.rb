@@ -12,15 +12,15 @@ FactoryBot.define do
     sequence(:published_at) { |n| Date.today - n.days }
 
     description do
-      "<div><a href='/tina'>Tina</a> McElroy Ansa is a little girl when her father's business goes under.</div>"
+      "<div><a href=\"/tina\">Tina</a> McElroy Ansa is a little girl when her father's business goes under.</div>"
     end
 
     content do
-      "<div><a href='/tina'>Tina</a> McElroy Ansa is a little girl when her father's business goes under.</div>"
+      "<div><a href=\"/tina\">Tina</a> McElroy Ansa is a little girl when her father's business goes under.</div>"
     end
 
     summary do
-      "<a href='/tina'>Tina</a> McElroy Ansa is a little girl when her father's business goes under"
+      "<a href=\"/tina\">Tina</a> McElroy Ansa is a little girl when her father's business goes under"
     end
 
     factory :episode_with_media do

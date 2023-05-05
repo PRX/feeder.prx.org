@@ -12,7 +12,7 @@ class Api::EpisodesController < Api::BaseController
 
   def included(relation)
     if action_name == "index"
-      relation.includes(:podcast, :images, :contents, :enclosures)
+      relation.includes(:podcast, :images, :contents)
     else
       relation
     end
