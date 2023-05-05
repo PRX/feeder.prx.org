@@ -4,6 +4,7 @@ require "hash_serializer"
 require "text_sanitizer"
 
 class Episode < ApplicationRecord
+  include EpisodeMedia
   include PublishingStatus
   include TextSanitizer
 
@@ -31,10 +32,6 @@ class Episode < ApplicationRecord
 
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
-
-  has_many :enclosures,
-    -> { order("created_at DESC") },
-    autosave: true, dependent: :destroy
 
   has_one :apple_podcast_container, class_name: "Apple::PodcastContainer"
   has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
@@ -162,55 +159,6 @@ class Episode < ApplicationRecord
     end
   end
 
-  def ready_enclosure
-    enclosures.complete_or_replaced.first
-  end
-
-  def enclosure
-    enclosures.first
-  end
-
-  def enclosure=(file)
-    enc = Enclosure.build(file)
-
-    if !enc
-      enclosures.each(&:mark_for_destruction)
-    elsif enc&.replace?(enclosure)
-      enclosures.build(enc.attributes.compact)
-    else
-      enc.update_resource(enclosure)
-    end
-  end
-
-  def ready_contents
-    contents.complete_or_replaced.group_by(&:position).values.map(&:first)
-  end
-
-  def contents=(files)
-    existing = contents.group_by(&:position)
-
-    files&.each_with_index do |file, idx|
-      position = idx + 1
-      con = Content.build(file, position)
-
-      if !con
-        existing[position]&.each(&:mark_for_destruction)
-      elsif con.replace?(existing[position]&.first)
-        contents.build(con.attributes.compact)
-      else
-        con.update_resource(existing[position].first)
-      end
-    end
-
-    # destroy unused positions
-    positions = 1..(files&.count.to_i)
-    existing.each do |position, contents|
-      contents.each(&:mark_for_destruction) unless positions.include?(position)
-    end
-
-    contents
-  end
-
   def initialize_guid
     guid
   end
@@ -252,37 +200,7 @@ class Episode < ApplicationRecord
     self[:keywords] ||= []
   end
 
-  def media_url
-    first_media_resource.try(:href)
-  end
-
-  def content_type(feed = nil)
-    media_content_type = first_media_resource.try(:mime_type)
-    if (media_content_type || "").starts_with?("video")
-      media_content_type
-    else
-      feed.try(:mime_type) || media_content_type || "audio/mpeg"
-    end
-  end
-
-  def duration
-    if contents.blank?
-      enclosure.try(:duration).to_f
-    else
-      contents.inject(0.0) { |s, c| s + c.duration.to_f }
-    end + podcast.try(:duration_padding).to_f
-  end
-
-  def file_size
-    if contents.blank?
-      enclosure.try(:file_size)
-    else
-      contents.inject(0) { |s, c| s + c.file_size.to_i }
-    end
-  end
-
   def copy_media(force = false)
-    enclosures.each { |e| e.copy_media(force) }
     contents.each { |c| c.copy_media(force) }
     images.each { |i| i.copy_media(force) }
   end
@@ -300,75 +218,10 @@ class Episode < ApplicationRecord
   end
 
   def include_in_feed?
-    # episodes can have no media at all
-    if medium.nil? && segment_count.nil? && !media?
+    if no_media?
       true
     else
-      media_ready?
-    end
-  end
-
-  def media_resources
-    if medium_audio?
-      contents
-    else
-      Array(enclosure)
-    end
-  end
-
-  # NOTE: API updates ignore nil attributes
-  def media_resources=(files)
-    return if files.nil?
-
-    resources = Array(files).map { |f| MediaResource.build(f) }
-
-    if medium_audio?
-      self.contents = resources
-    elsif medium_video?
-      self.enclosure = resources.first
-    elsif medium.nil? && resources.all?(&:audio?)
-      # infer audio
-      self.contents = resources
-    else
-      # default to enclosure
-      self.enclosure = resources.first
-    end
-  end
-
-  def ready_media_resources
-    medium_audio? ? ready_contents : Array(ready_enclosure)
-  end
-
-  def media?
-    media_resources.any?
-  end
-
-  def first_media_resource
-    ready_media_resources.first || media_resources.first
-  end
-
-  def media_status
-    states = media_resources.map(&:status).uniq
-    if !(%w[started created processing retrying] & states).empty?
-      "processing"
-    elsif states.any? { |s| s == "error" }
-      "error"
-    elsif media_ready?
-      "complete"
-    end
-  end
-
-  def media_ready?
-    if medium_audio?
-      if ready_contents.empty?
-        false
-      elsif segment_count.nil?
-        ready_contents.count == contents.maximum(:position)
-      else
-        ready_contents.count == segment_count
-      end
-    else
-      ready_enclosure.present?
+      complete_media?
     end
   end
 
