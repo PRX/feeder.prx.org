@@ -231,6 +231,7 @@ en:
       last_saved: Last Saved
       subscribe: Subscribe and Follow Links
       social_media: Social Media Links
+      status: Status
     update:
       error: Unable to save
       notice: Podcast updated
