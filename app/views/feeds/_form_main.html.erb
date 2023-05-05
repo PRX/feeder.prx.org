@@ -9,15 +9,31 @@
   <% end %>
 </div>
 
-<div class="col-12 mb-4">
+<div class="col-12 mb-4 prx-field-group">
   <div class="form-floating">
     <%= form.text_field :file_name %>
     <%= form.label :file_name %>
   </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.file_name") %>"><span class="material-icons">help</span></button>
 </div>
 
 <% unless feed.default? %>
   <div class="col-12">
+    <div class="mb-4 prx-field-group">
+      <div class="form-floating">
+        <%= form.text_field :slug %>
+        <%= form.label :slug %>
+      </div>
+
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.slug") %>"><span class="material-icons">help</span></button>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <hr>
+    <h3><%= t(".headers.overrides") %></h3>
+    <p><%= t(".help.overrides") %></p>
     <div class="mb-4">
       <div class="form-floating">
         <%= form.text_field :title %>
@@ -25,50 +41,70 @@
       </div>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-4 prx-field-group">
       <div class="form-floating">
-        <%= form.text_field :slug %>
-        <%= form.label :slug %>
+        <%= form.text_field :subtitle %>
+        <%= form.label :subtitle %>
       </div>
+
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.subtitle") %>"><span class="material-icons">help</span></button>
     </div>
 
-    <div>
+    <div class="mb-4 prx-field-group">
       <div class="form-floating">
         <%= form.text_area :description %>
         <%= form.label :description %>
       </div>
+
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.description") %>"><span class="material-icons">help</span></button>
+    </div>
+
+    <div class="mb-4 prx-field-group">
+      <div class="form-floating">
+        <%= form.text_area :summary %>
+        <%= form.label :summary %>
+      </div>
+
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></button>
     </div>
   </div>
 
   <div class="col-12">
     <hr>
-    <h3>Feed Visibility</h3>
-    <%= form.check_box :private %>
-    <%= form.label :private, "Private (unlisted)" %>
+    <h3><%= t(".headers.private") %></h3>
+    <div class="prx-field-group">
+      <div>
+      <%= form.check_box :private %>
+      <%= form.label :private %>
+      </div>
 
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.private") %>" data-bs-html="true"><span class="material-icons">help</span></button>
+    </div>
   </div>
 
   <div class="col-12">
     <hr>
-    <h3>Auth Tokens</h3>
+    <h3><%= t(".headers.auth_tokens") %></h3>
+    <p><%= t(".help.auth_tokens") %></p>
     <%= render "form_auth_tokens", feed: feed, form: form %>
   </div>
 
   <div class="col-12">
     <hr>
-    <h3>Ad Zones to Include</h3>
+    <h3><%= t(".headers.ad_zones") %></h3>
+    <p><%= t(".help.ad_zones") %></p>
 
     <%= form.check_box :billboard, value: 0 %>
-    <%= form.label :billboard, "Billboards", class: "me-2" %>
+    <%= form.label :billboard, class: "me-2" %>
 
     <%= form.check_box :house, value: 0 %>
-    <%= form.label :house, "House Ads", class: "me-2" %>
+    <%= form.label :house, class: "me-2" %>
 
     <%= form.check_box :paid, value: 0 %>
-    <%= form.label :paid, "Paid Ads", class: "me-2" %>
+    <%= form.label :paid, class: "me-2" %>
 
     <%= form.check_box :sonic_id, value: 0 %>
-    <%= form.label :sonic_id, "System (Sonic IDs)", class: "me-2" %>
+    <%= form.label :sonic_id, class: "me-2" %>
 
   </div>
   <div class="col-12">
@@ -76,44 +112,64 @@
   </div>
 <% end %>
 
-<div class="col-12 mb-4">
+<div class="col-12 mb-4 prx-field-group">
+  <div class="form-floating">
+    <%= form.text_field :url %>
+    <%= form.label :url %>
+  </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.url") %>"><span class="material-icons">help</span></button>
+</div>
+
+<div class="col-12 mb-4 prx-field-group">
   <div class="form-floating">
     <%= form.text_field :new_feed_url %>
-    <%= form.label :new_feed_url, "Public Feed Url" %>
+    <%= form.label :new_feed_url %>
   </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.new_feed_url") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-12 mb-4">
+<div class="col-12 mb-4 prx-field-group">
   <div class="form-floating">
     <%= form.text_field :enclosure_prefix %>
-    <%= form.label :enclosure_prefix, "Enclosure Prefix Url" %>
+    <%= form.label :enclosure_prefix %>
   </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.enclosure_prefix") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-12 mb-4">
+<div class="col-12 mb-4 prx-field-group">
   <div class="form-floating">
     <%= form.number_field :display_episodes_count %>
-    <%= form.label :display_episodes_count, "Feed Episode Limit" %>
+    <%= form.label :display_episodes_count %>
   </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.display_episodes_count") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-12 mb-4">
+<div class="col-12 mb-4 prx-field-group">
   <div class="form-floating">
     <%= form.number_field :display_full_episodes_count %>
-    <%= form.label :display_full_episodes_count, "Feed Metadata Limit" %>
+    <%= form.label :display_full_episodes_count %>
   </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.display_full_episodes_count") %>" data-bs-html="true"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-12 mb-4">
+<div class="col-12 mb-4 prx-field-group">
   <div class="form-floating">
     <%= form.select :episode_offset_seconds, episode_offset_options %>
-    <%= form.label :episode_offset_seconds, "Episode Publish Delay" %>
+    <%= form.label :episode_offset_seconds %>
   </div>
+
+  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.episode_offset_seconds") %>"><span class="material-icons">help</span></button>
 </div>
 
 <div class="col-12 mb-4">
   <hr>
-  <h3>Audio Format</h3>
+  <h3><%= t(".headers.audio_format") %></h3>
+  <p><%= t(".help.audio_format") %></p>
 
   <div class="row my-4">
     <div class="col-3">
@@ -144,5 +200,4 @@
       </div>
     </div>
   </div>
-
 </div>
