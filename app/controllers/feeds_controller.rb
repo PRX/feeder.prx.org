@@ -65,10 +65,13 @@ class FeedsController < ApplicationController
   def feed_params
     params.fetch(:feed, {}).permit(
       :file_name,
-      :title,
       :slug,
+      :title,
+      :subtitle,
       :description,
+      :summary,
       :private,
+      :url,
       :new_feed_url,
       :enclosure_prefix,
       :display_episodes_count,
