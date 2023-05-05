@@ -28,8 +28,8 @@ FactoryBot.define do
       segment_count { 1 }
       medium { "audio" }
 
-      contents { [association(:content)] }
-      images { [association(:episode_image)] }
+      contents { [association(:content, status: "complete")] }
+      images { [association(:episode_image, status: "complete")] }
     end
   end
 end
