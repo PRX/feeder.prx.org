@@ -1,9 +1,9 @@
-class RevampEnclosures < ActiveRecord::Migration[7.0]
+class ConvertEnclosures < ActiveRecord::Migration[7.0]
   def up
     add_column :episodes, :medium, :integer
 
     # cleanup episodes with both Contents and Enclosures
-    Enclosure.where("episode_id IN (#{Content.select(:episode_id).to_sql})").delete_all
+    MediaResource.where(type: "Enclosure").where("episode_id IN (#{Content.select(:episode_id).to_sql})").delete_all
 
     # guess missing mediums from original_urls
     MediaResource.status_complete.where(medium: nil).each do |mr|
@@ -16,15 +16,12 @@ class RevampEnclosures < ActiveRecord::Migration[7.0]
       end
     end
 
-    # convert video contents to enclosures, audio enclosures to contents
-    Content.where(medium: "video").update_all(type: "Enclosure", position: nil)
-    Enclosure.where(medium: "audio").update_all(type: "Content", position: 1)
+    # convert enclosures to contents
+    MediaResource.where(type: "Enclosure").update_all(type: "Content", position: 1)
 
     # set episode.medium based on media_resources.medium
     Episode.joins(:contents).where(contents: {medium: "audio"}).update_all(medium: "audio")
     Episode.joins(:contents).where(contents: {medium: "video"}).update_all(medium: "video")
-    Episode.joins(:enclosures).where(enclosures: {medium: "audio"}).update_all(medium: "audio")
-    Episode.joins(:enclosures).where(enclosures: {medium: "video"}).update_all(medium: "video")
   end
 
   def down
