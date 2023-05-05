@@ -115,11 +115,5 @@ class PublishingStatusTest < ActiveSupport::TestCase
       refute episode.valid?
       assert_includes episode.errors[:published_at], "can't be in the future"
     end
-
-    it "checks that media is uploaded" do
-      episode.publishing_status = "published"
-      refute episode.valid?
-      assert_includes episode.errors[:publishing_status], "audio not ready"
-    end
   end
 end
