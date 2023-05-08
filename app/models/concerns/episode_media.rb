@@ -3,10 +3,6 @@ require "active_support/concern"
 module EpisodeMedia
   extend ActiveSupport::Concern
 
-  included do
-    validate :validate_media_ready
-  end
-
   def complete_media
     contents.complete_or_replaced.group_by(&:position).values.map(&:first)
   end
@@ -24,7 +20,7 @@ module EpisodeMedia
   end
 
   def media
-    contents
+    contents.reject(&:marked_for_destruction?)
   end
 
   # API updates ignore nil attributes
@@ -66,11 +62,11 @@ module EpisodeMedia
   end
 
   def media?
-    contents.any?
+    media.any?
   end
 
   def media_content_type(feed = nil)
-    media_content_type = contents.first.try(:mime_type)
+    media_content_type = media.first.try(:mime_type)
     feed_content_type = feed.try(:mime_type)
 
     # if audio AND feed has a mime type, dovetail will transcode to that
@@ -84,27 +80,27 @@ module EpisodeMedia
   end
 
   def media_duration
-    contents.inject(0.0) { |s, c| s + c.duration.to_f } + podcast.try(:duration_padding).to_f
+    media.inject(0.0) { |s, c| s + c.duration.to_f } + podcast.try(:duration_padding).to_f
   end
 
   def media_file_size
-    contents.inject(0) { |s, c| s + c.file_size.to_i }
+    media.inject(0) { |s, c| s + c.file_size.to_i }
   end
 
   def media_ready?(must_be_complete = true)
-    if contents.empty?
+    if media.empty?
       false
-    elsif must_be_complete && !contents.all?(&:status_complete?)
+    elsif must_be_complete && !media.all?(&:status_complete?)
       false
     elsif segment_count.nil?
-      contents.size == contents.map(&:position).max
+      media.size == media.map(&:position).max
     else
-      contents.size == segment_count
+      media.size == segment_count
     end
   end
 
   def media_status
-    states = contents.map(&:status).uniq
+    states = media.map(&:status).uniq
     if !(%w[started created processing retrying] & states).empty?
       "processing"
     elsif states.any? { |s| s == "error" }
@@ -117,17 +113,6 @@ module EpisodeMedia
   end
 
   def media_url
-    contents.first.try(:href)
-  end
-
-  def validate_media_ready
-    return if published_at.blank? || no_media?
-
-    # in strict mode, media must be complete on _initial_ publish
-    must_be_complete = strict_validations && published_at_was.blank?
-
-    unless media_ready?(must_be_complete)
-      errors.add(:base, :media_not_ready, message: "media not ready")
-    end
+    media.first.try(:href)
   end
 end

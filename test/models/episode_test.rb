@@ -297,4 +297,37 @@ describe Episode do
       refute_nil c2.reload.deleted_at
     end
   end
+
+  describe "#validate_media_ready" do
+    it "only runs on strict + published episodes with media" do
+      e = build_stubbed(:episode, segment_count: 1)
+      assert e.valid?
+
+      e.strict_validations = true
+      refute e.valid?
+
+      e.published_at = nil
+      assert e.valid?
+    end
+
+    it "checks for complete media on initial publish" do
+      e = create(:episode_with_media, strict_validations: true, published_at: nil)
+      assert e.valid?
+
+      e.published_at = 1.hour.ago
+      assert e.valid?
+
+      e.contents.first.status = "invalid"
+      refute e.valid?
+      assert_includes e.errors[:base], "media not ready"
+    end
+
+    it "checks for present media on subsequent updates" do
+      e = create(:episode_with_media, strict_validations: true, published_at: 1.hour.ago)
+      assert e.valid?
+
+      e.contents.first.status = "processing"
+      assert e.valid?
+    end
+  end
 end

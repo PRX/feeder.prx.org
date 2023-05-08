@@ -48,6 +48,7 @@ class Episode < ApplicationRecord
   validates :explicit, inclusion: {in: %w[true false]}, allow_nil: true
   validates :segment_count, presence: true, if: :strict_validations
   validates :segment_count, numericality: {only_integer: true, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
+  validate :validate_media_ready, if: :strict_validations
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
@@ -286,6 +287,17 @@ class Episode < ApplicationRecord
       published_at
     elsif released_at.present?
       released_at
+    end
+  end
+
+  def validate_media_ready
+    return if published_at.blank? || no_media?
+
+    # media must be complete on _initial_ publish
+    must_be_complete = published_at_was.blank?
+
+    unless media_ready?(must_be_complete)
+      errors.add(:base, :media_not_ready, message: "media not ready")
     end
   end
 end

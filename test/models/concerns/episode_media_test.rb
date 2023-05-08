@@ -47,12 +47,13 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     it "replaces contents" do
       ep.media = [c1, "http://some.changed/url.mp3"]
 
-      assert_equal 3, ep.media.size
-      assert_equal c1, ep.media[0]
-      assert_equal c2, ep.media[1]
+      assert_equal 2, ep.media.size
+      assert_equal 3, ep.contents.size
+      assert_equal c1, ep.contents[0]
+      assert_equal c2, ep.contents[1]
       assert c2.marked_for_replacement?
 
-      new_content = ep.media[2]
+      new_content = ep.contents[2]
       assert new_content.new_record?
       assert_equal "http://some.changed/url.mp3", new_content.original_url
       assert_equal 2, new_content.position
@@ -76,9 +77,10 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     it "removes contents" do
       ep.media = [c1]
 
-      assert_equal 2, ep.media.size
-      assert_equal c1, ep.media[0]
-      assert_equal c2, ep.media[1]
+      assert_equal 1, ep.media.size
+      assert_equal 2, ep.contents.size
+      assert_equal c1, ep.contents[0]
+      assert_equal c2, ep.contents[1]
 
       assert c2.marked_for_destruction?
       refute c2.marked_for_replacement?
@@ -123,9 +125,10 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     it "handles non-arrays" do
       ep.media = c1.original_url
 
-      assert_equal 2, ep.media.size
-      assert_equal c1, ep.media[0]
-      assert_equal c2, ep.media[1]
+      assert_equal 1, ep.media.size
+      assert_equal 2, ep.contents.size
+      assert_equal c1, ep.contents[0]
+      assert_equal c2, ep.contents[1]
 
       assert c2.marked_for_destruction?
       refute c2.marked_for_replacement?
