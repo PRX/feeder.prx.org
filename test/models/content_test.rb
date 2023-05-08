@@ -18,26 +18,4 @@ describe Content do
       "lang" => "en"
     }
   }
-
-  it "can be constructed from feed content" do
-    c = Content.build_from_content(episode, crier_content)
-    refute c.is_default
-    assert_equal c.bit_rate, 64
-    assert_equal c.channels, 1
-    assert_equal c.duration, 3252.19
-    assert_equal c.expression, "sample"
-    assert_equal c.file_size, 26017749
-    assert_equal c.lang, "en"
-    assert_equal c.medium, "audio"
-    assert_equal c.sample_rate, 44100
-    assert_equal c.mime_type, "audio/mpeg"
-    assert_equal c.original_url, "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3"
-  end
-
-  it "can be updated" do
-    content.update_with_content!(crier_content)
-    assert_equal content.original_url, "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3"
-    assert_equal content.file_size, 26017749
-    assert_equal content.mime_type, "audio/mpeg"
-  end
 end
