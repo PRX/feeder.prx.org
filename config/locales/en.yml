@@ -225,6 +225,7 @@ en:
         other: "%{count} Scheduled Episodes"
   podcast_engagement:
     show:
+      confirm: Confirm
       donation_link: Donation Link
       micropayments: Micropayments
       payment_pointer: Coil
@@ -232,6 +233,7 @@ en:
       subscribe: Subscribe and Follow Links
       social_media: Social Media Links
       status: Status
+      save: Update
     update:
       error: Unable to save
       notice: Podcast updated
