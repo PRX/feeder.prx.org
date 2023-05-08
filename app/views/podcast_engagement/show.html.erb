@@ -1,44 +1,43 @@
 <% content_for :title, "#{@podcast.title} - Engagement" %>
 
 <%= render "podcasts/tabs" %>
-
 <%= form_with(model: @podcast, url: podcast_engagement_path, html: {autocomplete: "off"}, data: {controller: "unsaved", unsaved_changed_value: @podcast.changed?, unsaved_confirm_value: t(".confirm")}) do |form| %>
-<div class="container my-4">
+  <div class="container my-4">
     <div class="row my-4">
-        <div class="col-6">
-            <div class="col-12 mb-4">
-                <div class="input-group">
-                    <div class="form-floating">
-                        <%= form.text_field :donation_url %>
-                        <%= form.label :donation_url %>
-                    </div>
-                    <div class="input-group-text"> <span class="material-icons">link</span> </div>
-                </div>
+      <div class="col-6">
+        <div class="col-12 mb-4">
+          <div class="input-group">
+            <div class="form-floating">
+              <%= form.text_field :donation_url %>
+              <%= form.label :donation_url %>
             </div>
-            <div class="mb-4 prx-field-group">
-                <div class="input-group">
-                    <div class="form-floating">
-                        <%= form.text_field :payment_pointer %>
-                        <%= form.label :payment_pointer %>
-                    </div>
-                    <div class="input-group-text"> <span class="material-icons">link</span> </div>
-                </div>
-            </div>
-            <hr style="height:.1rem background-color:black">
-            <h3 aria-label="Podcast Apps">Podcast Apps</h3>
-            <h3 aria-label="Social Media Apps">Social Media Apps</h3>
+            <div class="input-group-text"> <span class="material-icons">link</span> </div>
+          </div>
         </div>
-        <div class="col-4 mb-4">
-            <div class="card">
-                <div class="card-header-primary">
-                    <h5 class="card-title"><%= t(".status") %></h5>
-                </div>
-                <div class="card-footer">
-                    <p class="status-text"><strong><%= t(".last_saved") %></strong> <br><%= l(@podcast.updated_at) %></p>
-                    <%= form.submit t(".save"), class: "btn btn-primary" %>
-                </div>
+        <div class="mb-4 prx-field-group">
+          <div class="input-group">
+            <div class="form-floating">
+              <%= form.text_field :payment_pointer %>
+              <%= form.label :payment_pointer %>
             </div>
+            <div class="input-group-text"> <span class="material-icons">link</span> </div>
+          </div>
         </div>
+        <hr style="height:.1rem background-color:black">
+        <h3 aria-label="Podcast Apps">Podcast Apps</h3>
+        <h3 aria-label="Social Media Apps">Social Media Apps</h3>
+      </div>
+      <div class="col-4 mb-4">
+        <div class="card">
+          <div class="card-header-primary">
+            <h5 class="card-title"><%= t(".status") %></h5>
+          </div>
+          <div class="card-footer">
+            <p class="status-text"><strong><%= t(".last_saved") %></strong> <br><%= l(@podcast.updated_at) %></p>
+            <%= form.submit t(".save"), class: "btn btn-primary" %>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 <% end %>
