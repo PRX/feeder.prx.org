@@ -225,6 +225,7 @@ en:
         other: "%{count} Scheduled Episodes"
   podcast_engagement:
     show:
+      engagement: Engagement
       confirm: Confirm
       donation_link: Donation Link
       micropayments: Micropayments
