@@ -4,6 +4,7 @@ class FeedsController < ApplicationController
 
   # GET /feeds/1
   def show
+    authorize @feed
   end
 
   # GET /feeds/new
@@ -26,8 +27,11 @@ class FeedsController < ApplicationController
 
   # PATCH/PUT /feeds/1
   def update
+    @feed.assign_attributes(feed_params)
+    authorize @feed
+
     respond_to do |format|
-      if @feed.update(feed_params)
+      if @feed.save
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
         format.html do

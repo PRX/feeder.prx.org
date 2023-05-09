@@ -1,4 +1,8 @@
 class FeedPolicy < ApplicationPolicy
+  def show?
+    update?
+  end
+
   def create?
     token&.authorized?(account_id)
   end
