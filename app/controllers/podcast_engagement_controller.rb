@@ -1,6 +1,9 @@
 class PodcastEngagementController < ApplicationController
   before_action :set_podcast
 
+  def show
+  end
+  
   # PATCH/PUT /podcasts/1/engagement
   def update
     @podcast.assign_attributes(podcast_engagement_params)
@@ -13,9 +16,6 @@ class PodcastEngagementController < ApplicationController
         format.html { render :show, status: :unprocessable_entity }
       end
     end
-  end
-
-  def show
   end
 
   private
