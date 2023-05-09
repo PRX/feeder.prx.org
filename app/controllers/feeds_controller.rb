@@ -4,7 +4,6 @@ class FeedsController < ApplicationController
 
   # GET /feeds/1
   def show
-    @custom_feeds = @podcast.feeds.custom
   end
 
   # GET /feeds/new
@@ -29,9 +28,12 @@ class FeedsController < ApplicationController
   def update
     respond_to do |format|
       if @feed.update(feed_params)
-        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: "Feed was successfully updated." }
+        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
-        format.html { render :edit, status: :unprocessable_entity }
+        format.html do
+          flash.alert = t ".failure", model: "Feed"
+          render :show, status: :unprocessable_entity
+        end
       end
     end
   end

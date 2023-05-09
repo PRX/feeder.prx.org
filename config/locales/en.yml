@@ -6,6 +6,10 @@ defaults:
     title: Status
     update: Save
     updated_at_hint: Last Saved
+  controller_actions:
+    update: &update
+      success: "%{model} update successful."
+      failure: "There was a problem updating the %{model}."
 
 en:
   # general config
@@ -230,6 +234,8 @@ en:
         khz_24: 24 kHz
         khz_44: 44.1 kHz
         khz_48: 48 kHz
+    update:
+      <<: *update
   images:
     help:
       episode_image: Provide an image for your episode, if desired. Image dimensions must be square.
