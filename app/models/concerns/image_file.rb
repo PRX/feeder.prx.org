@@ -79,7 +79,7 @@ module ImageFile
   end
 
   def href
-    status_complete? ? url : original_url
+    (status_complete? || status_invalid?) ? url : original_url
   end
 
   def href=(h)

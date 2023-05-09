@@ -22,7 +22,7 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def source_url(media_resource)
-    media_resource.original_url.sub(/\?.*$/, "")
+    media_resource.href.sub(/\?.*$/, "")
   end
 
   def destination_url(media_resource)
