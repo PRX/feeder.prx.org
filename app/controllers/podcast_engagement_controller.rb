@@ -3,7 +3,7 @@ class PodcastEngagementController < ApplicationController
 
   def show
   end
-  
+
   # PATCH/PUT /podcasts/1/engagement
   def update
     @podcast.assign_attributes(podcast_engagement_params)
