@@ -92,7 +92,7 @@ en:
         summary: iTunes Summary
         title: Title
       feed:
-        title: Feed Label
+        title: Title
         subtitle: Teaser
         description: Description
         summary: Summary
@@ -171,29 +171,32 @@ en:
       error: Unable to save
       notice: Episode updated
   feeds:
-    form_main:
+    form_custom_fields:
       headers:
         overrides: Overrides
         private: Feed Visibility
         auth_tokens: Auth Tokens
         ad_zones: Ad Zones to Include
-        audio_format: Audio Format
       help:
+        overrides: Override series metadata for this feed. You must provide an alternate title, but the other fields are optional.
+        slug: An alphanumeric slug used to identify your feed. Also used in the private feed RSS url.
         subtitle: Enter an alternate teaser
         description: Enter an alternate description
         summary: Enter an alternate summary
-        file_name: The file name used for your private RSS feed.
-        slug: An alphanumeric slug used to identify your feed. Also used in the private feed RSS url.
         private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private link with - <strong>anyone who has access to the link will be able to use it</strong>.
+        auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
+        ad_zones: Control the types of ads that should be stitched into episodes in this feed.
+    form_main:
+      headers:
+        audio_format: Audio Format
+      help:
+        file_name: The file name used for your private RSS feed.
         url: If you already have a public URL for your podcast feed (e.g., feedburner), enter it here. It should point to your private feed URL.
         new_feed_url: If your podcast feed is moving, use this field to point to the new URL where your podcast is located. The current feed should be maintained until all of your subscribers have migrated.
         enclosure_prefix: If you have an enclosure prefix URL to set a redirect on audio requests for your podcast feed (e.g., podtrac or blubrry), enter it here.
         display_episodes_count: You can optionally limit the number of episodes that will be publicly available in your feed. Your oldest episodes will disappear as you publish newer ones. Leave this field blank to include all.
         display_full_episodes_count: You can optionally reduce the size of your RSS feed by trimming metadata from your oldest feed episodes. This many of your newest episodes will include <i>all</i> metadata, and older episodes will omit certain RSS fields. Leave this field blank to include all metadata on every episode.
         episode_offset_seconds: Instead of episodes immediately showing up in this feed when published, delay their appearance. AKA Windowing.
-        overrides: Override series metadata for this feed. You must provide an alternate title, but the other fields are optional.
-        auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
-        ad_zones: Control the types of ads that should be stitched into episodes in this feed.
         audio_format: Optionally set an explicit audio format for your episodes. If you leave this blank, we will automatically use the same format as the first audio segment you upload for each episode.
     form_status:
       <<: *form_status
