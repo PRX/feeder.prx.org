@@ -1,10 +1,12 @@
+<% feed_link = feed.private? ? FeedToken.feed_published_url_with_token(feed) : feed.published_url %>
+
 <div class="col-12 mb-4 prx-field-group">
   <div class="form-floating">
     <%= form.text_field :feed_link, value: feed.published_url, disabled: true %>
     <%= form.label :feed_link %>
   </div>
 
-  <%= link_to(feed.published_url, class: "prx-btn-help", target: :_blank) do %>
+  <%= link_to(feed_link, class: "prx-btn-help", target: :_blank) do %>
     <span class="material-icons">link</span>
   <% end %>
 </div>

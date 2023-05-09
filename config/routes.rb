@@ -11,7 +11,6 @@ Rails.application.routes.draw do
     end
 
     resources :episodes, except: [:create, :new]
-    # resources :feeds
     resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
     get "/uploads/signature", to: "uploads#signature", as: :uploads_signature
 
