@@ -112,6 +112,7 @@ en:
         title: Write a short, Tweetable title. Think newspaper headline.
     form_status:
       create: Create Draft
+      creating: Creating...
       destroy: Delete
       destroy_confirm_title: Really Delete?
       destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
@@ -123,9 +124,11 @@ en:
       title_published: Published
       title_scheduled: Scheduled
       toggle_dropdown: Toggle Dropdown
+      unpublish: Unpublish
       update: Save
       updated_at_hint: Last Saved
-      unpublish: Unpublish
+      updating: Saving...
+      uploading: Uploading...
     form_tags:
       title: Categories
       help:
@@ -140,6 +143,7 @@ en:
       published: Published Episodes
     update:
       error: Unable to save
+      media_not_ready: Audio not ready
       notice: Episode updated
   images:
     help:
@@ -195,11 +199,14 @@ en:
         title: What's the name of this podcast?
     form_status:
       create: Create
+      creating: Creating...
       discard: Discard
       new_hint: Unsaved
       title: Status
       update: Save
       updated_at_hint: Last Saved
+      updating: Saving...
+      uploading: Uploading...
     index:
       search_podcasts: Search Podcasts
     podcast:
@@ -236,13 +243,13 @@ en:
       success: Episode drafts generated.
     form_main:
       header: Plan Episodes
-      help_html: Save yourself some time by automatically creating multiple episode drafts to create a production schedule, it may also help your revenue as our sales teams will have access to dropdates to sell against. If you only wish to add a single episode, <a href="%{url}">go here</a>.
+      help_html: Add multiple episode drafts to create a production schedule. Episode drafts improve the accuracy of your podcast's forecasts. If you only need to add a single episode, <a href="%{url}">go here</a>.
     form_date_calculator:
       header:
         date_calculation: Date Calculation of Draft Batch
-        day_select: Day Selection
-        week_select: Week Selection
-        range_select: Date Range Selection
+        day_select: Which day of the week do you plan to publish your episodes?
+        week_select: Which weeks of each month do you plan to publish on?
+        range_select: How long will episodes recur?
       help:
         date_calculation: Calculate release dates for your drafts by selecting which days and weeks you plan to publish, and then select a date range.
         day_select: Which day of the week do you plan to publish your episodes? Select all that apply.
@@ -254,16 +261,19 @@ en:
         calculate_range: Calculate the end of the batch by
         select_range: Select range
       label:
-        week_condition: Weekly rhythm
-        week_of_month: Week of the month
-        period: Interval
-        date_range_condition: End range
+        week_condition: Calculate the weeks by
+        week_of_month: Select Week of the month
+        period: Select weekly interval
+        date_range_condition: Calculate the end of the batch by
     form_side:
       header:
-        preview: Schedule Preview
-        publish_time: Publish Time
-        audio_segments: Audio Segments
-        number_of_drafts: "Number of Draft Episodes: %{count}"
+        preview: Preview Draft Schedule
+        publish_time: What time of day do you plan to publish the episodes?
+        audio_segments: How many audio segments?
+        segment_count: Number of segments
+        number_of_drafts: "Drafts planned: "
+        help:
+          segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
       help:
         preview: Select more options to get a schedule preview.
       label:
@@ -280,10 +290,10 @@ en:
         third: Third
         fourth: Fourth
         fifth: Fifth
-      episodes: number of episodes
-      end_date: end date
-      month: month
-      period: interval
+      episodes: Number of episodes
+      end_date: End date
+      month: Weeks of the Month
+      period: Weekly interval
   podcast_switcher:
     dropdown:
       all: View all my Podcasts

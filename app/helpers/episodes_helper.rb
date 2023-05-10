@@ -50,4 +50,12 @@ module EpisodesHelper
       edit_episode_path episode, uploads_destroy_params(form)
     end
   end
+
+  def episode_retry_image_path(episode, form)
+    if episode.new_record?
+      new_podcast_episode_path episode.podcast_id, uploads_retry_params(form)
+    else
+      edit_episode_path episode, uploads_retry_params(form)
+    end
+  end
 end

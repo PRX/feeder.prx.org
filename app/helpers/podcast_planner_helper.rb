@@ -5,6 +5,7 @@ module PodcastPlannerHelper
   MONTHLY_WEEKS = I18n.t([:first, :second, :third, :fourth, :fifth], scope: [:podcast_planner, :helper, :monthly_options])
   DATE_CONTROLLER = "date"
   TOGGLE_ACTION = "click->date#toggleSelect"
+  RECOUNT_ACTION = "click->count#recount"
 
   def day_options
     DateTime::DAYNAMES.map.with_index { |day, i| [day, i] }
@@ -59,7 +60,7 @@ module PodcastPlannerHelper
     data = {}
     if date_is_in_month?(day, month)
       data[:controller] = DATE_CONTROLLER
-      data[:action] = TOGGLE_ACTION
+      data[:action] = [TOGGLE_ACTION, RECOUNT_ACTION].join(" ")
     end
 
     content_tag(:td, class: calendar.td_classes_for(day), data: data) do

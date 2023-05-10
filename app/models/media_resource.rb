@@ -121,6 +121,23 @@ class MediaResource < ApplicationRecord
     # NOTE: media_resources have no user settable fields
   end
 
+  def retryable?
+    if status_started? || status_created? || status_processing?
+      (Time.now - updated_at) > 30
+    else
+      false
+    end
+  end
+
+  def retry!
+    status_retrying!
+    copy_media(true)
+  end
+
+  def _retry=(_val)
+    retry!
+  end
+
   def mark_for_replacement
     mark_for_destruction
     self.replaced_at = Time.now if status_complete?

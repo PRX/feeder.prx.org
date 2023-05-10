@@ -89,3 +89,10 @@
   --#{$prefix}btn-active-bg: #{$border-color};
   --#{$prefix}btn-active-border-color: #{$border-color};
 }
+
+.btn-discard-changed {
+  border-color: $orange;
+  &:hover {
+    border-color: $orange;
+  }
+}

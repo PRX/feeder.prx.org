@@ -107,12 +107,6 @@
       color: $orange;
     }
   }
-  .btn-discard-changed {
-    border-color: $orange;
-    &:hover {
-      border-color: $orange;
-    }
-  }
 
   // bootstrap5-tags need help
   .form-floating {
@@ -163,6 +157,10 @@
     min-height: $input-height;
     height: auto;
     // border: none;
+  }
+
+  .ss-values .ss-single {
+    margin-left: 0;
   }
 
   // selection colors

@@ -27,6 +27,9 @@ FactoryBot.define do
       after(:build) do |feed, _evaluator|
         feed.feed_image = build(:feed_image)
         feed.itunes_image = build(:itunes_image)
+
+        feed.feed_image.tasks.build
+        feed.itunes_image.tasks.build
       end
     end
 
