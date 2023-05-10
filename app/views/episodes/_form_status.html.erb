@@ -29,7 +29,7 @@
 
     <div class="col-12 mb-4">
       <div class="form-floating">
-        <%= form.time_field :released_at %>
+        <%= form.time_field :released_at, value: episode.published_or_released_date %>
         <%= form.label :released_at %>
       </div>
     </div>
