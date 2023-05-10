@@ -98,4 +98,37 @@ describe ImageFile do
       assert_equal image.credit, i.credit
     end
   end
+
+  describe "#retryable?" do
+    it "allows retrying stale processing" do
+      refute image.retryable?
+
+      # updated 10 seconds ago
+      image.updated_at = Time.now - 10
+      refute image.tap { |i| i.status = "started" }.retryable?
+      refute image.tap { |i| i.status = "processing" }.retryable?
+      refute image.tap { |i| i.status = "complete" }.retryable?
+
+      # updated 1 minute ago
+      image.updated_at = Time.now - 60
+      assert image.tap { |i| i.status = "started" }.retryable?
+      assert image.tap { |i| i.status = "processing" }.retryable?
+      refute image.tap { |i| i.status = "complete" }.retryable?
+    end
+  end
+
+  describe "#retry!" do
+    it "forces a new copy media job" do
+      mock_copy = Minitest::Mock.new
+      mock_copy.expect :call, nil, [true]
+      i = create(:feed_image)
+
+      i.stub(:copy_media, mock_copy) do
+        i.retry!
+        assert i.status_retrying?
+      end
+
+      mock_copy.verify
+    end
+  end
 end
