@@ -43,6 +43,7 @@ class EpisodesController < ApplicationController
     @episode = Episode.new(episode_params)
     @episode.podcast = @podcast
     @episode.strict_validations = true
+    @episode.build_contents
     authorize @episode
 
     respond_to do |format|
@@ -59,6 +60,7 @@ class EpisodesController < ApplicationController
   # PATCH/PUT /episodes/1
   def update
     @episode.assign_attributes(episode_params)
+    @episode.build_contents
     authorize @episode
 
     respond_to do |format|
