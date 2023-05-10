@@ -5,6 +5,9 @@ class ConvertEnclosures < ActiveRecord::Migration[7.0]
     # cleanup episodes with both Contents and Enclosures
     MediaResource.where(type: "Enclosure").where("episode_id IN (#{Content.select(:episode_id).to_sql})").delete_all
 
+    # convert enclosures to contents
+    MediaResource.where(type: "Enclosure").update_all(type: "Content", position: 1)
+
     # guess missing mediums from original_urls
     MediaResource.status_complete.where(medium: nil).each do |mr|
       if mr.audio?
@@ -15,9 +18,6 @@ class ConvertEnclosures < ActiveRecord::Migration[7.0]
         raise "could not infer medium for original_url = #{mr.original_url}"
       end
     end
-
-    # convert enclosures to contents
-    MediaResource.where(type: "Enclosure").update_all(type: "Content", position: 1)
 
     # set episode.medium based on media_resources.medium
     Episode.joins(:contents).where(contents: {medium: "audio"}).update_all(medium: "audio")
