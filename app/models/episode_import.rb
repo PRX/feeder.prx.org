@@ -86,7 +86,7 @@ class EpisodeImport < ActiveRecord::Base
   end
 
   def set_file_resources!
-    episode.contents = audio_content_params
+    episode.media = audio_content_params
     episode.image = image_contents_params
     episode.save!
     episode.images.reset
