@@ -47,7 +47,7 @@ class Episode < ApplicationRecord
   validates :season_number, numericality: {only_integer: true}, allow_nil: true
   validates :explicit, inclusion: {in: %w[true false]}, allow_nil: true
   validates :segment_count, presence: true, if: :strict_validations
-  validates :segment_count, numericality: {only_integer: true, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
+  validates :segment_count, numericality: {only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
   validate :validate_media_ready, if: :strict_validations
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
