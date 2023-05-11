@@ -36,11 +36,29 @@ describe ImageFile do
 
       Tasks::CopyImageTask.stub(:create!, create_task) do
         task.stub(:start!, true) do
+          image.status = "created"
           image.task = nil
           image.copy_media
           assert_equal image, task.owner
         end
       end
+    end
+
+    it "skips creating task if complete" do
+      assert_nil image.task
+      assert image.status_complete?
+      image.copy_media
+
+      assert_nil image.task
+    end
+
+    it "skips creating task if one exists" do
+      task = Tasks::CopyImageTask.new
+      image.status = "created"
+      image.task = task
+      image.copy_media
+
+      assert_equal task, image.task
     end
   end
 

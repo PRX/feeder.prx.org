@@ -67,7 +67,7 @@ module ImageFile
   end
 
   def copy_media(force = false)
-    if !task || force
+    if force || !(status_complete? || task)
       Tasks::CopyImageTask.create! do |task|
         task.owner = self
       end.start!

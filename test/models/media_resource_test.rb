@@ -63,6 +63,26 @@ describe MediaResource do
     end
   end
 
+  describe "#copy_media" do
+    it "skips creating task if complete" do
+      mr = build_stubbed(:media_resource, status: "complete")
+      assert_nil mr.task
+      mr.copy_media
+
+      assert_nil mr.task
+    end
+
+    it "skips creating task if one exists" do
+      mr = build_stubbed(:media_resource, status: "complete")
+      task = Tasks::CopyImageTask.new
+      mr.status = "created"
+      mr.task = task
+      mr.copy_media
+
+      assert_equal task, mr.task
+    end
+  end
+
   describe "#retry!" do
     it "forces a new copy media job" do
       mock_copy = Minitest::Mock.new
