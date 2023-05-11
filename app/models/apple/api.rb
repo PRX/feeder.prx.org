@@ -183,7 +183,7 @@ module Apple
 
     def bridge_remote(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE)
       url = bridge_url
-      Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge")
+      Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge", {param_count: bridge_options.count})
 
       body = {
         batch_size: batch_size,
