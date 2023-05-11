@@ -95,7 +95,7 @@ module EpisodeMedia
     elsif segment_count.nil?
       media.size == media.map(&:position).max
     else
-      media.size == segment_count
+      media.size >= segment_count
     end
   end
 

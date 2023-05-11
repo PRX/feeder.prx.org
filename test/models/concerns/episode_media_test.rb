@@ -215,8 +215,10 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       ep.segment_count = 3
       refute ep.media_ready?
 
+      # segment count can be smaller than ep.contents - they will get trimmed
+      # by the destroy_out_of_range_contents after save
       ep.segment_count = 1
-      refute ep.media_ready?
+      assert ep.media_ready?
     end
 
     it "counts positions if segment count is nil" do
