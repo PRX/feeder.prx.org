@@ -1,7 +1,7 @@
 require "test_helper"
 
-describe FixerCallbackWorker do
-  let(:worker) { FixerCallbackWorker.new }
+describe PorterCallbackWorker do
+  let(:worker) { PorterCallbackWorker.new }
 
   it "calls task" do
     job = Minitest::Mock.new
