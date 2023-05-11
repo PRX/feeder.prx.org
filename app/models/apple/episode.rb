@@ -58,6 +58,37 @@ module Apple
       api.bridge_remote_and_retry!("getEpisodes", bridge_params)
     end
 
+    def self.poll_episode_state(api, show, episodes)
+      guid_to_apple_json = Apple::Show.apple_episode_json(api, show.id).map do |ep_json|
+        [ep_json["attributes"]["guid"], ep_json]
+      end.to_h
+
+      guid_to_feeder_episode = episodes.map { |ep| [ep.guid, ep] }.to_h
+
+      # Only sync episodes that have a remote pair
+      episodes_to_sync = episodes.filter { |ep| guid_to_apple_json[ep.guid].present? }
+
+      # If there are remote episodes with no local feeder pair
+      Rails.logger.error("Missing feeder episode for remote apple episode") if guid_to_apple_json.keys.any? { |guid| guid_to_feeder_episode[guid].nil? }
+
+      bridge_params = episodes_to_sync.map do |ep|
+        id = guid_to_apple_json[ep.guid]["id"]
+        guid = guid_to_apple_json[ep.guid]["attributes"]["guid"]
+        Episode.get_episode_bridge_params(api, id, guid)
+      end
+
+      results = api.bridge_remote_and_retry!("getEpisodes", bridge_params)
+
+      join_on("guid", episodes_to_sync, results).map do |(ep, row)|
+        apple_id = row.dig("api_response", "val", "data", "id")
+        raise "missing apple id!" unless apple_id.present?
+
+        # Use the setter on Apple::Episode to upsert the sync log
+        ep.api_response = row
+        ep
+      end
+    end
+
     def self.create_episodes(api, episodes)
       return if episodes.empty?
 
@@ -352,6 +383,8 @@ module Apple
     end
 
     def audio_asset_state
+      return nil unless api_response.present?
+
       apple_attributes["appleHostedAudioAssetState"]
     end
 

@@ -43,6 +43,9 @@ module Apple
       end
 
       Rails.logger.tagged("Apple::Publisher#poll!") do
+        # Reject episodes for polling if they have audio assets marked as success
+        eps = eps.reject(&:audio_asset_state_success?)
+
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           poll_episodes!(eps)
           poll_podcast_containers!(eps)
@@ -57,6 +60,9 @@ module Apple
       raise "Missing Show!" unless show.apple_id.present?
 
       Rails.logger.tagged("Apple::Publisher#publish!") do
+        # Reject episodes for publishing if they have audio assets marked as success
+        eps = eps.reject(&:audio_asset_state_success?)
+
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           # only create if needed
           sync_episodes!(eps)
@@ -114,17 +120,19 @@ module Apple
 
     def poll_episodes!(eps)
       Rails.logger.tagged("##{__method__}") do
-        local_guids = eps.map(&:guid)
-        remote_guids = show.apple_episode_guids
+        res = Apple::Episode.poll_episode_state(api, show, eps)
 
-        Rails.logger.info("Polling remote / local episode state", {local_count: local_guids.length,
-                                                                    remote_count: remote_guids.length})
+        Rails.logger.info("Polling remote / local episode state", {local_count: eps.length,
+                                                                    remote_count: res.length})
+
+        eps
       end
     end
 
     def sync_episodes!(eps)
       Rails.logger.tagged("##{__method__}") do
         Rails.logger.info("Starting podcast episode sync")
+        poll_episodes!(eps)
 
         create_apple_episodes = eps.select(&:apple_new?)
         # NOTE: We don't attempt to update the remote state of episodes. Once
