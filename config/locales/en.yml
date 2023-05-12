@@ -238,6 +238,21 @@ en:
       scheduled_episodes:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
+  podcast_engagement:
+    show:
+      engagement: Engagement
+      confirm: Confirm
+      donation_link: Donation Link
+      micropayments: Micropayments
+      payment_pointer: Coil
+      last_saved: Last Saved
+      subscribe: Subscribe and Follow Links
+      social_media: Social Media Links
+      status: Status
+      save: Update
+    update:
+      error: Unable to save
+      notice: Podcast updated
   podcast_planner:
     create:
       success: Episode drafts generated.
