@@ -1,18 +1,18 @@
 class FeedPolicy < ApplicationPolicy
   def show?
-    update?
+    PodcastPolicy.new(token, resource.podcast).show?
   end
 
   def create?
-    token&.authorized?(account_id)
+    PodcastPolicy.new(token, resource.podcast).create?
   end
 
   def update?
-    token&.authorized?(account_id)
+    PodcastPolicy.new(token, resource.podcast).update?
   end
 
   def destroy?
-    token&.authorized?(account_id, :admin)
+    PodcastPolicy.new(token, resource.podcast).destroy?
   end
 
   def account_id

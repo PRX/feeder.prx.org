@@ -1,6 +1,10 @@
 class FeedTokenPolicy < ApplicationPolicy
   def show?
-    update?
+    if resource.feed.present?
+      FeedPolicy.new(token, resource.feed).show?
+    else
+      false
+    end
   end
 
   def create?
