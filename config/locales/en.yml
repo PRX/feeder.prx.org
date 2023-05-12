@@ -202,41 +202,41 @@ en:
       <<: *form_status
     helper:
       episode_offset_options:
-        min_5: 5 minutes
-        min_15: 15 minutes
-        hr_1: 1 hour
-        hr_6: 6 hours
-        hr_12: 12 hours
-        hr_24: 24 hours
+        "300": 5 minutes
+        "900": 15 minutes
+        "3600": 1 hour
+        "21600": 6 hours
+        "43200": 12 hours
+        "86400": 24 hours
       audio_format_options:
         mp3: MP3
         flac: FLAC
         wav: WAV
       audio_bitrate_options:
-        kb_96: 96 kbps
-        kb_112: 112 kbps
-        kb_128: 128 kbps
-        kb_160: 160 kbps
-        kb_192: 192 kbps
-        kb_224: 224 kbps
-        kb_256: 256 kbps
-        kb_320: 320 kbps
+        "96": 96 kbps
+        "112": 112 kbps
+        "128": 128 kbps
+        "160": 160 kbps
+        "192": 192 kbps
+        "224": 224 kbps
+        "256": 256 kbps
+        "320": 320 kbps
       audio_bitdepth_options:
-        b_16: 16 bit
-        b_24: 24 bit
-        b_32: 32 bit
+        "16": 16 bit
+        "24": 24 bit
+        "32": 32 bit
       audio_channel_options:
-        mono: Mono
-        stereo: Stereo
+        "1": Mono
+        "2": Stereo
       audio_sample_options:
-        khz_8: 8 kHz
-        khz_11: 11.025 kHz
-        khz_12: 12 kHz
-        khz_16: 16 kHz
-        khz_22: 22.05 kHz
-        khz_24: 24 kHz
-        khz_44: 44.1 kHz
-        khz_48: 48 kHz
+        "8000": 8 kHz
+        "11025": 11.025 kHz
+        "12000": 12 kHz
+        "16000": 16 kHz
+        "22050": 22.05 kHz
+        "24000": 24 kHz
+        "44100": 44.1 kHz
+        "48000": 48 kHz
     update:
       <<: *update
   images:
