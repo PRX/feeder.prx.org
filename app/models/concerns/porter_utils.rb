@@ -14,10 +14,10 @@ module PorterUtils
   end
 
   def porter_source
-    if source_url.starts_with?("s3://")
+    if source_url&.starts_with?("s3://")
       parts = source_url.sub("s3://", "").split("/", 2)
       {Mode: "AWS/S3", BucketName: parts[0], ObjectKey: parts[1]}
-    elsif source_url.starts_with?("http")
+    elsif source_url&.starts_with?("http")
       {Mode: "HTTP", URL: source_url}
     else
       raise "Invalid porter source url: #{source_url}"
@@ -44,7 +44,7 @@ module PorterUtils
   # NOTE: for HTTP sources (NOT S3) - make sure the eventual encoding of
   # the CloudFront filename/path matches the source HTTP url
   def porter_escape(str)
-    if source_url.starts_with?("http")
+    if source_url&.starts_with?("http")
       CGI.unescape(str)
     else
       str
