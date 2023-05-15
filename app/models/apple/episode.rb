@@ -417,6 +417,10 @@ module Apple
       audio_asset_state == AUDIO_ASSET_SUCCESS
     end
 
+    def synced_with_apple?
+      audio_asset_state_success?
+    end
+
     def waiting_for_asset_state?
       (podcast_delivery_files.length > 0 &&
         podcast_delivery_files.all?(&:delivered?) &&

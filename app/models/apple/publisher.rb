@@ -43,8 +43,8 @@ module Apple
       end
 
       Rails.logger.tagged("Apple::Publisher#poll!") do
-        # Reject episodes for polling if they have audio assets marked as success
-        eps = eps.reject(&:audio_asset_state_success?)
+        # Reject episodes if the audio is marked as uploaded/complete
+        eps = eps.reject(&:synced_with_apple?)
 
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           poll_episodes!(eps)
@@ -60,8 +60,8 @@ module Apple
       raise "Missing Show!" unless show.apple_id.present?
 
       Rails.logger.tagged("Apple::Publisher#publish!") do
-        # Reject episodes for publishing if they have audio assets marked as success
-        eps = eps.reject(&:audio_asset_state_success?)
+        # Reject episodes if the audio is marked as uploaded/complete
+        eps = eps.reject(&:synced_with_apple?)
 
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           # only create if needed
