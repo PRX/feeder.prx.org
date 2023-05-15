@@ -78,6 +78,10 @@ module ImageFile
     self[:url] ||= published_url
   end
 
+  def path
+    URI.parse(url).path if url.present?
+  end
+
   def href
     (status_complete? || status_invalid?) ? url : original_url
   end

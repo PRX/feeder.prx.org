@@ -53,6 +53,10 @@ class MediaResource < ApplicationRecord
     self[:url] ||= media_url
   end
 
+  def path
+    URI.parse(url).path if url.present?
+  end
+
   def replace_resources!
   end
 
