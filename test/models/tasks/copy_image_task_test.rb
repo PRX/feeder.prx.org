@@ -1,70 +1,91 @@
 require "test_helper"
 
 describe Tasks::CopyImageTask do
-  let(:task) { create(:copy_image_task) }
-  let(:image) { task.owner }
-  let(:path) { image.episode.podcast.path }
+  let(:task) { build_stubbed(:copy_image_task) }
 
-  it "has task options" do
-    opts = task.task_options
-    assert_equal opts[:job_type], "image"
-    assert_equal opts[:source], image.href
-    assert_match(/s3:\/\/test-prx-feed\/#{path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/images\/4e745a8c-77ee-481c-a72b-fd868dfd1c9(\d+)\/image\.png/, opts[:destination])
-  end
-
-  it "uses the url as source when complete" do
-    assert_equal image.status, "complete"
-    assert_equal task.task_options[:source], image.url
-
-    image.status = "started"
-    assert_equal task.task_options[:source], image.original_url
-  end
-
-  it "gets the image path" do
-    assert_equal task.image_path(image), "/#{path}/#{image.episode.guid}/images/#{image.guid}/image.png"
-  end
-
-  it "updates status before save" do
-    assert_equal task.status, "complete"
-    assert_equal task.image_resource.status, "complete"
-    task.update(status: "processing")
-    assert_equal task.status, "processing"
-    assert_equal task.image_resource.status, "processing"
-  end
-
-  it "replaces resources and publishes on complete" do
-    publish = MiniTest::Mock.new
-
-    task.podcast.stub(:publish!, publish) do
-      task.update(status: "created")
-      publish.verify
-
-      publish.expect(:call, nil)
-      task.update(status: "complete")
-      publish.verify
+  describe "#source_url" do
+    it "is the image href" do
+      task.image.stub(:href, "whatev") do
+        assert_equal "whatev", task.source_url
+      end
     end
   end
 
-  it "updates image metadata on complete" do
-    task.update(status: "created")
+  describe "#porter_tasks" do
+    it "runs an inspect task" do
+      assert_equal "Inspect", task.porter_tasks[0][:Type]
+    end
 
-    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Format] = "png"
-    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Height] = 1500
-    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Width] = 1500
-    task.update(status: "complete")
+    it "runs a copy task" do
+      t = task.porter_tasks[1]
 
-    assert_equal "png", task.image_resource.format
-    assert_equal 1500, task.image_resource.height
-    assert_equal 1500, task.image_resource.width
+      assert_equal "Copy", t[:Type]
+      assert_equal "AWS/S3", t[:Mode]
+      assert_equal "test-prx-feed", t[:BucketName]
+      assert_equal task.image.path, t[:ObjectKey]
+      assert_equal "REPLACE", t[:ContentType]
+      assert_equal "max-age=86400", t[:Parameters][:CacheControl]
+      assert_equal "attachment; filename=\"image.png\"", t[:Parameters][:ContentDisposition]
+    end
+
+    it "escapes http source urls" do
+      task.image.original_url = "http://some/where/my%20file.jpg"
+
+      task.image.stub(:path, "some/where/this%20goes") do
+        t = task.porter_tasks[1]
+
+        assert_equal "Copy", t[:Type]
+        assert_equal "some/where/this goes", t[:ObjectKey]
+        assert_equal "attachment; filename=\"my file.jpg\"", t[:Parameters][:ContentDisposition]
+      end
+    end
   end
 
-  it "handles validation errors" do
-    task.update(status: "created")
+  describe "#update_image" do
+    let(:task) { create(:copy_image_task) }
 
-    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Format] = "bad"
-    task.update(status: "complete")
+    it "updates status before save" do
+      assert_equal task.status, "complete"
+      assert_equal task.image.status, "complete"
+      task.update(status: "processing")
+      assert_equal task.status, "processing"
+      assert_equal task.image.status, "processing"
+    end
 
-    assert_equal "invalid", task.image_resource.status
-    assert_equal "bad", task.image_resource.format
+    it "replaces resources and publishes on complete" do
+      publish = MiniTest::Mock.new
+
+      task.podcast.stub(:publish!, publish) do
+        task.update(status: "created")
+        publish.verify
+
+        publish.expect(:call, nil)
+        task.update(status: "complete")
+        publish.verify
+      end
+    end
+
+    it "updates image metadata on complete" do
+      task.update(status: "created")
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Format] = "png"
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Height] = 1500
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Width] = 1500
+      task.update(status: "complete")
+
+      assert_equal "png", task.image.format
+      assert_equal 1500, task.image.height
+      assert_equal 1500, task.image.width
+    end
+
+    it "handles validation errors" do
+      task.update(status: "created")
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Format] = "bad"
+      task.update(status: "complete")
+
+      assert_equal "invalid", task.image.status
+      assert_equal "bad", task.image.format
+    end
   end
 end
