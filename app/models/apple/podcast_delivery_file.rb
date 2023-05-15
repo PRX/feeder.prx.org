@@ -74,7 +74,7 @@ module Apple
         matched = unwrapped.detect { |r| r["request_metadata"]["podcast_delivery_id"] == pdf.podcast_delivery_id }
         raise "Missing response for podcast delivery file" unless matched.present?
 
-        pdf.sync_log.api_response = matched
+        pdf.apple_sync_log.api_response = matched
       end
     end
 
