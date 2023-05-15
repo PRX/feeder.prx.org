@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_04_151854) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_15_152758) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -343,7 +343,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_04_151854) do
   create_table "sync_logs", force: :cascade do |t|
     t.string "feeder_type", null: false
     t.bigint "feeder_id", null: false
-    t.string "external_id"
+    t.string "external_id", null: false
     t.datetime "updated_at"
     t.datetime "created_at"
     t.text "api_response"
