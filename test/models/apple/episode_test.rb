@@ -50,7 +50,9 @@ describe Apple::Episode do
     end
 
     it "instantiates with an api_response" do
-      ep = build(:apple_episode, show: apple_show, feeder_episode: episode, api_response: apple_episode_json_api_result)
+      ep = build(:apple_episode, show: apple_show, feeder_episode: episode)
+      ep.feeder_episode.reload.create_apple_sync_log(api_response: apple_episode_json_api_result, external_id: "123")
+
       assert_equal "123", ep.apple_id
       assert_equal "456", ep.audio_asset_vendor_id
       assert_equal true, ep.drafting?, true
@@ -91,7 +93,7 @@ describe Apple::Episode do
 
     let(:delivery_file) do
       pdf = Apple::PodcastDeliveryFile.new(episode: episode, podcast_delivery: delivery)
-      pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response), feeder_type: :podcast_delivery_files))
+      pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files))
       pdf.save!
       pdf
     end
@@ -99,7 +101,7 @@ describe Apple::Episode do
     before do
       assert_equal [delivery_file], apple_episode.podcast_delivery_files
       apple_episode.apple_sync_log =
-        SyncLog.new(feeder_type: :episodes, api_response:
+        SyncLog.new(external_id: "123", feeder_type: :episodes, api_response:
         {"request_metadata" => {},
          "api_response" => {"ok" => true,
                             "err" => false,
@@ -140,7 +142,7 @@ describe Apple::Episode do
     it "should be false if the episode has a non complete apple hosted audio asset state" do
       apple_episode.api_response["api_response"]["val"]["data"]["attributes"]["appleHostedAudioAssetState"] = Apple::Episode::AUDIO_ASSET_FAILURE
 
-      delivery_file.apple_sync_log.update!(**build(:podcast_delivery_file_api_response))
+      delivery_file.apple_sync_log.update!(**build(:podcast_delivery_file_api_response).merge(external_id: "123"))
       apple_episode.podcast_delivery_files.reset
 
       assert_equal false, apple_episode.waiting_for_asset_state?

@@ -6,9 +6,9 @@ require "prx_access"
 describe SyncLog do
   describe "indexes" do
     it "prevents the same feeder_type, feeder_id combination from being saved" do
-      s = SyncLog.new(feeder_type: :feeds, feeder_id: 123)
+      s = SyncLog.new(feeder_type: :feeds, feeder_id: 123, external_id: 456, api_response: {foo: "bar"})
       s.save!
-      s2 = SyncLog.new(feeder_type: :feeds, feeder_id: 123)
+      s2 = SyncLog.new(feeder_type: :feeds, feeder_id: 123, external_id: 456, api_response: {foo: "bar"})
       assert_raises ActiveRecord::RecordNotUnique do
         s2.save!
       end
@@ -16,7 +16,7 @@ describe SyncLog do
   end
   describe ".feeds" do
     it "filters records by a feeds enum" do
-      s = SyncLog.new(feeder_type: :feeds, feeder_id: 123)
+      s = SyncLog.new(feeder_type: :feeds, feeder_id: 123, external_id: 456, api_response: {foo: "bar"})
       s.save!
       assert_equal SyncLog.feeds, [s]
     end

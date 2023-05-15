@@ -165,21 +165,10 @@ module Apple
       sl
     end
 
-    def initialize(show:, feeder_episode:, api:, api_response: nil)
+    def initialize(show:, feeder_episode:, api:)
       @show = show
       @feeder_episode = feeder_episode
-      self.api_response = api_response
       @api = api || Apple::Api.from_env
-    end
-
-    def api_response=(api_response)
-      return if api_response.nil?
-
-      if feeder_episode.apple_sync_log.present?
-        feeder_episode.apple_sync_log.update!(api_response: api_response)
-      else
-        feeder_episode.create_apple_sync_log!(api_response: api_response)
-      end
     end
 
     def api_response

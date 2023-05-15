@@ -23,7 +23,8 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
     let(:asset_delivery_state) { "COMPLETE" }
 
     let(:pdf_resp_container) { build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: asset_processing_state) }
-    let(:pdf) { Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container)) }
+    let(:apple_id) { {external_id: "123"} }
+    let(:pdf) { Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container.merge(apple_id))) }
 
     describe "#delivery_awaiting_upload?" do
       it "should be false if the status is delivery_status is false" do
@@ -38,11 +39,11 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
 
       it "will not be complete if either of the two state statues are not complete" do
         pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: "VALIDATION_FAILED")
-        pdf = Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container))
+        pdf = Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container.merge(apple_id)))
         assert_equal false, pdf.apple_complete?
 
         pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: "FAILED", asset_processing_state: asset_processing_state)
-        pdf = Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container))
+        pdf = Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container.merge(apple_id)))
         assert_equal false, pdf.apple_complete?
       end
     end
@@ -72,7 +73,7 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       it "should mark all existing files as uploaded if the episode has ready audio" do
         pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state)
         pdf = Apple::PodcastDeliveryFile.create!(podcast_delivery: podcast_delivery, episode: podcast_container.episode)
-        pdf.create_apple_sync_log!(**pdf_resp_container)
+        pdf.create_apple_sync_log!(**pdf_resp_container.merge(apple_id))
 
         pdf.update!(api_marked_as_uploaded: false)
         apple_episode.stub(:waiting_for_asset_state?, false) do
@@ -99,7 +100,7 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
     it "should soft delete the delivery" do
       pdf_resp_container = build(:podcast_delivery_file_api_response)
       pdf = Apple::PodcastDeliveryFile.create!(podcast_delivery: podcast_delivery, episode: podcast_container.episode)
-      pdf.create_apple_sync_log!(**pdf_resp_container)
+      pdf.create_apple_sync_log!(**pdf_resp_container.merge(external_id: "123"))
 
       assert_equal [pdf], podcast_delivery.podcast_delivery_files.reset
 
