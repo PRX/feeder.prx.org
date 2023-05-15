@@ -371,6 +371,10 @@ module Apple
       podcast_container.present?
     end
 
+    def missing_container?
+      !has_container?
+    end
+
     def has_unlinked_container?
       has_container? && apple_hosted_audio_asset_container_id.blank?
     end

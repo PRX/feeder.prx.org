@@ -65,6 +65,8 @@ module Apple
     end
 
     def self.poll_podcast_container_state(api, episodes)
+      episodes = episodes.filter(&:apple_persisted?)
+
       results = get_podcast_containers_via_episodes(api, episodes)
 
       join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
@@ -137,7 +139,7 @@ module Apple
     def self.get_podcast_containers_via_episodes(api, episodes)
       # Only query for episodes that don't have a podcast container
       # The container. Assume that if we have a container record, we don't need to poll.
-      _eps_with_container, eps_without_container = episodes.partition(&:has_container?)
+      eps_without_container = episodes.filter { |ep| ep.apple_persisted? && ep.missing_container? }
 
       # Fetch the podcast containers from the episodes side of the API
       response =
