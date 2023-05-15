@@ -4,7 +4,10 @@ module Apple
   class Episode
     include Apple::ApiWaiting
     include Apple::ApiResponse
-    attr_accessor :show, :feeder_episode, :api
+    attr_accessor :show,
+      :feeder_episode,
+      :api,
+      :apple_hosted_audio_available_start_date
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
@@ -78,6 +81,15 @@ module Apple
       upsert_sync_logs(episodes, episode_bridge_results)
     end
 
+    def self.update_episodes(api, episodes)
+      return if episodes.empty?
+
+      episode_bridge_results = api.bridge_remote_and_retry!("updateEpisodes",
+        episodes.map(&:update_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
+
+      upsert_sync_logs(episodes, episode_bridge_results)
+    end
+
     def self.update_audio_container_reference(api, episodes)
       return [] if episodes.empty?
 
@@ -121,11 +133,11 @@ module Apple
       episode_bridge_results
     end
 
-    def self.publish(api, episodes)
+    def self.publish(api, episodes, state: "PUBLISH")
       return [] if episodes.empty?
 
       api.bridge_remote_and_retry!("publishEpisodes",
-        episodes.map(&:publish_episode_bridge_params))
+        episodes.map { |e| e.publishing_state_bridge_params(state) })
     end
 
     def self.upsert_sync_logs(episodes, results)
@@ -238,6 +250,28 @@ module Apple
       }
     end
 
+    def update_episode_bridge_params
+      {
+        request_metadata: {
+          apple_episode_id: apple_id,
+          guid: guid
+        },
+        api_url: api.join_url("episodes/#{apple_id}").to_s,
+        api_parameters: episode_update_parameters
+      }
+    end
+
+    def episode_update_parameters
+      create_params = episode_create_parameters
+      create_params[:data][:id] = apple_id
+      create_params[:data].delete(:relationships)
+      create_params[:data][:attributes].delete(:guid)
+      create_params[:data][:attributes][:appleHostedAudioIsSubscriberOnly] = true
+      create_params[:data][:attributes][:appleHostedAudioAvailableStartDate] = apple_hosted_audio_available_start_date if apple_hosted_audio_available_start_date.present?
+
+      create_params
+    end
+
     def update_episode_audio_container_bridge_params
       {
         request_metadata: {
@@ -287,19 +321,19 @@ module Apple
       }
     end
 
-    def publish_episode_bridge_params
+    def publishing_state_bridge_params(state)
       {
         api_url: api.join_url("episodePublishingRequests").to_s,
-        api_parameters: publish_episode_parameters
+        api_parameters: publishing_state_parameters(state)
       }
     end
 
-    def publish_episode_parameters
+    def publishing_state_parameters(state)
       {
         data: {
           type: "episodePublishingRequests",
           attributes: {
-            action: "PUBLISH"
+            action: state
           },
           relationships: {
             episode: {
