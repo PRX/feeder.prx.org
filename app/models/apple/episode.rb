@@ -18,7 +18,7 @@ module Apple
         unwrapped = get_episodes(api, remaining_eps)
 
         remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["guid"], row] }.to_h
-        remaining_eps.each { |ep| ep.api_response = remote_ep_by_id[ep.guid] }
+        remaining_eps.each { |ep| insert_sync_log(ep, remote_ep_by_id[ep.guid]) }
 
         rem =
           remaining_eps.filter do |ep|
@@ -80,12 +80,7 @@ module Apple
       results = api.bridge_remote_and_retry!("getEpisodes", bridge_params)
 
       join_on("guid", episodes_to_sync, results).map do |(ep, row)|
-        apple_id = row.dig("api_response", "val", "data", "id")
-        raise "missing apple id!" unless apple_id.present?
-
-        # Use the setter on Apple::Episode to upsert the sync log
-        ep.api_response = row
-        ep
+        insert_sync_log(ep, row)
       end
     end
 
@@ -152,12 +147,22 @@ module Apple
       episodes_by_guid = episodes.map { |ep| [ep.guid, ep] }.to_h
 
       results.map do |res|
-        apple_id = res.dig("api_response", "val", "data", "id")
-        guid = res.dig("api_response", "val", "data", "attributes", "guid")
-        ep = episodes_by_guid.fetch(guid)
-
-        SyncLog.log!(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id, api_response: res)
+        insert_sync_log(episodes_by_guid[res.dig("request_metadata", "guid")], res)
       end
+    end
+
+    def self.insert_sync_log(ep, res)
+      apple_id = res.dig("api_response", "val", "data", "id")
+      raise "Missing remote apple id" unless apple_id.present?
+
+      sl = SyncLog.log!(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id, api_response: res)
+      # reload local state
+      if ep.feeder_episode.apple_sync_log.nil?
+        ep.feeder_episode.reload
+      else
+        ep.feeder_episode.apple_sync_log.reload
+      end
+      sl
     end
 
     def initialize(show:, feeder_episode:, api:, api_response: nil)
