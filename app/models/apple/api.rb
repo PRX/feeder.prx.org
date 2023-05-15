@@ -191,6 +191,8 @@ module Apple
         bridge_parameters: bridge_options
       }
 
+      return OpenStruct.new(code: "200", body: "[]") if bridge_options.empty?
+
       make_bridge_request(body, url)
     end
 
