@@ -1,6 +1,6 @@
 require "active_support/concern"
 
-module PorterParser
+module PorterCallback
   extend ActiveSupport::Concern
 
   class_methods do
