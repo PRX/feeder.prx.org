@@ -84,7 +84,7 @@ module Apple
       end
 
       # success
-      SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id)
+      SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id, api_response: {success: true})
     end
 
     def log_delivery_processing_errors(eps)
