@@ -10,8 +10,6 @@ describe PorterParser do
     assert_nil TestParser.porter_callback_job_id({})
     assert_nil TestParser.porter_callback_status({})
     assert_nil TestParser.porter_callback_time({})
-    assert_nil TestParser.porter_callback_copy({})
-    assert_nil TestParser.porter_callback_inspect({})
   end
 
   it "parses porter job received callback messages" do
@@ -19,8 +17,6 @@ describe PorterParser do
     assert_equal TestParser.porter_callback_job_id(porter_received_callback), "the-job-id"
     assert_equal TestParser.porter_callback_status(porter_received_callback), "processing"
     assert_equal TestParser.porter_callback_time(porter_received_callback), Time.parse("2012-12-21T12:34:56Z")
-    assert_nil TestParser.porter_callback_copy(porter_received_callback)
-    assert_nil TestParser.porter_callback_inspect(porter_received_callback)
   end
 
   it "ignores porter task result callback messages" do
@@ -40,8 +36,6 @@ describe PorterParser do
     assert_equal TestParser.porter_callback_job_id(porter_404_callback), "the-job-id"
     assert_equal TestParser.porter_callback_status(porter_404_callback), "error"
     assert_equal TestParser.porter_callback_time(porter_404_callback), Time.parse("2012-12-21T12:34:56Z")
-    assert_nil TestParser.porter_callback_copy(porter_404_callback)
-    assert_nil TestParser.porter_callback_inspect(porter_404_callback)
   end
 
   it "parses porter job failed callback messages" do
@@ -49,8 +43,6 @@ describe PorterParser do
     assert_equal TestParser.porter_callback_job_id(porter_error_callback), "the-job-id"
     assert_equal TestParser.porter_callback_status(porter_error_callback), "error"
     assert_equal TestParser.porter_callback_time(porter_error_callback), Time.parse("2012-12-21T12:34:56Z")
-    assert_nil TestParser.porter_callback_copy(porter_error_callback)
-    assert_nil TestParser.porter_callback_inspect(porter_error_callback)
   end
 
   it "parses porter successful callback messages" do
@@ -58,63 +50,54 @@ describe PorterParser do
     assert_equal TestParser.porter_callback_job_id(porter_success_callback), "the-job-id"
     assert_equal TestParser.porter_callback_status(porter_success_callback), "complete"
     assert_equal TestParser.porter_callback_time(porter_success_callback), Time.parse("2012-12-21T12:34:56Z")
-    assert_equal TestParser.porter_callback_copy(porter_success_callback), build(:porter_copy_result)
-    assert_equal TestParser.porter_callback_inspect(porter_success_callback), build(:porter_inspect_audio_result)
   end
 
-  it "parses porter audio metadata" do
+  it "parses porter task results" do
     model = TestParser.new
     model.result = build(:porter_job_results)
-    assert_equal(model.porter_callback_media_meta, {
-      mime_type: "audio/mpeg",
-      medium: "audio",
-      file_size: 32980032,
-      sample_rate: 48000,
-      channels: 2,
-      duration: 1371.437,
-      bit_rate: 192
-    })
+    copy_result = build(:porter_copy_result)
+    inspect_result = build(:porter_inspect_audio_result)
+
+    assert_nil model.porter_callback_task_result("foo")
+    assert_equal copy_result, model.porter_callback_task_result("Copy")
+    assert_equal copy_result, model.porter_callback_task_result(:Copy)
+    assert_equal inspect_result, model.porter_callback_task_result("Inspect")
+    assert_equal inspect_result, model.porter_callback_task_result(:Inspect)
   end
 
-  it "parses porter video metadata" do
-    porter_success_callback = build(:porter_job_results).tap do |r|
-      r[:JobResult][:TaskResults][1] = build(:porter_inspect_video_result)
-    end
-
+  it "parses porter inspect info" do
     model = TestParser.new
-    model.result = porter_success_callback
-    assert_equal(model.porter_callback_media_meta, {
-      mime_type: "video/mp4",
-      medium: "video",
-      file_size: 16996018,
-      sample_rate: 44100,
-      channels: 2,
-      duration: 157.991,
-      bit_rate: 747,
-      frame_rate: 24, # (24000 / 1001).round
-      width: 640,
-      height: 360
-    })
+    assert_empty model.porter_callback_inspect
+
+    model.result = build(:porter_job_results)
+    inspect_result = build(:porter_inspect_audio_result)
+    assert_equal inspect_result[:Inspection], model.porter_callback_inspect
   end
 
   it "parses porter mime type" do
-    porter_success_callback = build(:porter_job_results).tap do |r|
-      r[:JobResult][:TaskResults][1][:Inspection][:MIME] = "image/png"
-    end
     model = TestParser.new
-    model.result = porter_success_callback
-    assert_equal model.porter_callback_media_meta[:mime_type], "image/png"
-    assert_equal model.porter_callback_media_meta[:medium], "image"
+    assert_nil model.porter_callback_mime
+
+    model.result = build(:porter_job_results)
+    assert_equal "audio/mpeg", model.porter_callback_mime
+
+    model.result[:JobResult][:TaskResults][1][:Inspection][:MIME] = "foo/bar"
+    assert_equal "foo/bar", model.porter_callback_mime
+
+    # inferred for "Audio" inspect result
+    model.result[:JobResult][:TaskResults][1][:Inspection][:MIME] = nil
+    assert_equal "audio/mpeg", model.porter_callback_mime
+
+    # not inferred for other inspect results
+    model.result[:JobResult][:TaskResults][1][:Inspection][:Audio] = nil
+    assert_nil model.porter_callback_mime
   end
 
-  it "parses porter image metadata" do
+  it "parses porter file sizes" do
     model = TestParser.new
-    model.result = build(:porter_image_job_results)
-    assert_equal(model.porter_callback_image_meta, {
-      format: "jpeg",
-      height: 1400,
-      size: 60572,
-      width: 1400
-    })
+    assert_nil model.porter_callback_size
+
+    model.result = build(:porter_job_results)
+    assert_equal 32980032, model.porter_callback_size
   end
 end
