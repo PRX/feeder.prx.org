@@ -48,28 +48,13 @@ module Apple
       api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
 
-    def self.get_episodes_via_show(api, show_id)
-      bridge_params = Apple::Show.apple_episode_json(api, show_id).map do |ep_json|
-        id = ep_json["id"]
-        guid = ep_json["attributes"]["guid"]
-        Episode.get_episode_bridge_params(api, id, guid)
-      end
-
-      api.bridge_remote_and_retry!("getEpisodes", bridge_params)
-    end
-
     def self.poll_episode_state(api, show, episodes)
-      guid_to_apple_json = Apple::Show.apple_episode_json(api, show.id).map do |ep_json|
+      guid_to_apple_json = show.apple_episode_json.map do |ep_json|
         [ep_json["attributes"]["guid"], ep_json]
       end.to_h
 
-      guid_to_feeder_episode = episodes.map { |ep| [ep.guid, ep] }.to_h
-
       # Only sync episodes that have a remote pair
       episodes_to_sync = episodes.filter { |ep| guid_to_apple_json[ep.guid].present? }
-
-      # If there are remote episodes with no local feeder pair
-      Rails.logger.warn("Missing feeder episode for remote apple episode") if guid_to_apple_json.keys.any? { |guid| guid_to_feeder_episode[guid].nil? }
 
       bridge_params = episodes_to_sync.map do |ep|
         id = guid_to_apple_json[ep.guid]["id"]
