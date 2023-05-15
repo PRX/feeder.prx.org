@@ -69,7 +69,7 @@ module Apple
       episodes_to_sync = episodes.filter { |ep| guid_to_apple_json[ep.guid].present? }
 
       # If there are remote episodes with no local feeder pair
-      Rails.logger.error("Missing feeder episode for remote apple episode") if guid_to_apple_json.keys.any? { |guid| guid_to_feeder_episode[guid].nil? }
+      Rails.logger.warn("Missing feeder episode for remote apple episode") if guid_to_apple_json.keys.any? { |guid| guid_to_feeder_episode[guid].nil? }
 
       bridge_params = episodes_to_sync.map do |ep|
         id = guid_to_apple_json[ep.guid]["id"]
