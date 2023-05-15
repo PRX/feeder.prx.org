@@ -11,7 +11,7 @@ module Apple
 
     # In the case where the episodes state is not yet ready to publish, but the
     # underlying models are ready. Poll the episodes audio asset state but
-    # guards against waiting for episode assets that will never be processed.
+    # guard against waiting for episode assets that will never be processed.
     def self.wait_for_asset_state(api, eps)
       wait_for(eps) do |remaining_eps|
         Rails.logger.info("Probing for episode audio asset state")
