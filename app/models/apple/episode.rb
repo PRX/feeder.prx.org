@@ -347,18 +347,6 @@ module Apple
       }
     end
 
-    def create_episode!
-      self.class.create_apple_episodes([self])
-
-      api.unwrap_response(resp)
-    end
-
-    def update_episode!
-      resp = api.patch("episodes/#{apple_id}", update_episode_data)
-
-      api.unwrap_response(resp)
-    end
-
     def apple?
       feeder_episode.apple?
     end
