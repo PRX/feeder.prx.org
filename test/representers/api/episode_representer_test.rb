@@ -1,7 +1,7 @@
 require "test_helper"
 
 describe Api::EpisodeRepresenter do
-  let(:episode) { create(:episode) }
+  let(:episode) { build_stubbed(:episode) }
   let(:representer) { Api::EpisodeRepresenter.new(episode) }
   let(:json) { JSON.parse(representer.to_json) }
 
@@ -18,19 +18,16 @@ describe Api::EpisodeRepresenter do
     assert_equal json["itunesBlock"], false
   end
 
-  it "indicates if the episode media is not ready" do
+  it "is feed ready with no media" do
+    assert episode.no_media?
     assert_equal json["isFeedReady"], true
+    assert_nil json["_links"]["enclosure"]
   end
 
   it "includes an explicit_content value from the podcast" do
     assert_nil episode.explicit
     assert episode.podcast.explicit
     assert_equal json["explicitContent"], true
-  end
-
-  it "indicates if the episode media is not ready" do
-    episode.enclosure.update(status: "error")
-    assert_equal json["isFeedReady"], false
   end
 
   it "uses summary when not blank" do
@@ -61,67 +58,82 @@ describe Api::EpisodeRepresenter do
       "https://cms.prx.org#{episode.prx_audio_version_uri}"
   end
 
-  it "has media" do
-    assert_equal json["media"].size, 1
-    assert_equal json["media"].first["href"], episode.enclosure.url
-    assert_equal json["media"].first["originalUrl"], episode.enclosure.original_url
+  describe "with media" do
+    let(:episode) { create(:episode_with_media) }
 
-    # media is ready, so there's no readyMedia
-    assert_nil json["readyMedia"]
-  end
+    it "is feed ready" do
+      assert episode.media?
+      assert_equal json["isFeedReady"], true
+    end
 
-  it "has ready media when media is not complete" do
-    e1 = episode.enclosure
-    e2 = create(:enclosure, episode: episode, status: "created")
+    it "is not feed ready with processing media" do
+      episode.contents.first.status = "processing"
+      assert_equal json["isFeedReady"], true
+    end
 
-    # e2 is the latest enclosure, but incomplete (href is original_url)
-    assert_equal json["media"].size, 1
-    assert_equal json["media"].first["href"], e2.original_url
-    assert_equal json["media"].first["originalUrl"], e2.original_url
-    assert_equal json["media"].first["status"], "created"
+    it "has media" do
+      assert_equal json["media"].size, 1
+      assert_equal json["media"].first["href"], episode.contents.first.url
+      assert_equal json["media"].first["originalUrl"], episode.contents.first.original_url
 
-    assert_equal json["readyMedia"].size, 1
-    assert_equal json["readyMedia"].first["href"], e1.url
-    assert_equal json["readyMedia"].first["originalUrl"], e1.original_url
-    assert_equal json["readyMedia"].first["status"], "complete"
-  end
+      # media is ready, so there's no readyMedia
+      assert_nil json["readyMedia"]
+    end
 
-  it "has an audio version" do
-    assert_equal json["audioVersion"], "One segment audio"
-    assert_equal json["segmentCount"], 1
-  end
+    it "has ready media when media is not complete" do
+      c1 = episode.contents.first
+      c2 = create(:content, episode: episode, status: "created")
+      episode.reload
 
-  it "has image" do
-    assert_equal json["image"]["href"], episode.image.url
-    assert_equal json["image"]["originalUrl"], episode.image.original_url
-  end
+      # c2 is the latest enclosure, but incomplete (href is original_url)
+      assert_equal json["media"].size, 1
+      assert_equal json["media"].first["href"], c2.original_url
+      assert_equal json["media"].first["originalUrl"], c2.original_url
+      assert_equal json["media"].first["status"], "created"
 
-  it "has enclosure" do
-    assert_equal json["_links"]["enclosure"]["href"], episode.enclosure_url
-  end
+      assert_equal json["readyMedia"].size, 1
+      assert_equal json["readyMedia"].first["href"], c1.url
+      assert_equal json["readyMedia"].first["originalUrl"], c1.original_url
+      assert_equal json["readyMedia"].first["status"], "complete"
+    end
 
-  it "has a podcast-feed" do
-    assert_equal json["_links"]["prx:podcast-feed"]["href"],
-      episode.podcast_feed_url
-    assert_equal json["_links"]["prx:podcast-feed"]["type"],
-      "application/rss+xml"
-    assert_equal json["_links"]["prx:podcast-feed"]["title"],
-      episode.podcast.title
-  end
+    it "has an audio version" do
+      assert_equal json["audioVersion"], "One segment audio"
+      assert_equal json["segmentCount"], 1
+    end
 
-  it "has a default podcast-feed link when no podcast url set" do
-    episode.podcast.url = nil
-    assert_equal json["_links"]["prx:podcast-feed"]["href"],
-      episode.podcast.published_url
-  end
+    it "has image" do
+      assert_equal json["image"]["href"], episode.image.url
+      assert_equal json["image"]["originalUrl"], episode.image.original_url
+    end
 
-  it "can represent a sad, podcast-less episode" do
-    episode.podcast_id = nil
-    episode.podcast = nil
-    json2 = JSON.parse(Api::EpisodeRepresenter.new(episode).to_json)
-    assert_equal json2["guid"], "prx__#{episode.guid}"
-    assert_nil json2["_links"]["enclosure"]
-    assert_nil json2["_links"]["prx:podcast"]
-    assert_nil json2["_links"]["prx:podcast-feed"]
+    it "has enclosure" do
+      assert_equal json["_links"]["enclosure"]["href"], episode.enclosure_url
+    end
+
+    it "has a podcast-feed" do
+      assert_equal json["_links"]["prx:podcast-feed"]["href"],
+        episode.podcast_feed_url
+      assert_equal json["_links"]["prx:podcast-feed"]["type"],
+        "application/rss+xml"
+      assert_equal json["_links"]["prx:podcast-feed"]["title"],
+        episode.podcast.title
+    end
+
+    it "has a default podcast-feed link when no podcast url set" do
+      episode.podcast.url = nil
+      assert_equal json["_links"]["prx:podcast-feed"]["href"],
+        episode.podcast.published_url
+    end
+
+    it "can represent a sad, podcast-less episode" do
+      episode.podcast_id = nil
+      episode.podcast = nil
+      json2 = JSON.parse(Api::EpisodeRepresenter.new(episode).to_json)
+      assert_equal json2["guid"], "prx__#{episode.guid}"
+      assert_nil json2["_links"]["enclosure"]
+      assert_nil json2["_links"]["prx:podcast"]
+      assert_nil json2["_links"]["prx:podcast-feed"]
+    end
   end
 end

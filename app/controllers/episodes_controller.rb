@@ -49,6 +49,10 @@ class EpisodesController < ApplicationController
       if @episode.save
         @episode.copy_media
         format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
+      elsif @episode.errors.added?(:base, :media_not_ready)
+        @episode.build_contents.each(&:valid?)
+        flash.now[:error] = t(".media_not_ready")
+        format.html { render :edit, status: :unprocessable_entity }
       else
         flash.now[:error] = t(".error")
         format.html { render :new, status: :unprocessable_entity }
@@ -65,14 +69,12 @@ class EpisodesController < ApplicationController
       if @episode.save
         @episode.copy_media
         format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
+      elsif @episode.errors.added?(:base, :media_not_ready)
+        @episode.build_contents.each(&:valid?)
+        flash.now[:error] = t(".media_not_ready")
+        format.html { render :edit, status: :unprocessable_entity }
       else
-        flash.now[:error] =
-          if @episode.errors.added?(:base, :media_not_ready)
-            t(".media_not_ready")
-          else
-            t(".error")
-          end
-
+        flash.now[:error] = t(".error")
         format.html { render :edit, status: :unprocessable_entity }
       end
     end

@@ -11,24 +11,25 @@ FactoryBot.define do
     sequence(:clean_title) { |n| "Clean title #{n}" }
     sequence(:published_at) { |n| Date.today - n.days }
 
-    audio_version { "One segment audio" }
-    segment_count { 1 }
-
     description do
-      "<div><a href='/tina'>Tina</a> McElroy Ansa is a little girl when her father's business goes under.</div>"
+      "<div><a href=\"/tina\">Tina</a> McElroy Ansa is a little girl when her father's business goes under.</div>"
     end
 
     content do
-      "<div><a href='/tina'>Tina</a> McElroy Ansa is a little girl when her father's business goes under.</div>"
+      "<div><a href=\"/tina\">Tina</a> McElroy Ansa is a little girl when her father's business goes under.</div>"
     end
 
     summary do
-      "<a href='/tina'>Tina</a> McElroy Ansa is a little girl when her father's business goes under"
+      "<a href=\"/tina\">Tina</a> McElroy Ansa is a little girl when her father's business goes under"
     end
 
-    after(:create) do |episode, _evaluator|
-      episode.enclosures << create(:enclosure, episode: episode, status: "complete")
-      episode.images << create(:episode_image, episode: episode, status: "complete")
+    factory :episode_with_media do
+      audio_version { "One segment audio" }
+      segment_count { 1 }
+      medium { "audio" }
+
+      contents { [association(:content, status: "complete")] }
+      images { [association(:episode_image, status: "complete")] }
     end
   end
 end
