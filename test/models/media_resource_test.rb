@@ -96,4 +96,14 @@ describe MediaResource do
       mock_copy.verify
     end
   end
+
+  describe "#path" do
+    it "returns a path without leading slash" do
+      mr = MediaResource.new
+
+      mr.stub(:media_url, "http://test.prxu.org/some/file.mp3") do
+        assert_equal "some/file.mp3", mr.path
+      end
+    end
+  end
 end

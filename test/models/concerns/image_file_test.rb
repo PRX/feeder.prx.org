@@ -73,6 +73,16 @@ describe ImageFile do
     end
   end
 
+  describe "#path" do
+    it "returns a path without leading slash" do
+      i = FeedImage.new
+
+      i.stub(:published_url, url) do
+        assert_equal "where/file.png", i.path
+      end
+    end
+  end
+
   describe "#href" do
     it "checks if processing is complete or invalid" do
       assert_equal "complete", image.status

@@ -79,7 +79,7 @@ module ImageFile
   end
 
   def path
-    URI.parse(url).path if url.present?
+    URI.parse(url).path.sub(/\A\//, "") if url.present?
   end
 
   def href

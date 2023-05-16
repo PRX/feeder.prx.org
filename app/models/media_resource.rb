@@ -54,7 +54,7 @@ class MediaResource < ApplicationRecord
   end
 
   def path
-    URI.parse(url).path if url.present?
+    URI.parse(url).path.sub(/\A\//, "") if url.present?
   end
 
   def replace_resources!
