@@ -45,7 +45,7 @@ describe ImageFile do
     end
 
     it "skips creating task if complete" do
-      assert_nil image.task
+      image.task = nil
       assert image.status_complete?
       image.copy_media
 

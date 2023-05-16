@@ -66,7 +66,7 @@ describe MediaResource do
   describe "#copy_media" do
     it "skips creating task if complete" do
       mr = build_stubbed(:media_resource, status: "complete")
-      assert_nil mr.task
+      mr.task = nil
       mr.copy_media
 
       assert_nil mr.task
