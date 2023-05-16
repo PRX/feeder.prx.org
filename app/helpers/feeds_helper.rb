@@ -6,31 +6,31 @@ module FeedsHelper
   end
 
   def audio_format_options
-    ["mp3", "flac", "wav"].map do |value|
+    AudioFormatValidator::FORMATS.map do |value|
       [I18n.t(value, scope: [:feeds, :helper, :audio_format_options]), value]
     end
   end
 
   def audio_bitrate_options
-    [96, 112, 128, 160, 192, 224, 256, 320].map do |value|
+    AudioFormatValidator::BIT_RATES.map do |value|
       [I18n.t(value, scope: [:feeds, :helper, :audio_bitrate_options]), value]
     end
   end
 
   def audio_bitdepth_options
-    [16, 24, 32].map do |value|
+    AudioFormatValidator::BIT_DEPTHS.map do |value|
       [I18n.t(value, scope: [:feeds, :helper, :audio_bitdepth_options]), value]
     end
   end
 
   def audio_channel_options
-    [1, 2].map do |value|
+    AudioFormatValidator::CHANNELS.map do |value|
       [I18n.t(value, scope: [:feeds, :helper, :audio_channel_options]), value]
     end
   end
 
   def audio_sample_options
-    [8000, 11025, 12000, 16000, 22050, 24000, 44100, 48000].map do |value|
+    AudioFormatValidator::SAMPLE_RATES.map do |value|
       [I18n.t(value, scope: [:feeds, :helper, :audio_sample_options]), value]
     end
   end
