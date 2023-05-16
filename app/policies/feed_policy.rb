@@ -4,7 +4,7 @@ class FeedPolicy < ApplicationPolicy
   end
 
   def create?
-    PodcastPolicy.new(token, resource.podcast).create?
+    update?
   end
 
   def update?
@@ -12,7 +12,7 @@ class FeedPolicy < ApplicationPolicy
   end
 
   def destroy?
-    PodcastPolicy.new(token, resource.podcast).destroy?
+    update?
   end
 
   def account_id
