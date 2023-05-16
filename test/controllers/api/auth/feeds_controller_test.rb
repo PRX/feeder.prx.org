@@ -4,8 +4,8 @@ describe Api::Auth::FeedsController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
   let(:feed) { create(:feed, podcast: podcast, slug: "test-slug") }
-  let(:token) { StubToken.new(account_id, ["member"]) }
-  let(:bad_token) { StubToken.new(account_id + 100, ["member"]) }
+  let(:token) { StubToken.new(account_id, ["podcast_edit"]) }
+  let(:bad_token) { StubToken.new(account_id + 100, ["podcast_edit"]) }
 
   let(:feed_hash) do
     {

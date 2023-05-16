@@ -14,8 +14,4 @@ class FeedPolicy < ApplicationPolicy
   def destroy?
     update?
   end
-
-  def account_id
-    resource.podcast.account_id
-  end
 end
