@@ -1,8 +1,20 @@
 class Uncut < MediaResource
+  after_save :cut_contents
+
   serialize :segmentation, JSON
 
   validates :medium, inclusion: {in: %w[audio]}, if: :status_complete?
   validate :validate_segmentation
+
+  def cut_contents
+    if status_complete? && segmentation.present? && segmentation_previously_changed?
+      # TODO
+    end
+  end
+
+  def replace_resources!
+    Uncut.where(episode_id: episode_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
+  end
 
   def validate_segmentation
     return if segmentation.nil?
