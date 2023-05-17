@@ -72,6 +72,15 @@ describe Apple::Config do
         apple_key_pem_b64: nil)
       assert v4.valid?
     end
+
+    it "requires the apple provider id to not have an underscore" do
+      f1 = create(:feed)
+      f2 = create(:feed)
+
+      v1 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: "foo_bar")
+      refute v1.valid?
+      assert_equal ["cannot contain an underscore"], v1.errors[:apple_provider_id]
+    end
   end
 
   describe "apple_key" do

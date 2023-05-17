@@ -22,6 +22,15 @@ module Apple
                                          message: "can only have one credential per public and private feed"}
     validates :public_feed, exclusion: {in: ->(apple_credential) { [apple_credential.private_feed] }}
 
+    validate :apple_provider_id_is_valid, if: :apple_provider_id?
+
+    def apple_provider_id_is_valid
+      # ensure that it does not have an underscore
+      if apple_provider_id.include?("_")
+        errors.add(:apple_provider_id, "cannot contain an underscore")
+      end
+    end
+
     def any_apple_credentials_exist?
       apple_provider_id.present? || apple_key_id.present? || apple_key_pem_b64.present?
     end
