@@ -7,7 +7,7 @@ module Apple
     attr_accessor :show,
       :feeder_episode,
       :api,
-      :apple_hosted_audio_available_start_date
+      :apple_episode_update_attributes
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
@@ -266,9 +266,11 @@ module Apple
       create_params[:data][:id] = apple_id
       create_params[:data].delete(:relationships)
       create_params[:data][:attributes].delete(:guid)
-      create_params[:data][:attributes][:appleHostedAudioIsSubscriberOnly] = true
-      create_params[:data][:attributes][:appleHostedAudioAvailableStartDate] = apple_hosted_audio_available_start_date if apple_hosted_audio_available_start_date.present?
 
+      ep_attrs = create_params[:data][:attributes]
+      ep_attrs = ep_attrs.merge(apple_episode_update_attributes)
+
+      create_params[:data][:attributes] = ep_attrs
       create_params
     end
 
