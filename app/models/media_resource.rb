@@ -63,6 +63,19 @@ class MediaResource < ApplicationRecord
     url
   end
 
+  def reset_media_attributes
+    self.bit_rate = nil
+    self.channels = nil
+    self.duration = nil
+    self.file_size = nil
+    self.frame_rate = nil
+    self.height = nil
+    self.medium = nil
+    self.mime_type = nil
+    self.sample_rate = nil
+    self.width = nil
+  end
+
   def guid
     self[:guid] ||= SecureRandom.uuid
     self[:guid]

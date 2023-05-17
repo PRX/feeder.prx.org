@@ -51,17 +51,9 @@ class Tasks::CopyMediaTask < ::Task
       # only return for actual videos - not detected images in id3 tags
       if info[:Video] && media_resource.mime_type&.starts_with?("video")
         media_resource.duration = info[:Video][:Duration].to_f / 1000
-        media_resource.bit_rate = info[:Video][:Bitrate].to_i / 1000
         media_resource.width = info[:Video][:Width].to_i
         media_resource.height = info[:Video][:Height].to_i
-
-        # note: frame_rate is an integer in the schema, so just round it
-        media_resource.frame_rate =
-          begin
-            Rational(info[:Video][:Framerate]).to_f.round
-          rescue
-            nil
-          end
+        media_resource.frame_rate = info[:Video][:Framerate].to_f.round
       end
 
       # change status, if metadata doesn't pass validations

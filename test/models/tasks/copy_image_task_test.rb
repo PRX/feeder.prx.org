@@ -66,16 +66,16 @@ describe Tasks::CopyImageTask do
     end
 
     it "updates image metadata on complete" do
+      task.image.reset_image_attributes
+
       task.update(status: "created")
+      assert_nil task.image.format
 
-      task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Format] = "png"
-      task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Height] = 1500
-      task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Width] = 1500
       task.update(status: "complete")
-
-      assert_equal "png", task.image.format
-      assert_equal 1500, task.image.height
-      assert_equal 1500, task.image.width
+      assert_equal "jpeg", task.image.format
+      assert_equal 1400, task.image.height
+      assert_equal 1400, task.image.width
+      assert_equal 60572, task.image.size
     end
 
     it "handles validation errors" do
