@@ -16,14 +16,14 @@ describe Tasks::CopyMediaTask do
     assert_equal options.keys, %w[callback job_type source destination]
     assert_match(/^sqs:\/\//, options[:callback])
     assert_equal options[:job_type], "audio"
-    assert_equal options[:source], "s3://prx-testing/test/audio.mp3"
+    assert_equal options[:source], task.media_resource.href
     assert_match(/^s3:\/\//, options[:destination])
   end
 
   it "remove query string from audio url" do
     refute_nil task.media_resource
-    original = task.media_resource.original_url
-    task.media_resource.original_url = "#{original}?remove=this"
+    original = task.media_resource.href
+    task.media_resource.href = "#{original}?remove=this"
     assert_equal task.task_options[:source], original
   end
 
@@ -45,8 +45,12 @@ describe Tasks::CopyMediaTask do
     assert_equal url, "s3://test-prx-feed/path/guid/audio.mp3"
   end
 
-  it "use original url as the source url" do
+  it "use original url as the source url until complete" do
+    task.media_resource.status = "started"
     assert_equal task.source_url(task.media_resource), task.media_resource.original_url
+
+    task.media_resource.status = "complete"
+    assert_equal task.source_url(task.media_resource), task.media_resource.url
   end
 
   it "updates status before save" do
@@ -83,5 +87,15 @@ describe Tasks::CopyMediaTask do
   it "does not throw errors when owner is missing on callback" do
     task.owner = nil
     task.update(status: "complete")
+  end
+
+  it "handles validation errors" do
+    task.update(status: "created")
+
+    task.result[:JobResult][:TaskResults][1][:Inspection][:MIME] = "foo/bar"
+    task.update(status: "complete")
+
+    assert_equal "invalid", task.media_resource.status
+    assert_equal "foo", task.media_resource.medium
   end
 end

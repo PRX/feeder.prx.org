@@ -37,7 +37,6 @@ gem "roar-rails", github: "PRX/roar-rails", branch: "feat/rails_7"
 # models
 gem "addressable"
 gem "countries"
-gem "fastimage"
 gem "paranoia"
 gem "sanitize"
 
@@ -50,6 +49,10 @@ gem "ougai-formatters-customizable"
 # background workers
 gem "say_when", "~> 2.2.1"
 gem "shoryuken"
+
+# podcast import
+gem "feedjira", "2.1.0"
+gem "loofah"
 
 # utilities
 gem "amazing_print"

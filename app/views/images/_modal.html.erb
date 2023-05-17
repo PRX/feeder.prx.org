@@ -1,0 +1,51 @@
+<div id="<%= id %>" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><%= title %></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-sm m-0">
+          <tbody>
+            <tr>
+              <th scope="row"><strong>File:</strong></th>
+              <td>
+                <% if image.status_complete? %>
+                  <%= link_to image.file_name, image.url, target: "_blank", rel: "noopener" %>
+                <% else %>
+                  <%= image.file_name %>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Status:</strong></th>
+              <td>
+                <% case image.status %>
+                <% when "started", "created", "processing", "retrying" %>
+                  <span class="badge bg-secondary"><%= image.status.capitalize %></span>
+                <% when "complete" %>
+                  <span class="badge bg-success"><%= image.status.capitalize %></span>
+                <% else %>
+                  <span class="badge bg-danger"><%= image.status.capitalize %></span>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Size:</strong></th>
+              <td><%= blank_dash(image.size) { number_to_human_size(image.size) } %></td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Format:</strong></th>
+              <td><%= blank_dash(image.format) %></td>
+            </tr>
+            <tr>
+              <th scope="row"><strong>Dimensions:</strong></th>
+              <td><%= blank_dash(image.width, image.height) { "#{image.width} x #{image.height}" } %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -129,8 +129,8 @@ class PodcastsController < ApplicationController
       :complete,
       default_feed_attributes: [
         :id,
-        feed_images_attributes: %i[id original_url size alt_text caption credit _destroy],
-        itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy]
+        feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
+        itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
       ]
     )
   end

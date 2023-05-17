@@ -1,0 +1,7 @@
+<% if feed.tokens.present? %>
+  <%= form.fields_for :feed_tokens, feed.tokens do |fields| %>
+    <%= render "form_auth_token", form: fields %>
+  <% end %>
+<% end %>
+
+<span>Add token</span>

@@ -12,17 +12,15 @@ module ImageFile
 
     before_validation :initialize_attributes, on: :create
 
-    before_validation :detect_image_attributes
-
     validates :original_url, presence: true
 
-    validates :format, inclusion: {in: ["jpeg", "png", "gif", nil]}
+    validates :format, inclusion: {in: %w[jpeg png gif]}, if: :status_complete?
 
-    enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
+    enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
 
     scope :complete_or_replaced, -> do
       with_deleted
-        .complete
+        .status_complete
         .where("deleted_at IS NULL OR replaced_at IS NOT NULL")
         .order("created_at DESC")
     end
@@ -63,7 +61,9 @@ module ImageFile
   end
 
   def file_name
-    File.basename(URI.parse(original_url).path)
+    if original_url.present?
+      File.basename(URI.parse(original_url).path)
+    end
   end
 
   def copy_media(force = false)
@@ -75,11 +75,11 @@ module ImageFile
   end
 
   def url
-    complete? ? self[:url] : self[:original_url]
+    self[:url] ||= published_url
   end
 
   def href
-    complete? ? url : original_url
+    (status_complete? || status_invalid?) ? url : original_url
   end
 
   def href=(h)
@@ -105,39 +105,6 @@ module ImageFile
     self.status = :created
   end
 
-  def detect_image_attributes
-    # skip if we've already detected width/height/format
-    return if width.present? && height.present? && format.present?
-
-    # s3 urls cannot be fastimage'd - must wait for async porter inspection
-    return if original_url.blank? || original_url.starts_with?("s3://")
-
-    info = nil
-    begin
-      fastimage_options = {
-        timeout: 10,
-        raise_on_failure: true,
-        http_header: {"User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X) PRX Feeder/1.0"}
-      }
-      info = FastImage.new(original_url, fastimage_options)
-    rescue FastImage::FastImageException => err
-      logger.error(err)
-      NewRelic::Agent.notice_error(err)
-      raise
-    end
-    self.dimensions = info.size
-    self.format = info.type
-    self.size = info.content_length
-  end
-
-  def dimensions
-    [width, height]
-  end
-
-  def dimensions=(s)
-    self.width, self.height = s
-  end
-
   def replace?(img)
     original_url != img.try(:original_url)
   end
@@ -146,5 +113,22 @@ module ImageFile
     %i[alt_text caption credit].each do |key|
       img[key] = self[key]
     end
+  end
+
+  def retryable?
+    if status_started? || status_created? || status_processing?
+      (Time.now - updated_at) > 30
+    else
+      false
+    end
+  end
+
+  def retry!
+    status_retrying!
+    copy_media(true)
+  end
+
+  def _retry=(_val)
+    retry!
   end
 end

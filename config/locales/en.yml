@@ -1,3 +1,16 @@
+defaults:
+  form_status: &form_status
+    create: Create
+    discard: Discard
+    new_hint: Unsaved
+    title: Status
+    update: Save
+    updated_at_hint: Last Saved
+  controller_actions:
+    update: &update
+      success: "%{model} update successful."
+      failure: "There was a problem updating the %{model}."
+
 en:
   # general config
   date:
@@ -78,6 +91,22 @@ en:
         subtitle: Teaser
         summary: iTunes Summary
         title: Title
+      feed:
+        title: Title
+        subtitle: Teaser
+        description: Description
+        summary: Summary
+        private: Private (unlisted)
+        url: Public Feed Url
+        new_feed_url: New Feed Url
+        enclosure_prefix: Enclosure Prefix Url
+        display_episodes_count: Feed Episode Limit
+        display_full_episodes_count: Feed Metadata Limit
+        episode_offset_seconds: Episode Publish Delay
+        billboard: Billboards
+        house: House Ads
+        paid: Paid Ads
+        sonic_id: System (Sonic IDs)
   # specific pages/views
   episodes:
     create:
@@ -112,6 +141,7 @@ en:
         title: Write a short, Tweetable title. Think newspaper headline.
     form_status:
       create: Create Draft
+      creating: Creating...
       destroy: Delete
       destroy_confirm_title: Really Delete?
       destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
@@ -123,9 +153,11 @@ en:
       title_published: Published
       title_scheduled: Scheduled
       toggle_dropdown: Toggle Dropdown
+      unpublish: Unpublish
       update: Save
       updated_at_hint: Last Saved
-      unpublish: Unpublish
+      updating: Saving...
+      uploading: Uploading...
     form_tags:
       title: Categories
       help:
@@ -140,7 +172,77 @@ en:
       published: Published Episodes
     update:
       error: Unable to save
+      media_not_ready: Audio not ready
       notice: Episode updated
+  feeds:
+    form_custom_fields:
+      headers:
+        overrides: Overrides
+        private: Feed Visibility
+        auth_tokens: Auth Tokens
+        ad_zones: Ad Zones to Include
+      help:
+        overrides: Override series metadata for this feed. You must provide an alternate title, but the other fields are optional.
+        slug: An alphanumeric slug used to identify your feed. Also used in the private feed RSS url.
+        subtitle: Enter an alternate teaser
+        description: Enter an alternate description
+        summary: Enter an alternate summary
+        private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private link with - <strong>anyone who has access to the link will be able to use it</strong>.
+        auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
+        ad_zones: Control the types of ads that should be stitched into episodes in this feed.
+    form_main:
+      headers:
+        audio_format: Audio Format
+      help:
+        file_name: The file name used for your private RSS feed.
+        url: If you already have a public URL for your podcast feed (e.g., feedburner), enter it here. It should point to your private feed URL.
+        new_feed_url: If your podcast feed is moving, use this field to point to the new URL where your podcast is located. The current feed should be maintained until all of your subscribers have migrated.
+        enclosure_prefix: If you have an enclosure prefix URL to set a redirect on audio requests for your podcast feed (e.g., podtrac or blubrry), enter it here.
+        display_episodes_count: You can optionally limit the number of episodes that will be publicly available in your feed. Your oldest episodes will disappear as you publish newer ones. Leave this field blank to include all.
+        display_full_episodes_count: You can optionally reduce the size of your RSS feed by trimming metadata from your oldest feed episodes. This many of your newest episodes will include <i>all</i> metadata, and older episodes will omit certain RSS fields. Leave this field blank to include all metadata on every episode.
+        episode_offset_seconds: Instead of episodes immediately showing up in this feed when published, delay their appearance. AKA Windowing.
+        audio_format: Optionally set an explicit audio format for your episodes. If you leave this blank, we will automatically use the same format as the first audio segment you upload for each episode.
+    form_status:
+      <<: *form_status
+    helper:
+      episode_offset_options:
+        "300": 5 minutes
+        "900": 15 minutes
+        "3600": 1 hour
+        "21600": 6 hours
+        "43200": 12 hours
+        "86400": 24 hours
+      audio_format_options:
+        mp3: MP3
+        flac: FLAC
+        wav: WAV
+      audio_bitrate_options:
+        "96": 96 kbps
+        "112": 112 kbps
+        "128": 128 kbps
+        "160": 160 kbps
+        "192": 192 kbps
+        "224": 224 kbps
+        "256": 256 kbps
+        "320": 320 kbps
+      audio_bitdepth_options:
+        "16": 16 bit
+        "24": 24 bit
+        "32": 32 bit
+      audio_channel_options:
+        "1": Mono
+        "2": Stereo
+      audio_sample_options:
+        "8000": 8 kHz
+        "11025": 11.025 kHz
+        "12000": 12 kHz
+        "16000": 16 kHz
+        "22050": 22.05 kHz
+        "24000": 24 kHz
+        "44100": 44.1 kHz
+        "48000": 48 kHz
+    update:
+      <<: *update
   images:
     help:
       episode_image: Provide an image for your episode, if desired. Image dimensions must be square.
@@ -195,11 +297,14 @@ en:
         title: What's the name of this podcast?
     form_status:
       create: Create
+      creating: Creating...
       discard: Discard
       new_hint: Unsaved
       title: Status
       update: Save
       updated_at_hint: Last Saved
+      updating: Saving...
+      uploading: Uploading...
     index:
       search_podcasts: Search Podcasts
     podcast:
@@ -231,18 +336,33 @@ en:
       scheduled_episodes:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
+  podcast_engagement:
+    show:
+      engagement: Engagement
+      confirm: Confirm
+      donation_link: Donation Link
+      micropayments: Micropayments
+      payment_pointer: Coil
+      last_saved: Last Saved
+      subscribe: Subscribe and Follow Links
+      social_media: Social Media Links
+      status: Status
+      save: Update
+    update:
+      error: Unable to save
+      notice: Podcast updated
   podcast_planner:
     create:
       success: Episode drafts generated.
     form_main:
       header: Plan Episodes
-      help_html: Save yourself some time by automatically creating multiple episode drafts to create a production schedule, it may also help your revenue as our sales teams will have access to dropdates to sell against. If you only wish to add a single episode, <a href="%{url}">go here</a>.
+      help_html: Add multiple episode drafts to create a production schedule. Episode drafts improve the accuracy of your podcast's forecasts. If you only need to add a single episode, <a href="%{url}">go here</a>.
     form_date_calculator:
       header:
         date_calculation: Date Calculation of Draft Batch
-        day_select: Day Selection
-        week_select: Week Selection
-        range_select: Date Range Selection
+        day_select: Which day of the week do you plan to publish your episodes?
+        week_select: Which weeks of each month do you plan to publish on?
+        range_select: How long will episodes recur?
       help:
         date_calculation: Calculate release dates for your drafts by selecting which days and weeks you plan to publish, and then select a date range.
         day_select: Which day of the week do you plan to publish your episodes? Select all that apply.
@@ -254,16 +374,19 @@ en:
         calculate_range: Calculate the end of the batch by
         select_range: Select range
       label:
-        week_condition: Weekly rhythm
-        week_of_month: Week of the month
-        period: Interval
-        date_range_condition: End range
+        week_condition: Calculate the weeks by
+        week_of_month: Select Week of the month
+        period: Select weekly interval
+        date_range_condition: Calculate the end of the batch by
     form_side:
       header:
-        preview: Schedule Preview
-        publish_time: Publish Time
-        audio_segments: Audio Segments
-        number_of_drafts: "Number of Draft Episodes: %{count}"
+        preview: Preview Draft Schedule
+        publish_time: What time of day do you plan to publish the episodes?
+        audio_segments: How many audio segments?
+        segment_count: Number of segments
+        number_of_drafts: "Drafts planned: "
+        help:
+          segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
       help:
         preview: Select more options to get a schedule preview.
       label:
@@ -280,10 +403,10 @@ en:
         third: Third
         fourth: Fourth
         fifth: Fifth
-      episodes: number of episodes
-      end_date: end date
-      month: month
-      period: interval
+      episodes: Number of episodes
+      end_date: End date
+      month: Weeks of the Month
+      period: Weekly interval
   podcast_switcher:
     dropdown:
       all: View all my Podcasts

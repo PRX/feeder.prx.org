@@ -8,8 +8,16 @@ describe Tasks::CopyImageTask do
   it "has task options" do
     opts = task.task_options
     assert_equal opts[:job_type], "image"
-    assert_equal opts[:source], image.original_url
+    assert_equal opts[:source], image.href
     assert_match(/s3:\/\/test-prx-feed\/#{path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/images\/4e745a8c-77ee-481c-a72b-fd868dfd1c9(\d+)\/image\.png/, opts[:destination])
+  end
+
+  it "uses the url as source when complete" do
+    assert_equal image.status, "complete"
+    assert_equal task.task_options[:source], image.url
+
+    image.status = "started"
+    assert_equal task.task_options[:source], image.original_url
   end
 
   it "gets the image path" do
@@ -37,28 +45,26 @@ describe Tasks::CopyImageTask do
     end
   end
 
-  it "updates the image url on complete" do
-    task.image_resource.update(url: "what/ever")
-
+  it "updates image metadata on complete" do
     task.update(status: "created")
-    assert_equal task.image_resource[:url], "what/ever"
-    refute_equal task.image_resource.url, "what/ever"
-    assert_equal task.image_resource.url, task.image_resource.original_url
 
+    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Format] = "png"
+    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Height] = 1500
+    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Width] = 1500
     task.update(status: "complete")
-    refute_equal task.image_resource[:url], "what/ever"
-    assert_equal task.image_resource[:url], task.image_resource.published_url
-    refute_equal task.image_resource.url, "what/ever"
-    assert_equal task.image_resource.url, task.image_resource.published_url
+
+    assert_equal "png", task.image_resource.format
+    assert_equal 1500, task.image_resource.height
+    assert_equal 1500, task.image_resource.width
   end
 
   it "handles validation errors" do
     task.update(status: "created")
 
-    # TODO: better async validation error handling
-    task.stub(:porter_callback_image_meta, {format: "bad"}) do
-      task.update(status: "complete")
-      assert_equal "error", task.image_resource.status
-    end
+    task.result[:JobResult][:TaskResults][1][:Inspection][:Image][:Format] = "bad"
+    task.update(status: "complete")
+
+    assert_equal "invalid", task.image_resource.status
+    assert_equal "bad", task.image_resource.format
   end
 end

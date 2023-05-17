@@ -19,6 +19,7 @@ class Feed < ApplicationRecord
   belongs_to :podcast, -> { with_deleted }, optional: true
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
+  accepts_nested_attributes_for :feed_tokens
 
   has_many :apple_configs, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
     class_name: "::Apple::Config"
@@ -45,6 +46,7 @@ class Feed < ApplicationRecord
   before_validation :sanitize_text
 
   scope :default, -> { where(slug: nil) }
+  scope :custom, -> { where.not(slug: nil) }
 
   def self.enclosure_template_default
     "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"

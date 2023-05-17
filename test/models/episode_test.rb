@@ -135,6 +135,28 @@ describe Episode do
     assert episode.media_ready?
   end
 
+  it "validates media is complete when publishing" do
+    episode.strict_validations = true
+    episode.update!(published_at: nil)
+    episode.published_at = Time.now
+
+    episode.enclosures.first.status_processing!
+    refute episode.valid?
+
+    episode.enclosures.first.status_complete!
+    assert episode.valid?
+  end
+
+  it "validates media is complete or processing when published" do
+    episode.strict_validations = true
+
+    episode.enclosures.first.status_processing!
+    assert episode.valid?
+
+    episode.enclosures.first.status_invalid!
+    refute episode.valid?
+  end
+
   it "returns an audio content_type by default" do
     assert_equal Episode.new.content_type, "audio/mpeg"
   end
@@ -415,8 +437,8 @@ describe Episode do
 
   describe "#destroy_out_of_range_contents" do
     it "marks contents for destruction" do
-      c1 = episode.contents.create!(position: 2)
-      c2 = episode.contents.create!(position: 4)
+      c1 = episode.contents.create!(original_url: "c1", position: 2)
+      c2 = episode.contents.create!(original_url: "c2", position: 4)
 
       episode.segment_count = nil
       episode.destroy_out_of_range_contents

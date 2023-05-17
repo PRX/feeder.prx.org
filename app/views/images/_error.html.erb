@@ -15,7 +15,7 @@
         <small class="text-muted">(<%= number_to_human_size(image.size) %>)</small>
       </div>
 
-      <div class="invalid-feedback">There was a problem processing your image</div>
+      <div class="invalid-feedback"><%= upload_invalid_messages(image) || "There was a problem processing your image" %></div>
 
       <label class="is-invalid">Image File</label>
     </div>

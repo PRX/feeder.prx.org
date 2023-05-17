@@ -3,10 +3,10 @@
 <% else %>
   <% case image.status %>
   <% when "started", "created", "processing", "retrying" %>
-    <%= render "images/processing", form: form, image: image, delete_path: delete_path %>
+    <%= render "images/processing", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
   <% when "complete" %>
-    <%= render "images/complete", form: form, image: image, delete_path: delete_path %>
+    <%= render "images/complete", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
   <% else %>
-    <%= render "images/error", form: form, image: image, delete_path: delete_path %>
+    <%= render "images/error", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
   <% end %>
 <% end %>

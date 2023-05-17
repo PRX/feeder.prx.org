@@ -2,11 +2,15 @@
   <div class="card-header-info d-flex align-items-center">
     <h5 class="card-title flex-grow-1"><%= t("images.title.#{image.model_name.singular}") %></h5>
 
-    <button type="button" class="prx-btn-help me-1" data-bs-toggle="popover" data-bs-content="<%= t("images.help.#{image.model_name.singular}") %>">
+    <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#image-modal-<%= image.id %>">
+      <span class="material-icons">info</span>
+    </button>
+
+    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t("images.help.#{image.model_name.singular}") %>">
       <span class="material-icons">help</span>
     </button>
 
-    <%= link_to delete_path, class: "btn btn-icon p-0" do %>
+    <%= link_to delete_path, class: "prx-btn-help" do %>
       <span class="material-icons">delete</span>
     <% end %>
   </div>
@@ -15,8 +19,8 @@
     <div class="prx-uploads-image mb-4">
       <%= image_tag image.url, alt: image.alt_text %>
 
-      <% if image.height.present? && image.width.present? %>
-        <aside><%= image.height %>x<%= image.width %></aside>
+      <% if image.width.present? && image.height.present? %>
+        <aside><%= image.width %>x<%= image.height %></aside>
       <% end %>
     </div>
 
@@ -24,3 +28,5 @@
     <%= render "images/meta", form: form %>
   </div>
 </div>
+
+<%= render "images/modal", image: image, id: "image-modal-#{image.id}", title: t("images.title.#{image.model_name.singular}") %>

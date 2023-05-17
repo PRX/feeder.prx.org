@@ -6,12 +6,11 @@ Rails.application.routes.draw do
       resource :player, only: :show, controller: :podcast_player
       resources :imports
       resource :planner, only: [:show, :create], controller: :podcast_planner
-      resources :feeds, only: [:index]
+      resources :feeds, except: [:index, :edit]
       resources :episodes, only: [:index, :create, :new]
     end
 
     resources :episodes, except: [:create, :new]
-    resources :feeds
     resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
     get "/uploads/signature", to: "uploads#signature", as: :uploads_signature
 
