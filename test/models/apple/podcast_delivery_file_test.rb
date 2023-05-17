@@ -75,17 +75,19 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
         pdf = Apple::PodcastDeliveryFile.create!(podcast_delivery: podcast_delivery, episode: podcast_container.episode)
         pdf.create_apple_sync_log!(**pdf_resp_container.merge(apple_id))
 
-        pdf.update!(api_marked_as_uploaded: false)
-        apple_episode.stub(:waiting_for_asset_state?, false) do
-          Apple::PodcastDeliveryFile.mark_existing_uploaded([apple_episode])
-        end
-        assert_equal true, pdf.reload.api_marked_as_uploaded
+        api_response = {
+          request_metadata: {podcast_delivery_file_id: pdf.id, foo: 123},
+          api_response: {val: {data: {id: pdf.apple_sync_log.external_id}}}
+        }.with_indifferent_access
 
-        pdf.update(api_marked_as_uploaded: false)
-        apple_episode.stub(:waiting_for_asset_state?, true) do
-          Apple::PodcastDeliveryFile.mark_existing_uploaded([apple_episode])
+        pdf.stub(:delivery_awaiting_upload?, true) do
+          apple_api.stub(:bridge_remote_and_retry, [[api_response], []]) do
+            pdf.update!(api_marked_as_uploaded: false)
+            Apple::PodcastDeliveryFile.mark_uploaded(apple_api, [pdf])
+            assert_equal true, pdf.reload.api_marked_as_uploaded
+            assert_equal 123, pdf.reload.apple_sync_log.api_response["request_metadata"]["foo"]
+          end
         end
-        assert_equal false, pdf.reload.api_marked_as_uploaded
       end
     end
   end

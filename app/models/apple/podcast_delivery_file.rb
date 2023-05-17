@@ -79,14 +79,6 @@ module Apple
       end
     end
 
-    # Used in the case where we're re-syncing an existing podcast delivery file
-    def self.mark_existing_uploaded(episodes)
-      # Reject the episodes that are still waiting for the asset state
-      eps = episodes.reject(&:waiting_for_asset_state?)
-      pdfs = eps.map(&:podcast_delivery_files).flatten
-      pdfs.map { |pdf| pdf.update!(api_marked_as_uploaded: true) }
-    end
-
     def self.mark_uploaded(api, pdfs)
       # These still need to be marked as uploaded
       pdfs = pdfs.filter { |pdf| pdf.delivery_awaiting_upload? }
