@@ -28,8 +28,20 @@ class Tasks::CopyMediaTask < ::Task
           CacheControl: "max-age=86400",
           ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
         }
-      }
-    ]
+      },
+      (if media_resource.generate_waveform?
+         {
+           Type: "Waveform",
+           Generator: "BBC/audiowaveform/v1.x",
+           DataFormat: "JSON",
+           Destination: {
+             Mode: "AWS/S3",
+             BucketName: ENV["FEEDER_STORAGE_BUCKET"],
+             ObjectKey: porter_escape(media_resource.waveform_path)
+           }
+         }
+       end)
+    ].compact
   end
 
   def update_media_resource
@@ -61,6 +73,5 @@ class Tasks::CopyMediaTask < ::Task
     end
 
     media_resource.save!
-    podcast&.publish! if media_resource.status_complete?
   end
 end
