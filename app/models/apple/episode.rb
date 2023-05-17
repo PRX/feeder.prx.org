@@ -407,7 +407,7 @@ module Apple
     end
 
     def synced_with_apple?
-      audio_asset_state_success?
+      audio_asset_state_success? && apple_upload_complete?
     end
 
     def waiting_for_asset_state?

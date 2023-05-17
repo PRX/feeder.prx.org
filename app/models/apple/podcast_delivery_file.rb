@@ -20,6 +20,7 @@ module Apple
     alias_attribute :container, :podcast_container
 
     PODCAST_DELIVERY_ID_ATTR = "podcast_delivery_id"
+    PODCAST_DELIVERY_FILE_ID_ATTR = "podcast_delivery_file_id"
 
     # Apple: ProcessingState
     processing_state = %w[PROCESSING VALIDATED VALIDATION_FAILED DUPLICATE REPLACED COMPLETED].freeze
@@ -94,9 +95,10 @@ module Apple
 
       (episode_bridge_results, errs) = api.bridge_remote_and_retry("updateDeliveryFiles", bridge_params, batch_size: Apple::Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      episode_bridge_results.map do |row|
-        pd_id = row["request_metadata"]["podcast_delivery_file_id"]
-        Apple::PodcastDeliveryFile.find(pd_id).update!(api_response: row, api_marked_as_uploaded: true)
+      join_on(PODCAST_DELIVERY_FILE_ID_ATTR, pdfs, episode_bridge_results).each do |(pdf, row)|
+        external_id = row.dig("api_response", "val", "data", "id")
+        pdf.update!(api_marked_as_uploaded: true)
+        SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
       end
 
       api.raise_bridge_api_error(errs) if errs.present?
@@ -296,6 +298,10 @@ module Apple
       podcast_delivery.delivery_files.reset
 
       pdf
+    end
+
+    def podcast_delivery_file_id
+      id
     end
 
     def mark_uploaded_parameters

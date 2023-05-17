@@ -20,20 +20,18 @@ module Apple
     FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"
     SOURCE_URL_EXP_BUFFER = 10.minutes
 
-    def self.reset_for_expired_source_urls(api, episodes)
+    def self.reset_source_urls(api, episodes)
       containers = episodes.map(&:podcast_container)
       containers = containers.compact.select(&:needs_delivery?)
 
       containers.map do |container|
-        if container.source_url_expired?
-          Rails.logger.warn("Podcast container source url expired!",
-            podcast_container_id: container.id,
-            source_url: container.source_url)
+        Rails.logger.info("Resetting source url for podcast container",
+          podcast_container_id: container.id,
+          source_url: container.source_url)
 
-          container.update!(source_url: nil, source_size: nil)
-          # mark them for re-upload
-          container.podcast_deliveries.destroy_all
-        end
+        container.update!(source_url: nil, source_size: nil)
+        # mark them for re-upload
+        container.podcast_deliveries.destroy_all
       end.compact
     end
 
@@ -263,21 +261,6 @@ module Apple
       # If there are no deliveries, then the code that polls/checks the delivery
       # status will fail. So we need to create a delivery.
       podcast_deliveries.empty?
-    end
-
-    def source_url_expires_at
-      return nil if source_url.blank?
-
-      uri = URI.parse(source_url)
-      query_params = CGI.parse(uri.query)
-      timestamp = query_params["exp"].first
-      Time.at(timestamp.to_i).utc
-    end
-
-    def source_url_expired?
-      return false if source_url.blank?
-
-      source_url_expires_at <= (Time.now.utc + SOURCE_URL_EXP_BUFFER)
     end
   end
 end
