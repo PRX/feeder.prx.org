@@ -406,6 +406,11 @@ module Apple
       audio_asset_state == AUDIO_ASSET_SUCCESS
     end
 
+    def reset_for_upload!
+      container.podcast_deliveries.each(&:destroy)
+      feeder_episode.reload
+    end
+
     def synced_with_apple?
       audio_asset_state_success? && apple_upload_complete?
     end
