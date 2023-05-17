@@ -34,6 +34,10 @@ module Apple
       show.episodes
     end
 
+    def poll_all_episodes!
+      poll!(show.podcast_episodes)
+    end
+
     def poll!(eps = episodes_to_sync)
       if show.apple_id.nil?
         Rails.logger.warn "No connected Apple Podcasts show. Skipping polling!", {public_feed_id: public_feed.id,
