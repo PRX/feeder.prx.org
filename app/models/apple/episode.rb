@@ -268,7 +268,7 @@ module Apple
       create_params[:data][:attributes].delete(:guid)
 
       ep_attrs = create_params[:data][:attributes]
-      ep_attrs = ep_attrs.merge(apple_episode_update_attributes)
+      ep_attrs = ep_attrs.merge(apple_episode_update_attributes || {})
 
       create_params[:data][:attributes] = ep_attrs
       create_params

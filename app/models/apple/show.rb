@@ -124,7 +124,7 @@ module Apple
 
     def podcast_feeder_episodes
       @podcast_feeder_episodes ||=
-        podcast.episodes
+        podcast.episodes.reset
     end
 
     def podcast_episodes
