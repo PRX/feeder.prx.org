@@ -42,7 +42,6 @@ class EpisodeEntryHandler
 
     update_guid
     update_dates
-    update_enclosure
     update_contents
     update_image
     update_link
@@ -63,28 +62,12 @@ class EpisodeEntryHandler
     episode.url = nil if episode.url&.match(/libsyn\.com/)
   end
 
-  def update_enclosure
-    enclosure_hash = overrides.fetch(:enclosure, {}).dup
-    if overrides[:feedburner_orig_enclosure_link]
-      enclosure_hash[:url] = overrides[:feedburner_orig_enclosure_link]
-    end
-
-    if overrides[:enclosure]
-      episode.enclosure = Enclosure.build_from_enclosure(episode, enclosure_hash)
-    else
-      episode.enclosures.destroy_all
-    end
-  end
-
   def update_image
     episode.image = overrides[:image_url]
   end
 
   def update_contents
     new_contents = Array(overrides[:contents]).sort_by { |c| c[:position] }
-
-    episode.contents = new_contents.map do |c|
-      Content.build_from_content(episode, c)
-    end
+    episode.media = new_contents.map { |c| c[:url] }
   end
 end
