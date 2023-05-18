@@ -57,31 +57,25 @@ describe Apple::Show do
     end
 
     it "returns an array of Apple::Episode" do
-      Apple::Episode.stub(:get_episodes_via_show, []) do
-        assert_equal 1, apple_show.episodes.count
-        assert_equal Apple::Episode, apple_show.episodes.first.class
-        assert_equal apple_show, apple_show.episodes.first.show
-      end
+      assert_equal 1, apple_show.episodes.count
+      assert_equal Apple::Episode, apple_show.episodes.first.class
+      assert_equal apple_show, apple_show.episodes.first.show
     end
 
     it "returns memoized instances of Apple::Episode" do
-      Apple::Episode.stub(:get_episodes_via_show, []) do
-        obj_id = apple_show.episodes.first.object_id
-        # These are not the same objects
-        assert_equal apple_show.episodes.first.object_id, obj_id
-      end
+      obj_id = apple_show.episodes.first.object_id
+      # These are not the same objects
+      assert_equal apple_show.episodes.first.object_id, obj_id
     end
 
     it "returns the same base Feeder Episode" do
-      Apple::Episode.stub(:get_episodes_via_show, []) do
-        obj_id = apple_show.episodes.first.feeder_episode.object_id
-        # These feeder episodes are the same
-        assert_equal apple_show.episodes.first.feeder_episode.object_id, obj_id
+      obj_id = apple_show.episodes.first.feeder_episode.object_id
+      # These feeder episodes are the same
+      assert_equal apple_show.episodes.first.feeder_episode.object_id, obj_id
 
-        # now reload
-        apple_show.reload
-        refute_equal apple_show.episodes.first.feeder_episode.object_id, obj_id
-      end
+      # now reload
+      apple_show.reload
+      refute_equal apple_show.episodes.first.feeder_episode.object_id, obj_id
     end
   end
 
