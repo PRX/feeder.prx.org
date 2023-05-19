@@ -19,8 +19,7 @@ class PublishFeedJob < ApplicationJob
   def publish_apple(feed)
     feed.apple_configs.each do |config|
       if feed.publish_to_apple?(config)
-        publisher = Apple::Publisher.from_apple_config(config)
-        publisher.publish!
+        PublishAppleJob.perform_later(config)
       end
     end
   end
