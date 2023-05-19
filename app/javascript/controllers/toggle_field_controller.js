@@ -3,6 +3,12 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["check", "field"]
 
+  connect() {
+    if(this.checkTarget.checked) {
+      this.toggleDisplay()
+    }
+  }
+
   changeCheck() {
     this.checkTarget.parentElement.classList.add("d-none")
     this.fieldTarget.parentElement.classList.remove("d-none")
@@ -28,5 +34,9 @@ export default class extends Controller {
         el.classList.remove("d-none")
       }
     })
+  }
+
+  toggleDisplay() {
+    this.fieldTarget.classList.toggle("d-none")
   }
 }

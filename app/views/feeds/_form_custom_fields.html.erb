@@ -48,24 +48,24 @@
   </div>
 </div>
 
-<div class="col-12">
+<div class="col-12" data-controller="toggle-field">
   <hr>
   <h3><%= t(".headers.private") %></h3>
   <div class="prx-field-group">
     <div>
-      <%= form.check_box :private %>
+      <%= form.check_box :private, data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay"} %>
       <%= form.label :private %>
     </div>
 
     <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.private") %>" data-bs-html="true"><span class="material-icons">help</span></button>
   </div>
-</div>
 
-<div class="col-12">
-  <hr>
-  <h3><%= t(".headers.auth_tokens") %></h3>
-  <p><%= t(".help.auth_tokens") %></p>
-  <%= render "form_auth_tokens", feed: feed, form: form %>
+  <div class="d-none" data-toggle-field-target="field">
+    <hr>
+    <h3><%= t(".headers.auth_tokens") %></h3>
+    <p><%= t(".help.auth_tokens") %></p>
+    <%= render "form_auth_tokens", feed: feed, form: form %>
+  </div>
 </div>
 
 <div class="col-12">
