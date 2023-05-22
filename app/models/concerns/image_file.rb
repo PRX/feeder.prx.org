@@ -67,7 +67,7 @@ module ImageFile
   end
 
   def copy_media(force = false)
-    if !task || force
+    if force || !(status_complete? || task)
       Tasks::CopyImageTask.create! do |task|
         task.owner = self
       end.start!
@@ -76,6 +76,10 @@ module ImageFile
 
   def url
     self[:url] ||= published_url
+  end
+
+  def path
+    URI.parse(url).path.sub(/\A\//, "") if url.present?
   end
 
   def href

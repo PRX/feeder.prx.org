@@ -1,5 +1,5 @@
 class PodcastImportJob < ApplicationJob
-  queue_as :feeder_podcast_import
+  queue_as :feeder_default
 
   def perform(podcast_import, import_podcast = true)
     if import_podcast

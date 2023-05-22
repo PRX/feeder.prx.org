@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :copy_media_task, class: Tasks::CopyMediaTask do
-    association :owner, factory: :enclosure
+    association :owner, factory: :content
     status { :complete }
     job_id { "1234" }
     options { {destination: "s3://test-prx-up/podcast/episode/filename.mp3"} }

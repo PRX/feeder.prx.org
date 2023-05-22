@@ -5,7 +5,7 @@ describe EnclosureUrlBuilder do
   let(:template) { "https://#{ENV["DOVETAIL_HOST"]}/{slug}/{guid}/{original_filename}" }
   let(:prefix) { "http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/jojego/" }
   let(:podcast) { create(:podcast, enclosure_prefix: prefix, enclosure_template: template) }
-  let(:episode) { create(:episode, podcast: podcast, prx_uri: "/api/v1/stories/87683") }
+  let(:episode) { create(:episode_with_media, podcast: podcast, prx_uri: "/api/v1/stories/87683") }
   let(:feed) { create(:feed, podcast: podcast, slug: "no-ads-pls") }
   let(:builder) { EnclosureUrlBuilder.new }
 

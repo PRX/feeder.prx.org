@@ -11,10 +11,6 @@ FactoryBot.define do
     format { "png" }
     status { "complete" }
 
-    after(:create) do |episode_image, _evaluator|
-      episode_image.url = episode_image.published_url if episode_image.status == "complete"
-    end
-
     factory :episode_image_with_episode, class: EpisodeImage do
       episode
     end

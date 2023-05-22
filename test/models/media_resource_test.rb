@@ -63,6 +63,26 @@ describe MediaResource do
     end
   end
 
+  describe "#copy_media" do
+    it "skips creating task if complete" do
+      mr = build_stubbed(:media_resource, status: "complete")
+      mr.task = nil
+      mr.copy_media
+
+      assert_nil mr.task
+    end
+
+    it "skips creating task if one exists" do
+      mr = build_stubbed(:media_resource, status: "complete")
+      task = Tasks::CopyImageTask.new
+      mr.status = "created"
+      mr.task = task
+      mr.copy_media
+
+      assert_equal task, mr.task
+    end
+  end
+
   describe "#retry!" do
     it "forces a new copy media job" do
       mock_copy = Minitest::Mock.new
@@ -75,5 +95,49 @@ describe MediaResource do
 
       mock_copy.verify
     end
+  end
+
+  describe "#path" do
+    it "returns a path without leading slash" do
+      mr = MediaResource.new
+
+      mr.stub(:media_url, "http://test.prxu.org/some/file.mp3") do
+        assert_equal "some/file.mp3", mr.path
+      end
+    end
+  end
+
+  it "detects audio/video mediums" do
+    mr = build_stubbed(:media_resource, status: "started", medium: nil)
+
+    # detect audio from extension
+    mr.original_url = "s3://some.where/file.mp3"
+    assert mr.audio?
+    refute mr.video?
+
+    # detect video from extension
+    mr.original_url = "s3://some.where/file.mov"
+    refute mr.audio?
+    assert mr.video?
+
+    # override via medium
+    mr.assign_attributes(status: "complete", medium: "blah")
+    refute mr.audio?
+    refute mr.video?
+  end
+
+  it "marks completed resources for replacement" do
+    mr = build_stubbed(:media_resource, status: "started")
+    refute mr.marked_for_replacement?
+
+    mr.mark_for_replacement
+    refute mr.marked_for_replacement?
+
+    mr.status = "complete"
+    mr.mark_for_replacement
+    assert mr.marked_for_replacement?
+
+    mr.replaced_at = nil
+    refute mr.marked_for_replacement?
   end
 end

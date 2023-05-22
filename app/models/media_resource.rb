@@ -1,4 +1,7 @@
 class MediaResource < ApplicationRecord
+  AUDIO_EXTENSIONS = %w[aac aiff au flac m4a m4b mp2 mp3 ogg wav]
+  VIDEO_EXTENSIONS = %w[avi flv m4v mov mp4 webm wmv]
+
   has_one :task, -> { order("id desc") }, as: :owner
   has_many :tasks, as: :owner
 
@@ -38,10 +41,39 @@ class MediaResource < ApplicationRecord
     media.try(:original_url).try(:present?) ? media : nil
   end
 
+  def audio?
+    if status_complete? && medium.present?
+      medium == "audio"
+    else
+      AUDIO_EXTENSIONS.include? File.extname(original_url || "").strip.downcase[1..]
+    end
+  end
+
+  def video?
+    if status_complete? && medium.present?
+      medium == "video"
+    else
+      VIDEO_EXTENSIONS.include? File.extname(original_url || "").strip.downcase[1..]
+    end
+  end
+
   def initialize_attributes
     self.status ||= :created
     guid
     url
+  end
+
+  def reset_media_attributes
+    self.bit_rate = nil
+    self.channels = nil
+    self.duration = nil
+    self.file_size = nil
+    self.frame_rate = nil
+    self.height = nil
+    self.medium = nil
+    self.mime_type = nil
+    self.sample_rate = nil
+    self.width = nil
   end
 
   def guid
@@ -51,6 +83,10 @@ class MediaResource < ApplicationRecord
 
   def url
     self[:url] ||= media_url
+  end
+
+  def path
+    URI.parse(url).path.sub(/\A\//, "") if url.present?
   end
 
   def replace_resources!
@@ -77,7 +113,7 @@ class MediaResource < ApplicationRecord
   end
 
   def copy_media(force = false)
-    if !task || force
+    if force || !(status_complete? || task)
       Tasks::CopyMediaTask.create! do |task|
         task.owner = self
       end.start!
@@ -119,11 +155,12 @@ class MediaResource < ApplicationRecord
     retry!
   end
 
-  def ready?(is_initial_publish = false)
-    if is_initial_publish
-      status_complete?
-    else
-      original_url.present? && %w[started created processing complete].include?(status)
-    end
+  def mark_for_replacement
+    mark_for_destruction
+    self.replaced_at = Time.now if status_complete?
+  end
+
+  def marked_for_replacement?
+    marked_for_destruction? && replaced_at.present?
   end
 end

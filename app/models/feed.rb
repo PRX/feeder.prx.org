@@ -93,7 +93,7 @@ class Feed < ApplicationRecord
     feed_max = display_episodes_count.to_i
 
     filtered_episodes.each do |ep|
-      include_in_feed << ep if ep.media_ready?
+      include_in_feed << ep if ep.include_in_feed?
       break if (feed_max > 0) && (include_in_feed.size >= feed_max)
     end
     include_in_feed

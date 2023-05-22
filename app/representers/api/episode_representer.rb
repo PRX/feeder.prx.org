@@ -37,7 +37,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :is_closed_captioned
   property :is_perma_link
   property :include_in_feed?, as: :is_feed_ready
-  property :duration
   property :keywords
   property :categories
   property :position
@@ -50,17 +49,16 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :audio_version
   property :segment_count
 
-  collection :media_resources,
-    as: :media,
+  collection :media,
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
-  collection :ready_media_resources,
+  collection :complete_media,
     as: :ready_media,
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource,
     writeable: false,
-    if: ->(_o) { !media_resources&.all?(&:status_complete?) }
+    if: ->(_o) { !media_ready? && complete_media? }
 
   property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
 
@@ -72,9 +70,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     if represented.podcast && represented.media?
       {
         href: represented.enclosure_url,
-        type: represented.content_type,
-        size: represented.file_size,
-        duration: represented.duration.to_i,
+        type: represented.media_content_type,
+        size: represented.media_file_size,
+        duration: represented.media_duration.to_i,
         status: represented.media_status
       }
     end

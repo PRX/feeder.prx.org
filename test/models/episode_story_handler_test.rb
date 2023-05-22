@@ -47,6 +47,18 @@ describe EpisodeStoryHandler do
     assert_equal "some-credit", episode.image.credit
   end
 
+  it "does not replace contents with the same original_url" do
+    create(:podcast, prx_uri: "/api/v1/series/36501")
+    episode = EpisodeStoryHandler.create_from_story!(story)
+
+    assert_equal 4, episode.contents.with_deleted.count
+
+    handler = EpisodeStoryHandler.new(episode)
+    handler.update_from_story!(story)
+
+    assert_equal 4, episode.reload.contents.with_deleted.count
+  end
+
   describe "with episode identifiers" do
     let(:zero_identifiers_story) do
       msg = json_file(:prx_story_zero_identifiers)
