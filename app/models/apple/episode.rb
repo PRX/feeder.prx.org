@@ -4,18 +4,21 @@ module Apple
   class Episode
     include Apple::ApiWaiting
     include Apple::ApiResponse
-    attr_accessor :show, :feeder_episode, :api, :api_response
+    attr_accessor :show, :feeder_episode, :api
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
 
+    # In the case where the episodes state is not yet ready to publish, but the
+    # underlying models are ready. Poll the episodes audio asset state but
+    # guard against waiting for episode assets that will never be processed.
     def self.wait_for_asset_state(api, eps)
       wait_for(eps) do |remaining_eps|
         Rails.logger.info("Probing for episode audio asset state")
         unwrapped = get_episodes(api, remaining_eps)
 
         remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["guid"], row] }.to_h
-        remaining_eps.each { |ep| ep.api_response = remote_ep_by_id[ep.guid] }
+        remaining_eps.each { |ep| upsert_sync_log(ep, remote_ep_by_id[ep.guid]) }
 
         rem =
           remaining_eps.filter do |ep|
@@ -55,13 +58,41 @@ module Apple
       api.bridge_remote_and_retry!("getEpisodes", bridge_params)
     end
 
+    def self.poll_episode_state(api, show, episodes)
+      guid_to_apple_json = Apple::Show.apple_episode_json(api, show.id).map do |ep_json|
+        [ep_json["attributes"]["guid"], ep_json]
+      end.to_h
+
+      guid_to_feeder_episode = episodes.map { |ep| [ep.guid, ep] }.to_h
+
+      # Only sync episodes that have a remote pair
+      episodes_to_sync = episodes.filter { |ep| guid_to_apple_json[ep.guid].present? }
+
+      # If there are remote episodes with no local feeder pair
+      Rails.logger.warn("Missing feeder episode for remote apple episode") if guid_to_apple_json.keys.any? { |guid| guid_to_feeder_episode[guid].nil? }
+
+      bridge_params = episodes_to_sync.map do |ep|
+        id = guid_to_apple_json[ep.guid]["id"]
+        guid = guid_to_apple_json[ep.guid]["attributes"]["guid"]
+        Episode.get_episode_bridge_params(api, id, guid)
+      end
+
+      results = api.bridge_remote_and_retry!("getEpisodes", bridge_params)
+
+      join_on("guid", episodes_to_sync, results).map do |(ep, row)|
+        upsert_sync_log(ep, row)
+      end
+    end
+
     def self.create_episodes(api, episodes)
       return if episodes.empty?
 
-      episode_bridge_results = api.bridge_remote_and_retry!("createEpisodes",
+      results = api.bridge_remote_and_retry!("createEpisodes",
         episodes.map(&:create_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      insert_sync_logs(episodes, episode_bridge_results)
+      join_on("guid", episodes, results).map do |(ep, row)|
+        upsert_sync_log(ep, row)
+      end
     end
 
     def self.update_audio_container_reference(api, episodes)
@@ -69,7 +100,7 @@ module Apple
 
       # Make sure that we only update episodes that have a podcast container
       # And that the episode needs to be updated
-      episodes = episodes.filter { |ep| ep.podcast_container.present? && ep.audio_hosted_audio_asset_container_id.blank? }
+      episodes = episodes.filter { |ep| ep.has_unlinked_container? }
 
       (episode_bridge_results, errs) =
         api.bridge_remote_and_retry(
@@ -77,7 +108,7 @@ module Apple
           episodes.map(&:update_episode_audio_container_bridge_params)
         )
 
-      insert_sync_logs(episodes, episode_bridge_results)
+      upsert_sync_logs(episodes, episode_bridge_results)
 
       api.raise_bridge_api_error(errs) if errs.present?
 
@@ -93,7 +124,7 @@ module Apple
           episodes.map(&:remove_episode_audio_container_bridge_params)
         )
 
-      insert_sync_logs(episodes, episode_bridge_results)
+      upsert_sync_logs(episodes, episode_bridge_results)
 
       join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
         ep.podcast_container.podcast_delivery_files.each(&:destroy)
@@ -114,24 +145,36 @@ module Apple
         episodes.map(&:publish_episode_bridge_params))
     end
 
-    def self.insert_sync_logs(episodes, results)
+    def self.upsert_sync_logs(episodes, results)
       episodes_by_guid = episodes.map { |ep| [ep.guid, ep] }.to_h
 
       results.map do |res|
-        apple_id = res.dig("api_response", "val", "data", "id")
-        guid = res.dig("api_response", "val", "data", "attributes", "guid")
-        ep = episodes_by_guid.fetch(guid)
-
-        SyncLog
-          .create(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id)
+        upsert_sync_log(episodes_by_guid[res.dig("request_metadata", "guid")], res)
       end
     end
 
-    def initialize(show:, feeder_episode:, api:, api_response: nil)
+    def self.upsert_sync_log(ep, res)
+      apple_id = res.dig("api_response", "val", "data", "id")
+      raise "Missing remote apple id" unless apple_id.present?
+
+      sl = SyncLog.log!(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id, api_response: res)
+      # reload local state
+      if ep.feeder_episode.apple_sync_log.nil?
+        ep.feeder_episode.reload
+      else
+        ep.feeder_episode.apple_sync_log.reload
+      end
+      sl
+    end
+
+    def initialize(show:, feeder_episode:, api:)
       @show = show
       @feeder_episode = feeder_episode
-      @api_response = api_response
       @api = api || Apple::Api.from_env
+    end
+
+    def api_response
+      feeder_episode.apple_sync_log&.api_response
     end
 
     def guid
@@ -160,13 +203,8 @@ module Apple
       feeder_episode.enclosure_filename
     end
 
-    def completed_sync_log
-      SyncLog
-        .episodes
-        .complete
-        .latest
-        .where(feeder_id: feeder_episode.id, feeder_type: :episodes)
-        .first
+    def sync_log
+      SyncLog.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
     end
 
     def self.get_episode_bridge_params(api, apple_id, guid)
@@ -186,6 +224,9 @@ module Apple
 
     def create_episode_bridge_params
       {
+        request_metadata: {
+          guid: guid
+        },
         api_url: api.join_url("episodes").to_s,
         api_parameters: episode_create_parameters
       }
@@ -336,12 +377,26 @@ module Apple
       apple_attributes["appleHostedAudioAssetVendorId"]
     end
 
-    def audio_hosted_audio_asset_container_id
+    def apple_hosted_audio_asset_container_id
       apple_attributes["appleHostedAudioAssetContainerId"]
     end
 
     def audio_asset_state
+      return nil unless api_response.present?
+
       apple_attributes["appleHostedAudioAssetState"]
+    end
+
+    def has_container?
+      podcast_container.present?
+    end
+
+    def has_unlinked_container?
+      has_container? && apple_hosted_audio_asset_container_id.blank?
+    end
+
+    def has_linked_container?
+      has_container? && apple_hosted_audio_asset_container_id.present?
     end
 
     def audio_asset_state_finished?
@@ -354,6 +409,15 @@ module Apple
 
     def audio_asset_state_success?
       audio_asset_state == AUDIO_ASSET_SUCCESS
+    end
+
+    def reset_for_upload!
+      container.podcast_deliveries.each(&:destroy)
+      feeder_episode.reload
+    end
+
+    def synced_with_apple?
+      audio_asset_state_success? && apple_upload_complete?
     end
 
     def waiting_for_asset_state?
@@ -382,6 +446,18 @@ module Apple
 
     def podcast_delivery_files
       feeder_episode.apple_podcast_delivery_files
+    end
+
+    alias_method :container, :podcast_container
+    alias_method :deliveries, :podcast_deliveries
+    alias_method :delivery_files, :podcast_delivery_files
+
+    def apple_sync_log
+      feeder_episode.apple_sync_log
+    end
+
+    def apple_sync_log=(sl)
+      feeder_episode.apple_sync_log = sl
     end
   end
 end

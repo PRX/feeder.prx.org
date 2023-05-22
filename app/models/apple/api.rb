@@ -159,6 +159,23 @@ module Apple
       SUCCESS_CODES.include?(resp.code)
     end
 
+    def response(resp)
+      ok, json =
+        begin
+          [:ok, JSON.parse(resp.body)]
+        rescue JSON::ParserError
+          [:err, resp.body]
+        end
+
+      {
+        api_response: {
+          ok: ok == :ok,
+          err: ok == :err,
+          val: json
+        }
+      }.with_indifferent_access
+    end
+
     def unwrap_response(resp)
       raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp)
 
@@ -183,7 +200,7 @@ module Apple
 
     def bridge_remote(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE)
       url = bridge_url
-      Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge")
+      Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge", {param_count: bridge_options.count})
 
       body = {
         batch_size: batch_size,

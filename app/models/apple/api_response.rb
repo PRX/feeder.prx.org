@@ -74,6 +74,10 @@ module Apple
       end
     end
 
+    def api_response
+      apple_sync_log&.api_response
+    end
+
     def unwrap_response
       raise "incomplete api response" unless api_response&.dig("api_response", "ok")
 

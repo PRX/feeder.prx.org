@@ -7,15 +7,20 @@ module Apple
 
     acts_as_paranoid
 
-    serialize :api_response, JSON
+    default_scope { includes(:apple_sync_log) }
 
+    has_one :apple_sync_log, -> { podcast_delivery_files }, foreign_key: :feeder_id, class_name: "SyncLog", autosave: true
     belongs_to :podcast_delivery
     has_one :podcast_container, through: :podcast_delivery
     belongs_to :episode, class_name: "::Episode"
 
     delegate :apple_episode_id, to: :podcast_delivery
 
+    alias_attribute :delivery, :podcast_delivery
+    alias_attribute :container, :podcast_container
+
     PODCAST_DELIVERY_ID_ATTR = "podcast_delivery_id"
+    PODCAST_DELIVERY_FILE_ID_ATTR = "podcast_delivery_file_id"
 
     # Apple: ProcessingState
     processing_state = %w[PROCESSING VALIDATED VALIDATION_FAILED DUPLICATE REPLACED COMPLETED].freeze
@@ -66,12 +71,11 @@ module Apple
 
     def self.get_and_update_api_response(api, pdfs)
       unwrapped = get_podcast_delivery_files(api, pdfs)
-
       pdfs.each do |pdf|
         matched = unwrapped.detect { |r| r["request_metadata"]["podcast_delivery_id"] == pdf.podcast_delivery_id }
         raise "Missing response for podcast delivery file" unless matched.present?
 
-        pdf.api_response = matched
+        pdf.apple_sync_log.api_response = matched
       end
     end
 
@@ -83,9 +87,10 @@ module Apple
 
       (episode_bridge_results, errs) = api.bridge_remote_and_retry("updateDeliveryFiles", bridge_params, batch_size: Apple::Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      episode_bridge_results.map do |row|
-        pd_id = row["request_metadata"]["podcast_delivery_file_id"]
-        Apple::PodcastDeliveryFile.find(pd_id).update!(api_response: row, api_marked_as_uploaded: true)
+      join_on(PODCAST_DELIVERY_FILE_ID_ATTR, pdfs, episode_bridge_results).each do |(pdf, row)|
+        external_id = row.dig("api_response", "val", "data", "id")
+        pdf.update!(api_marked_as_uploaded: true)
+        SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
       end
 
       api.raise_bridge_api_error(errs) if errs.present?
@@ -133,13 +138,16 @@ module Apple
 
       results = get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
 
-      join_many_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, results, left_join: true).map do |(podcast_delivery, delivery_file_rows)|
+      res = join_many_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, results, left_join: true).map do |(podcast_delivery, delivery_file_rows)|
         next if delivery_file_rows.nil?
 
         delivery_file_rows.map do |delivery_file_row|
           upsert_podcast_delivery_file(podcast_delivery, delivery_file_row)
         end
       end
+      episodes.map(&:feeder_episode).map(&:reload)
+
+      res
     end
 
     def self.get_podcast_delivery_files(api, pdfs)
@@ -258,14 +266,13 @@ module Apple
           external_id: external_id,
           podcast_delivery_id: podcast_delivery_id).first)
 
-          delivery_file.update(api_response: row, updated_at: Time.now.utc)
+          delivery_file.update(updated_at: Time.now.utc)
           [delivery_file, :update]
         else
           delivery_file =
             Apple::PodcastDeliveryFile.create!(episode_id: podcast_delivery.episode.id,
               external_id: external_id,
-              podcast_delivery_id: podcast_delivery_id,
-              api_response: row)
+              podcast_delivery_id: podcast_delivery_id)
 
           [delivery_file, :create]
         end
@@ -277,9 +284,16 @@ module Apple
          feeder_episode_id: pdf.episode.id,
          podcast_delivery_file_id: pdf.podcast_delivery.id})
 
-      SyncLog.create!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id)
+      SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
+
+      # Flush the cache on the podcast container
+      podcast_delivery.delivery_files.reset
 
       pdf
+    end
+
+    def podcast_delivery_file_id
+      id
     end
 
     def mark_uploaded_parameters
@@ -301,7 +315,7 @@ module Apple
     end
 
     def apple_complete?
-      delivery_complete? && processed_completed?
+      delivery_complete? && (processed_completed? || processed_duplicate?)
     end
 
     def delivered?

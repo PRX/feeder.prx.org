@@ -33,6 +33,8 @@ class Episode < ApplicationRecord
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
 
+  has_one :apple_sync_log, -> { episodes }, foreign_key: :feeder_id, class_name: "SyncLog"
+  has_one :apple_podcast_delivery, class_name: "Apple::PodcastDelivery"
   has_one :apple_podcast_container, class_name: "Apple::PodcastContainer"
   has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
     class_name: "Apple::PodcastDelivery"

@@ -18,11 +18,11 @@ describe Apple::Show do
   describe "#reload" do
     it "flushes memoized attrs" do
       apple_show.instance_variable_set(:@apple_episode_json, "foo")
-      apple_show.instance_variable_set(:@feeder_episodes, "foo")
+      apple_show.instance_variable_set(:@podcast_feeder_episodes, "foo")
       apple_show.instance_variable_set(:@episodes, "foo")
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
-      assert_nil apple_show.instance_variable_get(:@feeder_episodes)
+      assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
       assert_nil apple_show.instance_variable_get(:@episodes)
     end
 
@@ -32,20 +32,20 @@ describe Apple::Show do
 
     it "doesn't raise an error if the attr is nil" do
       apple_show.instance_variable_set(:@apple_episode_json, nil)
-      apple_show.instance_variable_set(:@feeder_episodes, nil)
+      apple_show.instance_variable_set(:@podcast_feeder_episodes, nil)
       apple_show.instance_variable_set(:@episodes, nil)
       apple_show.reload
-      assert_nil apple_show.instance_variable_get(:@feeder_episodes)
+      assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
       assert_nil apple_show.instance_variable_get(:@episodes)
     end
 
     it "doesn't raise an error if the attr is false" do
       apple_show.instance_variable_set(:@apple_episode_json, false)
-      apple_show.instance_variable_set(:@feeder_episodes, false)
+      apple_show.instance_variable_set(:@podcast_feeder_episodes, false)
       apple_show.instance_variable_set(:@episodes, false)
       apple_show.reload
-      assert_nil apple_show.instance_variable_get(:@feeder_episodes)
+      assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
       assert_nil apple_show.instance_variable_get(:@episodes)
     end
@@ -104,7 +104,8 @@ describe Apple::Show do
 
   describe "#apple_id" do
     it "should return nil if not set" do
-      apple_show.completed_sync_log.delete
+      apple_show.sync_log.destroy
+      apple_show.public_feed.reload
 
       assert_nil apple_show.apple_id
     end
@@ -112,25 +113,39 @@ describe Apple::Show do
 
   describe "#sync!" do
     it "runs sync!" do
-      apple_show.stub(:create_or_update_show, {"data" => {"id" => "123"}}) do
+      apple_show.api.stub(:patch, OpenStruct.new(body: {"data" => {"id" => "123"}}.to_json, code: "200")) do
+        assert apple_show.sync_log.present?
+
         sync = apple_show.sync!
 
         assert_equal sync.class, SyncLog
-        assert_equal sync.complete?, true
+      end
+    end
+
+    it "creates a sync log if one does not exist" do
+      apple_show.api.stub(:patch, OpenStruct.new(body: {"data" => {"id" => "123", "attributes" => {"foo" => "bar"}}}.to_json, code: "200")) do
+        assert apple_show.sync_log.present?
+
+        sync = apple_show.sync!
+
+        assert_equal "123", sync.external_id
+        assert_equal "123", apple_show.apple_id
+        assert_equal "bar", apple_show.apple_attributes["foo"]
       end
     end
 
     it "logs an incomplete sync record if the upsert fails" do
       raises_exception = ->(_arg) { raise Apple::ApiError.new("Error", OpenStruct.new(code: 200, body: "body")) }
 
-      apple_show.completed_sync_log.delete
+      apple_show.sync_log.destroy
+      apple_show.public_feed.reload
 
       apple_show.stub(:create_or_update_show, raises_exception) do
         sync = nil
         assert_raises(Apple::ApiError) do
           sync = apple_show.sync!
         end
-        assert_nil apple_show.completed_sync_log
+        assert_nil apple_show.sync_log
       end
     end
   end

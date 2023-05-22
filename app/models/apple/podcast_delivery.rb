@@ -6,13 +6,17 @@ module Apple
 
     acts_as_paranoid
 
-    serialize :api_response, JSON
+    default_scope { includes(:apple_sync_log) }
 
+    has_one :apple_sync_log, -> { podcast_deliveries }, foreign_key: :feeder_id, class_name: "SyncLog"
     has_many :podcast_delivery_files, dependent: :destroy
     belongs_to :episode, class_name: "::Episode"
     belongs_to :podcast_container, class_name: "::Apple::PodcastContainer"
 
     delegate :apple_episode_id, to: :podcast_container
+
+    alias_attribute :delivery_files, :podcast_delivery_files
+    alias_attribute :container, :podcast_container
 
     enum status: {
       awaiting_upload: "AWAITING_UPLOAD",
@@ -37,13 +41,17 @@ module Apple
 
       results = get_podcast_deliveries_via_containers(api, podcast_containers)
 
-      join_many_on("podcast_container_id", podcast_containers, results, left_join: true).map do |(podcast_container, delivery_rows)|
+      res = join_many_on("podcast_container_id", podcast_containers, results, left_join: true).map do |(podcast_container, delivery_rows)|
         next if delivery_rows.nil?
 
         delivery_rows.each do |delivery_row|
           upsert_podcast_delivery(podcast_container, delivery_row)
         end
       end
+
+      episodes.map(&:feeder_episode).map(&:reload)
+
+      res
     end
 
     def self.select_containers_for_delivery(podcast_containers)
@@ -119,7 +127,7 @@ module Apple
           external_id: external_id,
           podcast_container: podcast_container).first)
 
-          delivery.update(api_response: row, updated_at: Time.now.utc)
+          delivery.update(status: delivery_status, updated_at: Time.now.utc)
 
           [delivery, :updated]
         else
@@ -127,8 +135,7 @@ module Apple
             Apple::PodcastDelivery.create!(episode_id: podcast_container.episode.id,
               external_id: external_id,
               status: delivery_status,
-              podcast_container: podcast_container,
-              api_response: row)
+              podcast_container: podcast_container)
           [delivery, :created]
         end
 
@@ -139,10 +146,10 @@ module Apple
          feeder_episode_id: podcast_container.episode.id,
          podcast_delivery_id: delivery.id})
 
+      SyncLog.log!(feeder_id: pd.id, feeder_type: :podcast_deliveries, external_id: external_id, api_response: row)
+
       # Flush the cache on the podcast container
       podcast_container.podcast_deliveries.reset
-
-      SyncLog.create!(feeder_id: pd.id, feeder_type: :podcast_deliveries, external_id: external_id)
 
       pd
     end
