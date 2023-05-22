@@ -29,7 +29,7 @@
       <% end %>
     </div>
 
-    <label>Segment <%= content.position %></label>
+    <label><%= episode_media_label(content) %></label>
   </div>
 
   <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#audio-modal-<%= content.id %>">
@@ -37,4 +37,4 @@
   </button>
 </div>
 
-<%= render "episodes/audio/modal", content: content, id: "audio-modal-#{content.id}", title: "Segment #{content.position}" %>
+<%= render "episodes/audio/modal", episode: episode, content: content, id: "audio-modal-#{content.id}" %>

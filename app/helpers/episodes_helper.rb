@@ -59,6 +59,14 @@ module EpisodesHelper
     end
   end
 
+  def episode_media_label(media)
+    if media.is_a?(Uncut)
+      I18n.t("helpers.label.uncut.original_url")
+    else
+      I18n.t("helpers.label.content.original_url", position: media.position)
+    end
+  end
+
   def episode_medium_options
     # TODO: why doesn't Episode.mediums work?
     Episode.defined_enums["medium"].keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }

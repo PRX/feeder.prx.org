@@ -11,7 +11,11 @@
     <% data[:unsaved_target] = "changed" if content.marked_for_destruction? %>
 
     <%# NOTE: name is nil, so we don't submit the actual file to Rails %>
-    <%= form.file_field :audio_file, class: cls, accept: "audio/*", name: nil, data: data %>
+    <% if episode.medium_video? %>
+      <%= form.file_field :audio_file, class: cls, accept: "video/*", name: nil, data: data %>
+    <% else %>
+      <%= form.file_field :audio_file, class: cls, accept: "audio/*", name: nil, data: data %>
+    <% end %>
 
     <%# fake display field; real text area is opacity-0 on top of it %>
     <% invalid_msg = upload_invalid_messages(content) %>
@@ -20,14 +24,14 @@
     <% fake_cls += " is-invalid" if invalid_msg %>
     <div class="<%= fake_cls %>">
       <span class="material-icons text-primary ms-2">upload</span>
-      <div class="text-secondary mx-2">Upload a file</div>
+      <div class="text-secondary mx-2"><%= t(".hint") %></div>
     </div>
 
     <% if invalid_msg %>
       <div class="invalid-feedback"><%= invalid_msg %></div>
     <% end %>
 
-    <%= form.label :audio_file, "Segment #{content.position}", class: "is-invalid" if invalid_msg %>
+    <%= form.label :audio_file, episode_media_label(content), class: ("is-invalid" if invalid_msg) %>
   </div>
 
   <%# step 2: upload progressbar %>
@@ -47,7 +51,7 @@
       </button>
     </div>
 
-    <label>Segment <%= content.position %></label>
+    <label><%= episode_media_label(content) %></label>
   </div>
 
   <%# step 3a: hidden original_url field pointing to the uploaded temporary s3 file %>
@@ -66,7 +70,7 @@
       </button>
     </div>
 
-    <label>Segment <%= content.position %></label>
+    <label><%= episode_media_label(content) %></label>
   </div>
 
   <%# step 3b: something went horribly wrong! %>
@@ -83,7 +87,7 @@
 
     <div class="invalid-feedback" data-upload-target="errorMessage"></div>
 
-    <label class="is-invalid">Segment <%= content.position %></label>
+    <label class="is-invalid"><%= episode_media_label(content) %></label>
   </div>
 
 </div>

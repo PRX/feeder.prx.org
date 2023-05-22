@@ -2,14 +2,14 @@
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><%= title %></h5>
+        <h5 class="modal-title"><%= episode_media_label(content) %></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <table class="table table-sm m-0">
           <tbody>
             <tr>
-              <th scope="row"><strong>File:</strong></th>
+              <th scope="row"><strong><%= t(".file_name") %>:</strong></th>
               <td>
                 <% if content.status_complete? %>
                   <%= link_to content.file_name, content.url, target: "_blank", rel: "noopener" %>
@@ -19,7 +19,7 @@
               </td>
             </tr>
             <tr>
-              <th scope="row"><strong>Status:</strong></th>
+              <th scope="row"><strong><%= t(".status") %>:</strong></th>
               <td>
                 <% case content.status %>
                 <% when "started", "created", "processing", "retrying" %>
@@ -32,27 +32,27 @@
               </td>
             </tr>
             <tr>
-              <th scope="row"><strong>Size:</strong></th>
+              <th scope="row"><strong><%= t(".file_size") %>:</strong></th>
               <td><%= blank_dash(content.file_size) { number_to_human_size(content.file_size) } %></td>
             </tr>
             <tr>
-              <th scope="row"><strong>Duration:</strong></th>
+              <th scope="row"><strong><%= t(".duration") %>:</strong></th>
               <td><%= content.duration.present? ? episode_content_duration(content) : "&mdash;" %></td>
             </tr>
             <tr>
-              <th scope="row" class="text-nowrap"><strong>Content Type:</strong></th>
+              <th scope="row" class="text-nowrap"><strong><%= t(".mime_type") %>:</strong></th>
               <td><%= blank_dash(content.mime_type) %></td>
             </tr>
             <tr>
-              <th scope="row"><strong>Frequency:</strong></th>
+              <th scope="row"><strong><%= t(".sample_rate") %>:</strong></th>
               <td><%= blank_dash(content.sample_rate) { "#{content.sample_rate.to_f / 1000} kHz" } %></td>
             </tr>
             <tr>
-              <th scope="row"><strong>Bitrate:</strong></th>
+              <th scope="row"><strong><%= t(".bit_rate") %>:</strong></th>
               <td><%= blank_dash(content.bit_rate) { "#{content.bit_rate} kb/s" } %></td>
             </tr>
             <tr>
-              <th scope="row"><strong>Channels:</strong></th>
+              <th scope="row"><strong><%= t(".channels") %>:</strong></th>
               <td>
                 <%= blank_dash(content.channels) do %>
                   <% if content.channels == 1 %>
@@ -67,13 +67,13 @@
             </tr>
             <% if content.frame_rate.present? %>
               <tr>
-                <th scope="row"><strong>Frame Rate:</strong></th>
+                <th scope="row"><strong><%= t(".frame_rate") %>:</strong></th>
                 <td><%= content.frame_rate %></td>
               </tr>
             <% end %>
             <% if content.width.present? && content.height.present? %>
               <tr>
-                <th scope="row"><strong>Dimensions:</strong></th>
+                <th scope="row"><strong><%= t(".dimensions") %>:</strong></th>
                 <td><%= content.width %> x <%= content.height %></td>
               </tr>
             <% end %>

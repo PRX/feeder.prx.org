@@ -7,8 +7,6 @@
 
     <div class="card-body">
       <%= turbo_frame_tag "episode-form-audio", data: {controller: "audio-upload"} do %>
-        <h3>Segment count = <%= episode.segment_count %> / valid <%= episode.valid? %></h3>
-        <%= debug episode.errors.full_messages %>
         <div class="row">
 
           <div class="col-12 mb-4 prx-field-group">

@@ -22,7 +22,10 @@ en:
   # form/model helpers
   helpers:
     label:
+      content:
+        original_url: Segment %{position}
       episode:
+        ad_breaks: How many ad breaks are there in this episode?
         author_email: Author Email
         author_name: Author Name
         add_itunes_summary: Add an alternate itunes:summary
@@ -92,8 +95,28 @@ en:
         subtitle: Teaser
         summary: iTunes Summary
         title: Title
+      uncut:
+        original_url: Audio File
   # specific pages/views
   episodes:
+    audio:
+      error:
+        feedback: There was a problem processing your file
+      modal:
+        bit_rate: Bitrate
+        channels: Channels
+        dimensions: Dimensions
+        duration: Duration
+        file_name: File
+        file_size: Size
+        frame_rate: Frame Rate
+        mime_type: Content Type
+        sample_rate: Frequency
+        status: Status
+      new:
+        hint: Upload a file
+      processing:
+        hint: Processing
     create:
       error: Unable to create
       notice: Episode created

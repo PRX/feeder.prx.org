@@ -11,8 +11,8 @@
       <% end %>
     </div>
 
-    <div class="invalid-feedback"><%= upload_invalid_messages(content) || "There was a problem processing your audio" %></div>
+    <div class="invalid-feedback"><%= upload_invalid_messages(content) || t(".feedback") %></div>
 
-    <label class="is-invalid">Segment <%= content.position %></label>
+    <label class="is-invalid"><%= episode_media_label(content) %></label>
   </div>
 </div>
