@@ -1,4 +1,4 @@
-class EpisodeImage < ActiveRecord::Base
+class EpisodeImage < ApplicationRecord
   include ImageFile
 
   belongs_to :episode, touch: true, optional: true

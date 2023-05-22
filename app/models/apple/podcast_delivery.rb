@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Apple
-  class PodcastDelivery < ActiveRecord::Base
+  class PodcastDelivery < ApplicationRecord
     include Apple::ApiResponse
 
     acts_as_paranoid

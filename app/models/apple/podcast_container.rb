@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Apple
-  class PodcastContainer < ActiveRecord::Base
+  class PodcastContainer < ApplicationRecord
     include Apple::ApiResponse
 
     serialize :api_response, JSON
