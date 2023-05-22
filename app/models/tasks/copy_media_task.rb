@@ -6,7 +6,7 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def podcast
-    media_resource&.episode&.podcast
+    media_resource.try(:episode).try(:podcast)
   end
 
   def source_url

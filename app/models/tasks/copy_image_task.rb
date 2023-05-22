@@ -6,7 +6,7 @@ class Tasks::CopyImageTask < ::Task
   end
 
   def podcast
-    image&.episode&.podcast || image&.podcast
+    image.try(:episode).try(:podcast) || image.try(:podcast)
   end
 
   def source_url
