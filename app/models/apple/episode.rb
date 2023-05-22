@@ -87,10 +87,12 @@ module Apple
     def self.create_episodes(api, episodes)
       return if episodes.empty?
 
-      episode_bridge_results = api.bridge_remote_and_retry!("createEpisodes",
+      results = api.bridge_remote_and_retry!("createEpisodes",
         episodes.map(&:create_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      upsert_sync_logs(episodes, episode_bridge_results)
+      join_on("guid", episodes, results).map do |(ep, row)|
+        upsert_sync_log(ep, row)
+      end
     end
 
     def self.update_audio_container_reference(api, episodes)
@@ -222,6 +224,9 @@ module Apple
 
     def create_episode_bridge_params
       {
+        request_metadata: {
+          guid: guid
+        },
         api_url: api.join_url("episodes").to_s,
         api_parameters: episode_create_parameters
       }
