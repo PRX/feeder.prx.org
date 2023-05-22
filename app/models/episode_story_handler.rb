@@ -80,8 +80,8 @@ class EpisodeStoryHandler
       []
     end
 
-    episode.contents = audio.map do |a|
-      Content.build(a.links["prx:storage"].href, a.position)
+    episode.media = audio.sort_by(&:position).map do |a|
+      a.links["prx:storage"].href
     end
   end
 
