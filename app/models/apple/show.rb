@@ -87,6 +87,10 @@ module Apple
       public_feed.apple_sync_log
     end
 
+    def apple_sync_log
+      sync_log
+    end
+
     def sync!
       apple_json = create_or_update_show(sync_log)
       sync_log.update!(api_response: apple_json)
