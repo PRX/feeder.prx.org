@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" media="screen" href="/~d/styles/rss2enclosuresfull.xsl"?>
+<?xml-stylesheet type="text/css" media="screen" href="http://feeds.prx.org/~d/styles/itemcontent.css"?>
+<rss
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+	xmlns:rawvoice="http://www.rawvoice.com/rawvoiceRssModule/"
+	xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0/play-podcasts.xsd"
+	xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0"
+	version="2.0">
+	<channel>
+		<title>Transistor</title>
+		<link>https://transistor.prx.org</link>
+		<description>A podcast of scientific questions and stories, with many episodes hosted by key scientists at the forefront of discovery.</description>
+		<lastBuildDate>Fri, 20 Jan 2017 03:04:53 +0000</lastBuildDate>
+		<language>en-US</language>
+		<sy:updatePeriod>hourly</sy:updatePeriod>
+		<sy:updateFrequency>1</sy:updateFrequency>
+		<generator>https://wordpress.org/?v=4.7.1</generator>
+		<!-- podcast_generator="Blubrry PowerPress/7.0.3" mode="advanced" feedslug="podcast" -->
+		<itunes:new-feed-url>http://feeds.prx.org/transistor_stem</itunes:new-feed-url>
+		<itunes:type>episodic</itunes:type>
+		<itunes:summary>Transistor is a podcast of scientific curiosities and current events, featuring guest hosts, scientists, and story-driven reporters. Presented by radio and podcast powerhouse PRX, with support from the Sloan Foundation.</itunes:summary>
+		<itunes:author>PRX</itunes:author>
+		<itunes:explicit>clean</itunes:explicit>
+		<itunes:image href="https://cdn-transistor.prx.org/transistor1400.jpg"/>
+		<itunes:owner>
+			<itunes:name>PRX</itunes:name>
+			<itunes:email>prxwpadmin@prx.org</itunes:email>
+		</itunes:owner>
+		<managingEditor>prxwpadmin@prx.org (PRX)</managingEditor>
+		<author>prxwpadmin@prx.org (PRX)</author>
+		<copyright>Copyright 2016 PRX</copyright>
+		<itunes:subtitle>A podcast of scientific questions and stories featuring guest hosts and reporters.</itunes:subtitle>
+		<image>
+			<title>Transistor</title>
+			<url>http://cdn-transistor.prx.org/transistor300.png</url>
+			<link>https://transistor.prx.org</link>
+		</image>
+		<itunes:category text="Science &amp; Medicine">
+			<itunes:category text="Natural Sciences"/>
+		</itunes:category>
+		<googleplay:category text="Science &amp; Medicine"/>
+		<googleplay:image href="http://cdn-transistor.prx.org/transistor1400.jpg"/>
+		<rawvoice:subscribe feed="http://transistor.prx.org/feed/podcast/" itunes="https://itunes.apple.com/us/podcast/transistor/id964305817?at=10l9zE"/>
+		<site xmlns="com-wordpress:feed-additions:1">85675297</site>
+		<atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="self" type="application/rss+xml" href="http://feeds.prx.org/transistor_stem"/><feedburner:info uri="transistor_stem"/><atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="hub" href="http://pubsubhubbub.appspot.com/"/>
+		<item>
+			<title>Sidedoor from the Smithsonian: Shake it Up</title>
+			<link>http://feeds.prx.org/~r/transistor_stem/~3/NHnLCsjtdQM/</link>
+			<pubDate>Fri, 20 Jan 2017 03:04:12 +0000</pubDate>
+			<guid isPermaLink="false">https://transistor.prx.org/?p=1286</guid>
+			<comments>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/#respond</comments>
+			<wfw:commentRss>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+			<category>
+				<![CDATA[Indie Features]]>
+			</category>
+			<category>
+				<![CDATA[science]]>
+			</category>
+			<category>
+				<![CDATA[architecture]]>
+			</category>
+			<category>
+			</category>
+			<description>For the next few episodes, we’re featuring the Smithsonian’s new series, Sidedoor, about where science, art, history, and humanity unexpectedly overlap — just like in their museums. In this episode: an astronomer has turned the night sky into a symphony; an architecture firm has radically re-thought police stations; and an audiophile builds a successful record … &lt;a href="https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/" class="more-link"&gt;Continue reading &lt;span class="screen-reader-text"&gt;Sidedoor from the Smithsonian: Shake it Up&lt;/span&gt;&lt;/a&gt;</description>
+			<content:encoded>
+				<![CDATA[<p>For the next few episodes, we’re featuring the Smithsonian’s new series, <em>Sidedoor</em>, about where science, art, history, and humanity unexpectedly overlap — just like in their museums.</p>
+<p>In this episode: an astronomer has turned the night sky into a symphony; an architecture firm has radically re-thought police stations; and an audiophile builds a successful record company on under-appreciated sounds.</p>
+<p><script id='prx-p195778-embed' src='https://www.prx.org/p/195778/embed.js?size=small'></script> </p>
+<p>For even more from <a href="https://itunes.apple.com/us/podcast/sidedoor/id1168154281?mt=2" target="_blank">Sidedoor</a>, subscribe in iTunes or wherever you get your podcasts.</p>
+<p><em>Music credits under backannounce: &#8220;Candy&#8221; by Jahzzar.</em></p>
+<img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" height="1" width="1" alt=""/>]]>
+			</content:encoded>
+
+			<itunes:title>Sidedoor iTunes title</itunes:title>
+			<itunes:subtitle>An astronomer has turned the night sky into a symphony.</itunes:subtitle>
+			<itunes:summary>For the next few episodes, we’re featuring the Smithsonian’s new series, Sidedoor, about where science, art, history, and humanity unexpectedly overlap — just like in their museums. In this episode: an astronomer who has turned the
+				night sky into a symphony.</itunes:summary>
+			<itunes:author>PRX</itunes:author>
+			<itunes:duration>24:46</itunes:duration>
+			<itunes:season>2</itunes:season>
+			<itunes:episode>4</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<post-id xmlns="com-wordpress:feed-additions:1">1286</post-id>
+			<feedburner:origLink>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/</feedburner:origLink>
+			<enclosure url="http://feeds.prx.org/~r/transistor_stem/~5/7X0iW0LgXWg/Smithsonian3_Transistor.mp3" length="29714854" type="audio/mpeg"/>
+			<feedburner:origEnclosureLink>https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3</feedburner:origEnclosureLink>
+			<itunes:image href="https://cdn-transistor.prx.org/shake.jpg"/>
+		</item>
+		<item>
+			<title>Sidedoor from the Smithsonian: Shake it Up</title>
+			<link>http://feeds.prx.org/~r/transistor_stem/~3/NHnLCsjtdQM/</link>
+			<pubDate>Fri, 20 Jan 2017 03:04:12 +0000</pubDate>
+			<guid isPermaLink="false">https://transistor.prx.org/?p=1287</guid>
+			<comments>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/#respond</comments>
+			<wfw:commentRss>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+			<category><![CDATA[Indie Features]]></category>
+			<description>For the next few episodes, we’re featuring the Smithsonian’s new series, Sidedoor, about where science, art, history, and humanity unexpectedly overlap — just like in their museums. In this episode: an astronomer has turned the night sky
+				into a symphony; an architecture firm has radically re-thought police stations; and an audiophile builds a successful record … &lt;a href="https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/" class="more-link"&gt;Continue
+				reading &lt;span class="screen-reader-text"&gt;Sidedoor from the Smithsonian: Shake it Up&lt;/span&gt;&lt;/a&gt;🌈</description>
+			<content:encoded>
+				<![CDATA[<p>For the next few episodes, we’re featuring the Smithsonian’s new series, <em>Sidedoor</em>, about where science, art, history, and humanity unexpectedly overlap — just like in their museums.</p>
+<p>In this episode: an astronomer has turned the night sky into a symphony; an architecture firm has radically re-thought police stations; and an audiophile builds a successful record company on under-appreciated sounds.</p>
+<p><script id='prx-p195778-embed' src='https://www.prx.org/p/195778/embed.js?size=small'></script> </p>
+<p>For even more from <a href="https://itunes.apple.com/us/podcast/sidedoor/id1168154281?mt=2" target="_blank">Sidedoor</a>, subscribe in iTunes or wherever you get your podcasts.</p>
+<p><em>Music credits under backannounce: &#8220;Candy&#8221; by Jahzzar.</em></p>
+<img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" height="1" width="1" alt=""/>]]>
+			</content:encoded>
+			<itunes:subtitle>An astronomer has turned the night sky into a symphony.</itunes:subtitle>
+			<itunes:author>PRX</itunes:author>
+			<itunes:duration>24:46</itunes:duration>
+			<post-id xmlns="com-wordpress:feed-additions:1">1286</post-id>
+			<feedburner:origLink>https://libsyn.com/2017/01/sidedoor-from-the-smithsonian-shake-it-up/</feedburner:origLink>
+			<enclosure url="http://feeds.prx.org/~r/transistor_stem/~5/7X0iW0LgXWg/Smithsonian3_Transistor.mp3" length="29714854" type="audio/mpeg"/>
+			<feedburner:origEnclosureLink>https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3</feedburner:origEnclosureLink>
+			<itunes:image href="https://cdn-transistor.prx.org/transistor1400.jpg"/>
+		</item>
+	</channel>
+</rss>

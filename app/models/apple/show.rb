@@ -2,6 +2,8 @@
 
 module Apple
   class Show
+    include Apple::ApiResponse
+
     attr_reader :public_feed,
       :private_feed,
       :api
@@ -88,24 +90,28 @@ module Apple
       public_feed.apple_sync_log
     end
 
+    def apple_sync_log
+      sync_log
+    end
+
     def sync!
       apple_json = create_or_update_show(sync_log)
-      sync_log.update!(api_response: apple_json)
-      sync_log
+      public_feed.reload
+      SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: apple_json["api_response"]["val"]["data"]["id"], api_response: apple_json)
     end
 
     def create_show!
       resp = api.post("shows", show_data)
 
-      api.unwrap_response(resp)
+      api.response(resp)
     end
 
     def update_show!(sync)
       show_data_with_id = show_data
       show_data_with_id[:data][:id] = sync.external_id
-      resp = api.patch("shows/#{sync.external_id}", show_data_with_id)
+      resp = api.patch("shows/#{sync.external_id}", **show_data_with_id)
 
-      api.unwrap_response(resp)
+      api.response(resp)
     end
 
     def create_or_update_show(sync)
@@ -153,6 +159,10 @@ module Apple
 
     def apple_episode_json
       @apple_episode_json ||= Apple::Show.apple_episode_json(api, id)
+    end
+
+    def api_response
+      public_feed.apple_sync_log&.api_response
     end
   end
 end

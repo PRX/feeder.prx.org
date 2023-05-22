@@ -2,9 +2,8 @@ require "hash_serializer"
 require "prx_access"
 
 class Task < ApplicationRecord
-  include PrxAccess
-  include PorterParser
-  include PorterEncoder
+  include PorterCallback
+  include PorterUtils
 
   enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
 
@@ -39,29 +38,23 @@ class Task < ApplicationRecord
     end
   end
 
+  def job_id
+    self[:job_id] ||= SecureRandom.uuid
+  end
+
+  def source_url
+  end
+
   def start!
-    self.options = task_options
-    if porter_enabled?
-      self.job_id = porter_start!(options)
-    end
+    self.status = "started"
+    self.options = {
+      Id: job_id,
+      Source: porter_source,
+      Tasks: porter_tasks,
+      Callbacks: porter_callbacks
+    }
+
+    porter_start!(options)
     save!
-  end
-
-  def task_options
-    {callback: callback_queue}.with_indifferent_access
-  end
-
-  def feeder_storage_bucket
-    ENV["FEEDER_STORAGE_BUCKET"]
-  end
-
-  def callback_queue
-    q = "#{Rails.configuration.active_job.queue_name_prefix}_feeder_fixer_callback"
-    r = ENV["AWS_REGION"].present? ? ENV["AWS_REGION"] : "us-east-1"
-    "sqs://#{r}/#{q}"
-  end
-
-  def porter_enabled?
-    ENV["PORTER_SNS_TOPIC"].present?
   end
 end

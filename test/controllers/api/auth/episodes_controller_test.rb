@@ -113,7 +113,6 @@ describe Api::Auth::EpisodesController do
       new_episode = Episode.find_by_guid(id)
       assert_equal new_episode.released_at, Time.parse(episode_hash[:releasedAt])
       assert_equal new_episode.prx_uri, "/api/v1/stories/123"
-      assert_equal new_episode.enclosures.count, 0
       assert_equal new_episode.contents.count, 3
       c = new_episode.contents.first
       assert_equal c.original_url, "https://s3.amazonaws.com/prx-testing/test/audio1.mp3"

@@ -4,6 +4,7 @@ import SparkMD5 from "spark-md5"
 import sha256 from "sha256"
 
 export default class extends Controller {
+  static outlets = ["disable"]
   static targets = [
     "field",
     "originalUrl",
@@ -140,6 +141,9 @@ export default class extends Controller {
     toggle(this.progressTargets, type === "progress")
     toggle(this.successTargets, type === "success")
     toggle(this.errorTargets, type === "error")
+
+    // disable form submit while upload in progress
+    this.disableOutlet.uploading(type === "progress")
 
     // disable id/_destroy fields if we're replacing that file
     this.replaceTargets.forEach((el) => (el.disabled = type === "success"))

@@ -4,6 +4,7 @@ require "hash_serializer"
 require "text_sanitizer"
 
 class Episode < ApplicationRecord
+  include EpisodeMedia
   include PublishingStatus
   include TextSanitizer
 
@@ -29,12 +30,8 @@ class Episode < ApplicationRecord
     -> { order("position ASC, created_at DESC") },
     autosave: true, dependent: :destroy
 
-  accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:original_url].blank? }
+  accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
-
-  has_many :enclosures,
-    -> { order("created_at DESC") },
-    autosave: true, dependent: :destroy
 
   has_one :apple_sync_log, -> { episodes }, foreign_key: :feeder_id, class_name: "SyncLog"
   has_one :apple_podcast_delivery, class_name: "Apple::PodcastDelivery"
@@ -52,7 +49,8 @@ class Episode < ApplicationRecord
   validates :season_number, numericality: {only_integer: true}, allow_nil: true
   validates :explicit, inclusion: {in: %w[true false]}, allow_nil: true
   validates :segment_count, presence: true, if: :strict_validations
-  validates :segment_count, numericality: {only_integer: true, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
+  validates :segment_count, numericality: {only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
+  validate :validate_media_ready, if: :strict_validations
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
@@ -64,8 +62,9 @@ class Episode < ApplicationRecord
   scope :draft, -> { where("episodes.published_at IS NULL") }
   scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
-
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
+
+  enum :medium, [:audio, :video], prefix: true
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -163,55 +162,6 @@ class Episode < ApplicationRecord
     end
   end
 
-  def ready_enclosure
-    enclosures.complete_or_replaced.first
-  end
-
-  def enclosure
-    enclosures.first
-  end
-
-  def enclosure=(file)
-    enc = Enclosure.build(file)
-
-    if !enc
-      enclosures.each(&:mark_for_destruction)
-    elsif enc&.replace?(enclosure)
-      enclosures.build(enc.attributes.compact)
-    else
-      enc.update_resource(enclosure)
-    end
-  end
-
-  def ready_contents
-    contents.complete_or_replaced.group_by(&:position).values.map(&:first)
-  end
-
-  def contents=(files)
-    existing = contents.group_by(&:position)
-
-    files&.each_with_index do |file, idx|
-      position = idx + 1
-      con = Content.build(file, position)
-
-      if !con
-        existing[position]&.each(&:mark_for_destruction)
-      elsif con.replace?(existing[position]&.first)
-        contents.build(con.attributes.compact)
-      else
-        con.update_resource(existing[position].first)
-      end
-    end
-
-    # destroy unused positions
-    positions = 1..(files&.count.to_i)
-    existing.each do |position, contents|
-      contents.each(&:mark_for_destruction) unless positions.include?(position)
-    end
-
-    contents
-  end
-
   def initialize_guid
     guid
   end
@@ -253,37 +203,7 @@ class Episode < ApplicationRecord
     self[:keywords] ||= []
   end
 
-  def media_url
-    first_media_resource.try(:href)
-  end
-
-  def content_type(feed = nil)
-    media_content_type = first_media_resource.try(:mime_type)
-    if (media_content_type || "").starts_with?("video")
-      media_content_type
-    else
-      feed.try(:mime_type) || media_content_type || "audio/mpeg"
-    end
-  end
-
-  def duration
-    if contents.blank?
-      enclosure.try(:duration).to_f
-    else
-      contents.inject(0.0) { |s, c| s + c.duration.to_f }
-    end + podcast.try(:duration_padding).to_f
-  end
-
-  def file_size
-    if contents.blank?
-      enclosure.try(:file_size)
-    else
-      contents.inject(0) { |s, c| s + c.file_size.to_i }
-    end
-  end
-
   def copy_media(force = false)
-    enclosures.each { |e| e.copy_media(force) }
     contents.each { |c| c.copy_media(force) }
     images.each { |i| i.copy_media(force) }
   end
@@ -301,50 +221,10 @@ class Episode < ApplicationRecord
   end
 
   def include_in_feed?
-    (segment_count.nil? && !media?) || media_ready?
-  end
-
-  def media_resources
-    contents.blank? ? Array(enclosure) : contents
-  end
-
-  # NOTE: API updates ignore nil attributes
-  def media_resources=(files)
-    self.contents = files unless files.nil?
-  end
-
-  def ready_media_resources
-    contents.blank? ? Array(ready_enclosure) : ready_contents
-  end
-
-  def media?
-    media_resources.any?
-  end
-
-  def first_media_resource
-    ready_media_resources.first || media_resources.first
-  end
-
-  def media_status
-    states = media_resources.map(&:status).uniq
-    if !(%w[started created processing retrying] & states).empty?
-      "processing"
-    elsif states.any? { |s| s == "error" }
-      "error"
-    elsif media_ready?
-      "complete"
-    end
-  end
-
-  def media_ready?
-    if contents.blank?
-      ready_enclosure.present?
-    elsif segment_count.nil?
-      ready_contents.count == contents.maximum(:position)
-    elsif segment_count.positive?
-      ready_contents.count == segment_count
+    if no_media?
+      true
     else
-      false
+      complete_media?
     end
   end
 
@@ -409,6 +289,17 @@ class Episode < ApplicationRecord
       published_at
     elsif released_at.present?
       released_at
+    end
+  end
+
+  def validate_media_ready
+    return if published_at.blank? || no_media?
+
+    # media must be complete on _initial_ publish
+    must_be_complete = published_at_was.blank?
+
+    unless media_ready?(must_be_complete)
+      errors.add(:base, :media_not_ready, message: "media not ready")
     end
   end
 end

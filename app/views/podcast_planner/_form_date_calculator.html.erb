@@ -1,12 +1,6 @@
 <section>
   <div class="mb-4">
-    <h2 class="fw-bold"><%= t(".header.date_calculation") %></h2>
-    <p><%= t(".help.date_calculation") %></p>
-  </div>
-
-  <div class="mb-4">
-    <h3 class="fw-bold"><%= t(".header.day_select") %></h3>
-    <p><%= t(".help.day_select") %></p>
+    <h3 class="mb-3"><%= t(".header.day_select") %></h3>
     <div class="col-lg-12">
       <div class="form-floating">
         <%= form.select :selected_days, day_options, {include_blank: true}, data: {action: "click#submit"}, multiple: true %>
@@ -16,11 +10,9 @@
   </div>
 
   <div class="mb-4" data-controller="toggle-field">
-    <h3 class="fw-bold"><%= t(".header.week_select") %></h3>
-    <p><%= t(".help.week_select") %></p>
+    <h3 class="mb-3"><%= t(".header.week_select") %></h3>
     <div class="row">
       <div class="col-lg-6">
-        <p><%= t(".help.calculate_weeks") %></p>
         <div class="form-floating">
           <%= form.select :week_condition, week_condition_options, {}, data: {action: "toggle-field#displayOnlyThisField click#submit"} %>
           <%= form.label t(".label.week_condition") %>
@@ -28,14 +20,12 @@
       </div>
       <div class="col-lg-6">
         <div class="" data-toggle-field-target="field" field="monthly">
-          <p><%= t(".help.select_weeks") %></p>
           <div class="form-floating">
             <%= form.select :monthly_weeks, monthly_weeks_options, {include_blank: true}, data: {action: "click#submit"}, multiple: true %>
             <%= form.label t(".label.week_of_month") %>
           </div>
         </div>
         <div class="d-none" data-toggle-field-target="field" field="periodic">
-          <p><%= t(".help.select_period") %></p>
           <div class="form-floating">
             <%= form.select :period, periodic_weeks_options, {}, data: {action: "click#submit"} %>
             <%= form.label t(".label.period") %>
@@ -46,11 +36,9 @@
   </div>
 
   <div class="mb-4" data-controller="toggle-field">
-    <h3 class="fw-bold"><%= t(".header.range_select") %></h3>
-    <p><%= t(".help.range_select") %></p>
+    <h3 class="mb-3"><%= t(".header.range_select") %></h3>
     <div class="row mb-4">
-      <div class="col-lg-6">
-        <p><%= t(".help.calculate_range") %></p>
+      <div class="col-12">
         <div>
           <div class="form-floating">
             <%= form.select :date_range_condition, end_condition_options, {}, data: {action: "toggle-field#displayOnlyThisField click#submit"} %>
@@ -58,13 +46,16 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="row mb-4">
       <div class="col-lg-6">
-        <p><%= t(".help.select_range") %></p>
-          <div class="form-floating mb-2">
-            <%= form.date_field :start_date, min: DateTime.tomorrow, max: DateTime.tomorrow + 1.years, value: DateTime.tomorrow, data: {action: "click#submit"} %>
-            <%= form.label :start_date %>
-          </div>
+        <div class="form-floating mb-2">
+          <%= form.date_field :start_date, min: DateTime.tomorrow, max: DateTime.tomorrow + 1.years, value: DateTime.tomorrow, data: {action: "click#submit"} %>
+          <%= form.label :start_date %>
+        </div>
+      </div>
 
+      <div class="col-lg-6">
         <div data-toggle-field-target="field" field="episodes">
           <div class="form-floating">
             <%= form.number_field :number_of_episodes, {min: 1, max: 100, step: 1, value: 10, data: {action: "click#submit"}} %>

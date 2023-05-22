@@ -1,23 +1,15 @@
 class FeedsController < ApplicationController
-  before_action :set_feed, only: %i[show edit update destroy]
+  before_action :set_feed, only: %i[show update destroy]
   before_action :set_podcast
-
-  # GET /feeds
-  def index
-    @feeds = Feed.all.limit(10)
-  end
 
   # GET /feeds/1
   def show
+    authorize @feed
   end
 
   # GET /feeds/new
   def new
     @feed = Feed.new
-  end
-
-  # GET /feeds/1/edit
-  def edit
   end
 
   # POST /feeds
@@ -35,11 +27,17 @@ class FeedsController < ApplicationController
 
   # PATCH/PUT /feeds/1
   def update
+    @feed.assign_attributes(feed_params)
+    authorize @feed
+
     respond_to do |format|
-      if @feed.update(feed_params)
-        format.html { redirect_to feed_url(@feed), notice: "Feed was successfully updated." }
+      if @feed.save
+        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
-        format.html { render :edit, status: :unprocessable_entity }
+        format.html do
+          flash.alert = t ".failure", model: "Feed"
+          render :show, status: :unprocessable_entity
+        end
       end
     end
   end
@@ -71,6 +69,21 @@ class FeedsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def feed_params
-    params.fetch(:feed, {})
+    params.fetch(:feed, {}).permit(
+      :file_name,
+      :slug,
+      :title,
+      :subtitle,
+      :description,
+      :summary,
+      :private,
+      :url,
+      :new_feed_url,
+      :enclosure_prefix,
+      :display_episodes_count,
+      :display_full_episodes_count,
+      :episode_offset_seconds,
+      feed_tokens_attributes: %i[id label token]
+    )
   end
 end

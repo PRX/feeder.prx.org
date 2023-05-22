@@ -159,6 +159,23 @@ module Apple
       SUCCESS_CODES.include?(resp.code)
     end
 
+    def response(resp)
+      ok, json =
+        begin
+          [:ok, JSON.parse(resp.body)]
+        rescue JSON::ParserError
+          [:err, resp.body]
+        end
+
+      {
+        api_response: {
+          ok: ok == :ok,
+          err: ok == :err,
+          val: json
+        }
+      }.with_indifferent_access
+    end
+
     def unwrap_response(resp)
       raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp)
 

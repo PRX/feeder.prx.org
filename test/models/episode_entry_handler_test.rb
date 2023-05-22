@@ -9,11 +9,6 @@ describe EpisodeEntryHandler do
   let(:entry_all) { api_resource(JSON.parse(json_file(:crier_all)), crier_root) }
   let(:entry_no_enclosure) { api_resource(JSON.parse(json_file(:crier_no_enclosure)), crier_root) }
 
-  before do
-    stub_request(:get, "http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99-1400.png?entry=1")
-      .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
-  end
-
   it "can update from entry" do
     EpisodeEntryHandler.update_from_entry!(episode, entry)
     assert_equal episode.title, "Episode 12: What We Know"
@@ -83,37 +78,6 @@ describe EpisodeEntryHandler do
     assert_equal episode.images.first.original_url, "http://cdn.99percentinvisible.org/wp-content/uploads/powerpress/99-1400.png?entry=1"
   end
 
-  it "creates enclosure from entry" do
-    podcast = create(:podcast)
-    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
-    assert_equal episode.enclosures.size, 1
-  end
-
-  it "updates enclosure from entry" do
-    podcast = create(:podcast)
-    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
-    episode.enclosures.first.complete!
-    first_enclosure = episode.enclosure
-
-    EpisodeEntryHandler.update_from_entry!(episode, entry)
-    assert_equal episode.enclosure, first_enclosure
-    assert_equal episode.enclosures.size, 1
-
-    episode.enclosure.update(original_url: "https://test.com")
-    first_enclosure = episode.enclosure
-    EpisodeEntryHandler.update_from_entry!(episode, entry)
-    assert_equal episode.enclosures.with_deleted.size, 2
-    replacement_enclosure = episode.enclosures.first
-
-    assert_equal episode.ready_enclosure, first_enclosure
-    assert_equal first_enclosure.original_url, "https://test.com"
-    assert_equal replacement_enclosure.original_url, "http://dts.podtrac.com/redirect.mp3/files.serialpodcast.org/sites/default/files/podcast/1445350094/serial-s01-e12.mp3"
-
-    replacement_enclosure.complete!
-    assert_equal episode.enclosures.reload.size, 1
-    assert_equal episode.ready_enclosure, replacement_enclosure
-  end
-
   it "creates contents from entry" do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
@@ -125,7 +89,7 @@ describe EpisodeEntryHandler do
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
 
     # complete just one of them
-    episode.contents.first.complete!
+    episode.contents.first.update!(status: "complete", medium: "audio")
     episode.reload
     first_content = episode.contents.first
     last_content = episode.contents.last
@@ -156,7 +120,7 @@ describe EpisodeEntryHandler do
   it "uses first content url when there is no enclosure" do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
-    episode.contents.first.complete!
+    episode.contents.first.update!(status: "complete", medium: "audio")
     episode.reload
     assert_match(/#{episode.contents.first.guid}.mp3$/, episode.media_url)
   end

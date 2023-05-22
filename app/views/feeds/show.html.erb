@@ -1,10 +1,5 @@
-<p style="color: green"><%= notice %></p>
+<% content_for :title, @feed.title.to_s %>
 
-<%= render @feed %>
+<%= render "tabs" %>
 
-<div>
-  <%= link_to "Edit this feed", edit_feed_path(@feed) %> |
-  <%= link_to "Back to feeds", feeds_path %>
-
-  <%= button_to "Destroy this feed", @feed, method: :delete %>
-</div>
+<%= render "form", feed: @feed, podcast: @podcast %>

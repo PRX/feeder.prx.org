@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:media="http://search.yahoo.com/mrss/" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
+  <channel>
+    <title>99% Invisible</title>
+    <link>http://99percentinvisible.org</link>
+    <pubDate>Tue, 24 Oct 2017 21:25:42 -0000</pubDate>
+    <lastBuildDate>Tue, 24 Oct 2017 21:31:21 -0000</lastBuildDate>
+    <ttl>60</ttl>
+    <language>en-US</language>
+    <copyright>Copyright © 2017 Roman Mars. All rights reserved.</copyright>
+    <webMaster>prxhelp@prx.org (PRX)</webMaster>
+    <description>
+      <![CDATA[Design is everywhere in our lives, perhaps most importantly in the places where we’ve just stopped noticing. 99% Invisible is a weekly exploration of the process and power of design and architecture. From award winning producer Roman Mars. Learn more at <a href="http://99percentinvisible.org">99percentinvisible.org</a>.<br/> A proud member of Radiotopia, from PRX. Learn more at <a href="http://radiotopia.fm/">radiotopia.fm</a>.]]>
+    </description>
+    <managingEditor>roman@prx.org (Roman Mars)</managingEditor>
+    <generator>PRX Feeder v1.0.0</generator>
+    <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+    <image>
+      <url>https://f.prxu.org/99pi/images/42384e27-3dd6-497f-991f-67fabb7e6e5b/99-300.png</url>
+      <title>99% Invisible</title>
+      <link>http://99percentinvisible.org</link>
+      <width>1400</width>
+      <height>1400</height>
+    </image>
+    <atom:link href="https://f.prxu.org/99pi/feed-rss.xml" rel="self" type="application/rss+xml"/>
+    <itunes:author>Roman Mars</itunes:author>
+    <itunes:type>episodic</itunes:type>
+    <itunes:category text="Arts">
+      <itunes:category text="Design"/>
+    </itunes:category>
+    <itunes:image href="https://f.prxu.org/99pi/images/6a748676-76e8-45fd-8de2-a868a58f6b8b/99-1400.png"/>
+    <itunes:explicit>clean</itunes:explicit>
+    <itunes:owner>
+      <itunes:email>roman@prx.org</itunes:email>
+      <itunes:name>Roman Mars</itunes:name>
+    </itunes:owner>
+    <itunes:subtitle>A tiny radio show about design, architecture &amp; the 99% invisible activity that shapes our world.</itunes:subtitle>
+    <itunes:summary>
+      <![CDATA[Design is everywhere in our lives, perhaps most importantly in the places where we've just stopped noticing. 99% Invisible is a weekly exploration of the process and power of design and architecture. From award winning producer Roman Mars. Learn more at <a href="http://99percentinvisible.org">99percentinvisible.org</a>.<br/><br />
+A proud member of Radiotopia, from PRX. Learn more at <a href="http://radiotopia.fm/">radiotopia.fm</a>.]]>
+    </itunes:summary>
+    <media:copyright>Copyright © 2017 Roman Mars. All rights reserved.</media:copyright>
+    <media:thumbnail url="https://f.prxu.org/99pi/images/42384e27-3dd6-497f-991f-67fabb7e6e5b/99-300.png"/>
+    <media:category scheme="http://www.itunes.com/dtds/podcast-1.0.dtd">Arts</media:category>
+    <sy:updatePeriod>hourly</sy:updatePeriod>
+    <sy:updateFrequency>1</sy:updateFrequency>
+    <item>
+      <guid isPermaLink="false">http://99percentinvisible.prx.org/?p=1094</guid>
+      <title>Video- The Norman Door with Vox</title>
+      <pubDate>Sat, 27 Feb 2016 20:05:21 -0000</pubDate>
+      <link>http://99percentinvisible.prx.org/2016/02/27/video-the-norman-door-with-vox/</link>
+      <description>
+        <![CDATA[There is an epidemic of terrible doors in the world. But when Don Norman got frustrated with them, he ended up changing the way people everywhere think about design. Video by Joe Posner of Vox, featuring Roman Mars of 99% … <a href="http://99percentinvisible.prx.org/2016/02/27/video-the-norman-door-with-vox/">Continue reading <span class="meta-nav">→</span></a>]]>
+      </description>
+      <enclosure url="https://dts.podtrac.com/redirect.mp3/media.blubrry.com/99percentinvisible/dovetail.prxu.org/99pi/10336672-4c5b-4b05-9f18-2d05a42bbf0a/The-Norman-Door-with-Vox.mp4" type="video/mp4" length="69368827"/>
+      <itunes:subtitle>There is an epidemic of terrible doors in the world. But when Don Norman got frustrated with them, he ended up changing the way people everywhere think about design. Video by Joe Posner of Vox, featuring Roman Mars of 99% … Continue reading →</itunes:subtitle>
+      <itunes:explicit>no</itunes:explicit>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:duration>02:30</itunes:duration>
+    </item>
+    <item>
+      <guid isPermaLink="false">http://99percentinvisible.prx.org/?p=1458</guid>
+      <title>281- La Sagrada Familia</title>
+      <pubDate>Tue, 24 Oct 2017 21:25:42 -0000</pubDate>
+      <link>http://99percentinvisible.prx.org/2017/10/24/281-la-sagrada-familia/</link>
+      <description>
+        <![CDATA[The line to enter Barcelona’s most famous cathedral often stretches around the block. La Sagrada Família, designed by Antoni Gaudí, draws millions of visitors each year. There are a lot of Gothic churches in Spain, but this one is different. … <a href="http://99percentinvisible.prx.org/2017/10/24/281-la-sagrada-familia/">Continue reading <span class="meta-nav">→</span></a>]]>
+      </description>
+      <enclosure url="https://dts.podtrac.com/redirect.mp3/media.blubrry.com/99percentinvisible/dovetail.prxu.org/99pi/a0520abd-e1a2-4565-875c-89022a0bbb86/281-La-Sagrada-Familia.mp3" type="audio/mpeg" length="34264498"/>
+      <itunes:subtitle>The line to enter Barcelona’s most famous cathedral often stretches around the block. La Sagrada Família, designed by Antoni Gaudí, draws millions of visitors each year. There are a lot of Gothic churches in Spain, but this one is different.</itunes:subtitle>
+      <itunes:explicit>clean</itunes:explicit>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:duration>38:00</itunes:duration>
+      <category>
+        <![CDATA[99 Percent Invisible]]>
+      </category>
+      <category>
+        <![CDATA[architecture]]>
+      </category>
+      <category>
+        <![CDATA[barcelona]]>
+      </category>
+      <category>
+        <![CDATA[catalonia]]>
+      </category>
+      <category>
+        <![CDATA[church]]>
+      </category>
+      <category>
+        <![CDATA[design]]>
+      </category>
+      <category>
+        <![CDATA[gaudi]]>
+      </category>
+      <category>
+        <![CDATA[parametric design]]>
+      </category>
+      <category>
+        <![CDATA[spain]]>
+      </category>
+      <itunes:author>Roman Mars</itunes:author>
+      <itunes:summary>
+        <![CDATA[The line to enter Barcelona’s most famous cathedral often stretches around the block. La Sagrada Família, designed by Antoni Gaudí, draws millions of visitors each year. There are a lot of Gothic churches in Spain, but this one is different. … Continue reading →]]>
+      </itunes:summary>
+      <itunes:image href="https://f.prxu.org/99pi/images/6a748676-76e8-45fd-8de2-a868a58f6b8b/99-1400.png"/>
+      <media:content fileSize="34264498" type="audio/mpeg" url="https://dts.podtrac.com/redirect.mp3/media.blubrry.com/99percentinvisible/dovetail.prxu.org/99pi/a0520abd-e1a2-4565-875c-89022a0bbb86/281-La-Sagrada-Familia.mp3"/>
+      <content:encoded>
+        <![CDATA[<p>The line to enter Barcelona’s most famous cathedral often stretches around the block. La Sagrada Família, designed by Antoni Gaudí, draws millions of visitors each year.</p>
+<p>There are a lot of Gothic churches in Spain, but this one is different. It doesn’t look like a Gothic cathedral. It looks organic, like it was built out of bones or sand. But there’s another thing that sets it apart from your average old Gothic cathedral: it isn’t actually old.</p>
+<p>Gaudí wasn’t able to build very much of his famous church before he died in 1926. Most of it has been built in the last 40 years, and it still isn’t finished. Which means that architects have had to figure out, and still are figuring out, how Gaudí wanted the church to be built.</p>
+<p><a href="https://99percentinvisible.org/?p=22093&amp;post_type=episode">La Sagrada Familia</a></p>
+]]>
+      </content:encoded>
+    </item>
+  </channel>
+</rss>

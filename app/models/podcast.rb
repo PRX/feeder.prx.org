@@ -22,6 +22,8 @@ class Podcast < ApplicationRecord
 
   validates :title, presence: true
   validates :link, http_url: true
+  validates :donation_url, http_url: true
+  validates :payment_pointer, format: /\A\$[A-Za-z0-9\-.]+\/?[^\s]*\z/, allow_blank: true
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
 

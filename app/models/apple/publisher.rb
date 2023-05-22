@@ -167,14 +167,14 @@ module Apple
 
         Rails.logger.info("Starting podcast container sync")
 
-        poll_podcast_containers!(eps) # TODO
+        poll_podcast_containers!(eps)
 
-        # Only reset if we need delivery and the source url (pinned mp3 arrangement) is expired.
-        # The podcast container is being used as a storage container for
-        # stitched audio metadata used in upload.
+        # The podcast container is storing the metadata for the audio file
+        # (size, url, etc).
         # The 'reset' in this case means fetching new CDN urls for the audio and
         # making sure that we will HEAD their file sizes for later upload.
-        reset = Apple::PodcastContainer.reset_for_expired_source_urls(api, eps)
+        # Only reset if we need delivery.
+        reset = Apple::PodcastContainer.reset_source_urls(api, eps)
         Rails.logger.info("Reset podcast containers for expired source urls.", {reset_count: reset.length})
 
         res = Apple::PodcastContainer.create_podcast_containers(api, eps)

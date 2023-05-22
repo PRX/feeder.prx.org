@@ -4,7 +4,7 @@ require "prx_access"
 describe Episode do
   include PrxAccess
 
-  let(:episode) { create(:episode) }
+  let(:episode) { create(:episode_with_media) }
 
   it "initializes guid and overrides" do
     e = Episode.new
@@ -75,118 +75,17 @@ describe Episode do
   end
 
   it "includes items in feed" do
-    episode = create(:episode, segment_count: nil, contents: [], enclosures: [])
-    episode.enclosures.destroy_all
+    episode = create(:episode)
     assert episode.include_in_feed?
 
     episode.update(segment_count: 1)
-    refute episode.reload.include_in_feed?
+    refute episode.include_in_feed?
 
     content = create(:content, episode: episode, status: "processing")
     refute episode.reload.include_in_feed?
 
     content.update(status: "complete")
     assert episode.reload.include_in_feed?
-  end
-
-  it "knows if enclosure audio is ready" do
-    e1 = episode.enclosures.first
-    assert_equal "complete", e1.status
-    assert_equal [e1], episode.media_resources
-    assert_equal [e1], episode.ready_media_resources
-    assert episode.media_ready?
-
-    # replace with an incomplete enclosure
-    e2 = create(:enclosure, episode: episode)
-    assert_equal "created", episode.enclosures.first.status
-    assert_equal [e2], episode.media_resources
-    assert_equal [e1], episode.ready_media_resources
-    assert episode.media_ready?
-
-    # set first (replaced) enclosure back to processing
-    e1.update(status: "processing")
-    assert_equal [e2], episode.media_resources
-    assert_equal [], episode.ready_media_resources
-    refute episode.media_ready?
-  end
-
-  it "knows if contents audio is ready" do
-    c1 = create(:content, episode: episode, status: "complete", position: 1)
-    assert_equal [c1], episode.media_resources
-    assert_equal [c1], episode.ready_media_resources
-    assert episode.media_ready?
-
-    # explicit segment_count
-    episode.update(segment_count: 2)
-    assert_equal [c1], episode.media_resources
-    assert_equal [c1], episode.ready_media_resources
-    refute episode.media_ready?
-
-    # with all positions complete
-    c2 = create(:content, episode: episode, status: "complete", position: 2)
-    assert_equal [c1, c2], episode.media_resources.reload
-    assert_equal [c1, c2], episode.ready_media_resources
-    assert episode.media_ready?
-
-    # replace with an incomplete content
-    c3 = create(:content, episode: episode, status: "processing", position: 1)
-    assert_equal [c3, c2], episode.media_resources.reload
-    assert_equal [c1, c2], episode.ready_media_resources
-    assert episode.media_ready?
-  end
-
-  it "returns an audio content_type by default" do
-    assert_equal Episode.new.content_type, "audio/mpeg"
-  end
-
-  it "returns the first media content_type" do
-    assert_equal episode.content_type, "audio/mpeg"
-  end
-
-  it "returns the feed content type for audio" do
-    feed = build_stubbed(:feed)
-    assert_equal feed.mime_type, "audio/flac"
-    assert_equal episode.first_media_resource.mime_type, "audio/mpeg"
-    assert_equal episode.content_type(feed), "audio/flac"
-  end
-
-  it "returns the file content type for video" do
-    feed = build_stubbed(:feed)
-    episode = build(:episode)
-    video_enclosure = create(:enclosure, episode: episode, status: "complete", mime_type: "video/mp4")
-    episode.enclosures = [video_enclosure]
-
-    assert_equal video_enclosure.mime_type, "video/mp4"
-    assert_equal episode.first_media_resource.mime_type, "video/mp4"
-    assert_equal episode.content_type(feed), "video/mp4"
-  end
-
-  it "has no audio file until processed" do
-    episode = build_stubbed(:episode)
-    assert_equal episode.media_resources.length, 0
-  end
-
-  it "has one audio file once processed" do
-    episode = create(:episode)
-    assert_equal episode.media_resources.length, 1
-  end
-
-  it "has a 0 duration when unprocessed" do
-    episode = build_stubbed(:episode)
-    assert_equal episode.duration, 0
-  end
-
-  it "has duration once processed" do
-    episode = create(:episode)
-    episode.enclosures = [create(:enclosure, episode: episode, status: "complete", duration: 10)]
-    assert_equal episode.duration, 10
-  end
-
-  it "has duration with podcast duration padding" do
-    episode = create(:episode)
-    episode.enclosures = [create(:enclosure, episode: episode, status: "complete", duration: 10)]
-    episode.podcast.duration_padding = 10
-    assert_equal episode.duration, 20
   end
 
   it "updates the podcast published date" do
@@ -239,37 +138,6 @@ describe Episode do
     refute episode.itunes_block
     episode.update_attribute(:itunes_block, true)
     assert episode.itunes_block
-  end
-
-  it "sets contents by adding new ones" do
-    assert_equal episode.contents.count, 0
-
-    c1 = build(:content, episode: episode)
-    episode.update!(contents: [c1])
-    assert_equal episode.contents.count, 1
-
-    c2 = build(:content, episode: episode)
-    episode.update!(contents: [c1.original_url, c2])
-    assert_equal episode.contents.count, 2
-    assert_equal episode.contents.with_deleted.count, 2
-  end
-
-  it "deletes media files" do
-    assert_equal episode.contents.count, 0
-
-    c1 = build(:content, episode: episode)
-    c2 = build(:content, episode: episode)
-    episode.update!(contents: [c1, c2])
-    assert_equal episode.contents.count, 2
-    assert_equal episode.contents.with_deleted.count, 2
-
-    episode.update!(contents: [c1])
-    assert_equal episode.contents.count, 1
-    assert_equal episode.contents.with_deleted.count, 2
-
-    episode.update!(contents: nil)
-    assert_equal episode.contents.count, 0
-    assert_equal episode.contents.with_deleted.count, 2
   end
 
   it "returns explicit_content based on the podcast" do
@@ -415,8 +283,8 @@ describe Episode do
 
   describe "#destroy_out_of_range_contents" do
     it "marks contents for destruction" do
-      c1 = episode.contents.create!(position: 2)
-      c2 = episode.contents.create!(position: 4)
+      c1 = episode.contents.create!(original_url: "c1", position: 2)
+      c2 = episode.contents.create!(original_url: "c2", position: 4)
 
       episode.segment_count = nil
       episode.destroy_out_of_range_contents
@@ -427,6 +295,39 @@ describe Episode do
       episode.destroy_out_of_range_contents
       assert_nil c1.reload.deleted_at
       refute_nil c2.reload.deleted_at
+    end
+  end
+
+  describe "#validate_media_ready" do
+    it "only runs on strict + published episodes with media" do
+      e = build_stubbed(:episode, segment_count: 1)
+      assert e.valid?
+
+      e.strict_validations = true
+      refute e.valid?
+
+      e.published_at = nil
+      assert e.valid?
+    end
+
+    it "checks for complete media on initial publish" do
+      e = create(:episode_with_media, strict_validations: true, published_at: nil)
+      assert e.valid?
+
+      e.published_at = 1.hour.ago
+      assert e.valid?
+
+      e.contents.first.status = "invalid"
+      refute e.valid?
+      assert_includes e.errors[:base], "media not ready"
+    end
+
+    it "checks for present media on subsequent updates" do
+      e = create(:episode_with_media, strict_validations: true, published_at: 1.hour.ago)
+      assert e.valid?
+
+      e.contents.first.status = "processing"
+      assert e.valid?
     end
   end
 end

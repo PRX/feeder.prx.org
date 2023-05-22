@@ -4,8 +4,8 @@ describe Api::Auth::FeedsController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
   let(:feed) { create(:feed, podcast: podcast, slug: "test-slug") }
-  let(:token) { StubToken.new(account_id, ["member"]) }
-  let(:bad_token) { StubToken.new(account_id + 100, ["member"]) }
+  let(:token) { StubToken.new(account_id, ["podcast_edit"]) }
+  let(:bad_token) { StubToken.new(account_id + 100, ["podcast_edit"]) }
 
   let(:feed_hash) do
     {
@@ -92,11 +92,8 @@ describe Api::Auth::FeedsController do
     end
 
     describe "feed images" do
-      let(:file) { test_file("/fixtures/transistor1400.jpg") }
       let(:url1) { "http://www.prx.org/fakeimageurl1.jpg" }
       let(:url2) { "http://www.prx.org/fakeimageurl2.jpg" }
-      before { stub_request(:get, url1).to_return(status: 200, body: file, headers: {}) }
-      before { stub_request(:get, url2).to_return(status: 200, body: file, headers: {}) }
 
       it "appends feed and itunes images" do
         _(feed.feed_images.count).must_equal 0

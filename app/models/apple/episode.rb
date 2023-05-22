@@ -75,10 +75,12 @@ module Apple
     def self.create_episodes(api, episodes)
       return if episodes.empty?
 
-      episode_bridge_results = api.bridge_remote_and_retry!("createEpisodes",
+      results = api.bridge_remote_and_retry!("createEpisodes",
         episodes.map(&:create_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      upsert_sync_logs(episodes, episode_bridge_results)
+      join_on("guid", episodes, results).map do |(ep, row)|
+        upsert_sync_log(ep, row)
+      end
     end
 
     def self.update_episodes(api, episodes)
@@ -219,6 +221,9 @@ module Apple
 
     def create_episode_bridge_params
       {
+        request_metadata: {
+          guid: guid
+        },
         api_url: api.join_url("episodes").to_s,
         api_parameters: episode_create_parameters
       }
@@ -419,8 +424,13 @@ module Apple
       audio_asset_state == AUDIO_ASSET_SUCCESS
     end
 
+    def reset_for_upload!
+      container.podcast_deliveries.each(&:destroy)
+      feeder_episode.reload
+    end
+
     def synced_with_apple?
-      audio_asset_state_success?
+      audio_asset_state_success? && apple_upload_complete?
     end
 
     def waiting_for_asset_state?

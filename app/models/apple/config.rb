@@ -31,6 +31,10 @@ module Apple
       end
     end
 
+    def build_publisher
+      Apple::Publisher.from_apple_config(self)
+    end
+
     def any_apple_credentials_exist?
       apple_provider_id.present? || apple_key_id.present? || apple_key_pem_b64.present?
     end
