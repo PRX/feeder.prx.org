@@ -4,6 +4,7 @@ require "hash_serializer"
 require "text_sanitizer"
 
 class Episode < ApplicationRecord
+  include EpisodeAdBreaks
   include EpisodeMedia
   include PublishingStatus
   include TextSanitizer
@@ -20,14 +21,13 @@ class Episode < ApplicationRecord
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
-
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy
-  has_many :uncuts, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
+  has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
 
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
-  accepts_nested_attributes_for :uncuts, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
+  accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
 
   has_one :apple_podcast_container, class_name: "Apple::PodcastContainer"
   has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
@@ -58,7 +58,7 @@ class Episode < ApplicationRecord
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
 
-  enum :medium, [:audio, :video], prefix: true
+  enum :medium, [:audio, :uncut, :video], prefix: true
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -200,6 +200,7 @@ class Episode < ApplicationRecord
   def copy_media(force = false)
     contents.each { |c| c.copy_media(force) }
     images.each { |i| i.copy_media(force) }
+    uncut&.copy_media(force)
   end
 
   def podcast_feed_url
@@ -267,6 +268,7 @@ class Episode < ApplicationRecord
   end
 
   def build_contents
+    self.segment_count = 1 if medium_video?
     segment_range.map do |p|
       contents.find { |c| c.position == p } || contents.build(position: p)
     end

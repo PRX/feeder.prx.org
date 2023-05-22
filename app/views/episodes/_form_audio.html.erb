@@ -7,36 +7,41 @@
 
     <div class="card-body">
       <%= turbo_frame_tag "episode-form-audio", data: {controller: "audio-upload"} do %>
+        <h3>Segment count = <%= episode.segment_count %> / valid <%= episode.valid? %></h3>
+        <%= debug episode.errors.full_messages %>
         <div class="row">
 
           <div class="col-12 mb-4 prx-field-group">
             <div class="form-floating" data-controller="dynamic-form">
-              <%= form.number_field :segment_count, min: 1, max: Episode::MAX_SEGMENT_COUNT, data: {action: "dynamic-form#change"} %>
-              <%= form.label :segment_count %>
+              <%= form.select :medium, episode_medium_options, {}, data: {action: "dynamic-form#change"} %>
+              <%= form.label :medium %>
               <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
             </div>
-
-            <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.segment_count") %>">
-              <span class="material-icons">help</span>
-            </button>
           </div>
 
-          <%= form.fields_for :contents, episode.build_contents, include_id: false do |fields| %>
-            <% content = fields.object %>
+          <% if episode.medium_video? %>
+            <%= form.hidden_field :segment_count, value: 1 %>
+          <% else %>
+            <div class="col-12 mb-4 prx-field-group">
+              <div class="form-floating" data-controller="dynamic-form">
+                <%= form.number_field :ad_breaks, min: 0, max: Episode::MAX_SEGMENT_COUNT - 1, data: {action: "dynamic-form#change"} %>
+                <%= form.label :ad_breaks %>
+                <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+              </div>
 
-            <%= turbo_frame_tag "episode-form-audio-#{content.position}" do %>
-              <% if content.new_record? || content.marked_for_destruction? %>
-                <%= render "episodes/audio/new", form: fields, episode: episode, content: content %>
-              <% else %>
-                <% case content.status %>
-                <% when "started", "created", "processing", "retrying" %>
-                  <%= render "episodes/audio/processing", form: fields, episode: episode, content: content %>
-                <% when "complete" %>
-                  <%= render "episodes/audio/complete", form: fields, episode: episode, content: content %>
-                <% else %>
-                  <%= render "episodes/audio/error", form: fields, episode: episode, content: content %>
-                <% end %>
-              <% end %>
+              <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.ad_breaks") %>">
+                <span class="material-icons">help</span>
+              </button>
+            </div>
+          <% end %>
+
+          <% if episode.medium_uncut? %>
+            <%= form.fields_for :uncut, episode.uncut || episode.build_uncut do |fields| %>
+              <%= render "form_audio_file", form: fields, episode: episode, media_resource: fields.object %>
+            <% end %>
+          <% else %>
+            <%= form.fields_for :contents, episode.build_contents, include_id: false do |fields| %>
+              <%= render "form_audio_file", form: fields, episode: episode, media_resource: fields.object %>
             <% end %>
           <% end %>
         </div>

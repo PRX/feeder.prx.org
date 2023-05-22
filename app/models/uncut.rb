@@ -12,8 +12,8 @@ class Uncut < MediaResource
     end
   end
 
-  def replace_resources!
-    Uncut.where(episode_id: episode_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
+  def generate_waveform?
+    true
   end
 
   def validate_segmentation

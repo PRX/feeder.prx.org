@@ -10,6 +10,15 @@ en:
       short: "%m/%d"
       time_12_hour: "%l:%M %p %Z"
       day_and_date: "%A, %m/%d"
+  # validation error messages
+  activerecord:
+    errors:
+      models:
+        episode:
+          attributes:
+            segment_count:
+              greater_than: Can't be negative
+              less_than_or_equal_to: Enter a number less than %{count}
   # form/model helpers
   helpers:
     label:
@@ -30,6 +39,11 @@ en:
           full: Full
           trailer: Trailer
           bonus: Bonus
+        medium: How do you want to upload your files?
+        mediums:
+          audio: Audio - upload multiple audio files
+          uncut: Audio - upload a single file and then segment
+          video: Video
         released_at: Dropdate
         production_notes: Production Notes
         publishing_status: Status
@@ -91,7 +105,7 @@ en:
     form_audio:
       title: Audio Files
       help:
-        segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
+        ad_breaks: Enter the number of ad breaks in this episode.
     form_distribution:
       title: Distribution
     form_main:

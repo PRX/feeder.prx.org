@@ -58,4 +58,9 @@ module EpisodesHelper
       edit_episode_path episode, uploads_retry_params(form)
     end
   end
+
+  def episode_medium_options
+    # TODO: why doesn't Episode.mediums work?
+    Episode.defined_enums["medium"].keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
+  end
 end

@@ -40,7 +40,13 @@ export default class extends Controller {
   }
 
   isInvalidSegmentCount(el) {
-    const field = el.querySelector('[name="episode[segment_count]"]')
-    return field && field.classList.contains("is-invalid")
+    const f1 = el.querySelector('[name="episode[segment_count]"]')
+    const f2 = el.querySelector('[name="episode[ad_breaks]"]')
+    console.log(
+      "isInvalidSegmentCount",
+      f1 && f1.classList.contains("is-invalid"),
+      f2 && f2.classList.contains("is-invalid")
+    )
+    return (f1 && f1.classList.contains("is-invalid")) || (f2 && f2.classList.contains("is-invalid"))
   }
 }
