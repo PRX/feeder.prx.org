@@ -6,12 +6,34 @@ module Apple
 
     serialize :api_response, JSON
 
+    default_scope { includes(:apple_sync_log) }
+
+    has_one :apple_sync_log, -> { podcast_containers }, foreign_key: :feeder_id, class_name: "SyncLog"
     has_many :podcast_deliveries, dependent: :destroy
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, class_name: "::Episode"
 
+    alias_attribute :deliveries, :podcast_deliveries
+    alias_attribute :delivery_files, :podcast_delivery_files
+
     FILE_STATUS_SUCCESS = "In Asset Repository"
     FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"
+    SOURCE_URL_EXP_BUFFER = 10.minutes
+
+    def self.reset_source_urls(api, episodes)
+      containers = episodes.map(&:podcast_container)
+      containers = containers.compact.select(&:needs_delivery?)
+
+      containers.map do |container|
+        Rails.logger.info("Resetting source url for podcast container",
+          podcast_container_id: container.id,
+          source_url: container.source_url)
+
+        container.update!(source_url: nil, source_size: nil)
+        # mark them for re-upload
+        container.podcast_deliveries.destroy_all
+      end.compact
+    end
 
     def self.update_podcast_container_file_metadata(api, episodes)
       containers = episodes.map(&:podcast_container)
@@ -50,7 +72,12 @@ module Apple
     end
 
     def self.create_podcast_containers(api, episodes)
-      episodes_to_create = episodes.reject { |ep| ep.podcast_container.present? }
+      # There is a 1:1 relationship between episodes and podcast containers w/
+      # key contraints on the episodes vendorId -- and you cannot destroy a
+      # podcast container.
+      # We should have a local record of the podcast container, per the poll
+      # method above.
+      episodes_to_create = episodes.reject { |ep| ep.has_container? }
 
       new_containers_response =
         api.bridge_remote_and_retry!("createPodcastContainers",
@@ -73,14 +100,12 @@ module Apple
           episode_id: episode.feeder_id,
           vendor_id: episode.audio_asset_vendor_id).first)
 
-          pc.update(api_response: row,
-            enclosure_url: episode.enclosure_url,
+          pc.update(enclosure_url: episode.enclosure_url,
             source_filename: episode.enclosure_filename,
             updated_at: Time.now.utc)
           [pc, :updated]
         else
-          pc = create!(api_response: row,
-            apple_episode_id: episode.apple_id,
+          pc = create!(apple_episode_id: episode.apple_id,
             external_id: external_id,
             source_filename: episode.enclosure_filename,
             enclosure_url: episode.enclosure_url,
@@ -95,23 +120,28 @@ module Apple
          external_id: external_id,
          feeder_episode_id: episode.feeder_id})
 
-      # reset the episode's podcast container cached value
-      episode.feeder_episode.reload_apple_podcast_container
+      SyncLog.log!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
 
-      SyncLog.create!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id)
+      # reset the episode's podcast container cached value
+      pc.reload if action == :updated
+      episode.feeder_episode.reload
 
       pc
     end
 
     def self.get_podcast_containers_via_episodes(api, episodes)
+      # Only query for episodes that don't have a podcast container
+      # The container. Assume that if we have a container record, we don't need to poll.
+      eps_without_container = episodes.reject(&:has_container?)
+
       # Fetch the podcast containers from the episodes side of the API
       response =
-        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes), batch_size: 1)
+        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, eps_without_container), batch_size: 1)
 
       # Rather than mangling and persisting the enumerated view of the containers in the episodes,
       # just re-fetch the podcast containers from the non-list podcast container endpoint
       formatted_bridge_params =
-        join_on_apple_episode_id(episodes, response).map do |(episode, row)|
+        join_on_apple_episode_id(eps_without_container, response).map do |(episode, row)|
           get_urls_for_episode_podcast_containers(api, row).map do |url|
             get_podcast_containers_bridge_param(episode.apple_id, url)
           end
@@ -222,8 +252,12 @@ module Apple
     end
 
     def needs_delivery?
-      # TODO: Overwriting the podcast audio with another file
-      missing_podcast_audio? && podcast_deliveries.empty?
+      # Handle the case where the podcast container *does* have podcast audio,
+      # but doesn't have any podcast deliveries / files. This is a weird edge
+      # case but it amounts to checking the deliveries to see if any are there.
+      # If there are no deliveries, then the code that polls/checks the delivery
+      # status will fail. So we need to create a delivery.
+      podcast_deliveries.empty?
     end
   end
 end

@@ -22,6 +22,10 @@ module Apple
                                          message: "can only have one credential per public and private feed"}
     validates :public_feed, exclusion: {in: ->(apple_credential) { [apple_credential.private_feed] }}
 
+    def build_publisher
+      Apple::Publisher.from_apple_config(self)
+    end
+
     def any_apple_credentials_exist?
       apple_provider_id.present? || apple_key_id.present? || apple_key_pem_b64.present?
     end

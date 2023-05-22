@@ -1,3 +1,16 @@
+defaults:
+  form_status: &form_status
+    create: Create
+    discard: Discard
+    new_hint: Unsaved
+    title: Status
+    update: Save
+    updated_at_hint: Last Saved
+  controller_actions:
+    update: &update
+      success: "%{model} update successful."
+      failure: "There was a problem updating the %{model}."
+
 en:
   # general config
   date:
@@ -59,6 +72,22 @@ en:
         subtitle: Subtitle
         summary: iTunes Summary
         title: Title
+      feed:
+        billboard: Billboards
+        description: Description
+        display_episodes_count: Feed Episode Limit
+        display_full_episodes_count: Feed Metadata Limit
+        enclosure_prefix: Enclosure Prefix Url
+        episode_offset_seconds: Episode Publish Delay
+        house: House Ads
+        new_feed_url: New Feed Url
+        paid: Paid Ads
+        private: Private (unlisted)
+        sonic_id: System (Sonic IDs)
+        subtitle: Teaser
+        summary: Summary
+        title: Title
+        url: Public Feed Url
       feed_image:
         alt_text: Alt Text
         caption: Caption
@@ -184,6 +213,75 @@ en:
       error: Unable to save
       media_not_ready: Audio not ready
       notice: Episode updated
+  feeds:
+    form_custom_fields:
+      headers:
+        overrides: Overrides
+        private: Feed Visibility
+        auth_tokens: Auth Tokens
+        ad_zones: Ad Zones to Include
+      help:
+        overrides: Override series metadata for this feed. You must provide an alternate title, but the other fields are optional.
+        slug: An alphanumeric slug used to identify your feed. Also used in the private feed RSS url.
+        subtitle: Enter an alternate teaser
+        description: Enter an alternate description
+        summary: Enter an alternate summary
+        private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private link with - <strong>anyone who has access to the link will be able to use it</strong>.
+        auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
+        ad_zones: Control the types of ads that should be stitched into episodes in this feed.
+    form_main:
+      headers:
+        audio_format: Audio Format
+      help:
+        file_name: The file name used for your private RSS feed.
+        url: If you already have a public URL for your podcast feed (e.g., feedburner), enter it here. It should point to your private feed URL.
+        new_feed_url: If your podcast feed is moving, use this field to point to the new URL where your podcast is located. The current feed should be maintained until all of your subscribers have migrated.
+        enclosure_prefix: If you have an enclosure prefix URL to set a redirect on audio requests for your podcast feed (e.g., podtrac or blubrry), enter it here.
+        display_episodes_count: You can optionally limit the number of episodes that will be publicly available in your feed. Your oldest episodes will disappear as you publish newer ones. Leave this field blank to include all.
+        display_full_episodes_count: You can optionally reduce the size of your RSS feed by trimming metadata from your oldest feed episodes. This many of your newest episodes will include <i>all</i> metadata, and older episodes will omit certain RSS fields. Leave this field blank to include all metadata on every episode.
+        episode_offset_seconds: Instead of episodes immediately showing up in this feed when published, delay their appearance. AKA Windowing.
+        audio_format: Optionally set an explicit audio format for your episodes. If you leave this blank, we will automatically use the same format as the first audio segment you upload for each episode.
+    form_status:
+      <<: *form_status
+    helper:
+      episode_offset_options:
+        "300": 5 minutes
+        "900": 15 minutes
+        "3600": 1 hour
+        "21600": 6 hours
+        "43200": 12 hours
+        "86400": 24 hours
+      audio_format_options:
+        mp3: MP3
+        flac: FLAC
+        wav: WAV
+      audio_bitrate_options:
+        "96": 96 kbps
+        "112": 112 kbps
+        "128": 128 kbps
+        "160": 160 kbps
+        "192": 192 kbps
+        "224": 224 kbps
+        "256": 256 kbps
+        "320": 320 kbps
+      audio_bitdepth_options:
+        "16": 16 bit
+        "24": 24 bit
+        "32": 32 bit
+      audio_channel_options:
+        "1": Mono
+        "2": Stereo
+      audio_sample_options:
+        "8000": 8 kHz
+        "11025": 11.025 kHz
+        "12000": 12 kHz
+        "16000": 16 kHz
+        "22050": 22.05 kHz
+        "24000": 24 kHz
+        "44100": 44.1 kHz
+        "48000": 48 kHz
+    update:
+      <<: *update
   images:
     help:
       episode_image: Provide an image for your episode, if desired. Image dimensions must be square.
@@ -277,6 +375,21 @@ en:
       scheduled_episodes:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
+  podcast_engagement:
+    show:
+      engagement: Engagement
+      confirm: Confirm
+      donation_link: Donation Link
+      micropayments: Micropayments
+      payment_pointer: Coil
+      last_saved: Last Saved
+      subscribe: Subscribe and Follow Links
+      social_media: Social Media Links
+      status: Status
+      save: Update
+    update:
+      error: Unable to save
+      notice: Podcast updated
   podcast_planner:
     create:
       success: Episode drafts generated.

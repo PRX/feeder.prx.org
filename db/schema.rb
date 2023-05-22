@@ -49,7 +49,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_17_165211) do
     t.integer "podcast_container_id"
     t.string "external_id"
     t.string "status"
-    t.string "api_response"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "deleted_at", precision: nil
@@ -62,7 +61,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_17_165211) do
     t.integer "episode_id"
     t.integer "podcast_delivery_id"
     t.string "external_id"
-    t.string "api_response"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "api_marked_as_uploaded", default: false
@@ -370,9 +368,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_17_165211) do
   create_table "sync_logs", force: :cascade do |t|
     t.string "feeder_type", null: false
     t.bigint "feeder_id", null: false
-    t.string "external_id"
-    t.datetime "sync_completed_at"
+    t.string "external_id", null: false
+    t.datetime "updated_at"
     t.datetime "created_at"
+    t.text "api_response"
+    t.index ["feeder_type", "feeder_id"], name: "index_sync_logs_on_feeder_type_and_feeder_id", unique: true
   end
 
   create_table "tasks", id: :serial, force: :cascade do |t|

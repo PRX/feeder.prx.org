@@ -50,7 +50,9 @@ describe Apple::Episode do
     end
 
     it "instantiates with an api_response" do
-      ep = build(:apple_episode, show: apple_show, feeder_episode: episode, api_response: apple_episode_json_api_result)
+      ep = build(:apple_episode, show: apple_show, feeder_episode: episode)
+      ep.feeder_episode.reload.create_apple_sync_log(api_response: apple_episode_json_api_result, external_id: "123")
+
       assert_equal "123", ep.apple_id
       assert_equal "456", ep.audio_asset_vendor_id
       assert_equal true, ep.drafting?, true
@@ -58,28 +60,13 @@ describe Apple::Episode do
     end
 
     it "instantiates with a nil api_response" do
-      ep = build(:apple_episode, show: apple_show, feeder_episode: episode, api_response: nil)
+      ep = build(:apple_episode, show: apple_show, feeder_episode: episode)
       assert_nil ep.apple_id
       assert_raises(RuntimeError, "incomplete api response") { ep.audio_asset_vendor_id }
       # It does not exists yet, so it is not drafting
       assert_equal false, ep.drafting?
       # Comes from the feeder model
       assert_equal episode.item_guid, ep.guid
-    end
-  end
-
-  describe "#completed_sync_log" do
-    it "should load the last sync log if complete" do
-      sync_log = SyncLog.create!(feeder_id: episode.id,
-        feeder_type: :episodes,
-        sync_completed_at: Time.now.utc,
-        external_id: "1234")
-
-      assert_equal apple_episode.completed_sync_log, sync_log
-    end
-
-    it "returns nil if nothing is completed" do
-      assert_nil apple_episode.completed_sync_log
     end
   end
 
@@ -106,21 +93,19 @@ describe Apple::Episode do
 
     let(:delivery_file) do
       pdf = Apple::PodcastDeliveryFile.new(episode: episode, podcast_delivery: delivery)
-      pdf.update(**build(:podcast_delivery_file_api_response))
+      pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files))
       pdf.save!
       pdf
     end
 
     before do
       assert_equal [delivery_file], apple_episode.podcast_delivery_files
-      apple_episode.api_response =
+      apple_episode.apple_sync_log =
+        SyncLog.new(external_id: "123", feeder_type: :episodes, api_response:
         {"request_metadata" => {},
-         "api_response" =>
-         {"ok" => true,
-          "err" => false,
-          "val" =>
-           {"data" =>
-             {"attributes" => {"appleHostedAudioAssetState" => "COMPLETE"}}}}}
+         "api_response" => {"ok" => true,
+                            "err" => false,
+                            "val" => {"data" => {"attributes" => {"appleHostedAudioAssetState" => "COMPLETE"}}}}})
     end
 
     it "should be true if all the conditions are met" do
@@ -134,21 +119,21 @@ describe Apple::Episode do
     end
 
     it "should be false if the delivery file is not delivered" do
-      delivery_file.update(**build(:podcast_delivery_file_api_response, asset_delivery_state: "AWAITING_UPLOAD"))
+      delivery_file.apple_sync_log.update!(**build(:podcast_delivery_file_api_response, asset_delivery_state: "AWAITING_UPLOAD"))
       apple_episode.podcast_delivery_files.reset
 
       assert_equal false, apple_episode.waiting_for_asset_state?
     end
 
     it "should be false if the delivery file has asset processing errors" do
-      delivery_file.update(**build(:podcast_delivery_file_api_response, asset_processing_state: "VALIDATION_FAILED"))
+      delivery_file.apple_sync_log.update!(**build(:podcast_delivery_file_api_response, asset_processing_state: "VALIDATION_FAILED"))
       apple_episode.podcast_delivery_files.reset
 
       assert_equal false, apple_episode.waiting_for_asset_state?
     end
 
     it "should be false if the delivery file has errors" do
-      delivery_file.update(**build(:podcast_delivery_file_api_response, asset_processing_state: "VALIDATION_FAILED"))
+      delivery_file.apple_sync_log.update!(**build(:podcast_delivery_file_api_response, asset_processing_state: "VALIDATION_FAILED"))
       apple_episode.podcast_delivery_files.reset
 
       assert_equal false, apple_episode.waiting_for_asset_state?
@@ -157,7 +142,7 @@ describe Apple::Episode do
     it "should be false if the episode has a non complete apple hosted audio asset state" do
       apple_episode.api_response["api_response"]["val"]["data"]["attributes"]["appleHostedAudioAssetState"] = Apple::Episode::AUDIO_ASSET_FAILURE
 
-      delivery_file.update(**build(:podcast_delivery_file_api_response))
+      delivery_file.apple_sync_log.update!(**build(:podcast_delivery_file_api_response).merge(external_id: "123"))
       apple_episode.podcast_delivery_files.reset
 
       assert_equal false, apple_episode.waiting_for_asset_state?
