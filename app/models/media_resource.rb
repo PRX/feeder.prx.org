@@ -63,6 +63,19 @@ class MediaResource < ApplicationRecord
     url
   end
 
+  def reset_media_attributes
+    self.bit_rate = nil
+    self.channels = nil
+    self.duration = nil
+    self.file_size = nil
+    self.frame_rate = nil
+    self.height = nil
+    self.medium = nil
+    self.mime_type = nil
+    self.sample_rate = nil
+    self.width = nil
+  end
+
   def guid
     self[:guid] ||= SecureRandom.uuid
     self[:guid]
@@ -70,6 +83,10 @@ class MediaResource < ApplicationRecord
 
   def url
     self[:url] ||= media_url
+  end
+
+  def path
+    URI.parse(url).path.sub(/\A\//, "") if url.present?
   end
 
   def replace_resources!
@@ -96,7 +113,7 @@ class MediaResource < ApplicationRecord
   end
 
   def copy_media(force = false)
-    if !task || force
+    if force || !(status_complete? || task)
       Tasks::CopyMediaTask.create! do |task|
         task.owner = self
       end.start!

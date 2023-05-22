@@ -14,7 +14,7 @@ describe PodcastImport do
     sns.reset
     prev_sns = ENV["PORTER_SNS_TOPIC"]
     ENV["PORTER_SNS_TOPIC"] = "FOO"
-    Task.stub :new_porter_sns_client, sns do
+    Task.stub :porter_sns_client, sns do
       test.call
     end
     ENV["PORTER_SNS_TOPIC"] = prev_sns
@@ -58,7 +58,7 @@ describe PodcastImport do
 
     _(sns.messages.count).must_equal 2
     _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 2]
-    _(sns.messages.map { |m| m["Job"]["Tasks"].map { |t| t["Type"] } }).must_equal [["Copy", "Inspect"], ["Copy", "Inspect"]]
+    _(sns.messages.map { |m| m["Job"]["Tasks"].map { |t| t["Type"] } }).must_equal [["Inspect", "Copy"], ["Inspect", "Copy"]]
     _(sns.messages.map { |m| m["Job"]["Source"] })
       .must_equal [
         {"Mode" => "HTTP", "URL" => "http://cdn-transistor.prx.org/transistor300.png"},

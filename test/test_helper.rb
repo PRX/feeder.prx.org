@@ -11,6 +11,7 @@ ENV["PRX_HOST"] = "www.prx.org"
 ENV["DOVETAIL_HOST"] = "dovetail.prxu.org"
 ENV["FEEDER_STORAGE_BUCKET"] = "test-prx-feed"
 ENV["ANNOUNCE_RESOURCE_PREFIX"] = "test"
+ENV["AWS_ACCOUNT_ID"] = "12345678"
 ENV["APPLE_PROVIDER_ID"] = "433f5f09-80f9-43d4-8cee-67bc549c28c5"
 ENV["APPLE_KEY_ID"] = "apple key id from env"
 ENV["APPLE_KEY_PEM_B64"] =

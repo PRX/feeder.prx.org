@@ -63,6 +63,26 @@ describe MediaResource do
     end
   end
 
+  describe "#copy_media" do
+    it "skips creating task if complete" do
+      mr = build_stubbed(:media_resource, status: "complete")
+      mr.task = nil
+      mr.copy_media
+
+      assert_nil mr.task
+    end
+
+    it "skips creating task if one exists" do
+      mr = build_stubbed(:media_resource, status: "complete")
+      task = Tasks::CopyImageTask.new
+      mr.status = "created"
+      mr.task = task
+      mr.copy_media
+
+      assert_equal task, mr.task
+    end
+  end
+
   describe "#retry!" do
     it "forces a new copy media job" do
       mock_copy = Minitest::Mock.new
@@ -74,6 +94,16 @@ describe MediaResource do
       end
 
       mock_copy.verify
+    end
+  end
+
+  describe "#path" do
+    it "returns a path without leading slash" do
+      mr = MediaResource.new
+
+      mr.stub(:media_url, "http://test.prxu.org/some/file.mp3") do
+        assert_equal "some/file.mp3", mr.path
+      end
     end
   end
 
