@@ -39,9 +39,6 @@ module Apple
       containers = episodes.map(&:podcast_container)
       raise "Missing podcast container for episode" if containers.any?(&:nil?)
 
-      # do not update if the source url is expired, see .reset_for_expired_source_urls
-      containers = containers.reject(&:source_url_expired?)
-
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
 
       api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params))

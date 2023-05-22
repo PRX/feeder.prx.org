@@ -25,6 +25,16 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
   let(:api) { build(:apple_api) }
 
+  describe ".update_podcast_container_file_metadata" do
+    it "should raise if any of the episodes lack a container" do
+      apple_episode.stub(:podcast_container, nil) do
+        assert_raises(RuntimeError, "missing podcast container") do
+          Apple::PodcastContainer.update_podcast_container_file_metadata(api, [apple_episode])
+        end
+      end
+    end
+  end
+
   describe ".upsert_podcast_containers" do
     it "should create logs based on a returned row value" do
       apple_episode.stub(:apple_id, apple_episode_id) do
