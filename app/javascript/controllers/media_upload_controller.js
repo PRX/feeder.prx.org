@@ -32,7 +32,7 @@ export default class extends Controller {
 
   // skip changes to segment turbo-frames (they update themselves)
   skipSegmentChanges(el) {
-    return (el.id || "").match(/episode-form-audio-[0-9]+/) ? false : true
+    return (el.id || "").match(/episode-media-contents-[0-9]+/) ? false : true
   }
 
   isParentTurboFrame(el) {
@@ -42,11 +42,6 @@ export default class extends Controller {
   isInvalidSegmentCount(el) {
     const f1 = el.querySelector('[name="episode[segment_count]"]')
     const f2 = el.querySelector('[name="episode[ad_breaks]"]')
-    console.log(
-      "isInvalidSegmentCount",
-      f1 && f1.classList.contains("is-invalid"),
-      f2 && f2.classList.contains("is-invalid")
-    )
     return (f1 && f1.classList.contains("is-invalid")) || (f2 && f2.classList.contains("is-invalid"))
   }
 }

@@ -100,6 +100,8 @@ en:
   # specific pages/views
   episodes:
     audio:
+      complete:
+        unable: Unable to play file
       error:
         feedback: There was a problem processing your file
       modal:
@@ -125,10 +127,6 @@ en:
       notice: Episode deleted
     form:
       confirm: Discard unsaved changes?
-    form_audio:
-      title: Audio Files
-      help:
-        ad_breaks: Enter the number of ad breaks in this episode.
     form_distribution:
       title: Distribution
     form_main:
@@ -147,6 +145,10 @@ en:
         subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
         summary: Unless otherwise specified, the summary is created from the description of your episode as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
         title: Write a short, Tweetable title. Think newspaper headline.
+    form_media:
+      title: Audio Files
+      help:
+        ad_breaks: Enter the number of ad breaks in this episode.
     form_status:
       create: Create Draft
       creating: Creating...

@@ -5,11 +5,11 @@
         <span class="visually-hidden"><%= t(".hint") %>...</span>
       </div>
 
-      <div class="text-secondary mx-2"><%= content.file_name %></div>
+      <div class="text-secondary mx-2"><%= media.file_name %></div>
 
-      <% if content.retryable? %>
+      <% if media.retryable? %>
         <div class="flex-grow-1">
-          <%= link_to edit_episode_path(content.episode, uploads_retry_params(form)), class: "btn btn-sm btn-warning" do %>
+          <%= link_to edit_episode_path(media.episode, uploads_retry_params(form)), class: "btn btn-sm btn-warning" do %>
             <span class="material-icons">restart_alt</span> Retry
           <% end %>
         </div>
@@ -17,16 +17,16 @@
         <small class="text-muted flex-grow-1">(<%= t(".hint") %>)</small>
       <% end %>
 
-      <% if content.file_size.present? %>
-        <small class="text-muted">(<%= number_to_human_size(content.file_size) %>)</small>
+      <% if media.file_size.present? %>
+        <small class="text-muted">(<%= number_to_human_size(media.file_size) %>)</small>
       <% end %>
 
-      <%= link_to edit_episode_path(content.episode, uploads_destroy_params(form)), class: "btn" do %>
+      <%= link_to edit_episode_path(media.episode, uploads_destroy_params(form)), class: "btn" do %>
         <span class="material-icons">delete</span>
       <% end %>
     </div>
 
-    <label><%= episode_media_label(content) %></label>
+    <label><%= episode_media_label(media) %></label>
   </div>
 
   <%# just keep polling until the file finishes processing %>
