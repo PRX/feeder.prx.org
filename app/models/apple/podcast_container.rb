@@ -132,7 +132,7 @@ module Apple
     def self.get_podcast_containers_via_episodes(api, episodes)
       # Only query for episodes that don't have a podcast container
       # The container. Assume that if we have a container record, we don't need to poll.
-      _eps_with_container, eps_without_container = episodes.partition(&:has_container?)
+      eps_without_container = episodes.reject(&:has_container?)
 
       # Fetch the podcast containers from the episodes side of the API
       response =
