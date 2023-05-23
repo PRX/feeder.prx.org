@@ -209,7 +209,7 @@ class Episode < ApplicationRecord
   end
 
   def apple_mark_for_reupload!
-    podcast_deliveries.destroy_all
+    apple_podcast_deliveries.destroy_all
   end
 
   def publish!
