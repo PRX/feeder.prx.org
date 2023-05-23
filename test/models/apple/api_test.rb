@@ -64,6 +64,14 @@ describe Apple::Api do
     end
   end
 
+  describe "#bridge_remote" do
+    it "stubs an empty response if there are no params given" do
+      resp = api.bridge_remote("someResource", [])
+      assert_equal "[]", resp.body
+      assert_equal OpenStruct, resp.class
+    end
+  end
+
   describe "#bridge_remote_and_retry" do
     it "exhausts retries until failure" do
       bridge_failure_response = [
@@ -71,7 +79,7 @@ describe Apple::Api do
       ]
 
       api.stub(:make_bridge_request, OpenStruct.new(body: bridge_failure_response.to_json, code: "200")) do
-        ok, err = api.bridge_remote_and_retry("someResource", [])
+        ok, err = api.bridge_remote_and_retry("someResource", [{foo: "bar"}])
 
         assert_equal ok, []
         assert_equal err.as_json, bridge_failure_response.as_json
@@ -97,7 +105,7 @@ describe Apple::Api do
       end
 
       api.stub(:make_bridge_request, returner) do
-        ok, err = api.bridge_remote_and_retry("someResource", [])
+        ok, err = api.bridge_remote_and_retry("someResource", [{foo: "bar"}])
 
         assert_equal ok.as_json, bridge_success_response.as_json
         assert_equal err, []

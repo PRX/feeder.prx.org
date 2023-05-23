@@ -4,7 +4,10 @@ module Apple
   class Episode
     include Apple::ApiWaiting
     include Apple::ApiResponse
-    attr_accessor :show, :feeder_episode, :api
+    attr_accessor :show,
+      :feeder_episode,
+      :api,
+      :apple_episode_update_attributes
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
@@ -48,28 +51,13 @@ module Apple
       api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
 
-    def self.get_episodes_via_show(api, show_id)
-      bridge_params = Apple::Show.apple_episode_json(api, show_id).map do |ep_json|
-        id = ep_json["id"]
-        guid = ep_json["attributes"]["guid"]
-        Episode.get_episode_bridge_params(api, id, guid)
-      end
-
-      api.bridge_remote_and_retry!("getEpisodes", bridge_params)
-    end
-
     def self.poll_episode_state(api, show, episodes)
-      guid_to_apple_json = Apple::Show.apple_episode_json(api, show.id).map do |ep_json|
+      guid_to_apple_json = show.apple_episode_json.map do |ep_json|
         [ep_json["attributes"]["guid"], ep_json]
       end.to_h
 
-      guid_to_feeder_episode = episodes.map { |ep| [ep.guid, ep] }.to_h
-
       # Only sync episodes that have a remote pair
       episodes_to_sync = episodes.filter { |ep| guid_to_apple_json[ep.guid].present? }
-
-      # If there are remote episodes with no local feeder pair
-      Rails.logger.warn("Missing feeder episode for remote apple episode") if guid_to_apple_json.keys.any? { |guid| guid_to_feeder_episode[guid].nil? }
 
       bridge_params = episodes_to_sync.map do |ep|
         id = guid_to_apple_json[ep.guid]["id"]
@@ -93,6 +81,15 @@ module Apple
       join_on("guid", episodes, results).map do |(ep, row)|
         upsert_sync_log(ep, row)
       end
+    end
+
+    def self.update_episodes(api, episodes)
+      return if episodes.empty?
+
+      episode_bridge_results = api.bridge_remote_and_retry!("updateEpisodes",
+        episodes.map(&:update_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
+
+      upsert_sync_logs(episodes, episode_bridge_results)
     end
 
     def self.update_audio_container_reference(api, episodes)
@@ -138,11 +135,11 @@ module Apple
       episode_bridge_results
     end
 
-    def self.publish(api, episodes)
+    def self.publish(api, episodes, state: "PUBLISH")
       return [] if episodes.empty?
 
       api.bridge_remote_and_retry!("publishEpisodes",
-        episodes.map(&:publish_episode_bridge_params))
+        episodes.map { |e| e.publishing_state_bridge_params(state) })
     end
 
     def self.upsert_sync_logs(episodes, results)
@@ -258,6 +255,30 @@ module Apple
       }
     end
 
+    def update_episode_bridge_params
+      {
+        request_metadata: {
+          apple_episode_id: apple_id,
+          guid: guid
+        },
+        api_url: api.join_url("episodes/#{apple_id}").to_s,
+        api_parameters: episode_update_parameters
+      }
+    end
+
+    def episode_update_parameters
+      create_params = episode_create_parameters
+      create_params[:data][:id] = apple_id
+      create_params[:data].delete(:relationships)
+      create_params[:data][:attributes].delete(:guid)
+
+      ep_attrs = create_params[:data][:attributes]
+      ep_attrs = ep_attrs.merge(apple_episode_update_attributes || {})
+
+      create_params[:data][:attributes] = ep_attrs
+      create_params
+    end
+
     def update_episode_audio_container_bridge_params
       {
         request_metadata: {
@@ -307,19 +328,19 @@ module Apple
       }
     end
 
-    def publish_episode_bridge_params
+    def publishing_state_bridge_params(state)
       {
         api_url: api.join_url("episodePublishingRequests").to_s,
-        api_parameters: publish_episode_parameters
+        api_parameters: publishing_state_parameters(state)
       }
     end
 
-    def publish_episode_parameters
+    def publishing_state_parameters(state)
       {
         data: {
           type: "episodePublishingRequests",
           attributes: {
-            action: "PUBLISH"
+            action: state
           },
           relationships: {
             episode: {
@@ -331,18 +352,6 @@ module Apple
           }
         }
       }
-    end
-
-    def create_episode!
-      self.class.create_apple_episodes([self])
-
-      api.unwrap_response(resp)
-    end
-
-    def update_episode!
-      resp = api.patch("episodes/#{apple_id}", update_episode_data)
-
-      api.unwrap_response(resp)
     end
 
     def apple?
@@ -389,6 +398,10 @@ module Apple
 
     def has_container?
       podcast_container.present?
+    end
+
+    def missing_container?
+      !has_container?
     end
 
     def has_unlinked_container?
