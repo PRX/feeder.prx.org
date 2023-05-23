@@ -5,8 +5,8 @@ class Tasks::CopyMediaTask < ::Task
     owner
   end
 
-  def podcast
-    media_resource&.episode&.podcast
+  def episode
+    media_resource.try(:episode)
   end
 
   def source_url
@@ -61,6 +61,6 @@ class Tasks::CopyMediaTask < ::Task
     end
 
     media_resource.save!
-    podcast&.publish! if media_resource.status_complete?
+    episode&.publish! if media_resource.status_complete?
   end
 end
