@@ -6,7 +6,9 @@ class PublishAppleJob < ApplicationJob
   end
 
   def perform(apple_config)
-    return unless apple_config.publish_to_apple?
+    if !apple_config.publish_to_apple?
+      logger.info "Skipping publish to apple for #{apple_config.class.name} #{apple_config.id}"
+    end
 
     self.class.publish_to_apple(apple_config)
   end
