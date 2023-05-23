@@ -22,4 +22,4 @@ groups:
   single_threaded:
     concurrency: 1
     queues:
-      - ["<%= prefix %>_feeder_publish_artifacts", 1]
+      - ["<%= prefix %>_feeder_publish_podcast", 1]
