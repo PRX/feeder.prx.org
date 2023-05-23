@@ -1,8 +1,8 @@
 class Content < MediaResource
-  after_save :publish_podcast
+  after_save :publish_episode!
 
-  def publish_podcast
-    episode&.podcast&.publish! if status_complete? && status_previously_changed?
+  def publish_episode!
+    episode&.publish! if status_complete? && status_previously_changed?
   end
 
   def replace_resources!

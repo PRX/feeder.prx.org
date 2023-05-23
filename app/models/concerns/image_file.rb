@@ -26,6 +26,7 @@ module ImageFile
     end
 
     after_create :replace_resources!
+    after_save :publish!
   end
 
   class_methods do

@@ -18,6 +18,10 @@ class EpisodeImage < ApplicationRecord
     "images/#{guid}/#{file_name}"
   end
 
+  def publish!
+    episode&.publish! if status_complete? && status_previously_changed?
+  end
+
   def replace_resources!
     EpisodeImage.where(episode_id: episode_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
   end

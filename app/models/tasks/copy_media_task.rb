@@ -5,10 +5,6 @@ class Tasks::CopyMediaTask < ::Task
     owner
   end
 
-  def podcast
-    media_resource&.episode&.podcast
-  end
-
   def source_url
     media_resource&.href
   end

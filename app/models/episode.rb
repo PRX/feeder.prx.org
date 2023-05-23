@@ -205,6 +205,10 @@ class Episode < ApplicationRecord
     uncut&.copy_media(force)
   end
 
+  def publish!
+    podcast&.publish!
+  end
+
   def podcast_feed_url
     podcast&.url || podcast&.published_url
   end
