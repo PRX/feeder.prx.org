@@ -24,10 +24,6 @@ class PublishFeedJob < ApplicationJob
     end
   end
 
-  def schedule_publish_apple(config)
-    PublishAppleJob.perform_later(config)
-  end
-
   def publish_rss(podcast, feed)
     save_file(podcast, feed)
   end
