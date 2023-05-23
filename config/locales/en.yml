@@ -35,8 +35,6 @@ en:
   # form/model helpers
   helpers:
     label:
-      content:
-        original_url: Segment %{position}
       episode:
         ad_breaks: How many ad breaks are there in this episode?
         author_email: Author Email
@@ -96,6 +94,11 @@ en:
         alt_text: Alt Text
         caption: Caption
         credit: Credit
+      media_resource:
+        original_url:
+          audio: Segment %{position}
+          uncut: Audio File
+          video: Video File
       podcast:
         add_itunes_summary: Add an alternate itunes:summary
         author_email: Author Email
@@ -124,30 +127,8 @@ en:
         subtitle: Teaser
         summary: iTunes Summary
         title: Title
-      uncut:
-        original_url: Audio File
   # specific pages/views
   episodes:
-    audio:
-      complete:
-        unable: Unable to play file
-      error:
-        feedback: There was a problem processing your file
-      modal:
-        bit_rate: Bitrate
-        channels: Channels
-        dimensions: Dimensions
-        duration: Duration
-        file_name: File
-        file_size: Size
-        frame_rate: Frame Rate
-        mime_type: Content Type
-        sample_rate: Frequency
-        status: Status
-      new:
-        hint: Upload a file
-      processing:
-        hint: Processing
     create:
       error: Unable to create
       notice: Episode created
@@ -176,8 +157,6 @@ en:
         title: Write a short, Tweetable title. Think newspaper headline.
     form_media:
       title: Audio Files
-      help:
-        ad_breaks: Enter the number of ad breaks in this episode.
     form_status:
       create: Create Draft
       creating: Creating...
@@ -209,6 +188,28 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+    media:
+      complete:
+        unable: Unable to play file
+      error:
+        feedback: There was a problem processing your file
+      modal:
+        bit_rate: Bitrate
+        channels: Channels
+        dimensions: Dimensions
+        duration: Duration
+        file_name: File
+        file_size: Size
+        frame_rate: Frame Rate
+        mime_type: Content Type
+        sample_rate: Frequency
+        status: Status
+      new:
+        hint: Upload a file
+      processing:
+        hint: Processing
+      segment_count:
+        help: Enter the number of ad breaks in this episode.
     update:
       error: Unable to save
       media_not_ready: Audio not ready

@@ -59,12 +59,9 @@ module EpisodesHelper
     end
   end
 
-  def episode_media_label(media)
-    if media.is_a?(Uncut)
-      I18n.t("helpers.label.uncut.original_url")
-    else
-      I18n.t("helpers.label.content.original_url", position: media.position)
-    end
+  def episode_media_label(episode, media)
+    medium = episode.medium || "audio"
+    I18n.t("helpers.label.media_resource.original_url.#{medium}", position: media.position)
   end
 
   def episode_medium_options

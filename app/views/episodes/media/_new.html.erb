@@ -31,7 +31,7 @@
       <div class="invalid-feedback"><%= invalid_msg %></div>
     <% end %>
 
-    <%= form.label :media_file, episode_media_label(media), class: ("is-invalid" if invalid_msg) %>
+    <%= form.label :media_file, episode_media_label(episode, media), class: ("is-invalid" if invalid_msg) %>
   </div>
 
   <%# step 2: upload progressbar %>
@@ -51,7 +51,7 @@
       </button>
     </div>
 
-    <label><%= episode_media_label(media) %></label>
+    <label><%= episode_media_label(episode, media) %></label>
   </div>
 
   <%# step 3a: hidden original_url field pointing to the uploaded temporary s3 file %>
@@ -61,7 +61,7 @@
     <%= form.hidden_field :position %>
 
     <div class="form-control d-flex align-items-center is-changed">
-      <span class="material-icons text-primary ms-2">audio_file</span>
+      <span class="material-icons text-primary ms-2"><%= episode.medium_video? ? "video_file" : "audio_file" %></span>
       <div class="text-secondary mx-2 flex-grow-1" data-upload-target="fileName"></div>
       <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
 
@@ -70,13 +70,13 @@
       </button>
     </div>
 
-    <label><%= episode_media_label(media) %></label>
+    <label><%= episode_media_label(episode, media) %></label>
   </div>
 
   <%# step 3b: something went horribly wrong! %>
   <div class="form-floating d-none" data-upload-target="error">
     <div class="form-control d-flex align-items-center is-invalid">
-      <span class="material-icons text-primary mx-2">audio_file</span>
+      <span class="material-icons text-primary mx-2"><%= episode.medium_video? ? "video_file" : "audio_file" %></span>
       <div class="text-secondary mx-2 flex-grow-1" data-upload-target="fileName"></div>
       <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
 
@@ -87,7 +87,7 @@
 
     <div class="invalid-feedback" data-upload-target="errorMessage"></div>
 
-    <label class="is-invalid"><%= episode_media_label(media) %></label>
+    <label class="is-invalid"><%= episode_media_label(episode, media) %></label>
   </div>
 
 </div>
