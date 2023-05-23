@@ -5,8 +5,8 @@ class Tasks::CopyImageTask < ::Task
     owner
   end
 
-  def podcast
-    image.try(:episode).try(:podcast) || image.try(:podcast)
+  def episode_or_podcast
+    image.try(:episode) || image.try(:podcast)
   end
 
   def source_url
@@ -51,6 +51,6 @@ class Tasks::CopyImageTask < ::Task
     end
 
     image.save!
-    podcast&.publish! if image.status_complete?
+    episode_or_podcast&.publish! if image.status_complete?
   end
 end
