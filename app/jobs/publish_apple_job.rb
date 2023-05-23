@@ -1,5 +1,5 @@
 class PublishAppleJob < ApplicationJob
-  queue_as :publish_apple
+  queue_as :publish
 
   def self.publish_to_apple(apple_config)
     apple_config.build_publisher.publish!

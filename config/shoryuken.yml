@@ -19,7 +19,7 @@ queues:
   - ["<%= prefix %>_announce_feeder_story_publish", 1]
   - ["<%= prefix %>_announce_feeder_story_unpublish", 1]
 groups:
-  singlethreaded:
+  single_threaded:
     concurrency: 1
     queues:
-      - ["<%= prefix %>_publish_apple", 1]
+      - ["<%= prefix %>_publish", 1]
