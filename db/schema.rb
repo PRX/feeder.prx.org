@@ -131,8 +131,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_17_165211) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.string "keyword_xid"
     t.datetime "source_updated_at", precision: nil
+    t.string "keyword_xid"
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"
