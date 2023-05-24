@@ -126,6 +126,7 @@ class EpisodesController < ApplicationController
       :author_name,
       :author_email,
       :medium,
+      :segment_count,
       :ad_breaks,
       :released_at,
       :publishing_status,

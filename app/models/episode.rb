@@ -186,7 +186,7 @@ class Episode < ApplicationRecord
   def medium=(new_medium)
     super
 
-    if medium_changed?
+    if medium_changed? && medium_was.present?
       contents.each(&:mark_for_replacement)
       uncut&.mark_for_replacement
     end
