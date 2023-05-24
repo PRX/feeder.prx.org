@@ -183,6 +183,17 @@ class Episode < ApplicationRecord
     self.original_guid = new_guid
   end
 
+  def medium=(new_medium)
+    super
+
+    if medium_changed?
+      contents.each(&:mark_for_replacement)
+      uncut&.mark_for_replacement
+    end
+
+    self.segment_count = 1 if medium_video?
+  end
+
   def overrides
     self[:overrides] ||= HashWithIndifferentAccess.new
   end
@@ -274,7 +285,6 @@ class Episode < ApplicationRecord
   end
 
   def build_contents
-    self.segment_count = 1 if medium_video?
     segment_range.map do |p|
       contents.find { |c| c.position == p } || contents.build(position: p)
     end
