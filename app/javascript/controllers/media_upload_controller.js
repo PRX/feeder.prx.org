@@ -36,7 +36,7 @@ export default class extends Controller {
   }
 
   isParentTurboFrame(el) {
-    return el.id === "episode-form-audio"
+    return el.id === "episode-form-media-segments"
   }
 
   isInvalidSegmentCount(el) {
