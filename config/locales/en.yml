@@ -156,7 +156,7 @@ en:
         summary: Unless otherwise specified, the summary is created from the description of your episode as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
         title: Write a short, Tweetable title. Think newspaper headline.
     form_media:
-      title: Audio Files
+      title: Media Files
     form_status:
       create: Create Draft
       creating: Creating...
