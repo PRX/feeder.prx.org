@@ -38,4 +38,23 @@ describe PublishFeedJob do
       end
     end
   end
+
+  describe "publishing to apple" do
+    it "does not schedule publishing to apple if there is no apple config" do
+      assert_equal [], feed.apple_configs
+      assert_equal [], job.publish_apple(feed)
+    end
+
+    it "does not schedule publishing to apple if the config is marked as not publishable" do
+      apple_config = create(:apple_config, public_feed: feed, publish_enabled: false)
+      assert_equal [apple_config], feed.apple_configs.reload
+      assert_equal [nil], job.publish_apple(feed)
+    end
+
+    it "does schedule publishing if the config is present and marked as publishable" do
+      apple_config = create(:apple_config, public_feed: feed, publish_enabled: true)
+      assert_equal [apple_config], feed.apple_configs.reload
+      assert_equal [PublishAppleJob], job.publish_apple(feed).map(&:class)
+    end
+  end
 end

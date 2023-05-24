@@ -208,7 +208,12 @@ class Episode < ApplicationRecord
     images.each { |i| i.copy_media(force) }
   end
 
+  def apple_mark_for_reupload!
+    apple_podcast_deliveries.destroy_all
+  end
+
   def publish!
+    apple_mark_for_reupload!
     podcast&.publish!
   end
 

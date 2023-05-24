@@ -18,3 +18,8 @@ queues:
   - ["<%= prefix %>_announce_feeder_story_delete", 1]
   - ["<%= prefix %>_announce_feeder_story_publish", 1]
   - ["<%= prefix %>_announce_feeder_story_unpublish", 1]
+groups:
+  single_threaded:
+    concurrency: 1
+    queues:
+      - ["<%= prefix %>_feeder_publishing", 1]

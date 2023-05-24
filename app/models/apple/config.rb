@@ -31,8 +31,18 @@ module Apple
       end
     end
 
+    def publish_to_apple?
+      return false unless apple_credentials?
+
+      public_feed.publish_to_apple?(self)
+    end
+
     def build_publisher
       Apple::Publisher.from_apple_config(self)
+    end
+
+    def apple_credentials?
+      apple_provider_id.present? && apple_key_id.present? && apple_key_pem_b64.present?
     end
 
     def any_apple_credentials_exist?

@@ -5,6 +5,8 @@ namespace :sqs do
   task :create, [:env] do
     sqs = Aws::SQS::Client.new
     names = Rails.application.config_for(:shoryuken, env: :queues).map(&:first)
+    group_names = Rails.application.config_for(:shoryuken, env: :groups).values.map { |v| v[:queues] }.map { |config| config.map(&:first) }.flatten
+    names += group_names
 
     # only allow creating queues in dev, with non-default names
     abort "Can only create queues in development" unless Rails.env.development?
