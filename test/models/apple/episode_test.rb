@@ -148,4 +148,12 @@ describe Apple::Episode do
       assert_equal false, apple_episode.waiting_for_asset_state?
     end
   end
+
+  describe "#episode_update_parameters" do
+    it "should mirror the create params with the addition of the id" do
+      apple_episode.stub(:apple_id, "123") do
+        assert_equal "123", apple_episode.episode_update_parameters[:data][:id]
+      end
+    end
+  end
 end

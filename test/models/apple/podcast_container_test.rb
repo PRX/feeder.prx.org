@@ -131,8 +131,10 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
       Apple::PodcastContainer.stub(:get_podcast_containers_via_episodes, [podcast_container_json_row]) do
         apple_episode.stub(:apple_id, apple_episode_id) do
-          apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-            Apple::PodcastContainer.poll_podcast_container_state(nil, [apple_episode])
+          apple_episode.stub(:apple_persisted?, true) do
+            apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+              Apple::PodcastContainer.poll_podcast_container_state(nil, [apple_episode])
+            end
           end
         end
       end
