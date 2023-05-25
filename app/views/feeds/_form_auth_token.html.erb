@@ -1,15 +1,21 @@
-<div class="row">
-  <div class="col mb-4">
-    <div class="form-floating">
-      <%= form.text_field :label %>
-      <%= form.label :label %>
+<div class="mb-4 prx-field-group">
+  <div class="row">
+    <div class="col-6">
+      <div class="form-floating">
+        <%= form.text_field :label %>
+        <%= form.label :label %>
+      </div>
+    </div>
+
+    <div class="col-6">
+      <div class="form-floating">
+        <%= form.text_field :token %>
+        <%= form.label :token %>
+      </div>
     </div>
   </div>
 
-  <div class="col mb-4">
-    <div class="form-floating">
-      <%= form.text_field :token %>
-      <%= form.label :token %>
-    </div>
-  </div>
+  <%= link_to podcast_feed_path({podcast_id: @podcast, id: feed}, feed_tokens_destroy_params(form)), class: "btn" do %>
+    <span class="material-icons">delete</span>
+  <% end %>
 </div>

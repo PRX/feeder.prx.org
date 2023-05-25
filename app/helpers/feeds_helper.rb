@@ -34,4 +34,12 @@ module FeedsHelper
       [I18n.t(value, scope: [:feeds, :helper, :audio_sample_options]), value]
     end
   end
+
+  def feed_tokens_destroy_params(form)
+    params = {}
+    params["#{form.object_name}[id]"] = form.object.id
+    params["#{form.object_name}[_destroy]"] = "1"
+
+    params
+  end
 end

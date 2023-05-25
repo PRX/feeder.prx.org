@@ -19,7 +19,7 @@ class Feed < ApplicationRecord
   belongs_to :podcast, -> { with_deleted }, optional: true
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
-  accepts_nested_attributes_for :feed_tokens
+  accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:label].blank? }
 
   has_many :apple_configs, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
     class_name: "::Apple::Config"

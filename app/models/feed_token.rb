@@ -3,6 +3,7 @@ class FeedToken < ApplicationRecord
 
   validates :token, presence: true, uniqueness: {scope: :feed_id}
   validates_format_of :token, with: /\A[0-9a-zA-Z_.-]+\z/
+  validates :label, presence: true
 
   after_initialize :set_defaults
 
