@@ -24,7 +24,7 @@ describe PodcastImport do
     stub_requests
   end
 
-  let(:feed) { Feedjira::Feed.parse(test_file("/fixtures/transistor_two.xml")) }
+  let(:feed) { Feedjira.parse(test_file("/fixtures/transistor_two.xml")) }
 
   it "retrieves a valid feed" do
     importer.get_feed
@@ -201,7 +201,7 @@ describe PodcastImport do
   end
 
   describe("#parse_feed_entries_for_dupe_guids") do
-    let(:rss_feed) { Feedjira::Feed.parse(test_file("/fixtures/transistor_dupped_guids.xml")) }
+    let(:rss_feed) { Feedjira.parse(test_file("/fixtures/transistor_dupped_guids.xml")) }
 
     it "will parse feed entries for good and duped entries" do
       importer.feed = rss_feed

@@ -175,7 +175,7 @@ class PodcastImport < ActiveRecord::Base
   def get_feed
     response = connection.get(uri.path, uri.query_values)
     self.feed_raw_doc = response.body
-    podcast_feed = Feedjira::Feed.parse(feed_raw_doc)
+    podcast_feed = Feedjira.parse(feed_raw_doc)
     validate_feed(podcast_feed)
     self.feed = podcast_feed
   end
