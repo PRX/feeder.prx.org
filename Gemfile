@@ -51,7 +51,7 @@ gem "say_when", "~> 2.2.1"
 gem "shoryuken"
 
 # podcast import
-gem "feedjira", "2.1.0"
+gem "feedjira"
 gem "loofah"
 
 # utilities
