@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.8"
+ruby "3.2.2"
 
 # core
 gem "activerecord-session_store"
@@ -51,7 +51,7 @@ gem "say_when", "~> 2.2.1"
 gem "shoryuken"
 
 # podcast import
-gem "feedjira", "2.1.0"
+gem "feedjira"
 gem "loofah"
 
 # utilities

@@ -8,7 +8,7 @@ describe EpisodeImport do
 
   let(:importer) { create(:podcast_import, account_id: account_id, podcast: podcast) }
 
-  let(:feed) { Feedjira::Feed.parse(test_file("/fixtures/transistor_two.xml")) }
+  let(:feed) { Feedjira.parse(test_file("/fixtures/transistor_two.xml")) }
   let(:entry) { feed.entries.first }
   let(:entry_libsyn) { feed.entries.last }
 
