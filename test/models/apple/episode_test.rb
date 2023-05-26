@@ -6,7 +6,7 @@ describe Apple::Episode do
   let(:podcast) { create(:podcast) }
 
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
-  let(:private_feed) { create(:feed, podcast: podcast, private: true, tokens: [FeedToken.new]) }
+  let(:private_feed) { create(:private_feed, podcast: podcast) }
 
   let(:apple_config) { build(:apple_config) }
   let(:apple_api) { Apple::Api.from_apple_config(apple_config) }

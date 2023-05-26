@@ -47,7 +47,7 @@ describe Api::Auth::FeedsController do
     describe "feed tokens" do
       before do
         feed.tokens.create!(label: "something", token: "tok1")
-        feed.tokens.create!(token: "tok2")
+        feed.tokens.create!(label: "something2", token: "tok2")
       end
 
       it "can create a new feed with tokens" do
@@ -55,7 +55,7 @@ describe Api::Auth::FeedsController do
           slug: "token-slug",
           tokens: [
             {token: "tok3", label: "tok3", expires: "2023-02-01"},
-            {token: "tok4"}
+            {token: "tok4", label: "tok4"}
           ]
         }
 
@@ -70,7 +70,7 @@ describe Api::Auth::FeedsController do
 
       it "can update nested tokens" do
         update_tok1 = {token: "tok1", label: "else", expires: "2023-02-01"}
-        create_tok3 = {token: "tok3"}
+        create_tok3 = {token: "tok3", label: "tok3"}
         update_hash = {tokens: [update_tok1, create_tok3]}
 
         put(:update, body: update_hash.to_json, as: :json,

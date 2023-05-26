@@ -9,7 +9,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   let(:apple_config) { build(:apple_config) }
   let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
-  let(:private_feed) { create(:feed, podcast: podcast, private: true, tokens: [FeedToken.new]) }
+  let(:private_feed) { create(:private_feed, podcast: podcast) }
   let(:apple_show) { Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed) }
 
   let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
