@@ -430,7 +430,7 @@ module Apple
     end
 
     def synced_with_apple?
-      audio_asset_state_success? && apple_upload_complete?
+      audio_asset_state_success? && apple_upload_complete? && !drafting?
     end
 
     def waiting_for_asset_state?

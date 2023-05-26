@@ -18,31 +18,14 @@ describe Apple::Episode do
       private_feed: private_feed)
   end
   let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
+  let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
+  let(:external_id) { apple_episode_api_response["api_response"]["api_response"]["val"]["data"]["id"] }
 
   before do
-    stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200")
-      .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
+    episode.create_apple_sync_log(external_id: external_id, **apple_episode_api_response)
   end
 
   describe "#apple_json" do
-    let(:apple_episode_json) do
-      {id: "123",
-       attributes: {
-         appleHostedAudioAssetVendorId: "456",
-         publishingState: "DRAFTING",
-         guid: episode.item_guid
-       }}.with_indifferent_access
-    end
-
-    let(:apple_episode_json_api_result) do
-      {"request_metadata" => {"apple_episode_id" => "123", "item_guid" => episode.item_guid},
-       "api_url" => "http://the-api-url.com/v1/episodes/123",
-       "api_parameters" => {},
-       "api_response" => {"ok" => true,
-                          "err" => false,
-                          "val" => {"data" => apple_episode_json}}}
-    end
-
     let(:apple_episode_list) do
       [
         apple_episode_json
@@ -51,7 +34,6 @@ describe Apple::Episode do
 
     it "instantiates with an api_response" do
       ep = build(:apple_episode, show: apple_show, feeder_episode: episode)
-      ep.feeder_episode.reload.create_apple_sync_log(api_response: apple_episode_json_api_result, external_id: "123")
 
       assert_equal "123", ep.apple_id
       assert_equal "456", ep.audio_asset_vendor_id
@@ -61,6 +43,9 @@ describe Apple::Episode do
 
     it "instantiates with a nil api_response" do
       ep = build(:apple_episode, show: apple_show, feeder_episode: episode)
+      ep.feeder_episode.apple_sync_log.destroy
+      ep.feeder_episode.reload
+
       assert_nil ep.apple_id
       assert_raises(RuntimeError, "incomplete api response") { ep.audio_asset_vendor_id }
       # It does not exists yet, so it is not drafting
@@ -100,12 +85,6 @@ describe Apple::Episode do
 
     before do
       assert_equal [delivery_file], apple_episode.podcast_delivery_files
-      apple_episode.apple_sync_log =
-        SyncLog.new(external_id: "123", feeder_type: :episodes, api_response:
-        {"request_metadata" => {},
-         "api_response" => {"ok" => true,
-                            "err" => false,
-                            "val" => {"data" => {"attributes" => {"appleHostedAudioAssetState" => "COMPLETE"}}}}})
     end
 
     it "should be true if all the conditions are met" do
@@ -153,6 +132,19 @@ describe Apple::Episode do
     it "should mirror the create params with the addition of the id" do
       apple_episode.stub(:apple_id, "123") do
         assert_equal "123", apple_episode.episode_update_parameters[:data][:id]
+      end
+    end
+  end
+
+  describe "#synced_with_apple?" do
+    let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "PUBLISH") }
+
+    it "should be false when drafting" do
+      ep = build(:uploaded_apple_episode)
+      assert_equal true, ep.synced_with_apple?
+
+      ep.stub(:drafting?, true) do
+        assert_equal false, ep.synced_with_apple?
       end
     end
   end
