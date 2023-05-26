@@ -1,13 +1,19 @@
-<% if feed.tokens.present? %>
-  <%= form.fields_for :feed_tokens do |fields| %>
-    <%= turbo_frame_tag "feed-token-#{fields.object.id}" do %>
-      <% if fields.object.marked_for_destruction? %>
-        <%= fields.hidden_field :_destroy, value: "1" %>
-      <% else %>
-        <%= render "form_auth_token", form: fields, feed: feed %>
-      <% end %>
+<% feed.tokens.build %>
+
+<%= form.fields_for :feed_tokens do |fields| %>
+  <%= turbo_frame_tag "feed-token-#{fields.object.id}" do %>
+    <% if fields.object.marked_for_destruction? %>
+      <%= fields.hidden_field :_destroy, value: "1" %>
+    <% elsif fields.object.id.blank? %>
+      <div data-controller="toggle-field">
+        <div class="d-none" data-toggle-field-target="field">
+          <%= render "form_auth_token", form: fields, feed: feed %>
+        </div>
+        <%= fields.check_box :add_token, checked: false, data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay"} %>
+        <%= fields.label :add_token %>
+      </div>
+    <% else %>
+      <%= render "form_auth_token", form: fields, feed: feed %>
     <% end %>
   <% end %>
 <% end %>
-
-<span>Add token</span>

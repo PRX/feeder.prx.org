@@ -4,7 +4,7 @@ export default class extends Controller {
   static targets = ["check", "field"]
 
   connect() {
-    if(this.checkTarget.checked) {
+    if (this.checkTarget.checked) {
       this.toggleDisplay()
     }
   }
