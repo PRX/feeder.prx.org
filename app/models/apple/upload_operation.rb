@@ -51,8 +51,11 @@ module Apple
 
       chunked_slices = operation_bridge_params.each_slice(chunk_size).to_a
 
+      caller_log_tags = Rails.logger.formatter.current_tags.dup
       Parallel.map(chunked_slices, in_threads: num_threads) do |ops|
-        api.bridge_remote_and_retry!("executeUploadOperations", ops, batch_size: 1)
+        Rails.logger.tagged(caller_log_tags) do
+          api.bridge_remote_and_retry!("executeUploadOperations", ops, batch_size: 1)
+        end
       end
     end
 
