@@ -109,7 +109,7 @@ module Apple
     def update_show!(sync)
       show_data_with_id = show_data
       show_data_with_id[:data][:id] = sync.external_id
-      resp = api.patch("shows/#{sync.external_id}", **show_data_with_id)
+      resp = api.patch("shows/#{sync.external_id}", show_data_with_id)
 
       api.response(resp)
     end
