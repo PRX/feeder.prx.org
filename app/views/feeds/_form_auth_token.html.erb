@@ -7,15 +7,19 @@
       </div>
     </div>
 
-    <div class="col-6">
-      <div class="form-floating">
-        <%= form.text_field :token %>
-        <%= form.label :token %>
+    <% unless form.object.new_record? %>
+      <div class="col-6">
+        <div class="form-floating">
+          <%= form.text_field :token %>
+          <%= form.label :token %>
+        </div>
       </div>
-    </div>
+    <% end %>
   </div>
 
-  <%= link_to podcast_feed_path({podcast_id: @podcast, id: feed}, feed_tokens_destroy_params(form)), class: "btn" do %>
-    <span class="material-icons">delete</span>
+  <% unless form.object.new_record? %>
+    <%= link_to podcast_feed_path({podcast_id: @podcast, id: feed}, feed_tokens_destroy_params(form)), class: "btn" do %>
+      <span class="material-icons">delete</span>
+    <% end %>
   <% end %>
 </div>
