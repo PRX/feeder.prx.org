@@ -4,6 +4,7 @@ networks:
     driver: bridge
 services:
   feeder:
+    image: feederprxorg_feeder
     build: .
     volumes:
       - .:/app
