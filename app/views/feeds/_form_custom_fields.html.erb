@@ -60,7 +60,7 @@
     <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.private") %>" data-bs-html="true"><span class="material-icons">help</span></button>
   </div>
 
-  <div class="d-none" data-toggle-field-target="field">
+  <div class="<%= display_auth_tokens(form) %>" data-toggle-field-target="field">
     <hr>
     <h3><%= t(".headers.auth_tokens") %></h3>
     <p><%= t(".help.auth_tokens") %></p>

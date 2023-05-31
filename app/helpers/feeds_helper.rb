@@ -35,6 +35,10 @@ module FeedsHelper
     end
   end
 
+  def display_auth_tokens(form)
+    form.object.private? ? "" : "d-none"
+  end
+
   def feed_tokens_destroy_params(form)
     params = {}
     params["#{form.object_name}[id]"] = form.object.id
