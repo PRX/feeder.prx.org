@@ -56,5 +56,19 @@ describe PublishFeedJob do
       assert_equal [apple_config], feed.apple_configs.reload
       assert_equal [PublishAppleJob], job.publish_apple(feed).map(&:class)
     end
+
+    it "performs the job immediately if the config is marked as publishable and syncs rss" do
+      apple_config = create(:apple_config, public_feed: feed, publish_enabled: true, sync_blocks_rss: true)
+      assert_equal [apple_config], feed.apple_configs.reload
+
+      PublishAppleJob.stub(:perform_now, :now) do
+        PublishAppleJob.stub(:perform_later, :later) do
+          assert_equal [:now], job.publish_apple(feed)
+
+          apple_config.update!(sync_blocks_rss: false)
+          assert_equal [:later], job.publish_apple(feed.reload)
+        end
+      end
+    end
   end
 end
