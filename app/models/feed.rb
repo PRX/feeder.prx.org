@@ -195,4 +195,8 @@ class Feed < ApplicationRecord
   def ready_image
     @ready_image ||= (ready_feed_image || ready_itunes_image)
   end
+
+  def display_auth_tokens
+    private? ? "" : "d-none"
+  end
 end
