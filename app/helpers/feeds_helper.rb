@@ -42,4 +42,8 @@ module FeedsHelper
 
     params
   end
+
+  def display_auth_tokens(feed)
+    feed.private? ? "" : "d-none"
+  end
 end
