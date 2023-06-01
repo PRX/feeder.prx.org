@@ -4,6 +4,7 @@ class FeedsController < ApplicationController
 
   # GET /feeds/1
   def show
+    @feed.assign_attributes(feed_params)
     authorize @feed
   end
 
@@ -83,7 +84,7 @@ class FeedsController < ApplicationController
       :display_episodes_count,
       :display_full_episodes_count,
       :episode_offset_seconds,
-      feed_tokens_attributes: %i[id label token]
+      feed_tokens_attributes: %i[id label token _destroy]
     )
   end
 end

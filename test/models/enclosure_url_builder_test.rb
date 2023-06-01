@@ -91,7 +91,7 @@ describe EnclosureUrlBuilder do
     end
 
     describe ".mark_authorized" do
-      let(:private_feed) { create(:feed, podcast: podcast, tokens: [FeedToken.new]) }
+      let(:private_feed) { create(:private_feed, podcast: podcast) }
       let(:feed_tok) { private_feed.tokens.first }
 
       it "should add an authorized query param" do

@@ -1,7 +1,12 @@
-<% if feed.tokens.present? %>
-  <%= form.fields_for :feed_tokens, feed.tokens do |fields| %>
-    <%= render "form_auth_token", form: fields %>
+<% feed.tokens.build %>
+
+<%= form.fields_for :feed_tokens do |fields| %>
+  <%= turbo_frame_tag "feed-token-#{fields.object.id}" do %>
+    <% if fields.object.marked_for_destruction? %>
+      <div class="is-changed" data-unsaved-target="changed"></div>
+      <%= fields.hidden_field :_destroy, value: "1" %>
+    <% else %>
+      <%= render "form_auth_token", form: fields, feed: feed %>
+    <% end %>
   <% end %>
 <% end %>
-
-<span>Add token</span>
