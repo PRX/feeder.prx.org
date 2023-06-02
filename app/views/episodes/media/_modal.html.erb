@@ -21,14 +21,7 @@
             <tr>
               <th scope="row"><strong><%= t(".status") %>:</strong></th>
               <td>
-                <% case media.status %>
-                <% when "started", "created", "processing", "retrying" %>
-                  <span class="badge bg-secondary"><%= media.status.capitalize %></span>
-                <% when "complete" %>
-                  <span class="badge bg-success"><%= media.status.capitalize %></span>
-                <% else %>
-                  <span class="badge bg-danger"><%= media.status.capitalize %></span>
-                <% end %>
+                <span class="badge bg-<%= upload_status_class(media) %>"><%= media.status.capitalize %></span>
               </td>
             </tr>
             <tr>

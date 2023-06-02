@@ -105,4 +105,26 @@ module UploadsHelper
 
     msgs.to_sentence.capitalize if msgs.present?
   end
+
+  def upload_new?(rec)
+    rec.new_record? || rec.marked_for_destruction?
+  end
+
+  def upload_processing?(rec)
+    %w[started created processing retrying].include?(rec.status)
+  end
+
+  def upload_complete?(rec)
+    %w[complete].include?(rec.status)
+  end
+
+  def upload_status_class(rec)
+    if upload_processing?(rec)
+      "secondary"
+    elsif upload_complete?(rec)
+      "success"
+    else
+      "danger"
+    end
+  end
 end
