@@ -4,7 +4,7 @@ require "feed_builder"
 describe FeedBuilder do
   let(:episode) { create(:episode_with_media, prx_uri: "/api/v1/stories/87683") }
   let(:podcast) { episode.podcast }
-  let(:feed) { create(:feed, podcast: podcast) }
+  let(:feed) { create(:feed, podcast: podcast, title: podcast.title) }
   let(:builder) { FeedBuilder.new(podcast, feed) }
   let(:rss) { builder.to_feed_xml }
   let(:rss_feed) { Nokogiri::XML(rss).css("channel") }

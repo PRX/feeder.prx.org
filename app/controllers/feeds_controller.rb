@@ -10,16 +10,20 @@ class FeedsController < ApplicationController
 
   # GET /feeds/new
   def new
-    @feed = Feed.new
+    @feed = Feed.new(private: false, slug: "new_feed")
+    @feed.podcast = @podcast
   end
 
   # POST /feeds
   def create
     @feed = Feed.new(feed_params)
+    @feed.podcast = @podcast
+    authorize @feed
 
     respond_to do |format|
       if @feed.save
-        format.html { redirect_to feed_url(@feed), notice: "Feed was successfully created." }
+        @feed.copy_media
+        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: "Feed was successfully created." }
       else
         format.html { render :new, status: :unprocessable_entity }
       end
