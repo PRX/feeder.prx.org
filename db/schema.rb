@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_15_152758) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -324,6 +324,25 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_152758) do
     t.index ["source_url"], name: "index_podcasts_on_source_url", unique: true, where: "((deleted_at IS NULL) AND (source_url IS NOT NULL))"
   end
 
+  create_table "publishing_attempts", force: :cascade do |t|
+    t.bigint "podcast_id", null: false
+    t.bigint "publishing_log_id", null: false
+    t.boolean "complete", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["podcast_id", "complete"], name: "index_publishing_attempts_on_podcast_id_and_complete"
+    t.index ["podcast_id", "publishing_log_id"], name: "index_publishing_attempts_on_podcast_id_and_publishing_log_id", unique: true
+    t.index ["podcast_id"], name: "index_publishing_attempts_on_podcast_id"
+    t.index ["publishing_log_id"], name: "index_publishing_attempts_on_publishing_log_id"
+  end
+
+  create_table "publishing_logs", force: :cascade do |t|
+    t.bigint "podcast_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["podcast_id", "created_at"], name: "index_publishing_logs_on_podcast_id_and_created_at"
+    t.index ["podcast_id"], name: "index_publishing_logs_on_podcast_id"
+  end
+
   create_table "say_when_job_executions", id: :serial, force: :cascade do |t|
     t.integer "job_id"
     t.string "status"
@@ -398,4 +417,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_152758) do
   add_foreign_key "feeds", "podcasts"
   add_foreign_key "itunes_images", "feeds"
   add_foreign_key "podcast_imports", "podcasts"
+  add_foreign_key "publishing_attempts", "podcasts"
+  add_foreign_key "publishing_attempts", "publishing_logs"
+  add_foreign_key "publishing_logs", "podcasts"
 end
