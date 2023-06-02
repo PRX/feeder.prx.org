@@ -40,7 +40,7 @@ module EpisodesHelper
   end
 
   def episode_media_duration(media)
-    Time.at(media.duration || 0).utc.strftime("%H:%M:%S").sub(/^00:/, "0:")
+    (media.duration || 0).to_time_summary
   end
 
   def episode_destroy_image_path(episode, form)
