@@ -6,7 +6,7 @@ describe Apple::Show do
   let(:podcast) { create(:episode).podcast }
   let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
-  let(:private_feed) { create(:feed, podcast: podcast, private: true) }
+  let(:private_feed) { create(:private_feed, podcast: podcast) }
   let(:apple_config) { build(:apple_config, public_feed: public_feed, private_feed: private_feed) }
   let(:apple_show) { Apple::Show.connect_existing("123", apple_config) }
 
@@ -163,7 +163,7 @@ describe Apple::Show do
   describe "#feed_published_url" do
     before do
       public_feed.podcast.feeds.update_all(private: true)
-      public_feed.podcast.feeds.map { |f| f.tokens.build.save! }
+      public_feed.podcast.feeds.map { |f| f.tokens.build(label: "my-tok").save! }
       apple_show.podcast.reload
       public_feed.reload
       private_feed.reload

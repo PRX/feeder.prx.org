@@ -29,4 +29,8 @@ export default class extends Controller {
       }
     })
   }
+
+  toggleDisplay() {
+    this.fieldTarget.classList.toggle("d-none")
+  }
 }

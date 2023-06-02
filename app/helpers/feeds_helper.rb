@@ -35,6 +35,18 @@ module FeedsHelper
     end
   end
 
+  def feed_tokens_destroy_params(form)
+    params = {}
+    params["#{form.object_name}[id]"] = form.object.id
+    params["#{form.object_name}[_destroy]"] = "1"
+
+    params
+  end
+
+  def display_auth_tokens(feed)
+    feed.private? ? "" : "d-none"
+  end
+
   def feed_destroy_image_path(feed, form)
     if feed.new_record?
       new_podcast_feed_path feed.podcast_id, uploads_destroy_params(form)
