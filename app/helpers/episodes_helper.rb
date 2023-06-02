@@ -65,7 +65,6 @@ module EpisodesHelper
   end
 
   def episode_medium_options
-    # TODO: why doesn't Episode.mediums work?
-    Episode.defined_enums["medium"].keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
+    Episode.mediums.keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
   end
 end
