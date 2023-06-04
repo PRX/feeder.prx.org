@@ -330,7 +330,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
     t.boolean "complete", default: false, null: false
     t.datetime "created_at", null: false
     t.index ["podcast_id", "complete"], name: "index_publishing_attempts_on_podcast_id_and_complete"
-    t.index ["podcast_id", "publishing_queue_item_id"], name: "index_publishing_attempts_on_podcast_id_and_queue_item_id", unique: true
+    t.index ["podcast_id", "publishing_queue_item_id", "complete"], name: "index_publishing_attempts_on_podcast_id_and_queue_item_id", unique: true
     t.index ["podcast_id"], name: "index_publishing_attempts_on_podcast_id"
     t.index ["publishing_queue_item_id"], name: "index_publishing_attempts_on_publishing_queue_item_id"
   end

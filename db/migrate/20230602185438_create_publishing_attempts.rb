@@ -8,7 +8,7 @@ class CreatePublishingAttempts < ActiveRecord::Migration[7.0]
       t.datetime :created_at, null: false
     end
 
-    add_index :publishing_attempts, [:podcast_id, :publishing_queue_item_id], unique: true, name: "index_publishing_attempts_on_podcast_id_and_queue_item_id"
+    add_index :publishing_attempts, [:podcast_id, :publishing_queue_item_id, :complete], unique: true, name: "index_publishing_attempts_on_podcast_id_and_queue_item_id"
     add_index :publishing_attempts, [:podcast_id, :complete]
   end
 end

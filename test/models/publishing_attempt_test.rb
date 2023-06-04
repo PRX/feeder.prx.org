@@ -25,17 +25,26 @@ describe PublishingAttempt do
   end
 
   describe "#publishing_queue_item" do
-    it "has one logged call to publish per attempt" do
-      pl = PublishingQueueItem.create!(podcast: podcast)
-      assert pl.publishing_attempt.nil?
+    it "has one publish queue item per attempt state" do
+      pqi = PublishingQueueItem.create!(podcast: podcast)
+      assert pqi.publishing_attempts.empty?
 
-      pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pl)
-      assert pl.reload.publishing_attempt.present?
+      pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi)
+      assert pqi.reload.publishing_attempts.present?
+      refute pqi.latest_attempt.complete?
 
       # raises an error if we try to create a second attempt
       assert_raises ActiveRecord::RecordNotUnique do
-        PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pl)
+        PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi)
       end
+
+      # but we can create a second attempt that is marked as complete
+      pa2 = pa.complete_publishing!
+
+      assert_equal pa2, PublishingAttempt.latest_attempt(podcast)
+      assert_equal pa2, pqi.reload.latest_attempt
+      assert_equal [pa, pa2], pqi.publishing_attempts
+      assert pa2.complete?
     end
   end
 end
