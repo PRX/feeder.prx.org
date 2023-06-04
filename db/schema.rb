@@ -329,7 +329,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
     t.bigint "publishing_log_id", null: false
     t.boolean "complete", default: false, null: false
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.index ["podcast_id", "complete"], name: "index_publishing_attempts_on_podcast_id_and_complete"
     t.index ["podcast_id", "publishing_log_id"], name: "index_publishing_attempts_on_podcast_id_and_publishing_log_id", unique: true
     t.index ["podcast_id"], name: "index_publishing_attempts_on_podcast_id"

@@ -5,7 +5,7 @@ class CreatePublishingAttempts < ActiveRecord::Migration[7.0]
       t.references :publishing_log, null: false, foreign_key: true
       t.boolean :complete, null: false, default: false
 
-      t.timestamps
+      t.datetime :created_at, null: false
     end
 
     add_index :publishing_attempts, [:podcast_id, :publishing_log_id], unique: true
