@@ -23,6 +23,7 @@ class PublishingQueueItem < ApplicationRecord
   def self.unfinished_items(podcast)
     all_unfinished_items
       .where(podcast: podcast)
+      .order(id: :desc)
   end
 
   def self.all_unfinished_items
@@ -47,16 +48,6 @@ class PublishingQueueItem < ApplicationRecord
 
   def complete?
     latest_attempt&.complete?
-  end
-
-  def publish!
-    if podcast.locked?
-      Rails.logger.info "Podcast #{podcast.id} is locked, skipping publish", {podcast_id: podcast.id, publishing_queue_item_id: id}
-      return false
-    end
-
-    PublishingAttempt.create!(podcast: podcast, publishing_queue_item: self)
-    create_publish_job
   end
 
   def create_publish_job

@@ -6,6 +6,7 @@ class Podcast < ApplicationRecord
   FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
 
   include TextSanitizer
+  include AdvisoryLocks
 
   serialize :categories, JSON
   serialize :keywords, JSON
@@ -156,15 +157,21 @@ class Podcast < ApplicationRecord
   end
 
   def publish!
-    create_publish_job unless locked?
+    if locked?
+      Rails.logger.warn "Podcast #{id} is locked, skipping publish", {podcast_id: id}
+      return false
+    end
+
+    PublishingQueueItem.create!(podcast: self)
+    PublishingAttempt.attempt!(self)
+  end
+
+  def with_publish_lock(&block)
+    with_advisory_lock(PODCAST_PUBLISHING_ADVISORY_LOCK_TYPE, &block)
   end
 
   def copy_media(force = false)
     feeds.each { |f| f.copy_media(force) }
-  end
-
-  def create_publish_job
-    PublishFeedJob.perform_later(self)
   end
 
   def web_master
