@@ -38,6 +38,32 @@ describe PublishingQueueItem do
     end
   end
 
+  describe ".all_unfinished_items" do
+    let(:podcast2) { create(:podcast) }
+    it "returns the publishing queue items across all podcasts" do
+      pqi = PublishingQueueItem.create!(podcast: podcast)
+      _pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi, complete: true)
+
+      pqi_2 = PublishingQueueItem.create!(podcast: podcast2)
+      _pa = PublishingAttempt.create!(podcast: podcast2, publishing_queue_item: pqi_2, complete: true)
+      assert_equal [], PublishingQueueItem.all_unfinished_items
+
+      unfinished_pqi = PublishingQueueItem.create!(podcast: podcast)
+      unfinished_pqi_2 = PublishingQueueItem.create!(podcast: podcast2)
+
+      assert_equal [unfinished_pqi, unfinished_pqi_2], PublishingQueueItem.all_unfinished_items
+
+      # now create some in-progress work, does not affect the unfinished queue
+      PublishingAttempt.create!(podcast: podcast, publishing_queue_item: unfinished_pqi, complete: false)
+      PublishingAttempt.create!(podcast: podcast2, publishing_queue_item: unfinished_pqi_2, complete: false)
+      assert_equal [unfinished_pqi, unfinished_pqi_2], PublishingQueueItem.all_unfinished_items
+
+      # now complete the work for podcast 2
+      PublishingAttempt.create!(podcast: podcast2, publishing_queue_item: unfinished_pqi_2, complete: true)
+      assert_equal [unfinished_pqi], PublishingQueueItem.all_unfinished_items
+    end
+  end
+
   describe ".unfinished_items" do
     it "returns the publishing queue items if there are no attempts" do
       pqi = PublishingQueueItem.create!(podcast: podcast)

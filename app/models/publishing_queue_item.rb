@@ -21,13 +21,28 @@ class PublishingQueueItem < ApplicationRecord
   end
 
   def self.unfinished_items(podcast)
+    all_unfinished_items
+      .where(podcast: podcast)
+  end
+
+  def self.all_unfinished_items
     frag = <<~SQL
-      id > COALESCE((SELECT max(publishing_queue_item_id)
-                     FROM publishing_attempts WHERE podcast_id = :podcast_id AND complete = true), -1)
+      (
+        SELECT unfinished_podcast_items.* FROM
+        (
+          SELECT DISTINCT podcast_id
+          FROM publishing_queue_items inner_pqi
+        ) pqi
+        JOIN LATERAL (
+          SELECT * from publishing_queue_items
+          WHERE id > COALESCE((SELECT max(publishing_queue_item_id)
+                               FROM publishing_attempts WHERE podcast_id = pqi.podcast_id AND complete = true), -1)
+          AND podcast_id = pqi.podcast_id
+        ) unfinished_podcast_items ON TRUE
+      ) publishing_queue_items
     SQL
 
-    where(podcast: podcast)
-      .where(frag, podcast_id: podcast.id)
+    from(frag)
   end
 
   def complete?
