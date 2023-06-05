@@ -82,11 +82,7 @@ export default class extends Controller {
       const hours = String(Math.floor(time / 3600)).padStart(2, "0")
       const minutes = String(Math.floor((time % 3600) / 60)).padStart(2, "0")
       const seconds = String(time % 60).padStart(2, "0")
-      if (hours === "00") {
-        this.durationTarget.innerHTML = `(0:${minutes}:${seconds})`
-      } else {
-        this.durationTarget.innerHTML = `(${hours}:${minutes}:${seconds})`
-      }
+      this.durationTarget.innerHTML = `(${hours}:${minutes}:${seconds})`
     }
   }
 

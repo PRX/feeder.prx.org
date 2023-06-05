@@ -16,18 +16,28 @@ ActionView::Base.field_error_proc = proc do |html_tag, instance|
   end
 end
 
-# even more hacky! monkey patch to include association errors on the foreign key
-# field, so a <select> gets the right error message
+# even more hacky! monkey patch to include error messages from other fields.
 module ActiveModel
   class Errors
     def messages_for(attribute)
+      to_check = [attribute]
+
+      # include association errors on the foreign key field
       if attribute.ends_with?("_id")
-        m1 = where(attribute).map(&:message)
-        m2 = where(attribute.to_s.sub(/_id$/, "")).map(&:message)
-        m1.concat(m2).uniq
-      else
-        where(attribute).map(&:message)
+        to_check << attribute.to_s.sub(/_id\z/, "")
       end
+
+      # include aliased attributes
+      if @base.attribute_aliases.key?(attribute.to_s)
+        to_check << @base.attribute_aliases[attribute.to_s]
+      end
+
+      # include aliased error messages
+      if @base.error_message_aliases.key?(attribute.to_s)
+        to_check << @base.error_message_aliases[attribute.to_s]
+      end
+
+      to_check.map { |a| where(a).map(&:message) }.flatten.uniq
     end
   end
 end

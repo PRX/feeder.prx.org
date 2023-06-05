@@ -19,4 +19,8 @@ module FeedImageFile
   def feed_image_path
     "images/#{guid}/#{file_name}"
   end
+
+  def publish!
+    podcast&.publish! if status_complete? && status_previously_changed?
+  end
 end

@@ -28,6 +28,22 @@ describe Tasks::CopyMediaTask do
       assert_equal "attachment; filename=\"audio.mp3\"", t[:Parameters][:ContentDisposition]
     end
 
+    it "optionally runs an inspect task" do
+      assert_equal 2, task.porter_tasks.count
+
+      task.media_resource.stub(:generate_waveform?, true) do
+        assert_equal 3, task.porter_tasks.count
+
+        t = task.porter_tasks[2]
+        assert_equal "Waveform", t[:Type]
+        assert_equal "BBC/audiowaveform/v1.x", t[:Generator]
+        assert_equal "JSON", t[:DataFormat]
+        assert_equal "AWS/S3", t[:Destination][:Mode]
+        assert_equal "test-prx-feed", t[:Destination][:BucketName]
+        assert_equal task.media_resource.waveform_path, t[:Destination][:ObjectKey]
+      end
+    end
+
     it "escapes http source urls" do
       task.media_resource.original_url = "http://some/where/my%20file.mp3"
 
@@ -55,7 +71,7 @@ describe Tasks::CopyMediaTask do
     it "replaces resources and publishes on complete" do
       publish = MiniTest::Mock.new
 
-      task.episode.stub(:publish!, publish) do
+      task.media_resource.episode.stub(:publish!, publish) do
         task.update(status: "created")
         publish.verify
 

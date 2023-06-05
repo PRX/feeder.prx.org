@@ -1,7 +1,7 @@
 require "loofah"
 require "hash_serializer"
 
-class PodcastImport < ActiveRecord::Base
+class PodcastImport < ApplicationRecord
   include ImportUtils
 
   serialize :config, HashSerializer

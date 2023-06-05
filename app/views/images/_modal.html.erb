@@ -21,14 +21,7 @@
             <tr>
               <th scope="row"><strong>Status:</strong></th>
               <td>
-                <% case image.status %>
-                <% when "started", "created", "processing", "retrying" %>
-                  <span class="badge bg-secondary"><%= image.status.capitalize %></span>
-                <% when "complete" %>
-                  <span class="badge bg-success"><%= image.status.capitalize %></span>
-                <% else %>
-                  <span class="badge bg-danger"><%= image.status.capitalize %></span>
-                <% end %>
+                <span class="badge bg-<%= upload_status_class(image) %>"><%= image.status.capitalize %></span>
               </td>
             </tr>
             <tr>
