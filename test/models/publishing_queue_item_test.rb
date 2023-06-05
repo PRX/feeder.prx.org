@@ -38,25 +38,57 @@ describe PublishingQueueItem do
     end
   end
 
-  describe ".unfinished_queue" do
+  describe ".unfinished_items" do
     it "returns the publishing queue items if there are no attempts" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
-      assert_equal [pqi], PublishingQueueItem.unfinished_queue(podcast)
+      assert_equal [pqi], PublishingQueueItem.unfinished_items(podcast)
     end
 
     it "returns the publishing queue items if there is no completed attempts" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
-      pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi, complete: false)
-      assert_equal [pqi], PublishingQueueItem.unfinished_queue(podcast)
+      _pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi, complete: false)
+      assert_equal [pqi], PublishingQueueItem.unfinished_items(podcast)
     end
 
     it "returns the publishing queue items only of there are subsequent to completed work" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
-      pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi, complete: true)
-      assert_equal [], PublishingQueueItem.unfinished_queue(podcast)
+      _pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi, complete: true)
+      assert_equal [], PublishingQueueItem.unfinished_items(podcast)
 
       unfinished_pqi = PublishingQueueItem.create!(podcast: podcast)
-      assert_equal [unfinished_pqi], PublishingQueueItem.unfinished_queue(podcast)
+      assert_equal [unfinished_pqi], PublishingQueueItem.unfinished_items(podcast)
+
+      # now create some in-progress work, does not affect the unfinished queue
+      _pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: unfinished_pqi, complete: false)
+      assert_equal [unfinished_pqi], PublishingQueueItem.unfinished_items(podcast)
+    end
+  end
+
+  describe ".settled_work?" do
+    it "is settled if there is no work going on" do
+      _pqi = PublishingQueueItem.create!(podcast: podcast)
+      assert PublishingQueueItem.settled_work?(podcast)
+    end
+
+    it "returns the publishing queue items if there is no completed attempts" do
+      pqi = PublishingQueueItem.create!(podcast: podcast)
+      _pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi, complete: false)
+      refute PublishingQueueItem.settled_work?(podcast)
+    end
+
+    it "returns the publishing queue items only of there are subsequent to completed work" do
+      pqi = PublishingQueueItem.create!(podcast: podcast)
+      _pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi, complete: true)
+      assert PublishingQueueItem.settled_work?(podcast)
+
+      unfinished_pqi = PublishingQueueItem.create!(podcast: podcast)
+
+      # The queue is settled because there is no work going on.
+      assert PublishingQueueItem.settled_work?(podcast)
+
+      # now create some in-progress work
+      _pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: unfinished_pqi, complete: false)
+      refute PublishingQueueItem.settled_work?(podcast)
     end
   end
 end

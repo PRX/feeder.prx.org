@@ -8,8 +8,19 @@ class PublishingQueueItem < ApplicationRecord
   has_one :latest_attempt, -> { order(id: :desc) }, class_name: "PublishingAttempt"
   belongs_to :podcast
 
-  def self.unfinished_queue(podcast)
-    # if there is no work being done/completed, consider all the queue items as unfinished
+  def self.settled_work?(podcast)
+    # test that there is no publishing attempt in progress
+    unfinished_attempted_item(podcast).nil?
+  end
+
+  def self.unfinished_attempted_item(podcast)
+    # test that there is no publishing attempt in progress
+    joins(:publishing_attempts)
+      .where(id: unfinished_items(podcast))
+      .where(publishing_attempts: {complete: false}).first
+  end
+
+  def self.unfinished_items(podcast)
     frag = <<~SQL
       id > COALESCE((SELECT max(publishing_queue_item_id)
                      FROM publishing_attempts WHERE podcast_id = :podcast_id AND complete = true), -1)
