@@ -8,15 +8,13 @@ class PublishingQueueItem < ApplicationRecord
   has_one :latest_attempt, -> { order(id: :desc) }, class_name: "PublishingAttempt"
   belongs_to :podcast
 
-  def self.settle_queue(podcast)
-    # TODO handle expired / failed attempts in the case where the publishing
-    # state has not been updated for some reason
-
-    # Handle the base case where there are items in the queue that need to be scheduled
-    # for publishing.
-    # Take the latest item:
-
-    PublishingQueueItem
+  def self.unfinished_queue_items(podcast)
+    sql = <<~SQL
+      SELECT publishing_queue_items.*
+      FROM publishing_queue_items
+      WHERE id > COALESCE((SELECT max(publishing_queue_item_id) FROM publishing_attempts WHERE podcast_id = :podcast_id AND complete = true), -1)
+    SQL
+    find_by_sql([sql, {podcast_id: podcast.id}])
   end
 
   def complete?
