@@ -38,25 +38,25 @@ describe PublishingQueueItem do
     end
   end
 
-  describe ".unfinished_queue_items" do
+  describe ".unfinished_queue" do
     it "returns the publishing queue items if there are no attempts" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
-      assert_equal [pqi], PublishingQueueItem.unfinished_queue_items(podcast)
+      assert_equal [pqi], PublishingQueueItem.unfinished_queue(podcast)
     end
 
     it "returns the publishing queue items if there is no completed attempts" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
       pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi, complete: false)
-      assert_equal [pqi], PublishingQueueItem.unfinished_queue_items(podcast)
+      assert_equal [pqi], PublishingQueueItem.unfinished_queue(podcast)
     end
 
     it "returns the publishing queue items only of there are subsequent to completed work" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
       pa = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi, complete: true)
-      assert_equal [], PublishingQueueItem.unfinished_queue_items(podcast)
+      assert_equal [], PublishingQueueItem.unfinished_queue(podcast)
 
       unfinished_pqi = PublishingQueueItem.create!(podcast: podcast)
-      assert_equal [unfinished_pqi], PublishingQueueItem.unfinished_queue_items(podcast)
+      assert_equal [unfinished_pqi], PublishingQueueItem.unfinished_queue(podcast)
     end
   end
 end
