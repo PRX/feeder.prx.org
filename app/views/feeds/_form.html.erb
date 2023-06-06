@@ -21,6 +21,14 @@
             <%= render "form_image", podcast: podcast, feed: feed, form: form %>
           </div>
         </div>
+
+        <% unless feed.new_record? %>
+          <div class="row">
+            <div class="col-12">
+              <%= link_to t(".remove_feed"), podcast_feed_path(podcast, feed), method: :delete, data: {confirm: t(".remove_confirm")}, class: "btn btn-danger" %>
+            </div>
+          </div>
+        <% end %>
       <% end %>
     </div>
   </div>

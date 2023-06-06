@@ -23,9 +23,12 @@ class FeedsController < ApplicationController
     respond_to do |format|
       if @feed.save
         @feed.copy_media
-        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: "Feed was successfully created." }
+        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
-        format.html { render :new, status: :unprocessable_entity }
+        format.html do
+          flash.alert = t ".failure", model: "Feed"
+          render :new, status: :unprocessable_entity
+        end
       end
     end
   end
@@ -49,10 +52,15 @@ class FeedsController < ApplicationController
 
   # DELETE /feeds/1
   def destroy
-    @feed.destroy
-
     respond_to do |format|
-      format.html { redirect_to feeds_url, notice: "Feed was successfully destroyed." }
+      if @feed.destroy
+        format.html { redirect_to podcast_feed_path(@podcast, @podcast.default_feed), notice: (t ".success", model: "Feed") }
+      else
+        format.html do
+          flash.alert = t ".failure", model: "Feed"
+          render :show, status: :unprocessable_entity
+        end
+      end
     end
   end
 

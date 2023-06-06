@@ -7,9 +7,15 @@ defaults:
     update: Save
     updated_at_hint: Last Saved
   controller_actions:
+    create: &create
+      success: "%{model} created successfully."
+      failure: "There was a problem creating the %{model}."
     update: &update
-      success: "%{model} update successful."
+      success: "%{model} updated successfully."
       failure: "There was a problem updating the %{model}."
+    destroy: &destroy
+      success: "%{model} deleted successfully."
+      failure: "There was a problem deleting the %{model}."
 
 en:
   # general config
@@ -175,6 +181,10 @@ en:
       media_not_ready: Audio not ready
       notice: Episode updated
   feeds:
+    create:
+      <<: *create
+    destroy:
+      <<: *destroy
     form_custom_fields:
       headers:
         overrides: Overrides
@@ -204,6 +214,9 @@ en:
         audio_format: Optionally set an explicit audio format for your episodes. If you leave this blank, we will automatically use the same format as the first audio segment you upload for each episode.
     form_status:
       <<: *form_status
+    form:
+      remove_feed: Remove feed
+      remove_confirm: Are you sure you want to remove this feed?
     helper:
       episode_offset_options:
         "300": 5 minutes
