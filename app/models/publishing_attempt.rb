@@ -20,7 +20,7 @@ class PublishingAttempt < ApplicationRecord
 
   def self.attempt!(podcast)
     podcast.with_publish_lock do
-      next if PublishingQueueItem.settled_work?(podcast)
+      next if PublishingQueueItem.unfinished_items(podcast).empty?
       next if PublishingQueueItem.unfinished_attempted_item(podcast).present?
 
       # Dedupe the work, grab the latest unfinished item in the queue

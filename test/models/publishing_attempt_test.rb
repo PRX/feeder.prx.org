@@ -3,6 +3,53 @@ require "test_helper"
 describe PublishingAttempt do
   let(:podcast) { create(:podcast) }
 
+  describe "attempt!" do
+    it "guards if there is already work" do
+      _pa1 = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+
+      assert_nil PublishingAttempt.attempt!(podcast)
+    end
+
+    it "guards if all the work is completed" do
+      _pa1 = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast), complete: true)
+
+      assert_nil PublishingAttempt.attempt!(podcast)
+    end
+
+    it "guards if there is no items" do
+      assert_nil PublishingAttempt.attempt!(podcast)
+    end
+
+    it "creates a new attempt" do
+      PublishingQueueItem.create!(podcast: podcast)
+
+      assert_difference "PublishingAttempt.count", 1 do
+        res = PublishingAttempt.attempt!(podcast)
+        assert_equal PublishFeedJob, res.class
+      end
+    end
+  end
+
+  describe "complete!" do
+    it "guards if there is no settled work" do
+      _pa1 = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+
+      assert_nil PublishingAttempt.attempt!(podcast)
+    end
+
+    it "creates a new attempt" do
+      pqi = PublishingQueueItem.create!(podcast: podcast)
+      PublishingAttempt.create!(podcast: podcast, publishing_queue_item: pqi)
+      refute PublishingAttempt.last.complete?
+
+      assert_difference "PublishingAttempt.count", 1 do
+        res = PublishingAttempt.complete!(podcast)
+        assert_equal res.class, PublishingAttempt
+        assert res.complete?
+      end
+    end
+  end
+
   describe "latest_attempt" do
     it "returns the most recent publishing attempt" do
       _pa1 = PublishingAttempt.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))

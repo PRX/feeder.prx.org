@@ -9,8 +9,8 @@ class PublishFeedJob < ApplicationJob
 
   def perform(podcast)
     podcast.feeds.each { |feed| publish_feed(podcast, feed) }
-  ensure
     PublishingAttempt.complete!(podcast)
+  ensure
     PublishingAttempt.settle_remaining!(podcast)
   end
 
