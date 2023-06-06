@@ -1,13 +1,13 @@
-class PublishingAttempt < ApplicationRecord
+class PublishingPipelineState < ApplicationRecord
   # add a scope that returns the most recent publishing attempts for each podcast
   scope :latest_by_queue_item, -> {
-                                 where(id: PublishingAttempt
+                                 where(id: PublishingPipelineState
                                   .group(:podcast_id, :publishing_queue_item_id)
                                   .select("max(id) as id"))
                                }
 
   scope :latest_by_podcast, -> {
-                              where(id: PublishingAttempt
+                              where(id: PublishingPipelineState
                                .group(:podcast_id)
                                .select("max(id) as id"))
                             }
@@ -26,7 +26,7 @@ class PublishingAttempt < ApplicationRecord
       # Dedupe the work, grab the latest unfinished item in the queue
       latest_unfinished_item = PublishingQueueItem.unfinished_items(podcast).first
 
-      PublishingAttempt.create!(podcast: podcast, publishing_queue_item: latest_unfinished_item)
+      PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: latest_unfinished_item)
       PublishFeedJob.perform_later(self)
     end
   end

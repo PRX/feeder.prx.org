@@ -324,15 +324,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
     t.index ["source_url"], name: "index_podcasts_on_source_url", unique: true, where: "((deleted_at IS NULL) AND (source_url IS NOT NULL))"
   end
 
-  create_table "publishing_attempts", force: :cascade do |t|
+  create_table "publishing_pipeline_states", force: :cascade do |t|
     t.bigint "podcast_id", null: false
     t.bigint "publishing_queue_item_id", null: false
     t.boolean "complete", default: false, null: false
     t.datetime "created_at", null: false
-    t.index ["podcast_id", "complete"], name: "index_publishing_attempts_on_podcast_id_and_complete"
-    t.index ["podcast_id", "publishing_queue_item_id", "complete"], name: "index_publishing_attempts_on_podcast_id_and_queue_item_id", unique: true
-    t.index ["podcast_id"], name: "index_publishing_attempts_on_podcast_id"
-    t.index ["publishing_queue_item_id"], name: "index_publishing_attempts_on_publishing_queue_item_id"
+    t.index ["podcast_id", "complete"], name: "index_publishing_pipeline_states_on_podcast_id_and_complete"
+    t.index ["podcast_id", "publishing_queue_item_id", "complete"], name: "index_publishing_pipeline_state_on_podcast_id_and_queue_item_id", unique: true
+    t.index ["podcast_id"], name: "index_publishing_pipeline_states_on_podcast_id"
+    t.index ["publishing_queue_item_id"], name: "index_publishing_pipeline_states_on_publishing_queue_item_id"
   end
 
   create_table "publishing_queue_items", force: :cascade do |t|
@@ -416,7 +416,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
   add_foreign_key "feeds", "podcasts"
   add_foreign_key "itunes_images", "feeds"
   add_foreign_key "podcast_imports", "podcasts"
-  add_foreign_key "publishing_attempts", "podcasts"
-  add_foreign_key "publishing_attempts", "publishing_queue_items"
+  add_foreign_key "publishing_pipeline_states", "podcasts"
+  add_foreign_key "publishing_pipeline_states", "publishing_queue_items"
   add_foreign_key "publishing_queue_items", "podcasts"
 end

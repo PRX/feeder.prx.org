@@ -163,7 +163,7 @@ class Podcast < ApplicationRecord
     end
 
     PublishingQueueItem.create!(podcast: self)
-    PublishingAttempt.attempt!(self)
+    PublishingPipelineState.attempt!(self)
   end
 
   def with_publish_lock(&block)
