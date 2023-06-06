@@ -5,21 +5,35 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   let(:feed) { create(:feed, podcast: podcast, private: false) }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
   let(:update_params) { {url: "/a_public_url", display_episodes_count: 5} }
+  let(:create_params) { {podcast: podcast, slug: "new_feed", title: "new title", private: false} }
 
   setup_current_user { build(:user, account_id: 123) }
 
-  # test "should get new" do
-  #   get new_feed_url
-  #   assert_response :success
-  # end
+  test "should get new" do
+    get new_podcast_feed_url(podcast)
+    assert_response :success
+  end
 
-  # test "should create feed" do
-  #   assert_difference("Feed.count") do
-  #     post feeds_url, params: {feed: {}}
-  #   end
+  test "should create feed" do
+    # instantiate first feed to get accurate feed count
+    assert podcast
+    assert_difference("Feed.count") do
+      post podcast_feeds_url(podcast), params: {feed: create_params}
+    end
 
-  #   assert_redirected_to feed_url(Feed.last)
-  # end
+    assert_redirected_to podcast_feed_url(podcast, Feed.last)
+  end
+
+  test "authorizes creating feeds" do
+    podcast.update(prx_account_uri: "/api/v1/accounts/456")
+    post podcast_feeds_url(podcast), params: {feed: create_params}
+    assert_response :forbidden
+  end
+
+  test "validates creating feeds" do
+    post podcast_feeds_url(podcast), params: {feed: {private: false, slug: nil, title: nil}}
+    assert_response :unprocessable_entity
+  end
 
   test "authorize show feed" do
     podcast.update(prx_account_uri: "/api/v1/accounts/456")
@@ -51,11 +65,21 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  # test "should destroy feed" do
-  #   assert_difference("Feed.count", -1) do
-  #     delete feed_url(@feed)
-  #   end
+  test "should destroy feed" do
+    assert podcast
+    assert feed
+    assert private_feed
 
-  #   assert_redirected_to feeds_url
-  # end
+    assert_difference("Feed.count", -1) do
+      delete podcast_feed_url(podcast, private_feed)
+    end
+
+    assert_redirected_to podcast_feed_url(podcast, podcast.default_feed)
+  end
+
+  test "authorizes destroying feeds" do
+    podcast.update(prx_account_uri: "/api/v1/accounts/456")
+    get podcast_feed_url(podcast, feed)
+    assert_response :forbidden
+  end
 end
