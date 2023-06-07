@@ -86,7 +86,8 @@ class FeedsController < ApplicationController
       :display_full_episodes_count,
       :episode_offset_seconds,
       feed_tokens_attributes: %i[id label token _destroy],
-      feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
+      feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
+      itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
     )
   end
 end
