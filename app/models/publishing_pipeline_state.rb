@@ -29,7 +29,7 @@ class PublishingPipelineState < ApplicationRecord
   # None of the methods in here are threadsafe if we assume that creating
   # published artifacts is non-idempotent (e.g. creating remote Apple resources)
 
-  def self.attempt!(podcast)
+  def self.attempt!(podcast, perform_later: true)
     podcast.with_publish_lock do
       next if PublishingQueueItem.unfinished_items(podcast).empty?
       next if PublishingQueueItem.unfinished_attempted_item(podcast).present?
@@ -38,19 +38,44 @@ class PublishingPipelineState < ApplicationRecord
       latest_unfinished_item = PublishingQueueItem.unfinished_items(podcast).first
 
       PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: latest_unfinished_item, status: :created)
-      PublishFeedJob.perform_later(self)
+
+      if perform_later
+        PublishFeedJob.perform_later(podcast)
+      else
+        PublishFeedJob.perform_now(podcast)
+      end
+    end
+  end
+
+  def self.guard_for_terminal_state_transition(podcast)
+    if PublishingQueueItem.settled_work?(podcast)
+      Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot complete", {podcast_id: podcast.id})
+      true
     end
   end
 
   def self.complete!(podcast)
     podcast.with_publish_lock do
-      if PublishingQueueItem.settled_work?(podcast)
-        Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot complete", {podcast_id: podcast.id})
-        next
-      end
+      next if guard_for_terminal_state_transition(podcast)
 
       pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
       create!(podcast: podcast, publishing_queue_item: pqi, status: :complete)
+    end
+  end
+
+  def self.error!(podcast)
+    podcast.with_publish_lock do
+      next if guard_for_terminal_state_transition(podcast)
+
+      pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
+      create!(podcast: podcast, publishing_queue_item: pqi, status: :error)
+    end
+  end
+
+  def self.started!(podcast)
+    podcast.with_publish_lock do
+      pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
+      create!(podcast: podcast, publishing_queue_item: pqi, status: :started)
     end
   end
 

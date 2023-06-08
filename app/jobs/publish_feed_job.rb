@@ -8,8 +8,11 @@ class PublishFeedJob < ApplicationJob
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   def perform(podcast)
+    PublishingPipelineState.started!(podcast)
     podcast.feeds.each { |feed| publish_feed(podcast, feed) }
     PublishingPipelineState.complete!(podcast)
+  rescue => _e
+    PublishingPipelineState.error!(podcast)
   ensure
     PublishingPipelineState.settle_remaining!(podcast)
   end

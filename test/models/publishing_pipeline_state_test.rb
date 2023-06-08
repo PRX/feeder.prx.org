@@ -94,4 +94,41 @@ describe PublishingPipelineState do
       assert pa2.complete?
     end
   end
+
+  describe "PublishFeedJob" do
+    before do
+      PublishingQueueItem.create!(podcast: podcast)
+    end
+
+    describe "error!" do
+      it 'sets the status to "error"' do
+        PublishFeedJob.stub_any_instance(:publish_feed, -> { raise "error" }) do
+          PublishingPipelineState.attempt!(podcast, perform_later: false)
+        end
+
+        assert_equal ["created", "started", "error"], PublishingPipelineState.where(podcast: podcast).map(&:status)
+      end
+    end
+
+    describe "complete!" do
+      it 'sets the status to "complete"' do
+        PublishFeedJob.stub_any_instance(:publish_feed, "pub!") do
+          PublishingPipelineState.attempt!(podcast, perform_later: false)
+        end
+
+        assert_equal ["created", "started", "complete"], PublishingPipelineState.where(podcast: podcast).map(&:status)
+      end
+
+      it "attempts new publishing pipelines" do
+        # And another request comes along to publish:
+        PublishingQueueItem.create!(podcast: podcast)
+
+        PublishFeedJob.stub_any_instance(:publish_feed, "pub!") do
+          PublishingPipelineState.attempt!(podcast, perform_later: false)
+        end
+
+        assert_equal ["created", "started", "complete", "created"], PublishingPipelineState.where(podcast: podcast).map(&:status)
+      end
+    end
+  end
 end
