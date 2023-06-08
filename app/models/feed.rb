@@ -1,6 +1,8 @@
 require "hash_serializer"
 
 class Feed < ApplicationRecord
+  include FeedAudioFormat
+
   DEFAULT_FILE_NAME = "feed-rss.xml".freeze
 
   AUDIO_MIME_TYPES = {

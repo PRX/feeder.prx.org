@@ -84,6 +84,11 @@ class FeedsController < ApplicationController
       :display_episodes_count,
       :display_full_episodes_count,
       :episode_offset_seconds,
+      :audio_type,
+      :audio_bitrate,
+      :audio_bitdepth,
+      :audio_channel,
+      :audio_sample,
       feed_tokens_attributes: %i[id label token _destroy]
     )
   end

@@ -1,7 +1,23 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["check", "field"]
+  static targets = ["check", "field", "start"]
+
+  connect() {
+    if (this.startTargets.length) {
+      // debugger
+      this.startTargets.forEach((target) => {
+        this.fieldTargets.forEach((el) => {
+          const types = el.getAttribute("field").split(" ")
+          if (types.includes(target.value)) {
+            el.classList.remove("d-none")
+          } else {
+            el.classList.add("d-none")
+          }
+        })
+      })
+    }
+  }
 
   changeCheck() {
     this.checkTarget.parentElement.classList.add("d-none")
@@ -22,10 +38,11 @@ export default class extends Controller {
     const field = event.target.value
 
     this.fieldTargets.forEach((el) => {
-      if (field !== el.getAttribute("field")) {
-        el.classList.add("d-none")
-      } else {
+      const types = el.getAttribute("field").split(" ")
+      if (types.includes(field)) {
         el.classList.remove("d-none")
+      } else {
+        el.classList.add("d-none")
       }
     })
   }
