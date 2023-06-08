@@ -15,6 +15,17 @@ class PublishingPipelineState < ApplicationRecord
   belongs_to :publishing_queue_item
   belongs_to :podcast
 
+  enum status: {
+    created: 0,
+    started: 1,
+    publishing_rss: 2,
+    publishing_apple: 3,
+    complete: 4,
+    error: 5
+  }
+
+  TERMINAL_STATUSES = [statuses[:complete], statuses[:error]]
+
   # None of the methods in here are threadsafe if we assume that creating
   # published artifacts is non-idempotent (e.g. creating remote Apple resources)
 
@@ -26,7 +37,7 @@ class PublishingPipelineState < ApplicationRecord
       # Dedupe the work, grab the latest unfinished item in the queue
       latest_unfinished_item = PublishingQueueItem.unfinished_items(podcast).first
 
-      PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: latest_unfinished_item)
+      PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: latest_unfinished_item, status: :created)
       PublishFeedJob.perform_later(self)
     end
   end
@@ -39,7 +50,7 @@ class PublishingPipelineState < ApplicationRecord
       end
 
       pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
-      create!(podcast: podcast, publishing_queue_item: pqi, complete: true)
+      create!(podcast: podcast, publishing_queue_item: pqi, status: :complete)
     end
   end
 
@@ -56,6 +67,6 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def complete_publishing!
-    self.class.create!(podcast: podcast, publishing_queue_item: publishing_queue_item, complete: true)
+    self.class.create!(podcast: podcast, publishing_queue_item: publishing_queue_item, status: :complete)
   end
 end

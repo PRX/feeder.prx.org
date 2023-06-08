@@ -11,7 +11,7 @@ describe PublishingPipelineState do
     end
 
     it "guards if all the work is completed" do
-      _pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast), complete: true)
+      _pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast), status: :complete)
 
       assert_nil PublishingPipelineState.attempt!(podcast)
     end
