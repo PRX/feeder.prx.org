@@ -48,10 +48,14 @@ module FeedsHelper
   end
 
   def display_bitrate(feed)
-    feed.audio_format.blank? || feed.try(:audio_format).try(:[], :f) == "mp3" ? "" : "d-none"
+    (feed.try(:audio_format).try(:[], :f) == "mp3") ? "" : "d-none"
   end
 
   def display_bitdepth(feed)
-    ["wav", "flac"].include?(feed.try(:audio_format).try(:[], :f)) ? "" : "d-none"
+    %w[wav flac].include?(feed.try(:audio_format).try(:[], :f)) ? "" : "d-none"
+  end
+
+  def display_audio_format(feed)
+    feed.audio_format.blank? ? "d-none" : ""
   end
 end
