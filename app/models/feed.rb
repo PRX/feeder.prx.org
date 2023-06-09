@@ -2,6 +2,7 @@ require "hash_serializer"
 
 class Feed < ApplicationRecord
   include FeedAudioFormat
+  include FeedAdZone
 
   DEFAULT_FILE_NAME = "feed-rss.xml".freeze
 

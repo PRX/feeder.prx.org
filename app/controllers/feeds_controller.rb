@@ -89,6 +89,10 @@ class FeedsController < ApplicationController
       :audio_bitdepth,
       :audio_channel,
       :audio_sample,
+      :billboard,
+      :house,
+      :paid,
+      :sonic_id,
       feed_tokens_attributes: %i[id label token _destroy]
     )
   end
