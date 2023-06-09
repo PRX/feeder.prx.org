@@ -6,7 +6,11 @@ export default class extends Controller {
   change(event) {
     for (const link of this.linkTargets) {
       const oldHref = link.href
-      link.search = new URLSearchParams({ [event.target.name]: event.target.value })
+
+      const search = new URLSearchParams(link.search)
+      search.set(event.target.name, event.target.value)
+      link.search = search
+
       if (link.href !== oldHref) {
         link.click()
       }

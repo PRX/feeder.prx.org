@@ -1,4 +1,4 @@
-class EpisodeImage < ActiveRecord::Base
+class EpisodeImage < ApplicationRecord
   include ImageFile
 
   belongs_to :episode, touch: true, optional: true
@@ -16,6 +16,10 @@ class EpisodeImage < ActiveRecord::Base
 
   def image_path
     "images/#{guid}/#{file_name}"
+  end
+
+  def publish!
+    episode&.publish! if status_complete? && status_previously_changed?
   end
 
   def replace_resources!

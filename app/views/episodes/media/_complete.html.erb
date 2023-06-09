@@ -10,9 +10,9 @@
         <span class="material-icons text-primary mx-2 my-1">pause</span>
       </button>
 
-      <div class="text-secondary me-2"><%= content.file_name %></div>
+      <div class="text-secondary me-2"><%= media.file_name %></div>
 
-      <small class="text-danger flex-grow-1 me-2">Unable to play file</small>
+      <small class="text-danger flex-grow-1 me-2"><%= t(".unable") %></small>
 
       <div class="flex-grow-1 me-2 py-2 prx-scrub" data-action="mousedown->audio-player#mouseDown" data-audio-player-target="scrubber">
         <div class="progress" data-audio-player-target="progress">
@@ -20,21 +20,21 @@
         </div>
       </div>
 
-      <audio class="d-none" src="<%= content.href %>" preload="none" data-audio-player-target="audio" data-action="timeupdate->audio-player#audioTimeUpdate ended->audio-player#audioEnded"></audio>
+      <audio class="d-none" src="<%= media.href %>" preload="none" data-audio-player-target="audio" data-action="timeupdate->audio-player#audioTimeUpdate ended->audio-player#audioEnded"></audio>
 
-      <small class="text-muted" data-audio-player-target="duration">(<%= episode_content_duration(content) %>)</small>
+      <small class="text-muted" data-audio-player-target="duration">(<%= episode_media_duration(media) %>)</small>
 
-      <%= link_to edit_episode_path(content.episode, uploads_destroy_params(form)), class: "btn" do %>
+      <%= link_to edit_episode_path(media.episode, uploads_destroy_params(form)), class: "btn" do %>
         <span class="material-icons">delete</span>
       <% end %>
     </div>
 
-    <label>Segment <%= content.position %></label>
+    <label><%= episode_media_label(episode, media) %></label>
   </div>
 
-  <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#audio-modal-<%= content.id %>">
+  <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#media-modal-<%= media.id %>">
     <span class="material-icons">info</span>
   </button>
 </div>
 
-<%= render "episodes/audio/modal", content: content, id: "audio-modal-#{content.id}", title: "Segment #{content.position}" %>
+<%= render "episodes/media/modal", episode: episode, media: media, id: "media-modal-#{media.id}" %>

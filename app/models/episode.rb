@@ -4,6 +4,7 @@ require "hash_serializer"
 require "text_sanitizer"
 
 class Episode < ApplicationRecord
+  include EpisodeAdBreaks
   include EpisodeMedia
   include PublishingStatus
   include TextSanitizer
@@ -13,25 +14,20 @@ class Episode < ApplicationRecord
 
   attr_accessor :strict_validations
 
-  serialize :categories, JSON
-  serialize :keywords, JSON
-
   acts_as_paranoid
 
+  serialize :categories, JSON
+  serialize :keywords, JSON
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
-
-  has_many :images,
-    -> { order("created_at DESC") },
-    class_name: "EpisodeImage", autosave: true, dependent: :destroy
-
-  has_many :contents,
-    -> { order("position ASC, created_at DESC") },
-    autosave: true, dependent: :destroy
+  has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy
+  has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy
+  has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
 
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
+  accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
 
   has_one :apple_sync_log, -> { episodes }, foreign_key: :feeder_id, class_name: "SyncLog"
   has_one :apple_podcast_delivery, class_name: "Apple::PodcastDelivery"
@@ -64,7 +60,7 @@ class Episode < ApplicationRecord
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
 
-  enum :medium, [:audio, :video], prefix: true
+  enum :medium, [:audio, :uncut, :video], prefix: true
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -187,6 +183,17 @@ class Episode < ApplicationRecord
     self.original_guid = new_guid
   end
 
+  def medium=(new_medium)
+    super
+
+    if medium_changed? && medium_was.present?
+      contents.each(&:mark_for_replacement)
+      uncut&.mark_for_replacement
+    end
+
+    self.segment_count = 1 if medium_video?
+  end
+
   def overrides
     self[:overrides] ||= HashWithIndifferentAccess.new
   end
@@ -206,6 +213,7 @@ class Episode < ApplicationRecord
   def copy_media(force = false)
     contents.each { |c| c.copy_media(force) }
     images.each { |i| i.copy_media(force) }
+    uncut&.copy_media(force)
   end
 
   def apple_mark_for_reupload!

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Apple
-  class PodcastDeliveryFile < ActiveRecord::Base
+  class PodcastDeliveryFile < ApplicationRecord
     include Apple::ApiResponse
     include Apple::ApiWaiting
 
