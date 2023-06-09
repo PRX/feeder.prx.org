@@ -58,4 +58,20 @@ module FeedsHelper
   def display_audio_format(feed)
     feed.audio_format.blank? ? "d-none" : ""
   end
+
+  def feed_destroy_image_path(feed, form)
+    if feed.new_record?
+      new_podcast_feed_path feed.podcast, uploads_destroy_params(form)
+    else
+      podcast_feed_path feed.podcast, feed, uploads_destroy_params(form)
+    end
+  end
+
+  def feed_retry_image_path(feed, form)
+    if feed.new_record?
+      new_podcast_feed_path feed.podcast, uploads_retry_params(form)
+    else
+      podcast_feed_path feed.podcast, feed, uploads_retry_params(form)
+    end
+  end
 end

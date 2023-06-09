@@ -33,6 +33,7 @@ class FeedsController < ApplicationController
 
     respond_to do |format|
       if @feed.save
+        @feed.copy_media
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
         format.html do
@@ -93,7 +94,9 @@ class FeedsController < ApplicationController
       :house,
       :paid,
       :sonic_id,
-      feed_tokens_attributes: %i[id label token _destroy]
+      feed_tokens_attributes: %i[id label token _destroy],
+      feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
+      itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
     )
   end
 end
