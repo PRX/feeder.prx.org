@@ -18,6 +18,7 @@ class MediaResource < ApplicationRecord
   validates :medium, inclusion: {in: %w[audio video]}, if: :status_complete?
 
   after_create :replace_resources!
+  after_destroy :mark_replaced!, if: :marked_for_replacement?
 
   scope :complete_or_replaced, -> do
     with_deleted
@@ -169,10 +170,14 @@ class MediaResource < ApplicationRecord
 
   def mark_for_replacement
     mark_for_destruction
-    self.replaced_at = Time.now if status_complete?
+    @marked_for_replacement = true if status_complete?
   end
 
   def marked_for_replacement?
-    marked_for_destruction? && replaced_at.present?
+    @marked_for_replacement == true
+  end
+
+  def mark_replaced!
+    update_column(:replaced_at, deleted_at)
   end
 end
