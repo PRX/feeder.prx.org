@@ -86,36 +86,35 @@
   <div class="row my-4">
     <div class="col-3">
       <div class="form-floating">
-        <%= form.select :audio_type, audio_format_options, {}, data: {action: "toggle-field#displayOnlyThisField", toggle_field_target: "start"} %>
+        <%= form.select :audio_type, audio_format_options, {include_blank: true}, data: {action: "toggle-field#displayOnlyThisField"} %>
         <%= form.label :audio_type %>
       </div>
     </div>
 
-  <%# note to self: bitrate/bitdepth errors out please fix %>
-    <div class="col-3 d-none" data-toggle-field-target="field" field="mp3">
+    <div class="col-3 <%= display_bitrate(feed)%>" data-toggle-field-target="field" field="mp3">
       <div class="form-floating">
-        <%= form.select :audio_bitrate, audio_bitrate_options %>
+        <%= form.select :audio_bitrate, audio_bitrate_options, include_blank: true %>
         <%= form.label :audio_bitrate %>
       </div>
     </div>
 
-    <div class="col-3 d-none" data-toggle-field-target="field" field="wav flac">
+    <div class="col-3 <%= display_bitdepth(feed)%>" data-toggle-field-target="field" field="wav flac">
       <div class="form-floating">
-        <%= form.select :audio_bitdepth, audio_bitdepth_options %>
+        <%= form.select :audio_bitdepth, audio_bitdepth_options, include_blank: true %>
         <%= form.label :audio_bitdepth %>
       </div>
     </div>
 
     <div class="col-3">
       <div class="form-floating">
-        <%= form.select :audio_channel, audio_channel_options %>
+        <%= form.select :audio_channel, audio_channel_options, include_blank: true %>
         <%= form.label :audio_channel %>
       </div>
     </div>
 
     <div class="col-3">
       <div class="form-floating">
-        <%= form.select :audio_sample, audio_sample_options %>
+        <%= form.select :audio_sample, audio_sample_options, include_blank: true %>
         <%= form.label :audio_sample %>
       </div>
     </div>
