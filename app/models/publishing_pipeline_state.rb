@@ -30,6 +30,11 @@ class PublishingPipelineState < ApplicationRecord
     where(publishing_queue_item_id: PublishingQueueItem.all_unfinished_items)
   end
 
+  def self.start_pipeline!(podcast)
+    PublishingQueueItem.ensure_queued!(podcast)
+    attempt!(podcast)
+  end
+
   # None of the methods that grab locks are threadsafe if we assume that
   # creating published artifacts is non-idempotent (e.g. creating remote Apple
   # resources)

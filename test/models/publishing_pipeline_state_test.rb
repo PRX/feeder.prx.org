@@ -102,8 +102,8 @@ describe PublishingPipelineState do
 
     describe "error!" do
       it 'sets the status to "error"' do
-        PublishFeedJob.stub_any_instance(:publish_feed, -> { raise "error" }) do
-          PublishingPipelineState.attempt!(podcast, perform_later: false)
+        PublishFeedJob.stub_any_instance(:publish_feed, ->(*args) { raise "error" }) do
+          assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
         end
 
         assert_equal ["created", "started", "error"], PublishingPipelineState.where(podcast: podcast).map(&:status)

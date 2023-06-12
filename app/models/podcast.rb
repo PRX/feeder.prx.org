@@ -162,8 +162,7 @@ class Podcast < ApplicationRecord
       return false
     end
 
-    PublishingQueueItem.create!(podcast: self)
-    PublishingPipelineState.attempt!(self)
+    PublishingPipelineState.start_pipeline!(self)
   end
 
   def with_publish_lock(&block)

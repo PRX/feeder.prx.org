@@ -31,6 +31,10 @@ describe PublishFeedJob do
 
     it "can process publishing a podcast" do
       job.stub(:client, stub_client) do
+        PublishFeedJob.stub(:perform_later, nil) do
+          PublishingPipelineState.start_pipeline!(podcast)
+        end
+
         rss = job.perform(podcast)
         refute_nil rss
         refute_nil job.put_object

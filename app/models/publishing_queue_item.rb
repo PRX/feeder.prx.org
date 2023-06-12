@@ -8,6 +8,10 @@ class PublishingQueueItem < ApplicationRecord
   has_one :latest_attempt, -> { order(id: :desc) }, class_name: "PublishingPipelineState"
   belongs_to :podcast
 
+  def self.ensure_queued!(podcast)
+    create!(podcast: podcast)
+  end
+
   def self.settled_work?(podcast)
     # test that there is no publishing attempt in progress
     unfinished_attempted_item(podcast).nil?
