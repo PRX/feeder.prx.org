@@ -11,8 +11,9 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.started!(podcast)
     podcast.feeds.each { |feed| publish_feed(podcast, feed) }
     PublishingPipelineState.complete!(podcast)
-  rescue => _e
+  rescue => e
     PublishingPipelineState.error!(podcast)
+    raise e
   ensure
     PublishingPipelineState.settle_remaining!(podcast)
   end
