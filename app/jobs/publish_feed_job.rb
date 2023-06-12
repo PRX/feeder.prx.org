@@ -1,7 +1,7 @@
 require "builder"
 
 class PublishFeedJob < ApplicationJob
-  queue_as :feeder_default
+  queue_as :feeder_publishing
 
   include PodcastsHelper
 
