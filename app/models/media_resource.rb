@@ -18,7 +18,6 @@ class MediaResource < ApplicationRecord
   validates :medium, inclusion: {in: %w[audio video]}, if: :status_complete?
 
   after_create :replace_resources!
-  after_destroy :mark_replaced!, if: :marked_for_replacement?
 
   scope :complete_or_replaced, -> do
     with_deleted
@@ -177,7 +176,9 @@ class MediaResource < ApplicationRecord
     @marked_for_replacement == true
   end
 
-  def mark_replaced!
-    update_column(:replaced_at, deleted_at)
+  def paranoia_destroy_attributes
+    super.tap do |attrs|
+      attrs[:replaced_at] = current_time_from_proper_timezone if marked_for_replacement?
+    end
   end
 end
