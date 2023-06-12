@@ -267,6 +267,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
     t.integer "status"
     t.datetime "deleted_at", precision: nil
     t.datetime "replaced_at", precision: nil
+    t.text "segmentation"
     t.index ["episode_id"], name: "index_media_resources_on_episode_id"
     t.index ["guid"], name: "index_media_resources_on_guid", unique: true
     t.index ["original_url"], name: "index_media_resources_on_original_url"

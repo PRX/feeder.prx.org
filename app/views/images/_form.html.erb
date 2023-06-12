@@ -1,12 +1,9 @@
-<% if image.new_record? || image.marked_for_destruction? %>
+<% if upload_new?(image) %>
   <%= render "images/new", form: form, image: image %>
+<% elsif upload_processing?(image) %>
+  <%= render "images/processing", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
+<% elsif upload_complete?(image) %>
+  <%= render "images/complete", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
 <% else %>
-  <% case image.status %>
-  <% when "started", "created", "processing", "retrying" %>
-    <%= render "images/processing", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
-  <% when "complete" %>
-    <%= render "images/complete", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
-  <% else %>
-    <%= render "images/error", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
-  <% end %>
+  <%= render "images/error", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
 <% end %>

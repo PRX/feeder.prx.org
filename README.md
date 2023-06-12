@@ -155,6 +155,10 @@ or the [Apple API Bridge Lambda](https://github.com/PRX/api-bridge-lambda/) to c
 First, make sure you have [awsso](https://github.com/PRX/internal/wiki/AWS:-Developer-Access-%E2%80%93-CLI#sso-via-iam-identity-center)
 installed and working, along with an AWS profile for the prx-shared-development account (`sso_account_id = 556402616001`).
 
+You'll need the key for the [`prx-feed-development-upload`](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/users/details/prx-feed-development-upload?section=security_credentials) user.
+
+And the url for the signing lambda [`prx-feed-development-upload-signer`](https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions/prx-feed-development-upload-signer?tab=code) lambda.
+
 Then you'll need to set a few ENVs to make this all work:
 
 ```
@@ -172,7 +176,7 @@ PORTER_SNS_TOPIC=<get ARN from legacy SNS web console>
 UPLOAD_BUCKET_NAME=prx-feed-development
 UPLOAD_BUCKET_PREFIX=uploads
 UPLOAD_SIGNING_SERVICE_KEY_ID=<get access key id from prx-shared-development IAM web console>
-UPLOAD_SIGNING_SERVICE_URL=<get invoke url from prx-shared-development Lambda web console>
+UPLOAD_SIGNING_SERVICE_URL=<get function url from prx-shared-development Lambda web console>
 
 # use the development S3/CloudFront for that same bucket
 FEEDER_CDN_HOST=f.development.prxu.org
@@ -187,7 +191,7 @@ for processed files. Then, to start the worker in development:
 bin/rails sqs:create
 
 # now you can start the web/worker in different terminals
-bin/rails web
+bin/rails server
 bin/rails worker
 
 # or shorthand

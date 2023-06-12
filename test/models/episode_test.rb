@@ -254,6 +254,27 @@ describe Episode do
     end
   end
 
+  describe "#medium=" do
+    it "marks existing content for replacement on change" do
+      refute episode.contents.first.marked_for_replacement?
+
+      episode.medium = "audio"
+      refute episode.contents.first.marked_for_replacement?
+
+      episode.medium = "uncut"
+      assert episode.contents.first.marked_for_replacement?
+    end
+
+    it "sets segment count for videos" do
+      episode.segment_count = 2
+      refute episode.contents.first.marked_for_replacement?
+
+      episode.medium = "video"
+      assert episode.contents.first.marked_for_replacement?
+      assert_equal 1, episode.segment_count
+    end
+  end
+
   describe "#segment_range" do
     it "returns a range of positions" do
       e = Episode.new(segment_count: nil)

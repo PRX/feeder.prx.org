@@ -89,6 +89,18 @@ class MediaResource < ApplicationRecord
     URI.parse(url).path.sub(/\A\//, "") if url.present?
   end
 
+  def waveform_url
+    "#{url}.json"
+  end
+
+  def waveform_path
+    "#{path}.json"
+  end
+
+  def generate_waveform?
+    false
+  end
+
   def replace_resources!
   end
 
