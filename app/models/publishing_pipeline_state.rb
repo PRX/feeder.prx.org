@@ -26,9 +26,13 @@ class PublishingPipelineState < ApplicationRecord
 
   TERMINAL_STATUSES = [statuses[:complete], statuses[:error]]
 
-  # None of the methods in here are threadsafe if we assume that creating
-  # published artifacts is non-idempotent (e.g. creating remote Apple resources)
+  def self.unfinished_pipelines
+    where(publishing_queue_item_id: PublishingQueueItem.all_unfinished_items)
+  end
 
+  # None of the methods that grab locks are threadsafe if we assume that
+  # creating published artifacts is non-idempotent (e.g. creating remote Apple
+  # resources)
   def self.attempt!(podcast, perform_later: true)
     podcast.with_publish_lock do
       next if PublishingQueueItem.unfinished_items(podcast).empty?
