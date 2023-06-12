@@ -127,6 +127,11 @@ describe PublishingPipelineState do
           PublishingPipelineState.attempt!(podcast, perform_later: false)
         end
 
+        PublishingQueueItem.create!(podcast: podcast)
+
+        # Just fire off the job async, so we can see the created state
+        PublishingPipelineState.attempt!(podcast, perform_later: true)
+
         assert_equal ["created", "started", "complete", "created"], PublishingPipelineState.where(podcast: podcast).map(&:status)
       end
     end
