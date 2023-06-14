@@ -20,7 +20,7 @@
   <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.file_name") %>"><span class="material-icons">help</span></button>
 </div>
 
-<% unless feed.default? %>
+<% unless feed.default? && !feed.new_record? %>
   <%= render "form_custom_fields", feed: feed, form: form %>
 <% end %>
 

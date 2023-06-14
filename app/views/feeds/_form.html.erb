@@ -15,7 +15,7 @@
           <%= render "form_status", podcast: podcast, feed: feed, form: form %>
         </div>
       </div>
-      <% unless feed.default? %>
+      <% unless feed.default? && !feed.new_record? %>
         <div class="row">
           <div class="col-12">
             <%= render "form_image", podcast: podcast, feed: feed, form: form %>

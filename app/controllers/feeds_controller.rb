@@ -10,7 +10,7 @@ class FeedsController < ApplicationController
 
   # GET /feeds/new
   def new
-    @feed = Feed.new(private: false, slug: "new_feed")
+    @feed = Feed.new(private: false)
     @feed.podcast = @podcast
   end
 
