@@ -49,43 +49,25 @@ class PublishingPipelineState < ApplicationRecord
       PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: latest_unfinished_item, status: :created)
 
       if perform_later
+        Rails.logger.info("Scheduling PublishFeedJob for podcast #{podcast.id}", {podcast_id: podcast.id})
         PublishFeedJob.perform_later(podcast)
       else
+        Rails.logger.info("Performing PublishFeedJob for podcast #{podcast.id}", {podcast_id: podcast.id})
         PublishFeedJob.perform_now(podcast)
       end
     end
   end
 
-  def self.guard_for_terminal_state_transition(podcast)
-    if PublishingQueueItem.settled_work?(podcast)
-      Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot complete", {podcast_id: podcast.id})
-      true
-    end
-  end
-
   def self.complete!(podcast)
-    podcast.with_publish_lock do
-      next if guard_for_terminal_state_transition(podcast)
-
-      pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
-      create!(podcast: podcast, publishing_queue_item: pqi, status: :complete)
-    end
+    state_transition(podcast, :complete)
   end
 
   def self.error!(podcast)
-    podcast.with_publish_lock do
-      next if guard_for_terminal_state_transition(podcast)
-
-      pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
-      create!(podcast: podcast, publishing_queue_item: pqi, status: :error)
-    end
+    state_transition(podcast, :error)
   end
 
   def self.started!(podcast)
-    podcast.with_publish_lock do
-      pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
-      create!(podcast: podcast, publishing_queue_item: pqi, status: :started)
-    end
+    state_transition(podcast, :started)
   end
 
   def self.settle_remaining!(podcast)
@@ -103,4 +85,16 @@ class PublishingPipelineState < ApplicationRecord
   def complete_publishing!
     self.class.create!(podcast: podcast, publishing_queue_item: publishing_queue_item, status: :complete)
   end
+
+  def self.state_transition(podcast, to_state)
+    pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
+    if pqi.present?
+      PublishingPipelineState.create(podcast: podcast, publishing_queue_item: pqi, status: to_state)
+    else
+      Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot complete", {podcast_id: podcast.id})
+      nil
+    end
+  end
+
+  private_class_method :state_transition
 end
