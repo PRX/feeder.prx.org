@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'hash_serializer'
-require 'mysql2'
-require 'reverse_markdown'
-require 's3_access'
+require "hash_serializer"
+require "mysql2"
+require "reverse_markdown"
+require "s3_access"
 
 # Do the work to synch cms and feeder
 class CmsSyncher
@@ -103,10 +103,10 @@ class CmsSyncher
   def create_image(instance, image, purpose)
     # ok, we need to add this image to cms
     attrs = {
-      status: 'complete', # assume the processing will work ;)
+      status: "complete", # assume the processing will work ;)
       upload_path: image.url,
       content_type: "image/#{image.format}",
-      filename: URI.parse(image.url || '').path.split('/').last,
+      filename: URI.parse(image.url || "").path.split("/").last,
       size: image.size,
       height: image.height,
       width: image.width,
@@ -133,16 +133,16 @@ class CmsSyncher
   end
 
   def id_from_uri(uri)
-    URI.parse(uri || '').path.split('/').last.to_i
+    URI.parse(uri || "").path.split("/").last.to_i
   end
 end
 
 module Cms
-  APP_VERSION = 'v4'
-  PROFILE = 'profile'
-  THUMBNAIL = 'thumbnail'
+  APP_VERSION = "v4"
+  PROFILE = "profile"
+  THUMBNAIL = "thumbnail"
   PURPOSES = [PROFILE, THUMBNAIL].freeze
-  CMS_BUCKET = ENV['CMS_STORAGE_BUCKET'] || 'production.mediajoint.prx.org'
+  CMS_BUCKET = ENV["CMS_STORAGE_BUCKET"] || "production.mediajoint.prx.org"
 
   # Base model class for CMS database access
   class CmsModel < ActiveRecord::Base
@@ -151,15 +151,15 @@ module Cms
 
     def self.cms_db_connection
       {
-        adapter: 'mysql2',
-        encoding: 'utf8mb4',
-        collation: 'utf8mb4_unicode_ci',
-        pool: ENV['CMS_DATABASE_POOL_SIZE'],
-        username: ENV['CMS_MYSQL_USER'],
-        password: ENV['CMS_MYSQL_PASSWORD'],
-        host: ENV['CMS_MYSQL_HOST'],
-        port: ENV['CMS_MYSQL_PORT'],
-        database: ENV['CMS_MYSQL_DATABASE'],
+        adapter: "mysql2",
+        encoding: "utf8mb4",
+        collation: "utf8mb4_unicode_ci",
+        pool: ENV["CMS_DATABASE_POOL_SIZE"],
+        username: ENV["CMS_MYSQL_USER"],
+        password: ENV["CMS_MYSQL_PASSWORD"],
+        host: ENV["CMS_MYSQL_HOST"],
+        port: ENV["CMS_MYSQL_PORT"],
+        database: ENV["CMS_MYSQL_DATABASE"],
         reconnect: true
       }
     end
@@ -168,11 +168,11 @@ module Cms
 
     def copy_original_task
       {
-        Type: 'Copy',
-        Mode: 'AWS/S3',
+        Type: "Copy",
+        Mode: "AWS/S3",
         BucketName: Cms::CMS_BUCKET,
         ObjectKey: s3_object_key,
-        ContentType: 'REPLACE',
+        ContentType: "REPLACE",
         Parameters: {
           ContentDisposition: "attachment; filename=\"#{filename}\""
         }
@@ -182,7 +182,7 @@ module Cms
     def porter_store_files(source_bucket, source_key)
       job = {
         Id: SecureRandom.uuid,
-        Source: { Mode: 'AWS/S3', BucketName: source_bucket, ObjectKey: source_key },
+        Source: {Mode: "AWS/S3", BucketName: source_bucket, ObjectKey: source_key},
         Tasks: [copy_original_task] + thumbnail_tasks
       }
 
@@ -213,9 +213,9 @@ module Cms
 
     def self.version_formats
       {
-        'square' => [75, 75],
-        'small' => [120, 120],
-        'medium' => [240, 240]
+        "square" => [75, 75],
+        "small" => [120, 120],
+        "medium" => [240, 240]
       }
     end
 
@@ -223,19 +223,19 @@ module Cms
       self.class.version_formats.map do |(thumb, dimensions)|
         derivative = s3_object_key(thumb)
         {
-          Type: 'Image',
-          Metadata: 'PRESERVE',
+          Type: "Image",
+          Metadata: "PRESERVE",
           Resize: {
-            Fit: name == 'square' ? 'cover' : 'inside',
+            Fit: (name == "square") ? "cover" : "inside",
             Height: dimensions[1],
-            Position: 'centre',
+            Position: "centre",
             Width: dimensions[0]
           },
           Destination: {
-            Mode: 'AWS/S3',
+            Mode: "AWS/S3",
             BucketName: Cms::CMS_BUCKET,
             ObjectKey: derivative,
-            ContentType: 'REPLACE',
+            ContentType: "REPLACE",
             Parameters: {
               ContentDisposition: "attachment; filename=\"#{File.basename(derivative)}\""
             }
@@ -250,8 +250,8 @@ module Cms
   end
 
   class StoryImage < CmsImage
-    self.table_name = 'piece_images'
-    belongs_to :story, -> { with_deleted }, class_name: 'Cms::Story', foreign_key: 'piece_id', touch: true
+    self.table_name = "piece_images"
+    belongs_to :story, -> { with_deleted }, class_name: "Cms::Story", foreign_key: "piece_id", touch: true
   end
 
   class AudioVersionTemplate < CmsModel
@@ -284,7 +284,7 @@ module Cms
 
   # Story AR
   class Story < CmsModel
-    self.table_name = 'pieces'
+    self.table_name = "pieces"
     belongs_to :series
     has_many :taggings, as: :taggable, dependent: :destroy
     has_many :user_tags, through: :taggings
@@ -300,20 +300,20 @@ module Cms
   end
 
   class UserTag < CmsModel
-    self.table_name = 'tags'
+    self.table_name = "tags"
     has_many :taggings
     has_many :taggables, through: :taggings
   end
 
   class AudioVersion < CmsModel
-    belongs_to :story, -> { with_deleted }, class_name: 'Cms::Story', foreign_key: 'piece_id'
+    belongs_to :story, -> { with_deleted }, class_name: "Cms::Story", foreign_key: "piece_id"
     belongs_to :audio_version_template
     has_many :audio_files, -> { order :position }, dependent: :destroy
   end
 
   class StoryDistribution < CmsModel
     belongs_to :distribution
-    belongs_to :story, -> { with_deleted }, class_name: 'Cms::Story', foreign_key: 'piece_id', touch: true
+    belongs_to :story, -> { with_deleted }, class_name: "Cms::Story", foreign_key: "piece_id", touch: true
     serialize :properties, HashSerializer
   end
 
