@@ -23,6 +23,9 @@ default: &default
   password: <%= ENV.fetch("POSTGRES_PASSWORD", "feeder-pass") %>
   host: <%= ENV.fetch("POSTGRES_HOST", "127.0.0.1") %>
   port: <%= ENV.fetch("POSTGRES_PORT", "5432") %>
+  <% if ENV["POSTGRES_GSSENCMODE"] %>
+  gssencmode: "<%= ENV["POSTGRES_GSSENCMODE"] %>"
+  <% end %>
 
 development:
   <<: *default
