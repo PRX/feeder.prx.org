@@ -21,10 +21,21 @@ class PublishingPipelineState < ApplicationRecord
     publishing_rss: 2,
     publishing_apple: 3,
     complete: 4,
-    error: 5
+    error: 5,
+    expire: 6
   }
 
-  TERMINAL_STATUSES = [statuses[:complete], statuses[:error]]
+  TERMINAL_STATUSES = [statuses[:complete], statuses[:error], statuses[:expire]].freeze
+  # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
+  TIMEOUT = 30.minutes.freeze
+
+  def self.expired_pipelines
+    pq_items = PublishingQueueItem
+      .where(id: unfinished_pipelines.where("publishing_pipeline_states.created_at < ?", TIMEOUT.ago)
+    .select(:publishing_queue_item_id))
+
+    where(publishing_queue_item: pq_items)
+  end
 
   def self.unfinished_pipelines
     where(publishing_queue_item_id: PublishingQueueItem.all_unfinished_items)
@@ -56,6 +67,10 @@ class PublishingPipelineState < ApplicationRecord
         PublishFeedJob.perform_now(podcast)
       end
     end
+  end
+
+  def self.expired?(podcast)
+    expired_pipelines.where(podcast: podcast).exists?
   end
 
   def self.complete!(podcast)

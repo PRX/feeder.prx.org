@@ -71,6 +71,54 @@ describe PublishingPipelineState do
     end
   end
 
+  describe ".expired_pipelines" do
+    it "returns expired publishing pipelines" do
+      pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+      pa2 = PublishingPipelineState.started!(podcast)
+      assert_equal [pa1, pa2], PublishingPipelineState.unfinished_pipelines
+      assert_equal [], PublishingPipelineState.expired_pipelines
+
+      refute PublishingPipelineState.expired?(podcast)
+
+      # it gets partially through the pipeline
+      pa2.update!(created_at: 29.minutes.ago)
+      assert_equal [], PublishingPipelineState.expired_pipelines
+      refute PublishingPipelineState.expired?(podcast)
+
+      # and times out
+      pa2.update!(created_at: 30.minutes.ago)
+      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
+      assert PublishingPipelineState.expired?(podcast)
+
+      pa2.update!(created_at: 2.hours.ago)
+      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
+      assert PublishingPipelineState.expired?(podcast)
+    end
+
+    it "expires with multiple and combinations of podcasts" do
+      podcast2 = create(:podcast)
+      pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+      pa2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast2))
+
+      assert_equal [], PublishingPipelineState.expired_pipelines
+      refute PublishingPipelineState.expired?(podcast)
+      refute PublishingPipelineState.expired?(podcast2)
+
+      # they are both expired
+      pa1.update!(created_at: 30.minutes.ago)
+      pa2.update!(created_at: 30.minutes.ago)
+      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
+      assert PublishingPipelineState.expired?(podcast)
+      assert PublishingPipelineState.expired?(podcast2)
+
+      # just one is expired
+      pa1.update(created_at: Time.now)
+      assert_equal [pa2], PublishingPipelineState.expired_pipelines
+      refute PublishingPipelineState.expired?(podcast)
+      assert PublishingPipelineState.expired?(podcast2)
+    end
+  end
+
   describe "#publishing_queue_item" do
     it "has one publish queue item per attempt state" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
@@ -106,7 +154,7 @@ describe PublishingPipelineState do
           assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
         end
 
-        assert_equal ["created", "started", "error"], PublishingPipelineState.where(podcast: podcast).map(&:status)
+        assert_equal ["created", "started", "error"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
       end
     end
 
