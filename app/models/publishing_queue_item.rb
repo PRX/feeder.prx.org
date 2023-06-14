@@ -49,8 +49,8 @@ class PublishingQueueItem < ApplicationRecord
     from(frag)
   end
 
-  def complete?
-    latest_attempt&.complete?
+  def completed?
+    latest_attempt&.completed?
   end
 
   def create_publish_job

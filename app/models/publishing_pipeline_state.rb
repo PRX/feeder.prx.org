@@ -18,14 +18,14 @@ class PublishingPipelineState < ApplicationRecord
   enum status: {
     created: 0,
     started: 1,
-    publishing_rss: 2,
-    publishing_apple: 3,
-    complete: 4,
-    error: 5,
-    expire: 6
+    published_rss: 2,
+    published_apple: 3,
+    completed: 4,
+    errored: 5,
+    expired: 6
   }
 
-  TERMINAL_STATUSES = [statuses[:complete], statuses[:error], statuses[:expire]].freeze
+  TERMINAL_STATUSES = [statuses[:completed], statuses[:errored], statuses[:expired]].freeze
   # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
   TIMEOUT = 30.minutes.freeze
 
@@ -77,16 +77,16 @@ class PublishingPipelineState < ApplicationRecord
     expired_pipelines.where(podcast: podcast).exists?
   end
 
-  def self.started!(podcast)
+  def self.start!(podcast)
     state_transition(podcast, :started)
   end
 
   def self.complete!(podcast)
-    state_transition(podcast, :complete)
+    state_transition(podcast, :completed)
   end
 
   def self.error!(podcast)
-    state_transition(podcast, :error)
+    state_transition(podcast, :errored)
   end
 
   def self.expire!(podcast)
@@ -100,7 +100,7 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def self.expire!(podcast)
-    state_transition(podcast, :expire)
+    state_transition(podcast, :expired)
   end
 
   def self.settle_remaining!(podcast)
@@ -120,7 +120,7 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def complete_publishing!
-    self.class.create!(podcast: podcast, publishing_queue_item: publishing_queue_item, status: :complete)
+    self.class.create!(podcast: podcast, publishing_queue_item: publishing_queue_item, status: :completed)
   end
 
   def self.state_transition(podcast, to_state)
