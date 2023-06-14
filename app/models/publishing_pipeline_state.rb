@@ -41,6 +41,10 @@ class PublishingPipelineState < ApplicationRecord
     where(publishing_queue_item_id: PublishingQueueItem.all_unfinished_items)
   end
 
+  def self.running_pipelines
+    unfinished_pipelines
+  end
+
   def self.start_pipeline!(podcast)
     PublishingQueueItem.ensure_queued!(podcast)
     attempt!(podcast)
@@ -73,6 +77,10 @@ class PublishingPipelineState < ApplicationRecord
     expired_pipelines.where(podcast: podcast).exists?
   end
 
+  def self.started!(podcast)
+    state_transition(podcast, :started)
+  end
+
   def self.complete!(podcast)
     state_transition(podcast, :complete)
   end
@@ -81,8 +89,14 @@ class PublishingPipelineState < ApplicationRecord
     state_transition(podcast, :error)
   end
 
-  def self.started!(podcast)
-    state_transition(podcast, :started)
+  def self.expire_pipelines!
+    Podcast.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
+      expire!(podcast)
+    end
+  end
+
+  def self.expire!(podcast)
+    state_transition(podcast, :expire)
   end
 
   def self.settle_remaining!(podcast)
@@ -95,6 +109,10 @@ class PublishingPipelineState < ApplicationRecord
 
   def self.latest_attempt(podcast)
     where(podcast_id: podcast.id).latest_by_podcast.first
+  end
+
+  def latest_pipeline(podcast)
+    PublishingPipelineState.where(podcast_id: podcast.id).latest_by_podcast
   end
 
   def complete_publishing!
