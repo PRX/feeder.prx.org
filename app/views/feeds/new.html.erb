@@ -1,5 +1,5 @@
-<% content_for :title, "New feed" %>
+<% content_for :title, "New feed for #{@podcast.title}" %>
 
-<%= render "tabs" %>
+<%= render "tabs", feed: @feed, podcast: @podcast %>
 
 <%= render "form", feed: @feed, podcast: @podcast %>
