@@ -53,6 +53,11 @@ class Podcast < ApplicationRecord
     Podcast.find_by(prx_uri: series_uri)
   end
 
+  def self.release!
+    PublishingPipelineState.expire_pipelines!
+    Episode.release_episodes!
+  end
+
   def set_defaults
     set_default_feed
     self.explicit ||= "false"
