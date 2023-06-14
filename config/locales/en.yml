@@ -1,11 +1,19 @@
 defaults:
+  form: &form
+    confirm: Discard unsaved changes?
   form_status: &form_status
     create: Create
+    destroy: Delete
+    destroy_confirm_title: Really Delete?
+    destroy_confirm_body: "Are you sure you want to delete this %{model}? This action cannot be undone."
+    destroy_confirm_yes: Delete
+    destroy_confirm_no: Cancel
     discard: Discard
     new_hint: Unsaved
     title: Status
     update: Save
     updated_at_hint: Last Saved
+    updating: Saving...
   controller_actions:
     create: &create
       success: "%{model} created successfully."
@@ -255,8 +263,7 @@ en:
     form_status:
       <<: *form_status
     form:
-      remove_feed: Remove feed
-      remove_confirm: Are you sure you want to remove this feed?
+      <<: *form
     helper:
       episode_offset_options:
         "300": 5 minutes
