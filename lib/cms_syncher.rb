@@ -30,6 +30,7 @@ class CmsSyncher
 
     save_image(series, podcast.itunes_image, Cms::PROFILE)
     save_image(series, podcast.feed_image, Cms::THUMBNAIL)
+    series
   end
 
   def sync_story(episode, user_id)
@@ -91,10 +92,10 @@ class CmsSyncher
     end
 
     # if the image is not yet complete, do nothing!
-    return unless image.complete?
+    return unless image.status_complete?
 
     # see if the image from this file exists, if so, we're done
-    return if instance.images.first(upload_path: image.url).first
+    return if instance.images.where(upload_path: image.url).first
 
     # ok, actually create it!
     create_image(instance, image, purpose)
@@ -146,7 +147,7 @@ module Cms
 
   # Base model class for CMS database access
   class CmsModel < ActiveRecord::Base
-    include PorterEncoder
+    include PorterUtils
     self.abstract_class = true
 
     def self.cms_db_connection
@@ -186,7 +187,8 @@ module Cms
         Tasks: [copy_original_task] + thumbnail_tasks
       }
 
-      porter_publish(job)
+      # porter_start!(job)
+      # puts job.to_json
     end
 
     def s3_object_key(thumb = nil)
@@ -205,7 +207,7 @@ module Cms
   # Series AR
   class Series < CmsModel
     has_many :stories
-    has_many :series_images
+    has_many :images, class_name: "SeriesImage"
   end
 
   class CmsImage < CmsModel
@@ -226,7 +228,7 @@ module Cms
           Type: "Image",
           Metadata: "PRESERVE",
           Resize: {
-            Fit: (name == "square") ? "cover" : "inside",
+            Fit: (thumb == "square") ? "cover" : "inside",
             Height: dimensions[1],
             Position: "centre",
             Width: dimensions[0]
