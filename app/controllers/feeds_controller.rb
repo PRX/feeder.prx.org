@@ -12,6 +12,7 @@ class FeedsController < ApplicationController
   def new
     @feed = Feed.new(private: false)
     @feed.podcast = @podcast
+    authorize @feed
   end
 
   # POST /feeds
@@ -26,7 +27,7 @@ class FeedsController < ApplicationController
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
         format.html do
-          flash.now = t ".failure", model: "Feed"
+          flash.now[:notice] = t ".failure", model: "Feed"
           render :new, status: :unprocessable_entity
         end
       end
@@ -44,7 +45,7 @@ class FeedsController < ApplicationController
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
         format.html do
-          flash.now = t ".failure", model: "Feed"
+          flash.now[:notice] = t ".failure", model: "Feed"
           render :show, status: :unprocessable_entity
         end
       end
@@ -58,7 +59,7 @@ class FeedsController < ApplicationController
         format.html { redirect_to podcast_feed_path(@podcast, @podcast.default_feed), notice: (t ".success", model: "Feed") }
       else
         format.html do
-          flash.now = t ".failure", model: "Feed"
+          flash.now[:notice] = t ".failure", model: "Feed"
           render :show, status: :unprocessable_entity
         end
       end

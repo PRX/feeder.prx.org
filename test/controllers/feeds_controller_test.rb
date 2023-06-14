@@ -14,6 +14,12 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "authorize new feed" do
+    podcast.update(prx_account_uri: "/api/v1/accounts/456")
+    get new_podcast_feed_url(podcast)
+    assert_response :forbidden
+  end
+
   test "should create feed" do
     # instantiate first feed to get accurate feed count
     assert podcast
