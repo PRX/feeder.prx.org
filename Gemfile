@@ -66,8 +66,8 @@ gem "net-http"
 gem "parallel"
 
 # cms sync - remove later!
-gem 'mysql2'
-gem 'reverse_markdown'
+gem "mysql2"
+gem "reverse_markdown"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

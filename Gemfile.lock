@@ -200,7 +200,7 @@ GEM
       fuzzyurl (= 0.2.2)
       json
       uri_template (>= 0.5.2)
-    i18n (1.13.0)
+    i18n (1.14.1)
       concurrent-ruby (~> 1.0)
     importmap-rails (1.1.5)
       actionpack (>= 6.0.0)
@@ -278,6 +278,8 @@ GEM
     nokogiri (1.15.2)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
+    nokogiri (1.15.2-arm64-darwin)
+      racc (~> 1.4)
     oauth2 (1.4.11)
       faraday (>= 0.17.3, < 3.0)
       jwt (>= 1.0, < 3.0)
@@ -294,7 +296,7 @@ GEM
       activerecord (>= 5.1, < 7.1)
     parser (3.2.2.1)
       ast (~> 2.4.1)
-    pg (1.4.5)
+    pg (1.5.3)
     popper_js (2.11.6)
     prx_auth (1.7.2)
       json (>= 1.8.1)
@@ -314,7 +316,7 @@ GEM
       nio4r (~> 2.0)
     pundit (2.3.0)
       activesupport (>= 3.0.0)
-    racc (1.6.2)
+    racc (1.7.0)
     rack (2.2.7)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
@@ -341,8 +343,9 @@ GEM
     rails-dom-testing (2.0.3)
       activesupport (>= 4.2.0)
       nokogiri (>= 1.6)
-    rails-html-sanitizer (1.5.0)
-      loofah (~> 2.19, >= 2.19.1)
+    rails-html-sanitizer (1.6.0)
+      loofah (~> 2.21)
+      nokogiri (~> 1.14)
     railties (7.0.4.3)
       actionpack (= 7.0.4.3)
       activesupport (= 7.0.4.3)
@@ -474,6 +477,7 @@ GEM
     zeitwerk (2.6.8)
 
 PLATFORMS
+  arm64-darwin-21
   ruby
 
 DEPENDENCIES
