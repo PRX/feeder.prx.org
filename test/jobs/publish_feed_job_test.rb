@@ -55,10 +55,12 @@ describe PublishFeedJob do
       assert_equal [nil], job.publish_apple(feed)
     end
 
-    it "does schedule publishing if the config is present and marked as publishable" do
+    it "does run the apple publishing if the config is present and marked as publishable" do
       apple_config = create(:apple_config, public_feed: feed, publish_enabled: true)
       assert_equal [apple_config], feed.apple_configs.reload
-      assert_equal [PublishAppleJob], job.publish_apple(feed).map(&:class)
+      PublishAppleJob.stub(:perform_now, :publishing_apple!) do
+        assert_equal [:publishing_apple!], job.publish_apple(feed)
+      end
     end
   end
 end

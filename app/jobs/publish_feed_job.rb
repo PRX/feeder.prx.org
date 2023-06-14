@@ -26,7 +26,7 @@ class PublishFeedJob < ApplicationJob
   def publish_apple(feed)
     feed.apple_configs.map do |config|
       if feed.publish_to_apple?(config)
-        PublishAppleJob.perform_later(config)
+        PublishAppleJob.perform_now(config)
       end
     end
   end
