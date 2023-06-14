@@ -122,14 +122,17 @@ describe PublishingPipelineState do
   describe ".expire_pipelines!" do
     it "marks all the pipelines that have timed out as expired" do
       podcast2 = create(:podcast)
+      pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+      pa2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast2))
+
       pa1.update!(created_at: 30.minutes.ago)
       pa2.update!(created_at: 30.minutes.ago)
 
       assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
       PublishingPipelineState.expire_pipelines!
 
-      assert_equal [:created, :expired], PublishingPipelineState.latest_attempt(podcast).map(:status)
-      assert_equal [:created, :expired], PublishingPipelineState.latest_attempt(podcast2).map(:status)
+      assert_equal ["created", "expired"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+      assert_equal ["created", "expired"], PublishingPipelineState.latest_pipeline(podcast2).map(&:status)
 
       # All pipelines are in a terminal state
       # There is nothing running:

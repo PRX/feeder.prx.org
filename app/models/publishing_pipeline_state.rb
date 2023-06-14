@@ -89,6 +89,10 @@ class PublishingPipelineState < ApplicationRecord
     state_transition(podcast, :error)
   end
 
+  def self.expire!(podcast)
+    state_transition(podcast, :expired)
+  end
+
   def self.expire_pipelines!
     Podcast.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
       expire!(podcast)
@@ -111,8 +115,8 @@ class PublishingPipelineState < ApplicationRecord
     where(podcast_id: podcast.id).latest_by_podcast.first
   end
 
-  def latest_pipeline(podcast)
-    PublishingPipelineState.where(podcast_id: podcast.id).latest_by_podcast
+  def self.latest_pipeline(podcast)
+    where(publishing_queue_item_id: where(podcast_id: podcast.id).latest_by_podcast.select(:publishing_queue_item_id))
   end
 
   def complete_publishing!
@@ -120,12 +124,14 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def self.state_transition(podcast, to_state)
-    pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
-    if pqi.present?
-      PublishingPipelineState.create(podcast: podcast, publishing_queue_item: pqi, status: to_state)
-    else
-      Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot complete", {podcast_id: podcast.id})
-      nil
+    podcast.with_publish_lock do
+      pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
+      if pqi.present?
+        PublishingPipelineState.create(podcast: podcast, publishing_queue_item: pqi, status: to_state)
+      else
+        Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot transition state", {podcast_id: podcast.id, to_state: to_state})
+        nil
+      end
     end
   end
 
