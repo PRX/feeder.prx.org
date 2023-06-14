@@ -1,17 +1,17 @@
-<nav class="prx-app-nav navbar bg-white">
+<div class="prx-app-bar | navbar justify-content-start align-items-stretch p-0 bg-white">
 
   <%= render "podcast_switcher/dropdown" %>
 
   <% if @podcast %>
-    <ul class="navbar-nav col">
+    <nav class="prx-app-nav | navbar-nav flex-row justifty-content-start">
       <% if @podcast.new_record? %>
-        <li class="nav-item"><%= active_link_to "Settings", main_app.new_podcast_path, class: "nav-link" %></li>
+        <%= active_link_to "Settings", main_app.new_podcast_path, class: "nav-link" %>
       <% else %>
-        <li class="nav-item"><%= active_link_to "Podcast", main_app.podcast_path(@podcast), active: :exact, class: "nav-link" %></li>
-        <li class="nav-item"><%= active_link_to "Settings", main_app.edit_podcast_path(@podcast), active: podcast_settings_active?, class: "nav-link" %></li>
-        <li class="nav-item"><%= active_link_to "Episodes", main_app.podcast_episodes_path(@podcast), class: "nav-link" %></li>
-        <li class="nav-item"><%= active_link_to "Feeds", main_app.podcast_feeds_path(@podcast), class: "nav-link" %></li>
+        <%= active_link_to "Podcast", main_app.podcast_path(@podcast), active: :exact, class: "nav-link" %>
+        <%= active_link_to "Settings", main_app.edit_podcast_path(@podcast), active: podcast_settings_active?, class: "nav-link" %>
+        <%= active_link_to "Episodes", main_app.podcast_episodes_path(@podcast), active: /\/episodes/, class: "nav-link" %>
+        <%= active_link_to "Feeds", main_app.podcast_feed_path(@podcast, @podcast.default_feed), class: "nav-link" %>
       <% end %>
-    </ul>
+    </nav>
   <% end %>
-</nav>
+</div>

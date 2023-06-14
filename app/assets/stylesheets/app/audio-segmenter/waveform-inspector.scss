@@ -1,0 +1,60 @@
+//
+// Waveform Inspector Styles.
+//
+
+$module: "prx-waveform-inspector";
+
+.#{$module} {
+  --#{$module}-spacing: #{map-get($spacers, 2)};
+  --#{$module}-bg: #{$white};
+  --#{$module}-border-color: #{$gray-300};
+  --#{$module}-border-width: 0.25rem;
+  --#{$module}-border-radius: 0.5rem;
+  --#{$module}-scrollbar-bg: #{tint-color($gray-300, 50%)};
+
+  display: grid;
+  gap: var(--#{$module}-spacing);
+
+  .playing-hide {
+    display: initial;
+  }
+
+  .playing-show {
+    display: none;
+  }
+
+  .player--playing & {
+    .playing-hide {
+      display: none;
+    }
+
+    .playing-show {
+      display: initial;
+    }
+  }
+}
+
+.#{$module}-container {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: 60px 20px 200px;
+  gap: var(--#{$module}-spacing);
+  overflow: hidden;
+  background-color: var(--#{$module}-border-color);
+  border-radius: var(--#{$module}-border-radius);
+  border: var(--#{$module}-border-width) solid var(--#{$module}-border-color);
+
+  [data-view] {
+    line-height: 0;
+    overflow: hidden;
+  }
+}
+
+.#{$module}-view-container {
+  background-color: #fff;
+}
+
+.#{$module}-scrollbar-wrapper {
+  display: grid;
+  background-color: var(--#{$module}-scrollbar-bg);
+}

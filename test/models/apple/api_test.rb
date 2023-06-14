@@ -64,6 +64,14 @@ describe Apple::Api do
     end
   end
 
+  describe "#bridge_remote" do
+    it "stubs an empty response if there are no params given" do
+      resp = api.bridge_remote("someResource", [])
+      assert_equal "[]", resp.body
+      assert_equal OpenStruct, resp.class
+    end
+  end
+
   describe "#bridge_remote_and_retry" do
     it "exhausts retries until failure" do
       bridge_failure_response = [
@@ -71,7 +79,7 @@ describe Apple::Api do
       ]
 
       api.stub(:make_bridge_request, OpenStruct.new(body: bridge_failure_response.to_json, code: "200")) do
-        ok, err = api.bridge_remote_and_retry("someResource", [])
+        ok, err = api.bridge_remote_and_retry("someResource", [{foo: "bar"}])
 
         assert_equal ok, []
         assert_equal err.as_json, bridge_failure_response.as_json
@@ -97,7 +105,7 @@ describe Apple::Api do
       end
 
       api.stub(:make_bridge_request, returner) do
-        ok, err = api.bridge_remote_and_retry("someResource", [])
+        ok, err = api.bridge_remote_and_retry("someResource", [{foo: "bar"}])
 
         assert_equal ok.as_json, bridge_success_response.as_json
         assert_equal err, []
@@ -106,10 +114,10 @@ describe Apple::Api do
     end
   end
 
-  describe ".from_apple_credentials" do
+  describe ".from_apple_config" do
     it "creates an api from apple credentials" do
-      creds = build(:apple_credential)
-      api = Apple::Api.from_apple_credentials(creds)
+      creds = build(:apple_config)
+      api = Apple::Api.from_apple_config(creds)
 
       assert_equal api.provider_id, creds.apple_provider_id
       assert_equal api.key_id, creds.apple_key_id
@@ -117,8 +125,8 @@ describe Apple::Api do
     end
 
     it "falls back on the environment if the apple credential attributes are not set" do
-      creds = build(:apple_credential, apple_provider_id: nil, apple_key_id: nil, apple_key_pem_b64: nil)
-      api = Apple::Api.from_apple_credentials(creds)
+      creds = create(:apple_config, apple_provider_id: nil, apple_key_id: nil, apple_key_pem_b64: nil)
+      api = Apple::Api.from_apple_config(creds)
       assert_equal api.key_id, "apple key id from env"
 
       assert_equal api.key_id, ENV["APPLE_KEY_ID"]

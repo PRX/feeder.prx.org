@@ -19,14 +19,20 @@ class Feed < ApplicationRecord
   belongs_to :podcast, -> { with_deleted }, optional: true
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
+  accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:label].blank? }
 
-  has_many :apple_credentials, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
-    class_name: "::Apple::Credential"
+  has_many :apple_configs, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
+    class_name: "::Apple::Config"
 
-  has_one :feed_image, -> { complete.order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
-  has_one :itunes_image, -> { complete.order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
+
+  has_one :apple_sync_log, -> { feeds }, foreign_key: :feeder_id, class_name: "SyncLog"
+
+  accepts_nested_attributes_for :feed_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
+  accepts_nested_attributes_for :itunes_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
+
+  acts_as_paranoid
 
   validates :slug, allow_nil: true, uniqueness: {scope: :podcast_id, allow_nil: false}
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
@@ -40,6 +46,7 @@ class Feed < ApplicationRecord
   before_validation :sanitize_text
 
   scope :default, -> { where(slug: nil) }
+  scope :custom, -> { where.not(slug: nil) }
 
   def self.enclosure_template_default
     "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
@@ -102,8 +109,10 @@ class Feed < ApplicationRecord
     cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, "").gsub(/\s+/, " ").strip
   end
 
-  def publish_to_apple?(creds)
-    creds.present? && creds.public_feed == self
+  def publish_to_apple?(apple_config)
+    apple_config.present? &&
+      apple_config.public_feed == self &&
+      apple_config.publish_enabled?
   end
 
   def use_include_tags?
@@ -145,31 +154,47 @@ class Feed < ApplicationRecord
     itunes_images.each { |i| i.copy_media(force) }
   end
 
-  # API updates for feed_image=
-  def feed_image_file
+  def ready_feed_image
+    feed_images.complete_or_replaced.first
+  end
+
+  def feed_image
     feed_images.first
   end
 
-  def feed_image_file=(file)
+  def feed_image=(file)
     img = FeedImage.build(file)
-    if img && img.original_url != feed_image_file.try(:original_url)
-      feed_images << img
-    elsif !img
-      feed_images.destroy_all
+
+    if !img
+      feed_images.each(&:mark_for_destruction)
+    elsif img&.replace?(feed_image)
+      feed_images.build(img.attributes.compact)
+    else
+      img.update_image(feed_image)
     end
   end
 
-  # API updates for itunes_image=
-  def itunes_image_file
+  def ready_itunes_image
+    itunes_images.complete_or_replaced.first
+  end
+
+  def itunes_image
     itunes_images.first
   end
 
-  def itunes_image_file=(file)
+  def itunes_image=(file)
     img = ITunesImage.build(file)
-    if img && img.original_url != itunes_image_file.try(:original_url)
-      itunes_images << img
-    elsif !img
-      itunes_images.destroy_all
+
+    if !img
+      itunes_images.each(&:mark_for_destruction)
+    elsif img&.replace?(itunes_image)
+      itunes_images.build(img.attributes.compact)
+    else
+      img.update_image(itunes_image)
     end
+  end
+
+  def ready_image
+    @ready_image ||= (ready_feed_image || ready_itunes_image)
   end
 end

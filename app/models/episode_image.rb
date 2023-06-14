@@ -1,7 +1,10 @@
-class EpisodeImage < ActiveRecord::Base
+class EpisodeImage < ApplicationRecord
+  include ImageFile
+
   belongs_to :episode, touch: true, optional: true
 
-  include ImageFile
+  validates :height, :width, numericality: {greater_than_or_equal_to: 1400, less_than_or_equal_to: 3000}, if: :status_complete?
+  validates :width, comparison: {equal_to: :height}, if: :status_complete?
 
   def destination_path
     "#{episode.path}/#{image_path}"
@@ -15,9 +18,11 @@ class EpisodeImage < ActiveRecord::Base
     "images/#{guid}/#{file_name}"
   end
 
+  def publish!
+    episode&.publish! if status_complete? && status_previously_changed?
+  end
+
   def replace_resources!
-    episode.with_lock do
-      episode.images.where("created_at < ? AND id != ?", created_at, id).destroy_all
-    end
+    EpisodeImage.where(episode_id: episode_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
   end
 end

@@ -2,7 +2,7 @@ require "test_helper"
 require "feed_builder"
 
 describe FeedBuilder do
-  let(:episode) { create(:episode, prx_uri: "/api/v1/stories/87683") }
+  let(:episode) { create(:episode_with_media, prx_uri: "/api/v1/stories/87683") }
   let(:podcast) { episode.podcast }
   let(:feed) { create(:feed, podcast: podcast) }
   let(:builder) { FeedBuilder.new(podcast, feed) }

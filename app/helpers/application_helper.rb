@@ -16,9 +16,9 @@ module ApplicationHelper
 
     # add our tab classes
     if html_options[:class].present?
-      html_options[:class] += " list-group-item"
+      html_options[:class] += " prx-tab | nav-link"
     else
-      html_options[:class] = "list-group-item"
+      html_options[:class] = "prx-tab | nav-link"
     end
 
     # add aria current page
@@ -29,5 +29,15 @@ module ApplicationHelper
 
     # call through
     active_link_to(name, options, html_options)
+  end
+
+  def blank_dash(*args, &block)
+    if args.any?(&:blank?)
+      "&mdash;".html_safe
+    elsif block
+      capture(&block)
+    else
+      args.last
+    end
   end
 end

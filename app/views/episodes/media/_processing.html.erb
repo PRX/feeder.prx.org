@@ -1,0 +1,34 @@
+<div class="col-12 mb-4">
+  <div class="form-floating">
+    <div class="form-control d-flex align-items-center">
+      <div class="spinner-border text-primary ms-2" role="status">
+        <span class="visually-hidden"><%= t(".hint") %>...</span>
+      </div>
+
+      <div class="text-secondary mx-2"><%= media.file_name %></div>
+
+      <% if media.retryable? %>
+        <div class="flex-grow-1">
+          <%= link_to edit_episode_path(media.episode, uploads_retry_params(form)), class: "btn btn-sm btn-warning" do %>
+            <span class="material-icons">restart_alt</span> Retry
+          <% end %>
+        </div>
+      <% else %>
+        <small class="text-muted flex-grow-1">(<%= t(".hint") %>)</small>
+      <% end %>
+
+      <% if media.file_size.present? %>
+        <small class="text-muted">(<%= number_to_human_size(media.file_size) %>)</small>
+      <% end %>
+
+      <%= link_to edit_episode_path(media.episode, uploads_destroy_params(form)), class: "btn" do %>
+        <span class="material-icons">delete</span>
+      <% end %>
+    </div>
+
+    <label><%= episode_media_label(episode, media) %></label>
+  </div>
+
+  <%# just keep polling until the file finishes processing %>
+  <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+</div>

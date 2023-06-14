@@ -59,4 +59,20 @@ module PodcastsHelper
   def podcast_serial_order_options
     [false, true].map { |val| [I18n.t("helpers.label.podcast.serial_orders.#{val}"), val] }
   end
+
+  def podcast_destroy_image_path(podcast, feed_form, image_form)
+    if podcast.new_record?
+      new_podcast_path(podcast, uploads_destroy_params(feed_form, image_form))
+    else
+      edit_podcast_path(podcast, uploads_destroy_params(feed_form, image_form))
+    end
+  end
+
+  def podcast_retry_image_path(podcast, feed_form, image_form)
+    if podcast.new_record?
+      new_podcast_path(podcast, uploads_retry_params(feed_form, image_form))
+    else
+      edit_podcast_path(podcast, uploads_retry_params(feed_form, image_form))
+    end
+  end
 end

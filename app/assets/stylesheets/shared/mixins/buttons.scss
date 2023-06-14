@@ -1,0 +1,16 @@
+//
+// Button mixins
+//
+
+@mixin button-borderless-variant(
+  $color,
+  $hover-color: shift-color($color, $btn-borderless-hover-tint-amount),
+  $active-color: shift-color($color, $btn-borderless-active-tint-amount),
+  $disabled-color: tint-color($color, 60%)
+) {
+  --#{$prefix}btn-color: #{$color};
+  --#{$prefix}btn-hover-color: #{$hover-color};
+  --#{$prefix}btn-focus-shadow-rgb: #{to-rgb($color)};
+  --#{$prefix}btn-active-color: #{$active-color};
+  --#{$prefix}btn-disabled-color: #{$disabled-color};
+}

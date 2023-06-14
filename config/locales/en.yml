@@ -1,3 +1,16 @@
+defaults:
+  form_status: &form_status
+    create: Create
+    discard: Discard
+    new_hint: Unsaved
+    title: Status
+    update: Save
+    updated_at_hint: Last Saved
+  controller_actions:
+    update: &update
+      success: "%{model} update successful."
+      failure: "There was a problem updating the %{model}."
+
 en:
   # general config
   date:
@@ -7,9 +20,85 @@ en:
   time:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
+      short: "%m/%d"
+      time_12_hour: "%l:%M %p %Z"
+      day_and_date: "%A, %m/%d"
+  # validation error messages
+  activerecord:
+    errors:
+      models:
+        episode:
+          attributes:
+            segment_count:
+              greater_than: Can't be negative
+              less_than_or_equal_to: Enter a number less than %{count}
   # form/model helpers
   helpers:
     label:
+      episode:
+        ad_breaks: How many ad breaks are there in this episode?
+        author_email: Author Email
+        author_name: Author Name
+        add_itunes_summary: Add an alternate itunes:summary
+        categories: Categories
+        clean_title: Clean Title
+        description: Description
+        episode_number: Episode Number
+        explicit: Explicit
+        explicits:
+          false: Clean
+          true: Explicit
+        itunes_type: Episode Type
+        itunes_types:
+          full: Full
+          trailer: Trailer
+          bonus: Bonus
+        medium: How do you want to upload your files?
+        mediums:
+          audio: Audio - upload multiple audio files
+          uncut: Audio - upload a single file and then segment
+          video: Video
+        released_at: Dropdate
+        production_notes: Production Notes
+        publishing_status: Status
+        publishing_statuses:
+          draft: Draft
+          published: Published
+          scheduled: Scheduled
+        season_number: Season Number
+        segment_count: Number of Segments
+        subtitle: Subtitle
+        summary: iTunes Summary
+        title: Title
+      feed:
+        billboard: Billboards
+        description: Description
+        display_episodes_count: Feed Episode Limit
+        display_full_episodes_count: Feed Metadata Limit
+        enclosure_prefix: Enclosure Prefix Url
+        episode_offset_seconds: Episode Publish Delay
+        house: House Ads
+        new_feed_url: New Feed Url
+        paid: Paid Ads
+        private: Private (unlisted)
+        sonic_id: System (Sonic IDs)
+        subtitle: Teaser
+        summary: Summary
+        title: Title
+        url: Public Feed Url
+      feed_image:
+        alt_text: Alt Text
+        caption: Caption
+        credit: Credit
+      itunes_image:
+        alt_text: Alt Text
+        caption: Caption
+        credit: Credit
+      media_resource:
+        original_url:
+          audio: Segment %{position}
+          uncut: Audio File
+          video: Video File
       podcast:
         add_itunes_summary: Add an alternate itunes:summary
         author_email: Author Email
@@ -39,6 +128,170 @@ en:
         summary: iTunes Summary
         title: Title
   # specific pages/views
+  episodes:
+    create:
+      error: Unable to create
+      notice: Episode created
+    destroy:
+      error: Cannot delete a published episode
+      notice: Episode deleted
+    form:
+      confirm: Discard unsaved changes?
+    form_distribution:
+      title: Distribution
+    form_main:
+      help:
+        author_email: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
+        author_name: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
+        add_itunes_summary: Add an alternate itunes:summary
+        clean_title: If the title above contains any extraneous identifying information about your episode (like season number), provide a clean version of the title alone here.
+        description: Write a full description of your episode, including keywords, names of interviewees, places and topics. Feel free to incorporate links, images, and any of the other provided rich text formatting options.
+        episode_number: If your episode is part of has a specific number add it here.
+        episode_url: If you have a public URL for this podcast episode, enter it here.
+        explicit: In accordance with <a href='https://help.apple.com/itc/podcasts_connect/#/itc1723472cb'>the requirements for iTunes podcast content</a>, does this episode contain explicit material?
+        itunes_type: <p>Select the type of episode.</p> <p><strong>Full</strong> default and most common;</p> <p><strong>Trailer</strong> a short, promotional piece of content that represents a preview of a show;</p> <p><strong>Bonus</strong> extra content like behind-the-scenes information or interviews.</p>
+        production_notes: Helpful information for the production and/or ad sales teams. Example 'Descriptions of violence in segment 2.'
+        season_number: If your episode is part of a season add it here.
+        subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
+        summary: Unless otherwise specified, the summary is created from the description of your episode as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
+        title: Write a short, Tweetable title. Think newspaper headline.
+    form_media:
+      title: Media Files
+    form_status:
+      create: Create Draft
+      creating: Creating...
+      destroy: Delete
+      destroy_confirm_title: Really Delete?
+      destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
+      destroy_confirm_yes: Delete
+      destroy_confirm_no: Cancel
+      discard: Discard
+      new_hint: Unsaved
+      title_draft: Draft
+      title_published: Published
+      title_scheduled: Scheduled
+      toggle_dropdown: Toggle Dropdown
+      unpublish: Unpublish
+      update: Save
+      updated_at_hint: Last Saved
+      updating: Saving...
+      uploading: Uploading...
+    form_tags:
+      title: Categories
+      help:
+        categories: Enter categories relevant to the content of your episode. Type the category and press Enter to set it.
+    index:
+      title: PRX Dovetail - Episodes
+      episodes: Episodes
+      create_episode: Create Episode
+      plan_episodes: Plan Episodes
+      search: Search Episodes
+      draft_or_scheduled: Draft or Scheduled Episodes
+      published: Published Episodes
+    media:
+      complete:
+        unable: Unable to play file
+      error:
+        feedback: There was a problem processing your file
+      modal:
+        bit_rate: Bitrate
+        channels: Channels
+        dimensions: Dimensions
+        duration: Duration
+        file_name: File
+        file_size: Size
+        frame_rate: Frame Rate
+        mime_type: Content Type
+        sample_rate: Frequency
+        status: Status
+      new:
+        hint: Upload a file
+      processing:
+        hint: Processing
+      segment_count:
+        help: Enter the number of ad breaks in this episode.
+    update:
+      error: Unable to save
+      media_not_ready: Audio not ready
+      notice: Episode updated
+  feeds:
+    form_custom_fields:
+      headers:
+        overrides: Overrides
+        private: Feed Visibility
+        auth_tokens: Auth Tokens
+        ad_zones: Ad Zones to Include
+      help:
+        overrides: Override series metadata for this feed. You must provide an alternate title, but the other fields are optional.
+        slug: An alphanumeric slug used to identify your feed. Also used in the private feed RSS url.
+        subtitle: Enter an alternate teaser
+        description: Enter an alternate description
+        summary: Enter an alternate summary
+        private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private link with - <strong>anyone who has access to the link will be able to use it</strong>.
+        auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
+        ad_zones: Control the types of ads that should be stitched into episodes in this feed.
+    form_main:
+      headers:
+        audio_format: Audio Format
+      help:
+        file_name: The file name used for your private RSS feed.
+        url: If you already have a public URL for your podcast feed (e.g., feedburner), enter it here. It should point to your private feed URL.
+        new_feed_url: If your podcast feed is moving, use this field to point to the new URL where your podcast is located. The current feed should be maintained until all of your subscribers have migrated.
+        enclosure_prefix: If you have an enclosure prefix URL to set a redirect on audio requests for your podcast feed (e.g., podtrac or blubrry), enter it here.
+        display_episodes_count: You can optionally limit the number of episodes that will be publicly available in your feed. Your oldest episodes will disappear as you publish newer ones. Leave this field blank to include all.
+        display_full_episodes_count: You can optionally reduce the size of your RSS feed by trimming metadata from your oldest feed episodes. This many of your newest episodes will include <i>all</i> metadata, and older episodes will omit certain RSS fields. Leave this field blank to include all metadata on every episode.
+        episode_offset_seconds: Instead of episodes immediately showing up in this feed when published, delay their appearance. AKA Windowing.
+        audio_format: Optionally set an explicit audio format for your episodes. If you leave this blank, we will automatically use the same format as the first audio segment you upload for each episode.
+    form_status:
+      <<: *form_status
+    helper:
+      episode_offset_options:
+        "300": 5 minutes
+        "900": 15 minutes
+        "3600": 1 hour
+        "21600": 6 hours
+        "43200": 12 hours
+        "86400": 24 hours
+      audio_format_options:
+        mp3: MP3
+        flac: FLAC
+        wav: WAV
+      audio_bitrate_options:
+        "96": 96 kbps
+        "112": 112 kbps
+        "128": 128 kbps
+        "160": 160 kbps
+        "192": 192 kbps
+        "224": 224 kbps
+        "256": 256 kbps
+        "320": 320 kbps
+      audio_bitdepth_options:
+        "16": 16 bit
+        "24": 24 bit
+        "32": 32 bit
+      audio_channel_options:
+        "1": Mono
+        "2": Stereo
+      audio_sample_options:
+        "8000": 8 kHz
+        "11025": 11.025 kHz
+        "12000": 12 kHz
+        "16000": 16 kHz
+        "22050": 22.05 kHz
+        "24000": 24 kHz
+        "44100": 44.1 kHz
+        "48000": 48 kHz
+    update:
+      <<: *update
+  images:
+    help:
+      episode_image: Provide an image for your episode, if desired. Image dimensions must be square.
+      feed_image: Optionally provide an alternate image to use for smaller display purposes.
+      itunes_image: This image will be used as the cover image for this series. Image dimensions must be square.
+    title:
+      episode_image: Cover Image
+      feed_image: Thumbnail Image
+      itunes_image: Profile Image
   layouts:
     nav:
       account: PRX Account
@@ -60,9 +313,8 @@ en:
     destroy:
       error: Cannot delete a podcast with published episodes
       notice: Podcast deleted
-    form_feed_image:
-      title: Thumbnail Image
-      help: Optionally provide an alternate image to use for smaller display purposes. If not provided, a rescaled thumbnail of the profile image will be used.
+    form:
+      confirm: Discard unsaved changes?
     form_main:
       help:
         author_email: Set the author email for this podcast.
@@ -70,36 +322,137 @@ en:
         complete: Checking the box indicates that the podcast is complete and you will not post any more episodes in the future.
         copyright: Copyright notice for content in the podcast.
         description: A full description of this podcast.
-        explicit: In accordance with [the requirements for iTunes podcast content](https://help.apple.com/itc/podcasts_connect/#/itc1723472cb), do any of your podcast episodes contain explicit material?
-        itunes_category: Select the [iTunes category and subcategory](https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12), if applicable, that best describe this podcast.
+        explicit: In accordance with <a href='https://help.apple.com/itc/podcasts_connect/#/itc1723472cb'>the requirements for iTunes podcast content</a>, do any of your podcast episodes contain explicit material?
+        itunes_category: Select the <a href='https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12'>iTunes category and subcategory</a>, if applicable, that best describe this podcast.
         language: Select which language your podcast is in.
         link: A link to the homepage for your podcast.
-        managing_editor_email: Set the managing editor name for this podcast.
-        managing_editor_name: Set the managing editor email for this podcast.
+        managing_editor_email: Set the managing editor email for this podcast.
+        managing_editor_name: Set the managing editor name for this podcast.
         owner_email: Set the iTunes owner email for this podcast.
         owner_name: Set the iTunes owner name for this podcast.
         prx_account_uri: Who is the owner of this podcast?
-        serial_order: Select how your episodes should be ordered. *Episodic*- when you want your episodes to be presented and recommended last-to-first; this is the default and most common order for podcasts. *Serial* - when you want your episodes presented and recommended first-to-last).
+        serial_order: <p>Select how your episodes should be ordered.</p> <p><strong>Episodic:</strong> episodes to be presented and recommended last-to-first; this is the default and most common order for podcasts.</p> <p><strong>Serial:</strong> Episodes presented and recommended first-to-last.</p>
         subtitle: A short description of this podcast.
         summary: Unless otherwise specified, the summary is created from the description of your podcast as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
         title: What's the name of this podcast?
-    form_itunes_image:
-      title: Profile Image
-      help: This image will be used as the cover image for this series. Image dimensions must be square.
     form_status:
       create: Create
+      creating: Creating...
+      discard: Discard
       new_hint: Unsaved
       title: Status
       update: Save
       updated_at_hint: Last Saved
+      updating: Saving...
+      uploading: Uploading...
+    index:
+      search_podcasts: Search Podcasts
+    podcast:
+      create_episode: Create Episode
+      plan_episodes: Plan Episodes
     update:
       error: Unable to save
       notice: Podcast updated
+    show:
+      latest_published: Latest Published
+      all_episodes: All Episodes
+      next_scheduled: Next Scheduled or Draft
+      feeds: Feeds
+      manage_feeds: Manage Feeds
+      default_feed: Default RSS Feed
+      settings: Settings
+      manage_settings: Manage Settings
+      engagement_settings: Engagement Settings
+      import: Import
+    podcast_page:
+      my_podcasts: My Podcasts
+      drafted_episodes:
+        one: 1 Drafted Episode
+        other: "%{count} Drafted Episodes"
+      last_saved: Last Saved
+      published_episodes:
+        one: 1 Published Episode
+        other: "%{count} Published Episodes"
+      scheduled_episodes:
+        one: "1 Scheduled Episode"
+        other: "%{count} Scheduled Episodes"
+  podcast_engagement:
+    show:
+      engagement: Engagement
+      confirm: Confirm
+      donation_link: Donation Link
+      micropayments: Micropayments
+      payment_pointer: Coil
+      last_saved: Last Saved
+      subscribe: Subscribe and Follow Links
+      social_media: Social Media Links
+      status: Status
+      save: Update
+    update:
+      error: Unable to save
+      notice: Podcast updated
+  podcast_planner:
+    create:
+      success: Episode drafts generated.
+    form_main:
+      header: Plan Episodes
+      help_html: Add multiple episode drafts to create a production schedule. Episode drafts improve the accuracy of your podcast's forecasts. If you only need to add a single episode, <a href="%{url}">go here</a>.
+    form_date_calculator:
+      header:
+        date_calculation: Date Calculation of Draft Batch
+        day_select: Which day of the week do you plan to publish your episodes?
+        week_select: Which weeks of each month do you plan to publish on?
+        range_select: How long will episodes recur?
+      help:
+        date_calculation: Calculate release dates for your drafts by selecting which days and weeks you plan to publish, and then select a date range.
+        day_select: Which day of the week do you plan to publish your episodes? Select all that apply.
+        week_select: Which weeks of the month do you plan to publish? Select all that apply.
+        calculate_weeks: Calculate the weeks by
+        select_weeks: Select weeks
+        select_period: Select interval
+        range_select: How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.
+        calculate_range: Calculate the end of the batch by
+        select_range: Select range
+      label:
+        week_condition: Calculate the weeks by
+        week_of_month: Select Week of the month
+        period: Select weekly interval
+        date_range_condition: Calculate the end of the batch by
+    form_side:
+      header:
+        preview: Preview Draft Schedule
+        publish_time: What time of day do you plan to publish the episodes?
+        audio_segments: How many audio segments?
+        segment_count: Number of segments
+        number_of_drafts: "Drafts planned: "
+        help:
+          segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
+      help:
+        preview: Select more options to get a schedule preview.
+      label:
+        submit: Create drafts
+    helper:
+      period_options:
+        every_one: Every week
+        every_two: Every two weeks
+        every_three: Every three weeks
+        every_four: Every four weeks
+      monthly_options:
+        first: First
+        second: Second
+        third: Third
+        fourth: Fourth
+        fifth: Fifth
+      episodes: Number of episodes
+      end_date: End date
+      month: Weeks of the Month
+      period: Weekly interval
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
       create: Create a New Podcast
       empty: No results found
+      new: New Podcast
       search: Search Podcasts
       select: Select a podcast
   pundit:

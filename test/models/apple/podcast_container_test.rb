@@ -6,10 +6,10 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   let(:podcast) { create(:podcast) }
   let(:episode) { create(:episode, podcast: podcast) }
 
-  let(:apple_creds) { build(:apple_credential) }
-  let(:apple_api) { Apple::Api.from_apple_credentials(apple_creds) }
+  let(:apple_config) { build(:apple_config) }
+  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
-  let(:private_feed) { create(:feed, podcast: podcast, private: true) }
+  let(:private_feed) { create(:private_feed, podcast: podcast) }
   let(:apple_show) { Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed) }
 
   let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
@@ -25,22 +25,33 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
   let(:api) { build(:apple_api) }
 
+  describe ".update_podcast_container_file_metadata" do
+    it "should raise if any of the episodes lack a container" do
+      apple_episode.stub(:podcast_container, nil) do
+        assert_raises(RuntimeError, "missing podcast container") do
+          Apple::PodcastContainer.update_podcast_container_file_metadata(api, [apple_episode])
+        end
+      end
+    end
+  end
+
   describe ".upsert_podcast_containers" do
     it "should create logs based on a returned row value" do
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-          assert_equal SyncLog.count, 0
+          assert_equal SyncLog.podcast_containers.count, 0
           assert_equal Apple::PodcastContainer.count, 0
 
           Apple::PodcastContainer.upsert_podcast_container(apple_episode,
             podcast_container_json_row)
-          assert_equal SyncLog.count, 1
+          assert_equal SyncLog.podcast_containers.count, 1
           assert_equal Apple::PodcastContainer.count, 1
 
           Apple::PodcastContainer.upsert_podcast_container(apple_episode,
             podcast_container_json_row)
 
-          assert_equal SyncLog.count, 2
+          # The second call should not create a new log or podcast container
+          assert_equal SyncLog.podcast_containers.count, 1
           assert_equal Apple::PodcastContainer.count, 1
         end
       end
@@ -90,7 +101,8 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
             apple_episode.stub(:enclosure_filename, "1234") do
               pc1 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
                 podcast_container_json_row)
-              assert_equal pc1.source_url, "https://podcast.source/1234"
+              assert_equal pc1.enclosure_url, "https://podcast.source/1234"
+              assert_nil pc1.source_url
               assert_equal pc1.source_filename, "1234"
             end
           end
@@ -105,25 +117,28 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
           assert pc1 == pc2
 
-          assert_equal pc2.source_url, "https://another.source/5678"
+          assert_equal pc2.enclosure_url, "https://another.source/5678"
+          assert_nil pc2.source_url
           assert_equal pc2.source_filename, "5678"
         end
       end
     end
   end
 
-  describe ".update_podcast_container_state(api, episodes)" do
+  describe ".poll_podcast_container_state(api, episodes)" do
     it "creates new records if they dont exist" do
-      assert_equal SyncLog.count, 0
+      assert_equal SyncLog.podcast_containers.count, 0
 
       Apple::PodcastContainer.stub(:get_podcast_containers_via_episodes, [podcast_container_json_row]) do
         apple_episode.stub(:apple_id, apple_episode_id) do
-          apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-            Apple::PodcastContainer.update_podcast_container_state(nil, [apple_episode])
+          apple_episode.stub(:apple_persisted?, true) do
+            apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+              Apple::PodcastContainer.poll_podcast_container_state(nil, [apple_episode])
+            end
           end
         end
       end
-      assert_equal SyncLog.count, 1
+      assert_equal SyncLog.podcast_containers.count, 1
     end
   end
 
@@ -152,6 +167,55 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     it "raises an error if the vendor id is missing" do
       assert_raises(RuntimeError, "incomplete api response") do
         Apple::PodcastContainer.podcast_container_url(api, OpenStruct.new)
+      end
+    end
+  end
+
+  describe "#has_podcast_audio?" do
+    let(:file) do
+      {"fileName" => "SomeName.flac",
+       "fileType" => "audio",
+       "status" => "In Asset Repository",
+       "assetRole" => "PodcastSourceAudio"}
+    end
+
+    let(:container) { Apple::PodcastContainer.new }
+
+    it "returns true if the podcast container has a podcast audio file" do
+      container.stub(:apple_attributes, {"files" => [file]}) do
+        assert container.has_podcast_audio?
+      end
+    end
+
+    it "returns false if the status is not in asset repository" do
+      file["status"] = "Not In Asset Repository"
+      container.stub(:apple_attributes, {"files" => [file]}) do
+        refute container.has_podcast_audio?
+      end
+    end
+
+    it "returns false if the assetRole is not podcast source audio" do
+      file["assetRole"] = "Not Podcast Source Audio"
+      container.stub(:apple_attributes, {"files" => [file]}) do
+        refute container.has_podcast_audio?
+      end
+    end
+  end
+
+  describe "#destroy" do
+    it "should destroy the podcast container and cascade to the delivery and delivery file" do
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          pc = Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row)
+          pd = pc.podcast_deliveries.create!(episode: pc.episode)
+          pdf = pd.podcast_delivery_files.create!(episode: pc.episode)
+
+          pc.podcast_deliveries.destroy_all
+          pc.podcast_delivery_files.destroy_all
+
+          assert_not_nil pd.reload.deleted_at
+          assert_not_nil pdf.reload.deleted_at
+        end
       end
     end
   end

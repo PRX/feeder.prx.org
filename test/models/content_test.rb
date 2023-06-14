@@ -1,43 +1,62 @@
 require "test_helper"
 
 describe Content do
-  let(:episode) { create(:episode) }
-  let(:content) { Content.create(original_url: "u", file_size: 10, mime_type: "mt", episode: episode) }
-  let(:crier_content) {
-    {
-      "position" => 1,
-      "url" => "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3",
-      "type" => "audio/mpeg",
-      "file_size" => 26017749,
-      "medium" => "audio",
-      "expression" => "sample",
-      "bitrate" => 64,
-      "samplingrate" => "44.1",
-      "channels" => 1,
-      "duration" => "3252.19",
-      "lang" => "en"
-    }
-  }
+  let(:episode) { create(:episode, contents: [c1, c2, c3]) }
+  let(:c1) { build(:content, position: 1) }
+  let(:c2) { build(:content, position: 2) }
+  let(:c3) { build(:content, position: 3) }
 
-  it "can be constructed from feed content" do
-    c = Content.build_from_content(episode, crier_content)
-    refute c.is_default
-    assert_equal c.bit_rate, 64
-    assert_equal c.channels, 1
-    assert_equal c.duration, 3252.19
-    assert_equal c.expression, "sample"
-    assert_equal c.file_size, 26017749
-    assert_equal c.lang, "en"
-    assert_equal c.medium, "audio"
-    assert_equal c.sample_rate, 44100
-    assert_equal c.mime_type, "audio/mpeg"
-    assert_equal c.original_url, "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3"
+  describe "#validate_episode_medium" do
+    it "does not run on incomplete contents" do
+      episode.medium = "audio"
+      c1.medium = "audio"
+      c2.medium = "video"
+      c3.medium = "text"
+
+      assert c1.valid?
+      assert c2.valid?
+      assert c3.valid?
+    end
+
+    it "matches content medium to episode medium" do
+      c1.status = "complete"
+
+      c1.medium = "audio"
+      c1.episode.medium = "audio"
+      assert c1.valid?
+
+      c1.episode.medium = "video"
+      refute c1.valid?
+
+      c1.medium = "video"
+      assert c1.valid?
+    end
   end
 
-  it "can be updated" do
-    content.update_with_content!(crier_content)
-    assert_equal content.original_url, "https://s3.amazonaws.com/prx-dovetail/testserial/serial_audio.mp3"
-    assert_equal content.file_size, 26017749
-    assert_equal content.mime_type, "audio/mpeg"
+  describe "#publish_episode!" do
+    it "publishes the episode when complete and status has changed" do
+      publish = MiniTest::Mock.new
+
+      c1.episode.stub(:publish!, publish) do
+        c1.update(status: "processing")
+        publish.verify
+
+        publish.expect(:call, nil)
+        c1.update(status: "complete")
+        publish.verify
+      end
+    end
+  end
+
+  describe "#replace_resources!" do
+    it "replaces contents with the same position" do
+      assert_equal [c1, c2, c3], episode.contents
+
+      c4 = create(:content, episode: episode, position: 2)
+      assert_equal [c1, c4, c3], episode.reload.contents
+
+      refute_nil c2.reload.deleted_at
+      refute_nil c2.replaced_at
+    end
   end
 end

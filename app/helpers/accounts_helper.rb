@@ -1,6 +1,10 @@
 module AccountsHelper
-  def podcast_account_name_options(selected_uri = nil)
-    account_name_options(:podcast_edit, selected_uri)
+  def podcast_account_name_options(podcast)
+    if podcast.new_record?
+      account_name_options(:podcast_create, podcast.prx_account_uri)
+    else
+      account_name_options(:podcast_edit, podcast.prx_account_uri)
+    end
   end
 
   def account_name_options(scope, selected_uri = nil)

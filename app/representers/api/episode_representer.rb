@@ -37,7 +37,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :is_closed_captioned
   property :is_perma_link
   property :include_in_feed?, as: :is_feed_ready
-  property :duration
   property :keywords
   property :categories
   property :position
@@ -49,12 +48,19 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
 
   property :audio_version
   property :segment_count
-  collection :media_files,
-    as: :media,
+
+  collection :media,
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
-  collection :images, decorator: Api::ImageRepresenter, class: EpisodeImage
+  collection :complete_media,
+    as: :ready_media,
+    decorator: Api::MediaResourceRepresenter,
+    class: MediaResource,
+    writeable: false,
+    if: ->(_o) { !media_ready? && complete_media? }
+
+  property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
 
   def self_url(episode)
     api_episode_path(id: episode.guid)
@@ -64,18 +70,16 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     if represented.podcast && represented.media?
       {
         href: represented.enclosure_url,
-        type: represented.content_type,
-        size: represented.file_size,
-        duration: represented.duration.to_i,
+        type: represented.media_content_type,
+        size: represented.media_file_size,
+        duration: represented.media_duration.to_i,
         status: represented.media_status
       }
     end
   end
 
   link rel: :podcast, writeable: true do
-    if represented.id && represented.podcast
-      api_podcast_path(represented.podcast)
-    end
+    api_podcast_path(represented.podcast) if represented.id && represented.podcast
   end
 
   link :story do
@@ -83,14 +87,16 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   end
 
   link :audio_version do
-    if represented.prx_audio_version_uri
-      URI.join(cms_root, represented.prx_audio_version_uri).to_s
-    end
+    URI.join(cms_root, represented.prx_audio_version_uri).to_s if represented.prx_audio_version_uri
   end
 
   link :podcast_feed do
     if represented.podcast_feed_url
-      {href: represented.podcast_feed_url, type: "application/rss+xml"}
+      {
+        href: represented.podcast_feed_url,
+        type: "application/rss+xml",
+        title: represented.podcast.title
+      }
     end
   end
 end

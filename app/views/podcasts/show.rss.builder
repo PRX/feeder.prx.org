@@ -9,7 +9,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
   xml.channel do
     xml.title @feed.title || @podcast.title
     xml.link @podcast.link
-    xml.pubDate @podcast.pub_date.utc.rfc2822
+    xml.pubDate @podcast.pub_date.utc.rfc2822 if @podcast.pub_date.present?
     xml.lastBuildDate @podcast.last_build_date.utc.rfc2822
     xml.ttl 60
     xml.language @podcast.language || "en-us"
@@ -116,7 +116,8 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
         xml.pubDate ep.published_at.utc.rfc2822
         xml.link ep.url || ep.enclosure_url(@feed)
         xml.description { xml.cdata!(ep.description || "") }
-        xml.enclosure(url: ep.enclosure_url(@feed), type: ep.content_type(@feed), length: ep.file_size) if ep.media?
+        # TODO: may not reflect the content_type/file_size of replaced media
+        xml.enclosure(url: ep.enclosure_url(@feed), type: ep.media_content_type(@feed), length: ep.media_file_size) if ep.media?
 
         xml.itunes :title, ep.clean_title unless ep.clean_title.blank?
         xml.itunes :subtitle, ep.subtitle unless ep.subtitle.blank?
@@ -125,7 +126,8 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
         xml.itunes :episodeType, ep.itunes_type unless ep.itunes_type.blank?
         xml.itunes :season, ep.season if ep.season?
         xml.itunes :episode, ep.number if ep.number?
-        xml.itunes :duration, ep.duration.to_i.to_time_summary if ep.media?
+        # TODO: may not reflect the duration of replaced media
+        xml.itunes :duration, ep.media_duration.to_i.to_time_summary if ep.media?
         xml.itunes :block, "Yes" if ep.itunes_block
 
         @podcast.restrictions.try(:each) do |r|
@@ -144,19 +146,20 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
 
           xml.itunes(:summary) { xml.cdata!(itunes_summary(ep)) } if show_itunes_summary?(ep)
 
-          if ep.image
-            xml.itunes :image, href: ep.image.url
-          elsif @podcast.itunes_image
-            xml.itunes :image, href: @podcast.itunes_image.url
+          if ep.ready_image
+            xml.itunes :image, href: ep.ready_image.url
+          elsif @itunes_image
+            xml.itunes :image, href: @itunes_image.url
           end
 
           xml.itunes :keywords, ep.keywords.join(",") unless ep.keywords.blank?
           xml.itunes(:isClosedCaptioned, "Yes") if ep.is_closed_captioned
 
           if ep.media?
+            # TODO: may not reflect the file_size/content_type/ of replaced media
             xml.media(:content,
-              fileSize: ep.file_size,
-              type: ep.content_type(@feed),
+              fileSize: ep.media_file_size,
+              type: ep.media_content_type(@feed),
               url: ep.enclosure_url(@feed))
           end
 

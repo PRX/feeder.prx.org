@@ -1,0 +1,51 @@
+{
+  "version": "v1",
+  "_links": {
+    "self": {
+      "href": "/api/v1",
+      "profile": "http://meta.prx.org/model/api"
+    },
+    "profile": {
+      "href": "http://meta.prx.org/model/api"
+    },
+    "curies": [
+      {
+        "name": "prx",
+        "href": "http://meta.prx.org/relation/{rel}",
+        "templated": true
+      }
+    ],
+    "prx:episode": [
+      {
+        "title": "Get a single episode",
+        "profile": "http://meta.prx.org/model/episode",
+        "href": "/api/v1/episodes/{id}{?zoom}",
+        "templated": true
+      }
+    ],
+    "prx:episodes": [
+      {
+        "title": "Get a paged collection of episodes",
+        "profile": "http://meta.prx.org/model/collection/episode",
+        "href": "/api/v1/episodes{?page,per,zoom}",
+        "templated": true
+      }
+    ],
+    "prx:podcast": [
+      {
+        "title": "Get a single podcast",
+        "profile": "http://meta.prx.org/model/podcast",
+        "href": "/api/v1/podcasts/{id}{?zoom}",
+        "templated": true
+      }
+    ],
+    "prx:podcasts": [
+      {
+        "title": "Get a paged collection of podcasts",
+        "profile": "http://meta.prx.org/model/collection/podcasts",
+        "href": "/api/v1/podcasts{?page,per,zoom}",
+        "templated": true
+      }
+    ]
+  }
+}

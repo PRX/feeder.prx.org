@@ -38,7 +38,7 @@ describe Podcast do
   end
 
   it "wont nil out podcast published_at" do
-    ep = podcast.episodes.create(published_at: 1.week.ago)
+    ep = podcast.episodes.create(title: "title", published_at: 1.week.ago)
     pub_at = podcast.reload.published_at
     refute_nil podcast.published_at
 

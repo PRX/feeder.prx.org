@@ -4,8 +4,8 @@ describe Api::Auth::FeedsController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
   let(:feed) { create(:feed, podcast: podcast, slug: "test-slug") }
-  let(:token) { StubToken.new(account_id, ["member"]) }
-  let(:bad_token) { StubToken.new(account_id + 100, ["member"]) }
+  let(:token) { StubToken.new(account_id, ["podcast_edit"]) }
+  let(:bad_token) { StubToken.new(account_id + 100, ["podcast_edit"]) }
 
   let(:feed_hash) do
     {
@@ -47,7 +47,7 @@ describe Api::Auth::FeedsController do
     describe "feed tokens" do
       before do
         feed.tokens.create!(label: "something", token: "tok1")
-        feed.tokens.create!(token: "tok2")
+        feed.tokens.create!(label: "something2", token: "tok2")
       end
 
       it "can create a new feed with tokens" do
@@ -55,7 +55,7 @@ describe Api::Auth::FeedsController do
           slug: "token-slug",
           tokens: [
             {token: "tok3", label: "tok3", expires: "2023-02-01"},
-            {token: "tok4"}
+            {token: "tok4", label: "tok4"}
           ]
         }
 
@@ -70,7 +70,7 @@ describe Api::Auth::FeedsController do
 
       it "can update nested tokens" do
         update_tok1 = {token: "tok1", label: "else", expires: "2023-02-01"}
-        create_tok3 = {token: "tok3"}
+        create_tok3 = {token: "tok3", label: "tok3"}
         update_hash = {tokens: [update_tok1, create_tok3]}
 
         put(:update, body: update_hash.to_json, as: :json,
@@ -92,11 +92,8 @@ describe Api::Auth::FeedsController do
     end
 
     describe "feed images" do
-      let(:file) { test_file("/fixtures/transistor1400.jpg") }
       let(:url1) { "http://www.prx.org/fakeimageurl1.jpg" }
       let(:url2) { "http://www.prx.org/fakeimageurl2.jpg" }
-      before { stub_request(:get, url1).to_return(status: 200, body: file, headers: {}) }
-      before { stub_request(:get, url2).to_return(status: 200, body: file, headers: {}) }
 
       it "appends feed and itunes images" do
         _(feed.feed_images.count).must_equal 0
@@ -122,11 +119,11 @@ describe Api::Auth::FeedsController do
         assert_response :success
 
         _(feed.reload.updated_at).must_be :>, fua
-        _(feed.feed_images.count).must_equal 2
-        _(feed.feed_images.first.caption).must_equal "d2"
-        _(feed.feed_images.last.caption).must_equal "d1"
-        _(feed.itunes_images.count).must_equal 1
-        _(feed.itunes_images.last.caption).must_equal "d3"
+        _(feed.feed_images.with_deleted.count).must_equal 2
+        _(feed.feed_images.with_deleted.first.caption).must_equal "d2"
+        _(feed.feed_images.with_deleted.last.caption).must_equal "d1"
+        _(feed.itunes_images.with_deleted.count).must_equal 1
+        _(feed.itunes_images.with_deleted.last.caption).must_equal "d3"
       end
     end
 

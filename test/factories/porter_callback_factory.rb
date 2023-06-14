@@ -30,6 +30,14 @@ FactoryBot.define do
           Layer: "3",
           Samples: nil,
           Frames: "57143"
+        },
+        Video: {
+          Duration: 8725,
+          Format: "mjpeg",
+          Width: 532,
+          Height: 496,
+          Aspect: "133:124",
+          Framerate: 90000
         }
       }
     end
@@ -54,11 +62,27 @@ FactoryBot.define do
         Video: {
           Duration: 157991,
           Format: "h264",
-          Bitrate: "747441",
           Width: 640,
           Height: 360,
           Aspect: "16:9",
-          Framerate: "24000/1001"
+          Framerate: 23.976
+        }
+      }
+    end
+    initialize_with { attributes.with_indifferent_access }
+  end
+
+  factory :porter_inspect_image_result, class: Hash do
+    Task { "Inspect" }
+    Inspection do
+      {
+        Extension: "jpg",
+        MIME: "image/jpeg",
+        Size: "60572",
+        Image: {
+          Format: "jpeg",
+          Height: 1400,
+          Width: 1400
         }
       }
     end
@@ -111,6 +135,20 @@ FactoryBot.define do
         Job: {Id: "the-job-id"},
         State: "DONE",
         TaskResults: [build(:porter_copy_result), build(:porter_inspect_audio_result)],
+        FailedTasks: []
+      }
+    end
+    initialize_with { attributes.with_indifferent_access }
+  end
+
+  factory :porter_image_job_results, class: Hash do
+    Time { "2012-12-21T12:34:56Z" }
+    Timestamp { 1356093296.0 }
+    JobResult do
+      {
+        Job: {Id: "the-job-id"},
+        State: "DONE",
+        TaskResults: [build(:porter_copy_result), build(:porter_inspect_image_result)],
         FailedTasks: []
       }
     end

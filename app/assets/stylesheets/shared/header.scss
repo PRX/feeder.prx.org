@@ -1,106 +1,9 @@
 /*
  * PRX header component
  */
-.navbar-brand {
-  display: block;
-  width: 152px;
-  height: 30px;
-  background-image: image-url("dovetail_logo.svg");
-  background-position: center center;
-  background-repeat: no-repeat;
-  text-indent: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-top: 50px;
 
-  @media (min-width: 576px) {
-    padding-top: 0;
-  }
-}
-
-.nav-avatar {
-  object-fit: cover;
-  border-radius: 50%;
-  border: 1px solid $blue-light;
-  height: 30px;
-  width: 30px;
-}
-
-.prx-dovetail-nav {
-  background: $blue-dark;
-  margin: 0;
-  padding: 0;
-
-  .navbar-nav {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-  }
-
-  .dropdown-menu {
-    position: absolute;
-    background: $blue-dark;
-    margin: 0;
-    padding: 0;
-    border-radius: 0;
-
-    .dropdown-item {
-      color: $white;
-      text-transform: uppercase;
-      font-weight: bold;
-      padding: 0.25rem 1.5rem;
-      min-width: 240px;
-
-      &:hover {
-        color: $white;
-        background: $blue;
-      }
-    }
-
-    .dropdown-username {
-      font-size: 24px;
-      color: $white;
-      padding: 0.5rem 1.5rem;
-      min-width: 240px;
-      font-weight: normal;
-      text-align: center;
-    }
-
-    .btn-info {
-      background: $blue-light;
-      font-weight: bold;
-      border-radius: 0;
-      padding: 0.25em 1.25em;
-      white-space: nowrap;
-    }
-
-    .dropdown-link {
-      font-weight: bold;
-      text-decoration: none;
-      padding: 0.5em 1.25em;
-      color: $blue-light;
-    }
-  }
-}
-
-.prx-app-nav {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  margin: 0;
-  padding: 0;
-  border-bottom: 1px solid $gray-300;
-
-  .navbar-nav {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    margin: 0;
-    padding: 0;
-  }
-}
+@import "header-nav";
+@import "header-subnav";
 
 .prx-podcast-switcher {
   width: 100%;
@@ -113,6 +16,10 @@
     border-bottom: none;
   }
 
+  .btn {
+    --#{$prefix}btn-padding-y: #{$btn-padding-y};
+  }
+
   .dropdown-toggle {
     width: 100%;
     border: none;
@@ -122,7 +29,22 @@
     gap: map-get($spacers, 2);
 
     &:after {
-      display: none;
+      @extend .material-icons;
+      content: "expand_more";
+      border: none;
+      transition: transform 150ms ease-in-out;
+    }
+
+    .img-placeholder {
+      width: 30px;
+      height: 30px;
+      background: $gray-200;
+    }
+
+    &.show {
+      &::after {
+        transform: rotate(180deg);
+      }
     }
   }
 
@@ -144,13 +66,10 @@
     &:hover {
       text-decoration: underline;
     }
-  }
-}
 
-.prx-podcast-switcher-indicator {
-  transition: transform 150ms ease-in-out;
-  .show & {
-    transform: rotate(180deg);
+    &:active {
+      color: $white;
+    }
   }
 }
 

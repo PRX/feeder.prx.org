@@ -5,16 +5,24 @@ Rails.application.routes.draw do
       resource :engagement, only: [:show, :update], controller: :podcast_engagement
       resource :player, only: :show, controller: :podcast_player
       resources :imports
-      resource :planner, only: [:show, :update], controller: :podcast_planner
-      resources :feeds, only: [:index]
-      resources :episodes, only: [:index]
+      resource :planner, only: [:show, :create], controller: :podcast_planner
+      resources :feeds, except: [:index, :edit]
+      resources :episodes, only: [:index, :create, :new]
     end
 
-    resources :episodes
-    resources :feeds
-    resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
+    resources :episodes, except: [:create, :new] do
+      resource :player, only: :show, controller: :episode_player
+      resource :segmenter, only: :show, controller: :episode_segmenter
+    end
 
-    resources :fake, only: [:index, :show, :create]
+    resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
+    get "/uploads/signature", to: "uploads#signature", as: :uploads_signature
+
+    resources :fake, only: [:index, :show, :create] do
+      collection do
+        get "audio-segmenter"
+      end
+    end
 
     mount PrxAuth::Rails::Engine => "/auth", :as => "prx_auth_engine"
     get "sessions/logout", to: "application#logout", as: :logout

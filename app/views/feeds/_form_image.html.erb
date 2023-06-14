@@ -1,0 +1,29 @@
+<%= turbo_frame_tag "itunes-images", data: {controller: "morphdom"} do %>
+  <div class="row">
+    <div class="col-12">
+      <% feed.itunes_images.build if feed.itunes_images.empty? %>
+
+      <%= form.fields_for :itunes_images, include_id: false do |fields| %>
+        <% dpath = feed_destroy_image_path(feed, fields) %>
+        <% rpath = feed_retry_image_path(feed, fields) %>
+
+        <%= render "images/form", form: fields, image: fields.object, delete_path: dpath, retry_path: rpath %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%= turbo_frame_tag "feed-images", data: {controller: "morphdom"} do %>
+  <div class="row">
+    <div class="col-12">
+      <% feed.feed_images.build if feed.feed_images.empty? %>
+
+      <%= form.fields_for :feed_images, include_id: false do |fields| %>
+        <% dpath = feed_destroy_image_path(feed, fields) %>
+        <% rpath = feed_retry_image_path(feed, fields) %>
+
+        <%= render "images/form", form: fields, image: fields.object, delete_path: dpath, retry_path: rpath %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

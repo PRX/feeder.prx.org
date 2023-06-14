@@ -1,10 +1,10 @@
 <% prefix = Rails.configuration.active_job.queue_name_prefix %>
 ---
 # The number of allocated threads to process messages. Default 25
-concurrency: <%= ENV['WORKER_COUNT'] || 25 %>
+concurrency: <%= if ENV["WORKER_COUNT"].present? then ENV["WORKER_COUNT"] else 25 end %>
 
-# The delay in seconds to pause a queue when it's empty. Default 0
-delay: <%= ENV['WORKER_PAUSE'] || 30 %>
+# The delay in seconds to pause a queue when it"s empty. Default 30
+delay: <%= if ENV["WORKER_PAUSE"].present? then ENV["WORKER_PAUSE"] else 30 end %>
 
 # All the queues to listen for messages
 queues:
@@ -18,3 +18,8 @@ queues:
   - ["<%= prefix %>_announce_feeder_story_delete", 1]
   - ["<%= prefix %>_announce_feeder_story_publish", 1]
   - ["<%= prefix %>_announce_feeder_story_unpublish", 1]
+groups:
+  single_threaded:
+    concurrency: 1
+    queues:
+      - ["<%= prefix %>_feeder_publishing", 1]

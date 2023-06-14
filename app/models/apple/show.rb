@@ -2,21 +2,27 @@
 
 module Apple
   class Show
+    include Apple::ApiResponse
+
     attr_reader :public_feed,
       :private_feed,
       :api
 
-    def self.connect_existing(apple_show_id, api, public_feed, private_feed)
-      SyncLog.create!(feeder_id: public_feed.id,
+    def self.apple_episode_json(api, show_id)
+      api.get_paged_collection("shows/#{show_id}/episodes")
+    end
+
+    def self.connect_existing(apple_show_id, apple_config)
+      api = Apple::Api.from_apple_config(apple_config)
+
+      SyncLog.log!(feeder_id: apple_config.public_feed.id,
         feeder_type: :feeds,
         sync_completed_at: Time.now.utc,
         external_id: apple_show_id)
 
-      new(api: api, public_feed: public_feed, private_feed: private_feed)
-    end
-
-    def self.get_episodes_json(api, show_id)
-      api.get_paged_collection("shows/#{show_id}/episodes")
+      new(api: api,
+        public_feed: apple_config.public_feed,
+        private_feed: apple_config.private_feed)
     end
 
     def self.get_show(api, show_id)
@@ -32,8 +38,10 @@ module Apple
     end
 
     def reload
-      # flush memoized attrs
-      @get_episodes_json = nil
+      @apple_episode_json = nil
+      @podcast_feeder_episodes = nil
+      @podcast_episodes = nil
+      @episodes = nil
     end
 
     def podcast
@@ -71,36 +79,31 @@ module Apple
     end
 
     def apple_id
-      completed_sync_log&.external_id
+      sync_log&.external_id
     end
 
     def id
       apple_id
     end
 
-    def completed_sync_log
-      SyncLog
-        .feeds
-        .complete
-        .where(feeder_id: public_feed.id, feeder_type: :feeds)
-        .order(created_at: :desc).first
+    def sync_log
+      public_feed.apple_sync_log
+    end
+
+    def apple_sync_log
+      sync_log
     end
 
     def sync!
-      last_completed_sync = completed_sync_log
-
-      apple_json = create_or_update_show(last_completed_sync)
-
-      SyncLog.create!(feeder_id: public_feed.id,
-        feeder_type: :feeds,
-        sync_completed_at: Time.now.utc,
-        external_id: apple_json["data"]["id"])
+      apple_json = create_or_update_show(sync_log)
+      public_feed.reload
+      SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: apple_json["api_response"]["val"]["data"]["id"], api_response: apple_json)
     end
 
     def create_show!
       resp = api.post("shows", show_data)
 
-      api.unwrap_response(resp)
+      api.response(resp)
     end
 
     def update_show!(sync)
@@ -108,7 +111,7 @@ module Apple
       show_data_with_id[:data][:id] = sync.external_id
       resp = api.patch("shows/#{sync.external_id}", show_data_with_id)
 
-      api.unwrap_response(resp)
+      api.response(resp)
     end
 
     def create_or_update_show(sync)
@@ -125,18 +128,41 @@ module Apple
       self.class.get_show(api, apple_id)
     end
 
-    def get_episodes_json
-      raise "Missing apple show id" unless apple_id.present?
-
-      @get_episodes_json ||=
-        begin
-          external_id = completed_sync_log&.external_id
-          self.class.get_episodes_json(api, external_id)
-        end
+    def podcast_feeder_episodes
+      @podcast_feeder_episodes ||=
+        podcast.episodes.reset
     end
 
-    def apple_episodes_json
-      get_episodes_json
+    def podcast_episodes
+      @podcast_episodes ||= podcast_feeder_episodes.map { |e| Apple::Episode.new(api: api, show: self, feeder_episode: e) }
+    end
+
+    def episodes
+      raise "Missing apple show id" unless apple_id.present?
+
+      @episodes ||= begin
+        feed_episode_ids = Set.new(private_feed.feed_episodes.map(&:id))
+        podcast_episodes.filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }
+      end
+    end
+
+    def episode_ids
+      @episode_ids ||= episodes.map(&:id).sort
+    end
+
+    def find_episode(id)
+      @find_episode ||=
+        episodes.map { |e| [e.id, e] }.to_h
+
+      @find_episode.fetch(id)
+    end
+
+    def apple_episode_json
+      @apple_episode_json ||= Apple::Show.apple_episode_json(api, id)
+    end
+
+    def api_response
+      public_feed.apple_sync_log&.api_response
     end
   end
 end

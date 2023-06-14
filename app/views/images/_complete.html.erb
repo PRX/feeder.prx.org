@@ -1,0 +1,32 @@
+<div class="card prx-uploads">
+  <div class="card-header-info d-flex align-items-center">
+    <h5 class="card-title flex-grow-1"><%= t("images.title.#{image.model_name.singular}") %></h5>
+
+    <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#image-modal-<%= image.id %>">
+      <span class="material-icons">info</span>
+    </button>
+
+    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t("images.help.#{image.model_name.singular}") %>">
+      <span class="material-icons">help</span>
+    </button>
+
+    <%= link_to delete_path, class: "prx-btn-help" do %>
+      <span class="material-icons">delete</span>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <div class="prx-uploads-image mb-4">
+      <%= image_tag image.url, alt: image.alt_text %>
+
+      <% if image.width.present? && image.height.present? %>
+        <aside><%= image.width %>x<%= image.height %></aside>
+      <% end %>
+    </div>
+
+    <%= form.hidden_field :id %>
+    <%= render "images/meta", form: form %>
+  </div>
+</div>
+
+<%= render "images/modal", image: image, id: "image-modal-#{image.id}", title: t("images.title.#{image.model_name.singular}") %>

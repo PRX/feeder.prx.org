@@ -42,7 +42,6 @@ class EpisodeEntryHandler
 
     update_guid
     update_dates
-    update_enclosure
     update_contents
     update_image
     update_link
@@ -63,48 +62,12 @@ class EpisodeEntryHandler
     episode.url = nil if episode.url&.match(/libsyn\.com/)
   end
 
-  def update_enclosure
-    enclosure_hash = overrides.fetch(:enclosure, {}).dup
-    if overrides[:feedburner_orig_enclosure_link]
-      enclosure_hash[:url] = overrides[:feedburner_orig_enclosure_link]
-    end
-
-    if overrides[:enclosure]
-      enclosure_file = URI.parse(enclosure_hash[:url] || "").path.split("/").last
-      if !episode.enclosures.where("original_url like ?", "%/#{enclosure_file}").exists?
-        episode.enclosures << Enclosure.build_from_enclosure(episode, enclosure_hash)
-      end
-    else
-      episode.enclosures.destroy_all
-    end
-  end
-
   def update_image
-    episode.image_file = overrides[:image_url]
+    episode.image = overrides[:image_url]
   end
 
   def update_contents
     new_contents = Array(overrides[:contents]).sort_by { |c| c[:position] }
-
-    if new_contents.blank?
-      episode.contents.destroy_all
-      return
-    end
-
-    new_contents.each do |c|
-      # If there is an existing file with the same filename, then update
-      if (existing_content = episode.find_existing_content(c[:position], c[:url]))
-        existing_content.update_with_content!(c)
-      # else if there is no file, or the filename in the url is different
-      # then make a new content to be or replace content for that position
-      else
-        new_content = Content.build_from_content(episode, c)
-        episode.all_contents << new_content
-      end
-    end
-
-    # find all contents with a greater position than last file and whack them
-    max_pos = new_contents.last[:position]
-    episode.all_contents.where(["position > ?", max_pos]).delete_all
+    episode.media = new_contents.map { |c| c[:url] }
   end
 end

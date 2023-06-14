@@ -140,83 +140,93 @@ describe Feed do
     end
   end
 
-  describe "#feed_image_file" do
+  describe "#feed_image" do
     it "replaces images" do
-      refute_nil feed1.feed_image_file
       refute_nil feed1.feed_image
       refute_empty feed1.feed_images
 
-      feed1.feed_image_file = "test/fixtures/transistor300.png"
+      feed1.feed_image = "test/fixtures/transistor300.png"
       feed1.save!
-      assert_equal feed1.reload.feed_images.count, 2
-      assert_equal feed1.feed_image_file.original_url, "test/fixtures/transistor300.png"
-      assert_equal feed1.feed_image_file.status, "created"
+      assert_equal feed1.reload.feed_images.with_deleted.count, 2
+      assert_equal feed1.feed_images.count, 1
+      assert_equal feed1.feed_image.original_url, "test/fixtures/transistor300.png"
+      assert_equal feed1.feed_image.status, "created"
 
-      # feed_image is still the completed one
-      refute_equal feed1.feed_image, feed1.feed_image_file
-      assert_equal feed1.feed_image.status, "complete"
+      # ready_feed_image is still the completed one
+      refute_equal feed1.ready_feed_image, feed1.feed_image
+      assert_equal feed1.ready_feed_image.status, "complete"
+      refute_nil feed1.ready_feed_image.deleted_at
+      refute_nil feed1.ready_feed_image.replaced_at
     end
 
     it "ignores existing images" do
-      feed2.feed_image_file = {original_url: "test/fixtures/transistor300.png"}
+      feed2.feed_image = {original_url: "test/fixtures/transistor300.png"}
       feed2.save!
-      assert_equal feed2.feed_images.count, 1
-      assert_equal feed2.feed_image_file.original_url, "test/fixtures/transistor300.png"
-      assert_equal feed2.feed_image_file.status, "created"
-      assert_nil feed2.reload.feed_image
+      assert_equal feed2.feed_images.with_deleted.count, 1
+      assert_equal feed2.feed_image.original_url, "test/fixtures/transistor300.png"
+      assert_equal feed2.feed_image.status, "created"
+      assert_nil feed2.reload.ready_feed_image
 
-      feed2.feed_image_file = {original_url: "test/fixtures/transistor300.png"}
-      feed2.feed_image_file = {original_url: "test/fixtures/transistor300.png"}
-      feed2.feed_image_file = {original_url: "test/fixtures/transistor300.png"}
+      feed2.feed_image = {original_url: "test/fixtures/transistor300.png"}
+      feed2.feed_image = {original_url: "test/fixtures/transistor300.png"}
+      feed2.feed_image = {original_url: "test/fixtures/transistor300.png"}
       feed2.save!
-      assert_equal feed2.feed_images.count, 1
+      assert_equal feed2.feed_images.with_deleted.count, 1
     end
 
     it "deletes images" do
       refute_empty feed1.feed_images
 
-      feed1.feed_image_file = nil
+      feed1.update(feed_image: nil)
       assert_empty feed1.reload.feed_images
+
+      assert_nil feed1.ready_feed_image
+      assert_nil feed1.feed_images.with_deleted.first.replaced_at
     end
   end
 
-  describe "#itunes_image_file" do
+  describe "#itunes_image" do
     it "replaces images" do
-      refute_nil feed1.itunes_image_file
       refute_nil feed1.itunes_image
       refute_empty feed1.itunes_images
 
-      feed1.itunes_image_file = "test/fixtures/transistor1400.jpg"
+      feed1.itunes_image = "test/fixtures/transistor1400.jpg"
       feed1.save!
-      assert_equal feed1.reload.itunes_images.count, 2
-      assert_equal feed1.itunes_image_file.original_url, "test/fixtures/transistor1400.jpg"
-      assert_equal feed1.itunes_image_file.status, "created"
+      assert_equal feed1.reload.itunes_images.with_deleted.count, 2
+      assert_equal feed1.reload.itunes_images.count, 1
+      assert_equal feed1.itunes_image.original_url, "test/fixtures/transistor1400.jpg"
+      assert_equal feed1.itunes_image.status, "created"
 
-      # itunes_image is still the completed one
-      refute_equal feed1.itunes_image, feed1.itunes_image_file
-      assert_equal feed1.itunes_image.status, "complete"
+      # ready_itunes_image is still the completed one
+      refute_equal feed1.ready_itunes_image, feed1.itunes_image
+      assert_equal feed1.ready_itunes_image.status, "complete"
+      refute_nil feed1.ready_itunes_image.deleted_at
+      refute_nil feed1.ready_itunes_image.replaced_at
     end
 
     it "ignores existing images" do
-      feed2.itunes_image_file = {original_url: "test/fixtures/transistor1400.jpg"}
+      feed2.itunes_image = {original_url: "test/fixtures/transistor1400.jpg"}
       feed2.save!
-      assert_equal feed2.itunes_images.count, 1
-      assert_equal feed2.itunes_image_file.original_url, "test/fixtures/transistor1400.jpg"
-      assert_equal feed2.itunes_image_file.status, "created"
-      assert_nil feed2.reload.itunes_image
+      assert_equal feed2.itunes_images.with_deleted.count, 1
+      assert_equal feed2.itunes_image.original_url, "test/fixtures/transistor1400.jpg"
+      assert_equal feed2.itunes_image.status, "created"
+      assert_nil feed2.reload.ready_itunes_image
 
-      feed2.itunes_image_file = {original_url: "test/fixtures/transistor1400.jpg"}
-      feed2.itunes_image_file = {original_url: "test/fixtures/transistor1400.jpg"}
-      feed2.itunes_image_file = {original_url: "test/fixtures/transistor1400.jpg"}
+      feed2.itunes_image = {original_url: "test/fixtures/transistor1400.jpg"}
+      feed2.itunes_image = {original_url: "test/fixtures/transistor1400.jpg"}
+      feed2.itunes_image = {original_url: "test/fixtures/transistor1400.jpg"}
       feed2.save!
-      assert_equal feed2.itunes_images.count, 1
+      assert_equal feed2.itunes_images.with_deleted.count, 1
     end
 
     it "deletes images" do
       refute_empty feed1.itunes_images
 
-      feed1.itunes_image_file = nil
+      feed1.update(itunes_image: nil)
       assert_empty feed1.reload.itunes_images
+
+      assert_nil feed1.ready_itunes_image
+      assert_nil feed1.itunes_images.with_deleted.first.replaced_at
     end
   end
 
@@ -244,23 +254,28 @@ describe Feed do
     end
   end
 
-  describe "#apple_credentials" do
+  describe "#apple_configs" do
     it "has apple credentials" do
-      creds = create(:apple_credential, public_feed: feed1, private_feed: feed2)
-      assert_equal feed1.apple_credentials, [creds]
-      assert_equal feed1.apple_credentials.first.private_feed, feed2
+      creds = create(:apple_config, public_feed: feed1, private_feed: feed2)
+      assert_equal feed1.apple_configs, [creds]
+      assert_equal feed1.apple_configs.first.private_feed, feed2
     end
   end
 
   describe "#publish_to_apple?" do
     it "returns true if the feed has apple credentials" do
-      creds = create(:apple_credential, public_feed: feed1, private_feed: feed2)
+      creds = create(:apple_config, public_feed: feed1, private_feed: feed2, publish_enabled: true)
       assert feed1.publish_to_apple?(creds)
       refute feed2.publish_to_apple?(creds)
     end
 
+    it "returns false if the creds are not marked publish_enabled?" do
+      creds = create(:apple_config, public_feed: feed1, private_feed: feed2, publish_enabled: false)
+      refute feed1.publish_to_apple?(creds)
+    end
+
     it "returns false if the feed does not have apple credentials" do
-      refute feed1.publish_to_apple?(create(:apple_credential, public_feed: create(:feed), private_feed: create(:feed)))
+      refute feed1.publish_to_apple?(create(:apple_config, public_feed: create(:feed), private_feed: create(:feed)))
     end
   end
 end

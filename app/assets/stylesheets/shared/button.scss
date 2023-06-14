@@ -1,37 +1,61 @@
-.btn-primary,
-.btn-danger {
-  color: $white;
+//
+// Button style overrides.
+//
+
+.btn {
+  --#{$prefix}btn-padding-y: #{map-get($spacers, 1)};
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: #{map-get($spacers, 2)};
+  white-space: nowrap;
 
   &:hover {
-    color: $white;
-  }
-}
-
-.btn-secondary-link {
-  transition: background-color 0.1s linear 0ms;
-  background-color: $white;
-  margin: 1rem 0.5rem;
-  padding: 0.5rem;
-  border: 1px dashed rgba(0, 0, 0, 0.12);
-  width: calc(100% - 1rem);
-  color: $primary;
-
-  &:hover {
-    color: $link-hover-color;
-    border: 1px dashed rgba(0, 0, 0, 0.12);
-    background: $gray-100;
+    text-decoration: none;
   }
 }
 
 .btn-icon {
-  text-decoration: none;
+  @include button-size($btn-icon-padding, $btn-icon-padding, $btn-icon-font-size, $btn-border-radius);
+
+  display: inline-grid;
+  place-items: center;
+  aspect-ratio: 1;
 
   .material-icons {
-    vertical-align: middle;
+    font-size: inherit;
   }
+}
 
-  &.dropdown-toggle::after {
-    display: none;
+.btn-icon-sm {
+  @include button-size($btn-icon-padding-sm, $btn-icon-padding-sm, $btn-icon-font-size-sm, $btn-border-radius-sm);
+}
+
+.btn-icon-lg {
+  @include button-size($btn-icon-padding-lg, $btn-icon-padding-lg, $btn-icon-font-size-lg, $btn-border-radius-lg);
+}
+
+.btn-icon-round {
+  --#{$prefix}btn-border-radius: 50%;
+}
+
+.btn-icon-borderless {
+  --#{$prefix}btn-bg: transparent;
+  --#{$prefix}btn-border-color: transparent;
+  --#{$prefix}btn-border-width: 0;
+  --#{$prefix}btn-hover-bg: transparent;
+  --#{$prefix}btn-hover-border-color: transparent;
+  --#{$prefix}btn-active-bg: transparent;
+  --#{$prefix}btn-active-border-color: transparent;
+  --#{$prefix}btn-active-shadow: none;
+  --#{$prefix}btn-disabled-bg: transparent;
+  --#{$prefix}btn-disabled-border-color: transparent;
+
+  @each $color, $value in $theme-colors {
+    &.btn-#{$color} {
+      @include button-borderless-variant($value);
+    }
   }
 }
 
@@ -56,13 +80,19 @@
   }
 }
 
-.btn-light {
-  border: 1px solid $border-color;
-  background: $white;
-  display: flex;
-  align-items: center;
+.btn-outline-light {
+  --#{$prefix}btn-bg: #{$white};
+  --#{$prefix}btn-border-color: #{$border-color};
+  --#{$prefix}btn-color: #{color-contrast($white)};
+  --#{$prefix}btn-hover-bg: #{tint-color($border-color, 50%)};
+  --#{$prefix}btn-hover-border-color: #{$border-color};
+  --#{$prefix}btn-active-bg: #{$border-color};
+  --#{$prefix}btn-active-border-color: #{$border-color};
+}
 
-  .material-icons {
-    margin: 0 0.25rem;
+.btn-discard-changed {
+  border-color: $orange;
+  &:hover {
+    border-color: $orange;
   }
 }

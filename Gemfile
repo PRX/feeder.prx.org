@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.7"
+ruby "3.2.2"
 
 # core
 gem "activerecord-session_store"
@@ -26,6 +26,7 @@ gem "kaminari"
 gem "sprockets-rails"
 gem "stimulus-rails"
 gem "turbo-rails"
+gem "simple_calendar", "~> 2.4"
 
 # api views
 gem "actionpack-action_caching" # for hal_api-rails
@@ -36,7 +37,6 @@ gem "roar-rails", github: "PRX/roar-rails", branch: "feat/rails_7"
 # models
 gem "addressable"
 gem "countries"
-gem "fastimage"
 gem "paranoia"
 gem "sanitize"
 
@@ -49,6 +49,10 @@ gem "ougai-formatters-customizable"
 # background workers
 gem "say_when", "~> 2.2.1"
 gem "shoryuken"
+
+# podcast import
+gem "feedjira"
+gem "loofah"
 
 # utilities
 gem "amazing_print"

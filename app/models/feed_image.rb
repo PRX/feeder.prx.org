@@ -3,8 +3,6 @@ class FeedImage < ApplicationRecord
   include FeedImageFile
 
   def replace_resources!
-    feed.with_lock do
-      feed.feed_images.where("created_at < ? AND id != ?", created_at, id).destroy_all
-    end
+    FeedImage.where(feed_id: feed_id).where.not(id: id).touch_all(:replaced_at, :deleted_at)
   end
 end

@@ -24,8 +24,18 @@ FactoryBot.define do
       include_podcast_value { true }
       include_donation_url { true }
 
-      feed_image
-      itunes_image
+      after(:build) do |feed, _evaluator|
+        feed.feed_image = build(:feed_image)
+        feed.itunes_image = build(:itunes_image)
+
+        feed.feed_image.tasks.build
+        feed.itunes_image.tasks.build
+      end
+    end
+
+    factory :private_feed do
+      private { true }
+      tokens { [FeedToken.new(label: "my-tok")] }
     end
   end
 end

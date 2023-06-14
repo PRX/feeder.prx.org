@@ -1,17 +1,22 @@
-<%= form_with(model: episode) do |form| %>
-  <% if episode.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(episode.errors.count, "error") %> prohibited this episode from being saved:</h2>
+<% model = episode.new_record? ? [episode.podcast, episode] : episode %>
+<% data = {controller: "unsaved disable", unsaved_changed_value: episode.changed?, unsaved_confirm_value: t(".confirm")} %>
 
-      <ul>
-        <% episode.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+<%= form_with(model: model, html: {autocomplete: "off"}, data: data) do |form| %>
+  <%# first button in form must be a submit, for enter key to work %>
+  <%= form.submit class: "d-none" %>
+
+  <div class="row my-4">
+    <div class="col-lg-8">
+      <div class="row">
+        <%= render "form_main", episode: episode, form: form %>
+        <%= render "form_tags", episode: episode, form: form %>
+        <%= render "form_media", episode: episode, form: form %>
+        <%= render "form_image", episode: episode, form: form %>
+      </div>
     </div>
-  <% end %>
-
-  <div>
-    <%= form.submit %>
+    <div class="col-lg-4 d-grid align-content-start gap-3">
+      <%= render "form_status", episode: episode, form: form %>
+      <%= render "form_distribution", episode: episode, form: form %>
+    </div>
   </div>
 <% end %>

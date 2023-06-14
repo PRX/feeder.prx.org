@@ -1,11 +1,17 @@
 class FeederFormBuilder < ActionView::Helpers::FormBuilder
+  alias_method :super_select, :select
+
   INPUT_CLASS = "form-control"
   CHECK_CLASS = "form-check-input"
   SELECT_CLASS = "form-select"
   BLANK_CLASS = "form-control-blank"
   BLANK_ACTION = "blur->blank-field#blur"
+  CHANGED_CLASS = "is-changed"
+  CHANGED_ACTION = "change->unsaved#change keyup->unsaved#change"
+  CHANGED_DATA_VALUE_WAS = :value_was
   SEARCH_ACTION = "search#submit"
   SLIM_SELECT_CONTROLLER = "slim-select"
+  TAG_SELECT_CONTROLLER = "tag-select"
   FLATPICKR_CONTROLLER = "flatpickr"
   FLATPICKR_ACTION = "keydown->flatpickr#keydown keyup->flatpickr#keyup"
   SELECT_BY_GROUP = "slim-select-group-select-value"
@@ -14,6 +20,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     options[:class] = INPUT_CLASS unless options.key?(:class)
     add_blank_class(options) if blank?(method, options)
     add_blank_action(options)
+    add_changed(method, options)
     add_disabled(options)
     super(method, options)
   end
@@ -22,6 +29,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     options[:class] = INPUT_CLASS unless options.key?(:class)
     add_blank_class(options) if blank?(method, options)
     add_blank_action(options)
+    add_changed(method, options)
     add_disabled(options)
     super(method, options)
   end
@@ -30,12 +38,14 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     options[:class] = INPUT_CLASS unless options.key?(:class)
     add_blank_class(options) if blank?(method, options)
     add_blank_action(options)
+    add_changed(method, options)
     add_disabled(options)
     super(method, options)
   end
 
   def check_box(method, options = {})
     options[:class] = CHECK_CLASS unless options.key?(:class)
+    add_changed(method, options)
     add_disabled(options)
     super(method, options)
   end
@@ -50,14 +60,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def time_field(method, options = {})
     value = options[:value] || object&.public_send(method)
-
-    # end timestamps are fudged 1-minute to look inclusive
-    if options[:fudge] && value && value == value.beginning_of_day
-      value -= 1.minute
-    end
-    options[:value] = value.try(:strftime, "%Y-%m-%d %H:%M") || value
-
-    add_data(options, :fudge, true) if options[:fudge]
+    options[:value] = value.try(:strftime, "%Y-%m-%d %H:%M:%S") || value
     add_data(options, :timestamp, true)
     add_flatpickr_controller(options)
     text_field(method, options)
@@ -67,10 +70,22 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     html_options[:class] = SELECT_CLASS unless html_options.key?(:class)
     add_blank_class(html_options) if blank?(method, options) && options[:include_blank]
     add_blank_action(html_options)
+    add_changed(method, html_options)
     add_slim_select_controller(html_options)
     add_disabled(html_options)
     add_select_by_group(html_options) if html_options[:group_select]
     super(method, choices, options, html_options, &block)
+  end
+
+  def tag_select(method, choices, options = {}, html_options = {}, &block)
+    options[:include_blank] = true
+    html_options[:class] = SELECT_CLASS unless html_options.key?(:class)
+    html_options[:multiple] = true
+    add_blank_class(html_options) if blank?(method, options)
+    add_blank_action(html_options)
+    add_tag_select_controller(html_options)
+    add_disabled(html_options)
+    super_select(method, choices, options, html_options, &block)
   end
 
   def search_text_field(method, params, options = {})
@@ -113,11 +128,37 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def add_blank_class(opts)
-    opts[:class] = [opts[:class], BLANK_CLASS].compact.join(" ").strip
+    add_class(opts, BLANK_CLASS)
   end
 
   def add_blank_action(opts)
     add_data(opts, :action, BLANK_ACTION)
+  end
+
+  def add_changed(method, opts)
+    add_data(opts, :action, CHANGED_ACTION)
+
+    if object.present?
+      changed = object.try("#{method}_changed?")
+      has_value_was = object.respond_to?("#{method}_was")
+      value_was = object.try("#{method}_was")
+      value_is = object.try(method)
+
+      # add changed class to changed fields
+      if changed
+        # but ignore nils being set to blanks by text fields
+        if has_value_was && value_was.nil? && value_is == ""
+          return
+        else
+          add_class(opts, CHANGED_CLASS)
+        end
+      end
+
+      # save previous value as a data attribute
+      if has_value_was
+        add_data(opts, CHANGED_DATA_VALUE_WAS, value_was)
+      end
+    end
   end
 
   def add_search_action(opts)
@@ -126,6 +167,10 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def add_slim_select_controller(opts)
     add_data(opts, :controller, SLIM_SELECT_CONTROLLER)
+  end
+
+  def add_tag_select_controller(opts)
+    add_data(opts, :controller, TAG_SELECT_CONTROLLER)
   end
 
   def add_flatpickr_controller(opts)
@@ -141,6 +186,10 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     if !opts.key?(:disabled) && object && !@template.policy(object).create_or_update?
       opts[:disabled] = true
     end
+  end
+
+  def add_class(opts, cls)
+    opts[:class] = [opts[:class], cls].compact.join(" ").strip
   end
 
   def add_data(opts, key, val)

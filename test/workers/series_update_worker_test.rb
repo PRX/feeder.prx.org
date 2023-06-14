@@ -23,11 +23,6 @@ describe SeriesUpdateWorker do
   end
 
   before do
-    stub_request(:get, profile)
-      .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
-  end
-
-  before do
     stub_request(:get, "https://cms.prx.org/api/v1/series/149726")
       .with(headers: {"Accept" => "application/json"})
       .to_return(status: 200, body: body, headers: {})

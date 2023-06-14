@@ -1,0 +1,98 @@
+<div class="card shadow border-0">
+  <div class="card-header-<%= episode_status_class(episode) %>">
+    <h5 class="card-title"><%= t(".title_#{episode.publishing_status_was}") %></h5>
+  </div>
+
+  <div class="card-body row">
+    <div class="col-12 mb-4">
+      <div class="form-floating">
+        <% invalid_class = episode.errors[:base].present? ? "is-invalid" : "" %>
+
+        <% if episode.publishing_status_was == 'published' %>
+          <%= form.hidden_field :publishing_status, value: "published" %>
+          <div class="form-control d-table <%= invalid_class %>">
+            <p class="d-table-cell align-middle">
+              <%= t("helpers.label.episode.publishing_statuses.published") %>
+            </p>
+          </div>
+        <% else %>
+          <%= form.select :publishing_status, episode_publishing_status_options, {}, class: "form-select #{invalid_class}" %>
+        <% end %>
+
+        <%= form.label :publishing_status, class: invalid_class %>
+
+        <% if episode.errors[:base].present? %>
+          <div class="invalid-feedback"><%= episode.errors[:base].to_sentence.capitalize %></div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-12 mb-4">
+      <div class="form-floating">
+        <%= form.time_field :released_at, value: episode.published_or_released_date %>
+        <%= form.label :released_at %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer d-flex align-items-center justify-content-between">
+    <% if episode.persisted? %>
+      <p class="status-text"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(episode.updated_at) %></p>
+
+      <% if policy(episode).update? %>
+        <div>
+          <%= link_to t(".discard"), edit_episode_path(episode), class: "btn btn-discard-changed invisible", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
+
+          <div class="btn-group">
+            <% data = {disable_with: t(".updating"), upload_with: t(".uploading")} %>
+            <%= form.submit t(".update"), class: "btn btn-#{episode_status_class(episode)}", data: data %>
+
+            <% if episode.published? || policy(episode).destroy? %>
+              <button type="button" class="btn btn-<%= episode_status_class(episode) %> dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="visually-hidden"><%= t(".toggle_dropdown") %></span>
+              </button>
+              <ul class="dropdown-menu">
+                <% if episode.published? && !episode.published_at_changed? %>
+                  <li><%= link_to t(".unpublish"), episode_path(episode, episode: {publishing_status: "draft"}), method: :put, class: "dropdown-item bg-danger text-white" %></li>
+                <% else %>
+                  <li>
+                    <button type="button" class="dropdown-item bg-danger text-white" data-bs-toggle="modal" data-bs-target="#confirm-destroy">
+                      <%= t(".destroy") %>
+                    </button>
+                  </li>
+                <% end %>
+              </ul>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+    <% else %>
+      <p class="status-text"><strong><%= t(".new_hint") %></strong></p>
+
+      <% if policy(episode).create? %>
+        <% data = {disable_with: t(".creating"), upload_with: t(".uploading")} %>
+        <%= form.submit t(".create"), class: "btn btn-warning", data: data %>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<% if policy(episode).destroy? %>
+  <div class="modal fade" id="confirm-destroy" tabindex="-1" aria-labelledby="confirm-destroy-title" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirm-destroy-title"><%= t(".destroy_confirm_title") %></h5>
+        </div>
+        <div class="modal-body">
+          <p><%= t(".destroy_confirm_body") %></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal"><%= t(".destroy_confirm_no") %></button>
+          <%= link_to t(".destroy_confirm_yes"), episode, method: :delete, class: "btn btn-danger" %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

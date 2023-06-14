@@ -1,43 +1,51 @@
 class Tasks::CopyImageTask < ::Task
-  before_save do
-    if image_resource && status_changed?
-      image_resource.update!(status: status)
-      if complete?
-        image_resource.update!(url: image_resource.published_url)
-        image_resource.try(:replace_resources!)
-        podcast.try(:publish!)
-      end
-    end
-  end
+  before_save :update_image, if: ->(t) { t.status_changed? && t.image }
 
-  def task_options
-    super.merge({
-      job_type: "file",
-      source: image_resource.original_url,
-      destination: destination_url(image_resource)
-    }).with_indifferent_access
-  end
-
-  def destination_url(image_resource)
-    URI::Generic.build(
-      scheme: "s3",
-      host: feeder_storage_bucket,
-      path: image_path(image_resource)
-    ).to_s
-  end
-
-  def image_path(image_resource)
-    if !image_resource
-      logger.info("in CopyImageTask#image_path and image_resource is nil. self is #{inspect}")
-    end
-    URI.parse(image_resource.published_url).path
-  end
-
-  def podcast
-    image_resource.try(:episode).try(:podcast) || image_resource.try(:podcast)
-  end
-
-  def image_resource
+  def image
     owner
+  end
+
+  def source_url
+    image.href
+  end
+
+  def porter_tasks
+    [
+      {
+        Type: "Inspect"
+      },
+      {
+        Type: "Copy",
+        Mode: "AWS/S3",
+        BucketName: ENV["FEEDER_STORAGE_BUCKET"],
+        ObjectKey: porter_escape(image.path),
+        ContentType: "REPLACE",
+        Parameters: {
+          CacheControl: "max-age=86400",
+          ContentDisposition: "attachment; filename=\"#{porter_escape(image.file_name)}\""
+        }
+      }
+    ]
+  end
+
+  def update_image
+    image.status = status
+
+    if complete?
+      info = porter_callback_inspect
+      image.size = porter_callback_size
+
+      # only return for actual images - not detected images in id3 tags
+      if info[:Image] && porter_callback_mime&.starts_with?("image/")
+        image.format = info[:Image][:Format]
+        image.height = info[:Image][:Height].to_i
+        image.width = info[:Image][:Width].to_i
+      end
+
+      # change status, if metadata doesn't pass validations
+      image.status = "invalid" if image.invalid?
+    end
+
+    image.save!
   end
 end

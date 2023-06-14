@@ -4,33 +4,33 @@ require "hash_serializer"
 require "text_sanitizer"
 
 class Episode < ApplicationRecord
+  include EpisodeAdBreaks
+  include EpisodeMedia
+  include PublishingStatus
   include TextSanitizer
 
-  serialize :categories, JSON
-  serialize :keywords, JSON
+  MAX_SEGMENT_COUNT = 10
+  VALID_ITUNES_TYPES = %w[full trailer bonus]
+
+  attr_accessor :strict_validations
 
   acts_as_paranoid
 
+  serialize :categories, JSON
+  serialize :keywords, JSON
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
+  has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy
+  has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy
+  has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
 
-  has_many :images,
-    -> { order("created_at DESC") },
-    class_name: "EpisodeImage", autosave: true, dependent: :destroy
+  accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
+  accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
+  accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
 
-  has_many :all_contents,
-    -> { order("position ASC, created_at DESC") },
-    class_name: "Content", autosave: true, dependent: :destroy
-
-  has_many :contents,
-    -> { order("position ASC, created_at DESC").complete },
-    autosave: true, dependent: :destroy
-
-  has_many :enclosures,
-    -> { order("created_at DESC") },
-    autosave: true, dependent: :destroy
-
+  has_one :apple_sync_log, -> { episodes }, foreign_key: :feeder_id, class_name: "SyncLog"
+  has_one :apple_podcast_delivery, class_name: "Apple::PodcastDelivery"
   has_one :apple_podcast_container, class_name: "Apple::PodcastContainer"
   has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
     class_name: "Apple::PodcastDelivery"
@@ -38,21 +38,29 @@ class Episode < ApplicationRecord
     class_name: "Apple::PodcastDeliveryFile"
 
   validates :podcast_id, :guid, presence: true
+  validates :title, presence: true
   validates :original_guid, uniqueness: {scope: :podcast_id, allow_nil: true}
-  validates :itunes_type, inclusion: {in: %w[full trailer bonus]}
-  validates :episode_number,
-    numericality: {only_integer: true}, allow_nil: true
-  validates :season_number,
-    numericality: {only_integer: true}, allow_nil: true
+  validates :itunes_type, inclusion: {in: VALID_ITUNES_TYPES}
+  validates :episode_number, numericality: {only_integer: true}, allow_nil: true
+  validates :season_number, numericality: {only_integer: true}, allow_nil: true
   validates :explicit, inclusion: {in: %w[true false]}, allow_nil: true
+  validates :segment_count, presence: true, if: :strict_validations
+  validates :segment_count, numericality: {only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
+  validate :validate_media_ready, if: :strict_validations
 
   before_validation :initialize_guid, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
+  after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
 
-  scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
+  scope :published, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at <= now()") }
+  scope :published_by, ->(offset) { where("episodes.published_at IS NOT NULL AND episodes.published_at <= ?", Time.now + offset) }
+  scope :draft, -> { where("episodes.published_at IS NULL") }
+  scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
+  scope :draft_or_scheduled, -> { draft.or(scheduled) }
+  scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
 
-  scope :published_by, ->(offset) { where("published_at IS NOT NULL AND published_at <= ?", Time.now + offset) }
+  enum :medium, [:audio, :uncut, :video], prefix: true
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -77,6 +85,11 @@ class Episode < ApplicationRecord
 
   def self.story_uri(story)
     (story.links["self"].href || "").gsub("/authorization/", "/")
+  end
+
+  # use guid rather than id for episode routes
+  def to_param
+    guid
   end
 
   def apple_file_errors?
@@ -125,25 +138,23 @@ class Episode < ApplicationRecord
     self.author_email = author["email"]
   end
 
-  def enclosure
-    enclosures.complete.first
+  def ready_image
+    images.complete_or_replaced.first
   end
 
   def image
-    images.complete.first
-  end
-
-  # API updates for image=
-  def image_file
     images.first
   end
 
-  def image_file=(file)
+  def image=(file)
     img = EpisodeImage.build(file)
-    if img && img.original_url != image_file.try(:original_url)
-      images << img
-    elsif !img
-      images.destroy_all
+
+    if !img
+      images.each(&:mark_for_destruction)
+    elsif img&.replace?(image)
+      images.build(img.attributes.compact)
+    else
+      img.update_image(image)
     end
   end
 
@@ -157,7 +168,7 @@ class Episode < ApplicationRecord
   end
 
   def explicit=(value)
-    super(Podcast::EXPLICIT_ALIASES[value] || value)
+    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
   end
 
   def explicit_content
@@ -172,6 +183,17 @@ class Episode < ApplicationRecord
     self.original_guid = new_guid
   end
 
+  def medium=(new_medium)
+    super
+
+    if medium_changed? && medium_was.present?
+      contents.each(&:mark_for_replacement)
+      uncut&.mark_for_replacement
+    end
+
+    self.segment_count = 1 if medium_video?
+  end
+
   def overrides
     self[:overrides] ||= HashWithIndifferentAccess.new
   end
@@ -180,43 +202,27 @@ class Episode < ApplicationRecord
     self[:categories] ||= []
   end
 
+  def categories=(cats)
+    self[:categories] = Array(cats).reject(&:blank?)
+  end
+
   def keywords
     self[:keywords] ||= []
   end
 
-  def media_url
-    first_media_resource.try(:href)
-  end
-
-  def content_type(feed = nil)
-    media_content_type = first_media_resource.try(:mime_type)
-    if (media_content_type || "").starts_with?("video")
-      media_content_type
-    else
-      feed.try(:mime_type) || media_content_type || "audio/mpeg"
-    end
-  end
-
-  def duration
-    if contents.blank?
-      enclosure.try(:duration).to_f
-    else
-      contents.inject(0.0) { |s, c| s + c.duration.to_f }
-    end + podcast.try(:duration_padding).to_f
-  end
-
-  def file_size
-    if contents.blank?
-      enclosure.try(:file_size)
-    else
-      contents.inject(0) { |s, c| s + c.file_size.to_i }
-    end
-  end
-
   def copy_media(force = false)
-    enclosures.each { |e| e.copy_media(force) }
-    all_contents.each { |c| c.copy_media(force) }
+    contents.each { |c| c.copy_media(force) }
     images.each { |i| i.copy_media(force) }
+    uncut&.copy_media(force)
+  end
+
+  def apple_mark_for_reupload!
+    apple_podcast_deliveries.destroy_all
+  end
+
+  def publish!
+    apple_mark_for_reupload!
+    podcast&.publish!
   end
 
   def podcast_feed_url
@@ -232,40 +238,11 @@ class Episode < ApplicationRecord
   end
 
   def include_in_feed?
-    !media? || media_ready?
-  end
-
-  def media?
-    !all_media_files.blank?
-  end
-
-  def media_status
-    states = all_media_files.map(&:status).uniq
-    if !(%w[started created processing retrying] & states).empty?
-      "processing"
-    elsif states.any? { |s| s == "error" }
-      "error"
-    elsif media_ready?
-      "complete"
-    end
-  end
-
-  def media_ready?
-    # if this episode has enclosures, media is ready if there is a complete one
-    if !enclosures.blank?
-      !!enclosure
-      # if this episode has contents, ready when each position is ready
-    elsif !all_contents.blank?
-      max_pos = all_contents.map(&:position).max
-      contents.size == max_pos
-      # if this episode has no audio, the media can't be ready, and `media?` will be false
+    if no_media?
+      true
     else
-      false
+      complete_media?
     end
-  end
-
-  def first_media_resource
-    all_media_files.first
   end
 
   def enclosure_url(feed = nil)
@@ -275,50 +252,6 @@ class Episode < ApplicationRecord
   def enclosure_filename
     uri = URI.parse(enclosure_url)
     File.basename(uri.path)
-  end
-
-  # used in the API, both read and write
-  def media_files
-    contents.blank? ? Array(enclosure) : contents
-  end
-
-  # API updates for media= ... just append new files and reprocess
-  def media_files=(files)
-    ignore = %i[id type episode_id guid position status created_at updated_at]
-    files.each_with_index do |f, index|
-      file = f.attributes.with_indifferent_access.except(*ignore)
-      file[:position] = index + 1
-      all_contents << Content.new(file)
-    end
-
-    # find all contents with a greater position and whack them
-    all_contents.where(["position > ?", files.count]).destroy_all
-  end
-
-  # find existing content by the last 2 segments of the url
-  def find_existing_content(pos, url)
-    return nil if url.blank?
-
-    content_file = URI.parse(url || "").path.split("/")[-2, 2].join("/")
-    content_file = "/#{content_file}" unless content_file[0] == "/"
-    all_contents.where(position: pos).where(
-      "original_url like ?",
-      "%#{content_file}"
-    ).order(created_at: :desc).first
-  end
-
-  def find_existing_image(url)
-    return nil if url.blank?
-
-    images.where(original_url: url).order(created_at: :desc).first
-  end
-
-  def all_media_files
-    all_contents.blank? ? Array(enclosures) : all_contents
-  end
-
-  def audio_files
-    media_files
   end
 
   def set_external_keyword
@@ -350,5 +283,40 @@ class Episode < ApplicationRecord
 
   def feeder_cdn_host
     ENV["FEEDER_CDN_HOST"]
+  end
+
+  def segment_range
+    1..segment_count.to_i
+  end
+
+  def build_contents
+    segment_range.map do |p|
+      contents.find { |c| c.position == p } || contents.build(position: p)
+    end
+  end
+
+  def destroy_out_of_range_contents
+    if segment_count.present? && segment_count.positive?
+      contents.where.not(position: segment_range.to_a).destroy_all
+    end
+  end
+
+  def published_or_released_date
+    if published_at.present?
+      published_at
+    elsif released_at.present?
+      released_at
+    end
+  end
+
+  def validate_media_ready
+    return if published_at.blank? || no_media?
+
+    # media must be complete on _initial_ publish
+    must_be_complete = published_at_was.blank?
+
+    unless media_ready?(must_be_complete)
+      errors.add(:base, :media_not_ready, message: "media not ready")
+    end
   end
 end

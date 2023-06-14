@@ -1,8 +1,9 @@
 require "text_sanitizer"
 
 class Podcast < ApplicationRecord
-  FEED_GETTERS = %i[subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image]
-  FEED_SETTERS = %i[subtitle= description= summary= url= new_feed_url= display_episodes_count= display_full_episodes_count= enclosure_prefix= enclosure_template= feed_image= itunes_image=]
+  FEED_ATTRS = %i[subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image ready_feed_image ready_itunes_image ready_image]
+  FEED_GETTERS = FEED_ATTRS.map { |s| [s, "#{s}_was".to_sym, "#{s}_changed?".to_sym] }.flatten
+  FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
 
   include TextSanitizer
 
@@ -11,22 +12,25 @@ class Podcast < ApplicationRecord
   serialize :restrictions, JSON
 
   has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true
-  has_many :feeds, dependent: :destroy
 
   has_many :episodes, -> { order("published_at desc") }
+  has_many :feeds, dependent: :destroy
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
 
+  accepts_nested_attributes_for :default_feed
+
   validates :title, presence: true
-  validates :subtitle, presence: true
   validates :link, http_url: true
+  validates :donation_url, http_url: true
+  validates :payment_pointer, format: /\A\$[A-Za-z0-9\-.]+\/?[^\s]*\z/, allow_blank: true
   validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
 
   # these keep changing - so just translate to the current accepted values
-  VALID_EXPLICITS = %w[true false]
+  VALID_EXPLICITS = %w[false true]
   EXPLICIT_ALIASES = {
-    "" => "false",
+    "" => nil,
     "no" => "false",
     "clean" => "false",
     false => "false",
@@ -40,6 +44,7 @@ class Podcast < ApplicationRecord
 
   before_validation :set_defaults, :sanitize_text
 
+  scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") }
   scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
 
   def self.by_prx_series(series)
@@ -48,12 +53,16 @@ class Podcast < ApplicationRecord
   end
 
   def set_defaults
-    self.default_feed ||= feeds.new(private: false)
+    set_default_feed
     self.explicit ||= "false"
   end
 
+  def set_default_feed
+    self.default_feed ||= feeds.new(private: false)
+  end
+
   def explicit=(value)
-    super(EXPLICIT_ALIASES[value] || value)
+    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
   end
 
   def itunes_category

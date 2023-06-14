@@ -9,6 +9,7 @@ describe Api::EpisodesController do
 
   let(:episode_hash) do
     {
+      title: "title",
       prxUri: "/api/v1/stories/123",
       media: [
         {href: "https://s3.amazonaws.com/prx-testing/test/audio1.mp3"},
@@ -118,9 +119,8 @@ describe Api::EpisodesController do
       id = JSON.parse(response.body)["id"]
       new_episode = Episode.find_by_guid(id)
       assert_equal new_episode.prx_uri, "/api/v1/stories/123"
-      assert_equal new_episode.enclosures.count, 0
-      assert_equal new_episode.all_contents.count, 3
-      c = new_episode.all_contents.first
+      assert_equal new_episode.contents.count, 3
+      c = new_episode.contents.first
       assert_equal c.original_url, "https://s3.amazonaws.com/prx-testing/test/audio1.mp3"
     end
 
@@ -133,8 +133,8 @@ describe Api::EpisodesController do
       new_episode = Episode.find_by_guid(id)
       assert_equal ep.id, new_episode.id
 
-      assert_equal new_episode.all_contents.count, 3
-      c = new_episode.all_contents.first
+      assert_equal new_episode.contents.count, 3
+      c = new_episode.contents.first
       assert_equal c.original_url, "https://s3.amazonaws.com/prx-testing/test/audio1.mp3"
     end
 
@@ -148,26 +148,26 @@ describe Api::EpisodesController do
         }]
       }
 
-      assert_equal episode_update.all_contents.size, 0
+      assert_equal episode_update.contents.size, 0
 
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
 
-      contents = episode_update.reload.all_contents
+      contents = episode_update.reload.contents
       assert_equal contents.size, 1
       assert_equal contents.first.mime_type, "audio/mpeg"
       assert_equal contents.first.file_size, 123456
       assert_equal contents.first.duration.to_s, "1234.5678"
       guid1 = contents.first.guid
 
-      # updating with a dupe should insert it
-      update_hash = {media: [{href: update_hash[:media][0][:href]}]}
+      # updating with a different href should insert it
+      update_hash = {media: [{href: "s3://something/else"}]}
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
 
-      contents = episode_update.reload.all_contents
+      contents = episode_update.reload.contents.with_deleted
       assert_equal contents.size, 2
 
       refute_equal contents.first.guid, guid1
@@ -187,14 +187,14 @@ describe Api::EpisodesController do
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
-      assert_equal episode_update.reload.all_contents.size, 2
+      assert_equal episode_update.reload.contents.size, 1
 
       # updating with an empty array deletes
       update_hash = {media: []}
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
-      assert_equal episode_update.reload.all_contents.size, 0
+      assert_equal episode_update.reload.contents.size, 0
     end
   end
 end

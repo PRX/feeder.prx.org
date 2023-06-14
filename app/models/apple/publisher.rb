@@ -2,17 +2,19 @@
 
 module Apple
   class Publisher
+    PUBLISH_CHUNK_LEN = 25
+
     attr_reader :public_feed,
       :private_feed,
       :api,
       :show
 
-    def self.from_apple_credential(apple_credential)
-      api = Apple::Api.from_apple_credentials(apple_credential)
+    def self.from_apple_config(apple_config)
+      api = Apple::Api.from_apple_config(apple_config)
 
       new(api: api,
-        public_feed: apple_credential.public_feed,
-        private_feed: apple_credential.private_feed)
+        public_feed: apple_config.public_feed,
+        private_feed: apple_config.private_feed)
     end
 
     def initialize(api:, public_feed:, private_feed:)
@@ -29,136 +31,220 @@ module Apple
     end
 
     def episodes_to_sync
-      @episodes_to_sync ||= private_feed
-        .feed_episodes.map do |ep|
-        Apple::Episode.new(show: show, feeder_episode: ep)
+      show.episodes
+    end
+
+    def poll_all_episodes!
+      poll!(show.podcast_episodes)
+    end
+
+    def poll!(eps = episodes_to_sync)
+      if show.apple_id.nil?
+        Rails.logger.warn "No connected Apple Podcasts show. Skipping polling!", {public_feed_id: public_feed.id,
+                                                                                  private_feed_id: private_feed.id,
+                                                                                  podcast_id: podcast.id}
+        return
+      end
+
+      Rails.logger.tagged("Apple::Publisher#poll!") do
+        # Reject episodes if the audio is marked as uploaded/complete
+        eps = eps.reject(&:synced_with_apple?)
+
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          poll_episodes!(eps)
+          poll_podcast_containers!(eps)
+          poll_podcast_deliveries!(eps)
+          poll_podcast_delivery_files!(eps)
+        end
       end
     end
 
-    def episode_ids
-      @episode_ids ||= episodes_to_sync.map(&:id).sort
-    end
-
-    def find_episode(id)
-      @find_episode ||=
-        episodes_to_sync.map { |e| [e.id, e] }.to_h
-
-      @find_episode.fetch(id)
-    end
-
-    def publish!
+    def publish!(eps = episodes_to_sync)
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
-      # only create if needed
-      sync_episodes!
-      sync_podcast_containers!
-      sync_podcast_deliveries!
-      sync_podcast_delivery_files!
+      Rails.logger.tagged("Apple::Publisher#publish!") do
+        # Reject episodes if the audio is marked as uploaded/complete
+        eps = eps.reject(&:synced_with_apple?)
 
-      # upload and mark as uploaded
-      execute_upload_operations!
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          # only create if needed
+          sync_episodes!(eps)
+          sync_podcast_containers!(eps)
+          sync_podcast_deliveries!(eps)
+          sync_podcast_delivery_files!(eps)
 
-      wait_for_upload_processing
+          # upload and mark as uploaded
+          execute_upload_operations!(eps)
+          mark_delivery_files_uploaded!(eps)
 
-      publish_drafting!
+          wait_for_upload_processing(eps)
+          wait_for_asset_state(eps)
 
-      log_delivery_processing_errors
+          publish_drafting!(eps)
+
+          log_delivery_processing_errors(eps)
+        end
+      end
 
       # success
-      SyncLog.create!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id)
+      SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id, api_response: {success: true})
     end
 
-    def log_delivery_processing_errors
-      episodes_to_sync.each do |ep|
+    def log_delivery_processing_errors(eps)
+      eps.each do |ep|
         ep.podcast_delivery_files.each do |pdf|
-          if pdf.processed_errors?
-            Rails.logger.error("Episode has processing errors",
-              {episode_id: ep.feeder_id,
-               podcast_delivery_file_id: pdf.id,
-               assert_processing_state: pdf.asset_processing_state,
-               asset_delivery_state: pdf.asset_delivery_state})
-          end
+          next unless pdf.processed_errors?
+
+          Rails.logger.error("Episode has processing errors",
+            {episode_id: ep.feeder_id,
+             podcast_delivery_file_id: pdf.id,
+             asset_processing_state: pdf.asset_processing_state,
+             asset_delivery_state: pdf.asset_delivery_state})
         end
       end
 
       true
     end
 
-    def wait_for_upload_processing
-      pdfs = episodes_to_sync.map(&:podcast_delivery_files).flatten
+    def wait_for_upload_processing(eps)
+      Rails.logger.tagged("##{__method__}") do
+        pdfs = eps.map(&:podcast_delivery_files).flatten
 
-      Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
+        Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
+      end
     end
 
-    def sync_episodes!
-      Rails.logger.info("Starting podcast episode sync")
-
-      create_apple_episodes = episodes_to_sync.select(&:apple_new?)
-      Rails.logger.info("Created remote / local state for #{create_apple_episodes.length} episodes.")
-
-      # Note: We don't attempt to update the remote state of episodes. Once
-      # apple has parsed the feed, it will not allow changing any attributes.
-      #
-      # It's assumed that the episodes are created solely by the PRX web UI (not
-      # on Podcasts Connect).
-      Apple::Episode.create_episodes(api, create_apple_episodes)
-
-      show.reload
+    def wait_for_asset_state(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
+        Apple::Episode.wait_for_asset_state(api, eps)
+      end
     end
 
-    def sync_podcast_containers!
-      # TODO: right now we only create one delivery per container,
-      # Apple RSS scaping means we don't need deliveries for freemium episode images
-      # But we do need asset deliveries for apple-only (non-rss) images
+    def poll_episodes!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        res = Apple::Episode.poll_episode_state(api, show, eps)
 
-      Rails.logger.info("Starting podcast container sync")
+        Rails.logger.info("Polling remote / local episode state", {local_count: eps.length,
+                                                                    remote_count: res.length})
 
-      # Scan and update for existing containers
-      res = Apple::PodcastContainer.update_podcast_container_state(api, episodes_to_sync)
-      Rails.logger.info("Updated local state for #{res.length} podcast containers.")
-
-      eps = Apple::PodcastContainer.create_podcast_containers(api, episodes_to_sync)
-      res = Apple::Episode.update_audio_container_reference(api, eps)
-      Rails.logger.info("Created remote / local state for #{eps.length} podcast containers.")
-      Rails.logger.info("Updated remote container references for #{res.length} episodes.")
-
-      res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, episodes_to_sync)
-      Rails.logger.info("Updated remote state for #{res.length} podcast containers.")
+        eps
+      end
     end
 
-    def sync_podcast_deliveries!
-      Rails.logger.info("Starting podcast deliveries sync")
+    def sync_episodes!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        Rails.logger.info("Starting podcast episode sync")
+        poll_episodes!(eps)
 
-      res = Apple::PodcastDelivery.update_podcast_deliveries_state(api, episodes_to_sync)
-      Rails.logger.info("Updated local state for #{res.length} podcast deliveries.")
+        create_apple_episodes = eps.select(&:apple_new?)
+        # NOTE: We don't attempt to update the remote state of episodes. Once
+        # apple has parsed the feed, it will not allow changing any attributes.
+        #
+        # It's assumed that the episodes are created solely by the PRX web UI (not
+        # on Podcasts Connect).
+        Apple::Episode.create_episodes(api, create_apple_episodes)
 
-      res = Apple::PodcastDelivery.create_podcast_deliveries(api, episodes_to_sync)
-      Rails.logger.info("Created remote / local state for #{res.length} podcast deliveries.")
+        Rails.logger.info("Created remote episodes", {count: create_apple_episodes.length})
+
+        show.reload
+      end
     end
 
-    def sync_podcast_delivery_files!
-      Rails.logger.info("Starting podcast delivery files sync")
-
-      res = Apple::PodcastDeliveryFile.update_podcast_delivery_files_state(api, episodes_to_sync)
-      Rails.logger.info("Updated local state for #{res.length} delivery files.")
-
-      res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, episodes_to_sync)
-      Rails.logger.info("Created remote/local state for #{res.length} podcast delivery files.")
+    def poll_podcast_containers!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        res = Apple::PodcastContainer.poll_podcast_container_state(api, eps)
+        Rails.logger.info("Modified local state for podcast containers.", {count: res.length})
+      end
     end
 
-    def execute_upload_operations!
-      upload_operation_result = Apple::UploadOperation.execute_upload_operations(api, episodes_to_sync)
-      delivery_file_ids = upload_operation_result.map { |r| r["request_metadata"]["podcast_delivery_file_id"] }
-      pdfs = ::Apple::PodcastDeliveryFile.where(id: delivery_file_ids)
-      ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
+    def sync_podcast_containers!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        # TODO: right now we only create one delivery per container,
+        # Apple RSS scaping means we don't need deliveries for freemium episode images
+        # But we do need asset deliveries for apple-only (non-rss) images
+
+        Rails.logger.info("Starting podcast container sync")
+
+        poll_podcast_containers!(eps)
+
+        # The podcast container is storing the metadata for the audio file
+        # (size, url, etc).
+        # The 'reset' in this case means fetching new CDN urls for the audio and
+        # making sure that we will HEAD their file sizes for later upload.
+        # Only reset if we need delivery.
+        reset = Apple::PodcastContainer.reset_source_urls(api, eps)
+        Rails.logger.info("Reset podcast containers for expired source urls.", {reset_count: reset.length})
+
+        res = Apple::PodcastContainer.create_podcast_containers(api, eps)
+        Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})
+
+        res = Apple::Episode.update_audio_container_reference(api, eps)
+        Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
+
+        res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, eps)
+        Rails.logger.info("Updated remote file metadata on podcast containers.", {count: res.length})
+      end
     end
 
-    def publish_drafting!
-      eps = episodes_to_sync.select { |ep| ep.drafting? && ep.apple_upload_complete? }
+    def poll_podcast_deliveries!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        res = Apple::PodcastDelivery.poll_podcast_deliveries_state(api, eps)
+        Rails.logger.info("Modified local state for podcast deliveries.", {count: res.length})
+      end
+    end
 
-      res = Apple::Episode.publish(api, eps)
-      Rails.logger.info("Published #{res.length} drafting episodes.")
+    def sync_podcast_deliveries!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        Rails.logger.info("Starting podcast deliveries sync")
+
+        poll_podcast_deliveries!(eps)
+
+        res = Apple::PodcastDelivery.create_podcast_deliveries(api, eps)
+        Rails.logger.info("Created remote and local state for podcast deliveries.", {count: res.length})
+      end
+    end
+
+    def poll_podcast_delivery_files!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        res = Apple::PodcastDeliveryFile.poll_podcast_delivery_files_state(api, eps)
+        Rails.logger.info("Modified local state for podcast delivery files.", {count: res.length})
+      end
+    end
+
+    def sync_podcast_delivery_files!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        Rails.logger.info("Starting podcast delivery files sync")
+
+        # TODO
+        poll_podcast_delivery_files!(eps)
+
+        res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, eps)
+        Rails.logger.info("Created remote/local state for #{res.length} podcast delivery files.")
+      end
+    end
+
+    def execute_upload_operations!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        Apple::UploadOperation.execute_upload_operations(api, eps)
+      end
+    end
+
+    def mark_delivery_files_uploaded!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        pdfs = eps.map(&:podcast_delivery_files).flatten
+        ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
+      end
+    end
+
+    def publish_drafting!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps = eps.select { |ep| ep.drafting? && ep.apple_upload_complete? }
+
+        res = Apple::Episode.publish(api, eps)
+        Rails.logger.info("Published #{res.length} drafting episodes.")
+      end
     end
   end
 end

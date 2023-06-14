@@ -3,8 +3,8 @@ require "test_helper"
 describe FeedToken do
   let(:podcast) { create(:podcast) }
   let(:feed) { podcast.default_feed }
-  let(:token1) { FeedToken.create(token: "tok1", feed: feed) }
-  let(:token2) { FeedToken.create(token: "tok2", feed: feed) }
+  let(:token1) { FeedToken.create(label: "tok1", token: "tok1", feed: feed) }
+  let(:token2) { FeedToken.create(label: "tok2", token: "tok2", feed: feed) }
 
   describe ".new" do
     it "sets a default token" do
@@ -30,6 +30,11 @@ describe FeedToken do
         token1.token = str
         refute token1.valid?
       end
+    end
+
+    it "requires a label" do
+      token1.label = nil
+      refute token1.valid?
     end
   end
 end

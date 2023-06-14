@@ -1,10 +1,105 @@
-<p style="color: green"><%= notice %></p>
+<div class="container my-4">
+  <div class="d-grid d-sm-flex align-items-center">
+    <%= render @podcast %>
+    <div class="d-grid d-lg-flex gap-2 align-items-center">
+      <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary btn-sm" do %>
+        <%= t ".create_episode" %>
+        <span class="material-icons ms-2" aria-hidden="true">mic</span>
+      <% end %>
+      <%= link_to podcast_planner_path(@podcast), class: "btn btn-primary btn-sm" do %>
+        <%= t ".plan_episodes" %>
+        <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
+      <% end %>
+    </div>
+  </div>
 
-<%= render @podcast %>
+  <div class="row my-4">
+    <div class="col-lg-4 mb-4 mb-lg-0">
+      <div class="card shadow mb-4">
+        <div class="card-header d-flex gap-4 align-items-center">
+          <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".latest_published" %></h1>
+          <%= link_to podcast_episodes_path(@podcast), class: "btn btn-primary btn-sm" do %>
+            <%= t ".all_episodes" %>
+            <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
+          <% end %>
+        </div>
+        <div class="card-body episode-card h-auto border-start-0">
+          <% if @recently_published.present? %>
+            <div class="episode-card-info">
+              <p class="episode-card-date"><%= l(@recently_published.published_at, format: :short) %></p>
+              <div class="episode-card-inner">
+                <h2 class="h5 episode-card-title m-0"><%= link_to @recently_published.title, episode_path(@recently_published) %></h2>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
 
-<div>
-  <%= link_to "Edit this podcast", edit_podcast_path(@podcast) %> |
-  <%= link_to "Back to podcasts", podcasts_path %>
+      <div class="card shadow">
+        <div class="card-header d-flex align-items-center">
+          <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".next_scheduled" %></h1>
+        </div>
+        <div class="card-body episode-card h-auto border-start-0">
+          <% if @next_scheduled.present? %>
+            <div class="episode-card-info">
+              <p class="episode-card-date">
+                <% if @next_scheduled.published_or_released_date.present? %>
+                  <%= l(@next_scheduled.published_or_released_date, format: :short) %>
+                <% end %>
+              </p>
+              <div class="episode-card-inner">
+                <h2 class="h5 episode-card-title"><%= link_to @next_scheduled.title, episode_path(@next_scheduled) %></h2>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
 
-  <%= button_to "Destroy this podcast", @podcast, method: :delete %>
+    <div class="col-lg-8 d-grid">
+      <div class="card shadow">
+        <div class="card-body">
+          <p>Metrics Placeholder</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6 d-grid mb-4 mb-lg-0">
+      <div class="card shadow">
+        <div class="card-header d-flex align-items-center">
+          <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".feeds" %></h1>
+          <%= link_to podcast_feeds_path(@podcast), class: "btn btn-primary btn-sm" do %>
+            <%= t ".manage_feeds" %>
+            <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
+          <% end %>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item p-0"><%= link_to (t ".default_feed"), podcast_feed_path(@podcast, @podcast.default_feed) %></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 d-grid">
+      <div class="card shadow">
+        <div class="card-header d-flex align-items-center">
+          <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".settings" %></h1>
+          <%= link_to edit_podcast_path(@podcast), class: "btn btn-primary btn-sm" do %>
+            <%= t ".manage_settings" %>
+            <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
+          <% end %>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item border-bottom-0 p-0"><%= link_to (t ".engagement_settings"), podcast_engagement_path(@podcast) %></li>
+            <li class="list-group-item p-0"><%= link_to (t ".import"), podcast_imports_path(@podcast) %></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

@@ -43,6 +43,11 @@ class ApplicationController < ActionController::Base
   end
 
   def skip_session
-    request.session_options[:drop] = true
+    request.session_options[:skip] = true
+  end
+
+  # TODO: hacky, but this method is private in turbo-rails
+  def turbo_frame_request?
+    request.headers["Turbo-Frame"].present?
   end
 end

@@ -17,10 +17,9 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_apple(feed)
-    feed.apple_credentials.each do |creds|
-      if feed.publish_to_apple?(creds)
-        publisher = Apple::Publisher.from_apple_credentials(creds)
-        publisher.publish!
+    feed.apple_configs.map do |config|
+      if feed.publish_to_apple?(config)
+        PublishAppleJob.perform_later(config)
       end
     end
   end

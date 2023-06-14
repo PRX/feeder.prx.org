@@ -21,6 +21,7 @@ describe Api::Auth::EpisodesController do
   let(:episode_deleted) { create(:episode, deleted_at: Time.now, podcast: podcast) }
   let(:episode_hash) do
     {
+      title: "title",
       releasedAt: "2020-03-12T18:02:03.000Z",
       prxUri: "/api/v1/stories/123",
       media: [
@@ -112,16 +113,15 @@ describe Api::Auth::EpisodesController do
       new_episode = Episode.find_by_guid(id)
       assert_equal new_episode.released_at, Time.parse(episode_hash[:releasedAt])
       assert_equal new_episode.prx_uri, "/api/v1/stories/123"
-      assert_equal new_episode.enclosures.count, 0
-      assert_equal new_episode.all_contents.count, 3
-      c = new_episode.all_contents.first
+      assert_equal new_episode.contents.count, 3
+      c = new_episode.contents.first
       assert_equal c.original_url, "https://s3.amazonaws.com/prx-testing/test/audio1.mp3"
     end
 
     it "can update audio on an episode" do
       update_hash = {media: [{href: "https://s3.amazonaws.com/prx-testing/test/change1.mp3"}]}
 
-      assert_equal episode_update.all_contents.size, 0
+      assert_equal episode_update.contents.size, 0
 
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
@@ -131,9 +131,9 @@ describe Api::Auth::EpisodesController do
       end
       assert_response :success
 
-      assert_equal episode_update.reload.all_contents.size, 1
+      assert_equal episode_update.reload.contents.size, 1
 
-      # updating with a dupe should insert it, with the same position value of 1
+      # updating with a dupe should not insert it
       @controller.stub(:publish, true) do
         @controller.stub(:process_media, true) do
           put(:update, body: update_hash.to_json, as: :json,
@@ -142,9 +142,8 @@ describe Api::Auth::EpisodesController do
       end
       assert_response :success
 
-      assert_equal episode_update.reload.all_contents.size, 2
-      assert_equal episode_update.all_contents.first.position, 1
-      assert_equal episode_update.all_contents.last.position, 1
+      assert_equal episode_update.reload.contents.with_deleted.size, 1
+      assert_equal episode_update.contents.with_deleted.first.position, 1
     end
   end
 
