@@ -26,7 +26,7 @@ class FeedsController < ApplicationController
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
         format.html do
-          flash.alert = t ".failure", model: "Feed"
+          flash.now = t ".failure", model: "Feed"
           render :new, status: :unprocessable_entity
         end
       end
@@ -44,7 +44,7 @@ class FeedsController < ApplicationController
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
         format.html do
-          flash.alert = t ".failure", model: "Feed"
+          flash.now = t ".failure", model: "Feed"
           render :show, status: :unprocessable_entity
         end
       end
@@ -58,7 +58,7 @@ class FeedsController < ApplicationController
         format.html { redirect_to podcast_feed_path(@podcast, @podcast.default_feed), notice: (t ".success", model: "Feed") }
       else
         format.html do
-          flash.alert = t ".failure", model: "Feed"
+          flash.now = t ".failure", model: "Feed"
           render :show, status: :unprocessable_entity
         end
       end
