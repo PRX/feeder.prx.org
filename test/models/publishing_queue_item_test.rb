@@ -13,17 +13,17 @@ describe PublishingQueueItem do
     end
   end
 
-  describe ".latest_completed" do
+  describe ".latest_complete" do
     it "returns the most recent queue items for each podcast that is complete" do
       _pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       pa2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
-      completed_pa = pa2.complete_publishing!
+      complete_pa = pa2.complete_publishing!
 
       podcast2 = create(:podcast)
       _pa3 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast2))
 
-      assert_equal [completed_pa.publishing_queue_item], PublishingQueueItem.latest_completed
-      assert_equal [], PublishingQueueItem.latest_completed.where(podcast: podcast2)
+      assert_equal [complete_pa.publishing_queue_item], PublishingQueueItem.latest_complete
+      assert_equal [], PublishingQueueItem.latest_complete.where(podcast: podcast2)
     end
   end
 
@@ -42,10 +42,10 @@ describe PublishingQueueItem do
     let(:podcast2) { create(:podcast) }
     it "returns the publishing queue items across all podcasts" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
-      _pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :completed)
+      _pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :complete)
 
       pqi_2 = PublishingQueueItem.create!(podcast: podcast2)
-      _pa = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: pqi_2, status: :completed)
+      _pa = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: pqi_2, status: :complete)
       assert_equal [], PublishingQueueItem.all_unfinished_items
 
       unfinished_pqi = PublishingQueueItem.create!(podcast: podcast)
@@ -59,7 +59,7 @@ describe PublishingQueueItem do
       assert_equal [unfinished_pqi, unfinished_pqi_2], PublishingQueueItem.all_unfinished_items
 
       # now complete the work for podcast 2
-      PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: unfinished_pqi_2, status: :completed)
+      PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: unfinished_pqi_2, status: :complete)
       assert_equal [unfinished_pqi], PublishingQueueItem.all_unfinished_items
     end
   end
@@ -70,7 +70,7 @@ describe PublishingQueueItem do
       assert_equal [pqi], PublishingQueueItem.unfinished_items(podcast)
     end
 
-    it "returns the publishing queue items if there is no completed attempts" do
+    it "returns the publishing queue items if there is no complete attempts" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
       _pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :started)
       assert_equal [pqi], PublishingQueueItem.unfinished_items(podcast)
@@ -78,7 +78,7 @@ describe PublishingQueueItem do
 
     it "returns the publishing queue items only of there are subsequent to completed work" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
-      _pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :completed)
+      _pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :complete)
       assert_equal [], PublishingQueueItem.unfinished_items(podcast)
 
       unfinished_pqi = PublishingQueueItem.create!(podcast: podcast)
@@ -104,7 +104,7 @@ describe PublishingQueueItem do
 
     it "returns the publishing queue items only of there are subsequent to completed work" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
-      _pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :completed)
+      _pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :complete)
       assert PublishingQueueItem.settled_work?(podcast)
 
       unfinished_pqi = PublishingQueueItem.create!(podcast: podcast)

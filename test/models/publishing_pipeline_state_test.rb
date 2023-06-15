@@ -21,8 +21,8 @@ describe PublishingPipelineState do
       assert_nil PublishingPipelineState.attempt!(podcast)
     end
 
-    it "guards if all the work is completed" do
-      _pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast), status: :completed)
+    it "guards if all the work is complete" do
+      _pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast), status: :complete)
 
       assert_nil PublishingPipelineState.attempt!(podcast)
     end
@@ -51,12 +51,12 @@ describe PublishingPipelineState do
     it "creates a new attempt" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
       PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
-      refute PublishingPipelineState.last.completed?
+      refute PublishingPipelineState.last.complete?
 
       assert_difference "PublishingPipelineState.count", 1 do
         res = PublishingPipelineState.complete!(podcast)
         assert_equal res.class, PublishingPipelineState
-        assert res.completed?
+        assert res.complete?
       end
     end
   end
@@ -162,7 +162,7 @@ describe PublishingPipelineState do
 
       pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
       assert pqi.reload.publishing_pipeline_states.present?
-      refute pqi.latest_attempt.completed?
+      refute pqi.latest_attempt.complete?
 
       # raises an error if we try to create a second attempt
       assert_raises ActiveRecord::RecordNotUnique do
@@ -175,7 +175,7 @@ describe PublishingPipelineState do
       assert_equal pa2, PublishingPipelineState.latest_attempt(podcast)
       assert_equal pa2, pqi.reload.latest_attempt
       assert_equal [pa, pa2], pqi.publishing_pipeline_states
-      assert pa2.completed?
+      assert pa2.complete?
     end
   end
 
@@ -190,7 +190,7 @@ describe PublishingPipelineState do
           assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
         end
 
-        assert_equal ["created", "started", "errored"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
+        assert_equal ["created", "started", "error"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
       end
     end
 
@@ -200,7 +200,7 @@ describe PublishingPipelineState do
           PublishingPipelineState.attempt!(podcast, perform_later: false)
         end
 
-        assert_equal ["created", "started", "completed"], PublishingPipelineState.where(podcast: podcast).map(&:status)
+        assert_equal ["created", "started", "complete"], PublishingPipelineState.where(podcast: podcast).map(&:status)
       end
 
       it "attempts new publishing pipelines" do
@@ -216,7 +216,7 @@ describe PublishingPipelineState do
         # Just fire off the job async, so we can see the created state
         PublishingPipelineState.attempt!(podcast, perform_later: true)
 
-        assert_equal ["created", "started", "completed", "created"], PublishingPipelineState.where(podcast: podcast).map(&:status)
+        assert_equal ["created", "started", "complete", "created"], PublishingPipelineState.where(podcast: podcast).map(&:status)
       end
     end
   end

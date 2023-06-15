@@ -1,9 +1,8 @@
 class PublishingQueueItem < ApplicationRecord
   scope :max_id_grouped, -> { group(:podcast_id).select("max(id) as id") }
   scope :latest_attempted, -> { joins(:publishing_pipeline_states).order("publishing_pipeline_states.id desc") }
-  scope :latest_completed, -> { latest_attempted.where(publishing_pipeline_states: {status: PublishingPipelineState::TERMINAL_STATUSES}) }
+  scope :latest_complete, -> { latest_attempted.where(publishing_pipeline_states: {status: PublishingPipelineState::TERMINAL_STATUSES}) }
 
-  # Has at most two publishing attempt logs: one when initiated and one when completed
   has_many :publishing_pipeline_states
   has_one :latest_attempt, -> { order(id: :desc) }, class_name: "PublishingPipelineState"
   belongs_to :podcast
@@ -56,8 +55,8 @@ class PublishingQueueItem < ApplicationRecord
     from(frag)
   end
 
-  def completed?
-    latest_attempt&.completed?
+  def complete?
+    latest_attempt&.complete?
   end
 
   def create_publish_job

@@ -20,12 +20,12 @@ class PublishingPipelineState < ApplicationRecord
     :started,
     :published_rss,
     :published_apple,
-    :completed,
-    :errored,
+    :complete,
+    :error,
     :expired
   ]
 
-  TERMINAL_STATUSES = [:completed, :errored, :expired].freeze
+  TERMINAL_STATUSES = [:complete, :error, :expired].freeze
   # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
   TIMEOUT = 30.minutes.freeze
 
@@ -94,11 +94,11 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def self.complete!(podcast)
-    state_transition(podcast, :completed)
+    state_transition(podcast, :complete)
   end
 
   def self.error!(podcast)
-    state_transition(podcast, :errored)
+    state_transition(podcast, :error)
   end
 
   def self.expire!(podcast)
@@ -129,7 +129,7 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def complete_publishing!
-    self.class.create!(podcast: podcast, publishing_queue_item: publishing_queue_item, status: :completed)
+    self.class.create!(podcast: podcast, publishing_queue_item: publishing_queue_item, status: :complete)
   end
 
   def self.state_transition(podcast, to_state)
