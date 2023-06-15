@@ -124,11 +124,11 @@ describe PublishingQueueItem do
 
       pqi = PublishingQueueItem.create!(podcast: podcast)
       PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
-      pps = PublishingPipelineState.start!(podcast)
+      _pps = PublishingPipelineState.start!(podcast)
 
       podcast2 = create(:podcast)
       pqi2 = PublishingQueueItem.create!(podcast: podcast2)
-      pps2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: pqi2)
+      _pps2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: pqi2)
 
       assert_equal 2, PublishingQueueItem.delivery_status.to_a.size
       # dig into the scope and test
