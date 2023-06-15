@@ -8,6 +8,13 @@ class PublishingQueueItem < ApplicationRecord
   has_one :latest_attempt, -> { order(id: :desc) }, class_name: "PublishingPipelineState"
   belongs_to :podcast
 
+  # in the style of the delivery logs in the exchange
+  def self.delivery_status
+    left_joins(:publishing_pipeline_states)
+      .merge(PublishingPipelineState.latest_by_queue_item)
+      .select("publishing_queue_items.*, publishing_pipeline_states.status")
+  end
+
   def self.ensure_queued!(podcast)
     create!(podcast: podcast)
   end

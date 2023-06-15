@@ -117,4 +117,29 @@ describe PublishingQueueItem do
       refute PublishingQueueItem.settled_work?(podcast)
     end
   end
+
+  describe ".delivery_status" do
+    it "should provide the delivery status in the exchange delivery log style" do
+      podcast = create(:podcast)
+
+      pqi = PublishingQueueItem.create!(podcast: podcast)
+      PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
+      pps = PublishingPipelineState.start!(podcast)
+
+      podcast2 = create(:podcast)
+      pqi2 = PublishingQueueItem.create!(podcast: podcast2)
+      pps2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: pqi2)
+
+      assert_equal 2, PublishingQueueItem.delivery_status.to_a.size
+      # dig into the scope and test
+      assert_equal [pqi], PublishingQueueItem.delivery_status.where(publishing_pipeline_states: {status: :started})
+      assert_equal [pqi2], PublishingQueueItem.delivery_status.where(publishing_pipeline_states: {status: :created})
+
+      # look at some status output:
+      assert_equal [
+        {"id" => pqi.id, "podcast_id" => podcast.id, "status" => 1},
+        {"id" => pqi2.id, "podcast_id" => podcast2.id, "status" => 0}
+      ], PublishingQueueItem.delivery_status.as_json(except: :created_at)
+    end
+  end
 end
