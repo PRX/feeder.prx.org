@@ -29,6 +29,14 @@ class PublishingPipelineState < ApplicationRecord
   # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
   TIMEOUT = 30.minutes.freeze
 
+  validate :podcast_ids_match
+
+  def podcast_ids_match
+    if podcast_id != publishing_queue_item&.podcast_id
+      errors.add(:podcast_id, "must match the podcast_id of the publishing_queue_item")
+    end
+  end
+
   def self.terminal_status_codes
     TERMINAL_STATUSES.map { |s| statuses[s] }
   end

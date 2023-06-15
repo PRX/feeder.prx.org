@@ -3,6 +3,17 @@ require "test_helper"
 describe PublishingPipelineState do
   let(:podcast) { create(:podcast) }
 
+  describe "validations" do
+    it "validates the podcast ids match" do
+      pqi = PublishingQueueItem.create!(podcast: podcast)
+
+      unrelated_podcast = create(:podcast)
+      assert_raises ActiveRecord::RecordInvalid do
+        PublishingPipelineState.create!(podcast: unrelated_podcast, publishing_queue_item: pqi)
+      end
+    end
+  end
+
   describe "attempt!" do
     it "guards if there is already work" do
       _pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
