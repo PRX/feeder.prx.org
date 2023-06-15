@@ -56,19 +56,19 @@ module FeedAdZone
   private
 
   def add_zone(zone)
-    return if self.include_zones.nil?
+    return if include_zones.nil?
 
-    self.include_zones << zone unless self.include_zones.include?(zone)
-    if self.include_zones.count == 4
+    include_zones << zone unless include_zones.include?(zone)
+    if include_zones.count == 4
       self.include_zones = nil
     end
   end
 
   def remove_zone(zone)
-    if self.include_zones.nil?
+    if include_zones.nil?
       self.include_zones = ALL_ZONES
     end
-    self.include_zones.reject! { |z| z == zone }
+    include_zones.reject! { |z| z == zone }
   end
 
   def checked?(val)
@@ -76,10 +76,10 @@ module FeedAdZone
   end
 
   def check(zone)
-    if self.include_zones.nil?
+    if include_zones.nil?
       "1"
     else
-      self.include_zones.include?(zone) ? "1" : "0"
+      include_zones.include?(zone) ? "1" : "0"
     end
   end
 end
