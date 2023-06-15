@@ -10,9 +10,11 @@ class FeedsController < ApplicationController
 
   # GET /feeds/new
   def new
-    @feed = Feed.new(private: false)
+    @feed = Feed.new(private: false, slug: "")
     @feed.podcast = @podcast
     authorize @feed
+
+    @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
   end
 
   # POST /feeds
