@@ -95,6 +95,7 @@ class PublishingPipelineState < ApplicationRecord
 
   def self.expire_pipelines!
     Podcast.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
+      Rails.logger.error("Cleaning up expired publishing pipeline for podcast #{podcast.id}", {podcast_id: podcast.id})
       expire!(podcast)
     end
   end
