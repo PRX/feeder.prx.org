@@ -40,7 +40,7 @@ class PublishingQueueItem < ApplicationRecord
         JOIN LATERAL (
           SELECT * from publishing_queue_items
           WHERE id > COALESCE((SELECT max(publishing_queue_item_id)
-                               FROM publishing_pipeline_states WHERE podcast_id = pqi.podcast_id AND status in (#{PublishingPipelineState::TERMINAL_STATUSES.join(",")})), -1)
+                               FROM publishing_pipeline_states WHERE podcast_id = pqi.podcast_id AND status in (#{PublishingPipelineState.terminal_status_codes.join(",")})), -1)
           AND podcast_id = pqi.podcast_id
         ) unfinished_podcast_items ON TRUE
       ) publishing_queue_items

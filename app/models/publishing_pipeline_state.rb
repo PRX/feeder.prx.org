@@ -15,19 +15,23 @@ class PublishingPipelineState < ApplicationRecord
   belongs_to :publishing_queue_item
   belongs_to :podcast
 
-  enum status: {
-    created: 0,
-    started: 1,
-    published_rss: 2,
-    published_apple: 3,
-    completed: 4,
-    errored: 5,
-    expired: 6
-  }
+  enum status: [
+    :created,
+    :started,
+    :published_rss,
+    :published_apple,
+    :completed,
+    :errored,
+    :expired
+  ]
 
-  TERMINAL_STATUSES = [statuses[:completed], statuses[:errored], statuses[:expired]].freeze
+  TERMINAL_STATUSES = [:completed, :errored, :expired].freeze
   # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
   TIMEOUT = 30.minutes.freeze
+
+  def self.terminal_status_codes
+    TERMINAL_STATUSES.map { |s| statuses[s] }
+  end
 
   def self.expired_pipelines
     pq_items = PublishingQueueItem
