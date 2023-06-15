@@ -6,6 +6,8 @@ class FeedsController < ApplicationController
   def show
     @feed.assign_attributes(feed_params)
     authorize @feed
+
+    @custom_feeds = @podcast.feeds.custom.order(created_at: :asc)
   end
 
   # GET /feeds/new
