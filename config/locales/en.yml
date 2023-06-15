@@ -14,6 +14,7 @@ defaults:
     update: Save
     updated_at_hint: Last Saved
     updating: Saving...
+    uploading: Uploading...
   controller_actions:
     create: &create
       success: "%{model} created successfully."
