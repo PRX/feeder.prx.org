@@ -99,10 +99,6 @@ class PublishingPipelineState < ApplicationRecord
     end
   end
 
-  def self.expire!(podcast)
-    state_transition(podcast, :expired)
-  end
-
   def self.settle_remaining!(podcast)
     attempt!(podcast)
   end
