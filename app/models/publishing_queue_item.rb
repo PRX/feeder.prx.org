@@ -7,7 +7,7 @@ class PublishingQueueItem < ApplicationRecord
   has_many :latest_state, -> { latest_by_queue_item }, class_name: "PublishingPipelineState"
 
   has_one :most_recent_state, -> { order(id: :desc) }, class_name: "PublishingPipelineState"
-  belongs_to :podcast
+  belongs_to :podcast, -> { with_deleted }
 
   enum last_pipeline_state: PublishingPipelineState.statuses
 

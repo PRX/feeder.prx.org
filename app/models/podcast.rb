@@ -8,6 +8,8 @@ class Podcast < ApplicationRecord
   include TextSanitizer
   include AdvisoryLocks
 
+  acts_as_paranoid
+
   serialize :categories, JSON
   serialize :keywords, JSON
   serialize :restrictions, JSON
@@ -40,8 +42,6 @@ class Podcast < ApplicationRecord
     true => "true"
   }.freeze
   validates :explicit, inclusion: {in: VALID_EXPLICITS}, allow_nil: false
-
-  acts_as_paranoid
 
   before_validation :set_defaults, :sanitize_text
 

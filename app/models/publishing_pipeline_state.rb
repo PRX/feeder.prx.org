@@ -34,7 +34,7 @@ class PublishingPipelineState < ApplicationRecord
   scope :latest_pipeline, ->(podcast) { latest_pipelines.where(podcast: podcast) }
 
   belongs_to :publishing_queue_item
-  belongs_to :podcast
+  belongs_to :podcast, -> { with_deleted }
 
   enum status: [
     :created,
