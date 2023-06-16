@@ -3,13 +3,15 @@ require "test_helper"
 describe PublishingQueueItem do
   let(:podcast) { create(:podcast) }
 
-  describe "#publishing_attempt" do
-    it "can has one publishing attempt" do
+  describe "#pubishing_pipeline_states" do
+    it "has many pipeline states" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
       assert_equal [], pqi.publishing_pipeline_states
 
-      pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
-      assert_equal [pa], pqi.reload.publishing_pipeline_states
+      pps = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
+      pps2 = PublishingPipelineState.complete!(podcast)
+
+      assert_equal [pps, pps2], pqi.reload.publishing_pipeline_states
     end
   end
 
