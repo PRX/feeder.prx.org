@@ -132,10 +132,6 @@ class PublishingPipelineState < ApplicationRecord
     most_recent_state(podcast)&.complete?
   end
 
-  def complete_publishing!
-    self.class.complete!(podcast)
-  end
-
   def self.state_transition(podcast, to_state)
     podcast.with_publish_lock do
       pqi = PublishingQueueItem.current_unfinished_item(podcast)
@@ -146,6 +142,10 @@ class PublishingPipelineState < ApplicationRecord
         nil
       end
     end
+  end
+
+  def complete_publishing!
+    self.class.complete!(podcast)
   end
 
   def done?
