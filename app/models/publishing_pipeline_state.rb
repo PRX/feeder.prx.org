@@ -48,11 +48,16 @@ class PublishingPipelineState < ApplicationRecord
 
   validate :podcast_ids_match
   validate :no_transition_from_terminal_state, on: :create
+  validate :no_update, on: :update
 
   after_save :log_state_on_queue_item
 
   def log_state_on_queue_item
     publishing_queue_item.update!(last_pipeline_state: status)
+  end
+
+  def no_update
+    errors.add(:base, "cannot update!")
   end
 
   def podcast_ids_match

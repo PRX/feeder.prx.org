@@ -102,16 +102,16 @@ describe PublishingPipelineState do
       refute PublishingPipelineState.expired?(podcast)
 
       # it gets partially through the pipeline
-      pa2.update!(created_at: 29.minutes.ago)
+      pa2.update_column(:created_at, 29.minutes.ago)
       assert_equal [], PublishingPipelineState.expired_pipelines
       refute PublishingPipelineState.expired?(podcast)
 
       # and times out
-      pa2.update!(created_at: 30.minutes.ago)
+      pa2.update_column(:created_at, 30.minutes.ago)
       assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
       assert PublishingPipelineState.expired?(podcast)
 
-      pa2.update!(created_at: 2.hours.ago)
+      pa2.update_column(:created_at, 2.hours.ago)
       assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
       assert PublishingPipelineState.expired?(podcast)
     end
@@ -126,14 +126,14 @@ describe PublishingPipelineState do
       refute PublishingPipelineState.expired?(podcast2)
 
       # they are both expired
-      pa1.update!(created_at: 30.minutes.ago)
-      pa2.update!(created_at: 30.minutes.ago)
+      pa1.update_column(:created_at, 30.minutes.ago)
+      pa2.update_column(:created_at, 30.minutes.ago)
       assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
       assert PublishingPipelineState.expired?(podcast)
       assert PublishingPipelineState.expired?(podcast2)
 
       # just one is expired
-      pa1.update(created_at: Time.now)
+      pa1.update_column(:created_at, Time.now)
       assert_equal [pa2], PublishingPipelineState.expired_pipelines
       refute PublishingPipelineState.expired?(podcast)
       assert PublishingPipelineState.expired?(podcast2)
@@ -146,8 +146,8 @@ describe PublishingPipelineState do
       pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       pa2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast2))
 
-      pa1.update!(created_at: 30.minutes.ago)
-      pa2.update!(created_at: 30.minutes.ago)
+      pa1.update_column(:created_at, 30.minutes.ago)
+      pa2.update_column(:created_at, 30.minutes.ago)
 
       assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
       PublishingPipelineState.expire_pipelines!
