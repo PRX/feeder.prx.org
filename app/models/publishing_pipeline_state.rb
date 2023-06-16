@@ -129,7 +129,7 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def complete_publishing!
-    self.class.create!(podcast: podcast, publishing_queue_item: publishing_queue_item, status: :complete)
+    self.class.complete!(podcast)
   end
 
   def self.state_transition(podcast, to_state)
