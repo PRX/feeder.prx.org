@@ -12,6 +12,16 @@ describe PublishingPipelineState do
         PublishingPipelineState.create!(podcast: unrelated_podcast, publishing_queue_item: pqi)
       end
     end
+
+    it "validates the transition is not from a terminal state" do
+      pqi = PublishingQueueItem.create!(podcast: podcast)
+      pps = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :complete)
+
+      # going from completed to created is not allowed
+      assert_raises ActiveRecord::RecordInvalid do
+        pps = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :started)
+      end
+    end
   end
 
   describe "attempt!" do

@@ -47,10 +47,17 @@ class PublishingPipelineState < ApplicationRecord
   ]
 
   validate :podcast_ids_match
+  validate :no_transition_from_terminal_state, on: :create
 
   def podcast_ids_match
     if podcast_id != publishing_queue_item&.podcast_id
       errors.add(:podcast_id, "must match the podcast_id of the publishing_queue_item")
+    end
+  end
+
+  def no_transition_from_terminal_state
+    if done?
+      errors.add(:status, "cannot transition from a terminal state")
     end
   end
 
@@ -139,6 +146,10 @@ class PublishingPipelineState < ApplicationRecord
         nil
       end
     end
+  end
+
+  def done?
+    self.class.where(publishing_queue_item: publishing_queue_item).where(status: self.class.terminal_status_codes).exists?
   end
 
   private_class_method :state_transition
