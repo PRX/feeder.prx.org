@@ -1,16 +1,31 @@
 class PublishingPipelineState < ApplicationRecord
-  # add a scope that returns the most recent publishing attempts for each podcast
-  scope :latest_by_queue_item, -> {
-                                 where(id: PublishingPipelineState
-                                  .group(:podcast_id, :publishing_queue_item_id)
-                                  .select("max(id) as id"))
-                               }
+  TERMINAL_STATUSES = [:complete, :error, :expired].freeze
+  # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
+  TIMEOUT = 30.minutes.freeze
+
+  scope :unfinished_pipelines, -> { where(publishing_queue_item_id: PublishingQueueItem.all_unfinished_items) }
+  scope :running_pipelines, -> { unfinished_pipelines }
+
+  scope :expired_pipelines, -> {
+                              pq_items = PublishingQueueItem
+                                .where(id: unfinished_pipelines.where("publishing_pipeline_states.created_at < ?", TIMEOUT.ago)
+                              .select(:publishing_queue_item_id))
+
+                              where(publishing_queue_item: pq_items)
+                            }
 
   scope :latest_by_podcast, -> {
                               where(id: PublishingPipelineState
                                .group(:podcast_id)
                                .select("max(id) as id"))
                             }
+  scope :latest_pipelines, -> {
+                             where(
+                               publishing_queue_item_id: latest_by_podcast.select(:publishing_queue_item_id)
+                             )
+                           }
+
+  scope :latest_pipeline, ->(podcast) { latest_pipelines.where(podcast: podcast) }
 
   belongs_to :publishing_queue_item
   belongs_to :podcast
@@ -25,10 +40,6 @@ class PublishingPipelineState < ApplicationRecord
     :expired
   ]
 
-  TERMINAL_STATUSES = [:complete, :error, :expired].freeze
-  # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
-  TIMEOUT = 30.minutes.freeze
-
   validate :podcast_ids_match
 
   def podcast_ids_match
@@ -41,28 +52,8 @@ class PublishingPipelineState < ApplicationRecord
     TERMINAL_STATUSES.map { |s| statuses[s] }
   end
 
-  def self.expired_pipelines
-    pq_items = PublishingQueueItem
-      .where(id: unfinished_pipelines.where("publishing_pipeline_states.created_at < ?", TIMEOUT.ago)
-    .select(:publishing_queue_item_id))
-
-    where(publishing_queue_item: pq_items)
-  end
-
-  def self.unfinished_pipelines
-    where(publishing_queue_item_id: PublishingQueueItem.all_unfinished_items)
-  end
-
-  def self.running_pipelines
-    unfinished_pipelines
-  end
-
   def self.most_recent_state(podcast)
     latest_by_podcast.where(podcast_id: podcast.id).first
-  end
-
-  def self.latest_pipeline(podcast)
-    where(publishing_queue_item_id: where(podcast_id: podcast.id).latest_by_podcast.select(:publishing_queue_item_id))
   end
 
   def self.start_pipeline!(podcast)
