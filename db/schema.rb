@@ -338,7 +338,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
 
   create_table "publishing_queue_items", force: :cascade do |t|
     t.bigint "podcast_id", null: false
+    t.integer "last_pipeline_state"
     t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["podcast_id", "created_at"], name: "index_publishing_queue_items_on_podcast_id_and_created_at"
     t.index ["podcast_id"], name: "index_publishing_queue_items_on_podcast_id"
   end
