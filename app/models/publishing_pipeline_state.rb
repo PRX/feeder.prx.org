@@ -58,7 +58,7 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def self.most_recent_state(podcast)
-    where(podcast_id: podcast.id).latest_by_podcast.first
+    latest_by_podcast.where(podcast_id: podcast.id).first
   end
 
   def self.latest_pipeline(podcast)
