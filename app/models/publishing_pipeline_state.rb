@@ -57,6 +57,14 @@ class PublishingPipelineState < ApplicationRecord
     unfinished_pipelines
   end
 
+  def self.most_recent_state(podcast)
+    where(podcast_id: podcast.id).latest_by_podcast.first
+  end
+
+  def self.latest_pipeline(podcast)
+    where(publishing_queue_item_id: where(podcast_id: podcast.id).latest_by_podcast.select(:publishing_queue_item_id))
+  end
+
   def self.start_pipeline!(podcast)
     PublishingQueueItem.ensure_queued!(podcast)
     attempt!(podcast)
@@ -118,14 +126,6 @@ class PublishingPipelineState < ApplicationRecord
 
   def self.complete?(podcast)
     most_recent_state(podcast)&.complete?
-  end
-
-  def self.most_recent_state(podcast)
-    where(podcast_id: podcast.id).latest_by_podcast.first
-  end
-
-  def self.latest_pipeline(podcast)
-    where(publishing_queue_item_id: where(podcast_id: podcast.id).latest_by_podcast.select(:publishing_queue_item_id))
   end
 
   def complete_publishing!
