@@ -4,7 +4,7 @@ class PublishingQueueItem < ApplicationRecord
   scope :latest_complete, -> { latest_attempted.where(publishing_pipeline_states: {status: PublishingPipelineState::TERMINAL_STATUSES}) }
 
   has_many :publishing_pipeline_states
-  has_one :latest_attempt, -> { order(id: :desc) }, class_name: "PublishingPipelineState"
+  has_one :most_recent_state, -> { order(id: :desc) }, class_name: "PublishingPipelineState"
   belongs_to :podcast
 
   # in the style of the delivery logs in the exchange
@@ -19,12 +19,10 @@ class PublishingQueueItem < ApplicationRecord
   end
 
   def self.settled_work?(podcast)
-    # test that there is no publishing attempt in progress
-    unfinished_attempted_item(podcast).nil?
+    current_unfinished_item(podcast).nil?
   end
 
-  def self.unfinished_attempted_item(podcast)
-    # test that there is no publishing attempt in progress
+  def self.current_unfinished_item(podcast)
     joins(:publishing_pipeline_states)
       .where(id: unfinished_items(podcast)).first
   end
@@ -56,7 +54,7 @@ class PublishingQueueItem < ApplicationRecord
   end
 
   def complete?
-    latest_attempt&.complete?
+    most_recent_state&.complete?
   end
 
   def create_publish_job

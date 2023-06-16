@@ -68,7 +68,7 @@ class PublishingPipelineState < ApplicationRecord
   def self.attempt!(podcast, perform_later: true)
     podcast.with_publish_lock do
       next if PublishingQueueItem.unfinished_items(podcast).empty?
-      next if PublishingQueueItem.unfinished_attempted_item(podcast).present?
+      next if PublishingQueueItem.current_unfinished_item(podcast).present?
 
       # Dedupe the work, grab the latest unfinished item in the queue
       latest_unfinished_item = PublishingQueueItem.unfinished_items(podcast).first
@@ -134,7 +134,7 @@ class PublishingPipelineState < ApplicationRecord
 
   def self.state_transition(podcast, to_state)
     podcast.with_publish_lock do
-      pqi = PublishingQueueItem.unfinished_attempted_item(podcast)
+      pqi = PublishingQueueItem.current_unfinished_item(podcast)
       if pqi.present?
         PublishingPipelineState.create(podcast: podcast, publishing_queue_item: pqi, status: to_state)
       else

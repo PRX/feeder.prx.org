@@ -61,16 +61,16 @@ describe PublishingPipelineState do
     end
   end
 
-  describe "latest_attempt" do
+  describe "most_recent_state" do
     it "returns the most recent publishing attempt" do
       _pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       pa2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
 
-      assert_equal pa2, PublishingPipelineState.latest_attempt(podcast)
+      assert_equal pa2, PublishingPipelineState.most_recent_state(podcast)
     end
 
     it "returns nil if there are no publishing attempts" do
-      assert_nil PublishingPipelineState.latest_attempt(podcast)
+      assert_nil PublishingPipelineState.most_recent_state(podcast)
     end
 
     it "ignores other podcasts" do
@@ -78,7 +78,7 @@ describe PublishingPipelineState do
       pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       _pa2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast2))
 
-      assert_equal pa1, PublishingPipelineState.latest_attempt(podcast)
+      assert_equal pa1, PublishingPipelineState.most_recent_state(podcast)
     end
   end
 
@@ -162,7 +162,7 @@ describe PublishingPipelineState do
 
       pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
       assert pqi.reload.publishing_pipeline_states.present?
-      refute pqi.latest_attempt.complete?
+      refute pqi.most_recent_state.complete?
 
       # raises an error if we try to create a second attempt
       assert_raises ActiveRecord::RecordNotUnique do
@@ -172,8 +172,8 @@ describe PublishingPipelineState do
       # but we can create a second attempt that is marked as complete
       pa2 = pa.complete_publishing!
 
-      assert_equal pa2, PublishingPipelineState.latest_attempt(podcast)
-      assert_equal pa2, pqi.reload.latest_attempt
+      assert_equal pa2, PublishingPipelineState.most_recent_state(podcast)
+      assert_equal pa2, pqi.reload.most_recent_state
       assert_equal [pa, pa2], pqi.publishing_pipeline_states
       assert pa2.complete?
     end
