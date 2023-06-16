@@ -4,7 +4,8 @@ LABEL org.prx.app="yes"
 LABEL org.prx.spire.publish.ecr="RAILS_APP"
 
 RUN apk -U upgrade && apk add --no-cache \
-    tzdata postgresql-dev postgresql-client build-base bash coreutils git nodejs
+    tzdata build-base bash coreutils git nodejs \
+    postgresql-dev postgresql-client mysql-dev mysql-client
 
 ENV RAILS_ENV production
 ENV APP_HOME /app
