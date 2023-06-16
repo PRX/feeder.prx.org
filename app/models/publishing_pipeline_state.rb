@@ -117,10 +117,10 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def self.complete?(podcast)
-    latest_attempt(podcast)&.complete?
+    most_recent_state(podcast)&.complete?
   end
 
-  def self.latest_attempt(podcast)
+  def self.most_recent_state(podcast)
     where(podcast_id: podcast.id).latest_by_podcast.first
   end
 
