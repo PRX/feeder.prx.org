@@ -136,7 +136,7 @@ class PublishingPipelineState < ApplicationRecord
     podcast.with_publish_lock do
       pqi = PublishingQueueItem.current_unfinished_item(podcast)
       if pqi.present?
-        PublishingPipelineState.create(podcast: podcast, publishing_queue_item: pqi, status: to_state)
+        PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: to_state)
       else
         Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot transition state", {podcast_id: podcast.id, to_state: to_state})
         nil
