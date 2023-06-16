@@ -4,13 +4,14 @@ class PublishingQueueItem < ApplicationRecord
   scope :latest_complete, -> { latest_attempted.where(publishing_pipeline_states: {status: PublishingPipelineState::TERMINAL_STATUSES}) }
 
   has_many :publishing_pipeline_states
+  has_many :latest_state, -> { latest_by_queue_item }, class_name: "PublishingPipelineState"
+
   has_one :most_recent_state, -> { order(id: :desc) }, class_name: "PublishingPipelineState"
   belongs_to :podcast
 
   # in the style of the delivery logs in the exchange
   def self.delivery_status
-    left_joins(:publishing_pipeline_states)
-      .merge(PublishingPipelineState.latest_by_queue_item)
+    left_joins(:latest_state)
       .select("publishing_queue_items.*, publishing_pipeline_states.status")
   end
 

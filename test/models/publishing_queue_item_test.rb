@@ -122,24 +122,30 @@ describe PublishingQueueItem do
     it "should provide the delivery status in the exchange delivery log style" do
       podcast = create(:podcast)
 
-      pqi = PublishingQueueItem.create!(podcast: podcast)
-      PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
-      _pps = PublishingPipelineState.start!(podcast)
+      pod1_pqi1 = PublishingQueueItem.create!(podcast: podcast)
+      PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pod1_pqi1)
+      PublishingPipelineState.complete!(podcast)
+
+      # create a new request that was debouced
+      pod1_pqi2 = PublishingQueueItem.create!(podcast: podcast)
+
+      pod1_pqi3 = PublishingQueueItem.create!(podcast: podcast)
+      PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pod1_pqi3)
+      PublishingPipelineState.start!(podcast)
 
       podcast2 = create(:podcast)
-      pqi2 = PublishingQueueItem.create!(podcast: podcast2)
-      _pps2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: pqi2)
+      pod2_pqi1 = PublishingQueueItem.create!(podcast: podcast2)
+      PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: pod2_pqi1)
 
-      assert_equal 2, PublishingQueueItem.delivery_status.to_a.size
-      # dig into the scope and test
-      assert_equal [pqi], PublishingQueueItem.delivery_status.where(publishing_pipeline_states: {status: :started})
-      assert_equal [pqi2], PublishingQueueItem.delivery_status.where(publishing_pipeline_states: {status: :created})
+      assert_equal 4, PublishingQueueItem.delivery_status.to_a.size
 
       # look at some status output:
       assert_equal [
-        {"id" => pqi.id, "podcast_id" => podcast.id, "status" => 1},
-        {"id" => pqi2.id, "podcast_id" => podcast2.id, "status" => 0}
-      ], PublishingQueueItem.delivery_status.as_json(except: :created_at)
+        {"id" => pod1_pqi1.id, "podcast_id" => podcast.id, "status" => 4},
+        {"id" => pod1_pqi2.id, "podcast_id" => podcast.id, "status" => nil},
+        {"id" => pod1_pqi3.id, "podcast_id" => podcast.id, "status" => 1},
+        {"id" => pod2_pqi1.id, "podcast_id" => podcast2.id, "status" => 0}
+      ], PublishingQueueItem.delivery_status.order(podcast_id: :asc, created_at: :asc).as_json(except: :created_at)
     end
   end
 end

@@ -14,6 +14,12 @@ class PublishingPipelineState < ApplicationRecord
                               where(publishing_queue_item: pq_items)
                             }
 
+  scope :latest_by_queue_item, -> {
+                                 where(id: PublishingPipelineState
+                                  .group(:podcast_id, :publishing_queue_item_id)
+                                  .select("max(id) as id"))
+                               }
+
   scope :latest_by_podcast, -> {
                               where(id: PublishingPipelineState
                                .group(:podcast_id)
