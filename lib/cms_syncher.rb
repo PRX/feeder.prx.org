@@ -54,7 +54,7 @@ class CmsSyncher
 
     episode.update_attribute(:prx_uri, "/api/v1/stories/#{story.id}")
 
-    episode.episode_images.each do |episode_image|
+    episode.images.each do |episode_image|
       save_image(story, episode_image)
     end
 
@@ -149,23 +149,7 @@ module Cms
   class CmsModel < ActiveRecord::Base
     include PorterUtils
     self.abstract_class = true
-
-    def self.cms_db_connection
-      {
-        adapter: "mysql2",
-        encoding: "utf8mb4",
-        collation: "utf8mb4_unicode_ci",
-        pool: ENV["CMS_DATABASE_POOL_SIZE"],
-        username: ENV["CMS_MYSQL_USER"],
-        password: ENV["CMS_MYSQL_PASSWORD"],
-        host: ENV["CMS_MYSQL_HOST"],
-        port: ENV["CMS_MYSQL_PORT"],
-        database: ENV["CMS_MYSQL_DATABASE"],
-        reconnect: true
-      }
-    end
-
-    establish_connection(cms_db_connection)
+    connects_to database: {writing: :test_cms, reading: :test_cms}
 
     def copy_original_task
       {
@@ -187,8 +171,11 @@ module Cms
         Tasks: [copy_original_task] + thumbnail_tasks
       }
 
-      # porter_start!(job)
-      # puts job.to_json
+      if Rails.env.test?
+        job.to_json
+      else
+        porter_start!(job)
+      end
     end
 
     def s3_object_key(thumb = nil)
@@ -206,7 +193,7 @@ module Cms
 
   # Series AR
   class Series < CmsModel
-    has_many :stories
+    has_many :stories, validate: false
     has_many :images, class_name: "SeriesImage"
   end
 
@@ -248,16 +235,16 @@ module Cms
   end
 
   class SeriesImage < CmsImage
-    belongs_to :series
+    belongs_to :series, validate: false, optional: true
   end
 
   class StoryImage < CmsImage
     self.table_name = "piece_images"
-    belongs_to :story, -> { with_deleted }, class_name: "Cms::Story", foreign_key: "piece_id", touch: true
+    belongs_to :story, class_name: "Cms::Story", foreign_key: "piece_id", touch: true
   end
 
   class AudioVersionTemplate < CmsModel
-    belongs_to :series
+    belongs_to :series, validate: false, optional: true
     has_many :audio_versions, dependent: :nullify
     has_many :audio_file_templates, -> { order :position }, dependent: :destroy
     has_many :distribution_templates, dependent: :destroy
@@ -269,7 +256,7 @@ module Cms
   end
 
   class Distribution < CmsModel
-    belongs_to :distributable, polymorphic: true
+    belongs_to :distributable, polymorphic: true, validate: false, optional: true
     has_many :story_distributions
     has_many :distribution_templates, dependent: :destroy, autosave: true
     has_many :audio_version_templates, through: :distribution_templates
@@ -287,9 +274,14 @@ module Cms
   # Story AR
   class Story < CmsModel
     self.table_name = "pieces"
-    belongs_to :series
+    belongs_to :series, validate: false, optional: true
     has_many :taggings, as: :taggable, dependent: :destroy
     has_many :user_tags, through: :taggings
+    has_many :images,
+      -> { where(parent_id: nil).order(:position) },
+      class_name: "StoryImage",
+      foreign_key: :piece_id,
+      dependent: :destroy
 
     def tags=(ts)
       self.user_tags = (ts || []).uniq.sort.map { |t| UserTag.new(name: t.strip) }
@@ -308,14 +300,14 @@ module Cms
   end
 
   class AudioVersion < CmsModel
-    belongs_to :story, -> { with_deleted }, class_name: "Cms::Story", foreign_key: "piece_id"
+    belongs_to :story, class_name: "Cms::Story", foreign_key: "piece_id"
     belongs_to :audio_version_template
     has_many :audio_files, -> { order :position }, dependent: :destroy
   end
 
   class StoryDistribution < CmsModel
     belongs_to :distribution
-    belongs_to :story, -> { with_deleted }, class_name: "Cms::Story", foreign_key: "piece_id", touch: true
+    belongs_to :story, class_name: "Cms::Story", foreign_key: "piece_id", touch: true
     serialize :properties, HashSerializer
   end
 
