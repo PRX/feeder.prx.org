@@ -3,14 +3,14 @@
 # Provide methods to access s3
 module S3Access
   def s3_bucket
-    ENV['FEEDER_STORAGE_BUCKET']
+    ENV["FEEDER_STORAGE_BUCKET"]
   end
 
   def s3_client
-    if Rails.env.test? || ENV['AWS_ACCESS_KEY_ID'].present?
+    if Rails.env.test? || ENV["AWS_ACCESS_KEY_ID"].present?
       Aws::S3::Client.new(
-        credentials: Aws::Credentials.new(ENV['AWS_ACCESS_KEY_ID'], ENV['AWS_SECRET_ACCESS_KEY']),
-        region: ENV['AWS_REGION']
+        credentials: Aws::Credentials.new(ENV["AWS_ACCESS_KEY_ID"], ENV["AWS_SECRET_ACCESS_KEY"]),
+        region: ENV["AWS_REGION"]
       )
     else
       Aws::S3::Client.new
