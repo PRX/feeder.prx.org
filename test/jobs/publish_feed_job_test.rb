@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 describe PublishFeedJob do
@@ -8,9 +10,9 @@ describe PublishFeedJob do
   let(:job) { PublishFeedJob.new }
 
   it "knows the right bucket to write to" do
-    assert_equal job.feeder_storage_bucket, "test-prx-feed"
+    assert_equal job.s3_bucket, "test-prx-feed"
     ENV["FEEDER_STORAGE_BUCKET"] = "foo"
-    assert_equal job.feeder_storage_bucket, "foo"
+    assert_equal job.s3_bucket, "foo"
     ENV["FEEDER_STORAGE_BUCKET"] = "test-prx-feed"
   end
 
@@ -23,18 +25,17 @@ describe PublishFeedJob do
     let(:stub_client) { Aws::S3::Client.new(stub_responses: true) }
 
     it "can save a podcast file" do
-      job.stub(:client, stub_client) do
+      job.stub(:s3_client, stub_client) do
         refute_nil job.save_file(podcast, podcast.default_feed)
         refute_nil job.save_file(podcast, feed)
       end
     end
 
     it "can process publishing a podcast" do
-      job.stub(:client, stub_client) do
+      job.stub(:s3_client, stub_client) do
         rss = job.perform(podcast)
         refute_nil rss
         refute_nil job.put_object
-        assert_nil job.copy_object
       end
     end
   end
