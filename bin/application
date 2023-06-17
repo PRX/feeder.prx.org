@@ -32,6 +32,21 @@ WaitForPostgres () {
   done
 }
 
+WaitForMysql () {
+  until nc -z $CMS_MYSQL_HOST $CMS_MYSQL_PORT && echo "Connected to Mysql"; do
+    >&2 echo "Mysql is unavailable - sleeping"
+    sleep 1
+  done
+}
+
+InitCmsTestMysql () {
+  echo Create the cms_test mysql db
+  mysql -h $CMS_MYSQL_HOST -u root --password=password -e "CREATE DATABASE IF NOT EXISTS cms_test"
+
+  echo Create structures for cms_test
+  mysql -h $CMS_MYSQL_HOST -u root --password=password cms_test < test/fixtures/mediajoint_structure.sql
+}
+
 ApplicationRun () {
   if [ "$PROCESS" = "help" ] ; then
     ApplicationUsage
@@ -70,6 +85,12 @@ ApplicationRun () {
 
   if [ \( "$PROCESS" = "web" \) -o \( "$PROCESS" = "worker" \) ] ; then
     ApplicationUpdate
+  fi
+
+  # Only in test create the cms mysql db
+  if [ \( "$PROCESS" = "test" \) ] ; then
+    WaitForMysql
+    InitCmsTestMysql
   fi
 
   $CMD $CMD_ARGS
