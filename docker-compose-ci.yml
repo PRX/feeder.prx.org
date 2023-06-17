@@ -1,4 +1,7 @@
 version: "2"
+networks:
+  feeder-net:
+    driver: bridge
 services:
   feeder:
     build: .
@@ -6,16 +9,35 @@ services:
       - env-example
     links:
       - db
+      - mysql
     depends_on:
       - db
+      - mysql
     command: test
     environment:
       VIRTUAL_HOST: feeder.prx.docker
       RAILS_ENV: test
       POSTGRES_HOST: db
+      CMS_MYSQL_HOST: mysql
+    networks:
+      - feeder-net
   db:
-    image: postgres
+    image: postgres:13.3-alpine
     env_file:
       - env-example
     expose:
       - "5432"
+    networks:
+      - feeder-net
+  mysql:
+    image: mysql:8.0.2
+    env_file:
+      - env-example
+    environment:
+      MYSQL_DATABASE: cms_test
+      MYSQL_ROOT_PASSWORD: password
+    expose:
+      - "3306"
+    command: mysqld --log_error_verbosity=1
+    networks:
+      - feeder-net

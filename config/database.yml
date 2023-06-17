@@ -23,9 +23,7 @@ default: &default
   password: <%= ENV.fetch("POSTGRES_PASSWORD", "feeder-pass") %>
   host: <%= ENV.fetch("POSTGRES_HOST", "127.0.0.1") %>
   port: <%= ENV.fetch("POSTGRES_PORT", "5432") %>
-  <% if ENV["POSTGRES_GSSENCMODE"] %>
-  gssencmode: "<%= ENV["POSTGRES_GSSENCMODE"] %>"
-  <% end %>
+  <%= "gssencmode: #{ENV["POSTGRES_GSSENCMODE"]}" if ENV["POSTGRES_GSSENCMODE"] %>
 
 development:
   <<: *default
@@ -90,3 +88,14 @@ staging:
 
 production:
   <<: *default
+
+test_cms:
+  adapter: mysql2
+  encoding: utf8mb4
+  collation: utf8mb4_unicode_ci
+  pool: <%= ENV["CMS_DATABASE_POOL_SIZE"] %>
+  username: <%= ENV["CMS_MYSQL_USER"] %>
+  password: <%= ENV["CMS_MYSQL_PASSWORD"] %>
+  host: <%= ENV["CMS_MYSQL_HOST"] %>
+  port: <%= ENV["CMS_MYSQL_PORT"] %>
+  database: <%= ENV["CMS_MYSQL_DATABASE"] %>

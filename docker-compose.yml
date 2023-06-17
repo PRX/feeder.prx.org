@@ -12,6 +12,10 @@ services:
       - .env
     links:
       - db
+      - mysql
+    depends_on:
+      - db
+      - mysql
     ports:
       - "3001:3000"
     command: web
@@ -38,5 +42,18 @@ services:
       - "5432"
     volumes:
       - ./db/import:/docker-entrypoint-initdb.d
+    networks:
+      - feeder-net
+  mysql:
+    image: mysql/mysql-server:8.0.23
+    command: mysqld --log_error_verbosity=1 --default-authentication-plugin=mysql_native_password --sql-mode=""
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: cms_test
+      MYSQL_ROOT_HOST: "%"
+    env_file:
+      - .env
+    expose:
+      - "3306"
     networks:
       - feeder-net
