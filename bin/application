@@ -41,10 +41,10 @@ WaitForMysql () {
 
 InitCmsTestMysql () {
   echo Create the cms_test mysql db
-  mysql -h $CMS_MYSQL_HOST -u root --password=password --ssl-mode=DISABLED -e "CREATE DATABASE IF NOT EXISTS cms_test"
+  mysql -h $CMS_MYSQL_HOST -u root --password=password --ssl=FALSE -e "CREATE DATABASE IF NOT EXISTS cms_test"
 
   echo Create structures for cms_test
-  mysql -h $CMS_MYSQL_HOST -u root --password=password --ssl-mode=DISABLED cms_test < test/fixtures/mediajoint_structure.sql
+  mysql -h $CMS_MYSQL_HOST -u root --password=password --ssl=FALSE cms_test < test/fixtures/mediajoint_structure.sql
 }
 
 ApplicationRun () {
