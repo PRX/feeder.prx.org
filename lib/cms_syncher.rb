@@ -9,6 +9,8 @@ require "s3_access"
 class CmsSyncher
   include S3Access
 
+  VIDEO_CONTENT_TYPE = "video/mpeg"
+
   # Create or update series
   def sync_series(podcast, user_id)
     series_id = id_from_uri(podcast.prx_uri)
@@ -48,7 +50,7 @@ class CmsSyncher
     story.short_description = episode.subtitle
     story.description = episode_description(episode)
     story.tags = episode.categories
-    story.published_at = episode.published_at
+    story.published_at = episode.released_at
     story.released_at = episode.published_at
     story.save!
 
@@ -58,18 +60,18 @@ class CmsSyncher
       save_image(story, episode_image)
     end
 
-    # version = story.audio_versions.create!(
-    #   audio_version_template: template_for_episode(episode),
-    #   label: 'Podcast Audio',
-    #   explicit: episode.explicit
-    # )
+    # get all the audio files regardless of version
+    audio_files = story.audio_files
 
-    # episode.media_resources.each_with_index do |media_resource, i|
-    #   upload_url = copy_media(episode, media_resource)
-    #   audio = version.audio_files.create!(label: "Segment #{i + 1}", upload: upload_url)
-    #   announce_audio(audio)
-    #   media_resource.update_attribute(:original_url, audio_file_original_url(audio))
-    # end
+    # get or create a version
+    version = save_audio_version(episode)
+
+    episode.media_resources.each_with_index do |media_resource, i|
+      upload_url = copy_media(episode, media_resource)
+      audio = version.audio_files.create!(label: "Segment #{i + 1}", upload: upload_url)
+      announce_audio(audio)
+      media_resource.update_attribute(:original_url, audio_file_original_url(audio))
+    end
 
     # # create the story distribution
     # episode_url = "#{feeder_root}/episodes/#{episode.guid}"
@@ -81,6 +83,59 @@ class CmsSyncher
     # )
 
     story
+  end
+
+  def save_audio_version(episode)
+    # see what template should be used for this episode
+    template = template_for_episode(episode)
+
+    # see if there is an audio version
+    version = story.audio_versions.where(audio_version_template_id: template.id).first
+    return version if version
+
+    # add the correct audio version
+    story.audio_versions.create!(
+      audio_version_template: template,
+      label: "Podcast Audio",
+      explicit: episode.explicit
+    )
+  end
+
+  def template_for_episode(episode)
+    if episode.content_type.starts_with?("video")
+      video_template(episode)
+    else
+      audio_template(episode)
+    end
+  end
+
+  def audio_template(episode)
+    num_segments = [episode.media_resources.count, 1].max
+    at = series.audio_version_templates.where(segment_count: num_segments, content_type: VIDEO_CONTENT_TYPE).first
+    return at if at
+
+    series.audio_version_templates.create!(
+      label: "Podcast Audio #{num_segments} #{"segment".pluralize(num_segments)}",
+      content_type: AudioFile::MP3_CONTENT_TYPE,
+      segment_count: num_segments,
+      promos: false,
+      length_minimum: 0,
+      length_maximum: 0
+    )
+  end
+
+  def video_template(episode)
+    vt = series.audio_version_templates.where(content_type: VIDEO_CONTENT_TYPE).first
+    return vt if vt
+
+    series.audio_version_templates.create!(
+      label: "Podcast Video 1 segment",
+      content_type: VIDEO_CONTENT_TYPE,
+      segment_count: 1,
+      promos: false,
+      length_minimum: 0,
+      length_maximum: 0
+    )
   end
 
   # pass in the story and episode image
@@ -195,6 +250,8 @@ module Cms
   class Series < CmsModel
     has_many :stories, validate: false
     has_many :images, class_name: "SeriesImage"
+    has_many :audio_version_templates
+    has_many :distributions, as: :distributable, dependent: :destroy
   end
 
   class CmsImage < CmsModel
@@ -302,7 +359,12 @@ module Cms
   class AudioVersion < CmsModel
     belongs_to :story, class_name: "Cms::Story", foreign_key: "piece_id"
     belongs_to :audio_version_template
-    has_many :audio_files, -> { order :position }, dependent: :destroy
+    has_many :audio_files, -> { order :position }, dependent: :nullify
+  end
+
+  class AudioFile < CmsModel
+    belongs_to :audio_version
+    has_one :story, through: :audio_version
   end
 
   class StoryDistribution < CmsModel

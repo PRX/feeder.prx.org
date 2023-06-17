@@ -1,11 +1,16 @@
 require "builder"
+require "s3_access"
 
+# Publish the feed:
+#  Sync to to Apple
+#  Saves the RSS feed to s3
 class PublishFeedJob < ApplicationJob
   queue_as :feeder_default
 
   include PodcastsHelper
+  include S3Access
 
-  attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
+  attr_accessor :podcast, :episodes, :rss, :put_object
 
   def perform(podcast)
     podcast.feeds.each { |feed| publish_feed(podcast, feed) }
@@ -31,14 +36,7 @@ class PublishFeedJob < ApplicationJob
   def save_file(podcast, feed, options = {})
     rss = FeedBuilder.new(podcast, feed).to_feed_xml
     opts = default_options.merge(options)
-    opts[:body] = rss
-    opts[:bucket] = feeder_storage_bucket
-    opts[:key] = key(podcast, feed)
-    @put_object = client.put_object(opts)
-  end
-
-  def feeder_storage_bucket
-    ENV["FEEDER_STORAGE_BUCKET"]
+    @put_object = s3_save_file(rss, key(podcast, feed), opts)
   end
 
   def key(podcast, feed)
@@ -50,16 +48,5 @@ class PublishFeedJob < ApplicationJob
       content_type: "application/rss+xml; charset=UTF-8",
       cache_control: "max-age=60"
     }
-  end
-
-  def client
-    if Rails.env.test? || ENV["AWS_ACCESS_KEY_ID"].present?
-      Aws::S3::Client.new(
-        credentials: Aws::Credentials.new(ENV["AWS_ACCESS_KEY_ID"], ENV["AWS_SECRET_ACCESS_KEY"]),
-        region: ENV["AWS_REGION"]
-      )
-    else
-      Aws::S3::Client.new
-    end
   end
 end
