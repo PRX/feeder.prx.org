@@ -10,12 +10,17 @@ class CmsSyncher
   include S3Access
 
   VIDEO_CONTENT_TYPE = "video/mpeg"
+  MP3_CONTENT_TYPE = "audio/mpeg"
 
   # Create or update series
   def sync_series(podcast, user_id)
-    series_id = id_from_uri(podcast.prx_uri)
-    series = Cms::Series.find_by_id(series_id) || Cms::Series.new
+    series = find_series_for_podcast(podcast) || Cms::Series.new
     update_series(series, podcast, user_id)
+  end
+
+  def find_series_for_podcast(podcast)
+    series_id = id_from_uri(podcast.prx_uri)
+    Cms::Series.find_by_id(series_id)
   end
 
   def update_series(series, podcast, user_id)
@@ -38,6 +43,7 @@ class CmsSyncher
   def sync_story(episode, user_id)
     story_id = id_from_uri(episode.prx_uri)
     story = Cms::Story.find_by_id(story_id) || Cms::Story.new
+    story.series ||= find_series_for_podcast(episode.podcast)
     update_story(story, episode, user_id)
   end
 
@@ -60,17 +66,17 @@ class CmsSyncher
       save_image(story, episode_image)
     end
 
+    # get or create a version
+    version = save_audio_version(story, episode)
+
     # get all the audio files regardless of version
     audio_files = story.audio_files
 
-    # get or create a version
-    version = save_audio_version(episode)
-
-    episode.media_resources.each_with_index do |media_resource, i|
-      upload_url = copy_media(episode, media_resource)
-      audio = version.audio_files.create!(label: "Segment #{i + 1}", upload: upload_url)
-      announce_audio(audio)
-      media_resource.update_attribute(:original_url, audio_file_original_url(audio))
+    episode.contents.each_with_index do |content, i|
+      # upload_url = copy_media(episode, content)
+      # audio = version.audio_files.create!(label: "Segment #{i + 1}", upload: upload_url)
+      # announce_audio(audio)
+      # media_resource.update_attribute(:original_url, audio_file_original_url(audio))
     end
 
     # # create the story distribution
@@ -85,9 +91,9 @@ class CmsSyncher
     story
   end
 
-  def save_audio_version(episode)
+  def save_audio_version(story, episode)
     # see what template should be used for this episode
-    template = template_for_episode(episode)
+    template = template_for_episode(story.series, episode)
 
     # see if there is an audio version
     version = story.audio_versions.where(audio_version_template_id: template.id).first
@@ -101,30 +107,29 @@ class CmsSyncher
     )
   end
 
-  def template_for_episode(episode)
-    if episode.content_type.starts_with?("video")
-      video_template(episode)
+  def template_for_episode(series, episode)
+    if episode.medium_video?
+      video_template(series)
     else
-      audio_template(episode)
+      audio_template(series, episode.segment_count)
     end
   end
 
-  def audio_template(episode)
-    num_segments = [episode.media_resources.count, 1].max
-    at = series.audio_version_templates.where(segment_count: num_segments, content_type: VIDEO_CONTENT_TYPE).first
+  def audio_template(series, segment_count)
+    at = series.audio_version_templates.where(segment_count: segment_count, content_type: MP3_CONTENT_TYPE).first
     return at if at
 
     series.audio_version_templates.create!(
-      label: "Podcast Audio #{num_segments} #{"segment".pluralize(num_segments)}",
-      content_type: AudioFile::MP3_CONTENT_TYPE,
-      segment_count: num_segments,
+      label: "Podcast Audio #{segment_count} #{"segment".pluralize(segment_count)}",
+      content_type: MP3_CONTENT_TYPE,
+      segment_count: segment_count,
       promos: false,
       length_minimum: 0,
       length_maximum: 0
     )
   end
 
-  def video_template(episode)
+  def video_template(series)
     vt = series.audio_version_templates.where(content_type: VIDEO_CONTENT_TYPE).first
     return vt if vt
 
@@ -339,6 +344,8 @@ module Cms
       class_name: "StoryImage",
       foreign_key: :piece_id,
       dependent: :destroy
+    has_many :audio_versions, -> { where(promos: false).includes(:audio_files) }, foreign_key: :piece_id
+    has_many :audio_files, through: :audio_versions
 
     def tags=(ts)
       self.user_tags = (ts || []).uniq.sort.map { |t| UserTag.new(name: t.strip) }
