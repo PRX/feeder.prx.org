@@ -11,13 +11,11 @@ describe CmsSyncher do
 
   let(:syncher) { CmsSyncher.new }
 
-  it "synchs a cms series to a podcast" do
+  it "synchs podcast episode to cms series story" do
     refute_nil podcast
     series = syncher.sync_series(podcast, user_id)
     assert_equal podcast.title, series.title
-  end
 
-  it "synchs a cms story to an episode" do
     refute_nil episode
     story = syncher.sync_story(episode, user_id)
     assert_equal episode.title, story.title
