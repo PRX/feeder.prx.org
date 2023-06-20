@@ -229,5 +229,43 @@ describe PublishingPipelineState do
         assert_equal ["created", "started", "complete", "created"], PublishingPipelineState.where(podcast: podcast).map(&:status)
       end
     end
+
+    describe "Apple publishing" do
+      before do
+        2.times { create(:private_feed, podcast: podcast) }
+        podcast.reload
+
+        f1, f2, f3 = podcast.feeds
+
+        create(:apple_config,
+          public_feed: f1,
+          private_feed: f2,
+          publish_enabled: true,
+          apple_key_id: "valencia",
+          apple_key_pem_b64: "orange")
+
+        create(:apple_config,
+          public_feed: f1,
+          private_feed: f3,
+          publish_enabled: true,
+          apple_key_id: "blood",
+          apple_key_pem_b64: "orange")
+      end
+
+      it "can publish via the apple configs" do
+        assert_equal 3, podcast.reload.feeds.count
+
+        PublishAppleJob.stub(:perform_now, "published apple!") do
+          PublishFeedJob.stub_any_instance(:save_file, "saved rss!") do
+            PublishingPipelineState.attempt!(podcast, perform_later: false)
+          end
+        end
+        PublishingPipelineState.complete!(podcast)
+        assert_equal(
+          ["complete", "published_rss", "published_rss", "published_rss", "published_apple", "published_apple", "started", "created"],
+          PublishingPipelineState.order(id: :desc).pluck(:status)
+        )
+      end
+    end
   end
 end

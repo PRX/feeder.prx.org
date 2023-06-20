@@ -122,6 +122,14 @@ class PublishingPipelineState < ApplicationRecord
     state_transition(podcast, :started)
   end
 
+  def self.publish_rss!(podcast)
+    state_transition(podcast, :published_rss)
+  end
+
+  def self.publish_apple!(podcast)
+    state_transition(podcast, :published_apple)
+  end
+
   def self.complete!(podcast)
     state_transition(podcast, :complete)
   end

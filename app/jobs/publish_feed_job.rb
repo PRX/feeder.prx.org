@@ -26,13 +26,17 @@ class PublishFeedJob < ApplicationJob
   def publish_apple(feed)
     feed.apple_configs.map do |config|
       if feed.publish_to_apple?(config)
-        PublishAppleJob.perform_now(config)
+        res = PublishAppleJob.perform_now(config)
+        PublishingPipelineState.publish_apple!(feed.podcast)
+        res
       end
     end
   end
 
   def publish_rss(podcast, feed)
-    save_file(podcast, feed)
+    res = save_file(podcast, feed)
+    PublishingPipelineState.publish_rss!(podcast)
+    res
   end
 
   def save_file(podcast, feed, options = {})
