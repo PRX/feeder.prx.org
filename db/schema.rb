@@ -330,8 +330,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
     t.bigint "publishing_queue_item_id", null: false
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
-    t.index ["podcast_id", "publishing_queue_item_id", "status"], name: "index_publishing_pipeline_state_on_podcast_id_and_queue_item_id", unique: true
+    t.index ["podcast_id", "publishing_queue_item_id", "status"], name: "index_publishing_pipeline_state_on_unique_status", unique: true, where: "(status = ANY (ARRAY[4, 5, 6, 0, 1]))"
     t.index ["podcast_id", "publishing_queue_item_id", "status"], name: "index_publishing_pipeline_state_uniqueness"
+    t.index ["podcast_id", "publishing_queue_item_id", "status"], name: "index_state_on_podcast_queue_item_and_status"
     t.index ["podcast_id"], name: "index_publishing_pipeline_states_on_podcast_id"
     t.index ["publishing_queue_item_id"], name: "index_publishing_pipeline_states_on_publishing_queue_item_id"
   end

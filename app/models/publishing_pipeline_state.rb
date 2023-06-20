@@ -1,5 +1,7 @@
 class PublishingPipelineState < ApplicationRecord
   TERMINAL_STATUSES = [:complete, :error, :expired].freeze
+  UNIQUE_STATUSES = TERMINAL_STATUSES + [:created, :started]
+
   # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
   TIMEOUT = 30.minutes.freeze
 
@@ -74,6 +76,10 @@ class PublishingPipelineState < ApplicationRecord
 
   def self.terminal_status_codes
     TERMINAL_STATUSES.map { |s| statuses[s] }
+  end
+
+  def self.unique_status_codes
+    UNIQUE_STATUSES.map { |s| statuses[s] }
   end
 
   def self.most_recent_state(podcast)
