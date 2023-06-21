@@ -1,4 +1,4 @@
-.prx-input-group {
+/*.prx-input-group {
   @extend .input-group;
   flex-shrink: 1;
   align-items: center;
@@ -54,7 +54,7 @@
   & > :is(.form-control:not(:placeholder-shown)) ~ .prx-input-confirm-hidden {
     display: none;
   }
-}
+}*/
 
 // material style floating form labels
 .form-floating {
@@ -156,6 +156,7 @@
     padding: 0.75rem;
     min-height: $input-height;
     height: auto;
+    border-color: $input-border-color;
     // border: none;
   }
 
@@ -338,3 +339,20 @@ small {
     color: $primary;
   }
 }
+
+.prx-help {
+  background: $white;
+  color: $gray-600;
+
+  &:hover {
+    text-decoration: none;
+    color: $primary;
+  }
+}
+
+/*.input-group {
+  .form-control,
+  .form-select {
+    border-right: none;
+  }
+}*/
