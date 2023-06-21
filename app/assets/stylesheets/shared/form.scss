@@ -1,4 +1,4 @@
-/*.prx-input-group {
+.prx-input-group {
   @extend .input-group;
   flex-shrink: 1;
   align-items: center;
@@ -54,7 +54,7 @@
   & > :is(.form-control:not(:placeholder-shown)) ~ .prx-input-confirm-hidden {
     display: none;
   }
-}*/
+}
 
 // material style floating form labels
 .form-floating {

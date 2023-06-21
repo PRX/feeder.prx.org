@@ -9,7 +9,7 @@
       <%= turbo_frame_tag "episode-form-media" do %>
         <div class="row">
 
-          <div class="col-12 mb-4 prx-field-group">
+          <div class="col-12 mb-4">
             <div class="form-floating" data-controller="dynamic-form">
               <%= form.select :medium, episode_medium_options, {}, data: {action: "dynamic-form#change"} %>
               <%= form.label :medium %>

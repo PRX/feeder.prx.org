@@ -1,11 +1,10 @@
 <div class="col-12">
-  <div class="mb-4 prx-field-group">
-    <div class="form-floating">
+  <div class="mb-4">
+    <div class="form-floating input-group">
       <%= form.text_field :slug %>
       <%= form.label :slug %>
+      <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.slug") %>"><span class="material-icons">help</span></a>
     </div>
-
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.slug") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -20,31 +19,28 @@
     </div>
   </div>
 
-  <div class="mb-4 prx-field-group">
+  <div class="mb-4">
     <div class="form-floating">
       <%= form.text_field :subtitle %>
       <%= form.label :subtitle %>
+      <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.subtitle") %>"><span class="material-icons">help</span></a>
     </div>
-
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.subtitle") %>"><span class="material-icons">help</span></button>
   </div>
 
-  <div class="mb-4 prx-field-group">
-    <div class="form-floating">
+  <div class="mb-4">
+    <div class="form-floating input-group">
       <%= form.text_area :description %>
       <%= form.label :description %>
+      <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.description") %>"><span class="material-icons">help</span></a>
     </div>
-
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.description") %>"><span class="material-icons">help</span></button>
   </div>
 
-  <div class="mb-4 prx-field-group">
-    <div class="form-floating">
+  <div class="mb-4">
+    <div class="form-floating input-group">
       <%= form.text_area :summary %>
       <%= form.label :summary %>
+      <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></a>
     </div>
-
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></button>
   </div>
 </div>
 
@@ -55,9 +51,8 @@
     <div>
       <%= form.check_box :private, data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay"} %>
       <%= form.label :private %>
+      <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.private") %>"><span class="material-icons">help</span></a>
     </div>
-
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.private") %>" data-bs-html="true"><span class="material-icons">help</span></button>
   </div>
 
   <div class="<%= display_auth_tokens(feed) %>" data-toggle-field-target="field">
