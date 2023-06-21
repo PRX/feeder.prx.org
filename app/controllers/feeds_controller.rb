@@ -10,18 +10,28 @@ class FeedsController < ApplicationController
 
   # GET /feeds/new
   def new
-    @feed = Feed.new
+    @feed = Feed.new(private: false, slug: "")
+    @feed.podcast = @podcast
+    authorize @feed
+
+    @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
   end
 
   # POST /feeds
   def create
     @feed = Feed.new(feed_params)
+    @feed.podcast = @podcast
+    authorize @feed
 
     respond_to do |format|
       if @feed.save
-        format.html { redirect_to feed_url(@feed), notice: "Feed was successfully created." }
+        @feed.copy_media
+        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
-        format.html { render :new, status: :unprocessable_entity }
+        format.html do
+          flash.now[:notice] = t ".failure", model: "Feed"
+          render :new, status: :unprocessable_entity
+        end
       end
     end
   end
@@ -37,7 +47,7 @@ class FeedsController < ApplicationController
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
       else
         format.html do
-          flash.alert = t ".failure", model: "Feed"
+          flash.now[:notice] = t ".failure", model: "Feed"
           render :show, status: :unprocessable_entity
         end
       end
@@ -46,10 +56,15 @@ class FeedsController < ApplicationController
 
   # DELETE /feeds/1
   def destroy
-    @feed.destroy
-
     respond_to do |format|
-      format.html { redirect_to feeds_url, notice: "Feed was successfully destroyed." }
+      if @feed.destroy
+        format.html { redirect_to podcast_feed_path(@podcast, @podcast.default_feed), notice: (t ".success", model: "Feed") }
+      else
+        format.html do
+          flash.now[:notice] = t ".failure", model: "Feed"
+          render :show, status: :unprocessable_entity
+        end
+      end
     end
   end
 

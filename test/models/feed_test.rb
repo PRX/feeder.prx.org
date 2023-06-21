@@ -87,6 +87,13 @@ describe Feed do
       assert_match(/^http/, Feed.enclosure_template_default)
       assert_equal feed.enclosure_template, Feed.enclosure_template_default
     end
+
+    it "has a title if it is not default" do
+      feed2.title = nil
+      refute feed2.valid?
+      feed2.title = "new feed"
+      assert feed2.valid?
+    end
   end
 
   describe "#published_url" do

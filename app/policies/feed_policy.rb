@@ -1,4 +1,8 @@
 class FeedPolicy < ApplicationPolicy
+  def new?
+    create?
+  end
+
   def show?
     PodcastPolicy.new(token, resource.podcast).show?
   end
