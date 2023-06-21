@@ -1,37 +1,33 @@
-<div class="col-12 mb-4 border-0 prx-field-group">
-    <div class="form-floating">
+<div class="col-12 mb-4 border-0">
+    <div class="form-floating input-group">
       <%= form.text_field :title %>
       <%= form.label :title %>
+      <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.title") %>"><span class="material-icons">help</span></a>
     </div>
-
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.title") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-12 mb-4 prx-field-group">
-  <div class="form-floating">
+<div class="col-12 mb-4">
+  <div class="form-floating input-group">
     <%= form.text_field :clean_title %>
     <%= form.label :clean_title %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.clean_title") %>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.clean_title") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-12 mb-4 prx-field-group">
-  <div class="form-floating">
+<div class="col-12 mb-4">
+  <div class="form-floating input-group">
     <%= form.text_field :subtitle %>
     <%= form.label :subtitle %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.subtitle") %>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.subtitle") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-12 mb-4 prx-field-group">
-  <div class="form-floating textarea-help">
+<div class="col-12 mb-4">
+  <div class="form-floating input-group">
     <%= form.text_area :description %>
     <%= form.label :description %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help prx-btn-helparea" data-bs-toggle="popover" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></button>
 </div>
 
 <div class="col-12 mb-4" data-controller="toggle-field">
@@ -39,7 +35,7 @@
     <%= form.check_box :add_itunes_summary, class: "form-check-input", name: nil, checked: false, data: {toggle_field_target: "check", action: "toggle-field#changeCheck"} %>
     <div class="d-flex align-items-center">
       <%= form.label :add_itunes_summary %>
-      <button type="button" class="prx-btn-help ms-1" data-bs-toggle="popover" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></button>
+      <a tabindex="0" class="prx-btn-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></a>
     </div>
   </div>
 
@@ -49,65 +45,58 @@
   </div>
 </div>
 
-<div class="col-12 mb-4 prx-field-group">
-  <div class="form-floating">
+<div class="col-12 mb-4">
+  <div class="form-floating input-group">
     <%= form.text_field :production_notes %>
     <%= form.label :production_notes %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.production_notes") %>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.production_notes") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-6 mb-4 prx-field-group">
-  <div class="form-floating">
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
     <%= form.select :explicit, podcast_explicit_options, {include_blank: true} %>
     <%= form.label :explicit %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.explicit") %>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.explicit") %>" data-bs-html="true"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-6 mb-4 prx-field-group">
-  <div class="form-floating">
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
     <%= form.select :itunes_type, episode_itunes_type_options %>
     <%= form.label :itunes_type %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.itunes_type") %>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.itunes_type") %>" data-bs-html="true"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-6 mb-4 prx-field-group">
-  <div class="form-floating">
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
     <%= form.number_field :season_number %>
     <%= form.label :season_number %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.season_number") %>>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.season_number") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-6 mb-4 prx-field-group">
-  <div class="form-floating">
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
     <%= form.number_field :episode_number %>
     <%= form.label :episode_number %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.episode_number") %>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.episode_number") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-6 mb-4 prx-field-group">
-  <div class="form-floating">
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
     <%= form.text_field :author_name %>
     <%= form.label :author_name %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.author_name") %>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.author_name") %>"><span class="material-icons">help</span></button>
 </div>
 
-<div class="col-6 mb-4 prx-field-group">
-  <div class="form-floating">
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
     <%= form.text_field :author_email %>
     <%= form.label :author_email %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.author_email") %>"><span class="material-icons">help</span></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.author_email") %>"><span class="material-icons">help</span></button>
 </div>

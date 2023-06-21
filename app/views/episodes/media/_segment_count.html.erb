@@ -1,11 +1,8 @@
-<div class="col-12 mb-4 prx-field-group">
-  <div class="form-floating" data-controller="dynamic-form">
+<div class="col-12 mb-4">
+  <div class="form-floating input-group" data-controller="dynamic-form">
     <%= form.number_field :ad_breaks, min: 0, max: Episode::MAX_SEGMENT_COUNT - 1, data: {action: "dynamic-form#change"} %>
     <%= form.label :ad_breaks %>
+    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help") %>"><span class="material-icons">help</span></a>
     <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
   </div>
-
-  <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help") %>">
-    <span class="material-icons">help</span>
-  </button>
 </div>
