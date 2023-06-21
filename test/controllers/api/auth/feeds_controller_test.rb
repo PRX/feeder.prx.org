@@ -9,7 +9,8 @@ describe Api::Auth::FeedsController do
 
   let(:feed_hash) do
     {
-      slug: "test-slug"
+      slug: "test-slug",
+      title: "test feed"
     }
   end
 
@@ -53,6 +54,7 @@ describe Api::Auth::FeedsController do
       it "can create a new feed with tokens" do
         token_hash = {
           slug: "token-slug",
+          title: "token feed",
           tokens: [
             {token: "tok3", label: "tok3", expires: "2023-02-01"},
             {token: "tok4", label: "tok4"}

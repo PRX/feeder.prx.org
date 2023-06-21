@@ -1,4 +1,9 @@
-<%= form_with(url: podcast_feed_path(podcast, feed), model: feed, html: {autocomplete: "off"}, data: {controller: "unsaved disable", unsaved_changed_value: feed.changed?}, unsaved_confirm_value: t(".confirm")) do |form| %>
+<% model = feed.new_record? ? [feed.podcast, feed] : feed %>
+<% url = feed.new_record? ? podcast_feeds_path(feed.podcast) : podcast_feed_path(feed.podcast, feed) %>
+<% method = feed.new_record? ? :post : :put %>
+<% data = {controller: "unsaved disable", unsaved_changed_value: feed.changed?, unsaved_confirm_value: t(".confirm")} %>
+
+<%= form_with(url: url, model: model, method: method, html: {autocomplete: "off"}, data: data) do |form| %>
   <div class="row mt-4">
     <div class="col-lg-8">
       <div class="row">
@@ -12,9 +17,12 @@
         </div>
       </div>
       <% unless feed.default? %>
-        <%= render "form_image", podcast: podcast, feed: feed, form: form %>
+        <div class="row">
+          <div class="col-12">
+            <%= render "form_image", podcast: podcast, feed: feed, form: form %>
+          </div>
+        </div>
       <% end %>
     </div>
   </div>
-
 <% end %>
