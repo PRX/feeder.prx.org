@@ -109,8 +109,8 @@ export default class extends Controller {
       if (el.classList.contains("ss-main")) {
         // ignore slimselect, which takes a bit to update
         continue
-      } else if (!el.offsetParent) {
-        // ignore non-visible (offset parent will be null)
+      } else if (el.classList.contains("if-visible") && !el.offsetParent) {
+        // ignore SOME non-visible (offset parent will be null)
         continue
       } else {
         return true

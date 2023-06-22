@@ -1,0 +1,2 @@
+class UncutPolicy < MediaResourcePolicy
+end

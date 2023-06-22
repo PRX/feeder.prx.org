@@ -42,7 +42,7 @@
 
     <%# step 2: upload progressbar %>
     <div class="form-floating d-none" data-upload-target="progress">
-      <div class="form-control d-flex align-items-center is-changed">
+      <div class="form-control d-flex align-items-center is-changed if-visible">
         <span class="material-icons text-primary ms-2">upload</span>
         <div class="text-secondary mx-2" data-upload-target="fileName"></div>
 
@@ -63,7 +63,7 @@
       <%= form.hidden_field :original_url, value: nil, data: {upload_target: "originalUrl"} %>
       <%= form.hidden_field :size, value: nil, data: {upload_target: "fileSize"} %>
 
-      <div class="form-control d-flex align-items-center is-changed">
+      <div class="form-control d-flex align-items-center is-changed if-visible">
         <span class="material-icons text-primary ms-2">image</span>
         <div class="text-secondary mx-2 flex-grow-1" data-upload-target="fileName"></div>
         <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>

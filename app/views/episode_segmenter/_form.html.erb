@@ -2,7 +2,7 @@
 <% data = {controller: "unsaved disable", unsaved_changed_value: uncut.changed?, unsaved_confirm_value: t(".confirm")} %>
 
 <%= form_with(url: url, model: uncut, html: {autocomplete: "off"}, data: data) do |form| %>
-  <%= form.hidden_field :segmentation, data: {audio_breakpoints_target: "markersInput", action: "change->unsaved#change"} %>
+  <%= form.text_field :segmentation, class: "d-none", data: {audio_breakpoints_target: "markersInput"} %>
 
   <header class="d-flex justify-content-end my-4">
     <% discard_data = {action: "unsaved#discard", unsaved_target: "discard"} %>
