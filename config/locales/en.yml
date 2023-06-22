@@ -214,6 +214,22 @@ en:
       error: Unable to save
       media_not_ready: Audio not ready
       notice: Episode updated
+  episode_segmenter:
+    form:
+      confirm: Discard unsaved changes?
+      update: Save
+      updating: Saving
+    incomplete:
+      error_html: There was a problem processing <a href="%{url}" data-turbo-frame="_top">your audio file</a>
+      missing_html: You haven't uploaded an <a href="%{url}" data-turbo-frame="_top">audio file</a> yet
+      processing_html: Your <a href="%{url}" data-turbo-frame="_top">audio file</a> is still processing
+    segmenter:
+      label_prefix: Midroll
+    show:
+      title: Audio Segmenter
+    update:
+      error: Unable to save
+      notice: Segments updated
   feeds:
     form_custom_fields:
       headers:

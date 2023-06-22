@@ -34,7 +34,8 @@ class Tasks::CopyMediaTask < ::Task
              Mode: "AWS/S3",
              BucketName: ENV["FEEDER_STORAGE_BUCKET"],
              ObjectKey: porter_escape(media_resource.waveform_path)
-           }
+           },
+           WaveformPointBitDepth: 8
          }
        end)
     ].compact
