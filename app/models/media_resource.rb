@@ -9,6 +9,8 @@ class MediaResource < ApplicationRecord
 
   acts_as_paranoid
 
+  serialize :segmentation, JSON
+
   enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
 
   before_validation :initialize_attributes, on: :create

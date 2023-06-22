@@ -1,8 +1,6 @@
 class Uncut < MediaResource
   after_save :cut_contents
 
-  serialize :segmentation, JSON
-
   validates :medium, inclusion: {in: %w[audio]}, if: :status_complete?
   validate :validate_segmentation
 
