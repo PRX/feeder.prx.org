@@ -96,7 +96,8 @@ describe PublishingPipelineState do
     it "returns expired publishing pipelines" do
       pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       pa2 = PublishingPipelineState.start!(podcast)
-      assert_equal [pa1, pa2], PublishingPipelineState.unfinished_pipelines
+
+      assert_equal [pa1, pa2], PublishingPipelineState.unfinished_pipelines.sort
       assert_equal [], PublishingPipelineState.expired_pipelines
 
       refute PublishingPipelineState.expired?(podcast)
@@ -108,11 +109,11 @@ describe PublishingPipelineState do
 
       # and times out
       pa2.update_column(:created_at, 30.minutes.ago)
-      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
+      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines.sort
       assert PublishingPipelineState.expired?(podcast)
 
       pa2.update_column(:created_at, 2.hours.ago)
-      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
+      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines.sort
       assert PublishingPipelineState.expired?(podcast)
     end
 
