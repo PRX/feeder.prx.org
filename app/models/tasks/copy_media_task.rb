@@ -10,35 +10,11 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def porter_tasks
-    [
-      {
-        Type: "Inspect"
-      },
-      {
-        Type: "Copy",
-        Mode: "AWS/S3",
-        BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-        ObjectKey: porter_escape(media_resource.path),
-        ContentType: "REPLACE",
-        Parameters: {
-          CacheControl: "max-age=86400",
-          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
-        }
-      },
-      (if media_resource.generate_waveform?
-         {
-           Type: "Waveform",
-           Generator: "BBC/audiowaveform/v1.x",
-           DataFormat: "JSON",
-           Destination: {
-             Mode: "AWS/S3",
-             BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-             ObjectKey: porter_escape(media_resource.waveform_path)
-           },
-           WaveformPointBitDepth: 8
-         }
-       end)
-    ].compact
+    tasks = [{Type: "Inspect"}]
+    tasks << porter_copy_task unless media_resource.slice?
+    tasks << porter_slice_task if media_resource.slice?
+    tasks << porter_waveform_task if media_resource.generate_waveform?
+    tasks
   end
 
   def update_media_resource
@@ -70,5 +46,54 @@ class Tasks::CopyMediaTask < ::Task
     end
 
     media_resource.save!
+  end
+
+  private
+
+  def porter_inspect_task
+    {Type: "Inspect"}
+  end
+
+  def porter_copy_task
+    {
+      Type: "Copy",
+      Mode: "AWS/S3",
+      BucketName: ENV["FEEDER_STORAGE_BUCKET"],
+      ObjectKey: porter_escape(media_resource.path),
+      ContentType: "REPLACE",
+      Parameters: {
+        CacheControl: "max-age=86400",
+        ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
+      }
+    }
+  end
+
+  def porter_slice_task
+    {
+      Type: "Transcode",
+      Destination: {
+        Mode: "AWS/S3",
+        BucketName: ENV["FEEDER_STORAGE_BUCKET"],
+        ObjectKey: porter_escape(media_resource.path)
+      },
+      FFmpeg: {
+        InputFileOptions: media_resource.slice_start.nil? ? "" : "-ss #{media_resource.slice_start}",
+        OutputFileOptions: media_resource.slice_end.nil? ? "" : "-t #{media_resource.slice_end}"
+      }
+    }
+  end
+
+  def porter_waveform_task
+    {
+      Type: "Waveform",
+      Generator: "BBC/audiowaveform/v1.x",
+      DataFormat: "JSON",
+      Destination: {
+        Mode: "AWS/S3",
+        BucketName: ENV["FEEDER_STORAGE_BUCKET"],
+        ObjectKey: porter_escape(media_resource.waveform_path)
+      },
+      WaveformPointBitDepth: 8
+    }
   end
 end

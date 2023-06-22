@@ -103,6 +103,10 @@ class MediaResource < ApplicationRecord
     false
   end
 
+  def slice?
+    false
+  end
+
   def replace_resources!
   end
 

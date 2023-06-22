@@ -21,6 +21,10 @@ class Content < MediaResource
     end
   end
 
+  def slice?
+    true
+  end
+
   def slice_start
     segmentation.try(:[], 0)
   end
