@@ -21,15 +21,20 @@ module Apple
     SOURCE_URL_EXP_BUFFER = 10.minutes
 
     def self.reset_source_urls(api, episodes)
-      containers = episodes.map(&:podcast_container)
-      containers = containers.compact.select(&:needs_delivery?)
+      episodes = episodes.select { |ep| ep.podcast_container.present? }
+      episodes = episodes.select { |ep| ep.podcast_container.needs_delivery? }
 
-      containers.map do |container|
+      episodes.map do |episode|
+        container = episode.container
+
         Rails.logger.info("Resetting source url for podcast container",
           podcast_container_id: container.id,
+          source_size: container.source_size,
           source_url: container.source_url)
 
-        container.update!(source_url: nil, source_size: nil)
+        # Back to DTR to pick up fresh arrangements:
+        container.reset_source_metadata!(episode.enclosure_url)
+
         # mark them for re-upload
         container.podcast_deliveries.destroy_all
       end.compact
@@ -38,6 +43,7 @@ module Apple
     def self.update_podcast_container_file_metadata(api, episodes)
       containers = episodes.map(&:podcast_container)
       raise "Missing podcast container for episode" if containers.any?(&:nil?)
+      containers = containers.filter(&:needs_file_metadata?)
 
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
 
@@ -260,6 +266,19 @@ module Apple
       # If there are no deliveries, then the code that polls/checks the delivery
       # status will fail. So we need to create a delivery.
       podcast_deliveries.empty?
+    end
+
+    def reset_source_metadata!(new_enclosure_url)
+      update!(
+        source_url: nil,
+        source_size: nil,
+        source_filename: nil,
+        enclosure_url: new_enclosure_url
+      )
+    end
+
+    def needs_file_metadata?
+      source_url.nil? || source_size.nil? || source_filename.nil?
     end
   end
 end

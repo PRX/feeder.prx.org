@@ -25,6 +25,63 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
   let(:api) { build(:apple_api) }
 
+  describe "the DTR / CDN redirect flow" do
+    let(:pc) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
+    before do
+      pc.update!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+    end
+    describe "#reset_source_metadata!" do
+      it "clears out the fields" do
+        assert pc.source_filename.present?
+        assert pc.source_url.present?
+        assert pc.source_size.present?
+
+        pc.reset_source_metadata!("new_enclosure_url")
+
+        refute pc.source_filename.present?
+        refute pc.source_url.present?
+        refute pc.source_size.present?
+
+        assert_equal "new_enclosure_url", pc.enclosure_url
+      end
+    end
+
+    describe "#needs_file_metadata?" do
+      it "is congruent with reset_source_metadata!" do
+        refute pc.needs_file_metadata?
+
+        pc.reset_source_metadata!("new_enclosure_url")
+
+        assert pc.needs_file_metadata?
+      end
+    end
+
+    describe ".reset_source_urls" do
+      it "needs delivery in order to be reset" do
+        apple_episode.podcast_container.stub(:needs_delivery?, false) do
+          Apple::PodcastContainer.reset_source_urls(api, [apple_episode])
+        end
+
+        apple_episode.podcast_container.reload
+        refute apple_episode.podcast_container.source_url.nil?
+        refute apple_episode.podcast_container.source_size.nil?
+        refute apple_episode.podcast_container.source_filename.nil?
+
+        apple_episode.stub(:enclosure_url, "http://this-is-new") do
+          apple_episode.podcast_container.stub(:needs_delivery?, true) do
+            Apple::PodcastContainer.reset_source_urls(api, [apple_episode])
+          end
+        end
+
+        apple_episode.podcast_container.reload
+        assert apple_episode.podcast_container.source_url.nil?
+        assert apple_episode.podcast_container.source_size.nil?
+        assert apple_episode.podcast_container.source_filename.nil?
+        assert_equal "http://this-is-new", apple_episode.podcast_container.enclosure_url
+      end
+    end
+  end
+
   describe ".update_podcast_container_file_metadata" do
     it "should raise if any of the episodes lack a container" do
       apple_episode.stub(:podcast_container, nil) do
