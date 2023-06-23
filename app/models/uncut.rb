@@ -25,23 +25,34 @@ class Uncut < MediaResource
   private
 
   def valid_segments?(segs)
-    segs.is_a?(Array) && segmentation.all? { |s| valid_segment?(s) }
+    segs.is_a?(Array) && segmentation.each_with_index.all? { |s, i| valid_segment?(s, i, segs.length) }
   end
 
   def ordered_segments?(segs)
-    segs.flatten == segs.flatten.sort
+    segs.flatten.compact == segs.flatten.compact.sort
   end
 
   # must be either a single number (cut point) or array of 2 numbers (cut range)
-  def valid_segment?(s)
-    if valid_number?(s)
+  def valid_segment?(segment, index, length)
+    if valid_number?(segment)
       true
+    elsif segment.is_a?(Array) && segment.length == 2
+      s1, s2 = segment
+
+      # first/last segments can have a nil, to indicate trimming the file
+      if index == 0
+        (valid_number?(s1) || s1.nil?) && valid_number?(s2)
+      elsif index == length - 1
+        valid_number?(s1) && (valid_number?(s2) || s2.nil?)
+      else
+        valid_number?(s1) && valid_number?(s2)
+      end
     else
-      s.is_a?(Array) && s.length == 2 && valid_number?(s[0]) && valid_number?(s[1])
+      false
     end
   end
 
   def valid_number?(n)
-    n.is_a?(Numeric) && (n.zero? || n.positive?)
+    n.is_a?(Numeric) && n.positive?
   end
 end
