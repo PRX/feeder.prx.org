@@ -40,7 +40,6 @@
   </div>
 </div>
 
-
 <%= turbo_frame_tag "episode-audio-segmenter" do %>
   <% if @episode.uncut&.status_complete? %>
     <%= render "segmenter", episode: @episode, uncut: @uncut %>
