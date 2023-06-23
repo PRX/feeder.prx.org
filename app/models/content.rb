@@ -22,7 +22,7 @@ class Content < MediaResource
   end
 
   def slice?
-    true
+    segmentation.present?
   end
 
   def slice_start

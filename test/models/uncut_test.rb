@@ -3,6 +3,42 @@ require "test_helper"
 describe Uncut do
   let(:uncut) { build_stubbed(:uncut) }
 
+  describe "#cut_contents" do
+    let(:episode) { create(:episode, medium: "uncut", segment_count: 3) }
+    let(:segs) { [[nil, 1], [2, 3], [3, nil]] }
+    let(:uncut) { create(:uncut, episode: episode, status: "complete", segmentation: segs) }
+
+    it "creates new contents" do
+      assert_empty episode.contents
+
+      uncut.slice_contents
+      assert_equal 3, episode.contents.size
+      assert_equal [1, 2, 3], episode.contents.pluck(:position)
+      assert_equal [uncut.original_url], episode.contents.pluck(:original_url).uniq
+      assert_equal segs, episode.contents.pluck(:segmentation)
+      assert_equal [true, true, true], episode.contents.map(&:changed?)
+    end
+
+    it "updates existing contents" do
+      uncut.slice_contents!
+
+      uncut.segmentation[0] = [0.5, 1]
+      uncut.segmentation[2] = [3.5, nil]
+      episode.contents[0].update(status: "complete", medium: "audio")
+      uncut.slice_contents
+
+      assert_equal 5, episode.contents.size
+      assert_equal [1, 2, 3, 1, 3], episode.contents.pluck(:position)
+      assert_equal [uncut.original_url], episode.contents.pluck(:original_url).uniq
+      assert_equal segs + [[0.5, 1], [3.5, nil]], episode.contents.pluck(:segmentation)
+      assert_equal [false, false, false, true, true], episode.contents.map(&:changed?)
+
+      # NOTE: since only contents[0] was completed, it's the only one marked replaced
+      assert_equal [true, false, false, false, false], episode.contents.map(&:marked_for_replacement?)
+      assert_equal [true, false, true, false, false], episode.contents.map(&:marked_for_destruction?)
+    end
+  end
+
   describe "#valid?" do
     it "must be audio when complete" do
       assert uncut.valid?
@@ -65,6 +101,33 @@ describe Uncut do
 
       uncut.segmentation = [[0.5, 2.2], [1, 3.9999]]
       refute uncut.valid?
+    end
+  end
+
+  describe "#segmentation_ready?" do
+    it "must be status complete" do
+      uncut.segmentation = [[1, 2.2]]
+      refute uncut.segmentation_ready?
+
+      uncut.status = "complete"
+      assert uncut.segmentation_ready?
+    end
+
+    it "must be valid" do
+      uncut.status = "complete"
+      uncut.segmentation = [[1, 2.2]]
+      uncut.medium = "video"
+      refute uncut.segmentation_ready?
+    end
+
+    it "checks the episode segment count" do
+      uncut.status = "complete"
+      uncut.segmentation = [[1, 2.2], [3, nil]]
+      uncut.episode.segment_count = 3
+      refute uncut.segmentation_ready?
+
+      uncut.episode.segment_count = 2
+      assert uncut.segmentation_ready?
     end
   end
 

@@ -1,13 +1,18 @@
 class Uncut < MediaResource
-  after_save :cut_contents
-
   validates :medium, inclusion: {in: %w[audio]}, if: :status_complete?
   validate :validate_segmentation
 
-  def cut_contents
-    if status_complete? && segmentation.present? && segmentation_previously_changed?
-      # TODO
+  def slice_contents
+    if segmentation_ready?
+      episode.media = segmentation.map do |seg|
+        Content.new(original_url: original_url, segmentation: seg)
+      end
     end
+  end
+
+  def slice_contents!
+    slice_contents
+    episode.save! if episode.contents.any?(&:changed?)
   end
 
   def generate_waveform?
@@ -19,6 +24,19 @@ class Uncut < MediaResource
 
     unless valid_segments?(segmentation) && ordered_segments?(segmentation)
       errors.add(:segmentation, :bad_segmentation, message: "bad segmentation")
+    end
+  end
+
+  # TODO: not sure if/how to make this a validation - will figure out the UX first
+  def segmentation_ready?
+    if status_complete? && valid? && segmentation.present?
+      if episode.segment_count.nil?
+        segmentation.present?
+      else
+        segmentation&.count.to_i == episode.segment_count
+      end
+    else
+      false
     end
   end
 
