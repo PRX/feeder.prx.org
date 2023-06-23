@@ -2,7 +2,7 @@ class Content < MediaResource
   after_save :publish_episode!
 
   validate :validate_episode_medium, if: :status_complete?
-  validate :validate_slices
+  validate :validate_segmentation
 
   def validate_episode_medium
     if episode&.medium_video?
@@ -12,11 +12,11 @@ class Content < MediaResource
     end
   end
 
-  def validate_slices
+  def validate_segmentation
     return if segmentation.nil?
 
-    # slices can be [1.23, 4.56] or [nil, 4.56] or [1.23, nil]
-    unless slices_array? && slices_numeric? && slices_ordered?
+    # can be [1.23, 4.56] or [nil, 4.56] or [1.23, nil]
+    unless array_segments? && numeric_segments? && ordered_segments?
       errors.add(:segmentation, :bad_slices, message: "bad slices")
     end
   end
@@ -55,15 +55,15 @@ class Content < MediaResource
 
   private
 
-  def slices_array?
+  def array_segments?
     segmentation.is_a?(Array) && segmentation.length == 2 && segmentation.compact.length >= 1
   end
 
-  def slices_numeric?
+  def numeric_segments?
     [slice_start, slice_end].compact.all? { |s| s.is_a?(Numeric) && s.positive? }
   end
 
-  def slices_ordered?
+  def ordered_segments?
     slice_start.nil? || slice_end.nil? || (slice_start < slice_end)
   end
 end

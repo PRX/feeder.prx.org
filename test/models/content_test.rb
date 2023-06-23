@@ -33,7 +33,7 @@ describe Content do
     end
   end
 
-  describe "#validate_slices" do
+  describe "#validate_segmentation" do
     it "validates an ordered array of 2 numbers" do
       assert_nil c1.segmentation
       assert c1.valid?
