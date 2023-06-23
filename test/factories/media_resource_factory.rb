@@ -27,7 +27,7 @@ FactoryBot.define do
     end
 
     factory :uncut, class: Uncut do
-      segmentation { [1.23, 4.56] }
+      segmentation { [[1.23, 4.56]] }
       task_count { 0 }
     end
   end
