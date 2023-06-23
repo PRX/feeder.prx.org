@@ -12,7 +12,8 @@ class EpisodeSegmenterController < ApplicationController
 
     respond_to do |format|
       if @uncut&.save
-        @uncut.copy_media
+        @uncut.slice_contents!
+        @episode.copy_media
         format.html { redirect_to episode_segmenter_url(@episode), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
@@ -30,12 +31,12 @@ class EpisodeSegmenterController < ApplicationController
   end
 
   def uncut_params
-    params.fetch(:uncut, {}).permit(:segmentation).tap do |p|
-      p[:segmentation] = parse_segmentation(p[:segmentation]) if p.key?(:segmentation)
+    params.fetch(:uncut, {}).permit(:ad_breaks).tap do |p|
+      p[:ad_breaks] = parse_ad_breaks(p[:ad_breaks]) if p.key?(:ad_breaks)
     end
   end
 
-  def parse_segmentation(str)
+  def parse_ad_breaks(str)
     if str.blank?
       nil
     else

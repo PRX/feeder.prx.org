@@ -1,7 +1,7 @@
 <div data-controller="audio-breakpoints waveform-inspector"
   data-audio-breakpoints-label-prefix-value="<%= t(".label_prefix") %>"
   data-audio-breakpoints-segment-count-value="<%= episode.segment_count %>"
-  data-audio-breakpoints-markers-value="<%= (uncut&.segmentation || []).to_json %>"
+  data-audio-breakpoints-markers-value="<%= (uncut&.ad_breaks || []).to_json %>"
   data-audio-breakpoints-target="waveformInspector"
   data-waveform-inspector-playing-class="player--playing"
   data-waveform-inspector-audio-url-value="<%= uncut&.url %>"

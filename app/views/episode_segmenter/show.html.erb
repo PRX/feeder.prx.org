@@ -2,6 +2,45 @@
 
 <%= render "episodes/tabs" %>
 
+<div class="card" style="width: 40rem;">
+  <div class="card-header">
+    Debugging...
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">
+      <% if @uncut.segmentation_ready? %>
+        Segmentation ready!
+      <% else %>
+        Not ready yet
+      <% end %>
+    </h5>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Position</th>
+          <th scope="col">Filename</th>
+          <th scope="col">Slice Start</th>
+          <th scope="col">Slice End</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @episode.contents.each do |c| %>
+          <tr>
+            <td><%= c.position %></td>
+            <td><%= c.file_name %></td>
+            <td><%= c.slice_start %></td>
+            <td><%= c.slice_end %></td>
+            <td><%= c.status %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
 <%= turbo_frame_tag "episode-audio-segmenter" do %>
   <% if @episode.uncut&.status_complete? %>
     <%= render "segmenter", episode: @episode, uncut: @uncut %>

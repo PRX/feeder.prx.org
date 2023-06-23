@@ -68,6 +68,7 @@ class Tasks::CopyMediaTask < ::Task
     }
   end
 
+  # TODO: what happens to id3 on sliced files? will the 1st segment still have it?
   def porter_slice_task
     {
       Type: "Transcode",
