@@ -31,7 +31,15 @@ module Apple
     end
 
     def episodes_to_sync
-      show.episodes
+      filter_episodes(show.episodes)
+    end
+
+    def filter_episodes(eps)
+      # Reject episodes if the audio is marked as uploaded/complete
+      # or if the episode is a video
+      eps
+        .reject(&:synced_with_apple?)
+        .reject(&:video_content_type?)
     end
 
     def poll_all_episodes!
@@ -47,9 +55,6 @@ module Apple
       end
 
       Rails.logger.tagged("Apple::Publisher#poll!") do
-        # Reject episodes if the audio is marked as uploaded/complete
-        eps = eps.reject(&:synced_with_apple?)
-
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           poll_episodes!(eps)
           poll_podcast_containers!(eps)
@@ -64,9 +69,6 @@ module Apple
       raise "Missing Show!" unless show.apple_id.present?
 
       Rails.logger.tagged("Apple::Publisher#publish!") do
-        # Reject episodes if the audio is marked as uploaded/complete
-        eps = eps.reject(&:synced_with_apple?)
-
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           # only create if needed
           sync_episodes!(eps)
