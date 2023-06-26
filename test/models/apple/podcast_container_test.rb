@@ -59,7 +59,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     describe ".reset_source_file_metadata" do
       it "needs delivery in order to be reset" do
         apple_episode.podcast_container.stub(:needs_delivery?, false) do
-          Apple::PodcastContainer.reset_source_file_metadata(api, [apple_episode])
+          Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
         end
 
         apple_episode.podcast_container.reload
@@ -69,7 +69,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
         apple_episode.stub(:enclosure_url, "http://this-is-new") do
           apple_episode.podcast_container.stub(:needs_delivery?, true) do
-            Apple::PodcastContainer.reset_source_file_metadata(api, [apple_episode])
+            Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
           end
         end
 
