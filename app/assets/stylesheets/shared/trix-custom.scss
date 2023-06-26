@@ -1,0 +1,27 @@
+#blank-toolbar {
+  display: none;
+}
+
+trix-toolbar span.trix-button-group--file-tools {
+  display: none;
+}
+
+trix-editor.trix-content {
+  border: 1px solid $input-border-color;
+
+  blockquote,
+  div,
+  h1,
+  h2,
+  ol,
+  p,
+  pre,
+  ul {
+    margin-bottom: 1rem;
+  }
+}
+
+trix-editor.trix-content[contenteditable="false"] {
+  background: $input-disabled-bg;
+  cursor: default;
+}

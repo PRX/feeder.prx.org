@@ -113,6 +113,22 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     select(method, choices, {include_blank: true, selected: selected}, add_search_action(html_options))
   end
 
+  def trix_editor(method, options = {})
+    disabled_toolbar = ""
+    options[:class] = "form-control" unless options.key?(:class)
+    if disabled?
+      disabled_toolbar_id = "trix-blank-toolbar_#{method}"
+      disabled_toolbar = @template.content_tag(:div, nil, id: disabled_toolbar_id)
+      options["toolbar"] = disabled_toolbar_id
+      options["contentEditable"] = !disabled?
+    end
+    [disabled_toolbar, super(method, options)].join.html_safe
+  end
+
+  def disabled?
+    object && !@template.policy(object).create_or_update?
+  end
+
   private
 
   def blank?(method, opts)
@@ -183,7 +199,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def add_disabled(opts)
-    if !opts.key?(:disabled) && object && !@template.policy(object).create_or_update?
+    if !opts.key?(:disabled) && disabled?
       opts[:disabled] = true
     end
   end
