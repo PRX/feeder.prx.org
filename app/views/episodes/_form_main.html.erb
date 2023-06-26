@@ -26,11 +26,12 @@
 </div>
 
 <div class="col-12 mb-4 prx-field-group">
-  <div class="form-floating textarea-help">
-    <%= form.text_area :description %>
-    <%= form.label :description %>
+  <div class="form-floating">
+    <div>
+      <%= form.label :description %>
+      <%= form.trix_editor :description %>
+    </div>
   </div>
-
   <button type="button" class="prx-btn-help prx-btn-helparea" data-bs-toggle="popover" data-bs-content="<%= t(".help.summary") %>"><span class="material-icons">help</span></button>
 </div>
 
