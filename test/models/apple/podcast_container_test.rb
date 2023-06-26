@@ -56,10 +56,10 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
 
-    describe ".reset_source_urls" do
+    describe ".reset_source_file_metadata" do
       it "needs delivery in order to be reset" do
         apple_episode.podcast_container.stub(:needs_delivery?, false) do
-          Apple::PodcastContainer.reset_source_urls(api, [apple_episode])
+          Apple::PodcastContainer.reset_source_file_metadata(api, [apple_episode])
         end
 
         apple_episode.podcast_container.reload
@@ -69,7 +69,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
         apple_episode.stub(:enclosure_url, "http://this-is-new") do
           apple_episode.podcast_container.stub(:needs_delivery?, true) do
-            Apple::PodcastContainer.reset_source_urls(api, [apple_episode])
+            Apple::PodcastContainer.reset_source_file_metadata(api, [apple_episode])
           end
         end
 
@@ -82,11 +82,11 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
   end
 
-  describe ".update_podcast_container_file_metadata" do
+  describe ".probe_source_file_metadata" do
     it "should raise if any of the episodes lack a container" do
       apple_episode.stub(:podcast_container, nil) do
         assert_raises(RuntimeError, "missing podcast container") do
-          Apple::PodcastContainer.update_podcast_container_file_metadata(api, [apple_episode])
+          Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
         end
       end
     end

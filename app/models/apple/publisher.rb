@@ -174,7 +174,7 @@ module Apple
         # The 'reset' in this case means fetching new CDN urls for the audio and
         # making sure that we will HEAD their file sizes for later upload.
         # Only reset if we need delivery.
-        reset = Apple::PodcastContainer.reset_source_urls(api, eps)
+        reset = Apple::PodcastContainer.reset_source_file_metadata(eps)
         Rails.logger.info("Reset podcast containers for expired source urls.", {reset_count: reset.length})
 
         res = Apple::PodcastContainer.create_podcast_containers(api, eps)
@@ -183,7 +183,7 @@ module Apple
         res = Apple::Episode.update_audio_container_reference(api, eps)
         Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
 
-        res = Apple::PodcastContainer.update_podcast_container_file_metadata(api, eps)
+        res = Apple::PodcastContainer.probe_source_file_metadata(api, eps)
         Rails.logger.info("Updated remote file metadata on podcast containers.", {count: res.length})
       end
     end

@@ -20,7 +20,7 @@ module Apple
     FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"
     SOURCE_URL_EXP_BUFFER = 10.minutes
 
-    def self.reset_source_urls(api, episodes)
+    def self.reset_source_file_metadata(episodes)
       episodes = episodes.select { |ep| ep.podcast_container.present? }
       episodes = episodes.select { |ep| ep.podcast_container.needs_delivery? }
 
@@ -40,7 +40,7 @@ module Apple
       end.compact
     end
 
-    def self.update_podcast_container_file_metadata(api, episodes)
+    def self.probe_source_file_metadata(api, episodes)
       containers = episodes.map(&:podcast_container)
       raise "Missing podcast container for episode" if containers.any?(&:nil?)
       containers = containers.filter(&:needs_file_metadata?)
