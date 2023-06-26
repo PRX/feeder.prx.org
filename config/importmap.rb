@@ -11,6 +11,7 @@ pin "popper", to: "popper.js", preload: true
 pin "bootstrap", to: "bootstrap.min.js", preload: true
 pin "flatpickr", preload: true # @4.6.13
 pin "bootstrap5-tags", preload: true # @1.5.4
+pin "trix", preload: true # @2.0.5
 pin "konva", to: "https://ga.jspm.io/npm:konva@8.4.2/lib/index.js", preload: true
 pin "peaks.js", to: "https://ga.jspm.io/npm:peaks.js@3.0.0-beta.6/dist/peaks.esm.js", preload: true
 pin "waveform-data", to: "https://ga.jspm.io/npm:waveform-data@4.3.0/dist/waveform-data.esm.js", preload: true
