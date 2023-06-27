@@ -156,33 +156,24 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
 
-    it "should update the source_url and source_file_name" do
+    it "should not update the source_url and source_file_name" do
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-          pc1 = nil
-          apple_episode.stub(:enclosure_url, "https://podcast.source/1234") do
-            apple_episode.stub(:enclosure_filename, "1234") do
-              pc1 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
-                podcast_container_json_row)
-              assert_equal pc1.enclosure_url, "https://podcast.source/1234"
-              assert_nil pc1.source_url
-              assert_equal pc1.source_filename, "1234"
-            end
-          end
+          # It does not touch the source_url or source_filename on create
+          pc1 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+            podcast_container_json_row)
+          assert_nil pc1.enclosure_url
+          assert_nil pc1.source_url
+          assert_nil pc1.source_filename
 
-          pc2 = nil
-          apple_episode.stub(:enclosure_url, "https://another.source/5678") do
-            apple_episode.stub(:enclosure_filename, "5678") do
-              pc2 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
-                podcast_container_json_row)
-            end
-          end
+          pc2 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+            podcast_container_json_row)
 
           assert pc1 == pc2
-
-          assert_equal pc2.enclosure_url, "https://another.source/5678"
-          assert_nil pc2.source_url
-          assert_equal pc2.source_filename, "5678"
+          # It does not touch the source_url or source_filename on update
+          assert_nil pc1.enclosure_url
+          assert_nil pc1.source_url
+          assert_nil pc1.source_filename
         end
       end
     end

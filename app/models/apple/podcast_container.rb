@@ -108,17 +108,14 @@ module Apple
           episode_id: episode.feeder_id,
           vendor_id: episode.audio_asset_vendor_id).first)
 
-          pc.update(enclosure_url: episode.enclosure_url,
-            source_filename: episode.enclosure_filename,
-            updated_at: Time.now.utc)
+          pc.touch
           [pc, :updated]
         else
           pc = create!(apple_episode_id: episode.apple_id,
             external_id: external_id,
-            source_filename: episode.enclosure_filename,
-            enclosure_url: episode.enclosure_url,
             vendor_id: episode.audio_asset_vendor_id,
             episode_id: episode.feeder_id)
+
           [pc, :created]
         end
 
