@@ -36,13 +36,17 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         assert pc.source_url.present?
         assert pc.source_size.present?
 
-        pc.reset_source_metadata!("new_enclosure_url")
+        apple_episode.stub(:enclosure_url, "http://something/transistor") do
+          pc.reset_source_metadata!(apple_episode)
+        end
 
-        refute pc.source_filename.present?
+        pc.reload
+        assert pc.source_filename.present?
         refute pc.source_url.present?
         refute pc.source_size.present?
 
-        assert_equal "new_enclosure_url", pc.enclosure_url
+        assert_equal "transistor", pc.source_filename
+        assert_equal "http://something/transistor", pc.enclosure_url
       end
     end
 
@@ -50,7 +54,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       it "is congruent with reset_source_metadata!" do
         refute pc.needs_file_metadata?
 
-        pc.reset_source_metadata!("new_enclosure_url")
+        pc.reset_source_metadata!(apple_episode)
 
         assert pc.needs_file_metadata?
       end
@@ -67,17 +71,19 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         refute apple_episode.podcast_container.source_size.nil?
         refute apple_episode.podcast_container.source_filename.nil?
 
-        apple_episode.stub(:enclosure_url, "http://this-is-new") do
-          apple_episode.podcast_container.stub(:needs_delivery?, true) do
-            Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
+        apple_episode.stub(:enclosure_filename, "new") do
+          apple_episode.stub(:enclosure_url, "http://this-is-new") do
+            apple_episode.podcast_container.stub(:needs_delivery?, true) do
+              Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
+            end
           end
         end
 
         apple_episode.podcast_container.reload
         assert apple_episode.podcast_container.source_url.nil?
         assert apple_episode.podcast_container.source_size.nil?
-        assert apple_episode.podcast_container.source_filename.nil?
         assert_equal "http://this-is-new", apple_episode.podcast_container.enclosure_url
+        assert_equal "new", apple_episode.podcast_container.source_filename
       end
     end
   end

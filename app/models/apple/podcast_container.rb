@@ -33,7 +33,7 @@ module Apple
           source_url: container.source_url)
 
         # Back to DTR to pick up fresh arrangements:
-        container.reset_source_metadata!(episode.enclosure_url)
+        container.reset_source_metadata!(episode)
 
         # mark them for re-upload
         container.podcast_deliveries.destroy_all
@@ -268,12 +268,12 @@ module Apple
       podcast_deliveries.empty?
     end
 
-    def reset_source_metadata!(new_enclosure_url)
+    def reset_source_metadata!(apple_ep)
       update!(
         source_url: nil,
         source_size: nil,
-        source_filename: nil,
-        enclosure_url: new_enclosure_url
+        source_filename: apple_ep.enclosure_filename,
+        enclosure_url: apple_ep.enclosure_url
       )
     end
 
