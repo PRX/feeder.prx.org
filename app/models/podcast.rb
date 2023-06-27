@@ -6,6 +6,9 @@ class Podcast < ApplicationRecord
   FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
 
   include TextSanitizer
+  include AdvisoryLocks
+
+  acts_as_paranoid
 
   serialize :categories, JSON
   serialize :keywords, JSON
@@ -40,8 +43,6 @@ class Podcast < ApplicationRecord
   }.freeze
   validates :explicit, inclusion: {in: VALID_EXPLICITS}, allow_nil: false
 
-  acts_as_paranoid
-
   before_validation :set_defaults, :sanitize_text
 
   scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") }
@@ -50,6 +51,11 @@ class Podcast < ApplicationRecord
   def self.by_prx_series(series)
     series_uri = series.links["self"].href
     Podcast.find_by(prx_uri: series_uri)
+  end
+
+  def self.release!(options = {})
+    PublishingPipelineState.expire_pipelines!
+    Episode.release_episodes!(options)
   end
 
   def set_defaults
@@ -156,15 +162,20 @@ class Podcast < ApplicationRecord
   end
 
   def publish!
-    create_publish_job unless locked?
+    if locked?
+      Rails.logger.warn "Podcast #{id} is locked, skipping publish", {podcast_id: id}
+      return false
+    end
+
+    PublishingPipelineState.start_pipeline!(self)
+  end
+
+  def with_publish_lock(&block)
+    with_advisory_lock(PODCAST_PUBLISHING_ADVISORY_LOCK_TYPE, &block)
   end
 
   def copy_media(force = false)
     feeds.each { |f| f.copy_media(force) }
-  end
-
-  def create_publish_job
-    PublishFeedJob.perform_later(self)
   end
 
   def web_master

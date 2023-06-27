@@ -5,6 +5,7 @@ FactoryBot.define do
     file_name { "feed-rss.xml" }
     audio_format { Hash(f: "flac", b: 16, c: 2, s: 44100) }
 
+    title { "new feed" }
     subtitle { "Goofy laughsters" }
     description { "A goofy fun-time laughcast with doofuses" }
     summary { "Public radio host Jesse Thorn and @midnight writer Jordan Morris goof around" }

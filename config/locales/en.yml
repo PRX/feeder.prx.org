@@ -1,15 +1,30 @@
 defaults:
+  form: &form
+    confirm: Discard unsaved changes?
   form_status: &form_status
     create: Create
+    destroy: Delete
+    destroy_confirm_title: Really Delete?
+    destroy_confirm_body: "Are you sure you want to delete this %{model}? This action cannot be undone."
+    destroy_confirm_yes: Delete
+    destroy_confirm_no: Cancel
     discard: Discard
     new_hint: Unsaved
     title: Status
     update: Save
     updated_at_hint: Last Saved
+    updating: Saving...
+    uploading: Uploading...
   controller_actions:
+    create: &create
+      success: "%{model} created successfully."
+      failure: "There was a problem creating the %{model}."
     update: &update
-      success: "%{model} update successful."
+      success: "%{model} updated successfully."
       failure: "There was a problem updating the %{model}."
+    destroy: &destroy
+      success: "%{model} deleted successfully."
+      failure: "There was a problem deleting the %{model}."
 
 en:
   # general config
@@ -220,6 +235,10 @@ en:
       media_not_ready: Audio not ready
       notice: Episode updated
   feeds:
+    create:
+      <<: *create
+    destroy:
+      <<: *destroy
     form_custom_fields:
       headers:
         overrides: Overrides
@@ -249,6 +268,8 @@ en:
         audio_format: Optionally set an explicit audio format for your episodes. If you leave this blank, we will automatically use the same format as the first audio segment you upload for each episode.
     form_status:
       <<: *form_status
+    form:
+      <<: *form
     helper:
       episode_offset_options:
         "300": 5 minutes

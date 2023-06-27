@@ -1,0 +1,13 @@
+<% content_for :tabs do %>
+  <div class="list-group d-flex col">
+    <% if @episode.persisted? %>
+      <%= tab_link_to "Metadata", edit_episode_path(@episode) %>
+      <% if @episode.medium_uncut? %>
+        <%= tab_link_to "Audio Segmenter", episode_segmenter_path(@episode) %>
+      <% end %>
+      <%= tab_link_to "Embeddable Player", episode_player_path(@episode) %>
+    <% else %>
+      <%= tab_link_to "Metadata", new_podcast_episode_path(@podcast), active: true %>
+    <% end %>
+  </div>
+<% end %>

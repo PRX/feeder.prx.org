@@ -44,6 +44,7 @@ class Feed < ApplicationRecord
   validates :include_zones, placement_zones: true
   validates :include_tags, tag_list: true
   validates :audio_format, audio_format: true
+  validates :title, presence: true, unless: :default?
 
   after_initialize :set_defaults
   before_validation :sanitize_text
