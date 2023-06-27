@@ -17,6 +17,7 @@ class FeedsController < ApplicationController
     authorize @feed
 
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
+    @custom_feeds = @podcast.feeds.custom.order(created_at: :asc)
   end
 
   # POST /feeds
