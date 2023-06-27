@@ -53,25 +53,17 @@ class FeedAdZoneTest < ActiveSupport::TestCase
   describe "setter methods" do
     let(:all_zones) { ["billboard", "house", "ad", "sonic_id"] }
 
-    describe "#add_zone" do
+    describe "#billboard=" do
       it "ignores nil" do
-        refute_equal feed.include_zones, all_zones
-        feed.billboard = ("1")
-        refute_equal feed.include_zones, all_zones
+        assert_nil feed.include_zones
+        feed.billboard = "1"
+        assert_nil feed.include_zones
       end
 
       it "adds to include_zones if zone is checked" do
         feed.include_zones = []
-        feed.billboard = ("1")
+        feed.billboard = "1"
         assert_includes feed.include_zones, "billboard"
-        feed.house = ("1")
-        assert_includes feed.include_zones, "house"
-        feed.paid = ("1")
-        assert_includes feed.include_zones, "ad"
-
-        feed.include_zones = []
-        feed.sonic_id = ("1")
-        assert_includes feed.include_zones, "sonic_id"
       end
 
       it "does not dupe zones if already checked" do
@@ -82,35 +74,145 @@ class FeedAdZoneTest < ActiveSupport::TestCase
       end
 
       it "nils include_zones if all zones are checked" do
-        feed.include_zones = []
-        refute_nil feed.include_zones
-        feed.billboard = ("1")
-        feed.house = ("1")
-        feed.paid = ("1")
-        feed.sonic_id = ("1")
+        feed.include_zones = ["house", "ad", "sonic_id"]
+        feed.billboard = "1"
         assert_nil feed.include_zones
       end
-    end
 
-    describe "#remove_zone" do
-      it "removes the selected zone" do
+      it "removes the selected zone if unchecked" do
         feed.include_zones = all_zones
-
         assert_includes feed.include_zones, "billboard"
         feed.billboard = "0"
         refute_includes feed.include_zones, "billboard"
       end
 
       it "leaves an empty array if all zones are de-selected" do
-        feed.include_zones = all_zones
-
-        assert_equal feed.include_zones.count, 4
-
+        feed.include_zones = ["billboard"]
         feed.billboard = "0"
-        feed.house = "0"
-        feed.paid = "0"
-        feed.sonic_id = "0"
+        refute_nil feed.include_zones
+        assert_empty feed.include_zones
+      end
+    end
 
+    describe "#house=" do
+      it "ignores nil" do
+        assert_nil feed.include_zones
+        feed.house = "1"
+        assert_nil feed.include_zones
+      end
+
+      it "adds to include_zones if zone is checked" do
+        feed.include_zones = []
+        feed.house = "1"
+        assert_includes feed.include_zones, "house"
+      end
+
+      it "does not dupe zones if already checked" do
+        feed.include_zones = ["house"]
+        feed.house = "1"
+        refute_equal feed.include_zones, ["house", "house"]
+        assert_includes feed.include_zones, "house"
+      end
+
+      it "nils include_zones if all zones are checked" do
+        feed.include_zones = ["billboard", "ad", "sonic_id"]
+        feed.house = "1"
+        assert_nil feed.include_zones
+      end
+
+      it "removes the selected zone if unchecked" do
+        feed.include_zones = all_zones
+        assert_includes feed.include_zones, "house"
+        feed.house = "0"
+        refute_includes feed.include_zones, "house"
+      end
+
+      it "leaves an empty array if all zones are de-selected" do
+        feed.include_zones = ["house"]
+        feed.house = "0"
+        refute_nil feed.include_zones
+        assert_empty feed.include_zones
+      end
+    end
+
+    describe "#paid=" do
+      it "ignores nil" do
+        assert_nil feed.include_zones
+        feed.paid = "1"
+        assert_nil feed.include_zones
+      end
+
+      it "adds to include_zones if zone is checked" do
+        feed.include_zones = []
+        feed.paid = "1"
+        assert_includes feed.include_zones, "ad"
+      end
+
+      it "does not dupe zones if already checked" do
+        feed.include_zones = ["ad"]
+        feed.paid = "1"
+        refute_equal feed.include_zones, ["ad", "ad"]
+        assert_includes feed.include_zones, "ad"
+      end
+
+      it "nils include_zones if all zones are checked" do
+        feed.include_zones = ["billboard", "house", "sonic_id"]
+        feed.paid = "1"
+        assert_nil feed.include_zones
+      end
+
+      it "removes the selected zone if unchecked" do
+        feed.include_zones = all_zones
+        assert_includes feed.include_zones, "ad"
+        feed.paid = "0"
+        refute_includes feed.include_zones, "ad"
+      end
+
+      it "leaves an empty array if all zones are de-selected" do
+        feed.include_zones = ["ad"]
+        feed.paid = "0"
+        refute_nil feed.include_zones
+        assert_empty feed.include_zones
+      end
+    end
+
+    describe "#sonic_id=" do
+      it "ignores nil" do
+        assert_nil feed.include_zones
+        feed.sonic_id = "1"
+        assert_nil feed.include_zones
+      end
+
+      it "adds to include_zones if zone is checked" do
+        feed.include_zones = []
+        feed.sonic_id = "1"
+        assert_includes feed.include_zones, "sonic_id"
+      end
+
+      it "does not dupe zones if already checked" do
+        feed.include_zones = ["sonic_id"]
+        feed.sonic_id = "1"
+        refute_equal feed.include_zones, ["sonic_id", "sonic_id"]
+        assert_includes feed.include_zones, "sonic_id"
+      end
+
+      it "nils include_zones if all zones are checked" do
+        feed.include_zones = ["billboard", "house", "ad"]
+        feed.sonic_id = "1"
+        assert_nil feed.include_zones
+      end
+
+      it "removes the selected zone if unchecked" do
+        feed.include_zones = all_zones
+        assert_includes feed.include_zones, "sonic_id"
+        feed.sonic_id = "0"
+        refute_includes feed.include_zones, "sonic_id"
+      end
+
+      it "leaves an empty array if all zones are de-selected" do
+        feed.include_zones = ["sonic_id"]
+        feed.sonic_id = "0"
+        refute_nil feed.include_zones
         assert_empty feed.include_zones
       end
     end
