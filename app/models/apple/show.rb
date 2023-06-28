@@ -31,6 +31,10 @@ module Apple
       api.unwrap_response(resp)
     end
 
+    def inspect
+      "#<Apple:Show:#{object_id} show_id=#{try(:apple_id) || "nil"}>"
+    end
+
     def initialize(api:, public_feed:, private_feed:)
       @private_feed = private_feed
       @public_feed = public_feed
