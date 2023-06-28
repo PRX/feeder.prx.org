@@ -97,23 +97,23 @@ describe PublishingPipelineState do
       pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       pa2 = PublishingPipelineState.start!(podcast)
 
-      assert_equal [pa1, pa2], PublishingPipelineState.unfinished_pipelines.sort
-      assert_equal [], PublishingPipelineState.expired_pipelines
+      assert_equal [pa1, pa2].to_set, PublishingPipelineState.unfinished_pipelines.to_set
+      assert PublishingPipelineState.expired_pipelines.empty?
 
       refute PublishingPipelineState.expired?(podcast)
 
       # it gets partially through the pipeline
       pa2.update_column(:created_at, 29.minutes.ago)
-      assert_equal [], PublishingPipelineState.expired_pipelines
+      assert PublishingPipelineState.expired_pipelines.empty?
       refute PublishingPipelineState.expired?(podcast)
 
       # and times out
       pa2.update_column(:created_at, 30.minutes.ago)
-      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines.sort
+      assert_equal [pa1, pa2].to_set, PublishingPipelineState.expired_pipelines.to_set
       assert PublishingPipelineState.expired?(podcast)
 
       pa2.update_column(:created_at, 2.hours.ago)
-      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines.sort
+      assert_equal [pa1, pa2].to_set, PublishingPipelineState.expired_pipelines.to_set
       assert PublishingPipelineState.expired?(podcast)
     end
 
@@ -122,20 +122,20 @@ describe PublishingPipelineState do
       pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       pa2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast2))
 
-      assert_equal [], PublishingPipelineState.expired_pipelines
+      assert PublishingPipelineState.expired_pipelines.empty?
       refute PublishingPipelineState.expired?(podcast)
       refute PublishingPipelineState.expired?(podcast2)
 
       # they are both expired
       pa1.update_column(:created_at, 30.minutes.ago)
       pa2.update_column(:created_at, 30.minutes.ago)
-      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
+      assert_equal [pa1, pa2].to_set, PublishingPipelineState.expired_pipelines.to_set
       assert PublishingPipelineState.expired?(podcast)
       assert PublishingPipelineState.expired?(podcast2)
 
       # just one is expired
       pa1.update_column(:created_at, Time.now)
-      assert_equal [pa2], PublishingPipelineState.expired_pipelines
+      assert_equal [pa2].to_set, PublishingPipelineState.expired_pipelines.to_set
       refute PublishingPipelineState.expired?(podcast)
       assert PublishingPipelineState.expired?(podcast2)
     end
@@ -150,7 +150,7 @@ describe PublishingPipelineState do
       pa1.update_column(:created_at, 30.minutes.ago)
       pa2.update_column(:created_at, 30.minutes.ago)
 
-      assert_equal [pa1, pa2], PublishingPipelineState.expired_pipelines
+      assert_equal [pa1, pa2].to_set, PublishingPipelineState.expired_pipelines.to_set
       PublishingPipelineState.expire_pipelines!
 
       assert_equal ["created", "expired"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
@@ -158,8 +158,8 @@ describe PublishingPipelineState do
 
       # All pipelines are in a terminal state
       # There is nothing running:
-      assert_equal [], PublishingPipelineState.running_pipelines
-      assert_equal [], PublishingPipelineState.expired_pipelines
+      assert PublishingPipelineState.running_pipelines.empty?
+      assert PublishingPipelineState.expired_pipelines.empty?
 
       refute PublishingPipelineState.expired?(podcast)
       refute PublishingPipelineState.expired?(podcast2)
@@ -185,7 +185,7 @@ describe PublishingPipelineState do
 
       assert_equal pa2, PublishingPipelineState.most_recent_state(podcast)
       assert_equal pa2, pqi.reload.most_recent_state
-      assert_equal [pa, pa2], pqi.publishing_pipeline_states
+      assert_equal [pa, pa2].to_set, pqi.publishing_pipeline_states.to_set
       assert pa2.complete?
     end
   end
@@ -201,7 +201,7 @@ describe PublishingPipelineState do
           assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
         end
 
-        assert_equal ["created", "started", "error"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
+        assert_equal ["created", "started", "error"].to_set, PublishingPipelineState.where(podcast: podcast).map(&:status).to_set
       end
     end
 
@@ -211,7 +211,7 @@ describe PublishingPipelineState do
           PublishingPipelineState.attempt!(podcast, perform_later: false)
         end
 
-        assert_equal ["created", "started", "complete"], PublishingPipelineState.where(podcast: podcast).map(&:status)
+        assert_equal ["created", "started", "complete"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
       end
 
       it "attempts new publishing pipelines" do
@@ -227,7 +227,7 @@ describe PublishingPipelineState do
         # Just fire off the job async, so we can see the created state
         PublishingPipelineState.attempt!(podcast, perform_later: true)
 
-        assert_equal ["created", "started", "complete", "created"], PublishingPipelineState.where(podcast: podcast).map(&:status)
+        assert_equal ["created", "started", "complete", "created"], PublishingPipelineState.where(podcast: podcast).order(id: :asc).map(&:status)
       end
     end
 

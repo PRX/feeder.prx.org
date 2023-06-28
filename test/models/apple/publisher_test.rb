@@ -33,6 +33,56 @@ describe Apple::Publisher do
     end
   end
 
+  describe "#filter_episodes" do
+    let(:podcast) { create(:podcast) }
+
+    let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+    let(:private_feed) { create(:private_feed, podcast: podcast) }
+
+    let(:apple_config) { build(:apple_config) }
+    let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+
+    let(:episode) { create(:episode, podcast: podcast) }
+    let(:apple_show) do
+      Apple::Show.new(api: apple_api,
+        public_feed: public_feed,
+        private_feed: private_feed)
+    end
+    let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
+    let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
+    let(:external_id) { apple_episode_api_response["api_response"]["api_response"]["val"]["data"]["id"] }
+
+    before do
+      episode.create_apple_sync_log(external_id: external_id, **apple_episode_api_response)
+    end
+
+    it "should filter episodes that are already synced to apple" do
+      refute apple_episode.video_content_type?
+
+      apple_episode.stub(:synced_with_apple?, true) do
+        assert_equal [], apple_publisher.filter_episodes([apple_episode])
+      end
+
+      apple_episode.stub(:synced_with_apple?, false) do
+        assert_equal [apple_episode], apple_publisher.filter_episodes([apple_episode])
+      end
+    end
+
+    it "should filter episodes that have a video mime" do
+      apple_episode.stub(:synced_with_apple?, false) do
+        apple_episode.stub(:video_content_type?, true) do
+          assert_equal [], apple_publisher.filter_episodes([apple_episode])
+        end
+      end
+
+      apple_episode.stub(:synced_with_apple?, false) do
+        apple_episode.stub(:video_content_type?, false) do
+          assert_equal [apple_episode], apple_publisher.filter_episodes([apple_episode])
+        end
+      end
+    end
+  end
+
   describe "#episodes_to_sync" do
     let(:episode) { create(:episode, podcast: podcast) }
 

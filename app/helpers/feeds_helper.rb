@@ -47,6 +47,18 @@ module FeedsHelper
     feed.private? ? "" : "d-none"
   end
 
+  def display_bitrate(feed)
+    (feed.try(:audio_format).try(:[], :f) == "mp3") ? "" : "d-none"
+  end
+
+  def display_bitdepth(feed)
+    %w[wav flac].include?(feed.try(:audio_format).try(:[], :f)) ? "" : "d-none"
+  end
+
+  def display_audio_format(feed)
+    feed.audio_format.blank? ? "d-none" : ""
+  end
+
   def feed_destroy_image_path(feed, form)
     if feed.new_record?
       new_podcast_feed_path feed.podcast, uploads_destroy_params(form)

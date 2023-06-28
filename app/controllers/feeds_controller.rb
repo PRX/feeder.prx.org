@@ -6,6 +6,8 @@ class FeedsController < ApplicationController
   def show
     @feed.assign_attributes(feed_params)
     authorize @feed
+
+    @custom_feeds = @podcast.feeds.custom.order(created_at: :asc)
   end
 
   # GET /feeds/new
@@ -15,6 +17,7 @@ class FeedsController < ApplicationController
     authorize @feed
 
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
+    @custom_feeds = @podcast.feeds.custom.order(created_at: :asc)
   end
 
   # POST /feeds
@@ -100,6 +103,15 @@ class FeedsController < ApplicationController
       :display_episodes_count,
       :display_full_episodes_count,
       :episode_offset_seconds,
+      :audio_type,
+      :audio_bitrate,
+      :audio_bitdepth,
+      :audio_channel,
+      :audio_sample,
+      :billboard,
+      :house,
+      :paid,
+      :sonic_id,
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]

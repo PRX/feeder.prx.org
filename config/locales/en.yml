@@ -86,6 +86,11 @@ en:
         summary: iTunes Summary
         title: Title
       feed:
+        audio_type: Format
+        audio_bitrate: Bitrate
+        audio_bitdepth: Bitdepth
+        audio_channel: Channels
+        audio_sample: Frequency
         billboard: Billboards
         description: Description
         display_episodes_count: Feed Episode Limit
@@ -96,7 +101,7 @@ en:
         new_feed_url: New Feed Url
         paid: Paid Ads
         private: Private (unlisted)
-        sonic_id: System (Sonic IDs)
+        sonic_id: Sonic IDs
         subtitle: Teaser
         summary: Summary
         title: Title

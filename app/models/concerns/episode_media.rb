@@ -77,6 +77,10 @@ module EpisodeMedia
     end
   end
 
+  def video_content_type?(*args)
+    media_content_type(*args).starts_with?("video")
+  end
+
   def media_duration
     media.inject(0.0) { |s, c| s + c.duration.to_f } + podcast.try(:duration_padding).to_f
   end
