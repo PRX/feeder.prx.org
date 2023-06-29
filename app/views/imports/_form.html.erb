@@ -1,17 +1,26 @@
-<%= form_with(model: import) do |form| %>
-  <% if import.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(import.errors.count, "error") %> prohibited this import from being saved:</h2>
+<%= form_with(url: podcast_imports_path(import.podcast), model: [import.podcast, import], method: :post, html: {autocomplete: "off"}) do |form| %>
 
-      <ul>
-        <% import.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+  <div class="col-12 mb-4 prx-field-group">
+    <div class="form-floating">
+      <%= form.select :source, ["RSS"] %>
+      <%= form.label :source, "Feed source" %>
     </div>
-  <% end %>
+
+    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
+  </div>
+
+  <div class="col-12 mb-4 prx-field-group">
+    <div class="form-floating">
+      <%= form.text_field :url %>
+      <%= form.label :url, "RSS Feed URL" %>
+    </div>
+
+    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
+  </div>
 
   <div>
-    <%= form.submit %>
+    <%= form.hidden_field :account_id, value: @podcast.account_id %>
+    <%= form.hidden_field :podcast_id, value: @podcast.id %>
+    <%= form.submit "Start Import", class: "btn btn-primary" %>
   </div>
 <% end %>

@@ -366,4 +366,7 @@ class PodcastImport < ApplicationRecord
 
     [good_entries, dupped_entries]
   end
+
+  def source
+  end
 end
