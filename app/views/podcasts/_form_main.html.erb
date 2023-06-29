@@ -32,8 +32,10 @@
 
 <div class="col-12 mb-4 prx-field-group">
   <div class="form-floating">
-    <%= form.text_area :description %>
-    <%= form.label :description %>
+    <div>
+      <%= form.label :description %>
+      <%= form.trix_editor :description %>
+    </div>
   </div>
 
   <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t(".help.description") %>"><span class="material-icons">help</span></button>
@@ -49,8 +51,10 @@
   </div>
 
   <div class="form-floating <%= "d-none" unless podcast.summary.present? %>">
-    <%= form.text_area :summary, data: {toggle_field_target: "field", action: "blur->toggle-field#changeField"} %>
-    <%= form.label :summary %>
+    <%= content_tag(:div, data: {toggle_field_target: "field", action: "blur->toggle-field#changeField"}) do -%>
+      <%= form.label :summary %>
+      <%= form.trix_editor :summary %>
+    <% end -%>
   </div>
 </div>
 

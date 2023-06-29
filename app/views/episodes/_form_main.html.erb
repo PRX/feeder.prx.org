@@ -45,8 +45,10 @@
   </div>
 
   <div class="form-floating <%= "d-none" unless episode.summary.present? %>">
-    <%= form.text_area :summary, data: {toggle_field_target: "field", action: "blur->toggle-field#changeField"} %>
-    <%= form.label :summary %>
+    <%= content_tag(:div, data: {toggle_field_target: "field", action: "blur->toggle-field#changeField"}) do -%>
+      <%= form.label :summary %>
+      <%= form.trix_editor :summary %>
+    <% end -%>
   </div>
 </div>
 
