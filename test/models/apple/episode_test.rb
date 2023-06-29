@@ -148,4 +148,23 @@ describe Apple::Episode do
       end
     end
   end
+
+  describe "#enclosure_filename" do
+    let(:episode) { create(:episode_with_media, podcast: podcast) }
+
+    it "should return the filename from the enclosure url" do
+      assert_equal "audio.flac", apple_episode.enclosure_filename
+    end
+
+    it "calls into the episode with the private feed" do
+      expecter = ->(feed) do
+        assert_equal(feed, apple_episode.private_feed)
+      end
+
+      # make sure the episode is called with the private feed
+      apple_episode.feeder_episode.stub(:enclosure_filename, expecter) do
+        apple_episode.enclosure_filename
+      end
+    end
+  end
 end

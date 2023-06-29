@@ -249,8 +249,8 @@ class Episode < ApplicationRecord
     EnclosureUrlBuilder.new.podcast_episode_url(podcast, self, feed)
   end
 
-  def enclosure_filename
-    uri = URI.parse(enclosure_url)
+  def enclosure_filename(feed = nil)
+    uri = URI.parse(enclosure_url(feed))
     File.basename(uri.path)
   end
 
