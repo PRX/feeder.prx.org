@@ -16,9 +16,20 @@ class ImportsController < ApplicationController
   def create
     # validate RSS
     # validate URL
-    # create podcast import instance
-    import = PodcastImport.new(import_params)
-    # import later
+    @import = PodcastImport.new(import_params)
+    authorize @import
+
+    respond_to do |format|
+      if @import.save
+        @import.import_later
+        format.html { redirect_to podcast_path(@podcast), notice: ("Beginning import.") }
+      else
+        format.html do
+          flash.now[:notice] = "Could not begin import."
+          render :new, status: :unprocessable_entity
+        end
+      end
+    end
   end
 
   private

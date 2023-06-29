@@ -1,4 +1,12 @@
 class PodcastImportPolicy < PodcastPolicy
+  def new?
+    PodcastPolicy.new(token, resource.podcast).new?
+  end
+
+  def create?
+    PodcastPolicy.new(token, resource.podcast).update?
+  end
+
   private
 
   def account_id
