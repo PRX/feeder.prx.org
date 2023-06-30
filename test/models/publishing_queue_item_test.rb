@@ -11,7 +11,7 @@ describe PublishingQueueItem do
       pps = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
       pps2 = PublishingPipelineState.complete!(podcast)
 
-      assert_equal [pps, pps2].to_set, pqi.reload.publishing_pipeline_states.to_set
+      assert_equal [pps, pps2].sort, pqi.reload.publishing_pipeline_states.sort
     end
   end
 
@@ -35,7 +35,7 @@ describe PublishingQueueItem do
       pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
       pqi3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
 
-      assert_equal [pqi3, pqi2, pqi1].to_set, PublishingQueueItem.latest_attempted.to_set
+      assert_equal [pqi3, pqi2, pqi1].sort, PublishingQueueItem.latest_attempted.sort
       assert_equal pqi3.created_at, PublishingQueueItem.latest_attempted.first.created_at
     end
   end
@@ -53,29 +53,29 @@ describe PublishingQueueItem do
       unfinished_pqi = PublishingQueueItem.create!(podcast: podcast)
       unfinished_pqi_2 = PublishingQueueItem.create!(podcast: podcast2)
 
-      assert_equal [unfinished_pqi, unfinished_pqi_2].to_set, PublishingQueueItem.all_unfinished_items.to_set
+      assert_equal [unfinished_pqi, unfinished_pqi_2].sort, PublishingQueueItem.all_unfinished_items.sort
 
       # now create some in-progress work, does not affect the unfinished queue
       PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: unfinished_pqi, status: :started)
       PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: unfinished_pqi_2, status: :started)
-      assert_equal [unfinished_pqi, unfinished_pqi_2].to_set, PublishingQueueItem.all_unfinished_items.to_set
+      assert_equal [unfinished_pqi, unfinished_pqi_2].sort, PublishingQueueItem.all_unfinished_items.sort
 
       # now complete the work for podcast 2
       PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: unfinished_pqi_2, status: :complete)
-      assert_equal [unfinished_pqi].to_set, PublishingQueueItem.all_unfinished_items.to_set
+      assert_equal [unfinished_pqi].sort, PublishingQueueItem.all_unfinished_items.sort
     end
   end
 
   describe ".unfinished_items" do
     it "returns the publishing queue items if there are no attempts" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
-      assert_equal [pqi].to_set, PublishingQueueItem.unfinished_items(podcast).to_set
+      assert_equal [pqi].sort, PublishingQueueItem.unfinished_items(podcast).sort
     end
 
     it "returns the publishing queue items if there is no complete attempts" do
       pqi = PublishingQueueItem.create!(podcast: podcast)
       _pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: :started)
-      assert_equal [pqi].to_set, PublishingQueueItem.unfinished_items(podcast).to_set
+      assert_equal [pqi].sort, PublishingQueueItem.unfinished_items(podcast).sort
     end
 
     it "returns the publishing queue items only of there are subsequent to completed work" do
@@ -84,11 +84,11 @@ describe PublishingQueueItem do
       assert PublishingQueueItem.unfinished_items(podcast).empty?
 
       unfinished_pqi = PublishingQueueItem.create!(podcast: podcast)
-      assert_equal [unfinished_pqi].to_set, PublishingQueueItem.unfinished_items(podcast).to_set
+      assert_equal [unfinished_pqi].sort, PublishingQueueItem.unfinished_items(podcast).sort
 
       # now create some in-progress work, does not affect the unfinished queue
       _pa = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: unfinished_pqi, status: :started)
-      assert_equal [unfinished_pqi].to_set, PublishingQueueItem.unfinished_items(podcast).to_set
+      assert_equal [unfinished_pqi].sort, PublishingQueueItem.unfinished_items(podcast).sort
     end
   end
 
