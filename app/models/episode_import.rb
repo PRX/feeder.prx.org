@@ -4,7 +4,7 @@ require "itunes_category_validator"
 require "loofah"
 require "hash_serializer"
 
-class EpisodeImport < ActiveRecord::Base
+class EpisodeImport < ApplicationRecord
   include ImportUtils
 
   serialize :entry, HashSerializer

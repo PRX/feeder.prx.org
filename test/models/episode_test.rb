@@ -254,6 +254,27 @@ describe Episode do
     end
   end
 
+  describe "#medium=" do
+    it "marks existing content for replacement on change" do
+      refute episode.contents.first.marked_for_replacement?
+
+      episode.medium = "audio"
+      refute episode.contents.first.marked_for_replacement?
+
+      episode.medium = "uncut"
+      assert episode.contents.first.marked_for_replacement?
+    end
+
+    it "sets segment count for videos" do
+      episode.segment_count = 2
+      refute episode.contents.first.marked_for_replacement?
+
+      episode.medium = "video"
+      assert episode.contents.first.marked_for_replacement?
+      assert_equal 1, episode.segment_count
+    end
+  end
+
   describe "#segment_range" do
     it "returns a range of positions" do
       e = Episode.new(segment_count: nil)
@@ -328,6 +349,32 @@ describe Episode do
 
       e.contents.first.status = "processing"
       assert e.valid?
+    end
+  end
+
+  describe "#description_with_default" do
+    let(:episode) { build_stubbed(:episode, description: "description", subtitle: "subtitle", title: "title") }
+
+    it "returns the description if present" do
+      assert_equal "description", episode.description_with_default
+    end
+
+    it "returns the subtitle if description is blank" do
+      episode.description = nil
+      assert_equal "subtitle", episode.description_with_default
+    end
+
+    it "returns the title if description and subtitle are blank" do
+      episode.description = nil
+      episode.subtitle = nil
+      assert_equal "title", episode.description_with_default
+    end
+
+    it "returns an empty string if description, subtitle, and title are blank" do
+      episode.description = nil
+      episode.subtitle = nil
+      episode.title = nil
+      assert_equal "", episode.description_with_default
     end
   end
 end

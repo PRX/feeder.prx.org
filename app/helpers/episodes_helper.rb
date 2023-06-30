@@ -39,8 +39,8 @@ module EpisodesHelper
     end
   end
 
-  def episode_content_duration(content)
-    Time.at(content.duration || 0).utc.strftime("%H:%M:%S").sub(/^00:/, "0:")
+  def episode_media_duration(media)
+    (media.duration || 0).to_time_summary
   end
 
   def episode_destroy_image_path(episode, form)
@@ -57,5 +57,14 @@ module EpisodesHelper
     else
       edit_episode_path episode, uploads_retry_params(form)
     end
+  end
+
+  def episode_media_label(episode, media)
+    medium = episode.medium || "audio"
+    I18n.t("helpers.label.media_resource.original_url.#{medium}", position: media.position)
+  end
+
+  def episode_medium_options
+    Episode.mediums.keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
   end
 end

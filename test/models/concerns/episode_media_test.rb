@@ -111,15 +111,20 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     end
 
     it "infers episode medium audio" do
-      ep.medium = nil
+      assert_nil ep.medium
       ep.media = ["http://some.new/url.mp3", "http://some.new/url.wav"]
       assert_equal "audio", ep.medium
     end
 
     it "infers episode medium video" do
-      ep.medium = nil
       ep.media = ["http://some.new/url.mov", "http://some.new/url.mp4"]
       assert_equal "video", ep.medium
+    end
+
+    it "defaults to audio" do
+      assert_nil ep.medium
+      ep.media = []
+      assert_equal "audio", ep.medium
     end
 
     it "handles non-arrays" do

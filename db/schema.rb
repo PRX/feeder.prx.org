@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_01_213725) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -132,8 +132,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_01_213725) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.datetime "source_updated_at", precision: nil
     t.string "keyword_xid"
+    t.datetime "source_updated_at", precision: nil
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"
@@ -268,6 +268,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_01_213725) do
     t.integer "status"
     t.datetime "deleted_at", precision: nil
     t.datetime "replaced_at", precision: nil
+    t.text "segmentation"
     t.index ["episode_id"], name: "index_media_resources_on_episode_id"
     t.index ["guid"], name: "index_media_resources_on_guid", unique: true
     t.index ["original_url"], name: "index_media_resources_on_original_url"
@@ -323,6 +324,27 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_01_213725) do
     t.index ["path"], name: "index_podcasts_on_path", unique: true
     t.index ["prx_uri"], name: "index_podcasts_on_prx_uri", unique: true
     t.index ["source_url"], name: "index_podcasts_on_source_url", unique: true, where: "((deleted_at IS NULL) AND (source_url IS NOT NULL))"
+  end
+
+  create_table "publishing_pipeline_states", force: :cascade do |t|
+    t.bigint "podcast_id", null: false
+    t.bigint "publishing_queue_item_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.index ["podcast_id", "publishing_queue_item_id", "status"], name: "index_publishing_pipeline_state_on_unique_status", unique: true, where: "(status = ANY (ARRAY[4, 5, 6, 0, 1]))"
+    t.index ["podcast_id", "publishing_queue_item_id", "status"], name: "index_publishing_pipeline_state_uniqueness"
+    t.index ["podcast_id", "publishing_queue_item_id", "status"], name: "index_state_on_podcast_queue_item_and_status"
+    t.index ["podcast_id"], name: "index_publishing_pipeline_states_on_podcast_id"
+    t.index ["publishing_queue_item_id"], name: "index_publishing_pipeline_states_on_publishing_queue_item_id"
+  end
+
+  create_table "publishing_queue_items", force: :cascade do |t|
+    t.bigint "podcast_id", null: false
+    t.integer "last_pipeline_state"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["podcast_id", "created_at"], name: "index_publishing_queue_items_on_podcast_id_and_created_at"
+    t.index ["podcast_id"], name: "index_publishing_queue_items_on_podcast_id"
   end
 
   create_table "say_when_job_executions", id: :serial, force: :cascade do |t|
@@ -399,4 +421,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_01_213725) do
   add_foreign_key "feeds", "podcasts"
   add_foreign_key "itunes_images", "feeds"
   add_foreign_key "podcast_imports", "podcasts"
+  add_foreign_key "publishing_pipeline_states", "podcasts"
+  add_foreign_key "publishing_pipeline_states", "publishing_queue_items"
+  add_foreign_key "publishing_queue_items", "podcasts"
 end

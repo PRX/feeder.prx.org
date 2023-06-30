@@ -22,10 +22,11 @@ export default class extends Controller {
     const field = event.target.value
 
     this.fieldTargets.forEach((el) => {
-      if (field !== el.getAttribute("field")) {
-        el.classList.add("d-none")
-      } else {
+      const types = el.getAttribute("field").split(" ")
+      if (types.includes(field)) {
         el.classList.remove("d-none")
+      } else {
+        el.classList.add("d-none")
       }
     })
   }

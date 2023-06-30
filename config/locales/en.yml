@@ -1,15 +1,30 @@
 defaults:
+  form: &form
+    confirm: Discard unsaved changes?
   form_status: &form_status
     create: Create
+    destroy: Delete
+    destroy_confirm_title: Really Delete?
+    destroy_confirm_body: "Are you sure you want to delete this %{model}? This action cannot be undone."
+    destroy_confirm_yes: Delete
+    destroy_confirm_no: Cancel
     discard: Discard
     new_hint: Unsaved
     title: Status
     update: Save
     updated_at_hint: Last Saved
+    updating: Saving...
+    uploading: Uploading...
   controller_actions:
+    create: &create
+      success: "%{model} created successfully."
+      failure: "There was a problem creating the %{model}."
     update: &update
-      success: "%{model} update successful."
+      success: "%{model} updated successfully."
       failure: "There was a problem updating the %{model}."
+    destroy: &destroy
+      success: "%{model} deleted successfully."
+      failure: "There was a problem deleting the %{model}."
 
 en:
   # general config
@@ -23,10 +38,20 @@ en:
       short: "%m/%d"
       time_12_hour: "%l:%M %p %Z"
       day_and_date: "%A, %m/%d"
+  # validation error messages
+  activerecord:
+    errors:
+      models:
+        episode:
+          attributes:
+            segment_count:
+              greater_than: Can't be negative
+              less_than_or_equal_to: Enter a number less than %{count}
   # form/model helpers
   helpers:
     label:
       episode:
+        ad_breaks: How many ad breaks are there in this episode?
         author_email: Author Email
         author_name: Author Name
         add_itunes_summary: Add an alternate itunes:summary
@@ -43,6 +68,11 @@ en:
           full: Full
           trailer: Trailer
           bonus: Bonus
+        medium: How do you want to upload your files?
+        mediums:
+          audio: Audio - upload multiple audio files
+          uncut: Audio - upload a single file and then segment
+          video: Video
         released_at: Dropdate
         production_notes: Production Notes
         publishing_status: Status
@@ -55,6 +85,27 @@ en:
         subtitle: Subtitle
         summary: iTunes Summary
         title: Title
+      feed:
+        audio_type: Format
+        audio_bitrate: Bitrate
+        audio_bitdepth: Bitdepth
+        audio_channel: Channels
+        audio_sample: Frequency
+        billboard: Billboards
+        description: Description
+        display_episodes_count: Feed Episode Limit
+        display_full_episodes_count: Feed Metadata Limit
+        enclosure_prefix: Enclosure Prefix Url
+        episode_offset_seconds: Episode Publish Delay
+        house: House Ads
+        new_feed_url: New Feed Url
+        paid: Paid Ads
+        private: Private (unlisted)
+        sonic_id: Sonic IDs
+        subtitle: Teaser
+        summary: Summary
+        title: Title
+        url: Public Feed Url
       feed_image:
         alt_text: Alt Text
         caption: Caption
@@ -63,6 +114,11 @@ en:
         alt_text: Alt Text
         caption: Caption
         credit: Credit
+      media_resource:
+        original_url:
+          audio: Segment %{position}
+          uncut: Audio File
+          video: Video File
       podcast:
         add_itunes_summary: Add an alternate itunes:summary
         author_email: Author Email
@@ -91,22 +147,6 @@ en:
         subtitle: Teaser
         summary: iTunes Summary
         title: Title
-      feed:
-        title: Title
-        subtitle: Teaser
-        description: Description
-        summary: Summary
-        private: Private (unlisted)
-        url: Public Feed Url
-        new_feed_url: New Feed Url
-        enclosure_prefix: Enclosure Prefix Url
-        display_episodes_count: Feed Episode Limit
-        display_full_episodes_count: Feed Metadata Limit
-        episode_offset_seconds: Episode Publish Delay
-        billboard: Billboards
-        house: House Ads
-        paid: Paid Ads
-        sonic_id: System (Sonic IDs)
   # specific pages/views
   episodes:
     create:
@@ -117,10 +157,6 @@ en:
       notice: Episode deleted
     form:
       confirm: Discard unsaved changes?
-    form_audio:
-      title: Audio Files
-      help:
-        segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
     form_distribution:
       title: Distribution
     form_main:
@@ -139,6 +175,8 @@ en:
         subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
         summary: Unless otherwise specified, the summary is created from the description of your episode as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
         title: Write a short, Tweetable title. Think newspaper headline.
+    form_media:
+      title: Media Files
     form_status:
       create: Create Draft
       creating: Creating...
@@ -170,11 +208,37 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+    media:
+      complete:
+        unable: Unable to play file
+      error:
+        feedback: There was a problem processing your file
+      modal:
+        bit_rate: Bitrate
+        channels: Channels
+        dimensions: Dimensions
+        duration: Duration
+        file_name: File
+        file_size: Size
+        frame_rate: Frame Rate
+        mime_type: Content Type
+        sample_rate: Frequency
+        status: Status
+      new:
+        hint: Upload a file
+      processing:
+        hint: Processing
+      segment_count:
+        help: Enter the number of ad breaks in this episode.
     update:
       error: Unable to save
       media_not_ready: Audio not ready
       notice: Episode updated
   feeds:
+    create:
+      <<: *create
+    destroy:
+      <<: *destroy
     form_custom_fields:
       headers:
         overrides: Overrides
@@ -204,6 +268,8 @@ en:
         audio_format: Optionally set an explicit audio format for your episodes. If you leave this blank, we will automatically use the same format as the first audio segment you upload for each episode.
     form_status:
       <<: *form_status
+    form:
+      <<: *form
     helper:
       episode_offset_options:
         "300": 5 minutes

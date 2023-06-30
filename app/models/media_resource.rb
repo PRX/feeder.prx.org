@@ -89,6 +89,18 @@ class MediaResource < ApplicationRecord
     URI.parse(url).path.sub(/\A\//, "") if url.present?
   end
 
+  def waveform_url
+    "#{url}.json"
+  end
+
+  def waveform_path
+    "#{path}.json"
+  end
+
+  def generate_waveform?
+    false
+  end
+
   def replace_resources!
   end
 
@@ -157,10 +169,16 @@ class MediaResource < ApplicationRecord
 
   def mark_for_replacement
     mark_for_destruction
-    self.replaced_at = Time.now if status_complete?
+    @marked_for_replacement = true if status_complete?
   end
 
   def marked_for_replacement?
-    marked_for_destruction? && replaced_at.present?
+    @marked_for_replacement == true
+  end
+
+  def paranoia_destroy_attributes
+    super.tap do |attrs|
+      attrs[:replaced_at] = current_time_from_proper_timezone if marked_for_replacement?
+    end
   end
 end

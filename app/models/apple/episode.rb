@@ -240,7 +240,7 @@ module Apple
             guid: guid,
             title: feeder_episode.title,
             originalReleaseDate: feeder_episode.published_at.utc.iso8601,
-            description: feeder_episode.description || feeder_episode.subtitle,
+            description: feeder_episode.description_with_default,
             websiteUrl: feeder_episode.url,
             explicit: explicit,
             episodeNumber: feeder_episode.episode_number,
@@ -447,6 +447,10 @@ module Apple
 
     def apple_episode_id
       apple_id
+    end
+
+    def video_content_type?
+      feeder_episode.video_content_type?
     end
 
     def podcast_container

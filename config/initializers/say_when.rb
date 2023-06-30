@@ -22,8 +22,8 @@ begin
       name: "release_episodes",
       trigger_strategy: "cron",
       trigger_options: {expression: "0 0/5 * * * ?", time_zone: "UTC"},
-      job_class: "Episode",
-      job_method: "release_episodes!"
+      job_class: "Podcast",
+      job_method: "release!"
     )
   end
 rescue ActiveRecord::StatementInvalid => e

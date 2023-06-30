@@ -1,6 +1,9 @@
 require "hash_serializer"
 
 class Feed < ApplicationRecord
+  include FeedAudioFormat
+  include FeedAdZone
+
   DEFAULT_FILE_NAME = "feed-rss.xml".freeze
 
   AUDIO_MIME_TYPES = {
@@ -41,6 +44,7 @@ class Feed < ApplicationRecord
   validates :include_zones, placement_zones: true
   validates :include_tags, tag_list: true
   validates :audio_format, audio_format: true
+  validates :title, presence: true, unless: :default?
 
   after_initialize :set_defaults
   before_validation :sanitize_text

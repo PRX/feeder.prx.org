@@ -7,15 +7,11 @@
 
   <div class="row my-4">
     <div class="col-lg-8">
-      <div class="card shadow pt-3 border-0">
-        <div class="card-body">
-          <div class="row">
-            <%= render "form_main", episode: episode, form: form %>
-            <%= render "form_tags", episode: episode, form: form %>
-            <%= render "form_audio", episode: episode, form: form %>
-            <%= render "form_image", episode: episode, form: form %>
-          </div>
-        </div>
+      <div class="row">
+        <%= render "form_main", episode: episode, form: form %>
+        <%= render "form_tags", episode: episode, form: form %>
+        <%= render "form_media", episode: episode, form: form %>
+        <%= render "form_image", episode: episode, form: form %>
       </div>
     </div>
     <div class="col-lg-4 d-grid align-content-start gap-3">

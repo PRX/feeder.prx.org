@@ -1,0 +1,38 @@
+<div class="prx-uploads col-12 mb-4">
+  <div class="card shadow border-0">
+
+    <div class="card-header card-header-info d-flex justify-content-between">
+      <h5 class="card-title"><%= t(".title") %></h5>
+    </div>
+
+    <div class="card-body">
+      <%= turbo_frame_tag "episode-form-media" do %>
+        <div class="row">
+
+          <div class="col-12 mb-4 prx-field-group">
+            <div class="form-floating" data-controller="dynamic-form">
+              <%= form.select :medium, episode_medium_options, {}, data: {action: "dynamic-form#change"} %>
+              <%= form.label :medium %>
+              <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+            </div>
+          </div>
+
+          <%= turbo_frame_tag "episode-form-media-segments", data: {controller: "media-upload"} do %>
+            <% if episode.medium_uncut? %>
+              <%= render "episodes/media/segment_count", form: form, episode: episode %>
+              <%= render "episodes/media/uncut", form: form, episode: episode %>
+            <% elsif episode.medium_video? %>
+              <%= form.hidden_field :segment_count, value: 1 %>
+              <%= render "episodes/media/contents", form: form, episode: episode %>
+            <% else %>
+              <%= render "episodes/media/segment_count", form: form, episode: episode %>
+              <%= render "episodes/media/contents", form: form, episode: episode %>
+            <% end %>
+          <% end %>
+
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</div>

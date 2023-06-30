@@ -75,15 +75,26 @@ describe Podcast do
 
   describe "publishing" do
     it "creates a publish job on publish" do
-      podcast.stub(:create_publish_job, "published!") do
+      PublishingPipelineState.stub(:start_pipeline!, "published!") do
         assert_equal podcast.publish!, "published!"
       end
     end
 
     it "wont create a publish job when podcast is locked" do
-      podcast.stub(:create_publish_job, "published!") do
+      PublishingPipelineState.stub(:start_pipeline!, "published!") do
         podcast.locked = true
         refute_equal podcast.publish!, "published!"
+      end
+    end
+
+    describe ".release!" do
+      it "cleans up dead publishing pipelines" do
+        obj = MiniTest::Mock.new
+        obj.expect :call, nil
+        PublishingPipelineState.stub(:expire_pipelines!, obj) do
+          Podcast.release!
+        end
+        obj.verify
       end
     end
   end
