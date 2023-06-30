@@ -84,11 +84,20 @@ describe PublishFeedJob do
       end
 
       describe "when the apple publishing fails" do
+        before do
+          # Simulate a publishing attempt
+          PublishingQueueItem.create!(podcast: feed.podcast)
+          PublishingPipelineState.attempt!(feed.podcast)
+          PublishingPipelineState.start!(feed.podcast)
+        end
         it "raises an error if the apple publishing fails" do
           assert_equal [apple_config], feed.apple_configs.reload
+
           PublishAppleJob.stub(:perform_now, ->(*, **) { raise "some apple error" }) do
             # it raises
             assert_raises(RuntimeError) { job.publish_apple(feed) }
+
+            assert_equal ["created", "started", "error_apple"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
           end
         end
 
@@ -104,6 +113,7 @@ describe PublishFeedJob do
               job.publish_apple(feed)
             end
           end
+          assert_equal ["created", "started", "error_apple"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
 
           mock.verify
         end
