@@ -9,6 +9,14 @@
 </div>
 
 <% unless feed.default? %>
+  <div class="col-12 mb-4">
+    <div class="form-floating input-group">
+      <%= form.text_field :title %>
+      <%= form.label :title %>
+      <%= field_help_text t(".help.title") %>
+    </div>
+  </div>
+
   <div class="col-6 mb-4">
     <div class="form-floating input-group">
       <%= form.text_field :slug %>
@@ -71,52 +79,5 @@
     <%= form.number_field :display_full_episodes_count %>
     <%= form.label :display_full_episodes_count %>
     <%= field_help_text t(".help.display_full_episodes_count") %>
-  </div>
-</div>
-
-<% unless feed.default? %>
-  <%= render "form_custom_fields", feed: feed, form: form %>
-<% end %>
-
-<div class="col-12 mb-4" data-controller="toggle-field">
-  <hr>
-  <h3><%= t(".headers.audio_format") %></h3>
-  <p><%= t(".help.audio_format") %></p>
-
-  <div class="row my-4">
-    <div class="col-3">
-      <div class="form-floating input-group">
-        <%= form.select :audio_type, audio_format_options, {include_blank: true}, data: {action: "toggle-field#displayOnlyThisField"} %>
-        <%= form.label :audio_type %>
-      </div>
-    </div>
-
-    <div class="col-3 <%= display_bitrate(feed) %>" data-toggle-field-target="field" field="mp3">
-      <div class="form-floating input-group">
-        <%= form.select :audio_bitrate, audio_bitrate_options %>
-        <%= form.label :audio_bitrate %>
-      </div>
-    </div>
-
-    <div class="col-3 <%= display_bitdepth(feed) %>" data-toggle-field-target="field" field="wav flac">
-      <div class="form-floating input-group">
-        <%= form.select :audio_bitdepth, audio_bitdepth_options %>
-        <%= form.label :audio_bitdepth %>
-      </div>
-    </div>
-
-    <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac">
-      <div class="form-floating input-group">
-        <%= form.select :audio_channel, audio_channel_options %>
-        <%= form.label :audio_channel %>
-      </div>
-    </div>
-
-    <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac">
-      <div class="form-floating input-group">
-        <%= form.select :audio_sample, audio_sample_options %>
-        <%= form.label :audio_sample %>
-      </div>
-    </div>
   </div>
 </div>

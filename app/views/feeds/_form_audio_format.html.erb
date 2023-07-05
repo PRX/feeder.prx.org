@@ -1,0 +1,47 @@
+<div class="col-12 mb-4" data-controller="toggle-field">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-secondary d-flex justify-content-between">
+      <h5 class="card-title flex-grow-1"><%= t(".title") %></h5>
+      <%= help_text t(".help.audio_format") %>
+    </div>
+
+    <div class="card-body">
+      <div class="row">
+        <div class="col-3">
+          <div class="form-floating input-group">
+            <%= form.select :audio_type, audio_format_options, {include_blank: true}, data: {action: "toggle-field#displayOnlyThisField"} %>
+            <%= form.label :audio_type %>
+          </div>
+        </div>
+
+        <div class="col-3 <%= display_bitrate(feed) %>" data-toggle-field-target="field" field="mp3">
+          <div class="form-floating input-group">
+            <%= form.select :audio_bitrate, audio_bitrate_options %>
+            <%= form.label :audio_bitrate %>
+          </div>
+        </div>
+
+        <div class="col-3 <%= display_bitdepth(feed) %>" data-toggle-field-target="field" field="wav flac">
+          <div class="form-floating input-group">
+            <%= form.select :audio_bitdepth, audio_bitdepth_options %>
+            <%= form.label :audio_bitdepth %>
+          </div>
+        </div>
+
+        <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac">
+          <div class="form-floating input-group">
+            <%= form.select :audio_channel, audio_channel_options %>
+            <%= form.label :audio_channel %>
+          </div>
+        </div>
+
+        <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac">
+          <div class="form-floating input-group">
+            <%= form.select :audio_sample, audio_sample_options %>
+            <%= form.label :audio_sample %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

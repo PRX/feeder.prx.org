@@ -8,6 +8,12 @@
     <div class="col-lg-8">
       <div class="row">
         <%= render "form_main", podcast: podcast, feed: feed, form: form %>
+        <% unless feed.default? %>
+          <%= render "form_overrides", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_auth", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_ad_zones", podcast: podcast, feed: feed, form: form %>
+        <% end %>
+        <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
       </div>
     </div>
     <div class="col-lg-4 d-grid align-content-start gap-3">

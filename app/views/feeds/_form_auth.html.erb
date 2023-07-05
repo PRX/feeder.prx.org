@@ -1,0 +1,22 @@
+<div class="col-12 mb-4" data-controller="toggle-field">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-secondary d-flex justify-content-between">
+      <h5 class="card-title flex-grow-1"><%= t(".title") %></h5>
+      <%= help_text t(".help.auth_tokens") %>
+    </div>
+
+    <div class="card-body">
+      <div class="form-check">
+        <%= form.check_box :private, data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay"} %>
+        <div class="d-flex align-items-center">
+          <%= form.label :private %>
+          <%= help_text t(".help.private") %>
+        </div>
+      </div>
+
+      <div class="mt-4 <%= display_auth_tokens(feed) %>" data-toggle-field-target="field">
+        <%= render "form_auth_tokens", feed: feed, form: form %>
+      </div>
+    </div>
+  </div>
+</div>
