@@ -25,3 +25,11 @@ trix-editor.trix-content[contenteditable="false"] {
   background: $input-disabled-bg;
   cursor: default;
 }
+
+.form-floating > trix-toolbar {
+  width: 100%;
+}
+
+.form-floating > trix-editor ~ label {
+  top: 36px;
+}
