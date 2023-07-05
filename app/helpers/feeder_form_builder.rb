@@ -113,6 +113,19 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     select(method, choices, {include_blank: true, selected: selected}, add_search_action(html_options))
   end
 
+  def trix_editor(method, options = {})
+    options[:class] = INPUT_CLASS unless options.key?(:class)
+    add_blank_class(options) if blank?(method, options)
+    add_blank_action(options)
+    add_changed(method, options)
+    add_disabled(options)
+    super(method, options)
+  end
+
+  def disabled?
+    object && !@template.policy(object).create_or_update?
+  end
+
   private
 
   def blank?(method, opts)
@@ -183,7 +196,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def add_disabled(opts)
-    if !opts.key?(:disabled) && object && !@template.policy(object).create_or_update?
+    if !opts.key?(:disabled) && disabled?
       opts[:disabled] = true
     end
   end

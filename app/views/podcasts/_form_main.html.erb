@@ -29,25 +29,14 @@
 </div>
 
 <div class="col-12 mb-4">
-  <div class="form-floating input-group">
-    <%= form.text_area :description %>
-    <%= form.label :description %>
-    <%= field_help_text t(".help.description") %>
-  </div>
-</div>
-
-<div class="col-12 mb-4" data-controller="toggle-field">
-  <div class="form-check <%= "d-none" if podcast.summary.present? %>">
-    <%= form.check_box :add_itunes_summary, class: "form-check-input", name: nil, checked: false, data: {toggle_field_target: "check", action: "toggle-field#changeCheck"} %>
-    <div class="d-flex align-items-center">
-      <%= form.label :add_itunes_summary %>
-      <%= help_text t(".help.summary") %>
+  <div class="card shadow border-0">
+    <div class="card-header card-header-secondary d-flex justify-content-between">
+      <h5 class="card-title flex-grow-1"><%= t("helpers.label.podcast.description") %></h5>
+      <%= help_text t(".help.description") %>
     </div>
-  </div>
-
-  <div class="form-floating <%= "d-none" unless podcast.summary.present? %>">
-    <%= form.text_area :summary, data: {toggle_field_target: "field", action: "blur->toggle-field#changeField"} %>
-    <%= form.label :summary %>
+    <div class="card-body">
+      <%= form.trix_editor :description %>
+    </div>
   </div>
 </div>
 

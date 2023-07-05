@@ -54,7 +54,6 @@ en:
         ad_breaks: How many ad breaks are there in this episode?
         author_email: Author Email
         author_name: Author Name
-        add_itunes_summary: Add an alternate itunes:summary
         categories: Categories
         clean_title: Clean Title
         description: Description
@@ -83,7 +82,6 @@ en:
         season_number: Season Number
         segment_count: Number of Segments
         subtitle: Subtitle
-        summary: iTunes Summary
         title: Title
       feed:
         audio_type: Format
@@ -103,7 +101,6 @@ en:
         private: Private (unlisted)
         sonic_id: Sonic IDs
         subtitle: Teaser
-        summary: Summary
         title: Title
         url: Public Feed Url
       feed_image:
@@ -120,7 +117,6 @@ en:
           uncut: Audio File
           video: Video File
       podcast:
-        add_itunes_summary: Add an alternate itunes:summary
         author_email: Author Email
         author_name: Author Name
         complete: The podcast is complete
@@ -145,7 +141,6 @@ en:
           false: Episodic
           true: Serial
         subtitle: Teaser
-        summary: iTunes Summary
         title: Title
   # specific pages/views
   episodes:
@@ -163,7 +158,6 @@ en:
       help:
         author_email: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
         author_name: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
-        add_itunes_summary: Add an alternate itunes:summary
         clean_title: If the title above contains any extraneous identifying information about your episode (like season number), provide a clean version of the title alone here.
         description: Write a full description of your episode, including keywords, names of interviewees, places and topics. Feel free to incorporate links, images, and any of the other provided rich text formatting options.
         episode_number: If your episode is part of has a specific number add it here.
@@ -173,7 +167,6 @@ en:
         production_notes: Helpful information for the production and/or ad sales teams. Example 'Descriptions of violence in segment 2.'
         season_number: If your episode is part of a season add it here.
         subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
-        summary: Unless otherwise specified, the summary is created from the description of your episode as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
         title: Write a short, Tweetable title. Think newspaper headline.
     form_media:
       title: Media Files
@@ -268,7 +261,6 @@ en:
       help:
         description: Enter an alternate description
         subtitle: Enter an alternate teaser
-        summary: Enter an alternate summary
     form_status:
       <<: *form_status
     form:
@@ -362,7 +354,6 @@ en:
         prx_account_uri: Who is the owner of this podcast?
         serial_order: <p>Select how your episodes should be ordered.</p> <p><strong>Episodic:</strong> episodes to be presented and recommended last-to-first; this is the default and most common order for podcasts.</p> <p><strong>Serial:</strong> Episodes presented and recommended first-to-last.</p>
         subtitle: A short description of this podcast.
-        summary: Unless otherwise specified, the summary is created from the description of your podcast as shown in the preview below. The iTunes summary only allows for links, so all other formatting has been removed.
         title: What's the name of this podcast?
     form_status:
       create: Create
