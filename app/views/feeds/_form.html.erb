@@ -19,7 +19,12 @@
       <% unless feed.default? %>
         <div class="row">
           <div class="col-12">
-            <%= render "form_image", podcast: podcast, feed: feed, form: form %>
+            <%= render "form_itunes_image", podcast: podcast, feed: feed, form: form %>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <%= render "form_feed_image", podcast: podcast, feed: feed, form: form %>
           </div>
         </div>
       <% end %>

@@ -7,8 +7,6 @@
       <% rpath = podcast_retry_image_path(podcast, f1, f2) %>
 
       <%= render "images/form", form: f2, image: f2.object, delete_path: path, retry_path: rpath %>
-
-      <%= f2.object.retryable? %>
     <% end %>
   <% end %>
 <% end %>

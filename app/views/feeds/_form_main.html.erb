@@ -4,29 +4,33 @@
   <div class="form-floating input-group">
     <%= form.text_field :feed_link, value: feed.published_url, disabled: true %>
     <%= form.label :feed_link %>
-    <%= link_to(feed_link, class: "input-group-text prx-help", target: :_blank) do %>
-      <span class="material-icons">link</span>
-    <% end %>
-  </div>
-</div>
-
-<div class="col-12 mb-4">
-  <div class="form-floating input-group">
-    <%= form.text_field :file_name %>
-    <%= form.label :file_name %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.file_name") %>"><span class="material-icons">help</span></a>
+    <%= field_link feed_link %>
   </div>
 </div>
 
 <% unless feed.default? %>
-  <%= render "form_custom_fields", feed: feed, form: form %>
+  <div class="col-6 mb-4">
+    <div class="form-floating input-group">
+      <%= form.text_field :slug %>
+      <%= form.label :slug %>
+      <%= field_help_text t(".help.slug") %>
+    </div>
+  </div>
 <% end %>
+
+<div class="<%= feed.default? ? "col-12" : "col-6" %> mb-4">
+  <div class="form-floating input-group">
+    <%= form.text_field :file_name %>
+    <%= form.label :file_name %>
+    <%= field_help_text t(".help.file_name") %>
+  </div>
+</div>
 
 <div class="col-12 mb-4">
   <div class="form-floating input-group">
     <%= form.text_field :url %>
     <%= form.label :url %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.url") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.url") %>
   </div>
 </div>
 
@@ -34,41 +38,45 @@
   <div class="form-floating input-group">
     <%= form.text_field :new_feed_url %>
     <%= form.label :new_feed_url %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.new_feed_url") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.new_feed_url") %>
   </div>
 </div>
 
-<div class="col-12 mb-4">
+<div class="col-6 mb-4">
   <div class="form-floating input-group">
     <%= form.text_field :enclosure_prefix %>
     <%= form.label :enclosure_prefix %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.enclosure_prefix") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.enclosure_prefix") %>
   </div>
 </div>
 
-<div class="col-12 mb-4">
-  <div class="form-floating input-group">
-    <%= form.number_field :display_episodes_count %>
-    <%= form.label :display_episodes_count %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.display_episodes_count") %>"><span class="material-icons">help</span></a>
-  </div>
-</div>
-
-<div class="col-12 mb-4">
-  <div class="form-floating input-group">
-    <%= form.number_field :display_full_episodes_count %>
-    <%= form.label :display_full_episodes_count %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.display_full_episodes_count") %>"><span class="material-icons">help</span></a>
-  </div>
-</div>
-
-<div class="col-12 mb-4">
+<div class="col-6 mb-4">
   <div class="form-floating input-group">
     <%= form.select :episode_offset_seconds, episode_offset_options, include_blank: true %>
     <%= form.label :episode_offset_seconds %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.episode_offset_seconds") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.episode_offset_seconds") %>
   </div>
 </div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
+    <%= form.number_field :display_episodes_count %>
+    <%= form.label :display_episodes_count %>
+    <%= field_help_text t(".help.display_episodes_count") %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
+    <%= form.number_field :display_full_episodes_count %>
+    <%= form.label :display_full_episodes_count %>
+    <%= field_help_text t(".help.display_full_episodes_count") %>
+  </div>
+</div>
+
+<% unless feed.default? %>
+  <%= render "form_custom_fields", feed: feed, form: form %>
+<% end %>
 
 <div class="col-12 mb-4" data-controller="toggle-field">
   <hr>
