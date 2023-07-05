@@ -1,4 +1,4 @@
-<div class="card prx-uploads">
+<div class="card shadow prx-uploads">
   <div class="card-header-info d-flex align-items-center">
     <h5 class="card-title flex-grow-1"><%= t("images.title.#{image.model_name.singular}") %></h5>
 
@@ -6,9 +6,7 @@
       <span class="material-icons">info</span>
     </button>
 
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= t("images.help.#{image.model_name.singular}") %>">
-      <span class="material-icons">help</span>
-    </button>
+    <%= help_text t("images.help.#{image.model_name.singular}") %>
 
     <%= link_to delete_path, class: "prx-btn-help" do %>
       <span class="material-icons">delete</span>

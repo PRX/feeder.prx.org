@@ -1,15 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  connect() {
-    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-    this.popoverList = [...popoverTriggerList].map((popoverTriggerEl) => new bootstrap.Popover(popoverTriggerEl))
+  static targets = ["trigger"]
+
+  triggerTargetConnected(el) {
+    new bootstrap.Popover(el, { html: true })
   }
 
-  disconnect() {
-    this.popoverList.forEach((popover) => {
-      popover.dispose()
-    })
-    delete this.popoverList
+  triggerTargetDisconnected(el) {
+    bootstrap.Popover.getInstance(el).dispose()
   }
 }

@@ -63,6 +63,7 @@
     height: auto;
     font-size: 1rem;
     width: auto;
+    z-index: 6;
 
     &.is-invalid {
       color: $form-feedback-invalid-color;
@@ -156,6 +157,7 @@
     padding: 0.75rem;
     min-height: $input-height;
     height: auto;
+    border-color: $input-border-color;
     // border: none;
   }
 
@@ -338,3 +340,20 @@ small {
     color: $primary;
   }
 }
+
+.prx-help {
+  background: $white;
+  color: $gray-600;
+
+  &:hover {
+    text-decoration: none;
+    color: $primary;
+  }
+}
+
+/*.input-group {
+  .form-control,
+  .form-select {
+    border-right: none;
+  }
+}*/
