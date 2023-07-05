@@ -2,7 +2,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :title %>
     <%= form.label :title %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.title") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.title") %>
   </div>
 </div>
 
@@ -24,7 +24,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :subtitle %>
     <%= form.label :subtitle %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.subtitle") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.subtitle") %>
   </div>
 </div>
 
@@ -32,7 +32,7 @@
   <div class="form-floating input-group">
     <%= form.text_area :description %>
     <%= form.label :description %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.description") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.description") %>
   </div>
 </div>
 
@@ -41,7 +41,7 @@
     <%= form.check_box :add_itunes_summary, class: "form-check-input", name: nil, checked: false, data: {toggle_field_target: "check", action: "toggle-field#changeCheck"} %>
     <div class="d-flex align-items-center">
       <%= form.label :add_itunes_summary %>
-      <a tabindex="0" class="prx-btn-help ms-1" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.summary") %>>"><span class="material-icons">help</span></a>
+      <%= help_text t(".help.summary") %>
     </div>
   </div>
 
@@ -55,7 +55,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :link %>
     <%= form.label :link %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.link") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.link") %>
   </div>
 </div>
 
@@ -63,7 +63,7 @@
   <div class="form-floating input-group">
     <%= form.select :explicit, podcast_explicit_options %>
     <%= form.label :explicit %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.explicit") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.explicit") %>
   </div>
 </div>
 
@@ -76,7 +76,7 @@
     <%= form.select :itunes_category, itunes_category_options, {include_blank: true}, class: klass, data: {action: "dynamic-form#change"} %>
     <% if nested_errors.present? %><div class="invalid-feedback"><%= nested_errors %></div><% end %>
     <%= form.label :itunes_category %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.itunes_category") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.itunes_category") %>
     <%# update subcategory turbo-frame when category changes %>
     <a hidden href="<%= new_podcast_path %>" data-dynamic-form-target="link" data-turbo-frame="itunes-subcategory"></a>
   </div>
@@ -96,7 +96,7 @@
   <div class="form-floating input-group">
     <%= form.select :serial_order, podcast_serial_order_options %>
     <%= form.label :serial_order %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.serial_order") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.serial_order") %>
   </div>
 </div>
 
@@ -105,7 +105,7 @@
     <%# TODO: make this a select, but where to get the options? %>
     <%= form.text_field :language %>
     <%= form.label :language %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.language") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.language") %>
   </div>
 </div>
 
@@ -113,7 +113,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :owner_name %>
     <%= form.label :owner_name %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.owner_name") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.owner_name") %>
   </div>
 </div>
 
@@ -121,7 +121,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :owner_email %>
     <%= form.label :owner_email %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.owner_email") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.owner_email") %>
   </div>
 </div>
 
@@ -129,7 +129,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :author_name %>
     <%= form.label :author_name %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.author_name") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.author_name") %>
   </div>
 </div>
 
@@ -137,7 +137,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :author_email %>
     <%= form.label :author_email %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.author_email") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.author_email") %>
   </div>
 </div>
 
@@ -145,7 +145,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :managing_editor_name %>
     <%= form.label :managing_editor_name %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.managing_editor_name") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.managing_editor_name") %>
   </div>
 </div>
 
@@ -153,7 +153,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :managing_editor_email %>
     <%= form.label :managing_editor_email %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.managing_editor_email") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.managing_editor_email") %>
   </div>
 </div>
 
@@ -161,7 +161,7 @@
   <div class="form-floating input-group">
     <%= form.text_field :copyright %>
     <%= form.label :copyright %>
-    <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.copyright") %>"><span class="material-icons">help</span></a>
+    <%= field_help_text t(".help.copyright") %>
   </div>
 </div>
 
@@ -170,8 +170,7 @@
     <%= form.check_box :complete, class: "form-check-input" %>
     <div class="d-flex align-items-center">
       <%= form.label :complete %>
-
-      <a tabindex="0" class="prx-btn-help ms-1" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.complete") %>"><span class="material-icons">help</span></a>
+      <%= help_text t(".help.complete") %>
     </div>
   </div>
 </div>
