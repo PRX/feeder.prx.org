@@ -1,0 +1,10 @@
+<%= turbo_frame_tag "feed-form-itunes-image", data: {controller: "morphdom"} do %>
+  <% form.object.itunes_images.build if form.object.itunes_images.empty? %>
+
+  <%= form.fields_for :itunes_images, include_id: false do |fields| %>
+    <% dpath = feed_destroy_image_path(feed, fields) %>
+    <% rpath = feed_retry_image_path(feed, fields) %>
+
+    <%= render "images/form", form: fields, image: fields.object, delete_path: dpath, retry_path: rpath %>
+  <% end %>
+<% end %>

@@ -1,0 +1,22 @@
+<div class="col-12 mb-4" data-controller="toggle-field">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-secondary d-flex justify-content-between">
+      <h5 class="card-title flex-grow-1"><%= t(".title") %></h5>
+      <%= help_text t(".help.ad_zones") %>
+    </div>
+
+    <div class="card-body">
+      <%= form.check_box :billboard %>
+      <%= form.label :billboard, class: "me-2" %>
+
+      <%= form.check_box :house %>
+      <%= form.label :house, class: "me-2" %>
+
+      <%= form.check_box :paid %>
+      <%= form.label :paid, class: "me-2" %>
+
+      <%= form.check_box :sonic_id %>
+      <%= form.label :sonic_id, class: "me-2" %>
+    </div>
+  </div>
+</div>

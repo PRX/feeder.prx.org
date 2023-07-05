@@ -249,8 +249,8 @@ class Episode < ApplicationRecord
     EnclosureUrlBuilder.new.podcast_episode_url(podcast, self, feed)
   end
 
-  def enclosure_filename
-    uri = URI.parse(enclosure_url)
+  def enclosure_filename(feed = nil)
+    uri = URI.parse(enclosure_url(feed))
     File.basename(uri.path)
   end
 
@@ -279,6 +279,10 @@ class Episode < ApplicationRecord
     self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
     self.keywords = keywords.map { |kw| sanitize_keyword(kw, kw.length) }
+  end
+
+  def description_with_default
+    description || subtitle || title || ""
   end
 
   def feeder_cdn_host

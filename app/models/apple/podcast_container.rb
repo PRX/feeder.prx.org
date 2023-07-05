@@ -20,24 +20,30 @@ module Apple
     FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"
     SOURCE_URL_EXP_BUFFER = 10.minutes
 
-    def self.reset_source_urls(api, episodes)
-      containers = episodes.map(&:podcast_container)
-      containers = containers.compact.select(&:needs_delivery?)
+    def self.reset_source_file_metadata(episodes)
+      episodes = episodes.select { |ep| ep.podcast_container.present? }
+      episodes = episodes.select { |ep| ep.podcast_container.needs_delivery? }
 
-      containers.map do |container|
+      episodes.map do |episode|
+        container = episode.container
+
         Rails.logger.info("Resetting source url for podcast container",
           podcast_container_id: container.id,
+          source_size: container.source_size,
           source_url: container.source_url)
 
-        container.update!(source_url: nil, source_size: nil)
+        # Back to DTR to pick up fresh arrangements:
+        container.reset_source_metadata!(episode)
+
         # mark them for re-upload
         container.podcast_deliveries.destroy_all
       end.compact
     end
 
-    def self.update_podcast_container_file_metadata(api, episodes)
+    def self.probe_source_file_metadata(api, episodes)
       containers = episodes.map(&:podcast_container)
       raise "Missing podcast container for episode" if containers.any?(&:nil?)
+      containers = containers.filter(&:needs_file_metadata?)
 
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
 
@@ -102,17 +108,14 @@ module Apple
           episode_id: episode.feeder_id,
           vendor_id: episode.audio_asset_vendor_id).first)
 
-          pc.update(enclosure_url: episode.enclosure_url,
-            source_filename: episode.enclosure_filename,
-            updated_at: Time.now.utc)
+          pc.touch
           [pc, :updated]
         else
           pc = create!(apple_episode_id: episode.apple_id,
             external_id: external_id,
-            source_filename: episode.enclosure_filename,
-            enclosure_url: episode.enclosure_url,
             vendor_id: episode.audio_asset_vendor_id,
             episode_id: episode.feeder_id)
+
           [pc, :created]
         end
 
@@ -260,6 +263,19 @@ module Apple
       # If there are no deliveries, then the code that polls/checks the delivery
       # status will fail. So we need to create a delivery.
       podcast_deliveries.empty?
+    end
+
+    def reset_source_metadata!(apple_ep)
+      update!(
+        source_url: nil,
+        source_size: nil,
+        source_filename: apple_ep.enclosure_filename,
+        enclosure_url: apple_ep.enclosure_url
+      )
+    end
+
+    def needs_file_metadata?
+      source_url.nil? || source_size.nil? || source_filename.nil?
     end
   end
 end

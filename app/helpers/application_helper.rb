@@ -40,4 +40,22 @@ module ApplicationHelper
       args.last
     end
   end
+
+  def field_help_text(text)
+    tag.a class: "input-group-text prx-help", tabindex: 0, role: "button", data: {popover_target: "trigger", bs_trigger: "focus", bs_content: text} do
+      tag.span "help", class: "material-icons"
+    end
+  end
+
+  def help_text(text)
+    tag.a class: "prx-btn-help", tabindex: 0, role: "button", data: {popover_target: "trigger", bs_trigger: "focus", bs_content: text} do
+      tag.span "help", class: "material-icons"
+    end
+  end
+
+  def field_link(href)
+    link_to href, class: "input-group-text prx-help", target: :_blank do
+      tag.span "link", class: "material-icons"
+    end
+  end
 end

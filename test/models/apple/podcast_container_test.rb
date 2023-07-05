@@ -25,11 +25,74 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
   let(:api) { build(:apple_api) }
 
-  describe ".update_podcast_container_file_metadata" do
+  describe "the DTR / CDN redirect flow" do
+    let(:pc) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
+    before do
+      pc.update!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+    end
+    describe "#reset_source_metadata!" do
+      it "clears out the fields" do
+        assert pc.source_filename.present?
+        assert pc.source_url.present?
+        assert pc.source_size.present?
+
+        apple_episode.stub(:enclosure_url, "http://something/transistor") do
+          pc.reset_source_metadata!(apple_episode)
+        end
+
+        pc.reload
+        assert pc.source_filename.present?
+        refute pc.source_url.present?
+        refute pc.source_size.present?
+
+        assert_equal "transistor", pc.source_filename
+        assert_equal "http://something/transistor", pc.enclosure_url
+      end
+    end
+
+    describe "#needs_file_metadata?" do
+      it "is congruent with reset_source_metadata!" do
+        refute pc.needs_file_metadata?
+
+        pc.reset_source_metadata!(apple_episode)
+
+        assert pc.needs_file_metadata?
+      end
+    end
+
+    describe ".reset_source_file_metadata" do
+      it "needs delivery in order to be reset" do
+        apple_episode.podcast_container.stub(:needs_delivery?, false) do
+          Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
+        end
+
+        apple_episode.podcast_container.reload
+        refute apple_episode.podcast_container.source_url.nil?
+        refute apple_episode.podcast_container.source_size.nil?
+        refute apple_episode.podcast_container.source_filename.nil?
+
+        apple_episode.stub(:enclosure_filename, "new") do
+          apple_episode.stub(:enclosure_url, "http://this-is-new") do
+            apple_episode.podcast_container.stub(:needs_delivery?, true) do
+              Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
+            end
+          end
+        end
+
+        apple_episode.podcast_container.reload
+        assert apple_episode.podcast_container.source_url.nil?
+        assert apple_episode.podcast_container.source_size.nil?
+        assert_equal "http://this-is-new", apple_episode.podcast_container.enclosure_url
+        assert_equal "new", apple_episode.podcast_container.source_filename
+      end
+    end
+  end
+
+  describe ".probe_source_file_metadata" do
     it "should raise if any of the episodes lack a container" do
       apple_episode.stub(:podcast_container, nil) do
         assert_raises(RuntimeError, "missing podcast container") do
-          Apple::PodcastContainer.update_podcast_container_file_metadata(api, [apple_episode])
+          Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
         end
       end
     end
@@ -93,33 +156,24 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
 
-    it "should update the source_url and source_file_name" do
+    it "should not update the source_url and source_file_name" do
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-          pc1 = nil
-          apple_episode.stub(:enclosure_url, "https://podcast.source/1234") do
-            apple_episode.stub(:enclosure_filename, "1234") do
-              pc1 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
-                podcast_container_json_row)
-              assert_equal pc1.enclosure_url, "https://podcast.source/1234"
-              assert_nil pc1.source_url
-              assert_equal pc1.source_filename, "1234"
-            end
-          end
+          # It does not touch the source_url or source_filename on create
+          pc1 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+            podcast_container_json_row)
+          assert_nil pc1.enclosure_url
+          assert_nil pc1.source_url
+          assert_nil pc1.source_filename
 
-          pc2 = nil
-          apple_episode.stub(:enclosure_url, "https://another.source/5678") do
-            apple_episode.stub(:enclosure_filename, "5678") do
-              pc2 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
-                podcast_container_json_row)
-            end
-          end
+          pc2 = Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+            podcast_container_json_row)
 
           assert pc1 == pc2
-
-          assert_equal pc2.enclosure_url, "https://another.source/5678"
-          assert_nil pc2.source_url
-          assert_equal pc2.source_filename, "5678"
+          # It does not touch the source_url or source_filename on update
+          assert_nil pc1.enclosure_url
+          assert_nil pc1.source_url
+          assert_nil pc1.source_filename
         end
       end
     end

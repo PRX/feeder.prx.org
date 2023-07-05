@@ -23,16 +23,20 @@ module Apple
         remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["guid"], row] }.to_h
         remaining_eps.each { |ep| upsert_sync_log(ep, remote_ep_by_id[ep.guid]) }
 
+        remaining_eps.each do |ep|
+          Rails.logger.info("Waiting for audio asset state?", {episode_id: ep.feeder_id,
+                                                                  delivery_file_count: ep.podcast_delivery_files.count,
+                                                                  delivery_files_processed_errors: ep.podcast_delivery_files.all?(&:processed_errors?),
+                                                                  delivery_files_processed: ep.podcast_delivery_files.all?(&:processed?),
+                                                                  delivery_files_delivered: ep.podcast_delivery_files.all?(&:delivered?),
+                                                                  asset_state: ep.audio_asset_state,
+                                                                  has_podcast_audio: ep&.podcast_container&.has_podcast_audio?,
+                                                                  waiting_for_asset_state: ep.waiting_for_asset_state?})
+        end
+
         rem =
           remaining_eps.filter do |ep|
             if ep.waiting_for_asset_state?
-              Rails.logger.info("Waiting for audio asset state", {episode_id: ep.feeder_id,
-                                                                      delivery_file_count: ep.podcast_delivery_files.count,
-                                                                      delivery_files_processed_errors: ep.podcast_delivery_files.all?(&:processed_errors?),
-                                                                      delivery_files_processed: ep.podcast_delivery_files.all?(&:processed?),
-                                                                      delivery_files_delivered: ep.podcast_delivery_files.all?(&:delivered?),
-                                                                      asset_state: ep.audio_asset_state,
-                                                                      has_podcast_audio: ep&.podcast_container&.has_podcast_audio?})
               true
             end
           end
@@ -197,7 +201,8 @@ module Apple
     end
 
     def enclosure_filename
-      feeder_episode.enclosure_filename
+      uri = URI.parse(enclosure_url)
+      File.basename(uri.path)
     end
 
     def sync_log
@@ -240,7 +245,7 @@ module Apple
             guid: guid,
             title: feeder_episode.title,
             originalReleaseDate: feeder_episode.published_at.utc.iso8601,
-            description: feeder_episode.description || feeder_episode.subtitle,
+            description: feeder_episode.description_with_default,
             websiteUrl: feeder_episode.url,
             explicit: explicit,
             episodeNumber: feeder_episode.episode_number,
@@ -447,6 +452,10 @@ module Apple
 
     def apple_episode_id
       apple_id
+    end
+
+    def video_content_type?
+      feeder_episode.video_content_type?
     end
 
     def podcast_container

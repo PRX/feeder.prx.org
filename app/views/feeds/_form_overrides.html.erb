@@ -1,0 +1,33 @@
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-secondary d-flex justify-content-between">
+      <h5 class="card-title"><%= t(".title") %></h5>
+    </div>
+
+    <div class="card-body">
+      <div class="mb-4">
+        <div class="form-floating input-group">
+          <%= form.text_field :subtitle %>
+          <%= form.label :subtitle %>
+          <%= field_help_text t(".help.subtitle") %>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <div class="form-floating input-group">
+          <%= form.text_area :description %>
+          <%= form.label :description %>
+          <%= field_help_text t(".help.description") %>
+        </div>
+      </div>
+
+      <div>
+        <div class="form-floating input-group">
+          <%= form.text_area :summary %>
+          <%= form.label :summary %>
+          <%= field_help_text t(".help.summary") %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
