@@ -19,6 +19,7 @@ class EpisodeImport < ApplicationRecord
     unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true)
   end
   scope :complete, -> { where(status: PodcastImport::COMPLETE) }
+  scope :importing, -> { where(status: [PodcastImport::COMPLETE, PodcastImport::IMPORTING]) }
 
   before_validation :set_defaults, on: :create
 
