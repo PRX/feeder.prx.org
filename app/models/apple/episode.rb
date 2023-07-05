@@ -201,7 +201,8 @@ module Apple
     end
 
     def enclosure_filename
-      feeder_episode.enclosure_filename(private_feed)
+      uri = URI.parse(enclosure_url)
+      File.basename(uri.path)
     end
 
     def sync_log
