@@ -281,6 +281,10 @@ class Episode < ApplicationRecord
     self.keywords = keywords.map { |kw| sanitize_keyword(kw, kw.length) }
   end
 
+  def description_with_default
+    description || subtitle || title || ""
+  end
+
   def feeder_cdn_host
     ENV["FEEDER_CDN_HOST"]
   end

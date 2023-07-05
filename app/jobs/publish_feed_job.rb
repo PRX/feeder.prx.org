@@ -1,14 +1,21 @@
 require "builder"
 
 class PublishFeedJob < ApplicationJob
-  queue_as :feeder_default
+  queue_as :feeder_publishing
 
   include PodcastsHelper
 
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   def perform(podcast)
+    PublishingPipelineState.start!(podcast)
     podcast.feeds.each { |feed| publish_feed(podcast, feed) }
+    PublishingPipelineState.complete!(podcast)
+  rescue => e
+    PublishingPipelineState.error!(podcast)
+    raise e
+  ensure
+    PublishingPipelineState.settle_remaining!(podcast)
   end
 
   def publish_feed(podcast, feed)
@@ -19,13 +26,17 @@ class PublishFeedJob < ApplicationJob
   def publish_apple(feed)
     feed.apple_configs.map do |config|
       if feed.publish_to_apple?(config)
-        PublishAppleJob.perform_later(config)
+        res = PublishAppleJob.perform_now(config)
+        PublishingPipelineState.publish_apple!(feed.podcast)
+        res
       end
     end
   end
 
   def publish_rss(podcast, feed)
-    save_file(podcast, feed)
+    res = save_file(podcast, feed)
+    PublishingPipelineState.publish_rss!(podcast)
+    res
   end
 
   def save_file(podcast, feed, options = {})

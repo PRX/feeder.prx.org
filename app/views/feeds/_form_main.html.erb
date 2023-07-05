@@ -4,14 +4,14 @@
   <div class="form-floating input-group">
     <%= form.text_field :feed_link, value: feed.published_url, disabled: true %>
     <%= form.label :feed_link %>
-    <%= link_to(feed_link, class: "input-group-text btn btn-primary", target: :_blank) do %>
+    <%= link_to(feed_link, class: "input-group-text prx-help", target: :_blank) do %>
       <span class="material-icons">link</span>
     <% end %>
   </div>
 </div>
 
 <div class="col-12 mb-4">
-  <div class="form-floating  input-group">
+  <div class="form-floating input-group">
     <%= form.text_field :file_name %>
     <%= form.label :file_name %>
     <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.file_name") %>"><span class="material-icons">help</span></a>
@@ -31,7 +31,7 @@
 </div>
 
 <div class="col-12 mb-4">
-  <div class="form-floating  input-group">
+  <div class="form-floating input-group">
     <%= form.text_field :new_feed_url %>
     <%= form.label :new_feed_url %>
     <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.new_feed_url") %>"><span class="material-icons">help</span></a>
@@ -39,7 +39,7 @@
 </div>
 
 <div class="col-12 mb-4">
-  <div class="form-floating  input-group">
+  <div class="form-floating input-group">
     <%= form.text_field :enclosure_prefix %>
     <%= form.label :enclosure_prefix %>
     <a tabindex="0" class="input-group-text prx-help" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.enclosure_prefix") %>"><span class="material-icons">help</span></a>
@@ -70,41 +70,44 @@
   </div>
 </div>
 
-<div class="col-12 mb-4">
-  <div class="card shadow mb-4">
-    <div class="card-header-info d-flex justify-content-between align-items-center">
-      <h3 class="card-title"><%= t(".headers.audio_format") %></h3>
-      <a tabindex="0" class="prx-btn-help ms-1" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="<%= t(".help.audio_format") %>"><span class="material-icons">help</span></a>
+<div class="col-12 mb-4" data-controller="toggle-field">
+  <hr>
+  <h3><%= t(".headers.audio_format") %></h3>
+  <p><%= t(".help.audio_format") %></p>
+
+  <div class="row my-4">
+    <div class="col-3">
+      <div class="form-floating input-group">
+        <%= form.select :audio_type, audio_format_options, {include_blank: true}, data: {action: "toggle-field#displayOnlyThisField"} %>
+        <%= form.label :audio_type %>
+      </div>
     </div>
-    <div class="card-body">
-      <div class="row my-4">
-        <div class="col-3">
-          <div class="form-floating">
-            <%= form.select :audio_format, audio_format_options %>
-            <%= form.label :audio_format %>
-          </div>
-        </div>
 
-        <div class="col-3">
-          <div class="form-floating">
-            <%= form.select :audio_format, audio_bitrate_options %>
-            <%= form.label :audio_format %>
-          </div>
-        </div>
+    <div class="col-3 <%= display_bitrate(feed) %>" data-toggle-field-target="field" field="mp3">
+      <div class="form-floating input-group">
+        <%= form.select :audio_bitrate, audio_bitrate_options %>
+        <%= form.label :audio_bitrate %>
+      </div>
+    </div>
 
-        <div class="col-3">
-          <div class="form-floating">
-            <%= form.select :audio_format, audio_channel_options %>
-            <%= form.label :audio_format %>
-          </div>
-        </div>
+    <div class="col-3 <%= display_bitdepth(feed) %>" data-toggle-field-target="field" field="wav flac">
+      <div class="form-floating input-group">
+        <%= form.select :audio_bitdepth, audio_bitdepth_options %>
+        <%= form.label :audio_bitdepth %>
+      </div>
+    </div>
 
-        <div class="col-3">
-          <div class="form-floating">
-            <%= form.select :audio_format, audio_sample_options %>
-            <%= form.label :audio_format %>
-          </div>
-        </div>
+    <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac">
+      <div class="form-floating input-group">
+        <%= form.select :audio_channel, audio_channel_options %>
+        <%= form.label :audio_channel %>
+      </div>
+    </div>
+
+    <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac">
+      <div class="form-floating input-group">
+        <%= form.select :audio_sample, audio_sample_options %>
+        <%= form.label :audio_sample %>
       </div>
     </div>
   </div>

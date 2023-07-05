@@ -8,7 +8,7 @@ gem "activerecord-session_store"
 gem "bootsnap", require: false
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.0"
-gem "rails", "~> 7.0.0"
+gem "rails", "~> 7.0.6"
 gem "redis", "~> 4.0"
 
 # authorization
