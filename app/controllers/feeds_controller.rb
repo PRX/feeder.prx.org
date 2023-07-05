@@ -95,7 +95,6 @@ class FeedsController < ApplicationController
       :title,
       :subtitle,
       :description,
-      :summary,
       :private,
       :url,
       :new_feed_url,

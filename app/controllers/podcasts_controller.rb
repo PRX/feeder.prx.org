@@ -112,7 +112,6 @@ class PodcastsController < ApplicationController
       :prx_account_uri,
       :subtitle,
       :description,
-      :summary,
       :link,
       :explicit,
       :itunes_category,

@@ -117,7 +117,6 @@ class EpisodesController < ApplicationController
       :clean_title,
       :subtitle,
       :description,
-      :summary,
       :production_notes,
       :explicit,
       :itunes_type,
