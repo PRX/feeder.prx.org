@@ -201,7 +201,7 @@ module Apple
     end
 
     def enclosure_filename
-      feeder_episode.enclosure_filename
+      feeder_episode.enclosure_filename(private_feed)
     end
 
     def sync_log
