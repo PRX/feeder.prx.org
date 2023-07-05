@@ -114,15 +114,12 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def trix_editor(method, options = {})
-    disabled_toolbar = ""
-    options[:class] = "form-control" unless options.key?(:class)
-    if disabled?
-      disabled_toolbar_id = "trix-blank-toolbar_#{method}"
-      disabled_toolbar = @template.content_tag(:div, nil, id: disabled_toolbar_id)
-      options["toolbar"] = disabled_toolbar_id
-      options["contentEditable"] = !disabled?
-    end
-    [disabled_toolbar, super(method, options)].join.html_safe
+    options[:class] = INPUT_CLASS unless options.key?(:class)
+    add_blank_class(options) if blank?(method, options)
+    add_blank_action(options)
+    add_changed(method, options)
+    add_disabled(options)
+    super(method, options)
   end
 
   def disabled?

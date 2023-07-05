@@ -1,4 +1,4 @@
-# instead of using the gem, got these helpers from
+# modified from:
 # https://github.com/afomera/trix/blob/ea25b97a0fcb7c17dba6199e353ad14f2232beed/lib/trix/form.rb
 
 require "action_view"
@@ -11,6 +11,14 @@ module TrixEditorHelper
   def trix_editor_tag(name, value = nil, options = {})
     options.symbolize_keys!
 
+    # handle disabled fields
+    toolbar_tag = ""
+    if options[:disabled]
+      options[:contentEditable] = false
+      options[:toolbar] = "trix-blank-toolbar_#{name}"
+      toolbar_tag = content_tag(:div, nil, id: options[:toolbar])
+    end
+
     css_class = Array.wrap(options.delete(:class)).join(" ")
     attributes = {
       class: "formatted_content trix-content #{css_class}".squish,
@@ -18,9 +26,9 @@ module TrixEditorHelper
     }.merge(options)
 
     editor_tag = content_tag("trix-editor", "", attributes)
-    input_tag = hidden_field_tag(name, value, id: attributes[:input])
+    input_tag = hidden_field_tag(name, value, options.merge(id: attributes[:input]))
 
-    input_tag + editor_tag
+    input_tag + editor_tag + toolbar_tag
   end
 end
 
