@@ -1,26 +1,13 @@
 <%= form_with(url: podcast_imports_path(import.podcast), model: [import.podcast, import], method: :post, html: {autocomplete: "off"}) do |form| %>
-
-  <div class="col-12 mb-4 prx-field-group">
-    <div class="form-floating">
-      <%= form.select :source, ["RSS"] %>
-      <%= form.label :source, "Feed source" %>
+  <div class="row my-4">
+    <div class="col-lg-8">
+      <div class="row">
+        <%= render "form_main", imports: imports, form: form %>
+      </div>
     </div>
-
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
-  </div>
-
-  <div class="col-12 mb-4 prx-field-group">
-    <div class="form-floating">
-      <%= form.text_field :url %>
-      <%= form.label :url, "RSS Feed URL" %>
+    <div class="col-lg-4 d-grid align-content-start gap-3">
+      <%= render "form_status", form: form %>
     </div>
-
-    <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
   </div>
 
-  <div>
-    <%= form.hidden_field :account_id, value: @podcast.account_id %>
-    <%= form.hidden_field :podcast_id, value: @podcast.id %>
-    <%= form.submit "Start Import", class: "btn btn-primary" %>
-  </div>
 <% end %>

@@ -1,0 +1,35 @@
+<div class="card shadow border-0">
+  <div class="card-header-success">
+    <h5 class="card-title">Import</h5>
+  </div>
+
+  <div class="card-body row">
+    <div class="col-12 mb-4 prx-field-group">
+      <div class="form-floating">
+        <%= form.select :source, ["RSS"] %>
+        <%= form.label :source, "Feed source" %>
+      </div>
+
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
+    </div>
+
+    <div class="col-12 mb-4 prx-field-group">
+      <div class="form-floating">
+        <%= form.text_field :url %>
+        <%= form.label :url, "RSS Feed URL" %>
+      </div>
+
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
+    </div>
+
+  </div>
+
+  <div class="card-footer d-flex-align-items-center justify-content-between">
+
+    <div class="col-12 mb-4">
+      <%= form.hidden_field :account_id, value: @podcast.account_id %>
+      <%= form.hidden_field :podcast_id, value: @podcast.id %>
+      <%= form.submit "Start Import", class: "btn btn-success" %>
+    </div>
+  </div>
+</div>

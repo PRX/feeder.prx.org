@@ -1,0 +1,30 @@
+<div class="overflow-auto text-nowrap">
+  <table class="table table-striped shadow rounded">
+    <thead>
+      <tr class="table-secondary">
+        <th>Feed Url</th>
+        <th>Status</th>
+        <th>Episode Count</th>
+        <th>Import Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if imports.present? %>
+        <% imports.each do |import| %>
+          <tr>
+            <td><%= import.url %></td>
+            <td><%= import.status %></td>
+            <td><%= import.feed_episode_count %></td>
+            <td><%= import.created_at.to_date %></td>
+          </tr>
+        <% end %>
+      <% else %>
+        <tr>
+          <td class="text-center text-muted p-4" colspan="100">No imports</td>
+        </tr>
+      <% end %>
+
+    </tbody>
+  </table>
+</div>
+

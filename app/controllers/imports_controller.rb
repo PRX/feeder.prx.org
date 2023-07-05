@@ -2,12 +2,9 @@ class ImportsController < ApplicationController
   before_action :set_podcast
   # before_action :set_import, only: %i[show]
 
-  # GET /imports/1
-  def show
-  end
-
-  # GET /imports/new
-  def new
+  # GET /imports
+  def index
+    @imports = PodcastImport.where(podcast_id: @podcast).order(created_at: :desc)
     @import = PodcastImport.new(account_id: @podcast.account_id, podcast_id: @podcast.id)
     authorize @import
   end
@@ -22,7 +19,7 @@ class ImportsController < ApplicationController
     respond_to do |format|
       if @import.save
         @import.import_later
-        format.html { redirect_to podcast_path(@podcast), notice: ("Beginning import.") }
+        format.html { redirect_to podcast_imports_path(@podcast), notice: ("Beginning import.") }
       else
         format.html do
           flash.now[:notice] = "Could not begin import."

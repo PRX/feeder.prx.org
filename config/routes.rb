@@ -4,7 +4,7 @@ Rails.application.routes.draw do
     resources :podcasts do
       resource :engagement, only: [:show, :update], controller: :podcast_engagement
       resource :player, only: :show, controller: :podcast_player
-      resources :imports, only: [:new, :create, :show]
+      resources :imports, only: [:index, :create]
       resource :planner, only: [:show, :create], controller: :podcast_planner
       resources :feeds, except: [:index, :edit]
       resources :episodes, only: [:index, :create, :new]

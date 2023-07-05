@@ -1,5 +1,5 @@
 class PodcastImportPolicy < PodcastPolicy
-  def new?
+  def index?
     PodcastPolicy.new(token, resource.podcast).new?
   end
 
