@@ -2,7 +2,7 @@
   <div class="card border-light shadow mb-4">
     <div class="card-header-light">
       <%= t(".header.day_select") %>
-    </div>  
+    </div>
     <div class="card-body">
       <div class="form-floating">
         <%= form.select :selected_days, day_options, {include_blank: true}, data: {action: "click#submit"}, multiple: true %>
@@ -80,6 +80,6 @@
           </div>
         </div>
       </div>
-    </div>  
+    </div>
   </div>
 </section>
