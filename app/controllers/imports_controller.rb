@@ -1,6 +1,5 @@
 class ImportsController < ApplicationController
   before_action :set_podcast
-  # before_action :set_import, only: %i[show]
 
   # GET /imports
   def index
@@ -30,11 +29,6 @@ class ImportsController < ApplicationController
   end
 
   private
-
-  # Use callbacks to share common setup or constraints between actions.
-  def set_import
-    # @import = Import.find(params[:id])
-  end
 
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
