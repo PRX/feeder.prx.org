@@ -4,7 +4,7 @@ class PodcastImportPolicy < PodcastPolicy
   end
 
   def create?
-    PodcastPolicy.new(token, resource.podcast).update?
+    PodcastPolicy.new(token, resource.podcast).create?
   end
 
   private
