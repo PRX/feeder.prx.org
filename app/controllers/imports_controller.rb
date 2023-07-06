@@ -22,7 +22,7 @@ class ImportsController < ApplicationController
       else
         format.html do
           flash.now[:notice] = "Could not begin import."
-          render :new, status: :unprocessable_entity
+          render :index, status: :unprocessable_entity
         end
       end
     end
