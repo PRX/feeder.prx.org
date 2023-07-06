@@ -56,6 +56,12 @@
   }
 }
 
+.input-group {
+  .invalid-feedback {
+    order: 4;
+  }
+}
+
 // material style floating form labels
 .form-floating {
   > label {
