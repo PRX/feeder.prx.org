@@ -15,7 +15,7 @@
 
   <div class="row my-4">
     <div class="col-lg-4 mb-4 mb-lg-0">
-      <div class="card shadow mb-4">
+      <div class="card shadow border-0 mb-4">
         <div class="card-header d-flex gap-4 align-items-center">
           <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".latest_published" %></h1>
           <%= link_to podcast_episodes_path(@podcast), class: "btn btn-primary btn-sm" do %>
@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <div class="card shadow">
+      <div class="card shadow border-0">
         <div class="card-header d-flex align-items-center">
           <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".next_scheduled" %></h1>
         </div>
@@ -57,7 +57,7 @@
     </div>
 
     <div class="col-lg-8 d-grid">
-      <div class="card shadow">
+      <div class="card shadow border-0">
         <div class="card-body">
           <p>Metrics Placeholder</p>
         </div>
@@ -68,7 +68,7 @@
 
   <div class="row">
     <div class="col-lg-6 d-grid mb-4 mb-lg-0">
-      <div class="card shadow">
+      <div class="card shadow border-0">
         <div class="card-header d-flex align-items-center">
           <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".feeds" %></h1>
           <%= link_to podcast_feeds_path(@podcast), class: "btn btn-primary btn-sm" do %>
@@ -85,7 +85,7 @@
     </div>
 
     <div class="col-lg-6 d-grid">
-      <div class="card shadow">
+      <div class="card shadow border-0">
         <div class="card-header d-flex align-items-center">
           <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".settings" %></h1>
           <%= link_to edit_podcast_path(@podcast), class: "btn btn-primary btn-sm" do %>
