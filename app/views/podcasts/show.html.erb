@@ -15,7 +15,7 @@
 
   <div class="row my-4">
     <div class="d-flex flex-column col-lg-4 mb-4 mb-lg-0">
-      <div class="card shadow mb-4 flex-fill">
+      <div class="card shadow border-0 mb-4 flex-fill">
         <div class="card-header d-flex gap-4 align-items-center">
           <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".latest_published" %></h2>
           <%= link_to podcast_episodes_path(@podcast), class: "btn btn-primary btn-sm" do %>
@@ -35,7 +35,8 @@
         </div>
       </div>
 
-      <div class="card shadow flex-fill">
+
+      <div class="card shadow border-0 flex-fill">
         <div class="card-header d-flex align-items-center">
           <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".next_scheduled" %></h2>
         </div>
@@ -58,7 +59,7 @@
 
     <% if current_user_app?("metrics") %>
       <div class="col-lg-8 d-grid">
-        <div class="card shadow"
+        <div class="card shadow border-0"
              data-controller="podcast-metrics"
              data-podcast-metrics-castle-value="<%= @metrics_castle_root %>"
              data-podcast-metrics-dates-value="<%= @metrics_dates.to_a.to_json %>"
@@ -97,7 +98,7 @@
 
   <div class="row">
     <div class="col-lg-6 d-grid mb-4 mb-lg-0">
-      <div class="card shadow">
+      <div class="card shadow border-0">
         <div class="card-header d-flex align-items-center">
           <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".feeds" %></h2>
           <%= link_to podcast_feeds_path(@podcast), class: "btn btn-primary btn-sm" do %>
@@ -114,7 +115,7 @@
     </div>
 
     <div class="col-lg-6 d-grid">
-      <div class="card shadow">
+      <div class="card shadow border-0">
         <div class="card-header d-flex align-items-center">
           <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".settings" %></h2>
           <%= link_to edit_podcast_path(@podcast), class: "btn btn-primary btn-sm" do %>
