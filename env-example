@@ -40,6 +40,7 @@ PRX_CLIENT_ID=
 PRX_SECRET=
 
 # prx hosts
+CASTLE_HOST=castle.staging.prx.tech
 CMS_HOST=cms.staging.prx.tech
 DOVETAIL_HOST=dovetail.staging.prxu.org
 FEEDER_HOST=feeder.staging.prx.tech

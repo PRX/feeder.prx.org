@@ -374,16 +374,21 @@ en:
       error: Unable to save
       notice: Podcast updated
     show:
-      latest_published: Latest Published
       all_episodes: All Episodes
-      next_scheduled: Next Scheduled or Draft
-      feeds: Feeds
-      manage_feeds: Manage Feeds
       default_feed: Default RSS Feed
-      settings: Settings
-      manage_settings: Manage Settings
       engagement_settings: Engagement Settings
+      feeds: Feeds
       import: Import
+      last_30: Last 30 Days
+      latest_published: Latest Published
+      loading: Loading...
+      manage_feeds: Manage Feeds
+      manage_settings: Manage Settings
+      next_scheduled: Next Scheduled or Draft
+      published_episodes: Published Episodes
+      settings: Settings
+      total_downloads: Total Downloads
+      view_metrics: View Metrics
     podcast_page:
       my_podcasts: My Podcasts
       drafted_episodes:

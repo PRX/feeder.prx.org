@@ -56,14 +56,44 @@
       </div>
     </div>
 
-    <div class="col-lg-8 d-grid">
-      <div class="card shadow">
-        <div class="card-body">
-          <p>Metrics Placeholder</p>
+    <% if current_user_app?("metrics") %>
+      <div class="col-lg-8 d-grid">
+        <div class="card shadow mb-4"
+             data-controller="podcast-metrics"
+             data-podcast-metrics-castle-value="<%= @metrics_castle_root %>"
+             data-podcast-metrics-dates-value="<%= @metrics_dates.to_a.to_json %>"
+             data-podcast-metrics-guids-value="<%= @metrics_guids.to_json %>"
+             data-podcast-metrics-jwt-value="<%= @metrics_jwt %>"
+             data-podcast-metrics-podcast-value="<%= @podcast.id %>"
+             data-podcast-metrics-titles-value="<%= @metrics_titles.to_json %>">
+          <div class="card-header d-flex gap-4 align-items-center">
+            <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t(".last_30") %></h1>
+            <%= link_to "#{current_user_app("metrics")}/#{@podcast.id}", class: "btn btn-primary btn-sm" do %>
+              <%= t(".view_metrics") %>
+              <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
+            <% end %>
+          </div>
+          <div class="card-body episode-card h-auto border-start-0">
+            <div class="d-flex justify-content-evenly">
+              <h1>
+                <span data-podcast-metrics-target="total">&mdash;</span>
+                <%= t(".total_downloads") %>
+              </h1>
+              <h1>
+                <%= pluralize @metrics_guids.size, t(".published_episodes") %>
+              </h1>
+            </div>
+            <div class="d-flex justify-content-center" data-podcast-metrics-target="chart">
+              <div class="m-4">
+                <div class="spinner-border text-primary ms-2" role="status">
+                  <span class="visually-hidden"><%= t(".loading") %></span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-    </div>
+    <% end %>
   </div>
 
   <div class="row">

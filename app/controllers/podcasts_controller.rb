@@ -1,4 +1,6 @@
 class PodcastsController < ApplicationController
+  include PrxAccess
+
   before_action :set_podcast, only: %i[show edit update destroy]
 
   # Translate the user selected sort to a query order argument
@@ -34,6 +36,11 @@ class PodcastsController < ApplicationController
 
     @recently_published = @podcast.episodes.published.first
     @next_scheduled = @podcast.episodes.draft_or_scheduled.order(:released_at).first
+
+    @metrics_jwt = prx_jwt
+    @metrics_castle_root = castle_root
+    @metrics_dates = 30.days.ago.utc.to_date..1.day.from_now.utc.to_date
+    @metrics_guids, @metrics_titles = published_episodes(@metrics_dates)
   end
 
   # GET /podcasts/new
@@ -104,6 +111,11 @@ class PodcastsController < ApplicationController
 
   def set_podcast
     @podcast = Podcast.find(params[:id])
+  end
+
+  def published_episodes(date_range)
+    data = @podcast.episodes.published.where(published_at: date_range).order(published_at: :asc).pluck(:guid, :title)
+    [data.transpose[0], data.transpose[1]]
   end
 
   def podcast_params
