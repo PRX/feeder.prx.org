@@ -36,3 +36,4 @@ pin "convert-string" # @0.1.0
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin_all_from "app/javascript/custom", under: "custom"
 pin_all_from "app/javascript/util", under: "util"
+pin "highcharts", to: "https://ga.jspm.io/npm:highcharts@11.1.0/highcharts.js"
