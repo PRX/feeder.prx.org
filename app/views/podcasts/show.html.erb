@@ -81,7 +81,7 @@
               </h3>
               <h3 class="text-center flex-fill border-start border-bottom py-2">
                 <span class="h1"><%= @metrics_guids.size %></span><br>
-                <span class="text-uppercase h6"><%= pluralize @metrics_guids.size, t(".published_episodes") %>
+                <span class="text-uppercase h6"><%= t(".published_episodes").pluralize(@metrics_guids.size) %>
                 </span>
               </h3>
             </div>
