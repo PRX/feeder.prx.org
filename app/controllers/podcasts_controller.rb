@@ -41,6 +41,8 @@ class PodcastsController < ApplicationController
     @metrics_castle_root = castle_root
     @metrics_dates = 30.days.ago.utc.to_date..Time.now.utc.to_date
     @metrics_guids, @metrics_titles = published_episodes(@metrics_dates)
+
+    @feeds = @podcast.feeds.order(Arel.sql("slug IS NULL DESC, updated_at DESC")).limit(3)
   end
 
   # GET /podcasts/new

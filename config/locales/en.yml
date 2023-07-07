@@ -387,6 +387,7 @@ en:
       next_scheduled: Next Scheduled or Draft
       no_published: No Published Episodes
       no_scheduled: No Scheduled Episodes
+      player: Embeddable Player
       published_episodes: Published Episode
       settings: Settings
       total_downloads: Total Downloads

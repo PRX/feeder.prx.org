@@ -115,7 +115,9 @@
         </div>
         <div class="card-body">
           <ul class="list-group list-group-flush">
-            <li class="list-group-item p-0"><%= link_to (t ".default_feed"), podcast_feed_path(@podcast, @podcast.default_feed) %></li>
+            <% @feeds.each do |feed| %>
+              <li class="list-group-item border-bottom-0 p-0"><%= link_to feed.default? ? t(".default_feed") : feed.title, podcast_feed_path(@podcast, feed) %></li>
+            <% end %>
           </ul>
         </div>
       </div>
@@ -126,14 +128,15 @@
         <div class="card-header d-flex align-items-center">
           <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".settings" %></h2>
           <%= link_to edit_podcast_path(@podcast), class: "btn btn-primary btn-sm" do %>
-            <%= t ".manage_settings" %>
+            <%= t(".manage_settings") %>
             <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
           <% end %>
         </div>
         <div class="card-body">
           <ul class="list-group list-group-flush">
-            <li class="list-group-item border-bottom-0 p-0"><%= link_to (t ".engagement_settings"), podcast_engagement_path(@podcast) %></li>
-            <li class="list-group-item p-0"><%= link_to (t ".import"), podcast_imports_path(@podcast) %></li>
+            <li class="list-group-item border-bottom-0 p-0"><%= link_to t(".engagement_settings"), podcast_engagement_path(@podcast) %></li>
+            <li class="list-group-item border-bottom-0 p-0"><%= link_to t(".player"), podcast_player_path(@podcast) %></li>
+            <li class="list-group-item border-bottom-0 p-0"><%= link_to t(".import"), podcast_imports_path(@podcast) %></li>
           </ul>
         </div>
       </div>
