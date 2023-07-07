@@ -72,6 +72,7 @@ class Tasks::CopyMediaTask < ::Task
   def porter_slice_task
     {
       Type: "Transcode",
+      Format: "INHERIT",
       Destination: {
         Mode: "AWS/S3",
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
