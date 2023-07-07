@@ -41,6 +41,13 @@ class Tasks::CopyMediaTask < ::Task
         media_resource.frame_rate = info[:Video][:Framerate].to_f.round
       end
 
+      # if we sliced the file, override the size/duration
+      if media_resource.slice?
+        porter_callback_inspect[:Size]&.to_i
+        media_resource.file_size = porter_callback_transcode[:Size]&.to_i
+        media_resource.duration = porter_callback_transcode[:Duration]&.to_f&./ 1000
+      end
+
       # change status, if metadata doesn't pass validations
       media_resource.status = "invalid" if media_resource.invalid?
     end

@@ -19,7 +19,7 @@ FactoryBot.define do
       {
         Extension: "mp3",
         MIME: "audio/mpeg",
-        Size: "32980032",
+        Size: 32980032,
         Audio: {
           Duration: 1371437,
           Format: "mp3",
@@ -41,6 +41,13 @@ FactoryBot.define do
         }
       }
     end
+    initialize_with { attributes.with_indifferent_access }
+  end
+
+  factory :porter_slice_audio_result, class: Hash do
+    Task { "Transcode" }
+    Duration { 9999 }
+    Size { 9999 }
     initialize_with { attributes.with_indifferent_access }
   end
 

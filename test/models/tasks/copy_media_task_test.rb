@@ -103,6 +103,20 @@ describe Tasks::CopyMediaTask do
       assert_nil task.media_resource.width
     end
 
+    it "overrides sliced audio with the new size/duration" do
+      task.media_resource.update!(segmentation: [5, 10])
+
+      task.result[:JobResult][:TaskResults] << build(:porter_slice_audio_result)
+      task.media_resource.reset_media_attributes
+
+      task.update(status: "created")
+      assert_nil task.media_resource.mime_type
+
+      task.update(status: "complete")
+      assert_equal 9.999, task.media_resource.duration
+      assert_equal 9999, task.media_resource.file_size
+    end
+
     it "updates video metadata on complete" do
       task.result[:JobResult][:TaskResults][1] = build(:porter_inspect_video_result)
       task.media_resource.reset_media_attributes

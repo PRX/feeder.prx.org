@@ -50,6 +50,10 @@ module PorterCallback
     porter_callback_task_result(:Inspect).try(:[], :Inspection) || {}
   end
 
+  def porter_callback_transcode
+    porter_callback_task_result(:Transcode) || {}
+  end
+
   def porter_callback_mime
     info = porter_callback_inspect
 
