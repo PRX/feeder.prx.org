@@ -39,7 +39,7 @@ class PodcastsController < ApplicationController
 
     @metrics_jwt = prx_jwt
     @metrics_castle_root = castle_root
-    @metrics_dates = 30.days.ago.utc.to_date..1.day.from_now.utc.to_date
+    @metrics_dates = 30.days.ago.utc.to_date..Time.now.utc.to_date
     @metrics_guids, @metrics_titles = published_episodes(@metrics_dates)
   end
 
@@ -114,8 +114,8 @@ class PodcastsController < ApplicationController
   end
 
   def published_episodes(date_range)
-    data = @podcast.episodes.published.where(published_at: date_range).order(published_at: :asc).pluck(:guid, :title)
-    [data.transpose[0], data.transpose[1]]
+    data = @podcast.episodes.published.where(published_at: date_range.first..).order(published_at: :asc).pluck(:guid, :title)
+    [data.transpose[0] || [], data.transpose[1] || []]
   end
 
   def podcast_params
