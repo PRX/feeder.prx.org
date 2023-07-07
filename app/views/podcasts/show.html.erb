@@ -17,7 +17,7 @@
     <div class="col-lg-4 mb-4 mb-lg-0">
       <div class="card shadow mb-4">
         <div class="card-header d-flex gap-4 align-items-center">
-          <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".latest_published" %></h1>
+          <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".latest_published" %></h2>
           <%= link_to podcast_episodes_path(@podcast), class: "btn btn-primary btn-sm" do %>
             <%= t ".all_episodes" %>
             <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
@@ -37,7 +37,7 @@
 
       <div class="card shadow">
         <div class="card-header d-flex align-items-center">
-          <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".next_scheduled" %></h1>
+          <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".next_scheduled" %></h2>
         </div>
         <div class="card-body episode-card h-auto border-start-0">
           <% if @next_scheduled.present? %>
@@ -58,7 +58,7 @@
 
     <% if current_user_app?("metrics") %>
       <div class="col-lg-8 d-grid">
-        <div class="card shadow mb-4"
+        <div class="card shadow"
              data-controller="podcast-metrics"
              data-podcast-metrics-castle-value="<%= @metrics_castle_root %>"
              data-podcast-metrics-dates-value="<%= @metrics_dates.to_a.to_json %>"
@@ -67,7 +67,7 @@
              data-podcast-metrics-podcast-value="<%= @podcast.id %>"
              data-podcast-metrics-titles-value="<%= @metrics_titles.to_json %>">
           <div class="card-header d-flex gap-4 align-items-center">
-            <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t(".last_30") %></h1>
+            <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t(".last_30") %></h2>
             <%= link_to "#{current_user_app("metrics")}/#{@podcast.id}", class: "btn btn-primary btn-sm" do %>
               <%= t(".view_metrics") %>
               <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
@@ -98,7 +98,7 @@
     <div class="col-lg-6 d-grid mb-4 mb-lg-0">
       <div class="card shadow">
         <div class="card-header d-flex align-items-center">
-          <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".feeds" %></h1>
+          <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".feeds" %></h2>
           <%= link_to podcast_feeds_path(@podcast), class: "btn btn-primary btn-sm" do %>
             <%= t ".manage_feeds" %>
             <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
@@ -115,7 +115,7 @@
     <div class="col-lg-6 d-grid">
       <div class="card shadow">
         <div class="card-header d-flex align-items-center">
-          <h1 class="h5 episode-card-title fw-bold flex-fill"><%= t ".settings" %></h1>
+          <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".settings" %></h2>
           <%= link_to edit_podcast_path(@podcast), class: "btn btn-primary btn-sm" do %>
             <%= t ".manage_settings" %>
             <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
