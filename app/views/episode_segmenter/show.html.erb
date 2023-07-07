@@ -2,13 +2,13 @@
 
 <%= render "episodes/tabs" %>
 
-<div class="card" style="width: 40rem;">
+<div class="card text-dark bg-warning mt-4" style="width: 40rem;">
   <div class="card-header">
     Debugging...
   </div>
   <div class="card-body">
     <h5 class="card-title">
-      <% if @uncut.segmentation_ready? %>
+      <% if @uncut&.segmentation_ready? %>
         Segmentation ready!
       <% else %>
         Not ready yet
@@ -29,7 +29,13 @@
         <% @episode.contents.each do |c| %>
           <tr>
             <td><%= c.position %></td>
-            <td><%= c.file_name %></td>
+            <td>
+              <% if c.status_complete? %>
+                <%= link_to c.file_name, c.url %>
+              <% else %>
+                <%= c.file_name %>
+              <% end %>
+            </td>
             <td><%= c.slice_start %></td>
             <td><%= c.slice_end %></td>
             <td><%= c.status %></td>
