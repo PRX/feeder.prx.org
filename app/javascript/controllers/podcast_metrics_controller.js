@@ -50,6 +50,9 @@ export default class extends Controller {
 
   async load(path, seriesIndex, isTotal = false) {
     const json = await this.fetchJSON(path)
+    if (!json) {
+      return
+    }
     const data = json.downloads.map((d) => [new Date(d[0]).getTime(), d[1]])
 
     // clear out yAxis max and update series
@@ -77,12 +80,17 @@ export default class extends Controller {
           const err = new Error(`Got ${res.status} from ${url}`)
           console.error(err.message, err)
           this.showError(err)
-          return null
         }
       },
       (err) => {
         console.error(`Fetch error for ${url}`, err)
-        this.showError(err)
+        if (window.location.href.includes("localhost") || window.location.href.includes("127.0.0.1")) {
+          this.showError(
+            new Error("CORS error - you cannot load metrics data using localhost. Switch to https://feeder.prx.test!")
+          )
+        } else {
+          this.showError(err)
+        }
       }
     )
   }
