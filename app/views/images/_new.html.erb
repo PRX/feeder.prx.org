@@ -30,7 +30,7 @@
 
       <%# fake display field; real text area is opacity-0 on top of it %>
       <div class="form-control d-flex align-items-center <%= "is-changed" if image.marked_for_destruction? %>">
-        <span class="material-icons text-primary ms-2">upload</span>
+        <span class="material-icons text-primary">upload</span>
         <div class="text-secondary mx-2">Upload a file</div>
       </div>
 
@@ -40,7 +40,7 @@
     <%# step 2: upload progressbar %>
     <div class="form-floating d-none" data-upload-target="progress">
       <div class="form-control d-flex align-items-center is-changed if-visible">
-        <span class="material-icons text-primary ms-2">upload</span>
+        <span class="material-icons text-primary">upload</span>
         <div class="text-secondary mx-2" data-upload-target="fileName"></div>
 
         <div class="progress flex-grow-1 me-2">
