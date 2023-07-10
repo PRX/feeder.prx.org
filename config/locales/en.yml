@@ -244,16 +244,18 @@ en:
       notice: Episode updated
   episode_player:
     form:
-      enclosure_not_ready: No Media Files Uploadedzz
+      enclosure_not_ready: No Media Files Uploaded
       help:
         copy: Copy the code for one of the following players, and place it on your webpage.
         types:
-          standard: The standard player is responsive, meaning it automatically adjusts to the content column it is embedded in. Resize this panel to see how the player adjusts and looks at different widths.
           card: Something about a responsive card
           card_fixed: Fixed width card something blah
+          standard: The standard player is responsive, meaning it automatically adjusts to the content column it is embedded in. Resize this panel to see how the player adjusts and looks at different widths.
+        warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/links will begin to function as expected within a few minutes of publishing.
       title:
         copy: Copy and Use your Embed Code
         preview: Player
+        warning: Warning
     show:
       title: Embeddable Player
   episode_segmenter:

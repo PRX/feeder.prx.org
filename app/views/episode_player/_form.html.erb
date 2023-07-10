@@ -51,7 +51,14 @@
   <div class="col-12 mb-4">
     <h3 class="fw-bold"><%= t(".title.preview") %></h3>
 
-    <%= embed_player_episode_iframe(episode, embed_player_type) %>
+    <% unless episode.published? %>
+      <div class="alert alert-warning" role="alert">
+        <h4 class="alert-heading fw-bold"><%= t(".title.warning") %></h4>
+        <p class="mb-0"><%= t(".help.warning") %></p>
+      </div>
+    <% end %>
+
+    <%= embed_player_episode_iframe(episode, embed_player_type, true) %>
   </div>
 
 <% end %>
