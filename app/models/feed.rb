@@ -89,11 +89,7 @@ class Feed < ApplicationRecord
   end
 
   def public_url
-    if private? || url.blank?
-      published_url
-    else
-      url
-    end
+    url.present? ? url : published_url
   end
 
   def published_path
