@@ -52,10 +52,12 @@ module EpisodeMedia
 
     # infer episode medium
     current = contents.reject(&:marked_for_destruction?)
-    if current.all?(&:audio?)
-      self.medium = "audio"
-    elsif current.all?(&:video?)
-      self.medium = "video"
+    unless medium_uncut?
+      if current.all?(&:audio?)
+        self.medium = "audio"
+      elsif current.all?(&:video?)
+        self.medium = "video"
+      end
     end
   end
 

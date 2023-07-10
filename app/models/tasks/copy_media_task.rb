@@ -10,34 +10,11 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def porter_tasks
-    [
-      {
-        Type: "Inspect"
-      },
-      {
-        Type: "Copy",
-        Mode: "AWS/S3",
-        BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-        ObjectKey: porter_escape(media_resource.path),
-        ContentType: "REPLACE",
-        Parameters: {
-          CacheControl: "max-age=86400",
-          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
-        }
-      },
-      (if media_resource.generate_waveform?
-         {
-           Type: "Waveform",
-           Generator: "BBC/audiowaveform/v1.x",
-           DataFormat: "JSON",
-           Destination: {
-             Mode: "AWS/S3",
-             BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-             ObjectKey: porter_escape(media_resource.waveform_path)
-           }
-         }
-       end)
-    ].compact
+    tasks = [{Type: "Inspect"}]
+    tasks << porter_copy_task unless media_resource.slice?
+    tasks << porter_slice_task if media_resource.slice?
+    tasks << porter_waveform_task if media_resource.generate_waveform?
+    tasks
   end
 
   def update_media_resource
@@ -64,10 +41,68 @@ class Tasks::CopyMediaTask < ::Task
         media_resource.frame_rate = info[:Video][:Framerate].to_f.round
       end
 
+      # if we sliced the file, override the size/duration
+      if media_resource.slice?
+        porter_callback_inspect[:Size]&.to_i
+        media_resource.file_size = porter_callback_transcode[:Size]&.to_i
+        media_resource.duration = porter_callback_transcode[:Duration]&.to_f&./ 1000
+      end
+
       # change status, if metadata doesn't pass validations
       media_resource.status = "invalid" if media_resource.invalid?
     end
 
     media_resource.save!
+  end
+
+  private
+
+  def porter_inspect_task
+    {Type: "Inspect"}
+  end
+
+  def porter_copy_task
+    {
+      Type: "Copy",
+      Mode: "AWS/S3",
+      BucketName: ENV["FEEDER_STORAGE_BUCKET"],
+      ObjectKey: porter_escape(media_resource.path),
+      ContentType: "REPLACE",
+      Parameters: {
+        CacheControl: "max-age=86400",
+        ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
+      }
+    }
+  end
+
+  # TODO: what happens to id3 on sliced files? will the 1st segment still have it?
+  def porter_slice_task
+    {
+      Type: "Transcode",
+      Format: "INHERIT",
+      Destination: {
+        Mode: "AWS/S3",
+        BucketName: ENV["FEEDER_STORAGE_BUCKET"],
+        ObjectKey: porter_escape(media_resource.path)
+      },
+      FFmpeg: {
+        InputFileOptions: media_resource.slice_start.nil? ? "" : "-ss #{media_resource.slice_start}",
+        OutputFileOptions: media_resource.slice_end.nil? ? "" : "-t #{media_resource.slice_end}"
+      }
+    }
+  end
+
+  def porter_waveform_task
+    {
+      Type: "Waveform",
+      Generator: "BBC/audiowaveform/v1.x",
+      DataFormat: "JSON",
+      Destination: {
+        Mode: "AWS/S3",
+        BucketName: ENV["FEEDER_STORAGE_BUCKET"],
+        ObjectKey: porter_escape(media_resource.waveform_path)
+      },
+      WaveformPointBitDepth: 8
+    }
   end
 end

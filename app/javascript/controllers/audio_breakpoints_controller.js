@@ -25,11 +25,11 @@ export default class extends Controller {
   initMarkers() {
     this.breakpointMarkers = [...Array(this.segmentCountValue - 1).keys()]
       .map((key) => this.markersValue?.[key] || [])
-      .map(([startTime, endTime], index) => ({
+      .map((time, index) => ({
         id: Math.random().toString(16).split(".")[1],
         labelText: `${this.labelPrefixValue} ${index + 1}`,
-        startTime,
-        endTime,
+        startTime: Array.isArray(time) ? time[0] : time,
+        endTime: Array.isArray(time) ? time[1] : null,
       }))
 
     this.sortBreakpointMarkers()
@@ -114,7 +114,8 @@ export default class extends Controller {
     const markers = this.getMarkers()
 
     // Updated markers form input value.
-    this.markersInputTarget.value = JSON.stringify(markers)
+    this.markersInputTarget.value = markers.length ? JSON.stringify(markers) : ""
+    this.markersInputTarget.dispatchEvent(new Event("change"))
 
     // Update waveform inspector.
     if (this.hasWaveformInspectorTarget) {
@@ -140,14 +141,13 @@ export default class extends Controller {
   }
 
   /**
-   * Get ad markers as times only in array format. (e.g. [[start], [start, end])
+   * Get ad markers as times only in array format. (e.g. [start, [start, end])
    * @returns Array of arrays containing start and end times for markers.
    */
   getMarkers() {
-    return this.breakpointMarkers.reduce(
-      (a, { startTime, endTime }) => (startTime ? [...a, [startTime, ...(endTime ? [endTime] : [])]] : a),
-      []
-    )
+    return this.breakpointMarkers
+      .filter(({ startTime, endTime }) => startTime !== undefined)
+      .map(({ startTime, endTime }) => (endTime ? [startTime, endTime] : startTime))
   }
 
   renderAdMarkerControls() {
