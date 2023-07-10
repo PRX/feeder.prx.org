@@ -38,7 +38,8 @@ module EmbedPlayerHelper
   end
 
   def embed_player_type_options(selected)
-    options_for_select(%w[standard card fixed_card], selected)
+    opts = %w[standard card fixed_card].map { |v| [t("helpers.label.episode.embed_player_types.#{v}"), v] }
+    options_for_select(opts, selected)
   end
 
   private
