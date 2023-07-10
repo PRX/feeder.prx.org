@@ -10,7 +10,7 @@
 
     <div class="form-control d-flex align-items-center">
       <div class="text-secondary me-2"><%= media.file_name %></div>
-      
+
       <small class="text-danger flex-grow-1 me-2"><%= t(".unable") %></small>
 
       <div class="flex-grow-1 me-2 py-2 prx-scrub" data-action="mousedown->audio-player#mouseDown" data-audio-player-target="scrubber">
@@ -25,7 +25,7 @@
     </div>
 
     <label><%= episode_media_label(episode, media) %></label>
-    
+
     <%= link_to edit_episode_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
       <span class="material-icons text-danger">delete</span>
     <% end %>
@@ -35,7 +35,5 @@
     </button>
   </div>
 </div>
-
-
 
 <%= render "episodes/media/modal", episode: episode, media: media, id: "media-modal-#{media.id}" %>

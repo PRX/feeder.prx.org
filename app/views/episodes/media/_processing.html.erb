@@ -21,7 +21,7 @@
         <small class="text-muted">(<%= number_to_human_size(media.file_size) %>)</small>
       <% end %>
     </div>
-    
+
     <%= link_to edit_episode_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
       <span class="material-icons text-danger">delete</span>
     <% end %>
