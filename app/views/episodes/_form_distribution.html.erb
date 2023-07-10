@@ -30,12 +30,14 @@
 
     <div class="col-12 mb-4">
       <div class="form-floating input-group">
-        <% url = embed_player_episode_url(episode) %>
-        <%= form.text_field :embed_player_url, value: url, disabled: true %>
-        <%= form.label :embed_player_url %>
-        <% if url.present? %>
-          <%= field_link url %>
-          <%= field_copy url %>
+        <% if episode.persisted? %>
+          <%= form.text_field :embed_player_url, value: embed_player_episode_url(episode), disabled: true %>
+          <%= form.label :embed_player_url %>
+          <%= field_link embed_player_episode_url(episode) %>
+          <%= field_copy embed_player_episode_url(episode) %>
+        <% else %>
+          <%= form.text_field :embed_player_url, value: t(".embed_player_not_ready"), disabled: true %>
+          <%= form.label :embed_player_url %>
         <% end %>
       </div>
     </div>

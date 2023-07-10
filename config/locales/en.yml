@@ -160,6 +160,7 @@ en:
     form:
       confirm: Discard unsaved changes?
     form_distribution:
+      embed_player_not_ready: Episode Not Saved
       enclosure_not_ready: No Media Files Uploaded
       title: Distribution
     form_main:
