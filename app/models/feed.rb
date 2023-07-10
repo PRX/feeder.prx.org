@@ -88,6 +88,14 @@ class Feed < ApplicationRecord
     end
   end
 
+  def public_url
+    if private? || url.blank?
+      published_url
+    else
+      url
+    end
+  end
+
   def published_path
     default? ? file_name : "#{slug}/#{file_name}"
   end

@@ -39,7 +39,8 @@ class Episode < ApplicationRecord
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
-  validates :original_guid, uniqueness: {scope: :podcast_id, allow_nil: true}
+  validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
+  alias_error_messages :item_guid, :original_guid
   validates :itunes_type, inclusion: {in: VALID_ITUNES_TYPES}
   validates :episode_number, numericality: {only_integer: true}, allow_nil: true
   validates :season_number, numericality: {only_integer: true}, allow_nil: true
@@ -180,7 +181,7 @@ class Episode < ApplicationRecord
   end
 
   def item_guid=(new_guid)
-    self.original_guid = new_guid
+    self.original_guid = new_guid.blank? ? nil : new_guid
   end
 
   def medium=(new_medium)
@@ -226,7 +227,7 @@ class Episode < ApplicationRecord
   end
 
   def podcast_feed_url
-    podcast&.url || podcast&.published_url
+    podcast&.public_url
   end
 
   def base_published_url
