@@ -114,6 +114,10 @@ module PrxAccess
     root_uri ENV["ID_HOST"]
   end
 
+  def play_root
+    root_uri ENV["PLAY_HOST"]
+  end
+
   private
 
   def method_missing(method, *args)

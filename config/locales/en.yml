@@ -49,6 +49,8 @@ en:
               less_than_or_equal_to: Enter a number less than %{count}
   # form/model helpers
   helpers:
+    application:
+      field_copy_tooltip: Copied!
     label:
       episode:
         ad_breaks: How many ad breaks are there in this episode?
@@ -57,11 +59,14 @@ en:
         categories: Categories
         clean_title: Clean Title
         description: Description
+        embed_player_url: Embeddable Player Link
+        enclosure_url: Media Link
         episode_number: Episode Number
         explicit: Explicit
         explicits:
           false: Clean
           true: Explicit
+        item_guid: GUID
         itunes_type: Episode Type
         itunes_types:
           full: Full
@@ -72,6 +77,7 @@ en:
           audio: Audio - upload multiple audio files
           uncut: Audio - upload a single file and then segment
           video: Video
+        original_guid: GUID
         released_at: Dropdate
         production_notes: Production Notes
         publishing_status: Status
@@ -83,6 +89,7 @@ en:
         segment_count: Number of Segments
         subtitle: Subtitle
         title: Title
+        url: Episode URL
       feed:
         audio_type: Format
         audio_bitrate: Bitrate
@@ -153,6 +160,7 @@ en:
     form:
       confirm: Discard unsaved changes?
     form_distribution:
+      enclosure_not_ready: No Media Files Uploaded
       title: Distribution
     form_main:
       help:
