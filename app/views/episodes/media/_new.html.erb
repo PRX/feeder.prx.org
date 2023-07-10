@@ -35,7 +35,7 @@
   </div>
 
   <%# step 2: upload progressbar %>
-  <div class="form-floating d-none" data-upload-target="progress">
+  <div class="form-floating d-none input-group input-group" data-upload-target="progress">
     <div class="form-control d-flex align-items-center is-changed if-visible">
       <span class="material-icons text-primary">upload</span>
       <div class="text-secondary mx-2" data-upload-target="fileName"></div>
@@ -45,17 +45,17 @@
           <span data-upload-target="progressBytes"></span>
         </div>
       </div>
-
-      <button class="btn" data-action="upload#cancelUpload">
-        <span class="material-icons">delete</span>
-      </button>
     </div>
+
+    <button class="input-group-text prx-input-group-text" data-action="upload#cancelUpload"> 
+      <span class="material-icons text-danger">delete</span>
+    </button>
 
     <label><%= episode_media_label(episode, media) %></label>
   </div>
 
   <%# step 3a: hidden original_url field pointing to the uploaded temporary s3 file %>
-  <div class="form-floating d-none" data-upload-target="success">
+  <div class="form-floating d-none input-group" data-upload-target="success">
     <%= form.hidden_field :original_url, value: nil, data: {upload_target: "originalUrl"} %>
     <%= form.hidden_field :file_size, value: nil, data: {upload_target: "fileSize"} %>
     <%= form.hidden_field :position %>
@@ -64,11 +64,11 @@
       <span class="material-icons text-primary ms-2"><%= episode.medium_video? ? "video_file" : "audio_file" %></span>
       <div class="text-secondary mx-2 flex-grow-1" data-upload-target="fileName"></div>
       <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
-
-      <button class="btn" data-action="upload#cancelUpload">
-        <span class="material-icons">delete</span>
-      </button>
     </div>
+
+    <button class="input-group-text prx-input-group-text" data-action="upload#cancelUpload">
+      <span class="material-icons text-danger">delete</span>
+    </button>
 
     <label><%= episode_media_label(episode, media) %></label>
   </div>

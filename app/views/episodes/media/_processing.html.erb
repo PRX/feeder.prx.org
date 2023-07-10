@@ -1,5 +1,5 @@
 <div class="col-12 mb-4">
-  <div class="form-floating">
+  <div class="form-floating input-group">
     <div class="form-control d-flex align-items-center">
       <div class="spinner-border text-primary ms-2" role="status">
         <span class="visually-hidden"><%= t(".hint") %>...</span>
@@ -20,11 +20,11 @@
       <% if media.file_size.present? %>
         <small class="text-muted">(<%= number_to_human_size(media.file_size) %>)</small>
       <% end %>
-
-      <%= link_to edit_episode_path(media.episode, uploads_destroy_params(form)), class: "btn" do %>
-        <span class="material-icons">delete</span>
-      <% end %>
     </div>
+    
+    <%= link_to edit_episode_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
+      <span class="material-icons text-danger">delete</span>
+    <% end %>
 
     <label><%= episode_media_label(episode, media) %></label>
   </div>
