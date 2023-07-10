@@ -88,6 +88,10 @@ class Feed < ApplicationRecord
     end
   end
 
+  def public_url
+    url.present? ? url : published_url
+  end
+
   def published_path
     default? ? file_name : "#{slug}/#{file_name}"
   end

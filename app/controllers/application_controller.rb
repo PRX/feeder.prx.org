@@ -20,6 +20,10 @@ class ApplicationController < ActionController::Base
     redirect_to PrxAuth::Rails::Engine.routes.url_helpers.new_sessions_path
   end
 
+  def nilify(p)
+    p.transform_values { |v| v.present? ? v : nil }
+  end
+
   protected
 
   def user_not_authorized(exception)

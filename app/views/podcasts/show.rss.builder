@@ -40,7 +40,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
       end
     end
 
-    xml.atom :link, href: (@feed.url || @feed.published_url), rel: "self", type: "application/rss+xml"
+    xml.atom :link, href: @feed.public_url, rel: "self", type: "application/rss+xml"
 
     unless @feed.new_feed_url.blank?
       xml.itunes :"new-feed-url", @feed.new_feed_url
