@@ -440,6 +440,8 @@ en:
         payment_pointer: The PRX Embeddable player support micropayments. We've created a guide to walk you through the process of collecting payments as folks listen. <a href="https://help.prx.org/hc/en-us/articles/9901810244251" target="_blank">Learn more about micropayments.</a>
     form_status:
       <<: *form_status
+    show:
+      title: Engagement
     update:
       error: Unable to save
       notice: Engagement settings updated
