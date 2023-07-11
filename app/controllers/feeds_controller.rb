@@ -1,38 +1,34 @@
 class FeedsController < ApplicationController
   before_action :set_feed, only: %i[show update destroy]
   before_action :set_podcast
+  before_action :set_feeds
 
   # GET /feeds/1
   def show
     @feed.assign_attributes(feed_params)
     authorize @feed
-
-    @custom_feeds = @podcast.feeds.custom.order(created_at: :asc)
   end
 
   # GET /feeds/new
   def new
-    @feed = Feed.new(private: false, slug: "")
-    @feed.podcast = @podcast
+    @feed = @podcast.feeds.new(private: false, slug: "")
     authorize @feed
 
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
-    @custom_feeds = @podcast.feeds.custom.order(created_at: :asc)
   end
 
   # POST /feeds
   def create
-    @feed = Feed.new(feed_params)
-    @feed.podcast = @podcast
+    @feed = @podcast.feeds.new(feed_params)
     authorize @feed
 
     respond_to do |format|
       if @feed.save
         @feed.copy_media
-        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
+        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
       else
         format.html do
-          flash.now[:notice] = t ".failure", model: "Feed"
+          flash.now[:error] = t(".failure", model: "Feed")
           render :new, status: :unprocessable_entity
         end
       end
@@ -47,10 +43,10 @@ class FeedsController < ApplicationController
     respond_to do |format|
       if @feed.save
         @feed.copy_media
-        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: (t ".success", model: "Feed") }
+        format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
       else
         format.html do
-          flash.now[:notice] = t ".failure", model: "Feed"
+          flash.now[:error] = t(".failure", model: "Feed")
           render :show, status: :unprocessable_entity
         end
       end
@@ -61,10 +57,10 @@ class FeedsController < ApplicationController
   def destroy
     respond_to do |format|
       if @feed.destroy
-        format.html { redirect_to podcast_feed_path(@podcast, @podcast.default_feed), notice: (t ".success", model: "Feed") }
+        format.html { redirect_to podcast_feed_path(@podcast, @podcast.default_feed), notice: t(".success", model: "Feed") }
       else
         format.html do
-          flash.now[:notice] = t ".failure", model: "Feed"
+          flash.now[:notice] = t(".failure", model: "Feed")
           render :show, status: :unprocessable_entity
         end
       end
@@ -80,6 +76,10 @@ class FeedsController < ApplicationController
       elsif params[:podcast_id].present?
         Podcast.find(params[:podcast_id])
       end
+  end
+
+  def set_feeds
+    @feeds = @podcast.feeds.order(Arel.sql("slug IS NULL DESC, created_at ASC"))
   end
 
   # Use callbacks to share common setup or constraints between actions.
