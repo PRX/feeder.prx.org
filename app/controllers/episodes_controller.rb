@@ -112,7 +112,7 @@ class EpisodesController < ApplicationController
   end
 
   def episode_params
-    params.fetch(:episode, {}).permit(
+    nilify params.fetch(:episode, {}).permit(
       :title,
       :clean_title,
       :subtitle,
@@ -129,6 +129,9 @@ class EpisodesController < ApplicationController
       :ad_breaks,
       :released_at,
       :publishing_status,
+      :url,
+      :item_guid,
+      :original_guid,
       categories: [],
       contents_attributes: %i[id position original_url file_size _destroy _retry],
       images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
