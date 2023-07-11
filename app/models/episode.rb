@@ -222,7 +222,7 @@ class Episode < ApplicationRecord
   end
 
   def publish!
-    # apple_mark_for_reupload!
+    apple_mark_for_reupload!
     podcast&.publish!
   end
 
