@@ -42,7 +42,7 @@ module ApplicationHelper
   end
 
   def field_help_text(text)
-    tag.a class: "input-group-text prx-help", tabindex: 0, role: "button", data: {popover_target: "trigger", bs_trigger: "focus", bs_content: text} do
+    tag.a class: "input-group-text prx-input-group-text", tabindex: 0, role: "button", data: {popover_target: "trigger", bs_trigger: "focus", bs_content: text} do
       tag.span "help", class: "material-icons"
     end
   end
@@ -54,7 +54,7 @@ module ApplicationHelper
   end
 
   def field_link(href)
-    link_to href, class: "input-group-text prx-help", target: :_blank do
+    link_to href, class: "input-group-text prx-input-group-text", target: :_blank do
       tag.span "open_in_new", class: "material-icons text-primary"
     end
   end
@@ -62,7 +62,7 @@ module ApplicationHelper
   def field_copy(content)
     data = {controller: "clipboard", clipboard_copy_value: content, clipboard_tooltip_value: t("helpers.application.field_copy_tooltip")}
 
-    tag.button class: "input-group-text prx-help", data: data do
+    tag.button class: "input-group-text prx-input-group-text", data: data do
       tag.span "link", class: "material-icons text-primary"
     end
   end
