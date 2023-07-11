@@ -377,4 +377,22 @@ describe Episode do
       assert_equal "", episode.description_with_default
     end
   end
+
+  describe "#publish!" do
+    let(:episode) { create(:episode) }
+    let(:container) { create(:apple_podcast_container, episode: episode) }
+    let(:delivery) { create(:apple_podcast_delivery, episode: episode, podcast_container: container) }
+
+    before do
+      assert_equal [delivery], episode.apple_podcast_deliveries
+    end
+
+    it "destroys any existing apple podcast deliveries" do
+      refute_empty container.podcast_deliveries
+      refute_empty episode.apple_podcast_deliveries
+      episode.publish!
+      assert_empty episode.apple_podcast_deliveries
+      assert_empty container.podcast_deliveries
+    end
+  end
 end
