@@ -1,50 +1,5 @@
 <% content_for :title, "#{@podcast.title} - #{t(".engagement")}" %>
 
 <%= render "podcasts/tabs" %>
-<%= form_with(model: @podcast, url: podcast_engagement_path, html: {autocomplete: "off"}, data: {controller: "unsaved", unsaved_changed_value: @podcast.changed?, unsaved_confirm_value: t(".confirm")}) do |form| %>
-  <div class="container my-4 mx-2">
-    <div class="row">
-      <div class="col-lg-8">
-        <div class="row">
-          <div class="col-12">
-            <div class="input-group mb-4">
-              <div class="form-floating">
-                <%= form.text_field :donation_url %>
-                <%= form.label :donation_url %>
-              </div>
-              <div class="input-group-text">
-                <span class="material-icons">link</span>
-              </div>
-            </div>
 
-            <div class="input-group mb-4">
-              <div class="form-floating">
-                <%= form.text_field :payment_pointer %>
-                <%= form.label :payment_pointer %>
-              </div>
-              <div class="input-group-text">
-                <span class="material-icons">link</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-      <div class="col-lg-4">
-        <div class="row">
-          <div class="col-12">
-            <div class="card shadow border-0">
-              <div class="card-header-primary">
-                <h5 class="card-title"><%= t(".status") %></h5>
-              </div>
-              <div class="card-footer">
-                <p class="status-text mb-2"><strong><%= t(".last_saved") %></strong> <br><%= l(@podcast.updated_at) %></p>
-                <%= form.submit t(".save"), class: "btn btn-primary" %>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-<% end %>
+<%= render "form", podcast: @podcast %>

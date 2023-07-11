@@ -1,0 +1,18 @@
+<div class="col-12 mb-4">
+  <div class="form-floating input-group">
+    <%= form.text_field :donation_url %>
+    <%= form.label :donation_url %>
+    <%= field_help_text t(".help.donation_url") %>
+    <%= field_link podcast.donation_url %>
+    <%= field_copy podcast.donation_url %>
+  </div>
+</div>
+
+<div class="col-12 mb-4">
+  <div class="form-floating input-group">
+    <%= form.text_field :payment_pointer %>
+    <%= form.label :payment_pointer %>
+    <%= field_help_text t(".help.payment_pointer") %>
+    <%= field_copy podcast.payment_pointer %>
+  </div>
+</div>
