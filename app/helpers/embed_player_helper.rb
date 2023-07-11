@@ -38,10 +38,8 @@ module EmbedPlayerHelper
     allow = "monetization"
 
     if type == "card"
-      # TODO: this is not working
-      tag.div style: "width: 100%; height: calc(100% + 200px); position: relative;" do
-        tag.iframe src: src, allow: allow, style: "position: absolute; inset: 0;"
-      end
+      # TODO: this is NOW working, but I'm not sure how helpful this is to a producer that wishes to embed it.
+      tag.iframe src: src, allow: allow, width: "100%", height: "700", style: "--aspect-ratio: 2/3; width: 100%;"
     elsif type == "fixed_card"
       tag.iframe src: src, allow: allow, width: "500", height: "700"
     else
