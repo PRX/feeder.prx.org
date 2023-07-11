@@ -394,5 +394,15 @@ describe Episode do
       assert_empty episode.apple_podcast_deliveries
       assert_empty container.podcast_deliveries
     end
+
+    it "can be called for an episode without a container" do
+      delivery.destroy!
+      container.destroy!
+      episode.reload
+
+      assert_empty episode.apple_podcast_deliveries
+      episode.publish!
+      assert_empty episode.apple_podcast_deliveries
+    end
   end
 end
