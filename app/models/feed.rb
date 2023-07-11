@@ -51,6 +51,7 @@ class Feed < ApplicationRecord
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
+  scope :tab_order, -> { order(Arel.sql("slug IS NULL DESC, created_at ASC")) }
 
   def self.enclosure_template_default
     "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"

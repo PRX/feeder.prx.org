@@ -79,7 +79,7 @@ class FeedsController < ApplicationController
   end
 
   def set_feeds
-    @feeds = @podcast.feeds.order(Arel.sql("slug IS NULL DESC, created_at ASC"))
+    @feeds = @podcast.feeds.tab_order
   end
 
   # Use callbacks to share common setup or constraints between actions.
