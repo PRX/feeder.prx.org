@@ -15,11 +15,11 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body data-controller="blank-field popover">
+  <body data-controller="blank-field confirm-field popover">
     <%= render "layouts/nav" %>
     <%= render "layouts/subnav" if current_user %>
-
     <%= render "layouts/alerts" %>
+    <%= render "layouts/confirm_field" %>
 
     <% if content_for? :tabs %>
       <div class="prx-main | container-fluid d-grid">

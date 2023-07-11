@@ -271,6 +271,10 @@ en:
         auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
         private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private link with - <strong>anyone who has access to the link will be able to use it</strong>.
     form_main:
+      confirm:
+        file_name: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?
+        url: Are you sure you want to change your public feed URL from <b>{old}</b> to <b>{new}</b>? This will point your subscribers to a new feed location.<br/>If you have existing subscribers at <b>{old}</b>, make sure to set the <a href="https://help.apple.com/itc/podcasts_connect/#/itcb54353390" target="_blank">New Feed URL</a> as well to avoid losing subscribers.
+        url_delete: Are you sure you want to delete your public feed URL? This will point your subscribers back at your PRX feed location. If you have existing subscribers at <b>{old}</b>, make sure to set the New Feed URL as well to avoid losing subscribers.
       help:
         display_episodes_count: You can optionally limit the number of episodes that will be publicly available in your feed. Your oldest episodes will disappear as you publish newer ones. Leave this field blank to include all.
         display_full_episodes_count: You can optionally reduce the size of your RSS feed by trimming metadata from your oldest feed episodes. This many of your newest episodes will include <i>all</i> metadata, and older episodes will omit certain RSS fields. Leave this field blank to include all metadata on every episode.
@@ -339,6 +343,10 @@ en:
       feed_image: Thumbnail Image
       itunes_image: Profile Image
   layouts:
+    confirm_field:
+      cancel: Cancel
+      okay: Okay
+      title: Really Change?
     nav:
       account: PRX Account
       attribution: Attribution

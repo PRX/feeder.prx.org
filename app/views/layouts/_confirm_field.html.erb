@@ -1,0 +1,16 @@
+<div class="modal fade" id="confirm-field" tabindex="-1" aria-labelledby="confirm-field-title" aria-hidden="true" data-confirm-field-target="modal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirm-field-title"><%= t(".title") %></h5>
+      </div>
+      <div class="modal-body">
+        <p data-confirm-field-target="message">jello</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-action="confirm-field#confirmCancel"><%= t(".cancel") %></button>
+        <button type="button" class="btn btn-primary" data-action="confirm-field#confirmOkay"><%= t(".okay") %></button>
+      </div>
+    </div>
+  </div>
+</div>
