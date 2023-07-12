@@ -42,7 +42,7 @@ class PodcastsController < ApplicationController
     @metrics_dates = 30.days.ago.utc.to_date..Time.now.utc.to_date
     @metrics_guids, @metrics_titles = published_episodes(@metrics_dates)
 
-    @feeds = @podcast.feeds.order(Arel.sql("slug IS NULL DESC, created_at ASC"))
+    @feeds = @podcast.feeds.tab_order
   end
 
   # GET /podcasts/new

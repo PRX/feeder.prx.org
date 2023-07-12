@@ -6,7 +6,7 @@
 <%= form_with(url: url, model: model, method: method, html: {autocomplete: "off"}, data: data) do |form| %>
   <div class="row my-4 mx-2">
     <div class="col-lg-8">
-      <div class="row">
+      <div class="row" data-controller="feed-link">
         <%= render "form_main", podcast: podcast, feed: feed, form: form %>
         <% unless feed.default? %>
           <%= render "form_overrides", podcast: podcast, feed: feed, form: form %>

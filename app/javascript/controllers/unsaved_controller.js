@@ -6,7 +6,7 @@ export default class extends Controller {
 
   connect() {
     this.isSubmitting = false
-    this.isChanged = this.changedValue
+    this.setChanged(this.changedValue)
 
     // bind listeners for page change
     this.bindChange = this.change.bind(this)
