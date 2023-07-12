@@ -45,7 +45,7 @@
     <div class="col-12 mb-4">
       <div class="form-floating input-group">
         <% if episode.persisted? %>
-          <%= form.text_field :item_guid %>
+          <%= form.text_field :item_guid, data: {action: "blur->confirm-field#confirm", confirm_with: t(".confirm.item_guid")} %>
           <%= form.label :item_guid %>
           <%= field_copy episode.item_guid %>
         <% else %>

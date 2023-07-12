@@ -162,6 +162,8 @@ en:
     form:
       confirm: Discard unsaved changes?
     form_distribution:
+      confirm:
+        item_guid: Are you sure you want to change the permanent GUID for this episode from <b>{old}</b> to <b>{new}</b>? This should only be done in special cases.
       embed_player_not_ready: Episode Not Saved
       enclosure_not_ready: No Media Files Uploaded
       title: Distribution
@@ -234,6 +236,10 @@ en:
         hint: Processing
       segment_count:
         help: Enter the number of ad breaks in this episode.
+    missing_drafts:
+      message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
+      okay: Okay
+      title: Missing Episode Drafts
     update:
       error: Unable to save
       media_not_ready: Audio not ready

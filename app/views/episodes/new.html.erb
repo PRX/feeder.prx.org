@@ -3,3 +3,7 @@
 <%= render "tabs" %>
 
 <%= render "form", episode: @episode %>
+
+<% if !@podcast.complete && @podcast.episodes.after(Time.now).none? %>
+  <%= render "missing_drafts", podcast: @podcast %>
+<% end %>

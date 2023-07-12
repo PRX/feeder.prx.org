@@ -1,0 +1,18 @@
+<div class="modal hide" id="missing-drafts" tabindex="-1" aria-labelledby="missing-drafts-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="missing-drafts-title"><%= t(".title") %></h5>
+      </div>
+      <div class="modal-body">
+        <p><%= t(".message", href: podcast_planner_path(podcast)).html_safe %></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><%= t(".okay") %></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# click hidden button to immediately show modal %>
+<button type="button" class="d-none" data-bs-toggle="modal" data-bs-target="#missing-drafts" data-controller="click" data-click-immediate-value="true"></button>

@@ -59,6 +59,7 @@ class Episode < ApplicationRecord
   scope :draft, -> { where("episodes.published_at IS NULL") }
   scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
+  scope :after, ->(time) { where("COALESCE(published_at, released_at) > ?", time) }
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
 
   enum :medium, [:audio, :uncut, :video], prefix: true
