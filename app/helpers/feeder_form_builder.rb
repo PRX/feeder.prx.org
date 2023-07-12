@@ -208,7 +208,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   def add_data(opts, key, val)
     opts ||= {}
     opts[:data] ||= {}
-    opts[:data][key] = [opts[:data][key], val].compact.join(" ").strip.html_safe
+    opts[:data][key] = [val, opts[:data][key]].compact.join(" ").strip.html_safe
     opts
   end
 end

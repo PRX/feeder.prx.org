@@ -162,6 +162,8 @@ en:
     form:
       confirm: Discard unsaved changes?
     form_distribution:
+      confirm:
+        item_guid: Are you sure you want to change the permanent GUID for this episode from <b>{old}</b> to <b>{new}</b>? This should only be done in special cases.
       embed_player_not_ready: Episode Not Saved
       enclosure_not_ready: No Media Files Uploaded
       title: Distribution
@@ -234,6 +236,10 @@ en:
         hint: Processing
       segment_count:
         help: Enter the number of ad breaks in this episode.
+    missing_drafts:
+      message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
+      okay: Okay
+      title: Missing Episode Drafts
     update:
       error: Unable to save
       media_not_ready: Audio not ready
@@ -273,6 +279,14 @@ en:
         auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
         private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private link with - <strong>anyone who has access to the link will be able to use it</strong>.
     form_main:
+      confirm:
+        file_name: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?
+        new_feed_url: Are you sure you want to change your feed URL from <b>{old}</b> to <b>{new}</b>? This will point your subscribers to a new feed location.
+        new_feed_url_create: Are you sure you want to change your feed URL to <b>{new}</b>? This will point your subscribers to a new feed location.
+        new_feed_url_delete: Are you sure you want to delete your New Feed URL? Generally you should just leave this alone after setting it to something.
+        slug: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?
+        url: Are you sure you want to change your public feed URL from <b>{old}</b> to <b>{new}</b>? This will point your subscribers to a new feed location.<br/><br/>If you have existing subscribers at <b>{old}</b>, make sure to set the <a href="https://help.apple.com/itc/podcasts_connect/#/itcb54353390" target="_blank">New Feed URL</a> as well to avoid losing subscribers.
+        url_delete: Are you sure you want to delete your public feed URL? This will point your subscribers back at your PRX feed location <b>%{published_url}</b>.<br/><br/>If you have existing subscribers at <b>{old}</b>, make sure to set the <a href="https://help.apple.com/itc/podcasts_connect/#/itcb54353390" target="_blank">New Feed URL</a> as well to avoid losing subscribers.
       help:
         display_episodes_count: You can optionally limit the number of episodes that will be publicly available in your feed. Your oldest episodes will disappear as you publish newer ones. Leave this field blank to include all.
         display_full_episodes_count: You can optionally reduce the size of your RSS feed by trimming metadata from your oldest feed episodes. This many of your newest episodes will include <i>all</i> metadata, and older episodes will omit certain RSS fields. Leave this field blank to include all metadata on every episode.
@@ -341,6 +355,10 @@ en:
       feed_image: Thumbnail Image
       itunes_image: Profile Image
   layouts:
+    confirm_field:
+      cancel: Cancel
+      okay: Okay
+      title: Really Change?
     nav:
       account: PRX Account
       attribution: Attribution
@@ -364,6 +382,9 @@ en:
     form:
       confirm: Discard unsaved changes?
     form_main:
+      confirm:
+        complete: Are you sure this podcast is complete? Apps will assume this show is over, and won't look for new episodes.
+        owner: Are you sure you want to change the owner of this podcast from <b>{old}</b> to <b>{new}</b>? This will affect who can access the podcast
       help:
         author_email: Set the author email for this podcast.
         author_name: Set the author name for this podcast.
