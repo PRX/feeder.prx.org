@@ -29,11 +29,21 @@ export default class extends Controller {
     const oldValue = this.field.dataset.valueWas
     const newValue = this.field.value
 
-    // optionally show a different message when deleting
     const updateMsg = this.field.dataset.confirmWith
-    const deleteMsg = this.field.dataset.confirmDelete || updateMsg
-    const msg = newValue ? updateMsg : deleteMsg
+    const createMsg = this.field.dataset.confirmCreate
+    const deleteMsg = this.field.dataset.confirmDelete
 
+    // optionally show a different message when creating/deleting
+    if (oldValue && newValue) {
+      return this.templateMessage(oldValue, newValue, updateMsg)
+    } else if (newValue) {
+      return this.templateMessage(oldValue, newValue, createMsg || updateMsg)
+    } else {
+      return this.templateMessage(oldValue, newValue, deleteMsg || updateMsg)
+    }
+  }
+
+  templateMessage(oldValue, newValue, msg) {
     return msg.replaceAll("{old}", oldValue).replaceAll("{new}", newValue)
   }
 }
