@@ -1,17 +1,23 @@
-<%= form_with(model: podcast_engagement) do |form| %>
-  <% if podcast_engagement.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(podcast_engagement.errors.count, "error") %> prohibited this podcast_engagement from being saved:</h2>
+<% data = {controller: "unsaved disable", unsaved_changed_value: podcast.changed?, unsaved_confirm_value: t(".confirm")} %>
 
-      <ul>
-        <% podcast_engagement.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+<%= form_with(model: podcast, url: podcast_engagement_path, html: {autocomplete: "off"}, data: data) do |form| %>
+
+  <%# first button in form must be a submit, for enter key to work %>
+  <%= form.submit class: "d-none" %>
+
+  <div class="row my-4 mx-2">
+    <div class="col-lg-8">
+      <div class="row">
+        <%= render "form_main", podcast: podcast, form: form %>
+      </div>
     </div>
-  <% end %>
-
-  <div>
-    <%= form.submit %>
+    <div class="col-lg-4 d-grid align-content-start gap-3">
+      <div class="row">
+        <div class="col-12">
+          <%= render "form_status", podcast: podcast, form: form %>
+        </div>
+      </div>
+    </div>
   </div>
+
 <% end %>

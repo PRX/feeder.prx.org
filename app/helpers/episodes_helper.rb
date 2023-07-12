@@ -1,6 +1,10 @@
 require "text_sanitizer"
 
 module EpisodesHelper
+  def episode_metadata_active?
+    action_name == "edit" || action_name == "update"
+  end
+
   def episode_itunes_type_options
     Episode::VALID_ITUNES_TYPES.map { |val| [I18n.t("helpers.label.episode.itunes_types.#{val}"), val] }
   end

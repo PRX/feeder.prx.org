@@ -53,11 +53,9 @@ module Apple
     end
 
     def feed_published_url
-      if public_feed.private?
-        FeedToken.feed_published_url_with_token(public_feed)
-      else
-        public_feed.published_url
-      end
+      raise "missing token for private feed" if public_feed.private? && public_feed.tokens.empty?
+
+      public_feed.published_url(true)
     end
 
     def category_data

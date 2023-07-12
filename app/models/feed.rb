@@ -51,6 +51,7 @@ class Feed < ApplicationRecord
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
+  scope :tab_order, -> { order(Arel.sql("slug IS NULL DESC, created_at ASC")) }
 
   def self.enclosure_template_default
     "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
@@ -80,9 +81,13 @@ class Feed < ApplicationRecord
     default? && public? && include_zones.nil? && audio_format.blank?
   end
 
-  def published_url
+  def published_url(include_token = false)
     if private?
-      "#{podcast.base_private_url}/#{published_path}{?auth}"
+      if include_token
+        "#{podcast.base_private_url}/#{published_path}?auth=#{tokens.first&.token}"
+      else
+        "#{podcast.base_private_url}/#{published_path}{?auth}"
+      end
     else
       "#{podcast.base_published_url}/#{published_path}"
     end

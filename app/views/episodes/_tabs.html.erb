@@ -1,7 +1,7 @@
 <% content_for :tabs do %>
   <div class="list-group d-flex col">
     <% if @episode.persisted? %>
-      <%= tab_link_to "Metadata", edit_episode_path(@episode) %>
+      <%= tab_link_to "Metadata", edit_episode_path(@episode), active: episode_metadata_active? %>
       <% if @episode.medium_uncut? %>
         <%= tab_link_to "Audio Segmenter", episode_segmenter_path(@episode) %>
       <% end %>

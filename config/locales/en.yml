@@ -129,6 +129,7 @@ en:
         complete: The podcast is complete
         copyright: Copyright
         description: Description
+        donation_url: Donation Form
         explicit: Explicit
         explicits:
           false: Clean
@@ -142,6 +143,7 @@ en:
         managing_editor_name: Managing Editor Name
         owner_email: Feed Owner Email
         owner_name: Feed Owner Name
+        payment_pointer: Micropayments Wallet
         prx_account_uri: Owner
         serial_order: Podcast Type
         serial_orders:
@@ -438,20 +440,19 @@ en:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
   podcast_engagement:
+    form:
+      <<: *form
+    form_main:
+      help:
+        donation_url: Let your listeners know where they can support your work by entering in an address to your donation form.
+        payment_pointer: The PRX Embeddable player support micropayments. We've created a guide to walk you through the process of collecting payments as folks listen. <a href="https://help.prx.org/hc/en-us/articles/9901810244251" target="_blank">Learn more about micropayments.</a>
+    form_status:
+      <<: *form_status
     show:
-      engagement: Engagement
-      confirm: Confirm
-      donation_link: Donation Link
-      micropayments: Micropayments
-      payment_pointer: Coil
-      last_saved: Last Saved
-      subscribe: Subscribe and Follow Links
-      social_media: Social Media Links
-      status: Status
-      save: Update
+      title: Engagement
     update:
       error: Unable to save
-      notice: Podcast updated
+      notice: Engagement settings updated
   podcast_planner:
     create:
       success: Episode drafts generated.
