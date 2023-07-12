@@ -160,17 +160,18 @@ module Apple
     end
 
     def response(resp)
-      ok, json =
+      ok = resp.code.to_i < 300
+      json =
         begin
-          [:ok, JSON.parse(resp.body)]
+          JSON.parse(resp.body)
         rescue JSON::ParserError
-          [:err, resp.body]
+          resp.body
         end
 
       {
         api_response: {
-          ok: ok == :ok,
-          err: ok == :err,
+          ok: ok,
+          err: !ok,
           val: json
         }
       }.with_indifferent_access
