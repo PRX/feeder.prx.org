@@ -218,11 +218,13 @@ class Episode < ApplicationRecord
   end
 
   def apple_mark_for_reupload!
-    apple_podcast_deliveries.destroy_all
+    apple_podcast_deliveries.map(&:destroy)
+    apple_podcast_deliveries.reset
+    apple_podcast_container&.podcast_deliveries&.reset
   end
 
   def publish!
-    # apple_mark_for_reupload!
+    apple_mark_for_reupload!
     podcast&.publish!
   end
 
