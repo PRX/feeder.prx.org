@@ -376,6 +376,9 @@ en:
     form:
       confirm: Discard unsaved changes?
     form_main:
+      confirm:
+        complete: Are you sure this podcast is complete? Apps will assume this show is over, and won't look for new episodes.
+        owner: Are you sure you want to change the owner of this podcast from <b>{old}</b> to <b>{new}</b>? This will affect who can access the podcast
       help:
         author_email: Set the author email for this podcast.
         author_name: Set the author name for this podcast.

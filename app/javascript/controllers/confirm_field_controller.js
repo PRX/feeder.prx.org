@@ -20,14 +20,18 @@ export default class extends Controller {
   }
 
   confirmCancel() {
-    this.field.value = this.field.dataset.valueWas
+    if (this.field.type === "checkbox") {
+      this.field.checked = this.field.dataset.valueWas === "true"
+    } else {
+      this.field.value = this.field.dataset.valueWas
+    }
     this.field.dispatchEvent(new Event("change"))
     this.modal.hide()
   }
 
   confirmMessage() {
-    const oldValue = this.field.dataset.valueWas
-    const newValue = this.field.value
+    const oldValue = this.labelForValue(this.field, this.field.dataset.valueWas)
+    const newValue = this.labelForValue(this.field, this.field.value)
 
     const updateMsg = this.field.dataset.confirmWith
     const createMsg = this.field.dataset.confirmCreate
@@ -41,6 +45,19 @@ export default class extends Controller {
     } else {
       return this.templateMessage(oldValue, newValue, deleteMsg || updateMsg)
     }
+  }
+
+  // lookup labels for select options
+  labelForValue(field, value) {
+    if (field.options) {
+      for (const opt of field.options) {
+        if (opt.value === value) {
+          return opt.textContent
+        }
+      }
+    }
+
+    return value
   }
 
   templateMessage(oldValue, newValue, msg) {

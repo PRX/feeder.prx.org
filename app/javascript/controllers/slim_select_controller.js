@@ -21,6 +21,7 @@ export default class extends Controller {
           } else {
             this.select.selectEl.classList.add("form-control-blank")
           }
+          this.element.dispatchEvent(new Event("blur"))
         },
       },
     })

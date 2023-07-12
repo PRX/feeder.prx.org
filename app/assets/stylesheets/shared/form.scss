@@ -157,6 +157,25 @@
   }
 }
 
+// slightly different layout for checkboxes with help text
+.form-check {
+  .form-check-input.is-changed:not(.is-invalid) {
+    border-color: $orange;
+
+    &:focus {
+      box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
+    }
+
+    &:checked {
+      background-color: $orange;
+    }
+
+    ~ div > label {
+      color: $orange;
+    }
+  }
+}
+
 // These styles work with Slim Select v2, not tested with v1
 .ss-main {
   &.form-select {
