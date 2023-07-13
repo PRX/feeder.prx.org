@@ -45,6 +45,11 @@ class Feed < ApplicationRecord
   validates :include_tags, tag_list: true
   validates :audio_format, audio_format: true
   validates :title, presence: true, unless: :default?
+  validates :url, http_url: true
+  validates :new_feed_url, http_url: true
+  validates :enclosure_prefix, http_url: true
+  validates :display_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
+  validates :display_full_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
 
   after_initialize :set_defaults
   before_validation :sanitize_text
