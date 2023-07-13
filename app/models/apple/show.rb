@@ -102,21 +102,8 @@ module Apple
       SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: apple_json["api_response"]["val"]["data"]["id"], api_response: apple_json)
     end
 
-    def log_sync_error(resp)
-      return unless resp.is_a? Net::HTTPSuccess
-
-      Rails.logger.info "Apple::Show#log_sync_error", {
-        body: resp.body,
-        public_feed_id: public_feed.id,
-        private_feed_id: private_feed.id,
-        podcast_id: podcast.id,
-        response_code: resp.code
-      }
-    end
-
     def create_show!
       resp = api.post("shows", show_data)
-      log_sync_error(resp)
 
       api.response(resp)
     end
@@ -125,7 +112,6 @@ module Apple
       show_data_with_id = show_data
       show_data_with_id[:data][:id] = sync.external_id
       resp = api.patch("shows/#{sync.external_id}", show_data_with_id)
-      log_sync_error(resp)
 
       api.response(resp)
     end

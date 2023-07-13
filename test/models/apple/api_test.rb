@@ -176,5 +176,25 @@ describe Apple::Api do
 
       assert_equal({"not" => "found"}, api_response["api_response"]["val"])
     end
+
+    it "calls the log error method when there is an error" do
+      http_response = OpenStruct.new(code: "404", body: {not: :found}.to_json)
+
+      mock = Minitest::Mock.new
+      mock.expect(:call, nil, [{"api_response" => {"ok" => false, "err" => true, "val" => {"not" => "found"}}}])
+      api.stub(:log_response_error, mock) { api.response(http_response) }
+
+      mock.verify
+    end
+
+    it "does not call the log error method when there is no error" do
+      http_response = OpenStruct.new(code: "299", body: {so: :good}.to_json)
+
+      mock = Minitest::Mock.new
+      mock.expect(:call, nil, [{"api_response" => {"ok" => false, "err" => true, "val" => {"so" => "good"}}}])
+      api.stub(:log_response_error, mock) { api.response(http_response) }
+
+      mock.verify
+    end
   end
 end

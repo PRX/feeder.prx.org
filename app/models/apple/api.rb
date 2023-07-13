@@ -159,6 +159,12 @@ module Apple
       SUCCESS_CODES.include?(resp.code)
     end
 
+    def log_response_error(resp)
+      Rails.logger.info "Apple::Show#log_sync_error", {
+        body: resp["api_response"]["val"]
+      }
+    end
+
     def response(resp)
       ok = resp.code.to_i < 300
       json =
@@ -168,13 +174,18 @@ module Apple
           resp.body
         end
 
-      {
-        api_response: {
-          ok: ok,
-          err: !ok,
-          val: json
-        }
-      }.with_indifferent_access
+      resp =
+        {
+          api_response: {
+            ok: ok,
+            err: !ok,
+            val: json
+          }
+        }.with_indifferent_access
+
+      log_response_error(resp) unless ok
+
+      resp
     end
 
     def unwrap_response(resp)
