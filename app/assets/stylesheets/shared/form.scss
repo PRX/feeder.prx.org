@@ -178,7 +178,6 @@
 
 // These styles work with Slim Select v2, not tested with v1
 .ss-main {
-
   &.form-select {
     padding: 0.75rem;
     min-height: $input-height;
@@ -237,8 +236,7 @@
 
 .ss-main.form-select.is-invalid:not([multiple]):not([size]) {
   padding-right: $form-select-feedback-icon-padding-end;
-  background-image: 
-    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23323233' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"), 
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23323233' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"),
     url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
   background-position: $form-select-bg-position, $form-select-feedback-icon-position;
   background-size: $form-select-bg-size, $form-select-feedback-icon-size;
@@ -248,7 +246,6 @@
 .form-select.is-invalid:not([multiple]):not([size]) {
   padding-right: 0;
   background-image: none;
-  
 }
 
 .ss-search input {
@@ -313,11 +310,6 @@
       background-color: $primary;
     }
   }
-}
-
-
-.form-control-blank.form-select.is-invalid:not([multiple]):not([size]) {
-
 }
 
 // undo bootstrap placeholder class
