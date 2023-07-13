@@ -80,11 +80,16 @@
   > label::before {
     content: "";
     z-index: -1;
-    background: transparent;
+    background: $input-bg;
     position: absolute;
     inset: 35% 0.25rem 1rem;
     border-radius: $input-border-radius;
   }
+
+  .ss-disabled ~ label:before {
+    background: transparent;
+  }
+
 
   .form-control {
     color: #000;
