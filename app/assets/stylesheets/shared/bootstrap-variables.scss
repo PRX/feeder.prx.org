@@ -121,6 +121,12 @@ $form-floating-input-padding-t: $input-btn-padding-y;
 $form-floating-input-padding-b: $input-btn-padding-y;
 $form-floating-label-opacity: 1;
 $form-floating-label-transform: scale(0.85) translateY(-1.75rem) translateX(0.15rem);
+$form-select-indicator-color: $gray-800;
+$form-select-indicator: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23323233' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+$form-feedback-invalid-color: $danger;
+$form-feedback-icon-invalid-color: $form-feedback-invalid-color;
+$form-feedback-icon-invalid: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
 
 $border-radius: 0.1875rem;
 

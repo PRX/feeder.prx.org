@@ -86,6 +86,10 @@
     border-radius: $input-border-radius;
   }
 
+  .ss-disabled ~ label:before {
+    background: transparent;
+  }
+
   .form-control {
     color: #000;
     border: $input-border-width $border-style $input-border-color;
@@ -235,7 +239,16 @@
 }
 
 .ss-main.form-select.is-invalid:not([multiple]):not([size]) {
+  padding-right: $form-select-feedback-icon-padding-end;
+  background-image: $form-select-indicator, $form-feedback-icon-invalid;
+  background-position: $form-select-bg-position, $form-select-feedback-icon-position;
+  background-size: $form-select-bg-size, $form-select-feedback-icon-size;
+  border-color: $danger;
+}
+
+.form-select.is-invalid:not([multiple]):not([size]) {
   padding-right: 0;
+  background-image: none;
 }
 
 .ss-search input {
