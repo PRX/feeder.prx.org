@@ -3,8 +3,8 @@ class ImportsController < ApplicationController
 
   # GET /imports
   def index
-    @imports = PodcastImport.where(podcast_id: @podcast).order(created_at: :desc)
-    @import = PodcastImport.new(account_id: @podcast.account_id, podcast_id: @podcast.id)
+    @imports = @podcast.podcast_imports
+    @import = @podcast.podcast_imports.new
     authorize @import
   end
 
@@ -12,7 +12,7 @@ class ImportsController < ApplicationController
   def create
     # validate RSS
     # validate URL
-    @import = PodcastImport.new(import_params)
+    @import = @podcast.podcast_imports.new(import_params)
     authorize @import
 
     respond_to do |format|
@@ -37,8 +37,6 @@ class ImportsController < ApplicationController
   # Only allow a list of trusted parameters through.
   def import_params
     params.fetch(:podcast_import, {}).permit(
-      :account_id,
-      :podcast_id,
       :url
     )
   end

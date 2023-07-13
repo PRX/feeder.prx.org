@@ -4,6 +4,16 @@ require "prx_access"
 module ImportUtils
   extend ActiveSupport::Concern
 
+  AUDIO_SAVED = "audio saved".freeze
+  COMPLETE = "complete".freeze
+  CREATED = "created".freeze
+  SAVED = "saved".freeze
+  FAILED = "failed".freeze
+  FEED_RETRIEVED = "feed retrieved".freeze
+  IMPORTING = "importing".freeze
+  RETRYING = "retrying".freeze
+  STARTED = "started".freeze
+
   included do
     include Rails.application.routes.url_helpers
   end

@@ -20,6 +20,7 @@ class Podcast < ApplicationRecord
   has_many :feeds, dependent: :destroy
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
+  has_many :podcast_imports, -> { order("created_at desc") }
 
   accepts_nested_attributes_for :default_feed
 

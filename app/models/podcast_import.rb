@@ -13,17 +13,19 @@ class PodcastImport < ApplicationRecord
 
   before_validation :set_defaults, on: :create
 
-  validates :account_id, :url, presence: true
+  validates :url, presence: true
 
-  AUDIO_SAVED = "audio saved".freeze
-  COMPLETE = "complete".freeze
-  CREATED = "created".freeze
-  SAVED = "saved".freeze
-  FAILED = "failed".freeze
-  FEED_RETRIEVED = "feed retrieved".freeze
-  IMPORTING = "importing".freeze
-  RETRYING = "retrying".freeze
-  STARTED = "started".freeze
+  enum :status, {
+    audio_saved: AUDIO_SAVED,
+    complete: COMPLETE,
+    created: CREATED,
+    saved: SAVED,
+    failed: FAILED,
+    feed_retrieved: FEED_RETRIEVED,
+    importing: IMPORTING,
+    retrying: RETRYING,
+    started: STARTED
+  }, prefix: true
 
   def episode_import_placeholders
     EpisodeImport.where(podcast_import_id: id).having_duplicate_guids
@@ -52,8 +54,10 @@ class PodcastImport < ApplicationRecord
     return super if episode_importing_count > episode_imports.count
 
     if complete?
+      status_complete!
       COMPLETE
     elsif finished? && some_failed?
+      status_failed!
       FAILED
     else
       super
@@ -63,18 +67,17 @@ class PodcastImport < ApplicationRecord
   def finished?
     return false unless episode_imports.count == episode_importing_count
     episode_imports.all? do |e|
-      e.status == COMPLETE ||
-        e.status == FAILED
+      e.finished?
     end
   end
 
   def complete?
     return false unless episode_imports.count == episode_importing_count
-    episode_imports.all? { |e| e.status == COMPLETE }
+    episode_imports.all? { |e| e.status_complete? }
   end
 
   def some_failed?
-    episode_imports.any? { |e| e.status == FAILED }
+    episode_imports.any? { |e| e.status_failed? }
   end
 
   def retry!
@@ -87,16 +90,15 @@ class PodcastImport < ApplicationRecord
   end
 
   def import_podcast!
-    update!(status: STARTED)
+    status_started!
 
     # Request the RSS feed
     get_feed
-    update!(status: FEED_RETRIEVED)
+    status_feed_retrieved!
 
     # Create the podcast
     create_or_update_podcast!
-
-    update!(status: CREATED)
+    status_created!
   rescue => err
     update(status: FAILED)
     raise err
@@ -108,11 +110,11 @@ class PodcastImport < ApplicationRecord
 
     # Update podcast attributes
     create_or_update_podcast!
-    update!(status: CREATED)
+    status_created!
 
     # Create the episodes
-    update!(status: IMPORTING)
     create_or_update_episode_imports!
+    status_importing!
   rescue => err
     Rails.logger.error ([err.message] + err.backtrace).join($/)
     update(status: FAILED)

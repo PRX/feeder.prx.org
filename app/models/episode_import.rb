@@ -18,11 +18,20 @@ class EpisodeImport < ApplicationRecord
   scope :having_duplicate_guids, -> do
     unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true)
   end
-  scope :complete, -> { where(status: PodcastImport::COMPLETE) }
+  scope :complete, -> { where(status: COMPLETE) }
 
   before_validation :set_defaults, on: :create
 
   validates :entry, :guid, presence: true
+
+  enum :status, {
+    created: CREATED,
+    complete: COMPLETE,
+    failed: FAILED,
+    saved: SAVED,
+    retrying: RETRYING,
+    audio_saved: AUDIO_SAVED
+  }, prefix: true
 
   def unlock_podcast
     if podcast_import.finished?
@@ -36,7 +45,7 @@ class EpisodeImport < ApplicationRecord
   end
 
   def set_defaults
-    self.status ||= PodcastImport::CREATED
+    self.status ||= CREATED
     self.audio ||= {files: []}
   end
 
@@ -47,26 +56,24 @@ class EpisodeImport < ApplicationRecord
 
   def import
     set_audio_metadata!
-    update!(status: PodcastImport::AUDIO_SAVED)
+    status_audio_saved!
 
     lookup_and_assign_episode!
 
     create_or_update_episode!
 
     set_file_resources!
-
-    update!(status: PodcastImport::SAVED)
+    status_saved!
 
     episode.save!
-
-    update!(status: PodcastImport::COMPLETE)
+    status_complete!
 
     unlock_podcast
 
     episode
   rescue => err
     Rails.logger.error ([err.message] + err.backtrace).join($/)
-    update(status: PodcastImport::FAILED)
+    update(status: FAILED)
     raise err
   end
 
@@ -189,5 +196,9 @@ class EpisodeImport < ApplicationRecord
   def lookup_and_assign_episode!
     lookup = Episode.find_by_item_guid(guid)
     self.episode = lookup if lookup.present?
+  end
+
+  def finished?
+    status_complete? || status_failed?
   end
 end

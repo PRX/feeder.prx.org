@@ -10,16 +10,17 @@
         </tr>
       </thead>
       <tbody>
-        <% if imports.present? %>
+        <% if imports.first.persisted? %>
           <% imports.each do |import| %>
-            <% if %w[complete failed].include?(import.status) %>
-              <tr>
-                <td><%= import.url %></td>
-                <td><%= import.status %></td>
-                <td><%= import.feed_episode_count %></td>
-                <td><%= import.created_at.to_date %></td>
-              </tr>
-            <% else %>
+            <% if import.persisted? %>
+              <% if import.status_complete? || import.status_failed? %>
+                <tr>
+                  <td><%= import.url %></td>
+                  <td><%= import.status %></td>
+                  <td><%= import.feed_episode_count %></td>
+                  <td><%= import.created_at.to_date %></td>
+                </tr>
+              <% else %>
                 <tr>
                   <td><%= import.url %></td>
                   <td><%= import.status %></td>
@@ -29,6 +30,7 @@
                   <%# just keep polling until the import finishes %>
                   <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
                 </tr>
+              <% end %>
             <% end %>
           <% end %>
         <% else %>
@@ -36,7 +38,6 @@
             <td class="text-center text-muted p-4" colspan="100">No imports</td>
           </tr>
         <% end %>
-
       </tbody>
     </table>
   <% end %>
