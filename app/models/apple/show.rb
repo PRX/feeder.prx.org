@@ -97,6 +97,8 @@ module Apple
     end
 
     def sync!
+      Rails.logger.info("Syncing feed with Apple show", {apple_id: apple_id, public_feed_id: public_feed.id, private_feed_id: private_feed.id})
+
       apple_json = create_or_update_show(sync_log)
       public_feed.reload
       SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: apple_json["api_response"]["val"]["data"]["id"], api_response: apple_json)
