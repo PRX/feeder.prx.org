@@ -1,10 +1,20 @@
 import { Controller } from "@hotwired/stimulus"
 
+const ACTION = "blur->confirm-field#confirm keydown.enter->confirm-field#enter"
+
 export default class extends Controller {
-  static targets = ["modal", "message"]
+  static targets = ["modal", "message", "field"]
 
   connect() {
     this.modal = new bootstrap.Modal(this.modalTarget, { backdrop: "static", keyboard: false })
+  }
+
+  fieldTargetConnected(field) {
+    if (!field.dataset.action) {
+      field.dataset.action = ACTION
+    } else {
+      field.dataset.action += ` ${ACTION}`
+    }
   }
 
   confirm(event) {
@@ -12,6 +22,14 @@ export default class extends Controller {
       this.field = event.target
       this.messageTarget.innerHTML = this.confirmMessage()
       this.modal.show()
+      return true
+    }
+  }
+
+  // prevent enter from submitting the form before we confirm the change
+  enter(event) {
+    if (this.confirm(event)) {
+      event.preventDefault()
     }
   }
 

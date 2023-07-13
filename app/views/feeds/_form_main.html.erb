@@ -17,8 +17,8 @@
 
   <div class="col-6 mb-4">
     <div class="form-floating input-group">
-      <% action = "keyup->feed-link#updateSlug blur->confirm-field#confirm" %>
-      <%= form.text_field :slug, data: {action: action, confirm_with: t(".confirm.slug")} %>
+      <% data = {action: "keyup->feed-link#updateSlug", confirm_field_target: "field", confirm_with: t(".confirm.slug")} %>
+      <%= form.text_field :slug, data: data %>
       <%= form.label :slug %>
       <%= field_help_text t(".help.slug") %>
     </div>
@@ -27,8 +27,8 @@
 
 <div class="<%= feed.default? ? "col-12" : "col-6" %> mb-4">
   <div class="form-floating input-group">
-    <% action = "keyup->feed-link#updateFileName blur->confirm-field#confirm" %>
-    <%= form.text_field :file_name, data: {action: action, confirm_with: t(".confirm.file_name")} %>
+    <% data = {action: "keyup->feed-link#updateFileName", confirm_field_target: "field", confirm_with: t(".confirm.file_name")} %>
+    <%= form.text_field :file_name, data: data %>
     <%= form.label :file_name %>
     <%= field_help_text t(".help.file_name") %>
   </div>
@@ -36,10 +36,10 @@
 
 <div class="col-12 mb-4">
   <div class="form-floating input-group">
-    <% action = feed.url_was.present? ? "blur->confirm-field#confirm" : "" %>
     <% with = t(".confirm.url") %>
     <% delete = t(".confirm.url_delete", published_url: feed.published_url) %>
-    <%= form.text_field :url, data: {action: action, confirm_with: with, confirm_delete: delete} %>
+    <% data = {confirm_field_target: "field", confirm_with: with, confirm_delete: delete} %>
+    <%= form.text_field :url, data: feed.url_was.present? ? data : {} %>
     <%= form.label :url %>
     <%= field_help_text t(".help.url") %>
   </div>
@@ -47,11 +47,11 @@
 
 <div class="col-12 mb-4">
   <div class="form-floating input-group">
-    <% action = "blur->confirm-field#confirm" %>
     <% with = t(".confirm.new_feed_url") %>
     <% create = t(".confirm.new_feed_url_create") %>
     <% delete = t(".confirm.new_feed_url_delete") %>
-    <%= form.text_field :new_feed_url, data: {action: action, confirm_with: with, confirm_create: create, confirm_delete: delete} %>
+    <% data = {confirm_field_target: "field", confirm_with: with, confirm_create: create, confirm_delete: delete} %>
+    <%= form.text_field :new_feed_url, data: data %>
     <%= form.label :new_feed_url %>
     <%= field_help_text t(".help.new_feed_url") %>
   </div>
