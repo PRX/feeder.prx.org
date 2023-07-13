@@ -4,7 +4,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/123") }
   let(:feed) { create(:feed, podcast: podcast, private: false) }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
-  let(:update_params) { {url: "/a_public_url", display_episodes_count: 5} }
+  let(:update_params) { {url: "https://prx.org/a_public_url", display_episodes_count: 5} }
   let(:create_params) { {podcast: podcast, slug: "new_feed", title: "new title", private: false} }
 
   setup_current_user { build(:user, account_id: 123) }
