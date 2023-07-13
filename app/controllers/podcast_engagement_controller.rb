@@ -30,7 +30,7 @@ class PodcastEngagementController < ApplicationController
 
   ### TODO include params for socmed and podcast apps
   def podcast_engagement_params
-    params.fetch(:podcast, {}).permit(
+    nilify params.fetch(:podcast, {}).permit(
       :donation_url,
       :payment_pointer
     )
