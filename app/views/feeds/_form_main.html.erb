@@ -41,7 +41,7 @@
     <% delete = t(".confirm.url_delete", published_url: feed.published_url) %>
     <%= form.text_field :url, data: {action: action, confirm_with: with, confirm_delete: delete} %>
     <%= form.label :url %>
-    <%= field_help_text t(".help.url") %>
+    <%= field_help_text t(".help.url", published_url: feed.published_url) %>
   </div>
 </div>
 

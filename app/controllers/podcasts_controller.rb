@@ -121,7 +121,7 @@ class PodcastsController < ApplicationController
   end
 
   def podcast_params
-    params.fetch(:podcast, {}).permit(
+    nilify params.fetch(:podcast, {}).permit(
       :title,
       :prx_account_uri,
       :subtitle,

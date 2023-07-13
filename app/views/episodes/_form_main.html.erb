@@ -46,7 +46,7 @@
   <div class="form-floating input-group">
     <%= form.select :explicit, podcast_explicit_options, {include_blank: true} %>
     <%= form.label :explicit %>
-    <%= field_help_text t(".help.explicit") %>
+    <%= field_help_text t(".help.explicit", podcast_value: t("helpers.label.podcast.explicits.#{episode.podcast.explicit}")) %>
   </div>
 </div>
 

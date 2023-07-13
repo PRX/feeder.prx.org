@@ -8,7 +8,7 @@ class HttpUrlValidator < ActiveModel::EachValidator
 
   def validate_each(record, attribute, value)
     if value.present? && !self.class.http_url?(value)
-      record.errors.add(attribute, "is not a valid HTTP URL")
+      record.errors.add(attribute, :not_http_url)
     end
   end
 end
