@@ -39,11 +39,12 @@ class Episode < ApplicationRecord
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
+  validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
   alias_error_messages :item_guid, :original_guid
   validates :itunes_type, inclusion: {in: VALID_ITUNES_TYPES}
-  validates :episode_number, numericality: {only_integer: true}, allow_nil: true
-  validates :season_number, numericality: {only_integer: true}, allow_nil: true
+  validates :episode_number, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
+  validates :season_number, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :explicit, inclusion: {in: %w[true false]}, allow_nil: true
   validates :segment_count, presence: true, if: :strict_validations
   validates :segment_count, numericality: {only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
