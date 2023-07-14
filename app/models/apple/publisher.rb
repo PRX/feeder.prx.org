@@ -244,7 +244,7 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         eps = eps.select { |ep| ep.drafting? && ep.apple_upload_complete? }
 
-        res = Apple::Episode.publish(api, eps)
+        res = Apple::Episode.publish(api, show, eps)
         Rails.logger.info("Published #{res.length} drafting episodes.")
       end
     end

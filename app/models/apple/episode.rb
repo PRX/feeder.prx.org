@@ -139,11 +139,15 @@ module Apple
       episode_bridge_results
     end
 
-    def self.publish(api, episodes, state: "PUBLISH")
+    def self.publish(api, show, episodes, state: "PUBLISH")
       return [] if episodes.empty?
 
       api.bridge_remote_and_retry!("publishEpisodes",
         episodes.map { |e| e.publishing_state_bridge_params(state) })
+
+      # We don't get back the full episode model in the response.
+      # So poll for current state
+      poll_episode_state(api, show, episodes)
     end
 
     def self.upsert_sync_logs(episodes, results)
