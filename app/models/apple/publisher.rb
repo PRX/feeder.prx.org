@@ -114,6 +114,10 @@ module Apple
         pdfs = eps.map(&:podcast_delivery_files).flatten
 
         Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
+
+        # Get the latest state of the podcast containers
+        # which should include synced files
+        Apple::PodcastContainer.poll_podcast_container_state(api, eps)
       end
     end
 

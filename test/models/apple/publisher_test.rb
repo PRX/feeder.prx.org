@@ -123,4 +123,17 @@ describe Apple::Publisher do
       mock.verify
     end
   end
+
+  describe "#wait_for_upload_processing" do
+    it "should poll the podcast container state" do
+      mock = Minitest::Mock.new
+      mock.expect(:call, [], [apple_publisher.api, []])
+
+      Apple::PodcastContainer.stub(:poll_podcast_container_state, mock) do
+        apple_publisher.wait_for_upload_processing([])
+      end
+
+      mock.verify
+    end
+  end
 end
