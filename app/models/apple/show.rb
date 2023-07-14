@@ -98,14 +98,18 @@ module Apple
 
     def sync!
       Rails.logger.info("Syncing feed with Apple show", {apple_id: apple_id, public_feed_id: public_feed.id, private_feed_id: private_feed.id})
+      Rails.logger.tagged("Apple::Show#sync!") do
+        apple_json = create_or_update_show(sync_log)
+      end
 
-      apple_json = create_or_update_show(sync_log)
       public_feed.reload
       SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: apple_json["api_response"]["val"]["data"]["id"], api_response: apple_json)
     end
 
     def create_show!
-      resp = api.post("shows", show_data)
+      data = show_data
+      Rails.logger.info("Creating show", show_data: data)
+      resp = api.post("shows", data)
 
       api.response(resp)
     end
@@ -113,6 +117,7 @@ module Apple
     def update_show!(sync)
       show_data_with_id = show_data
       show_data_with_id[:data][:id] = sync.external_id
+      Rails.logger.info("Updating show", show_data: show_data_with_id)
       resp = api.patch("shows/#{sync.external_id}", show_data_with_id)
 
       api.response(resp)
