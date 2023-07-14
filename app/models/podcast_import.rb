@@ -49,6 +49,12 @@ class PodcastImport < ApplicationRecord
     feed_episode_count - episode_import_placeholders.count
   end
 
+  def remaining_import_count
+    if feed_episode_count.present?
+      feed_episode_count - episode_imports.finished.count
+    end
+  end
+
   def status
     return super unless episode_imports.count > 0
     return super if episode_importing_count > episode_imports.count

@@ -1,13 +1,10 @@
 <%= form_with(url: podcast_imports_path(import.podcast), model: [import.podcast, import], method: :post, html: {autocomplete: "off"}) do |form| %>
   <div class="row my-4">
     <div class="col-lg-8">
-      <div class="row">
-        <%= render "form_main", imports: imports, form: form %>
-      </div>
+      <%= render "form_main", imports: imports, podcast: podcast, form: form %>
     </div>
     <div class="col-lg-4 d-grid align-content-start gap-3">
       <%= render "form_status", form: form %>
     </div>
   </div>
-
 <% end %>

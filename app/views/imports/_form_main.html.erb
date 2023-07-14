@@ -3,9 +3,10 @@
     <table class="table table-striped shadow rounded">
       <thead>
         <tr class="table-secondary">
-          <th>Feed Url</th>
+          <th>ID</th>
           <th>Status</th>
           <th>Episode Count</th>
+          <th>Feed Url</th>
           <th>Import Date</th>
         </tr>
       </thead>
@@ -13,24 +14,19 @@
         <% if imports.first.persisted? %>
           <% imports.each do |import| %>
             <% if import.persisted? %>
-              <% if import.status_complete? || import.status_failed? %>
                 <tr>
+                  <td><%= import.id %></td>
+                  <td><%= link_to import.status, podcast_import_path(podcast, import), data: {turbo: false} %></td>
+                  <% if import.status_complete? || import.status_failed? %>
+                    <td><%= import.feed_episode_count %></td>
+                  <% else %>
+                    <td><%= import.episode_imports.complete.count %></td>
+                    <%# just keep polling until the import finishes %>
+                    <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+                  <% end %>
                   <td><%= import.url %></td>
-                  <td><%= import.status %></td>
-                  <td><%= import.feed_episode_count %></td>
                   <td><%= import.created_at.to_date %></td>
                 </tr>
-              <% else %>
-                <tr>
-                  <td><%= import.url %></td>
-                  <td><%= import.status %></td>
-                  <td><%= import.episode_imports.complete.count %></td>
-                  <td><%= import.created_at.to_date %></td>
-
-                  <%# just keep polling until the import finishes %>
-                  <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
-                </tr>
-              <% end %>
             <% end %>
           <% end %>
         <% else %>

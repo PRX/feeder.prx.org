@@ -1,11 +1,15 @@
 class ImportsController < ApplicationController
   before_action :set_podcast
+  before_action :set_import, only: :show
 
   # GET /imports
   def index
     @imports = @podcast.podcast_imports
     @import = @podcast.podcast_imports.new
     authorize @import
+  end
+
+  def show
   end
 
   # POST /imports
@@ -32,6 +36,10 @@ class ImportsController < ApplicationController
 
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
+  end
+
+  def set_import
+    @import = PodcastImport.find(params[:id])
   end
 
   # Only allow a list of trusted parameters through.
