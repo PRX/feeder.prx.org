@@ -8,9 +8,8 @@
 
 <div class="col-6 mb-4">
   <div class="form-floating">
-    <% action = podcast.persisted? ? "change->confirm-field#confirm" : "" %>
-    <% with = t(".confirm.owner") %>
-    <%= form.select :prx_account_uri, podcast_account_name_options(podcast), {}, data: {action: action, confirm_with: with} %>
+    <% data = {confirm_field_target: "field", confirm_with: t(".confirm.owner")} %>
+    <%= form.select :prx_account_uri, podcast_account_name_options(podcast), {}, data: podcast.persisted? ? data : {} %>
     <%= form.label :prx_account_uri %>
   </div>
 </div>
@@ -158,8 +157,8 @@
 
 <div class="col-6 mb-4 d-flex align-items-center">
   <div class="form-check">
-    <% action = podcast.complete? ? "" : "change->confirm-field#confirm" %>
-    <%= form.check_box :complete, data: {action: action, confirm_with: t(".confirm.complete")} %>
+    <% data = {confirm_field_target: "field", confirm_with: t(".confirm.complete")} %>
+    <%= form.check_box :complete, data: podcast.complete? ? {} : data %>
     <div class="d-flex align-items-center">
       <%= form.label :complete %>
       <%= help_text t(".help.complete") %>
