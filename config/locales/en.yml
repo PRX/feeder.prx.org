@@ -3,6 +3,7 @@ defaults:
     confirm: Discard unsaved changes?
   form_status: &form_status
     create: Create
+    creating: Creating...
     destroy: Delete
     destroy_confirm_title: Really Delete?
     destroy_confirm_body: "Are you sure you want to delete this %{model}? This action cannot be undone."
@@ -11,6 +12,7 @@ defaults:
     discard: Discard
     new_hint: Unsaved
     title: Status
+    toggle_dropdown: Toggle Dropdown
     update: Save
     updated_at_hint: Last Saved
     updating: Saving...
@@ -195,24 +197,13 @@ en:
     form_media:
       title: Media Files
     form_status:
+      <<: *form_status
       create: Create Draft
-      creating: Creating...
-      destroy: Delete
-      destroy_confirm_title: Really Delete?
       destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
-      destroy_confirm_yes: Delete
-      destroy_confirm_no: Cancel
-      discard: Discard
-      new_hint: Unsaved
       title_draft: Draft
       title_published: Published
       title_scheduled: Scheduled
-      toggle_dropdown: Toggle Dropdown
       unpublish: Unpublish
-      update: Save
-      updated_at_hint: Last Saved
-      updating: Saving...
-      uploading: Uploading...
     form_tags:
       title: Categories
       help:
@@ -415,15 +406,8 @@ en:
         subtitle: A short description of this podcast.
         title: What's the name of this podcast?
     form_status:
-      create: Create
-      creating: Creating...
-      discard: Discard
-      new_hint: Unsaved
-      title: Status
-      update: Save
-      updated_at_hint: Last Saved
-      updating: Saving...
-      uploading: Uploading...
+      <<: *form_status
+      destroy_confirm_body_html: Are you sure you want to delete this podcast? Your episodes will also be deleted, and requests to download episodes from your RSS feed will fail.<br/><br/><b>This action cannot be undone.</b>
     index:
       search_podcasts: Search Podcasts
     podcast:
