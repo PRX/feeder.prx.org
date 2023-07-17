@@ -52,6 +52,11 @@ en:
             segment_count:
               greater_than: Can't be negative
               less_than_or_equal_to: Enter a number less than %{count}
+        feed:
+          attributes:
+            slug:
+              invalid: Invalid slug
+              taken: Must be unique
         podcast:
           attributes:
             payment_pointer:

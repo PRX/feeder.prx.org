@@ -20,4 +20,14 @@ describe FeedPolicy do
       assert FeedPolicy.new(member_token, feed).update?
     end
   end
+
+  describe "#destroy?" do
+    it "will not destroy the default feed" do
+      refute feed.default?
+      assert FeedPolicy.new(member_token, feed).destroy?
+
+      feed.slug = nil
+      refute FeedPolicy.new(member_token, feed).destroy?
+    end
+  end
 end

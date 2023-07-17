@@ -20,6 +20,7 @@ class FeedsController < ApplicationController
   # POST /feeds
   def create
     @feed = @podcast.feeds.new(feed_params)
+    @feed.slug = "" if @feed.slug.nil?
     authorize @feed
 
     respond_to do |format|
