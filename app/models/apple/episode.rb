@@ -130,6 +130,7 @@ module Apple
       join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
         ep.podcast_container.podcast_delivery_files.each(&:destroy)
         ep.podcast_container.podcast_deliveries.each(&:destroy)
+        Rails.logger.info("Removed audio container reference for episode", {episode_id: ep.feeder_id})
       end
 
       show.reload
