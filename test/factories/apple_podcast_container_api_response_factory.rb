@@ -22,12 +22,12 @@ FactoryBot.define do
         "val" =>
          {"data" =>
          {"type" => "podcastContainers",
-          "id" => "#{evaluator.podcast_container_id}",
+          "id" => evaluator.podcast_container_id.to_s,
           "attributes" =>
-          {"vendorId" => "#{evaluator.vendor_id}",
+          {"vendorId" => evaluator.vendor_id.to_s,
            "episodeDetail" => nil,
            "files" =>
-            [{"assetToken" => "#{evaluator.file_asset_token}", "fileName" => "#{evaluator.file_name}", "fileType" => "#{evaluator.file_type}", "status" => "#{evaluator.file_status}", "assetRole" => "#{evaluator.file_asset_role}", "imageAsset" => nil}]},
+            [{"assetToken" => evaluator.file_asset_token.to_s, "fileName" => evaluator.file_name.to_s, "fileType" => evaluator.file_type.to_s, "status" => evaluator.file_status.to_s, "assetRole" => evaluator.file_asset_role.to_s, "imageAsset" => nil}]},
           "relationships" =>
           {"podcastDeliveries" =>
             {"links" =>
