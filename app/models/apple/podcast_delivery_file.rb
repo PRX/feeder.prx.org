@@ -327,14 +327,14 @@ module Apple
     def processed_errors?
       return false unless asset_processing_state.present?
 
-      processed_validation_failed? || processed_duplicate?
+      processed_validation_failed?
     end
 
     def processed?
       # FIXME: sometimes we get a nil assetProcessingState, but the file is uploaded
       return false unless asset_processing_state.present?
 
-      processed_completed? || processed_errors?
+      processed_completed? || processed_duplicate? || processed_errors?
     end
 
     def asset_processing_state
