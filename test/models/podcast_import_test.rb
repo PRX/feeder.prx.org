@@ -91,7 +91,7 @@ describe PodcastImport do
     importer.url = "http://feeds.prx.org/feed_with_video"
     importer.import
 
-    eps = importer.episode_imports.reset
+    eps = importer.episode_imports.reset.sort_by(&:guid)
     eps.map(&:import)
 
     _(eps.length).must_equal 2
