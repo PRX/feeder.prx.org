@@ -252,5 +252,14 @@ module Apple
         Rails.logger.info("Published #{res.length} drafting episodes.")
       end
     end
+
+    # Not used in any of the polling or publish routines, but useful for
+    # debugging.  This removes the audio container reference from the episode,
+    # but leaves the podcast container intact.
+    def remove_audio_container_reference(eps)
+      Rails.logger.tagged("##{__method__}") do
+        Apple::Episode.remove_audio_container_reference(api, show, eps)
+      end
+    end
   end
 end
