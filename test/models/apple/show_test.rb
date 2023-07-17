@@ -107,12 +107,17 @@ describe Apple::Show do
 
   describe "#sync!" do
     it "runs sync!" do
-      apple_show.api.stub(:patch, OpenStruct.new(body: {"data" => {"id" => "123"}}.to_json, code: "200")) do
+      apple_show.api.stub(:patch, OpenStruct.new(body: {"data" => {"id" => "123", "attributes" => {"foo" => "bar"}}}.to_json, code: "200")) do
         assert apple_show.sync_log.present?
+        apple_show.sync_log.update!(api_response: {})
 
         sync = apple_show.sync!
 
         assert_equal sync.class, SyncLog
+
+        assert_equal "123", sync.external_id
+        assert_equal "123", apple_show.apple_id
+        assert_equal "bar", apple_show.apple_attributes["foo"]
       end
     end
 
