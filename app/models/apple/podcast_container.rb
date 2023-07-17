@@ -236,9 +236,9 @@ module Apple
     end
 
     def has_podcast_audio?
-      return false if files.blank?
+      return false if files.empty?
 
-      files.any? do |file|
+      files.all? do |file|
         # Retrieve the file status from the podcast container's files attribute
         file["status"] == FILE_STATUS_SUCCESS && file["assetRole"] == FILE_ASSET_ROLE_PODCAST_AUDIO
       end
@@ -248,13 +248,35 @@ module Apple
       !has_podcast_audio?
     end
 
+    def delivered?
+      return false if podcast_delivery_files.length == 0
+
+      (podcast_delivery_files.all?(&:delivered?) &&
+        podcast_delivery_files.all?(&:processed?))
+    end
+
+    def processed_errors?
+      return false if podcast_delivery_files.length == 0
+
+      podcast_delivery_files.all?(&:processed_errors?)
+    end
+
+    def delivery_settled?
+      return false if podcast_delivery_files.length == 0
+
+      delivered? && !processed_errors?
+    end
+
+    def skip_delivery?
+      # Sets us up for a retry if something prevented the audio from being
+      # marked as uploaded and then processed and validated. Assuming that we
+      # get to that point and the audio is still missing, we should be able to
+      # retry.
+      has_podcast_audio? && delivery_settled?
+    end
+
     def needs_delivery?
-      # Handle the case where the podcast container *does* have podcast audio,
-      # but doesn't have any podcast deliveries / files. This is a weird edge
-      # case but it amounts to checking the deliveries to see if any are there.
-      # If there are no deliveries, then the code that polls/checks the delivery
-      # status will fail. So we need to create a delivery.
-      podcast_deliveries.empty?
+      !skip_delivery?
     end
 
     def reset_source_metadata!(apple_ep)

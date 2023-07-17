@@ -387,9 +387,7 @@ module Apple
     end
 
     def apple_upload_complete?
-      pdfs = feeder_episode.apple_podcast_delivery_files
-
-      pdfs.present? && pdfs.to_a.flatten.all?(&:apple_complete?)
+      feeder_episode.apple_podcast_container.skip_delivery?
     end
 
     def audio_asset_vendor_id
@@ -444,11 +442,7 @@ module Apple
     end
 
     def waiting_for_asset_state?
-      (podcast_delivery_files.length > 0 &&
-        podcast_delivery_files.all?(&:delivered?) &&
-        podcast_delivery_files.all?(&:processed?) &&
-        !podcast_delivery_files.all?(&:processed_errors?) &&
-        !audio_asset_state_finished?)
+      podcast_container.delivery_settled? && !audio_asset_state_finished?
     end
 
     def apple_id
