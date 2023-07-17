@@ -256,9 +256,9 @@ module Apple
     # Not used in any of the polling or publish routines, but useful for
     # debugging.  This removes the audio container reference from the episode,
     # but leaves the podcast container intact.
-    def remove_audio_container_reference(eps)
+    def remove_audio_container_reference(eps, apple_mark_for_reupload: true)
       Rails.logger.tagged("##{__method__}") do
-        Apple::Episode.remove_audio_container_reference(api, show, eps)
+        Apple::Episode.remove_audio_container_reference(api, show, eps, apple_mark_for_reupload: apple_mark_for_reupload)
       end
     end
   end
