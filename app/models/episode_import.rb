@@ -61,8 +61,6 @@ class EpisodeImport < ApplicationRecord
     set_audio_metadata!
     status_audio_saved!
 
-    lookup_and_assign_episode!
-
     create_or_update_episode!
 
     set_file_resources!
@@ -115,7 +113,13 @@ class EpisodeImport < ApplicationRecord
   end
 
   def create_or_update_episode!
-    self.episode ||= Episode.new(podcast: podcast)
+    lookup = Episode.find_by_item_guid(guid)
+
+    if lookup.present?
+      self.episode = lookup
+    else
+      self.episode ||= Episode.new(podcast: podcast)
+    end
 
     update_episode_with_entry!
 
@@ -194,11 +198,6 @@ class EpisodeImport < ApplicationRecord
 
   def account
     podcast_import.try(:account)
-  end
-
-  def lookup_and_assign_episode!
-    lookup = Episode.find_by_item_guid(guid)
-    self.episode = lookup if lookup.present?
   end
 
   def finished?
