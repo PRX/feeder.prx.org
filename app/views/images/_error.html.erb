@@ -11,7 +11,7 @@
     <div class="form-floating mb-4">
       <div class="form-control d-flex align-items-center is-invalid">
         <span class="material-icons text-primary mx-2">image</span>
-        <div class="text-secondary mx-2 flex-grow-1"><%= image.file_name %></div>
+        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= image.file_name %></div>
         <small class="text-muted">(<%= number_to_human_size(image.size) %>)</small>
       </div>
 

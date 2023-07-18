@@ -2,7 +2,7 @@
   <div class="form-floating input-group">
     <div class="form-control d-flex align-items-center is-invalid">
       <span class="material-icons text-primary mx-2"><%= episode.medium_video? ? "video_file" : "audio_file" %></span>
-      <div class="text-secondary mx-2 flex-grow-1"><%= media.file_name %></div>
+      <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= media.file_name %></div>
       <small class="text-muted">(<%= number_to_human_size(media.file_size) %>)</small>
     </div>
 
