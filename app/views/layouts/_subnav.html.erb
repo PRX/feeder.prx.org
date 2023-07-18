@@ -1,9 +1,9 @@
-<div class="prx-app-bar | navbar justify-content-start align-items-stretch p-0 bg-white">
+<div class="prx-app-bar navbar justify-content-start align-items-stretch p-0 bg-white">
 
   <%= render "podcast_switcher/dropdown" %>
 
   <% if @podcast %>
-    <nav class="prx-app-nav | navbar-nav flex-row justifty-content-start">
+    <nav class="prx-app-nav navbar-nav flex-row justifty-content-start">
       <% if @podcast.new_record? %>
         <%= active_link_to "Settings", main_app.new_podcast_path, class: "nav-link" %>
       <% else %>
