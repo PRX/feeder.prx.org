@@ -45,7 +45,6 @@ describe Apple::ApiWaiting do
       (timed_out, remaining) = TestTimeout.wait_for(["a", "b", "c"]) do |remaining|
         remaining
       end
-      binding.pry
 
       assert_equal timed_out, true
       assert_equal remaining, ["a", "b", "c"]
