@@ -14,10 +14,9 @@ class ImportsController < ApplicationController
 
   # POST /imports
   def create
-    # validate RSS
-    # validate URL
     @import = @podcast.podcast_imports.new(import_params)
     authorize @import
+    @import.get_feed
 
     respond_to do |format|
       if @import.save
