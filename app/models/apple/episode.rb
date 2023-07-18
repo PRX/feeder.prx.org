@@ -25,13 +25,13 @@ module Apple
 
         remaining_eps.each do |ep|
           Rails.logger.info("Waiting for audio asset state?", {episode_id: ep.feeder_id,
-                                                                  delivery_file_count: ep.podcast_delivery_files.count,
-                                                                  delivery_files_processed_errors: ep.podcast_delivery_files.all?(&:processed_errors?),
-                                                                  delivery_files_processed: ep.podcast_delivery_files.all?(&:processed?),
-                                                                  delivery_files_delivered: ep.podcast_delivery_files.all?(&:delivered?),
-                                                                  asset_state: ep.audio_asset_state,
-                                                                  has_podcast_audio: ep&.podcast_container&.has_podcast_audio?,
-                                                                  waiting_for_asset_state: ep.waiting_for_asset_state?})
+                                                               delivery_file_count: ep.podcast_delivery_files.count,
+                                                               delivery_files_processed_errors: ep.podcast_delivery_files.all?(&:processed_errors?),
+                                                               delivery_files_processed: ep.podcast_delivery_files.all?(&:processed?),
+                                                               delivery_files_delivered: ep.podcast_delivery_files.all?(&:delivered?),
+                                                               asset_state: ep.audio_asset_state,
+                                                               has_podcast_audio: ep&.podcast_container&.has_podcast_audio?,
+                                                               waiting_for_asset_state: ep.waiting_for_asset_state?})
         end
 
         rem =
