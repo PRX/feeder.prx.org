@@ -29,6 +29,7 @@ export default class extends Controller {
     jwt: String,
     podcast: Number,
     titles: Array,
+    warning: String,
   }
 
   connect() {
@@ -76,6 +77,9 @@ export default class extends Controller {
       (res) => {
         if (res.status === 200) {
           return res.json()
+        } else if (res.status === 403 || res.status == 404) {
+          // takes a bit for Castle to hear about the new podcast
+          this.showNotReady()
         } else {
           const err = new Error(`Got ${res.status} from ${url}`)
           console.error(err.message, err)
@@ -93,6 +97,14 @@ export default class extends Controller {
         }
       }
     )
+  }
+
+  showNotReady() {
+    this.chartTarget.innerHTML = `
+      <div class="alert alert-primary" role="alert">
+        <p class="mb-0">${this.warningValue}</p>
+      </div>
+    `
   }
 
   showError(err) {
