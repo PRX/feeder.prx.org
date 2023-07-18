@@ -2,6 +2,8 @@
 // Episode card styles.
 //
 
+prx-episode-s
+
 .episode-card {
   border-top: none;
   border-left: 5px solid $primary;
@@ -37,7 +39,6 @@
     .episode-card-inner {
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
     .episode-card-title {
