@@ -73,7 +73,8 @@
              data-podcast-metrics-guids-value="<%= @metrics_guids.to_json %>"
              data-podcast-metrics-jwt-value="<%= @metrics_jwt %>"
              data-podcast-metrics-podcast-value="<%= @podcast.id %>"
-             data-podcast-metrics-titles-value="<%= @metrics_titles.to_json %>">
+             data-podcast-metrics-titles-value="<%= @metrics_titles.to_json %>"
+             data-podcast-metrics-warning-value="<%= t(".metrics_not_ready") %>">
           <div class="card-header-light d-flex gap-4 align-items-center">
             <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t(".last_30") %></h2>
             <%= link_to "#{current_user_app("metrics")}/#{@podcast.id}", class: "btn btn-primary btn-sm" do %>

@@ -454,6 +454,7 @@ en:
       loading: Loading...
       manage_feeds: Manage Feeds
       manage_settings: Manage Settings
+      metrics_not_ready: Download metrics not available yet
       next_scheduled: Next Scheduled or Draft
       no_published: No Published Episodes
       no_scheduled: No Scheduled Episodes
