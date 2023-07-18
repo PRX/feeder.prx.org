@@ -16,7 +16,7 @@ class Podcast < ApplicationRecord
 
   has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true
 
-  has_many :episodes, -> { order("published_at desc") }
+  has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner

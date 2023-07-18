@@ -78,6 +78,27 @@ describe PodcastPolicy do
     it "returns false if token lacks destroy scope" do
       refute PodcastPolicy.new(token("feeder:podcast-create feeder:podcast-edit"), podcast).destroy?
     end
+
+    it "returns false unless the podcast is new or has no published episodes" do
+      podcast.created_at = 1.week.ago
+      tok = token("feeder:podcast-delete")
+
+      no_published = Struct.new(:none?).new(true)
+      has_published = Struct.new(:none?).new(false)
+      episodes = Struct.new(:published).new(no_published)
+
+      podcast.stub(:episodes, episodes) do
+        assert PodcastPolicy.new(tok, podcast).destroy?
+
+        # with episodes, cannot destroy
+        episodes.published = has_published
+        refute PodcastPolicy.new(tok, podcast).destroy?
+
+        # unless created very recently
+        podcast.created_at = 1.hour.ago
+        assert PodcastPolicy.new(tok, podcast).destroy?
+      end
+    end
   end
 
   describe "Scope" do

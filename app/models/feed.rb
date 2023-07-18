@@ -78,6 +78,10 @@ class Feed < ApplicationRecord
     slug.nil?
   end
 
+  def custom?
+    !default?
+  end
+
   def public?
     !private?
   end

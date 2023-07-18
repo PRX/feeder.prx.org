@@ -16,7 +16,12 @@ class PodcastPolicy < ApplicationPolicy
   end
 
   def destroy?
-    authorized?(:podcast_delete)
+    if authorized?(:podcast_delete)
+      # must be new-ish OR have 0 published episodes
+      resource.created_at > 1.day.ago || resource.episodes.published.none?
+    else
+      false
+    end
   end
 
   private
