@@ -10,6 +10,7 @@ class ImportsController < ApplicationController
   end
 
   def show
+    authorize @import
   end
 
   # POST /imports
