@@ -25,6 +25,11 @@ describe EpisodePolicy do
     it "returns true if token is a member of the account" do
       assert EpisodePolicy.new(token("feeder:episode"), episode).update?
       assert EpisodePolicy.new(token("feeder:episode"), episode).create?
+
+      # can only destroy unpublished episodes
+      episode.published_at = 10.days.ago
+      refute EpisodePolicy.new(token("feeder:episode"), episode).destroy?
+      episode.published_at = nil
       assert EpisodePolicy.new(token("feeder:episode"), episode).destroy?
     end
 
