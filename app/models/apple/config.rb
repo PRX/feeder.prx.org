@@ -28,7 +28,7 @@ module Apple
     validates :public_feed, exclusion: {in: ->(apple_credential) { [apple_credential.private_feed] }}
 
     def publish_to_apple?
-      return false unless apple_credentials&.valid?
+      return false unless key&.valid?
 
       public_feed.publish_to_apple?(self)
     end
