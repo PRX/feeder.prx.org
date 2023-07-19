@@ -13,7 +13,7 @@ export default class extends Controller {
   submit() {
     if (this.hasSubmitTarget) {
       this.submitTarget.click()
-    } else {
+    } else if (this.element) {
       this.element.click()
     }
   }

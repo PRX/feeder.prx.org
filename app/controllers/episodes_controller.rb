@@ -85,12 +85,13 @@ class EpisodesController < ApplicationController
     authorize @episode
 
     respond_to do |format|
-      if @episode.published?
-        flash.now[:error] = t(".error")
-        format.html { render :edit, status: :unprocessable_entity }
-      else
-        @episode.destroy
+      if @episode.destroy
         format.html { redirect_to podcast_episodes_url(@episode.podcast_id), notice: t(".notice") }
+      else
+        format.html do
+          flash.now[:error] = t(".error")
+          render :show, status: :unprocessable_entity
+        end
       end
     end
   end
