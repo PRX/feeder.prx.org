@@ -113,7 +113,7 @@ class EpisodeImport < ApplicationRecord
   end
 
   def create_or_update_episode!
-    lookup = Episode.find_by_item_guid(guid)
+    lookup = Episode.where(podcast_id: podcast.id).find_by_item_guid(guid)
 
     if lookup.present?
       self.episode = lookup
