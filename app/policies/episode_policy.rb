@@ -12,7 +12,11 @@ class EpisodePolicy < ApplicationPolicy
   end
 
   def destroy?
-    update?
+    if resource.published?
+      false
+    else
+      update?
+    end
   end
 
   private

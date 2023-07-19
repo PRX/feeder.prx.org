@@ -98,13 +98,13 @@ class PodcastsController < ApplicationController
     authorize @podcast
 
     respond_to do |format|
-      # TODO: better/real validation?
-      if @podcast.episodes.published_by(10.years).any?
-        flash.now[:error] = t(".error")
-        format.html { render :edit, status: :unprocessable_entity }
-      else
-        @podcast.destroy
+      if @podcast.destroy
         format.html { redirect_to podcasts_url, notice: t(".notice") }
+      else
+        format.html do
+          flash.now[:error] = t(".error")
+          render :edit, status: :unprocessable_entity
+        end
       end
     end
   end
