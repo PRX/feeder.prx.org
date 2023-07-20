@@ -3,19 +3,19 @@
     <table class="table table-striped shadow rounded">
       <tbody>
         <tr>
-          <td>Import ID</td>
+          <td><%= t(".id") %></td>
           <td><%= import.id %></td>
         </tr>
         <tr>
-          <td>Url</td>
+          <td><%= t(".url") %></td>
           <td><%= import.url %></td>
         </tr>
         <tr>
-          <td>Status</td>
+          <td><%= t(".status") %></td>
           <td><%= import.status %></td>
         </tr>
         <tr>
-          <td>Progress</td>
+          <td><%= t(".progress") %></td>
           <td>
             <% if import.feed_episode_count.present? %>
               <%= render "import_progress_bar", import: import %>
@@ -25,27 +25,27 @@
           </td>
         </tr>
         <tr>
-          <td>Entries in RSS Feed</td>
+          <td><%= t(".feed_episode_count") %></td>
           <td><%= import.feed_episode_count if import.feed_episode_count.present? %></td>
         </tr>
         <tr>
-          <td>Successfully Imported</td>
+          <td><%= t(".success") %></td>
           <td><%= import.episode_imports.complete.count %></td>
         </tr>
         <tr>
-          <td>In Progress</td>
+          <td><%= t(".in_progress") %></td>
           <td><%= import.episode_imports.in_progress.count %></td>
         </tr>
         <tr>
-          <td>Remaining to Import</td>
+          <td><%= t(".remaining") %></td>
           <td><%= import.remaining_import_count %></td>
         </tr>
         <tr>
-          <td>Failed</td>
+          <td><%= t(".failed") %></td>
           <td><%= import.episode_imports.failed.count %></td>
         </tr>
         <tr>
-          <td>Duplicate GUID Count</td>
+          <td><%= t(".duplicate") %></td>
           <td><%= import.episode_import_placeholders.count %></td>
         </tr>
 

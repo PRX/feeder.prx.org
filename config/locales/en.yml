@@ -114,6 +114,9 @@ en:
         alt_text: Alt Text
         caption: Caption
         credit: Credit
+      podcast_import:
+        feed_source: Feed Source
+        url: RSS Feed URL
       media_resource:
         original_url:
           audio: Segment %{position}
@@ -318,6 +321,34 @@ en:
       episode_image: Cover Image
       feed_image: Thumbnail Image
       itunes_image: Profile Image
+  imports:
+    create:
+      success: Beginning import.
+      failure: Could not begin import.
+    form_main:
+      id: ID
+      status: Status
+      progress: Progress
+      episode_count: Episode Count
+      url: Feed Url
+      import_date: Import Date
+      no_imports: No imports
+    form_status:
+      title: Import
+      submit: Start Import
+    import:
+      id: Import ID
+      url: URL
+      status: Status
+      progress: Progress
+      feed_episode_count: Entries in RSS Feed
+      success: Successfully Imported
+      in_progress: In Progress
+      remaining: Remaining to Import
+      failed: Failed
+      duplicate: Duplicate GUID Count
+    import_spinner:
+      importing: Importing...
   layouts:
     nav:
       account: PRX Account

@@ -22,10 +22,10 @@ class ImportsController < ApplicationController
     respond_to do |format|
       if @import.save
         @import.import_later
-        format.html { redirect_to podcast_import_path(@podcast, @import), notice: "Beginning import." }
+        format.html { redirect_to podcast_import_path(@podcast, @import), notice: t(".success") }
       else
         format.html do
-          flash.now[:notice] = "Could not begin import."
+          flash.now[:notice] = t(".failure")
           render :index, status: :unprocessable_entity
         end
       end
