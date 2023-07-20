@@ -166,7 +166,9 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def self.settle_remaining!(podcast)
-    attempt!(podcast)
+    Rails.logger.tagged("PublishingPipeLineState.settle_remaining!") do
+      attempt!(podcast)
+    end
   end
 
   def self.complete?(podcast)
@@ -176,8 +178,9 @@ class PublishingPipelineState < ApplicationRecord
   def self.state_transition(podcast, to_state)
     podcast.with_publish_lock do
       pqi = PublishingQueueItem.current_unfinished_item(podcast)
+      curr_running_item = PublishingQueueItem.current_unfinished_item(podcast)
       if pqi.present?
-        Rails.logger.info("Transitioning podcast #{podcast.id} publishing pipeline to state #{to_state}", {podcast_id: podcast.id, to_state: to_state})
+        Rails.logger.info("Transitioning podcast #{podcast.id} publishing pipeline to state #{to_state}", {podcast_id: podcast.id, to_state: to_state, running_queue_item: curr_running_item&.id})
         PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: to_state)
       else
         Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot transition state", {podcast_id: podcast.id, to_state: to_state})
