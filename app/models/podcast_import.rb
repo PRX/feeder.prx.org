@@ -70,14 +70,6 @@ class PodcastImport < ApplicationRecord
     end
   end
 
-  def progress_bar
-    if feed_episode_count.present?
-      ((episode_imports.finished.count.to_f / feed_episode_count.to_f) * 100).ceil.to_s
-    else
-      "0"
-    end
-  end
-
   def finished?
     return false unless episode_imports.count == episode_importing_count
     episode_imports.all? do |e|
