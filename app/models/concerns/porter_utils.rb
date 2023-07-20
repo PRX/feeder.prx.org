@@ -5,7 +5,13 @@ module PorterUtils
 
   class_methods do
     def porter_sns_client
-      @porter_sns_client ||= Aws::SNS::Client.new
+      @porter_sns_client ||= Aws::SNS::Client.new(region: porter_region)
+    end
+
+    def porter_region
+      arn = ENV["PORTER_SNS_TOPIC"] || ""
+      match_data = arn.match(/arn:aws:sns:(?<region>.+):\d+:.+/) || {}
+      match_data[:region] || ENV["AWS_REGION"]
     end
   end
 

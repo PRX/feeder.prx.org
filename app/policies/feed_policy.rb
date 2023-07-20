@@ -16,6 +16,6 @@ class FeedPolicy < ApplicationPolicy
   end
 
   def destroy?
-    update?
+    resource.custom? && update?
   end
 end

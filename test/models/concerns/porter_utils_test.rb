@@ -10,9 +10,33 @@ describe PorterUtils do
   let(:model) { TestUtils.new }
 
   around do |test|
+    prev_region = ENV["AWS_REGION"]
+    prev_arn = ENV["PORTER_SNS_TOPIC"]
+
     sns.reset
     TestUtils.stub :porter_sns_client, sns do
       test.call
+    end
+
+    ENV["AWS_REGION"] = prev_region
+    ENV["PORTER_SNS_TOPIC"] = prev_arn
+  end
+
+  describe ".porter_region" do
+    it "parses the region from an sns topic" do
+      ENV["PORTER_SNS_TOPIC"] = "arn:aws:sns:us-gov-east-1:12345678:some-topic-name"
+
+      assert_equal "us-gov-east-1", model.class.porter_region
+    end
+
+    it "defaults to the aws region" do
+      ENV["AWS_REGION"] = "eu-west-1"
+
+      ENV["PORTER_SNS_TOPIC"] = "arn:aws:this:is:a:bad:string"
+      assert_equal "eu-west-1", model.class.porter_region
+
+      ENV["PORTER_SNS_TOPIC"] = nil
+      assert_equal "eu-west-1", model.class.porter_region
     end
   end
 

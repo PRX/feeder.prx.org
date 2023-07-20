@@ -151,4 +151,46 @@ describe Apple::Api do
       assert_equal headers["User-Agent"], "PRX-Feeder-Apple/1.0 (Rails-test)"
     end
   end
+
+  describe "#response" do
+    it "has the result type structure wrapped in an api_response key" do
+      http_response = OpenStruct.new(code: "999", body: {a: :b}.to_json)
+      assert_equal api.response(http_response).keys, ["api_response"]
+      assert_equal api.response(http_response)["api_response"].keys.sort, ["err", "ok", "val"].sort
+    end
+
+    it "returns an ok with something like a 200" do
+      http_response = OpenStruct.new(code: "210", body: {awesome: :api}.to_json)
+      api_response = api.response(http_response)
+      assert_equal false, api_response["api_response"]["err"]
+      assert_equal true, api_response["api_response"]["ok"]
+
+      assert_equal({"awesome" => "api"}, api_response["api_response"]["val"])
+    end
+
+    it "returns an error with something other than a 200" do
+      http_response = OpenStruct.new(code: "404", body: {not: :found}.to_json)
+      api_response = api.response(http_response)
+      assert_equal true, api_response["api_response"]["err"]
+      assert_equal false, api_response["api_response"]["ok"]
+
+      assert_equal({"not" => "found"}, api_response["api_response"]["val"])
+    end
+
+    it "calls the log error method when there is an error" do
+      http_response = OpenStruct.new(code: "404", body: {not: :found}.to_json)
+
+      mock = Minitest::Mock.new
+      mock.expect(:call, nil, [{"api_response" => {"ok" => false, "err" => true, "val" => {"not" => "found"}}}])
+      api.stub(:log_response_error, mock) { api.response(http_response) }
+
+      mock.verify
+    end
+
+    it "does not call the log error method when there is no error" do
+      http_response = OpenStruct.new(code: "299", body: {so: :good}.to_json)
+
+      api.stub(:log_response_error, ->(**) { raise "should not be called" }) { api.response(http_response) }
+    end
+  end
 end

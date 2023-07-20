@@ -3,6 +3,7 @@ defaults:
     confirm: Discard unsaved changes?
   form_status: &form_status
     create: Create
+    creating: Creating...
     destroy: Delete
     destroy_confirm_title: Really Delete?
     destroy_confirm_body: "Are you sure you want to delete this %{model}? This action cannot be undone."
@@ -11,6 +12,7 @@ defaults:
     discard: Discard
     new_hint: Unsaved
     title: Status
+    toggle_dropdown: Toggle Dropdown
     update: Save
     updated_at_hint: Last Saved
     updating: Saving...
@@ -50,6 +52,11 @@ en:
             segment_count:
               greater_than: Can't be negative
               less_than_or_equal_to: Enter a number less than %{count}
+        feed:
+          attributes:
+            slug:
+              invalid: Invalid slug
+              taken: Must be unique
         podcast:
           attributes:
             payment_pointer:
@@ -66,6 +73,12 @@ en:
         categories: Categories
         clean_title: Clean Title
         description: Description
+        embed_player_iframe: Embeddable Player IFrame
+        embed_player_type: Player Style
+        embed_player_types:
+          standard: Standard
+          card: Responsive Card
+          fixed_card: Fixed Width Card
         embed_player_url: Embeddable Player Link
         enclosure_url: Media Link
         episode_number: Episode Number
@@ -195,24 +208,13 @@ en:
     form_media:
       title: Media Files
     form_status:
+      <<: *form_status
       create: Create Draft
-      creating: Creating...
-      destroy: Delete
-      destroy_confirm_title: Really Delete?
       destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
-      destroy_confirm_yes: Delete
-      destroy_confirm_no: Cancel
-      discard: Discard
-      new_hint: Unsaved
       title_draft: Draft
       title_published: Published
       title_scheduled: Scheduled
-      toggle_dropdown: Toggle Dropdown
       unpublish: Unpublish
-      update: Save
-      updated_at_hint: Last Saved
-      updating: Saving...
-      uploading: Uploading...
     form_tags:
       title: Categories
       help:
@@ -255,6 +257,22 @@ en:
       error: Unable to save
       media_not_ready: Audio not ready
       notice: Episode updated
+  episode_player:
+    form:
+      enclosure_not_ready: No Media Files Uploaded
+      help:
+        copy: Copy the code for one of the following players, and place it on your webpage.
+        types:
+          card: Something about a responsive card
+          card_fixed: Fixed width card something blah
+          standard: The standard player is responsive, meaning it automatically adjusts to the content column it is embedded in. Resize this panel to see how the player adjusts and looks at different widths.
+        warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/links will begin to function as expected within a few minutes of publishing.
+      title:
+        copy: Copy and Use your Embed Code
+        preview: Player
+        warning: Warning
+    show:
+      title: Embeddable Player
   episode_segmenter:
     form:
       confirm: Discard unsaved changes?
@@ -415,15 +433,8 @@ en:
         subtitle: A short description of this podcast.
         title: What's the name of this podcast?
     form_status:
-      create: Create
-      creating: Creating...
-      discard: Discard
-      new_hint: Unsaved
-      title: Status
-      update: Save
-      updated_at_hint: Last Saved
-      updating: Saving...
-      uploading: Uploading...
+      <<: *form_status
+      destroy_confirm_body_html: Are you sure you want to delete this podcast? Your episodes will also be deleted, and requests to download episodes from your RSS feed will fail.<br/><br/><b>This action cannot be undone.</b>
     index:
       search_podcasts: Search Podcasts
     podcast:
@@ -443,6 +454,7 @@ en:
       loading: Loading...
       manage_feeds: Manage Feeds
       manage_settings: Manage Settings
+      metrics_not_ready: Download metrics not available yet
       next_scheduled: Next Scheduled or Draft
       no_published: No Published Episodes
       no_scheduled: No Scheduled Episodes

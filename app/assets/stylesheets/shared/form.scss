@@ -86,8 +86,11 @@
     border-radius: $input-border-radius;
   }
 
-  .ss-disabled ~ label:before {
-    background: transparent;
+  [disabled="disabled"],
+  .ss-disabled {
+    ~ label:before {
+      background: $input-disabled-bg;
+    }
   }
 
   .form-control {
@@ -110,7 +113,8 @@
   .form-select.is-changed:not(.is-invalid) {
     border-color: $orange;
 
-    &:focus {
+    &:focus,
+    &.form-control-focus {
       box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
     }
 
@@ -120,25 +124,30 @@
   }
 
   // bootstrap5-tags need help
-  .form-floating {
-    > .form-tag-select ~ label {
-      opacity: $form-floating-label-opacity !important;
-      transform: $form-floating-label-transform !important;
+  .form-tag-select {
+    // tag field doesn't end up being first - so re-add radius
+    border-top-left-radius: $border-radius !important;
+    border-bottom-left-radius: $border-radius !important;
+
+    // no dropdown carat
+    background-image: none;
+
+    // re-implement focus styling
+    &.form-control-focus {
+      color: $input-focus-color;
+      background-color: $input-focus-bg;
+      border-color: $input-focus-border-color;
+      outline: 0;
+      box-shadow: $input-focus-box-shadow;
+      ~ label {
+        transform: $form-floating-label-transform !important;
+      }
     }
-    > .form-tag-select.form-control-blank:not(.form-control-focus) ~ label {
-      opacity: 1 !important;
-      transform: none !important;
+
+    // inner input has no css classes, so height is wrong
+    input {
+      line-height: $line-height-base;
     }
-  }
-  .is-changed ~ .form-tag-select {
-    border-color: $orange;
-  }
-  .form-tag-select.form-control-focus {
-    color: $input-focus-color;
-    background-color: $input-focus-bg;
-    border-color: $input-focus-border-color;
-    outline: 0;
-    box-shadow: $input-focus-box-shadow;
   }
 
   .form-control[type="file"] {
@@ -188,6 +197,10 @@
     height: auto;
     border-color: $input-border-color;
     // border: none;
+  }
+
+  &.ss-disabled {
+    background-color: $input-disabled-bg;
   }
 
   .ss-values .ss-single {
