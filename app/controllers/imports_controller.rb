@@ -22,7 +22,7 @@ class ImportsController < ApplicationController
     respond_to do |format|
       if @import.save
         @import.import_later
-        format.html { redirect_to podcast_imports_path(@podcast), notice: "Beginning import." }
+        format.html { redirect_to podcast_import_path(@podcast, @import), notice: "Beginning import." }
       else
         format.html do
           flash.now[:notice] = "Could not begin import."

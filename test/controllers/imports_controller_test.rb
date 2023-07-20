@@ -39,7 +39,7 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
       post podcast_imports_url(@podcast), params: {podcast_import: params}
     end
 
-    assert_redirected_to podcast_imports_url(@podcast)
+    assert_redirected_to podcast_import_url(@podcast, PodcastImport.last)
   end
 
   test "authorizes creating imports" do
