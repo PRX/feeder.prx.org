@@ -48,13 +48,18 @@
 }
 
 .prx-tab {
-  &:is(.nav-link, .nav-link.disable, .nav-link.active) {
+  &:is(.nav-link, .nav-link.disable) {
     border-inline-start-width: map-get($spacers, 1);
     background-color: rgba(var(--prx-tab-bg-rgb), var(--prx-tab-bg-opacity));
   }
 
+  &:is(.nav-link.active) {
+    border-inline-start-width: map-get($spacers, 1);
+    background-color: $white;
+  }
+
   &.active {
-    --prx-tab-bg-opacity: 0;
+    background-color: $white;
   }
 
   &:hover:not(.active) {
