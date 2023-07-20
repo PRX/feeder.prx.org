@@ -104,7 +104,7 @@ class PublishingPipelineState < ApplicationRecord
           Rails.logger.info("Unfinished items empty, nothing to do", podcast_id: podcast.id)
           next
         end
-        if curr_running_item = PublishingQueueItem.current_unfinished_item(podcast)
+        if (curr_running_item = PublishingQueueItem.current_unfinished_item(podcast))
           Rails.logger.info("Podcast's PublishingQueueItem already has running pipeline", podcast_id: podcast.id, running_queue_item: curr_running_item.id)
           next
         end
