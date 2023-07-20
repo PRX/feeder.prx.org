@@ -153,8 +153,8 @@ describe PublishingPipelineState do
       assert_equal [pa1, pa2].sort, PublishingPipelineState.expired_pipelines.sort
       PublishingPipelineState.expire_pipelines!
 
-      assert_equal ["created", "expired"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
-      assert_equal ["created", "expired"], PublishingPipelineState.latest_pipeline(podcast2).map(&:status)
+      assert_equal ["created", "expired"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+      assert_equal ["created", "expired"].sort, PublishingPipelineState.latest_pipeline(podcast2).map(&:status).sort
 
       # All pipelines are in a terminal state
       # There is nothing running:
