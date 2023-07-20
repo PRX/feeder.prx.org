@@ -18,6 +18,7 @@ class PublishingQueueItem < ApplicationRecord
   end
 
   def self.ensure_queued!(podcast)
+    Rails.logger.info("Creating new PublishingQueueItem", {podcast_id: podcast.id})
     create!(podcast: podcast)
   end
 
