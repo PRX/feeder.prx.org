@@ -48,6 +48,7 @@ time pg_dump --verbose -Fc -h 127.0.0.1 \
   --exclude-table-data 'public.say_when_job_executions' \
   --exclude-table-data 'sessions' \
   --exclude-table-data 'tasks' \
+  --exclude-table-data 'apple_keys' \
   -W -d "${DUMP_REMOTE_POSTGRES_DATABASE}" -U "$DUMP_REMOTE_POSTGRES_USER" -f "$OUTPUT_FILE"
 echo "Wrote: $OUTPUT_FILE"
 
