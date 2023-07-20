@@ -86,8 +86,11 @@
     border-radius: $input-border-radius;
   }
 
-  .ss-disabled ~ label:before {
-    background: transparent;
+  [disabled="disabled"],
+  .ss-disabled {
+    ~ label:before {
+      background: $input-disabled-bg;
+    }
   }
 
   .form-control {
@@ -194,6 +197,10 @@
     height: auto;
     border-color: $input-border-color;
     // border: none;
+  }
+
+  &.ss-disabled {
+    background-color: $input-disabled-bg;
   }
 
   .ss-values .ss-single {

@@ -87,12 +87,12 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test "validates destroying episodes" do
+  test "authorizes you aren't destroying published episodes" do
     episode.update(published_at: 1.hour.ago)
 
     # cannot delete published episode
     delete episode_url(episode)
-    assert_response :unprocessable_entity
+    assert_response :forbidden
 
     # can delete once unpublished
     episode.update(published_at: 1.hour.from_now)

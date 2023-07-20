@@ -3,11 +3,7 @@ import Tags from "bootstrap5-tags"
 
 export default class extends Controller {
   connect() {
-    if (!this.element.id) {
-      this.element.setAttribute("id", Math.random().toString(16))
-    }
-
-    Tags.init("#" + this.element.id, {
+    this.tags = new Tags(this.element, {
       addOnBlur: true,
       hideNativeValidation: true,
       onBlur: () => this.element.dispatchEvent(new Event("blur")),
@@ -26,7 +22,9 @@ export default class extends Controller {
   }
 
   disconnect() {
-    Tags.getInstance(this.element).dispose()
+    if (this.tags) {
+      this.tags.dispose()
+    }
     this.element.removeEventListener("change", this.bindChange)
   }
 
