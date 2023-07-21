@@ -53,30 +53,54 @@ class CmsSyncher
     story.deleted_at = DateTime.now
     story.account_id = episode.podcast.account_id
     story.title = episode.title
+    story.clean_title = episode.clean_title
     story.short_description = episode.subtitle
     story.description = episode_description(episode)
+    story.production_notes = episode.production_notes
     story.tags = episode.categories
     story.published_at = episode.released_at
     story.released_at = episode.published_at
-    story.save!
 
-    episode.update_attribute(:prx_uri, "/api/v1/stories/#{story.id}")
-
-    episode.images.each do |episode_image|
-      save_image(story, episode_image)
+    %w[season episode].each do |time|
+      id = episode["#{time}_number"].to_i
+      story["#{time}_identifier"] = id.positive? ? id : nil
     end
+
+    story.save!
 
     # get or create a version
     version = save_audio_version(story, episode)
 
-    # get all the audio files regardless of version
-    audio_files = story.audio_files
+    episode.prx_audio_version_uri = "/api/v1/audio_versions/#{version.id}"
+    episode.explicit = version.explicit
+    episode.source_updated_at = story.updated_at
+    episode.prx_uri = "/api/v1/stories/#{story.id}"
+    episode.save!
 
-    episode.contents.each_with_index do |content, i|
+    # get all the audio files regardless of version
+    audio_files = Array(story.audio_files)
+    puts "audio_files! #{audio_files}"
+
+    # for each audio file, if it is complete, first see if it is already in cms
+    # we know if it's the same file if the original url matches
+    # also keep track of story audio_files we aren't using, we can delete those!
+
+    # cms audio files are uploaded to s3, and typically have an s3 url for the upload_path
+    # s3://infrastructure-cd-root-produ-publishuploadsbucket-12jcu1illhit4/prod/a1158078-e3e0-203f-5062-5bf14d0d77e8/newscast.mp3
+
+    # we can use the feeder original_url for this
+
+    episode.media.each_with_index do |em, i|
+      # see if the file already exists
+      audio_files.select { |af| af.upload_path == em.original_url }
       # upload_url = copy_media(episode, content)
       # audio = version.audio_files.create!(label: "Segment #{i + 1}", upload: upload_url)
       # announce_audio(audio)
       # media_resource.update_attribute(:original_url, audio_file_original_url(audio))
+    end
+
+    episode.images.each do |episode_image|
+      save_image(story, episode_image)
     end
 
     # # create the story distribution

@@ -9,7 +9,7 @@ services:
     volumes:
       - .:/app
     env_file:
-      - .env
+      - env-example
     links:
       - db
       - mysql
@@ -21,6 +21,9 @@ services:
     command: web
     environment:
       VIRTUAL_HOST: feeder.prx.docker
+      RAILS_ENV: test
+      POSTGRES_HOST: db
+      CMS_MYSQL_HOST: mysql
     networks:
       - feeder-net
   worker:
@@ -28,7 +31,12 @@ services:
     volumes:
       - .:/app
     env_file:
-      - .env
+      - env-example
+    environment:
+      VIRTUAL_HOST: feeder.prx.docker
+      RAILS_ENV: test
+      POSTGRES_HOST: db
+      CMS_MYSQL_HOST: mysql
     links:
       - db
     command: worker
@@ -37,7 +45,7 @@ services:
   db:
     image: postgres:13.3-alpine
     env_file:
-      - .env
+      - env-example
     expose:
       - "5432"
     volumes:
@@ -52,7 +60,7 @@ services:
       MYSQL_DATABASE: cms_test
       MYSQL_ROOT_HOST: "%"
     env_file:
-      - .env
+      - env-example
     expose:
       - "3306"
     networks:
