@@ -25,7 +25,7 @@ describe Apple::ApiWaiting do
 
       step = 0
 
-      (finished_waiting, remaining) = TestWait.wait_for(records) do |remaining|
+      (timed_out, remaining) = TestWait.wait_for(records) do |remaining|
         rem = remaining.dup
 
         assert_equal intervals[step], rem
@@ -37,16 +37,16 @@ describe Apple::ApiWaiting do
         rem
       end
 
-      assert_equal finished_waiting, true
+      assert_equal timed_out, false
       assert_equal remaining, []
     end
 
     it "times out" do
-      (finished_waiting, remaining) = TestTimeout.wait_for(["a", "b", "c"]) do |remaining|
+      (timed_out, remaining) = TestTimeout.wait_for(["a", "b", "c"]) do |remaining|
         remaining
       end
 
-      assert_equal finished_waiting, false
+      assert_equal timed_out, true
       assert_equal remaining, ["a", "b", "c"]
     end
   end

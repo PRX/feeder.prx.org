@@ -113,7 +113,11 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
 
-        Apple::PodcastDeliveryFile.wait_for_delivery_files(api, pdfs)
+        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs)
+        raise "Timed out waiting for delivery" if waiting_timed_out
+
+        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs)
+        raise "Timed out waiting for processing" if waiting_timed_out
 
         # Get the latest state of the podcast containers
         # which should include synced files
@@ -124,7 +128,9 @@ module Apple
     def wait_for_asset_state(eps)
       Rails.logger.tagged("##{__method__}") do
         eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
-        Apple::Episode.wait_for_asset_state(api, eps)
+
+        (waiting_timed_out, _) = Apple::Episode.wait_for_asset_state(api, eps)
+        raise "Timed out waiting for asset state" if waiting_timed_out
       end
     end
 
