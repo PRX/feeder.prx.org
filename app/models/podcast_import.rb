@@ -87,7 +87,7 @@ class PodcastImport < ApplicationRecord
   end
 
   def retry!
-    update(status: RETRYING)
+    status_retrying!
     import_later
   end
 
@@ -106,7 +106,7 @@ class PodcastImport < ApplicationRecord
     create_or_update_podcast!
     status_created!
   rescue => err
-    update(status: FAILED)
+    status_failed!
     raise err
   end
 
@@ -123,7 +123,7 @@ class PodcastImport < ApplicationRecord
     status_importing!
   rescue => err
     Rails.logger.error ([err.message] + err.backtrace).join($/)
-    update(status: FAILED)
+    status_failed!
     raise err
   end
 
