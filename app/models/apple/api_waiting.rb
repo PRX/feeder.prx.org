@@ -8,12 +8,15 @@ module Apple
       def self.wait_for(remaining_records)
         t_beg = Time.now.utc
         loop do
-          # TODO: handle timeout
-          break [false, remaining_records] if Time.now.utc - t_beg > self::API_WAIT_TIMEOUT
+          Rails.logger.info(".wait_for", {remaining_records: remaining_records, have_waited: Time.now.utc - t_beg})
+
+          # Return `timeout == true` if we've waited too long
+          break [true, remaining_records] if Time.now.utc - t_beg > self::API_WAIT_TIMEOUT
 
           remaining_records = yield(remaining_records)
 
-          break [true, []] if remaining_records.empty?
+          # All done, return `timeout == false`
+          break [false, []] if remaining_records.empty?
 
           sleep(self::API_WAIT_INTERVAL)
         end
