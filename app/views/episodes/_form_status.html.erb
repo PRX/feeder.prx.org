@@ -77,20 +77,3 @@
     <% end %>
   </div>
 </div>
-
-<div class="modal fade" id="confirm-destroy" tabindex="-1" aria-labelledby="confirm-destroy-title" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirm-destroy-title"><%= t(".destroy_confirm_title") %></h5>
-      </div>
-      <div class="modal-body">
-        <p><%= t(".destroy_confirm_body") %></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-light" data-bs-dismiss="modal"><%= t(".destroy_confirm_no") %></button>
-        <%= link_to t(".destroy_confirm_yes"), episode, method: :delete, class: "btn btn-danger" %>
-      </div>
-    </div>
-  </div>
-</div>
