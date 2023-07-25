@@ -121,6 +121,13 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
         episode: podcast_container.episode)
     }
 
+    before do
+      pdf_resp_container = build(:podcast_delivery_file_api_response)
+      pdf = Apple::PodcastDeliveryFile.create!(podcast_delivery: podcast_delivery, episode: podcast_container.episode)
+      pdf.create_apple_sync_log!(**pdf_resp_container)
+      podcast_container.reload
+    end
+
     it "should soft delete the delivery" do
       assert podcast_container.persisted?
       assert_equal [podcast_delivery], podcast_container.podcast_deliveries

@@ -118,6 +118,10 @@ module Apple
 
         (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs)
         raise "Timed out waiting for processing" if waiting_timed_out
+
+        # Get the latest state of the podcast containers
+        # which should include synced files
+        Apple::PodcastContainer.poll_podcast_container_state(api, eps)
       end
     end
 
@@ -248,10 +252,19 @@ module Apple
 
     def publish_drafting!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.select { |ep| ep.drafting? && ep.apple_upload_complete? }
+        eps = eps.select { |ep| ep.drafting? && ep.container_upload_complete? }
 
-        res = Apple::Episode.publish(api, eps)
+        res = Apple::Episode.publish(api, show, eps)
         Rails.logger.info("Published #{res.length} drafting episodes.")
+      end
+    end
+
+    # Not used in any of the polling or publish routines, but useful for
+    # debugging.  This removes the audio container reference from the episode,
+    # but leaves the podcast container intact.
+    def remove_audio_container_reference(eps, apple_mark_for_reupload: true)
+      Rails.logger.tagged("##{__method__}") do
+        Apple::Episode.remove_audio_container_reference(api, show, eps, apple_mark_for_reupload: apple_mark_for_reupload)
       end
     end
   end

@@ -92,7 +92,7 @@ describe Apple::Episode do
     end
 
     it "should be false if there are no podcast delivery files" do
-      apple_episode.stub(:podcast_delivery_files, []) do
+      apple_episode.podcast_container.stub(:podcast_delivery_files, []) do
         assert_equal false, apple_episode.waiting_for_asset_state?
       end
     end
@@ -165,6 +165,21 @@ describe Apple::Episode do
       apple_episode.feeder_episode.stub(:enclosure_filename, expecter) do
         apple_episode.enclosure_filename
       end
+    end
+  end
+
+  describe "#publish" do
+    it "should call poll! at the conclusion of the episode publishing" do
+      mock = Minitest::Mock.new
+      mock.expect(:call, nil, [apple_api, apple_show, [apple_episode]])
+
+      apple_api.stub(:bridge_remote_and_retry, nil) do
+        Apple::Episode.stub(:poll_episode_state, mock) do
+          Apple::Episode.publish(apple_api, apple_show, [apple_episode])
+        end
+      end
+
+      mock.verify
     end
   end
 end

@@ -64,8 +64,6 @@ module Apple
     end
 
     def self.poll_podcast_container_state(api, episodes)
-      episodes = episodes.filter(&:apple_persisted?)
-
       results = get_podcast_containers_via_episodes(api, episodes)
 
       join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
@@ -133,18 +131,14 @@ module Apple
     end
 
     def self.get_podcast_containers_via_episodes(api, episodes)
-      # Only query for episodes that don't have a podcast container
-      # The container. Assume that if we have a container record, we don't need to poll.
-      eps_without_container = episodes.filter { |ep| ep.apple_persisted? && ep.missing_container? }
-
       # Fetch the podcast containers from the episodes side of the API
       response =
-        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, eps_without_container), batch_size: 1)
+        api.bridge_remote_and_retry!("getPodcastContainers", get_podcast_containers_bridge_params(api, episodes), batch_size: 1)
 
       # Rather than mangling and persisting the enumerated view of the containers in the episodes,
       # just re-fetch the podcast containers from the non-list podcast container endpoint
       formatted_bridge_params =
-        join_on_apple_episode_id(eps_without_container, response).map do |(episode, row)|
+        join_on_apple_episode_id(episodes, response).map do |(episode, row)|
           get_urls_for_episode_podcast_containers(api, row).map do |url|
             get_podcast_containers_bridge_param(episode.apple_id, url)
           end
@@ -242,9 +236,9 @@ module Apple
     end
 
     def has_podcast_audio?
-      return false if files.blank?
+      return false if files.empty?
 
-      files.any? do |file|
+      files.all? do |file|
         # Retrieve the file status from the podcast container's files attribute
         file["status"] == FILE_STATUS_SUCCESS && file["assetRole"] == FILE_ASSET_ROLE_PODCAST_AUDIO
       end
@@ -254,13 +248,39 @@ module Apple
       !has_podcast_audio?
     end
 
+    def delivered?
+      return false if podcast_delivery_files.length == 0
+
+      (podcast_delivery_files.all?(&:delivered?) &&
+        podcast_delivery_files.all?(&:processed?))
+    end
+
+    def processed_errors?
+      return false if podcast_delivery_files.length == 0
+
+      podcast_delivery_files.all?(&:processed_errors?)
+    end
+
+    def delivery_settled?
+      return false if podcast_delivery_files.length == 0
+
+      delivered? && !processed_errors?
+    end
+
+    def skip_delivery?
+      container_upload_satisfied?
+    end
+
+    def container_upload_satisfied?
+      # Sets us up for a retry if something prevented the audio from being
+      # marked as uploaded and then processed and validated. Assuming that we
+      # get to that point and the audio is still missing, we should be able to
+      # retry.
+      has_podcast_audio? && delivery_settled?
+    end
+
     def needs_delivery?
-      # Handle the case where the podcast container *does* have podcast audio,
-      # but doesn't have any podcast deliveries / files. This is a weird edge
-      # case but it amounts to checking the deliveries to see if any are there.
-      # If there are no deliveries, then the code that polls/checks the delivery
-      # status will fail. So we need to create a delivery.
-      podcast_deliveries.empty?
+      !skip_delivery?
     end
 
     def reset_source_metadata!(apple_ep)

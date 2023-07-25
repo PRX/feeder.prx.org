@@ -109,4 +109,31 @@ describe Apple::Publisher do
       end
     end
   end
+
+  describe "#publish_drafting!" do
+    it "should call the episode publish drafting class method" do
+      ep = OpenStruct.new(drafting?: true, container_upload_complete?: true)
+      mock = Minitest::Mock.new
+      mock.expect(:call, [], [apple_publisher.api, apple_publisher.show, [ep]])
+
+      Apple::Episode.stub(:publish, mock) do
+        apple_publisher.publish_drafting!([ep])
+      end
+
+      mock.verify
+    end
+  end
+
+  describe "#wait_for_upload_processing" do
+    it "should poll the podcast container state" do
+      mock = Minitest::Mock.new
+      mock.expect(:call, [], [apple_publisher.api, []])
+
+      Apple::PodcastContainer.stub(:poll_podcast_container_state, mock) do
+        apple_publisher.wait_for_upload_processing([])
+      end
+
+      mock.verify
+    end
+  end
 end

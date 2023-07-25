@@ -116,7 +116,7 @@ module Apple
       episode_bridge_results
     end
 
-    def self.remove_audio_container_reference(api, show, episodes)
+    def self.remove_audio_container_reference(api, show, episodes, apple_mark_for_reupload: true)
       return [] if episodes.empty?
 
       (episode_bridge_results, errs) =
@@ -128,8 +128,8 @@ module Apple
       upsert_sync_logs(episodes, episode_bridge_results)
 
       join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        ep.podcast_container.podcast_delivery_files.each(&:destroy)
-        ep.podcast_container.podcast_deliveries.each(&:destroy)
+        ep.feeder_episode.apple_mark_for_reupload if apple_mark_for_reupload
+        Rails.logger.info("Removed audio container reference for episode", {episode_id: ep.feeder_id})
       end
 
       show.reload
@@ -139,11 +139,15 @@ module Apple
       episode_bridge_results
     end
 
-    def self.publish(api, episodes, state: "PUBLISH")
+    def self.publish(api, show, episodes, state: "PUBLISH")
       return [] if episodes.empty?
 
       api.bridge_remote_and_retry!("publishEpisodes",
         episodes.map { |e| e.publishing_state_bridge_params(state) })
+
+      # We don't get back the full episode model in the response.
+      # So poll for current state
+      poll_episode_state(api, show, episodes)
     end
 
     def self.upsert_sync_logs(episodes, results)
@@ -381,10 +385,8 @@ module Apple
       apple_json&.dig("attributes", "publishingState") == "DRAFTING"
     end
 
-    def apple_upload_complete?
-      pdfs = feeder_episode.apple_podcast_delivery_files
-
-      pdfs.present? && pdfs.to_a.flatten.all?(&:apple_complete?)
+    def container_upload_complete?
+      feeder_episode.apple_podcast_container.container_upload_satisfied?
     end
 
     def audio_asset_vendor_id
@@ -435,15 +437,11 @@ module Apple
     end
 
     def synced_with_apple?
-      audio_asset_state_success? && apple_upload_complete? && !drafting?
+      audio_asset_state_success? && container_upload_complete? && !drafting?
     end
 
     def waiting_for_asset_state?
-      (podcast_delivery_files.length > 0 &&
-        podcast_delivery_files.all?(&:delivered?) &&
-        podcast_delivery_files.all?(&:processed?) &&
-        !podcast_delivery_files.all?(&:processed_errors?) &&
-        !audio_asset_state_finished?)
+      podcast_container.delivery_settled? && !audio_asset_state_finished?
     end
 
     def apple_id
