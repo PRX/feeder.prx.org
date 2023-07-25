@@ -15,9 +15,16 @@ class ImportsController < ApplicationController
 
   # POST /imports
   def create
+    @imports = @podcast.podcast_imports
     @import = @podcast.podcast_imports.new(import_params)
     authorize @import
-    @import.get_feed
+    begin
+      @import.get_feed
+    rescue URI::InvalidURIError
+      flash.now[:notice] = t(".failure_get_feed")
+      render :index, status: :unprocessable_entity
+      return
+    end
 
     respond_to do |format|
       if @import.save

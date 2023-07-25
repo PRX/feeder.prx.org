@@ -325,6 +325,7 @@ en:
     create:
       success: Beginning import.
       failure: Could not begin import.
+      failure_get_feed: Missing or invalid URL.
     form_main:
       id: ID
       status: Status

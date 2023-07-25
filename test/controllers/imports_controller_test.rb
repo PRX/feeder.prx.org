@@ -48,10 +48,10 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  # test "validates creating imports" do
-  #   post podcast_imports_url(@podcast), params: {podcast_import: {url: nil}}
-  #   assert_response :unprocessable_entity
-  # end
+  test "validates creating imports" do
+    post podcast_imports_url(@podcast), params: {podcast_import: {url: ""}}
+    assert_response :unprocessable_entity
+  end
 
   def stub_requests
     stub_request(:get, "https://transistor.prx.org")
