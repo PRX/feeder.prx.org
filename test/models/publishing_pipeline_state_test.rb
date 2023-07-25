@@ -153,8 +153,8 @@ describe PublishingPipelineState do
       assert_equal [pa1, pa2].sort, PublishingPipelineState.expired_pipelines.sort
       PublishingPipelineState.expire_pipelines!
 
-      assert_equal ["created", "expired"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
-      assert_equal ["created", "expired"], PublishingPipelineState.latest_pipeline(podcast2).map(&:status)
+      assert_equal ["created", "expired"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+      assert_equal ["created", "expired"].sort, PublishingPipelineState.latest_pipeline(podcast2).map(&:status).sort
 
       # All pipelines are in a terminal state
       # There is nothing running:
@@ -197,8 +197,10 @@ describe PublishingPipelineState do
 
     describe "error!" do
       it 'sets the status to "error"' do
-        PublishFeedJob.stub_any_instance(:publish_feed, ->(*args) { raise "error" }) do
-          assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
+        PublishFeedJob.stub_any_instance(:save_file, nil) do
+          PublishFeedJob.stub_any_instance(:publish_feed, ->(*args) { raise "error" }) do
+            assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
+          end
         end
 
         assert_equal ["created", "started", "error"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
@@ -207,8 +209,10 @@ describe PublishingPipelineState do
 
     describe "complete!" do
       it 'sets the status to "complete"' do
-        PublishFeedJob.stub_any_instance(:publish_feed, "pub!") do
-          PublishingPipelineState.attempt!(podcast, perform_later: false)
+        PublishFeedJob.stub_any_instance(:save_file, nil) do
+          PublishFeedJob.stub_any_instance(:publish_feed, "pub!") do
+            PublishingPipelineState.attempt!(podcast, perform_later: false)
+          end
         end
 
         assert_equal ["created", "started", "complete"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
@@ -218,8 +222,10 @@ describe PublishingPipelineState do
         # And another request comes along to publish:
         PublishingQueueItem.create!(podcast: podcast)
 
-        PublishFeedJob.stub_any_instance(:publish_feed, "pub!") do
-          PublishingPipelineState.attempt!(podcast, perform_later: false)
+        PublishFeedJob.stub_any_instance(:save_file, nil) do
+          PublishFeedJob.stub_any_instance(:publish_feed, "pub!") do
+            PublishingPipelineState.attempt!(podcast, perform_later: false)
+          end
         end
 
         PublishingQueueItem.create!(podcast: podcast)
