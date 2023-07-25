@@ -173,6 +173,9 @@ en:
         title: Title
   # specific pages/views
   episodes:
+    confirm_destroy:
+      <<: *form_status
+      destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
     create:
       error: Unable to create
       notice: Episode created
@@ -210,7 +213,6 @@ en:
     form_status:
       <<: *form_status
       create: Create Draft
-      destroy_confirm_body: Are you sure you want to delete this episode? This action cannot be undone.
       title_draft: Draft
       title_published: Published
       title_scheduled: Scheduled
@@ -290,6 +292,8 @@ en:
       error: Unable to save
       notice: Segments updated
   feeds:
+    confirm_destroy:
+      <<: *form_status
     create:
       <<: *create
     destroy:
@@ -402,6 +406,9 @@ en:
       status: Status
       terms: Terms
   podcasts:
+    confirm_destroy:
+      <<: *form_status
+      destroy_confirm_body_html: Are you sure you want to delete this podcast? Your episodes will also be deleted, and requests to download episodes from your RSS feed will fail.<br/><br/><b>This action cannot be undone.</b>
     create:
       error: Unable to create
       notice: Podcast created
@@ -434,7 +441,6 @@ en:
         title: What's the name of this podcast?
     form_status:
       <<: *form_status
-      destroy_confirm_body_html: Are you sure you want to delete this podcast? Your episodes will also be deleted, and requests to download episodes from your RSS feed will fail.<br/><br/><b>This action cannot be undone.</b>
     index:
       search_podcasts: Search Podcasts
     podcast:
