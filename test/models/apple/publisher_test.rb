@@ -112,7 +112,7 @@ describe Apple::Publisher do
 
   describe "#publish_drafting!" do
     it "should call the episode publish drafting class method" do
-      ep = OpenStruct.new(drafting?: true, apple_upload_complete?: true)
+      ep = OpenStruct.new(drafting?: true, container_upload_complete?: true)
       mock = Minitest::Mock.new
       mock.expect(:call, [], [apple_publisher.api, apple_publisher.show, [ep]])
 

@@ -268,6 +268,10 @@ module Apple
     end
 
     def skip_delivery?
+      container_upload_satisfied?
+    end
+
+    def container_upload_satisfied?
       # Sets us up for a retry if something prevented the audio from being
       # marked as uploaded and then processed and validated. Assuming that we
       # get to that point and the audio is still missing, we should be able to

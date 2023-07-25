@@ -385,8 +385,8 @@ module Apple
       apple_json&.dig("attributes", "publishingState") == "DRAFTING"
     end
 
-    def apple_upload_complete?
-      feeder_episode.apple_podcast_container.skip_delivery?
+    def container_upload_complete?
+      feeder_episode.apple_podcast_container.container_upload_satisfied?
     end
 
     def audio_asset_vendor_id
@@ -437,7 +437,7 @@ module Apple
     end
 
     def synced_with_apple?
-      audio_asset_state_success? && apple_upload_complete? && !drafting?
+      audio_asset_state_success? && container_upload_complete? && !drafting?
     end
 
     def waiting_for_asset_state?
