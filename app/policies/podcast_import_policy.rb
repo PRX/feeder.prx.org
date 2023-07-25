@@ -1,14 +1,6 @@
 class PodcastImportPolicy < PodcastPolicy
-  def index?
-    PodcastPolicy.new(token, resource.podcast).update?
-  end
-
-  def show?
-    index?
-  end
-
   def create?
-    PodcastPolicy.new(token, resource.podcast).create?
+    PodcastPolicy.new(token, resource.podcast).update?
   end
 
   private

@@ -46,15 +46,15 @@ describe PodcastImportPolicy do
     end
 
     it "returns false if token is not a member of the account" do
-      refute PodcastImportPolicy.new(token("feeder:podcast-create", account_id + 1), podcast_import).create?
+      refute PodcastImportPolicy.new(token("feeder:podcast-edit", account_id + 1), podcast_import).create?
     end
 
-    it "returns true if token is a member of the account and has create scope" do
-      assert PodcastImportPolicy.new(token("feeder:podcast-create"), podcast_import).create?
+    it "returns true if token is a member of the account and has edit scope" do
+      assert PodcastImportPolicy.new(token("feeder:podcast-edit"), podcast_import).create?
     end
 
-    it "returns false if token lacks create scope" do
-      refute PodcastImportPolicy.new(token("feeder:podcast-edit feeder:podcast-delete"), podcast_import).create?
+    it "returns false if token lacks edit scope" do
+      refute PodcastImportPolicy.new(token("feeder:read-private"), podcast_import).create?
     end
   end
 

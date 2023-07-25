@@ -6,11 +6,11 @@ class ImportsController < ApplicationController
   def index
     @imports = @podcast.podcast_imports
     @import = @podcast.podcast_imports.new
-    authorize @import
+    authorize @podcast, :show?
   end
 
   def show
-    authorize @import
+    authorize @podcast, :show?
   end
 
   # POST /imports

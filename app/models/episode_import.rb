@@ -18,8 +18,10 @@ class EpisodeImport < ApplicationRecord
   scope :having_duplicate_guids, -> do
     unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true)
   end
+  scope :complete, -> { where(status: COMPLETE) }
   scope :finished, -> { where(status: [COMPLETE, FAILED]) }
   scope :in_progress, -> { where.not(status: [COMPLETE, FAILED, CREATED]) }
+  scope :failed, -> { where(status: FAILED) }
 
   before_validation :set_defaults, on: :create
 

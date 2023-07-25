@@ -4,7 +4,9 @@
       <%= render "form_main", imports: imports, podcast: podcast, form: form %>
     </div>
     <div class="col-lg-4 d-grid align-content-start gap-3">
-      <%= render "form_status", form: form %>
+      <% if policy(import).create? %>
+        <%= render "form_status", form: form %>
+      <% end %>
     </div>
   </div>
 <% end %>
