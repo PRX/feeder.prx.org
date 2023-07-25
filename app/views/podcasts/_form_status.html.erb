@@ -1,39 +1,43 @@
-<div class="card shadow border-0">
-  <div class="card-header-primary">
-    <h5 class="card-title"><%= t(".title") %></h5>
-  </div>
-  <div class="card-footer d-flex align-items-center">
-    <% if podcast.persisted? %>
-      <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(podcast.updated_at) %></p>
+<div class="row mb-4 sticky-lg-top">
+  <div class="col-12">
+    <div class="card shadow border-0">
+      <div class="card-header-primary">
+        <h5 class="card-title"><%= t(".title") %></h5>
+      </div>
+      <div class="card-footer d-flex align-items-center">
+        <% if podcast.persisted? %>
+          <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(podcast.updated_at) %></p>
 
-      <% if policy(podcast).update? %>
-        <% data = {action: "unsaved#discard", unsaved_target: "discard"} %>
-        <%= link_to t(".discard"), edit_podcast_path(podcast), class: "btn btn-discard-changed invisible me-2", data: data %>
+          <% if policy(podcast).update? %>
+            <% data = {action: "unsaved#discard", unsaved_target: "discard"} %>
+            <%= link_to t(".discard"), edit_podcast_path(podcast), class: "btn btn-discard-changed invisible me-2", data: data %>
 
-        <div class="btn-group">
-          <% data = {disable_with: t(".updating"), upload_with: t(".uploading")} %>
-          <%= form.submit t(".update"), class: "btn btn-primary", data: data %>
+            <div class="btn-group">
+              <% data = {disable_with: t(".updating"), upload_with: t(".uploading")} %>
+              <%= form.submit t(".update"), class: "btn btn-primary", data: data %>
 
-          <% if policy(podcast).destroy? %>
-            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
-              <span class="visually-hidden"><%= t(".toggle_dropdown") %></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li>
-                <button type="button" class="dropdown-item bg-danger text-white" data-bs-toggle="modal" data-bs-target="#confirm-destroy">
-                  <%= t(".destroy") %>
+              <% if policy(podcast).destroy? %>
+                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split border-start border-color-white" data-bs-toggle="dropdown" aria-expanded="false">
+                  <span class="visually-hidden"><%= t(".toggle_dropdown") %></span>
                 </button>
-              </li>
-            </ul>
+                <ul class="dropdown-menu">
+                  <li>
+                    <button type="button" class="dropdown-item bg-danger text-white" data-bs-toggle="modal" data-bs-target="#confirm-destroy">
+                      <%= t(".destroy") %>
+                    </button>
+                  </li>
+                </ul>
+              <% end %>
+            </div>
           <% end %>
-        </div>
-      <% end %>
-    <% else %>
-      <p class="status-text flex-grow-1"><strong><%= t(".new_hint") %></strong></p>
+        <% else %>
+          <p class="status-text flex-grow-1"><strong><%= t(".new_hint") %></strong></p>
 
-      <% data = {disable_with: t(".creating"), upload_with: t(".uploading")} %>
-      <%= form.submit t(".create"), class: "btn btn-primary", data: data %>
-    <% end %>
+          <% data = {disable_with: t(".creating"), upload_with: t(".uploading")} %>
+          <%= form.submit t(".create"), class: "btn btn-primary", data: data %>
+        <% end %>
+      </div>
+    </div>
   </div>
 </div>
 
