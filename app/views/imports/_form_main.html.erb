@@ -18,7 +18,7 @@
                 <tr>
                   <td><%= import.id %></td>
                   <td><%= link_to import.status, podcast_import_path(podcast, import), data: {turbo: false} %></td>
-                  <td>
+                  <td class="align-middle">
                     <% if import.feed_episode_count.present? %>
                       <%= render "import_progress_bar", import: import %>
                     <% else %>
