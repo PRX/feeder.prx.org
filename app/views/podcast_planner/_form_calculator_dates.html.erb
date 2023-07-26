@@ -23,10 +23,10 @@
 </div>
 
 <div class="col-6 mb-4">
-  <div class="d-flex">
+  <div class="d-flex" data-controller="toggle-blank">
 
     <div class="form-floating input-group">
-      <%= form.number_field :number_of_episodes, min: 1, max: 100, step: 1, value: 10, data: {action: "click#submit"} %>
+      <%= form.number_field :number_of_episodes, min: 1, max: 100, step: 1, value: 10, data: {action: "click#submit", toggle_blank_target: "toggle"} %>
       <%= form.label :number_of_episodes, t(".label.number_of_episodes") %>
     </div>
 
@@ -35,7 +35,7 @@
     </div>
 
     <div class="form-floating input-group">
-      <%= form.date_field :end_date, min: DateTime.tomorrow + 1.day, max: DateTime.tomorrow + 2.years, data: {action: "click#submit"} %>
+      <%= form.date_field :end_date, min: DateTime.tomorrow + 1.day, max: DateTime.tomorrow + 2.years, data: {action: "click#submit", toggle_blank_target: "toggle"} %>
       <%= form.label :end_date, t(".label.end_date") %>
     </div>
 
