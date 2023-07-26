@@ -51,7 +51,20 @@ module PodcastPlannerHelper
       data[:action] = [TOGGLE_ACTION, RECOUNT_ACTION].join(" ")
     end
 
-    content_tag(:td, class: calendar.td_classes_for(day), data: data) do
+    is_new = date_is_in_dates?(day, @planner.dates)
+    is_existing = date_is_in_dates?(day, @draft_dates)
+    cls =
+      if is_new && is_existing
+        ["bg-danger", "text-light"]
+      elsif is_new
+        ["bg-primary", "text-light"]
+      elsif is_existing
+        ["bg-warning"]
+      else
+        []
+      end
+
+    content_tag(:td, class: calendar.td_classes_for(day) + cls, data: data) do
       block.call
     end
   end
