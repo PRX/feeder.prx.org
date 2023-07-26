@@ -26,6 +26,7 @@ class FeedsController < ApplicationController
     respond_to do |format|
       if @feed.save
         @feed.copy_media
+        @feed.podcast&.publish!
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
       else
         format.html do
@@ -44,6 +45,7 @@ class FeedsController < ApplicationController
     respond_to do |format|
       if @feed.save
         @feed.copy_media
+        @feed.podcast&.publish!
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
       else
         format.html do
@@ -58,6 +60,7 @@ class FeedsController < ApplicationController
   def destroy
     respond_to do |format|
       if @feed.destroy
+        @feed.podcast&.publish!
         format.html { redirect_to podcast_feed_path(@podcast, @podcast.default_feed), notice: t(".success", model: "Feed") }
       else
         format.html do

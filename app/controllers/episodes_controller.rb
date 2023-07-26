@@ -48,6 +48,7 @@ class EpisodesController < ApplicationController
     respond_to do |format|
       if @episode.save
         @episode.copy_media
+        @episode.podcast&.publish!
         format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
         @episode.build_contents.each(&:valid?)
@@ -68,6 +69,7 @@ class EpisodesController < ApplicationController
     respond_to do |format|
       if @episode.save
         @episode.copy_media
+        @episode.podcast&.publish!
         format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
         @episode.build_contents.each(&:valid?)
@@ -86,6 +88,7 @@ class EpisodesController < ApplicationController
 
     respond_to do |format|
       if @episode.destroy
+        @episode.podcast&.publish!
         format.html { redirect_to podcast_episodes_url(@episode.podcast_id), notice: t(".notice") }
       else
         format.html do
