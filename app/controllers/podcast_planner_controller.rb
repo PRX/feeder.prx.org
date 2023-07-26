@@ -49,11 +49,7 @@ class PodcastPlannerController < ApplicationController
       p[:period] = periodic_weeks.first
     end
 
-    if p[:number_of_episodes].present?
-      p[:date_range_condition] = "episodes"
-    else
-      p[:date_range_condition] = "date"
-    end
+    p[:date_range_condition] = p[:number_of_episodes].present? ? "episodes" : "date"
 
     p
   end

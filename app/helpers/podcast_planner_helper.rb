@@ -5,7 +5,7 @@ module PodcastPlannerHelper
   PERIODIC_WEEKS = [:every_one, :every_two, :every_three, :every_four]
   DATE_CONTROLLER = "date"
   TOGGLE_ACTION = "click->date#toggleSelect"
-  RECOUNT_ACTION = "click->count#recount"
+  RECOUNT_ACTION = "click->planner#recount"
 
   def day_options
     DateTime::DAYNAMES.map.with_index { |day, i| [day, i] }

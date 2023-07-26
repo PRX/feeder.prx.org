@@ -519,7 +519,10 @@ en:
       help:
         settings: Enter the number of ad-breaks in your episode (if applicable), and the time of day you plan to release your episodes.
       label:
+        create: Create
+        draft: Draft
         key: Key
+        key_duplicate: Duplicate Episode Drafts
         key_existing: Existing Episode Draft
         key_new: New Episode Draft
         month: Month

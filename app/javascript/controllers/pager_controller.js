@@ -22,9 +22,7 @@ export default class extends Controller {
     return index >= this.currentPositionValue && index < this.currentPositionValue + this.rangeValue
   }
 
-  pageForward(event) {
-    event.preventDefault()
-
+  pageForward() {
     if (this.currentPositionValue < this.pageTargets.length - this.rangeValue) {
       this.currentPositionValue += this.stepValue
       this.prevTarget.disabled = false
@@ -34,9 +32,7 @@ export default class extends Controller {
     }
   }
 
-  pageBackward(event) {
-    event.preventDefault()
-
+  pageBackward() {
     if (this.currentPositionValue > 0) {
       this.currentPositionValue -= this.stepValue
       this.nextTarget.disabled = false
