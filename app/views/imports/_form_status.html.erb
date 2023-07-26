@@ -1,0 +1,33 @@
+<div class="card shadow border-0">
+  <div class="card-header-success">
+    <h5 class="card-title"><%= t(".title") %></h5>
+  </div>
+
+  <div class="card-body row">
+    <div class="col-12 mb-4 prx-field-group">
+      <div class="form-floating">
+        <%= form.select :feed_source, ["RSS"] %>
+        <%= form.label :feed_source %>
+      </div>
+
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
+    </div>
+
+    <div class="col-12 mb-4 prx-field-group">
+      <div class="form-floating">
+        <%= form.text_field :url %>
+        <%= form.label :url %>
+      </div>
+
+      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
+    </div>
+
+  </div>
+
+  <div class="card-footer d-flex-align-items-center justify-content-between">
+
+    <div class="col-12 mb-4">
+      <%= form.submit t(".submit"), class: "btn btn-success" %>
+    </div>
+  </div>
+</div>

@@ -1,17 +1,12 @@
-<%= form_with(model: import) do |form| %>
-  <% if import.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(import.errors.count, "error") %> prohibited this import from being saved:</h2>
-
-      <ul>
-        <% import.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+<%= form_with(url: podcast_imports_path(import.podcast), model: [import.podcast, import], method: :post, html: {autocomplete: "off"}) do |form| %>
+  <div class="row my-4">
+    <div class="col-lg-8">
+      <%= render "form_main", imports: imports, podcast: podcast, form: form %>
     </div>
-  <% end %>
-
-  <div>
-    <%= form.submit %>
+    <div class="col-lg-4 d-grid align-content-start gap-3">
+      <% if policy(import).create? %>
+        <%= render "form_status", form: form %>
+      <% end %>
+    </div>
   </div>
 <% end %>

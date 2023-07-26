@@ -1,71 +1,58 @@
 class ImportsController < ApplicationController
   before_action :set_podcast
-  before_action :set_import, only: %i[show edit update destroy]
+  before_action :set_import, only: :show
 
   # GET /imports
   def index
-    @imports = [] # Import.all
+    @imports = @podcast.podcast_imports
+    @import = @podcast.podcast_imports.new
+    authorize @podcast, :show?
   end
 
-  # GET /imports/1
   def show
-  end
-
-  # GET /imports/new
-  def new
-    # @import = Import.new
-  end
-
-  # GET /imports/1/edit
-  def edit
+    authorize @podcast, :show?
   end
 
   # POST /imports
   def create
-    # @import = Import.new(import_params)
+    @imports = @podcast.podcast_imports
+    @import = @podcast.podcast_imports.new(import_params)
+    authorize @import
+    begin
+      @import.get_feed
+    rescue URI::InvalidURIError
+      flash.now[:notice] = t(".failure_get_feed")
+      render :index, status: :unprocessable_entity
+      return
+    end
 
-    # respond_to do |format|
-    #   if @import.save
-    #     format.html { redirect_to import_url(@import), notice: "Import was successfully created." }
-    #   else
-    #     format.html { render :new, status: :unprocessable_entity }
-    #   end
-    # end
-  end
-
-  # PATCH/PUT /imports/1
-  def update
-    # respond_to do |format|
-    #   if @import.update(import_params)
-    #     format.html { redirect_to import_url(@import), notice: "Import was successfully updated." }
-    #   else
-    #     format.html { render :edit, status: :unprocessable_entity }
-    #   end
-    # end
-  end
-
-  # DELETE /imports/1
-  def destroy
-    # @import.destroy
-
-    # respond_to do |format|
-    #   format.html { redirect_to imports_url, notice: "Import was successfully destroyed." }
-    # end
+    respond_to do |format|
+      if @import.save
+        @import.import_later
+        format.html { redirect_to podcast_import_path(@podcast, @import), notice: t(".success") }
+      else
+        format.html do
+          flash.now[:notice] = t(".failure")
+          render :index, status: :unprocessable_entity
+        end
+      end
+    end
   end
 
   private
-
-  # Use callbacks to share common setup or constraints between actions.
-  def set_import
-    # @import = Import.find(params[:id])
-  end
 
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
   end
 
+  def set_import
+    @import = PodcastImport.find(params[:id])
+  end
+
   # Only allow a list of trusted parameters through.
   def import_params
-    params.fetch(:import, {})
+    params.fetch(:podcast_import, {}).permit(
+      :url
+    )
   end
 end

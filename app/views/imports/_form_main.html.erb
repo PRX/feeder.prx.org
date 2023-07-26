@@ -1,0 +1,47 @@
+<div class="overflow-auto text-nowrap">
+  <%= turbo_frame_tag "imports-table", data: {controller: "morphdom"} do %>
+    <table class="table table-striped shadow rounded">
+      <thead>
+        <tr class="table-secondary">
+          <th><%= t(".id") %></th>
+          <th><%= t(".status") %></th>
+          <th><%= t(".progress") %></th>
+          <th><%= t(".episode_count") %></th>
+          <th><%= t(".url") %></th>
+          <th><%= t(".import_date") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if imports.first.persisted? %>
+          <% imports.each do |import| %>
+            <% if import.persisted? %>
+                <tr>
+                  <td><%= import.id %></td>
+                  <td><%= link_to import.status, podcast_import_path(podcast, import), data: {turbo: false} %></td>
+                  <td class="align-middle">
+                    <% if import.feed_episode_count.present? %>
+                      <%= render "import_progress_bar", import: import %>
+                    <% else %>
+                      <%= render "import_spinner" %>
+                    <% end %>
+                  </td>
+                  <td><%= import.episode_imports.complete.count %></td>
+                  <td><%= import.url %></td>
+                  <td><%= import.created_at.to_date %></td>
+
+                  <% unless import.status_complete? || import.status_failed? %>
+                    <%# just keep polling until the import finishes %>
+                    <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+                  <% end %>
+                </tr>
+            <% end %>
+          <% end %>
+        <% else %>
+          <tr>
+            <td class="text-center text-muted p-4" colspan="100"><%= t(".no_imports") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

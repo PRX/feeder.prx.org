@@ -1,16 +1,5 @@
 <%= render "podcasts/tabs" %>
 
-<p style="color: green"><%= notice %></p>
-
-<h1>Imports</h1>
-
-<div id="imports">
-  <% @imports.each do |import| %>
-    <%= render import %>
-    <p>
-      <%= link_to "Show this import", import %>
-    </p>
-  <% end %>
+<div class="my-4 px-2">
+  <%= render "form", import: @import, imports: @imports, podcast: @podcast %>
 </div>
-
-<%= link_to "New import", new_podcast_import_path(@podcast) %>

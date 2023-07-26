@@ -18,11 +18,23 @@ class EpisodeImport < ApplicationRecord
   scope :having_duplicate_guids, -> do
     unscope(where: :has_duplicate_guid).where(has_duplicate_guid: true)
   end
-  scope :complete, -> { where(status: PodcastImport::COMPLETE) }
+  scope :complete, -> { where(status: COMPLETE) }
+  scope :finished, -> { where(status: [COMPLETE, FAILED]) }
+  scope :in_progress, -> { where.not(status: [COMPLETE, FAILED, CREATED]) }
+  scope :failed, -> { where(status: FAILED) }
 
   before_validation :set_defaults, on: :create
 
   validates :entry, :guid, presence: true
+
+  enum :status, {
+    created: CREATED,
+    complete: COMPLETE,
+    failed: FAILED,
+    saved: SAVED,
+    retrying: RETRYING,
+    audio_saved: AUDIO_SAVED
+  }, prefix: true
 
   def unlock_podcast
     if podcast_import.finished?
@@ -31,12 +43,12 @@ class EpisodeImport < ApplicationRecord
   end
 
   def retry!
-    update(status: PodcastImport::RETRYING)
+    status_retrying!
     import_later
   end
 
   def set_defaults
-    self.status ||= PodcastImport::CREATED
+    self.status ||= CREATED
     self.audio ||= {files: []}
   end
 
@@ -47,24 +59,22 @@ class EpisodeImport < ApplicationRecord
 
   def import
     set_audio_metadata!
-    update!(status: PodcastImport::AUDIO_SAVED)
+    status_audio_saved!
 
     create_or_update_episode!
 
     set_file_resources!
-
-    update!(status: PodcastImport::SAVED)
+    status_saved!
 
     episode.save!
-
-    update!(status: PodcastImport::COMPLETE)
+    status_complete!
 
     unlock_podcast
 
     episode
   rescue => err
     Rails.logger.error ([err.message] + err.backtrace).join($/)
-    update(status: PodcastImport::FAILED)
+    status_failed!
     raise err
   end
 
@@ -103,7 +113,13 @@ class EpisodeImport < ApplicationRecord
   end
 
   def create_or_update_episode!
-    self.episode ||= Episode.new(podcast: podcast)
+    lookup = Episode.where(podcast_id: podcast.id).find_by_item_guid(guid)
+
+    if lookup.present?
+      self.episode = lookup
+    else
+      self.episode ||= Episode.new(podcast: podcast)
+    end
 
     update_episode_with_entry!
 
@@ -182,5 +198,9 @@ class EpisodeImport < ApplicationRecord
 
   def account
     podcast_import.try(:account)
+  end
+
+  def finished?
+    status_complete? || status_failed?
   end
 end

@@ -1,2 +1,58 @@
-<div id="<%= dom_id import %>">
+<div class="col-lg-12 my-4">
+  <%= turbo_frame_tag "import-table", data: {controller: "morphdom"} do %>
+    <table class="table table-striped shadow rounded">
+      <tbody>
+        <tr>
+          <td><%= t(".id") %></td>
+          <td><%= import.id %></td>
+        </tr>
+        <tr>
+          <td><%= t(".url") %></td>
+          <td><%= import.url %></td>
+        </tr>
+        <tr>
+          <td><%= t(".status") %></td>
+          <td><%= import.status %></td>
+        </tr>
+        <tr>
+          <td><%= t(".progress") %></td>
+          <td class="align-middle">
+            <% if import.feed_episode_count.present? %>
+              <%= render "import_progress_bar", import: import %>
+            <% else %>
+              <%= render "import_spinner" %>
+            <% end %>
+          </td>
+        </tr>
+        <tr>
+          <td><%= t(".feed_episode_count") %></td>
+          <td><%= import.feed_episode_count if import.feed_episode_count.present? %></td>
+        </tr>
+        <tr>
+          <td><%= t(".success") %></td>
+          <td><%= import.episode_imports.complete.count %></td>
+        </tr>
+        <tr>
+          <td><%= t(".in_progress") %></td>
+          <td><%= import.episode_imports.in_progress.count %></td>
+        </tr>
+        <tr>
+          <td><%= t(".remaining") %></td>
+          <td><%= import.remaining_import_count %></td>
+        </tr>
+        <tr>
+          <td><%= t(".failed") %></td>
+          <td><%= import.episode_imports.failed.count %></td>
+        </tr>
+        <tr>
+          <td><%= t(".duplicate") %></td>
+          <td><%= import.episode_import_placeholders.count %></td>
+        </tr>
+
+        <% unless import.status_complete? || import.status_failed? %>
+          <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
 </div>

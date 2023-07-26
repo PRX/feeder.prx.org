@@ -1,10 +1,5 @@
-<p style="color: green"><%= notice %></p>
+<%= render "podcasts/tabs" %>
 
-<%= render @import %>
-
-<div>
-  <%= link_to "Edit this import", edit_import_path(@import) %> |
-  <%= link_to "Back to imports", imports_path %>
-
-  <%= button_to "Destroy this import", @import, method: :delete %>
+<div class="my-4 px-2">
+  <%= render "import", import: @import, podcast: @podcast %>
 </div>
