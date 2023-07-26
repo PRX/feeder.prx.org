@@ -1,0 +1,43 @@
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
+    <%= form.select :selected_days, day_options, {include_blank: true}, multiple: true, data: {action: "click#submit"} %>
+    <%= form.label :selected_days, t(".label.selected_days") %>
+    <%= field_help_text t(".help.selected_days") %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
+    <%= form.select :selected_weeks, week_options, {include_blank: true}, multiple: true, data: {action: "click#submit"}  %>
+    <%= form.label :selected_weeks, t(".label.selected_weeks") %>
+    <%= field_help_text t(".help.selected_weeks") %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="form-floating input-group">
+    <%= form.date_field :start_date, min: DateTime.tomorrow, max: DateTime.tomorrow + 1.years, value: DateTime.tomorrow, data: {action: "click#submit"} %>
+    <%= form.label :start_date, t(".label.start_date") %>
+    <%= field_help_text t(".help.start_date") %>
+  </div>
+</div>
+
+<div class="col-6 mb-4">
+  <div class="d-flex">
+
+    <div class="form-floating input-group">
+      <%= form.number_field :number_of_episodes, min: 1, max: 100, step: 1, value: 10, data: {action: "click#submit"} %>
+      <%= form.label :number_of_episodes, t(".label.number_of_episodes") %>
+    </div>
+
+    <div class="form-input d-flex align-items-center">
+      <p class="p-0 my-0 mx-2 "><%= t(".label.or") %></p>
+    </div>
+
+    <div class="form-floating input-group">
+      <%= form.date_field :end_date, min: DateTime.tomorrow + 1.day, max: DateTime.tomorrow + 2.years, data: {action: "click#submit"} %>
+      <%= form.label :end_date, t(".label.end_date") %>
+    </div>
+
+  </div>
+</div>

@@ -1,6 +1,10 @@
+<% content_for :title, "#{@podcast.title} - Plan Episodes" %>
+
 <%= render "podcasts/tabs" %>
 
-<div class="my-4 mx-4">
-  <%= render "form_main" %>
-  <%= render "form_side" %>
-</div>
+<%= turbo_frame_tag "podcast-planner", data: {controller: "morphdom"} do %>
+  <div class="row my-4 mx-2">
+    <%= render "form_calculator" %>
+    <%= render "form_draft" %>
+  </div>
+<% end %>

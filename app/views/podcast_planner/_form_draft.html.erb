@@ -1,0 +1,48 @@
+<%= form_with(url: podcast_planner_path(@podcast), method: :post) do |form| %>
+
+  <div class="col-12 mb-4">
+    <div class="card shadow border-0">
+      <div class="card-header card-header-info d-flex justify-content-between">
+        <h5 class="card-title flex-grow-1"><%= t(".title.settings") %></h5>
+        <%= help_text t(".help.settings") %>
+      </div>
+
+      <div class="card-body pt-4 pb-0" data-morph="false">
+        <%= turbo_frame_tag "form-draft-settings", data: {controller: "morphdom"} do %>
+          <div class="row">
+            <%= render "form_draft_settings", form: form %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 mb-4">
+    <div class="card shadow border-0" data-controller="pager count">
+      <div class="card-header card-header-light d-flex justify-content-between align-items-center">
+        <h5 class="card-title flex-grow-1">
+          <%= t(".title.calendar") %>
+        </h5>
+
+        <div data-count-target="showZero">
+          <%= form.submit "Create 5 Drafts", class: "btn btn-warning", disabled: true %>
+        </div>
+      </div>
+
+      <div class="card-body pt-4 pb-0">
+        <div class="row d-flex flex-wrap gx-4">
+          <% 24.times do |i| %>
+            <%= render "calendar", form: form, start_date: Date.today.beginning_of_month + i.months, planner: @planner, index: i, range: 6 %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+<% end %>
+
+
+
+

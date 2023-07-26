@@ -1,0 +1,24 @@
+<div class="col-6 mb-4" data-morph="false">
+  <div class="form-floating input-group" data-controller="dynamic-form">
+    <%= form.select :medium, episode_medium_options, {}, data: {action: "dynamic-form#change"} %>
+    <%= form.label :medium, t(".label.medium") %>
+    <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+    <%= field_help_text t(".help.medium") %>
+  </div>
+</div>
+
+<div class="col-3 mb-4">
+  <div class="form-floating input-group">
+    <%= form.number_field :ad_breaks, min: 0, max: Episode::MAX_SEGMENT_COUNT - 1 %>
+    <%= form.label :ad_breaks, t(".label.ad_breaks") %>
+    <%= field_help_text t(".help.ad_breaks") %>
+  </div>
+</div>
+
+<div class="col-3 mb-4" data-morph="false">
+  <div class="form-floating input-group">
+    <%= form.select :publish_time, time_options %>
+    <%= form.label :publish_time, t(".label.publish_time") %>
+    <%= field_help_text t(".help.publish_time") %>
+  </div>
+</div>
