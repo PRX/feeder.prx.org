@@ -8,7 +8,7 @@
 
 <div class="col-6 mb-4">
   <div class="form-floating input-group">
-    <%= form.select :selected_weeks, week_options, {include_blank: true}, multiple: true, data: {action: "click#submit"} %>
+    <%= form.select :selected_weeks, week_options, {include_blank: true}, multiple: true, data: {slim_select_exclusive_value: PodcastPlannerHelper::PERIODIC_WEEKS, action: "click#submit"} %>
     <%= form.label :selected_weeks, t(".label.selected_weeks") %>
     <%= field_help_text t(".help.selected_weeks") %>
   </div>

@@ -1,4 +1,5 @@
-<%= form_with(url: podcast_planner_path(@podcast), method: :post, data: {controller: "planner"}) do |form| %>
+<% data = {controller: "planner", planner_dates_count_value: @planner.dates&.count.to_i} %>
+<%= form_with(url: podcast_planner_path(@podcast), method: :post, data: data) do |form| %>
 
   <div class="col-12 mb-4">
     <div class="card shadow border-0">
@@ -24,11 +25,11 @@
           <%= t(".title.calendar") %>
         </h5>
 
-        <button type="submit" class="btn btn-primary d-inline" <%= "disabled" if @planner.dates.blank? %> data-planner-target="button">
-          Create
+        <button type="submit" class="btn btn-primary d-inline" disabled data-planner-target="button">
+          <%= t(".label.create") %>
           <span data-planner-target="count"><%= @planner.dates&.count.to_i %></span>
           <span data-planner-target="label" data-singular="<%= t(".label.draft") %>" data-plural="<%= t(".label.draft").pluralize %>">
-            <%= t(".label.draft").pluralize(@planner.dates&.to_i) %>
+            <%= t(".label.draft").pluralize(@planner.dates&.count.to_i) %>
           </span>
         </button>
       </div>

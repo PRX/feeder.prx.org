@@ -38,7 +38,10 @@ class PodcastPlannerController < ApplicationController
   def planner_params
     p = permit_params
     p[:podcast_id] = @podcast.id
+    p[:date_range_condition] = p[:number_of_episodes].present? ? "episodes" : "date"
+    p[:segment_count] = p[:ad_breaks] + 1 if p[:ad_breaks].present?
 
+    # translate selected weeks into monthly weeks
     monthly_weeks = monthly_week_options(p[:selected_weeks])
     periodic_weeks = periodic_week_options(p[:selected_weeks])
     if monthly_weeks.any?
@@ -48,8 +51,6 @@ class PodcastPlannerController < ApplicationController
       p[:week_condition] = "periodic"
       p[:period] = periodic_weeks.first
     end
-
-    p[:date_range_condition] = p[:number_of_episodes].present? ? "episodes" : "date"
 
     p
   end

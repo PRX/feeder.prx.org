@@ -2,6 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["adBreaks", "button", "count", "counter", "label"]
+  static values = { datesCount: Number }
+
+  datesCountValueChanged() {
+    this.recount()
+  }
 
   setMedium(event) {
     if (event.target.value === "video") {

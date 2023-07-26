@@ -1,5 +1,5 @@
 class PodcastPlanner
-  attr_accessor :podcast_id, :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :selected_dates, :drafts
+  attr_accessor :podcast_id, :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :medium, :selected_dates, :drafts
 
   def initialize(params = {})
     @dates = params[:selected_dates].try { map { |date| date.to_datetime } }
@@ -15,6 +15,7 @@ class PodcastPlanner
     @end_date = params[:end_date].try(:to_datetime)
     @publish_time = params[:publish_time].try(:to_time)
     @segment_count = params[:segment_count].try(:to_i)
+    @medium = params[:medium]
   end
 
   def date_range_ends_by_episodes?
@@ -137,7 +138,8 @@ class PodcastPlanner
   def ready_to_generate_drafts?
     @dates.present? &&
       @publish_time.present? &&
-      @segment_count.present?
+      @segment_count.present? &&
+      @medium.present?
   end
 
   def generate_drafts!
@@ -148,7 +150,8 @@ class PodcastPlanner
         podcast_id: @podcast_id,
         released_at: apply_publish_time(date),
         title: generate_default_title(date),
-        segment_count: @segment_count
+        segment_count: @segment_count,
+        medium: @medium
       ))
     end
   end

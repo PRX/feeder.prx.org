@@ -545,11 +545,11 @@ en:
         every_three: Every three weeks
         every_four: Every four weeks
       monthly_options:
-        first: First
-        second: Second
-        third: Third
-        fourth: Fourth
-        fifth: Fifth
+        first: First Week
+        second: Second Week
+        third: Third Week
+        fourth: Fourth Week
+        fifth: Fifth Week
       episodes: Number of episodes
       end_date: End date
       month: Weeks of the Month
