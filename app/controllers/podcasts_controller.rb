@@ -69,6 +69,7 @@ class PodcastsController < ApplicationController
     respond_to do |format|
       if @podcast.save
         @podcast.copy_media
+        @podcast.publish!
         format.html { redirect_to podcast_url(@podcast), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
@@ -85,6 +86,7 @@ class PodcastsController < ApplicationController
     respond_to do |format|
       if @podcast.save
         @podcast.copy_media
+        @podcast.publish!
         format.html { redirect_to edit_podcast_url(@podcast), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
