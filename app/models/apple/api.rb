@@ -3,7 +3,7 @@
 module Apple
   class Api
     ERROR_RETRIES = 3
-    SUCCESS_CODES = %w[200 201].freeze
+    SUCCESS_CODES = [200, 201].freeze
     DEFAULT_BATCH_SIZE = 5
     DEFAULT_WRITE_BATCH_SIZE = 1
 
@@ -155,8 +155,10 @@ module Apple
       true
     end
 
-    def ok_code(resp)
-      SUCCESS_CODES.include?(resp.code)
+    def ok_code(resp, ignore_not_found: false)
+      return true if ignore_not_found && resp.code.to_i == 404
+
+      SUCCESS_CODES.include?(resp.code.to_i)
     end
 
     def log_response_error(resp)
@@ -188,13 +190,13 @@ module Apple
       resp
     end
 
-    def unwrap_response(resp)
-      raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp)
+    def unwrap_response(resp, ignore_not_found: false)
+      raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp, ignore_not_found: ignore_not_found)
 
       JSON.parse(resp.body)
     end
 
-    def unwrap_bridge_response(resp)
+    def unwrap_bridge_response(resp, ignore_not_found: false)
       raise Apple::ApiError.new("Apple Api Bridge Error", resp) unless ok_code(resp)
 
       parsed = JSON.parse(resp.body)
@@ -205,7 +207,15 @@ module Apple
         parsed.select { |row_operation| row_operation["api_response"][key] == true }
       end
 
-      (fixed_errs, remaining_errors) = yield(errs)
+      # ignore 404s if requested
+      errs = errs.reject { |err| err.dig("api_response", "val", "data", "status") == 404 } if ignore_not_found
+
+      (fixed_errs, remaining_errors) =
+        if block_given?
+          yield(errs)
+        else
+          [[], errs]
+        end
 
       [oks + fixed_errs, remaining_errors]
     end
@@ -231,16 +241,16 @@ module Apple
       unwrap_bridge_response(resp, &block)
     end
 
-    def bridge_remote_and_retry(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE)
+    def bridge_remote_and_retry(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE, ignore_not_found: false)
       resp = bridge_remote(bridge_resource, bridge_options, batch_size: batch_size)
 
-      unwrap_bridge_response(resp) do |row_operation_errors|
+      unwrap_bridge_response(resp, ignore_not_found: ignore_not_found) do |row_operation_errors|
         retry_bridge_api_operation(bridge_resource, [], row_operation_errors)
       end
     end
 
-    def bridge_remote_and_retry!(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE)
-      (oks, errs) = bridge_remote_and_retry(bridge_resource, bridge_options, batch_size: batch_size)
+    def bridge_remote_and_retry!(bridge_resource, bridge_options, **args)
+      (oks, errs) = bridge_remote_and_retry(bridge_resource, bridge_options, **args)
       raise_bridge_api_error(errs) if errs.present?
 
       oks

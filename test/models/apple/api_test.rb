@@ -193,4 +193,36 @@ describe Apple::Api do
       api.stub(:log_response_error, ->(**) { raise "should not be called" }) { api.response(http_response) }
     end
   end
+
+  describe "#unwrap_bridge_response" do
+    let(:ok_row) { {api_response: {ok: true, err: false, val: {data: {status: 200}}}}.with_indifferent_access }
+    let(:not_found_row) { {api_response: {ok: false, err: true, val: {data: {status: 404}}}}.with_indifferent_access }
+
+    it "handles strings or integers" do
+      assert_equal [[], []], api.unwrap_bridge_response(OpenStruct.new(code: "200", body: [].to_json))
+      assert_equal [[], []], api.unwrap_bridge_response(OpenStruct.new(code: 200, body: [].to_json))
+    end
+
+    it "groups 'ok' data into the ok response array" do
+      assert_equal [[ok_row], []], api.unwrap_bridge_response(OpenStruct.new(code: "201", body: [ok_row].to_json))
+    end
+
+    it "groups 'err' data into the err response array" do
+      assert_equal [[], [not_found_row]], api.unwrap_bridge_response(OpenStruct.new(code: "201", body: [not_found_row].to_json))
+    end
+
+    it "raises for a 4xx and 5xx _bridge_ reponse" do
+      # it raises Apple::ApiError
+      assert_raises Apple::ApiError do
+        api.unwrap_bridge_response(OpenStruct.new(code: "404", body: [].to_json))
+      end
+      assert_raises Apple::ApiError do
+        api.unwrap_bridge_response(OpenStruct.new(code: "500", body: [].to_json))
+      end
+    end
+
+    it "can optionally treat a 404 as ok, excising the missing responses" do
+      assert_equal [[ok_row], []], api.unwrap_bridge_response(OpenStruct.new(code: "200", body: [not_found_row, ok_row].to_json), ignore_not_found: true)
+    end
+  end
 end
