@@ -8,7 +8,7 @@ module Apple
       def self.wait_for(remaining_records)
         t_beg = Time.now.utc
         loop do
-          Rails.logger.info(".wait_for", {remaining_records: remaining_records, have_waited: Time.now.utc - t_beg})
+          Rails.logger.info(".wait_for", {remaining_record_count: remaining_records.count, have_waited: Time.now.utc - t_beg})
 
           # Return `timeout == true` if we've waited too long
           break [true, remaining_records] if Time.now.utc - t_beg > self::API_WAIT_TIMEOUT
