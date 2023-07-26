@@ -25,7 +25,7 @@
           <%= t(".title.calendar") %>
         </h5>
 
-        <button type="submit" class="btn btn-primary d-inline" disabled data-planner-target="button">
+        <button type="submit" class="btn btn-primary d-inline" disabled data-planner-target="button" data-turbo="false">
           <%= t(".label.create") %>
           <span data-planner-target="count"><%= @planner.dates&.count.to_i %></span>
           <span data-planner-target="label" data-singular="<%= t(".label.draft") %>" data-plural="<%= t(".label.draft").pluralize %>">

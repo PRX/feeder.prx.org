@@ -138,7 +138,7 @@ class PodcastPlanner
   def ready_to_generate_drafts?
     @dates.present? &&
       @publish_time.present? &&
-      @segment_count.present? &&
+      (@segment_count.present? || @medium === "video") &&
       @medium.present?
   end
 
