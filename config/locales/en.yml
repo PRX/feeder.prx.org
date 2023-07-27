@@ -356,6 +356,7 @@ en:
         subtitle: Enter an alternate teaser
     form_status:
       <<: *form_status
+      title: Feed Status
     form_tags:
       help:
         categories: Limit episodes that appear in this feed based on their Categories.
@@ -497,6 +498,7 @@ en:
         title: What's the name of this podcast?
     form_status:
       <<: *form_status
+      title: Podcast Status
     index:
       search_podcasts: Search Podcasts
     podcast:
