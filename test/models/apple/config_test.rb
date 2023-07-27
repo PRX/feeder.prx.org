@@ -16,20 +16,6 @@ describe Apple::Config do
       refute c3.valid?
     end
 
-    it "requires apple key fields" do
-      pub = create(:feed, private: false)
-      priv = create(:feed, private: true)
-      c = build(:apple_config, public_feed: pub, private_feed: priv)
-      assert c.valid?
-
-      c.apple_key_id = nil
-      refute c.valid?
-
-      c.apple_key_id = "pears are better"
-      c.apple_key_pem_b64 = nil
-      refute c.valid?
-    end
-
     it "is unique to a public and private feed" do
       f1 = create(:feed)
       f2 = create(:feed)
@@ -50,43 +36,6 @@ describe Apple::Config do
 
       c5 = build(:apple_config, public_feed: f1, private_feed: f1)
       refute c5.valid?
-    end
-
-    it "requires all apple credentials to have a value or be nil" do
-      f1 = create(:feed)
-      f2 = create(:feed)
-
-      v1 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: nil, apple_key_id: "blood",
-        apple_key_pem_b64: "orange")
-      refute v1.valid?
-
-      v2 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: "barlett", apple_key_id: nil,
-        apple_key_pem_b64: "pear")
-      refute v2.valid?
-
-      v3 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: "cotton candy",
-        apple_key_id: "grapes", apple_key_pem_b64: nil)
-      refute v3.valid?
-
-      v4 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: nil, apple_key_id: nil,
-        apple_key_pem_b64: nil)
-      assert v4.valid?
-    end
-
-    it "requires the apple provider id to not have an underscore" do
-      f1 = create(:feed)
-      f2 = create(:feed)
-
-      v1 = build(:apple_config, public_feed: f1, private_feed: f2, apple_provider_id: "foo_bar")
-      refute v1.valid?
-      assert_equal ["cannot contain an underscore"], v1.errors[:apple_provider_id]
-    end
-  end
-
-  describe "apple_key" do
-    it "base64 decodes the apple key" do
-      c = Apple::Config.new(apple_key_pem_b64: Base64.encode64("hello"))
-      assert_equal c.apple_key, "hello"
     end
   end
 end

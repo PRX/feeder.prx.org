@@ -247,16 +247,12 @@ describe PublishingPipelineState do
         create(:apple_config,
           public_feed: f1,
           private_feed: f2,
-          publish_enabled: true,
-          apple_key_id: "valencia",
-          apple_key_pem_b64: "orange")
+          publish_enabled: true)
 
         create(:apple_config,
           public_feed: f1,
           private_feed: f3,
-          publish_enabled: true,
-          apple_key_id: "blood",
-          apple_key_pem_b64: "orange")
+          publish_enabled: true)
       end
 
       it "can publish via the apple configs" do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
+ActiveRecord::Schema[7.0].define(version: 2023_07_19_174404) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -18,15 +18,22 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_02_185438) do
   create_table "apple_configs", force: :cascade do |t|
     t.bigint "public_feed_id", null: false
     t.bigint "private_feed_id", null: false
-    t.string "apple_provider_id"
-    t.string "apple_key_id"
-    t.text "apple_key_pem_b64"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "publish_enabled", default: false, null: false
     t.boolean "sync_blocks_rss", default: false, null: false
+    t.bigint "key_id"
+    t.index ["key_id"], name: "index_apple_configs_on_key_id"
     t.index ["private_feed_id"], name: "index_apple_configs_on_private_feed_id"
     t.index ["public_feed_id"], name: "index_apple_configs_on_public_feed_id"
+  end
+
+  create_table "apple_keys", force: :cascade do |t|
+    t.string "provider_id"
+    t.string "key_id"
+    t.text "key_pem_b64"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "apple_podcast_containers", force: :cascade do |t|
