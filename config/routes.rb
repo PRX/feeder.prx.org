@@ -6,7 +6,7 @@ Rails.application.routes.draw do
       resource :player, only: :show, controller: :podcast_player
       resources :imports, only: [:index, :show, :create]
       resource :planner, only: [:show, :create], controller: :podcast_planner
-      resources :feeds, except: [:index, :edit]
+      resources :feeds, except: [:edit]
       resources :episodes, only: [:index, :create, :new]
     end
 

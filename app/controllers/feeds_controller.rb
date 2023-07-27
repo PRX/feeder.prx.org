@@ -3,6 +3,10 @@ class FeedsController < ApplicationController
   before_action :set_podcast
   before_action :set_feeds
 
+  def index
+    redirect_to podcast_feed_url(@podcast, @podcast.default_feed)
+  end
+
   # GET /feeds/1
   def show
     @feed.assign_attributes(feed_params)
