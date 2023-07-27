@@ -168,6 +168,7 @@ en:
         owner_name: Feed Owner Name
         payment_pointer: Micropayments Wallet
         prx_account_uri: Owner
+        public_url: Feed Link
         serial_order: Podcast Type
         serial_orders:
           false: Episodic
@@ -449,6 +450,11 @@ en:
       notice: Podcast deleted
     form:
       confirm: Discard unsaved changes?
+    form_distribution:
+      help:
+        link: If you have a homepage for your podcast, enter it here. If not, we'll auto generate one for you.
+        public_url_html: The public url for your feed. To make changes to this, you should <a href="%{url}">edit your default feed</a>.
+      title: Distribution
     form_main:
       confirm:
         complete: Are you sure this podcast is complete? Apps will assume this show is over, and won't look for new episodes.
@@ -462,7 +468,6 @@ en:
         explicit: In accordance with <a href="https://help.apple.com/itc/podcasts_connect/#/itc1723472cb" target="_blank">the requirements for iTunes podcast content</a>, do any of your podcast episodes contain explicit material?
         itunes_category: Select the <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">iTunes category and subcategory</a>, if applicable, that best describe this podcast.
         language: Select which language your podcast is in.
-        link: A link to the homepage for your podcast.
         managing_editor_email: Set the managing editor email for this podcast.
         managing_editor_name: Set the managing editor name for this podcast.
         owner_email: Set the iTunes owner email for this podcast.

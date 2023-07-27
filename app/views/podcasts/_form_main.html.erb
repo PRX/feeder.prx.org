@@ -6,21 +6,6 @@
   </div>
 </div>
 
-<div class="col-6 mb-4">
-  <div class="form-floating">
-    <% data = {confirm_field_target: "field", confirm_with: t(".confirm.owner")} %>
-    <%= form.select :prx_account_uri, podcast_account_name_options(podcast), {}, data: podcast.persisted? ? data : {} %>
-    <%= form.label :prx_account_uri %>
-  </div>
-</div>
-
-<div class="col-6 mb-4">
-  <div class="form-floating">
-    <%= form.text_field :id, disabled: true %>
-    <%= form.label :id %>
-  </div>
-</div>
-
 <div class="col-12 mb-4">
   <div class="form-floating input-group">
     <%= form.text_field :subtitle %>
@@ -42,10 +27,10 @@
 </div>
 
 <div class="col-6 mb-4">
-  <div class="form-floating input-group">
-    <%= form.text_field :link %>
-    <%= form.label :link %>
-    <%= field_help_text t(".help.link") %>
+  <div class="form-floating">
+    <% data = {confirm_field_target: "field", confirm_with: t(".confirm.owner")} %>
+    <%= form.select :prx_account_uri, podcast_account_name_options(podcast), {}, data: podcast.persisted? ? data : {} %>
+    <%= form.label :prx_account_uri %>
   </div>
 </div>
 
