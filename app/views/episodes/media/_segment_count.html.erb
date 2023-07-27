@@ -6,7 +6,7 @@
     <% if episode.new_record? %>
       <a hidden href="<%= new_podcast_episode_path(episode.podcast_id) %>" data-dynamic-form-target="link"></a>
     <% else %>
-      <a hidden href="<%= episode_path(episode) %>" data-dynamic-form-target="link"></a>
+      <a hidden href="<%= edit_episode_path(episode) %>" data-dynamic-form-target="link"></a>
     <% end %>
   </div>
 </div>
