@@ -97,9 +97,12 @@ class FeedsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def feed_params
+    nilified_feed_params.merge(params.fetch(:feed, {}).permit(:slug))
+  end
+
+  def nilified_feed_params
     nilify params.fetch(:feed, {}).permit(
       :file_name,
-      :slug,
       :title,
       :subtitle,
       :description,
@@ -119,6 +122,9 @@ class FeedsController < ApplicationController
       :house,
       :paid,
       :sonic_id,
+      :include_donation_url,
+      :include_podcast_value,
+      include_tags: [],
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]

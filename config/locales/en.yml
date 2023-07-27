@@ -124,6 +124,9 @@ en:
         episode_offset_seconds: Episode Publish Delay
         file_name: File Name
         house: House Ads
+        include_donation_url: Include Donation Form
+        include_podcast_value: Include Micropayments Wallet
+        include_tags: Include Categories
         new_feed_url: New Feed URL
         paid: Paid Ads
         private: Private (unlisted)
@@ -348,9 +351,15 @@ en:
       title: Overrides
       help:
         description: Enter an alternate description
+        include_donation_url: In some cases, you may wish to exclude your donation URL from a private feed.
+        include_podcast_value: In some cases, you may wish to exclude micropayments from a private feed.
         subtitle: Enter an alternate teaser
     form_status:
       <<: *form_status
+    form_tags:
+      help:
+        categories: Limit episodes that appear in this feed based on their Categories.
+      title: Episode Categories
     form:
       <<: *form
     helper:

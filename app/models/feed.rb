@@ -143,6 +143,16 @@ class Feed < ApplicationRecord
       apple_config.publish_enabled?
   end
 
+  def include_tags=(tags)
+    tags = Array(tags).reject(&:blank?)
+    self[:include_tags] = tags.blank? ? nil : tags
+  end
+
+  def exclude_tags=(tags)
+    tags = Array(tags).reject(&:blank?)
+    self[:include_tags] = tags.blank? ? nil : tags
+  end
+
   def use_include_tags?
     !include_tags.blank?
   end
