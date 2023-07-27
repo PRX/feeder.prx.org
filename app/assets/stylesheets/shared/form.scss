@@ -62,6 +62,18 @@
   }
 }
 
+label[required="required"],
+label[required="true"] {
+
+  &::after {
+    content: '*';
+    color: $danger;
+    display: inline;
+    vertical-align: middle;
+    margin-left: .25rem;
+  }
+}
+
 // material style floating form labels
 .form-floating {
   > label {
