@@ -6,12 +6,17 @@ describe TagListValidator do
   it "allows nil" do
     feed.include_tags = nil
     assert feed.valid?
+  end
 
+  it "compacts empty values to nil" do
     feed.include_tags = {}
-    refute feed.valid?
+    assert_nil feed.include_tags
 
     feed.include_tags = []
-    refute feed.valid?
+    assert_nil feed.include_tags
+
+    feed.include_tags = [""]
+    assert_nil feed.include_tags
   end
 
   it "validates string tags" do
@@ -23,5 +28,10 @@ describe TagListValidator do
 
     feed.include_tags = ["tag", "tag with spaces ", "1234"]
     assert feed.valid?
+  end
+
+  it "compacts string tags" do
+    feed.include_tags = ["", "tag", "tag with spaces", ""]
+    assert_equal ["tag", "tag with spaces"], feed.include_tags
   end
 end
