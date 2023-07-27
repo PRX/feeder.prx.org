@@ -4,9 +4,9 @@
     <%= form.label :ad_breaks %>
     <%= field_help_text t(".help") %>
     <% if episode.new_record? %>
-      <a hidden href="<%= new_podcast_episode_path(episode.podcast_id) %>" data-dynamic-form-target="link"></a>
+      <a hidden href="<%= new_podcast_episode_path(episode.podcast_id, request.query_parameters) %>" data-dynamic-form-target="link"></a>
     <% else %>
-      <a hidden href="<%= edit_episode_path(episode) %>" data-dynamic-form-target="link"></a>
+      <a hidden href="<%= edit_episode_path(episode, request.query_parameters) %>" data-dynamic-form-target="link"></a>
     <% end %>
   </div>
 </div>
