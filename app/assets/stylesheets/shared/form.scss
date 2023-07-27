@@ -64,13 +64,12 @@
 
 label[required="required"],
 label[required="true"] {
-
   &::after {
-    content: '*';
+    content: "*";
     color: $danger;
     display: inline;
     vertical-align: middle;
-    margin-left: .25rem;
+    margin-left: 0.25rem;
   }
 }
 
