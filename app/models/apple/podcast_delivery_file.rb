@@ -161,13 +161,14 @@ module Apple
     def self.get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
       delivery_files_response =
         api.bridge_remote_and_retry!("getPodcastDeliveryFiles",
-          get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries), batch_size: 1)
+          get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries), batch_size: 1, ignore_not_found: true)
 
       # Rather than mangling and persisting the enumerated view of the delivery files from the podcast delivery
       # Instead, re-fetch the podcast delivery file from the non-list podcast delivery file resource
       formatted_bridge_params =
-        join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, delivery_files_response)
-          .map do |(podcast_delivery, row)|
+        join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, delivery_files_response, left_join: true).map do |(podcast_delivery, row)|
+          next if row.nil?
+
           podcast_delivery_files_ids =
             row["api_response"]["val"]["data"].map do |podcast_delivery_file_data|
               podcast_delivery_file_data["id"]
@@ -179,8 +180,9 @@ module Apple
           end
         end
           .flatten
+          .compact
 
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", formatted_bridge_params, batch_size: 1)
+      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", formatted_bridge_params, batch_size: 1, ignore_not_found: true)
     end
 
     # Map across the podcast deliveries and get the bridge params for each
