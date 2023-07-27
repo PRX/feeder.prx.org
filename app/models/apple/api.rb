@@ -46,6 +46,10 @@ module Apple
       @bridge_url = URI(bridge_url)
     end
 
+    def inspect
+      "#<Apple:Api:#{object_id} key_id=#{@key_id || "nil"} bridge_url=#{@bridge_url || "nil"}>"
+    end
+
     def ec_key
       @ec_key ||= OpenSSL::PKey::EC.new(key)
     end
