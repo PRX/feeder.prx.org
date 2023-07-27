@@ -95,9 +95,9 @@ export default class extends Controller {
 
     if (this.hasDiscardTarget) {
       if (changed) {
-        this.discardTarget.classList.remove("invisible")
+        this.discardTarget.classList.remove("d-none")
       } else {
-        this.discardTarget.classList.add("invisible")
+        this.discardTarget.classList.add("d-none")
       }
     }
   }
