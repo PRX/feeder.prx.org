@@ -150,7 +150,7 @@ class Feed < ApplicationRecord
 
   def exclude_tags=(tags)
     tags = Array(tags).reject(&:blank?)
-    self[:include_tags] = tags.blank? ? nil : tags
+    self[:exclude_tags] = tags.blank? ? nil : tags
   end
 
   def use_include_tags?
