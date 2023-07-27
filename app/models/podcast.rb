@@ -196,12 +196,12 @@ class Podcast < ApplicationRecord
     "https://#{feeder_cdn_private_host}/#{path}"
   end
 
-  def published_url
-    "#{base_published_url}/#{default_feed.try(:file_name) || Feed::DEFAULT_FILE_NAME}"
+  def published_url(include_token = nil)
+    default_feed.published_url(include_token)
   end
 
-  def public_url
-    default_feed.public_url
+  def public_url(include_token = nil)
+    default_feed.public_url(include_token)
   end
 
   def itunes_type

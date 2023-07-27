@@ -17,9 +17,9 @@
 
         <div class="col-12 mb-4">
           <div class="form-floating input-group">
-            <%= form.text_field :public_url, disabled: true %>
+            <%= form.text_field :public_url, value: podcast.public_url(false), disabled: true %>
             <%= form.label :public_url %>
-            <%= field_link podcast.public_url %>
+            <%= field_link podcast.public_url(true) %>
             <%= field_help_text t(".help.public_url_html", url: podcast_feed_path(podcast, podcast.default_feed)) %>
           </div>
         </div>

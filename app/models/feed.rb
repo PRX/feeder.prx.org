@@ -90,20 +90,22 @@ class Feed < ApplicationRecord
     default? && public? && include_zones.nil? && audio_format.blank?
   end
 
-  def published_url(include_token = false)
+  def published_url(include_token = nil)
     if private?
       if include_token
         "#{podcast.base_private_url}/#{published_path}?auth=#{tokens.first&.token}"
-      else
+      elsif include_token.nil?
         "#{podcast.base_private_url}/#{published_path}{?auth}"
+      else
+        "#{podcast.base_private_url}/#{published_path}"
       end
     else
       "#{podcast.base_published_url}/#{published_path}"
     end
   end
 
-  def public_url
-    url.present? ? url : published_url
+  def public_url(include_token = nil)
+    url.present? ? url : published_url(include_token)
   end
 
   def published_path

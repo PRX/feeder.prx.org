@@ -1,0 +1,60 @@
+<% if feed.persisted? %>
+  <div class="card shadow border-0">
+    <div class="card-header-info">
+      <h5 class="card-title"><%= t(".title") %></h5>
+    </div>
+
+    <div class="card-body">
+      <div class="row">
+
+        <% if feed.public? %>
+          <div class="col-12 mb-4">
+            <div class="form-floating input-group">
+              <% with = t(".confirm.url") %>
+              <% delete = t(".confirm.url_delete", published_url: feed.published_url) %>
+              <% data = {confirm_field_target: "field", confirm_with: with, confirm_delete: delete} %>
+              <%= form.text_field :url, data: feed.url_was.present? ? data : {} %>
+              <%= form.label :url %>
+              <%= field_link podcast.link if podcast.link.present? %>
+              <%= field_help_text t(".help.url", published_url: feed.published_url) %>
+            </div>
+          </div>
+
+          <div class="col-12 mb-4">
+            <div class="form-floating input-group">
+              <% with = t(".confirm.new_feed_url") %>
+              <% create = t(".confirm.new_feed_url_create") %>
+              <% delete = t(".confirm.new_feed_url_delete") %>
+              <% data = {confirm_with: with, confirm_create: create, confirm_delete: delete} %>
+              <% data[:confirm_field_target] = "field" if feed.persisted? %>
+              <%= form.text_field :new_feed_url, data: data %>
+              <%= form.label :new_feed_url %>
+              <%= field_help_text t(".help.new_feed_url") %>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= form.text_field :published_url, value: feed.published_url(false), disabled: true %>
+            <%= form.label :published_url %>
+            <%= field_link feed.published_url(true) %>
+          </div>
+        </div>
+
+        <% if feed.custom? %>
+          <div class="col-12 mb-4">
+            <div class="form-check">
+              <%= form.check_box :private, data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay"} %>
+              <div class="d-flex align-items-center">
+                <%= form.label :private %>
+                <%= help_text t(".help.private") %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+      </div>
+    </div>
+  </div>
+<% end %>
