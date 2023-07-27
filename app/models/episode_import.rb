@@ -96,7 +96,9 @@ class EpisodeImport < ApplicationRecord
   end
 
   def set_file_resources!
-    episode.media = audio_content_params
+    content = audio_content_params
+    episode.media = content
+    episode.segment_count = content.size
     episode.image = image_contents_params
     episode.save!
     episode.images.reset
