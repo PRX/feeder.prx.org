@@ -22,7 +22,7 @@ class Feed < ApplicationRecord
   belongs_to :podcast, -> { with_deleted }, optional: true
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
-  accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:label].blank? }
+  accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
 
   has_many :apple_configs, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
     class_name: "::Apple::Config"
@@ -92,12 +92,16 @@ class Feed < ApplicationRecord
 
   def published_url(include_token = nil)
     if private?
-      if include_token
-        "#{podcast.base_private_url}/#{published_path}?auth=#{tokens.first&.token}"
+      private_path = "#{podcast.base_private_url}/#{published_path}"
+
+      if include_token == true
+        "#{private_path}?auth=#{tokens.first&.token}"
+      elsif include_token.present?
+        "#{private_path}?auth=#{include_token}"
       elsif include_token.nil?
-        "#{podcast.base_private_url}/#{published_path}{?auth}"
+        "#{private_path}{?auth}"
       else
-        "#{podcast.base_private_url}/#{published_path}"
+        private_path
       end
     else
       "#{podcast.base_published_url}/#{published_path}"

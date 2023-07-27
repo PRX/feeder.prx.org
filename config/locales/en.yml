@@ -122,11 +122,13 @@ en:
         display_full_episodes_count: Feed Metadata Limit
         enclosure_prefix: Enclosure Prefix URL
         episode_offset_seconds: Episode Publish Delay
+        file_name: File Name
         house: House Ads
         new_feed_url: New Feed URL
         paid: Paid Ads
         private: Private (unlisted)
         published_url: Private Feed URL
+        slug: Slug
         sonic_id: Sonic IDs
         subtitle: Teaser
         title: Title
@@ -315,6 +317,9 @@ en:
       title: Feed Authorization
       help:
         auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
+    form_auth_token:
+      help:
+        label: Enter a meaningful label to identify who is using this token.
     form_distribution:
       confirm:
         new_feed_url: Are you sure you want to change your feed URL from <b>{old}</b> to <b>{new}</b>? This will point your subscribers to a new feed location.

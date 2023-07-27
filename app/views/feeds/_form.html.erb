@@ -4,7 +4,7 @@
 <% data = {controller: "unsaved disable", unsaved_changed_value: feed.changed?, unsaved_confirm_value: t(".confirm")} %>
 
 <%= form_with(url: url, model: model, method: method, html: {autocomplete: "off"}, data: data) do |form| %>
-  <div class="row my-4 mx-2" data-controller="feed-tokens">
+  <div class="row my-4 mx-2" data-controller="feed-tokens" data-feed-tokens-unsaved-outlet="form">
     <div class="col-lg-8">
       <div class="row" data-controller="feed-link">
         <%= render "form_main", podcast: podcast, feed: feed, form: form %>

@@ -6,8 +6,20 @@
     </div>
 
     <div class="card-body">
-      <div class="mt-4">
-        <%= render "form_auth_tokens", feed: feed, form: form %>
+      <div class="row">
+        <%= form.fields_for :feed_tokens do |fields| %>
+          <%= render "form_auth_token", form: fields, token: fields.object %>
+        <% end %>
+
+        <template data-feed-tokens-target="template">
+          <%= form.fields_for :feed_tokens, feed.tokens.new(token: "NEW_TOKEN"), child_index: "NEW_RECORD" do |fields| %>
+            <%= render "form_auth_token", form: fields, token: fields.object %>
+          <% end %>
+        </template>
+
+        <div class="col-12">
+          <button type="button" class="btn btn-warning" data-action="feed-tokens#addToken">Add Token</button>
+        </div>
       </div>
     </div>
   </div>
