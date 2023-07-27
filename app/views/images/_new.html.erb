@@ -5,10 +5,10 @@
     <%= help_text t("images.help.#{image.model_name.singular}") %>
 
     <%# delete buttons in header, after upload completes %>
-    <button class="btn btn-icon p-0 d-none" data-action="upload#cancelUpload" data-upload-target="success">
+    <button type="button" class="btn btn-icon p-0 d-none" data-action="upload#cancelUpload" data-upload-target="success">
       <span class="material-icons">delete</span>
     </button>
-    <button class="btn btn-icon p-0 d-none" data-action="upload#cancelUpload" data-upload-target="error">
+    <button type="button" class="btn btn-icon p-0 d-none" data-action="upload#cancelUpload" data-upload-target="error">
       <span class="material-icons">delete</span>
     </button>
   </div>
@@ -47,7 +47,7 @@
           <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-upload-target="progressBar"></div>
         </div>
 
-        <button class="btn" data-action="upload#cancelUpload">
+        <button type="button" class="btn" data-action="upload#cancelUpload">
           <span class="material-icons">delete</span>
         </button>
       </div>

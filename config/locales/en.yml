@@ -312,10 +312,9 @@ en:
       help:
         audio_format: Optionally set an explicit audio format for your episodes. If you leave this blank, we will automatically use the same format as the first audio segment you upload for each episode.
     form_auth:
-      title: Feed Visibility
+      title: Feed Authorization
       help:
         auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
-        private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private link with - <strong>anyone who has access to the link will be able to use it</strong>.
     form_distribution:
       confirm:
         new_feed_url: Are you sure you want to change your feed URL from <b>{old}</b> to <b>{new}</b>? This will point your subscribers to a new feed location.
