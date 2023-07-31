@@ -265,10 +265,18 @@ en:
       message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
       okay: Okay
       title: Missing Episode Drafts
+    tabs:
+      edit: Metadata
+      media: Media Files
+      player: Embeddable Player
+      segmenter: Audio Segmenter
     update:
       error: Unable to save
       media_not_ready: Audio not ready
       notice: Episode updated
+  episode_media:
+    show:
+      title: Media Files
   episode_player:
     form:
       enclosure_not_ready: No Media Files Uploaded

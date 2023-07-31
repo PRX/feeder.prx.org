@@ -11,6 +11,7 @@ Rails.application.routes.draw do
     end
 
     resources :episodes, except: [:create, :new] do
+      resource :media, only: [:show, :update], controller: :episode_media
       resource :player, only: :show, controller: :episode_player
       resource :segmenter, only: [:show, :update], controller: :episode_segmenter
     end
