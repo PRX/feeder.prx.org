@@ -424,3 +424,9 @@ small {
   padding: 0.65rem;
   font-size: 0.875rem;
 }
+
+// Thanks for this Bootstrap :eyeroll:.
+.input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating) {
+  border-top-right-radius: $input-border-radius;
+  border-bottom-right-radius: $input-border-radius;
+}

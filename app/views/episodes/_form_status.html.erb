@@ -40,9 +40,10 @@
       <p class="status-text"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(episode.updated_at) %></p>
 
       <% if policy(episode).update? %>
-        <div>
+        <div class="d-flex align-items-center">
+          <%= link_to t(".discard"), edit_episode_path(episode), class: "btn btn-discard-changed d-none me-2", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
+
           <div class="btn-group">
-            <%= link_to t(".discard"), edit_episode_path(episode), class: "btn btn-discard-changed d-none me-2", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
             <% data = {disable_with: t(".updating"), upload_with: t(".uploading")} %>
             <%= form.submit t(".update"), class: "btn btn-#{episode_status_class(episode)}", data: data %>
 
