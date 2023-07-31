@@ -10,10 +10,16 @@ module Apple
     attr_accessor :provider_id, :key_id, :key, :bridge_url
 
     def self.from_env
-      apple_key_pem = Base64.decode64(ENV["APPLE_KEY_PEM_B64"])
+      apple_key_id = ENV["APPLE_KEY_ID"]
+      apple_provider_id = ENV["APPLE_PROVIDER_ID"]
+      apple_key_pem_b64 = ENV["APPLE_KEY_PEM_B64"]
 
-      new(provider_id: ENV["APPLE_PROVIDER_ID"],
-        key_id: ENV["APPLE_KEY_ID"],
+      raise "Apple::Api.from_env Apple key details missing from ENV" if [apple_key_id, apple_provider_id, apple_key_pem_b64].any?(&:blank?)
+
+      apple_key_pem = Base64.decode64(apple_key_pem_b64)
+
+      new(provider_id: apple_provider_id,
+        key_id: apple_key_id,
         key: apple_key_pem)
     end
 
@@ -38,6 +44,10 @@ module Apple
       @key_id = key_id
       @key = key
       @bridge_url = URI(bridge_url)
+    end
+
+    def inspect
+      "#<Apple:Api:#{object_id} key_id=#{@key_id || "nil"} bridge_url=#{@bridge_url || "nil"}>"
     end
 
     def ec_key
