@@ -13,7 +13,7 @@
           <% data = {confirm_field_target: "field", confirm_with: with, confirm_delete: delete} %>
           <%= form.text_field :url, data: feed.url_was.present? ? data : {} %>
           <%= form.label :url %>
-          <%= field_link podcast.link if podcast.link.present? %>
+          <%= field_link podcast.url if podcast.url.present? %>
           <%= field_help_text t(".help.url", published_url: feed.published_url) %>
         </div>
       </div>
