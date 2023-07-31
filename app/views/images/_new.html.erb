@@ -5,10 +5,10 @@
     <%= help_text t("images.help.#{image.model_name.singular}") %>
 
     <%# delete buttons in header, after upload completes %>
-    <button type="button" class="btn btn-icon p-0 d-none" data-action="upload#cancelUpload" data-upload-target="success">
+    <button type="button" class="prx-btn-help d-none" data-action="upload#cancelUpload" data-upload-target="success">
       <span class="material-icons">delete</span>
     </button>
-    <button type="button" class="btn btn-icon p-0 d-none" data-action="upload#cancelUpload" data-upload-target="error">
+    <button type="button" class="prx-btn-help d-none" data-action="upload#cancelUpload" data-upload-target="error">
       <span class="material-icons">delete</span>
     </button>
   </div>
@@ -31,10 +31,10 @@
       <%# fake display field; real text area is opacity-0 on top of it %>
       <div class="form-control d-flex align-items-center <%= "is-changed" if image.marked_for_destruction? %>">
         <span class="material-icons text-primary">upload</span>
-        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate">Upload a file</div>
+        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= t("images.label.upload") %></div>
       </div>
 
-      <%= form.label :image_file, "Image File" %>
+      <%= form.label :image_file, t("images.label.image_file") %>
     </div>
 
     <%# step 2: upload progressbar %>
@@ -52,7 +52,7 @@
         </button>
       </div>
 
-      <label>Image File</label>
+      <label><%= t("images.label.image_file") %></label>
     </div>
 
     <%# step 3a: hidden original_url field pointing to the uploaded temporary s3 file %>
@@ -66,7 +66,7 @@
         <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
       </div>
 
-      <label>Image File</label>
+      <label><%= t("images.label.image_file") %></label>
     </div>
     <div class="d-none" data-upload-target="success">
       <%= render "images/meta", form: form %>
@@ -82,7 +82,7 @@
 
       <div class="invalid-feedback" data-upload-target="errorMessage"></div>
 
-      <label class="is-invalid">Image File</label>
+      <label class="is-invalid"><%= t("images.label.image_file") %></label>
     </div>
 
   </div>

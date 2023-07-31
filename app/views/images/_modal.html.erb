@@ -3,13 +3,13 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title"><%= title %></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= t("images.label.close") %>"></button>
       </div>
       <div class="modal-body">
         <table class="table table-sm m-0">
           <tbody>
             <tr>
-              <th scope="row"><strong>File:</strong></th>
+              <th scope="row"><strong><%= t("images.label.file") %>:</strong></th>
               <td>
                 <% if image.status_complete? %>
                   <%= link_to image.file_name, image.url, target: "_blank", rel: "noopener" %>
@@ -19,21 +19,21 @@
               </td>
             </tr>
             <tr>
-              <th scope="row"><strong>Status:</strong></th>
+              <th scope="row"><strong><%= t("images.label.status") %>:</strong></th>
               <td>
                 <span class="badge bg-<%= upload_status_class(image) %>"><%= image.status.capitalize %></span>
               </td>
             </tr>
             <tr>
-              <th scope="row"><strong>Size:</strong></th>
+              <th scope="row"><strong><%= t("images.label.size") %>:</strong></th>
               <td><%= blank_dash(image.size) { number_to_human_size(image.size) } %></td>
             </tr>
             <tr>
-              <th scope="row"><strong>Format:</strong></th>
+              <th scope="row"><strong><%= t("images.label.format") %>:</strong></th>
               <td><%= blank_dash(image.format) %></td>
             </tr>
             <tr>
-              <th scope="row"><strong>Dimensions:</strong></th>
+              <th scope="row"><strong><%= t("images.label.dimensions") %>:</strong></th>
               <td><%= blank_dash(image.width, image.height) { "#{image.width} x #{image.height}" } %></td>
             </tr>
           </tbody>
