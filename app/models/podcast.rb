@@ -197,11 +197,11 @@ class Podcast < ApplicationRecord
   end
 
   def published_url(include_token = nil)
-    default_feed.published_url(include_token)
+    default_feed&.published_url(include_token)
   end
 
   def public_url(include_token = nil)
-    default_feed.public_url(include_token)
+    default_feed&.public_url(include_token)
   end
 
   def itunes_type
