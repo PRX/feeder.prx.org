@@ -7,6 +7,7 @@ class Podcast < ApplicationRecord
 
   include TextSanitizer
   include AdvisoryLocks
+  include EmbedPlayerHelper
 
   acts_as_paranoid
 
@@ -63,6 +64,7 @@ class Podcast < ApplicationRecord
   def set_defaults
     set_default_feed
     self.explicit ||= "false"
+    self.link ||= embed_player_landing_url(self)
   end
 
   def set_default_feed
