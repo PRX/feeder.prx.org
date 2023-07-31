@@ -55,8 +55,8 @@ describe MediaResource do
       refute mr.tap { |i| i.status = "processing" }.retryable?
       refute mr.tap { |i| i.status = "complete" }.retryable?
 
-      # updated 1 minute ago
-      mr.updated_at = Time.now - 60
+      # updated 2 minutes ago
+      mr.updated_at = Time.now - 120
       assert mr.tap { |i| i.status = "started" }.retryable?
       assert mr.tap { |i| i.status = "processing" }.retryable?
       refute mr.tap { |i| i.status = "complete" }.retryable?
