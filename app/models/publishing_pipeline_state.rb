@@ -88,7 +88,7 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def self.start_pipeline!(podcast)
-    Rails.logger.tagged(["PublishingPipeLineState.start_pipeline!", "Podcast:#{podcast.id}"]) do
+    Rails.logger.tagged("PublishingPipeLineState.start_pipeline!", "Podcast:#{podcast.id}") do
       PublishingQueueItem.ensure_queued!(podcast)
       attempt!(podcast)
     end

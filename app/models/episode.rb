@@ -72,6 +72,7 @@ class Episode < ApplicationRecord
   def self.release_episodes!(_options = {})
     podcasts = []
     episodes_to_release.each do |e|
+      Rails.logger.info("Releasing episode", podcast_id: e.podcast_id, episode_id: e.id)
       podcasts << e.podcast
       e.touch
     end
