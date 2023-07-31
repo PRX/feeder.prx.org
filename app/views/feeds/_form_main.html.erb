@@ -1,16 +1,15 @@
-<div class="col-12 mb-4">
-  <div class="form-floating input-group">
-    <%= form.text_field :feed_link, value: feed.published_url, disabled: true, data: {feed_link_target: "link"} %>
-    <%= form.label :feed_link %>
-    <%= field_link feed.published_url(true) %>
+<% if feed.default? %>
+  <div class="col-6 mb-4">
+    <div class="form-floating input-group">
+      <%= form.text_field :title, value: "Default Feed", disabled: true %>
+      <%= form.label :title %>
+    </div>
   </div>
-</div>
-
-<% unless feed.default? %>
+<% else %>
   <div class="col-12 mb-4">
     <div class="form-floating input-group">
       <%= form.text_field :title %>
-      <%= form.label :title %>
+      <%= form.label :title, required: true %>
       <%= field_help_text t(".help.title") %>
     </div>
   </div>
@@ -23,10 +22,14 @@
       <%= form.label :slug %>
       <%= field_help_text t(".help.slug") %>
     </div>
+
+    <div class="form-text">
+      <a href="<%= feed.published_url(false) %>" target="_blank" class="d-none" data-feed-link-target="link"><%= feed.published_url(false) %></a>
+    </div>
   </div>
 <% end %>
 
-<div class="<%= feed.default? ? "col-12" : "col-6" %> mb-4">
+<div class="col-6 mb-4">
   <div class="form-floating input-group">
     <% data = {action: "keyup->feed-link#updateFileName", confirm_with: t(".confirm.file_name")} %>
     <% data[:confirm_field_target] = "field" if feed.persisted? %>
@@ -34,29 +37,9 @@
     <%= form.label :file_name %>
     <%= field_help_text t(".help.file_name") %>
   </div>
-</div>
 
-<div class="col-12 mb-4">
-  <div class="form-floating input-group">
-    <% with = t(".confirm.url") %>
-    <% delete = t(".confirm.url_delete", published_url: feed.published_url) %>
-    <% data = {confirm_field_target: "field", confirm_with: with, confirm_delete: delete} %>
-    <%= form.text_field :url, data: feed.url_was.present? ? data : {} %>
-    <%= form.label :url %>
-    <%= field_help_text t(".help.url", published_url: feed.published_url) %>
-  </div>
-</div>
-
-<div class="col-12 mb-4">
-  <div class="form-floating input-group">
-    <% with = t(".confirm.new_feed_url") %>
-    <% create = t(".confirm.new_feed_url_create") %>
-    <% delete = t(".confirm.new_feed_url_delete") %>
-    <% data = {confirm_with: with, confirm_create: create, confirm_delete: delete} %>
-    <% data[:confirm_field_target] = "field" if feed.persisted? %>
-    <%= form.text_field :new_feed_url, data: data %>
-    <%= form.label :new_feed_url %>
-    <%= field_help_text t(".help.new_feed_url") %>
+  <div class="form-text">
+    <a href="<%= feed.published_url(false) %>" target="_blank" class="d-none" data-feed-link-target="link"><%= feed.published_url(false) %></a>
   </div>
 </div>
 

@@ -1,7 +1,7 @@
 require "text_sanitizer"
 
 class Podcast < ApplicationRecord
-  FEED_ATTRS = %i[subtitle description summary url public_url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image ready_feed_image ready_itunes_image ready_image]
+  FEED_ATTRS = %i[subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image ready_feed_image ready_itunes_image ready_image]
   FEED_GETTERS = FEED_ATTRS.map { |s| [s, "#{s}_was".to_sym, "#{s}_changed?".to_sym] }.flatten
   FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
 
@@ -196,8 +196,12 @@ class Podcast < ApplicationRecord
     "https://#{feeder_cdn_private_host}/#{path}"
   end
 
-  def published_url
-    "#{base_published_url}/#{default_feed.try(:file_name) || Feed::DEFAULT_FILE_NAME}"
+  def published_url(include_token = nil)
+    default_feed.published_url(include_token)
+  end
+
+  def public_url(include_token = nil)
+    default_feed.public_url(include_token)
   end
 
   def itunes_type

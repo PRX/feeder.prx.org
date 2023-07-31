@@ -6,6 +6,22 @@
 
     <div class="col-12 mb-4">
       <div class="form-floating input-group">
+        <% if episode.persisted? %>
+          <% data = {confirm_field_target: "field", confirm_with: t(".confirm.item_guid")} %>
+          <%= form.text_field :item_guid, data: data %>
+          <%= form.label :item_guid %>
+          <%= field_copy episode.item_guid %>
+          <%= field_help_text t(".help.item_guid") %>
+        <% else %>
+          <%= form.text_field :original_guid %>
+          <%= form.label :original_guid %>
+          <%= field_help_text t(".help.original_guid") %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-12 mb-4">
+      <div class="form-floating input-group">
         <% if episode.media_ready? %>
           <%= form.text_field :enclosure_url, value: episode.enclosure_url, disabled: true %>
           <%= form.label :enclosure_url %>
@@ -31,7 +47,7 @@
       </div>
     </div>
 
-    <div class="col-12 mb-4">
+    <div class="col-12">
       <div class="form-floating input-group">
         <%= form.text_field :url %>
         <%= form.label :url %>
@@ -40,22 +56,6 @@
           <%= field_copy episode.url %>
         <% end %>
         <%= field_help_text t(".help.url") %>
-      </div>
-    </div>
-
-    <div class="col-12">
-      <div class="form-floating input-group">
-        <% if episode.persisted? %>
-          <% data = {confirm_field_target: "field", confirm_with: t(".confirm.item_guid")} %>
-          <%= form.text_field :item_guid, data: data %>
-          <%= form.label :item_guid %>
-          <%= field_copy episode.item_guid %>
-          <%= field_help_text t(".help.item_guid") %>
-        <% else %>
-          <%= form.text_field :original_guid %>
-          <%= form.label :original_guid %>
-          <%= field_help_text t(".help.original_guid") %>
-        <% end %>
       </div>
     </div>
 

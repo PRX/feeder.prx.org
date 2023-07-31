@@ -5,6 +5,28 @@
     </div>
 
     <div class="card-body">
+      <div class="row">
+        <div class="col-lg-6 mb-4">
+          <div class="form-check">
+            <%= form.check_box :include_donation_url %>
+            <div class="d-flex align-items-center">
+              <%= form.label :include_donation_url %>
+              <%= help_text t(".help.include_donation_url") %>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+          <div class="form-check">
+            <%= form.check_box :include_podcast_value %>
+            <div class="d-flex align-items-center">
+              <%= form.label :include_podcast_value %>
+              <%= help_text t(".help.podcast_value") %>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="mb-4">
         <div class="form-floating input-group">
           <%= form.text_field :subtitle %>

@@ -43,10 +43,6 @@ module FeedsHelper
     params
   end
 
-  def display_auth_tokens(feed)
-    feed.private? ? "" : "d-none"
-  end
-
   def display_bitrate(feed)
     (feed.try(:audio_format).try(:[], :f) == "mp3") ? "" : "d-none"
   end

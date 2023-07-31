@@ -1,25 +1,27 @@
-<div class="mb-4 d-flex">
-  <div class="row flex-grow-1">
-    <div class="col-6">
-      <div class="form-floating">
-        <%= form.text_field :label %>
-        <%= form.label :label %>
-      </div>
-    </div>
-
-    <% unless form.object.new_record? %>
-      <div class="col-6">
-        <div class="form-floating">
-          <%= form.text_field :token %>
-          <%= form.label :token %>
-        </div>
-      </div>
-    <% end %>
+<div class="col-12 mb-3 d-flex gap-3 align-items-top">
+  <div class="form-floating input-group flex-grow-1 ">
+    <%= form.text_field :label %>
+    <%= form.label :label %>
+    <%= field_help_text t(".help.label") %>
   </div>
 
-  <% unless form.object.new_record? %>
-    <%= link_to podcast_feed_path(feed.podcast, feed, feed_tokens_destroy_params(form)), class: "btn" do %>
+  <div class="form-floating input-group flex-grow-1">
+    <%= form.text_field :token %>
+    <%= form.label :token %>
+  </div>
+
+  <%= link_to form.object.published_url, class: "btn", target: "_blank" do %>
+    <span class="material-icons text-primary">open_in_new</span>
+  <% end %>
+
+  <% if form.object.persisted? %>
+    <button type="button" class="btn btn-icon" data-action="feed-tokens#removeToken">
       <span class="material-icons">delete</span>
-    <% end %>
+    </button>
+    <%= form.text_field :_destroy, value: false, class: "d-none" %>
+  <% else %>
+    <button type="button" class="btn btn-icon" data-action="feed-tokens#nukeToken">
+      <span class="material-icons">delete</span>
+    </button>
   <% end %>
 </div>

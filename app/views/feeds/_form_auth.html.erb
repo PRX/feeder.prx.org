@@ -1,21 +1,25 @@
-<div class="col-12 mb-4" data-controller="toggle-field">
+<div class="col-12 mb-4 <%= "d-none" if feed.public? %>" data-feed-tokens-target="showPrivate">
   <div class="card shadow border-0">
-    <div class="card-header card-header-light d-flex justify-content-between">
+    <div class="card-header card-header-warning d-flex justify-content-between">
       <h5 class="card-title flex-grow-1"><%= t(".title") %></h5>
       <%= help_text t(".help.auth_tokens") %>
     </div>
 
     <div class="card-body">
-      <div class="form-check">
-        <%= form.check_box :private, data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay"} %>
-        <div class="d-flex align-items-center">
-          <%= form.label :private %>
-          <%= help_text t(".help.private") %>
-        </div>
-      </div>
+      <div class="row">
+        <%= form.fields_for :feed_tokens do |fields| %>
+          <%= render "form_auth_token", form: fields, token: fields.object %>
+        <% end %>
 
-      <div class="mt-4 <%= display_auth_tokens(feed) %>" data-toggle-field-target="field">
-        <%= render "form_auth_tokens", feed: feed, form: form %>
+        <template data-feed-tokens-target="template">
+          <%= form.fields_for :feed_tokens, feed.tokens.new(token: "NEW_TOKEN"), child_index: "NEW_RECORD" do |fields| %>
+            <%= render "form_auth_token", form: fields, token: fields.object %>
+          <% end %>
+        </template>
+
+        <div class="col-12">
+          <button type="button" class="btn btn-warning" data-action="feed-tokens#addToken">Add Token</button>
+        </div>
       </div>
     </div>
   </div>

@@ -38,17 +38,19 @@ export default class extends Controller {
     this.change({ target })
   }
 
-  change(event) {
+  change(event = null) {
     if (this.isSubmitting) {
       return
     }
 
     // set is-changed indicator
-    const valueWas = event.target.dataset.valueWas
-    if (valueWas === undefined || valueWas !== this.getValue(event.target)) {
-      event.target.classList.add("is-changed")
-    } else {
-      event.target.classList.remove("is-changed")
+    if (event) {
+      const valueWas = event.target.dataset.valueWas
+      if (valueWas === undefined || valueWas !== this.getValue(event.target)) {
+        event.target.classList.add("is-changed")
+      } else {
+        event.target.classList.remove("is-changed")
+      }
     }
 
     this.setChanged(this.hasChangedFields())

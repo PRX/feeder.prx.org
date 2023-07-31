@@ -10,4 +10,8 @@ class FeedToken < ApplicationRecord
   def set_defaults
     self.token ||= SecureRandom.urlsafe_base64(20)
   end
+
+  def published_url
+    feed.published_url(token)
+  end
 end
