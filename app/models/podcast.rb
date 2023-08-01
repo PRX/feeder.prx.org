@@ -55,7 +55,7 @@ class Podcast < ApplicationRecord
   end
 
   def self.release!(options = {})
-    Rails.logger.tagged("Podcast.release! #{SecureRandom.uuid}") do
+    Rails.logger.tagged("Podcast.release!") do
       PublishingPipelineState.expire_pipelines!
       Episode.release_episodes!(options)
     end
