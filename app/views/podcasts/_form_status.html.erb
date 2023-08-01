@@ -4,7 +4,7 @@
   </div>
   <div class="card-footer d-flex align-items-center">
     <% if podcast.persisted? %>
-      <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(podcast.updated_at) %></p>
+      <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= local_time_ago(podcast.updated_at) %></p>
 
       <% if policy(podcast).update? %>
         <% data = {action: "unsaved#discard", unsaved_target: "discard"} %>

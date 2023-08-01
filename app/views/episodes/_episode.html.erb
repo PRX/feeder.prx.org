@@ -3,7 +3,7 @@
     <div class="episode-card-info">
       <p class="episode-card-date">
         <% if episode.published_or_released_date.present? %>
-          <%= l(episode.published_or_released_date, format: :short) %>
+          <%= local_date(episode.published_or_released_date, format: :short) %>
         <% end %>
       </p>
       <div class="episode-card-inner">
