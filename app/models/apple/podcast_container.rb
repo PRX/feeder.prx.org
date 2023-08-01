@@ -8,7 +8,7 @@ module Apple
 
     default_scope { includes(:apple_sync_log) }
 
-    has_one :apple_sync_log, -> { podcast_containers }, foreign_key: :feeder_id, class_name: "SyncLog"
+    has_one :apple_sync_log, -> { podcast_containers }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
     has_many :podcast_deliveries, dependent: :destroy
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, class_name: "::Episode"
