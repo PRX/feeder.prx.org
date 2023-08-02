@@ -125,11 +125,15 @@ module Apple
     end
 
     def update_show!(sync)
-      data = show_data(update_attributes, id: apple_id)
-      Rails.logger.info("Updating show", show_data: data)
-      resp = api.patch("shows/#{sync.external_id}", data)
+      Rails.logger.warn("Skipping update for existing show!")
+      nil
 
-      api.response(resp)
+      # TODO, map out the cases where we'd actually need to update a show
+      # data = show_data(update_attributes, id: apple_id)
+      # Rails.logger.info("Updating show", show_data: data)
+      # resp = api.patch("shows/#{sync.external_id}", data)
+      #
+      # api.response(resp)
     end
 
     def create_or_update_show(sync)
