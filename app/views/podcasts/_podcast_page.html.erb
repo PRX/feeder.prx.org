@@ -6,7 +6,7 @@
       <% end %>
     </div>
     <div class="card-body flex-grow-1 ">
-      <h2 class="card-title h5 "><%= podcast.title %></h2>
+      <h2 class="card-title h5"><%= podcast.title %></h2>
       <p class="card-text m-0 lh-xs fs-sm">
         <%= t(".published_episodes", count: @published_episodes_counts[podcast.id].to_i) %> |
         <%= t(".scheduled_episodes", count: @scheduled_episodes_counts[podcast.id].to_i) %> |
