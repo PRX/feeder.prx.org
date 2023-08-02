@@ -63,21 +63,32 @@ module Apple
       [{"type" => "categories", "id" => "1301"}]
     end
 
-    def show_data
+    def update_attributes
+      create_attributes.except(:releaseFrequency, :thirdPartyRights)
+    end
+
+    def create_attributes
       {
-        data: {
-          type: "shows",
-          relationships: {
-            allowedCountriesAndRegions: {data: api.countries_and_regions}
-          },
-          attributes: {
-            kind: "RSS",
-            rssUrl: feed_published_url,
-            releaseFrequency: "OPTOUT",
-            thirdPartyRights: "HAS_RIGHTS_TO_THIRD_PARTY_CONTENT"
+        kind: "RSS",
+        rssUrl: feed_published_url,
+        releaseFrequency: "WEEKLY",
+        thirdPartyRights: "HAS_RIGHTS_TO_THIRD_PARTY_CONTENT"
+      }
+    end
+
+    def show_data(attributes, id: nil)
+      res =
+        {
+          data: {
+            type: "shows",
+            relationships: {
+              allowedCountriesAndRegions: {data: api.countries_and_regions}
+            },
+            attributes: attributes
           }
         }
-      }
+      res[:data][:id] = id if id.present?
+      res
     end
 
     def apple_id
@@ -106,7 +117,7 @@ module Apple
     end
 
     def create_show!
-      data = show_data
+      data = show_data(create_attributes)
       Rails.logger.info("Creating show", show_data: data)
       resp = api.post("shows", data)
 
@@ -114,10 +125,9 @@ module Apple
     end
 
     def update_show!(sync)
-      show_data_with_id = show_data
-      show_data_with_id[:data][:id] = sync.external_id
-      Rails.logger.info("Updating show", show_data: show_data_with_id)
-      resp = api.patch("shows/#{sync.external_id}", show_data_with_id)
+      data = show_data(update_attributes, id: apple_id)
+      Rails.logger.info("Updating show", show_data: data)
+      resp = api.patch("shows/#{sync.external_id}", data)
 
       api.response(resp)
     end
