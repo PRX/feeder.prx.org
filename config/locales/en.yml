@@ -404,10 +404,24 @@ en:
     update:
       <<: *update
   images:
+    error:
+      processing: There was a problem processing your image
     help:
       episode_image: Provide an image for your episode, if desired. Image dimensions must be square.
       feed_image: Optionally provide an alternate image to use for smaller display purposes.
       itunes_image: This image will be used as the cover image for this series. Image dimensions must be square.
+    label:
+      close: Close
+      dimensions: Dimensions
+      file: File
+      format: Format
+      image_file: Image File
+      loading: Loading...
+      processing: Processing
+      retry: Retry
+      size: Size
+      status: Status
+      upload: Upload a file
     title:
       episode_image: Cover Image
       feed_image: Thumbnail Image

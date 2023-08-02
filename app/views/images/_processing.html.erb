@@ -1,4 +1,4 @@
-<div class="card shadow border-0 prx-uploads mb-4">
+<div class="card shadow border-0 prx-uploads">
   <div class="card-header-info d-flex justify-content-between align-items-center">
     <h2 class="card-title h5"><%= t("images.title.#{image.model_name.singular}") %></h5>
 
@@ -11,27 +11,18 @@
     <div class="form-floating mb-4">
       <div class="form-control d-flex align-items-center">
         <div class="spinner-border text-primary ms-2" role="status">
-          <span class="visually-hidden">Loading...</span>
+          <span class="visually-hidden"><%= t("images.label.loading") %></span>
         </div>
 
-        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= image.file_name %></div>
-
-        <% if image.retryable? %>
-          <div class="flex-grow-1">
-            <%= link_to retry_path, class: "btn btn-sm btn-warning" do %>
-              <span class="material-icons">restart_alt</span> Retry
-            <% end %>
-          </div>
-        <% else %>
-          <small class="text-muted flex-grow-1">(Processing)</small>
-        <% end %>
+        <div class="text-secondary mx-2 overflow-hidden text-truncate"><%= image.file_name %></div>
+        <small class="text-muted flex-grow-1">(<%= t("images.label.processing") %>)</small>
 
         <% if image.size.present? %>
           <small class="text-muted">(<%= number_to_human_size(image.size) %>)</small>
         <% end %>
       </div>
 
-      <label>Image File</label>
+      <label><%= t("images.label.image_file") %></label>
     </div>
 
     <%# just keep polling until the file finishes processing %>
