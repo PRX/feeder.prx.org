@@ -12,11 +12,14 @@ module Apple
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
 
+    EPISODE_ASSET_WAIT_TIMEOUT = 8.minutes.freeze
+    EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
+
     # In the case where the episodes state is not yet ready to publish, but the
     # underlying models are ready. Poll the episodes audio asset state but
     # guard against waiting for episode assets that will never be processed.
     def self.wait_for_asset_state(api, eps)
-      wait_for(eps) do |remaining_eps|
+      wait_for(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL) do |remaining_eps|
         Rails.logger.info("Probing for episode audio asset state")
         unwrapped = get_episodes(api, remaining_eps)
 
