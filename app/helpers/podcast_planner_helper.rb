@@ -1,32 +1,20 @@
 # frozen_string_literal: true
 
 module PodcastPlannerHelper
-  PERIODIC_WEEKS = I18n.t([:every_one, :every_two, :every_three, :every_four], scope: [:podcast_planner, :helper, :period_options])
-  MONTHLY_WEEKS = I18n.t([:first, :second, :third, :fourth, :fifth], scope: [:podcast_planner, :helper, :monthly_options])
+  MONTHLY_WEEKS = [:first, :second, :third, :fourth, :fifth]
+  PERIODIC_WEEKS = [:every_one, :every_two, :every_three, :every_four]
   DATE_CONTROLLER = "date"
   TOGGLE_ACTION = "click->date#toggleSelect"
-  RECOUNT_ACTION = "click->count#recount"
+  RECOUNT_ACTION = "click->planner#recount"
 
   def day_options
     DateTime::DAYNAMES.map.with_index { |day, i| [day, i] }
   end
 
-  def periodic_weeks_options
-    PERIODIC_WEEKS.map.with_index { |opt, i| [opt, i + 1] }
-  end
-
-  def monthly_weeks_options
-    MONTHLY_WEEKS.map.with_index { |opt, i| [opt, i + 1] }
-  end
-
-  def end_condition_options
-    [[I18n.t(".podcast_planner.helper.episodes"), "episodes"],
-      [I18n.t(".podcast_planner.helper.end_date"), "date"]]
-  end
-
-  def week_condition_options
-    [[I18n.t(".podcast_planner.helper.month"), "monthly"],
-      [I18n.t(".podcast_planner.helper.period"), "periodic"]]
+  def week_options
+    monthly = MONTHLY_WEEKS.map { |v| [t("podcast_planner.helper.monthly_options.#{v}"), v] }
+    periodic = PERIODIC_WEEKS.map { |v| [t("podcast_planner.helper.period_options.#{v}"), v] }
+    monthly + periodic
   end
 
   def time_options
@@ -58,12 +46,24 @@ module PodcastPlannerHelper
 
   def calendar_day_tag(day:, month:, calendar:, &block)
     data = {}
+    cls = []
+
     if date_is_in_month?(day, month)
       data[:controller] = DATE_CONTROLLER
       data[:action] = [TOGGLE_ACTION, RECOUNT_ACTION].join(" ")
+
+      is_new = date_is_in_dates?(day, @planner.dates)
+      is_existing = date_is_in_dates?(day, @draft_dates)
+      if is_new && is_existing
+        cls = ["bg-warning", "bg-danger", "text-light"]
+      elsif is_new
+        cls = ["bg-primary", "text-light"]
+      elsif is_existing
+        cls = ["bg-warning"]
+      end
     end
 
-    content_tag(:td, class: calendar.td_classes_for(day), data: data) do
+    content_tag(:td, class: calendar.td_classes_for(day) + cls, data: data) do
       block.call
     end
   end

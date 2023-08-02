@@ -1,22 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["preselected"]
-
-  connect() {
-    if (!this.isDisabled(this.preselectedTarget)) {
-      if (this.isDraft(this.preselectedTarget)) {
-        this.element.classList.add("bg-danger", "text-light")
-      } else {
-        this.element.classList.add("bg-primary", "text-light")
-      }
-    }
-
-    if (this.preselectedTarget.getAttribute("draft") === "true") {
-      this.element.classList.add("bg-warning")
-    }
-  }
-
   toggleSelect(event) {
     if (!this.isDisabled(event.target.firstElementChild)) {
       if (this.isDraft(event.target.firstElementChild)) {

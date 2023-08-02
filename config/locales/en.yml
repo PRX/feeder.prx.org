@@ -67,7 +67,7 @@ en:
       field_copy_tooltip: Copied!
     label:
       episode:
-        ad_breaks: How many ad breaks are there in this episode?
+        ad_breaks: Ad Breaks
         author_email: Author Email
         author_name: Author Name
         categories: Categories
@@ -92,7 +92,7 @@ en:
           full: Full
           trailer: Trailer
           bonus: Bonus
-        medium: How do you want to upload your files?
+        medium: File Format
         mediums:
           audio: Audio - upload multiple audio files
           uncut: Audio - upload a single file and then segment
@@ -220,6 +220,7 @@ en:
         title: Write a short, Tweetable title. Think newspaper headline.
     form_media:
       title: Media Files
+      help: Enter the file format for this episode.
     form_status:
       <<: *form_status
       create: Create Draft
@@ -260,7 +261,7 @@ en:
       processing:
         hint: Processing
       segment_count:
-        help: Enter the number of ad breaks in this episode.
+        help: Enter the number of ad breaks (midrolls) in this episode. This helps us to better predict ad inventory for your podcast.
     missing_drafts:
       message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
       okay: Okay
@@ -556,43 +557,37 @@ en:
   podcast_planner:
     create:
       success: Episode drafts generated.
-    form_main:
-      header: Plan Episodes
+    form_calculator:
       help_html: Add multiple episode drafts to create a production schedule. Episode drafts improve the accuracy of your podcast's forecasts. If you only need to add a single episode, <a href="%{url}">go here</a>.
-    form_date_calculator:
-      header:
-        date_calculation: Date Calculation of Draft Batch
-        day_select: Which day of the week do you plan to publish your episodes?
-        week_select: Which weeks of each month do you plan to publish on?
-        range_select: How long will episodes recur?
+      title: Plan Episodes
+    form_calculator_dates:
       help:
-        date_calculation: Calculate release dates for your drafts by selecting which days and weeks you plan to publish, and then select a date range.
-        day_select: Which day of the week do you plan to publish your episodes? Select all that apply.
-        week_select: Which weeks of the month do you plan to publish? Select all that apply.
-        calculate_weeks: Calculate the weeks by
-        select_weeks: Select weeks
-        select_period: Select interval
-        range_select: How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.
-        calculate_range: Calculate the end of the batch by
-        select_range: Select range
+        selected_days: Which day of the week do you plan to publish your episodes? Select all that apply.
+        selected_weeks: Which weeks of the month do you plan to publish? Select all that apply.
+        start_date: How long should episodes recur? Give a date range with a start date, and choose how to calculate the end date.
       label:
-        week_condition: Calculate the weeks by
-        week_of_month: Select Week of the month
-        period: Select weekly interval
-        date_range_condition: Calculate the end of the batch by
-    form_side:
-      header:
-        preview: Preview Draft Schedule
-        publish_time: What time of day do you plan to publish the episodes?
-        audio_segments: How many audio segments?
-        segment_count: Number of segments
-        number_of_drafts: "Drafts planned: "
-        help:
-          segment_count: Enter the number of original audio segments. The number of segments helps determine the number and location of ad breaks for this episode.
+        end_date: End Date
+        number_of_episodes: Number of Episodes
+        or: OR
+        selected_days: Days of Week
+        selected_weeks: Weeks of Month
+        start_date: Start Date
+    form_draft:
+      label:
+        create: Create
+        draft: Draft
+        key: Key
+        key_duplicate: Duplicate Episode Drafts
+        key_existing: Existing Episode Draft
+        key_new: New Episode Draft
+        month: Month
+      title:
+        calendar: Production Calendar
+        settings: Draft Settings
+    form_draft_settings:
       help:
-        preview: Select more options to get a schedule preview.
-      label:
-        submit: Create drafts
+        ad_breaks: Enter the number of ad breaks (midrolls) these episodes will have. Accurately entering the number of ad breaks help us to better predict ad inventory for your podcast.
+        medium: Enter the file format you plan to upload for these episodes.
     helper:
       period_options:
         every_one: Every week
@@ -600,11 +595,11 @@ en:
         every_three: Every three weeks
         every_four: Every four weeks
       monthly_options:
-        first: First
-        second: Second
-        third: Third
-        fourth: Fourth
-        fifth: Fifth
+        first: First Week
+        second: Second Week
+        third: Third Week
+        fourth: Fourth Week
+        fifth: Fifth Week
       episodes: Number of episodes
       end_date: End date
       month: Weeks of the Month

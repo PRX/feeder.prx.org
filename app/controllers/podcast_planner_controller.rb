@@ -34,21 +34,51 @@ class PodcastPlannerController < ApplicationController
     Date.beginning_of_week = :sunday
   end
 
-  # Only allow a list of trusted parameters through.
+  # Make params match PodcastPlanner interface
   def planner_params
+    p = permit_params
+    p[:podcast_id] = @podcast.id
+    p[:date_range_condition] = p[:number_of_episodes].present? ? "episodes" : "date"
+    p[:segment_count] = p[:ad_breaks].to_i + 1 if p[:ad_breaks].present?
+
+    # translate selected weeks into monthly weeks
+    monthly_weeks = monthly_week_options(p[:selected_weeks])
+    periodic_weeks = periodic_week_options(p[:selected_weeks])
+    if monthly_weeks.any?
+      p[:week_condition] = "monthly"
+      p[:monthly_weeks] = monthly_weeks
+    elsif periodic_weeks.any?
+      p[:week_condition] = "periodic"
+      p[:period] = periodic_weeks.first
+    end
+
+    p
+  end
+
+  # Only allow a list of trusted parameters through.
+  def permit_params
     params.permit(
-      :podcast_id,
-      :week_condition,
-      :period,
       :start_date,
-      :date_range_condition,
       :number_of_episodes,
       :end_date,
       :publish_time,
-      :segment_count,
+      :medium,
+      :ad_breaks,
       selected_days: [],
-      monthly_weeks: [],
+      selected_weeks: [],
       selected_dates: []
     )
+  end
+
+  def monthly_week_options(selected_weeks)
+    PodcastPlannerHelper::MONTHLY_WEEKS.filter_map.with_index do |val, idx|
+      idx + 1 if selected_weeks&.include?(val.to_s)
+    end
+  end
+
+  def periodic_week_options(selected_weeks)
+    PodcastPlannerHelper::PERIODIC_WEEKS.filter_map.with_index do |val, idx|
+      idx + 1 if selected_weeks&.include?(val.to_s)
+    end
   end
 end
