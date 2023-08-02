@@ -9,11 +9,9 @@
       </div>
 
       <div class="card-body pt-4 pb-0" data-morph="false">
-        <%= turbo_frame_tag "form-draft-settings", data: {controller: "morphdom"} do %>
-          <div class="row">
-            <%= render "form_draft_settings", form: form %>
-          </div>
-        <% end %>
+        <div class="row">
+          <%= render "form_draft_settings", form: form %>
+        </div>
       </div>
     </div>
   </div>
