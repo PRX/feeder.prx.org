@@ -104,7 +104,7 @@ class Feed < ApplicationRecord
         private_path
       end
     else
-      "#{podcast.base_published_url}/#{published_path}"
+      "#{podcast&.base_published_url}/#{published_path}"
     end
   end
 

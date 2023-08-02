@@ -1,6 +1,7 @@
 module EmbedPlayerHelper
   include PrxAccess
 
+  EMBED_PLAYER_LANDING_PATH = "/listen"
   EMBED_PLAYER_PATH = "/e"
   EMBED_PLAYER_FEED = "uf"
   EMBED_PLAYER_GUID = "ge"
@@ -11,6 +12,13 @@ module EmbedPlayerHelper
   EMBED_PLAYER_RSS_URL = "us"
   EMBED_PLAYER_AUDIO_URL = "ua"
   DOVETAIL_TOKEN = "_t"
+
+  def embed_player_landing_url(podcast, ep = nil)
+    params = {}
+    params[EMBED_PLAYER_FEED] = podcast&.public_url
+    params[EMBED_PLAYER_GUID] = ep.item_guid if ep.present?
+    "#{play_root}#{EMBED_PLAYER_LANDING_PATH}?#{params.to_query}"
+  end
 
   def embed_player_episode_url(ep, type = nil, preview = false)
     params = {}
