@@ -18,14 +18,13 @@ module PodcastPlannerHelper
   end
 
   def time_options
-    opts = []
-    24.times do |hour|
-      time = Time.new
-      opts.push(time.change({hour: hour}))
-      opts.push(time.change({hour: hour, min: 30}))
+    epoch = Time.at(0).utc
+    24.times.flat_map do |hour|
+      [0, 30].map do |minute|
+        time = epoch.change(hour: hour, min: minute)
+        [I18n.l(time, format: :time_12_hour), time.to_i]
+      end
     end
-
-    opts.map { |opt| [I18n.l(opt, format: :time_12_hour), opt] }
   end
 
   def days_in_month(month)

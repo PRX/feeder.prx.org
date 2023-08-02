@@ -80,7 +80,7 @@ describe PodcastPlanner do
       planner.dates = dates
       assert_equal planner.ready_to_generate_drafts?, false
 
-      planner.publish_time = DateTime.new(2001, 2, 3, 4, 30)
+      planner.publish_time = 4.hours.to_i + 30.minutes.to_i
       assert_equal planner.ready_to_generate_drafts?, false
 
       planner.medium = "video"
@@ -96,6 +96,9 @@ describe PodcastPlanner do
       assert_equal planner.ready_to_generate_drafts?, false
 
       planner.dates = dates
+      planner.publish_time = 0
+      assert_equal planner.ready_to_generate_drafts?, true
+
       planner.publish_time = nil
       assert_equal planner.ready_to_generate_drafts?, false
     end
@@ -397,7 +400,7 @@ describe PodcastPlanner do
           DateTime.new(2001, 7, 4)
         ]
         # 9:30 AM
-        planner.publish_time = DateTime.new(2001, 2, 3, 9, 30)
+        planner.publish_time = 9.hours.to_i + 30.minutes.to_i
         planner.segment_count = 2
       end
 

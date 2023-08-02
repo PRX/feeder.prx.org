@@ -13,7 +13,7 @@ class PodcastPlanner
     @week_condition = params[:week_condition]
     @number_of_episodes = params[:number_of_episodes].try(:to_i)
     @end_date = params[:end_date].try(:to_datetime)
-    @publish_time = params[:publish_time].try(:to_time)
+    @publish_time = params[:publish_time].try(:to_i)
     @segment_count = params[:segment_count].try(:to_i)
     @medium = params[:medium]
   end
@@ -157,7 +157,7 @@ class PodcastPlanner
   end
 
   def apply_publish_time(date)
-    date.change(hour: @publish_time.hour, min: @publish_time.min)
+    Time.at(date.to_i + @publish_time)
   end
 
   def generate_default_title(date)
