@@ -171,8 +171,6 @@ en:
           true: Serial
         subtitle: Teaser
         title: Title
-      podcast_planner:
-        selected_days: asanoteuh
   # specific pages/views
   episodes:
     confirm_destroy:
