@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import SlimSelect from "slim-select"
 
 export default class extends Controller {
-  static values = { groupSelect: Boolean }
+  static values = { groupSelect: Boolean, exclusive: Array }
 
   connect() {
     this.select = new SlimSelect({
@@ -22,6 +22,28 @@ export default class extends Controller {
             this.select.selectEl.classList.add("form-control-blank")
           }
           this.element.dispatchEvent(new Event("blur"))
+        },
+        beforeChange: (newOpts, oldOpts) => {
+          if (this.exclusiveValue.length) {
+            const newVals = newOpts.map((o) => o.value)
+            const oldVals = oldOpts.map((o) => o.value)
+            const added = newVals.find((v) => !oldVals.includes(v))
+            const addedExclusive = this.exclusiveValue.includes(added) ? added : null
+            const addedNonExclusive = !this.exclusiveValue.includes(added) ? added : null
+
+            // deselect when adding an exclusive
+            if (addedExclusive && oldVals.length) {
+              this.select.setSelected([addedExclusive])
+              return false
+            }
+
+            // deselect if exclusive is selected and we added non-exclusive
+            if (oldVals.find((v) => this.exclusiveValue.includes(v)) && addedNonExclusive) {
+              this.select.setSelected([addedNonExclusive])
+              return false
+            }
+          }
+          return true
         },
       },
     })
