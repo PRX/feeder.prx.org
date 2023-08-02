@@ -55,9 +55,10 @@ class Podcast < ApplicationRecord
   end
 
   def self.release!(options = {})
-    Rails.logger.info("Podcast.release! called")
-    PublishingPipelineState.expire_pipelines!
-    Episode.release_episodes!(options)
+    Rails.logger.tagged("Podcast.release!") do
+      PublishingPipelineState.expire_pipelines!
+      Episode.release_episodes!(options)
+    end
   end
 
   def set_defaults
