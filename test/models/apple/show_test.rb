@@ -161,7 +161,7 @@ describe Apple::Show do
 
   describe "#show_data" do
     it "returns a hash" do
-      assert_equal apple_show.show_data.class, Hash
+      assert_equal apple_show.show_data({}).class, Hash
     end
   end
 
