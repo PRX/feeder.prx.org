@@ -64,7 +64,7 @@ module Apple
     end
 
     def update_attributes
-      create_attributes.except(:releaseFrequency, :thirdPartyRights)
+      create_attributes.except(:releaseFrequency)
     end
 
     def create_attributes
