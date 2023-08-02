@@ -55,7 +55,7 @@ module PodcastPlannerHelper
       is_new = date_is_in_dates?(day, @planner.dates)
       is_existing = date_is_in_dates?(day, @draft_dates)
       if is_new && is_existing
-        cls = ["bg-danger", "text-light"]
+        cls = ["bg-warning", "bg-danger", "text-light"]
       elsif is_new
         cls = ["bg-primary", "text-light"]
       elsif is_existing
