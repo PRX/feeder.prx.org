@@ -5,11 +5,11 @@
       <% if @podcast.ready_image %>
         <%= image_tag(@podcast.ready_image.url, size: 30, alt: @podcast.ready_image.alt_text) %>
       <% else %>
-        <span class="img-placeholder" aria-label="hidden"></span>
+        <span class="img-placeholder" aria-hidden="true"></span>
       <% end %>
       <em class="flex-grow-1 text-start"><%= @podcast.persisted? ? @podcast.title : t(".new") %></em>
     <% else %>
-      <span class="img-placeholder" aria-label="hidden"></span>
+      <span class="img-placeholder" aria-hidden="true"></span>
       <em class="flex-grow-1 text-start"><%= t(".select") %></em>
     <% end %>
   </button>
@@ -19,8 +19,8 @@
     <li class="search-filter mb-2">
       <%= form_with(url: main_app.podcast_switcher_path, html: {autocomplete: "off"}, data: {controller: "search"}) do |f| %>
         <div class="form-floating">
-          <%= f.search_text_field :q, {}, data: {focus_target: "field"} %>
-          <%= f.label :q, t(".search") %>
+          <%= f.search_text_field :q, {}, id: "podcast_switcher", data: {focus_target: "field"} %>
+          <%= f.label :q, t(".search"), for: "podcast_switcher" %>
         </div>
         <%= f.submit class: "d-none", data: {search_target: "submit"} %>
       <% end %>
