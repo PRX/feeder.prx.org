@@ -42,10 +42,10 @@ module Apple
     end
 
     def apple_data
-      episode_data =
-        ::Episode.where(podcast: podcast).map do |episode|
-          [episode.apple_sync_log, episode.podcast_container]
-        end.flatten.compact
+      episode_data = [
+        SyncLog.where(feeder_type: "episodes", feeder_id: podcast.episodes.pluck(:id)),
+        Apple::PodcastContainer.where(episode: podcast.episodes)
+      ].flatten.compact
 
       podcast_delivery_data = [
         Apple::PodcastDelivery.with_deleted.where(episode: podcast.episodes),
