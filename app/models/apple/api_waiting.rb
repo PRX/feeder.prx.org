@@ -18,13 +18,22 @@ module Apple
         end
       end
 
+      def self.work_done?(remaining_records, waited, wait_timeout)
+        if remaining_records.empty?
+          Rails.logger.info("Done waiting for Apple Api work", waited: waited, wait_timeout: wait_timeout)
+          true
+        else
+          false
+        end
+      end
+
       def self.wait_for(remaining_records, wait_timeout: API_WAIT_TIMEOUT, wait_interval: API_WAIT_INTERVAL)
         t_beg = current_time
 
         waited = 0
         loop do
           # All done, return `timeout == false`
-          break [false, []] if remaining_records.empty?
+          break [false, []] if work_done?(remaining_records, waited, wait_timeout)
           # Return `timeout == true` if we've waited too long
 
           break [true, remaining_records] if wait_timed_out?(waited, wait_timeout)
