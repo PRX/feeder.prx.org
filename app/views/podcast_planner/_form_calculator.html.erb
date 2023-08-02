@@ -1,4 +1,5 @@
-<%= form_with(url: podcast_planner_path(@podcast), method: :get, data: {controller: "click"}) do |form| %>
+<% data = {controller: "click", click_debounce_value: 200} %>
+<%= form_with(url: podcast_planner_path(@podcast), method: :get, data: data) do |form| %>
 
   <div class="col-12 mb-4">
     <div class="card shadow border-0">
