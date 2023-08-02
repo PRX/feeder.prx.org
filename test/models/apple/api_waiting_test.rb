@@ -42,5 +42,22 @@ describe Apple::ApiWaiting do
       assert_equal timed_out, true
       assert_equal remaining, ["a", "b", "c"]
     end
+
+    it "times out by default after 5 minutes" do
+      current_time = Time.utc(2021, 1, 1, 0, 0, 0)
+      index = 0
+
+      Test.stub(:current_time, -> {
+                                 current_time += index.minutes
+                                 index += 1
+                               }) do
+        (timed_out, remaining) = Test.wait_for(["a", "b", "c"], wait_interval: 0.seconds) do |remaining|
+          remaining
+        end
+
+        assert_equal timed_out, true
+        assert_equal remaining, ["a", "b", "c"]
+      end
+    end
   end
 end

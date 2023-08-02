@@ -9,6 +9,15 @@ module Apple
         Time.now.utc
       end
 
+      def self.wait_timed_out?(waited, wait_timeout)
+        if waited > wait_timeout
+          Rails.logger.info("Timed out waiting for Apple API to process", waited: waited, wait_timeout: wait_timeout)
+          true
+        else
+          false
+        end
+      end
+
       def self.wait_for(remaining_records, wait_timeout: API_WAIT_TIMEOUT, wait_interval: API_WAIT_INTERVAL)
         t_beg = current_time
 
@@ -17,7 +26,8 @@ module Apple
           # All done, return `timeout == false`
           break [false, []] if remaining_records.empty?
           # Return `timeout == true` if we've waited too long
-          break [true, remaining_records] if waited > wait_timeout
+
+          break [true, remaining_records] if wait_timed_out?(waited, wait_timeout)
 
           sleep(wait_interval)
 
