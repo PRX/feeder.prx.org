@@ -33,6 +33,19 @@ describe Apple::Publisher do
     end
   end
 
+  describe "#only_episodes_with_apple_state" do
+    let(:episode) { build(:apple_episode) }
+
+    it "should only return episodes that have an apple state" do
+      episode.stub(:apple_new?, true) do
+        assert_equal apple_publisher.only_episodes_with_apple_state([episode]), []
+      end
+      episode.stub(:apple_new?, false) do
+        assert_equal apple_publisher.only_episodes_with_apple_state([episode]), [episode]
+      end
+    end
+  end
+
   describe "#filter_episodes" do
     let(:podcast) { create(:podcast) }
 
