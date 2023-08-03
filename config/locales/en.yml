@@ -34,12 +34,12 @@ en:
     formats:
       default: "%F"
       short: "%-m/%-e"
+      full_month: "%B %-e, %Y"
   time:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
       short: "%m/%d"
       time_12_hour: "%-l:%M %p %Z"
-      day_and_date: "%A, %m/%d"
   # validation error messages https://guides.rubyonrails.org/i18n.html#error-message-interpolation
   activerecord:
     errors:
