@@ -402,6 +402,7 @@ describe PodcastPlanner do
         # 9:30 AM
         planner.publish_time = 9.hours.to_i + 30.minutes.to_i
         planner.segment_count = 2
+        planner.titles = ["Override a title"]
       end
 
       describe "Episodes" do
@@ -425,6 +426,14 @@ describe PodcastPlanner do
 
         it "have a segment count equal to the planner segment count" do
           assert_equal Episode.first.segment_count, 2
+        end
+
+        it "optionally overrides titles" do
+          eps = Episode.order(id: :asc).limit(3)
+
+          assert_equal "Override a title", eps[0].title
+          assert_equal "March 7, 2001", eps[1].title
+          assert_equal "April 2, 2001", eps[2].title
         end
       end
     end

@@ -1,18 +1,19 @@
 class PodcastPlanner
-  attr_accessor :podcast_id, :dates, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :medium, :selected_dates, :drafts
+  attr_accessor :podcast_id, :dates, :titles, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :medium, :selected_dates, :drafts
 
   def initialize(params = {})
-    @dates = params[:selected_dates].try { map { |date| date.to_datetime } }
+    @dates = params[:selected_dates].try(:map, &:to_date)
+    @titles = params[:selected_titles]
     @drafts = []
     @podcast_id = params[:podcast_id]
-    @start_date = params[:start_date].try(:to_datetime)
+    @start_date = params[:start_date].try(:to_date)
     @selected_days = params[:selected_days].try { reject(&:blank?) }.try { map { |day| day.to_i } }
     @period = params[:period].try(:to_i)
     @monthly_weeks = params[:monthly_weeks].try { reject(&:blank?) }.try { map { |week| week.to_i } }
     @date_range_condition = params[:date_range_condition]
     @week_condition = params[:week_condition]
     @number_of_episodes = params[:number_of_episodes].try(:to_i)
-    @end_date = params[:end_date].try(:to_datetime)
+    @end_date = params[:end_date].try(:to_date)
     @publish_time = params[:publish_time].try(:to_i)
     @segment_count = params[:segment_count].try(:to_i)
     @medium = params[:medium]
@@ -145,11 +146,11 @@ class PodcastPlanner
   def generate_drafts!
     return unless ready_to_generate_drafts?
 
-    @dates.each do |date|
+    @dates.zip(@titles || []).each do |date, title|
       @drafts.push(Episode.new(
         podcast_id: @podcast_id,
         released_at: apply_publish_time(date),
-        title: generate_default_title(date),
+        title: generate_default_title(date, title),
         segment_count: @segment_count,
         medium: @medium
       ))
@@ -157,10 +158,14 @@ class PodcastPlanner
   end
 
   def apply_publish_time(date)
-    Time.at(date.to_i + @publish_time)
+    Time.at(date.to_datetime.to_i + @publish_time)
   end
 
-  def generate_default_title(date)
-    I18n.l(date, format: :day_and_date).to_s
+  def generate_default_title(date, title)
+    if title.present?
+      title
+    else
+      I18n.l(date.to_date, format: :full_month)
+    end
   end
 end

@@ -6,7 +6,7 @@ class PodcastPlannerController < ApplicationController
   def show
     @planner = PodcastPlanner.new(planner_params)
     @planner.generate_dates!
-    @draft_dates = @podcast.episodes.draft_or_scheduled.pluck(:released_at).map(&:to_date)
+    @draft_times = @podcast.episodes.draft_or_scheduled.pluck(:released_at)
   end
 
   # POST /podcasts/1/planner
@@ -66,7 +66,8 @@ class PodcastPlannerController < ApplicationController
       :ad_breaks,
       selected_days: [],
       selected_weeks: [],
-      selected_dates: []
+      selected_dates: [],
+      selected_titles: []
     )
   end
 
