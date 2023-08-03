@@ -57,6 +57,14 @@ module Apple
       Rails.logger.tagged("Apple::Publisher#poll!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           poll_episodes!(eps)
+
+          eps =
+            eps.reject do |ep|
+              Rails.logger.info("Cannot poll episode lacking remote Apple state", {episode_id: ep.feeder_id}) if ep.apple_new?
+
+              ep.apple_new?
+            end
+
           poll_podcast_containers!(eps)
           poll_podcast_deliveries!(eps)
           poll_podcast_delivery_files!(eps)
