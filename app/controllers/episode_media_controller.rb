@@ -16,6 +16,10 @@ class EpisodeMediaController < ApplicationController
     respond_to do |format|
       if @episode.save
         format.html { redirect_to episode_media_path(@episode), notice: t(".notice") }
+      elsif @episode.errors.added?(:base, :media_not_ready)
+        @episode.build_contents.each(&:valid?)
+        flash.now[:error] = t(".media_not_ready")
+        format.html { render :show, status: :unprocessable_entity }
       else
         flash.now[:error] = t(".error")
         format.html { render :show, status: :unprocessable_entity }

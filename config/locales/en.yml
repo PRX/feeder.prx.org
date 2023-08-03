@@ -218,9 +218,6 @@ en:
         season_number: If your episode is part of a season add it here.
         subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
         title: Write a short, Tweetable title. Think newspaper headline.
-    form_media:
-      title: Media Files
-      help: Enter the file format for this episode.
     form_status:
       <<: *form_status
       create: Create Draft
@@ -240,6 +237,28 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+    missing_drafts:
+      message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
+      okay: Okay
+      title: Missing Episode Drafts
+    tabs:
+      edit: Metadata
+      media: Media Files
+      player: Embeddable Player
+      segmenter: Audio Segmenter
+    update:
+      error: Unable to save
+      media_not_ready: Audio not ready
+      notice: Episode updated
+  episode_media:
+    form:
+      confirm: Discard unsaved changes?
+    form_media:
+      title: Media Files
+      help: Enter the file format for this episode.
+    form_status:
+      <<: *form_status
+      title: Media Status
     media:
       complete:
         unable: Unable to play file
@@ -262,22 +281,12 @@ en:
         hint: Processing
       segment_count:
         help: Enter the number of ad breaks (midrolls) in this episode. This helps us to better predict ad inventory for your podcast.
-    missing_drafts:
-      message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
-      okay: Okay
-      title: Missing Episode Drafts
-    tabs:
-      edit: Metadata
-      media: Media Files
-      player: Embeddable Player
-      segmenter: Audio Segmenter
-    update:
-      error: Unable to save
-      media_not_ready: Audio not ready
-      notice: Episode updated
-  episode_media:
     show:
       title: Media Files
+    update:
+      error: Unable to save
+      media_not_ready: Published episodes cannot have empty media
+      notice: Media updated
   episode_player:
     form:
       enclosure_not_ready: No Media Files Uploaded

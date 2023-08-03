@@ -2,7 +2,7 @@ require "text_sanitizer"
 
 module EpisodesHelper
   def episode_metadata_active?
-    action_name == "edit" || action_name == "update"
+    controller_name == "episodes" && (action_name == "edit" || action_name == "update")
   end
 
   def episode_itunes_type_options
