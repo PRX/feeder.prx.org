@@ -46,7 +46,8 @@ module Apple
       # Only select episodes that have an remote apple state,
       # as determined by the sync log
       eps.reject do |ep|
-        Rails.logger.info("Episode lacks remote Apple state", {episode_id: ep.feeder_id}) if
+        Rails.logger.info("Episode lacks remote Apple state", {episode_id: ep.feeder_id}) if ep.apple_new?
+
         ep.apple_new?
       end
     end
