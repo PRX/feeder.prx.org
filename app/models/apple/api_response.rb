@@ -78,8 +78,16 @@ module Apple
       apple_sync_log&.api_response
     end
 
+    def guard_for_ok_response
+      return true if api_response&.dig("api_response", "ok")
+
+      Rails.logger.error("Apple api response error", apple_sync_log: apple_sync_log&.as_json)
+
+      raise "incomplete api response"
+    end
+
     def unwrap_response
-      raise "incomplete api response" unless api_response&.dig("api_response", "ok")
+      guard_for_ok_response
 
       api_response["api_response"]["val"]
     end
