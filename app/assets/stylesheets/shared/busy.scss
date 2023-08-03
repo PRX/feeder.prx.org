@@ -1,0 +1,20 @@
+.prx-show-busy {
+  display: none !important;
+}
+.prx-visible-busy {
+  visibility: hidden !important;
+}
+turbo-frame[busy] {
+  .prx-show-busy {
+    display: initial !important;
+  }
+  .prx-hide-busy {
+    display: none !important;
+  }
+  .prx-visible-busy {
+    visibility: initial !important;
+  }
+  .prx-invisible-busy {
+    visibility: hidden !important;
+  }
+}

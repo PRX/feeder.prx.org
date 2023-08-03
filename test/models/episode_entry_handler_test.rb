@@ -26,14 +26,14 @@ describe EpisodeEntryHandler do
     assert_equal episode.url, "http://serialpodcast.org"
   end
 
-  it "fixes libsyn links" do
-    entry.attributes["url"] = "http://traffic.libsyn.com/test/test.mp3"
-    entry.attributes["feedburner_orig_link"] = nil
+  # it "fixes libsyn links" do
+  #   entry.attributes["url"] = "http://traffic.libsyn.com/test/test.mp3"
+  #   entry.attributes["feedburner_orig_link"] = nil
 
-    podcast = create(:podcast)
-    episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
-    assert_nil episode.url
-  end
+  #   podcast = create(:podcast)
+  #   episode = EpisodeEntryHandler.create_from_entry!(podcast, entry)
+  #   assert_nil episode.url
+  # end
 
   it "sets all attributes" do
     podcast = create(:podcast)

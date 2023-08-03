@@ -2,7 +2,7 @@
   <div class="card shadow border-0">
 
     <div class="card-header card-header-info d-flex justify-content-between">
-      <h5 class="card-title"><%= t(".title") %></h5>
+      <h2 class="card-title h5"><%= t(".title") %></h5>
     </div>
 
     <div class="card-body">
@@ -10,9 +10,11 @@
         <div class="row">
 
           <div class="col-12 mb-4">
-            <div class="form-floating" data-controller="dynamic-form">
+            <div class="form-floating input-group" data-controller="dynamic-form">
               <%= form.select :medium, episode_medium_options, {}, data: {action: "dynamic-form#change"} %>
               <%= form.label :medium %>
+              <%= field_help_text t(".help") %>
+
               <% if episode.new_record? %>
                 <a hidden href="<%= new_podcast_episode_path(episode.podcast_id, request.query_parameters) %>" data-dynamic-form-target="link"></a>
               <% else %>

@@ -137,8 +137,8 @@ describe ImageFile do
       refute image.tap { |i| i.status = "processing" }.retryable?
       refute image.tap { |i| i.status = "complete" }.retryable?
 
-      # updated 1 minute ago
-      image.updated_at = Time.now - 60
+      # updated 2 minutes ago
+      image.updated_at = Time.now - 120
       assert image.tap { |i| i.status = "started" }.retryable?
       assert image.tap { |i| i.status = "processing" }.retryable?
       refute image.tap { |i| i.status = "complete" }.retryable?

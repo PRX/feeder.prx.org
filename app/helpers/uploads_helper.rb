@@ -114,6 +114,10 @@ module UploadsHelper
     %w[started created processing retrying].include?(rec&.status)
   end
 
+  def upload_stalled?(rec)
+    upload_processing?(rec) && rec.retryable?
+  end
+
   def upload_complete?(rec)
     %w[complete].include?(rec.status)
   end

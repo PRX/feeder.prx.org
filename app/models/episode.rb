@@ -8,6 +8,7 @@ class Episode < ApplicationRecord
   include EpisodeMedia
   include PublishingStatus
   include TextSanitizer
+  include EmbedPlayerHelper
 
   MAX_SEGMENT_COUNT = 10
   VALID_ITUNES_TYPES = %w[full trailer bonus]
@@ -50,7 +51,7 @@ class Episode < ApplicationRecord
   validates :segment_count, numericality: {only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
   validate :validate_media_ready, if: :strict_validations
 
-  before_validation :initialize_guid, :set_external_keyword, :sanitize_text
+  before_validation :set_defaults, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
   after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
@@ -72,6 +73,7 @@ class Episode < ApplicationRecord
   def self.release_episodes!(_options = {})
     podcasts = []
     episodes_to_release.each do |e|
+      Rails.logger.info("Releasing episode", podcast_id: e.podcast_id, episode_id: e.id)
       podcasts << e.podcast
       e.touch
     end
@@ -161,8 +163,9 @@ class Episode < ApplicationRecord
     end
   end
 
-  def initialize_guid
+  def set_defaults
     guid
+    self.url ||= embed_player_landing_url(podcast, self)
   end
 
   def guid

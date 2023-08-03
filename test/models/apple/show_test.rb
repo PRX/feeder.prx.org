@@ -107,7 +107,9 @@ describe Apple::Show do
 
   describe "#sync!" do
     it "runs sync!" do
-      apple_show.api.stub(:patch, OpenStruct.new(body: {"data" => {"id" => "123", "attributes" => {"foo" => "bar"}}}.to_json, code: "200")) do
+      # TODO, do we need update the show?
+      # apple_show.api.stub(:patch, OpenStruct.new(body: {"data" => {"id" => "123", "attributes" => {"foo" => "bar"}}}.to_json, code: "200")) do
+      apple_show.api.stub(:get, OpenStruct.new(body: {"data" => {"id" => "123", "attributes" => {"foo" => "bar"}}}.to_json, code: "200")) do
         assert apple_show.sync_log.present?
         apple_show.sync_log.update!(api_response: {})
 
@@ -122,7 +124,7 @@ describe Apple::Show do
     end
 
     it "creates a sync log if one does not exist" do
-      apple_show.api.stub(:patch, OpenStruct.new(body: {"data" => {"id" => "123", "attributes" => {"foo" => "bar"}}}.to_json, code: "200")) do
+      apple_show.api.stub(:get, OpenStruct.new(body: {"data" => {"id" => "123", "attributes" => {"foo" => "bar"}}}.to_json, code: "200")) do
         assert apple_show.sync_log.present?
 
         sync = apple_show.sync!
@@ -161,7 +163,7 @@ describe Apple::Show do
 
   describe "#show_data" do
     it "returns a hash" do
-      assert_equal apple_show.show_data.class, Hash
+      assert_equal apple_show.show_data({}).class, Hash
     end
   end
 

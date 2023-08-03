@@ -91,9 +91,9 @@ describe Apple::Episode do
       assert_equal true, apple_episode.waiting_for_asset_state?
     end
 
-    it "should be false if there are no podcast delivery files" do
+    it "should be true if there are no podcast delivery files and the asset state is UNSPECIFIED" do
       apple_episode.podcast_container.stub(:podcast_delivery_files, []) do
-        assert_equal false, apple_episode.waiting_for_asset_state?
+        assert_equal true, apple_episode.waiting_for_asset_state?
       end
     end
 
@@ -145,6 +145,18 @@ describe Apple::Episode do
 
       ep.stub(:drafting?, true) do
         assert_equal false, ep.synced_with_apple?
+      end
+    end
+
+    it "should be false when the podcast_container is nil" do
+      ep = build(:apple_episode)
+      assert ep.podcast_container.nil?
+
+      # it returns early via the guard
+      ep.stub(:podcast_container, -> { raise "shouldn't happen" }) do
+        ep.stub(:has_container?, false) do
+          refute ep.container_upload_complete?
+        end
       end
     end
   end

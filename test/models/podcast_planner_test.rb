@@ -2,7 +2,7 @@ require "test_helper"
 
 describe PodcastPlanner do
   let(:podcast) { create(:podcast) }
-  let(:planner) { PodcastPlanner.new(podcast_id: podcast.id) }
+  let(:planner) { PodcastPlanner.new(podcast_id: podcast.id, medium: "audio") }
 
   describe "guard methods" do
     it "ready_to_select_weeks?" do
@@ -81,6 +81,12 @@ describe PodcastPlanner do
       assert_equal planner.ready_to_generate_drafts?, false
 
       planner.publish_time = DateTime.new(2001, 2, 3, 4, 30)
+      assert_equal planner.ready_to_generate_drafts?, false
+
+      planner.medium = "video"
+      assert_equal planner.ready_to_generate_drafts?, true
+
+      planner.medium = "audio"
       assert_equal planner.ready_to_generate_drafts?, false
 
       planner.segment_count = 2

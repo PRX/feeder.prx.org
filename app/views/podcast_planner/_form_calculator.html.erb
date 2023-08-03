@@ -1,0 +1,21 @@
+<% data = {controller: "click", click_debounce_value: 200} %>
+<%= form_with(url: podcast_planner_path(@podcast), method: :get, data: data) do |form| %>
+
+  <div class="col-12 mb-4">
+    <div class="card shadow border-0">
+      <div class="card-header card-header-primary d-flex justify-content-between">
+        <h5 class="card-title flex-grow-1"><%= t(".title") %></h5>
+        <%= help_text t(".help_html", url: new_podcast_episode_path(@podcast)) %>
+      </div>
+
+      <div class="card-body pt-4 pb-0">
+        <div class="row" data-morph="false">
+          <%= render "form_calculator_dates", form: form %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%= form.submit class: "d-none", data: {click_target: "submit"} %>
+
+<% end %>
