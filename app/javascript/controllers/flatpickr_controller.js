@@ -112,11 +112,11 @@ export default class extends Controller {
   formatDate(date) {
     const str = flatpickr.formatDate(date, this.dateFormat)
 
-    if (this.picker && this.picker.isOpen) {
-      return str
-    } else {
+    if (this.isTimestamp && !(this.picker && this.picker.isOpen)) {
       const tz = date.toLocaleTimeString(undefined, { timeZoneName: "short" }).split(" ").pop()
       return `${str} ${tz}`
+    } else {
+      return str
     }
   }
 }
