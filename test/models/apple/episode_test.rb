@@ -91,9 +91,9 @@ describe Apple::Episode do
       assert_equal true, apple_episode.waiting_for_asset_state?
     end
 
-    it "should be false if there are no podcast delivery files" do
+    it "should be true if there are no podcast delivery files and the asset state is UNSPECIFIED" do
       apple_episode.podcast_container.stub(:podcast_delivery_files, []) do
-        assert_equal false, apple_episode.waiting_for_asset_state?
+        assert_equal true, apple_episode.waiting_for_asset_state?
       end
     end
 

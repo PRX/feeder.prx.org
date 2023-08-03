@@ -249,7 +249,8 @@ module Apple
     end
 
     def delivered?
-      return false if podcast_delivery_files.length == 0
+      # because we cannot infer if the podcast delivery files have expired
+      return true if podcast_delivery_files.length == 0
 
       (podcast_delivery_files.all?(&:delivered?) &&
         podcast_delivery_files.all?(&:processed?))
@@ -262,13 +263,7 @@ module Apple
     end
 
     def delivery_settled?
-      return false if podcast_delivery_files.length == 0
-
       delivered? && !processed_errors?
-    end
-
-    def skip_delivery?
-      container_upload_satisfied?
     end
 
     def container_upload_satisfied?
@@ -277,6 +272,10 @@ module Apple
       # get to that point and the audio is still missing, we should be able to
       # retry.
       has_podcast_audio? && delivery_settled?
+    end
+
+    def skip_delivery?
+      container_upload_satisfied?
     end
 
     def needs_delivery?
