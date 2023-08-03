@@ -147,6 +147,18 @@ describe Apple::Episode do
         assert_equal false, ep.synced_with_apple?
       end
     end
+
+    it "should be false when the podcast_container is nil" do
+      ep = build(:apple_episode)
+      assert ep.podcast_container.nil?
+
+      # it returns early via the guard
+      ep.stub(:podcast_container, -> { raise "shouldn't happen" }) do
+        ep.stub(:has_container?, false) do
+          refute ep.container_upload_complete?
+        end
+      end
+    end
   end
 
   describe "#enclosure_filename" do

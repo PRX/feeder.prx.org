@@ -386,7 +386,9 @@ module Apple
     end
 
     def container_upload_complete?
-      feeder_episode.apple_podcast_container.container_upload_satisfied?
+      return false unless has_container?
+
+      podcast_container.container_upload_satisfied?
     end
 
     def audio_asset_vendor_id
