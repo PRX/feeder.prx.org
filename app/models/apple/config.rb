@@ -40,5 +40,21 @@ module Apple
     def apple_key
       Base64.decode64(apple_key_pem_b64)
     end
+
+    def apple_data
+      episode_data =
+        ::Episode.where(podcast: podcast).map do |episode|
+          [episode.apple_sync_log, episode.podcast_container]
+        end.flatten.compact
+
+      podcast_delivery_data = [
+        Apple::PodcastDelivery.with_deleted.where(episode: podcast.episodes),
+        Apple::PodcastDeliveryFile.with_deleted.where(episode: podcast.episodes)
+      ]
+
+      feed_data = [public_feed.apple_sync_log, private_feed.apple_sync_log].compact
+
+      [podcast_delivery_data, episode_data, feed_data]
+    end
   end
 end

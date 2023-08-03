@@ -256,6 +256,31 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
   end
 
+  describe "retry sentinals and gatekeeping" do
+    let(:container) { Apple::PodcastContainer.new }
+    describe "#delivery_settled?" do
+      it "should be settled if there are no delivery files" do
+        container.stub(:podcast_delivery_files, []) do
+          assert container.delivery_settled?
+          assert container.delivered?
+        end
+      end
+    end
+
+    describe "#container_upload_satisfied?" do
+      it "should be satisfied with podcast files and a settled delivery" do
+        container.stub(:files, [
+          {status: Apple::PodcastContainer::FILE_STATUS_SUCCESS,
+           assetRole: Apple::PodcastContainer::FILE_ASSET_ROLE_PODCAST_AUDIO}.with_indifferent_access
+        ]) do
+          container.stub(:podcast_delivery_files, []) do
+            assert container.container_upload_satisfied?
+          end
+        end
+      end
+    end
+  end
+
   describe "#destroy" do
     it "should destroy the podcast container and cascade to the delivery and delivery file" do
       apple_episode.stub(:apple_id, apple_episode_id) do

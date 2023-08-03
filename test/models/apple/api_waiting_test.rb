@@ -2,15 +2,8 @@
 
 require "test_helper"
 
-class TestWait
+class Test
   include Apple::ApiWaiting
-  API_WAIT_INTERVAL = 0.seconds
-end
-
-class TestTimeout
-  include Apple::ApiWaiting
-  API_WAIT_INTERVAL = 0.seconds
-  API_WAIT_TIMEOUT = 0.seconds
 end
 
 describe Apple::ApiWaiting do
@@ -25,7 +18,7 @@ describe Apple::ApiWaiting do
 
       step = 0
 
-      (timed_out, remaining) = TestWait.wait_for(records) do |remaining|
+      (timed_out, remaining) = Test.wait_for(records, wait_interval: 0.seconds) do |remaining|
         rem = remaining.dup
 
         assert_equal intervals[step], rem
@@ -42,12 +35,29 @@ describe Apple::ApiWaiting do
     end
 
     it "times out" do
-      (timed_out, remaining) = TestTimeout.wait_for(["a", "b", "c"]) do |remaining|
+      (timed_out, remaining) = Test.wait_for(["a", "b", "c"], wait_interval: 0.seconds, wait_timeout: 0.seconds) do |remaining|
         remaining
       end
 
       assert_equal timed_out, true
       assert_equal remaining, ["a", "b", "c"]
+    end
+
+    it "times out by default after 5 minutes" do
+      current_time = Time.utc(2021, 1, 1, 0, 0, 0)
+      index = 0
+
+      Test.stub(:current_time, -> {
+                                 current_time += index.minutes
+                                 index += 1
+                               }) do
+        (timed_out, remaining) = Test.wait_for(["a", "b", "c"], wait_interval: 0.seconds) do |remaining|
+          remaining
+        end
+
+        assert_equal timed_out, true
+        assert_equal remaining, ["a", "b", "c"]
+      end
     end
   end
 end
