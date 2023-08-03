@@ -1,11 +1,11 @@
 <% if upload_new?(media) %>
-  <%= render "episodes/media/new", form: form, episode: episode, media: media %>
+  <%= render "episode_media/media/new", form: form, episode: episode, media: media %>
 <% elsif upload_stalled?(media) %>
-  <%= render "episodes/media/error", form: form, episode: episode, media: media, retryable: true %>
+  <%= render "episode_media/media/error", form: form, episode: episode, media: media, retryable: true %>
 <% elsif upload_processing?(media) %>
-  <%= render "episodes/media/processing", form: form, episode: episode, media: media %>
+  <%= render "episode_media/media/processing", form: form, episode: episode, media: media %>
 <% elsif upload_complete?(media) %>
-  <%= render "episodes/media/complete", form: form, episode: episode, media: media %>
+  <%= render "episode_media/media/complete", form: form, episode: episode, media: media %>
 <% else %>
-  <%= render "episodes/media/error", form: form, episode: episode, media: media, retryable: false %>
+  <%= render "episode_media/media/error", form: form, episode: episode, media: media, retryable: false %>
 <% end %>
