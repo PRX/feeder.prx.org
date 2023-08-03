@@ -386,7 +386,7 @@ module Apple
     end
 
     def container_upload_complete?
-      return false unless has_container?
+      return false if missing_container?
 
       podcast_container.container_upload_satisfied?
     end
