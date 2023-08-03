@@ -190,6 +190,10 @@ module Apple
       feeder_episode.id
     end
 
+    def id
+      feeder_id
+    end
+
     def private_feed
       show.private_feed
     end

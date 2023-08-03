@@ -82,7 +82,7 @@ module Apple
       return true if api_response&.dig("api_response", "ok")
 
       sl = try(:apple_sync_log)
-      Rails.logger.error("Apple api response error", apple_sync_log: sl&.as_json, this_class: self.class.name, this: self&.as_json)
+      Rails.logger.error("Apple api response error", apple_sync_log: sl&.as_json, this_class: self.class.name, this: try(:id))
 
       raise "incomplete api response"
     end
