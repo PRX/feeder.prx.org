@@ -11,6 +11,9 @@ module EmbedPlayerHelper
   EMBED_PLAYER_RSS_URL = "us"
   EMBED_PLAYER_AUDIO_URL = "ua"
   DOVETAIL_TOKEN = "_t"
+  EMBED_PLAYER_PLAYLIST = "sp"
+  EMBED_PLAYER_SEASON = "se"
+  EMBED_PLAYER_CATEGORY = "ct"
 
   def embed_player_episode_url(ep, type = nil, preview = false)
     params = {}
@@ -33,6 +36,19 @@ module EmbedPlayerHelper
     embed_params(params)
   end
 
+  def embed_player_podcast_url(podcast, preview = false, options)
+    params = {}
+
+    params[EMBED_PLAYER_FEED] = podcast.published_url
+    params[EMBED_PLAYER_PLAYLIST] = options[:episode_number] || "10"
+
+    # if options[:embed_player_type] == "card" || options[:embed_player_type] == "fixed_card"
+    #   params[EMBED_PLAYER_CARD] = "1"
+    # end
+
+    embed_params(params)
+  end
+
   def embed_player_episode_iframe(ep, type = nil, preview = false)
     src = embed_player_episode_url(ep, type, preview)
     allow = "monetization"
@@ -44,6 +60,20 @@ module EmbedPlayerHelper
       tag.iframe src: src, allow: allow, width: "500", height: "700"
     else
       tag.iframe src: src, allow: allow, width: "100%", height: "200"
+    end
+  end
+
+  def embed_player_podcast_iframe(podcast, preview = false, options)
+    src = embed_player_podcast_url(podcast, preview, options)
+    allow = "monetization"
+
+    if options[:embed_player_type] == "card"
+      # TODO: this is NOW working, but I'm not sure how helpful this is to a producer that wishes to embed it.
+      tag.iframe src: src, allow: allow, width: "100%", height: "700", style: "--aspect-ratio: 2/3; width: 100%;"
+    elsif options[:embed_player_type] == "fixed_card"
+      tag.iframe src: src, allow: allow, width: "500", height: "700"
+    else
+      tag.iframe src: src, allow: allow, width: "100%", height: "600", style: "--aspect-ratio: 2/3; width: 100%;"
     end
   end
 

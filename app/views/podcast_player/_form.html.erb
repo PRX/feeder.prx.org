@@ -1,0 +1,65 @@
+<%= turbo_frame_tag "embed-player", data: {controller: "morphdom"} do %>
+
+  <div class="col-12 mb-4">
+    <div class="form-floating input-group" data-controller="dynamic-form">
+      <%= select_tag :embed_player_type, embed_player_type_options(player_options[:embed_player_type]), class: "form-control", data: {action: "dynamic-form#change"} %>
+      <%= label_tag :embed_player_style, t("helpers.label.episode.embed_player_type") %>
+      <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+    </div>
+
+    <div class="form-text">
+      <%= t(".help.types.#{player_options[:embed_player_type] || "card"}") %>
+    </div>
+  </div>
+
+  <div class="col-12 mb-4" data-controller="toggle-field">
+    <div class="mb-4">
+      <div class="form-check">
+        <%= check_box_tag :playlist, "1", true, data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay"}, class: "form-check-input" %>
+        <%= label_tag :playlist %>
+      </div>
+    </div>
+
+    <div class="" data-toggle-field-target="field">
+      <div class="form-floating input-group" data-controller="dynamic-form">
+        <%= number_field_tag :episode_number, player_options[:episode_number], class: "form-control", data: {action: "dynamic-form#change"}, min: 1 %>
+        <%= label_tag "Number of Episodes" %>
+        <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+      </div>
+
+      <div class="form-check">
+        <%= check_box_tag :season, nil, false %>
+        <%= label_tag :season, "Play a single season" %>
+      </div>
+
+      <div class="form-check">
+        <%= check_box_tag :category, nil, false %>
+        <%= label_tag :category, "Play a single category" %>
+      </div>
+
+      <div class="form-check">
+        <%= check_box_tag :recent, nil, false %>
+        <%= label_tag :recent, "Play the most recent episode" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 mb-4">
+    <div class="form-floating input-group">
+
+    </div>
+  </div>
+
+  <div class="col-12 mb-4">
+    <div class="form-floating input-group">
+
+    </div>
+  </div>
+
+  <div class="col-12 mb-4">
+    <h3 class="fw-bold"><%= t(".title.preview") %></h3>
+
+    <%= embed_player_podcast_iframe(podcast, true, player_options) %>
+  </div>
+
+<% end %>
