@@ -88,9 +88,11 @@ describe MediaResource do
       mock_copy = Minitest::Mock.new
       mock_copy.expect :call, nil, [true]
 
-      media_resource.stub(:copy_media, mock_copy) do
-        media_resource.retry!
-        assert media_resource.status_retrying?
+      media_resource.stub(:retryable?, true) do
+        media_resource.stub(:copy_media, mock_copy) do
+          media_resource.retry!
+          assert media_resource.status_retrying?
+        end
       end
 
       mock_copy.verify

@@ -15,6 +15,7 @@ class EpisodeMediaController < ApplicationController
 
     respond_to do |format|
       if @episode.save
+        @episode.copy_media
         format.html { redirect_to episode_media_path(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
         @episode.build_contents.each(&:valid?)

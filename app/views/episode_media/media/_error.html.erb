@@ -5,7 +5,7 @@
       <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= media.file_name %></div>
 
       <% if retryable %>
-        <%= link_to episode_media_path(media.episode, uploads_retry_params(form)), class: "btn btn-sm btn-warning" do %>
+        <%= link_to episode_media_path(media.episode, uploads_retry_params(form)), method: :put, class: "btn btn-sm btn-warning" do %>
           <span class="material-icons">restart_alt</span> Retry
         <% end %>
       <% else %>
@@ -13,7 +13,7 @@
       <% end %>
     </div>
 
-    <%= link_to episode_media_path(media.episode, uploads_destroy_params(form)), class: "input-text-group prx-input-text-group" do %>
+    <%= link_to episode_media_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
       <span class="material-icons text-danger">delete</span>
     <% end %>
 

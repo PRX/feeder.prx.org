@@ -130,8 +130,10 @@ module ImageFile
   end
 
   def retry!
-    status_retrying!
-    copy_media(true)
+    if retryable?
+      status_retrying!
+      copy_media(true)
+    end
   end
 
   def _retry=(_val)
