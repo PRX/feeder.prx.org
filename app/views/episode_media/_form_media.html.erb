@@ -14,9 +14,9 @@
     <div class="prx-uploads col-12 mb-4">
       <div class="card shadow border-0">
         <div class="card-header card-header-info d-flex justify-content-between">
-          <h2 class="card-title h5"><%= t(".title") %></h2>
+          <h2 class="card-title h5"><%= t(".title.upload") %></h2>
         </div>
-        <div class="card-body">
+        <div class="card-body pb-0">
           <% if episode.medium_uncut? %>
             <%= render "episode_media/media/uncut", form: form, episode: episode %>
           <% else %>
@@ -25,5 +25,18 @@
         </div>
       </div>
     </div>
+
+    <% if episode.medium_uncut? && episode.uncut&.status_complete? %>
+      <div class="col-12 mb-4">
+        <div class="card shadow border-0">
+          <div class="card-header card-header-warning d-flex justify-content-between">
+            <h2 class="card-title h5"><%= t(".title.segment") %></h2>
+          </div>
+          <div class="card-body pb-0">
+            <%= render "segmenter", episode: episode, uncut: episode.uncut %>
+          </div>
+        </div>
+      </div>
+    <% end %>
   <% end %>
 <% end %>

@@ -254,8 +254,10 @@ en:
     form:
       confirm: Discard unsaved changes?
     form_media:
-      title: Upload Files
       help: Enter the file format for this episode.
+      title:
+        segment: Mark Segments
+        upload: Upload Files
     form_status:
       <<: *form_status
       title: Media Status
@@ -281,6 +283,9 @@ en:
         hint: Processing
       segment_count:
         help: Enter the number of ad breaks (midrolls) in this episode. This helps us to better predict ad inventory for your podcast.
+    segmenter:
+      label:
+        prefix: Midroll
     show:
       title: Media Files
     update:
