@@ -441,6 +441,10 @@ module Apple
       feeder_episode.reload
     end
 
+    def needs_delivery?
+      podcast_container&.needs_delivery? || apple_hosted_audio_asset_container_id.blank?
+    end
+
     def synced_with_apple?
       audio_asset_state_success? && container_upload_complete? && !drafting?
     end
