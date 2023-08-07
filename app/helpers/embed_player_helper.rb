@@ -36,7 +36,7 @@ module EmbedPlayerHelper
     embed_params(params)
   end
 
-  def embed_player_podcast_url(podcast, preview = false, options)
+  def embed_player_podcast_url(podcast, options, preview = false)
     params = {}
 
     params[EMBED_PLAYER_FEED] = podcast.published_url
@@ -63,8 +63,8 @@ module EmbedPlayerHelper
     end
   end
 
-  def embed_player_podcast_iframe(podcast, preview = false, options)
-    src = embed_player_podcast_url(podcast, preview, options)
+  def embed_player_podcast_iframe(podcast, options, preview = false)
+    src = embed_player_podcast_url(podcast, options, preview)
     allow = "monetization"
 
     if options[:embed_player_type] == "card"

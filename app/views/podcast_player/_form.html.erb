@@ -45,21 +45,32 @@
   </div>
 
   <div class="col-12 mb-4">
-    <div class="form-floating input-group">
+    <h3 class="fw-bold"><%= t(".title.copy") %></h3>
 
+    <div class="form-text mb-4">
+      <%= t(".help.copy") %>
+    </div>
+
+    <div class="form-floating input-group">
+      <%= text_field_tag :embed_player_url, embed_player_podcast_url(podcast, player_options), class: "form-control", disabled: true, autocomplete: "off" %>
+      <%= label_tag :embed_player_url, t("helpers.label.episode.embed_player_url") %>
+      <%= field_link embed_player_podcast_url(podcast, player_options) %>
+      <%= field_copy embed_player_podcast_url(podcast, player_options) %>
     </div>
   </div>
 
   <div class="col-12 mb-4">
     <div class="form-floating input-group">
-
+      <%= text_field_tag :embed_player_iframe, embed_player_podcast_iframe(podcast, player_options), class: "form-control", disabled: true, autocomplete: "off" %>
+      <%= label_tag :embed_player_iframe, t("helpers.label.episode.embed_player_iframe") %>
+      <%= field_copy embed_player_podcast_iframe(podcast, player_options) %>
     </div>
   </div>
 
   <div class="col-12 mb-4">
     <h3 class="fw-bold"><%= t(".title.preview") %></h3>
 
-    <%= embed_player_podcast_iframe(podcast, true, player_options) %>
+    <%= embed_player_podcast_iframe(podcast, player_options, true) %>
   </div>
 
 <% end %>
