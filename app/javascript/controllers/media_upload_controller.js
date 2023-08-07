@@ -11,32 +11,27 @@ export default class extends Controller {
     this.element.removeEventListener("turbo:before-frame-render", this.bindBeforeFrameRender)
   }
 
-  // skip some updates/deletes for segment_count changes
   beforeFrameRender(event) {
-    const childrenOnly = true
-    const onBeforeElUpdated = this.skipSegmentChanges
-    const onBeforeNodeDiscarded = this.skipSegmentChanges
+    const opts = { childrenOnly: true, onBeforeElUpdated: this.shouldMorph }
+
+    // don't remove upload fields if segment count is invalid
+    if (this.isInvalidSegmentCount(event.detail.newFrame)) {
+      console.log("IS INVALID")
+      opts.onBeforeNodeDiscarded = this.shouldMorph
+    }
 
     event.detail.render = (currentElement, newElement) => {
-      if (this.isParentTurboFrame(event.target)) {
-        if (this.isInvalidSegmentCount(event.detail.newFrame)) {
-          morphdom(currentElement, newElement, { childrenOnly, onBeforeElUpdated, onBeforeNodeDiscarded })
-        } else {
-          morphdom(currentElement, newElement, { childrenOnly, onBeforeElUpdated })
-        }
-      } else {
-        morphdom(currentElement, newElement, { childrenOnly })
-      }
+      morphdom(currentElement, newElement, opts)
     }
   }
 
-  // skip changes to segment turbo-frames (they update themselves)
-  skipSegmentChanges(el) {
-    return (el.id || "").match(/episode-media-contents-[0-9]+/) ? false : true
-  }
-
-  isParentTurboFrame(el) {
-    return el.id === "episode-form-media-segments"
+  shouldMorph(el) {
+    if ((el.dataset || {}).morph === "false") {
+      console.log("do not morph", el)
+      return false
+    } else {
+      return true
+    }
   }
 
   isInvalidSegmentCount(el) {

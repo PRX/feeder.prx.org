@@ -4,16 +4,35 @@
   <%# first button in form must be a submit, for enter key to work %>
   <%= form.submit class: "d-none" %>
 
-  <div class="row my-4 mx-2">
-    <div class="col-lg-8">
-      <div class="row">
-        <%= render "form_media", episode: episode, form: form %>
+  <%= turbo_frame_tag "episode-form-media", data: {controller: "media-upload"} do %>
+
+    <div class="container">
+      <div class="row mt-4 mx-2">
+        <div class="col-lg-8">
+          <div class="row">
+            <%= render "form_main", episode: episode, form: form %>
+          </div>
+        </div>
+        <div class="col-lg-4 d-grid align-content-start gap-3">
+          <div class="sticky-lg-top">
+            <%= render "form_status", episode: episode, form: form %>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="col-lg-4 d-grid align-content-start gap-3">
-      <div class="sticky-lg-top">
-        <%= render "form_status", episode: episode, form: form %>
+
+    <div class="container">
+      <div class="row mx-2">
+        <div class="col-lg-12">
+          <% if episode.medium_uncut? %>
+            <%= render "form_uncut", episode: episode, form: form %>
+          <% else %>
+            <%= render "form_contents", episode: episode, form: form %>
+          <% end %>
+        </div>
       </div>
     </div>
-  </div>
+
+  <% end %>
+
 <% end %>

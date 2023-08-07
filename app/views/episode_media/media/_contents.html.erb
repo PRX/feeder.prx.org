@@ -1,5 +1,0 @@
-<%= form.fields_for :contents, episode.build_contents, include_id: false do |fields| %>
-  <%= turbo_frame_tag "episode-media-contents-#{fields.object.position}" do %>
-    <%= render "episode_media/media/media", form: fields, episode: episode, media: fields.object %>
-  <% end %>
-<% end %>

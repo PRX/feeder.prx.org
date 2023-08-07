@@ -1,5 +1,0 @@
-<%= form.fields_for :uncut, episode.uncut || episode.build_uncut do |fields| %>
-  <%= turbo_frame_tag "episode-media-uncut" do %>
-    <%= render "episode_media/media/media", form: fields, episode: episode, media: fields.object %>
-  <% end %>
-<% end %>

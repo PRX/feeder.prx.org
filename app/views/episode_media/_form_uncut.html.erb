@@ -1,0 +1,29 @@
+<%= form.fields_for :uncut, episode.uncut || episode.build_uncut do |fields| %>
+  <%= turbo_frame_tag "episode-media-uncut" do %>
+
+    <div class="prx-uploads col-12 mb-4">
+      <div class="card shadow border-0">
+        <div class="card-header card-header-info d-flex justify-content-between">
+          <h2 class="card-title h5"><%= t(".title.media") %></h2>
+        </div>
+        <div class="card-body pb-0" data-morph="false">
+          <%= render "episode_media/media/media", form: fields, episode: episode, media: fields.object %>
+        </div>
+      </div>
+    </div>
+
+    <% if fields.object.status_complete? %>
+      <div class="col-12 mb-4">
+        <div class="card shadow border-0">
+          <div class="card-header card-header-warning d-flex justify-content-between">
+            <h2 class="card-title h5"><%= t(".title.segmenter") %></h2>
+          </div>
+          <div class="card-body pb-0">
+            <%= render "episode_media/segmenter/segmenter", episode: episode, uncut: fields.object %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+  <% end %>
+<% end %>
