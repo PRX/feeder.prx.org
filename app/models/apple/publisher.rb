@@ -189,9 +189,6 @@ module Apple
         res = Apple::PodcastContainer.create_podcast_containers(api, eps)
         Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})
 
-        res = Apple::Episode.update_audio_container_reference(api, eps)
-        Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
-
         reset = Apple::PodcastContainer.reset_source_file_metadata(eps)
         Rails.logger.info("Reset podcast containers for expired source urls.", {reset_count: reset.length})
 
@@ -247,6 +244,9 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
         ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
+
+        res = Apple::Episode.update_audio_container_reference(api, eps)
+        Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
       end
     end
 
