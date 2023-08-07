@@ -254,7 +254,7 @@ en:
     form:
       confirm: Discard unsaved changes?
     form_media:
-      title: Media Files
+      title: Upload Files
       help: Enter the file format for this episode.
     form_status:
       <<: *form_status
@@ -286,7 +286,7 @@ en:
     update:
       error: Unable to save
       media_not_ready: Published episodes cannot have empty media
-      notice: Media updated
+      notice: Media files updated
   episode_player:
     form:
       enclosure_not_ready: No Media Files Uploaded
