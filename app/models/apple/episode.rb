@@ -388,6 +388,10 @@ module Apple
       apple_json&.dig("attributes", "publishingState") == "DRAFTING"
     end
 
+    def archived?
+      apple_json&.dig("attributes", "publishingState") == "ARCHIVED"
+    end
+
     def container_upload_complete?
       return false if missing_container?
 

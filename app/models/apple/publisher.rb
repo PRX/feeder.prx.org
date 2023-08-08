@@ -40,6 +40,7 @@ module Apple
       eps
         .reject(&:synced_with_apple?)
         .reject(&:video_content_type?)
+        .reject(&:archived?)
     end
 
     def poll_all_episodes!
