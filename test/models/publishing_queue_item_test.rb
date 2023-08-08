@@ -35,7 +35,8 @@ describe PublishingQueueItem do
       pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
       pqi3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
 
-      assert_equal [pqi3, pqi2, pqi1].sort, PublishingQueueItem.latest_attempted.sort
+      assert_equal [pqi1, pqi2, pqi3].sort, PublishingQueueItem.unfinished_items(podcast).sort
+      assert_equal [pqi3].sort, PublishingQueueItem.latest_attempted.sort
       assert_equal pqi3.created_at, PublishingQueueItem.latest_attempted.first.created_at
     end
   end
