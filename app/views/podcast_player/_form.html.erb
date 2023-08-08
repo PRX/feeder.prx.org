@@ -27,15 +27,22 @@
         <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
       </div>
 
-      <div class="form-check">
-        <%= check_box_tag :season, nil, false, data: {action: "dynamic-form#change"} %>
-        <%= label_tag :season, "Play a single season" %>
-        <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+      <div data-controller="toggle-field">
+        <div class="form-check">
+          <%= check_box_tag :season_present, player_options[:season_present], player_options[:season_present], data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay toggle-field#clearSelection"}, class: "form-check-input" %>
+          <%= label_tag :season_present, "Play a single season" %>
+        </div>
+
+        <div class="<%= "d-none" unless player_options[:season_present] %> form-floating input-group" data-toggle-field-target="field" data-controller="dynamic-form">
+          <%= number_field_tag :season, player_options[:season], class: "form-control", data: {toggle_field_target: "clear", action: "dynamic-form#change"} %>
+          <%= label_tag :season, t("helpers.label.episode.season") %>
+          <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+        </div>
       </div>
 
       <div data-controller="toggle-field">
         <div class="form-check">
-          <%= check_box_tag :category_present, player_options[:category_present], player_options[:category_present], data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay toggle-field#clearSelection"} %>
+          <%= check_box_tag :category_present, player_options[:category_present], player_options[:category_present], data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay toggle-field#clearSelection"}, class: "form-check-input" %>
           <%= label_tag :category_present, "Play a single category" %>
         </div>
 
@@ -47,7 +54,7 @@
       </div>
 
       <div class="form-check">
-        <%= check_box_tag :recent, nil, false %>
+        <%= check_box_tag :recent, nil, false, class: "form-check-input" %>
         <%= label_tag :recent, "Play the most recent episode" %>
       </div>
     </div>
