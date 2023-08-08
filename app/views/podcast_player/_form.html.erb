@@ -12,50 +12,27 @@
     </div>
   </div>
 
-  <div class="col-12 mb-4" data-controller="toggle-field">
-    <div class="mb-4">
-      <div class="form-check">
-        <%= check_box_tag :playlist, "1", true, data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay"}, class: "form-check-input" %>
-        <%= label_tag :playlist %>
-      </div>
-    </div>
-
-    <div class="" data-toggle-field-target="field">
-      <div class="form-floating input-group" data-controller="dynamic-form">
-        <%= number_field_tag :episode_number, player_options[:episode_number], class: "form-control", data: {action: "dynamic-form#change"}, min: 1 %>
+  <div class="col-12 mb-4">
+    <div>
+      <div class="form-floating input-group mb-2" data-controller="dynamic-form">
+        <%= number_field_tag :episode_number, player_options[:episode_number], class: "form-control", data: {action: "dynamic-form#change"}, min: 1, autocomplete: "off" %>
         <%= label_tag "Number of Episodes" %>
+        <%= field_help_text t(".help.episode_number") %>
         <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
       </div>
 
-      <div data-controller="toggle-field">
-        <div class="form-check">
-          <%= check_box_tag :season_present, player_options[:season_present], player_options[:season_present], data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay toggle-field#clearSelection"}, class: "form-check-input" %>
-          <%= label_tag :season_present, "Play a single season" %>
-        </div>
-
-        <div class="<%= "d-none" unless player_options[:season_present] %> form-floating input-group" data-toggle-field-target="field" data-controller="dynamic-form">
-          <%= number_field_tag :season, player_options[:season], class: "form-control", data: {toggle_field_target: "clear", action: "dynamic-form#change"} %>
-          <%= label_tag :season, t("helpers.label.episode.season") %>
-          <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
-        </div>
+      <div class="form-floating input-group mb-2" data-controller="dynamic-form">
+        <%= number_field_tag :season, player_options[:season], class: "form-control", data: {action: "dynamic-form#change"}, min: 0, autocomplete: "off" %>
+        <%= label_tag :season, t("helpers.label.episode.season") %>
+        <%= field_help_text t(".help.season") %>
+        <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
       </div>
 
-      <div data-controller="toggle-field">
-        <div class="form-check">
-          <%= check_box_tag :category_present, player_options[:category_present], player_options[:category_present], data: {toggle_field_target: "check", action: "toggle-field#toggleDisplay toggle-field#clearSelection"}, class: "form-check-input" %>
-          <%= label_tag :category_present, "Play a single category" %>
-        </div>
-
-        <div class="<%= "d-none" unless player_options[:category_present] %> form-floating input-group" data-toggle-field-target="field" data-controller="dynamic-form">
-          <%= select_tag :category, embed_player_category_options(podcast, player_options[:category]), include_blank: true, class: "form-control", data: {toggle_field_target: "clear", action: "dynamic-form#change"} %>
-          <%= label_tag :category, t("helpers.label.episode.embed_player_type") %>
-          <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
-        </div>
-      </div>
-
-      <div class="form-check">
-        <%= check_box_tag :recent, nil, false, class: "form-check-input" %>
-        <%= label_tag :recent, "Play the most recent episode" %>
+      <div class="form-floating input-group mb-2" data-controller="dynamic-form">
+        <%= select_tag :category, embed_player_category_options(podcast, player_options[:category]), include_blank: true, class: "form-control", data: {action: "dynamic-form#change"} %>
+        <%= label_tag :category, t("helpers.label.episode.category") %>
+        <%= field_help_text t(".help.episode_category") %>
+        <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
       </div>
     </div>
   </div>

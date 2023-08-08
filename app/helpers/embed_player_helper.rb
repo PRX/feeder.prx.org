@@ -38,14 +38,11 @@ module EmbedPlayerHelper
 
   def embed_player_podcast_url(podcast, options, preview = false)
     params = {}
-
     params[EMBED_PLAYER_FEED] = podcast.published_url
-    params[EMBED_PLAYER_PLAYLIST] = options[:episode_number] || "10"
 
-    if params[EMBED_PLAYER_PLAYLIST].present?
-      params[EMBED_PLAYER_SEASON] = options[:season]
-      params[EMBED_PLAYER_CATEGORY] = options[:category]
-    end
+    params[EMBED_PLAYER_PLAYLIST] = options[:episode_number]
+    params[EMBED_PLAYER_SEASON] = options[:season]
+    params[EMBED_PLAYER_CATEGORY] = options[:category]
 
     embed_params(params)
   end
