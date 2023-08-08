@@ -2,7 +2,7 @@
   <div class="list-group d-flex col">
     <% if @episode.persisted? %>
       <!-- TODO: Change to show episode title instead of Metadata -->
-      <%= tab_link_to t(".edit"), edit_episode_path(@episode), active: episode_metadata_active? %>
+      <%= tab_link_to t(".edit"), edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
       <%= tab_link_to episode_media_path(@episode) do %>
         <%= t(".media") %>
         <span class="badge rounded-pill prx-badge-incomplete">Incomplete</span>
