@@ -53,6 +53,8 @@ Rails.application.routes.draw do
     end
   end
 
+  get "/.well-known/change-password", to: redirect("https://#{ENV["ID_HOST"]}/.well-known/change-password", status: 301)
+
   match "/api", via: [:get], to: redirect("/api/v1")
   match "/", via: [:get], to: redirect("/api/v1")
 end
