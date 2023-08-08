@@ -46,7 +46,7 @@ describe PublishingQueueItem do
       pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
       PublishingPipelineState.error!(podcast)
 
-      pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+      _pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
       PublishingPipelineState.complete!(podcast)
 
       pqi3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
@@ -76,7 +76,7 @@ describe PublishingQueueItem do
       assert_equal [pqi2].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [pqi2].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
 
-      pqi3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+      _pqi3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
 
       assert_equal [pqi2].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
@@ -89,7 +89,7 @@ describe PublishingQueueItem do
       assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [pqi1].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
 
-      pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+      _pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
 
       assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
