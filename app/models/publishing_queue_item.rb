@@ -6,10 +6,17 @@ class PublishingQueueItem < ApplicationRecord
                                .order(id: :desc)
                            }
   scope :latest_complete, -> {
-                            where(id: PublishingPipelineState.group(:podcast_id)
-                            .where(status: PublishingPipelineState::TERMINAL_STATUSES)
-                            .select("max(publishing_queue_item_id)")).order(:id)
+                            latest_by_status(PublishingPipelineState::TERMINAL_STATUSES)
                           }
+  scope :latest_failed, -> {
+                          latest_by_status(PublishingPipelineState::TERMINAL_FAILURE_STATUSES)
+                        }
+
+  scope :latest_by_status, ->(status) {
+                             where(id: PublishingPipelineState.group(:podcast_id)
+                             .where(status: status)
+                             .select("max(publishing_queue_item_id)")).order(id: :desc)
+                           }
 
   has_many :publishing_pipeline_states
   has_many :latest_state, -> { latest_by_queue_item }, class_name: "PublishingPipelineState"
