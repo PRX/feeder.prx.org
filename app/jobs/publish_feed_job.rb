@@ -7,7 +7,7 @@ class PublishFeedJob < ApplicationJob
 
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
-  def perform(podcast)
+  def perform(podcast, publishing_queue_item)
     # Since we don't current have a way to retry failed attempts,
     # and until somthing akin to https://github.com/PRX/feeder.prx.org/issues/714 lands
     # the RSS publishing is extracted from the publishing pipeline semantics.

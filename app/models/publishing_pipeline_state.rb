@@ -115,12 +115,11 @@ class PublishingPipelineState < ApplicationRecord
         Rails.logger.info("Creating publishing pipeline for podcast #{podcast.id}", {podcast_id: podcast.id, queue_item_id: latest_unfinished_item.id})
         PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: latest_unfinished_item, status: :created)
 
+        Rails.logger.info("Initiating PublishFeedJob for podcast #{podcast.id}", {podcast_id: podcast.id, queue_item_id: latest_unfinished_item.id, perform_later: perform_later})
         if perform_later
-          Rails.logger.info("Scheduling PublishFeedJob for podcast #{podcast.id}", {podcast_id: podcast.id})
-          PublishFeedJob.perform_later(podcast)
+          PublishFeedJob.perform_later(podcast, latest_unfinished_item)
         else
-          Rails.logger.info("Performing PublishFeedJob for podcast #{podcast.id}", {podcast_id: podcast.id})
-          PublishFeedJob.perform_now(podcast)
+          PublishFeedJob.perform_now(podcast, latest_unfinished_item)
         end
       end
     end

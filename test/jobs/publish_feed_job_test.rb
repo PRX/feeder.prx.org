@@ -35,7 +35,9 @@ describe PublishFeedJob do
           PublishingPipelineState.start_pipeline!(podcast)
         end
 
-        rss = job.perform(podcast)
+        pub_item = PublishingQueueItem.unfinished_items(podcast).first
+
+        rss = job.perform(podcast, pub_item)
         refute_nil rss
         refute_nil job.put_object
         assert_nil job.copy_object
