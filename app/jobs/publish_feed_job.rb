@@ -7,12 +7,17 @@ class PublishFeedJob < ApplicationJob
 
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
-  def perform(podcast, publishing_queue_item)
-    # Since we don't current have a way to retry failed attempts,
-    # and until somthing akin to https://github.com/PRX/feeder.prx.org/issues/714 lands
-    # the RSS publishing is extracted from the publishing pipeline semantics.
-    # TODO: recombine the publishing invocations (RSS, Apple) once we have some retry guarantees
-    podcast.feeds.each { |feed| save_file(podcast, feed) }
+  def perform(podcast, pub_item)
+    current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
+
+    if pub_item != current_pub_item
+      Rails.logger.error("PublishFeedJob: Skipping due to mismatched publishing_queue_item", {
+        podcast_id: podcast.id,
+        incoming_publishing_item_id: pub_item.id,
+        current_publishing_item_id: current_pub_item.id
+      })
+      return :mismatched
+    end
 
     PublishingPipelineState.start!(podcast)
     podcast.feeds.each { |feed| publish_feed(podcast, feed) }
@@ -46,9 +51,9 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_rss(podcast, feed)
-    # res = save_file(podcast, feed)
+    res = save_file(podcast, feed)
     PublishingPipelineState.publish_rss!(podcast)
-    # res
+    res
   end
 
   def save_file(podcast, feed, options = {})

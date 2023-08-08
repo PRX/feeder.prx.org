@@ -43,6 +43,17 @@ describe PublishFeedJob do
         assert_nil job.copy_object
       end
     end
+
+    it "will skip the publishing if the pub items are mismatched" do
+      job.stub(:client, stub_client) do
+        PublishFeedJob.stub(:perform_later, nil) do
+          PublishingPipelineState.start_pipeline!(podcast)
+        end
+
+        pub_item = PublishingQueueItem.create(podcast: podcast)
+        assert_equal :mismatched, job.perform(podcast, pub_item)
+      end
+    end
   end
 
   describe "publishing to apple" do
