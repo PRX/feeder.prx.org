@@ -13,7 +13,6 @@ Rails.application.routes.draw do
     resources :episodes, except: [:create, :new] do
       resource :media, only: [:show, :update], controller: :episode_media
       resource :player, only: :show, controller: :episode_player
-      resource :segmenter, only: [:show, :update], controller: :episode_segmenter
     end
 
     resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher

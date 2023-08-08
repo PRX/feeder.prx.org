@@ -11,9 +11,6 @@
         <span class="badge rounded-pill prx-badge-error">Error</span>
         <span class="badge rounded-pill prx-badge-complete">Complete</span>
       <% end %>
-      <% if @episode.medium_uncut? %>
-        <%= tab_link_to t(".segmenter"), episode_segmenter_path(@episode) %>
-      <% end %>
       <%= tab_link_to t(".player"), episode_player_path(@episode) %>
     <% else %>
       <%= tab_link_to t(".edit"), new_podcast_episode_path(@podcast), active: true %>
