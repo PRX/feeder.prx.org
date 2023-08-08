@@ -5,7 +5,7 @@ class Uncut < MediaResource
   def slice_contents
     if segmentation_ready?
       episode.media = segmentation.map do |seg|
-        Content.new(original_url: original_url, segmentation: seg)
+        Content.new(original_url: url, segmentation: seg)
       end
     end
   end
