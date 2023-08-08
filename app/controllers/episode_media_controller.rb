@@ -4,14 +4,14 @@ class EpisodeMediaController < ApplicationController
   # GET /episodes/1/media
   def show
     authorize @episode, :show?
-    @episode.assign_attributes(episode_params)
+    @episode.assign_attributes(parsed_episode_params)
     @episode.valid?
   end
 
   # PATCH/PUT /episodes/1/media
   def update
     authorize @episode, :update?
-    @episode.assign_attributes(episode_params)
+    @episode.assign_attributes(parsed_episode_params)
 
     respond_to do |format|
       if @episode.save
@@ -41,7 +41,27 @@ class EpisodeMediaController < ApplicationController
       :medium,
       :ad_breaks,
       contents_attributes: %i[id position original_url file_size _destroy _retry],
-      uncut_attributes: %i[id original_url file_size _destroy _retry]
+      uncut_attributes: %i[id ad_breaks original_url file_size _destroy _retry]
     )
+  end
+
+  # NOTE: the uncut "ad breaks" field is json encoded. eventually this should be
+  # converted to rails array-params, and allow trimming the start/end of the file.
+  def parsed_episode_params
+    episode_params.tap do |p|
+      if p.key?(:uncut_attributes) && p[:uncut_attributes].key?(:ad_breaks)
+        p[:uncut_attributes][:ad_breaks] = parse_ad_breaks(p[:uncut_attributes][:ad_breaks])
+      end
+    end
+  end
+
+  def parse_ad_breaks(str)
+    if str.blank?
+      nil
+    else
+      JSON.parse(str)
+    end
+  rescue JSON::ParserError
+    str
   end
 end

@@ -19,6 +19,10 @@ export default class extends Controller {
     this.initMarkers()
   }
 
+  segmentCountValueChanged() {
+    this.initMarkers()
+  }
+
   /**
    * Initial render of ad markers.
    */

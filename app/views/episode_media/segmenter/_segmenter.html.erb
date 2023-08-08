@@ -8,9 +8,9 @@
   data-waveform-inspector-waveform-url-value="<%= uncut&.waveform_url %>"
   data-action="resize@window->waveform-inspector#updateLayout audio-breakpoints:markers.update->waveform-inspector#updateMarkers waveform-inspector:marker.update->audio-breakpoints#updateBreakpointMarker audio-breakpoint:marker.update->audio-breakpoints#updateBreakpointMarker audio-breakpoint:play->waveform-inspector#playMarker audio-breakpoint:seekTo->waveform-inspector#seekToMarker">
 
-  <%# render "form", episode: @episode, uncut: @episode.uncut %>
+  <%= form.text_field :ad_breaks, value: (uncut&.ad_breaks || []).to_json, class: "d-none", data: {audio_breakpoints_target: "markersInput"} %>
 
-  <div class="prx-waveform-inspector d-grid gap-2 my-4">
+  <div class="prx-waveform-inspector d-grid gap-2" data-morph="false">
     <div class="prx-waveform-inspector-container">
       <div class="prx-waveform-inspector-view-container" data-waveform-inspector-target="overview"></div>
       <div class="prx-waveform-inspector-scrollbar-wrapper">
@@ -47,7 +47,7 @@
       </div>
     </div>
   </div>
-  <div class="row">
+  <div class="row" data-morph="false">
     <div class="col-12 p-0 my-4">
       <table class="prx-audio-breakpoints-table">
         <thead>

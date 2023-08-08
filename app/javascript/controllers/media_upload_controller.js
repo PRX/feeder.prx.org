@@ -16,7 +16,6 @@ export default class extends Controller {
 
     // don't remove upload fields if segment count is invalid
     if (this.isInvalidSegmentCount(event.detail.newFrame)) {
-      console.log("IS INVALID")
       opts.onBeforeNodeDiscarded = this.shouldMorph
     }
 
@@ -27,7 +26,6 @@ export default class extends Controller {
 
   shouldMorph(el) {
     if ((el.dataset || {}).morph === "false") {
-      console.log("do not morph", el)
       return false
     } else {
       return true
