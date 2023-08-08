@@ -8,6 +8,12 @@ class EpisodeMediaController < ApplicationController
     @episode.valid?
   end
 
+  # GET /episodes/1/media/status
+  def status
+    authorize @episode, :show?
+    render :status, layout: false
+  end
+
   # PATCH/PUT /episodes/1/media
   def update
     authorize @episode, :update?

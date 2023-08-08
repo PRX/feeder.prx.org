@@ -12,6 +12,7 @@ Rails.application.routes.draw do
 
     resources :episodes, except: [:create, :new] do
       resource :media, only: [:show, :update], controller: :episode_media
+      get "media_status", to: "episode_media#status"
       resource :player, only: :show, controller: :episode_player
     end
 

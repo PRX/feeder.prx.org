@@ -1,11 +1,8 @@
 <% content_for :tabs do %>
   <div class="list-group d-flex col">
     <% if @episode.persisted? %>
-      <!-- TODO: Change to show episode title instead of Metadata -->
       <%= tab_link_to @episode.title, edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
-      <%= tab_link_to episode_media_path(@episode) do %>
-        <%= t(".media") %><%= episode_media_badge(@episode) %>
-      <% end %>
+      <%= render "episode_media/tab", episode: @episode %>
       <%= tab_link_to t(".player"), episode_player_path(@episode) %>
     <% else %>
       <%= tab_link_to t(".new"), new_podcast_episode_path(@podcast), active: true %>

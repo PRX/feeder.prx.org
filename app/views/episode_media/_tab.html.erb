@@ -1,0 +1,15 @@
+<%= turbo_frame_tag "episode-media-status", data: {controller: "morphdom"} do %>
+  <% status = episode_media_status(episode) %>
+
+  <%= tab_link_to episode_media_path(episode), active: /media/, data: {turbo_frame: "_top"} do %>
+    <%= t("episodes.tabs.media") %>
+    <span class="badge rounded-pill prx-badge-<%= status %>">
+      <%= t("helpers.label.episode.media_statuses.#{status}") %>
+      <% if status == "processing" %><span class="spinner-border"></span><% end %>
+    </span>
+  <% end %>
+
+  <% if status == "processing" %>
+    <%= link_to "", episode_media_status_path(episode), class: "d-none", data: {controller: "polling", polling_debounce_value: 3000} %>
+  <% end %>
+<% end %>
