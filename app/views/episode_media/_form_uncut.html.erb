@@ -1,4 +1,4 @@
-<%= form.fields_for :uncut, episode.uncut || episode.build_uncut do |fields| %>
+<%= form.fields_for :uncut, episode.uncut || episode.build_uncut, include_id: false do |fields| %>
   <%= turbo_frame_tag "episode-media-uncut" do %>
 
     <div class="prx-uploads col-12 mb-4">
