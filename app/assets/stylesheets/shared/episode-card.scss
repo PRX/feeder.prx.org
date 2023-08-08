@@ -24,6 +24,7 @@
   }
 
   .episode-card-info {
+    width: 100%;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -37,6 +38,7 @@
     .episode-card-inner {
       display: flex;
       flex-direction: column;
+      flex-grow: 1;
     }
 
     .episode-card-title {
