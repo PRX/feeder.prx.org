@@ -7,6 +7,7 @@ class PodcastPlayerController < ApplicationController
     @player_options[:embed_player_type] = params[:embed_player_type]
     @player_options[:episode_number] = params[:episode_number]
     @player_options[:season] = params[:season]
+    @player_options[:category_present] = params[:category].present?
     @player_options[:category] = params[:category]
     @player_options[:recent] = params[:recent]
   end

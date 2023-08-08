@@ -42,9 +42,10 @@ module EmbedPlayerHelper
     params[EMBED_PLAYER_FEED] = podcast.published_url
     params[EMBED_PLAYER_PLAYLIST] = options[:episode_number] || "10"
 
-    # if options[:embed_player_type] == "card" || options[:embed_player_type] == "fixed_card"
-    #   params[EMBED_PLAYER_CARD] = "1"
-    # end
+    if params[EMBED_PLAYER_PLAYLIST].present?
+      params[EMBED_PLAYER_SEASON] = options[:season]
+      params[EMBED_PLAYER_CATEGORY] = options[:category]
+    end
 
     embed_params(params)
   end
@@ -79,6 +80,11 @@ module EmbedPlayerHelper
 
   def embed_player_type_options(selected)
     opts = %w[standard card fixed_card].map { |v| [t("helpers.label.episode.embed_player_types.#{v}"), v] }
+    options_for_select(opts, selected)
+  end
+
+  def embed_player_category_options(podcast, selected)
+    opts = podcast.feed_episodes.pluck(:categories).flatten.uniq
     options_for_select(opts, selected)
   end
 

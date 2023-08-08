@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["check", "field"]
+  static targets = ["check", "field", "clear"]
 
   changeCheck() {
     this.checkTarget.parentElement.classList.add("d-none")
@@ -33,5 +33,13 @@ export default class extends Controller {
 
   toggleDisplay() {
     this.fieldTarget.classList.toggle("d-none")
+  }
+
+  clearSelection() {
+    const classes = Array.from(this.clearTarget.parentElement.classList)
+    if (classes.includes("d-none")) {
+      this.clearTarget.value = null
+      this.clearTarget.dispatchEvent(new Event("change"))
+    }
   }
 }
