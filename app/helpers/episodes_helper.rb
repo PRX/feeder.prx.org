@@ -20,6 +20,31 @@ module EpisodesHelper
     end
   end
 
+  def episode_media_badge(episode)
+    all_media = episode.media.append(episode.uncut).compact
+
+    status =
+      if all_media.any? { |m| upload_problem?(m) }
+        "error"
+      elsif all_media.any? { |m| upload_processing?(m) }
+        "processing"
+      elsif episode.media_ready?(true)
+        "complete"
+      else
+        "incomplete"
+      end
+
+    label = I18n.t("helpers.label.episode.media_statuses.#{status}")
+
+    tag.span class: "badge rounded-pill prx-badge-#{status}" do
+      if status == "processing"
+        safe_concat(label + " " + tag.span(class: "spinner-border"))
+      else
+        label
+      end
+    end
+  end
+
   def episode_border_color(episode)
     case episode.publishing_status
     when "draft"

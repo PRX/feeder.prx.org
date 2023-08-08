@@ -92,6 +92,12 @@ en:
           full: Full
           trailer: Trailer
           bonus: Bonus
+        media_statuses:
+          complete: Complete
+          error: Error
+          incomplete: Incomplete
+          invalid: Invalid
+          processing: Processing
         medium: File Format
         mediums:
           audio: Audio - upload multiple audio files
@@ -242,7 +248,7 @@ en:
       okay: Okay
       title: Missing Episode Drafts
     tabs:
-      edit: Metadata
+      edit: New Episode
       media: Media Files
       player: Embeddable Player
       segmenter: Audio Segmenter
@@ -287,6 +293,14 @@ en:
       processing:
         hint: Processing
     segmenter:
+      modal:
+        label:
+          file_name: File Name
+          position: "#"
+          slice_end: Slice End
+          slice_start: Slice Start
+          status: Status
+        title: Audio Segments
       segmenter:
         label:
           prefix: Midroll

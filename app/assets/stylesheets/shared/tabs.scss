@@ -69,6 +69,16 @@
   &:hover:not(.active) {
     --prx-tab-bg-opacity: 1;
   }
+
+  .badge {
+    margin-left: 0.25rem;
+    vertical-align: text-bottom;
+
+    .spinner-border {
+      height: 0.75rem;
+      width: 0.75rem;
+    }
+  }
 }
 
 .prx-tabs-actions {

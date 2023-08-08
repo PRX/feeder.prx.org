@@ -2,18 +2,13 @@
   <div class="list-group d-flex col">
     <% if @episode.persisted? %>
       <!-- TODO: Change to show episode title instead of Metadata -->
-      <%= tab_link_to t(".edit"), edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
+      <%= tab_link_to @episode.title, edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
       <%= tab_link_to episode_media_path(@episode) do %>
-        <%= t(".media") %>
-        <span class="badge rounded-pill prx-badge-incomplete">Incomplete</span>
-        <span class="badge rounded-pill prx-badge-processing">Processing</span>
-        <span class="badge rounded-pill prx-badge-invalid">Invalid</span>
-        <span class="badge rounded-pill prx-badge-error">Error</span>
-        <span class="badge rounded-pill prx-badge-complete">Complete</span>
+        <%= t(".media") %><%= episode_media_badge(@episode) %>
       <% end %>
       <%= tab_link_to t(".player"), episode_player_path(@episode) %>
     <% else %>
-      <%= tab_link_to t(".edit"), new_podcast_episode_path(@podcast), active: true %>
+      <%= tab_link_to t(".new"), new_podcast_episode_path(@podcast), active: true %>
     <% end %>
   </div>
 <% end %>
