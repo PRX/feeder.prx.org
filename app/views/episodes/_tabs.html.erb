@@ -1,5 +1,5 @@
 <% content_for :tabs do %>
-  <div class="list-group d-flex col">
+  <div class="list-group d-flex col mw-100">
     <% if @episode.persisted? %>
       <%= tab_link_to @episode.title, edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
       <%= render "episode_media/tab", episode: @episode %>
