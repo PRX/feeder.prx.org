@@ -166,6 +166,38 @@ describe PublishingPipelineState do
     end
   end
 
+  describe ".retry_failed_pipelines!" do
+    it "should retry failed pipelines" do
+      PublishingPipelineState.start_pipeline!(podcast)
+      assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+
+      # it fails
+      PublishingPipelineState.error!(podcast)
+      assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # it retries
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+    end
+
+    it "ignores previously errored pipelines back in the queue" do
+      # A failed pipeline
+      PublishingPipelineState.start_pipeline!(podcast)
+      assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+      PublishingPipelineState.error!(podcast)
+      assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # A new pipeline
+      PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.publish_rss!(podcast)
+      assert_equal ["created", "published_rss"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+
+      # it does not retry the errored pipeline
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created", "published_rss"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+    end
+  end
+
   describe "#publishing_queue_item" do
     it "has one publish queue item per attempt state" do
       pqi = PublishingQueueItem.create!(podcast: podcast)

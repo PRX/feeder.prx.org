@@ -171,7 +171,7 @@ class PublishingPipelineState < ApplicationRecord
   def self.retry_failed_pipelines!
     Podcast.where(id: latest_failed_pipelines.select(:podcast_id).distinct).each do |podcast|
       Rails.logger.error("Retrying failed publishing pipeline for podcast #{podcast.id}", {podcast_id: podcast.id})
-      attempt!(podcast)
+      start_pipeline!(podcast)
     end
   end
 
