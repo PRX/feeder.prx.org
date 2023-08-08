@@ -15,6 +15,7 @@ class EpisodeMediaController < ApplicationController
 
     respond_to do |format|
       if @episode.save
+        @episode.uncut&.slice_contents!
         @episode.copy_media
         format.html { redirect_to episode_media_path(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
@@ -49,7 +50,7 @@ class EpisodeMediaController < ApplicationController
   # converted to rails array-params, and allow trimming the start/end of the file.
   def parsed_episode_params
     episode_params.tap do |p|
-      if p.key?(:uncut_attributes) && p[:uncut_attributes].key?(:ad_breaks)
+      if p[:uncut_attributes].present?
         p[:uncut_attributes][:ad_breaks] = parse_ad_breaks(p[:uncut_attributes][:ad_breaks])
       end
     end
