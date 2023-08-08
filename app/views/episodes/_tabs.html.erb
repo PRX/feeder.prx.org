@@ -1,8 +1,16 @@
 <% content_for :tabs do %>
   <div class="list-group d-flex col">
     <% if @episode.persisted? %>
+      <!-- TODO: Change to show episode title instead of Metadata -->
       <%= tab_link_to t(".edit"), edit_episode_path(@episode), active: episode_metadata_active? %>
-      <%= tab_link_to t(".media"), episode_media_path(@episode) %>
+      <%= tab_link_to episode_media_path(@episode) do %>
+        <%= t(".media") %>
+        <span class="badge rounded-pill prx-badge-incomplete">Incomplete</span>
+        <span class="badge rounded-pill prx-badge-processing">Processing</span>
+        <span class="badge rounded-pill prx-badge-invalid">Invalid</span>
+        <span class="badge rounded-pill prx-badge-error">Error</span>
+        <span class="badge rounded-pill prx-badge-complete">Complete</span>
+      <% end %>
       <% if @episode.medium_uncut? %>
         <%= tab_link_to t(".segmenter"), episode_segmenter_path(@episode) %>
       <% end %>

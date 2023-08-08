@@ -62,8 +62,12 @@
     background-color: $white;
   }
 
+  &:hover {
+    text-decoration: none;
+  }
+
   &:hover:not(.active) {
-    --prx-tab-bg-opacity: 0.6;
+    --prx-tab-bg-opacity: 1;
   }
 }
 
