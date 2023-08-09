@@ -204,6 +204,12 @@ class PodcastImport < ApplicationRecord
     clean_text(result)
   end
 
+  def update_itunes_categories(feed)
+    default_feed = podcast.default_feed
+    default_feed.itunes_categories = parse_itunes_categories(feed)
+    default_feed.save!
+  end
+
   def update_images(feed)
     default_feed = podcast.default_feed
 
@@ -239,7 +245,6 @@ class PodcastImport < ApplicationRecord
     podcast_attributes[:owner_name] = owner[:name]
     podcast_attributes[:owner_email] = owner[:email]
 
-    podcast_attributes[:itunes_categories] = parse_itunes_categories(feed)
     podcast_attributes[:categories] = parse_categories(feed)
     podcast_attributes[:complete] = (clean_string(feed.itunes_complete) == "yes")
     podcast_attributes[:copyright] ||= clean_string(feed.media_copyright)
@@ -265,6 +270,7 @@ class PodcastImport < ApplicationRecord
     podcast.assign_attributes(**build_podcast_attributes)
     update!(podcast: podcast)
 
+    update_itunes_categories(feed)
     update_images(feed)
 
     podcast
