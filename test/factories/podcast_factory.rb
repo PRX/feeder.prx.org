@@ -24,10 +24,5 @@ FactoryBot.define do
     donation_url { "https://prx.org/donations" }
 
     default_feed
-
-    after(:create) do |podcast, _evaluator|
-      itunes_category = create(:itunes_category, podcast: podcast)
-      podcast.itunes_categories << itunes_category
-    end
   end
 end

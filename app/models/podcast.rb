@@ -1,7 +1,9 @@
 require "text_sanitizer"
 
 class Podcast < ApplicationRecord
-  FEED_ATTRS = %i[subtitle description summary url new_feed_url display_episodes_count display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image ready_feed_image ready_itunes_image ready_image]
+  FEED_ATTRS = %i[subtitle description summary url new_feed_url display_episodes_count
+    display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image
+    ready_feed_image ready_itunes_image ready_image itunes_category itunes_subcategory itunes_categories]
   FEED_GETTERS = FEED_ATTRS.map { |s| [s, "#{s}_was".to_sym, "#{s}_changed?".to_sym] }.flatten
   FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
 
@@ -19,7 +21,6 @@ class Podcast < ApplicationRecord
 
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
-  has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
   has_many :tasks, as: :owner
   has_many :podcast_imports, -> { order("created_at desc") }
 
@@ -63,44 +64,16 @@ class Podcast < ApplicationRecord
   end
 
   def set_defaults
-    set_default_feed
     self.explicit ||= "false"
     self.link ||= embed_player_landing_url(self)
   end
 
-  def set_default_feed
-    self.default_feed ||= feeds.new(private: false)
+  def default_feed
+    super || build_default_feed(podcast: self, private: false)
   end
 
   def explicit=(value)
     super Podcast::EXPLICIT_ALIASES.fetch(value, value)
-  end
-
-  def itunes_category
-    itunes_categories.first&.name
-  end
-
-  def itunes_category=(value)
-    if (cat = itunes_categories[0])
-      if cat.name != value
-        cat.name = value
-        cat.subcategories = []
-      end
-    else
-      itunes_categories.build(name: value)
-    end
-  end
-
-  def itunes_subcategory
-    itunes_categories.first&.subcategories&.first
-  end
-
-  def itunes_subcategory=(value)
-    if (cat = itunes_categories[0])
-      cat.subcategories = [value]
-    else
-      itunes_categories.build(subcategories: [value])
-    end
   end
 
   def publish_updated

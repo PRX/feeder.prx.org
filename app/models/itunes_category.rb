@@ -1,5 +1,5 @@
 class ITunesCategory < ApplicationRecord
-  belongs_to :podcast, touch: true, optional: true
+  belongs_to :feed, touch: true, optional: true
   serialize :subcategories, JSON
 
   validates_presence_of :name

@@ -31,6 +31,8 @@ FactoryBot.define do
 
         feed.feed_image.tasks.build
         feed.itunes_image.tasks.build
+
+        feed.itunes_categories = [build(:itunes_category)]
       end
     end
 
