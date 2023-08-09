@@ -17,6 +17,8 @@ class PublishingPipelineState < ApplicationRecord
                               where(publishing_queue_item: pq_items)
                             }
   scope :latest_failed_pipelines, -> {
+                                    # Grab the latest attempted Publishing Item AND the latest failed Pub Item.
+                                    # If that is a non-null intersection, then we have a current/latest+failed pipeline.
                                     where(publishing_queue_item_id: PublishingQueueItem.latest_attempted.latest_failed.select(:id))
                                   }
 
