@@ -98,7 +98,7 @@ class FeedsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def feed_params
-    nilified_feed_params.merge(params.fetch(:feed, {}).permit(:slug))
+    params.fetch(:feed, {}).permit(:slug).merge(nilified_feed_params)
   end
 
   def nilified_feed_params
