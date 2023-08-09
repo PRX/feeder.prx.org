@@ -165,15 +165,17 @@ class PublishingPipelineState < ApplicationRecord
 
   def self.expire_pipelines!
     Podcast.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
-      Rails.logger.error("Cleaning up expired publishing pipeline for podcast #{podcast.id}", {podcast_id: podcast.id})
-      expire!(podcast)
+      Rails.logger.tagged("PublishingPipeLineState.expire_pipelines!", "Podcast:#{podcast.id}") do
+        expire!(podcast)
+      end
     end
   end
 
   def self.retry_failed_pipelines!
     Podcast.where(id: latest_failed_pipelines.select(:podcast_id).distinct).each do |podcast|
-      Rails.logger.error("Retrying failed publishing pipeline for podcast #{podcast.id}", {podcast_id: podcast.id})
-      start_pipeline!(podcast)
+      Rails.logger.tagged("PublishingPipeLineState.retry_failed_pipelines!", "Podcast:#{podcast.id}") do
+        start_pipeline!(podcast)
+      end
     end
   end
 
