@@ -3,7 +3,6 @@ class PublishingQueueItem < ApplicationRecord
 
   scope :latest_attempted, -> {
                              where(id: PublishingPipelineState.group(:podcast_id).select("max(publishing_queue_item_id)"))
-                               .order(id: :desc)
                            }
   scope :latest_complete, -> {
                             latest_by_status(PublishingPipelineState::TERMINAL_STATUSES)
@@ -15,7 +14,7 @@ class PublishingQueueItem < ApplicationRecord
   scope :latest_by_status, ->(status) {
                              where(id: PublishingPipelineState.group(:podcast_id)
                              .where(status: status)
-                             .select("max(publishing_queue_item_id)")).order(id: :desc)
+                             .select("max(publishing_queue_item_id)"))
                            }
 
   has_many :publishing_pipeline_states
