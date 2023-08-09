@@ -8,16 +8,9 @@ class PublishFeedJob < ApplicationJob
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   def perform(podcast, pub_item)
-    current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
-
-    if pub_item != current_pub_item
-      Rails.logger.error("PublishFeedJob: Skipping due to mismatched publishing_queue_item", {
-        podcast_id: podcast.id,
-        incoming_publishing_item_id: pub_item.id,
-        current_publishing_item_id: current_pub_item.id
-      })
-      return :mismatched
-    end
+    # Consume the SQS message, return early, if we have racing threads trying to
+    # grab the current publishing pipeline.
+    return :mismatched if mismatched_publishing_item?(podcast, pub_item)
 
     PublishingPipelineState.start!(podcast)
     podcast.feeds.each { |feed| publish_feed(podcast, feed) }
@@ -89,5 +82,21 @@ class PublishFeedJob < ApplicationJob
     else
       Aws::S3::Client.new
     end
+  end
+
+  def mismatched_publishing_item?(podcast, pub_item)
+    current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
+
+    mismatch = pub_item != current_pub_item
+
+    if mismatch
+      Rails.logger.error("Mismatched publishing_queue_item in PublishFeedJob", {
+        podcast_id: podcast.id,
+        incoming_publishing_item_id: pub_item.id,
+        current_publishing_item_id: current_pub_item.id
+      })
+    end
+
+    mismatch
   end
 end
