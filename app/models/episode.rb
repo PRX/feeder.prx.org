@@ -12,6 +12,7 @@ class Episode < ApplicationRecord
 
   MAX_SEGMENT_COUNT = 10
   VALID_ITUNES_TYPES = %w[full trailer bonus]
+  DROP_DATE = "COALESCE(episodes.published_at, episodes.released_at)"
 
   attr_accessor :strict_validations
 
@@ -61,10 +62,10 @@ class Episode < ApplicationRecord
   scope :draft, -> { where("episodes.published_at IS NULL") }
   scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
-  scope :after, ->(time) { where("COALESCE(published_at, released_at) > ?", time) }
+  scope :after, ->(time) { where("#{DROP_DATE} > ?", time) }
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
-  scope :dropdate_asc, -> { reorder(Arel.sql("COALESCE(published_at, released_at) ASC NULLS FIRST")) }
-  scope :dropdate_desc, -> { reorder(Arel.sql("COALESCE(published_at, released_at) DESC NULLS LAST")) }
+  scope :dropdate_asc, -> { reorder(Arel.sql("#{DROP_DATE} ASC NULLS FIRST")) }
+  scope :dropdate_desc, -> { reorder(Arel.sql("#{DROP_DATE} DESC NULLS LAST")) }
 
   enum :medium, [:audio, :uncut, :video], prefix: true
 
