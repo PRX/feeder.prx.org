@@ -51,6 +51,7 @@ describe PublishFeedJob do
         end
 
         pub_item = PublishingQueueItem.create(podcast: podcast)
+        assert job.mismatched_publishing_item?(podcast, pub_item)
         assert_equal :mismatched, job.perform(podcast, pub_item)
       end
     end
