@@ -58,11 +58,6 @@ module Apple
       public_feed.published_url(true)
     end
 
-    def category_data
-      podcast.itunes_categories.map { |c| {id: 1511, type: "categories", attributes: {name: c.name}} }
-      [{"type" => "categories", "id" => "1301"}]
-    end
-
     def update_attributes
       create_attributes.except(:releaseFrequency)
     end
