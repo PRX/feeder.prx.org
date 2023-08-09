@@ -14,7 +14,7 @@ class EpisodesController < ApplicationController
     filtered_episodes = episodes.filter_by_title(params[:q]).includes(:contents, :uncut)
 
     @published_episodes = filtered_episodes.published.order(published_at: :desc).page(params[:published_page]).per(10)
-    @scheduled_episodes = filtered_episodes.draft_or_scheduled.order("released_at ASC NULLS FIRST").page(params[:scheduled_page]).per(10)
+    @scheduled_episodes = filtered_episodes.draft_or_scheduled.reorder("released_at ASC NULLS FIRST").page(params[:scheduled_page]).per(10)
   end
 
   # GET /episodes/1
