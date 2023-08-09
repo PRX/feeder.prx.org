@@ -34,8 +34,8 @@ class PodcastsController < ApplicationController
   def show
     authorize @podcast
 
-    @recently_published = @podcast.episodes.published.order(published_at: :desc).limit(3)
-    @next_scheduled = @podcast.episodes.draft_or_scheduled.order(released_at: :asc).limit(3)
+    @recently_published = @podcast.episodes.published.dropdate_desc.limit(3)
+    @next_scheduled = @podcast.episodes.draft_or_scheduled.dropdate_asc.limit(3)
 
     @metrics_jwt = prx_jwt
     @metrics_castle_root = castle_root

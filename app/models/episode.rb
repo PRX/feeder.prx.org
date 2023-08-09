@@ -63,6 +63,8 @@ class Episode < ApplicationRecord
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
   scope :after, ->(time) { where("COALESCE(published_at, released_at) > ?", time) }
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
+  scope :dropdate_asc, -> { reorder(Arel.sql("COALESCE(published_at, released_at) ASC NULLS FIRST")) }
+  scope :dropdate_desc, -> { reorder(Arel.sql("COALESCE(published_at, released_at) DESC NULLS LAST")) }
 
   enum :medium, [:audio, :uncut, :video], prefix: true
 
