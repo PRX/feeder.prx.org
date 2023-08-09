@@ -40,7 +40,7 @@ module EmbedPlayerHelper
     params = {}
     params[EMBED_PLAYER_FEED] = podcast.published_url
 
-    params[EMBED_PLAYER_PLAYLIST] = options[:episode_number]
+    params[EMBED_PLAYER_PLAYLIST] = (options[:all_episodes] == "all") ? options[:all_episodes] : options[:episode_number]
     params[EMBED_PLAYER_SEASON] = options[:season]
     params[EMBED_PLAYER_CATEGORY] = options[:category]
 
@@ -87,6 +87,11 @@ module EmbedPlayerHelper
 
   def embed_player_category_options(podcast, selected)
     opts = podcast.feed_episodes.pluck(:categories).flatten.uniq
+    options_for_select(opts, selected)
+  end
+
+  def embed_player_all_episodes_options(selected)
+    opts = %w[all number].map { |v| [t("helpers.label.podcast_player.episodes_options.#{v}"), v] }
     options_for_select(opts, selected)
   end
 

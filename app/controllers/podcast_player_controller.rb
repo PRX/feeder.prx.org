@@ -5,6 +5,7 @@ class PodcastPlayerController < ApplicationController
   def show
     @player_options = {}
     @player_options[:embed_player_type] = params[:embed_player_type] || "card"
+    @player_options[:all_episodes] = params[:all_episodes] || "all"
 
     @player_options[:episode_number] = params[:episode_number]
     @player_options[:season] = params[:season]

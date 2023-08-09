@@ -181,6 +181,9 @@ en:
         category: Category
         embed_player_url: Embeddable Player Link
         embed_player_iframe: Embeddable Player IFrame
+        episodes_options:
+          all: All Episodes
+          number: Capped Number of Episodes
   # specific pages/views
   episodes:
     confirm_destroy:
@@ -594,7 +597,7 @@ en:
     form:
       help:
         <<: *player_help
-        episode_number: Choose the number of episodes for this playlist. Leaving this blank will play only the most recent episode.
+        episode_number: Choose between showing all episodes or only a number of episodes for this playlist.
         season: (Optional) Choose a single season for this playlist. Leaving this blank or 0 will not add a season filter.
         episode_category: (Optional) Choose a single category for this playlist. Leaving this blank will not add a category filter.
         playlist: Add any options below to better specify the playlist you want to create.
