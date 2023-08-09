@@ -242,13 +242,14 @@ class Feed < ApplicationRecord
   end
 
   def itunes_category=(value)
-    if (cat = itunes_categories[0])
-      if cat.name != value
-        cat.name = value
-        cat.subcategories = []
-      end
-    else
-      itunes_categories.build(name: value)
+    cat = itunes_categories[0] || itunes_categories.build
+
+    # allow destroying for non-default feeds
+    if custom? && value.blank?
+      cat.mark_for_destruction
+    elsif cat.name != value
+      cat.name = value
+      cat.subcategories = []
     end
   end
 
