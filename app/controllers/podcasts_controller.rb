@@ -48,7 +48,6 @@ class PodcastsController < ApplicationController
   # GET /podcasts/new
   def new
     @podcast = Podcast.new(podcast_params)
-    @podcast.set_default_feed
 
     # TODO: get the default account from ID somehow
     @podcast.prx_account_uri = helpers.podcast_account_name_options(@podcast).first.last
@@ -126,12 +125,8 @@ class PodcastsController < ApplicationController
     nilify params.fetch(:podcast, {}).permit(
       :title,
       :prx_account_uri,
-      :subtitle,
-      :description,
       :link,
       :explicit,
-      :itunes_category,
-      :itunes_subcategory,
       :serial_order,
       :language,
       :owner_name,
@@ -144,6 +139,10 @@ class PodcastsController < ApplicationController
       :complete,
       default_feed_attributes: [
         :id,
+        :subtitle,
+        :description,
+        :itunes_category,
+        :itunes_subcategory,
         feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
         itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
       ]

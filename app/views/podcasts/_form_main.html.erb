@@ -8,9 +8,11 @@
 
 <div class="col-12 mb-4">
   <div class="form-floating input-group">
-    <%= form.text_field :subtitle %>
-    <%= form.label :subtitle %>
-    <%= field_help_text t(".help.subtitle") %>
+    <%= form.fields_for :default_feed do |fields| %>
+      <%= fields.text_field :subtitle %>
+      <%= fields.label :subtitle %>
+      <%= field_help_text t(".help.subtitle") %>
+    <% end %>
   </div>
 </div>
 
@@ -21,7 +23,9 @@
       <%= help_text t(".help.description") %>
     </div>
     <div class="card-body">
-      <%= form.trix_editor :description %>
+      <%= form.fields_for :default_feed do |fields| %>
+        <%= fields.trix_editor :description %>
+      <% end %>
     </div>
   </div>
 </div>
@@ -43,26 +47,29 @@
 </div>
 
 <div class="col-6 mb-4">
-  <%# HACK: display nested validation errors %>
-  <% nested_errors = podcast.errors.full_messages_for("itunes_categories.name").join(", ") %>
-  <% klass = nested_errors.present? ? "is-invalid form-select" : "form-select" %>
-
   <div class="form-floating input-group" data-controller="dynamic-form">
-    <%= form.select :itunes_category, itunes_category_options, {include_blank: true}, class: klass, data: {action: "dynamic-form#change"} %>
-    <% if nested_errors.present? %><div class="invalid-feedback"><%= nested_errors %></div><% end %>
-    <%= form.label :itunes_category %>
-    <%= field_help_text t(".help.itunes_category") %>
-    <%# update subcategory turbo-frame when category changes %>
-    <a hidden href="<%= new_podcast_path %>" data-dynamic-form-target="link" data-turbo-frame="itunes-subcategory"></a>
+    <%= form.fields_for :default_feed do |fields| %>
+      <%# HACK: display nested validation errors %>
+      <% nested_errors = fields.object.errors.full_messages_for("itunes_categories.name").join(", ") %>
+      <% klass = nested_errors.present? ? "is-invalid form-select" : "form-select" %>
+      <%= fields.select :itunes_category, itunes_category_options, {include_blank: true}, class: klass, data: {action: "dynamic-form#change"} %>
+      <% if nested_errors.present? %><div class="invalid-feedback"><%= nested_errors %></div><% end %>
+      <%= fields.label :itunes_category %>
+      <%= field_help_text t(".help.itunes_category") %>
+      <%# update subcategory turbo-frame when category changes %>
+      <a hidden href="<%= new_podcast_path %>" data-dynamic-form-target="link" data-turbo-frame="itunes-subcategory"></a>
+    <% end %>
   </div>
 </div>
 
 <div class="col-6 mb-4">
   <%= turbo_frame_tag "itunes-subcategory" do %>
     <div class="form-floating">
-      <% opts = itunes_subcategory_options(podcast.itunes_category) %>
-      <%= form.select :itunes_subcategory, opts, {include_blank: true}, disabled: opts.blank? %>
-      <%= form.label :itunes_subcategory %>
+      <%= form.fields_for :default_feed do |fields| %>
+        <% opts = itunes_subcategory_options(podcast.itunes_category) %>
+        <%= fields.select :itunes_subcategory, opts, {include_blank: true}, disabled: opts.blank? %>
+        <%= fields.label :itunes_subcategory %>
+      <% end %>
     </div>
   <% end %>
 </div>
