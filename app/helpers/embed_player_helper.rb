@@ -44,6 +44,11 @@ module EmbedPlayerHelper
     params[EMBED_PLAYER_SEASON] = options[:season]
     params[EMBED_PLAYER_CATEGORY] = options[:category]
 
+    # TODO: the height styling doesn't really work here in the way Play specifies how it needs to be for a playlist, so leaving this as a TODO for now.
+    # if options[:embed_player_type] == "card" || options[:embed_player_type] == "fixed_card"
+    #   params[EMBED_PLAYER_CARD] = "1"
+    # end
+
     embed_params(params)
   end
 
@@ -71,7 +76,7 @@ module EmbedPlayerHelper
     elsif options[:embed_player_type] == "fixed_card"
       tag.iframe src: src, allow: allow, width: "500", height: "700"
     else
-      tag.iframe src: src, allow: allow, width: "100%", height: "600", style: "--aspect-ratio: 2/3; width: 100%;"
+      tag.iframe src: src, allow: allow, width: "100%", height: "200"
     end
   end
 
