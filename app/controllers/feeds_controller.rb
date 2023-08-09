@@ -18,6 +18,7 @@ class FeedsController < ApplicationController
     @feed = @podcast.feeds.new(private: false, slug: "")
     authorize @feed
 
+    @feed.assign_attributes(feed_params)
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
   end
 
@@ -106,6 +107,10 @@ class FeedsController < ApplicationController
       :title,
       :subtitle,
       :description,
+      :itunes_category,
+      :itunes_subcategory,
+      :include_donation_url,
+      :include_podcast_value,
       :private,
       :url,
       :new_feed_url,
@@ -122,8 +127,6 @@ class FeedsController < ApplicationController
       :house,
       :paid,
       :sonic_id,
-      :include_donation_url,
-      :include_podcast_value,
       include_tags: [],
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
