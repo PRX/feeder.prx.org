@@ -183,7 +183,6 @@ describe PublishingPipelineState do
     it "ignores previously errored pipelines back in the queue" do
       # A failed pipeline
       PublishingPipelineState.start_pipeline!(podcast)
-      assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
       PublishingPipelineState.error!(podcast)
       assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
 
@@ -191,10 +190,13 @@ describe PublishingPipelineState do
       PublishingPipelineState.start_pipeline!(podcast)
       PublishingPipelineState.publish_rss!(podcast)
       assert_equal ["created", "published_rss"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+      publishing_item = PublishingPipelineState.latest_pipeline(podcast).map(&:publishing_queue_item_id).uniq
 
       # it does not retry the errored pipeline
       PublishingPipelineState.retry_failed_pipelines!
       assert_equal ["created", "published_rss"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+      # it's the same publishing item
+      assert_equal publishing_item, PublishingPipelineState.latest_pipeline(podcast).map(&:publishing_queue_item_id).uniq
     end
   end
 
