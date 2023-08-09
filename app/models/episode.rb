@@ -166,6 +166,7 @@ class Episode < ApplicationRecord
   def set_defaults
     guid
     self.url ||= embed_player_landing_url(podcast, self)
+    self.segment_count ||= 1 if new_record? && strict_validations
   end
 
   def guid

@@ -158,7 +158,7 @@ class MediaResource < ApplicationRecord
 
   def retryable?
     if %w[started created processing retrying].include?(status)
-      last_event = task&.updated_at || updated_at
+      last_event = task&.updated_at || updated_at || Time.now
       Time.now - last_event > 100
     else
       false
@@ -166,8 +166,10 @@ class MediaResource < ApplicationRecord
   end
 
   def retry!
-    status_retrying!
-    copy_media(true)
+    if retryable?
+      status_retrying!
+      copy_media(true)
+    end
   end
 
   def _retry=(_val)

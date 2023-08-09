@@ -1,3 +1,5 @@
+<%= form.hidden_field :id %>
+
 <div class="col-12 mb-4">
   <div class="form-floating input-group prx-audio-player" data-controller="audio-player">
     <button type="button" class="prx-play input-group-text prx-input-group-text" data-action="audio-player#play">
@@ -26,7 +28,7 @@
 
     <label><%= episode_media_label(episode, media) %></label>
 
-    <%= link_to edit_episode_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
+    <%= link_to episode_media_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
       <span class="material-icons text-danger">delete</span>
     <% end %>
 
@@ -36,4 +38,4 @@
   </div>
 </div>
 
-<%= render "episodes/media/modal", episode: episode, media: media, id: "media-modal-#{media.id}" %>
+<%= render "episode_media/media/modal", episode: episode, media: media, id: "media-modal-#{media.id}" %>

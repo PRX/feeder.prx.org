@@ -1,0 +1,18 @@
+.prx-badge-incomplete {
+  background: $warning;
+  color: $black;
+}
+
+.prx-badge-complete {
+  background: $success;
+}
+
+.prx-badge-processing {
+  background: $info;
+  color: $black;
+}
+
+.prx-badge-invalid,
+.prx-badge-error {
+  background: $danger;
+}

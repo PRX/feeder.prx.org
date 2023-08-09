@@ -62,8 +62,22 @@
     background-color: $white;
   }
 
+  &:hover {
+    text-decoration: none;
+  }
+
   &:hover:not(.active) {
-    --prx-tab-bg-opacity: 0.6;
+    --prx-tab-bg-opacity: 1;
+  }
+
+  .badge {
+    margin-left: 0.25rem;
+    vertical-align: text-bottom;
+
+    .spinner-border {
+      height: 0.75rem;
+      width: 0.75rem;
+    }
   }
 }
 

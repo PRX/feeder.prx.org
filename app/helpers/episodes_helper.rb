@@ -2,7 +2,7 @@ require "text_sanitizer"
 
 module EpisodesHelper
   def episode_metadata_active?
-    action_name == "edit" || action_name == "update"
+    controller_name == "episodes" && (action_name == "edit" || action_name == "update")
   end
 
   def episode_itunes_type_options
@@ -17,6 +17,20 @@ module EpisodesHelper
       "success text-white"
     else
       "primary text-white"
+    end
+  end
+
+  def episode_media_status(episode)
+    all_media = episode.media.append(episode.uncut).compact
+
+    if all_media.any? { |m| upload_problem?(m) }
+      "error"
+    elsif all_media.any? { |m| upload_processing?(m) }
+      "processing"
+    elsif episode.media_ready?(true)
+      "complete"
+    else
+      "incomplete"
     end
   end
 

@@ -1,0 +1,40 @@
+<div id="uncut-modal" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><%= t(".title") %></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= t("images.label.close") %>"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col"><%= t(".label.position") %></th>
+              <th scope="col"><%= t(".label.file_name") %></th>
+              <th scope="col"><%= t(".label.slice_start") %></th>
+              <th scope="col"><%= t(".label.slice_end") %></th>
+              <th scope="col"><%= t(".label.status") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% contents.each do |c| %>
+              <tr>
+                <td><%= c.position %></td>
+                <td>
+                  <% if c.status_complete? %>
+                    <%= link_to c.file_name, c.url %>
+                  <% else %>
+                    <%= c.file_name %>
+                  <% end %>
+                </td>
+                <td><%= c.slice_start %></td>
+                <td><%= c.slice_end %></td>
+                <td><span class="badge bg-<%= upload_status_class(c) %>"><%= c.status.capitalize %></span></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

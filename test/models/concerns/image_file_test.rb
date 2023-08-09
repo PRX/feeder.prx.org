@@ -151,9 +151,11 @@ describe ImageFile do
       mock_copy.expect :call, nil, [true]
       i = create(:feed_image)
 
-      i.stub(:copy_media, mock_copy) do
-        i.retry!
-        assert i.status_retrying?
+      i.stub(:retryable?, true) do
+        i.stub(:copy_media, mock_copy) do
+          i.retry!
+          assert i.status_retrying?
+        end
       end
 
       mock_copy.verify
