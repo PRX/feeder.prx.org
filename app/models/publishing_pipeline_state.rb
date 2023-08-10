@@ -1,5 +1,6 @@
 class PublishingPipelineState < ApplicationRecord
   TERMINAL_STATUSES = [:complete, :error, :expired].freeze
+  TERMINAL_FAILURE_STATUSES = [:error, :expired].freeze
   UNIQUE_STATUSES = TERMINAL_STATUSES + [:created, :started]
 
   # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
@@ -15,6 +16,11 @@ class PublishingPipelineState < ApplicationRecord
 
                               where(publishing_queue_item: pq_items)
                             }
+  scope :latest_failed_pipelines, -> {
+                                    # Grab the latest attempted Publishing Item AND the latest failed Pub Item.
+                                    # If that is a non-null intersection, then we have a current/latest+failed pipeline.
+                                    where(publishing_queue_item_id: PublishingQueueItem.latest_attempted.latest_failed.select(:id))
+                                  }
 
   scope :latest_by_queue_item, -> {
                                  where(id: PublishingPipelineState
@@ -115,12 +121,11 @@ class PublishingPipelineState < ApplicationRecord
         Rails.logger.info("Creating publishing pipeline for podcast #{podcast.id}", {podcast_id: podcast.id, queue_item_id: latest_unfinished_item.id})
         PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: latest_unfinished_item, status: :created)
 
+        Rails.logger.info("Initiating PublishFeedJob for podcast #{podcast.id}", {podcast_id: podcast.id, queue_item_id: latest_unfinished_item.id, perform_later: perform_later})
         if perform_later
-          Rails.logger.info("Scheduling PublishFeedJob for podcast #{podcast.id}", {podcast_id: podcast.id})
-          PublishFeedJob.perform_later(podcast)
+          PublishFeedJob.perform_later(podcast, latest_unfinished_item)
         else
-          Rails.logger.info("Performing PublishFeedJob for podcast #{podcast.id}", {podcast_id: podcast.id})
-          PublishFeedJob.perform_now(podcast)
+          PublishFeedJob.perform_now(podcast, latest_unfinished_item)
         end
       end
     end
@@ -160,8 +165,17 @@ class PublishingPipelineState < ApplicationRecord
 
   def self.expire_pipelines!
     Podcast.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
-      Rails.logger.error("Cleaning up expired publishing pipeline for podcast #{podcast.id}", {podcast_id: podcast.id})
-      expire!(podcast)
+      Rails.logger.tagged("PublishingPipeLineState.expire_pipelines!", "Podcast:#{podcast.id}") do
+        expire!(podcast)
+      end
+    end
+  end
+
+  def self.retry_failed_pipelines!
+    Podcast.where(id: latest_failed_pipelines.select(:podcast_id).distinct).each do |podcast|
+      Rails.logger.tagged("PublishingPipeLineState.retry_failed_pipelines!", "Podcast:#{podcast.id}") do
+        start_pipeline!(podcast)
+      end
     end
   end
 

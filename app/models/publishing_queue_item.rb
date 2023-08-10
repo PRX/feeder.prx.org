@@ -1,7 +1,21 @@
 class PublishingQueueItem < ApplicationRecord
   scope :max_id_grouped, -> { group(:podcast_id).select("max(id) as id") }
-  scope :latest_attempted, -> { joins(:publishing_pipeline_states).order("publishing_pipeline_states.id desc") }
-  scope :latest_complete, -> { latest_attempted.where(publishing_pipeline_states: {status: PublishingPipelineState::TERMINAL_STATUSES}) }
+
+  scope :latest_attempted, -> {
+                             where(id: PublishingPipelineState.group(:podcast_id).select("max(publishing_queue_item_id)"))
+                           }
+  scope :latest_complete, -> {
+                            latest_by_status(PublishingPipelineState::TERMINAL_STATUSES)
+                          }
+  scope :latest_failed, -> {
+                          latest_by_status(PublishingPipelineState::TERMINAL_FAILURE_STATUSES)
+                        }
+
+  scope :latest_by_status, ->(status) {
+                             where(id: PublishingPipelineState.group(:podcast_id)
+                             .where(status: status)
+                             .select("max(publishing_queue_item_id)"))
+                           }
 
   has_many :publishing_pipeline_states
   has_many :latest_state, -> { latest_by_queue_item }, class_name: "PublishingPipelineState"
@@ -51,6 +65,7 @@ class PublishingQueueItem < ApplicationRecord
                                FROM publishing_pipeline_states WHERE podcast_id = pqi.podcast_id AND status in (#{PublishingPipelineState.terminal_status_codes.join(",")})), -1)
           AND podcast_id = pqi.podcast_id
         ) unfinished_podcast_items ON TRUE
+        ORDER BY unfinished_podcast_items.id DESC
       ) publishing_queue_items
     SQL
 

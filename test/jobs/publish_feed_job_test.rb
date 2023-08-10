@@ -35,10 +35,24 @@ describe PublishFeedJob do
           PublishingPipelineState.start_pipeline!(podcast)
         end
 
-        rss = job.perform(podcast)
+        pub_item = PublishingQueueItem.unfinished_items(podcast).first
+
+        rss = job.perform(podcast, pub_item)
         refute_nil rss
         refute_nil job.put_object
         assert_nil job.copy_object
+      end
+    end
+
+    it "will skip the publishing if the pub items are mismatched" do
+      job.stub(:client, stub_client) do
+        PublishFeedJob.stub(:perform_later, nil) do
+          PublishingPipelineState.start_pipeline!(podcast)
+        end
+
+        pub_item = PublishingQueueItem.create(podcast: podcast)
+        assert job.mismatched_publishing_item?(podcast, pub_item)
+        assert_equal :mismatched, job.perform(podcast, pub_item)
       end
     end
   end

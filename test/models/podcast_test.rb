@@ -96,6 +96,15 @@ describe Podcast do
         end
         obj.verify
       end
+
+      it "retries latest publishing pipelines with errors" do
+        obj = MiniTest::Mock.new
+        obj.expect :call, nil
+        PublishingPipelineState.stub(:retry_failed_pipelines!, obj) do
+          Podcast.release!
+        end
+        obj.verify
+      end
     end
   end
 

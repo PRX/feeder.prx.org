@@ -58,6 +58,7 @@ class Podcast < ApplicationRecord
   def self.release!(options = {})
     Rails.logger.tagged("Podcast.release!") do
       PublishingPipelineState.expire_pipelines!
+      PublishingPipelineState.retry_failed_pipelines!
       Episode.release_episodes!(options)
     end
   end
