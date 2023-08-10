@@ -11,43 +11,56 @@
     </div>
   </div>
 
-  <div class="col-12 mb-4">
-    <h3 class="fw-bold"><%= t(".title.playlist") %></h3>
+  <div class="card border-light mb-4">
+    <div class="card-header-light"><%= t(".title.playlist") %></div>
 
-    <div class="form-text mb-4">
-      <%= t(".help.playlist") %>
-    </div>
-
-    <div data-controller="toggle-field">
-      <div class="form-floating input-group mb-2" data-controller="dynamic-form">
-        <%= select_tag :all_episodes, embed_player_all_episodes_options(player_options[:all_episodes]), class: "form-control", data: {action: "dynamic-form#change toggle-field#displayOnlyThisField"}, include_blank: false %>
-        <%= label_tag t("helpers.label.podcast_player.episode_number") %>
-        <%= field_help_text t(".help.episode_number") %>
-        <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+    <div class="card-body">
+      <div class="form-text mb-4">
+        <%= t(".help.playlist") %>
       </div>
 
-      <div class="<%= "d-none" unless player_options[:all_episodes] == "number" %> form-floating input-group mb-2" data-controller="dynamic-form" data-toggle-field-target="field" field="number">
-        <%= number_field_tag :episode_number, player_options[:episode_number], class: "form-control", data: {action: "dynamic-form#change"}, min: 1, autocomplete: "off" %>
-        <%= label_tag t("helpers.label.podcast_player.episode_number") %>
-        <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+      <div class="row mb-4" data-controller="toggle-field">
+        <div class="col-6">
+          <div class="form-floating input-group" data-controller="dynamic-form">
+            <%= select_tag :all_episodes, embed_player_all_episodes_options(player_options[:all_episodes]), class: "form-control", data: {action: "dynamic-form#change toggle-field#displayOnlyThisField"}, include_blank: false %>
+            <%= label_tag t("helpers.label.podcast_player.episode_number") %>
+            <%= field_help_text t(".help.episode_number") %>
+            <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="<%= "d-none" unless player_options[:all_episodes] == "number" %> form-floating input-group" data-controller="dynamic-form" data-toggle-field-target="field" field="number">
+            <%= number_field_tag :episode_number, player_options[:episode_number], class: "form-control", data: {action: "dynamic-form#change"}, min: 1, autocomplete: "off" %>
+            <%= label_tag t("helpers.label.podcast_player.episode_number") %>
+            <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-6">
+          <div class="form-floating input-group" data-controller="dynamic-form">
+            <%= number_field_tag :season, player_options[:season], class: "form-control #{"form-control-blank" unless player_options[:season].present?}", data: {action: "dynamic-form#change"}, min: 0, autocomplete: "off" %>
+            <%= label_tag :season, t("helpers.label.podcast_player.season") %>
+            <%= field_help_text t(".help.season") %>
+            <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="form-floating input-group" data-controller="dynamic-form">
+            <%= select_tag :category, embed_player_category_options(podcast, player_options[:category]), include_blank: true, class: "form-control #{"form-control-blank" unless player_options[:category].present?}", data: {action: "dynamic-form#change"} %>
+            <%= label_tag :category, t("helpers.label.podcast_player.category") %>
+            <%= field_help_text t(".help.episode_category") %>
+            <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="form-floating input-group mb-2" data-controller="dynamic-form">
-      <%= number_field_tag :season, player_options[:season], class: "form-control", data: {action: "dynamic-form#change"}, min: 0, autocomplete: "off" %>
-      <%= label_tag :season, t("helpers.label.podcast_player.season") %>
-      <%= field_help_text t(".help.season") %>
-      <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+    <div class="card-footer">
+  <%= link_to t(".clear"), podcast_player_path(podcast), class: "btn btn-primary" %>
     </div>
-
-    <div class="form-floating input-group mb-2" data-controller="dynamic-form">
-      <%= select_tag :category, embed_player_category_options(podcast, player_options[:category]), include_blank: true, class: "form-control", data: {action: "dynamic-form#change"} %>
-      <%= label_tag :category, t("helpers.label.podcast_player.category") %>
-      <%= field_help_text t(".help.episode_category") %>
-      <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
-    </div>
-
-    <%= link_to t(".clear"), podcast_player_path(podcast), class: "btn btn-primary" %>
   </div>
 
   <div class="col-12 mb-4">
@@ -78,5 +91,4 @@
 
     <%= embed_player_podcast_iframe(podcast, player_options, true) %>
   </div>
-
 <% end %>
