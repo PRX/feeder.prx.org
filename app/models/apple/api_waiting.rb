@@ -1,8 +1,8 @@
-API_WAIT_INTERVAL = 2.seconds
-API_WAIT_TIMEOUT = 5.minutes
-
 module Apple
   module ApiWaiting
+    API_WAIT_INTERVAL = 2.seconds
+    API_WAIT_TIMEOUT = 5.minutes
+
     extend ActiveSupport::Concern
     included do
       def self.current_time
