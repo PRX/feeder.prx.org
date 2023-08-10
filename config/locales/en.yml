@@ -187,6 +187,16 @@ en:
           true: Serial
         subtitle: Teaser
         title: Title
+      podcast_player:
+        embed_player_type: Player Style
+        episode_number: Number of Episodes
+        season: Season Number
+        category: Category
+        embed_player_url: Embeddable Player Link
+        embed_player_iframe: Embeddable Player IFrame
+        episodes_options:
+          all: All Episodes
+          number: Capped Number of Episodes
   # specific pages/views
   episodes:
     confirm_destroy:
@@ -313,14 +323,14 @@ en:
   episode_player:
     form:
       enclosure_not_ready: No Media Files Uploaded
-      help:
+      help: &player_help
         copy: Copy the code for one of the following players, and place it on your webpage.
         types:
-          card: Something about a responsive card
-          card_fixed: Fixed width card something blah
-          standard: The standard player is responsive, meaning it automatically adjusts to the content column it is embedded in. Resize this panel to see how the player adjusts and looks at different widths.
+          card: The player style that shows off your podcast's artwork and will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 800px tall.
+          fixed_card: The player style that shows off your podcast's artwork. The size will NOT adjust to the user's screensize. Must always be 500px wide by 800px tall.
+          standard: Default view of the PRX Player, will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 200px tall.
         warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/links will begin to function as expected within a few minutes of publishing.
-      title:
+      title: &player_title
         copy: Copy and Use your Embed Code
         preview: Player
         warning: Warning
@@ -643,6 +653,18 @@ en:
       end_date: End date
       month: Weeks of the Month
       period: Weekly interval
+  podcast_player:
+    form:
+      help:
+        <<: *player_help
+        episode_number: Choose between showing all episodes or only a number of episodes for this playlist.
+        season: (Optional) Choose a single season for this playlist. Leaving this blank or 0 will not add a season filter.
+        episode_category: (Optional) Choose a single category for this playlist. Leaving this blank will not add a category filter.
+        playlist: Add any options below to better specify the playlist you want to create.
+      title:
+        <<: *player_title
+        playlist: Make it a playlist
+      clear: Clear options
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
