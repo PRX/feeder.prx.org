@@ -539,6 +539,7 @@ en:
       <<: *form_status
       title: Podcast Status
     index:
+      create: New Podcast
       search_podcasts: Search Podcasts
     podcast:
       create_episode: Create Episode
