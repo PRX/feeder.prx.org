@@ -278,9 +278,9 @@ en:
       help: &player_help
         copy: Copy the code for one of the following players, and place it on your webpage.
         types:
-          card: Something about a responsive card
-          fixed_card: Fixed width card something blah
-          standard: The standard player is responsive, meaning it automatically adjusts to the content column it is embedded in. Resize this panel to see how the player adjusts and looks at different widths.
+          card: The player style that shows off your podcast's artwork and will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 800px tall.
+          fixed_card: The player style that shows off your podcast's artwork. The size will NOT adjust to the user's screensize. Must always be 500px wide by 800px tall.
+          standard: Default view of the PRX Player, will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 200px tall.
         warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/links will begin to function as expected within a few minutes of publishing.
       title: &player_title
         copy: Copy and Use your Embed Code
