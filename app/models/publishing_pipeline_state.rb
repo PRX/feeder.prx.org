@@ -127,6 +127,8 @@ class PublishingPipelineState < ApplicationRecord
         else
           PublishFeedJob.perform_now(podcast, latest_unfinished_item)
         end
+
+        latest_unfinished_item
       end
     end
   end
