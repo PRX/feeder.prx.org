@@ -83,6 +83,22 @@ describe StoryUpdateWorker do
     end
   end
 
+  it "will not update via a deleted story" do
+    episode = create(:episode, prx_uri: "/api/v1/stories/#{prx_story_id}", podcast: podcast, deleted_at: Time.now)
+    assert episode.deleted?
+    podcast.stub(:copy_media, true) do
+      episode.stub(:copy_media, true) do
+        episode.stub(:podcast, podcast) do
+          worker.stub(:get_account_token, "token") do
+            worker.stub(:get_story, ->(_) { raise HyperResource::ClientError.new("404", {body: "Resource Not Found", response: "Gone!"}) }) do
+              assert_equal :gone, worker.perform(nil, {subject: "story", action: "update", body: JSON.parse(prx_story_update)})
+            end
+          end
+        end
+      end
+    end
+  end
+
   it "can delete an episode" do
     episode = create(:episode, prx_uri: "/api/v1/stories/99999", podcast: podcast)
     Episode.stub(:by_prx_story, episode) do
