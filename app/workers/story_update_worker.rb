@@ -12,6 +12,7 @@ class StoryUpdateWorker < ApplicationWorker
   def receive_story_update(data)
     parse_message(data)
 
+    return :gone.tap { Rails.logger.warn("Gone story!") } if story_deleted?
     # don't allow incomplete stories to alter a published episode
     return if episode.try(:published?) && action == "update" && story.status != "complete"
 
