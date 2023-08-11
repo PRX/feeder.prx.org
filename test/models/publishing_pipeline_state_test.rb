@@ -46,7 +46,7 @@ describe PublishingPipelineState do
 
       assert_difference "PublishingPipelineState.count", 1 do
         res = PublishingPipelineState.attempt!(podcast)
-        assert_equal PublishFeedJob, res.class
+        assert_equal PublishingQueueItem, res.class
       end
     end
   end

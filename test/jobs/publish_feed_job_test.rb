@@ -55,6 +55,33 @@ describe PublishFeedJob do
         assert_equal :mismatched, job.perform(podcast, pub_item)
       end
     end
+
+    it "will skip the publishing if the pub items are null" do
+      job.stub(:client, stub_client) do
+        assert PublishingQueueItem.unfinished_items(podcast).empty?
+
+        assert job.null_publishing_item?(podcast, nil)
+        assert_equal :null, job.perform(podcast, nil)
+
+        # There is no currently running publishing pipeline
+        pub_item = PublishingQueueItem.create(podcast: podcast)
+        assert job.null_publishing_item?(podcast, pub_item)
+        assert_equal :null, job.perform(podcast, pub_item)
+
+        # `settle_remaining` is called at the end of the publishing job
+        # This means pub_item has been picked up and scheduled
+        assert_equal "created", pub_item.reload.last_pipeline_state
+        PublishingPipelineState.complete!(podcast)
+        assert_equal "complete", pub_item.reload.last_pipeline_state
+
+        # Start a pipeline: Create publishing item and transition that item's pipeline to :created
+        queue_item = PublishingPipelineState.start_pipeline!(podcast)
+
+        refute job.null_publishing_item?(podcast, queue_item)
+        res = job.perform(podcast, queue_item)
+        refute_equal :null, res
+      end
+    end
   end
 
   describe "publishing to apple" do

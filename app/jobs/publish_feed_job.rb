@@ -10,6 +10,7 @@ class PublishFeedJob < ApplicationJob
   def perform(podcast, pub_item)
     # Consume the SQS message, return early, if we have racing threads trying to
     # grab the current publishing pipeline.
+    return :null if null_publishing_item?(podcast, pub_item)
     return :mismatched if mismatched_publishing_item?(podcast, pub_item)
 
     PublishingPipelineState.start!(podcast)
@@ -84,6 +85,20 @@ class PublishFeedJob < ApplicationJob
     end
   end
 
+  def null_publishing_item?(podcast, pub_item)
+    current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
+
+    null_pub_item = pub_item.nil? || current_pub_item.nil?
+
+    if null_pub_item
+      Rails.logger.error("Null publishing_queue_item in PublishFeedJob", {
+        podcast_id: podcast.id,
+        incoming_publishing_item_id: pub_item&.id,
+        current_publishing_item_id: current_pub_item&.id
+      })
+    end
+  end
+
   def mismatched_publishing_item?(podcast, pub_item)
     current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
 
@@ -92,8 +107,8 @@ class PublishFeedJob < ApplicationJob
     if mismatch
       Rails.logger.error("Mismatched publishing_queue_item in PublishFeedJob", {
         podcast_id: podcast.id,
-        incoming_publishing_item_id: pub_item.id,
-        current_publishing_item_id: current_pub_item.id
+        incoming_publishing_item_id: pub_item&.id,
+        current_publishing_item_id: current_pub_item&.id
       })
     end
 
