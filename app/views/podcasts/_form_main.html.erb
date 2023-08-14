@@ -1,27 +1,31 @@
 <div class="col-12 mb-4">
   <div class="form-floating input-group">
     <%= form.text_field :title %>
-    <%= form.label :title, required: "true" %>
+    <%= form.label :title, required: true %>
     <%= field_help_text t(".help.title") %>
   </div>
 </div>
 
 <div class="col-12 mb-4">
   <div class="form-floating input-group">
-    <%= form.text_field :subtitle %>
-    <%= form.label :subtitle %>
-    <%= field_help_text t(".help.subtitle") %>
+    <%= form.fields_for :default_feed do |fields| %>
+      <%= fields.text_field :subtitle %>
+      <%= fields.label :subtitle %>
+      <%= field_help_text t(".help.subtitle") %>
+    <% end %>
   </div>
 </div>
 
 <div class="col-12 mb-4">
   <div class="card shadow border-0">
     <div class="card-header card-header-light d-flex justify-content-between">
-      <h5 class="card-title flex-grow-1"><%= t("helpers.label.podcast.description") %></h5>
+      <h2 class="card-title h5 flex-grow-1"><%= t("helpers.label.podcast.description") %></h2>
       <%= help_text t(".help.description") %>
     </div>
     <div class="card-body">
-      <%= form.trix_editor :description %>
+      <%= form.fields_for :default_feed do |fields| %>
+        <%= fields.trix_editor :description %>
+      <% end %>
     </div>
   </div>
 </div>
@@ -30,39 +34,42 @@
   <div class="form-floating">
     <% data = {confirm_field_target: "field", confirm_with: t(".confirm.owner")} %>
     <%= form.select :prx_account_uri, podcast_account_name_options(podcast), {}, data: podcast.persisted? ? data : {} %>
-    <%= form.label :prx_account_uri %>
+    <%= form.label :prx_account_uri, required: true %>
   </div>
 </div>
 
 <div class="col-6 mb-4">
   <div class="form-floating input-group">
     <%= form.select :explicit, podcast_explicit_options %>
-    <%= form.label :explicit %>
+    <%= form.label :explicit, required: true %>
     <%= field_help_text t(".help.explicit") %>
   </div>
 </div>
 
 <div class="col-6 mb-4">
-  <%# HACK: display nested validation errors %>
-  <% nested_errors = podcast.errors.full_messages_for("itunes_categories.name").join(", ") %>
-  <% klass = nested_errors.present? ? "is-invalid form-select" : "form-select" %>
-
   <div class="form-floating input-group" data-controller="dynamic-form">
-    <%= form.select :itunes_category, itunes_category_options, {include_blank: true}, class: klass, data: {action: "dynamic-form#change"} %>
-    <% if nested_errors.present? %><div class="invalid-feedback"><%= nested_errors %></div><% end %>
-    <%= form.label :itunes_category %>
-    <%= field_help_text t(".help.itunes_category") %>
-    <%# update subcategory turbo-frame when category changes %>
-    <a hidden href="<%= new_podcast_path %>" data-dynamic-form-target="link" data-turbo-frame="itunes-subcategory"></a>
+    <%= form.fields_for :default_feed do |fields| %>
+      <%# HACK: display nested validation errors %>
+      <% nested_errors = fields.object.errors.full_messages_for("itunes_categories.name").join(", ") %>
+      <% klass = nested_errors.present? ? "is-invalid form-select" : "form-select" %>
+      <%= fields.select :itunes_category, itunes_category_options, {include_blank: true}, class: klass, data: {action: "dynamic-form#change"} %>
+      <% if nested_errors.present? %><div class="invalid-feedback"><%= nested_errors %></div><% end %>
+      <%= fields.label :itunes_category, required: true %>
+      <%= field_help_text t(".help.itunes_category") %>
+      <%# update subcategory turbo-frame when category changes %>
+      <a hidden href="<%= new_podcast_path %>" data-dynamic-form-target="link" data-turbo-frame="itunes-subcategory"></a>
+    <% end %>
   </div>
 </div>
 
 <div class="col-6 mb-4">
   <%= turbo_frame_tag "itunes-subcategory" do %>
     <div class="form-floating">
-      <% opts = itunes_subcategory_options(podcast.itunes_category) %>
-      <%= form.select :itunes_subcategory, opts, {include_blank: true}, disabled: opts.blank? %>
-      <%= form.label :itunes_subcategory %>
+      <%= form.fields_for :default_feed do |fields| %>
+        <% opts = itunes_subcategory_options(podcast.itunes_category) %>
+        <%= fields.select :itunes_subcategory, opts, {include_blank: true}, disabled: opts.blank? %>
+        <%= fields.label :itunes_subcategory %>
+      <% end %>
     </div>
   <% end %>
 </div>
@@ -70,7 +77,7 @@
 <div class="col-6 mb-4">
   <div class="form-floating input-group">
     <%= form.select :serial_order, podcast_serial_order_options %>
-    <%= form.label :serial_order %>
+    <%= form.label :serial_order, required: true %>
     <%= field_help_text t(".help.serial_order") %>
   </div>
 </div>

@@ -46,7 +46,7 @@ describe PublishingPipelineState do
 
       assert_difference "PublishingPipelineState.count", 1 do
         res = PublishingPipelineState.attempt!(podcast)
-        assert_equal PublishFeedJob, res.class
+        assert_equal PublishingQueueItem, res.class
       end
     end
   end
@@ -163,6 +163,40 @@ describe PublishingPipelineState do
 
       refute PublishingPipelineState.expired?(podcast)
       refute PublishingPipelineState.expired?(podcast2)
+    end
+  end
+
+  describe ".retry_failed_pipelines!" do
+    it "should retry failed pipelines" do
+      PublishingPipelineState.start_pipeline!(podcast)
+      assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+
+      # it fails
+      PublishingPipelineState.error!(podcast)
+      assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # it retries
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+    end
+
+    it "ignores previously errored pipelines back in the queue" do
+      # A failed pipeline
+      PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.error!(podcast)
+      assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # A new pipeline
+      PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.publish_rss!(podcast)
+      assert_equal ["created", "published_rss"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+      publishing_item = PublishingPipelineState.latest_pipeline(podcast).map(&:publishing_queue_item_id).uniq
+
+      # it does not retry the errored pipeline
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created", "published_rss"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+      # it's the same publishing item
+      assert_equal publishing_item, PublishingPipelineState.latest_pipeline(podcast).map(&:publishing_queue_item_id).uniq
     end
   end
 

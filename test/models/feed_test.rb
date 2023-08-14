@@ -285,4 +285,28 @@ describe Feed do
       refute feed1.publish_to_apple?(create(:apple_config, public_feed: create(:feed), private_feed: create(:feed)))
     end
   end
+
+  describe "#itunes_category" do
+    it "is required for default feeds" do
+      assert_equal 1, feed1.itunes_categories.count
+      assert_equal "Leisure", feed1.itunes_category
+      assert_equal "Aviation", feed1.itunes_subcategory
+
+      feed1.itunes_category = nil
+      assert feed1.invalid?
+      assert_match(/can't be blank/i, feed1.errors.full_messages_for("itunes_categories.name").join)
+    end
+
+    it "can be deleted for non-default feeds" do
+      create(:itunes_category, feed: feed2)
+
+      assert_equal 1, feed2.itunes_categories.count
+      assert_equal "Leisure", feed2.itunes_category
+      assert_equal "Aviation", feed2.itunes_subcategory
+
+      feed2.itunes_category = nil
+      assert feed2.valid?
+      assert feed2.itunes_categories[0].marked_for_destruction?
+    end
+  end
 end

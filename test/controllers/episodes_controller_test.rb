@@ -2,8 +2,8 @@ require "test_helper"
 
 class EpisodesControllerTest < ActionDispatch::IntegrationTest
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/123") }
-  let(:episode) { create(:episode, podcast: podcast, published_at: nil) }
-  let(:params) { {title: "title", segment_count: 1} }
+  let(:episode) { create(:episode, podcast: podcast, published_at: nil, segment_count: 1) }
+  let(:params) { {title: "title", description: "description"} }
 
   setup_current_user { build(:user, account_id: 123) }
 

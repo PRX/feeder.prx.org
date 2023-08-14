@@ -92,6 +92,12 @@ en:
           full: Full
           trailer: Trailer
           bonus: Bonus
+        media_statuses:
+          complete: Complete
+          error: Error
+          incomplete: Incomplete
+          invalid: Invalid
+          processing: Processing
         medium: File Format
         mediums:
           audio: Audio - upload multiple audio files
@@ -127,6 +133,8 @@ en:
         include_donation_url: Include Donation Form
         include_podcast_value: Include Micropayments Wallet
         include_tags: Include Categories
+        itunes_category: Category
+        itunes_subcategory: Sub-Category
         new_feed_url: New Feed URL
         paid: Paid Ads
         private: Private (unlisted)
@@ -164,8 +172,6 @@ en:
           false: Clean
           true: Explicit
         id: ID
-        itunes_category: Category
-        itunes_subcategory: Sub-Category
         language: Language
         link: Homepage Link
         managing_editor_email: Managing Editor Email
@@ -181,6 +187,16 @@ en:
           true: Serial
         subtitle: Teaser
         title: Title
+      podcast_player:
+        embed_player_type: Player Style
+        episode_number: Number of Episodes
+        season: Season Number
+        category: Category
+        embed_player_url: Embeddable Player Link
+        embed_player_iframe: Embeddable Player IFrame
+        episodes_options:
+          all: All Episodes
+          number: Capped Number of Episodes
   # specific pages/views
   episodes:
     confirm_destroy:
@@ -218,9 +234,6 @@ en:
         season_number: If your episode is part of a season add it here.
         subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
         title: Write a short, Tweetable title. Think newspaper headline.
-    form_media:
-      title: Media Files
-      help: Enter the file format for this episode.
     form_status:
       <<: *form_status
       create: Create Draft
@@ -240,6 +253,35 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+    missing_drafts:
+      message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
+      okay: Okay
+      title: Missing Episode Drafts
+    tabs:
+      edit: New Episode
+      media: Media Files
+      player: Embeddable Player
+      segmenter: Audio Segmenter
+    update:
+      error: Unable to save
+      media_not_ready: Audio not ready
+      notice: Episode updated
+  episode_media:
+    form:
+      confirm: Discard unsaved changes?
+    form_main:
+      help:
+        medium: Enter the file format for this episode.
+        segment_count: Enter the number of ad breaks (midrolls) in this episode. This helps us to better predict ad inventory for your podcast.
+    form_contents:
+      title: Upload Files
+    form_status:
+      <<: *form_status
+      title: Media Status
+    form_uncut:
+      title:
+        media: Upload File
+        segmenter: Mark Segments
     media:
       complete:
         unable: Unable to play file
@@ -260,48 +302,40 @@ en:
         hint: Upload a file
       processing:
         hint: Processing
-      segment_count:
-        help: Enter the number of ad breaks (midrolls) in this episode. This helps us to better predict ad inventory for your podcast.
-    missing_drafts:
-      message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
-      okay: Okay
-      title: Missing Episode Drafts
+    segmenter:
+      modal:
+        label:
+          file_name: File Name
+          position: "#"
+          slice_end: Slice End
+          slice_start: Slice Start
+          status: Status
+        title: Audio Segments
+      segmenter:
+        label:
+          prefix: Midroll
+    show:
+      title: Media Files
     update:
       error: Unable to save
-      media_not_ready: Audio not ready
-      notice: Episode updated
+      media_not_ready: Published episodes cannot have empty media
+      notice: Media files updated
   episode_player:
     form:
       enclosure_not_ready: No Media Files Uploaded
-      help:
+      help: &player_help
         copy: Copy the code for one of the following players, and place it on your webpage.
         types:
-          card: Something about a responsive card
-          card_fixed: Fixed width card something blah
-          standard: The standard player is responsive, meaning it automatically adjusts to the content column it is embedded in. Resize this panel to see how the player adjusts and looks at different widths.
+          card: The player style that shows off your podcast's artwork and will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 800px tall.
+          fixed_card: The player style that shows off your podcast's artwork. The size will NOT adjust to the user's screensize. Must always be 500px wide by 800px tall.
+          standard: Default view of the PRX Player, will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 200px tall.
         warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/links will begin to function as expected within a few minutes of publishing.
-      title:
+      title: &player_title
         copy: Copy and Use your Embed Code
         preview: Player
         warning: Warning
     show:
       title: Embeddable Player
-  episode_segmenter:
-    form:
-      confirm: Discard unsaved changes?
-      update: Save
-      updating: Saving
-    incomplete:
-      error_html: There was a problem processing <a href="%{url}" data-turbo-frame="_top">your audio file</a>
-      missing_html: You haven't uploaded an <a href="%{url}" data-turbo-frame="_top">audio file</a> yet
-      processing_html: Your <a href="%{url}" data-turbo-frame="_top">audio file</a> is still processing
-    segmenter:
-      label_prefix: Midroll
-    show:
-      title: Audio Segmenter
-    update:
-      error: Unable to save
-      notice: Segments updated
   feeds:
     confirm_destroy:
       <<: *form_status
@@ -354,6 +388,7 @@ en:
         description: Enter an alternate description
         include_donation_url: In some cases, you may wish to exclude your donation URL from a private feed.
         include_podcast_value: In some cases, you may wish to exclude micropayments from a private feed.
+        itunes_category: Enter an alternate <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">iTunes category and subcategory</a>, differentiating this Feed from the Podcast.
         subtitle: Enter an alternate teaser
     form_status:
       <<: *form_status
@@ -404,10 +439,24 @@ en:
     update:
       <<: *update
   images:
+    error:
+      processing: There was a problem processing your image
     help:
       episode_image: Provide an image for your episode, if desired. Image dimensions must be square.
       feed_image: Optionally provide an alternate image to use for smaller display purposes.
       itunes_image: This image will be used as the cover image for this series. Image dimensions must be square.
+    label:
+      close: Close
+      dimensions: Dimensions
+      file: File
+      format: Format
+      image_file: Image File
+      loading: Loading...
+      processing: Processing
+      retry: Retry
+      size: Size
+      status: Status
+      upload: Upload a file
     title:
       episode_image: Cover Image
       feed_image: Thumbnail Image
@@ -501,6 +550,7 @@ en:
       <<: *form_status
       title: Podcast Status
     index:
+      create: New Podcast
       search_podcasts: Search Podcasts
     podcast:
       create_episode: Create Episode
@@ -604,6 +654,18 @@ en:
       end_date: End date
       month: Weeks of the Month
       period: Weekly interval
+  podcast_player:
+    form:
+      help:
+        <<: *player_help
+        episode_number: Choose between showing all episodes or only a number of episodes for this playlist.
+        season: (Optional) Choose a single season for this playlist. Leaving this blank or 0 will not add a season filter.
+        episode_category: (Optional) Choose a single category for this playlist. Leaving this blank will not add a category filter.
+        playlist: Add any options below to better specify the playlist you want to create.
+      title:
+        <<: *player_title
+        playlist: Make it a playlist
+      clear: Clear options
   podcast_switcher:
     dropdown:
       all: View all my Podcasts

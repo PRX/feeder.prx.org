@@ -18,10 +18,6 @@ describe Podcast do
     assert podcast.default_feed.file_name == Feed::DEFAULT_FILE_NAME
   end
 
-  it "has iTunes categories" do
-    assert_respond_to podcast, :itunes_categories
-  end
-
   it "is episodic or serial" do
     assert_match(/episodic/, podcast.itunes_type)
     podcast.update(serial_order: true)
@@ -59,16 +55,16 @@ describe Podcast do
   end
 
   it "gets and sets itunes categories" do
-    assert_equal 1, podcast.itunes_categories.count
-    assert_equal 2, podcast.itunes_categories.first.subcategories.count
+    assert_equal 1, podcast.default_feed.itunes_categories.count
+    assert_equal 2, podcast.default_feed.itunes_categories.first.subcategories.count
     assert_equal "Leisure", podcast.itunes_category
     assert_equal "Aviation", podcast.itunes_subcategory
 
     podcast.itunes_category = "Arts"
     podcast.itunes_subcategory = "Books"
 
-    assert_equal 1, podcast.itunes_categories.count
-    assert_equal 1, podcast.itunes_categories.first.subcategories.count
+    assert_equal 1, podcast.default_feed.itunes_categories.count
+    assert_equal 1, podcast.default_feed.itunes_categories.first.subcategories.count
     assert_equal "Arts", podcast.itunes_category
     assert_equal "Books", podcast.itunes_subcategory
   end
@@ -92,6 +88,15 @@ describe Podcast do
         obj = MiniTest::Mock.new
         obj.expect :call, nil
         PublishingPipelineState.stub(:expire_pipelines!, obj) do
+          Podcast.release!
+        end
+        obj.verify
+      end
+
+      it "retries latest publishing pipelines with errors" do
+        obj = MiniTest::Mock.new
+        obj.expect :call, nil
+        PublishingPipelineState.stub(:retry_failed_pipelines!, obj) do
           Podcast.release!
         end
         obj.verify

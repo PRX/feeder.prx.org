@@ -60,14 +60,19 @@ describe FeedBuilder do
     assert_equal image_xml.css("description").text, podcast.subtitle
   end
 
-  it "displays iTunes categories correctly" do
-    category = create(:itunes_category, podcast: podcast)
+  it "displays default feed iTunes categories" do
     cat_node = rss_feed.at_css("itunes|category")
-    subcats = category.subcategories
+    assert_equal cat_node.attributes["text"].value, "Leisure"
+    assert_equal cat_node.element_children[0].attributes["text"].value, "Aviation"
+    assert_equal cat_node.element_children[1].attributes["text"].value, "Automotive"
+  end
 
-    assert_equal cat_node.attributes["text"].value, category.name
-    assert_equal cat_node.element_children[0].attributes["text"].value, subcats[0]
-    assert_equal cat_node.element_children[1].attributes["text"].value, subcats[1]
+  it "displays sub-feed iTunes categories" do
+    create(:itunes_category, feed: feed, name: "Arts", subcategories: ["Books"])
+
+    cat_node = rss_feed.at_css("itunes|category")
+    assert_equal cat_node.attributes["text"].value, "Arts"
+    assert_equal cat_node.element_children[0].attributes["text"].value, "Books"
   end
 
   it "displays correct episode titles" do

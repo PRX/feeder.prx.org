@@ -40,6 +40,17 @@ module Apple
       eps
         .reject(&:synced_with_apple?)
         .reject(&:video_content_type?)
+        .reject(&:archived?)
+    end
+
+    def only_episodes_with_apple_state(eps)
+      # Only select episodes that have an remote apple state,
+      # as determined by the sync log
+      eps.reject do |ep|
+        Rails.logger.info("Episode lacks remote Apple state", {episode_id: ep.feeder_id}) if ep.apple_new?
+
+        ep.apple_new?
+      end
     end
 
     def poll_all_episodes!
@@ -57,6 +68,9 @@ module Apple
       Rails.logger.tagged("Apple::Publisher#poll!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           poll_episodes!(eps)
+
+          eps = only_episodes_with_apple_state(eps)
+
           poll_podcast_containers!(eps)
           poll_podcast_deliveries!(eps)
           poll_podcast_delivery_files!(eps)
@@ -189,9 +203,6 @@ module Apple
         res = Apple::PodcastContainer.create_podcast_containers(api, eps)
         Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})
 
-        res = Apple::Episode.update_audio_container_reference(api, eps)
-        Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
-
         reset = Apple::PodcastContainer.reset_source_file_metadata(eps)
         Rails.logger.info("Reset podcast containers for expired source urls.", {reset_count: reset.length})
 
@@ -247,6 +258,9 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
         ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
+
+        res = Apple::Episode.update_audio_container_reference(api, eps)
+        Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
       end
     end
 

@@ -11,10 +11,10 @@ class EpisodesController < ApplicationController
         policy_scope(Episode).all
       end
 
-    filtered_episodes = episodes.filter_by_title(params[:q])
+    filtered_episodes = episodes.filter_by_title(params[:q]).includes(:contents, :uncut)
 
-    @published_episodes = filtered_episodes.published.order(published_at: :desc).page(params[:published_page]).per(10)
-    @scheduled_episodes = filtered_episodes.draft_or_scheduled.order(released_at: :asc).page(params[:scheduled_page]).per(10)
+    @published_episodes = filtered_episodes.published.dropdate_desc.page(params[:published_page]).per(10)
+    @scheduled_episodes = filtered_episodes.draft_or_scheduled.dropdate_asc.page(params[:scheduled_page]).per(10)
   end
 
   # GET /episodes/1
@@ -51,7 +51,6 @@ class EpisodesController < ApplicationController
         @episode.podcast&.publish!
         format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
-        @episode.build_contents.each(&:valid?)
         flash.now[:error] = t(".media_not_ready")
         format.html { render :edit, status: :unprocessable_entity }
       else
@@ -72,7 +71,6 @@ class EpisodesController < ApplicationController
         @episode.podcast&.publish!
         format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
-        @episode.build_contents.each(&:valid?)
         flash.now[:error] = t(".media_not_ready")
         format.html { render :edit, status: :unprocessable_entity }
       else
@@ -128,18 +126,13 @@ class EpisodesController < ApplicationController
       :episode_number,
       :author_name,
       :author_email,
-      :medium,
-      :segment_count,
-      :ad_breaks,
       :released_at,
       :publishing_status,
       :url,
       :item_guid,
       :original_guid,
       categories: [],
-      contents_attributes: %i[id position original_url file_size _destroy _retry],
-      images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
-      uncut_attributes: %i[id original_url file_size _destroy _retry]
+      images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
     )
   end
 end

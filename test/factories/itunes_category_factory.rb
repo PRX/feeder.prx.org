@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :itunes_category do
-    podcast
+    feed
     name { "Leisure" }
     subcategories { ["Aviation", "Automotive"] }
   end

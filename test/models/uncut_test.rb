@@ -14,7 +14,7 @@ describe Uncut do
       uncut.slice_contents
       assert_equal 3, episode.contents.size
       assert_equal [1, 2, 3], episode.contents.pluck(:position)
-      assert_equal [uncut.original_url], episode.contents.pluck(:original_url).uniq
+      assert_equal [uncut.url], episode.contents.pluck(:original_url).uniq
       assert_equal segs, episode.contents.pluck(:segmentation)
       assert_equal [true, true, true], episode.contents.map(&:changed?)
     end
@@ -29,7 +29,7 @@ describe Uncut do
 
       assert_equal 5, episode.contents.size
       assert_equal [1, 2, 3, 1, 3], episode.contents.pluck(:position)
-      assert_equal [uncut.original_url], episode.contents.pluck(:original_url).uniq
+      assert_equal [uncut.url], episode.contents.pluck(:original_url).uniq
       assert_equal segs + [[0.5, 1], [3.5, nil]], episode.contents.pluck(:segmentation)
       assert_equal [false, false, false, true, true], episode.contents.map(&:changed?)
 

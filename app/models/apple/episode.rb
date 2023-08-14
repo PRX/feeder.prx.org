@@ -12,11 +12,14 @@ module Apple
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
 
+    EPISODE_ASSET_WAIT_TIMEOUT = 8.minutes.freeze
+    EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
+
     # In the case where the episodes state is not yet ready to publish, but the
     # underlying models are ready. Poll the episodes audio asset state but
     # guard against waiting for episode assets that will never be processed.
     def self.wait_for_asset_state(api, eps)
-      wait_for(eps) do |remaining_eps|
+      wait_for(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL) do |remaining_eps|
         Rails.logger.info("Probing for episode audio asset state")
         unwrapped = get_episodes(api, remaining_eps)
 
@@ -128,7 +131,7 @@ module Apple
       upsert_sync_logs(episodes, episode_bridge_results)
 
       join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        ep.feeder_episode.apple_mark_for_reupload if apple_mark_for_reupload
+        ep.feeder_episode.apple_mark_for_reupload! if apple_mark_for_reupload
         Rails.logger.info("Removed audio container reference for episode", {episode_id: ep.feeder_id})
       end
 
@@ -188,6 +191,10 @@ module Apple
 
     def feeder_id
       feeder_episode.id
+    end
+
+    def id
+      feeder_id
     end
 
     def private_feed
@@ -385,8 +392,14 @@ module Apple
       apple_json&.dig("attributes", "publishingState") == "DRAFTING"
     end
 
+    def archived?
+      apple_json&.dig("attributes", "publishingState") == "ARCHIVED"
+    end
+
     def container_upload_complete?
-      feeder_episode.apple_podcast_container.container_upload_satisfied?
+      return false if missing_container?
+
+      podcast_container.container_upload_satisfied?
     end
 
     def audio_asset_vendor_id
@@ -434,6 +447,10 @@ module Apple
     def reset_for_upload!
       container.podcast_deliveries.each(&:destroy)
       feeder_episode.reload
+    end
+
+    def needs_delivery?
+      podcast_container&.needs_delivery? || apple_hosted_audio_asset_container_id.blank?
     end
 
     def synced_with_apple?

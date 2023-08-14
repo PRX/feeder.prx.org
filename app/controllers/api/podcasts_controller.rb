@@ -9,7 +9,7 @@ class Api::PodcastsController < Api::BaseController
   after_action :publish, only: [:create, :update, :destroy]
 
   def included(relation)
-    relation.includes(:itunes_categories, default_feed: [:itunes_images, :feed_images])
+    relation.includes(default_feed: [:itunes_categories, :itunes_images, :feed_images])
   end
 
   def show

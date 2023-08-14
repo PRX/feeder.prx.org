@@ -137,8 +137,8 @@ describe ImageFile do
       refute image.tap { |i| i.status = "processing" }.retryable?
       refute image.tap { |i| i.status = "complete" }.retryable?
 
-      # updated 1 minute ago
-      image.updated_at = Time.now - 60
+      # updated 2 minutes ago
+      image.updated_at = Time.now - 120
       assert image.tap { |i| i.status = "started" }.retryable?
       assert image.tap { |i| i.status = "processing" }.retryable?
       refute image.tap { |i| i.status = "complete" }.retryable?
@@ -151,9 +151,11 @@ describe ImageFile do
       mock_copy.expect :call, nil, [true]
       i = create(:feed_image)
 
-      i.stub(:copy_media, mock_copy) do
-        i.retry!
-        assert i.status_retrying?
+      i.stub(:retryable?, true) do
+        i.stub(:copy_media, mock_copy) do
+          i.retry!
+          assert i.status_retrying?
+        end
       end
 
       mock_copy.verify

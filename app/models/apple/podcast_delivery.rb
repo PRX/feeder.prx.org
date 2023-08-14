@@ -8,7 +8,7 @@ module Apple
 
     default_scope { includes(:apple_sync_log) }
 
-    has_one :apple_sync_log, -> { podcast_deliveries }, foreign_key: :feeder_id, class_name: "SyncLog"
+    has_one :apple_sync_log, -> { podcast_deliveries }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
     has_many :podcast_delivery_files, dependent: :destroy
     belongs_to :episode, class_name: "::Episode"
     belongs_to :podcast_container, class_name: "::Apple::PodcastContainer"
@@ -54,14 +54,14 @@ module Apple
       res
     end
 
-    def self.select_containers_for_delivery(podcast_containers)
-      podcast_containers
+    def self.select_episodes_for_delivery(episodes)
+      episodes
         .select(&:needs_delivery?)
         .compact
     end
 
     def self.create_podcast_deliveries(api, episodes)
-      podcast_containers = episodes.filter_map do |ep|
+      episodes = episodes.filter do |ep|
         if ep.podcast_container.nil?
           missing_container_for_episode(ep)
           next
@@ -77,7 +77,8 @@ module Apple
       # The overall publishing workflow dependes on the assumption that there is
       # a delivery present. If we don't create a delivery here, we short-circuit
       # subsequent steps (no uploads, no audio linking).
-      podcast_containers = select_containers_for_delivery(podcast_containers)
+      episodes = select_episodes_for_delivery(episodes)
+      podcast_containers = episodes.map(&:podcast_container)
 
       (response, errs) =
         api.bridge_remote_and_retry("createPodcastDeliveries",

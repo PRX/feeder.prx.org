@@ -34,8 +34,8 @@ class PodcastsController < ApplicationController
   def show
     authorize @podcast
 
-    @recently_published = @podcast.episodes.published.order(published_at: :desc).limit(3)
-    @next_scheduled = @podcast.episodes.draft_or_scheduled.order(released_at: :asc).limit(3)
+    @recently_published = @podcast.episodes.published.dropdate_desc.limit(3)
+    @next_scheduled = @podcast.episodes.draft_or_scheduled.dropdate_asc.limit(3)
 
     @metrics_jwt = prx_jwt
     @metrics_castle_root = castle_root
@@ -48,7 +48,6 @@ class PodcastsController < ApplicationController
   # GET /podcasts/new
   def new
     @podcast = Podcast.new(podcast_params)
-    @podcast.set_default_feed
 
     # TODO: get the default account from ID somehow
     @podcast.prx_account_uri = helpers.podcast_account_name_options(@podcast).first.last
@@ -126,12 +125,8 @@ class PodcastsController < ApplicationController
     nilify params.fetch(:podcast, {}).permit(
       :title,
       :prx_account_uri,
-      :subtitle,
-      :description,
       :link,
       :explicit,
-      :itunes_category,
-      :itunes_subcategory,
       :serial_order,
       :language,
       :owner_name,
@@ -144,6 +139,10 @@ class PodcastsController < ApplicationController
       :complete,
       default_feed_attributes: [
         :id,
+        :subtitle,
+        :description,
+        :itunes_category,
+        :itunes_subcategory,
         feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
         itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
       ]

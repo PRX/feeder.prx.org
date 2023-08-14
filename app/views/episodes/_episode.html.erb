@@ -6,6 +6,7 @@
           <%= local_date(episode.published_or_released_date, format: :short) %>
         <% end %>
       </p>
+
       <div class="episode-card-inner">
         <h2 class="episode-card-title"><%= episode.title %></h2>
         <% if episode.subtitle.present? %>
@@ -13,6 +14,13 @@
         <% end %>
 
         <%= link_to "Go to Episode", edit_episode_path(episode.guid), class: "stretched-link" %>
+      </div>
+
+      <div class="episode-card-badges">
+        <% status = episode_media_status(episode) %>
+        <span class="badge rounded-pill prx-badge-<%= status %>">
+          <%= t("helpers.label.episode.media_statuses.#{status}") %>
+        </span>
       </div>
     </div>
   </div>

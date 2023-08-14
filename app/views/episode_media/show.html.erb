@@ -1,0 +1,5 @@
+<% content_for :title, "#{@episode.title} - #{t(".title")}" %>
+
+<%= render "episodes/tabs" %>
+
+<%= render "form", episode: @episode %>

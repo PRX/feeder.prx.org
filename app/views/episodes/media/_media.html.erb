@@ -1,9 +1,0 @@
-<% if upload_new?(media) %>
-  <%= render "episodes/media/new", form: form, episode: episode, media: media %>
-<% elsif upload_processing?(media) %>
-  <%= render "episodes/media/processing", form: form, episode: episode, media: media %>
-<% elsif upload_complete?(media) %>
-  <%= render "episodes/media/complete", form: form, episode: episode, media: media %>
-<% else %>
-  <%= render "episodes/media/error", form: form, episode: episode, media: media %>
-<% end %>

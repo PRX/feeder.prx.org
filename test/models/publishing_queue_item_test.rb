@@ -35,8 +35,64 @@ describe PublishingQueueItem do
       pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
       pqi3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
 
-      assert_equal [pqi3, pqi2, pqi1].sort, PublishingQueueItem.latest_attempted.sort
+      assert_equal [pqi1, pqi2, pqi3].sort, PublishingQueueItem.unfinished_items(podcast).sort
+      assert_equal [pqi3].sort, PublishingQueueItem.latest_attempted.sort
       assert_equal pqi3.created_at, PublishingQueueItem.latest_attempted.first.created_at
+    end
+  end
+
+  describe ".latest_failed" do
+    it "returns the most recent failed publishing attempt for each podcast" do
+      pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+      PublishingPipelineState.error!(podcast)
+
+      _pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+      PublishingPipelineState.complete!(podcast)
+
+      pqi3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+
+      assert_equal [pqi3].sort, PublishingQueueItem.unfinished_items(podcast).sort
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+
+      PublishingPipelineState.error!(podcast)
+      assert_equal [pqi3].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+    end
+
+    it "can be combined with other scopes to query the current failed item" do
+      # create a failed item, transition to `created` pipeline state and then transition to `error`
+      pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+      PublishingPipelineState.error!(podcast)
+
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
+
+      pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+      assert_equal [].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
+
+      PublishingPipelineState.error!(podcast)
+
+      assert_equal [pqi2].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+      assert_equal [pqi2].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
+
+      _pqi3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+
+      assert_equal [pqi2].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+      assert_equal [].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
+    end
+
+    it "returns the most recent expired publishing attempt for each podcast" do
+      pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+      PublishingPipelineState.expire!(podcast)
+
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
+
+      _pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+      assert_equal [].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
     end
   end
 

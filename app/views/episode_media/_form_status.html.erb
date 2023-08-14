@@ -1,0 +1,14 @@
+<div class="card shadow border-0 mb-4" data-morph="false">
+  <div class="card-header-primary">
+    <h2 class="card-title h5"><%= t(".title") %></h2>
+  </div>
+  <div class="card-footer d-flex align-items-center">
+
+    <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(episode.updated_at) %></p>
+
+    <%= link_to t(".discard"), episode_media_path(episode), class: "btn btn-discard-changed d-none me-2", data: {action: "unsaved#discard", unsaved_target: "discard", turbo_frame: "_top"} %>
+
+    <% data = {disable_with: t(".updating"), upload_with: t(".uploading")} %>
+    <%= form.submit t(".update"), class: "btn btn-primary", data: data %>
+  </div>
+</div>

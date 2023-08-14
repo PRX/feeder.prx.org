@@ -11,8 +11,9 @@ Rails.application.routes.draw do
     end
 
     resources :episodes, except: [:create, :new] do
+      resource :media, only: [:show, :update], controller: :episode_media
+      get "media_status", to: "episode_media#status"
       resource :player, only: :show, controller: :episode_player
-      resource :segmenter, only: [:show, :update], controller: :episode_segmenter
     end
 
     resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
@@ -52,6 +53,8 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  get "/.well-known/change-password", to: redirect("https://#{ENV["ID_HOST"]}/.well-known/change-password", status: 302)
 
   match "/api", via: [:get], to: redirect("/api/v1")
   match "/", via: [:get], to: redirect("/api/v1")

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_07_19_174404) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_09_152757) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -224,9 +224,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_19_174404) do
   create_table "itunes_categories", id: :serial, force: :cascade do |t|
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
-    t.integer "podcast_id"
     t.string "name", null: false
     t.string "subcategories"
+    t.integer "feed_id"
   end
 
   create_table "itunes_images", id: :serial, force: :cascade do |t|

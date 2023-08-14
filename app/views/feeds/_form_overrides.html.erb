@@ -1,11 +1,51 @@
 <div class="col-12 mb-4">
   <div class="card shadow border-0">
     <div class="card-header card-header-light d-flex justify-content-between">
-      <h5 class="card-title"><%= t(".title") %></h5>
+      <h2 class="card-title h5"><%= t(".title") %></h2>
     </div>
 
     <div class="card-body">
       <div class="row">
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= form.text_field :subtitle %>
+            <%= form.label :subtitle %>
+            <%= field_help_text t(".help.subtitle") %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= form.trix_editor :description %>
+            <%= form.label :description %>
+            <%= field_help_text t(".help.description") %>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+          <div class="form-floating input-group" data-controller="dynamic-form">
+            <%# HACK: display nested validation errors %>
+            <% nested_errors = feed.errors.full_messages_for("itunes_categories.name").join(", ") %>
+            <% klass = nested_errors.present? ? "is-invalid form-select" : "form-select" %>
+            <%= form.select :itunes_category, itunes_category_options, {include_blank: true}, class: klass, data: {action: "dynamic-form#change"} %>
+            <% if nested_errors.present? %><div class="invalid-feedback"><%= nested_errors %></div><% end %>
+            <%= form.label :itunes_category %>
+            <%= field_help_text t(".help.itunes_category") %>
+            <%# update subcategory turbo-frame when category changes %>
+            <a hidden href="<%= new_podcast_feed_path(podcast) %>" data-dynamic-form-target="link" data-turbo-frame="itunes-subcategory"></a>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+          <%= turbo_frame_tag "itunes-subcategory" do %>
+            <div class="form-floating">
+              <% opts = itunes_subcategory_options(feed.itunes_category) %>
+              <%= form.select :itunes_subcategory, opts, {include_blank: true}, disabled: opts.blank? %>
+              <%= form.label :itunes_subcategory %>
+            </div>
+          <% end %>
+        </div>
+
         <div class="col-lg-6 mb-4">
           <div class="form-check">
             <%= form.check_box :include_donation_url %>
@@ -24,22 +64,6 @@
               <%= help_text t(".help.podcast_value") %>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div class="mb-4">
-        <div class="form-floating input-group">
-          <%= form.text_field :subtitle %>
-          <%= form.label :subtitle %>
-          <%= field_help_text t(".help.subtitle") %>
-        </div>
-      </div>
-
-      <div>
-        <div class="form-floating input-group">
-          <%= form.trix_editor :description %>
-          <%= form.label :description %>
-          <%= field_help_text t(".help.description") %>
         </div>
       </div>
     </div>

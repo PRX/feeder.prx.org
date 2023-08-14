@@ -1,13 +1,11 @@
 <% content_for :tabs do %>
-  <div class="list-group d-flex col">
+  <div class="list-group d-flex col mw-100">
     <% if @episode.persisted? %>
-      <%= tab_link_to "Metadata", edit_episode_path(@episode), active: episode_metadata_active? %>
-      <% if @episode.medium_uncut? %>
-        <%= tab_link_to "Audio Segmenter", episode_segmenter_path(@episode) %>
-      <% end %>
-      <%= tab_link_to "Embeddable Player", episode_player_path(@episode) %>
+      <%= tab_link_to @episode.title, edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
+      <%= render "episode_media/tab", episode: @episode %>
+      <%= tab_link_to t(".player"), episode_player_path(@episode) %>
     <% else %>
-      <%= tab_link_to "Metadata", new_podcast_episode_path(@podcast), active: true %>
+      <%= tab_link_to t(".new"), new_podcast_episode_path(@podcast), active: true %>
     <% end %>
   </div>
 <% end %>

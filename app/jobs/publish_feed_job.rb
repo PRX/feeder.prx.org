@@ -7,12 +7,11 @@ class PublishFeedJob < ApplicationJob
 
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
-  def perform(podcast)
-    # Since we don't current have a way to retry failed attempts,
-    # and until somthing akin to https://github.com/PRX/feeder.prx.org/issues/714 lands
-    # the RSS publishing is extracted from the publishing pipeline semantics.
-    # TODO: recombine the publishing invocations (RSS, Apple) once we have some retry guarantees
-    podcast.feeds.each { |feed| save_file(podcast, feed) }
+  def perform(podcast, pub_item)
+    # Consume the SQS message, return early, if we have racing threads trying to
+    # grab the current publishing pipeline.
+    return :null if null_publishing_item?(podcast, pub_item)
+    return :mismatched if mismatched_publishing_item?(podcast, pub_item)
 
     PublishingPipelineState.start!(podcast)
     podcast.feeds.each { |feed| publish_feed(podcast, feed) }
@@ -46,9 +45,9 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_rss(podcast, feed)
-    # res = save_file(podcast, feed)
+    res = save_file(podcast, feed)
     PublishingPipelineState.publish_rss!(podcast)
-    # res
+    res
   end
 
   def save_file(podcast, feed, options = {})
@@ -84,5 +83,35 @@ class PublishFeedJob < ApplicationJob
     else
       Aws::S3::Client.new
     end
+  end
+
+  def null_publishing_item?(podcast, pub_item)
+    current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
+
+    null_pub_item = pub_item.nil? || current_pub_item.nil?
+
+    if null_pub_item
+      Rails.logger.error("Null publishing_queue_item in PublishFeedJob", {
+        podcast_id: podcast.id,
+        incoming_publishing_item_id: pub_item&.id,
+        current_publishing_item_id: current_pub_item&.id
+      })
+    end
+  end
+
+  def mismatched_publishing_item?(podcast, pub_item)
+    current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
+
+    mismatch = pub_item != current_pub_item
+
+    if mismatch
+      Rails.logger.error("Mismatched publishing_queue_item in PublishFeedJob", {
+        podcast_id: podcast.id,
+        incoming_publishing_item_id: pub_item&.id,
+        current_publishing_item_id: current_pub_item&.id
+      })
+    end
+
+    mismatch
   end
 end

@@ -55,8 +55,8 @@ describe MediaResource do
       refute mr.tap { |i| i.status = "processing" }.retryable?
       refute mr.tap { |i| i.status = "complete" }.retryable?
 
-      # updated 1 minute ago
-      mr.updated_at = Time.now - 60
+      # updated 2 minutes ago
+      mr.updated_at = Time.now - 120
       assert mr.tap { |i| i.status = "started" }.retryable?
       assert mr.tap { |i| i.status = "processing" }.retryable?
       refute mr.tap { |i| i.status = "complete" }.retryable?
@@ -88,9 +88,11 @@ describe MediaResource do
       mock_copy = Minitest::Mock.new
       mock_copy.expect :call, nil, [true]
 
-      media_resource.stub(:copy_media, mock_copy) do
-        media_resource.retry!
-        assert media_resource.status_retrying?
+      media_resource.stub(:retryable?, true) do
+        media_resource.stub(:copy_media, mock_copy) do
+          media_resource.retry!
+          assert media_resource.status_retrying?
+        end
       end
 
       mock_copy.verify
