@@ -3,8 +3,8 @@
 module PodcastPlannerHelper
   MONTHLY_WEEKS = [:first, :second, :third, :fourth, :fifth]
   PERIODIC_WEEKS = [:every_one, :every_two, :every_three, :every_four]
-  DATE_CONTROLLER = "date"
-  TOGGLE_ACTION = "click->date#toggleSelect"
+  CALENDAR_TARGET = "container"
+  TOGGLE_ACTION = "click->calendar#toggleSelect"
   RECOUNT_ACTION = "click->planner#recount"
 
   def day_options
@@ -18,14 +18,13 @@ module PodcastPlannerHelper
   end
 
   def time_options
-    opts = []
-    24.times do |hour|
-      time = Time.new
-      opts.push(time.change({hour: hour}))
-      opts.push(time.change({hour: hour, min: 30}))
+    epoch = Time.at(0).utc
+    24.times.flat_map do |hour|
+      [0, 30].map do |minute|
+        time = epoch.change(hour: hour, min: minute)
+        [I18n.l(time, format: :time_12_hour), time.to_i]
+      end
     end
-
-    opts.map { |opt| [I18n.l(opt, format: :time_12_hour), opt] }
   end
 
   def days_in_month(month)
@@ -46,24 +45,14 @@ module PodcastPlannerHelper
 
   def calendar_day_tag(day:, month:, calendar:, &block)
     data = {}
-    cls = []
+    cls = calendar.td_classes_for(day)
 
     if date_is_in_month?(day, month)
-      data[:controller] = DATE_CONTROLLER
+      data[:calendar_target] = CALENDAR_TARGET
       data[:action] = [TOGGLE_ACTION, RECOUNT_ACTION].join(" ")
-
-      is_new = date_is_in_dates?(day, @planner.dates)
-      is_existing = date_is_in_dates?(day, @draft_dates)
-      if is_new && is_existing
-        cls = ["bg-warning", "bg-danger", "text-light"]
-      elsif is_new
-        cls = ["bg-primary", "text-light"]
-      elsif is_existing
-        cls = ["bg-warning"]
-      end
     end
 
-    content_tag(:td, class: calendar.td_classes_for(day) + cls, data: data) do
+    content_tag(:td, class: cls, data: data) do
       block.call
     end
   end

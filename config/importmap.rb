@@ -20,6 +20,7 @@ pin "konva/lib/Core", to: "https://ga.jspm.io/npm:konva@8.4.2/lib/Core.js", prel
 pin "konva/lib/shapes/Line", to: "https://ga.jspm.io/npm:konva@8.4.2/lib/shapes/Line.js", preload: true
 pin "konva/lib/shapes/Rect", to: "https://ga.jspm.io/npm:konva@8.4.2/lib/shapes/Rect.js", preload: true
 pin "konva/lib/shapes/Text", to: "https://ga.jspm.io/npm:konva@8.4.2/lib/shapes/Text.js", preload: true
+pin "local-time", to: "https://ga.jspm.io/npm:local-time@2.1.0/app/assets/javascripts/local-time.js"
 pin "lodash", to: "https://ga.jspm.io/npm:lodash@4.17.21/lodash.js"
 pin "morphdom", to: "https://ga.jspm.io/npm:morphdom@2.7.0/dist/morphdom.js"
 pin "highcharts", to: "https://ga.jspm.io/npm:highcharts@11.1.0/highcharts.js"

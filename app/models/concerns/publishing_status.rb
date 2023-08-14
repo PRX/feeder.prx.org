@@ -38,7 +38,7 @@ module PublishingStatus
     elsif value == "scheduled"
       self.published_at = released_at
     elsif value == "published"
-      self.released_at ||= Time.now
+      self.released_at ||= Time.now unless publishing_status_was == "published"
       self.published_at = released_at
     end
   end

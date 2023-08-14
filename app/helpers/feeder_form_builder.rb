@@ -60,7 +60,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def time_field(method, options = {})
     value = options[:value] || object&.public_send(method)
-    options[:value] = value.try(:strftime, "%Y-%m-%d %H:%M:%S") || value
+    options[:value] = value.try(:strftime, "%Y-%m-%d %-l:%M:%S %p %Z") || value
     add_data(options, :timestamp, true)
     add_flatpickr_controller(options)
     text_field(method, options)

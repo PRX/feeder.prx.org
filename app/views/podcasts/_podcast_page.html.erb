@@ -16,7 +16,7 @@
     </div>
     <div class="card-footer d-grid g-1 lh-sm fs-sm text-end">
       <strong><%= t(".last_saved") %></strong>
-      <datetime><%= l(podcast.updated_at) %></datetime>
+      <datetime><%= local_time_ago(podcast.updated_at) %></datetime>
     </div>
   </div>
 </div>

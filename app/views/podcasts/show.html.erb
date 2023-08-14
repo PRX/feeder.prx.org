@@ -29,7 +29,7 @@
           <% if @recently_published.present? %>
             <% @recently_published.each do |ep| %>
               <div class="episode-card-info flex-fill px-3 py-2 border-bottom">
-                <p class="episode-card-date"><%= l(ep.published_at, format: :short) %></p>
+                <p class="episode-card-date"><%= local_date(ep.published_at, format: :short) %></p>
                 <div class="episode-card-inner">
                   <h2 class="h5 episode-card-title m-0"><%= link_to ep.title, edit_episode_path(ep) %></h2>
                 </div>
@@ -51,7 +51,7 @@
               <div class="episode-card-info flex-fill px-3 py-2 border-bottom">
                 <p class="episode-card-date">
                   <% if ep.published_or_released_date.present? %>
-                    <%= l(ep.published_or_released_date, format: :short) %>
+                    <%= local_date(ep.published_or_released_date, format: :short) %>
                   <% end %>
                 </p>
                 <div class="episode-card-inner">

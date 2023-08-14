@@ -27,7 +27,7 @@
                   </td>
                   <td><%= import.episode_imports.complete.count %></td>
                   <td><%= import.url %></td>
-                  <td><%= import.created_at.to_date %></td>
+                  <td><%= local_date(import.created_at) %></td>
 
                   <% unless import.status_complete? || import.status_failed? %>
                     <%# just keep polling until the import finishes %>
