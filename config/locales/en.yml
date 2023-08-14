@@ -133,6 +133,8 @@ en:
         include_donation_url: Include Donation Form
         include_podcast_value: Include Micropayments Wallet
         include_tags: Include Categories
+        itunes_category: Category
+        itunes_subcategory: Sub-Category
         new_feed_url: New Feed URL
         paid: Paid Ads
         private: Private (unlisted)
@@ -170,8 +172,6 @@ en:
           false: Clean
           true: Explicit
         id: ID
-        itunes_category: Category
-        itunes_subcategory: Sub-Category
         language: Language
         link: Homepage Link
         managing_editor_email: Managing Editor Email
@@ -388,6 +388,7 @@ en:
         description: Enter an alternate description
         include_donation_url: In some cases, you may wish to exclude your donation URL from a private feed.
         include_podcast_value: In some cases, you may wish to exclude micropayments from a private feed.
+        itunes_category: Enter an alternate <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">iTunes category and subcategory</a>, differentiating this Feed from the Podcast.
         subtitle: Enter an alternate teaser
     form_status:
       <<: *form_status

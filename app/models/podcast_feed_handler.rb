@@ -67,7 +67,7 @@ class PodcastFeedHandler
     end
 
     # delete and update existing itunes_categories
-    podcast.itunes_categories.each do |icat|
+    podcast.default_feed.itunes_categories.each do |icat|
       if itunes_cats.key?(icat.name)
         subs = itunes_cats.delete(icat.name).sort.uniq
         icat.update!(subcategories: subs)
@@ -79,7 +79,7 @@ class PodcastFeedHandler
     # create missing itunes_categories
     itunes_cats.each_key do |cat|
       subs = itunes_cats[cat].sort.uniq
-      podcast.itunes_categories.build(name: cat, subcategories: subs)
+      podcast.default_feed.itunes_categories.build(name: cat, subcategories: subs)
     end
 
     podcast.categories = cats

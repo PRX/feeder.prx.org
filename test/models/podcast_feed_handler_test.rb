@@ -68,8 +68,8 @@ describe PodcastFeedHandler do
 
     handler.update_categories
 
-    assert_equal podcast.itunes_categories.size, 1
-    assert_equal podcast.itunes_categories.first.name, "Science"
+    assert_equal podcast.default_feed.itunes_categories.size, 1
+    assert_equal podcast.default_feed.itunes_categories.first.name, "Science"
     assert_equal podcast.categories.first, "Fictional"
   end
 end

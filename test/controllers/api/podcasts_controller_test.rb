@@ -44,14 +44,14 @@ describe Api::PodcastsController do
       assert_response :success
       id = JSON.parse(response.body)["id"]
       new_podcast = Podcast.find(id)
-      assert_equal new_podcast.itunes_categories.first.name, "Arts"
+      assert_equal new_podcast.default_feed.itunes_categories.first.name, "Arts"
       assert_equal new_podcast.feeds.count, 1
       assert new_podcast.default_feed.present?
     end
 
     it "can update a podcast" do
       pua = podcast.updated_at
-      assert_operator podcast.itunes_categories.size, :>, 0
+      assert_operator podcast.default_feed.itunes_categories.size, :>, 0
       update_hash = {itunesCategories: []}
 
       @controller.stub(:publish, true) do
@@ -62,7 +62,7 @@ describe Api::PodcastsController do
       assert_response :success
 
       assert_operator podcast.reload.updated_at, :>, pua
-      assert_equal podcast.itunes_categories.size, 0
+      assert_equal podcast.default_feed.itunes_categories.size, 0
       assert_equal podcast.feeds.count, 1
     end
 
@@ -105,7 +105,7 @@ describe Api::PodcastsController do
 
     it "rejects update for unauthorizd token" do
       @controller.prx_auth_token = limited_token
-      assert_operator podcast.itunes_categories.size, :>, 0
+      assert_operator podcast.default_feed.itunes_categories.size, :>, 0
       update_hash = {itunesCategories: []}
 
       @controller.stub(:publish, true) do

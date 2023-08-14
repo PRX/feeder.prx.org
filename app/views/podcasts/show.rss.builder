@@ -51,7 +51,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
     xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
     xml.itunes :type, @podcast.itunes_type unless @podcast.itunes_type.blank?
 
-    @podcast.itunes_categories[0, 3].each do |cat|
+    @itunes_categories[0, 3].each do |cat|
       if cat.subcategories.blank?
         xml.itunes :category, text: cat.name
       else
@@ -88,7 +88,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
     xml.media :thumbnail, url: @feed_image.url if @feed_image
     xml.media :keywords, @podcast.keywords.join(",") unless @podcast.keywords.blank?
 
-    cat = @podcast.itunes_categories.first.try(:name)
+    cat = @itunes_categories.first.try(:name)
     xml.media :category, cat, scheme: "http://www.itunes.com/dtds/podcast-1.0.dtd" unless cat.blank?
 
     xml.sy :updatePeriod, @podcast.update_period if @podcast.update_period
