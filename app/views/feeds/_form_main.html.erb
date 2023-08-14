@@ -19,7 +19,7 @@
       <% data = {action: "keyup->feed-link#updateSlug", confirm_with: t(".confirm.slug")} %>
       <% data[:confirm_field_target] = "field" if feed.persisted? %>
       <%= form.text_field :slug, data: data %>
-      <%= form.label :slug %>
+      <%= form.label :slug, required: true %>
       <%= field_help_text t(".help.slug") %>
     </div>
 
@@ -34,7 +34,7 @@
     <% data = {action: "keyup->feed-link#updateFileName", confirm_with: t(".confirm.file_name")} %>
     <% data[:confirm_field_target] = "field" if feed.persisted? %>
     <%= form.text_field :file_name, data: data %>
-    <%= form.label :file_name %>
+    <%= form.label :file_name, required: true %>
     <%= field_help_text t(".help.file_name") %>
   </div>
 
