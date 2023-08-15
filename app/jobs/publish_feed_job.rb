@@ -91,7 +91,7 @@ class PublishFeedJob < ApplicationJob
     null_pub_item = pub_item.nil? || current_pub_item.nil?
 
     if null_pub_item
-      Rails.logger.error("Null publishing_queue_item in PublishFeedJob", {
+      Rails.logger.info("Null publishing_queue_item in PublishFeedJob", {
         podcast_id: podcast.id,
         incoming_publishing_item_id: pub_item&.id,
         current_publishing_item_id: current_pub_item&.id
@@ -105,7 +105,7 @@ class PublishFeedJob < ApplicationJob
     mismatch = pub_item != current_pub_item
 
     if mismatch
-      Rails.logger.error("Mismatched publishing_queue_item in PublishFeedJob", {
+      Rails.logger.info("Mismatched publishing_queue_item in PublishFeedJob", {
         podcast_id: podcast.id,
         incoming_publishing_item_id: pub_item&.id,
         current_publishing_item_id: current_pub_item&.id
