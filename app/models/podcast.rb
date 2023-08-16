@@ -146,7 +146,7 @@ class Podcast < ApplicationRecord
       return false
     end
 
-    PublishingPipelineState.start_pipeline!(self)
+    StartPublishingPipelineJob.perform_later(self)
   end
 
   def with_publish_lock(&block)
