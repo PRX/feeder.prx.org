@@ -155,6 +155,7 @@ en:
       podcast_import:
         feed_source: Feed Source
         url: RSS Feed URL
+        import_metadata: Import Podcast Metadata
       media_resource:
         original_url:
           audio: Segment %{position}
