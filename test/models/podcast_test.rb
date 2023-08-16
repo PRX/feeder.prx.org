@@ -72,14 +72,14 @@ describe Podcast do
   describe "publishing" do
     it "creates a publish job on publish" do
       PublishingPipelineState.stub(:start_pipeline!, "published!") do
-        assert_equal podcast.publish!, "published!"
+        assert_equal StartPublishingPipelineJob, podcast.publish!.class
       end
     end
 
     it "wont create a publish job when podcast is locked" do
       PublishingPipelineState.stub(:start_pipeline!, "published!") do
         podcast.locked = true
-        refute_equal podcast.publish!, "published!"
+        refute_equal StartPublishingPipelineJob, podcast.publish!.class
       end
     end
 
