@@ -106,6 +106,9 @@ class PublishingPipelineState < ApplicationRecord
   def self.attempt!(podcast, perform_later: true)
     Rails.logger.tagged("PublishingPipeLineState.attempt!") do
       podcast.with_publish_lock do
+        if ActiveRecord::Base.connection.transaction_open?
+          Rails.logger.info("Open transactions found, dirty reads possible!", podcast_id: podcast.id, caller: caller.join("\n"))
+        end
         if PublishingQueueItem.unfinished_items(podcast).empty?
           Rails.logger.info("Unfinished items empty, nothing to do", podcast_id: podcast.id)
           next
