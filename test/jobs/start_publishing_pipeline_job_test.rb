@@ -7,5 +7,7 @@ describe StartPublishingPipelineJob do
     PublishingPipelineState.stub :start_pipeline!, mock do
       StartPublishingPipelineJob.perform_now(create(:podcast))
     end
+
+    mock.verify
   end
 end
