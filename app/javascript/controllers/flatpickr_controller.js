@@ -25,6 +25,7 @@ export default class extends Controller {
       this.element.removeAttribute("name")
       this.element.insertAdjacentHTML("afterend", `<input type="hidden" name="${name}">`)
       this.hiddenField = this.element.nextSibling
+      this.hiddenField.value = this.element.value
     }
 
     this.picker = flatpickr(this.element, {
