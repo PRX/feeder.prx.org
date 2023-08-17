@@ -31,7 +31,7 @@ module Apple
       end
     end
 
-    # Apple: AppMediaAssetState
+    # Apple: DeliveryState
     delivery_state = %W[AWAITING_UPLOAD UPLOAD_COMPLETE COMPLETE FAILED].freeze
     delivery_state.map do |state|
       define_method("delivery_#{state.downcase}?") do
