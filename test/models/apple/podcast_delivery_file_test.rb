@@ -11,7 +11,7 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
     end
 
     it "Operates on an array of Apple::Episodes" do
-      ep1 = create(:apple_episode)
+      ep1 = build(:apple_episode)
       assert_equal [], Apple::PodcastDeliveryFile.select_podcast_deliveries([ep1])
     end
   end
