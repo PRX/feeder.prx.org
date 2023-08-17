@@ -28,6 +28,11 @@ class Api::BaseController < ApplicationController
     render json: message, status: 401
   end
 
+  # TEMPORARY: feeder UI removes CMS accounts - we keep them in the API
+  def current_user
+    prx_auth_token
+  end
+
   def pundit_user
     prx_auth_token
   end

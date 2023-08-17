@@ -24,6 +24,12 @@ class ApplicationController < ActionController::Base
     p.transform_values { |v| v.present? ? v : nil }
   end
 
+  # TEMPORARY: remove CMS authorized accounts from using Feeder UI
+  def current_user
+    cms_accounts = prx_auth_token&.resources(:cms, :read_private)
+    prx_auth_token&.except(*cms_accounts)
+  end
+
   protected
 
   def user_not_authorized(exception)
