@@ -15,11 +15,6 @@ class Api::FeedsController < ApplicationController
     render json: json
   end
 
-  # TEMPORARY: feeder UI removes CMS accounts - we keep them in the API
-  def current_user
-    prx_auth_token
-  end
-
   private
 
   def authenticate_feeds_token!

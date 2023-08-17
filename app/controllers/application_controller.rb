@@ -24,7 +24,8 @@ class ApplicationController < ActionController::Base
     p.transform_values { |v| v.present? ? v : nil }
   end
 
-  # TEMPORARY: remove CMS authorized accounts from using Feeder UI
+  # TEMPORARY: remove CMS authorized accounts from using Feeder UI-only
+  # NOTE: the API uses prx_auth_token directly, not current_user
   def current_user
     cms_accounts = prx_auth_token&.resources(:cms, :read_private)
     prx_auth_token&.except(*cms_accounts)
