@@ -24,6 +24,11 @@ module Apple
       @show = Apple::Show.new(api: api,
         public_feed: public_feed,
         private_feed: private_feed)
+
+      Rails.logger.info("Initialized Apple::Publisher", {public_feed_id: public_feed.id,
+                                                         private_feed_id: private_feed.id,
+                                                         podcast_id: podcast.id,
+                                                         show_apple_id: show.apple_id})
     end
 
     def podcast
