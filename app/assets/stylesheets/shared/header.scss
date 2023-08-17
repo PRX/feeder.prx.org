@@ -9,7 +9,7 @@
   width: 100%;
   border-bottom: 1px solid $gray-200;
   position: relative;
-  z-index: 1022;
+  z-index: $zindex-fixed;
 
   @media (min-width: 992px) {
     min-width: 350px;
