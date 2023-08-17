@@ -336,6 +336,10 @@ en:
         warning: Warning
     show:
       title: Embeddable Player
+  errors:
+    no_access:
+      message_html: <a href="%{href}">Your accounts</a> are not authorized to use this PRX application.<br/>If you believe this to be in error, please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>
+      title: Not Authorized
   feeds:
     confirm_destroy:
       <<: *form_status

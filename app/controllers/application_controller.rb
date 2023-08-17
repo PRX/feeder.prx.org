@@ -10,13 +10,6 @@ class ApplicationController < ActionController::Base
   before_action :redirect_api_requests, :set_after_sign_in_path, :authenticate!
   skip_before_action :set_after_sign_in_path, :authenticate!, only: [:logout, :refresh]
 
-  # make sure json/hal requests to the root redirect to /api/v1
-  def redirect_api_requests
-    if request.path == "/" && (request.format.json? || request.format.hal?)
-      redirect_to api_root_path
-    end
-  end
-
   def logout
     sign_out_user
     redirect_to "//#{PrxAuth::Rails.configuration.id_host}/session/sign_out", allow_other_host: true
@@ -38,6 +31,22 @@ class ApplicationController < ActionController::Base
   end
 
   protected
+
+  # make sure json/hal requests to the root redirect to /api/v1
+  def redirect_api_requests
+    if request.path == "/" && (request.format.json? || request.format.hal?)
+      redirect_to api_root_path
+    end
+  end
+
+  # check for > 0 feeder authorized accounts
+  def authenticate!
+    if super
+      unless current_user.globally_authorized?(:read_private) || current_user.authorized_account_ids(:read_private).any?
+        render "errors/no_access", layout: "plain"
+      end
+    end
+  end
 
   def user_not_authorized(exception)
     @policy = exception.policy.class.to_s.underscore
