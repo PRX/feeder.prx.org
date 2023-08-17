@@ -1,6 +1,21 @@
 require "test_helper"
 
 class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
+  describe ".select_podcast_delivery_files" do
+    it "should return the apple_podcast_deliveries from the episodes" do
+      ep1 = OpenStruct.new(podcast_deliveries: [1, 2])
+      ep2 = OpenStruct.new(podcast_deliveries: [3])
+      ep3 = OpenStruct.new(podcast_deliveries: [])
+
+      assert_equal [1, 2, 3], Apple::PodcastDeliveryFile.select_podcast_deliveries([ep1, ep2, ep3])
+    end
+
+    it "Operates on an array of Apple::Episodes" do
+      ep1 = create(:apple_episode)
+      assert_equal [], Apple::PodcastDeliveryFile.select_podcast_deliveries([ep1])
+    end
+  end
+
   describe ".get_delivery_file_bridge_params" do
     it "should format a single bridge param row" do
       assert_equal({

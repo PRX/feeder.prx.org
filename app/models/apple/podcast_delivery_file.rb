@@ -98,17 +98,14 @@ module Apple
       episode_bridge_results
     end
 
+    def self.select_podcast_deliveries(episodes)
+      episodes.map(&:podcast_deliveries).flatten
+    end
+
     def self.create_podcast_delivery_files(api, episodes)
       return [] if episodes.empty?
 
-      podcast_containers = episodes.map(&:podcast_container)
-      podcast_deliveries = podcast_containers.map do |pc|
-        raise("Missing podcast deliveries") if pc.podcast_deliveries.empty?
-
-        pc.podcast_deliveries
-      end
-
-      podcast_deliveries = podcast_deliveries.flatten
+      podcast_deliveries = select_podcast_deliveries(episodes)
 
       # filter for only the podcast deliveries that have missing podcast delivery files
       # podcast_delivery_files are soft deleted in rails when they are replaced
