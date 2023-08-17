@@ -124,15 +124,14 @@ Run the rails development server at [feeder.prx.test](http://feeder.prx.test):
 bin/rails server
 ```
 
-At [feeder.prx.test/fake](http://feeder.prx.test/fake), you'll find the HTML user
-interface for Feeder. In addition to standard Rails, it uses [Turbo](https://turbo.hotwired.dev/),
+In addition to standard Rails, the Feeder UI uses [Turbo](https://turbo.hotwired.dev/),
 [Stimulus](https://stimulus.hotwired.dev/), and [Bootstrap 5](https://getbootstrap.com/docs/5.0/getting-started/introduction/).
 Whenever possible, we'd appreciate it if you stuck to this toolset!
 
 When you land on an authenticated page, you will be redirected to `ID_HOST` for authorization.
 Once you are logged in, you will be redirected back to (hopefully) your local `/auth/sessions`.
 If this is not working, you should check your `PRX_CLIENT_ID` ClientApplication and your
-`AccountApplication`s in the ID admin interface.
+`Account.plan` in the ID admin interface.
 
 #### HAL API
 

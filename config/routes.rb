@@ -19,12 +19,6 @@ Rails.application.routes.draw do
     resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
     get "/uploads/signature", to: "uploads#signature", as: :uploads_signature
 
-    resources :fake, only: [:index, :show, :create] do
-      collection do
-        get "audio-segmenter"
-      end
-    end
-
     mount PrxAuth::Rails::Engine => "/auth", :as => "prx_auth_engine"
     get "sessions/logout", to: "application#logout", as: :logout
     get "sessions/refresh", to: "application#refresh", as: :refresh

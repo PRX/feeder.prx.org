@@ -39,7 +39,7 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(_resource)
-    main_app.fake_index_path
+    main_app.root_path
   end
 
   # TODO: some way to trigger full reload on session expiration
