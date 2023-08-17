@@ -5,7 +5,9 @@ module CurrentUserHelper
 
   def current_user_app(name)
     current_user_apps.values.find do |url|
-      url.include?("#{name}.prx.org") || url.include?("#{name}.staging.prx.tech")
+      url.include?("#{name}.prx.org") ||
+        url.include?("#{name}.staging.prx.tech") ||
+        url.include?("#{name}.prx.test")
     end
   end
 
