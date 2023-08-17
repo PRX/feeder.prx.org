@@ -7,8 +7,15 @@ class ApplicationController < ActionController::Base
 
   default_form_builder FeederFormBuilder
 
-  before_action :set_after_sign_in_path, :authenticate!
+  before_action :redirect_api_requests, :set_after_sign_in_path, :authenticate!
   skip_before_action :set_after_sign_in_path, :authenticate!, only: [:logout, :refresh]
+
+  # make sure json/hal requests to the root redirect to /api/v1
+  def redirect_api_requests
+    if request.path == "/" && (request.format.json? || request.format.hal?)
+      redirect_to api_root_path
+    end
+  end
 
   def logout
     sign_out_user

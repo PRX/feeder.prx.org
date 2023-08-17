@@ -51,5 +51,5 @@ Rails.application.routes.draw do
   get "/.well-known/change-password", to: redirect("https://#{ENV["ID_HOST"]}/.well-known/change-password", status: 302)
 
   match "/api", via: [:get], to: redirect("/api/v1")
-  match "/", via: [:get], to: redirect("/api/v1")
+  root "podcasts#index"
 end

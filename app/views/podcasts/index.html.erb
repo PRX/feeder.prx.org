@@ -1,7 +1,5 @@
 <% content_for :title, "My Podcasts" %>
 
-<%= debug current_user %>
-
 <div class="mt-4 mb-2">
   <div class="d-flex align-items-center justify-content-between">
     <div class="dashboard header">
@@ -21,16 +19,16 @@
           <% end %>
         </button>
         <ul class="dropdown-menu">
-          <li><%= active_link_to "Recent Activity", podcasts_path(sort: "Recent Activity"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-          <li><%= active_link_to "# of Episodes", podcasts_path(sort: "episode_count"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-          <li><%= active_link_to "A-Z", podcasts_path(sort: "A-Z"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-          <li><%= active_link_to "Z-A", podcasts_path(sort: "Z-A"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
+          <li><%= active_link_to "Recent Activity", root_path(sort: "Recent Activity"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
+          <li><%= active_link_to "# of Episodes", root_path(sort: "episode_count"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
+          <li><%= active_link_to "A-Z", root_path(sort: "A-Z"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
+          <li><%= active_link_to "Z-A", root_path(sort: "Z-A"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
         </ul>
       </div>
     </div>
 
     <div class="row-reverse col-4">
-      <%= form_with(url: podcasts_path, method: :get, data: {controller: "search", turbo_frame: "podcasts"}) do |form| %>
+      <%= form_with(url: root_path, method: :get, data: {controller: "search", turbo_frame: "podcasts"}) do |form| %>
       <div class="form-floating">
         <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm" %>
         <%= form.label :q, t(".search_podcasts") %>
