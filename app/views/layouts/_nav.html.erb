@@ -36,7 +36,7 @@
     <% if current_user %>
       <nav class="navbar-nav dropdown">
         <h2 class="visually-hidden">User Menu</h2>
-        <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-user-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-user-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="min-width:46px">
           <% if current_user_image? %>
             <img src="<%= current_user_image %>" class="prx-header-nav-avatar" alt="<%= current_user_name %>'s avatar">
           <% else %>

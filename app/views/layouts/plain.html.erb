@@ -11,11 +11,13 @@
     <link rel="apple-touch-icon" href="https://media.prx.org/favicon/icon-180.png">
 
     <%= stylesheet_link_tag "application" %>
+    <%= javascript_importmap_tags %>
   </head>
 
   <body data-controller="blank-field confirm-field popover">
     <%= render "layouts/nav" %>
     <%= render "layouts/alerts" %>
+    <%= render "layouts/confirm_field" %>
 
     <main class="prx-main container-xl">
       <%= yield %>
