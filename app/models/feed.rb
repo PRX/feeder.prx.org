@@ -19,7 +19,7 @@ class Feed < ApplicationRecord
   serialize :exclude_tags, JSON
   serialize :audio_format, HashSerializer
 
-  belongs_to :podcast, -> { with_deleted }, optional: true
+  belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
   has_many :feed_tokens, autosave: true, dependent: :destroy
   alias_attribute :tokens, :feed_tokens
   accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
@@ -29,6 +29,7 @@ class Feed < ApplicationRecord
 
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
+  has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
 
   has_one :apple_sync_log, -> { feeds }, foreign_key: :feeder_id, class_name: "SyncLog"
 
@@ -234,5 +235,33 @@ class Feed < ApplicationRecord
 
   def ready_image
     @ready_image ||= (ready_feed_image || ready_itunes_image)
+  end
+
+  def itunes_category
+    itunes_categories[0]&.name
+  end
+
+  def itunes_category=(value)
+    cat = itunes_categories[0] || itunes_categories.build
+
+    # allow destroying for non-default feeds
+    if custom? && value.blank?
+      cat.mark_for_destruction
+    elsif cat.name != value
+      cat.name = value
+      cat.subcategories = []
+    end
+  end
+
+  def itunes_subcategory
+    itunes_categories[0]&.subcategories&.first
+  end
+
+  def itunes_subcategory=(value)
+    if (cat = itunes_categories[0])
+      cat.subcategories = [value]
+    else
+      itunes_categories.build(subcategories: [value])
+    end
   end
 end

@@ -16,7 +16,10 @@
   </div>
 
   <div class="col-12 mb-4">
-    <div class="card shadow border-0" data-controller="pager">
+    <div class="card shadow border-0"
+         data-controller="pager calendar"
+         data-calendar-existing-value="<%= @draft_times.to_json %>"
+         data-calendar-planning-value="<%= (@planner.dates || []).to_json %>">
       <div class="card-header card-header-light d-flex justify-content-between align-items-center">
         <h5 class="card-title flex-grow-1">
           <%= t(".title.calendar") %>

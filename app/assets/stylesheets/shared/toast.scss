@@ -1,5 +1,5 @@
 .toaster {
-  z-index: 9999;
+  z-index: $zindex-toast;
 
   .bg-success,
   .bg-danger {

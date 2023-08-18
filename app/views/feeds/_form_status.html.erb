@@ -4,7 +4,7 @@
   </div>
   <div class="card-footer d-flex align-items-center">
     <% if feed.persisted? %>
-      <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(feed.updated_at) %></p>
+      <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= local_time_ago(feed.updated_at) %></p>
 
       <% if policy(feed).update? %>
         <%= link_to t(".discard"), podcast_feed_path(podcast, feed), class: "btn btn-discard-changed d-none me-2", data: {action: "unsaved#discard", unsaved_target: "discard"} %>

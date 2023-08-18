@@ -5,8 +5,10 @@ import Trix from "trix"
 import "popper"
 import "bootstrap"
 import Rails from "@rails/ujs"
+import LocalTime from "local-time"
 
 Rails.start()
+LocalTime.start()
 
 // debugging turbo
 document.addEventListener("turbo:frame-missing", function (event) {

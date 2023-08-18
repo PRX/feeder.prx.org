@@ -8,7 +8,7 @@ gem "activerecord-session_store"
 gem "bootsnap", require: false
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.0"
-gem "rails", "~> 7.0.6"
+gem "rails", "~> 7.0.7"
 gem "redis", "~> 4.0"
 
 # authorization
@@ -23,6 +23,7 @@ gem "active_link_to"
 gem "bootstrap", "~> 5.2.2"
 gem "importmap-rails"
 gem "kaminari"
+gem "local_time"
 gem "sprockets-rails"
 gem "stimulus-rails"
 gem "turbo-rails"

@@ -1,7 +1,7 @@
 <div class="col-12 mb-4 border-0">
     <div class="form-floating input-group">
       <%= form.text_field :title %>
-      <%= form.label :title %>
+      <%= form.label :title, required: true %>
       <%= field_help_text t(".help.title") %>
     </div>
 </div>
@@ -53,7 +53,7 @@
 <div class="col-6 mb-4">
   <div class="form-floating input-group">
     <%= form.select :itunes_type, episode_itunes_type_options %>
-    <%= form.label :itunes_type %>
+    <%= form.label :itunes_type, required: true %>
     <%= field_help_text t(".help.itunes_type") %>
   </div>
 </div>

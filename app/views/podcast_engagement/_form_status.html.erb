@@ -4,7 +4,7 @@
   </div>
   <div class="card-footer d-flex align-items-center">
 
-    <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(podcast.updated_at) %></p>
+    <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= local_time_ago(podcast.updated_at) %></p>
 
     <%= link_to t(".discard"), podcast_engagement_path(podcast), class: "btn btn-discard-changed d-none me-2", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
 

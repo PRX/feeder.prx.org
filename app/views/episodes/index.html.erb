@@ -34,31 +34,33 @@
     </div>
   </div>
 
-  <%= turbo_frame_tag "episodes", target: "_top" do %>
-    <div class="row mb-4">
-      <div class="col-md-6">
-        <h2 class="fw-bold"><%= t(".draft_or_scheduled") %></h2>
-        <% @scheduled_episodes.each do |episode| %>
-          <%= render episode %>
-        <% end %>
+  <div class="container">
+    <%= turbo_frame_tag "episodes", target: "_top" do %>
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h2 class="fw-bold"><%= t(".draft_or_scheduled") %></h2>
+          <% @scheduled_episodes.each do |episode| %>
+            <%= render episode %>
+          <% end %>
 
-        <div class="mt-2">
-          <%= paginate @scheduled_episodes, param_name: "scheduled_page", window: 2, outer_window: 1 %>
-          <%= page_entries_info @scheduled_episodes %>
+          <div class="mt-2">
+            <%= paginate @scheduled_episodes, param_name: "scheduled_page", window: 2, outer_window: 1 %>
+            <%= page_entries_info @scheduled_episodes %>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <h2 class="fw-bold"><%= t(".published") %></h2>
+          <% @published_episodes.each do |episode| %>
+            <%= render episode %>
+          <% end %>
+
+          <div class="mt-2">
+            <%= paginate @published_episodes, param_name: "published_page", window: 2, outer_window: 1 %>
+            <%= page_entries_info @published_episodes %>
+          </div>
         </div>
       </div>
-
-      <div class="col-md-6">
-        <h2 class="fw-bold"><%= t(".published") %></h2>
-        <% @published_episodes.each do |episode| %>
-          <%= render episode %>
-        <% end %>
-
-        <div class="mt-2">
-          <%= paginate @published_episodes, param_name: "published_page", window: 2, outer_window: 1 %>
-          <%= page_entries_info @published_episodes %>
-        </div>
-      </div>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 </div>

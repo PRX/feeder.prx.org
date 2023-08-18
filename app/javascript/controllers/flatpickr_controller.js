@@ -2,14 +2,31 @@ import { Controller } from "@hotwired/stimulus"
 import flatpickr from "flatpickr"
 
 const invalidClass = "is-invalid"
-const timeValidator = /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/
+const timeValidator = /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9][0-9]?:[0-9]{2}:[0-9]{2} (AM|PM)( [A-Z]+)?$/
 const dateValidator = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/
+const defaultHour = 12
 
 export default class extends Controller {
   connect() {
     this.isTimestamp = !!this.element.dataset.timestamp
-    this.dateFormat = this.isTimestamp ? "Y-m-d H:i:S" : "Y-m-d"
+    this.dateFormat = this.isTimestamp ? "Y-m-d h:i:S K" : "Y-m-d"
     this.validator = this.isTimestamp ? timeValidator : dateValidator
+
+    // fix valueWas to match format (including timezone)
+    if (this.element.dataset.valueWas) {
+      const date = this.parseDate(this.element.dataset.valueWas)
+      const formatted = this.formatDate(date)
+      this.element.dataset.valueWas = formatted
+    }
+
+    // for timestamps, we need to make a hidden field for the actual ISO date
+    if (this.isTimestamp) {
+      const name = this.element.name
+      this.element.removeAttribute("name")
+      this.element.insertAdjacentHTML("afterend", `<input type="hidden" name="${name}">`)
+      this.hiddenField = this.element.nextSibling
+      this.hiddenField.value = this.element.value
+    }
 
     this.picker = flatpickr(this.element, {
       allowInput: true,
@@ -18,10 +35,36 @@ export default class extends Controller {
       disableMobile: true,
       parseDate: (str) => this.parseDate(str),
       formatDate: (date) => this.formatDate(date),
+      onChange: () => this.setDefaultHours(),
       onValueUpdate: () => this.validate(),
+      onOpen: () => this.refreshValue(),
+      onClose: () => this.refreshValue(),
       minDate: this.element.min,
       maxDate: this.element.max,
     })
+  }
+
+  setDefaultHours() {
+    const date = this.picker.selectedDates[0]
+    if (this.isTimestamp && date && date.getHours() !== defaultHour) {
+      date.setHours(defaultHour)
+      this.picker.setDate(date)
+      this.hiddenField.value = date.toISOString()
+    }
+  }
+
+  refreshValue() {
+    const date = this.picker.selectedDates[0]
+
+    // add/remove the timezone from the field as it opens/closes
+    if (date) {
+      this.element.value = this.formatDate(date)
+    }
+
+    // refresh hidden field for timestamps
+    if (this.hiddenField) {
+      this.hiddenField.value = date ? date.toISOString() : ""
+    }
   }
 
   keydown(event) {
@@ -61,13 +104,20 @@ export default class extends Controller {
   }
 
   parseDate(str, strict = false) {
-    if (Date.parse(str) && (!strict || this.validator.test(str))) {
-      return flatpickr.parseDate(str, this.dateFormat)
+    const epoch = Date.parse(str)
+    if (epoch && (!strict || this.validator.test(str))) {
+      return new Date(epoch)
     }
   }
 
   formatDate(date) {
     const str = flatpickr.formatDate(date, this.dateFormat)
-    return str
+
+    if (this.isTimestamp && !(this.picker && this.picker.isOpen)) {
+      const tz = date.toLocaleTimeString(undefined, { timeZoneName: "short" }).split(" ").pop()
+      return `${str} ${tz}`
+    } else {
+      return str
+    }
   }
 }

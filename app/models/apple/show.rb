@@ -58,11 +58,6 @@ module Apple
       public_feed.published_url(true)
     end
 
-    def category_data
-      podcast.itunes_categories.map { |c| {id: 1511, type: "categories", attributes: {name: c.name}} }
-      [{"type" => "categories", "id" => "1301"}]
-    end
-
     def update_attributes
       create_attributes.except(:releaseFrequency)
     end
@@ -125,7 +120,7 @@ module Apple
     end
 
     def update_show!(sync)
-      Rails.logger.warn("Skipping update for existing show!")
+      Rails.logger.info("Skipping update for existing show!")
       # TODO, map out the cases where we'd actually need to update a show
       # data = show_data(update_attributes, id: apple_id)
       # Rails.logger.info("Updating show", show_data: data)
