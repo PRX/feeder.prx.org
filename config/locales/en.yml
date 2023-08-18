@@ -55,6 +55,7 @@ en:
     "ay-bo": Aymara
     "az": Azerbaijani
     "az-az": Azerbaijani
+    "be": Belarusian
     "be-by": Belarusian
     "bg": Bulgarian
     "bg-bg": Bulgarian
@@ -76,6 +77,8 @@ en:
     "de-at": German (Austria)
     "de-de": German (Germany)
     "de-ch": German (Switzerland)
+    "de-li": German (Liechtenstein)
+    "de-lu": German (Luxembourg)
     "dsb": Lower Sorbian
     "el": Greek
     "el-gr": Greek (Greece)
@@ -89,6 +92,12 @@ en:
     "en-ud": English (Upside Down)
     "en-us": English (US)
     "en-za": English (South Africa)
+    "en-bz": English (Belize)
+    "en-jm": English (Jamaica)
+    "en-nz": English (New Zealand)
+    "en-ph": English (Phillipines)
+    "en-tt": English (Trinidad)
+    "en-zw": English (Zimbabwe)
     "en@pirate": English (Pirate)
     "eo": Esperanto
     "eo-eo": Esperanto
@@ -104,6 +113,17 @@ en:
     "es-mx": Spanish (Mexico)
     "es-us": Spanish (United States)
     "es-ve": Spanish (Venezuela)
+    "es-bo": Spanish (Bolivia)
+    "es-cr": Spanish (Costa Rica)
+    "es-do": Spanish (Dominican Republic)
+    "es-sv": Spanish (El Salvador)
+    "es-gt": Spanish (Guatemala)
+    "es-hn": Spanish (Honduras)
+    "es-pa": Spanish (Panama)
+    "es-py": Spanish (Paraguay)
+    "es-pe": Spanish (Peru)
+    "es-pr": Spanish (Puerto Rico)
+    "es-uy": Spanish (Uruguay)
     "et": Estonian
     "et-ee": Estonian (Estonia)
     "eu": Basque
@@ -114,20 +134,25 @@ en:
     "ff": Fulah
     "fi": Finnish
     "fi-fi": Finnish
+    "fo": Faeroese
     "fo-fo": Faroese
     "fr": French
     "fr-ca": French (Canada)
     "fr-fr": French (France)
     "fr-be": French (Belgium)
     "fr-ch": French (Switzerland)
+    "fr-lu": French (Luxembourg)
+    "fr-mc": French (Monaco)
     "fy-nl": Frisian (West)
     "ga": Irish
     "ga-ie": Irish (Gaelic)
+    "gd": Gaelic
     "gl": Galician
     "gl-es": Galician
     "gn-py": Guarani
     "gu-in": Gujarati
     "gx-gr": Classical Greek
+    "haw": Hawaiian
     "he": Hebrew
     "he-il": Hebrew
     "hi": Hindi
@@ -141,10 +166,12 @@ en:
     "hy-am": Armenian
     "id": Indonesian
     "id-id": Indonesian
+    "in": Indonesian
     "is": Icelandic
     "is-is": Icelandic (Iceland)
     "it": Italian
     "it-it": Italian
+    "it-ch": Italian (Switzerland)
     "ja": Japanese
     "ja-jp": Japanese
     "jv-id": Javanese
@@ -203,8 +230,10 @@ en:
     "rm-ch": Romansh
     "ro": Romanian
     "ro-ro": Romanian
+    "ro-mo": Romanian (Moldova)
     "ru": Russian
     "ru-ru": Russian
+    "ru-mo": Russian (Moldova)
     "sa-in": Sanskrit
     "se-no": Northern Sámi
     "si-lk": Sinhala (Sri Lanka)
@@ -220,6 +249,7 @@ en:
     "su": Sundanese
     "sv": Swedish
     "sv-se": Swedish
+    "sv-fi": Swedish (Finland)
     "sw": Swahili
     "sw-ke": Swahili (Kenya)
     "ta": Tamil
