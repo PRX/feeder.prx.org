@@ -6,7 +6,7 @@ class PodcastImport < ApplicationRecord
 
   serialize :config, HashSerializer
 
-  attr_accessor :feed, :feed_raw_doc, :templates, :feed_source, :import_metadata
+  attr_accessor :feed, :feed_raw_doc, :templates, :feed_source
 
   belongs_to :podcast, -> { with_deleted }, touch: true, optional: true, autosave: true
   has_many :episode_imports, -> { where(has_duplicate_guid: false).includes(:podcast_import) }, dependent: :destroy
