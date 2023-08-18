@@ -37,7 +37,7 @@ module Apple
         # Until then it's not safe to have multiple apple_configs for the same podcast
         Rails.logger.error("Found existing private feed for #{podcast.title}!")
         Rails.logger.error("Do you want to continue? (y/N)")
-        raise "Stopping find_or_build_private_feed" if STDIN.gets.chomp.downcase != "y"
+        raise "Stopping find_or_build_private_feed" if $stdin.gets.chomp.downcase != "y"
 
         return existing
       end
