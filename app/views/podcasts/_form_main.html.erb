@@ -84,7 +84,7 @@
 
 <div class="col-6 mb-4">
   <div class="form-floating input-group">
-    <%= form.select :language, rss_language_options, include_blank: true, disabled: PodcastsHelper::NON_COMPLIANT_CODES %>
+    <%= form.select :language, rss_language_options(podcast), include_blank: true, disabled: disable_non_compliant_language(podcast.language) %>
     <%= form.label :language %>
     <%= field_help_text t(".help.language") %>
   </div>
