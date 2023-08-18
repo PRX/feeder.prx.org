@@ -31,7 +31,16 @@ module Apple
                                          message: "can only have one credential per public and private feed"}
     validates :public_feed, exclusion: {in: ->(apple_credential) { [apple_credential.private_feed] }}
 
-    def self.build_private_feed(podcast)
+    def self.find_or_build_private_feed(podcast)
+      if (existing = podcast.feeds.find_by(slug: DEFAULT_FEED_SLUG, title: DEFAULT_TITLE))
+        # TODO, handle partitions on apple models via the apple_config
+        # Until then it's not safe to have multiple apple_configs for the same podcast
+        Rails.logger.error("Found existing private feed for #{podcast.title}!")
+        Rails.logger.error("Do you want to continue? (y/N)")
+        raise "Stopping find_or_build_private_feed" if STDIN.gets.chomp.downcase != "y"
+
+        return existing
+      end
       default_feed = podcast.default_feed
 
       Feed.new(
@@ -48,7 +57,7 @@ module Apple
     def self.build_apple_config(podcast, key)
       ac = Apple::Config.new
       ac.public_feed = podcast.default_feed
-      ac.private_feed = build_private_feed(podcast)
+      ac.private_feed = find_or_build_private_feed(podcast)
       ac.key = key
 
       ac
