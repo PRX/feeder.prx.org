@@ -114,10 +114,6 @@ class PodcastImport < ApplicationRecord
     # Request the RSS feed again
     get_feed
 
-    # Update podcast attributes
-    create_or_update_podcast!
-    status_created!
-
     # Create the episodes
     create_or_update_episode_imports!
     status_importing!

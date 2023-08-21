@@ -28,7 +28,7 @@ class ImportsController < ApplicationController
 
     respond_to do |format|
       if @import.save
-        @import.import_later
+        @import.import_later(import_metadata)
         format.html { redirect_to podcast_import_path(@podcast, @import), notice: t(".success") }
       else
         format.html do
@@ -54,5 +54,9 @@ class ImportsController < ApplicationController
     params.fetch(:podcast_import, {}).permit(
       :url
     )
+  end
+
+  def import_metadata
+    ActiveRecord::Type::Boolean.new.cast(params[:podcast_import][:import_metadata])
   end
 end
