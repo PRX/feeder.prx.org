@@ -545,7 +545,7 @@ en:
         sample_rate: Frequency
         status: Status
       new:
-        hint: Upload a file
+        hint: Upload a file or drag it here
       processing:
         hint: Processing
     segmenter:
@@ -702,7 +702,7 @@ en:
       retry: Retry
       size: Size
       status: Status
-      upload: Upload a file
+      upload: Upload a file or drag it here
     title:
       episode_image: Cover Image
       feed_image: Thumbnail Image
