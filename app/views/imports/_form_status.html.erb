@@ -9,8 +9,6 @@
         <%= form.select :feed_source, ["RSS"] %>
         <%= form.label :feed_source, required: true %>
       </div>
-
-      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
     </div>
 
     <div class="col-12 prx-field-group">
@@ -18,14 +16,15 @@
         <%= form.text_field :url %>
         <%= form.label :url, required: true %>
       </div>
-
-      <button type="button" class="prx-btn-help" data-bs-toggle="popover" data-bs-content="<%= "help" %>"><span class="material-icons">help</span></button>
     </div>
 
     <div class="col-12 prx-field-group">
       <div class="form-check">
         <%= form.check_box :import_metadata, checked: true %>
-        <%= form.label :import_metadata %>
+        <div class="d-flex align-items-center">
+          <%= form.label :import_metadata %>
+          <%= help_text t(".help.import_metadata") %>
+        </div>
       </div>
     </div>
   </div>
