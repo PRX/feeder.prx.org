@@ -7,7 +7,7 @@ ruby "3.2.2"
 gem "activerecord-session_store"
 gem "bootsnap", require: false
 gem "pg", "~> 1.1"
-gem "puma", "~> 5.0"
+gem "puma", "~> 5.6"
 gem "rails", "~> 7.0.7"
 gem "redis", "~> 4.0"
 
