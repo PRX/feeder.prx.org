@@ -29,7 +29,7 @@
       <%= form.file_field :image_file, class: cls, accept: "image/*", name: nil, data: data %>
 
       <%# fake display field; real text area is opacity-0 on top of it %>
-      <div class="form-control d-flex align-items-center <%= "is-changed" if image.marked_for_destruction? %>">
+      <div class="form-control d-flex align-items-center prx_dragndrop <%= "is-changed" if image.marked_for_destruction? %>">
         <span class="material-icons text-primary">upload</span>
         <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= t("images.label.upload") %></div>
       </div>
