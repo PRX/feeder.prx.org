@@ -40,6 +40,251 @@ en:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
       short: "%m/%d"
       time_12_hour: "%-l:%M %p %Z"
+      day_and_date: "%A, %m/%d"
+  lang_code:
+    "ach": Acholi
+    "ady": Adyghe
+    "af": Afrikaans
+    "af-na": Afrikaans (Namibia)
+    "af-za": Afrikaans (South Africa)
+    "ak": Akan
+    "ar": Arabic
+    "ar-ar": Arabic
+    "ar-ma": Arabic (Morocco)
+    "ar-sa": Arabic (Saudi Arabia)
+    "ay-bo": Aymara
+    "az": Azerbaijani
+    "az-az": Azerbaijani
+    "be": Belarusian
+    "be-by": Belarusian
+    "bg": Bulgarian
+    "bg-bg": Bulgarian
+    "bn": Bengali
+    "bn-in": Bengali (India)
+    "bn-bd": Bengali (Bangladesh)
+    "bs-ba": Bosnian
+    "ca": Catalan
+    "ca-es": Catalan
+    "cak": Kaqchikel
+    "ck-us": Cherokee
+    "cs": Czech
+    "cs-cz": Czech
+    "cy": Welsh
+    "cy-gb": Welsh
+    "da": Danish
+    "da-dk": Danish
+    "de": German
+    "de-at": German (Austria)
+    "de-de": German (Germany)
+    "de-ch": German (Switzerland)
+    "de-li": German (Liechtenstein)
+    "de-lu": German (Luxembourg)
+    "dsb": Lower Sorbian
+    "el": Greek
+    "el-gr": Greek (Greece)
+    "en": English
+    "en-gb": English (UK)
+    "en-au": English (Australia)
+    "en-ca": English (Canada)
+    "en-ie": English (Ireland)
+    "en-in": English (India)
+    "en-pi": English (Pirate)
+    "en-ud": English (Upside Down)
+    "en-us": English (US)
+    "en-za": English (South Africa)
+    "en-bz": English (Belize)
+    "en-jm": English (Jamaica)
+    "en-nz": English (New Zealand)
+    "en-ph": English (Phillipines)
+    "en-tt": English (Trinidad)
+    "en-zw": English (Zimbabwe)
+    "en@pirate": English (Pirate)
+    "eo": Esperanto
+    "eo-eo": Esperanto
+    "es": Spanish
+    "es-ar": Spanish (Argentina)
+    "es-419": Spanish (Latin America)
+    "es-cl": Spanish (Chile)
+    "es-co": Spanish (Colombia)
+    "es-ec": Spanish (Ecuador)
+    "es-es": Spanish (Spain)
+    "es-la": Spanish (Latin America)
+    "es-ni": Spanish (Nicaragua)
+    "es-mx": Spanish (Mexico)
+    "es-us": Spanish (United States)
+    "es-ve": Spanish (Venezuela)
+    "es-bo": Spanish (Bolivia)
+    "es-cr": Spanish (Costa Rica)
+    "es-do": Spanish (Dominican Republic)
+    "es-sv": Spanish (El Salvador)
+    "es-gt": Spanish (Guatemala)
+    "es-hn": Spanish (Honduras)
+    "es-pa": Spanish (Panama)
+    "es-py": Spanish (Paraguay)
+    "es-pe": Spanish (Peru)
+    "es-pr": Spanish (Puerto Rico)
+    "es-uy": Spanish (Uruguay)
+    "et": Estonian
+    "et-ee": Estonian (Estonia)
+    "eu": Basque
+    "eu-es": Basque
+    "fa": Persian
+    "fa-ir": Persian
+    "fb-lt": Leet
+    "ff": Fulah
+    "fi": Finnish
+    "fi-fi": Finnish
+    "fo": Faeroese
+    "fo-fo": Faroese
+    "fr": French
+    "fr-ca": French (Canada)
+    "fr-fr": French (France)
+    "fr-be": French (Belgium)
+    "fr-ch": French (Switzerland)
+    "fr-lu": French (Luxembourg)
+    "fr-mc": French (Monaco)
+    "fy-nl": Frisian (West)
+    "ga": Irish
+    "ga-ie": Irish (Gaelic)
+    "gd": Gaelic
+    "gl": Galician
+    "gl-es": Galician
+    "gn-py": Guarani
+    "gu-in": Gujarati
+    "gx-gr": Classical Greek
+    "haw": Hawaiian
+    "he": Hebrew
+    "he-il": Hebrew
+    "hi": Hindi
+    "hi-in": Hindi
+    "hr": Croatian
+    "hr-hr": Croatian
+    "hsb": Upper Sorbian
+    "ht": Haitian Creole
+    "hu": Hungarian
+    "hu-hu": Hungarian
+    "hy-am": Armenian
+    "id": Indonesian
+    "id-id": Indonesian
+    "in": Indonesian
+    "is": Icelandic
+    "is-is": Icelandic (Iceland)
+    "it": Italian
+    "it-it": Italian
+    "it-ch": Italian (Switzerland)
+    "ja": Japanese
+    "ja-jp": Japanese
+    "jv-id": Javanese
+    "ka-ge": Georgian
+    "kk-kz": Kazakh
+    "km": Khmer
+    "km-kh": Khmer
+    "kab": Kabyle
+    "kn": Kannada
+    "kn-in": Kannada (India)
+    "ko": Korean
+    "ko-kr": Korean (Korea)
+    "ku-tr": Kurdish
+    "la": Latin
+    "la-va": Latin
+    "lb": Luxembourgish
+    "li-nl": Limburgish
+    "lt": Lithuanian
+    "lt-lt": Lithuanian
+    "lv": Latvian
+    "lv-lv": Latvian
+    "mai": Maithili
+    "mg-mg": Malagasy
+    "mk": Macedonian
+    "mk-mk": Macedonian (Macedonian)
+    "ml": Malayalam
+    "ml-in": Malayalam
+    "mn-mn": Mongolian
+    "mr": Marathi
+    "mr-in": Marathi
+    "ms": Malay
+    "ms-my": Malay
+    "mt": Maltese
+    "mt-mt": Maltese
+    "my": Burmese
+    "no": Norwegian
+    "nb": Norwegian (bokmal)
+    "nb-no": Norwegian (bokmal)
+    "ne": Nepali
+    "ne-np": Nepali
+    "nl": Dutch
+    "nl-be": Dutch (Belgium)
+    "nl-nl": Dutch (Netherlands)
+    "nn-no": Norwegian (nynorsk)
+    "oc": Occitan
+    "or-in": Oriya
+    "pa": Punjabi
+    "pa-in": Punjabi (India)
+    "pl": Polish
+    "pl-pl": Polish
+    "ps-af": Pashto
+    "pt": Portuguese
+    "pt-br": Portuguese (Brazil)
+    "pt-pt": Portuguese (Portugal)
+    "qu-pe": Quechua
+    "rm-ch": Romansh
+    "ro": Romanian
+    "ro-ro": Romanian
+    "ro-mo": Romanian (Moldova)
+    "ru": Russian
+    "ru-ru": Russian
+    "ru-mo": Russian (Moldova)
+    "sa-in": Sanskrit
+    "se-no": Northern Sámi
+    "si-lk": Sinhala (Sri Lanka)
+    "sk": Slovak
+    "sk-sk": Slovak (Slovakia)
+    "sl": Slovenian
+    "sl-si": Slovenian
+    "so-so": Somali
+    "sq": Albanian
+    "sq-al": Albanian
+    "sr": Serbian
+    "sr-rs": Serbian (Serbia)
+    "su": Sundanese
+    "sv": Swedish
+    "sv-se": Swedish
+    "sv-fi": Swedish (Finland)
+    "sw": Swahili
+    "sw-ke": Swahili (Kenya)
+    "ta": Tamil
+    "ta-in": Tamil
+    "te": Telugu
+    "te-in": Telugu
+    "tg": Tajik
+    "tg-tj": Tajik
+    "th": Thai
+    "th-th": Thai (Thailand)
+    "tl": Filipino
+    "tl-ph": Filipino
+    "tlh": Klingon
+    "tr": Turkish
+    "tr-tr": Turkish
+    "tt-ru": Tatar
+    "uk": Ukrainian
+    "uk-ua": Ukrainian
+    "ur": Urdu
+    "ur-pk": Urdu
+    "uz": Uzbek
+    "uz-uz": Uzbek
+    "vi": Vietnamese
+    "vi-vn": Vietnamese
+    "xh-za": Xhosa
+    "yi": Yiddish
+    "yi-de": Yiddish (German)
+    "zh": Chinese
+    "zh-hans": Chinese Simplified
+    "zh-hant": Chinese Traditional
+    "zh-cn": Chinese Simplified (China)
+    "zh-hk": Chinese Traditional (Hong Kong)
+    "zh-sg": Chinese Simplified (Singapore)
+    "zh-tw": Chinese Traditional (Taiwan)
+    "zu-za": Zulu
   # validation error messages https://guides.rubyonrails.org/i18n.html#error-message-interpolation
   activerecord:
     errors:
