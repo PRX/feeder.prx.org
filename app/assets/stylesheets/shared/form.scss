@@ -112,6 +112,10 @@ label[required="true"] {
       border-color: $red;
     }
 
+    &.prx_dragndrop {
+      border: 2px dashed $gray-300;
+    }
+
     /*&:focus {
       box-shadow: none;
       border-color: transparent;

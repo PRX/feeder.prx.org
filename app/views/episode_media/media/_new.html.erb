@@ -19,7 +19,7 @@
 
     <%# fake display field; real text area is opacity-0 on top of it %>
     <% invalid_msg = upload_invalid_messages(media) %>
-    <% fake_cls = "form-control d-flex align-items-center" %>
+    <% fake_cls = "form-control d-flex align-items-center prx_dragndrop" %>
     <% fake_cls += " is-changed" if media.marked_for_destruction? %>
     <% fake_cls += " is-invalid" if invalid_msg %>
     <div class="<%= fake_cls %>">
