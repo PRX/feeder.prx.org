@@ -1,41 +1,10 @@
 <%= form.hidden_field :id %>
-
 <div class="col-12 mb-4">
-  <div class="form-floating input-group prx-audio-player" data-controller="audio-player">
-    <button type="button" class="prx-play input-group-text prx-input-group-text" data-action="audio-player#play">
-      <span class="material-icons text-primary">play_arrow</span>
-    </button>
-
-    <button type="button" class="prx-pause input-group-text prx-input-group-text" data-action="audio-player#pause">
-      <span class="material-icons text-primary">pause</span>
-    </button>
-
-    <div class="form-control d-flex align-items-center">
-      <div class="text-secondary me-2 overflow-hidden text-truncate"><%= media.file_name %></div>
-
-      <small class="text-danger flex-grow-1 me-2"><%= t(".unable") %></small>
-
-      <div class="flex-grow-1 me-2 py-2 prx-scrub" data-action="mousedown->audio-player#mouseDown" data-audio-player-target="scrubber">
-        <div class="progress" data-audio-player-target="progress">
-          <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-audio-player-target="progressBar"></div>
-        </div>
-      </div>
-
-      <audio class="d-none" src="<%= media.href %>" preload="none" data-audio-player-target="audio" data-action="timeupdate->audio-player#audioTimeUpdate ended->audio-player#audioEnded"></audio>
-
-      <small class="text-muted" data-audio-player-target="duration">(<%= episode_media_duration(media) %>)</small>
-    </div>
-
-    <label><%= episode_media_label(episode, media) %></label>
-
-    <%= link_to episode_media_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
-      <span class="material-icons text-danger">delete</span>
-    <% end %>
-
-    <button type="button" class="input-group-text prx-input-group-text" data-bs-toggle="modal" data-bs-target="#media-modal-<%= media.id %>">
-      <span class="material-icons text-primary">info</span>
-    </button>
-  </div>
+  <% if episode.medium_video? %>
+    <%= render "episode_media/media/complete_video", form: form, episode: episode, media: media %>
+  <% else %>
+    <%= render "episode_media/media/complete_audio", form: form, episode: episode, media: media %>
+  <% end %>
 </div>
 
 <%= render "episode_media/media/modal", episode: episode, media: media, id: "media-modal-#{media.id}" %>
