@@ -42,7 +42,7 @@ class ApplicationController < ActionController::Base
 
   # check for > 0 feeder authorized accounts
   def authenticate!
-    if super
+    if super == true
       unless current_user.globally_authorized?(:read_private) || current_user.authorized_account_ids(:read_private).any?
         render "errors/no_access", layout: "plain"
       end
