@@ -82,7 +82,7 @@ describe Content do
 
   describe "#publish_episode!" do
     it "publishes the episode when complete and status has changed" do
-      publish = MiniTest::Mock.new
+      publish = Minitest::Mock.new
 
       c1.episode.stub(:publish!, publish) do
         c1.update(status: "processing")

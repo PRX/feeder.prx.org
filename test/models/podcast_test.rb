@@ -85,7 +85,7 @@ describe Podcast do
 
     describe ".release!" do
       it "cleans up dead publishing pipelines" do
-        obj = MiniTest::Mock.new
+        obj = Minitest::Mock.new
         obj.expect :call, nil
         PublishingPipelineState.stub(:expire_pipelines!, obj) do
           Podcast.release!
@@ -94,7 +94,7 @@ describe Podcast do
       end
 
       it "retries latest publishing pipelines with errors" do
-        obj = MiniTest::Mock.new
+        obj = Minitest::Mock.new
         obj.expect :call, nil
         PublishingPipelineState.stub(:retry_failed_pipelines!, obj) do
           Podcast.release!
