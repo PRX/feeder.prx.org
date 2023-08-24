@@ -9,10 +9,10 @@
           <%= t ".create_episode" %>
           <span class="material-icons ms-2" aria-hidden="true">mic</span>
         <% end %>
-      <% end %>
-      <%= link_to podcast_planner_path(@podcast), class: "btn btn-primary btn-sm" do %>
-        <%= t ".plan_episodes" %>
-        <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
+        <%= link_to podcast_planner_path(@podcast), class: "btn btn-primary btn-sm" do %>
+          <%= t ".plan_episodes" %>
+          <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
+        <% end %>
       <% end %>
     </div>
   </div>
