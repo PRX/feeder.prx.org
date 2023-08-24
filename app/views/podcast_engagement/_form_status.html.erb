@@ -6,9 +6,11 @@
 
     <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= local_time_ago(podcast.updated_at) %></p>
 
-    <%= link_to t(".discard"), podcast_engagement_path(podcast), class: "btn btn-discard-changed d-none me-2", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
+    <% if policy(podcast).update? %>
+      <%= link_to t(".discard"), podcast_engagement_path(podcast), class: "btn btn-discard-changed d-none me-2", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
 
-    <% data = {disable_with: t(".updating"), upload_with: t(".uploading")} %>
-    <%= form.submit t(".update"), class: "btn btn-primary", data: data %>
+      <% data = {disable_with: t(".updating"), upload_with: t(".uploading")} %>
+      <%= form.submit t(".update"), class: "btn btn-primary", data: data %>
+    <% end %>
   </div>
 </div>
