@@ -53,7 +53,7 @@ describe Tasks::CopyImageTask do
     end
 
     it "replaces resources and publishes on complete" do
-      publish = MiniTest::Mock.new
+      publish = Minitest::Mock.new
 
       task.image.episode.stub(:publish!, publish) do
         task.update(status: "created")

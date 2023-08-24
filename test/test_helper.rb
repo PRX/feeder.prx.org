@@ -42,13 +42,8 @@ class ActiveSupport::TestCase
   Rails.application.config.active_job.queue_name_prefix = "test"
 end
 
-# MiniTest
-class MiniTest::Unit::TestCase
-  include FactoryBot::Syntax::Methods
-end
-
-# MiniTest::Spec
-class MiniTest::Spec
+# Minitest::Spec
+class Minitest::Spec
   include FactoryBot::Syntax::Methods
 end
 

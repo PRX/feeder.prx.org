@@ -63,7 +63,7 @@ describe Task do
           "Callbacks" => task.porter_callbacks.map(&:with_indifferent_access)
         }
 
-        fake = MiniTest::Mock.new
+        fake = Minitest::Mock.new
         fake.expect :call, nil, [job]
 
         task.stub(:porter_start!, fake) do
