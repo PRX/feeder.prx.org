@@ -69,7 +69,7 @@ describe Tasks::CopyMediaTask do
     end
 
     it "replaces resources and publishes on complete" do
-      publish = MiniTest::Mock.new
+      publish = Minitest::Mock.new
 
       task.media_resource.episode.stub(:publish!, publish) do
         task.update(status: "created")
