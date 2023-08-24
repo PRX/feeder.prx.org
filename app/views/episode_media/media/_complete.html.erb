@@ -28,8 +28,10 @@
 
     <label><%= episode_media_label(episode, media) %></label>
 
-    <%= link_to episode_media_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
-      <span class="material-icons text-danger">delete</span>
+    <% if policy(episode).update? %>
+      <%= link_to episode_media_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
+        <span class="material-icons text-danger">delete</span>
+      <% end %>
     <% end %>
 
     <button type="button" class="input-group-text prx-input-group-text" data-bs-toggle="modal" data-bs-target="#media-modal-<%= media.id %>">
