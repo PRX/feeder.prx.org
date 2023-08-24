@@ -8,8 +8,10 @@
 
     <%= help_text t("images.help.#{image.model_name.singular}") %>
 
-    <%= link_to delete_path, class: "prx-btn-help" do %>
-      <span class="material-icons">delete</span>
+    <% if policy(@podcast).update? %>
+      <%= link_to delete_path, class: "prx-btn-help" do %>
+        <span class="material-icons">delete</span>
+      <% end %>
     <% end %>
   </div>
 
