@@ -4,6 +4,7 @@ class PodcastPlannerController < ApplicationController
 
   # GET /podcasts/1/planner
   def show
+    authorize @podcast, :update?
     @planner = PodcastPlanner.new(planner_params)
     @planner.generate_dates!
     @draft_times = @podcast.episodes.draft_or_scheduled.pluck(:released_at)
@@ -11,6 +12,7 @@ class PodcastPlannerController < ApplicationController
 
   # POST /podcasts/1/planner
   def create
+    authorize @podcast, :update?
     @planner = PodcastPlanner.new(planner_params)
     @planner.generate_drafts!
 

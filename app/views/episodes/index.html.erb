@@ -5,6 +5,7 @@
     <h1 class="text-black fw-bold d-flex flex-fill my-4"><%= t(".episodes") %></h1>
     <div class="d-flex gap-2 align-items-center">
       <% if @podcast.present? %>
+        <% if policy(@podcast).update? %>
           <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary btn-sm" do %>
             <%= t ".create_episode" %>
             <span class="material-icons ms-2" aria-hidden="true">mic</span>
@@ -13,6 +14,7 @@
             <%= t ".plan_episodes" %>
             <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
           <% end %>
+        <% end %>
       <% end %>
       <%= form_with(
             url: episodes_path_or_podcast_episodes_path(@podcast),

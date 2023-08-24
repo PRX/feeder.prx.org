@@ -29,6 +29,7 @@ class EpisodesController < ApplicationController
     @episode.clear_attribute_changes(%i[podcast_id])
     @episode.strict_validations = true
     @episode.valid? if turbo_frame_request?
+    authorize @podcast, :update?
   end
 
   # GET /episodes/1/edit
