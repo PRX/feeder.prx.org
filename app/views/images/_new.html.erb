@@ -1,92 +1,90 @@
-<% if policy(@podcast).update? %>
-  <div class="card shadow border-0 prx-uploads mb-4" data-controller="upload" data-upload-disable-outlet="form">
+<div class="card shadow border-0 prx-uploads mb-4" data-controller="upload" data-upload-disable-outlet="form">
 
-    <div class="card-header-info d-flex align-items-center">
-      <h2 class="card-title h5 flex-grow-1"><%= t("images.title.#{image.model_name.singular}") %></h2>
-      <%= help_text t("images.help.#{image.model_name.singular}") %>
+  <div class="card-header-info d-flex align-items-center">
+    <h2 class="card-title h5 flex-grow-1"><%= t("images.title.#{image.model_name.singular}") %></h2>
+    <%= help_text t("images.help.#{image.model_name.singular}") %>
 
-      <%# delete buttons in header, after upload completes %>
-      <button type="button" class="prx-btn-help d-none" data-action="upload#cancelUpload" data-upload-target="success">
-        <span class="material-icons">delete</span>
-      </button>
-      <button type="button" class="prx-btn-help d-none" data-action="upload#cancelUpload" data-upload-target="error">
-        <span class="material-icons">delete</span>
-      </button>
+    <%# delete buttons in header, after upload completes %>
+    <button type="button" class="prx-btn-help d-none" data-action="upload#cancelUpload" data-upload-target="success">
+      <span class="material-icons">delete</span>
+    </button>
+    <button type="button" class="prx-btn-help d-none" data-action="upload#cancelUpload" data-upload-target="error">
+      <span class="material-icons">delete</span>
+    </button>
+  </div>
+
+  <div class="card-body">
+
+    <%# step 0: destroying image (will be nulled out if we actually replace it) %>
+    <%= form.hidden_field :id, data: {upload_target: "replace"} %>
+    <%= form.hidden_field :_destroy, value: true, data: {upload_target: "replace"} %>
+
+    <%# step 1: file field %>
+    <div class="form-floating" data-upload-target="picker">
+      <% cls = "form-control position-absolute opacity-0 z-1" %>
+      <% data = {action: "change->unsaved#change upload#upload", upload_target: "field"} %>
+      <% data[:unsaved_target] = "changed" if image.marked_for_destruction? %>
+
+      <%# NOTE: name is nil, so we don't submit the actual file to Rails %>
+      <%= form.file_field :image_file, class: cls, accept: "image/*", name: nil, data: data %>
+
+      <%# fake display field; real text area is opacity-0 on top of it %>
+      <div class="form-control d-flex align-items-center prx_dragndrop <%= "is-changed" if image.marked_for_destruction? %>">
+        <span class="material-icons text-primary">upload</span>
+        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= t("images.label.upload") %></div>
+      </div>
+
+      <%= form.label :image_file, t("images.label.image_file") %>
     </div>
 
-    <div class="card-body">
+    <%# step 2: upload progressbar %>
+    <div class="form-floating d-none" data-upload-target="progress">
+      <div class="form-control d-flex align-items-center is-changed if-visible">
+        <span class="material-icons text-primary">upload</span>
+        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate" data-upload-target="fileName"></div>
 
-      <%# step 0: destroying image (will be nulled out if we actually replace it) %>
-      <%= form.hidden_field :id, data: {upload_target: "replace"} %>
-      <%= form.hidden_field :_destroy, value: true, data: {upload_target: "replace"} %>
-
-      <%# step 1: file field %>
-      <div class="form-floating" data-upload-target="picker">
-        <% cls = "form-control position-absolute opacity-0 z-1" %>
-        <% data = {action: "change->unsaved#change upload#upload", upload_target: "field"} %>
-        <% data[:unsaved_target] = "changed" if image.marked_for_destruction? %>
-
-        <%# NOTE: name is nil, so we don't submit the actual file to Rails %>
-        <%= form.file_field :image_file, class: cls, accept: "image/*", name: nil, data: data %>
-
-        <%# fake display field; real text area is opacity-0 on top of it %>
-        <div class="form-control d-flex align-items-center prx_dragndrop <%= "is-changed" if image.marked_for_destruction? %>">
-          <span class="material-icons text-primary">upload</span>
-          <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= t("images.label.upload") %></div>
+        <div class="progress flex-grow-1 me-2">
+          <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-upload-target="progressBar"></div>
         </div>
 
-        <%= form.label :image_file, t("images.label.image_file") %>
+        <button type="button" class="btn" data-action="upload#cancelUpload">
+          <span class="material-icons">delete</span>
+        </button>
       </div>
 
-      <%# step 2: upload progressbar %>
-      <div class="form-floating d-none" data-upload-target="progress">
-        <div class="form-control d-flex align-items-center is-changed if-visible">
-          <span class="material-icons text-primary">upload</span>
-          <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate" data-upload-target="fileName"></div>
+      <label><%= t("images.label.image_file") %></label>
+    </div>
 
-          <div class="progress flex-grow-1 me-2">
-            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-upload-target="progressBar"></div>
-          </div>
+    <%# step 3a: hidden original_url field pointing to the uploaded temporary s3 file %>
+    <div class="form-floating d-none mb-4" data-upload-target="success">
+      <%= form.hidden_field :original_url, value: nil, data: {upload_target: "originalUrl"} %>
+      <%= form.hidden_field :size, value: nil, data: {upload_target: "fileSize"} %>
 
-          <button type="button" class="btn" data-action="upload#cancelUpload">
-            <span class="material-icons">delete</span>
-          </button>
-        </div>
-
-        <label><%= t("images.label.image_file") %></label>
+      <div class="form-control d-flex align-items-center is-changed if-visible">
+        <span class="material-icons text-primary ms-2">image</span>
+        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate overflow-hidden text-truncate" data-upload-target="fileName"></div>
+        <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
       </div>
 
-      <%# step 3a: hidden original_url field pointing to the uploaded temporary s3 file %>
-      <div class="form-floating d-none mb-4" data-upload-target="success">
-        <%= form.hidden_field :original_url, value: nil, data: {upload_target: "originalUrl"} %>
-        <%= form.hidden_field :size, value: nil, data: {upload_target: "fileSize"} %>
+      <label><%= t("images.label.image_file") %></label>
+    </div>
+    <div class="d-none" data-upload-target="success">
+      <%= render "images/meta", form: form %>
+    </div>
 
-        <div class="form-control d-flex align-items-center is-changed if-visible">
-          <span class="material-icons text-primary ms-2">image</span>
-          <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate overflow-hidden text-truncate" data-upload-target="fileName"></div>
-          <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
-        </div>
-
-        <label><%= t("images.label.image_file") %></label>
-      </div>
-      <div class="d-none" data-upload-target="success">
-        <%= render "images/meta", form: form %>
+    <%# step 3b: something went horribly wrong! %>
+    <div class="form-floating d-none" data-upload-target="error">
+      <div class="form-control d-flex align-items-center is-invalid">
+        <span class="material-icons text-primary mx-2">image</span>
+        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate overflow-hidden text-truncate " data-upload-target="fileName"></div>
+        <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
       </div>
 
-      <%# step 3b: something went horribly wrong! %>
-      <div class="form-floating d-none" data-upload-target="error">
-        <div class="form-control d-flex align-items-center is-invalid">
-          <span class="material-icons text-primary mx-2">image</span>
-          <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate overflow-hidden text-truncate " data-upload-target="fileName"></div>
-          <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
-        </div>
+      <div class="invalid-feedback" data-upload-target="errorMessage"></div>
 
-        <div class="invalid-feedback" data-upload-target="errorMessage"></div>
-
-        <label class="is-invalid"><%= t("images.label.image_file") %></label>
-      </div>
-
+      <label class="is-invalid"><%= t("images.label.image_file") %></label>
     </div>
 
   </div>
-<% end %>
+
+</div>
