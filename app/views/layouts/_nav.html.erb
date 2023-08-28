@@ -1,13 +1,13 @@
 <div class="prx-header-bar navbar navbar-dark align-items-stretch p-0 bg-primary-dark">
   <div class="container-fluid align-items-stretch pe-0">
     <header class="flex-grow-1 d-flex align-items-center">
-      <%= link_to image_tag("dovetail_logo.svg", width: 152, height: 30, alt: "Dovetail from PRX"), main_app.podcasts_path, class: "navbar-brand d-inline-flex" %>
+      <%= link_to image_tag("dovetail_logo.svg", width: 152, height: 30, alt: "Dovetail from PRX"), main_app.root_path, class: "navbar-brand d-inline-flex" %>
     </header>
 
     <nav class="navbar-nav d-none d-md-flex flex-row align-items-stretch">
       <h2 class="visually-hidden">Your Applications</h2>
 
-      <%= link_to t(".feeder"), main_app.podcasts_path, class: "nav-link active" %>
+      <%= link_to t(".feeder"), main_app.root_path, class: "nav-link active" %>
 
       <% if current_user_app?("metrics") %>
         <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
@@ -36,7 +36,7 @@
     <% if current_user %>
       <nav class="navbar-nav dropdown">
         <h2 class="visually-hidden">User Menu</h2>
-        <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-user-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-user-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="min-width:46px">
           <% if current_user_image? %>
             <img src="<%= current_user_image %>" class="prx-header-nav-avatar" alt="<%= current_user_name %>'s avatar">
           <% else %>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for?(:title) ? content_for(:title) : "Feeder" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="https://media.prx.org/favicon/icon-32.ico" sizes="any">
+    <link rel="icon" href="https://media.prx.org/favicon/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="https://media.prx.org/favicon/icon-180.png">
+
+    <%= stylesheet_link_tag "application" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body data-controller="blank-field confirm-field popover">
+    <%= render "layouts/nav" %>
+    <%= render "layouts/alerts" %>
+    <%= render "layouts/confirm_field" %>
+
+    <main class="prx-main container-xl">
+      <%= yield %>
+    </main>
+  </body>
+</html>

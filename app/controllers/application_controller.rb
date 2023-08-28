@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
 
   default_form_builder FeederFormBuilder
 
-  before_action :set_after_sign_in_path, :authenticate!
+  before_action :redirect_api_requests, :set_after_sign_in_path, :authenticate!
   skip_before_action :set_after_sign_in_path, :authenticate!, only: [:logout, :refresh]
 
   def logout
@@ -24,7 +24,30 @@ class ApplicationController < ActionController::Base
     p.transform_values { |v| v.present? ? v : nil }
   end
 
+  # TEMPORARY: remove CMS authorized accounts from using Feeder UI-only
+  # NOTE: the API uses prx_auth_token directly, not current_user
+  def current_user
+    cms_accounts = prx_auth_token&.resources(:cms, :read_private)
+    prx_auth_token&.except(*cms_accounts)
+  end
+
   protected
+
+  # make sure json/hal requests to the root redirect to /api/v1
+  def redirect_api_requests
+    if request.path == "/" && (request.format.json? || request.format.hal?)
+      redirect_to api_root_path
+    end
+  end
+
+  # check for > 0 feeder authorized accounts
+  def authenticate!
+    if super == true
+      unless current_user.globally_authorized?(:read_private) || current_user.authorized_account_ids(:read_private).any?
+        render "errors/no_access", layout: "plain"
+      end
+    end
+  end
 
   def user_not_authorized(exception)
     @policy = exception.policy.class.to_s.underscore
@@ -33,7 +56,7 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(_resource)
-    main_app.fake_index_path
+    main_app.root_path
   end
 
   # TODO: some way to trigger full reload on session expiration
