@@ -6,16 +6,16 @@
 
     <div class="card-body">
       <div class="form-floating input-group">
-        <%= form.tag_select :categories, episode.categories, {}, data: {allow_new: true, allow_clear: true, category_target: "field" } %>
+        <%= form.tag_select :categories, episode.categories, {}, data: {allow_new: true, allow_clear: true, category_target: "field"} %>
         <%= form.label :categories %>
         <%= field_help_text t(".help.categories") %>
       </div>
     </div>
 
     <div class="card-footer" data-controller="tooltip">
-      <button type="button" class="btn badge bg-secondary" data-bs-toggle="tooltip" data-bs-title="Informs some distributions to not include ads" data-bs-placement="bottom" value="adfree" data-action="click->category#addCategory">Ad Free</button>
-      <button type="button" class="btn badge bg-secondary" data-bs-toggle="tooltip" data-bs-title="Some text about a house ad" data-bs-placement="bottom" value="houseadfree" data-action="click->category#addCategory">House Ad Free</button>
-      <button type="button" class="btn badge bg-secondary" data-bs-toggle="tooltip" data-bs-title="Some text about a paid ad" data-bs-placement="bottom" value="paidadfree" data-action="click->category#addCategory">Paid Ad Free</button>
+      <button type="button" class="btn badge btn-secondary" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.adfree") %>" data-bs-placement="bottom" value="adfree" data-action="click->category#addCategory"><%= t(".label.adfree") %></button>
+      <button type="button" class="btn badge btn-secondary" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.houseadfree") %>" data-bs-placement="bottom" value="houseadfree" data-action="click->category#addCategory"><%= t(".label.houseadfree") %></button>
+      <button type="button" class="btn badge btn-secondary" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.paidadfree") %>" data-bs-placement="bottom" value="paidadfree" data-action="click->category#addCategory"><%= t(".label.paidadfree") %></button>
     </div>
   </div>
 </div>
