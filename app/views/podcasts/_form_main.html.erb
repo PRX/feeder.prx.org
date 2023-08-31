@@ -67,7 +67,7 @@
     <div class="form-floating">
       <%= form.fields_for :default_feed do |fields| %>
         <% opts = itunes_subcategory_options(podcast.itunes_category) %>
-        <%= fields.select :itunes_subcategory, opts, {include_blank: true}, disabled: opts.blank? %>
+        <%= fields.select :itunes_subcategory, opts, {include_blank: true}, disabled: (opts.blank? || !policy(podcast).update?) %>
         <%= fields.label :itunes_subcategory %>
       <% end %>
     </div>
