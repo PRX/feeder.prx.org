@@ -802,8 +802,14 @@ en:
       <<: *form_status
       title: Podcast Status
     index:
+      title: My Podcasts
       create: New Podcast
       search_podcasts: Search Podcasts
+      sort:
+        recent: Recent Activity
+        number: "# of Episodes"
+        asc: A-Z
+        desc: Z-A
     podcast:
       create_episode: Create Episode
       plan_episodes: Plan Episodes
