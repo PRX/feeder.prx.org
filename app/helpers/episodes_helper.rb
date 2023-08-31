@@ -85,4 +85,12 @@ module EpisodesHelper
   def episode_medium_options
     Episode.mediums.keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
   end
+
+  def episode_category_button_class(episode, value)
+    if episode.categories.include?(value)
+      "btn-primary"
+    else
+      "btn-light"
+    end
+  end
 end

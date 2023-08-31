@@ -8,6 +8,9 @@ export default class extends Controller {
     const vals = Tags.getInstance(this.fieldTarget).getSelectedValues()
 
     if (!vals.includes(event.target.value)) {
+      if (vals.length === 0) {
+        this.fieldTarget.classList.remove("form-control-blank")
+      }
       Tags.getInstance(this.fieldTarget).addItem(event.target.value)
       event.target.classList.add("btn-primary")
       event.target.classList.remove("btn-light")
