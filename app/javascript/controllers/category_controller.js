@@ -9,6 +9,12 @@ export default class extends Controller {
 
     if (!vals.includes(event.target.value)) {
       Tags.getInstance(this.fieldTarget).addItem(event.target.value)
+      event.target.classList.add("btn-primary")
+      event.target.classList.remove("btn-light")
+    } else {
+      Tags.getInstance(this.fieldTarget).removeItem(event.target.value)
+      event.target.classList.add("btn-light")
+      event.target.classList.remove("btn-primary")
     }
   }
 }
