@@ -4,6 +4,12 @@ class EpisodeMediaController < ApplicationController
   # GET /episodes/1/media
   def show
     authorize @episode, :show?
+
+    # try to ensure a segment count, so the UI doesn't break
+    if @episode.segment_count.blank? && @episode.contents.any?
+      @episode.segment_count = @episode.contents.map(&:position).max || @episode.contents.size
+    end
+
     @episode.assign_attributes(parsed_episode_params)
     @episode.valid?
   end
