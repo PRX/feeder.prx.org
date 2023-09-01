@@ -867,7 +867,7 @@ en:
     form_status:
       <<: *form_status
     show:
-      title: Engagement
+      title: "%{title} - Engagement"
     update:
       error: Unable to save
       notice: Engagement settings updated
