@@ -4,10 +4,10 @@ class PodcastsController < ApplicationController
   before_action :set_podcast, only: %i[show edit update destroy]
 
   # Translate the user selected sort to a query order argument
-  DISPLAY_ORDER = {"A-Z" => {title: :asc},
-                   "Z-A" => {title: :desc},
+  DISPLAY_ORDER = {I18n.t(".sort.asc") => {title: :asc},
+                   I18n.t(".sort.desc") => {title: :desc},
                    "" => {updated_at: :desc},
-                   "Recent Activity" => {updated_at: :desc}}.freeze
+                   I18n.t(".sort.recent") => {updated_at: :desc}}.freeze
 
   DEFAULT_PAGE_SIZE = 10
 
