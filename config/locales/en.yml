@@ -546,8 +546,11 @@ en:
         file_size: Size
         frame_rate: Frame Rate
         mime_type: Content Type
+        mono: Mono
+        multichannel: "%{number} Channels"
         sample_rate: Frequency
         status: Status
+        stereo: Stereo
       new:
         hint: Upload a file or drag it here
       processing:
@@ -564,8 +567,20 @@ en:
       segmenter:
         label:
           prefix: Midroll
+        table:
+          name: Name
+          timestamps: Timestamps
+        tooltip:
+          add_end_time: Add End Time
+          change_end_time: Edit End Time
+          change_start_time: Edit Start Time
+          confirm: Confirm Change
+          remove_end_time: Remove End Time
+          seek_input: Enter time to seek to
+          set_playhead: Set To Playhead
+        insert: Insert At Playhead
     show:
-      title: Media Files
+      title: "%{title} - Media Files"
     update:
       error: Unable to save
       media_not_ready: Published episodes cannot have empty media
