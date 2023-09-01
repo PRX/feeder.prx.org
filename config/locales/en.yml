@@ -770,6 +770,8 @@ en:
     destroy:
       error: Cannot delete a podcast with published episodes
       notice: Podcast deleted
+    edit:
+      title: "%{title} - Settings"
     form:
       confirm: Discard unsaved changes?
     form_distribution:
@@ -801,6 +803,12 @@ en:
     form_status:
       <<: *form_status
       title: Podcast Status
+    tabs:
+      metadata: Metadata
+      engagement: Engagement Settings
+      player: Embeddable Player
+      import: Import
+      planner: Plan Episodes
     index:
       title: My Podcasts
       create: New Podcast
@@ -848,6 +856,7 @@ en:
       scheduled_episodes:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
+      link: Go to Podcast
   podcast_engagement:
     form:
       <<: *form
