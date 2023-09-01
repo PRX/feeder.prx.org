@@ -499,6 +499,10 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+    edit:
+      title: "%{title} - Edit"
+    new:
+      title: "%{title} - New Episode"
     missing_drafts:
       message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
       okay: Okay
