@@ -302,6 +302,13 @@ en:
             slug:
               invalid: Invalid slug
               taken: Must be unique
+        media_resource:
+          attributes:
+            medium:
+              format: "%{message}"
+            original_url:
+              blank: Can't be blank
+              format: "%{message}"
         podcast:
           attributes:
             payment_pointer:
