@@ -329,9 +329,17 @@ class Episode < ApplicationRecord
     return if published_at.blank? || no_media?
 
     # media must be complete on _initial_ publish
-    must_be_complete = published_at_was.blank?
+    # otherwise - having files in any status is good enough
+    is_ready =
+      if published_at_was.blank?
+        media_ready?(true)
+      elsif medium_uncut?
+        uncut.present? && !uncut.marked_for_destruction?
+      else
+        media_ready?(false)
+      end
 
-    unless media_ready?(must_be_complete)
+    unless is_ready
       errors.add(:base, :media_not_ready, message: "media not ready")
     end
   end
