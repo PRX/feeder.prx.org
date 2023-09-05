@@ -1,5 +1,7 @@
 <% if upload_new?(media) %>
-  <%= render "episode_media/media/new", form: form, episode: episode, media: media %>
+  <% if policy(media).create? %>
+    <%= render "episode_media/media/new", form: form, episode: episode, media: media %>
+  <% end %>
 <% elsif upload_stalled?(media) %>
   <%= render "episode_media/media/error", form: form, episode: episode, media: media, retryable: true %>
 <% elsif upload_processing?(media) %>

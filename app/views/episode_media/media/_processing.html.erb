@@ -13,8 +13,10 @@
       <% end %>
     </div>
 
-    <%= link_to episode_media_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
-      <span class="material-icons text-danger">delete</span>
+    <% if policy(media).destroy? %>
+      <%= link_to episode_media_path(media.episode, uploads_destroy_params(form)), class: "input-group-text prx-input-group-text" do %>
+        <span class="material-icons text-danger">delete</span>
+      <% end %>
     <% end %>
 
     <label><%= episode_media_label(episode, media) %></label>

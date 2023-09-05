@@ -490,7 +490,15 @@ en:
     form_tags:
       title: Categories
       help:
-        categories: Enter categories relevant to the content of your episode. Type the category and press Enter to set it.
+        categories: Enter categories relevant to the content of your episode. Type the category and press Enter to set it. You can also use the preset buttons below.
+      tooltip:
+        adfree: Excludes ads scheduled in all house, paid, billboard, and sonic zones - disabling ad injection entirely.
+        houseadfree: Excludes the ads scheduled in house zones.
+        paidadfree: Excludes the ads scheduled in paid zones.
+      label:
+        adfree: Ad Free
+        houseadfree: House Ad Free
+        paidadfree: Paid Ad Free
     index:
       title: PRX Dovetail - Episodes
       episodes: Episodes

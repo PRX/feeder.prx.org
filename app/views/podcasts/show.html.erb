@@ -4,13 +4,15 @@
   <div class="d-grid d-sm-flex align-items-center">
     <%= render @podcast %>
     <div class="d-flex gap-2 align-items-center">
-      <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary btn-sm" do %>
-        <%= t ".create_episode" %>
-        <span class="material-icons ms-2" aria-hidden="true">mic</span>
-      <% end %>
-      <%= link_to podcast_planner_path(@podcast), class: "btn btn-primary btn-sm" do %>
-        <%= t ".plan_episodes" %>
-        <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
+      <% if policy(@podcast).update? %>
+        <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary btn-sm" do %>
+          <%= t ".create_episode" %>
+          <span class="material-icons ms-2" aria-hidden="true">mic</span>
+        <% end %>
+        <%= link_to podcast_planner_path(@podcast), class: "btn btn-primary btn-sm" do %>
+          <%= t ".plan_episodes" %>
+          <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
+        <% end %>
       <% end %>
     </div>
   </div>
