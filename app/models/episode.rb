@@ -24,6 +24,7 @@ class Episode < ApplicationRecord
 
   belongs_to :podcast, -> { with_deleted }, touch: true
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy
+  has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy
   has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
 

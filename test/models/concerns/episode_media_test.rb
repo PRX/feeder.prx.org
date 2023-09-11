@@ -5,25 +5,54 @@ class EpisodeMediaTest < ActiveSupport::TestCase
   let(:c2) { build_stubbed(:content, status: "complete", position: 2) }
   let(:ep) { build(:episode, segment_count: 2, contents: [c1, c2]) }
 
-  describe "#complete_media_ready?" do
-    it "checks for any complete_media if published" do
-      ep.published_at = 1.day.ago
+  describe "#complete_media" do
+    it "creates and updates media versions" do
+      episode = create(:episode, segment_count: 2)
+      assert_empty episode.media_versions
 
+      c1 = create(:content, episode: episode, position: 1, status: "complete")
+      c2 = create(:content, episode: episode, position: 2, status: "complete")
+
+      assert_equal [c1, c2], episode.complete_media
+      assert_equal 1, episode.media_versions.size
+
+      v = episode.media_versions.first
+      assert_equal 2, v.media_version_resources.size
+      assert_equal [c1, c2], v.media_resources
+
+      # replacing c2, but processing not done - same old version
+      c3 = create(:content, episode: episode, position: 2, status: "processing")
+      assert c2.reload.deleted?
+      assert_equal [c1, c2], episode.reload.complete_media
+      assert_equal 1, episode.media_versions.size
+
+      # new version when processing completes
+      c3.update(status: "complete")
+      assert_equal [c1, c3], episode.reload.complete_media
+      assert_equal 2, episode.media_versions.size
+    end
+
+    it "creates no media versions until complete" do
+      episode = create(:episode, segment_count: 2)
+      assert_empty episode.media_versions
+
+      create(:content, episode: episode, position: 1, status: "complete")
+      create(:content, episode: episode, position: 2, status: "processing")
+
+      assert_equal [], episode.complete_media
+      assert_equal 0, episode.media_versions.size
+    end
+  end
+
+  describe "#complete_media?" do
+    it "checks for any complete_media" do
       ep.stub(:complete_media, []) do
         refute ep.complete_media?
       end
 
-      ep.stub(:complete_media, [c1]) do
+      ep.stub(:complete_media, ["anything"]) do
         assert ep.complete_media?
       end
-    end
-
-    it "checks for media_ready? if unpublished" do
-      ep.published_at = 1.day.from_now
-      assert ep.complete_media?
-
-      c1.status = "processing"
-      refute ep.complete_media?
     end
   end
 
@@ -265,19 +294,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       c1.stub(:href, "some-href") do
         assert_equal "some-href", ep.media_url
       end
-    end
-  end
-
-  describe "#complete_media" do
-    it "returns completed or replaced contents" do
-      episode = create(:episode)
-      c1 = create(:content, episode: episode, position: 1, status: "complete", replaced_at: Time.now, deleted_at: Time.now)
-      c2 = create(:content, episode: episode, position: 1, status: "created")
-      c3 = create(:content, episode: episode, position: 2, status: "complete")
-      c4 = create(:content, episode: episode, position: 3, status: "created")
-
-      assert_equal [c1, c3], episode.complete_media
-      assert_equal [c2, c3, c4], episode.media
     end
   end
 end

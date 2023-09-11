@@ -4,15 +4,23 @@ module EpisodeMedia
   extend ActiveSupport::Concern
 
   def complete_media
-    contents.complete_or_replaced.group_by(&:position).values.map(&:first)
+    latest_version = media_versions.first&.media_resources || []
+    latest_ids = latest_version.map(&:id).sort
+
+    # backfill media_versions for newly completed media
+    if media_ready? && latest_ids != media_ids
+      new_version = media_versions.build
+      media.each { |m| new_version.media_version_resources.build(media_resource: m) }
+      new_version.save!
+
+      media
+    else
+      latest_version
+    end
   end
 
   def complete_media?
-    if published?
-      complete_media.any?
-    else
-      media_ready?
-    end
+    complete_media.any?
   end
 
   def no_media?
@@ -21,6 +29,10 @@ module EpisodeMedia
 
   def media
     contents.reject(&:marked_for_destruction?)
+  end
+
+  def media_ids
+    media.map(&:id).sort
   end
 
   # API updates ignore nil attributes
