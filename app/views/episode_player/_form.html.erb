@@ -57,7 +57,7 @@
 
     <div class="container-fluid mb-4" data-controller="dynamic-form" data-dynamic-form-help-value="<%= t(".help.types").to_json %>">
       <div class="form-floating input-group">
-        <%= select_tag :embed_player_type, embed_player_type_options(player_options[:embed_player_type]), class: "form-control", data: {action: "embed-preview#changeType dynamic-form#updateHelp"} %>
+        <%= select_tag :embed_player_type, embed_player_type_options(player_options[:embed_player_type]), class: "form-select", data: {action: "embed-preview#changeType dynamic-form#updateHelp"} %>
         <%= label_tag :embed_player_type, t("helpers.label.podcast_player.embed_player_type") %>
       </div>
 
@@ -88,7 +88,7 @@
         <div class="row">
           <div class="col-12" data-controller="dynamic-form" data-dynamic-form-help-value="<%= t(".help.themes").to_json %>">
             <div class="form-floating input-group">
-              <%= select_tag :embed_player_theme, embed_player_theme_options(player_options[:embed_player_theme]), class: "form-control", data: {action: "embed-preview#changeTheme dynamic-form#updateHelp"} %>
+              <%= select_tag :embed_player_theme, embed_player_theme_options(player_options[:embed_player_theme]), class: "form-select", data: {action: "embed-preview#changeTheme dynamic-form#updateHelp"} %>
               <%= label_tag :embed_player_theme, t("helpers.label.podcast_player.embed_player_theme") %>
             </div>
 
