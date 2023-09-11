@@ -80,8 +80,12 @@ class EpisodeStoryHandler
       []
     end
 
-    episode.media = audio.sort_by(&:position).map do |a|
-      a.links["prx:storage"].href
+    # possible race condition i couldn't quite track down, when replacing files on a
+    # published episode - so let's just not allow deleting it for now
+    unless episode.published? && audio.empty?
+      episode.media = audio.sort_by(&:position).map do |a|
+        a.links["prx:storage"].href
+      end
     end
   end
 
