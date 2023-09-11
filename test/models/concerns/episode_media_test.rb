@@ -5,7 +5,7 @@ class EpisodeMediaTest < ActiveSupport::TestCase
   let(:c2) { build_stubbed(:content, status: "complete", position: 2) }
   let(:ep) { build(:episode, segment_count: 2, contents: [c1, c2]) }
 
-  describe "#complete_media_ready?" do
+  describe "#complete_media?" do
     it "checks for any complete_media if published" do
       ep.published_at = 1.day.ago
 
@@ -14,6 +14,21 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       end
 
       ep.stub(:complete_media, [c1]) do
+        assert ep.complete_media?
+      end
+    end
+
+    it "checks for media_ready? if published in the past hour" do
+      ep.stub(:complete_media, [c2]) do
+        # recently published - ignores complete media
+        ep.published_at = 10.minutes.ago
+        assert ep.complete_media?
+
+        c1.status = "processing"
+        refute ep.complete_media?
+
+        # published > 1 hour ago - will serve any complete_media
+        ep.published_at = 61.minutes.ago
         assert ep.complete_media?
       end
     end
