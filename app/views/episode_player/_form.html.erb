@@ -1,64 +1,118 @@
-<%= turbo_frame_tag "embed-player", data: {controller: "morphdom"} do %>
+<div class="row my-4 mx-2" data-controller="embed-preview"
+  data-embed-preview-embed-url-value="<%= embed_player_episode_url(episode, player_options, true) %>"
+>
+  <div class="col-8">
 
-  <div class="col-12 mb-4">
-    <div class="form-floating input-group" data-controller="dynamic-form">
-      <%= select_tag :embed_player_type, embed_player_type_options(embed_player_type), class: "form-control", data: {action: "dynamic-form#change"} %>
-      <%= label_tag :embed_player_style, t("helpers.label.episode.embed_player_type") %>
-      <a hidden href="<%= episode_player_path(episode) %>" data-dynamic-form-target="link"></a>
-    </div>
+    <div class="container-fluid mb-5">
+      <h3 class="fw-bold"><%= t(".title.preview") %></h3>
 
-    <div class="form-text">
-      <%= t(".help.types.#{embed_player_type || "standard"}") %>
-    </div>
-  </div>
-
-  <div class="col-12 mb-4">
-    <h3 class="fw-bold"><%= t(".title.copy") %></h3>
-
-    <div class="form-text mb-4">
-      <%= t(".help.copy") %>
-    </div>
-
-    <div class="form-floating input-group">
-      <%= text_field_tag :embed_player_url, embed_player_episode_url(episode, embed_player_type), class: "form-control", disabled: true, autocomplete: "off" %>
-      <%= label_tag :embed_player_url, t("helpers.label.episode.embed_player_url") %>
-      <%= field_link embed_player_episode_url(episode, embed_player_type) %>
-      <%= field_copy embed_player_episode_url(episode, embed_player_type) %>
-    </div>
-  </div>
-
-  <div class="col-12 mb-4">
-    <div class="form-floating input-group">
-      <%= text_field_tag :embed_player_iframe, embed_player_episode_iframe(episode, embed_player_type), class: "form-control", disabled: true, autocomplete: "off" %>
-      <%= label_tag :embed_player_iframe, t("helpers.label.episode.embed_player_iframe") %>
-      <%= field_copy embed_player_episode_iframe(episode, embed_player_type) %>
-    </div>
-  </div>
-
-  <div class="col-12 mb-4">
-    <div class="form-floating input-group">
-      <% if episode.media_ready? %>
-        <%= text_field_tag :enclosure_url, episode.enclosure_url, class: "form-control", disabled: true, autocomplete: "off" %>
-        <%= label_tag :enclosure_url, t("helpers.label.episode.enclosure_url") %>
-        <%= field_copy episode.enclosure_url %>
-      <% else %>
-        <%= text_field_tag :enclosure_url, t(".enclosure_not_ready"), class: "form-control", disabled: true, autocomplete: "off" %>
-        <%= label_tag :enclosure_url, t("helpers.label.episode.enclosure_url") %>
-      <% end %>
-    </div>
-  </div>
-
-  <div class="col-12 mb-4">
-    <h3 class="fw-bold"><%= t(".title.preview") %></h3>
-
-    <% unless episode.published? %>
-      <div class="alert alert-warning" role="alert">
-        <h4 class="alert-heading fw-bold"><%= t(".title.warning") %></h4>
-        <p class="mb-0"><%= t(".help.warning") %></p>
+      <div class="p-4 mx-auto border border-2" style="resize: horizontal; overflow: scroll; min-width: calc(304px + 3rem); max-width: 100%">
+        <div class="mb-4">
+          <%= render "layouts/skeleton_text", lines: 4 %>
+        </div>
+        <div class="lh-0"><%= embed_player_iframe(player_options) %></div>
+        <div class="mt-4">
+          <%= render "layouts/skeleton_text", lines: 4 %>
+        </div>
       </div>
-    <% end %>
+    </div>
 
-    <%= embed_player_episode_iframe(episode, embed_player_type, true) %>
+    <div class="container-fluid mb-4">
+      <h3 class="fw-bold"><%= t(".title.copy") %></h3>
+
+      <div class="form-text mb-4">
+        <%= t(".help.copy") %>
+      </div>
+
+      <div class="form-floating input-group">
+        <%= text_field_tag :embed_player_url, '', class: "form-control", disabled: true, autocomplete: "off", data: { :embed_preview_target => 'embedUrl' } %>
+        <%= label_tag :embed_player_url, t("helpers.label.podcast_player.embed_player_url") %>
+        <%= field_link '', { :embed_preview_target => 'embedUrl' } %>
+        <%= field_copy '', { :embed_preview_target => 'embedUrl' } %>
+      </div>
+    </div>
+
+    <div class="container-fluid mb-4">
+      <div class="form-floating input-group">
+        <%= text_field_tag :embed_player_iframe, '', class: "form-control", disabled: true, autocomplete: "off", data: { :embed_preview_target => 'embedHtml' } %>
+        <%= label_tag :embed_player_iframe, t("helpers.label.podcast_player.embed_player_iframe") %>
+        <%= field_copy '', { :embed_preview_target => 'embedHtml' } %>
+      </div>
+    </div>
+
+    <div class="container-fluid mb-4">
+      <div class="form-floating input-group">
+        <% if episode.media_ready? %>
+          <%= text_field_tag :enclosure_url, episode.enclosure_url, class: "form-control", disabled: true, autocomplete: "off" %>
+          <%= label_tag :enclosure_url, t("helpers.label.episode.enclosure_url") %>
+          <%= field_copy episode.enclosure_url %>
+        <% else %>
+          <%= text_field_tag :enclosure_url, t(".enclosure_not_ready"), class: "form-control", disabled: true, autocomplete: "off" %>
+          <%= label_tag :enclosure_url, t("helpers.label.episode.enclosure_url") %>
+        <% end %>
+      </div>
+    </div>
   </div>
 
-<% end %>
+  <div class="col-4">
+
+    <div class="container-fluid mb-4" data-controller="dynamic-form" data-dynamic-form-help-value="<%= t(".help.types").to_json %>">
+      <div class="form-floating input-group">
+        <%= select_tag :embed_player_type, embed_player_type_options(player_options[:embed_player_type]), class: "form-control", data: { action: "embed-preview#changeType dynamic-form#updateHelp" } %>
+        <%= label_tag :embed_player_type, t("helpers.label.podcast_player.embed_player_type") %>
+      </div>
+        
+      <div class="form-text" data-dynamic-form-target="help">
+        <%= t(".help.types.#{player_options[:embed_player_type] || "standard"}") %>
+      </div>
+    </div>
+
+    <div class="container-fluid mb-4">
+      <div class="form-floating input-group">
+        <%= number_field_tag :max_width, player_options[:max_width], min: 300, class: "form-control", data: { action: "embed-preview#changeMaxWidth" }, placeholder: '100%' %>
+        <%= label_tag :max_width, t("helpers.label.podcast_player.max_width") %>
+        <span class="input-group-text" id="basic-addon2">px</span>
+      </div>
+
+      <div class="form-text">
+        <%= t(".help.max_width") %>
+      </div>
+    </div>
+
+    <div class="card border-light mb-4">
+      <div class="card-header-light"><%= t(".title.customize") %></div>
+      <div class="card-body d-grid gap-3">
+        <div class="form-text">
+          <%= t(".help.customize") %>
+        </div>
+
+        <div class="row">
+          <div class="col-12" data-controller="dynamic-form" data-dynamic-form-help-value="<%= t(".help.themes").to_json %>">
+            <div class="form-floating input-group">
+              <%= select_tag :embed_player_theme, embed_player_theme_options(player_options[:embed_player_theme]), class: "form-control", data: { action: "embed-preview#changeTheme dynamic-form#updateHelp" } %>
+              <%= label_tag :embed_player_theme, t("helpers.label.podcast_player.embed_player_theme") %>
+            </div>
+
+            <div class="form-text" data-dynamic-form-target="help">
+              <%= t(".help.themes.#{player_options[:embed_player_theme] || "dark"}") %>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+          <%= label_tag :accent_color, t("helpers.label.podcast_player.accent_color") %>
+            <div class="input-group">
+              <%= tag.input type: 'color', value: player_options[:accent_color][0], class: "form-control form-control-color", data: { :embed_preview_target => "accentColor", action: "embed-preview#changeAccentColor" } %> 
+            </div>
+
+            <div class="form-text">
+              <%= t(".help.accent_color") %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

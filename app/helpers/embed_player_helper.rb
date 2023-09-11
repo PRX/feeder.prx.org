@@ -24,10 +24,10 @@ module EmbedPlayerHelper
     "#{play_root}#{EMBED_PLAYER_LANDING_PATH}?#{params.to_query}"
   end
 
-  def embed_player_episode_url(ep, type = nil, preview = false)
+  def embed_player_episode_url(ep, options = nil, preview = false)
     params = {}
 
-    if preview && !ep.published?
+    if preview || !ep.published?
       params[EMBED_PLAYER_TITLE] = ep.title
       params[EMBED_PLAYER_SUBTITLE] = ep.podcast.title
       params[EMBED_PLAYER_IMAGE] = ep.ready_image&.url || ep.podcast.ready_image&.url
@@ -38,11 +38,11 @@ module EmbedPlayerHelper
       params[EMBED_PLAYER_GUID] = ep.item_guid
     end
 
-    if type == "card" || type == "fixed_card"
+    if options.present? && options[:embed_player_type] == "card"
       params[EMBED_PLAYER_CARD] = "1"
     end
 
-    embed_params(params)
+    embed_params(params, preview)
   end
 
   def embed_player_podcast_url(podcast, options, preview = false)
@@ -65,29 +65,11 @@ module EmbedPlayerHelper
       params[EMBED_PLAYER_CATEGORY] = options[:category]
     end
 
-    if options[:embed_player_type] == "card" || options[:embed_player_type] == "fixed_card"
+    if options[:embed_player_type] == "card"
       params[EMBED_PLAYER_CARD] = "1"
     end
 
-    embed_params(params)
-  end
-
-  def embed_player_episode_iframe(ep, type = nil, preview = false)
-    src = embed_player_episode_url(ep, type, preview)
-    allow = "monetization origin"
-    data = { :embed_preview_target => 'embedIframe' }
-
-    if type == "card"
-      # Responsive cards require a wrapper div around iframe. The wrapper uses padding to determine the size of the area the iframe should fill.
-      tag.div style: "position: relative; height: 0; width: 100%; padding-top: calc(100% + 200px);" do
-        tag.iframe src: src, allow: allow, width: "100%", height: "100%", style: "position: absolute; inset: 0;", data: data
-      end
-    elsif type == "fixed_card"
-      # Fixxed card heights should always be 200px larger than the width.
-      tag.iframe src: src, allow: allow, width: "500", height: "700", data: data
-    else
-      tag.iframe src: src, allow: allow, width: "100%", height: "200", data: data
-    end
+    embed_params(params, preview)
   end
 
   def embed_player_iframe(options)
@@ -102,7 +84,6 @@ module EmbedPlayerHelper
       iframeHeight = '100%'
       iframeStyle = "position: absolute; inset: 0;"
     end
-
 
     tag.div style: wrapperStyle, data: { :embed_preview_target => 'embedIframeWrapper' } do
       tag.iframe class: 'bg-light', src: src, allow: allow, width: "100%", height: iframeHeight, style: iframeStyle, data: { :embed_preview_target => 'embedIframe' }
@@ -131,8 +112,8 @@ module EmbedPlayerHelper
 
   private
 
-  def embed_params(params)
-    "https://#{ENV["PLAY_HOST"]}#{EMBED_PLAYER_PREVIEW_PATH}?#{params.to_query}"
+  def embed_params(params, preview = false)
+    "https://#{ENV["PLAY_HOST"]}#{preview ? EMBED_PLAYER_PREVIEW_PATH : EMBED_PLAYER_PATH}?#{params.to_query}"
   end
 
   def enclosure_with_token(ep)
