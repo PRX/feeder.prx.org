@@ -105,22 +105,6 @@ class EpisodeStoryHandler
     end
   end
 
-  def build_content(audio)
-    update_content(Content.new, audio)
-  end
-
-  def update_content(content, audio)
-    content.tap do |c|
-      c.position = audio.attributes["position"]
-      c.href = audio.links["prx:storage"].href
-      c.mime_type = audio.links["prx:storage"].type || audio.attributes["content_type"]
-      c.file_size = audio.attributes["size"]
-      c.duration = audio.attributes["duration"]
-      c.bit_rate = audio.attributes["bit_rate"]
-      c.sample_rate = audio.attributes["frequency"] * 1000 if audio.attributes["frequency"]
-    end
-  end
-
   def get_story(account = nil)
     return nil unless episode.prx_uri
 
