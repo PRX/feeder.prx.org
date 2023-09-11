@@ -604,6 +604,8 @@ en:
         customize: Make It Your Own
         preview: Player
         warning: Warning
+      label: &player_label
+        clear: Restore Default Options
     show:
       title: Embeddable Player
   errors:
@@ -943,7 +945,8 @@ en:
       title:
         <<: *player_title
         playlist: Make It A Playlist
-      clear: Clear options
+      label:
+        <<: *player_label
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
