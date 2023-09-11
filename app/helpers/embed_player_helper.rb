@@ -73,20 +73,20 @@ module EmbedPlayerHelper
   end
 
   def embed_player_iframe(options)
-    src = ''
+    src = ""
     allow = "monetization"
-    iframeHeight = '200'
-    iframeStyle = ''
-    wrapperStyle = 'line-height: 0;'
+    iframe_height = "200"
+    iframe_styles = ""
+    wrapper_styles = "line-height: 0;"
 
     if options[:embed_player_type] == "card"
-      wrapperStyle = "position: relative; height: 0; width: 100%; padding-top: calc(100% + #{iframeHeight}px); line-height: 0;"
-      iframeHeight = '100%'
-      iframeStyle = "position: absolute; inset: 0;"
+      wrapper_styles = "position: relative; height: 0; width: 100%; padding-top: calc(100% + #{iframe_height}px); line-height: 0;"
+      iframe_height = "100%"
+      iframe_styles = "position: absolute; inset: 0;"
     end
 
-    tag.div style: wrapperStyle, data: { :embed_preview_target => 'embedIframeWrapper' } do
-      tag.iframe class: 'bg-light', src: src, allow: allow, width: "100%", height: iframeHeight, style: iframeStyle, data: { :embed_preview_target => 'embedIframe' }
+    tag.div style: wrapper_styles, data: {embed_preview_target: "embedIframeWrapper"} do
+      tag.iframe class: "bg-light", src: src, allow: allow, width: "100%", height: iframe_height, style: iframe_styles, data: {embed_preview_target: "embedIframe"}
     end
   end
 

@@ -4,7 +4,7 @@ export default class extends Controller {
   static targets = ["link", "help"]
 
   static values = {
-    help: Object
+    help: Object,
   }
 
   updateHelp(event) {

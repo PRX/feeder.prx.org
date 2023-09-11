@@ -6,12 +6,12 @@ export default class extends Controller {
   originalStyleDisplay
 
   connect() {
-    this.originalStyleDisplay = this.element.style.display;
+    this.originalStyleDisplay = this.element.style.display
 
-    navigator.permissions.query({ name: 'clipboard-write'}).then((result) => {
-      this.updatePermissionState(result.state);
-      result.addEventListener('change', () => {
-        this.updatePermissionState(result.state);
+    navigator.permissions.query({ name: "clipboard-write" }).then((result) => {
+      this.updatePermissionState(result.state)
+      result.addEventListener("change", () => {
+        this.updatePermissionState(result.state)
       })
     })
 
@@ -26,12 +26,12 @@ export default class extends Controller {
 
   updatePermissionState(state) {
     switch (state) {
-      case 'denied':
-        this.element.style.display = 'none';
-        break;
-      case 'prompt':
-        this.element.style.display = this.originalStyleDisplay;
-        break;
+      case "denied":
+        this.element.style.display = "none"
+        break
+      case "prompt":
+        this.element.style.display = this.originalStyleDisplay
+        break
     }
   }
 
