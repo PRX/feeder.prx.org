@@ -80,8 +80,12 @@ class EpisodeStoryHandler
       []
     end
 
-    episode.media = audio.sort_by(&:position).map do |a|
-      a.links["prx:storage"].href
+    # possible race condition i couldn't quite track down, when replacing files on a
+    # published episode - so let's just not allow deleting it for now
+    unless episode.published? && audio.empty?
+      episode.media = audio.sort_by(&:position).map do |a|
+        a.links["prx:storage"].href
+      end
     end
   end
 
@@ -102,22 +106,6 @@ class EpisodeStoryHandler
     if cms_href.present?
       episode.image.caption = cms_image.attributes["caption"]
       episode.image.credit = cms_image.attributes["credit"]
-    end
-  end
-
-  def build_content(audio)
-    update_content(Content.new, audio)
-  end
-
-  def update_content(content, audio)
-    content.tap do |c|
-      c.position = audio.attributes["position"]
-      c.href = audio.links["prx:storage"].href
-      c.mime_type = audio.links["prx:storage"].type || audio.attributes["content_type"]
-      c.file_size = audio.attributes["size"]
-      c.duration = audio.attributes["duration"]
-      c.bit_rate = audio.attributes["bit_rate"]
-      c.sample_rate = audio.attributes["frequency"] * 1000 if audio.attributes["frequency"]
     end
   end
 

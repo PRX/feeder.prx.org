@@ -7,8 +7,11 @@ module EpisodeMedia
     contents.complete_or_replaced.group_by(&:position).values.map(&:first)
   end
 
+  # TODO: not ideal, but we need to ensure this stays true forever, after the
+  # first time the episode is written to any feed. for now, just assume that
+  # takes about an hour.
   def complete_media?
-    if published?
+    if published? && published_at < 1.hour.ago
       complete_media.any?
     else
       media_ready?
