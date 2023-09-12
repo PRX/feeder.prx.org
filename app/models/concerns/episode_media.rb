@@ -4,8 +4,8 @@ module EpisodeMedia
   extend ActiveSupport::Concern
 
   def complete_media
-    latest_version = media_versions.first&.media_resources || []
-    latest_ids = latest_version.map(&:id).sort
+    latest_media = media_versions.first&.media_resources || []
+    latest_ids = latest_media.map(&:id)
 
     # backfill media_versions for newly completed media
     if media_ready? && latest_ids != media_ids
@@ -15,7 +15,7 @@ module EpisodeMedia
 
       media
     else
-      latest_version
+      latest_media
     end
   end
 
@@ -32,7 +32,11 @@ module EpisodeMedia
   end
 
   def media_ids
-    media.map(&:id).sort
+    media.map(&:id)
+  end
+
+  def media_version_id
+    media_versions.first&.id
   end
 
   # API updates ignore nil attributes
