@@ -198,7 +198,9 @@ class Episode < ApplicationRecord
     super
 
     if medium_changed? && medium_was.present?
-      contents.each(&:mark_for_replacement)
+      unless medium == "audio" && medium_was == "uncut"
+        contents.each(&:mark_for_replacement)
+      end
       uncut&.mark_for_replacement
     end
 
