@@ -348,6 +348,7 @@ en:
           complete: Complete
           error: Error
           incomplete: Incomplete
+          incomplete_published: Incomplete
           invalid: Invalid
           processing: Processing
         medium: File Format

@@ -19,7 +19,7 @@
       <div class="episode-card-badges">
         <% status = episode_media_status(episode) %>
         <span class="badge rounded-pill prx-badge-<%= status %>">
-          <%= t("helpers.label.episode.media_statuses.#{status}") %>
+          <%= t("helpers.label.episode.media_statuses.#{status.underscore}") %>
         </span>
       </div>
     </div>
