@@ -1,4 +1,4 @@
-<% content_for :title, "My Podcasts" %>
+<% content_for :title, t(".title") %>
 
 <div class="mt-4 mb-2">
   <div class="d-flex align-items-center justify-content-between">
@@ -10,19 +10,19 @@
         <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
           <% if params[:sort] == 'episode_count' %>
             <span class="material-icons" aria-hidden="true">123</span>
-          <% elsif params[:sort] == 'A-Z' %>
+          <% elsif params[:sort] == t(".sort.asc") %>
             <span>A-Z</span>
-          <% elsif params[:sort] == 'Z-A' %>
+          <% elsif params[:sort] == t(".sort.desc") %>
             <span>Z-A</span>
           <% else %>
             <span class="material-icons" aria-hidden="true">timer</span>
           <% end %>
         </button>
         <ul class="dropdown-menu">
-          <li><%= active_link_to "Recent Activity", root_path(sort: "Recent Activity"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-          <li><%= active_link_to "# of Episodes", root_path(sort: "episode_count"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-          <li><%= active_link_to "A-Z", root_path(sort: "A-Z"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-          <li><%= active_link_to "Z-A", root_path(sort: "Z-A"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
+          <li><%= active_link_to t(".sort.recent"), root_path(sort: t(".sort.recent")), active: :exact, class: "dropdown-item text-decoration-none" %></li>
+          <li><%= active_link_to t(".sort.number"), root_path(sort: "episode_count"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
+          <li><%= active_link_to t(".sort.asc"), root_path(sort: t(".sort.asc")), active: :exact, class: "dropdown-item text-decoration-none" %></li>
+          <li><%= active_link_to t(".sort.desc"), root_path(sort: t(".sort.desc")), active: :exact, class: "dropdown-item text-decoration-none" %></li>
         </ul>
       </div>
     </div>

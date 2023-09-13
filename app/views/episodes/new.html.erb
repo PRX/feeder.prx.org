@@ -1,4 +1,4 @@
-<% content_for :title, "#{@podcast.title} - New Episode" %>
+<% content_for :title, t(".title", title: @podcast.title) %>
 
 <%= render "tabs" %>
 

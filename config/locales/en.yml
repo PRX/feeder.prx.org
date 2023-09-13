@@ -507,6 +507,10 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+    edit:
+      title: "%{title} - Edit"
+    new:
+      title: "%{title} - New Episode"
     missing_drafts:
       message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
       okay: Okay
@@ -550,8 +554,11 @@ en:
         file_size: Size
         frame_rate: Frame Rate
         mime_type: Content Type
+        mono: Mono
+        multichannel: "%{number} Channels"
         sample_rate: Frequency
         status: Status
+        stereo: Stereo
       new:
         hint: Upload a file or drag it here
       processing:
@@ -568,8 +575,20 @@ en:
       segmenter:
         label:
           prefix: Midroll
+        table:
+          name: Name
+          timestamps: Timestamps
+        tooltip:
+          add_end_time: Add End Time
+          change_end_time: Edit End Time
+          change_start_time: Edit Start Time
+          confirm: Confirm Change
+          remove_end_time: Remove End Time
+          seek_input: Enter time to seek to
+          set_playhead: Set To Playhead
+        insert: Insert At Playhead
     show:
-      title: Media Files
+      title: "%{title} - Media Files"
     update:
       error: Unable to save
       media_not_ready: Published episodes cannot have empty media
@@ -778,6 +797,8 @@ en:
     destroy:
       error: Cannot delete a podcast with published episodes
       notice: Podcast deleted
+    edit:
+      title: "%{title} - Settings"
     form:
       confirm: Discard unsaved changes?
     form_distribution:
@@ -809,9 +830,21 @@ en:
     form_status:
       <<: *form_status
       title: Podcast Status
+    tabs:
+      metadata: Metadata
+      engagement: Engagement Settings
+      player: Embeddable Player
+      import: Import
+      planner: Plan Episodes
     index:
+      title: My Podcasts
       create: New Podcast
       search_podcasts: Search Podcasts
+      sort:
+        recent: Recent Activity
+        number: "# of Episodes"
+        asc: A-Z
+        desc: Z-A
     podcast:
       create_episode: Create Episode
       plan_episodes: Plan Episodes
@@ -850,6 +883,7 @@ en:
       scheduled_episodes:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
+      link: Go to Podcast
   podcast_engagement:
     form:
       <<: *form
@@ -860,7 +894,7 @@ en:
     form_status:
       <<: *form_status
     show:
-      title: Engagement
+      title: "%{title} - Engagement"
     update:
       error: Unable to save
       notice: Engagement settings updated
