@@ -33,3 +33,8 @@ trix-editor.trix-content[contenteditable="false"] {
 .form-floating > trix-editor ~ label {
   top: 36px;
 }
+
+.form-floating > trix-editor.form-control {
+  min-height: calc(3.5em + 2px);
+  height: auto;
+}
