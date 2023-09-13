@@ -95,8 +95,8 @@ class Tasks::CopyMediaTask < ::Task
   def porter_waveform_task
     {
       Type: "Waveform",
-      Generator: "BBC/audiowaveform/v1.x",
-      DataFormat: "JSON",
+      Generator: "PRX/FFprobe",
+      DataFormat: "audiowaveform/JSON",
       Destination: {
         Mode: "AWS/S3",
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
