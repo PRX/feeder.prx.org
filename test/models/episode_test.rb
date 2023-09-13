@@ -349,6 +349,13 @@ describe Episode do
 
       e.contents.first.status = "processing"
       assert e.valid?
+
+      # also applies to uncut media
+      e.medium = "uncut"
+      refute e.valid?
+
+      e.uncut = build(:uncut)
+      assert e.valid?
     end
   end
 
