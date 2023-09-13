@@ -23,9 +23,11 @@
       <%= help_text t(".help.description") %>
     </div>
     <div class="card-body">
-      <%= form.fields_for :default_feed do |fields| %>
-        <%= fields.trix_editor :description %>
-      <% end %>
+      <div class="form-floating">
+        <%= form.fields_for :default_feed do |fields| %>
+          <%= fields.trix_editor :description %>
+        <% end %>
+      </div>
     </div>
   </div>
 </div>
