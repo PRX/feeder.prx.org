@@ -5,30 +5,34 @@ class EpisodeMediaTest < ActiveSupport::TestCase
   let(:c2) { build_stubbed(:content, status: "complete", position: 2) }
   let(:ep) { build(:episode, segment_count: 2, contents: [c1, c2]) }
 
-  describe "#complete_media" do
-    it "creates and updates media versions" do
+  describe "#cut_media_version!" do
+    it "creates new media versions" do
       episode = create(:episode, segment_count: 2)
       assert_empty episode.media_versions
 
       c1 = create(:content, episode: episode, position: 1, status: "complete")
       c2 = create(:content, episode: episode, position: 2, status: "complete")
+      v1 = episode.cut_media_version!
 
-      assert_equal [c1, c2], episode.complete_media
+      # repeat calls have no effect
+      assert_equal v1, episode.cut_media_version!
+      assert_equal v1, episode.cut_media_version!
       assert_equal 1, episode.media_versions.size
-
-      v = episode.media_versions.first
-      assert_equal 2, v.media_version_resources.size
-      assert_equal [c1, c2], v.media_resources
+      assert_equal 2, v1.media_version_resources.size
+      assert_equal [c1, c2], v1.media_resources
 
       # replacing c2, but processing not done - same old version
       c3 = create(:content, episode: episode, position: 2, status: "processing")
+      assert_equal v1, episode.reload.cut_media_version!
       assert c2.reload.deleted?
-      assert_equal [c1, c2], episode.reload.complete_media
+      assert_equal [c1, c2], v1.reload.media_resources
       assert_equal 1, episode.media_versions.size
 
       # new version when processing completes
       c3.update(status: "complete")
-      assert_equal [c1, c3], episode.reload.complete_media
+      v2 = episode.reload.cut_media_version!
+      refute_equal v1, v2
+      assert_equal [c1, c3], v2.media_resources
       assert_equal 2, episode.media_versions.size
     end
 
@@ -39,8 +43,40 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       create(:content, episode: episode, position: 1, status: "complete")
       create(:content, episode: episode, position: 2, status: "processing")
 
-      assert_equal [], episode.complete_media
+      assert_nil episode.cut_media_version!
       assert_equal 0, episode.media_versions.size
+    end
+  end
+
+  describe "#media_version_id" do
+    it "cuts a version and returns its id" do
+      ep.stub(:cut_media_version!, MediaVersion.new(id: 1234)) do
+        assert_equal 1234, ep.media_version_id
+      end
+    end
+
+    it "handles non ready media" do
+      ep.stub(:cut_media_version!, nil) do
+        assert_nil ep.media_version_id
+      end
+    end
+  end
+
+  describe "#complete_media" do
+    it "returns the current media version resources" do
+      mock = Minitest::Mock.new
+      mock.expect(:media_resources, [])
+
+      ep.stub(:cut_media_version!, mock) do
+        assert_equal [], ep.complete_media
+        mock.verify
+      end
+    end
+
+    it "returns an empty array for non ready media" do
+      ep.stub(:cut_media_version!, nil) do
+        assert_equal [], ep.complete_media
+      end
     end
   end
 

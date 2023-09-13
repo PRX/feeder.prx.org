@@ -3,8 +3,9 @@ require "active_support/concern"
 module EpisodeMedia
   extend ActiveSupport::Concern
 
-  def complete_media
-    latest_media = media_versions.first&.media_resources || []
+  def cut_media_version!
+    latest_version = media_versions.first
+    latest_media = latest_version&.media_resources || []
     latest_ids = latest_media.map(&:id)
 
     # backfill media_versions for newly completed media
@@ -12,11 +13,18 @@ module EpisodeMedia
       new_version = media_versions.build
       media.each { |m| new_version.media_version_resources.build(media_resource: m) }
       new_version.save!
-
-      media
+      new_version
     else
-      latest_media
+      latest_version
     end
+  end
+
+  def media_version_id
+    cut_media_version!&.id
+  end
+
+  def complete_media
+    cut_media_version!&.media_resources || []
   end
 
   def complete_media?
@@ -33,10 +41,6 @@ module EpisodeMedia
 
   def media_ids
     media.map(&:id)
-  end
-
-  def media_version_id
-    media_versions.first&.id
   end
 
   # API updates ignore nil attributes
