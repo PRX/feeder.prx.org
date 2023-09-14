@@ -45,10 +45,10 @@ describe Feed do
     end
 
     it "does nothing if ENV is blank" do
-      old_prefix, ENV["PUBLIC_FEEDS_PREFIX"] = ENV["PUBLIC_FEEDS_PREFIX"], ""
+      old_prefix, ENV["PUBLIC_FEEDS_URL_PREFIX"] = ENV["PUBLIC_FEEDS_URL_PREFIX"], ""
       feed.set_public_feeds_url
       assert_nil feed.url
-      ENV["PUBLIC_FEEDS_PREFIX"] = old_prefix
+      ENV["PUBLIC_FEEDS_URL_PREFIX"] = old_prefix
     end
   end
 

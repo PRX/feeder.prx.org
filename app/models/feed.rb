@@ -78,8 +78,8 @@ class Feed < ApplicationRecord
   end
 
   def set_public_feeds_url
-    if public? && url.blank? && ENV["PUBLIC_FEEDS_PREFIX"].present?
-      self.url = "#{ENV["PUBLIC_FEEDS_PREFIX"]}/#{podcast.path}/#{published_path}"
+    if public? && url.blank? && ENV["PUBLIC_FEEDS_URL_PREFIX"].present?
+      self.url = "#{ENV["PUBLIC_FEEDS_URL_PREFIX"]}/#{podcast.path}/#{published_path}"
     end
   end
 
