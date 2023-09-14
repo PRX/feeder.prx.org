@@ -39,7 +39,8 @@
   }
 
   :is(thead > tr) {
-    &::before, &::after {
+    &::before,
+    &::after {
       content: "";
       display: block;
       grid-column: 1 / -1;

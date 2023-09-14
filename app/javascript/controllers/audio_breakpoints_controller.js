@@ -20,12 +20,12 @@ export default class extends Controller {
    * DO NOT UPDATE THIS VALUE AS A RESULT OF EDITS IN THE AD LOCATIONS UI.
    */
   markersValueChanged() {
-    if (!this.breakpointMarkers) return;
+    if (!this.breakpointMarkers) return
     this.initMarkers()
   }
 
   adBreaksValueChanged() {
-    if (!this.breakpointMarkers) return;
+    if (!this.breakpointMarkers) return
     this.initMarkers()
   }
 
@@ -33,19 +33,16 @@ export default class extends Controller {
    * Initial render of ad markers.
    */
   initMarkers() {
-    if (!this.hasMarkersValue || !this.hasAdBreaksValue) return;
+    if (!this.hasMarkersValue || !this.hasAdBreaksValue) return
 
-    const increasedBy = Math.max(0, this.adBreaksValue - this.breakpointMarkers?.length || 0);
-    const allMarkers = [
-      ...(this.breakpointMarkers || []),
-      ...(this.inactiveMarkers || [])
-    ]
+    const increasedBy = Math.max(0, this.adBreaksValue - this.breakpointMarkers?.length || 0)
+    const allMarkers = [...(this.breakpointMarkers || []), ...(this.inactiveMarkers || [])]
 
     this.breakpointMarkers = [...Array(this.adBreaksValue).keys()]
-      .map((key) => (allMarkers[key] && [
-        allMarkers[key].startTime,
-        allMarkers[key].endTime
-      ]) || this.markersValue?.[key] || [])
+      .map(
+        (key) =>
+          (allMarkers[key] && [allMarkers[key].startTime, allMarkers[key].endTime]) || this.markersValue?.[key] || []
+      )
       .map((time, index) => ({
         id: allMarkers[index]?.id || Math.random().toString(16).split(".")[1],
         labelText: `${this.labelPrefixValue} ${index + 1}`,
@@ -56,9 +53,9 @@ export default class extends Controller {
     this.inactiveMarkers = allMarkers.slice(this.adBreaksValue)
 
     if (increasedBy) {
-      [...this.breakpointMarkers.slice(-increasedBy)].forEach(({ id, startTime, endTime }) => {
-        this.restoreBreakpointMarker({ detail: { id, startTime, endTime }})
-      });
+      ;[...this.breakpointMarkers.slice(-increasedBy)].forEach(({ id, startTime, endTime }) => {
+        this.restoreBreakpointMarker({ detail: { id, startTime, endTime } })
+      })
     }
 
     this.initialMarkers = this.initialMarkers || this.breakpointMarkers
@@ -74,13 +71,13 @@ export default class extends Controller {
     const breakpointMarkerIndex = this.breakpointMarkers.findIndex((marker) => marker.id === id)
     const breakpointMarker = this.breakpointMarkers[breakpointMarkerIndex]
 
-    if (!breakpointMarker) return;
+    if (!breakpointMarker) return
 
-    const newStartTime = !!startTime && convertToSeconds(startTime) || startTime
-    const newEndTime = !!endTime && convertToSeconds(endTime) || endTime
+    const newStartTime = (!!startTime && convertToSeconds(startTime)) || startTime
+    const newEndTime = (!!endTime && convertToSeconds(endTime)) || endTime
     let newBreakpointMarker = {
       ...breakpointMarker,
-      changed: (new Date()).getMilliseconds(),
+      changed: new Date().getMilliseconds(),
       startTime: newEndTime ? Math.min(newStartTime, newEndTime) : newStartTime,
       endTime: newEndTime ? Math.max(newStartTime, newEndTime) : undefined,
     }
@@ -109,20 +106,19 @@ export default class extends Controller {
         }
       }
     } else {
-        const intersectingSegment = this.breakpointMarkers.find(
-          ({ id: iId, startTime: iStartTime, endTime: iEndTime }) => id !== iId &&
-            newBreakpointMarker.startTime > iStartTime &&
-            newBreakpointMarker.startTime < iEndTime
-        )
-  
-        // Prevent point marker from being dropped in a segment.
-        if (intersectingSegment) {
-          // If dropped on a segment, reset to original position.
-          newBreakpointMarker = {
-            ...newBreakpointMarker,
-            startTime: breakpointMarker.startTime
-          }
+      const intersectingSegment = this.breakpointMarkers.find(
+        ({ id: iId, startTime: iStartTime, endTime: iEndTime }) =>
+          id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime
+      )
+
+      // Prevent point marker from being dropped in a segment.
+      if (intersectingSegment) {
+        // If dropped on a segment, reset to original position.
+        newBreakpointMarker = {
+          ...newBreakpointMarker,
+          startTime: breakpointMarker.startTime,
         }
+      }
     }
 
     this.breakpointMarkers[breakpointMarkerIndex] = newBreakpointMarker
@@ -138,13 +134,13 @@ export default class extends Controller {
     const breakpointMarkerIndex = this.breakpointMarkers.findIndex((marker) => marker.id === id)
     const breakpointMarker = this.breakpointMarkers[breakpointMarkerIndex]
 
-    if (!breakpointMarker) return;
+    if (!breakpointMarker) return
 
-    const newStartTime = !!startTime && convertToSeconds(startTime) || startTime
-    const newEndTime = !!endTime && convertToSeconds(endTime) || endTime
+    const newStartTime = (!!startTime && convertToSeconds(startTime)) || startTime
+    const newEndTime = (!!endTime && convertToSeconds(endTime)) || endTime
     let newBreakpointMarker = {
       ...breakpointMarker,
-      changed: (new Date()).getMilliseconds(),
+      changed: new Date().getMilliseconds(),
       startTime: newEndTime ? Math.min(newStartTime, newEndTime) : newStartTime,
       endTime: newEndTime ? Math.max(newStartTime, newEndTime) : undefined,
     }
@@ -152,63 +148,53 @@ export default class extends Controller {
 
     if (isSegment) {
       const intersectingSegment = this.breakpointMarkers.find(
-        ({ id: iId, startTime: iStartTime, endTime: iEndTime }) => id !== iId && 
-          (
-            newStartTime > iStartTime && newStartTime < iEndTime ||
-            newEndTime > iStartTime && newEndTime < iEndTime
-          ) ||
-          (
-            newStartTime < iStartTime && newEndTime > iEndTime
-          )
+        ({ id: iId, startTime: iStartTime, endTime: iEndTime }) =>
+          (id !== iId &&
+            ((newStartTime > iStartTime && newStartTime < iEndTime) ||
+              (newEndTime > iStartTime && newEndTime < iEndTime))) ||
+          (newStartTime < iStartTime && newEndTime > iEndTime)
       )
 
       if (
-        intersectingSegment && (
-          (
-            // Fully covers restored breakpoint.
-            intersectingSegment.startTime < newBreakpointMarker.startTime &&
-            intersectingSegment.endTime > newBreakpointMarker.endTime
-          ) ||
-          (
-            // Fully Covered by restored breakpoint.
-            intersectingSegment.startTime > newBreakpointMarker.startTime &&
-            intersectingSegment.endTime < newBreakpointMarker.endTime
-          )
-        )
+        intersectingSegment && // Fully covers restored breakpoint.
+        ((intersectingSegment.startTime < newBreakpointMarker.startTime &&
+          intersectingSegment.endTime > newBreakpointMarker.endTime) ||
+          // Fully Covered by restored breakpoint.
+          (intersectingSegment.startTime > newBreakpointMarker.startTime &&
+            intersectingSegment.endTime < newBreakpointMarker.endTime))
       ) {
         newBreakpointMarker = {
           ...newBreakpointMarker,
           startTime: null,
-          endTime: null
+          endTime: null,
         }
       } else if (intersectingSegment && intersectingSegment.startTime < newBreakpointMarker.startTime) {
         // Restored breakpoint overlaps end of active segment.
         newBreakpointMarker = {
           ...newBreakpointMarker,
-          startTime: intersectingSegment.endTime
+          startTime: intersectingSegment.endTime,
         }
       } else if (intersectingSegment && intersectingSegment.endTime > newBreakpointMarker.endTime) {
         // Restored breakpoint overlaps start of active segment.
         newBreakpointMarker = {
           ...newBreakpointMarker,
-          endTime: intersectingSegment.startTime
+          endTime: intersectingSegment.startTime,
         }
       }
     } else {
-        const intersectingSegment = this.breakpointMarkers.find(
-          ({ id: iId, startTime: iStartTime, endTime: iEndTime }) => id !== iId &&
-            newBreakpointMarker.startTime > iStartTime &&
-            newBreakpointMarker.startTime < iEndTime
-        )
-  
-        // Prevent point marker from being dropped in a segment.
-        if (intersectingSegment) {
-          // If restored within a segment, clear start tie so itt can be reset by user.
-          newBreakpointMarker = {
-            ...newBreakpointMarker,
-            startTime: undefined
-          }
+      const intersectingSegment = this.breakpointMarkers.find(
+        ({ id: iId, startTime: iStartTime, endTime: iEndTime }) =>
+          id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime
+      )
+
+      // Prevent point marker from being dropped in a segment.
+      if (intersectingSegment) {
+        // If restored within a segment, clear start tie so itt can be reset by user.
+        newBreakpointMarker = {
+          ...newBreakpointMarker,
+          startTime: undefined,
         }
+      }
     }
 
     this.breakpointMarkers[breakpointMarkerIndex] = newBreakpointMarker
@@ -247,7 +233,7 @@ export default class extends Controller {
 
   sortMarkers(markers) {
     return markers
-      .sort((a, b) => !a.startTime ? 1 : a.startTime - b.startTime)
+      .sort((a, b) => (!a.startTime ? 1 : a.startTime - b.startTime))
       .map((marker, index) => ({
         ...marker,
         labelText: `${this.labelPrefixValue} ${index + 1}`,
@@ -258,7 +244,7 @@ export default class extends Controller {
    * Sort ad markers by start time, in ascending order, and update label text.
    */
   sortBreakpointMarkers() {
-    this.breakpointMarkers = this.sortMarkers(this.breakpointMarkers);
+    this.breakpointMarkers = this.sortMarkers(this.breakpointMarkers)
   }
 
   /**
