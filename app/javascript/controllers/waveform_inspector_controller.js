@@ -129,14 +129,6 @@ export default class extends Controller {
         self.element.classList.add(...this.playingClasses)
       })
 
-      peaksInstance.on("player.timeupdate", (time) => {
-        // Update currentTime input placeholder.
-        self.seekInputTarget.placeholder = convertSecondsToDuration(time)
-
-        // Update data attribute so external controls have easy access to the playhead time.
-        self.element.dataset.playheadTime = time
-      })
-
       // Points Events
       peaksInstance.on("points.dragend", ({ point }) => {
         const { id, time } = point
@@ -179,7 +171,7 @@ export default class extends Controller {
         editable: true,
       }
 
-      if (!startTime) return
+      if (!startTime && startTime !== 0) return
 
       if (endTime) {
         segments.push({
@@ -211,8 +203,10 @@ export default class extends Controller {
   }
 
   markersValueChanged() {
-    this.clearMarkers()
-    this.initMarkers()
+    if (this.markersValue?.length) {
+      this.clearMarkers()
+      this.initMarkers()
+    }
   }
 
   togglePlaying() {
@@ -275,5 +269,19 @@ export default class extends Controller {
 
   getMarker(id) {
     return this.markersValue.find((marker) => marker.id === id)
+  }
+
+  updateBreakpointMarkerStartTimeToPlayhead({ detail }) {
+    const { id, endTime } = detail || {}
+
+    // Dispatch marker update event.
+    this.dispatch("marker.update", { detail: { id, startTime: this.peaks.player.getCurrentTime(), endTime } })
+  }
+
+  updateBreakpointMarkerEndTimeToPlayhead({ detail }) {
+    const { id, startTime } = detail || {}
+
+    // Dispatch marker update event.
+    this.dispatch("marker.update", { detail: { id, startTime, endTime: this.peaks.player.getCurrentTime() } })
   }
 }

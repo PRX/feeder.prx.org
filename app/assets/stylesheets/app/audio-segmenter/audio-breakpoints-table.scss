@@ -38,15 +38,13 @@
     }
   }
 
-  :is(tr) {
-    &:first-of-type {
-      &::before {
-        content: "";
-        display: block;
-        grid-column: 1 / -1;
-        height: $table-border-width * 2;
-        background-color: var(--#{$prefix}table-border-color);
-      }
+  :is(thead > tr) {
+    &::before, &::after {
+      content: "";
+      display: block;
+      grid-column: 1 / -1;
+      height: $table-border-width * 2;
+      background-color: var(--#{$prefix}table-border-color);
     }
   }
 
