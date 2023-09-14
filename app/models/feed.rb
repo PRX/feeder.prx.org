@@ -55,6 +55,7 @@ class Feed < ApplicationRecord
   after_initialize :set_defaults
   before_validation :sanitize_text
   before_create :set_public_feeds_url
+  before_save :remove_url, if: :private?
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
@@ -80,6 +81,10 @@ class Feed < ApplicationRecord
     if public? && url.blank? && ENV["PUBLIC_FEEDS_PREFIX"].present?
       self.url = "#{ENV["PUBLIC_FEEDS_PREFIX"]}/#{podcast.path}/#{published_path}"
     end
+  end
+
+  def remove_url
+    self.url = nil
   end
 
   def default?

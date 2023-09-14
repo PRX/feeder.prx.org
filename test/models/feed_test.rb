@@ -52,6 +52,16 @@ describe Feed do
     end
   end
 
+  describe "#remove_url" do
+    it "removes public feed urls from private feeds" do
+      assert feed1.public?
+      assert feed1.url.present?
+
+      feed1.update!(private: true)
+      assert feed1.url.nil?
+    end
+  end
+
   describe "#default" do
     it "returns default feeds" do
       assert feed1.default?
