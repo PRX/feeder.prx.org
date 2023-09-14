@@ -23,6 +23,35 @@ describe Feed do
     end
   end
 
+  describe "#set_public_feeds_url" do
+    let(:podcast) { build_stubbed(:podcast, path: nil) }
+    let(:feed) { build_stubbed(:feed, podcast: podcast, private: false, url: nil) }
+
+    it "sets a default public feeds url" do
+      feed.set_public_feeds_url
+      assert_equal "https://publicfeeds.net/f/#{podcast.id}/#{feed.slug}/feed-rss.xml", feed.url
+    end
+
+    it "does not overwrite non-blank urls" do
+      feed.url = "https://some.where/feed.xml"
+      feed.set_public_feeds_url
+      assert_equal "https://some.where/feed.xml", feed.url
+    end
+
+    it "does nothing for private feeds" do
+      feed.private = true
+      feed.set_public_feeds_url
+      assert_nil feed.url
+    end
+
+    it "does nothing if ENV is blank" do
+      old_prefix, ENV["PUBLIC_FEEDS_PREFIX"] = ENV["PUBLIC_FEEDS_PREFIX"], ""
+      feed.set_public_feeds_url
+      assert_nil feed.url
+      ENV["PUBLIC_FEEDS_PREFIX"] = old_prefix
+    end
+  end
+
   describe "#default" do
     it "returns default feeds" do
       assert feed1.default?
