@@ -32,11 +32,19 @@
       </div>
 
       <% if feed.persisted? %>
-        <div class="col-12 mb-4">
+        <div class="col-12 mb-4 <%= "d-none" unless feed.public? %>" data-feed-tokens-target="showPublic">
           <div class="form-floating input-group">
-            <%= form.text_field :published_url, value: feed.published_url(false), disabled: true %>
+            <%= form.text_field :published_url, value: feed.published_public_url, disabled: true %>
             <%= form.label :published_url %>
-            <%= field_link feed.published_url(true) %>
+            <%= field_link feed.published_public_url %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-4 <%= "d-none" unless feed.private? %>" data-feed-tokens-target="showPrivate">
+          <div class="form-floating input-group">
+            <%= form.text_field :published_url, value: feed.published_private_url(false), disabled: true %>
+            <%= form.label :published_url %>
+            <%= field_link feed.published_private_url(true) %>
           </div>
         </div>
       <% end %>
