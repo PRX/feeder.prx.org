@@ -34,9 +34,9 @@ export default class extends Controller {
     if (this.hasInitialMarkerValue) {
       const isChanged = this.startTimeValue !== this.initialMarkerValue.startTime
   
-      this.startTimeTarget.classList.toggle('is-changed', isChanged)
+      this.startTimeTarget.parentNode.classList.toggle('is-changed', isChanged)
     } else {
-      this.startTimeTarget.classList.add('is-changed')
+      this.startTimeTarget.parentNode.classList.add('is-changed')
     }
 
     this.startTimeTarget.placeholder = convertSecondsToDuration(this.startTimeValue)
@@ -45,12 +45,12 @@ export default class extends Controller {
   endTimeValueChanged() {
     if (this.hasInitialMarkerValue) {
       const isChanged = this.endTimeValue !== this.initialMarkerValue.endTime
-      const isStartTimeChanged = this.startTimeTarget.classList.contains('is-changed') || isChanged && !this.hasEndTimeValue
+      const isStartTimeChanged = this.startTimeTarget.parentNode.classList.contains('is-changed') || isChanged && !this.hasEndTimeValue
   
-      this.endTimeTarget.classList.toggle('is-changed', isChanged)
-      this.startTimeTarget.classList.toggle('is-changed', isStartTimeChanged)
+      this.endTimeTarget.parentNode.classList.toggle('is-changed', isChanged)
+      this.startTimeTarget.parentNode.classList.toggle('is-changed', isStartTimeChanged)
     } else {
-      this.endTimeTarget.classList.add('is-changed')
+      this.endTimeTarget.parentNode.classList.add('is-changed')
     }
 
     this.endTimeTarget.placeholder = convertSecondsToDuration(this.endTimeValue)
