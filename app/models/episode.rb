@@ -24,6 +24,7 @@ class Episode < ApplicationRecord
 
   belongs_to :podcast, -> { with_deleted }, touch: true
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy
+  has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy
   has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
 
@@ -197,7 +198,9 @@ class Episode < ApplicationRecord
     super
 
     if medium_changed? && medium_was.present?
-      contents.each(&:mark_for_replacement)
+      unless medium == "audio" && medium_was == "uncut"
+        contents.each(&:mark_for_replacement)
+      end
       uncut&.mark_for_replacement
     end
 
@@ -329,9 +332,17 @@ class Episode < ApplicationRecord
     return if published_at.blank? || no_media?
 
     # media must be complete on _initial_ publish
-    must_be_complete = published_at_was.blank?
+    # otherwise - having files in any status is good enough
+    is_ready =
+      if published_at_was.blank?
+        media_ready?(true)
+      elsif medium_uncut?
+        uncut.present? && !uncut.marked_for_destruction?
+      else
+        media_ready?(false)
+      end
 
-    unless media_ready?(must_be_complete)
+    unless is_ready
       errors.add(:base, :media_not_ready, message: "media not ready")
     end
   end

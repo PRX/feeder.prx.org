@@ -112,8 +112,9 @@ label[required="true"] {
       border-color: $red;
     }
 
-    &.prx_dragndrop {
-      border: 2px dashed $gray-300;
+    &.prx-dragndrop {
+      border-width: 2px;
+      border-style: dashed;
     }
 
     /*&:focus {

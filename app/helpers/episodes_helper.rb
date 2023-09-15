@@ -21,7 +21,7 @@ module EpisodesHelper
   end
 
   def episode_media_status(episode)
-    all_media = episode.media.append(episode.uncut).compact
+    all_media = episode.media.append(episode.uncut).compact.reject(&:new_record?)
 
     if all_media.any? { |m| upload_problem?(m) }
       "error"
@@ -29,6 +29,8 @@ module EpisodesHelper
       "processing"
     elsif episode.media_ready?(true)
       "complete"
+    elsif episode.published_at.present?
+      "incomplete-published"
     else
       "incomplete"
     end

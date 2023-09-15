@@ -42,6 +42,8 @@ module Feeder
       end
     config.active_job.queue_name_delimiter = "_"
 
+    config.active_model.i18n_customize_full_message = true
+
     config.cache_store = :memory_store, {size: 128.megabytes}
 
     # Configuration for the application, engines, and railties goes here.
