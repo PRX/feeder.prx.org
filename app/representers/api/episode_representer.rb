@@ -46,8 +46,9 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     property :author_email, as: :email
   end
 
-  property :audio_version
+  property :audio_version # NOTE: deprecated - delete when CMS goes away
   property :segment_count
+  property :media_version_id, as: :media_version, writeable: false
 
   collection :media,
     decorator: Api::MediaResourceRepresenter,
