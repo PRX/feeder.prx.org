@@ -12,7 +12,7 @@ module Apple
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
 
-    EPISODE_ASSET_WAIT_TIMEOUT = 10.minutes.freeze
+    EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
     # In the case where the episodes state is not yet ready to publish, but the
