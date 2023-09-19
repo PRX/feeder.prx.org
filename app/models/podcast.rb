@@ -70,7 +70,7 @@ class Podcast < ApplicationRecord
   end
 
   def set_empty_link
-    if link.nil?
+    if link.blank?
       update_column(:link, embed_player_landing_url(self))
     end
   end
