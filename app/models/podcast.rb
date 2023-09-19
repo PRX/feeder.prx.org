@@ -47,6 +47,7 @@ class Podcast < ApplicationRecord
   validates :explicit, inclusion: {in: VALID_EXPLICITS}, allow_nil: false
 
   before_validation :set_defaults, :sanitize_text
+  after_save :set_empty_link
 
   scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") }
   scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
@@ -66,7 +67,12 @@ class Podcast < ApplicationRecord
 
   def set_defaults
     self.explicit ||= "false"
-    self.link ||= embed_player_landing_url(self)
+  end
+
+  def set_empty_link
+    if link.nil?
+      update_column(:link, embed_player_landing_url(self))
+    end
   end
 
   def default_feed
