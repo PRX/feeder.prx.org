@@ -37,6 +37,7 @@ describe Tasks::CopyMediaTask do
         t = task.porter_tasks[2]
         assert_equal "Waveform", t[:Type]
         assert_equal "BBC/audiowaveform/v1.x", t[:Generator]
+        assert_equal "JSON", t[:DataFormat]
         assert_equal "AWS/S3", t[:Destination][:Mode]
         assert_equal "test-prx-feed", t[:Destination][:BucketName]
         assert_equal task.media_resource.waveform_path, t[:Destination][:ObjectKey]

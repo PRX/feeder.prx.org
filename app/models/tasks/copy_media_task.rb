@@ -96,6 +96,7 @@ class Tasks::CopyMediaTask < ::Task
     {
       Type: "Waveform",
       Generator: "BBC/audiowaveform/v1.x",
+      DataFormat: "JSON",
       Destination: {
         Mode: "AWS/S3",
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
