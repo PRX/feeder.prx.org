@@ -2,6 +2,10 @@
 
 module Apple
   class Config < ApplicationRecord
+    DEFAULT_FEED_SLUG = "apple-delegated-delivery-subscriptions"
+    DEFAULT_TITLE = "Apple Delegated Delivery Subscriptions"
+    DEFAULT_AUDIO_FORMAT = {"f" => "flac", "b" => 16, "c" => 2, "s" => 44100}.freeze
+
     belongs_to :public_feed, class_name: "Feed"
     belongs_to :private_feed, class_name: "Feed"
 
@@ -26,6 +30,50 @@ module Apple
     validates :public_feed, uniqueness: {scope: :private_feed,
                                          message: "can only have one credential per public and private feed"}
     validates :public_feed, exclusion: {in: ->(apple_credential) { [apple_credential.private_feed] }}
+
+    def self.find_or_build_private_feed(podcast)
+      if (existing = podcast.feeds.find_by(slug: DEFAULT_FEED_SLUG, title: DEFAULT_TITLE))
+        # TODO, handle partitions on apple models via the apple_config
+        # Until then it's not safe to have multiple apple_configs for the same podcast
+        Rails.logger.error("Found existing private feed for #{podcast.title}!")
+        Rails.logger.error("Do you want to continue? (y/N)")
+        raise "Stopping find_or_build_private_feed" if $stdin.gets.chomp.downcase != "y"
+
+        return existing
+      end
+      default_feed = podcast.default_feed
+
+      Feed.new(
+        display_episodes_count: default_feed.display_episodes_count,
+        slug: DEFAULT_FEED_SLUG,
+        title: DEFAULT_TITLE,
+        audio_format: DEFAULT_AUDIO_FORMAT,
+        include_zones: ["billboard", "sonic_id"],
+        tokens: [FeedToken.new(label: DEFAULT_TITLE)],
+        podcast: podcast
+      )
+    end
+
+    def self.build_apple_config(podcast, key)
+      ac = Apple::Config.new
+      ac.public_feed = podcast.default_feed
+      ac.private_feed = find_or_build_private_feed(podcast)
+      ac.key = key
+
+      ac
+    end
+
+    def self.setup_delegated_delivery(podcast, key: nil, apple_config: nil, apple_show_id: nil)
+      ac = apple_config || build_apple_config(podcast, key)
+      ac.save!
+
+      return "No apple show id -- skip connect existing " unless apple_show_id.present?
+
+      Apple::Show.connect_existing(apple_show_id, ac)
+
+      pub = ac.build_publisher
+      pub.poll!
+    end
 
     def publish_to_apple?
       return false unless key&.valid?
