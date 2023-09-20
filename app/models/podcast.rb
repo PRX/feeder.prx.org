@@ -17,7 +17,7 @@ class Podcast < ApplicationRecord
   serialize :keywords, JSON
   serialize :restrictions, JSON
 
-  has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true
+  has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true, inverse_of: :podcast
 
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
