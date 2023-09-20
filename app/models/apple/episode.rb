@@ -450,7 +450,8 @@ module Apple
     end
 
     def needs_delivery?
-      podcast_container&.needs_delivery? || apple_hosted_audio_asset_container_id.blank?
+      # TODO: probe for episode media version
+      podcast_container&.needs_delivery? || feeder_episode.needs_apple_delivery?
     end
 
     def synced_with_apple?

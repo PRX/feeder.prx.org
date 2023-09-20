@@ -22,7 +22,7 @@ module Apple
 
     def self.reset_source_file_metadata(episodes)
       episodes = episodes.select { |ep| ep.podcast_container.present? }
-      episodes = episodes.select { |ep| ep.podcast_container.needs_delivery? }
+      episodes = episodes.select { |ep| ep.needs_delivery? }
 
       episodes.map do |episode|
         container = episode.container
