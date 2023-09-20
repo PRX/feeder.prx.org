@@ -52,6 +52,11 @@ class EnclosureUrlBuilder
     fn = File.basename(base[:path].to_s)
     ex = File.extname(base[:path].to_s)
 
+    # extensions only matter for audio, so default to .mp3 otherwise
+    unless media.try(:medium) == "audio" && %w[.wav .flac].include?(ex)
+      ex = ".mp3"
+    end
+
     {
       original_filename: orig_fn,
       original_extension: orig_ex,
