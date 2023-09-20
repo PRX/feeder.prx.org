@@ -264,7 +264,14 @@ module Apple
         pdfs = eps.map(&:podcast_delivery_files).flatten
         ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
 
+        # link the podcast container with the audio to the episode
         res = Apple::Episode.update_audio_container_reference(api, eps)
+        # update the feeder episode to indicate that delivery is no longer needed
+        eps.each do |ep|
+          Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
+          ep.feeder_episode.update!(needs_apple_delivery: false)
+        end
+
         Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
       end
     end
