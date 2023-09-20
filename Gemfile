@@ -9,7 +9,10 @@ gem "bootsnap", require: false
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.6"
 gem "rails", "~> 7.0.7"
-gem "redis", "~> 4.0"
+
+# caching
+gem "hiredis", "~> 0.6.3"
+gem "redis", "~> 5.0"
 
 # authorization
 gem "oauth2", "~> 1.4.7"
