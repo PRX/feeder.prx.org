@@ -50,6 +50,31 @@ describe EnclosureUrlBuilder do
     _(expansions[:path]).must_match(/\/#{podcast.path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/)
   end
 
+  describe "default feed extensions when audio format is not present" do
+    before do
+      feed.audio_format[:f] = nil
+    end
+
+    it "keeps extensions if wav or flac" do
+      episode.contents.first.original_url.sub!(/mp3/, "wav")
+      expansions = builder.podcast_episode_expansions(podcast, episode, feed)
+      _(expansions[:extension]).must_equal ".wav"
+    end
+
+    it "defaults extensions to .mp3 if not wav or flac" do
+      episode.contents.first.original_url.sub!(/mp3/, "ogg")
+      expansions = builder.podcast_episode_expansions(podcast, episode, feed)
+      _(expansions[:extension]).must_equal ".mp3"
+    end
+
+    it "keeps extensions if medium is video" do
+      episode.contents.first.original_url.sub!(/mp3/, "mp4")
+      episode.contents.first.medium = "video"
+      expansions = builder.podcast_episode_expansions(podcast, episode, feed)
+      _(expansions[:extension]).must_equal ".mp4"
+    end
+  end
+
   it "can make an enclosure url for a podcast and episode with template" do
     podcast.enclosure_prefix = nil
     url = builder.podcast_episode_url(podcast, episode)
