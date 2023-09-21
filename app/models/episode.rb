@@ -230,9 +230,13 @@ class Episode < ApplicationRecord
   end
 
   def apple_mark_for_reupload!
+    # remove the previous delivery attempt (soft delete)
     apple_podcast_deliveries.map(&:destroy)
     apple_podcast_deliveries.reset
     apple_podcast_container&.podcast_deliveries&.reset
+    # Skip rails validations in case we are in e.g. a controller delete action
+    # with invalid media
+    update_column(:needs_apple_delivery, true)
   end
 
   def publish!

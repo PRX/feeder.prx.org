@@ -282,11 +282,18 @@ module Apple
       !skip_delivery?
     end
 
+    def filename_prefix(ct)
+      ct.zero? ? "" : "#{ct}_"
+    end
+
     def reset_source_metadata!(apple_ep)
+      count = source_fetch_count + 1
+
       update!(
+        source_fetch_count: count,
         source_url: nil,
         source_size: nil,
-        source_filename: apple_ep.enclosure_filename,
+        source_filename: filename_prefix(count) + apple_ep.enclosure_filename,
         enclosure_url: apple_ep.enclosure_url
       )
     end
