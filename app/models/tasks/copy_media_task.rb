@@ -77,6 +77,11 @@ class Tasks::CopyMediaTask < ::Task
 
   # TODO: what happens to id3 on sliced files? will the 1st segment still have it?
   def porter_slice_task
+    input_opts = []
+    input_opts << "-ss #{media_resource.slice_start}" if media_resource.slice_start.present?
+    output_opts = ["-map_metadata 0"]
+    output_opts << "-t #{media_resource.slice_end}" if media_resource.slice_end.present?
+
     {
       Type: "Transcode",
       Format: "INHERIT",
@@ -86,8 +91,8 @@ class Tasks::CopyMediaTask < ::Task
         ObjectKey: porter_escape(media_resource.path)
       },
       FFmpeg: {
-        InputFileOptions: media_resource.slice_start.nil? ? "" : "-ss #{media_resource.slice_start}",
-        OutputFileOptions: media_resource.slice_end.nil? ? "" : "-t #{media_resource.slice_end}"
+        InputFileOptions: input_opts.join(" "),
+        OutputFileOptions: output_opts.join(" ")
       }
     }
   end
