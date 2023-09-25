@@ -503,5 +503,9 @@ module Apple
     def apple_sync_log=(sl)
       feeder_episode.apple_sync_log = sl
     end
+
+    def apple_mark_for_reupload!
+      feeder_episode.apple_mark_for_reupload!
+    end
   end
 end

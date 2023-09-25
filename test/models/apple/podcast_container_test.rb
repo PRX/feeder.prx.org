@@ -294,9 +294,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
           {status: Apple::PodcastContainer::FILE_STATUS_SUCCESS,
            assetRole: Apple::PodcastContainer::FILE_ASSET_ROLE_PODCAST_AUDIO}.with_indifferent_access
         ]) do
-          container.stub(:podcast_delivery_files, []) do
-            assert container.container_upload_satisfied?
-          end
+          assert container.container_upload_satisfied?
         end
       end
     end

@@ -271,7 +271,7 @@ module Apple
       # marked as uploaded and then processed and validated. Assuming that we
       # get to that point and the audio is still missing, we should be able to
       # retry.
-      has_podcast_audio? && delivery_settled?
+      has_podcast_audio?
     end
 
     def skip_delivery?
