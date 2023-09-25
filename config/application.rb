@@ -44,7 +44,15 @@ module Feeder
 
     config.active_model.i18n_customize_full_message = true
 
-    config.cache_store = :memory_store, {size: 128.megabytes}
+    # Use redis if the env vars are present
+    if ENV["REDIS_HOST"].present? && ENV["REDIS_PORT"].present?
+      config.cache_store = [:redis_cache_store, {url: "redis://#{ENV["REDIS_HOST"]}:#{ENV["REDIS_PORT"]}/1"}]
+      config.session_store :cache_store, key: "_feeder_session"
+    else
+      require "feeder_active_record_store"
+      config.cache_store = [:memory_store, {size: 128.megabytes}]
+      config.session_store :feeder_active_record_store, key: "_feeder_session"
+    end
 
     # Configuration for the application, engines, and railties goes here.
     #
