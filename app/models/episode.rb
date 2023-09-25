@@ -240,8 +240,10 @@ class Episode < ApplicationRecord
   end
 
   def publish!
-    apple_mark_for_reupload!
-    podcast&.publish!
+    Rails.logger.tagged("Episode#publish!") do
+      apple_mark_for_reupload!
+      podcast&.publish!
+    end
   end
 
   def podcast_feed_url
