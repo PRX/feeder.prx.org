@@ -34,7 +34,6 @@ module Apple
 
         # Back to DTR to pick up fresh arrangements:
         container.reset_source_metadata!(episode)
-        episode.feeder_episode.apple_mark_for_reupload!
       end.compact
     end
 
