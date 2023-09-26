@@ -12,6 +12,7 @@ module EmbedPlayerHelper
   EMBED_PLAYER_IMAGE = "ui"
   EMBED_PLAYER_RSS_URL = "us"
   EMBED_PLAYER_AUDIO_URL = "ua"
+  EMBED_PLAYER_AUDIO_URL_PREVIEW = "uap"
   DOVETAIL_TOKEN = "_t"
   EMBED_PLAYER_PLAYLIST = "sp"
   EMBED_PLAYER_SEASON = "se"
@@ -32,7 +33,8 @@ module EmbedPlayerHelper
       params[EMBED_PLAYER_SUBTITLE] = ep.podcast.title
       params[EMBED_PLAYER_IMAGE] = ep.ready_image&.url || ep.podcast.ready_image&.url
       params[EMBED_PLAYER_RSS_URL] = ep.podcast_feed_url
-      params[EMBED_PLAYER_AUDIO_URL] = enclosure_with_token(ep)
+      params[EMBED_PLAYER_AUDIO_URL] = ep.enclosure_url
+      params[EMBED_PLAYER_AUDIO_URL_PREVIEW] = enclosure_with_token(ep)
     else
       params[EMBED_PLAYER_FEED] = ep.podcast_feed_url
       params[EMBED_PLAYER_GUID] = ep.item_guid

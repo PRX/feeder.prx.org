@@ -35,6 +35,7 @@ export default class extends Controller {
   }
 
   handlePostMessage(e) {
+    // Bail if post message didn't originate from a Play domain.
     if (!/^https?:\/\/play(?:\.staging)?\.prx\.(?:org|tech|test)$/.test(e.origin)) return
 
     this.previewSource = e.source
