@@ -1,0 +1,20 @@
+<header>
+  <h3 class="fw-bold m-0"><%= t(".title.copy") %></h3>
+
+  <div class="form-text">
+    <%= t(".help.copy") %>
+  </div>
+</header>
+
+<div class="form-floating input-group">
+  <%= text_field_tag :embed_player_url, "", class: "form-control", disabled: true, autocomplete: "off", data: {embed_preview_target: "embedUrl"} %>
+  <%= label_tag :embed_player_url, t("helpers.label.podcast_player.embed_player_url") %>
+  <%= field_link "", {embed_preview_target: "embedUrl"} %>
+  <%= field_copy "", {embed_preview_target: "embedUrl"} %>
+</div>
+
+<div class="form-floating input-group">
+  <%= text_field_tag :embed_player_iframe, "", class: "form-control", disabled: true, autocomplete: "off", data: {embed_preview_target: "embedHtml"} %>
+  <%= label_tag :embed_player_iframe, t("helpers.label.podcast_player.embed_player_iframe") %>
+  <%= field_copy "", {embed_preview_target: "embedHtml"} %>
+</div>

@@ -2,44 +2,17 @@
   data-embed-preview-embed-url-value="<%= embed_player_episode_url(episode, player_options, true) %>">
   <div class="col-8">
 
-    <div class="container-fluid mb-5">
-      <h3 class="fw-bold"><%= t(".title.preview") %></h3>
+    <section class="container-fluid mb-5">
+      <header>
+        <h3 class="fw-bold"><%= t(".title.preview") %></h3>
+      </header>
 
-      <div class="p-4 mx-auto border border-2" style="resize: horizontal; overflow: scroll; min-width: calc(304px + 3rem); max-width: 100%">
-        <div class="mb-4">
-          <%= render "layouts/skeleton_text", lines: 4 %>
-        </div>
-        <div class="lh-0"><%= embed_player_iframe(player_options) %></div>
-        <div class="mt-4">
-          <%= render "layouts/skeleton_text", lines: 4 %>
-        </div>
-      </div>
-    </div>
+      <%= render "form_preview", player_options: @player_options %>
+    </section>
 
-    <div class="container-fluid mb-4">
-      <h3 class="fw-bold"><%= t(".title.copy") %></h3>
+    <section class="container-fluid d-grid gap-4">
+      <%= render "form_copy", player_options: @player_options %>
 
-      <div class="form-text mb-4">
-        <%= t(".help.copy") %>
-      </div>
-
-      <div class="form-floating input-group">
-        <%= text_field_tag :embed_player_url, "", class: "form-control", disabled: true, autocomplete: "off", data: {embed_preview_target: "embedUrl"} %>
-        <%= label_tag :embed_player_url, t("helpers.label.podcast_player.embed_player_url") %>
-        <%= field_link "", {embed_preview_target: "embedUrl"} %>
-        <%= field_copy "", {embed_preview_target: "embedUrl"} %>
-      </div>
-    </div>
-
-    <div class="container-fluid mb-4">
-      <div class="form-floating input-group">
-        <%= text_field_tag :embed_player_iframe, "", class: "form-control", disabled: true, autocomplete: "off", data: {embed_preview_target: "embedHtml"} %>
-        <%= label_tag :embed_player_iframe, t("helpers.label.podcast_player.embed_player_iframe") %>
-        <%= field_copy "", {embed_preview_target: "embedHtml"} %>
-      </div>
-    </div>
-
-    <div class="container-fluid mb-4">
       <div class="form-floating input-group">
         <% if episode.media_ready? %>
           <%= text_field_tag :enclosure_url, episode.enclosure_url, class: "form-control", disabled: true, autocomplete: "off" %>
@@ -50,72 +23,19 @@
           <%= label_tag :enclosure_url, t("helpers.label.episode.enclosure_url") %>
         <% end %>
       </div>
-    </div>
+    </section>
+
   </div>
 
   <div class="col-4">
 
-    <div class="container-fluid mb-4" data-controller="form-select" data-form-select-help-value="<%= t(".help.types").to_json %>">
-      <div class="form-floating input-group">
-        <%= select_tag :embed_player_type, embed_player_type_options(player_options[:embed_player_type]), class: "form-select", data: {action: "embed-preview#changeType form-select#updateHelp"} %>
-        <%= label_tag :embed_player_type, t("helpers.label.podcast_player.embed_player_type") %>
-      </div>
+    <div class="container-fluid d-grid gap-4">
+      <%= render "form_sidebar", player_options: @player_options %>
 
-      <div class="form-text" data-form-select-target="help">
-        <%= t(".help.types.#{player_options[:embed_player_type] || "standard"}") %>
-      </div>
-    </div>
-
-    <div class="container-fluid mb-4">
-      <div class="form-floating input-group">
-        <%= number_field_tag :max_width, player_options[:max_width], min: 300, class: "form-control", data: {action: "embed-preview#changeMaxWidth"}, placeholder: "100%", autocomplete: "off" %>
-        <%= label_tag :max_width, t("helpers.label.podcast_player.max_width") %>
-        <span class="input-group-text" id="basic-addon2">px</span>
-      </div>
-
-      <div class="form-text">
-        <%= t(".help.max_width") %>
-      </div>
-    </div>
-
-    <div class="card border-light mb-4">
-      <div class="card-header-light"><%= t(".title.customize") %></div>
-      <div class="card-body d-grid gap-3">
-        <div class="form-text">
-          <%= t(".help.customize") %>
+      <div class="card border-light">
+        <div class="card-footer d-grid">
+          <%= link_to t(".label.clear"), episode_player_path(episode), class: "btn btn-primary" %>
         </div>
-
-        <div class="row">
-          <div class="col-12" data-controller="form-select" data-form-select-help-value="<%= t(".help.themes").to_json %>">
-            <div class="form-floating input-group">
-              <%= select_tag :embed_player_theme, embed_player_theme_options(player_options[:embed_player_theme]), class: "form-select", data: {action: "embed-preview#changeTheme form-select#updateHelp"} %>
-              <%= label_tag :embed_player_theme, t("helpers.label.podcast_player.embed_player_theme") %>
-            </div>
-
-            <div class="form-text" data-form-select-target="help">
-              <%= t(".help.themes.#{player_options[:embed_player_theme] || "dark"}") %>
-            </div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-12">
-          <%= label_tag :accent_color, t("helpers.label.podcast_player.accent_color") %>
-            <div class="input-group">
-              <%= tag.input type: "color", value: player_options[:accent_color][0], class: "form-control form-control-color", data: {embed_preview_target: "accentColor", action: "embed-preview#changeAccentColor"} %>
-            </div>
-
-            <div class="form-text">
-              <%= t(".help.accent_color") %>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card border-light mb-4">
-      <div class="card-footer d-grid">
-        <%= link_to t(".label.clear"), episode_player_path(episode), class: "btn btn-primary" %>
       </div>
     </div>
 

@@ -584,7 +584,7 @@ en:
       media_not_ready: Published episodes cannot have empty media
       notice: Media files updated
   episode_player:
-    form:
+    form: &player_form
       enclosure_not_ready: No Media Files Uploaded
       help: &player_help
         copy: Copy the code for one of the following players, and place it on your webpage.
@@ -606,6 +606,12 @@ en:
         warning: Warning
       label: &player_label
         clear: Restore Default Options
+    form_preview:
+      <<: *player_form
+    form_copy:
+      <<: *player_form
+    form_sidebar:
+      <<: *player_form
     show:
       title: Embeddable Player
   errors:
@@ -935,7 +941,7 @@ en:
   podcast_player:
     show:
       title: Embeddable Player
-    form:
+    form: &podcast_player_form
       help:
         <<: *player_help
         episode_number: (Optional) Limit the number of episodes included in the playlist. Leave blank to include all episodes.
@@ -947,6 +953,12 @@ en:
         playlist: Make It A Playlist
       label:
         <<: *player_label
+    form_preview:
+      <<: *podcast_player_form
+    form_copy:
+      <<: *podcast_player_form
+    form_sidebar:
+      <<: *podcast_player_form
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
