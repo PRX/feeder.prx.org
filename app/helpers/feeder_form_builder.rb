@@ -13,8 +13,8 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   SLIM_SELECT_CONTROLLER = "slim-select"
   TAG_SELECT_CONTROLLER = "tag-select"
   FLATPICKR_CONTROLLER = "flatpickr"
-  FLATPICKR_ACTION = "keydown->flatpickr#keydown keyup->flatpickr#keyup"
   SELECT_BY_GROUP = "slim-select-group-select-value"
+  TIME_ZONE_CONTROLLER = "time-zone"
 
   def text_field(method, options = {})
     options[:class] = INPUT_CLASS unless options.key?(:class)
@@ -51,24 +51,14 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def date_field(method, options = {})
-    value = options[:value] || object&.public_send(method)
-    options[:value] = value.try(:strftime, "%Y-%m-%d") || value
-
-    add_flatpickr_controller(options)
-    text_field(method, options)
-  end
-
-  def time_field(method, options = {})
-    value = options[:value] || object&.public_send(method)
-    options[:value] = value.try(:strftime, "%Y-%m-%d %-l:%M:%S %p %Z") || value
-    add_data(options, :timestamp, true)
     add_flatpickr_controller(options)
     text_field(method, options)
   end
 
   def time_zone_field(method, options = {})
-    opts = (ActiveSupport::TimeZone.us_zones.map(&:name) + ActiveSupport::TimeZone.all.map(&:name)).uniq
-    select :publish_time_zone, opts, {selected: "UTC"}, data: {controller: "time-zone"}
+    choices = (ActiveSupport::TimeZone.us_zones.map(&:name) + ActiveSupport::TimeZone.all.map(&:name)).uniq
+    add_data(options, :controller, TIME_ZONE_CONTROLLER)
+    select method, choices, {selected: "UTC"}, options
   end
 
   def select(method, choices, options = {}, html_options = {}, &block)
@@ -101,11 +91,6 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   def search_date_field(method, params, options = {})
     value = options[:value] || params[method]
     date_field(method, add_search_action(options.merge(value: value)))
-  end
-
-  def search_time_field(method, params, options = {})
-    value = options[:value] || params[method]
-    time_field(method, add_search_action(options.merge(value: value)))
   end
 
   def search_check_box(method, params, options = {})
@@ -193,7 +178,6 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def add_flatpickr_controller(opts)
     add_data(opts, :controller, FLATPICKR_CONTROLLER)
-    add_data(opts, :action, FLATPICKR_ACTION)
   end
 
   def add_select_by_group(opts)

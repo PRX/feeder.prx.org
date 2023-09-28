@@ -19,7 +19,7 @@ export default class extends Controller {
 
       // make it look like this was the original value
       this.element.value = zone
-      if (this.element.dataset.valueWas && this.element.dataset.valueWas !== "UTC") {
+      if (this.element.dataset.valueWas) {
         this.element.dataset.valueWas = zone
       }
 
