@@ -13,6 +13,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   SLIM_SELECT_CONTROLLER = "slim-select"
   TAG_SELECT_CONTROLLER = "tag-select"
   FLATPICKR_CONTROLLER = "flatpickr"
+  FLATPICKR_ACTION = "flatpickr#change"
   SELECT_BY_GROUP = "slim-select-group-select-value"
   TIME_ZONE_CONTROLLER = "time-zone"
 
@@ -178,6 +179,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def add_flatpickr_controller(opts)
     add_data(opts, :controller, FLATPICKR_CONTROLLER)
+    add_data(opts, :action, FLATPICKR_ACTION)
   end
 
   def add_select_by_group(opts)

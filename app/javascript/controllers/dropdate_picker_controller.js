@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import lookupFriendlyTimeZone from "util/lookupFriendlyTimeZone"
+import flatpickr from "flatpickr"
 
 export default class extends Controller {
   static targets = ["input", "date", "time", "zone", "showing", "editing"]
