@@ -5,17 +5,11 @@ export default class extends Controller {
   static targets = ["input", "date", "time", "zone", "showing", "editing"]
 
   connect() {
-    const resolvedZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-    const zone = lookupFriendlyTimeZone(resolvedZone) || resolvedZone
-
-    // select zone and localize displayed date/time
-    if (zone) {
-      this.selectZone(zone)
-      if (this.inputTarget.value) {
-        const date = new Date(this.inputTarget.value)
-        this.setValue(this.dateTarget, date.toLocaleDateString(), true)
-        this.setValue(this.timeTarget, date.toLocaleTimeString(), true)
-      }
+    // localize inputs
+    if (this.inputTarget.value) {
+      const date = new Date(this.inputTarget.value)
+      this.setValue(this.dateTarget, date.toLocaleDateString(), true)
+      this.setValue(this.timeTarget, date.toLocaleTimeString(), true)
     }
 
     // listen for changes
@@ -75,20 +69,6 @@ export default class extends Controller {
       this.timeTarget.classList.add("form-control-blank")
       this.change()
     }
-  }
-
-  selectZone(zone) {
-    const values = [...this.zoneTarget.options].map((o) => o.value)
-
-    // add the zone if it's not in these friendly options
-    if (!values.includes(zone)) {
-      const opt = document.createElement("option")
-      opt.value = zone
-      opt.text = zone
-      this.zoneTarget.appendChild(opt)
-    }
-
-    this.setValue(this.zoneTarget, zone, true)
   }
 
   setValue(field, value, setValueWas = false) {

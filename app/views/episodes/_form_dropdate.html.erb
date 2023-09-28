@@ -44,7 +44,7 @@
   <div class="col-12 <%= "d-none" unless editing %>" data-dropdate-picker-target="editing">
     <div class="form-floating">
       <% data = {dropdate_picker_target: "zone"} %>
-      <%= form.select :released_at_zone, time_zone_options, {selected: "UTC"}, data: data %>
+      <%= form.time_zone_field :released_at_zone, data: data %>
       <%= form.label :released_at_zone %>
     </div>
   </div>
