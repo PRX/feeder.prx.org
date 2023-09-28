@@ -5,7 +5,7 @@
 
   <div class="col-12 <%= "d-none" if editing %>" data-dropdate-picker-target="showing">
     <div class="form-floating">
-      <div class="form-control d-table">
+      <div class="form-control d-table pe-0">
         <p class="d-table-cell align-middle">
           <% if episode.published_or_released_date.present? %>
             <%= local_time(episode.published_or_released_date, format: :default) %>
@@ -14,9 +14,9 @@
           <% end %>
         </p>
         <% if policy(episode).update? %>
-          <p class="d-table-cell align-middle align-right">
-            <a href="#" data-action="dropdate-picker#editing">Edit</a>
-          </p>
+          <a href="#" class="d-table-cell align-middle align-right" data-action="dropdate-picker#editing">
+            <span class="material-icons text-primary align-bottom">edit</span>
+          </a>
         <% end %>
       </div>
       <%= form.label :released_at %>
