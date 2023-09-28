@@ -7,7 +7,11 @@
     <div class="form-floating">
       <div class="form-control d-table">
         <p class="d-table-cell align-middle">
-          <%= local_time(episode.published_or_released_date, format: :default) %>
+          <% if episode.published_or_released_date.present? %>
+            <%= local_time(episode.published_or_released_date, format: :default) %>
+          <% else %>
+            &mdash;
+          <% end %>
         </p>
         <% if policy(episode).update? %>
           <p class="d-table-cell align-middle align-right">

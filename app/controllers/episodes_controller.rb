@@ -115,7 +115,7 @@ class EpisodesController < ApplicationController
   end
 
   def episode_params
-    nilify params.fetch(:episode, {}).permit(
+    nilify(params.fetch(:episode, {}).permit(
       :title,
       :clean_title,
       :subtitle,
@@ -134,6 +134,9 @@ class EpisodesController < ApplicationController
       :original_guid,
       categories: [],
       images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
-    )
+    ).tap do |p|
+      # HACK: DateTime.parse doesn't handle rails "friendly" generic timezone names
+      p[:released_at] = Time.parse(p[:released_at]) if p[:released_at].present?
+    end)
   end
 end
