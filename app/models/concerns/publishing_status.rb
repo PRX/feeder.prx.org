@@ -49,13 +49,13 @@ module PublishingStatus
     # check desired status vs timestamp
     if published_at.blank?
       errors.add(:published_at, "can't be blank")
-      errors.add(:released_at, "can't be blank")
+      errors.add(:released_at_date, "can't be blank")
     elsif @publishing_status == "scheduled" && published_at <= Time.now
       errors.add(:published_at, "can't be in the past")
-      errors.add(:released_at, "can't be in the past")
+      errors.add(:released_at_date, "can't be in the past")
     elsif @publishing_status == "published" && published_at > Time.now
       errors.add(:published_at, "can't be in the future")
-      errors.add(:released_at, "can't be in the future")
+      errors.add(:released_at_date, "can't be in the future")
     end
   end
 end

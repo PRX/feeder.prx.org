@@ -135,8 +135,13 @@ class EpisodesController < ApplicationController
       categories: [],
       images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
     ).tap do |p|
-      # HACK: DateTime.parse doesn't handle rails "friendly" generic timezone names
-      p[:released_at] = Time.parse(p[:released_at]) if p[:released_at].present?
+      p[:released_at] = released_at_zone.parse(p[:released_at]) if p[:released_at].present?
     end)
+  end
+
+  # released_at needs to be parsed in the selected zone
+  def released_at_zone
+    zone_name = params.fetch(:episode, {}).fetch(:released_at_zone, "")
+    ActiveSupport::TimeZone[zone_name] || ActiveSupport::TimeZone["UTC"]
   end
 end
