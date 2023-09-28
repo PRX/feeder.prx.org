@@ -66,6 +66,11 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     text_field(method, options)
   end
 
+  def time_zone_field(method, options = {})
+    opts = (ActiveSupport::TimeZone.us_zones.map(&:name) + ActiveSupport::TimeZone.all.map(&:name)).uniq
+    select :publish_time_zone, opts, {selected: "UTC"}, data: {controller: "time-zone"}
+  end
+
   def select(method, choices, options = {}, html_options = {}, &block)
     html_options[:class] = SELECT_CLASS unless html_options.key?(:class)
     add_blank_class(html_options) if blank?(method, options) && options[:include_blank]

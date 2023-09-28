@@ -1,5 +1,5 @@
 class PodcastPlanner
-  attr_accessor :podcast_id, :dates, :titles, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :segment_count, :medium, :selected_dates, :drafts
+  attr_accessor :podcast_id, :dates, :titles, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :publish_time_zone, :segment_count, :medium, :selected_dates, :drafts
 
   def initialize(params = {})
     @dates = params[:selected_dates].try(:map, &:to_date)
@@ -14,7 +14,8 @@ class PodcastPlanner
     @week_condition = params[:week_condition]
     @number_of_episodes = params[:number_of_episodes].try(:to_i)
     @end_date = params[:end_date].try(:to_date)
-    @publish_time = params[:publish_time].try(:to_i)
+    @publish_time = params[:publish_time]
+    @publish_time_zone = params[:publish_time_zone] || ""
     @segment_count = params[:segment_count].try(:to_i)
     @medium = params[:medium]
   end
@@ -158,7 +159,8 @@ class PodcastPlanner
   end
 
   def apply_publish_time(date)
-    Time.at(date.to_datetime.to_i + @publish_time)
+    zone = ActiveSupport::TimeZone[@publish_time_zone] || ActiveSupport::TimeZone["UTC"]
+    zone.parse("#{date.to_date} #{@publish_time}")
   end
 
   def generate_default_title(date, title)
