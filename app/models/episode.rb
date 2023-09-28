@@ -42,6 +42,7 @@ class Episode < ApplicationRecord
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
+  validates :description, bytesize: {maximum: 4000}, if: :strict_validations
   validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
   alias_error_messages :item_guid, :original_guid
