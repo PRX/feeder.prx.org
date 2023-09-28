@@ -66,4 +66,8 @@ module ApplicationHelper
       tag.span "link", class: "material-icons text-primary"
     end
   end
+
+  def time_zone_options
+    (ActiveSupport::TimeZone.us_zones.map(&:name) + ActiveSupport::TimeZone.all.map(&:name)).uniq
+  end
 end

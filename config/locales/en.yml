@@ -358,6 +358,9 @@ en:
           video: Video
         original_guid: GUID
         released_at: Dropdate
+        released_at_date: Date
+        released_at_time: Time
+        released_at_zone: Time Zone
         production_notes: Production Notes
         publishing_status: Status
         publishing_statuses:

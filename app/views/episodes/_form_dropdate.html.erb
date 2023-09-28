@@ -1,0 +1,48 @@
+<% editing = policy(episode).update? && (episode.published_or_released_date.blank? || episode.released_at_changed?) %>
+
+<div class="row" data-controller="dropdate-picker">
+  <%= form.hidden_field :released_at, value: episode.published_or_released_date, data: {dropdate_picker_target: "input"} %>
+
+  <div class="col-12 <%= "d-none" if editing %>" data-dropdate-picker-target="showing">
+    <div class="form-floating">
+      <div class="form-control d-table">
+        <p class="d-table-cell align-middle">
+          <%= local_time(episode.published_or_released_date, format: :default) %>
+        </p>
+        <% if policy(episode).update? %>
+          <p class="d-table-cell align-middle align-right">
+            <a href="#" data-action="dropdate-picker#editing">Edit</a>
+          </p>
+        <% end %>
+      </div>
+      <%= form.label :released_at %>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4 <%= "d-none" unless editing %>" data-dropdate-picker-target="editing">
+    <div class="form-floating">
+      <% value = episode.published_or_released_date.try(:strftime, "%-m/%-d/%Y") %>
+      <% data = {dropdate_picker_target: "date"} %>
+      <%= form.text_field :released_at_date, value: value, data: data %>
+      <%= form.label :released_at_date %>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4 <%= "d-none" unless editing %>" data-dropdate-picker-target="editing">
+    <div class="form-floating">
+      <% value = episode.published_or_released_date.try(:strftime, "%-l:%M:%S %p") %>
+      <% data = {dropdate_picker_target: "time"} %>
+      <%= form.text_field :released_at_time, value: value, data: data %>
+      <%= form.label :released_at_time %>
+    </div>
+  </div>
+
+  <div class="col-12 <%= "d-none" unless editing %>" data-dropdate-picker-target="editing">
+    <div class="form-floating">
+      <% data = {dropdate_picker_target: "zone"} %>
+      <%= form.select :released_at_zone, time_zone_options, {selected: "UTC"}, data: data %>
+      <%= form.label :released_at_zone %>
+    </div>
+  </div>
+
+</div>
