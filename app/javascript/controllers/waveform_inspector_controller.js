@@ -87,7 +87,7 @@ export default class extends Controller {
         overlayBorderWidth: 0,
         overlayCornerRadius: 0,
         overlayFontSize: 0,
-        overlayLabelColor: "rgba(0, 0, 0, 0,)",
+        overlayLabelColor: "rgba(0, 0, 0, 0)",
       },
     }
 

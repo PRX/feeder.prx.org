@@ -7,6 +7,7 @@ export default class extends Controller {
   static values = {
     labelPrefix: { type: String, default: "Breakpoint" },
     adBreaks: { type: Number, default: 1 },
+    adBreaksValid: { type: Boolean, default: false },
     markers: Array,
   }
 
@@ -33,7 +34,7 @@ export default class extends Controller {
    * Initial render of ad markers.
    */
   initMarkers() {
-    if (!this.hasMarkersValue || !this.hasAdBreaksValue) return
+    if (!this.hasMarkersValue || !this.hasAdBreaksValue || !this.adBreaksValidValue) return
 
     const increasedBy = Math.max(0, this.adBreaksValue - this.breakpointMarkers?.length || 0)
     const allMarkers = [...(this.breakpointMarkers || []), ...(this.inactiveMarkers || [])]

@@ -32,7 +32,7 @@ export default class extends Controller {
 
   startTimeValueChanged() {
     if (this.hasInitialMarkerValue) {
-      const isChanged = this.startTimeValue !== this.initialMarkerValue.startTime
+      const isChanged = this.startTimeValue !== (this.initialMarkerValue.startTime || 0)
 
       this.startTimeTarget.parentNode.classList.toggle("is-changed", isChanged)
     } else {
@@ -44,7 +44,7 @@ export default class extends Controller {
 
   endTimeValueChanged() {
     if (this.hasInitialMarkerValue) {
-      const isChanged = this.endTimeValue !== this.initialMarkerValue.endTime
+      const isChanged = this.endTimeValue !== (this.initialMarkerValue.endTime || 0)
       const isStartTimeChanged =
         this.startTimeTarget.parentNode.classList.contains("is-changed") || (isChanged && !this.hasEndTimeValue)
 
