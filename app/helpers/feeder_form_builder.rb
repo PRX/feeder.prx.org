@@ -17,6 +17,16 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   SELECT_BY_GROUP = "slim-select-group-select-value"
   TIME_ZONE_CONTROLLER = "time-zone"
 
+  IMPORTANT_ZONES = [
+    "Hawaii",
+    "Alaska",
+    "Pacific Time (US & Canada)",
+    "Mountain Time (US & Canada)",
+    "Central Time (US & Canada)",
+    "Eastern Time (US & Canada)",
+    "UTC"
+  ]
+
   def text_field(method, options = {})
     options[:class] = INPUT_CLASS unless options.key?(:class)
     add_blank_class(options) if blank?(method, options)
@@ -57,9 +67,8 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def time_zone_field(method, options = {})
-    choices = (ActiveSupport::TimeZone.us_zones.map(&:name) + ActiveSupport::TimeZone.all.map(&:name)).uniq
     add_data(options, :controller, TIME_ZONE_CONTROLLER)
-    select method, choices, {selected: "UTC"}, options
+    select method, IMPORTANT_ZONES, {selected: "UTC"}, options
   end
 
   def select(method, choices, options = {}, html_options = {}, &block)
