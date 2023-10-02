@@ -8,10 +8,11 @@ export default class extends Controller {
   static classes = ["completed"]
 
   static values = {
+    initialMarker: Object,
     id: String,
     label: String,
-    startTime: String,
-    endTime: String,
+    startTime: Number,
+    endTime: Number,
   }
 
   connect() {
@@ -30,10 +31,29 @@ export default class extends Controller {
   }
 
   startTimeValueChanged() {
+    if (this.hasInitialMarkerValue) {
+      const isChanged = this.startTimeValue !== (this.initialMarkerValue.startTime || 0)
+
+      this.startTimeTarget.parentNode.classList.toggle("is-changed", isChanged)
+    } else {
+      this.startTimeTarget.parentNode.classList.add("is-changed")
+    }
+
     this.startTimeTarget.placeholder = convertSecondsToDuration(this.startTimeValue)
   }
 
   endTimeValueChanged() {
+    if (this.hasInitialMarkerValue) {
+      const isChanged = this.endTimeValue !== (this.initialMarkerValue.endTime || 0)
+      const isStartTimeChanged =
+        this.startTimeTarget.parentNode.classList.contains("is-changed") || (isChanged && !this.hasEndTimeValue)
+
+      this.endTimeTarget.parentNode.classList.toggle("is-changed", isChanged)
+      this.startTimeTarget.parentNode.classList.toggle("is-changed", isStartTimeChanged)
+    } else {
+      this.endTimeTarget.parentNode.classList.add("is-changed")
+    }
+
     this.endTimeTarget.placeholder = convertSecondsToDuration(this.endTimeValue)
   }
 
@@ -48,19 +68,13 @@ export default class extends Controller {
   }
 
   updateStartTimeToPlayhead() {
-    const playheadTime = this.getPlayheadTime()
-
-    if (playheadTime) {
-      this.updateStartTime(playheadTime)
-    }
+    this.dispatch("marker.update-start-time-to-playhead", { detail: { id: this.idValue, endTime: this.endTimeValue } })
   }
 
   updateEndTimeToPlayhead() {
-    const playheadTime = this.getPlayheadTime()
-
-    if (playheadTime) {
-      this.updateEndTime(playheadTime)
-    }
+    this.dispatch("marker.update-end-time-to-playhead", {
+      detail: { id: this.idValue, startTime: this.startTimeValue },
+    })
   }
 
   changeStartTime() {
@@ -79,12 +93,6 @@ export default class extends Controller {
 
   removeEndTime() {
     this.updateEndTime(null)
-  }
-
-  getPlayheadTime() {
-    const playerContainer = this.element.closest("[data-playhead-time]")
-
-    return playerContainer ? playerContainer.dataset.playheadTime : 0
   }
 
   play() {

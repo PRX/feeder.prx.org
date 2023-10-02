@@ -1,12 +1,23 @@
 <div data-controller="audio-breakpoints waveform-inspector"
   data-audio-breakpoints-label-prefix-value="<%= t(".label.prefix") %>"
-  data-audio-breakpoints-segment-count-value="<%= episode.segment_count %>"
+  data-audio-breakpoints-ad-breaks-value="<%= episode.ad_breaks %>"
+  data-audio-breakpoints-ad-breaks-valid-value="<%= episode.validate(:ad_breaks) %>"
   data-audio-breakpoints-markers-value="<%= (uncut&.ad_breaks || []).to_json %>"
   data-audio-breakpoints-target="waveformInspector"
   data-waveform-inspector-playing-class="player--playing"
   data-waveform-inspector-audio-url-value="<%= uncut&.url %>"
   data-waveform-inspector-waveform-url-value="<%= uncut&.waveform_url %>"
-  data-action="resize@window->waveform-inspector#updateLayout audio-breakpoints:markers.update->waveform-inspector#updateMarkers waveform-inspector:marker.update->audio-breakpoints#updateBreakpointMarker audio-breakpoint:marker.update->audio-breakpoints#updateBreakpointMarker audio-breakpoint:play->waveform-inspector#playMarker audio-breakpoint:seekTo->waveform-inspector#seekToMarker">
+  data-waveform-inspector-playhead-time-value="0"
+  data-action="
+    resize@window->waveform-inspector#updateLayout
+    audio-breakpoints:markers.update->waveform-inspector#updateMarkers
+    waveform-inspector:marker.update->audio-breakpoints#updateBreakpointMarker
+    audio-breakpoint:marker.update->audio-breakpoints#updateBreakpointMarker
+    audio-breakpoint:marker.update-start-time-to-playhead->waveform-inspector#updateBreakpointMarkerStartTimeToPlayhead
+    audio-breakpoint:marker.update-end-time-to-playhead->waveform-inspector#updateBreakpointMarkerEndTimeToPlayhead
+    audio-breakpoint:play->waveform-inspector#playMarker
+    audio-breakpoint:seekTo->waveform-inspector#seekToMarker
+  ">
 
   <%= form.text_field :ad_breaks, value: (uncut&.ad_breaks || []).to_json, class: "d-none", data: {audio_breakpoints_target: "markersInput"} %>
 

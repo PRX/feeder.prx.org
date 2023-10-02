@@ -1,10 +1,10 @@
 /**
- * Convert a string value into number os seconds. String numeric or in duration format ([HH:]MM:SS[.ss]).
+ * Convert a string value into number of seconds. String numeric or in duration format ([HH:]MM:SS[.ss]).
  * @param {String} value Value to be converted.
  * @returns Value in seconds as Number, or NaN.
  */
 export default function convertToSeconds(value) {
-  if (!value) return NaN
+  if (!["string", "number"].includes(typeof value)) return NaN
 
   if (typeof value === "number") return value
 
@@ -19,7 +19,7 @@ export default function convertToSeconds(value) {
     return seconds + (minutes || 0) * 60 + (hours || 0) * 360
   } else {
     // Convert string to number.
-    const numericValue = value.replaceAll(/[^0-9.]/gi)
+    const numericValue = value.replaceAll(/[^0-9.]/gi, "")
     return parseFloat(numericValue)
   }
 }

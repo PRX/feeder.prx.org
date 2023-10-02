@@ -10,6 +10,14 @@
     box-shadow: $input-focus-box-shadow;
   }
 
+  &.is-changed {
+    border-color: $orange;
+
+    &:focus-within {
+      box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
+    }
+  }
+
   & > :is(.form-control, .input-group-text, .btn) {
     border: none;
 
