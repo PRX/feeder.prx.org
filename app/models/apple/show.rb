@@ -46,6 +46,7 @@ module Apple
       @podcast_feeder_episodes = nil
       @podcast_episodes = nil
       @episodes = nil
+      @deleted_episodes = nil
     end
 
     def podcast
@@ -148,19 +149,32 @@ module Apple
 
     def podcast_feeder_episodes
       @podcast_feeder_episodes ||=
-        podcast.episodes.reset
+        podcast.episodes.reset.with_deleted
     end
 
+    # All the episodes
     def podcast_episodes
       @podcast_episodes ||= podcast_feeder_episodes.map { |e| Apple::Episode.new(api: api, show: self, feeder_episode: e) }
     end
 
+    # Don't assume that the deleted episodes are in the private feed
+    def deleted_episodes
+      raise "Missing apple show id" unless apple_id.present?
+
+      @deleted_episodes ||= podcast_episodes
+        .filter { |e| e.deleted? }
+    end
+
+    # Does not include deleted episodes
     def episodes
       raise "Missing apple show id" unless apple_id.present?
 
       @episodes ||= begin
         feed_episode_ids = Set.new(private_feed.feed_episodes.map(&:id))
-        podcast_episodes.filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }
+
+        podcast_episodes
+          .filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }
+          .reject { |e| e.deleted? }
       end
     end
 

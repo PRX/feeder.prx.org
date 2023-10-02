@@ -346,4 +346,8 @@ class Episode < ApplicationRecord
       errors.add(:base, :media_not_ready, message: "media not ready")
     end
   end
+
+  def deleted?
+    deleted_at.present?
+  end
 end

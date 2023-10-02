@@ -77,6 +77,14 @@ describe Apple::Show do
       apple_show.reload
       refute_equal apple_show.episodes.first.feeder_episode.object_id, obj_id
     end
+
+    it "filters out the deleted episodes" do
+      assert_equal 1, apple_show.episodes.count
+      apple_show.episodes.first.feeder_episode.update!(deleted_at: Time.now.utc)
+
+      apple_show.reload
+      assert_equal 0, apple_show.episodes.count
+    end
   end
 
   describe ".connect_existing" do
