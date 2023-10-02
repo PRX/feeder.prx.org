@@ -1,13 +1,25 @@
 import { Controller } from "@hotwired/stimulus"
 import convertToSeconds from "util/convertToSeconds"
+import convertSecondsToDuration from "util/convertSecondsToDuration"
 
 export default class extends Controller {
-  static targets = ["waveformInspector", "markersInput", "controls", "controlTemplate"]
+  static targets = [
+    "waveformInspector",
+    "markersInput",
+    "controls",
+    "controlTemplate",
+    "preRollControlTemplate",
+    "postRollControlTemplate"
+  ]
 
   static values = {
+    duration: Number,
     labelPrefix: { type: String, default: "Breakpoint" },
+    labelPreRoll: { type: String, default: "Pre-Roll" },
+    labelPostRoll: { type: String, default: "Post-Roll" },
     adBreaks: { type: Number, default: 1 },
     adBreaksValid: { type: Boolean, default: false },
+    segments: Array,
     markers: Array,
   }
 
@@ -25,6 +37,34 @@ export default class extends Controller {
     this.initMarkers()
   }
 
+  durationValueChanged() {
+    const endTimeInput = this.postRollControlTemplateTarget.content.querySelector('[data-audio-breakpoint-target="endTime"]')
+
+    endTimeInput?.setAttribute('placeholder', convertSecondsToDuration(this.durationValue))
+  }
+
+  segmentsValueChanged(value) {
+    console.log('segments', value)
+
+    this.preRollPoint = value[0][0]
+    this.postRollPoint = value[value.length - 1][1]
+    this.adBreaks = value && [
+      ...value.reduce((a, [, end1], index, all) => {
+        if (index > all.length - 2) return a
+        const [start2] = all[index + 1]
+        return [
+          ...a,
+          end1 !== start2 ? [end1, start2] : end1
+        ]
+      }, [])
+    ];
+
+    console.log(this.preRollPoint, this.adBreaks, this.postRollPoint);
+
+    if (!this.breakpointMarkers) return
+    this.initMarkers()
+  }
+
   adBreaksValueChanged() {
     if (!this.breakpointMarkers) return
     this.initMarkers()
@@ -36,13 +76,15 @@ export default class extends Controller {
   initMarkers() {
     if (!this.hasMarkersValue || !this.hasAdBreaksValue || !this.adBreaksValidValue) return
 
+    const preRollMarker = this.breakpointMarkers?.shift()
+    const postRollMarker = this.breakpointMarkers?.pop()
     const increasedBy = Math.max(0, this.adBreaksValue - this.breakpointMarkers?.length || 0)
     const allMarkers = [...(this.breakpointMarkers || []), ...(this.inactiveMarkers || [])]
 
     this.breakpointMarkers = [...Array(this.adBreaksValue).keys()]
       .map(
         (key) =>
-          (allMarkers[key] && [allMarkers[key].startTime, allMarkers[key].endTime]) || this.markersValue?.[key] || []
+          (allMarkers[key] && [allMarkers[key].startTime, allMarkers[key].endTime]) || this.adBreaks?.[key] || []
       )
       .map((time, index) => ({
         id: allMarkers[index]?.id || Math.random().toString(16).split(".")[1],
@@ -53,13 +95,25 @@ export default class extends Controller {
 
     this.inactiveMarkers = allMarkers.slice(this.adBreaksValue)
 
+    this.breakpointMarkers.unshift(preRollMarker || {
+      id: 'preRoll',
+      labelText: this.labelPreRollValue,
+      startTime: this.preRollPoint || 0
+    })
+
+    this.breakpointMarkers.push(postRollMarker || {
+      id: 'postRoll',
+      labelText: this.labelPostRollValue,
+      startTime: this.postRollPoint || this.durationValue
+    })
+
+    this.initialMarkers = this.initialMarkers || this.breakpointMarkers
+
     if (increasedBy) {
-      ;[...this.breakpointMarkers.slice(-increasedBy)].forEach(({ id, startTime, endTime }) => {
+      [...this.breakpointMarkers.slice(-increasedBy)].forEach(({ id, startTime, endTime }) => {
         this.restoreBreakpointMarker({ detail: { id, startTime, endTime } })
       })
     }
-
-    this.initialMarkers = this.initialMarkers || this.breakpointMarkers
 
     this.updateBreakpointMarkers()
   }
@@ -237,7 +291,7 @@ export default class extends Controller {
       .sort((a, b) => (!a.startTime ? 1 : a.startTime - b.startTime))
       .map((marker, index) => ({
         ...marker,
-        labelText: `${this.labelPrefixValue} ${index + 1}`,
+        labelText: ['preRoll', 'postRoll'].includes(marker.id) ? marker.labelText : `${this.labelPrefixValue} ${index}`,
       }))
   }
 
@@ -262,8 +316,11 @@ export default class extends Controller {
     const controls = []
 
     this.breakpointMarkers.forEach((marker, index) => {
-      const template = this.controlTemplateTarget.content.cloneNode(true)
-      const control = template.querySelector('[data-controller*="audio-breakpoint"')
+      const templateTarget = (marker.id === 'preRoll' && this.preRollControlTemplateTarget)
+        || (marker.id === 'postRoll' && this.postRollControlTemplateTarget)
+        || this.controlTemplateTarget;
+      const template = templateTarget.content.cloneNode(true)
+      const control = template.querySelector('[data-controller*="audio-breakpoint"]')
       const { id, labelText, startTime, endTime } = marker
       const initialMarker = this.initialMarkers.find(({ id: iId }) => iId === id)
 

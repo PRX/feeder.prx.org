@@ -11,14 +11,22 @@ class PrxPointMarker {
   constructor(options) {
     this._options = options
     this._peaks = options.layer._peaks
+    this._lineWidth = 1
+    this._handleWidth = 10
+    this._handleHeight = 20
+    this._tagCornerRadius = options.fontSize
+    this._textPadding = options.fontSize / 2
+    this._paddingX = 8
+    this._paddingY = 8
+
+    if (this._options.view === "zoomview") {
+      const axisMarkerHeight = this._peaks.options.zoomview.axisBottomMarkerHeight || 10
+      const axisMarkerFontSize = this._peaks.options.zoomview.fontSize || 11
+      this._paddingBottom = axisMarkerHeight + axisMarkerFontSize + this._paddingY
+    }
   }
 
   init(group) {
-    const handleWidth = 10
-    const handleHeight = 20
-    const handleX = -(handleWidth / 2) + 0.5 // Place in the middle of the marker
-    const tagCornerRadius = this._options.fontSize
-    const textPadding = this._options.fontSize / 2
 
     // Label
 
@@ -29,13 +37,12 @@ class PrxPointMarker {
         y: 0,
       })
 
-      label.add(
-        new Konva.Tag({
-          fill: this._options.color,
-          lineJoin: "round",
-          cornerRadius: tagCornerRadius,
-        })
-      )
+      this._labelTag = new Konva.Tag({
+        fill: this._options.color,
+        lineJoin: "round",
+        cornerRadius: this._tagCornerRadius,
+      })
+      label.add(this._labelTag)
 
       label.add(
         new Text({
@@ -44,7 +51,7 @@ class PrxPointMarker {
           fontFamily: this._options.fontFamily || "sans-serif",
           fontSize: this._options.fontSize || 10,
           fontStyle: this._options.fontStyle || "normal",
-          padding: textPadding,
+          padding: this._textPadding,
           fill: "#fff",
         })
       )
@@ -55,6 +62,7 @@ class PrxPointMarker {
     // Handle - create with default y, the real value is set in fitToView().
 
     if (this._options.draggable) {
+      const handleX = -(this._handleWidth - this._lineWidth) / 2 // Place in the middle of the marker
       const handle = new Konva.Group({
         x: handleX,
         y: 0,
@@ -62,14 +70,13 @@ class PrxPointMarker {
 
       handle.add(
         new Rect({
-          width: handleWidth,
-          height: handleHeight,
+          width: this._handleWidth,
+          height: this._handleHeight,
           fill: this._options.color,
         })
       )
 
       this._handle = handle
-      this._handleWidth = handleWidth
     }
 
     // Line - create with default y and points, the real values
@@ -78,7 +85,7 @@ class PrxPointMarker {
       x: 0,
       y: 0,
       stroke: this._options.color,
-      strokeWidth: 1,
+      strokeWidth: this._lineWidth,
     })
 
     // Time label
@@ -90,13 +97,12 @@ class PrxPointMarker {
         y: 0,
       })
 
-      time.add(
-        new Konva.Tag({
-          fill: this._options.color,
-          lineJoin: "round",
-          cornerRadius: [tagCornerRadius, 0, 0, tagCornerRadius],
-        })
-      )
+      this._timeTag = new Konva.Tag({
+        fill: this._options.color,
+        lineJoin: "round",
+        cornerRadius: [this._tagCornerRadius, 0, 0, this._tagCornerRadius],
+      })
+      time.add(this._timeTag)
 
       this._timeText = new Text({
         text: this._options.layer.formatTime(this._options.point.time),
@@ -104,7 +110,7 @@ class PrxPointMarker {
         fontFamily: this._options.fontFamily || "sans-serif",
         fontSize: this._options.fontSize || 10,
         fontStyle: this._options.fontStyle || "normal",
-        padding: textPadding,
+        padding: this._textPadding,
         fill: "#fff",
       })
       time.add(this._timeText)
@@ -135,11 +141,7 @@ class PrxPointMarker {
     const self = this
 
     if (self._handle) {
-      const timeX = -this._time.getWidth() + 0.5
-
       self._handle.on("mouseover touchstart", function () {
-        // Position text to the left of the marker
-        self._time.setX(timeX)
         self._time.show()
       })
 
@@ -148,7 +150,6 @@ class PrxPointMarker {
       })
 
       group.on("dragstart", function () {
-        self._time.setX(timeX)
         self._time.show()
       })
 
@@ -156,20 +157,63 @@ class PrxPointMarker {
         self._time.hide()
       })
     }
+
+    group.on('xChange', (evt) => {
+      const layer = evt.currentTarget.getLayer()
+
+      self.updateLabelPosition(evt.newVal, layer)
+      self.updateTimePosition(evt.newVal, layer)
+    })
+  }
+
+  updateLabelPosition(posX, layer) {
+    if(!this._label || !layer?.canvas) return
+
+    const canvasWidth = layer.canvas.width
+    const labelWidth = this._label.getWidth()
+    const offset = labelWidth / 2
+    let newX = -offset
+    let cornerRadius = this._tagCornerRadius
+
+    if (posX <= offset) {
+      newX = 0
+      cornerRadius = [0, this._tagCornerRadius, this._tagCornerRadius, 0]
+    }
+
+    if (posX >= canvasWidth - offset) {
+      newX = -labelWidth
+      cornerRadius = [this._tagCornerRadius, 0, 0, this._tagCornerRadius]
+    }
+
+    this._label.x(newX)
+    this._labelTag.cornerRadius(cornerRadius)
+  }
+
+  updateTimePosition(posX, layer) {
+    if(!this._time || !layer?.canvas) return
+
+    const timeWidth = this._time.getWidth()
+
+    if (posX < timeWidth) {
+      this._time.x(this._handleWidth - this._lineWidth / 2)
+      this._timeTag.cornerRadius([0, this._tagCornerRadius, this._tagCornerRadius, 0])
+    } else {
+      this._time.x(-timeWidth + this._lineWidth / 2)
+      this._timeTag.cornerRadius([this._tagCornerRadius, 0, 0, this._tagCornerRadius])
+    }
   }
 
   fitToView() {
     const height = this._options.layer.getHeight()
 
-    this._line.points([0.5, 0, 0.5, height])
+    this._line.points([0, 0, 0, height])
 
     if (this._label) {
-      this._label.x(-this._label.getWidth() / 2 - 0.5)
-      this._label.y(height - this._label.getHeight() - this._peaks.options.zoomview.fontSize - 16)
+      this._label.y(height - this._label.getHeight() - this._paddingBottom)
     }
 
     if (this._handle) {
-      this._handle.y(height / 2 - 10.5)
+      this._handle.y((height - this._handleHeight) / 2)
     }
   }
 

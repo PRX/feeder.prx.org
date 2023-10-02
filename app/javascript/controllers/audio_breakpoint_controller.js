@@ -43,6 +43,8 @@ export default class extends Controller {
   }
 
   endTimeValueChanged() {
+    if (!this.hasEndTimeTarget) return
+
     if (this.hasInitialMarkerValue) {
       const isChanged = this.endTimeValue !== (this.initialMarkerValue.endTime || 0)
       const isStartTimeChanged =
@@ -54,7 +56,9 @@ export default class extends Controller {
       this.endTimeTarget.parentNode.classList.add("is-changed")
     }
 
-    this.endTimeTarget.placeholder = convertSecondsToDuration(this.endTimeValue)
+    if (this.hasEndTimeValue) {
+      this.endTimeTarget.placeholder = convertSecondsToDuration(this.endTimeValue)
+    }
   }
 
   updateStartTime(newTime) {

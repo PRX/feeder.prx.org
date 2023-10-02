@@ -1,8 +1,10 @@
 <div data-controller="audio-breakpoints waveform-inspector"
+  data-audio-breakpoints-duration-value="<%= uncut&.duration %>"
   data-audio-breakpoints-label-prefix-value="<%= t(".label.prefix") %>"
   data-audio-breakpoints-ad-breaks-value="<%= episode.ad_breaks %>"
   data-audio-breakpoints-ad-breaks-valid-value="<%= episode.validate(:ad_breaks) %>"
   data-audio-breakpoints-markers-value="<%= (uncut&.ad_breaks || []).to_json %>"
+  data-audio-breakpoints-segments-value="<%= (uncut&.segmentation || []).to_json %>"
   data-audio-breakpoints-target="waveformInspector"
   data-waveform-inspector-playing-class="player--playing"
   data-waveform-inspector-audio-url-value="<%= uncut&.url %>"
@@ -73,6 +75,7 @@
       </table>
     </div>
   </div>
+
   <template data-audio-breakpoints-target="controlTemplate">
     <tr data-controller="audio-breakpoint tooltip" data-audio-breakpoint-completed-class="status--completed">
       <td>
@@ -124,6 +127,77 @@
         <button type="button" class="has-end-time-show btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#play">
           <span class="material-icons">play_arrow</span>
         </button>
+        <button type="button" class="has-start-time-show btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#seekTo">
+          <span class="material-icons">skip_next</span>
+        </button>
+      </td>
+    </tr>
+  </template>
+
+  <template data-audio-breakpoints-target="preRollControlTemplate">
+    <tr data-controller="audio-breakpoint tooltip" data-audio-breakpoint-completed-class="status--completed">
+      <td></td>
+      <td>
+        <span data-audio-breakpoint-target="label">Label Text</span>
+      </td>
+      <td>
+        <div class="prx-input-group input-group-sm">
+          <input class="form-control" placeholder="00:00" disabled
+            data-bs-toggle="tooltip"
+            data-bs-title="Start Time">
+        </div>
+        <span class="material-icons rotate-90">expand</span>
+        <div class="prx-input-group input-group-sm">
+          <input class="form-control" placeholder="00:00"
+            data-audio-breakpoint-target="startTime"
+            data-action="keypress.enter->audio-breakpoint#changeStartTime"
+            data-bs-toggle="tooltip"
+            data-bs-title="Edit End Time">
+          <button type="button" class="prx-input-confirm btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="audio-breakpoint#changeStartTime">
+            <span class="material-icons">done</span>
+          </button>
+          <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="audio-breakpoint#updateStartTimeToPlayhead">
+            <span class="material-icons">my_location</span>
+          </button>
+        </div>
+      </td>
+      <td class="justify-content-end">
+        <button type="button" class="has-start-time-show btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#seekTo">
+          <span class="material-icons">skip_next</span>
+        </button>
+      </td>
+    </tr>
+  </template>
+
+  <template data-audio-breakpoints-target="postRollControlTemplate">
+    <tr data-controller="audio-breakpoint tooltip" data-audio-breakpoint-completed-class="status--completed">
+      <td></td>
+      <td>
+        <span data-audio-breakpoint-target="label">Label Text</span>
+      </td>
+      <td>
+        <div class="has-start-time-show prx-input-group input-group-sm">
+          <input class="form-control" placeholder="00:00"
+            data-audio-breakpoint-target="startTime"
+            data-action="keypress.enter->audio-breakpoint#changeStartTime"
+            data-bs-toggle="tooltip"
+            data-bs-title="Edit Start Time">
+          <button type="button" class="prx-input-confirm btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="audio-breakpoint#changeStartTime">
+            <span class="material-icons">done</span>
+          </button>
+          <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="audio-breakpoint#updateStartTimeToPlayhead">
+            <span class="material-icons">my_location</span>
+          </button>
+        </div>
+        <span class="material-icons rotate-90">expand</span>
+        <div class="prx-input-group input-group-sm">
+          <input class="form-control" placeholder="00:00" disabled
+            data-audio-breakpoint-target="endTime"
+            data-bs-toggle="tooltip"
+            data-bs-title="End Time">
+        </div>
+      </td>
+      <td class="justify-content-end">
         <button type="button" class="has-start-time-show btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#seekTo">
           <span class="material-icons">skip_next</span>
         </button>

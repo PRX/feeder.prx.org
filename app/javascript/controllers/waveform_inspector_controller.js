@@ -46,7 +46,7 @@ export default class extends Controller {
           highlightColor: "#8cd2f4",
           highlightOpacity: 0.3,
           segmentOptions: {
-            overlayOpacity: 0.3,
+            overlayOpacity: 1,
             overlayOffset: 0,
             overlayFontSize: 0,
           },
@@ -82,8 +82,8 @@ export default class extends Controller {
         endMarkerColor: "#ff9600",
         overlay: true,
         overlayOffset: 0,
-        overlayColor: "#ff9600",
-        overlayOpacity: 0.1,
+        overlayColor: "rgba(255, 193, 7, 0.3)",
+        overlayOpacity: 1,
         overlayBorderWidth: 0,
         overlayCornerRadius: 0,
         overlayFontSize: 0,
@@ -166,6 +166,8 @@ export default class extends Controller {
     const segments = []
     const points = []
 
+    console.log(this.peaks)
+
     this.markersValue.forEach(({ id, labelText, startTime, endTime }) => {
       const optionsDefault = {
         editable: true,
@@ -186,15 +188,17 @@ export default class extends Controller {
           ...optionsDefault,
           id,
           labelText,
-          time: startTime,
+          time: startTime
         })
 
         // Add a placeholder segment for this point.
-        segments.push({
+        const placeholderSegment = {
           id: `placeholder.segments.${id}`,
-          startTime,
-          endTime: startTime,
-        })
+          startTime: id === 'preRoll' ? 0 : startTime,
+          endTime: id === 'postRoll' ? Math.ceil(this.peaks.player.getDuration()) : startTime
+        }
+        console.log(placeholderSegment)
+        segments.push(placeholderSegment)
       }
     })
 
@@ -220,7 +224,7 @@ export default class extends Controller {
   seekTo(time) {
     const seconds = convertToSeconds(time)
 
-    if (seconds) {
+    if (seconds || seconds === 0) {
       this.peaks.player.seek(seconds)
     }
   }
