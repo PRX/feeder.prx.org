@@ -183,11 +183,26 @@ describe Apple::Episode do
   describe "#publish" do
     it "should call poll! at the conclusion of the episode publishing" do
       mock = Minitest::Mock.new
-      mock.expect(:call, nil, [apple_api, apple_show, [apple_episode]])
+      mock.expect(:call, [], [apple_api, apple_show, [apple_episode]])
 
       apple_api.stub(:bridge_remote_and_retry, nil) do
         Apple::Episode.stub(:poll_episode_state, mock) do
           Apple::Episode.publish(apple_api, apple_show, [apple_episode])
+        end
+      end
+
+      mock.verify
+    end
+  end
+
+  describe "#archive" do
+    it "should delegate to the alter_publish_state" do
+      mock = Minitest::Mock.new
+      mock.expect(:call, [], [apple_api, apple_show, [apple_episode], "ARCHIVE"])
+
+      apple_api.stub(:bridge_remote_and_retry, nil) do
+        Apple::Episode.stub(:alter_publish_state, mock) do
+          Apple::Episode.archive(apple_api, apple_show, [apple_episode])
         end
       end
 
