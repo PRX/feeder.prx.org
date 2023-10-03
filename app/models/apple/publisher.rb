@@ -41,22 +41,32 @@ module Apple
       eps
         .reject(&:synced_with_apple?)
         .reject(&:video_content_type?)
-        .reject(&:archived?)
     end
 
     def episodes_to_sync
-      filter_episodes_to_sync(show.episodes)
+      # only look at the private delegated delivery feed
+      filter_episodes_to_sync(show.apple_private_feed_episodes)
     end
 
     def filter_episodes_to_archive(eps)
       eps
-        .filter { |ep| ep.deleted? }
+        .filter { |ep| ep.deleted? || !ep.published? }
         .reject(&:apple_new?)
         .reject(&:archived?)
     end
 
     def episodes_to_archive
+      # look at the global list of episodes, not just the private feed
       filter_episodes_to_archive(show.podcast_episodes)
+    end
+
+    def filter_episodes_to_unarchive(eps)
+      eps.filter(&:archived?)
+    end
+
+    def episodes_to_unarchive
+      # only look at the private delegated delivery feed
+      filter_episodes_to_unarchive(show.apple_private_feed_episodes)
     end
 
     def only_episodes_with_apple_state(eps)
@@ -94,24 +104,18 @@ module Apple
       end
     end
 
-    def archive!(eps = episodes_to_archive)
-      Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        poll!(eps)
-
-        eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
-          Apple::Episode.archive(api, show, chunked_eps)
-
-          res = Apple::Episode.archive(api, show, eps)
-          Rails.logger.info("Archived #{res.length} deleted episodes.")
-        end
-      end
-    end
-
-    def publish!(eps = episodes_to_sync)
+    def publish!(eps = nil)
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
-      archive!
+      # delete or unpublished episodes
+      archive!(episodes_to_archive)
+      show.reload
+
+      unarchive!(episodes_to_unarchive)
+      show.reload
+
+      eps = episodes_to_sync if eps.nil?
 
       Rails.logger.tagged("Apple::Publisher#publish!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
@@ -136,6 +140,28 @@ module Apple
 
       # success
       SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id, api_response: {success: true})
+    end
+
+    def archive!(eps = episodes_to_archive)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        poll!(eps)
+
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
+          res = Apple::Episode.archive(api, show, eps)
+          Rails.logger.info("Archived #{res.length} episodes.")
+        end
+      end
+    end
+
+    def unarchive!(eps = episodes_to_unarchive)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        poll!(eps)
+
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
+          res = Apple::Episode.unarchive(api, show, eps)
+          Rails.logger.info("Un-Archived #{res.length} episodes.")
+        end
+      end
     end
 
     def log_delivery_processing_errors(eps)

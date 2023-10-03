@@ -170,6 +170,10 @@ module Apple
       end
     end
 
+    def apple_private_feed_episodes
+      episodes
+    end
+
     def episode_ids
       @episode_ids ||= episodes.map(&:id).sort
     end

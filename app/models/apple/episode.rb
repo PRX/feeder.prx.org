@@ -146,6 +146,10 @@ module Apple
       alter_publish_state(api, show, episodes, "ARCHIVE")
     end
 
+    def self.unarchive(api, show, episodes)
+      alter_publish_state(api, show, episodes, "UNARCHIVE")
+    end
+
     def self.publish(api, show, episodes)
       alter_publish_state(api, show, episodes, "PUBLISH")
     end
@@ -498,6 +502,10 @@ module Apple
 
     def deleted?
       feeder_episode.deleted?
+    end
+
+    def published?
+      feeder_episode.published?
     end
 
     alias_method :container, :podcast_container

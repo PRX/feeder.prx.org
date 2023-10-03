@@ -94,24 +94,6 @@ describe Apple::Publisher do
         end
       end
     end
-
-    it "should filter episodes that are archived" do
-      apple_episode.stub(:synced_with_apple?, false) do
-        apple_episode.stub(:video_content_type?, false) do
-          apple_episode.stub(:archived?, true) do
-            assert_equal [], apple_publisher.filter_episodes_to_sync([apple_episode])
-          end
-        end
-      end
-
-      apple_episode.stub(:synced_with_apple?, false) do
-        apple_episode.stub(:video_content_type?, false) do
-          apple_episode.stub(:archived?, false) do
-            assert_equal [apple_episode], apple_publisher.filter_episodes_to_sync([apple_episode])
-          end
-        end
-      end
-    end
   end
 
   describe "#filter_episodes_to_archive" do
@@ -135,6 +117,31 @@ describe Apple::Publisher do
       end
 
       episode.stub(:apple_new?, true) do
+        assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
+      end
+    end
+
+    it "should filter episodes that are archived" do
+      episode.feeder_episode.touch(:deleted_at)
+
+      episode.stub(:archived?, false) do
+        assert_equal [episode], apple_publisher.filter_episodes_to_archive([episode])
+      end
+
+      episode.stub(:archived?, true) do
+        assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
+      end
+    end
+
+    it "should filter episodes that are published" do
+      assert_equal false, episode.deleted?
+      assert_equal false, episode.archived?
+
+      episode.stub(:published?, false) do
+        assert_equal [episode], apple_publisher.filter_episodes_to_archive([episode])
+      end
+
+      episode.stub(:published?, true) do
         assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
       end
     end
