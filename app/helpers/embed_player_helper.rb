@@ -103,7 +103,7 @@ module EmbedPlayerHelper
   end
 
   def embed_player_category_options(podcast, selected)
-    opts = podcast.feed_episodes.pluck(:categories).flatten.uniq
+    opts = podcast.episodes.published.pluck(:categories).flatten.uniq
     options_for_select(opts, selected)
   end
 
