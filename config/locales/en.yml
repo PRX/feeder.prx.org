@@ -331,6 +331,12 @@ en:
           standard: Standard
           card: Responsive Card
           fixed_card: Fixed Width Card
+        embed_player_theme: Embed Player Theme
+        embed_player_themes:
+          dark: Dark (Default)
+          light: Light
+          auto: User System Default
+        accent_color: Accent Color
         embed_player_url: Embeddable Player Link
         enclosure_url: Media Link
         episode_number: Episode Number
@@ -443,9 +449,12 @@ en:
         title: Title
       podcast_player:
         embed_player_type: Player Style
+        max_width: Player Width
         episode_number: Number of Episodes
+        episodes_all: All Episodes
         season: Season Number
         category: Category
+        no_category: (None)
         embed_player_url: Embeddable Player Link
         embed_player_iframe: Embeddable Player IFrame
         episodes_options:
@@ -602,19 +611,34 @@ en:
       media_not_ready: Published episodes cannot have empty media
       notice: Media files updated
   episode_player:
-    form:
+    form: &player_form
       enclosure_not_ready: No Media Files Uploaded
       help: &player_help
         copy: Copy the code for one of the following players, and place it on your webpage.
+        customize: Customize the appearance of the embed.
+        max_width: Cap the width the embed can scale to. It will continue to scale down when content width is less than the entered width. Minimum 300px.
         types:
-          card: The player style that shows off your podcast's artwork and will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 800px tall.
-          fixed_card: The player style that shows off your podcast's artwork. The size will NOT adjust to the user's screensize. Must always be 500px wide by 800px tall.
-          standard: Default view of the PRX Player, will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 200px tall.
+          card: The player style that shows off your podcast's artwork. Size of embed will be responsive to the size of content is embedded into.
+          standard: Default view of the PRX Player, will adjust to be responsive to the size of the user's screen and the website it is embedded on.
+        themes:
+          dark: Dark theme that stands out in lighter themed sites.
+          light: Light theme for that subtle look.
+          auto: Allow the users system preferences to determine the theme.
+        accent_color: Choose an accent color that works for your brand.
         warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/links will begin to function as expected within a few minutes of publishing.
       title: &player_title
         copy: Copy and Use your Embed Code
+        customize: Make It Your Own
         preview: Player
         warning: Warning
+      label: &player_label
+        clear: Restore Default Options
+    form_preview:
+      <<: *player_form
+    form_copy:
+      <<: *player_form
+    form_sidebar:
+      <<: *player_form
     show:
       title: Embeddable Player
   errors:
@@ -957,17 +981,26 @@ en:
       month: Weeks of the Month
       period: Weekly interval
   podcast_player:
-    form:
+    show:
+      title: Embeddable Player
+    form: &podcast_player_form
       help:
         <<: *player_help
-        episode_number: Choose between showing all episodes or only a number of episodes for this playlist.
+        episode_number: (Optional) Limit the number of episodes included in the playlist. Leave blank to include all episodes.
         season: (Optional) Choose a single season for this playlist. Leaving this blank or 0 will not add a season filter.
         episode_category: (Optional) Choose a single category for this playlist. Leaving this blank will not add a category filter.
         playlist: Add any options below to better specify the playlist you want to create.
       title:
         <<: *player_title
-        playlist: Make it a playlist
-      clear: Clear options
+        playlist: Make It A Playlist
+      label:
+        <<: *player_label
+    form_preview:
+      <<: *podcast_player_form
+    form_copy:
+      <<: *podcast_player_form
+    form_sidebar:
+      <<: *podcast_player_form
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
