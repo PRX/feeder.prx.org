@@ -165,15 +165,16 @@ module Apple
     def self.alter_publish_state(api, show, episodes, state)
       return [] if episodes.empty?
 
-      api.bridge_remote_and_retry!("publishEpisodes",
+      episode_bridge_results = api.bridge_remote_and_retry!("publishEpisodes",
         episodes.map { |e| e.publishing_state_bridge_params(state) })
+
+      join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
+        Rails.logger.info("Moving episode to #{state} state", {episode_id: ep.feeder_id, state: state})
+      end
 
       # We don't get back the full episode model in the response.
       # So poll for current state
-      poll_episode_state(api, show, episodes).map do |log|
-        Rails.logger.info("Moving episode to #{state} state", {episode_id: log.feeder_id})
-        log
-      end
+      poll_episode_state(api, show, episodes)
     end
 
     def self.upsert_sync_logs(episodes, results)
@@ -369,6 +370,10 @@ module Apple
 
     def publishing_state_bridge_params(state)
       {
+        request_metadata: {
+          apple_episode_id: apple_id,
+          guid: guid
+        },
         api_url: api.join_url("episodePublishingRequests").to_s,
         api_parameters: publishing_state_parameters(state)
       }
