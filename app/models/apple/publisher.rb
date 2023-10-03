@@ -35,7 +35,7 @@ module Apple
       public_feed.podcast
     end
 
-    def filter_episodes(eps)
+    def filter_episodes_to_sync(eps)
       # Reject episodes if the audio is marked as uploaded/complete
       # or if the episode is a video
       eps
@@ -45,14 +45,18 @@ module Apple
     end
 
     def episodes_to_sync
-      filter_episodes(show.episodes)
+      filter_episodes_to_sync(show.episodes)
+    end
+
+    def filter_episodes_to_archive(eps)
+      eps
+        .filter { |ep| ep.deleted? }
+        .reject(&:apple_new?)
+        .reject(&:archived?)
     end
 
     def episodes_to_archive
-      show
-        .deleted_episodes
-        .reject(&:apple_new?)
-        .reject(&:archived?)
+      filter_episodes_to_archive(show.podcast_episodes)
     end
 
     def only_episodes_with_apple_state(eps)
@@ -90,12 +94,15 @@ module Apple
       end
     end
 
-    def archive_deleted!(eps = episodes_to_archive)
-      Rails.logger.tagged("Apple::Publisher#archive_deleted!") do
+    def archive!(eps = episodes_to_archive)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
         poll!(eps)
 
         eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
           Apple::Episode.archive(api, show, chunked_eps)
+
+          res = Apple::Episode.archive(api, show, eps)
+          Rails.logger.info("Archived #{res.length} deleted episodes.")
         end
       end
     end
@@ -104,7 +111,7 @@ module Apple
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
-      archive_deleted!
+      archive!
 
       Rails.logger.tagged("Apple::Publisher#publish!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
@@ -294,15 +301,6 @@ module Apple
 
         res = Apple::Episode.publish(api, show, eps)
         Rails.logger.info("Published #{res.length} drafting episodes.")
-      end
-    end
-
-    def archive!(eps)
-      Rails.logger.tagged("##{__method__}") do
-        eps = eps.select { |ep| ep.deleted? }
-
-        res = Apple::Episode.archive(api, show, eps)
-        Rails.logger.info("Archived #{res.length} deleted episodes.")
       end
     end
 

@@ -152,17 +152,9 @@ module Apple
         podcast.episodes.reset.with_deleted
     end
 
-    # All the episodes
+    # All the episodes -- including deleted and unpublished
     def podcast_episodes
       @podcast_episodes ||= podcast_feeder_episodes.map { |e| Apple::Episode.new(api: api, show: self, feeder_episode: e) }
-    end
-
-    # Don't assume that the deleted episodes are in the private feed
-    def deleted_episodes
-      raise "Missing apple show id" unless apple_id.present?
-
-      @deleted_episodes ||= podcast_episodes
-        .filter { |e| e.deleted? }
     end
 
     # Does not include deleted episodes
