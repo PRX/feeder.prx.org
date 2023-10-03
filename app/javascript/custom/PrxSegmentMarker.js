@@ -10,6 +10,7 @@ import { Text } from "konva/lib/shapes/Text"
 class PrxSegmentMarker {
   constructor(options) {
     this._options = options
+    this._segment = options.segment
     this._peaks = options.layer._peaks
     this._lineWidth = 1
     this._handleWidth = 10
@@ -27,6 +28,11 @@ class PrxSegmentMarker {
   }
 
   init(group) {
+
+    if (
+      this._options.startMarker && this._segment.id === 'preRoll'
+      || !this._options.startMarker && this._segment.id === 'postRoll'
+    )  return
 
     // Label
 
@@ -155,6 +161,11 @@ class PrxSegmentMarker {
 
     group.on('xChange', (evt) => {
       const layer = evt.currentTarget.getLayer()
+      self._overlay = layer.children.find((child) => child.attrs.name === 'overlay' && child.attrs.draggable)
+
+      if (self._overlay && ['preRoll', 'postRoll'].includes(this._segment.id)) {
+        self._overlay.draggable(false)
+      }
 
       self.updateLabelPosition(evt.newVal, layer)
       self.updateTimePosition(evt.newVal, layer)
@@ -162,11 +173,10 @@ class PrxSegmentMarker {
   }
 
   updateLabelPosition(posX, layer) {
-    if(!this._options.startMarker || !this._label || !layer?.children?.[1]) return
+    if(!this._options.startMarker || !this._label || !this._overlay) return
 
     // Position label sticky within bounds of segment overlay.
-    const overlay = layer.children.find((child) => child.attrs.name === 'overlay' && child.attrs.draggable)
-    const segmentWidth = overlay.getWidth()
+    const segmentWidth = this._overlay.getWidth()
     const labelWidth = this._label.getWidth()
     const rightBound = segmentWidth - this._paddingX - labelWidth
     let newX = this._paddingX;
@@ -199,7 +209,7 @@ class PrxSegmentMarker {
   fitToView() {
     const height = this._options.layer.getHeight()
 
-    this._line.points([0.5, 0, 0.5, height])
+    this._line.points([0, 0, 0, height])
 
     if (this._label) {
       this._label.y(height - this._label.getHeight() - this._peaks.options.zoomview.fontSize - 16)

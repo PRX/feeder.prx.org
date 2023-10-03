@@ -109,6 +109,7 @@ export default class extends Controller {
       const zoomView = peaksInstance.views.getView("zoomview")
       const overviewView = peaksInstance.views.getView("overview")
 
+      zoomView.setMinSegmentDragWidth(0)
       zoomView.setAmplitudeScale(2)
 
       // Prevent segments from overlapping other segments.
@@ -166,16 +167,15 @@ export default class extends Controller {
     const segments = []
     const points = []
 
-    console.log(this.peaks)
-
     this.markersValue.forEach(({ id, labelText, startTime, endTime }) => {
       const optionsDefault = {
         editable: true,
       }
 
-      if (!startTime && startTime !== 0) return
+      if (startTime == null) return
 
-      if (endTime) {
+      if (endTime != null) {
+        console.log('init segment', id, startTime, endTime)
         segments.push({
           ...optionsDefault,
           id,
@@ -197,13 +197,18 @@ export default class extends Controller {
           startTime: id === 'preRoll' ? 0 : startTime,
           endTime: id === 'postRoll' ? Math.ceil(this.peaks.player.getDuration()) : startTime
         }
-        console.log(placeholderSegment)
         segments.push(placeholderSegment)
       }
     })
 
     this.peaks?.points.add(points)
     this.peaks?.segments.add(segments)
+
+    this.peaks?.segments.add({
+      startTime:0,
+      endTime:0.0001,
+      color: '#f00'
+    })
   }
 
   markersValueChanged() {
@@ -277,6 +282,8 @@ export default class extends Controller {
 
   updateBreakpointMarkerStartTimeToPlayhead({ detail }) {
     const { id, endTime } = detail || {}
+
+    console.log('updateBreakpointMarkerStartTimeToPlayhead', detail)
 
     // Dispatch marker update event.
     this.dispatch("marker.update", { detail: { id, startTime: this.peaks.player.getCurrentTime(), endTime } })

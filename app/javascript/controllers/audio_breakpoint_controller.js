@@ -31,6 +31,8 @@ export default class extends Controller {
   }
 
   startTimeValueChanged() {
+    if (!this.hasStartTimeTarget) return
+
     if (this.hasInitialMarkerValue) {
       const isChanged = this.startTimeValue !== (this.initialMarkerValue.startTime || 0)
 
@@ -42,16 +44,23 @@ export default class extends Controller {
     this.startTimeTarget.placeholder = convertSecondsToDuration(this.startTimeValue)
   }
 
-  endTimeValueChanged() {
+  endTimeValueChanged(newValue) {
     if (!this.hasEndTimeTarget) return
+
+    console.log('endTimeValueChanged', newValue, this.endTimeValue, this.hasEndTimeValue)
 
     if (this.hasInitialMarkerValue) {
       const isChanged = this.endTimeValue !== (this.initialMarkerValue.endTime || 0)
-      const isStartTimeChanged =
-        this.startTimeTarget.parentNode.classList.contains("is-changed") || (isChanged && !this.hasEndTimeValue)
 
       this.endTimeTarget.parentNode.classList.toggle("is-changed", isChanged)
-      this.startTimeTarget.parentNode.classList.toggle("is-changed", isStartTimeChanged)
+
+      if (this.hasStartTimeTarget) {
+        const isStartTimeChanged =
+          this.startTimeTarget.parentNode.classList.contains("is-changed")
+          || (isChanged && !this.hasEndTimeValue)
+
+        this.startTimeTarget.parentNode.classList.toggle("is-changed", isStartTimeChanged)
+      }
     } else {
       this.endTimeTarget.parentNode.classList.add("is-changed")
     }
@@ -72,7 +81,12 @@ export default class extends Controller {
   }
 
   updateStartTimeToPlayhead() {
-    this.dispatch("marker.update-start-time-to-playhead", { detail: { id: this.idValue, endTime: this.endTimeValue } })
+    this.dispatch("marker.update-start-time-to-playhead", {
+      detail: {
+        id: this.idValue,
+        ...(this.hasEndTimeValue && { endTime: this.endTimeValue })
+      }
+    })
   }
 
   updateEndTimeToPlayhead() {
