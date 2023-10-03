@@ -185,7 +185,14 @@ describe Apple::Episode do
       mock = Minitest::Mock.new
       mock.expect(:call, [], [apple_api, apple_show, [apple_episode]])
 
-      apple_api.stub(:bridge_remote_and_retry, nil) do
+      apple_api.stub(:bridge_remote_and_retry!, [{
+        request_metadata: {
+          apple_episode_id: apple_episode.apple_id,
+          guid: apple_episode.guid
+        },
+        api_url: "asdf/",
+        api_parameters: "ARBITRARY"
+      }.with_indifferent_access]) do
         Apple::Episode.stub(:poll_episode_state, mock) do
           Apple::Episode.publish(apple_api, apple_show, [apple_episode])
         end
