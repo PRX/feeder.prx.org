@@ -25,6 +25,15 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
   let(:api) { build(:apple_api) }
 
+  describe "#episode" do
+    it "can assign a soft deleted episode" do
+      episode.touch(:deleted_at)
+      pc = Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row)
+
+      assert_equal true, pc.episode.deleted?
+    end
+  end
+
   describe "the DTR / CDN redirect flow" do
     let(:pc) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
     before do

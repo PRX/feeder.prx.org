@@ -11,7 +11,7 @@ module Apple
     has_one :apple_sync_log, -> { podcast_containers }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
     has_many :podcast_deliveries, dependent: :destroy
     has_many :podcast_delivery_files, through: :podcast_deliveries
-    belongs_to :episode, class_name: "::Episode"
+    belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
 
     alias_attribute :deliveries, :podcast_deliveries
     alias_attribute :delivery_files, :podcast_delivery_files
