@@ -143,11 +143,19 @@ module Apple
     end
 
     def self.archive(api, show, episodes)
-      alter_publish_state(api, show, episodes, "ARCHIVE")
+      res = alter_publish_state(api, show, episodes, "ARCHIVE")
+      # Apple purges the podcast deliveries when you archive/unarchive an episode
+      episodes.map(&:podcast_deliveries).flatten.each(&:destroy)
+
+      res
     end
 
     def self.unarchive(api, show, episodes)
-      alter_publish_state(api, show, episodes, "UNARCHIVE")
+      res = alter_publish_state(api, show, episodes, "UNARCHIVE")
+      # Apple purges the podcast deliveries when you archive/unarchive an episode
+      episodes.map(&:podcast_deliveries).flatten.each(&:destroy)
+
+      res
     end
 
     def self.publish(api, show, episodes)
