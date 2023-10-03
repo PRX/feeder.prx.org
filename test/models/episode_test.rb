@@ -412,4 +412,26 @@ describe Episode do
       assert_empty episode.apple_podcast_deliveries
     end
   end
+
+  describe "#apple_needs_delivery?" do
+    let(:episode) { create(:episode) }
+    it "is true by default" do
+      assert_nil episode.apple_episode_delivery_status
+      assert episode.apple_needs_delivery?
+    end
+
+    it "can be set to false" do
+      episode.apple_has_delivery!
+      refute episode.apple_needs_delivery?
+    end
+
+    it "can be set to true" do
+      episode.apple_has_delivery!
+      refute episode.apple_needs_delivery?
+
+      # now set it to true
+      episode.apple_needs_delivery!
+      assert episode.apple_needs_delivery?
+    end
+  end
 end

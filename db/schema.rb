@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_21_203839) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -26,6 +26,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_21_203839) do
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
     t.index ["private_feed_id"], name: "index_apple_configs_on_private_feed_id"
     t.index ["public_feed_id"], name: "index_apple_configs_on_public_feed_id"
+  end
+
+  create_table "apple_episode_delivery_statuses", force: :cascade do |t|
+    t.bigint "episode_id", null: false
+    t.boolean "delivered", default: false
+    t.datetime "created_at", null: false
+    t.index ["episode_id", "created_at", "delivered"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at"
+    t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
   end
 
   create_table "apple_keys", force: :cascade do |t|
@@ -153,7 +161,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_21_203839) do
     t.integer "segment_count"
     t.text "production_notes"
     t.integer "medium"
-    t.boolean "needs_apple_delivery", default: true
     t.index ["guid"], name: "index_episodes_on_guid", unique: true
     t.index ["keyword_xid"], name: "index_episodes_on_keyword_xid", unique: true
     t.index ["original_guid", "podcast_id"], name: "index_episodes_on_original_guid_and_podcast_id", unique: true, where: "((deleted_at IS NULL) AND (original_guid IS NOT NULL))"
@@ -440,6 +447,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_21_203839) do
 
   add_foreign_key "apple_configs", "feeds", column: "private_feed_id"
   add_foreign_key "apple_configs", "feeds", column: "public_feed_id"
+  add_foreign_key "apple_episode_delivery_statuses", "episodes"
   add_foreign_key "episode_imports", "podcast_imports"
   add_foreign_key "feed_images", "feeds"
   add_foreign_key "feed_tokens", "feeds"

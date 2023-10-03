@@ -269,7 +269,7 @@ module Apple
         # update the feeder episode to indicate that delivery is no longer needed
         eps.each do |ep|
           Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
-          ep.feeder_episode.update!(needs_apple_delivery: false)
+          ep.feeder_episode.apple_has_delivery!
         end
 
         Rails.logger.info("Updated remote container references for episodes.", {count: res.length})

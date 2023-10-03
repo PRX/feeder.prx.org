@@ -39,6 +39,7 @@ class Episode < ApplicationRecord
     class_name: "Apple::PodcastDelivery"
   has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
     class_name: "Apple::PodcastDeliveryFile"
+  has_many :apple_episode_delivery_statuses, dependent: :destroy, class_name: "Apple::EpisodeDeliveryStatus"
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
@@ -111,6 +112,24 @@ class Episode < ApplicationRecord
     # TODO: for now these are all considered audio files
 
     apple_delivery_files.map { |p| p.asset_processing_state["errors"] }.flatten
+  end
+
+  def apple_episode_delivery_status
+    apple_episode_delivery_statuses.reset.order(created_at: :desc).first
+  end
+
+  def apple_needs_delivery?
+    return true if apple_episode_delivery_status.nil?
+
+    apple_episode_delivery_status.delivered == false
+  end
+
+  def apple_needs_delivery!
+    apple_episode_delivery_statuses.create!(delivered: false)
+  end
+
+  def apple_has_delivery!
+    apple_episode_delivery_statuses.create!(delivered: true)
   end
 
   def self.generate_item_guid(podcast_id, episode_guid)
@@ -234,9 +253,7 @@ class Episode < ApplicationRecord
     apple_podcast_deliveries.map(&:destroy)
     apple_podcast_deliveries.reset
     apple_podcast_container&.podcast_deliveries&.reset
-    # Skip rails validations in case we are in e.g. a controller delete action
-    # with invalid media
-    update_column(:needs_apple_delivery, true)
+    apple_needs_delivery!
   end
 
   def publish!

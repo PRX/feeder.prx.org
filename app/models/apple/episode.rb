@@ -453,7 +453,7 @@ module Apple
       return true if missing_container?
 
       # TODO: probe for episode media version
-      podcast_container&.needs_delivery? || feeder_episode.needs_apple_delivery?
+      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery?
     end
 
     def has_delivery?
