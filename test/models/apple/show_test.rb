@@ -20,7 +20,7 @@ describe Apple::Show do
       apple_show.instance_variable_set(:@apple_episode_json, "foo")
       apple_show.instance_variable_set(:@podcast_feeder_episodes, "foo")
       apple_show.instance_variable_set(:@episodes, "foo")
-      apple_show.instance_variable_set(:@deleted_atepisodes, "foo")
+      apple_show.instance_variable_set(:@deleted_episodes, "foo")
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
       assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
