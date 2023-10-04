@@ -187,14 +187,14 @@ export default class extends Controller {
           ...optionsDefault,
           id,
           labelText,
-          time: startTime
+          time: startTime,
         })
 
         // Add a placeholder segment for this point.
         const placeholderSegment = {
           id: `placeholder.segments.${id}`,
-          startTime: id === 'preRoll' ? 0 : startTime,
-          endTime: id === 'postRoll' ? Math.ceil(this.peaks.player.getDuration()) : startTime
+          startTime: id === "preRoll" ? 0 : startTime,
+          endTime: id === "postRoll" ? Math.ceil(this.peaks.player.getDuration()) : startTime,
         }
         segments.push(placeholderSegment)
       }
@@ -204,9 +204,9 @@ export default class extends Controller {
     this.peaks?.segments.add(segments)
 
     this.peaks?.segments.add({
-      startTime:0,
-      endTime:0.0001,
-      color: '#f00'
+      startTime: 0,
+      endTime: 0.0001,
+      color: "#f00",
     })
   }
 

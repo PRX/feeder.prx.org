@@ -102,7 +102,7 @@ export default class extends Controller {
         id: "postRoll",
         labelText: this.labelPostRollValue,
         startTime: this.postRollPoint || this.durationValue,
-        endTime: this.durationValue
+        endTime: this.durationValue,
       }
     )
 
@@ -138,7 +138,9 @@ export default class extends Controller {
     let newBreakpointMarker = {
       ...breakpointMarker,
       changed: new Date().getMilliseconds(),
-      startTime: hasEndTime ? Math.max(this.minTime, Math.min(newStartTime, newEndTime, this.durationValue)) : newStartTime,
+      startTime: hasEndTime
+        ? Math.max(this.minTime, Math.min(newStartTime, newEndTime, this.durationValue))
+        : newStartTime,
       endTime: hasEndTime ? Math.min(this.durationValue, Math.max(newStartTime, newEndTime, this.minTime)) : undefined,
     }
     const isSegment = !!newBreakpointMarker.endTime
@@ -166,7 +168,8 @@ export default class extends Controller {
         }
       }
     } else {
-      const inValidStartTime = newBreakpointMarker.startTime <= this.minTime || newBreakpointMarker.startTime >= this.durationValue
+      const inValidStartTime =
+        newBreakpointMarker.startTime <= this.minTime || newBreakpointMarker.startTime >= this.durationValue
       const intersectingSegment = this.breakpointMarkers.find(
         ({ id: iId, startTime: iStartTime, endTime: iEndTime }) =>
           id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime
@@ -324,10 +327,7 @@ export default class extends Controller {
         const segmentStart = startTime > this.minTime ? startTime : null
         const segmentEnd = (this.durationValue - next.startTime) * 100 > 10 ? next.startTime : null
 
-        return [
-          ...a,
-          [segmentStart, segmentEnd]
-        ]
+        return [...a, [segmentStart, segmentEnd]]
       }, [])
   }
 
@@ -359,9 +359,11 @@ export default class extends Controller {
         control.dataset.audioBreakpointEndTimeValue = endTime
       }
 
-      if (marker.id === 'postRoll') {
+      if (marker.id === "postRoll") {
         control.dataset.audioBreakpointEndTimeValue = endTime
-        control.querySelector('[data-audio-breakpoint-target="startTime"]').setAttribute('placeholder', convertSecondsToDuration(this.durationValue))
+        control
+          .querySelector('[data-audio-breakpoint-target="startTime"]')
+          .setAttribute("placeholder", convertSecondsToDuration(this.durationValue))
       }
 
       controls.push(control)

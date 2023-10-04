@@ -27,7 +27,6 @@ class PrxPointMarker {
   }
 
   init(group) {
-
     // Label
 
     if (this._options.view === "zoomview") {
@@ -158,7 +157,7 @@ class PrxPointMarker {
       })
     }
 
-    group.on('xChange', (evt) => {
+    group.on("xChange", (evt) => {
       const layer = evt.currentTarget.getLayer()
 
       self.updateLabelPosition(evt.newVal, layer)
@@ -167,7 +166,7 @@ class PrxPointMarker {
   }
 
   updateLabelPosition(posX, layer) {
-    if(!this._label || !layer?.canvas) return
+    if (!this._label || !layer?.canvas) return
 
     const canvasWidth = layer.canvas.width
     const labelWidth = this._label.getWidth()
@@ -190,7 +189,7 @@ class PrxPointMarker {
   }
 
   updateTimePosition(posX, layer) {
-    if(!this._time || !layer?.canvas) return
+    if (!this._time || !layer?.canvas) return
 
     const timeWidth = this._time.getWidth()
 

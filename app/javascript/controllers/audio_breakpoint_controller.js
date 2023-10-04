@@ -43,7 +43,7 @@ export default class extends Controller {
 
     if (this.hasStartTimeValue) {
       this.startTimeTarget.placeholder = convertSecondsToDuration(this.startTimeValue)
-    } else if (this.idValue === 'postRoll') {
+    } else if (this.idValue === "postRoll") {
       this.startTimeTarget.placeholder = convertSecondsToDuration(this.initialMarkerValue.endTime)
     }
   }

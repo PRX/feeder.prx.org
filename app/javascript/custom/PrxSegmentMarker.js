@@ -27,24 +27,23 @@ class PrxSegmentMarker {
     }
 
     if (
-      options.startMarker && this._segment.id === 'preRoll'
-      || !options.startMarker && this._segment.id === 'postRoll'
+      (options.startMarker && this._segment.id === "preRoll") ||
+      (!options.startMarker && this._segment.id === "postRoll")
     ) {
       this._disabled = true
     }
 
-    if (!options.startMarker && this._segment.id === 'preRoll') {
+    if (!options.startMarker && this._segment.id === "preRoll") {
       this._isPreRollMarker = true
     }
 
-    if (options.startMarker && this._segment.id === 'postRoll') {
+    if (options.startMarker && this._segment.id === "postRoll") {
       this._isPostRollMarker = true
     }
   }
 
   init(group) {
-
-    if (this._disabled)  return
+    if (this._disabled) return
 
     // Label
 
@@ -170,10 +169,11 @@ class PrxSegmentMarker {
       self._time.hide()
     })
 
-    group.on('xChange', (evt) => {
+    group.on("xChange", (evt) => {
       const layer = evt.currentTarget.getLayer()
       self._canvas = layer.canvas
-      self._overlay = self._overlay || layer.children.find((child) => child.attrs.name === 'overlay' && child.attrs.draggable)
+      self._overlay =
+        self._overlay || layer.children.find((child) => child.attrs.name === "overlay" && child.attrs.draggable)
 
       if (self._isPreRollMarker || self._isPostRollMarker) {
         self._overlay.draggable(false)
@@ -185,11 +185,11 @@ class PrxSegmentMarker {
   }
 
   updateLabelPosition(posX) {
-    if(!this._label || !this._overlay) return
+    if (!this._label || !this._overlay) return
 
     if (this._isPreRollMarker || this._isPostRollMarker) {
       // Position Pre/Post roll marker label.
-      this.positionPreOrPostRollLabel(posX);
+      this.positionPreOrPostRollLabel(posX)
     } else {
       // Position label sticky within bounds of segment overlay.
       this.positionLabelSticky(posX)
@@ -221,7 +221,7 @@ class PrxSegmentMarker {
     const segmentWidth = this._overlay.getWidth()
     const labelWidth = this._label.getWidth()
     const rightBound = segmentWidth - this._paddingX - labelWidth
-    let newX = this._paddingX;
+    let newX = this._paddingX
 
     if (posX < 0) {
       newX = Math.min(Math.abs(posX) + this._paddingX, rightBound)
@@ -231,14 +231,14 @@ class PrxSegmentMarker {
   }
 
   updateTimePosition(posX) {
-    if(!this._time || !this._canvas) return
+    if (!this._time || !this._canvas) return
 
     const canvasWidth = this._canvas.getWidth()
     const timeWidth = this._time.getWidth()
 
     if (
-      this._options.startMarker && posX < timeWidth ||
-      !this._options.startMarker && posX < canvasWidth - timeWidth
+      (this._options.startMarker && posX < timeWidth) ||
+      (!this._options.startMarker && posX < canvasWidth - timeWidth)
     ) {
       this._time.x(this._handleWidth - this._lineWidth / 2)
       this._timeTag.cornerRadius([0, this._tagCornerRadius, this._tagCornerRadius, 0])
@@ -249,7 +249,7 @@ class PrxSegmentMarker {
   }
 
   fitToView() {
-    if (this._disabled) return;
+    if (this._disabled) return
 
     const height = this._options.layer.getHeight()
 
@@ -265,7 +265,7 @@ class PrxSegmentMarker {
   }
 
   timeUpdated(time) {
-    if (this._disabled) return;
+    if (this._disabled) return
 
     if (this._time) {
       this._timeText.setText(this._options.layer.formatTime(time))
