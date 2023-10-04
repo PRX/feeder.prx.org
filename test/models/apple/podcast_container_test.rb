@@ -32,6 +32,8 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
     describe "#reset_source_metadata!" do
       it "clears out the fields" do
+        assert_equal 0, pc.source_fetch_count
+        assert pc.source_filename.present?
         assert pc.source_filename.present?
         assert pc.source_url.present?
         assert pc.source_size.present?
@@ -41,12 +43,30 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         end
 
         pc.reload
+        assert_equal 1, pc.source_fetch_count
         assert pc.source_filename.present?
         refute pc.source_url.present?
         refute pc.source_size.present?
 
-        assert_equal "transistor", pc.source_filename
+        assert_equal "1_transistor", pc.source_filename
         assert_equal "http://something/transistor", pc.enclosure_url
+      end
+
+      it "increments the source filename" do
+        apple_episode.stub(:enclosure_filename, "new") do
+          apple_episode.stub(:enclosure_url, "http://this-is-new") do
+            assert_equal "foo", pc.source_filename
+            assert_equal 0, pc.source_fetch_count
+
+            pc.reset_source_metadata!(apple_episode)
+            assert_equal "1_new", pc.source_filename
+            assert_equal 1, pc.source_fetch_count
+
+            pc.reset_source_metadata!(apple_episode)
+            assert_equal "2_new", pc.source_filename
+            assert_equal 2, pc.source_fetch_count
+          end
+        end
       end
     end
 
@@ -62,7 +82,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
     describe ".reset_source_file_metadata" do
       it "needs delivery in order to be reset" do
-        apple_episode.podcast_container.stub(:needs_delivery?, false) do
+        apple_episode.stub(:needs_delivery?, false) do
           Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
         end
 
@@ -70,10 +90,11 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         refute apple_episode.podcast_container.source_url.nil?
         refute apple_episode.podcast_container.source_size.nil?
         refute apple_episode.podcast_container.source_filename.nil?
+        assert_equal "foo", apple_episode.podcast_container.source_filename
 
         apple_episode.stub(:enclosure_filename, "new") do
           apple_episode.stub(:enclosure_url, "http://this-is-new") do
-            apple_episode.podcast_container.stub(:needs_delivery?, true) do
+            apple_episode.stub(:needs_delivery?, true) do
               Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
             end
           end
@@ -83,7 +104,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         assert apple_episode.podcast_container.source_url.nil?
         assert apple_episode.podcast_container.source_size.nil?
         assert_equal "http://this-is-new", apple_episode.podcast_container.enclosure_url
-        assert_equal "new", apple_episode.podcast_container.source_filename
+        assert_equal "1_new", apple_episode.podcast_container.source_filename
       end
     end
   end
@@ -273,9 +294,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
           {status: Apple::PodcastContainer::FILE_STATUS_SUCCESS,
            assetRole: Apple::PodcastContainer::FILE_ASSET_ROLE_PODCAST_AUDIO}.with_indifferent_access
         ]) do
-          container.stub(:podcast_delivery_files, []) do
-            assert container.container_upload_satisfied?
-          end
+          assert container.container_upload_satisfied?
         end
       end
     end
