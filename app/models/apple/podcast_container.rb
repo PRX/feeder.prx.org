@@ -22,7 +22,7 @@ module Apple
 
     def self.reset_source_file_metadata(episodes)
       episodes = episodes.select { |ep| ep.podcast_container.present? }
-      episodes = episodes.select { |ep| ep.podcast_container.needs_delivery? }
+      episodes = episodes.select { |ep| ep.needs_delivery? }
 
       episodes.map do |episode|
         container = episode.container
@@ -34,7 +34,6 @@ module Apple
 
         # Back to DTR to pick up fresh arrangements:
         container.reset_source_metadata!(episode)
-        episode.feeder_episode.apple_mark_for_reupload!
       end.compact
     end
 
@@ -271,7 +270,7 @@ module Apple
       # marked as uploaded and then processed and validated. Assuming that we
       # get to that point and the audio is still missing, we should be able to
       # retry.
-      has_podcast_audio? && delivery_settled?
+      has_podcast_audio?
     end
 
     def skip_delivery?
@@ -282,11 +281,18 @@ module Apple
       !skip_delivery?
     end
 
+    def filename_prefix(ct)
+      ct.zero? ? "" : "#{ct}_"
+    end
+
     def reset_source_metadata!(apple_ep)
+      count = source_fetch_count + 1
+
       update!(
+        source_fetch_count: count,
         source_url: nil,
         source_size: nil,
-        source_filename: apple_ep.enclosure_filename,
+        source_filename: filename_prefix(count) + apple_ep.enclosure_filename,
         enclosure_url: apple_ep.enclosure_url
       )
     end

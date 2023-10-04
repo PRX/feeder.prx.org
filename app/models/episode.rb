@@ -39,9 +39,11 @@ class Episode < ApplicationRecord
     class_name: "Apple::PodcastDelivery"
   has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
     class_name: "Apple::PodcastDeliveryFile"
+  has_many :apple_episode_delivery_statuses, -> { order(created_at: :desc) }, dependent: :destroy, class_name: "Apple::EpisodeDeliveryStatus"
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
+  validates :description, bytesize: {maximum: 4000}, if: :strict_validations
   validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
   alias_error_messages :item_guid, :original_guid
@@ -111,6 +113,28 @@ class Episode < ApplicationRecord
     # TODO: for now these are all considered audio files
 
     apple_delivery_files.map { |p| p.asset_processing_state["errors"] }.flatten
+  end
+
+  def apple_episode_delivery_status
+    apple_episode_delivery_statuses.order(created_at: :desc).first
+  end
+
+  def apple_needs_delivery?
+    return true if apple_episode_delivery_status.nil?
+
+    apple_episode_delivery_status.delivered == false
+  end
+
+  def apple_needs_delivery!
+    apple_episode_delivery_statuses.create!(delivered: false)
+    apple_episode_delivery_statuses.reset
+    apple_episode_delivery_status
+  end
+
+  def apple_has_delivery!
+    apple_episode_delivery_statuses.create!(delivered: true)
+    apple_episode_delivery_statuses.reset
+    apple_episode_delivery_status
   end
 
   def self.generate_item_guid(podcast_id, episode_guid)
@@ -230,14 +254,18 @@ class Episode < ApplicationRecord
   end
 
   def apple_mark_for_reupload!
+    # remove the previous delivery attempt (soft delete)
     apple_podcast_deliveries.map(&:destroy)
     apple_podcast_deliveries.reset
     apple_podcast_container&.podcast_deliveries&.reset
+    apple_needs_delivery!
   end
 
   def publish!
-    apple_mark_for_reupload!
-    podcast&.publish!
+    Rails.logger.tagged("Episode#publish!") do
+      apple_mark_for_reupload!
+      podcast&.publish!
+    end
   end
 
   def podcast_feed_url

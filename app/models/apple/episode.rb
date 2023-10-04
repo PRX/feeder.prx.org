@@ -482,11 +482,18 @@ module Apple
     end
 
     def needs_delivery?
-      podcast_container&.needs_delivery? || apple_hosted_audio_asset_container_id.blank?
+      return true if missing_container?
+
+      # TODO: probe for episode media version
+      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery?
+    end
+
+    def has_delivery?
+      !needs_delivery?
     end
 
     def synced_with_apple?
-      audio_asset_state_success? && container_upload_complete? && !drafting?
+      audio_asset_state_success? && has_delivery? && !drafting?
     end
 
     def waiting_for_asset_state?
@@ -535,6 +542,10 @@ module Apple
 
     def apple_sync_log=(sl)
       feeder_episode.apple_sync_log = sl
+    end
+
+    def apple_mark_for_reupload!
+      feeder_episode.apple_mark_for_reupload!
     end
   end
 end

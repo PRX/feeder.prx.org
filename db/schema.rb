@@ -28,6 +28,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
     t.index ["public_feed_id"], name: "index_apple_configs_on_public_feed_id"
   end
 
+  create_table "apple_episode_delivery_statuses", force: :cascade do |t|
+    t.bigint "episode_id", null: false
+    t.boolean "delivered", default: false
+    t.datetime "created_at", null: false
+    t.index ["episode_id", "created_at", "delivered", "id"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at"
+    t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
+  end
+
   create_table "apple_keys", force: :cascade do |t|
     t.string "provider_id"
     t.string "key_id"
@@ -48,6 +56,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
     t.string "source_filename"
     t.bigint "source_size"
     t.text "enclosure_url"
+    t.integer "source_fetch_count", default: 0, null: false
     t.index ["episode_id"], name: "index_apple_podcast_containers_on_episode_id", unique: true
     t.index ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true
   end
@@ -139,8 +148,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.string "keyword_xid"
     t.datetime "source_updated_at", precision: nil
+    t.string "keyword_xid"
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"
@@ -438,6 +447,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
 
   add_foreign_key "apple_configs", "feeds", column: "private_feed_id"
   add_foreign_key "apple_configs", "feeds", column: "public_feed_id"
+  add_foreign_key "apple_episode_delivery_statuses", "episodes"
   add_foreign_key "episode_imports", "podcast_imports"
   add_foreign_key "feed_images", "feeds"
   add_foreign_key "feed_tokens", "feeds"

@@ -1,64 +1,43 @@
-<%= turbo_frame_tag "embed-player", data: {controller: "morphdom"} do %>
+<div class="row my-4 mx-2" data-controller="embed-preview"
+  data-embed-preview-embed-url-value="<%= embed_player_episode_url(episode, player_options, true) %>">
+  <div class="col-8">
 
-  <div class="col-12 mb-4">
-    <div class="form-floating input-group" data-controller="dynamic-form">
-      <%= select_tag :embed_player_type, embed_player_type_options(embed_player_type), class: "form-control", data: {action: "dynamic-form#change"} %>
-      <%= label_tag :embed_player_style, t("helpers.label.episode.embed_player_type") %>
-      <a hidden href="<%= episode_player_path(episode) %>" data-dynamic-form-target="link"></a>
-    </div>
+    <section class="container-fluid mb-5">
+      <header>
+        <h3 class="fw-bold"><%= t(".title.preview") %></h3>
+      </header>
 
-    <div class="form-text">
-      <%= t(".help.types.#{embed_player_type || "standard"}") %>
-    </div>
-  </div>
+      <%= render "form_preview", player_options: @player_options %>
+    </section>
 
-  <div class="col-12 mb-4">
-    <h3 class="fw-bold"><%= t(".title.copy") %></h3>
+    <section class="container-fluid d-grid gap-4">
+      <%= render "form_copy", player_options: @player_options %>
 
-    <div class="form-text mb-4">
-      <%= t(".help.copy") %>
-    </div>
-
-    <div class="form-floating input-group">
-      <%= text_field_tag :embed_player_url, embed_player_episode_url(episode, embed_player_type), class: "form-control", disabled: true, autocomplete: "off" %>
-      <%= label_tag :embed_player_url, t("helpers.label.episode.embed_player_url") %>
-      <%= field_link embed_player_episode_url(episode, embed_player_type) %>
-      <%= field_copy embed_player_episode_url(episode, embed_player_type) %>
-    </div>
-  </div>
-
-  <div class="col-12 mb-4">
-    <div class="form-floating input-group">
-      <%= text_field_tag :embed_player_iframe, embed_player_episode_iframe(episode, embed_player_type), class: "form-control", disabled: true, autocomplete: "off" %>
-      <%= label_tag :embed_player_iframe, t("helpers.label.episode.embed_player_iframe") %>
-      <%= field_copy embed_player_episode_iframe(episode, embed_player_type) %>
-    </div>
-  </div>
-
-  <div class="col-12 mb-4">
-    <div class="form-floating input-group">
-      <% if episode.media_ready? %>
-        <%= text_field_tag :enclosure_url, episode.enclosure_url, class: "form-control", disabled: true, autocomplete: "off" %>
-        <%= label_tag :enclosure_url, t("helpers.label.episode.enclosure_url") %>
-        <%= field_copy episode.enclosure_url %>
-      <% else %>
-        <%= text_field_tag :enclosure_url, t(".enclosure_not_ready"), class: "form-control", disabled: true, autocomplete: "off" %>
-        <%= label_tag :enclosure_url, t("helpers.label.episode.enclosure_url") %>
-      <% end %>
-    </div>
-  </div>
-
-  <div class="col-12 mb-4">
-    <h3 class="fw-bold"><%= t(".title.preview") %></h3>
-
-    <% unless episode.published? %>
-      <div class="alert alert-warning" role="alert">
-        <h4 class="alert-heading fw-bold"><%= t(".title.warning") %></h4>
-        <p class="mb-0"><%= t(".help.warning") %></p>
+      <div class="form-floating input-group">
+        <% if episode.media_ready? %>
+          <%= text_field_tag :enclosure_url, episode.enclosure_url, class: "form-control", disabled: true, autocomplete: "off" %>
+          <%= label_tag :enclosure_url, t("helpers.label.episode.enclosure_url") %>
+          <%= field_copy episode.enclosure_url %>
+        <% else %>
+          <%= text_field_tag :enclosure_url, t(".enclosure_not_ready"), class: "form-control", disabled: true, autocomplete: "off" %>
+          <%= label_tag :enclosure_url, t("helpers.label.episode.enclosure_url") %>
+        <% end %>
       </div>
-    <% end %>
+    </section>
 
-    <%= embed_player_episode_iframe(episode, embed_player_type, true) %>
   </div>
 
-<% end %>
+  <div class="col-4">
+
+    <div class="container-fluid d-grid gap-4">
+      <%= render "form_sidebar", player_options: @player_options %>
+
+      <div class="card border-light">
+        <div class="card-footer d-grid">
+          <%= link_to t(".label.clear"), episode_player_path(episode), class: "btn btn-primary" %>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

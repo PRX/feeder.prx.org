@@ -20,6 +20,25 @@ describe Episode do
     assert minimal_episode.updated_at > 10.minutes.ago
   end
 
+  it "validates descriptions have a maximum of 4000 bytes" do
+    e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
+
+    e.description = nil
+    assert e.valid?
+
+    e.description = "a" * 4000
+    assert e.valid?
+
+    e.description = "a" * 4001
+    refute e.valid?
+
+    e.description = "a" * 3999 + "’"
+    refute e.valid?
+
+    e.strict_validations = false
+    assert e.valid?
+  end
+
   it "validates unique original guids" do
     e1 = create(:episode, original_guid: "original")
     e2 = build(:episode, original_guid: "original", podcast: e1.podcast)
@@ -410,6 +429,28 @@ describe Episode do
       assert_empty episode.apple_podcast_deliveries
       episode.publish!
       assert_empty episode.apple_podcast_deliveries
+    end
+  end
+
+  describe "#apple_needs_delivery?" do
+    let(:episode) { create(:episode) }
+    it "is true by default" do
+      assert_nil episode.apple_episode_delivery_status
+      assert episode.apple_needs_delivery?
+    end
+
+    it "can be set to false" do
+      episode.apple_has_delivery!
+      refute episode.apple_needs_delivery?
+    end
+
+    it "can be set to true" do
+      episode.apple_has_delivery!
+      refute episode.apple_needs_delivery?
+
+      # now set it to true
+      episode.apple_needs_delivery!
+      assert episode.apple_needs_delivery?
     end
   end
 end
