@@ -16,6 +16,8 @@
   </div>
 <% end %>
 
-<%= link_to main_app.new_podcast_path, class: "btn btn-success btn-fab"  do %>
-  <span class="material-icons">add</span> <%= t(".create") %>
+<% if policy(Podcast.new).new? %>
+  <%= link_to new_podcast_path, class: "btn btn-success btn-fab" do %>
+    <span class="material-icons">add</span> <%= t(".create") %>
+  <% end %>
 <% end %>
