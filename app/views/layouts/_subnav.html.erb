@@ -10,7 +10,7 @@
         <%= active_link_to "Podcast", main_app.podcast_path(@podcast), active: :exact, class: "nav-link" %>
         <%= active_link_to "Settings", main_app.edit_podcast_path(@podcast), active: podcast_settings_active?, class: "nav-link" %>
         <%= active_link_to "Episodes", main_app.podcast_episodes_path(@podcast), active: /\/episodes/, class: "nav-link" %>
-        <%= active_link_to "Feeds", main_app.podcast_feed_path(@podcast, @podcast.default_feed), active: /\/feeds/, class: "nav-link" %>
+        <%= active_link_to "Feeds", main_app.podcast_feeds_path(@podcast), active: /\/feeds/, class: "nav-link" %>
       <% end %>
     </nav>
   <% end %>
