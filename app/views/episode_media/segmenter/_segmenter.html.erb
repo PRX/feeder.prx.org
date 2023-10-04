@@ -3,7 +3,6 @@
   data-audio-breakpoints-label-prefix-value="<%= t(".label.prefix") %>"
   data-audio-breakpoints-ad-breaks-value="<%= episode.ad_breaks %>"
   data-audio-breakpoints-ad-breaks-valid-value="<%= episode.validate(:ad_breaks) %>"
-  data-audio-breakpoints-markers-value="<%= (uncut&.ad_breaks || []).to_json %>"
   data-audio-breakpoints-segments-value="<%= (uncut&.segmentation || []).to_json %>"
   data-audio-breakpoints-target="waveformInspector"
   data-waveform-inspector-playing-class="player--playing"
@@ -21,7 +20,7 @@
     audio-breakpoint:seekTo->waveform-inspector#seekToMarker
   ">
 
-  <%= form.text_field :segmentation, value: (uncut&.segmentation || []).to_json, class: "d-none", type: "hidden", data: {audio_breakpoints_target: "markersInput"} %>
+  <%= form.hidden_field :segmentation, value: uncut&.segmentation&.to_json, data: {audio_breakpoints_target: "markersInput", action: "change->unsaved#change"} %>
 
   <div class="prx-waveform-inspector d-grid gap-2" data-morph="false">
     <div class="prx-waveform-inspector-container">
@@ -159,10 +158,13 @@
           <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="audio-breakpoint#updateEndTimeToPlayhead">
             <span class="material-icons">my_location</span>
           </button>
+          <button type="button" class="has-end-time-show btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Reset End Time" data-action="audio-breakpoint#minEndTime">
+            <span class="material-icons">close</span>
+          </button>
         </div>
       </td>
       <td class="justify-content-end">
-        <button type="button" class="has-start-time-show btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#seekTo">
+        <button type="button" class="btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#seekTo">
           <span class="material-icons">skip_next</span>
         </button>
       </td>
@@ -176,7 +178,7 @@
         <span data-audio-breakpoint-target="label">Label Text</span>
       </td>
       <td>
-        <div class="has-start-time-show prx-input-group input-group-sm">
+        <div class="prx-input-group input-group-sm">
           <input class="form-control" placeholder="00:00"
             data-audio-breakpoint-target="startTime"
             data-action="keypress.enter->audio-breakpoint#changeStartTime"
@@ -188,6 +190,9 @@
           <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="audio-breakpoint#updateStartTimeToPlayhead">
             <span class="material-icons">my_location</span>
           </button>
+          <button type="button" class="has-start-time-show btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Reset Start Time" data-action="audio-breakpoint#maxStartTime">
+            <span class="material-icons">close</span>
+          </button>
         </div>
         <span class="material-icons rotate-90">expand</span>
         <div class="prx-input-group input-group-sm">
@@ -198,7 +203,7 @@
         </div>
       </td>
       <td class="justify-content-end">
-        <button type="button" class="has-start-time-show btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#seekTo">
+        <button type="button" class="btn btn-icon btn-icon-round btn-primary" data-action="audio-breakpoint#seekTo">
           <span class="material-icons">skip_next</span>
         </button>
       </td>

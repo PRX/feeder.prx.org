@@ -175,7 +175,6 @@ export default class extends Controller {
       if (startTime == null) return
 
       if (endTime != null) {
-        console.log('init segment', id, startTime, endTime)
         segments.push({
           ...optionsDefault,
           id,
@@ -282,8 +281,6 @@ export default class extends Controller {
 
   updateBreakpointMarkerStartTimeToPlayhead({ detail }) {
     const { id, endTime } = detail || {}
-
-    console.log('updateBreakpointMarkerStartTimeToPlayhead', detail)
 
     // Dispatch marker update event.
     this.dispatch("marker.update", { detail: { id, startTime: this.peaks.player.getCurrentTime(), endTime } })

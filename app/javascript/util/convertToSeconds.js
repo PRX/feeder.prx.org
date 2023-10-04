@@ -4,9 +4,7 @@
  * @returns Value in seconds as Number, or NaN.
  */
 export default function convertToSeconds(value) {
-  if (!["string", "number"].includes(typeof value)) return value
-
-  if (typeof value === "number") return value
+  if (!["string"].includes(typeof value)) return value
 
   if (value.indexOf(":") != -1) {
     // Convert duration string to seconds.
