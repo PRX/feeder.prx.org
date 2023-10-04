@@ -1,0 +1,29 @@
+<div class="mt-4 mb-2" data-controller="dynamic-form">
+
+  <div class="d-flex align-items-center justify-content-between">
+
+    <h1 class="text-black fw-bold m-0"><%= t(".my_podcasts") %></h1>
+
+    <div class="dropdown mx-4 flex-grow-1">
+      <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Sorting options">
+        <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
+        <%= t(".sorts.#{PodcastSorting.key(params[:sort])}") %>
+      </button>
+
+      <ul class="dropdown-menu">
+        <% PodcastSorting::SORTS.each do |key, value| %>
+          <li>
+            <%= search_sort_button t(".sorts.#{key}"), value %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+
+    <div class="form-floating w-25">
+      <%= search_query_field t(".search_podcasts") %>
+    </div>
+  </div>
+
+  <%# clicking hidden reloads the podcasts turbo-frame %>
+  <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link" data-turbo-action="replace"></a>
+</div>

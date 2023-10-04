@@ -862,27 +862,32 @@ en:
     form_status:
       <<: *form_status
       title: Podcast Status
-    tabs:
-      metadata: Metadata
-      engagement: Engagement Settings
-      player: Embeddable Player
-      import: Import
-      planner: Plan Episodes
     index:
       title: My Podcasts
       create: New Podcast
-      search_podcasts: Search Podcasts
-      sort:
-        recent: Recent Activity
-        number: "# of Episodes"
-        asc: A-Z
-        desc: Z-A
     podcast:
       create_episode: Create Episode
       plan_episodes: Plan Episodes
-    update:
-      error: Unable to save
-      notice: Podcast updated
+    podcast_filters:
+      my_podcasts: My Podcasts
+      search_podcasts: Search Podcasts
+      sorts:
+        asc: A-Z
+        desc: Z-A
+        episodes: "# of Episodes"
+        recent: Recent Activity
+    podcast_page:
+      drafted_episodes:
+        one: 1 Drafted Episode
+        other: "%{count} Drafted Episodes"
+      last_saved: Last Saved
+      published_episodes:
+        one: 1 Published Episode
+        other: "%{count} Published Episodes"
+      scheduled_episodes:
+        one: "1 Scheduled Episode"
+        other: "%{count} Scheduled Episodes"
+      link: Go to Podcast
     show:
       all_episodes: All Episodes
       default_feed: Default RSS Feed
@@ -903,19 +908,15 @@ en:
       settings: Settings
       total_downloads: Total Downloads
       view_metrics: View Metrics
-    podcast_page:
-      my_podcasts: My Podcasts
-      drafted_episodes:
-        one: 1 Drafted Episode
-        other: "%{count} Drafted Episodes"
-      last_saved: Last Saved
-      published_episodes:
-        one: 1 Published Episode
-        other: "%{count} Published Episodes"
-      scheduled_episodes:
-        one: "1 Scheduled Episode"
-        other: "%{count} Scheduled Episodes"
-      link: Go to Podcast
+    tabs:
+      metadata: Metadata
+      engagement: Engagement Settings
+      player: Embeddable Player
+      import: Import
+      planner: Plan Episodes
+    update:
+      error: Unable to save
+      notice: Podcast updated
   podcast_engagement:
     form:
       <<: *form
