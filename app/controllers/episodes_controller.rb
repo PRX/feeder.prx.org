@@ -120,8 +120,8 @@ class EpisodesController < ApplicationController
   end
 
   def episodes_base
-    if params[:podcast_id]
-      policy_scope(Podcast).find(params[:podcast_id]).episodes.reorder(nil)
+    if @podcast
+      policy_scope(@podcast.episodes).reorder(nil)
     else
       policy_scope(Episode).all
     end
