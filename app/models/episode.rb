@@ -5,9 +5,8 @@ require "text_sanitizer"
 
 class Episode < ApplicationRecord
   include EpisodeAdBreaks
-  include EpisodeFiltering
+  include EpisodeFilters
   include EpisodeMedia
-  include EpisodeSorting
   include PublishingStatus
   include TextSanitizer
   include EmbedPlayerHelper

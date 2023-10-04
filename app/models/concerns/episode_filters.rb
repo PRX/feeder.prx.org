@@ -1,6 +1,6 @@
 require "active_support/concern"
 
-module EpisodeFiltering
+module EpisodeFilters
   extend ActiveSupport::Concern
 
   FILTERS = {
@@ -8,8 +8,19 @@ module EpisodeFiltering
     incomplete: "incomplete"
   }
 
-  def self.key(value)
+  SORTS = {
+    calendar: "",
+    asc: "asc",
+    desc: "desc",
+    recent: "recent"
+  }
+
+  def self.filter_key(value)
     FILTERS.key(value) || "all"
+  end
+
+  def self.sort_key(value)
+    SORTS.key(value) || "calendar"
   end
 
   included do
@@ -18,6 +29,24 @@ module EpisodeFiltering
         incomplete = "COUNT(media_resources) != COUNT(media_resources) FILTER (WHERE status = #{MediaResource.statuses[:complete]})"
         missing = "segment_count IS NOT NULL AND segment_count != COUNT(media_resources)"
         left_joins(:contents).group(:id).having("#{incomplete} OR #{missing}")
+      end
+    end
+
+    scope :sort_by_alias, ->(sort) do
+      if sort == "asc"
+        dropdate_asc
+      elsif sort == "desc"
+        dropdate_desc
+      elsif sort == "recent"
+        order(updated_at: :desc)
+      end
+    end
+
+    scope :paginate, ->(page, per) do
+      if per == "all"
+        page(1).per(10000)
+      else
+        page(page).per(per)
       end
     end
   end

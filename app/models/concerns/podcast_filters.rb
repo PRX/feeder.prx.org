@@ -1,26 +1,28 @@
 require "active_support/concern"
 
-module EpisodeSorting
+module PodcastFilters
   extend ActiveSupport::Concern
 
   SORTS = {
-    calendar: "",
     asc: "asc",
     desc: "desc",
-    recent: "recent"
+    recent: "",
+    episodes: "episodes"
   }
 
-  def self.key(value)
-    SORTS.key(value) || "calendar"
+  def self.sort_key(value)
+    SORTS.key(value) || "recent"
   end
 
   included do
     scope :sort_by_alias, ->(sort) do
       if sort == "asc"
-        dropdate_asc
+        order(title: :asc)
       elsif sort == "desc"
-        dropdate_desc
-      elsif sort == "recent"
+        order(title: :desc)
+      elsif sort == "episodes"
+        left_joins(:episodes).group(:id).order("COUNT(episodes.id) DESC")
+      else
         order(updated_at: :desc)
       end
     end

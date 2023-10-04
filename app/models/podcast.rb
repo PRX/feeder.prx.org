@@ -10,7 +10,7 @@ class Podcast < ApplicationRecord
   include TextSanitizer
   include AdvisoryLocks
   include EmbedPlayerHelper
-  include PodcastSorting
+  include PodcastFilters
 
   acts_as_paranoid
 
