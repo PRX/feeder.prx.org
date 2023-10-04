@@ -8,7 +8,11 @@ export default class extends Controller {
       const oldHref = link.href
 
       const search = new URLSearchParams(link.search)
-      search.set(event.target.name, event.target.value)
+      if (event.currentTarget.value) {
+        search.set(event.currentTarget.name, event.currentTarget.value)
+      } else {
+        search.delete(event.currentTarget.name)
+      }
       link.search = search
 
       if (link.href !== oldHref) {
