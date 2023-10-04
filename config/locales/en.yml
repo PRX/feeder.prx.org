@@ -471,6 +471,22 @@ en:
     destroy:
       error: Cannot delete a published episode
       notice: Episode deleted
+    episode_filters:
+      my_episodes: Episodes
+      filters:
+        all: All
+        incomplete: Incomplete
+      pages:
+        10: Show 10
+        20: Show 20
+        50: Show 50
+        all: Show All
+      search_episodes: Search Episodes
+      sorts:
+        asc: A-Z
+        calendar: Calendar
+        desc: Z-A
+        recent: Recent Activity
     form:
       confirm: Discard unsaved changes?
     form_distribution:
@@ -870,12 +886,12 @@ en:
       plan_episodes: Plan Episodes
     podcast_filters:
       my_podcasts: My Podcasts
-      search_podcasts: Search Podcasts
       pages:
         10: Show 10
         20: Show 20
         50: Show 50
         all: Show All
+      search_podcasts: Search Podcasts
       sorts:
         asc: A-Z
         desc: Z-A

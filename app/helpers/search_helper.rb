@@ -54,4 +54,8 @@ module SearchHelper
   def search_per_page_button(label, value)
     search_button(label, "per", value)
   end
+
+  def search_filter_button(label, value)
+    search_button(label, "filter", value)
+  end
 end
