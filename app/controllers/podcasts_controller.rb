@@ -9,8 +9,7 @@ class PodcastsController < ApplicationController
       policy_scope(Podcast)
         .filter_by_title(params[:q])
         .sort_by_alias(params[:sort])
-        .page(params[:page])
-        .per(params[:per])
+        .paginate(params[:page], params[:per])
   end
 
   # GET /podcasts/1

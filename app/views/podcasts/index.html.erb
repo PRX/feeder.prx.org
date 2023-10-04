@@ -10,8 +10,10 @@
     </div>
   </section>
 
-  <%= paginate @podcasts, window: 2, outer_window: 1 %>
-  <%= page_entries_info @podcasts %>
+  <div class="my-4">
+    <%= paginate @podcasts %>
+    <%= page_entries_info @podcasts %>
+  </div>
 <% end %>
 
 <%= link_to main_app.new_podcast_path, class: "btn btn-success btn-fab"  do %>

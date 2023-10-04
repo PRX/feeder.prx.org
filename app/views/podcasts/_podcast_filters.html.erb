@@ -4,7 +4,7 @@
 
     <h1 class="text-black fw-bold m-0"><%= t(".my_podcasts") %></h1>
 
-    <div class="dropdown mx-4 flex-grow-1">
+    <div class="dropdown mx-4">
       <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Sorting options">
         <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
         <%= t(".sorts.#{PodcastSorting.key(params[:sort])}") %>
@@ -14,6 +14,21 @@
         <% PodcastSorting::SORTS.each do |key, value| %>
           <li>
             <%= search_sort_button t(".sorts.#{key}"), value %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+
+    <div class="dropdown mx-2 flex-grow-1">
+      <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Paging options">
+        <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">settings</span>
+        <%= t(".pages.#{search_per_page_key}") %>
+      </button>
+
+      <ul class="dropdown-menu">
+        <% search_per_page_options.each do |key, value| %>
+          <li>
+            <%= search_per_page_button t(".pages.#{key}"), value %>
           </li>
         <% end %>
       </ul>

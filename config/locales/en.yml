@@ -871,6 +871,11 @@ en:
     podcast_filters:
       my_podcasts: My Podcasts
       search_podcasts: Search Podcasts
+      pages:
+        10: Show 10
+        20: Show 20
+        50: Show 50
+        all: Show All
       sorts:
         asc: A-Z
         desc: Z-A

@@ -26,5 +26,13 @@ module PodcastSorting
         order(updated_at: :desc)
       end
     end
+
+    scope :paginate, ->(page, per) do
+      if per == "all"
+        page(1).per(size)
+      else
+        page(page).per(per)
+      end
+    end
   end
 end
