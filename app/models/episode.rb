@@ -39,7 +39,7 @@ class Episode < ApplicationRecord
     class_name: "Apple::PodcastDelivery"
   has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
     class_name: "Apple::PodcastDeliveryFile"
-  has_many :apple_episode_delivery_statuses, dependent: :destroy, class_name: "Apple::EpisodeDeliveryStatus"
+  has_many :apple_episode_delivery_statuses, -> { order(created_at: :desc) }, dependent: :destroy, class_name: "Apple::EpisodeDeliveryStatus"
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
@@ -115,7 +115,7 @@ class Episode < ApplicationRecord
   end
 
   def apple_episode_delivery_status
-    apple_episode_delivery_statuses.reset.order(created_at: :desc).first
+    apple_episode_delivery_statuses.order(created_at: :desc).first
   end
 
   def apple_needs_delivery?
@@ -126,10 +126,14 @@ class Episode < ApplicationRecord
 
   def apple_needs_delivery!
     apple_episode_delivery_statuses.create!(delivered: false)
+    apple_episode_delivery_statuses.reset
+    apple_episode_delivery_status
   end
 
   def apple_has_delivery!
     apple_episode_delivery_statuses.create!(delivered: true)
+    apple_episode_delivery_statuses.reset
+    apple_episode_delivery_status
   end
 
   def self.generate_item_guid(podcast_id, episode_guid)

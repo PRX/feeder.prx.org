@@ -32,7 +32,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
     t.bigint "episode_id", null: false
     t.boolean "delivered", default: false
     t.datetime "created_at", null: false
-    t.index ["episode_id", "created_at", "delivered"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at"
+    t.index ["episode_id", "created_at", "delivered", "id"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at"
     t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
   end
 
@@ -148,8 +148,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.string "keyword_xid"
     t.datetime "source_updated_at", precision: nil
+    t.string "keyword_xid"
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"

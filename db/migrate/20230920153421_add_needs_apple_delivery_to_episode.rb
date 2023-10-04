@@ -7,7 +7,7 @@ class AddNeedsAppleDeliveryToEpisode < ActiveRecord::Migration[7.0]
       t.datetime :created_at, null: false
     end
 
-    execute('CREATE INDEX "index_apple_episode_delivery_statuses_on_episode_id_created_at" ON "apple_episode_delivery_statuses" ("episode_id", "created_at") INCLUDE (delivered);')
+    execute('CREATE INDEX "index_apple_episode_delivery_statuses_on_episode_id_created_at" ON "apple_episode_delivery_statuses" ("episode_id", "created_at") INCLUDE (delivered, id);')
 
     reversible do |dir|
       dir.up do
