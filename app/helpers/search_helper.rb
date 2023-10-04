@@ -20,7 +20,7 @@ module SearchHelper
   def search_field(label, name)
     opts = {
       class: "form-control",
-      data: {action: "blur->blank-field#blur dynamic-form#change"}
+      data: {action: "blur->blank-field#blur dynamic-form#change", debounce: 20}
     }
 
     if params[name].blank?
