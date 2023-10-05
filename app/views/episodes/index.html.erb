@@ -49,14 +49,3 @@
   </div>
 
 <% end %>
-
-<% if @podcast && policy(@podcast.episodes.new).create? %>
-  <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary btn-fab" do %>
-    <%= t ".create_episode" %>
-    <span class="material-icons ms-2" aria-hidden="true">mic</span>
-  <% end %>
-  <%= link_to podcast_planner_path(@podcast), class: "btn btn-success btn-fab" do %>
-    <%= t ".plan_episodes" %>
-    <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
-  <% end %>
-<% end %>
