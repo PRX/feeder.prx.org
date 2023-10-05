@@ -83,7 +83,7 @@ class ApplicationController < ActionController::Base
     super.tap do |deps|
       if request.format.html?
         @@i18n_version ||= Digest::MD5.digest(I18n.backend.translations.to_s)
-        deps << @@i18n_version
+        deps << I18n.locale.to_s << @@i18n_version
       end
     end
   end
