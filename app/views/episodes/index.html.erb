@@ -21,7 +21,8 @@
 
       <% else %>
 
-        <section class="col-lg-6">
+        <section class="col-md-6 col-12">
+          <div class="row">
           <h2 class="fw-bold"><%= t(".draft_or_scheduled") %></h2>
           <div class="dashboard-list mb-4 shadow">
             <%= render partial: "episodes/episode", collection: @scheduled_episodes, cached: true %>
@@ -30,9 +31,11 @@
             <%= paginate @scheduled_episodes, param_name: :scheduled_page %>
             <%= page_entries_info @scheduled_episodes %>
           </div>
+          </div>
         </section>
 
-        <section class="col-lg-6">
+        <section class="col-md-6 col-12">
+          <div class="row">
           <h2 class="fw-bold"><%= t(".published") %></h2>
           <div class="dashboard-list mb-4 shadow">
             <%= render partial: "episodes/episode", collection: @published_episodes, cached: true %>
@@ -40,6 +43,7 @@
           <div class="my-4">
             <%= paginate @published_episodes, param_name: :published_page %>
             <%= page_entries_info @published_episodes %>
+          </div>
           </div>
         </section>
 

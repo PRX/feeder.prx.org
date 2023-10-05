@@ -4,20 +4,16 @@
 
   <%= render "podcast_filters" %>
 
-  <section class="col-lg-12">
-    <div class="dashboard-list mb-4 shadow">
-      <%= render partial: "podcasts/podcast", collection: @podcasts, cached: true %>
+  <section class="container">
+    <div class="col-lg-12">
+      <div class="dashboard-list mb-4 shadow">
+        <%= render partial: "podcasts/podcast", collection: @podcasts, cached: true %>
+      </div>
+    </div>
+
+    <div class="my-4">
+      <%= paginate @podcasts %>
+      <%= page_entries_info @podcasts %>
     </div>
   </section>
-
-  <div class="my-4">
-    <%= paginate @podcasts %>
-    <%= page_entries_info @podcasts %>
-  </div>
-<% end %>
-
-<% if policy(Podcast.new).new? %>
-  <%= link_to new_podcast_path, class: "btn btn-success btn-fab" do %>
-    <span class="material-icons">add</span> <%= t(".create") %>
-  <% end %>
 <% end %>
