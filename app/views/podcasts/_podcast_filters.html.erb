@@ -2,9 +2,9 @@
   <div class="row">
     <div class="col-12 d-flex align-items-center justify-content-between mb-4">
 
-      <h1 class="col-md-4 col-12 text-black fw-bold my-0 mb-0 me-4"><%= t(".my_podcasts") %></h1>
+      <h1 class="text-black fw-bold my-0 mb-0 me-4"><%= t(".my_podcasts") %></h1>
 
-      <div class="col-md-8 col-12 d-flex justify-items-end">
+      <div class="d-flex justify-items-end">
         <% if policy(Podcast.new).new? %>
           <%= link_to new_podcast_path, class: "btn btn-success" do %>
             <span class="material-icons">add</span> <%= t(".create") %>
