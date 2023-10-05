@@ -3,7 +3,7 @@
   data-audio-breakpoints-label-prefix-value="<%= t(".label.prefix") %>"
   data-audio-breakpoints-ad-breaks-value="<%= episode.ad_breaks %>"
   data-audio-breakpoints-ad-breaks-valid-value="<%= episode.validate(:ad_breaks) %>"
-  data-audio-breakpoints-segments-value="<%= (uncut&.segmentation || []).to_json %>"
+  data-audio-breakpoints-segments-value="<%= uncut&.segmentation&.to_json %>"
   data-audio-breakpoints-target="waveformInspector"
   data-waveform-inspector-playing-class="player--playing"
   data-waveform-inspector-audio-url-value="<%= uncut&.url %>"
