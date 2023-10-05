@@ -6,7 +6,7 @@
 
       <div class="d-flex justify-items-end">
         <% if policy(Podcast.new).new? %>
-          <%= link_to new_podcast_path, class: "btn btn-success" do %>
+          <%= link_to new_podcast_path, class: "btn btn-success", data: {turbo_frame: "_top"} do %>
             <span class="material-icons">add</span> <%= t(".create") %>
           <% end %>
         <% end %>

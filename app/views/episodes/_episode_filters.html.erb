@@ -6,11 +6,11 @@
 
       <div class="d-flex justify-items-end">
         <% if @podcast && policy(@podcast.episodes.new).create? %>
-          <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary me-2" do %>
+          <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary me-2", data: {turbo_frame: "_top"} do %>
             <%= t ".create_episode" %>
             <span class="material-icons ms-2" aria-hidden="true">mic</span>
           <% end %>
-          <%= link_to podcast_planner_path(@podcast), class: "btn btn-primary" do %>
+          <%= link_to podcast_planner_path(@podcast), class: "btn btn-primary", data: {turbo_frame: "_top"} do %>
             <%= t ".plan_episodes" %>
             <span class="material-icons ms-2" aria-hidden="true">calendar_today</span>
           <% end %>
