@@ -19,7 +19,7 @@ export default class extends Controller {
     labelPostRoll: { type: String, default: "Post-Roll" },
     adBreaks: { type: Number, default: 1 },
     adBreaksValid: { type: Boolean, default: false },
-    segments: { type: Array, default: null },
+    segments: { type: Array, default: [] },
   }
 
   minTime = 0.000001
@@ -42,7 +42,7 @@ export default class extends Controller {
    * DO NOT UPDATE THIS VALUE AS A RESULT OF EDITS IN THE AD LOCATIONS UI.
    */
   segmentsValueChanged(value) {
-    if (!Array.isArray(value)) return
+    if (!Array.isArray(value) || !value.length) return
 
     this.preRollPoint = value[0][0]
     this.postRollPoint = value[value.length - 1][1]
