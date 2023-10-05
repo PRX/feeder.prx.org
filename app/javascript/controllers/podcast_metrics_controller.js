@@ -59,7 +59,8 @@ export default class extends Controller {
     // clear out yAxis max and update series
     this.chart.yAxis[0].update({ max: null }, false)
     this.chart.series[seriesIndex].setData(data, false)
-    this.chart.redraw()
+    clearTimeout(this.timer)
+    this.timer = setTimeout(() => this.chart.redraw(), 100)
 
     // set total element
     if (isTotal) {
