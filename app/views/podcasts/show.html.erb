@@ -2,7 +2,20 @@
 
 <div class="my-4">
   <div class="d-grid d-sm-flex align-items-center">
-    <%= render @podcast %>
+    <div class="d-flex align-items-center flex-fill">
+      <%= cache [@podcast, :show_image] do %>
+        <div>
+          <% if @podcast.ready_image %>
+            <%= image_tag(@podcast.ready_image.url, width: 135, alt: @podcast.ready_image.alt_text, class: "d-flex me-4") %>
+          <% end %>
+        </div>
+        <div class="flex-fill">
+          <h1 class="fw-bold lh-1"><%= @podcast.title %></h1>
+          <%= @podcast.subtitle %>
+        </div>
+      <% end %>
+    </div>
+
     <div class="d-flex gap-2 align-items-center">
       <% if policy(@podcast).update? %>
         <%= link_to new_podcast_episode_path(@podcast), class: "btn btn-primary btn-sm" do %>

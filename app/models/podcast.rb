@@ -10,6 +10,7 @@ class Podcast < ApplicationRecord
   include TextSanitizer
   include AdvisoryLocks
   include EmbedPlayerHelper
+  include PodcastFilters
 
   acts_as_paranoid
 
@@ -49,7 +50,7 @@ class Podcast < ApplicationRecord
   before_validation :set_defaults, :sanitize_text
   after_save :set_empty_link
 
-  scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") }
+  scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") if text.present? }
   scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
 
   def self.by_prx_series(series)
