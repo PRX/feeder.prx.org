@@ -882,8 +882,17 @@ en:
       title: My Podcasts
       create: New Podcast
     podcast:
-      create_episode: Create Episode
-      plan_episodes: Plan Episodes
+      drafted_episodes:
+        one: 1 Drafted Episode
+        other: "%{count} Drafted Episodes"
+      last_saved: Last Saved
+      link: Go to Podcast
+      published_episodes:
+        one: 1 Published Episode
+        other: "%{count} Published Episodes"
+      scheduled_episodes:
+        one: "1 Scheduled Episode"
+        other: "%{count} Scheduled Episodes"
     podcast_filters:
       my_podcasts: My Podcasts
       pages:
@@ -897,20 +906,9 @@ en:
         desc: Z-A
         episodes: "# of Episodes"
         recent: Recent Activity
-    podcast_page:
-      drafted_episodes:
-        one: 1 Drafted Episode
-        other: "%{count} Drafted Episodes"
-      last_saved: Last Saved
-      published_episodes:
-        one: 1 Published Episode
-        other: "%{count} Published Episodes"
-      scheduled_episodes:
-        one: "1 Scheduled Episode"
-        other: "%{count} Scheduled Episodes"
-      link: Go to Podcast
     show:
       all_episodes: All Episodes
+      create_episode: Create Episode
       default_feed: Default RSS Feed
       engagement_settings: Engagement Settings
       feeds: Feeds
@@ -924,6 +922,7 @@ en:
       next_scheduled: Next Scheduled or Draft
       no_published: No Published Episodes
       no_scheduled: No Scheduled Episodes
+      plan_episodes: Plan Episodes
       player: Embeddable Player
       published_episodes: Published Episode
       settings: Settings
