@@ -476,6 +476,7 @@ en:
       filters:
         all: All
         incomplete: Incomplete
+        published: Published
       pages:
         10: Show 10
         20: Show 20
@@ -485,7 +486,6 @@ en:
       sorts:
         asc: A-Z
         calendar: Calendar
-        desc: Z-A
         recent: Recent Activity
     form:
       confirm: Discard unsaved changes?

@@ -5,14 +5,14 @@ module EpisodeFilters
 
   FILTERS = {
     all: "",
-    incomplete: "incomplete"
+    incomplete: "incomplete",
+    published: "published"
   }
 
   SORTS = {
     calendar: "",
-    asc: "asc",
-    desc: "desc",
-    recent: "recent"
+    recent: "recent",
+    asc: "asc"
   }
 
   def self.filter_key(value)
@@ -29,14 +29,14 @@ module EpisodeFilters
         incomplete = "COUNT(media_resources) != COUNT(media_resources) FILTER (WHERE status = #{MediaResource.statuses[:complete]})"
         missing = "segment_count IS NOT NULL AND segment_count != COUNT(media_resources)"
         left_joins(:contents).group(:id).having("#{incomplete} OR #{missing}")
+      elsif filter == "published"
+        published
       end
     end
 
     scope :sort_by_alias, ->(sort) do
       if sort == "asc"
         dropdate_asc
-      elsif sort == "desc"
-        dropdate_desc
       elsif sort == "recent"
         order(updated_at: :desc)
       end
