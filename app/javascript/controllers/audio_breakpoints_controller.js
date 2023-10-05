@@ -19,7 +19,7 @@ export default class extends Controller {
     labelPostRoll: { type: String, default: "Post-Roll" },
     adBreaks: { type: Number, default: 1 },
     adBreaksValid: { type: Boolean, default: false },
-    segments: Array,
+    segments: { type: Array, default: null },
   }
 
   minTime = 0.000001
