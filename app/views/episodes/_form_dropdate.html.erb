@@ -1,7 +1,7 @@
 <% editing = policy(episode).update? && (episode.published_or_released_date.blank? || episode.released_at_changed?) %>
 
 <div class="row" data-controller="dropdate-picker">
-  <%= form.hidden_field :released_at, value: episode.published_or_released_date, data: {dropdate_picker_target: "input"} %>
+  <%= form.hidden_field :released_at, value: episode.published_or_released_date&.iso8601, data: {dropdate_picker_target: "input"} %>
 
   <div class="col-12 <%= "d-none" if editing %>" data-dropdate-picker-target="showing">
     <div class="form-floating">

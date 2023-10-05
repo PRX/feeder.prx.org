@@ -44,7 +44,7 @@ export default class extends Controller {
       this.dateTarget.classList.remove("is-invalid")
     }
 
-    if (this.timeTarget.value && isNaN(new Date(`2020-01-01 ${this.timeTarget.value}`))) {
+    if (this.timeTarget.value && isNaN(new Date(`2020/01/01 ${this.timeTarget.value}`))) {
       this.timeTarget.classList.add("is-invalid")
     } else {
       this.timeTarget.classList.remove("is-invalid")
