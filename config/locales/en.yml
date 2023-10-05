@@ -894,6 +894,7 @@ en:
         one: "1 Scheduled Episode"
         other: "%{count} Scheduled Episodes"
     podcast_filters:
+      create: New Podcast
       my_podcasts: My Podcasts
       pages:
         10: Show 10
