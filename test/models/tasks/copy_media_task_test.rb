@@ -81,6 +81,20 @@ describe Tasks::CopyMediaTask do
       end
     end
 
+    it "calls slice on uncut resources on complete" do
+      slice = Minitest::Mock.new
+      slice.expect(:call, nil)
+
+      uncut = build(:uncut)
+
+      task.stub(:media_resource, uncut) do
+        uncut.stub(:slice_contents, slice) do
+          task.update_media_resource
+          slice.verify
+        end
+      end
+    end
+
     it "updates audio metadata on complete" do
       task.media_resource.reset_media_attributes
 

@@ -15,14 +15,14 @@ class Content < MediaResource
   def validate_segmentation
     return if segmentation.nil?
 
-    # can be [1.23, 4.56] or [nil, 4.56] or [1.23, nil]
+    # can be [1.23, 4.56] or [nil, 4.56] or [1.23, nil] or [nil, nil]
     unless array_segments? && numeric_segments? && ordered_segments?
       errors.add(:segmentation, :bad_slices, message: "bad slices")
     end
   end
 
   def slice?
-    segmentation.present?
+    segmentation.present? && (slice_start.present? || slice_end.present?)
   end
 
   def slice_start
@@ -56,7 +56,7 @@ class Content < MediaResource
   private
 
   def array_segments?
-    segmentation.is_a?(Array) && segmentation.length == 2 && segmentation.compact.length >= 1
+    segmentation.is_a?(Array) && segmentation.length == 2
   end
 
   def numeric_segments?

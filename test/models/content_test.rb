@@ -51,7 +51,7 @@ describe Content do
       assert c1.valid?
 
       c1.segmentation = [nil, nil]
-      refute c1.valid?
+      assert c1.valid?
 
       c1.segmentation = [1.23, 4.56, 7.89]
       refute c1.valid?
@@ -77,6 +77,19 @@ describe Content do
 
       c1.slice_start = nil
       assert_equal [nil, 4.56], c1.segmentation
+    end
+  end
+
+  describe "#slice?" do
+    it "checks for nil start and end" do
+      c1.segmentation = nil
+      refute c1.slice?
+
+      c1.segmentation = [nil, nil]
+      refute c1.slice?
+
+      c1.segmentation = [nil, 2]
+      assert c1.slice?
     end
   end
 

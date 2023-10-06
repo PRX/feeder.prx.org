@@ -61,21 +61,20 @@ class EpisodeMediaController < ApplicationController
       :medium,
       :ad_breaks,
       contents_attributes: %i[id position original_url file_size _destroy _retry],
-      uncut_attributes: %i[id ad_breaks original_url file_size _destroy _retry]
+      uncut_attributes: %i[id segmentation original_url file_size _destroy _retry]
     )
   end
 
-  # NOTE: the uncut "ad breaks" field is json encoded. eventually this should be
-  # converted to rails array-params, and allow trimming the start/end of the file.
+  # NOTE: the uncut "segmentation" field is json encoded
   def parsed_episode_params
     episode_params.tap do |p|
       if p[:uncut_attributes].present?
-        p[:uncut_attributes][:ad_breaks] = parse_ad_breaks(p[:uncut_attributes][:ad_breaks])
+        p[:uncut_attributes][:segmentation] = parse_segmentation(p[:uncut_attributes][:segmentation])
       end
     end
   end
 
-  def parse_ad_breaks(str)
+  def parse_segmentation(str)
     if str.blank?
       nil
     else
