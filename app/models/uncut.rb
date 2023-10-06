@@ -2,6 +2,12 @@ class Uncut < MediaResource
   validates :medium, inclusion: {in: %w[audio]}, if: :status_complete?
   validate :validate_segmentation
 
+  before_validation :set_defaults
+
+  def set_defaults
+    self.segmentation ||= [[nil, nil]]
+  end
+
   def slice_contents
     if segmentation_ready?
       episode.media = segmentation.map do |seg|
@@ -76,7 +82,9 @@ class Uncut < MediaResource
     segs.each_with_index.all? do |segment, index|
       s1, s2 = segment
 
-      if index == 0
+      if index == 0 && segs.length == 1
+        (valid_number?(s1) || s1.nil?) && (valid_number?(s2) || s2.nil?)
+      elsif index == 0
         (valid_number?(s1) || s1.nil?) && valid_number?(s2)
       elsif index == segs.length - 1
         valid_number?(s1) && (valid_number?(s2) || s2.nil?)
