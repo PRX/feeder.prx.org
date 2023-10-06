@@ -282,6 +282,8 @@ describe Episode do
 
       episode.medium = "uncut"
       assert episode.contents.first.marked_for_replacement?
+      assert episode.uncut.new_record?
+      assert_equal episode.contents.first.url, episode.uncut.original_url
     end
 
     it "sets segment count for videos" do
