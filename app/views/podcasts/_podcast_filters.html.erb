@@ -1,0 +1,61 @@
+<div class="container mt-4 mb-2" data-controller="dynamic-form">
+  <div class="row">
+    <div class="col-12 d-flex align-items-center justify-content-between mb-4">
+
+      <h1 class="text-black fw-bold my-0 mb-0 me-4"><%= t(".my_podcasts") %></h1>
+
+      <div class="d-flex justify-items-end">
+        <% if policy(Podcast.new).new? %>
+          <%= link_to new_podcast_path, class: "btn btn-success", data: {turbo_frame: "_top"} do %>
+            <span class="material-icons">add</span> <%= t(".create") %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 d-flex align-items-center justify-content-between  flex-md-row flex-column mb-4">
+      <div class="col-md-8 col-12 d-flex justify-items-start">
+        <div class="dropdown me-2">
+          <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Sorting options">
+            <span class="material-icons text-black-50" aria-hidden="true" aria-hidden="true">sort</span>
+            <%= t(".sorts.#{PodcastFilters.sort_key(params[:sort])}") %>
+          </button>
+
+          <ul class="dropdown-menu">
+            <% PodcastFilters::SORTS.each do |key, value| %>
+              <li>
+                <%= search_sort_button t(".sorts.#{key}"), value %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+
+        <div class="dropdown mx-2">
+          <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Paging options">
+            <span class="material-icons text-black-50" aria-hidden="true" aria-hidden="true">settings</span>
+            <%= t(".pages.#{search_per_page_key}") %>
+          </button>
+
+          <ul class="dropdown-menu">
+            <% search_per_page_options.each do |key, value| %>
+              <li>
+                <%= search_per_page_button t(".pages.#{key}"), value %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-12 d-flex justify-content-end mt-sm-2 mt-md-0">
+        <div class="form-floating flex-grow-1">
+          <%= search_query_field t(".search_podcasts") %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# clicking hidden reloads the podcasts turbo-frame %>
+  <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link" data-turbo-action="replace"></a>
+</div>

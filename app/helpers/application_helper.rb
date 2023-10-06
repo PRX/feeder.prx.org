@@ -53,14 +53,14 @@ module ApplicationHelper
     end
   end
 
-  def field_link(href)
-    link_to href, class: "input-group-text prx-input-group-text", target: :_blank do
+  def field_link(href, data = {})
+    link_to href, class: "input-group-text prx-input-group-text", target: :_blank, data: data do
       tag.span "open_in_new", class: "material-icons text-primary"
     end
   end
 
-  def field_copy(content)
-    data = {controller: "clipboard", clipboard_copy_value: content, clipboard_tooltip_value: t("helpers.application.field_copy_tooltip")}
+  def field_copy(content, data = {})
+    data = {controller: "clipboard", clipboard_copy_value: content, clipboard_tooltip_value: t("helpers.application.field_copy_tooltip")}.merge(data)
 
     tag.button class: "input-group-text prx-input-group-text", data: data do
       tag.span "link", class: "material-icons text-primary"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_09_152757) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -26,6 +26,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_09_152757) do
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
     t.index ["private_feed_id"], name: "index_apple_configs_on_private_feed_id"
     t.index ["public_feed_id"], name: "index_apple_configs_on_public_feed_id"
+  end
+
+  create_table "apple_episode_delivery_statuses", force: :cascade do |t|
+    t.bigint "episode_id", null: false
+    t.boolean "delivered", default: false
+    t.datetime "created_at", null: false
+    t.index ["episode_id", "created_at", "delivered", "id"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at"
+    t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
   end
 
   create_table "apple_keys", force: :cascade do |t|
@@ -48,6 +56,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_09_152757) do
     t.string "source_filename"
     t.bigint "source_size"
     t.text "enclosure_url"
+    t.integer "source_fetch_count", default: 0, null: false
     t.index ["episode_id"], name: "index_apple_podcast_containers_on_episode_id", unique: true
     t.index ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true
   end
@@ -139,8 +148,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_09_152757) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.string "keyword_xid"
     t.datetime "source_updated_at", precision: nil
+    t.string "keyword_xid"
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"
@@ -279,6 +288,22 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_09_152757) do
     t.index ["episode_id"], name: "index_media_resources_on_episode_id"
     t.index ["guid"], name: "index_media_resources_on_guid", unique: true
     t.index ["original_url"], name: "index_media_resources_on_original_url"
+  end
+
+  create_table "media_version_resources", force: :cascade do |t|
+    t.bigint "media_version_id", null: false
+    t.bigint "media_resource_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["media_resource_id"], name: "index_media_version_resources_on_media_resource_id"
+    t.index ["media_version_id"], name: "index_media_version_resources_on_media_version_id"
+  end
+
+  create_table "media_versions", force: :cascade do |t|
+    t.bigint "episode_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["episode_id"], name: "index_media_versions_on_episode_id"
   end
 
   create_table "podcast_imports", force: :cascade do |t|
@@ -422,11 +447,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_09_152757) do
 
   add_foreign_key "apple_configs", "feeds", column: "private_feed_id"
   add_foreign_key "apple_configs", "feeds", column: "public_feed_id"
+  add_foreign_key "apple_episode_delivery_statuses", "episodes"
   add_foreign_key "episode_imports", "podcast_imports"
   add_foreign_key "feed_images", "feeds"
   add_foreign_key "feed_tokens", "feeds"
   add_foreign_key "feeds", "podcasts"
   add_foreign_key "itunes_images", "feeds"
+  add_foreign_key "media_version_resources", "media_resources"
+  add_foreign_key "media_version_resources", "media_versions"
+  add_foreign_key "media_versions", "episodes"
   add_foreign_key "podcast_imports", "podcasts"
   add_foreign_key "publishing_pipeline_states", "podcasts"
   add_foreign_key "publishing_pipeline_states", "publishing_queue_items"

@@ -1,9 +1,5 @@
+<% content_for :title, "#{@podcast.title} - #{t(".title")}" %>
+
 <%= render "podcasts/tabs" %>
 
-<div class="row my-4 mx-2">
-  <div class="col-lg-12">
-    <div class="row">
-      <%= render "form", podcast: @podcast, player_options: @player_options %>
-    </div>
-  </div>
-</div>
+<%= render "form", podcast: @podcast, player_options: @player_options %>

@@ -10,6 +10,10 @@ POSTGRES_PASSWORD=password
 POSTGRES_PORT=5432
 POSTGRES_USER=feeder
 
+# redis caching
+REDIS_HOST=
+REDIS_PORT=
+
 # async jobs
 ANNOUNCE_RESOURCE_PREFIX=
 PORTER_SNS_TOPIC=
@@ -49,6 +53,7 @@ FEEDER_CDN_PRIVATE_HOST=p.staging.prxu.org
 ID_HOST=id.staging.prx.tech
 PLAY_HOST=play.staging.prx.tech
 PRX_HOST=beta.staging.prx.tech
+PUBLIC_FEEDS_URL_PREFIX=https://publicfeeds.net/f
 
 # RSS settings
 # FEEDER_GENERATOR=

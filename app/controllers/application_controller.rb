@@ -77,4 +77,14 @@ class ApplicationController < ActionController::Base
   def turbo_frame_request?
     request.headers["Turbo-Frame"].present?
   end
+
+  # include i18n (en.yml etc) in view fragment cache keys
+  def view_cache_dependencies
+    super.tap do |deps|
+      if request.format.html?
+        @@i18n_version ||= Digest::MD5.digest(I18n.backend.translations.to_s)
+        deps << I18n.locale.to_s << @@i18n_version
+      end
+    end
+  end
 end

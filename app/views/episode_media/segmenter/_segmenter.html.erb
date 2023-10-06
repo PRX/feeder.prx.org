@@ -41,7 +41,7 @@
             data-waveform-inspector-target="seekInput"
             data-action="keypress.enter->waveform-inspector#seekSubmit"
             data-bs-toggle="tooltip"
-            data-bs-title="Enter time to seek to">
+            data-bs-title="<%= t(".tooltip.seek_input") %>">
           <button type="button" class="btn btn-icon btn-icon-borderless btn-primary" data-action="waveform-inspector#seekToInputValue">
             <span class="material-icons">skip_next</span>
           </button>
@@ -64,8 +64,8 @@
       <table class="prx-audio-breakpoints-table">
         <thead>
           <th><!-- Placeholder Cell --></th>
-          <th>Name</th>
-          <th width="100%">Timestamps</th>
+          <th><%= t(".table.name") %></th>
+          <th width="100%"><%= t(".table.timestamps") %></th>
           <th><!-- Placeholder Cell --></th>
         </thead>
         <tbody data-audio-breakpoints-target="controls">
@@ -86,21 +86,21 @@
       </td>
       <td>
         <button type="button" class="has-start-time-hide btn btn-sm btn-primary text-nowrap" data-action="audio-breakpoint#updateStartTimeToPlayhead">
-          Insert At Playhead <span class="material-icons" aria-hidden="true">my_location</span>
+          <%= t(".insert") %><span class="material-icons" aria-hidden="true">my_location</span>
         </button>
         <div class="has-start-time-show prx-input-group input-group-sm">
           <input class="form-control" placeholder="00:00"
             data-audio-breakpoint-target="startTime"
             data-action="keypress.enter->audio-breakpoint#changeStartTime"
             data-bs-toggle="tooltip"
-            data-bs-title="Edit Start Time">
-          <button type="button" class="prx-input-confirm btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="audio-breakpoint#changeStartTime">
+            data-bs-title="<%= t(".tooltip.change_start_time") %>">
+          <button type="button" class="prx-input-confirm btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.confirm") %>" data-action="audio-breakpoint#changeStartTime">
             <span class="material-icons">done</span>
           </button>
-          <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="audio-breakpoint#updateStartTimeToPlayhead">
+          <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.set_playhead") %>" data-action="audio-breakpoint#updateStartTimeToPlayhead">
             <span class="material-icons">my_location</span>
           </button>
-          <button type="button" class="has-end-time-hide btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Add End Time" data-action="audio-breakpoint#addEndTime">
+          <button type="button" class="has-end-time-hide btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.add_end_time") %>" data-action="audio-breakpoint#addEndTime">
             <span class="material-icons rotate-90">expand</span>
           </button>
         </div>
@@ -110,14 +110,14 @@
             data-audio-breakpoint-target="endTime"
             data-action="keypress.enter->audio-breakpoint#changeEndTime"
             data-bs-toggle="tooltip"
-            data-bs-title="Edit End Time">
-          <button type="button" class="prx-input-confirm btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="audio-breakpoint#changeEndTime">
+            data-bs-title="<%= t(".tooltip.change_end_time") %>">
+          <button type="button" class="prx-input-confirm btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.confirm") %>" data-action="audio-breakpoint#changeEndTime">
             <span class="material-icons">done</span>
           </button>
-          <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="audio-breakpoint#updateEndTimeToPlayhead">
+          <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.set_playhead") %>" data-action="audio-breakpoint#updateEndTimeToPlayhead">
             <span class="material-icons">my_location</span>
           </button>
-          <button type="button" class="btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Remove End Time" data-action="audio-breakpoint#removeEndTime">
+          <button type="button" class="btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.remove_end_time") %>" data-action="audio-breakpoint#removeEndTime">
             <span class="material-icons">close</span>
           </button>
         </div>

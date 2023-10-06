@@ -10,6 +10,7 @@ class Podcast < ApplicationRecord
   include TextSanitizer
   include AdvisoryLocks
   include EmbedPlayerHelper
+  include PodcastFilters
 
   acts_as_paranoid
 
@@ -17,7 +18,7 @@ class Podcast < ApplicationRecord
   serialize :keywords, JSON
   serialize :restrictions, JSON
 
-  has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true
+  has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true, inverse_of: :podcast
 
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
@@ -47,8 +48,9 @@ class Podcast < ApplicationRecord
   validates :explicit, inclusion: {in: VALID_EXPLICITS}, allow_nil: false
 
   before_validation :set_defaults, :sanitize_text
+  after_save :set_empty_link
 
-  scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") }
+  scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") if text.present? }
   scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
 
   def self.by_prx_series(series)
@@ -66,7 +68,12 @@ class Podcast < ApplicationRecord
 
   def set_defaults
     self.explicit ||= "false"
-    self.link ||= embed_player_landing_url(self)
+  end
+
+  def set_empty_link
+    if link.blank?
+      update_column(:link, embed_player_landing_url(self))
+    end
   end
 
   def default_feed

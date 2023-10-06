@@ -4,6 +4,12 @@ class EpisodeMediaController < ApplicationController
   # GET /episodes/1/media
   def show
     authorize @episode, :show?
+
+    # try to ensure a segment count, so the UI doesn't break
+    if @episode.segment_count.blank? && @episode.contents.any?
+      @episode.segment_count = @episode.contents.map(&:position).max || @episode.contents.size
+    end
+
     @episode.assign_attributes(parsed_episode_params)
     @episode.valid?
   end
@@ -25,7 +31,14 @@ class EpisodeMediaController < ApplicationController
         @episode.copy_media
         format.html { redirect_to episode_media_path(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
-        @episode.build_contents.each(&:valid?)
+
+        # some UI feedback that these files aren't ready
+        if @episode.medium_uncut?
+          (@episode.uncut || @episode.build_uncut).valid?
+        else
+          @episode.build_contents.each(&:valid?)
+        end
+
         flash.now[:error] = t(".media_not_ready")
         format.html { render :show, status: :unprocessable_entity }
       else

@@ -5,6 +5,7 @@ require "text_sanitizer"
 
 class Episode < ApplicationRecord
   include EpisodeAdBreaks
+  include EpisodeFilters
   include EpisodeMedia
   include PublishingStatus
   include TextSanitizer
@@ -23,9 +24,10 @@ class Episode < ApplicationRecord
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
-  has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy
-  has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy
-  has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
+  has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
+  has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
+  has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
 
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
@@ -38,9 +40,11 @@ class Episode < ApplicationRecord
     class_name: "Apple::PodcastDelivery"
   has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
     class_name: "Apple::PodcastDeliveryFile"
+  has_many :apple_episode_delivery_statuses, -> { order(created_at: :desc) }, dependent: :destroy, class_name: "Apple::EpisodeDeliveryStatus"
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
+  validates :description, bytesize: {maximum: 4000}, if: :strict_validations
   validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
   alias_error_messages :item_guid, :original_guid
@@ -63,7 +67,7 @@ class Episode < ApplicationRecord
   scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
   scope :after, ->(time) { where("#{DROP_DATE} > ?", time) }
-  scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
+  scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
   scope :dropdate_asc, -> { reorder(Arel.sql("#{DROP_DATE} ASC NULLS FIRST")) }
   scope :dropdate_desc, -> { reorder(Arel.sql("#{DROP_DATE} DESC NULLS LAST")) }
 
@@ -110,6 +114,28 @@ class Episode < ApplicationRecord
     # TODO: for now these are all considered audio files
 
     apple_delivery_files.map { |p| p.asset_processing_state["errors"] }.flatten
+  end
+
+  def apple_episode_delivery_status
+    apple_episode_delivery_statuses.order(created_at: :desc).first
+  end
+
+  def apple_needs_delivery?
+    return true if apple_episode_delivery_status.nil?
+
+    apple_episode_delivery_status.delivered == false
+  end
+
+  def apple_needs_delivery!
+    apple_episode_delivery_statuses.create!(delivered: false)
+    apple_episode_delivery_statuses.reset
+    apple_episode_delivery_status
+  end
+
+  def apple_has_delivery!
+    apple_episode_delivery_statuses.create!(delivered: true)
+    apple_episode_delivery_statuses.reset
+    apple_episode_delivery_status
   end
 
   def self.generate_item_guid(podcast_id, episode_guid)
@@ -197,7 +223,9 @@ class Episode < ApplicationRecord
     super
 
     if medium_changed? && medium_was.present?
-      contents.each(&:mark_for_replacement)
+      unless medium == "audio" && medium_was == "uncut"
+        contents.each(&:mark_for_replacement)
+      end
       uncut&.mark_for_replacement
     end
 
@@ -227,14 +255,18 @@ class Episode < ApplicationRecord
   end
 
   def apple_mark_for_reupload!
+    # remove the previous delivery attempt (soft delete)
     apple_podcast_deliveries.map(&:destroy)
     apple_podcast_deliveries.reset
     apple_podcast_container&.podcast_deliveries&.reset
+    apple_needs_delivery!
   end
 
   def publish!
-    apple_mark_for_reupload!
-    podcast&.publish!
+    Rails.logger.tagged("Episode#publish!") do
+      apple_mark_for_reupload!
+      podcast&.publish!
+    end
   end
 
   def podcast_feed_url
@@ -329,9 +361,17 @@ class Episode < ApplicationRecord
     return if published_at.blank? || no_media?
 
     # media must be complete on _initial_ publish
-    must_be_complete = published_at_was.blank?
+    # otherwise - having files in any status is good enough
+    is_ready =
+      if published_at_was.blank?
+        media_ready?(true)
+      elsif medium_uncut?
+        uncut.present? && !uncut.marked_for_destruction?
+      else
+        media_ready?(false)
+      end
 
-    unless media_ready?(must_be_complete)
+    unless is_ready
       errors.add(:base, :media_not_ready, message: "media not ready")
     end
   end

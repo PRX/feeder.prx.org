@@ -302,6 +302,13 @@ en:
             slug:
               invalid: Invalid slug
               taken: Must be unique
+        media_resource:
+          attributes:
+            medium:
+              format: "%{message}"
+            original_url:
+              blank: Can't be blank
+              format: "%{message}"
         podcast:
           attributes:
             payment_pointer:
@@ -324,6 +331,12 @@ en:
           standard: Standard
           card: Responsive Card
           fixed_card: Fixed Width Card
+        embed_player_theme: Embed Player Theme
+        embed_player_themes:
+          dark: Dark (Default)
+          light: Light
+          auto: User System Default
+        accent_color: Accent Color
         embed_player_url: Embeddable Player Link
         enclosure_url: Media Link
         episode_number: Episode Number
@@ -341,6 +354,7 @@ en:
           complete: Complete
           error: Error
           incomplete: Incomplete
+          incomplete_published: Incomplete
           invalid: Invalid
           processing: Processing
         medium: File Format
@@ -435,9 +449,12 @@ en:
         title: Title
       podcast_player:
         embed_player_type: Player Style
+        max_width: Player Width
         episode_number: Number of Episodes
+        episodes_all: All Episodes
         season: Season Number
         category: Category
+        no_category: (None)
         embed_player_url: Embeddable Player Link
         embed_player_iframe: Embeddable Player IFrame
         episodes_options:
@@ -454,6 +471,22 @@ en:
     destroy:
       error: Cannot delete a published episode
       notice: Episode deleted
+    episode_filters:
+      my_episodes: Episodes
+      filters:
+        all: All
+        incomplete: Incomplete
+        published: Published
+      pages:
+        10: Show 10
+        20: Show 20
+        50: Show 50
+        all: Show All
+      search_episodes: Search Episodes
+      sorts:
+        asc: A-Z
+        calendar: Calendar
+        recent: Recent Activity
     form:
       confirm: Discard unsaved changes?
     form_distribution:
@@ -507,6 +540,10 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+    edit:
+      title: "%{title} - Edit"
+    new:
+      title: "%{title} - New Episode"
     missing_drafts:
       message: The more drafts you add, the better we can support your podcast. Please add <a href="%{href}">all of your known upcoming episodes</a> to the Production Calendar.
       okay: Okay
@@ -550,8 +587,11 @@ en:
         file_size: Size
         frame_rate: Frame Rate
         mime_type: Content Type
+        mono: Mono
+        multichannel: "%{number} Channels"
         sample_rate: Frequency
         status: Status
+        stereo: Stereo
       new:
         hint: Upload a file or drag it here
       processing:
@@ -568,26 +608,53 @@ en:
       segmenter:
         label:
           prefix: Midroll
+        table:
+          name: Name
+          timestamps: Timestamps
+        tooltip:
+          add_end_time: Add End Time
+          change_end_time: Edit End Time
+          change_start_time: Edit Start Time
+          confirm: Confirm Change
+          remove_end_time: Remove End Time
+          seek_input: Enter time to seek to
+          set_playhead: Set To Playhead
+        insert: Insert At Playhead
     show:
-      title: Media Files
+      title: "%{title} - Media Files"
     update:
       error: Unable to save
       media_not_ready: Published episodes cannot have empty media
       notice: Media files updated
   episode_player:
-    form:
+    form: &player_form
       enclosure_not_ready: No Media Files Uploaded
       help: &player_help
         copy: Copy the code for one of the following players, and place it on your webpage.
+        customize: Customize the appearance of the embed.
+        max_width: Cap the width the embed can scale to. It will continue to scale down when content width is less than the entered width. Minimum 300px.
         types:
-          card: The player style that shows off your podcast's artwork and will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 800px tall.
-          fixed_card: The player style that shows off your podcast's artwork. The size will NOT adjust to the user's screensize. Must always be 500px wide by 800px tall.
-          standard: Default view of the PRX Player, will adjust to be responsive to the size of the user's screen and the website it is embedded on. Must always be 200px tall.
+          card: The player style that shows off your podcast's artwork. Size of embed will be responsive to the size of content is embedded into.
+          standard: Default view of the PRX Player, will adjust to be responsive to the size of the user's screen and the website it is embedded on.
+        themes:
+          dark: Dark theme that stands out in lighter themed sites.
+          light: Light theme for that subtle look.
+          auto: Allow the users system preferences to determine the theme.
+        accent_color: Choose an accent color that works for your brand.
         warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/links will begin to function as expected within a few minutes of publishing.
       title: &player_title
         copy: Copy and Use your Embed Code
+        customize: Make It Your Own
         preview: Player
         warning: Warning
+      label: &player_label
+        clear: Restore Default Options
+    form_preview:
+      <<: *player_form
+    form_copy:
+      <<: *player_form
+    form_sidebar:
+      <<: *player_form
     show:
       title: Embeddable Player
   errors:
@@ -778,6 +845,8 @@ en:
     destroy:
       error: Cannot delete a podcast with published episodes
       notice: Podcast deleted
+    edit:
+      title: "%{title} - Settings"
     form:
       confirm: Discard unsaved changes?
     form_distribution:
@@ -810,16 +879,37 @@ en:
       <<: *form_status
       title: Podcast Status
     index:
+      title: My Podcasts
       create: New Podcast
-      search_podcasts: Search Podcasts
     podcast:
-      create_episode: Create Episode
-      plan_episodes: Plan Episodes
-    update:
-      error: Unable to save
-      notice: Podcast updated
+      drafted_episodes:
+        one: 1 Drafted Episode
+        other: "%{count} Drafted Episodes"
+      last_saved: Last Saved
+      link: Go to Podcast
+      published_episodes:
+        one: 1 Published Episode
+        other: "%{count} Published Episodes"
+      scheduled_episodes:
+        one: "1 Scheduled Episode"
+        other: "%{count} Scheduled Episodes"
+    podcast_filters:
+      create: New Podcast
+      my_podcasts: My Podcasts
+      pages:
+        10: Show 10
+        20: Show 20
+        50: Show 50
+        all: Show All
+      search_podcasts: Search Podcasts
+      sorts:
+        asc: A-Z
+        desc: Z-A
+        episodes: "# of Episodes"
+        recent: Recent Activity
     show:
       all_episodes: All Episodes
+      create_episode: Create Episode
       default_feed: Default RSS Feed
       engagement_settings: Engagement Settings
       feeds: Feeds
@@ -833,23 +923,21 @@ en:
       next_scheduled: Next Scheduled or Draft
       no_published: No Published Episodes
       no_scheduled: No Scheduled Episodes
+      plan_episodes: Plan Episodes
       player: Embeddable Player
       published_episodes: Published Episode
       settings: Settings
       total_downloads: Total Downloads
       view_metrics: View Metrics
-    podcast_page:
-      my_podcasts: My Podcasts
-      drafted_episodes:
-        one: 1 Drafted Episode
-        other: "%{count} Drafted Episodes"
-      last_saved: Last Saved
-      published_episodes:
-        one: 1 Published Episode
-        other: "%{count} Published Episodes"
-      scheduled_episodes:
-        one: "1 Scheduled Episode"
-        other: "%{count} Scheduled Episodes"
+    tabs:
+      metadata: Metadata
+      engagement: Engagement Settings
+      player: Embeddable Player
+      import: Import
+      planner: Plan Episodes
+    update:
+      error: Unable to save
+      notice: Podcast updated
   podcast_engagement:
     form:
       <<: *form
@@ -860,7 +948,7 @@ en:
     form_status:
       <<: *form_status
     show:
-      title: Engagement
+      title: "%{title} - Engagement"
     update:
       error: Unable to save
       notice: Engagement settings updated
@@ -915,17 +1003,26 @@ en:
       month: Weeks of the Month
       period: Weekly interval
   podcast_player:
-    form:
+    show:
+      title: Embeddable Player
+    form: &podcast_player_form
       help:
         <<: *player_help
-        episode_number: Choose between showing all episodes or only a number of episodes for this playlist.
+        episode_number: (Optional) Limit the number of episodes included in the playlist. Leave blank to include all episodes.
         season: (Optional) Choose a single season for this playlist. Leaving this blank or 0 will not add a season filter.
         episode_category: (Optional) Choose a single category for this playlist. Leaving this blank will not add a category filter.
         playlist: Add any options below to better specify the playlist you want to create.
       title:
         <<: *player_title
-        playlist: Make it a playlist
-      clear: Clear options
+        playlist: Make It A Playlist
+      label:
+        <<: *player_label
+    form_preview:
+      <<: *podcast_player_form
+    form_copy:
+      <<: *podcast_player_form
+    form_sidebar:
+      <<: *podcast_player_form
   podcast_switcher:
     dropdown:
       all: View all my Podcasts

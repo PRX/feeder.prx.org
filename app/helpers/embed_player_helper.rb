@@ -3,6 +3,7 @@ module EmbedPlayerHelper
 
   EMBED_PLAYER_LANDING_PATH = "/listen"
   EMBED_PLAYER_PATH = "/e"
+  EMBED_PLAYER_PREVIEW_PATH = "/preview"
   EMBED_PLAYER_FEED = "uf"
   EMBED_PLAYER_GUID = "ge"
   EMBED_PLAYER_CARD = "ca"
@@ -11,6 +12,7 @@ module EmbedPlayerHelper
   EMBED_PLAYER_IMAGE = "ui"
   EMBED_PLAYER_RSS_URL = "us"
   EMBED_PLAYER_AUDIO_URL = "ua"
+  EMBED_PLAYER_AUDIO_URL_PREVIEW = "uap"
   DOVETAIL_TOKEN = "_t"
   EMBED_PLAYER_PLAYLIST = "sp"
   EMBED_PLAYER_SEASON = "se"
@@ -23,78 +25,85 @@ module EmbedPlayerHelper
     "#{play_root}#{EMBED_PLAYER_LANDING_PATH}?#{params.to_query}"
   end
 
-  def embed_player_episode_url(ep, type = nil, preview = false)
+  def embed_player_episode_url(ep, options = nil, preview = false)
     params = {}
 
-    if preview && !ep.published?
+    if !ep.published?
       params[EMBED_PLAYER_TITLE] = ep.title
       params[EMBED_PLAYER_SUBTITLE] = ep.podcast.title
       params[EMBED_PLAYER_IMAGE] = ep.ready_image&.url || ep.podcast.ready_image&.url
       params[EMBED_PLAYER_RSS_URL] = ep.podcast_feed_url
-      params[EMBED_PLAYER_AUDIO_URL] = enclosure_with_token(ep)
+      params[EMBED_PLAYER_AUDIO_URL] = ep.enclosure_url
+      params[EMBED_PLAYER_AUDIO_URL_PREVIEW] = enclosure_with_token(ep)
     else
       params[EMBED_PLAYER_FEED] = ep.podcast_feed_url
       params[EMBED_PLAYER_GUID] = ep.item_guid
     end
 
-    if type == "card" || type == "fixed_card"
+    if options.present? && options[:embed_player_type] == "card"
       params[EMBED_PLAYER_CARD] = "1"
     end
 
-    embed_params(params)
+    embed_params(params, preview)
   end
 
   def embed_player_podcast_url(podcast, options, preview = false)
     params = {}
     params[EMBED_PLAYER_FEED] = podcast.published_url
 
-    params[EMBED_PLAYER_PLAYLIST] = (options[:all_episodes] == "all") ? options[:all_episodes] : options[:episode_number]
-    params[EMBED_PLAYER_SEASON] = options[:season]
-    params[EMBED_PLAYER_CATEGORY] = options[:category]
-
-    # TODO: the height styling doesn't really work here in the way Play specifies how it needs to be for a playlist, so leaving this as a TODO for now.
-    # if options[:embed_player_type] == "card" || options[:embed_player_type] == "fixed_card"
-    #   params[EMBED_PLAYER_CARD] = "1"
-    # end
-
-    embed_params(params)
-  end
-
-  def embed_player_episode_iframe(ep, type = nil, preview = false)
-    src = embed_player_episode_url(ep, type, preview)
-    allow = "monetization"
-
-    if type == "card"
-      # TODO: this is NOW working, but I'm not sure how helpful this is to a producer that wishes to embed it.
-      tag.iframe src: src, allow: allow, width: "100%", height: "700", style: "--aspect-ratio: 2/3; width: 100%;"
-    elsif type == "fixed_card"
-      tag.iframe src: src, allow: allow, width: "500", height: "700"
-    else
-      tag.iframe src: src, allow: allow, width: "100%", height: "200"
+    if options[:all_episodes] === "all"
+      params[EMBED_PLAYER_PLAYLIST] = "all"
     end
-  end
 
-  def embed_player_podcast_iframe(podcast, options, preview = false)
-    src = embed_player_podcast_url(podcast, options, preview)
-    allow = "monetization"
+    if options[:all_episodes] == "number" && options[:episode_number].to_i > 1
+      params[EMBED_PLAYER_PLAYLIST] = options[:episode_number]
+    end
+
+    if !options[:season].to_s.strip.empty? && options[:season].to_i > 0
+      params[EMBED_PLAYER_SEASON] = options[:season]
+    end
+
+    if !options[:category].to_s.strip.empty?
+      params[EMBED_PLAYER_CATEGORY] = options[:category]
+    end
 
     if options[:embed_player_type] == "card"
-      # TODO: this is NOW working, but I'm not sure how helpful this is to a producer that wishes to embed it.
-      tag.iframe src: src, allow: allow, width: "100%", height: "700", style: "--aspect-ratio: 2/3; width: 100%;"
-    elsif options[:embed_player_type] == "fixed_card"
-      tag.iframe src: src, allow: allow, width: "500", height: "700"
-    else
-      tag.iframe src: src, allow: allow, width: "100%", height: "200"
+      params[EMBED_PLAYER_CARD] = "1"
+    end
+
+    embed_params(params, preview)
+  end
+
+  def embed_player_iframe(options)
+    src = ""
+    allow = "monetization"
+    iframe_height = "200"
+    iframe_styles = ""
+    wrapper_styles = "line-height: 0;"
+
+    if options[:embed_player_type] == "card"
+      wrapper_styles = "position: relative; height: 0; width: 100%; padding-top: calc(100% + #{iframe_height}px); line-height: 0;"
+      iframe_height = "100%"
+      iframe_styles = "position: absolute; inset: 0;"
+    end
+
+    tag.div style: wrapper_styles, data: {embed_preview_target: "embedIframeWrapper"} do
+      tag.iframe class: "bg-light", src: src, allow: allow, width: "100%", height: iframe_height, style: iframe_styles, data: {embed_preview_target: "embedIframe"}
     end
   end
 
   def embed_player_type_options(selected)
-    opts = %w[standard card fixed_card].map { |v| [t("helpers.label.episode.embed_player_types.#{v}"), v] }
+    opts = %w[standard card].map { |v| [t("helpers.label.episode.embed_player_types.#{v}"), v] }
+    options_for_select(opts, selected)
+  end
+
+  def embed_player_theme_options(selected)
+    opts = %w[dark light auto].map { |v| [t("helpers.label.episode.embed_player_themes.#{v}"), v] }
     options_for_select(opts, selected)
   end
 
   def embed_player_category_options(podcast, selected)
-    opts = podcast.feed_episodes.pluck(:categories).flatten.uniq
+    opts = podcast.episodes.published.pluck(:categories).flatten.uniq
     options_for_select(opts, selected)
   end
 
@@ -105,8 +114,8 @@ module EmbedPlayerHelper
 
   private
 
-  def embed_params(params)
-    "#{play_root}#{EMBED_PLAYER_PATH}?#{params.to_query}"
+  def embed_params(params, preview = false)
+    "https://#{ENV["PLAY_HOST"]}#{preview ? EMBED_PLAYER_PREVIEW_PATH : EMBED_PLAYER_PATH}?#{params.to_query}"
   end
 
   def enclosure_with_token(ep)

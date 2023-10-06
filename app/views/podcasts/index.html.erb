@@ -1,59 +1,19 @@
-<% content_for :title, "My Podcasts" %>
+<% content_for :title, t(".title") %>
 
-<div class="mt-4 mb-2">
-  <div class="d-flex align-items-center justify-content-between">
-    <div class="dashboard header">
-      <div class="d-flex gap-2 align-items-center">
-        <h1 class="text-black fw-bold d-flex flex-fill my-4"><%= t(".my_podcasts") %></h1>
+<%= turbo_frame_tag "podcasts", data: {controller: "morphdom"} do %>
 
-        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Sorting options">
-        <span class="material-icons" style="color: green" aria-hidden="true" aria-hidden="true">sort</span>
-          <% if params[:sort] == 'episode_count' %>
-            <span class="material-icons" aria-hidden="true">123</span>
-          <% elsif params[:sort] == 'A-Z' %>
-            <span>A-Z</span>
-          <% elsif params[:sort] == 'Z-A' %>
-            <span>Z-A</span>
-          <% else %>
-            <span class="material-icons" aria-hidden="true">timer</span>
-          <% end %>
-        </button>
-        <ul class="dropdown-menu">
-          <li><%= active_link_to "Recent Activity", root_path(sort: "Recent Activity"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-          <li><%= active_link_to "# of Episodes", root_path(sort: "episode_count"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-          <li><%= active_link_to "A-Z", root_path(sort: "A-Z"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-          <li><%= active_link_to "Z-A", root_path(sort: "Z-A"), active: :exact, class: "dropdown-item text-decoration-none" %></li>
-        </ul>
+  <%= render "podcast_filters" %>
+
+  <section class="container">
+    <div class="col-lg-12">
+      <div class="dashboard-list mb-4 shadow">
+        <%= render partial: "podcasts/podcast", collection: @podcasts, cached: true %>
       </div>
     </div>
 
-    <div class="row-reverse col-4">
-      <%= form_with(url: root_path, method: :get, data: {controller: "search", turbo_frame: "podcasts"}) do |form| %>
-      <div class="form-floating">
-        <%= form.search_text_field :q, params, autofocus: true, class: "form-control form-control-sm" %>
-        <%= form.label :q, t(".search_podcasts") %>
-      </div>
-      <%= form.submit class: "d-none", data: {search_target: "submit"} %>
-      <% end %>
-    </div>
-  </div>
-</div>
-
-<%= turbo_frame_tag "podcasts", target: "_top" do %>
-  <section class="col-lg-12">
-    <div class="dashboard-list mb-4 shadow">
-      <% @podcasts.each do |podcast| %>
-        <%= render "podcast_page", podcast: podcast %>
-       <% end %>
-        <div class="mt-2">
-      </div>
+    <div class="my-4">
+      <%= paginate @podcasts %>
+      <%= page_entries_info @podcasts %>
     </div>
   </section>
-
-  <%= paginate @podcasts, window: 2, outer_window: 1 %>
-  <%= page_entries_info @podcasts %>
-<% end %>
-
-<%= link_to main_app.new_podcast_path, class: "btn btn-success btn-fab"  do %>
-  <span class="material-icons">add</span> <%= t(".create") %>
 <% end %>

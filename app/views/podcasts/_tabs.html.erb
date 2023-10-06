@@ -1,15 +1,15 @@
 <% content_for :tabs do %>
   <div class="list-group d-flex col">
     <% if @podcast.persisted? %>
-      <%= tab_link_to "Metadata", edit_podcast_path(@podcast), active: podcast_metadata_active? %>
-      <%= tab_link_to "Engagement Settings", podcast_engagement_path(@podcast) %>
-      <%= tab_link_to "Embeddable Player", podcast_player_path(@podcast) %>
-      <%= tab_link_to "Import", podcast_imports_path(@podcast) %>
+      <%= tab_link_to t(".metadata"), edit_podcast_path(@podcast), active: podcast_metadata_active? %>
+      <%= tab_link_to t(".engagement"), podcast_engagement_path(@podcast) %>
+      <%= tab_link_to t(".player"), podcast_player_path(@podcast) %>
+      <%= tab_link_to t(".import"), podcast_imports_path(@podcast) %>
       <% if policy(@podcast).update? %>
-        <%= tab_link_to "Plan Episodes", podcast_planner_path(@podcast) %>
+        <%= tab_link_to t(".planner"), podcast_planner_path(@podcast) %>
       <% end %>
     <% else %>
-      <%= tab_link_to "Metadata", new_podcast_path, active: true %>
+      <%= tab_link_to t(".metadata"), new_podcast_path, active: true %>
     <% end %>
   </div>
 <% end %>

@@ -49,11 +49,11 @@
               <td>
                 <%= blank_dash(media.channels) do %>
                   <% if media.channels == 1 %>
-                    Mono
+                    <%= t(".mono") %>
                   <% elsif media.channels == 2 %>
-                    Stereo
+                    <%= t(".stereo") %>
                   <% else %>
-                    <%= media.channels %> Channels
+                    <%= t(".multichannel", number: media.channels) %>
                   <% end %>
                 <% end %>
               </td>

@@ -68,7 +68,7 @@ describe Api::EpisodeRepresenter do
 
     it "is not feed ready with processing media" do
       episode.contents.first.status = "processing"
-      assert_equal json["isFeedReady"], true
+      assert_equal json["isFeedReady"], false
     end
 
     it "has media" do
@@ -81,6 +81,10 @@ describe Api::EpisodeRepresenter do
     end
 
     it "has ready media when media is not complete" do
+      refute_empty episode.complete_media
+      refute_empty episode.media_versions
+
+      # replace with an incomplete segment
       c1 = episode.contents.first
       c2 = create(:content, episode: episode, status: "created")
       episode.reload

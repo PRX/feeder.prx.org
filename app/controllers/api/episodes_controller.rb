@@ -87,6 +87,6 @@ class Api::EpisodesController < Api::BaseController
   end
 
   def publish
-    resource&.podcast&.publish!
+    resource&.publish!
   end
 end

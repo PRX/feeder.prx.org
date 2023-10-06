@@ -3,35 +3,13 @@ class PodcastsController < ApplicationController
 
   before_action :set_podcast, only: %i[show edit update destroy]
 
-  # Translate the user selected sort to a query order argument
-  DISPLAY_ORDER = {"A-Z" => {title: :asc},
-                   "Z-A" => {title: :desc},
-                   "" => {updated_at: :desc},
-                   "Recent Activity" => {updated_at: :desc}}.freeze
-
-  DEFAULT_PAGE_SIZE = 10
-
   # GET /podcasts
   def index
-    base_query = policy_scope(Podcast).page(params[:page]).per(DEFAULT_PAGE_SIZE).includes(default_feed: :feed_images)
-    filtered_podcasts = if params[:q].present?
-      base_query.filter_by_title(params[:q])
-    else
-      base_query
-    end
-    @podcasts = add_sorting(filtered_podcasts)
-
-    @published_episodes_counts = Episode.where(podcasts: @podcasts).published.group(:podcast_id).count
-    @scheduled_episodes_counts = Episode.where(podcasts: @podcasts).scheduled.group(:podcast_id).count
-    @drafted_episodes_counts = Episode.where(podcasts: @podcasts).draft.group(:podcast_id).count
-  end
-
-  def add_sorting(query)
-    if params[:sort] == "episode_count"
-      query.left_joins(:episodes).group(:id).order("COUNT(episodes.id) DESC")
-    else
-      query.order(DISPLAY_ORDER[params[:sort].to_s])
-    end
+    @podcasts =
+      policy_scope(Podcast)
+        .filter_by_title(params[:q])
+        .sort_by_alias(params[:sort])
+        .paginate(params[:page], params[:per])
   end
 
   # GET /podcasts/1

@@ -20,15 +20,15 @@ class Feed < ApplicationRecord
   serialize :audio_format, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
-  has_many :feed_tokens, autosave: true, dependent: :destroy
+  has_many :feed_tokens, autosave: true, dependent: :destroy, inverse_of: :feed
   alias_attribute :tokens, :feed_tokens
   accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
 
   has_many :apple_configs, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
     class_name: "::Apple::Config"
 
-  has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
-  has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy
+  has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
+  has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
 
   has_one :apple_sync_log, -> { feeds }, foreign_key: :feeder_id, class_name: "SyncLog"
@@ -54,6 +54,8 @@ class Feed < ApplicationRecord
 
   after_initialize :set_defaults
   before_validation :sanitize_text
+  before_create :set_public_feeds_url
+  before_save :remove_url, if: :private?
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
@@ -75,6 +77,16 @@ class Feed < ApplicationRecord
     self.title = sanitize_text_only(title) if title_changed?
   end
 
+  def set_public_feeds_url
+    if public? && url.blank? && ENV["PUBLIC_FEEDS_URL_PREFIX"].present?
+      self.url = "#{ENV["PUBLIC_FEEDS_URL_PREFIX"]}/#{podcast.path}/#{published_path}"
+    end
+  end
+
+  def remove_url
+    self.url = nil
+  end
+
   def default?
     slug.nil?
   end
@@ -93,19 +105,27 @@ class Feed < ApplicationRecord
 
   def published_url(include_token = nil)
     if private?
-      private_path = "#{podcast.base_private_url}/#{published_path}"
-
-      if include_token == true
-        "#{private_path}?auth=#{tokens.first&.token}"
-      elsif include_token.present?
-        "#{private_path}?auth=#{include_token}"
-      elsif include_token.nil?
-        "#{private_path}{?auth}"
-      else
-        private_path
-      end
+      published_private_url(include_token)
     else
-      "#{podcast&.base_published_url}/#{published_path}"
+      published_public_url
+    end
+  end
+
+  def published_public_url
+    "#{podcast&.base_published_url}/#{published_path}"
+  end
+
+  def published_private_url(include_token = nil)
+    private_path = "#{podcast.base_private_url}/#{published_path}"
+
+    if include_token == true
+      "#{private_path}?auth=#{tokens.first&.token}"
+    elsif include_token.present?
+      "#{private_path}?auth=#{include_token}"
+    elsif include_token.nil?
+      "#{private_path}{?auth}"
+    else
+      private_path
     end
   end
 

@@ -29,7 +29,9 @@
       <%= help_text t(".help.description") %>
     </div>
     <div class="card-body">
-      <%= form.trix_editor :description %>
+      <div class="form-floating">
+        <%= form.trix_editor :description %>
+      </div>
     </div>
   </div>
 </div>
