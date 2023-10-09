@@ -33,6 +33,10 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   if ENV["ASSET_HOST"].present?
     config.asset_host = ENV["ASSET_HOST"]
+    config.public_file_server.headers = {
+      "Access-Control-Allow-Origin" => "*",
+      "Cache-Control" => "public, max-age=#{30.days.to_i}"
+    }
   end
 
   # Specifies the header that your server uses for sending files.
