@@ -135,7 +135,7 @@ class EpisodesController < ApplicationController
   end
 
   def episode_params
-    nilify params.fetch(:episode, {}).permit(
+    nilify(params.fetch(:episode, {}).permit(
       :title,
       :clean_title,
       :subtitle,
@@ -154,6 +154,14 @@ class EpisodesController < ApplicationController
       :original_guid,
       categories: [],
       images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
-    )
+    ).tap do |p|
+      p[:released_at] = released_at_zone.parse(p[:released_at]) if p[:released_at].present?
+    end)
+  end
+
+  # released_at needs to be parsed in the selected zone
+  def released_at_zone
+    zone_name = params.fetch(:episode, {}).fetch(:released_at_zone, "")
+    ActiveSupport::TimeZone[zone_name] || ActiveSupport::TimeZone["UTC"]
   end
 end

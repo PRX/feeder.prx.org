@@ -24,9 +24,7 @@ pin "local-time", to: "https://ga.jspm.io/npm:local-time@2.1.0/app/assets/javasc
 pin "lodash", to: "https://ga.jspm.io/npm:lodash@4.17.21/lodash.js"
 pin "morphdom", to: "https://ga.jspm.io/npm:morphdom@2.7.0/dist/morphdom.js"
 pin "highcharts", to: "https://ga.jspm.io/npm:highcharts@11.1.0/highcharts.js"
-
-# NOTE: this one seems a bit broken, so appended `export default window.SlimSelect;` to the file
-pin "slim-select", preload: true # @2.4.1
+pin "slim-select", preload: true # @2.6.0
 
 # evaporate multipart uploads
 pin "evaporate" # @2.1.4

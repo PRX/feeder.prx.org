@@ -39,7 +39,7 @@ en:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
       short: "%m/%d"
-      time_12_hour: "%-l:%M %p %Z"
+      time_12_hour: "%-l:%M %p"
       day_and_date: "%A, %m/%d"
   lang_code:
     "ach": Acholi
@@ -364,6 +364,9 @@ en:
           video: Video
         original_guid: GUID
         released_at: Dropdate
+        released_at_date: Date
+        released_at_time: Time
+        released_at_zone: Time Zone
         production_notes: Production Notes
         publishing_status: Status
         publishing_statuses:
@@ -986,6 +989,9 @@ en:
       help:
         ad_breaks: Enter the number of ad breaks (midrolls) these episodes will have. Accurately entering the number of ad breaks help us to better predict ad inventory for your podcast.
         medium: Enter the file format you plan to upload for these episodes.
+      label:
+        publish_time: Publish Time
+        publish_time_zone: Time Zone
     helper:
       period_options:
         every_one: Every week

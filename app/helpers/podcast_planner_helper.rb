@@ -22,7 +22,7 @@ module PodcastPlannerHelper
     24.times.flat_map do |hour|
       [0, 30].map do |minute|
         time = epoch.change(hour: hour, min: minute)
-        [I18n.l(time, format: :time_12_hour), time.to_i]
+        [I18n.l(time, format: :time_12_hour), time.strftime("%T")]
       end
     end
   end
