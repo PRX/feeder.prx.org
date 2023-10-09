@@ -49,8 +49,14 @@ module Apple
     end
 
     def filter_episodes_to_archive(eps)
+      eps_to_sync = Set.new(episodes_to_sync)
+
+      # Episodes to archive can include:
+      # - episodes that are now excluded from the feed
+      # - episodes that are deleted or unpublished
+      # - episodes that have fallen off the end of the feed (Feed#display_episodes_count)
       eps
-        .filter { |ep| ep.deleted? || !ep.published? }
+        .reject { |ep| eps_to_sync.include?(ep) }
         .reject(&:apple_new?)
         .reject(&:archived?)
     end

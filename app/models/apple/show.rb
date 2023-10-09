@@ -166,7 +166,6 @@ module Apple
 
         podcast_episodes
           .filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }
-          .reject { |e| e.deleted? }
       end
     end
 

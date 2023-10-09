@@ -99,50 +99,29 @@ describe Apple::Publisher do
   describe "#filter_episodes_to_archive" do
     let(:episode) { build(:apple_episode) }
 
-    it "should filter episodes that are not deleted" do
-      episode.stub(:deleted?, true) do
+    it "should filter episodes that are not in the private feed" do
+      apple_publisher.stub(:episodes_to_sync, []) do
         assert_equal [episode], apple_publisher.filter_episodes_to_archive([episode])
       end
 
-      episode.stub(:deleted?, false) do
+      apple_publisher.stub(:episodes_to_sync, [episode]) do
         assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
       end
     end
 
     it "should filter episodes that don't have apple state" do
-      episode.feeder_episode.touch(:deleted_at)
-
-      episode.stub(:apple_new?, false) do
-        assert_equal [episode], apple_publisher.filter_episodes_to_archive([episode])
-      end
-
       episode.stub(:apple_new?, true) do
-        assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
+        apple_publisher.stub(:episodes_to_sync, []) do
+          assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
+        end
       end
     end
 
     it "should filter episodes that are archived" do
-      episode.feeder_episode.touch(:deleted_at)
-
-      episode.stub(:archived?, false) do
-        assert_equal [episode], apple_publisher.filter_episodes_to_archive([episode])
-      end
-
       episode.stub(:archived?, true) do
-        assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
-      end
-    end
-
-    it "should filter episodes that are published" do
-      assert_equal false, episode.deleted?
-      assert_equal false, episode.archived?
-
-      episode.stub(:published?, false) do
-        assert_equal [episode], apple_publisher.filter_episodes_to_archive([episode])
-      end
-
-      episode.stub(:published?, true) do
-        assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
+        apple_publisher.stub(:episodes_to_sync, []) do
+          assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
+        end
       end
     end
   end
