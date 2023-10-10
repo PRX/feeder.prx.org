@@ -51,7 +51,7 @@ class PodcastImport < ApplicationRecord
   end
 
   def done?
-    status_complete? && status_invalid? && status_error?
+    status_complete? || status_invalid? || status_error?
   end
 
   def undone?

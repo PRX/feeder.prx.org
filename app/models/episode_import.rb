@@ -26,16 +26,21 @@ class EpisodeImport < ApplicationRecord
 
   def set_defaults
     self.status ||= CREATED
+    self.config ||= {}
+  end
+
+  def all_media_status
+    episode.media.append(episode.uncut).concat(episode.images).compact.map(&:status)
   end
 
   def status_from_media!
-    stats = media.append(uncut).concat(images).compact.map(&:status).uniq
+    stats = all_media_status
 
     if stats.include?(ERROR)
       status_error!
     elsif stats.include?(INVALID)
       status_invalid!
-    elsif stats.all?(COMPLETE)
+    elsif stats.empty? || stats.all?(COMPLETE)
       status_complete!
     else
       status_importing!
@@ -52,7 +57,7 @@ class EpisodeImport < ApplicationRecord
   end
 
   def done?
-    status_complete? && status_invalid? && status_error?
+    status_complete? || status_invalid? || status_error?
   end
 
   def undone?
