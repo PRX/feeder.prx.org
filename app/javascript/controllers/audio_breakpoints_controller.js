@@ -99,8 +99,6 @@ export default class extends Controller {
       }
     )
 
-    console.log(this.postRollPoint, this.durationValue)
-
     this.breakpointMarkers.push(
       postRollMarker || {
         id: "postRoll",
