@@ -142,9 +142,7 @@ export default class extends Controller {
     let newBreakpointMarker = {
       ...breakpointMarker,
       changed: new Date().getMilliseconds(),
-      startTime: hasEndTime
-        ? Math.max(this.minTime, Math.min(newStartTime, newEndTime, this.maxTime))
-        : newStartTime,
+      startTime: hasEndTime ? Math.max(this.minTime, Math.min(newStartTime, newEndTime, this.maxTime)) : newStartTime,
       endTime: hasEndTime ? Math.min(this.durationValue, Math.max(newStartTime, newEndTime, this.minTime)) : undefined,
     }
     const isSegment = !!newBreakpointMarker.endTime
