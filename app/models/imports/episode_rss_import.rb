@@ -23,8 +23,6 @@ class EpisodeRssImport < EpisodeImport
   rescue => err
     status_error!
     raise err
-  ensure
-    podcast_import.status_from_episodes!
   end
 
   def audio_content_params

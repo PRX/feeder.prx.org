@@ -33,13 +33,24 @@ class PodcastRssImport < PodcastImport
     end
   end
 
+  def url=(value)
+    @feed = nil
+    self.feed_rss = nil
+    self.feed_episode_count = nil
+    super
+  end
+
+  def feed_rss=(value)
+    @feed = nil
+    super
+  end
+
   def validate_rss
     if url.blank?
       errors.add(:url, :blank)
     elsif !HttpUrlValidator.http_url?(url)
       errors.add(:url, :not_http_url)
-    elsif url_changed?
-      @feed = nil
+    else
       self.feed_episode_count = feed.entries.count
     end
   rescue ImportUtils::HttpError

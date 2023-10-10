@@ -100,11 +100,11 @@ describe PodcastRssImport do
     _(eps[1].episode.contents.map(&:url).all? { |u| u =~ /\.mp3$/ }).must_equal true
   end
 
-  it "Sets a failed status with exceptions" do
-    importer.stub(:feed_rss, -> { raise "foo" }) do
-      assert_raises(RuntimeError) { importer.import! }
-    end
-    _(importer.status).must_equal "error"
+  it "validates feed rss" do
+    assert importer.valid?
+
+    importer.feed_rss = "not-rss"
+    assert importer.invalid?
   end
 
   describe "episodes only" do

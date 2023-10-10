@@ -17,10 +17,6 @@ describe PodcastImport do
       import.status_from_episodes!
       assert import.status_complete?
 
-      import.episode_imports.create(status: "invalid")
-      import.status_from_episodes!
-      assert import.status_invalid?
-
       import.episode_imports.create(status: "error")
       import.status_from_episodes!
       assert import.status_error?

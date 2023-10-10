@@ -10,7 +10,7 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
 
   let(:feed) { Feedjira.parse(test_file("/fixtures/transistor_two.xml")) }
   let(:import_1) { PodcastImport.create(podcast: @podcast, url: feed.url) }
-  let(:params) { {url: feed.url} }
+  let(:params) { {url: feed.url, type: "PodcastRssImport"} }
 
   test "should get index" do
     get podcast_imports_url(@podcast)
@@ -49,19 +49,12 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "validates creating imports" do
-    post podcast_imports_url(@podcast), params: {podcast_import: {url: ""}}
+    post podcast_imports_url(@podcast), params: {podcast_import: params.merge(url: "")}
     assert_response :unprocessable_entity
   end
 
   def stub_requests
     stub_request(:get, "https://transistor.prx.org")
-      .with(
-        headers: {
-          "Accept" => "*/*",
-          "Host" => "transistor.prx.org:443",
-          "User-Agent" => "PRX CMS FeedValidator"
-        }
-      )
       .to_return(status: 200, body: test_file("/fixtures/transistor_two.xml"))
   end
 end

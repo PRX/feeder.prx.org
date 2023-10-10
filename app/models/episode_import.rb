@@ -11,6 +11,7 @@ class EpisodeImport < ApplicationRecord
   scope :having_duplicate_guids, -> { where(has_duplicate_guid: true) }
 
   before_validation :set_defaults, on: :create
+  after_update :set_podcast_import_status
 
   enum :status, {
     created: CREATED,
@@ -26,6 +27,10 @@ class EpisodeImport < ApplicationRecord
   def set_defaults
     self.status ||= CREATED
     self.config ||= {}
+  end
+
+  def set_podcast_import_status
+    podcast_import.status_from_episodes! if status_previously_changed?
   end
 
   def import!
