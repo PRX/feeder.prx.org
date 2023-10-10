@@ -1,18 +1,17 @@
 require "active_support/concern"
 require "prx_access"
+require "net/http"
+require "uri"
 
 module ImportUtils
   extend ActiveSupport::Concern
 
-  AUDIO_SAVED = "audio saved".freeze
-  COMPLETE = "complete".freeze
   CREATED = "created".freeze
-  SAVED = "saved".freeze
-  FAILED = "failed".freeze
-  FEED_RETRIEVED = "feed retrieved".freeze
-  IMPORTING = "importing".freeze
-  RETRYING = "retrying".freeze
   STARTED = "started".freeze
+  IMPORTING = "importing".freeze
+  COMPLETE = "complete".freeze
+  INVALID = "invalid".freeze
+  ERROR = "error".freeze
 
   included do
     include Rails.application.routes.url_helpers
@@ -21,13 +20,6 @@ module ImportUtils
   def enclosure_url(entry)
     url = entry[:feedburner_orig_enclosure_link] || enclosure_url_from_entry(entry)
     clean_string(url)
-  end
-
-  def default_episode_url(episode)
-    # TODO no access to the story id here, so we can't build the url
-    # path = "#{story.class.name.underscore.pluralize}/#{story.id}"
-    #  ENV['PRX_HOST'].nil? ? nil : "https://#{ENV['PRX_HOST']}/#{path}"
-    nil
   end
 
   def clean_title(str)
@@ -98,6 +90,15 @@ module ImportUtils
       filename = URI.parse(url || "").path.split("/").last
       file.filename == filename
     end
+  end
+
+  def http_get(url)
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true if uri.scheme == "https"
+    req = Net::HTTP::Get.new(uri)
+    req["User-Agent"] = "PRX-Feeder-Import/1.0 (Rails-#{Rails.env})"
+    http.request(req).body
   end
 
   private
