@@ -25,7 +25,7 @@ class PodcastImport < ApplicationRecord
   end
 
   def status_from_episodes!
-    stats = episode_imports.group(:status).count
+    stats = with_lock { episode_imports.group(:status).count }
 
     if (stats.keys - [COMPLETE, ERROR]).empty?
       if stats[ERROR]

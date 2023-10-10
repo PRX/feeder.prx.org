@@ -32,13 +32,13 @@ describe PodcastImport do
 
       import.status_from_episodes!
       assert import.undone?
-      assert podcast.locked?
+      assert podcast.reload.locked?
 
       import.episode_imports.first.update(status: "error")
 
       import.status_from_episodes!
       assert import.done?
-      refute podcast.locked?
+      refute podcast.reload.locked?
     end
   end
 end
