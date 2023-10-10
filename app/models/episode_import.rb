@@ -19,10 +19,26 @@ class EpisodeImport < ApplicationRecord
   }, prefix: true
 
   scope :done, -> { where(status: [COMPLETE, INVALID, ERROR]) }
-  scope :undone, -> { where.not.done }
+  scope :undone, -> { where.not(status: [COMPLETE, INVALID, ERROR]) }
 
   def set_defaults
     self.status ||= CREATED
+  end
+
+  def status_from_media!
+    stats = media.append(uncut).concat(images).compact.map(&:status).uniq
+
+    if stats.include?(ERROR)
+      status_error!
+    elsif stats.include?(INVALID)
+      status_invalid!
+    elsif stats.all?(COMPLETE)
+      status_complete!
+    else
+      status_importing!
+    end
+
+    podcast_import.status_from_episodes! if status_previously_changed?
   end
 
   def import!

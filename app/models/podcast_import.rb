@@ -18,7 +18,7 @@ class PodcastImport < ApplicationRecord
   }, prefix: true
 
   scope :done, -> { where(status: [COMPLETE, INVALID, ERROR]) }
-  scope :undone, -> { where.not.done }
+  scope :undone, -> { where.not(status: [COMPLETE, INVALID, ERROR]) }
 
   def set_defaults
     self.status ||= CREATED
@@ -39,6 +39,8 @@ class PodcastImport < ApplicationRecord
     else
       status_importing!
     end
+
+    unlock_podcast! if done?
   end
 
   def import!
@@ -54,5 +56,9 @@ class PodcastImport < ApplicationRecord
 
   def undone?
     !done?
+  end
+
+  def unlock_podcast!
+    podcast.update!(locked: false)
   end
 end
