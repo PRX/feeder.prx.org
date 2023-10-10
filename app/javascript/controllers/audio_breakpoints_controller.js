@@ -34,6 +34,8 @@ export default class extends Controller {
     )
 
     endTimeInput?.setAttribute("placeholder", convertSecondsToDuration(this.durationValue))
+
+    this.maxTime = this.durationValue - 0.01
   }
 
   /**
@@ -97,11 +99,13 @@ export default class extends Controller {
       }
     )
 
+    console.log(this.postRollPoint, this.durationValue)
+
     this.breakpointMarkers.push(
       postRollMarker || {
         id: "postRoll",
         labelText: this.labelPostRollValue,
-        startTime: this.postRollPoint || this.durationValue,
+        startTime: this.postRollPoint || this.maxTime,
         endTime: this.durationValue,
       }
     )
@@ -139,7 +143,7 @@ export default class extends Controller {
       ...breakpointMarker,
       changed: new Date().getMilliseconds(),
       startTime: hasEndTime
-        ? Math.max(this.minTime, Math.min(newStartTime, newEndTime, this.durationValue))
+        ? Math.max(this.minTime, Math.min(newStartTime, newEndTime, this.maxTime))
         : newStartTime,
       endTime: hasEndTime ? Math.min(this.durationValue, Math.max(newStartTime, newEndTime, this.minTime)) : undefined,
     }
@@ -169,7 +173,7 @@ export default class extends Controller {
       }
     } else {
       const inValidStartTime =
-        newBreakpointMarker.startTime <= this.minTime || newBreakpointMarker.startTime >= this.durationValue
+        newBreakpointMarker.startTime <= this.minTime || newBreakpointMarker.startTime >= this.maxTime
       const intersectingSegment = this.breakpointMarkers.find(
         ({ id: iId, startTime: iStartTime, endTime: iEndTime }) =>
           id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime
