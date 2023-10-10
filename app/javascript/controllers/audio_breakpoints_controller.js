@@ -353,11 +353,11 @@ export default class extends Controller {
       control.dataset.audioBreakpointIdValue = id
       control.dataset.audioBreakpointLabelValue = labelText
 
-      if (startTime != null && startTime > this.minTime && startTime < this.durationValue) {
+      if (startTime != null && startTime > this.minTime && startTime < this.maxTime) {
         control.dataset.audioBreakpointStartTimeValue = startTime
       }
 
-      if (endTime != null && endTime > this.minTime && endTime < this.durationValue) {
+      if (endTime != null && endTime > this.minTime && endTime < this.maxTime) {
         control.dataset.audioBreakpointEndTimeValue = endTime
       }
 
