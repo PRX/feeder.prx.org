@@ -1,19 +1,18 @@
 require "test_helper"
 require "prx_access"
 
-describe EpisodeImport do
+describe EpisodeRssImport do
   let(:user) { create(:user) }
-  let(:account_id) { user.authorized_account_ids(:podcast_edit).first }
   let(:podcast) { create(:podcast) }
 
-  let(:importer) { create(:podcast_import, account_id: account_id, podcast: podcast) }
+  let(:importer) { create(:podcast_import, podcast: podcast) }
 
   let(:feed) { Feedjira.parse(test_file("/fixtures/transistor_two.xml")) }
   let(:entry) { feed.entries.first }
   let(:entry_libsyn) { feed.entries.last }
 
   let(:episode_import) do
-    EpisodeImport.create!(
+    EpisodeRssImport.create!(
       podcast_import: importer,
       entry: entry.to_h,
       guid: "https://transistor.prx.org/?p=1286"
@@ -21,7 +20,7 @@ describe EpisodeImport do
   end
 
   let(:libsyn_episode_import) do
-    EpisodeImport.create!(
+    EpisodeRssImport.create!(
       podcast_import: importer,
       entry: entry.to_h,
       guid: "https://transistor.prx.org/?p=1287"
@@ -45,7 +44,8 @@ describe EpisodeImport do
   end
 
   it "creates an episode on import" do
-    f = episode_import.import
+    episode_import.import!
+    f = episode_import.episode
     _(f.description).must_match(/For the next few episodes/)
     _(f.description).wont_match(/feedburner/)
     _(f.categories).must_include "Indie Features"
@@ -82,13 +82,14 @@ describe EpisodeImport do
   end
 
   it "creates correctly for libsyn entries" do
-    e = libsyn_episode_import.import
+    e = libsyn_episode_import
+    e.import!
     e.reload
     assert e.valid?
   end
 
   it "creates audio entries" do
-    ei = EpisodeImport.create!(
+    ei = EpisodeRssImport.create!(
       podcast_import: importer,
       entry: entry.to_h,
       guid: "https://transistor.prx.org/?p=1286"
@@ -96,23 +97,23 @@ describe EpisodeImport do
 
     _(ei.audio["files"].present?).must_equal(false)
 
-    ei.import
+    ei.import!
 
     _(ei.audio["files"].present?).must_equal(true)
   end
 
-  it "sets a failed status" do
-    ei = EpisodeImport.create!(
+  it "sets an error status" do
+    ei = EpisodeRssImport.create!(
       podcast_import: importer,
       entry: entry.to_h,
       guid: "https://transistor.prx.org/?p=1286"
     )
 
     ei.stub(:set_audio_metadata!, -> { raise "boom" }) do
-      assert_raises(RuntimeError) { ei.import }
+      assert_raises(RuntimeError) { ei.import! }
     end
 
-    _(ei.status).must_equal "failed"
+    _(ei.status).must_equal "error"
   end
 
   describe "helper methods" do
