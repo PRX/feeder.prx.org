@@ -38,10 +38,6 @@ describe EpisodeRssImport do
     ENV["PORTER_SNS_TOPIC"] = prev_sns
   end
 
-  before do
-    stub_episode_requests
-  end
-
   it "creates an episode on import" do
     episode_import.import!
     f = episode_import.episode
@@ -167,40 +163,4 @@ describe EpisodeRssImport do
       %w[UnClean y N 1 0].each { |x| _(episode_import.explicit(x)).must_be_nil }
     end
   end
-end
-
-def stub_episode_requests
-  stub_request(:get, "http://feeds.prx.org/transistor_stem")
-    .to_return(status: 200, body: test_file("/fixtures/transistor_two.xml"), headers: {})
-
-  stub_request(:get, "https://www.prx.org/search/all.atom?q=radio")
-    .to_return(status: 200, body: test_file("/fixtures/prx-atom.xml"), headers: {})
-
-  stub_request(:post, "https://id.prx.org/token")
-    .to_return(status: 200,
-      body: '{"access_token":"thisisnotatoken","token_type":"bearer"}',
-      headers: {"Content-Type" => "application/json; charset=utf-8"})
-
-  stub_request(:get, "https://feeder.prx.org/api/v1")
-    .with(headers: {"Authorization" => "Bearer thisisnotatoken"})
-    .to_return(status: 200, body: json_file("feeder_root"), headers: {})
-
-  stub_request(:get, /https:\/\/feeder.prx.org\/api\/v1\/podcasts\/\d+/)
-    .to_return(status: 200, body: json_file("transistor_podcast_basic"), headers: {})
-
-  stub_request(:post, "https://feeder.prx.org/api/v1/podcasts")
-    .with(body: /prxUri/)
-    .to_return(status: 200, body: json_file("transistor_podcast_basic"), headers: {})
-
-  stub_request(:post, "https://feeder.prx.org/api/v1/podcasts/51/episodes")
-    .with(body: /prxUri/,
-      headers: {"Authorization" => "Bearer thisisnotatoken"})
-    .to_return(status: 200, body: json_file("transistor_episode"), headers: {})
-
-  stub_request(:get, "https://feeder.prx.org/api/v1/authorization/episodes/153e6ea8-6485-4d53-9c22-bd996d0b3b03")
-    .with(headers: {"Authorization" => "Bearer thisisnotatoken"})
-    .to_return(status: 200, body: json_file("transistor_episode"), headers: {})
-
-  stub_request(:get, "https://cdn-transistor.prx.org/shake.jpg")
-    .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
 end

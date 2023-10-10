@@ -236,16 +236,6 @@ describe PodcastRssImport do
 end
 
 def stub_requests
-  stub_request(:put, "https://feeder.prx.org/api/v1/podcasts/51")
-    .with(body: "{\"copyright\":\"Copyright 2016 PRX\",\"language\":\"en-US\",\"updateFrequency\":\"1\",\"updatePeriod\":\"hourly\",\"summary\":\"Transistor is a podcast of scientific curiosities and current events, featuring guest hosts, scientists, and story-driven reporters. Presented by radio and podcast powerhouse PRX, with support from the Sloan Foundation.\",\"link\":\"https://transistor.prx.org\",\"explicit\":\"false\",\"newFeedUrl\":\"http://feeds.prx.org/transistor_stem\",\"enclosurePrefix\":\"https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/\",\"feedburnerUrl\":\"http://feeds.feedburner.com/transistor_stem\",\"url\":\"http://feeds.feedburner.com/transistor_stem\",\"author\":{\"name\":\"PRX\",\"email\":null},\"managingEditor\":{\"name\":\"PRX\",\"email\":\"prxwpadmin@prx.org\"},\"owner\":{\"name\":\"PRX\",\"email\":\"prxwpadmin@prx.org\"},\"itunesCategories\":[{\"name\":\"Science\",\"subcategories\":[\"Natural Sciences\"]}],\"categories\":[],\"complete\":false,\"keywords\":[],\"serialOrder\":false,\"locked\":true}",
-      headers: {"Accept" => "application/json", "Authorization" => "Bearer thisisnotatoken", "Content-Type" => "application/json", "Host" => "feeder.prx.org", "User-Agent" => "HyperResource 0.9.4"})
-    .to_return(status: 200, body: "", headers: {})
-
-  stub_request(:put, "https://feeder.prx.org/api/v1/podcasts/51")
-    .with(body: "{\"locked\":false}",
-      headers: {"Accept" => "application/json", "Authorization" => "Bearer thisisnotatoken", "Content-Type" => "application/json", "Host" => "feeder.prx.org", "User-Agent" => "HyperResource 0.9.4"})
-    .to_return(status: 200, body: "", headers: {})
-
   stub_request(:get, "http://feeds.prx.org/transistor_stem")
     .to_return(status: 200, body: test_file("/fixtures/transistor_two.xml"), headers: {})
 
@@ -255,54 +245,9 @@ def stub_requests
   stub_request(:get, "https://www.prx.org/search/all.atom?q=radio")
     .to_return(status: 200, body: test_file("/fixtures/prx-atom.xml"), headers: {})
 
-  stub_request(:post, "https://id.prx.org/token")
-    .to_return(status: 200,
-      body: '{"access_token":"thisisnotatoken","token_type":"bearer"}',
-      headers: {"Content-Type" => "application/json; charset=utf-8"})
-
-  stub_request(:get, "https://feeder.prx.org/api/v1")
-    .with(headers: {"Authorization" => "Bearer thisisnotatoken"})
-    .to_return(status: 200, body: json_file("feeder_root"), headers: {})
-
-  stub_request(:get, "https://feeder.prx.org/api/v1/podcasts/51")
-    .with(headers: {"Authorization" => "Bearer thisisnotatoken"})
-    .to_return(status: 200, body: json_file("transistor_podcast_basic"), headers: {})
-
-  stub_request(:post, "https://feeder.prx.org/api/v1/podcasts")
-    .with(body: /prxUri/)
-    .to_return(status: 200, body: json_file("transistor_podcast_basic"), headers: {})
-
-  stub_request(:post, "https://feeder.prx.org/api/v1/podcasts/51/episodes")
-    .with(body: /prxUri/,
-      headers: {"Authorization" => "Bearer thisisnotatoken"})
-    .to_return(status: 200, body: json_file("transistor_episode"), headers: {})
-
-  stub_request(:get, "https://feeder.prx.org/api/v1/authorization/episodes/153e6ea8-6485-4d53-9c22-bd996d0b3b03")
-    .with(headers: {"Authorization" => "Bearer thisisnotatoken"})
-    .to_return(status: 200, body: json_file("transistor_episode"), headers: {})
-
-  stub_request(:get, "https://feeder.prx.org/api/v1/podcasts/23")
-    .with(headers: {"Authorization" => "Bearer thisisnotatoken"})
-    .to_return(status: 200, body: json_file("transistor_podcast_basic"), headers: {})
-
   stub_request(:get, "http://feeds.prx.org/transistor_stem_duped")
     .to_return(status: 200, body: test_file("/fixtures/transistor_dupped_guids.xml"), headers: {})
 
   stub_request(:get, "http://feeds.prx.org/feed_with_video")
     .to_return(status: 200, body: test_file("/fixtures/99pi-feed-rss.xml"), headers: {})
-
-  stub_request(:get, "https://cdn-transistor.prx.org/transistor1400.jpg")
-    .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
-
-  stub_request(:get, "https://f.prxu.org/99pi/images/6a748676-76e8-45fd-8de2-a868a58f6b8b/99-1400.png")
-    .to_return(status: 200, body: test_file("/fixtures/99-1400.png"), headers: {})
-
-  stub_request(:get, "https://cdn-transistor.prx.org/shake.jpg")
-    .to_return(status: 200, body: test_file("/fixtures/transistor1400.jpg"), headers: {})
-
-  stub_request(:get, "http://cdn-transistor.prx.org/transistor300.png")
-    .to_return(status: 200, body: test_file("/fixtures/transistor300.png"), headers: {})
-
-  stub_request(:get, "https://f.prxu.org/99pi/images/42384e27-3dd6-497f-991f-67fabb7e6e5b/99-300.png")
-    .to_return(status: 200, body: test_file("/fixtures/99-300.png"), headers: {})
 end
