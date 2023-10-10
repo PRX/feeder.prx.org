@@ -6,11 +6,13 @@ require "uri"
 module ImportUtils
   extend ActiveSupport::Concern
 
+  class HttpError < StandardError
+  end
+
   CREATED = "created".freeze
   STARTED = "started".freeze
   IMPORTING = "importing".freeze
   COMPLETE = "complete".freeze
-  INVALID = "invalid".freeze
   ERROR = "error".freeze
 
   included do
@@ -98,7 +100,13 @@ module ImportUtils
     http.use_ssl = true if uri.scheme == "https"
     req = Net::HTTP::Get.new(uri)
     req["User-Agent"] = "PRX-Feeder-Import/1.0 (Rails-#{Rails.env})"
-    http.request(req).body
+    res = http.request(req)
+
+    if res.is_a? Net::HTTPSuccess
+      res.body
+    else
+      raise HttpError.new("bad response from #{url}")
+    end
   end
 
   private

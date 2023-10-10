@@ -4,23 +4,27 @@ class EpisodeRssImport < EpisodeImport
   validates :guid, presence: true
 
   def set_defaults
-    self.audio ||= {files: []}
     super
+    self.audio ||= {files: []}
   end
 
   def import!
     status_started!
-
     set_audio_metadata!
-    create_or_update_episode!
-    set_file_resources!
-    episode.save!
 
     status_importing!
+    create_or_update_episode!
+    set_file_resources!
+
+    episode.save!
+    episode.copy_media
+
+    status_complete!
   rescue => err
     status_error!
-    podcast_import.status_from_episodes!
     raise err
+  ensure
+    podcast_import.status_from_episodes!
   end
 
   def audio_content_params
@@ -48,7 +52,6 @@ class EpisodeRssImport < EpisodeImport
     episode.save!
     episode.images.reset
     episode.contents.reset
-    episode.copy_media
   end
 
   def entry_audio_files(entry)

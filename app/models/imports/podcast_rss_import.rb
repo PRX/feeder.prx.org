@@ -5,12 +5,13 @@ class PodcastRssImport < PodcastImport
 
   has_many :episode_imports, dependent: :destroy, class_name: "EpisodeRssImport", foreign_key: :podcast_import_id
 
-  validates :url, presence: true
+  validate :validate_rss
+  validates :url, presence: true, http_url: true
 
   def set_defaults
-    self.episodes_only = false
-    self.audio = {}
     super
+    self.episodes_only ||= false
+    self.audio ||= {}
   end
 
   def feed_rss
@@ -30,6 +31,29 @@ class PodcastRssImport < PodcastImport
       end
       parsed
     end
+  end
+
+  def validate_rss
+    if url.blank?
+      errors.add(:url, :blank)
+    elsif !HttpUrlValidator.http_url?(url)
+      errors.add(:url, :not_http_url)
+    elsif url_changed?
+      @feed = nil
+      self.feed_episode_count = feed.entries.count
+    end
+  rescue ImportUtils::HttpError
+    errors.add(:url, :bad_http_response, message: "bad http response")
+  rescue
+    errors.add(:url, :invalid_rss, message: "invalid rss")
+  end
+
+  def import_metadata
+    !episodes_only
+  end
+
+  def import_metadata=(val)
+    self.episodes_only = (val == "0") ? true : !val
   end
 
   def config_url=(config_url)

@@ -17,36 +17,15 @@ class EpisodeImport < ApplicationRecord
     started: STARTED,
     importing: IMPORTING,
     complete: COMPLETE,
-    invalid: INVALID,
     error: ERROR
   }, prefix: true
 
-  scope :done, -> { where(status: [COMPLETE, INVALID, ERROR]) }
-  scope :undone, -> { where.not(status: [COMPLETE, INVALID, ERROR]) }
+  scope :done, -> { where(status: [COMPLETE, ERROR]) }
+  scope :undone, -> { where.not(status: [COMPLETE, ERROR]) }
 
   def set_defaults
     self.status ||= CREATED
     self.config ||= {}
-  end
-
-  def all_media_status
-    episode.media.append(episode.uncut).concat(episode.images).compact.map(&:status)
-  end
-
-  def status_from_media!
-    stats = all_media_status
-
-    if stats.include?(ERROR)
-      status_error!
-    elsif stats.include?(INVALID)
-      status_invalid!
-    elsif stats.empty? || stats.all?(COMPLETE)
-      status_complete!
-    else
-      status_importing!
-    end
-
-    podcast_import.status_from_episodes! if status_previously_changed?
   end
 
   def import!
@@ -57,7 +36,7 @@ class EpisodeImport < ApplicationRecord
   end
 
   def done?
-    status_complete? || status_invalid? || status_error?
+    status_complete? || status_error?
   end
 
   def undone?

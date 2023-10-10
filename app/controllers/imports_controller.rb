@@ -4,7 +4,7 @@ class ImportsController < ApplicationController
 
   # GET /imports
   def index
-    @imports = @podcast.podcast_imports
+    @imports = @podcast.podcast_imports.order(created_at: :asc)
     @import = @podcast.podcast_imports.new
     authorize @podcast, :show?
   end
@@ -15,24 +15,17 @@ class ImportsController < ApplicationController
 
   # POST /imports
   def create
-    @imports = @podcast.podcast_imports
+    @imports = @podcast.podcast_imports.order(created_at: :asc)
     @import = @podcast.podcast_imports.new(import_params)
     authorize @import
-    begin
-      @import.get_feed
-    rescue URI::InvalidURIError
-      flash.now[:notice] = t(".failure_get_feed")
-      render :index, status: :unprocessable_entity
-      return
-    end
 
     respond_to do |format|
       if @import.save
-        @import.import_later(import_metadata)
-        format.html { redirect_to podcast_import_path(@podcast, @import), notice: t(".success") }
+        @import.import_later
+        format.html { redirect_to podcast_imports_path(@podcast), notice: t(".success") }
       else
         format.html do
-          flash.now[:notice] = t(".failure")
+          flash.now[:error] = t(".failure")
           render :index, status: :unprocessable_entity
         end
       end
@@ -52,11 +45,9 @@ class ImportsController < ApplicationController
   # Only allow a list of trusted parameters through.
   def import_params
     params.fetch(:podcast_import, {}).permit(
+      :import_metadata,
+      :type,
       :url
     )
-  end
-
-  def import_metadata
-    ActiveRecord::Type::Boolean.new.cast(params[:podcast_import][:import_metadata])
   end
 end

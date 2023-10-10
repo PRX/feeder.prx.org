@@ -13,12 +13,11 @@ class PodcastImport < ApplicationRecord
     started: STARTED,
     importing: IMPORTING,
     complete: COMPLETE,
-    invalid: INVALID,
     error: ERROR
   }, prefix: true
 
-  scope :done, -> { where(status: [COMPLETE, INVALID, ERROR]) }
-  scope :undone, -> { where.not(status: [COMPLETE, INVALID, ERROR]) }
+  scope :done, -> { where(status: [COMPLETE, ERROR]) }
+  scope :undone, -> { where.not(status: [COMPLETE, ERROR]) }
 
   def set_defaults
     self.status ||= CREATED
@@ -28,11 +27,9 @@ class PodcastImport < ApplicationRecord
   def status_from_episodes!
     stats = episode_imports.group(:status).count
 
-    if (stats.keys - [COMPLETE, INVALID, ERROR]).empty?
+    if (stats.keys - [COMPLETE, ERROR]).empty?
       if stats[ERROR]
         status_error!
-      elsif stats[INVALID]
-        status_invalid!
       else
         status_complete!
       end
@@ -51,7 +48,7 @@ class PodcastImport < ApplicationRecord
   end
 
   def done?
-    status_complete? || status_invalid? || status_error?
+    status_complete? || status_error?
   end
 
   def undone?
