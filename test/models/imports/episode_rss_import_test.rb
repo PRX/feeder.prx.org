@@ -1,5 +1,4 @@
 require "test_helper"
-require "prx_access"
 
 describe EpisodeRssImport do
   let(:user) { create(:user) }

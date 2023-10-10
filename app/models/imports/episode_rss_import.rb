@@ -1,8 +1,6 @@
 class EpisodeRssImport < EpisodeImport
   store :config, accessors: [:entry, :audio], coder: JSON
 
-  scope :having_duplicate_guids, -> { where(has_duplicate_guid: true) }
-
   validates :guid, presence: true
 
   def set_defaults

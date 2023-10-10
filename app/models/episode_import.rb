@@ -7,6 +7,9 @@ class EpisodeImport < ApplicationRecord
   belongs_to :podcast_import
   has_one :podcast, through: :podcast_import
 
+  scope :non_duplicates, -> { where(has_duplicate_guid: false) }
+  scope :having_duplicate_guids, -> { where(has_duplicate_guid: true) }
+
   before_validation :set_defaults, on: :create
 
   enum :status, {

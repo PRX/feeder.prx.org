@@ -1,13 +1,11 @@
 require "test_helper"
-require "prx_access"
 require "ostruct"
 
-describe PodcastImport do
+describe PodcastRssImport do
   let(:user) { create(:user) }
-  let(:account_id) { user.authorized_account_ids(:podcast_edit).first }
   let(:podcast_url) { "http://feeds.prx.org/transistor_stem" }
   let(:podcast) { create(:podcast) }
-  let(:importer) { PodcastImport.create(podcast: podcast, account_id: account_id, url: podcast_url) }
+  let(:importer) { PodcastRssImport.create(podcast: podcast, url: podcast_url) }
   let(:sns) { SnsMock.new }
 
   around do |test|
@@ -27,8 +25,10 @@ describe PodcastImport do
   let(:feed) { Feedjira.parse(test_file("/fixtures/transistor_two.xml")) }
 
   it "retrieves a valid feed" do
-    importer.get_feed
+    importer.feed
     _(importer.feed).wont_be_nil
+    _(importer.feed_rss).wont_be_nil
+    _(importer.config[:feed_rss]).wont_be_nil
   end
 
   it "retrieves a config" do
@@ -39,11 +39,11 @@ describe PodcastImport do
 
   it "fails when feed is invalid" do
     importer.url = "https://www.prx.org/search/all.atom?q=radio"
-    _ { importer.get_feed }.must_raise(RuntimeError)
+    _ { importer.feed }.must_raise(RuntimeError)
   end
 
   it "updates a podcast" do
-    importer.feed = feed
+    importer.feed_rss = test_file("/fixtures/transistor_two.xml")
     importer.create_or_update_podcast!
     _(importer.podcast).wont_be_nil
     _(importer.podcast.account_id).wont_be_nil
@@ -72,10 +72,10 @@ describe PodcastImport do
 
   it "creates podcast episode imports using a config" do
     importer.config_url = "http://test.prx.org/transistor_import_config.json"
-    importer.import
+    importer.import!
 
     eps = importer.episode_imports.reset
-    eps.map(&:import)
+    eps.map(&:import!)
     importer = eps.first.podcast_import
 
     # get the memoized importer
@@ -84,15 +84,15 @@ describe PodcastImport do
   end
 
   it "imports a feed" do
-    importer.import
+    importer.import!
   end
 
   it "handles audio and video in episodes" do
     importer.url = "http://feeds.prx.org/feed_with_video"
-    importer.import
+    importer.import!
 
     eps = importer.episode_imports.reset.sort_by(&:guid)
-    eps.map(&:import)
+    eps.map(&:import!)
 
     _(eps.length).must_equal 2
 
@@ -101,10 +101,10 @@ describe PodcastImport do
   end
 
   it "Sets a failed status with exceptions" do
-    importer.stub(:get_feed, -> { raise "foo" }) do
-      assert_raises(RuntimeError) { importer.import }
+    importer.stub(:feed_rss, -> { raise "foo" }) do
+      assert_raises(RuntimeError) { importer.import! }
     end
-    _(importer.status).must_equal "failed"
+    _(importer.status).must_equal "error"
   end
 
   describe "episodes only" do
@@ -114,12 +114,12 @@ describe PodcastImport do
 
     it "must have podcast set" do
       importer.podcast = nil
-      _ { importer.import }.must_raise("No podcast for import of episodes only")
+      _ { importer.import! }.must_raise("No podcast for import of episodes only")
     end
 
     it "imports with a podcast" do
       importer.podcast = podcast
-      importer.import
+      importer.import!
     end
   end
 
@@ -185,147 +185,52 @@ describe PodcastImport do
   describe("#episode_imports") do
     it("should create episode import placeholders") do
       importer.url = "http://feeds.prx.org/transistor_stem_duped"
-      importer.import
+      importer.import!
       _(importer.episode_imports.having_duplicate_guids.count).must_equal 3
-      _(importer.episode_imports.count).must_equal 3
+      _(importer.episode_imports.non_duplicates.count).must_equal 3
     end
 
     it("should delete all import placeholders with each import") do
       importer.url = "http://feeds.prx.org/transistor_stem_duped"
-      importer.import_podcast!
+      importer.import!
       # invoke the creation of placeholders
-      importer.import_episodes!
       importer.create_or_update_episode_imports!
       _(importer.episode_imports.having_duplicate_guids.count).must_equal 3
     end
   end
 
   describe("#parse_feed_entries_for_dupe_guids") do
-    let(:rss_feed) { Feedjira.parse(test_file("/fixtures/transistor_dupped_guids.xml")) }
-
     it "will parse feed entries for good and duped entries" do
-      importer.feed = rss_feed
+      importer.feed_rss = test_file("/fixtures/transistor_dupped_guids.xml")
       good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
       _(good_entries.length).must_equal 3
       _(dupped_guid_entries.length).must_equal 3
     end
 
     it "handles entry lists of size 0" do
-      importer.feed = []
-      good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
-      _(good_entries.length).must_equal 0
-      _(dupped_guid_entries.length).must_equal 0
+      importer.stub(:feed, []) do
+        good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
+        _(good_entries.length).must_equal 0
+        _(dupped_guid_entries.length).must_equal 0
+      end
     end
 
     it "handles entry lists of size 1" do
-      importer.feed = [OpenStruct.new(entry_id: 1)]
-      good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
-      _(good_entries.length).must_equal 1
-      _(dupped_guid_entries.length).must_equal 0
+      importer.stub(:feed, [OpenStruct.new(entry_id: 1)]) do
+        good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
+        _(good_entries.length).must_equal 1
+        _(dupped_guid_entries.length).must_equal 0
+      end
     end
   end
 
   describe("#feed_episode_count") do
     it "registers the count of episodes in the feed" do
-      importer.import
+      importer.import!
       _(importer.feed_episode_count).must_equal 2
       _(importer.episode_imports.count).must_equal 2
 
       _(importer.podcast.episodes.count).must_equal 0
-    end
-  end
-
-  describe("#status") do
-    it "sets a status based on the episode imports" do
-      importer.import
-      _(importer.status).must_equal PodcastImport::IMPORTING
-
-      ep1 = importer.episode_imports[0]
-      ep2 = importer.episode_imports[1]
-
-      _(importer.status).must_equal PodcastImport::IMPORTING
-
-      ep1.update! status: PodcastImport::COMPLETE
-      ep2.update! status: PodcastImport::COMPLETE
-
-      importer.reload
-
-      _(importer.complete?).must_equal true
-      _(importer.finished?).must_equal true
-      _(importer.some_failed?).must_equal false
-      _(importer.status).must_equal PodcastImport::COMPLETE
-    end
-
-    it "is failed so long as the import is finished" do
-      importer.import
-      _(importer.status).must_equal PodcastImport::IMPORTING
-
-      ep1 = importer.episode_imports[0]
-      ep2 = importer.episode_imports[1]
-
-      ep1.update! status: PodcastImport::FAILED
-      ep2.update! status: PodcastImport::COMPLETE
-
-      importer.reload
-
-      _(importer.complete?).must_equal false
-      _(importer.finished?).must_equal true
-      _(importer.some_failed?).must_equal true
-      _(importer.status).must_equal PodcastImport::FAILED
-    end
-
-    it "is in progress so long as the episode imports are not all created" do
-      importer.import
-
-      # simulate a more imports than currently created
-      importer.update(feed_episode_count: 3)
-      _(importer.episode_imports.length).must_equal 2
-
-      ep1 = importer.episode_imports[0]
-      ep2 = importer.episode_imports[1]
-
-      ep1.update! status: PodcastImport::FAILED
-      ep2.update! status: PodcastImport::FAILED
-
-      importer.reload
-
-      _(importer.complete?).must_equal false
-      _(importer.finished?).must_equal false
-      _(importer.some_failed?).must_equal true
-      _(importer.status).must_equal PodcastImport::IMPORTING
-    end
-
-    it "is in progress so long as the episode imports are not finished" do
-      importer.import
-
-      # simulate a more imports than currently created
-      _(importer.episode_imports.length).must_equal 2
-
-      ep1 = importer.episode_imports[0]
-      ep2 = importer.episode_imports[1]
-
-      ep1.update! status: PodcastImport::FAILED
-      ep2.update! status: PodcastImport::SAVED
-
-      importer.reload
-
-      _(importer.complete?).must_equal false
-      _(importer.finished?).must_equal false
-      _(importer.some_failed?).must_equal true
-      _(importer.status).must_equal PodcastImport::IMPORTING
-    end
-
-    it "should unlock the podcast distribution once all the episodes are imported" do
-      importer.import
-
-      ep1 = importer.episode_imports[0]
-      ep2 = importer.episode_imports[1]
-
-      ep1.update! status: PodcastImport::COMPLETE
-      ep2.update! status: PodcastImport::FAILED
-
-      ep1.import
-      _(importer.podcast.locked).must_equal false
     end
   end
 end
