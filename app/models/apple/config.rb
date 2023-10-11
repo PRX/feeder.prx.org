@@ -63,6 +63,14 @@ module Apple
       ac
     end
 
+    def self.mark_as_delivered!(apple_publisher)
+      apple_publisher.episodes_to_sync.each do |episode|
+        if episode.podcast_container&.needs_delivery? == false
+          episode.feeder_episode.apple_has_delivery!
+        end
+      end
+    end
+
     def self.setup_delegated_delivery(podcast, key: nil, apple_config: nil, apple_show_id: nil)
       ac = apple_config || build_apple_config(podcast, key)
       ac.save!
@@ -73,6 +81,8 @@ module Apple
 
       pub = ac.build_publisher
       pub.poll!
+
+      mark_as_delivered!(pub)
     end
 
     def publish_to_apple?
