@@ -109,7 +109,7 @@ export default class extends Controller {
       const zoomView = peaksInstance.views.getView("zoomview")
       const overviewView = peaksInstance.views.getView("overview")
 
-      zoomView.setMinSegmentDragWidth(0)
+      zoomView.setMinSegmentDragWidth(1)
       zoomView.setAmplitudeScale(2)
 
       // Prevent segments from overlapping other segments.

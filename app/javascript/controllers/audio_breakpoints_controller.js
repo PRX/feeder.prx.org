@@ -34,6 +34,8 @@ export default class extends Controller {
     )
 
     endTimeInput?.setAttribute("placeholder", convertSecondsToDuration(this.durationValue))
+
+    this.maxTime = this.durationValue - 0.01
   }
 
   /**
@@ -101,7 +103,7 @@ export default class extends Controller {
       postRollMarker || {
         id: "postRoll",
         labelText: this.labelPostRollValue,
-        startTime: this.postRollPoint || this.durationValue,
+        startTime: this.postRollPoint || this.maxTime,
         endTime: this.durationValue,
       }
     )
@@ -138,9 +140,7 @@ export default class extends Controller {
     let newBreakpointMarker = {
       ...breakpointMarker,
       changed: new Date().getMilliseconds(),
-      startTime: hasEndTime
-        ? Math.max(this.minTime, Math.min(newStartTime, newEndTime, this.durationValue))
-        : newStartTime,
+      startTime: hasEndTime ? Math.max(this.minTime, Math.min(newStartTime, newEndTime, this.maxTime)) : newStartTime,
       endTime: hasEndTime ? Math.min(this.durationValue, Math.max(newStartTime, newEndTime, this.minTime)) : undefined,
     }
     const isSegment = !!newBreakpointMarker.endTime
@@ -169,7 +169,7 @@ export default class extends Controller {
       }
     } else {
       const inValidStartTime =
-        newBreakpointMarker.startTime <= this.minTime || newBreakpointMarker.startTime >= this.durationValue
+        newBreakpointMarker.startTime <= this.minTime || newBreakpointMarker.startTime >= this.maxTime
       const intersectingSegment = this.breakpointMarkers.find(
         ({ id: iId, startTime: iStartTime, endTime: iEndTime }) =>
           id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime
@@ -351,11 +351,11 @@ export default class extends Controller {
       control.dataset.audioBreakpointIdValue = id
       control.dataset.audioBreakpointLabelValue = labelText
 
-      if (startTime != null && startTime > this.minTime && startTime < this.durationValue) {
+      if (startTime != null && startTime > this.minTime && startTime < this.maxTime) {
         control.dataset.audioBreakpointStartTimeValue = startTime
       }
 
-      if (endTime != null && endTime > this.minTime && endTime < this.durationValue) {
+      if (endTime != null && endTime > this.minTime && endTime < this.maxTime) {
         control.dataset.audioBreakpointEndTimeValue = endTime
       }
 
