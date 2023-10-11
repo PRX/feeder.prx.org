@@ -58,23 +58,22 @@ module Apple
       api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
 
+    # Creates the `#apple_sync_log` attributes for the given episodes
+    # and returns the created `SyncLog` records
+    # This indicates that there is a remote pair for the episode
     def self.poll_episode_state(api, show, episodes)
-      guid_to_apple_json = show.apple_episode_json.map do |ep_json|
-        [ep_json["attributes"]["guid"], ep_json]
-      end.to_h
-
       # Only sync episodes that have a remote pair
-      episodes_to_sync = episodes.filter { |ep| guid_to_apple_json[ep.guid].present? }
+      episodes_to_sync = episodes.filter { |ep| show.find_apple_episode_json_by_guid(ep.guid).present? }
 
       bridge_params = episodes_to_sync.map do |ep|
-        id = guid_to_apple_json[ep.guid]["id"]
-        guid = guid_to_apple_json[ep.guid]["attributes"]["guid"]
-        Episode.get_episode_bridge_params(api, id, guid)
+        apple_json = show.find_apple_episode_json_by_guid(ep.guid)
+        apple_episode_id = apple_json["id"]
+        Episode.get_episode_bridge_params(api, ep.feeder_id, apple_episode_id)
       end
 
       results = api.bridge_remote_and_retry!("getEpisodes", bridge_params)
 
-      join_on("guid", episodes_to_sync, results).map do |(ep, row)|
+      join_on("feeder_id", episodes_to_sync, results).map do |(ep, row)|
         upsert_sync_log(ep, row)
       end
     end
@@ -220,11 +219,11 @@ module Apple
       SyncLog.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
     end
 
-    def self.get_episode_bridge_params(api, apple_id, guid)
+    def self.get_episode_bridge_params(api, feeder_id, apple_id)
       {
         request_metadata: {
           apple_episode_id: apple_id,
-          guid: guid
+          feeder_id: feeder_id
         },
         api_url: api.join_url("episodes/#{apple_id}").to_s,
         api_parameters: {}
@@ -232,7 +231,7 @@ module Apple
     end
 
     def get_episode_bridge_params
-      self.class.get_episode_bridge_params(api, apple_id, guid)
+      self.class.get_episode_bridge_params(api, feeder_id, apple_id)
     end
 
     def create_episode_bridge_params
