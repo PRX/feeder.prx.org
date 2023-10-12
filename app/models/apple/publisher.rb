@@ -49,14 +49,14 @@ module Apple
     end
 
     def filter_episodes_to_archive(eps)
-      eps_to_sync = Set.new(episodes_to_sync)
+      eps_in_private_feed = Set.new(show.apple_private_feed_episodes)
 
       # Episodes to archive can include:
       # - episodes that are now excluded from the feed
       # - episodes that are deleted or unpublished
       # - episodes that have fallen off the end of the feed (Feed#display_episodes_count)
       eps
-        .reject { |ep| eps_to_sync.include?(ep) }
+        .reject { |ep| eps_in_private_feed.include?(ep) }
         .reject(&:apple_new?)
         .reject(&:archived?)
     end

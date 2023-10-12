@@ -96,31 +96,118 @@ describe Apple::Publisher do
     end
   end
 
-  describe "#filter_episodes_to_archive" do
-    let(:episode) { build(:apple_episode) }
+  describe "Archive and Unarchive flows" do
+    let(:podcast) { create(:podcast) }
+    let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+    let(:private_feed) { create(:private_feed, podcast: podcast) }
+    let(:apple_config) { create(:apple_config, public_feed: public_feed, private_feed: private_feed) }
+    let(:episode) { create(:episode, podcast: podcast) }
+    let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
+    let(:apple_publisher) { apple_config.build_publisher }
+    let(:apple_api) { apple_publisher.api }
+    let(:apple_episode) { Apple::Episode.new(show: apple_publisher.show, feeder_episode: episode, api: apple_api) }
 
-    it "should filter episodes that are not in the private feed" do
-      apple_publisher.stub(:episodes_to_sync, []) do
-        assert_equal [episode], apple_publisher.filter_episodes_to_archive([episode])
-      end
-
-      apple_publisher.stub(:episodes_to_sync, [episode]) do
-        assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
-      end
+    before do
+      Apple::Show.connect_existing("123", apple_config)
+      episode.create_apple_sync_log(external_id: "123", **apple_episode_api_response)
     end
 
-    it "should filter episodes that don't have apple state" do
-      episode.stub(:apple_new?, true) do
-        apple_publisher.stub(:episodes_to_sync, []) do
-          assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
+    describe "#episodes_to_archive" do
+      it "should select episodes that are not in the private feed" do
+        # it's in the feed
+        assert_equal [episode], private_feed.feed_episodes
+        # so no archive
+        assert_equal [], apple_publisher.episodes_to_archive
+
+        private_feed.update!(exclude_tags: ["apple-excluded"])
+        episode.update!(categories: ["apple-excluded"])
+        apple_publisher.show.reload
+
+        # it's not in the feed
+        assert_equal [], private_feed.feed_episodes
+        assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_archive.map(&:feeder_id)
+      end
+
+      it "should archive episodes that are deleted" do
+        # destroy it from the feed
+        apple_episode.feeder_episode.destroy
+        assert_equal [], private_feed.feed_episodes
+        apple_publisher.show.reload
+
+        # it's deleted, but still in the list of podcast epiodes
+        assert_equal [apple_episode.feeder_id], apple_publisher.show.podcast_episodes.map(&:feeder_id)
+
+        assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_archive.map(&:feeder_id)
+      end
+
+      it "should reject episodes that don't have apple state" do
+        # Remove the apple state to model a un-synced episode
+        apple_episode.sync_log.destroy!
+        apple_episode.feeder_episode.destroy
+        assert_equal [], private_feed.feed_episodes
+        apple_publisher.show.reload
+
+        # it's deleted, but still in the list of podcast epiodes
+        assert_equal [apple_episode.feeder_id], apple_publisher.show.podcast_episodes.map(&:feeder_id)
+        apple_episode = apple_publisher.show.podcast_episodes.first
+
+        # lacks apple state
+        assert apple_episode.apple_new?
+
+        assert_equal [], apple_publisher.episodes_to_archive
+      end
+
+      describe "archived episodes" do
+        let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "ARCHIVED", apple_episode_id: "123") }
+
+        it "should reject episodes that are already archived" do
+          # Typical case where the episode is deleted and will be archived
+          apple_episode.feeder_episode.destroy
+          assert_equal [], private_feed.feed_episodes
+          apple_publisher.show.reload
+          # reload the episode
+          apple_episode = apple_publisher.show.podcast_episodes.first
+          # pointer equals
+          assert_equal [apple_episode.object_id], apple_publisher.show.podcast_episodes.map(&:object_id)
+
+          assert apple_episode.archived?
+
+          assert_equal [], apple_publisher.episodes_to_archive
         end
       end
+
+      it "should archive an upublished episode" do
+        apple_episode.feeder_episode.update!(published_at: nil, released_at: nil)
+        refute apple_episode.published?
+
+        assert_equal [], private_feed.feed_episodes
+        apple_publisher.show.reload
+        # reload the episode
+        apple_episode = apple_publisher.show.podcast_episodes.first
+
+        assert_equal [apple_episode], apple_publisher.episodes_to_archive
+      end
     end
 
-    it "should filter episodes that are archived" do
-      episode.stub(:archived?, true) do
-        apple_publisher.stub(:episodes_to_sync, []) do
-          assert_equal [], apple_publisher.filter_episodes_to_archive([episode])
+    describe "#episode_to_unarchive" do
+      let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "ARCHIVED", apple_episode_id: "123") }
+
+      it "should select episodes that are in the private feed" do
+        assert_equal [episode], private_feed.feed_episodes
+        # episodes to sync includes the archived episode
+        assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_sync.map(&:feeder_id)
+        assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
+      end
+
+      describe "non-archived episodes" do
+        let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "DRAFTING", apple_episode_id: "123") }
+
+        it "should not select the episode" do
+          assert_equal [episode], private_feed.feed_episodes
+          assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_sync.map(&:feeder_id)
+
+          # does not un-archive the episode
+          assert_equal [], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
         end
       end
     end
