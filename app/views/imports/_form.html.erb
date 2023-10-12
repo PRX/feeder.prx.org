@@ -1,4 +1,4 @@
-<%= form_with(url: podcast_imports_path(import.podcast), model: [import.podcast, import], method: :post, html: {autocomplete: "off"}) do |form| %>
+<%= form_with(url: podcast_imports_path(import.podcast), model: [import.podcast, import.becomes(PodcastImport)], method: :post, html: {autocomplete: "off"}) do |form| %>
   <div class="row my-4">
     <div class="col-lg-8">
       <%= render "form_main", imports: imports, podcast: podcast, form: form %>
