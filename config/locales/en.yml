@@ -421,9 +421,16 @@ en:
         credit: Credit
       podcast_import:
         import_metadata: Import Podcast Metadata
+        statuses:
+          created: Queued
+          started: Running
+          importing: Importing
+          complete: Complete
+          error: Error
         type: Import Type
         types:
           PodcastRssImport: RSS
+          PodcastTimingsImport: Midroll Timings
         url: RSS Feed URL
       media_resource:
         original_url:
@@ -801,7 +808,12 @@ en:
       success: Beginning import.
       failure: Could not begin import.
       failure_get_feed: Missing or invalid URL.
-    form_main:
+    form:
+      title: Import
+      submit: Start Import
+      help:
+        import_metadata: If selected, the values from the RSS feed channel will override any values added to the Metadata tab. For example, if the title in the feed differs from the podcast title previously listed, the title in the RSS feed will be used.
+    table:
       id: ID
       status: Status
       progress: Progress
@@ -809,11 +821,6 @@ en:
       url: Feed Url
       import_date: Import Date
       no_imports: No imports
-    form_status:
-      title: Import
-      submit: Start Import
-      help:
-        import_metadata: If selected, the values from the RSS feed channel will override any values added to the Metadata tab. For example, if the title in the feed differs from the podcast title previously listed, the title in the RSS feed will be used.
     import:
       id: Import ID
       url: URL

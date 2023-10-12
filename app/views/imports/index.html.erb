@@ -1,5 +1,18 @@
 <%= render "podcasts/tabs" %>
 
-<div class="my-4 px-2">
-  <%= render "form", import: @import, imports: @imports, podcast: @podcast %>
+<div class="row my-4 mx-2">
+  <div class="col-lg-8">
+    <div class="row">
+      <%= render "table", imports: @imports %>
+    </div>
+  </div>
+  <div class="col-lg-4 d-grid align-content-start gap-3">
+    <div class="row">
+      <div class="col-12">
+        <% if policy(@import).create? %>
+          <%= render "form", import: @import %>
+        <% end %>
+      </div>
+    </div>
+  </div>
 </div>

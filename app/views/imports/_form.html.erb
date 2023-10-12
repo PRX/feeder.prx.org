@@ -1,12 +1,35 @@
-<%= form_with(url: podcast_imports_path(import.podcast), model: [import.podcast, import.becomes(PodcastImport)], method: :post, html: {autocomplete: "off"}) do |form| %>
-  <div class="row my-4">
-    <div class="col-lg-8">
-      <%= render "form_main", imports: imports, podcast: podcast, form: form %>
+<%= form_with(model: import.becomes(PodcastImport), method: :post, html: {autocomplete: "off"}) do |form| %>
+  <%# hacky - but we need to cast back into the child class %>
+  <% form.object = import.becomes(import.class) %>
+
+  <div class="card shadow border-0">
+    <div class="card-header-success">
+      <h2 class="card-title h5"><%= t(".title") %></h2>
     </div>
-    <div class="col-lg-4 d-grid align-content-start gap-3">
-      <% if policy(import).create? %>
-        <%= render "form_status", form: form %>
+
+    <div class="card-body row">
+      <%= turbo_frame_tag "import-settings" do %>
+        <div class="col-12 mb-4 prx-field-group">
+          <div class="form-floating" data-controller="dynamic-form">
+            <%= form.select :type, t("helpers.label.podcast_import.types").to_a.map(&:reverse), {}, data: {action: "dynamic-form#change"} %>
+            <%= form.label :type, required: true %>
+            <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+          </div>
+        </div>
+
+        <%# if form.object.is_a? PodcastRssImport %>
+        <% if form.object.type == "PodcastTimingsImport" %>
+          <%= render "form_timings", form: form %>
+        <% else %>
+          <%= render "form_rss", form: form %>
+        <% end %>
       <% end %>
+    </div>
+
+    <div class="card-footer d-flex-align-items-center justify-content-between">
+      <div class="col-12 mb-4">
+        <%= form.submit t(".submit"), class: "btn btn-success" %>
+      </div>
     </div>
   </div>
 <% end %>
