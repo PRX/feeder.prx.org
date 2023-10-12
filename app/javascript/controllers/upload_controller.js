@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import Evaporate from "evaporate"
 import SparkMD5 from "spark-md5"
 import sha256 from "sha256"
+import humanBytes from "util/humanBytes"
 
 export default class extends Controller {
   static outlets = ["disable"]
@@ -90,7 +91,7 @@ export default class extends Controller {
       t.style.width = `${percent * 100}%`
       t.ariaValueNow = `${percent * 100}`
     })
-    this.progressBytesTargets.forEach((t) => (t.innerHTML = percent >= 0.1 ? this.humanFileSize(bytes) : ""))
+    this.progressBytesTargets.forEach((t) => (t.innerHTML = percent >= 0.1 ? humanBytes(bytes) : ""))
     this.progressPercentTargets.forEach((t) => (t.innerHTML = `${percent & 100}%`))
   }
 
@@ -103,7 +104,7 @@ export default class extends Controller {
     this.fileNameTargets.forEach((t) => (t.innerHTML = config.cleanName))
     this.fileSizeTargets.forEach((t) => {
       if (t.value === undefined) {
-        t.innerHTML = this.humanFileSize(config.file.size)
+        t.innerHTML = humanBytes(config.file.size)
       } else {
         t.value = config.file.size
       }
@@ -162,16 +163,6 @@ export default class extends Controller {
       return `${prefixNoSlashes}/${date}/${uuid}/${name}`
     } else {
       return `${date}/${uuid}/${name}`
-    }
-  }
-
-  humanFileSize(bytes) {
-    if (bytes) {
-      const i = Math.floor(Math.log(bytes) / Math.log(1024))
-      const units = ["B", "kB", "MB", "GB", "TB"][i]
-      return (bytes / Math.pow(1024, i)).toFixed(2) * 1 + " " + units
-    } else {
-      return "0 B"
     }
   }
 
