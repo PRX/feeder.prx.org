@@ -106,7 +106,7 @@ module Apple
       end
     end
 
-    def publish!(eps = nil)
+    def publish!(eps = episodes_to_sync)
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
@@ -116,8 +116,6 @@ module Apple
 
       unarchive!(episodes_to_unarchive)
       show.reload
-
-      eps = episodes_to_sync if eps.nil?
 
       Rails.logger.tagged("Apple::Publisher#publish!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
