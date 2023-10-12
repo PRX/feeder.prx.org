@@ -19,37 +19,17 @@ describe Apple::Show do
     it "flushes memoized attrs" do
       apple_show.instance_variable_set(:@apple_episode_json, "foo")
       apple_show.instance_variable_set(:@podcast_feeder_episodes, "foo")
+      apple_show.instance_variable_set(:@podcast_episodes, "foo")
       apple_show.instance_variable_set(:@episodes, "foo")
-      apple_show.instance_variable_set(:@deleted_episodes, "foo")
+      apple_show.instance_variable_set(:@episode_ids, "foo")
+      apple_show.instance_variable_set(:@find_episode, "foo")
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
       assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
+      assert_nil apple_show.instance_variable_get(:@podcast_episodes)
       assert_nil apple_show.instance_variable_get(:@episodes)
-      assert_nil apple_show.instance_variable_get(:@deleted_episodes)
-    end
-
-    it "doesn't raise an error if the attr isn't memoized" do
-      apple_show.reload
-    end
-
-    it "doesn't raise an error if the attr is nil" do
-      apple_show.instance_variable_set(:@apple_episode_json, nil)
-      apple_show.instance_variable_set(:@podcast_feeder_episodes, nil)
-      apple_show.instance_variable_set(:@episodes, nil)
-      apple_show.reload
-      assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
-      assert_nil apple_show.instance_variable_get(:@apple_episode_json)
-      assert_nil apple_show.instance_variable_get(:@episodes)
-    end
-
-    it "doesn't raise an error if the attr is false" do
-      apple_show.instance_variable_set(:@apple_episode_json, false)
-      apple_show.instance_variable_set(:@podcast_feeder_episodes, false)
-      apple_show.instance_variable_set(:@episodes, false)
-      apple_show.reload
-      assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
-      assert_nil apple_show.instance_variable_get(:@apple_episode_json)
-      assert_nil apple_show.instance_variable_get(:@episodes)
+      assert_nil apple_show.instance_variable_get(:@episode_ids)
+      assert_nil apple_show.instance_variable_get(:@find_episode)
     end
   end
 

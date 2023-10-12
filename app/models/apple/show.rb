@@ -46,7 +46,8 @@ module Apple
       @podcast_feeder_episodes = nil
       @podcast_episodes = nil
       @episodes = nil
-      @deleted_episodes = nil
+      @episode_ids = nil
+      @find_episode = nil
     end
 
     def podcast
