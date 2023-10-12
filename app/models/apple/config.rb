@@ -28,8 +28,15 @@ module Apple
     validates_associated :private_feed
 
     validates :public_feed, uniqueness: {scope: :private_feed,
-                                         message: "can only have one credential per public and private feed"}
+                                         message: "can only have one config per public and private feed"}
     validates :public_feed, exclusion: {in: ->(apple_credential) { [apple_credential.private_feed] }}
+
+    validate :one_config_per_podcast, on: :create
+    validate :feed_podcasts_match
+
+    def self.has_apple_config?(podcast)
+      podcast.default_feed.apple_configs.present?
+    end
 
     def self.find_or_build_private_feed(podcast)
       if (existing = podcast.feeds.find_by(slug: DEFAULT_FEED_SLUG, title: DEFAULT_TITLE))
@@ -55,7 +62,13 @@ module Apple
     end
 
     def self.build_apple_config(podcast, key)
-      ac = Apple::Config.new
+      if has_apple_config?(podcast)
+        Rails.logger.error("Found existing apple config for #{podcast.title}!")
+        Rails.logger.error("Do you want to continue? (y/N)")
+        raise "Stopping build_apple_config" if $stdin.gets.chomp.downcase != "y"
+      end
+
+      ac = podcast.default_feed.apple_configs.first || Apple::Config.new
       ac.public_feed = podcast.default_feed
       ac.private_feed = find_or_build_private_feed(podcast)
       ac.key = key
@@ -83,6 +96,23 @@ module Apple
       pub.poll!
 
       mark_as_delivered!(pub)
+    end
+
+    def one_config_per_podcast
+      return unless public_feed.present? && private_feed.present?
+      return unless podcast.present?
+
+      if podcast.feeds.map(&:apple_configs).flatten.compact.present?
+        errors.add(:podcast, "can only have one apple config")
+      end
+    end
+
+    def feed_podcasts_match
+      return unless public_feed.present? && private_feed.present?
+
+      if public_feed.podcast != private_feed.podcast
+        errors.add(:public_feed, "must belong to the same podcast as the private feed")
+      end
     end
 
     def publish_to_apple?

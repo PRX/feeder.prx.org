@@ -282,11 +282,6 @@ describe PublishingPipelineState do
           public_feed: f1,
           private_feed: f2,
           publish_enabled: true)
-
-        create(:apple_config,
-          public_feed: f1,
-          private_feed: f3,
-          publish_enabled: true)
       end
 
       it "can publish via the apple configs" do
@@ -299,7 +294,7 @@ describe PublishingPipelineState do
         end
         PublishingPipelineState.complete!(podcast)
         assert_equal(
-          ["complete", "published_rss", "published_rss", "published_rss", "published_apple", "published_apple", "started", "created"],
+          ["complete", "published_rss", "published_rss", "published_rss", "published_apple", "started", "created"],
           PublishingPipelineState.order(id: :desc).pluck(:status)
         )
       end
