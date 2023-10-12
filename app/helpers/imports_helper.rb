@@ -6,4 +6,8 @@ module ImportsHelper
       "0"
     end
   end
+
+  def import_timings_pasted?
+    params.dig(:podcast_import, :pasted).present?
+  end
 end

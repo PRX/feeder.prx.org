@@ -48,6 +48,7 @@ class ImportsController < ApplicationController
   # Only allow a list of trusted parameters through.
   def import_params
     params.fetch(:podcast_import, {}).permit(
+      :file_name,
       :import_metadata,
       :timings,
       :type,
