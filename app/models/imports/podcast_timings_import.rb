@@ -10,10 +10,6 @@ class PodcastTimingsImport < PodcastImport
 
   validate :validate_timings, if: :timings_changed?
 
-  def set_defaults
-    super
-  end
-
   def timings=(val)
     @csv = nil
     super(val)
@@ -69,8 +65,41 @@ class PodcastTimingsImport < PodcastImport
       return errors.add(:timings, :timings_not_found)
     end
 
-    # check if the first row looks like a header
+    # check if the first row looks like a header and set the count
     self.has_header = !has_episode_with_guid?(csv.first[guid_index].strip)
+    self.feed_episode_count = has_header ? csv.count - 1 : csv.count
+  end
+
+  def import!
+    status_started!
+
+    # cleanup existing dups - they may be recreated later
+    episode_imports.having_duplicate_guids.destroy_all
+
+    guids = []
+    rows = has_header ? csv[1..] : csv
+
+    rows.each do |row|
+      guid = row[guid_index]
+      timings = row[timings_index]
+
+      # mark dups with a completed episode import
+      if guids.include?(guid)
+        episode_imports.create!(guid: guid, timings: timings, has_duplicate_guid: true, status: :complete)
+      else
+        guids << guid
+        ei = episode_imports.non_duplicates.find_by_guid(guid) || episode_imports.build
+        ei.guid = guid
+        ei.timings = timings
+        ei.save!
+        ei.import_later
+      end
+    end
+
+    status_importing!
+  rescue => err
+    status_error!
+    raise err
   end
 
   protected
