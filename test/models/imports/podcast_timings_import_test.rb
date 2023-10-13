@@ -3,6 +3,7 @@ require "test_helper"
 describe PodcastTimingsImport do
   let(:podcast) { create(:podcast) }
   let(:import) { PodcastTimingsImport.new(podcast: podcast) }
+  let(:guid_length) { Episode.generate_item_guid(podcast.id, SecureRandom.uuid).length }
 
   describe "#csv" do
     it "parses timings" do
@@ -30,22 +31,22 @@ describe PodcastTimingsImport do
 
   describe "#minimum_guid_length" do
     it "queries for the minimum episode guid length" do
-      assert_equal 45, PodcastTimingsImport.new(podcast: podcast).minimum_guid_length
+      assert_equal guid_length, PodcastTimingsImport.new(podcast: podcast).minimum_guid_length
 
       episode = create(:episode, podcast: podcast, original_guid: "abcd")
       assert_equal 4, PodcastTimingsImport.new(podcast: podcast).minimum_guid_length
 
       episode.update!(original_guid: "abcd" * 20)
-      assert_equal 45, PodcastTimingsImport.new(podcast: podcast).minimum_guid_length
+      assert_equal guid_length, PodcastTimingsImport.new(podcast: podcast).minimum_guid_length
     end
   end
 
   describe "#maximum_guid_length" do
     it "queries for the maximum episode guid length" do
-      assert_equal 45, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length
+      assert_equal guid_length, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length
 
       episode = create(:episode, podcast: podcast, original_guid: "abcd")
-      assert_equal 45, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length
+      assert_equal guid_length, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length
 
       episode.update!(original_guid: "abcd" * 20)
       assert_equal 80, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length

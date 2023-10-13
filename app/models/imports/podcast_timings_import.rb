@@ -124,24 +124,7 @@ class PodcastTimingsImport < PodcastImport
 
   def find_timings_index(row)
     row.find_index do |val|
-      if val.strip == "{}"
-        true
-      elsif val.starts_with?("{") && val.ends_with?("}")
-        all_floats?(val[1...-1])
-      elsif val.present?
-        all_floats?(val)
-      end
+      true unless EpisodeTimingsImport.parse_timings(val).nil?
     end
-  end
-
-  def all_floats?(str)
-    floats = str.split(",").map(&:strip).map do |part|
-      part.match(/\A[0-9.]+\z/) && Float(part)
-    rescue
-      nil
-    end
-
-    # all must be numbers, > 0 must be decimals
-    floats.all?(&:present?) && floats.any? { |f| f != f.round }
   end
 end
