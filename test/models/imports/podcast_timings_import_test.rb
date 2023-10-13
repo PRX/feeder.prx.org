@@ -153,4 +153,54 @@ describe PodcastTimingsImport do
       end
     end
   end
+
+  describe "#import!" do
+    let(:import) { create(:podcast_timings_import, podcast: podcast) }
+    let(:csv) do
+      [
+        ["The Title", "The Guid", "Timings", "Something Else"],
+        ["aaaa", "guid1", "{}", "whatever"],
+        ["aaaa", "guid2", "{1.23}", "whatever"],
+        ["aaaa", "guid3", "4.56", "whatever"],
+        ["aaaa", "guid3", "dup1", "whatever"],
+        ["aaaa", "guid3", "dup2", "whatever"]
+      ]
+    end
+    let(:job_count) { 0 }
+
+    around do |test|
+      import.stub(:has_episode_with_guid?, ->(g) { g.starts_with?("guid") }) do
+        test.call
+      end
+    end
+
+    it "creates episode imports" do
+      import.csv = csv
+      job_count = 0
+
+      EpisodeImport.stub_any_instance(:import_later, -> { job_count += 1 }) do
+        import.import!
+        assert import.status_importing?
+
+        # 5 records created
+        eps = import.episode_imports.sort_by(&:id)
+        assert_equal 5, eps.count
+        assert_equal %w[guid1 guid2 guid3 guid3 guid3], eps.map(&:guid)
+        assert_equal %w[{} {1.23} 4.56 dup1 dup2], eps.map(&:timings)
+        assert_equal [false, false, false, true, true], eps.map(&:has_duplicate_guid)
+
+        # but the 2 dups don't get jobs
+        assert_equal 3, job_count
+      end
+    end
+
+    it "handles errors" do
+      import.csv = csv
+
+      EpisodeImport.stub_any_instance(:import_later, -> { raise "woh!" }) do
+        assert_raises(RuntimeError) { import.import! }
+        assert import.status_error?
+      end
+    end
+  end
 end
