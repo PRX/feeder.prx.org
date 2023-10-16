@@ -29,27 +29,23 @@
           <td><%= import.feed_episode_count if import.feed_episode_count.present? %></td>
         </tr>
         <tr>
-          <td><%= t(".success") %></td>
-          <td><%= import.episode_imports.complete.count %></td>
-        </tr>
-        <tr>
           <td><%= t(".in_progress") %></td>
-          <td><%= import.episode_imports.in_progress.count %></td>
+          <td><%= import.episode_imports.undone.count %></td>
         </tr>
         <tr>
-          <td><%= t(".remaining") %></td>
-          <td><%= import.remaining_import_count %></td>
+          <td><%= t(".success") %></td>
+          <td><%= import.episode_imports.status_complete.count %></td>
         </tr>
         <tr>
           <td><%= t(".failed") %></td>
-          <td><%= import.episode_imports.failed.count %></td>
+          <td><%= import.episode_imports.status_error.count %></td>
         </tr>
         <tr>
           <td><%= t(".duplicate") %></td>
-          <td><%= import.episode_import_placeholders.count %></td>
+          <td><%= import.episode_imports.having_duplicate_guids.count %></td>
         </tr>
 
-        <% unless import.status_complete? || import.status_failed? %>
+        <% if import.undone? %>
           <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
         <% end %>
       </tbody>

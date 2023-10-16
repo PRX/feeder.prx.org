@@ -10,6 +10,10 @@ class ApplicationJob < ActiveJob::Base
   rescue_from(StandardError) do |e|
     NewRelic::Agent.notice_error(e)
   ensure
-    raise e
+    if e.is_a? ActiveJob::DeserializationError
+      Rails.logger.warn(e.message)
+    else
+      raise e
+    end
   end
 end

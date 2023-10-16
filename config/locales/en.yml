@@ -313,6 +313,11 @@ en:
           attributes:
             payment_pointer:
               invalid: Payment pointers must have the format $prx.wallet.example/abcd1234
+        podcast_import:
+          attributes:
+            url:
+              bad_http_response: Unable to fetch feed url
+              invalid_rss: Not a valid RSS feed
   # form/model helpers
   helpers:
     application:
@@ -415,9 +420,11 @@ en:
         caption: Caption
         credit: Credit
       podcast_import:
-        feed_source: Feed Source
-        url: RSS Feed URL
         import_metadata: Import Podcast Metadata
+        type: Import Type
+        types:
+          PodcastRssImport: RSS
+        url: RSS Feed URL
       media_resource:
         original_url:
           audio: Segment %{position}

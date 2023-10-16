@@ -13,6 +13,7 @@ module Feeder
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
     config.autoload_paths += %W[
+      #{config.root}/app/models/imports
       #{config.root}/app/models/validators
       #{config.root}/app/representers/concerns
       #{config.root}/app/workers
@@ -20,6 +21,7 @@ module Feeder
 
     # Use Rails 7 zeitwerk eager loading
     config.eager_load_paths += %W[
+      #{config.root}/app/models/imports
       #{config.root}/app/models/validators
       #{config.root}/app/representers/concerns
       #{config.root}/app/workers

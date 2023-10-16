@@ -6,8 +6,8 @@
   <div class="card-body row">
     <div class="col-12 mb-4 prx-field-group">
       <div class="form-floating">
-        <%= form.select :feed_source, ["RSS"] %>
-        <%= form.label :feed_source, required: true %>
+        <%= form.select :type, t("helpers.label.podcast_import.types").to_a.map(&:reverse) %>
+        <%= form.label :type, required: true %>
       </div>
     </div>
 
