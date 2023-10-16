@@ -276,7 +276,7 @@ describe PublishingPipelineState do
         2.times { create(:private_feed, podcast: podcast) }
         podcast.reload
 
-        f1, f2, f3 = podcast.feeds
+        f1, f2, _f3 = podcast.feeds
 
         create(:apple_config,
           public_feed: f1,
