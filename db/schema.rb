@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_09_191606) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_16_225839) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -114,7 +114,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_09_191606) do
     t.integer "episode_id"
     t.string "guid"
     t.string "status"
-    t.boolean "has_duplicate_guid", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "type"
