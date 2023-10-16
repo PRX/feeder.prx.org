@@ -47,7 +47,7 @@ class MediaResource < ApplicationRecord
     if status_complete? && medium.present?
       medium == "audio"
     else
-      AUDIO_EXTENSIONS.include? File.extname(original_url || "").strip.downcase[1..]
+      AUDIO_EXTENSIONS.include? original_ext.strip.downcase[1..]
     end
   end
 
@@ -55,7 +55,7 @@ class MediaResource < ApplicationRecord
     if status_complete? && medium.present?
       medium == "video"
     else
-      VIDEO_EXTENSIONS.include? File.extname(original_url || "").strip.downcase[1..]
+      VIDEO_EXTENSIONS.include? original_ext.strip.downcase[1..]
     end
   end
 
@@ -142,8 +142,13 @@ class MediaResource < ApplicationRecord
     media_url_for_base(episode.base_published_url) if episode
   end
 
+  def original_ext
+    without_query = (original_url || "").split("?").first
+    File.extname(without_query || "")
+  end
+
   def media_url_for_base(base_published_url)
-    ext = File.extname(original_url || "")
+    ext = original_ext
     ext = ".mp3" if ext.blank?
     "#{base_published_url}/#{guid}#{ext}"
   end
