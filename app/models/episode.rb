@@ -224,10 +224,20 @@ class Episode < ApplicationRecord
     super
 
     if medium_changed? && medium_was.present?
-      unless medium == "audio" && medium_was == "uncut"
+      if medium_was == "uncut" && medium == "audio"
+        uncut&.mark_for_replacement
+      elsif medium_was == "audio" && medium == "uncut"
+        if contents.first&.status_complete?
+          (uncut || build_uncut).tap do |u|
+            u.original_url = contents.first.url
+            u.file_size = contents.first.file_size
+            u.duration = contents.first.duration
+          end
+        end
+        contents.each(&:mark_for_replacement)
+      else
         contents.each(&:mark_for_replacement)
       end
-      uncut&.mark_for_replacement
     end
 
     self.segment_count = 1 if medium_video?
