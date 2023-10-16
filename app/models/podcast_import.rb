@@ -26,7 +26,7 @@ class PodcastImport < ApplicationRecord
       stats = episode_imports.group(:status).count
 
       if (stats.keys - ALL_DONE).empty?
-        if stats.keys == [COMPLETE]
+        if stats.keys.empty? || stats.keys == [COMPLETE]
           status_complete!
         else
           status_error!
