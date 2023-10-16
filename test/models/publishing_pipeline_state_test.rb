@@ -276,16 +276,11 @@ describe PublishingPipelineState do
         2.times { create(:private_feed, podcast: podcast) }
         podcast.reload
 
-        f1, f2, f3 = podcast.feeds
+        f1, f2, _f3 = podcast.feeds
 
         create(:apple_config,
           public_feed: f1,
           private_feed: f2,
-          publish_enabled: true)
-
-        create(:apple_config,
-          public_feed: f1,
-          private_feed: f3,
           publish_enabled: true)
       end
 
@@ -299,7 +294,7 @@ describe PublishingPipelineState do
         end
         PublishingPipelineState.complete!(podcast)
         assert_equal(
-          ["complete", "published_rss", "published_rss", "published_rss", "published_apple", "published_apple", "started", "created"],
+          ["complete", "published_rss", "published_rss", "published_rss", "published_apple", "started", "created"],
           PublishingPipelineState.order(id: :desc).pluck(:status)
         )
       end

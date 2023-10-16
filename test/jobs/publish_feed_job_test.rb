@@ -4,6 +4,7 @@ describe PublishFeedJob do
   let(:episode) { create(:episode, prx_uri: "/api/v1/stories/87683") }
   let(:podcast) { episode.podcast }
   let(:feed) { create(:feed, podcast: podcast, slug: "adfree") }
+  let(:private_feed) { create(:private_feed, podcast: podcast) }
 
   let(:job) { PublishFeedJob.new }
 
@@ -91,7 +92,7 @@ describe PublishFeedJob do
     end
 
     describe "when the apple config is present" do
-      let(:apple_config) { create(:apple_config, public_feed: feed) }
+      let(:apple_config) { create(:apple_config, public_feed: feed, private_feed: private_feed) }
 
       it "does not schedule publishing to apple if the config is marked as not publishable" do
         apple_config.update!(publish_enabled: false)

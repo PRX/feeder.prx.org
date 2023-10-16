@@ -4,7 +4,8 @@ describe PublishAppleJob do
   let(:episode) { create(:episode, prx_uri: "/api/v1/stories/87683") }
   let(:podcast) { episode.podcast }
   let(:feed) { create(:feed, podcast: podcast, slug: "adfree") }
-  let(:apple_config) { create(:apple_config, public_feed: feed) }
+  let(:private_feed) { create(:private_feed, podcast: podcast) }
+  let(:apple_config) { create(:apple_config, public_feed: feed, private_feed: private_feed) }
 
   describe "publishing to apple" do
     it "does not publish to apple unless publish_enabled?" do
