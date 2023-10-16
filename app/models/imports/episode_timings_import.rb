@@ -38,15 +38,18 @@ class EpisodeTimingsImport < EpisodeImport
     if parse_timings.present?
       status_importing!
 
-      uncut = find_or_convert_uncut
-      return status_no_media! unless uncut.present?
+      # changing audio->uncut medium builds a new Uncut
+      episode.medium = "uncut"
+      return status_no_media! unless episode.uncut.present?
 
-      uncut.ad_breaks = parse_timings
-      return status_bad_timings! unless uncut.valid?
+      episode.uncut.ad_breaks = parse_timings
+      return status_bad_timings! unless episode.uncut.valid?
 
-      episode.uncut = uncut
-      episode.segment_count = uncut.segmentation.count
+      episode.segment_count = episode.uncut.segmentation.count
       episode.save!
+
+      # slice new contents (if any) and re-copy
+      episode.uncut.slice_contents!
       episode.copy_media
     end
 
@@ -54,15 +57,5 @@ class EpisodeTimingsImport < EpisodeImport
   rescue => err
     status_error!
     raise err
-  end
-
-  protected
-
-  def find_or_convert_uncut
-    if episode.uncut.present?
-      episode.uncut
-    elsif episode.contents.count == 1
-      episode.contents.first.becomes_uncut
-    end
   end
 end

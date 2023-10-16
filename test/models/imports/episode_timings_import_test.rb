@@ -108,18 +108,18 @@ describe EpisodeTimingsImport do
       end
     end
 
-    it "re-segments single segments" do
+    it "re-segments single contents" do
       assert content1.present?
 
       Episode.stub_any_instance(:copy_media, true) do
+        episode.update!(medium: "audio")
+
         import.import!
         assert import.status_complete?
+        assert content1.reload.deleted_at.present?
 
-        # content has been converted to uncut - reload
-        converted = MediaResource.find(content1.id)
-        assert_equal "Uncut", converted.type
-        assert_nil converted.position
-        assert_equal [[nil, 1.23], [1.23, 4.56], [4.56, nil]], converted.segmentation
+        assert episode.uncut.present?
+        assert_equal [[nil, 1.23], [1.23, 4.56], [4.56, nil]], episode.uncut.segmentation
         assert_equal 3, episode.reload.segment_count
       end
     end

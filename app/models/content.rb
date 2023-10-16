@@ -53,13 +53,6 @@ class Content < MediaResource
     Content.where(episode_id: episode_id, position: position).where.not(id: id).touch_all(:replaced_at, :deleted_at)
   end
 
-  def becomes_uncut
-    self.type = "Uncut"
-    self.position = nil
-    self.segmentation = nil
-    becomes(Uncut)
-  end
-
   private
 
   def array_segments?
