@@ -3,15 +3,15 @@
     <table class="table table-striped shadow rounded">
       <thead>
         <tr class="table-secondary">
-          <th><%= t(".status") %></th>
-          <th><%= t(".progress") %></th>
-          <th><%= t(".episode_count") %></th>
+          <th width=0><%= t(".type") %></th>
           <th><%= t(".source") %></th>
+          <th><%= t(".episode_count") %></th>
+          <th><%= t(".status") %></th>
           <th><%= t(".import_date") %></th>
         </tr>
       </thead>
       <tbody>
-        <%= render partial: "imports/table_row", collection: imports, as: :import, cached: true %>
+        <%= render partial: "imports/import", collection: imports, cached: true %>
         <% if imports.empty? %>
           <tr>
             <td class="text-center text-muted p-4" colspan="100"><%= t(".no_imports") %></td>

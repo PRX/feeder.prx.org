@@ -1,9 +1,11 @@
+<% content_for :title, t(".title", title: @podcast.title) %>
+
 <%= render "podcasts/tabs" %>
 
 <div class="row my-4 mx-2">
   <div class="col-lg-8">
     <div class="row">
-      <%= render "table", imports: @imports %>
+      <%= render "imports", imports: @imports %>
     </div>
   </div>
   <div class="col-lg-4 d-grid align-content-start gap-3">

@@ -814,6 +814,22 @@ en:
       success: Beginning import.
       failure: Could not begin import.
       failure_get_feed: Missing or invalid URL.
+    episode_import_filters:
+      filters:
+        all: All
+        done: Done
+        undone: Importing
+        errors: Errors
+      pages:
+        10: Show 10
+        20: Show 20
+        50: Show 50
+        all: Show All
+      search: Search
+    episode_imports:
+      guid: GUID
+      episode: Episode
+      status: Status
     form:
       title: Import
       submit: Start Import
@@ -823,13 +839,8 @@ en:
     form_timings:
       help:
         timings: Your timings CSV file must have a column containing Episode GUIDs, and a column containing the comma-separated timestamps in seconds that you want your midrolls inserted at.
-    table:
-      episode_count: Count
-      import_date: Import Date
-      no_imports: No imports
-      progress: Progress
-      source: Source
-      status: Status
+    index:
+      title: "%{title} - Imports"
     import:
       id: Import ID
       url: URL
@@ -841,8 +852,21 @@ en:
       remaining: Remaining to Import
       failed: Failed
       duplicate: Duplicate GUID Count
-    import_spinner:
-      importing: Importing...
+    import_status:
+      complete: Completed
+      episode_count: Episode Count
+      errors: Errors
+      status: Status
+      title: Status
+    imports:
+      episode_count: Count
+      import_date: Import Date
+      no_imports: No imports
+      source: Source
+      status: Status
+      type: Type
+    show:
+      title: "%{title} - Import %{id}"
   layouts:
     confirm_field:
       cancel: Cancel

@@ -1,5 +1,6 @@
 class EpisodeImport < ApplicationRecord
   include ImportUtils
+  include EpisodeImportFilters
 
   store :config, coder: JSON
 
@@ -9,6 +10,7 @@ class EpisodeImport < ApplicationRecord
 
   scope :non_duplicates, -> { where(has_duplicate_guid: false) }
   scope :having_duplicate_guids, -> { where(has_duplicate_guid: true) }
+  scope :filter_by_title, ->(text) { joins(:episode).where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
 
   before_validation :set_defaults, on: :create
   after_update :set_podcast_import_status

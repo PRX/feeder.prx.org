@@ -7,6 +7,15 @@
   background: $success;
 }
 
+.prx-badge-created {
+  background: $secondary;
+}
+
+.prx-badge-started,
+.prx-badge-importing {
+  background: $primary;
+}
+
 .prx-badge-processing {
   background: $info;
   color: $black;
@@ -14,6 +23,9 @@
 
 .prx-badge-incomplete-published,
 .prx-badge-invalid,
+.prx-badge-not_found,
+.prx-badge-bad_timings,
+.prx-badge-no_media,
 .prx-badge-error {
   background: $danger;
 }
