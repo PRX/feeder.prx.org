@@ -74,7 +74,7 @@ class PodcastTimingsImport < PodcastImport
     status_started!
 
     # cleanup existing dups - they may be recreated later
-    episode_imports.having_duplicate_guids.destroy_all
+    episode_imports.status_duplicate.destroy_all
 
     guids = []
     rows = has_header ? csv[1..] : csv
@@ -85,10 +85,10 @@ class PodcastTimingsImport < PodcastImport
 
       # mark dups with a completed episode import
       if guids.include?(guid)
-        episode_imports.create!(guid: guid, timings: timings, has_duplicate_guid: true, status: :complete)
+        episode_imports.create!(guid: guid, timings: timings, status: :duplicate)
       else
         guids << guid
-        ei = episode_imports.non_duplicates.find_by_guid(guid) || episode_imports.build
+        ei = episode_imports.not_status_duplicate.find_by_guid(guid) || episode_imports.build
         ei.guid = guid
         ei.timings = timings
         ei.save!

@@ -17,9 +17,10 @@ module ImportUtils
   NOT_FOUND = "not_found".freeze
   BAD_TIMINGS = "bad_timings".freeze
   NO_MEDIA = "no_media".freeze
+  DUPLICATE = "duplicate".freeze
 
-  ALL_DONE = [COMPLETE, ERROR, NOT_FOUND, BAD_TIMINGS, NO_MEDIA]
-  ALL_ERRORS = [ERROR, NOT_FOUND, BAD_TIMINGS, NO_MEDIA]
+  ALL_DONE = [COMPLETE, ERROR, NOT_FOUND, BAD_TIMINGS, NO_MEDIA, DUPLICATE]
+  ALL_ERRORS = [ERROR, NOT_FOUND, BAD_TIMINGS, NO_MEDIA, DUPLICATE]
 
   included do
     include Rails.application.routes.url_helpers

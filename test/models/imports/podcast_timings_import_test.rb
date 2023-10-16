@@ -187,7 +187,7 @@ describe PodcastTimingsImport do
         assert_equal 5, eps.count
         assert_equal %w[guid1 guid2 guid3 guid3 guid3], eps.map(&:guid)
         assert_equal %w[{} {1.23} 4.56 dup1 dup2], eps.map(&:timings)
-        assert_equal [false, false, false, true, true], eps.map(&:has_duplicate_guid)
+        assert_equal ["created", "created", "created", "duplicate", "duplicate"], eps.map(&:status)
 
         # but the 2 dups don't get jobs
         assert_equal 3, job_count

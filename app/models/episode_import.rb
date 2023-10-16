@@ -8,8 +8,6 @@ class EpisodeImport < ApplicationRecord
   belongs_to :podcast_import, touch: true
   has_one :podcast, through: :podcast_import
 
-  scope :non_duplicates, -> { where(has_duplicate_guid: false) }
-  scope :having_duplicate_guids, -> { where(has_duplicate_guid: true) }
   scope :filter_by_title, ->(text) { joins(:episode).where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
 
   before_validation :set_defaults, on: :create
@@ -23,7 +21,8 @@ class EpisodeImport < ApplicationRecord
     error: ERROR,
     not_found: NOT_FOUND,
     bad_timings: BAD_TIMINGS,
-    no_media: NO_MEDIA
+    no_media: NO_MEDIA,
+    duplicate: DUPLICATE
   }, prefix: true
 
   def set_defaults
