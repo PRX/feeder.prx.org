@@ -3,11 +3,10 @@
     <table class="table table-striped shadow rounded">
       <thead>
         <tr class="table-secondary">
-          <th><%= t(".id") %></th>
           <th><%= t(".status") %></th>
           <th><%= t(".progress") %></th>
           <th><%= t(".episode_count") %></th>
-          <th><%= t(".url") %></th>
+          <th><%= t(".source") %></th>
           <th><%= t(".import_date") %></th>
         </tr>
       </thead>
@@ -20,5 +19,10 @@
         <% end %>
       </tbody>
     </table>
+
+    <% if imports.any?(&:undone?) %>
+      <%# just keep polling until the import finishes %>
+      <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+    <% end %>
   <% end %>
 </div>

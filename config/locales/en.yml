@@ -824,13 +824,12 @@ en:
       help:
         timings: Your timings CSV file must have a column containing Episode GUIDs, and a column containing the comma-separated timestamps in seconds that you want your midrolls inserted at.
     table:
-      id: ID
-      status: Status
-      progress: Progress
-      episode_count: Episode Count
-      url: Feed Url
+      episode_count: Count
       import_date: Import Date
       no_imports: No imports
+      progress: Progress
+      source: Source
+      status: Status
     import:
       id: Import ID
       url: URL
