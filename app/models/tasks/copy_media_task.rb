@@ -53,6 +53,12 @@ class Tasks::CopyMediaTask < ::Task
     end
 
     media_resource.save!
+
+    # slice uncut media (only happens if the segment_count is 1)
+    if media_resource.is_a?(Uncut) && media_resource.segmentation_ready?
+      media_resource.slice_contents!
+      media_resource.episode.contents.each(&:copy_media)
+    end
   end
 
   private
@@ -75,7 +81,6 @@ class Tasks::CopyMediaTask < ::Task
     }
   end
 
-  # TODO: what happens to id3 on sliced files? will the 1st segment still have it?
   def porter_slice_task
     input_opts = []
     input_opts << "-ss #{media_resource.slice_start}" if media_resource.slice_start.present?

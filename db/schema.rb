@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_11_213406) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -113,12 +113,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
     t.integer "podcast_import_id"
     t.integer "episode_id"
     t.string "guid"
-    t.text "entry"
-    t.text "audio"
     t.string "status"
     t.boolean "has_duplicate_guid", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "type"
+    t.text "config"
   end
 
   create_table "episodes", id: :serial, force: :cascade do |t|
@@ -307,7 +307,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
   end
 
   create_table "podcast_imports", force: :cascade do |t|
-    t.integer "account_id"
     t.integer "podcast_id"
     t.string "url"
     t.string "status"
@@ -315,6 +314,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_22_185542) do
     t.text "config"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "type"
   end
 
   create_table "podcasts", id: :serial, force: :cascade do |t|

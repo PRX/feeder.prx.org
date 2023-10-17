@@ -39,7 +39,7 @@ en:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
       short: "%m/%d"
-      time_12_hour: "%-l:%M %p %Z"
+      time_12_hour: "%-l:%M %p"
       day_and_date: "%A, %m/%d"
   lang_code:
     "ach": Acholi
@@ -313,6 +313,11 @@ en:
           attributes:
             payment_pointer:
               invalid: Payment pointers must have the format $prx.wallet.example/abcd1234
+        podcast_import:
+          attributes:
+            url:
+              bad_http_response: Unable to fetch feed url
+              invalid_rss: Not a valid RSS feed
   # form/model helpers
   helpers:
     application:
@@ -364,6 +369,9 @@ en:
           video: Video
         original_guid: GUID
         released_at: Dropdate
+        released_at_date: Date
+        released_at_time: Time
+        released_at_zone: Time Zone
         production_notes: Production Notes
         publishing_status: Status
         publishing_statuses:
@@ -412,9 +420,11 @@ en:
         caption: Caption
         credit: Credit
       podcast_import:
-        feed_source: Feed Source
-        url: RSS Feed URL
         import_metadata: Import Podcast Metadata
+        type: Import Type
+        types:
+          PodcastRssImport: RSS
+        url: RSS Feed URL
       media_resource:
         original_url:
           audio: Segment %{position}
@@ -471,6 +481,22 @@ en:
     destroy:
       error: Cannot delete a published episode
       notice: Episode deleted
+    episode_filters:
+      my_episodes: Episodes
+      filters:
+        all: All
+        incomplete: Incomplete
+        published: Published
+      pages:
+        10: Show 10
+        20: Show 20
+        50: Show 50
+        all: Show All
+      search_episodes: Search Episodes
+      sorts:
+        asc: A-Z
+        calendar: Calendar
+        recent: Recent Activity
     form:
       confirm: Discard unsaved changes?
     form_distribution:
@@ -862,29 +888,38 @@ en:
     form_status:
       <<: *form_status
       title: Podcast Status
-    tabs:
-      metadata: Metadata
-      engagement: Engagement Settings
-      player: Embeddable Player
-      import: Import
-      planner: Plan Episodes
     index:
       title: My Podcasts
       create: New Podcast
+    podcast:
+      drafted_episodes:
+        one: 1 Drafted Episode
+        other: "%{count} Drafted Episodes"
+      last_saved: Last Saved
+      link: Go to Podcast
+      published_episodes:
+        one: 1 Published Episode
+        other: "%{count} Published Episodes"
+      scheduled_episodes:
+        one: "1 Scheduled Episode"
+        other: "%{count} Scheduled Episodes"
+    podcast_filters:
+      create: New Podcast
+      my_podcasts: My Podcasts
+      pages:
+        10: Show 10
+        20: Show 20
+        50: Show 50
+        all: Show All
       search_podcasts: Search Podcasts
-      sort:
-        recent: Recent Activity
-        number: "# of Episodes"
+      sorts:
         asc: A-Z
         desc: Z-A
-    podcast:
-      create_episode: Create Episode
-      plan_episodes: Plan Episodes
-    update:
-      error: Unable to save
-      notice: Podcast updated
+        episodes: "# of Episodes"
+        recent: Recent Activity
     show:
       all_episodes: All Episodes
+      create_episode: Create Episode
       default_feed: Default RSS Feed
       engagement_settings: Engagement Settings
       feeds: Feeds
@@ -898,24 +933,21 @@ en:
       next_scheduled: Next Scheduled or Draft
       no_published: No Published Episodes
       no_scheduled: No Scheduled Episodes
+      plan_episodes: Plan Episodes
       player: Embeddable Player
       published_episodes: Published Episode
       settings: Settings
       total_downloads: Total Downloads
       view_metrics: View Metrics
-    podcast_page:
-      my_podcasts: My Podcasts
-      drafted_episodes:
-        one: 1 Drafted Episode
-        other: "%{count} Drafted Episodes"
-      last_saved: Last Saved
-      published_episodes:
-        one: 1 Published Episode
-        other: "%{count} Published Episodes"
-      scheduled_episodes:
-        one: "1 Scheduled Episode"
-        other: "%{count} Scheduled Episodes"
-      link: Go to Podcast
+    tabs:
+      metadata: Metadata
+      engagement: Engagement Settings
+      player: Embeddable Player
+      import: Import
+      planner: Plan Episodes
+    update:
+      error: Unable to save
+      notice: Podcast updated
   podcast_engagement:
     form:
       <<: *form
@@ -964,6 +996,9 @@ en:
       help:
         ad_breaks: Enter the number of ad breaks (midrolls) these episodes will have. Accurately entering the number of ad breaks help us to better predict ad inventory for your podcast.
         medium: Enter the file format you plan to upload for these episodes.
+      label:
+        publish_time: Publish Time
+        publish_time_zone: Time Zone
     helper:
       period_options:
         every_one: Every week

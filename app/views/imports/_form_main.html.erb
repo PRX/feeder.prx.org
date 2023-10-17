@@ -12,31 +12,30 @@
         </tr>
       </thead>
       <tbody>
-        <% if imports.first.persisted? %>
-          <% imports.each do |import| %>
-            <% if import.persisted? %>
-                <tr>
-                  <td><%= import.id %></td>
-                  <td><%= link_to import.status, podcast_import_path(podcast, import), data: {turbo: false} %></td>
-                  <td class="align-middle">
-                    <% if import.feed_episode_count.present? %>
-                      <%= render "import_progress_bar", import: import %>
-                    <% else %>
-                      <%= render "import_spinner" %>
-                    <% end %>
-                  </td>
-                  <td><%= import.episode_imports.complete.count %></td>
-                  <td><%= import.url %></td>
-                  <td><%= local_date(import.created_at) %></td>
-
-                  <% unless import.status_complete? || import.status_failed? %>
-                    <%# just keep polling until the import finishes %>
-                    <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+        <% imports.each do |import| %>
+          <% if import.persisted? %>
+              <tr>
+                <td><%= import.id %></td>
+                <td><%= link_to import.status, podcast_import_path(podcast, import), data: {turbo: false} %></td>
+                <td class="align-middle">
+                  <% if import.feed_episode_count.present? %>
+                    <%= render "import_progress_bar", import: import %>
+                  <% else %>
+                    <%= render "import_spinner" %>
                   <% end %>
-                </tr>
-            <% end %>
+                </td>
+                <td><%= import.episode_imports.status_complete.count %></td>
+                <td><%= import.url %></td>
+                <td><%= local_date(import.created_at) %></td>
+
+                <% if import.undone? %>
+                  <%# just keep polling until the import finishes %>
+                  <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+                <% end %>
+              </tr>
           <% end %>
-        <% else %>
+        <% end %>
+        <% if imports.empty? %>
           <tr>
             <td class="text-center text-muted p-4" colspan="100"><%= t(".no_imports") %></td>
           </tr>

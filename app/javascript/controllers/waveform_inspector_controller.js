@@ -46,7 +46,7 @@ export default class extends Controller {
           highlightColor: "#8cd2f4",
           highlightOpacity: 0.3,
           segmentOptions: {
-            overlayOpacity: 0.3,
+            overlayOpacity: 1,
             overlayOffset: 0,
             overlayFontSize: 0,
           },
@@ -82,8 +82,8 @@ export default class extends Controller {
         endMarkerColor: "#ff9600",
         overlay: true,
         overlayOffset: 0,
-        overlayColor: "#ff9600",
-        overlayOpacity: 0.1,
+        overlayColor: "rgba(255, 193, 7, 0.3)",
+        overlayOpacity: 1,
         overlayBorderWidth: 0,
         overlayCornerRadius: 0,
         overlayFontSize: 0,
@@ -109,6 +109,7 @@ export default class extends Controller {
       const zoomView = peaksInstance.views.getView("zoomview")
       const overviewView = peaksInstance.views.getView("overview")
 
+      zoomView.setMinSegmentDragWidth(1)
       zoomView.setAmplitudeScale(2)
 
       // Prevent segments from overlapping other segments.
@@ -171,9 +172,9 @@ export default class extends Controller {
         editable: true,
       }
 
-      if (!startTime && startTime !== 0) return
+      if (startTime == null) return
 
-      if (endTime) {
+      if (endTime != null) {
         segments.push({
           ...optionsDefault,
           id,
@@ -190,16 +191,23 @@ export default class extends Controller {
         })
 
         // Add a placeholder segment for this point.
-        segments.push({
+        const placeholderSegment = {
           id: `placeholder.segments.${id}`,
-          startTime,
-          endTime: startTime,
-        })
+          startTime: id === "preRoll" ? 0 : startTime,
+          endTime: id === "postRoll" ? Math.ceil(this.peaks.player.getDuration()) : startTime,
+        }
+        segments.push(placeholderSegment)
       }
     })
 
     this.peaks?.points.add(points)
     this.peaks?.segments.add(segments)
+
+    this.peaks?.segments.add({
+      startTime: 0,
+      endTime: 0.0001,
+      color: "#f00",
+    })
   }
 
   markersValueChanged() {
@@ -220,7 +228,7 @@ export default class extends Controller {
   seekTo(time) {
     const seconds = convertToSeconds(time)
 
-    if (seconds) {
+    if (seconds || seconds === 0) {
       this.peaks.player.seek(seconds)
     }
   }

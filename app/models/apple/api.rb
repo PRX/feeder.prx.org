@@ -23,6 +23,12 @@ module Apple
         key: apple_key_pem)
     end
 
+    def self.from_key(apple_key)
+      new(provider_id: apple_key.provider_id,
+        key_id: apple_key.key_id,
+        key: apple_key.key_pem)
+    end
+
     def self.from_apple_config(apple_config)
       if apple_config.key.blank?
         Rails.logger.info("No Apple API keys in config object, falling back to environment default keys",

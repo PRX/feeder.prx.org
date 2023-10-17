@@ -86,12 +86,13 @@
 
 .btn-outline-light {
   --#{$prefix}btn-bg: #{$white};
-  --#{$prefix}btn-border-color: #{$border-color};
+  --#{$prefix}btn-border-color: #eee;
   --#{$prefix}btn-color: #{color-contrast($white)};
   --#{$prefix}btn-hover-bg: #{tint-color($border-color, 50%)};
   --#{$prefix}btn-hover-border-color: #{$border-color};
   --#{$prefix}btn-active-bg: #{$border-color};
   --#{$prefix}btn-active-border-color: #{$border-color};
+  --#{$prefix}btn-padding-y: 1rem;
 }
 
 .btn-discard-changed {

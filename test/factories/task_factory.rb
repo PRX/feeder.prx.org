@@ -5,6 +5,10 @@ FactoryBot.define do
     job_id { "1234" }
     options { {destination: "s3://test-prx-up/podcast/episode/filename.mp3"} }
     result { build(:porter_job_results) }
+
+    factory :copy_uncut_task do
+      association :owner, factory: :uncut
+    end
   end
 
   factory :copy_image_task, class: Tasks::CopyImageTask do

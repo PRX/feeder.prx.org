@@ -80,7 +80,7 @@ describe PodcastPlanner do
       planner.dates = dates
       assert_equal planner.ready_to_generate_drafts?, false
 
-      planner.publish_time = 4.hours.to_i + 30.minutes.to_i
+      planner.publish_time = "4:30 AM"
       assert_equal planner.ready_to_generate_drafts?, false
 
       planner.medium = "video"
@@ -96,7 +96,7 @@ describe PodcastPlanner do
       assert_equal planner.ready_to_generate_drafts?, false
 
       planner.dates = dates
-      planner.publish_time = 0
+      planner.publish_time = "12:00 AM"
       assert_equal planner.ready_to_generate_drafts?, true
 
       planner.publish_time = nil
@@ -399,8 +399,8 @@ describe PodcastPlanner do
           # Wednesday, July 4
           DateTime.new(2001, 7, 4)
         ]
-        # 9:30 AM
-        planner.publish_time = 9.hours.to_i + 30.minutes.to_i
+        planner.publish_time = "9:30 AM"
+        planner.publish_time_zone = "Mountain Time (US & Canada)"
         planner.segment_count = 2
         planner.titles = ["Override a title"]
       end
@@ -420,7 +420,7 @@ describe PodcastPlanner do
         end
 
         it "have a released_at time equal to the planner publish time" do
-          assert_equal Episode.first.released_at.hour, 9
+          assert_equal Episode.first.released_at.hour, 16
           assert_equal Episode.first.released_at.min, 30
         end
 

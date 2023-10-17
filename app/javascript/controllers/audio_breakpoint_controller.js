@@ -31,35 +31,53 @@ export default class extends Controller {
   }
 
   startTimeValueChanged() {
-    if (this.hasInitialMarkerValue) {
-      const isChanged = this.startTimeValue !== (this.initialMarkerValue.startTime || 0)
+    if (!this.hasStartTimeTarget) return
 
-      this.startTimeTarget.parentNode.classList.toggle("is-changed", isChanged)
+    if (this.hasInitialMarkerValue) {
+      const isChanged = this.hasStartTimeValue && this.startTimeValue !== (this.initialMarkerValue.startTime || 0)
+
+      this.startTimeTarget.parentNode.classList.toggle("js-is-changed", isChanged)
     } else {
-      this.startTimeTarget.parentNode.classList.add("is-changed")
+      this.startTimeTarget.parentNode.classList.add("js-is-changed")
     }
 
-    this.startTimeTarget.placeholder = convertSecondsToDuration(this.startTimeValue)
+    if (this.hasStartTimeValue) {
+      this.startTimeTarget.placeholder = convertSecondsToDuration(this.startTimeValue)
+    } else if (this.idValue === "postRoll") {
+      this.startTimeTarget.placeholder = convertSecondsToDuration(this.initialMarkerValue.endTime)
+    }
   }
 
   endTimeValueChanged() {
-    if (this.hasInitialMarkerValue) {
-      const isChanged = this.endTimeValue !== (this.initialMarkerValue.endTime || 0)
-      const isStartTimeChanged =
-        this.startTimeTarget.parentNode.classList.contains("is-changed") || (isChanged && !this.hasEndTimeValue)
+    if (!this.hasEndTimeTarget) return
 
-      this.endTimeTarget.parentNode.classList.toggle("is-changed", isChanged)
-      this.startTimeTarget.parentNode.classList.toggle("is-changed", isStartTimeChanged)
+    if (this.hasInitialMarkerValue) {
+      const isChanged = this.hasEndTimeValue && this.endTimeValue !== (this.initialMarkerValue.endTime || 0)
+
+      this.endTimeTarget.parentNode.classList.toggle("js-is-changed", isChanged)
+
+      if (this.hasStartTimeTarget) {
+        const isStartTimeChanged =
+          this.startTimeTarget.parentNode.classList.contains("js-is-changed") || (isChanged && !this.hasEndTimeValue)
+
+        this.startTimeTarget.parentNode.classList.toggle("js-is-changed", isStartTimeChanged)
+      }
     } else {
-      this.endTimeTarget.parentNode.classList.add("is-changed")
+      this.endTimeTarget.parentNode.classList.add("js-is-changed")
     }
 
-    this.endTimeTarget.placeholder = convertSecondsToDuration(this.endTimeValue)
+    if (this.hasEndTimeValue) {
+      this.endTimeTarget.placeholder = convertSecondsToDuration(this.endTimeValue)
+    }
   }
 
   updateStartTime(newTime) {
     this.dispatch("marker.update", {
-      detail: { id: this.idValue, startTime: newTime || this.startTimeValue, endTime: this.endTimeValue },
+      detail: {
+        id: this.idValue,
+        startTime: newTime || this.startTimeValue,
+        ...(this.hasEndTimeValue && { endTime: this.endTimeValue }),
+      },
     })
   }
 
@@ -68,7 +86,12 @@ export default class extends Controller {
   }
 
   updateStartTimeToPlayhead() {
-    this.dispatch("marker.update-start-time-to-playhead", { detail: { id: this.idValue, endTime: this.endTimeValue } })
+    this.dispatch("marker.update-start-time-to-playhead", {
+      detail: {
+        id: this.idValue,
+        ...(this.hasEndTimeValue && { endTime: this.endTimeValue }),
+      },
+    })
   }
 
   updateEndTimeToPlayhead() {
@@ -93,6 +116,14 @@ export default class extends Controller {
 
   removeEndTime() {
     this.updateEndTime(null)
+  }
+
+  minEndTime() {
+    this.updateEndTime(0)
+  }
+
+  maxStartTime() {
+    this.updateStartTime(Infinity)
   }
 
   play() {

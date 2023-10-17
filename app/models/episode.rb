@@ -5,6 +5,7 @@ require "text_sanitizer"
 
 class Episode < ApplicationRecord
   include EpisodeAdBreaks
+  include EpisodeFilters
   include EpisodeMedia
   include PublishingStatus
   include TextSanitizer
@@ -23,6 +24,7 @@ class Episode < ApplicationRecord
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
+  has_many :episode_imports
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
@@ -66,7 +68,7 @@ class Episode < ApplicationRecord
   scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
   scope :after, ->(time) { where("#{DROP_DATE} > ?", time) }
-  scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") }
+  scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
   scope :dropdate_asc, -> { reorder(Arel.sql("#{DROP_DATE} ASC NULLS FIRST")) }
   scope :dropdate_desc, -> { reorder(Arel.sql("#{DROP_DATE} DESC NULLS LAST")) }
 
@@ -222,10 +224,20 @@ class Episode < ApplicationRecord
     super
 
     if medium_changed? && medium_was.present?
-      unless medium == "audio" && medium_was == "uncut"
+      if medium_was == "uncut" && medium == "audio"
+        uncut&.mark_for_replacement
+      elsif medium_was == "audio" && medium == "uncut"
+        if contents.first&.status_complete?
+          (uncut || build_uncut).tap do |u|
+            u.original_url = contents.first.url
+            u.file_size = contents.first.file_size
+            u.duration = contents.first.duration
+          end
+        end
+        contents.each(&:mark_for_replacement)
+      else
         contents.each(&:mark_for_replacement)
       end
-      uncut&.mark_for_replacement
     end
 
     self.segment_count = 1 if medium_video?

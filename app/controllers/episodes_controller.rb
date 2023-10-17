@@ -4,17 +4,22 @@ class EpisodesController < ApplicationController
 
   # GET /episodes
   def index
-    episodes =
-      if params[:podcast_id]
-        policy_scope(Podcast).find(params[:podcast_id]).episodes
-      else
-        policy_scope(Episode).all
-      end
-
-    filtered_episodes = episodes.filter_by_title(params[:q]).includes(:contents, :uncut)
-
-    @published_episodes = filtered_episodes.published.dropdate_desc.page(params[:published_page]).per(10)
-    @scheduled_episodes = filtered_episodes.draft_or_scheduled.dropdate_asc.page(params[:scheduled_page]).per(10)
+    if params[:sort].present?
+      @episodes =
+        episodes_query
+          .paginate(params[:page], params[:per])
+    else
+      @published_episodes =
+        episodes_query
+          .published
+          .dropdate_desc
+          .paginate(params[:published_page], params[:per])
+      @scheduled_episodes =
+        episodes_query
+          .draft_or_scheduled
+          .dropdate_asc
+          .paginate(params[:scheduled_page], params[:per])
+    end
   end
 
   # GET /episodes/1
@@ -114,8 +119,23 @@ class EpisodesController < ApplicationController
     end
   end
 
+  def episodes_base
+    if @podcast
+      policy_scope(@podcast.episodes).reorder(nil)
+    else
+      policy_scope(Episode).all
+    end
+  end
+
+  def episodes_query
+    episodes_base
+      .filter_by_title(params[:q])
+      .filter_by_alias(params[:filter])
+      .sort_by_alias(params[:sort])
+  end
+
   def episode_params
-    nilify params.fetch(:episode, {}).permit(
+    nilify(params.fetch(:episode, {}).permit(
       :title,
       :clean_title,
       :subtitle,
@@ -134,6 +154,14 @@ class EpisodesController < ApplicationController
       :original_guid,
       categories: [],
       images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
-    )
+    ).tap do |p|
+      p[:released_at] = released_at_zone.parse(p[:released_at]) if p[:released_at].present?
+    end)
+  end
+
+  # released_at needs to be parsed in the selected zone
+  def released_at_zone
+    zone_name = params.fetch(:episode, {}).fetch(:released_at_zone, "")
+    ActiveSupport::TimeZone[zone_name] || ActiveSupport::TimeZone["UTC"]
   end
 end

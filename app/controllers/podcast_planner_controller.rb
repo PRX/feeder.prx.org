@@ -64,6 +64,7 @@ class PodcastPlannerController < ApplicationController
       :number_of_episodes,
       :end_date,
       :publish_time,
+      :publish_time_zone,
       :medium,
       :ad_breaks,
       selected_days: [],

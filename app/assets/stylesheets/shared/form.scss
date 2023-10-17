@@ -10,7 +10,7 @@
     box-shadow: $input-focus-box-shadow;
   }
 
-  &.is-changed {
+  &.js-is-changed {
     border-color: $orange;
 
     &:focus-within {

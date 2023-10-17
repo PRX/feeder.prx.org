@@ -4,9 +4,7 @@
  * @returns Value in seconds as Number, or NaN.
  */
 export default function convertToSeconds(value) {
-  if (!["string", "number"].includes(typeof value)) return NaN
-
-  if (typeof value === "number") return value
+  if (!["string"].includes(typeof value)) return value
 
   if (value.indexOf(":") != -1) {
     // Convert duration string to seconds.
@@ -19,7 +17,7 @@ export default function convertToSeconds(value) {
     return seconds + (minutes || 0) * 60 + (hours || 0) * 360
   } else {
     // Convert string to number.
-    const numericValue = value.replaceAll(/[^0-9.]/gi, "")
+    const numericValue = value.replaceAll(/[^0-9.\-]/gi, "")
     return parseFloat(numericValue)
   }
 }

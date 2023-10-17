@@ -192,5 +192,27 @@ module Apple
     def api_response
       public_feed.apple_sync_log&.api_response
     end
+
+    def guid_to_apple_json(guid)
+      @guid_to_apple_json ||= apple_episode_json.map do |ep_json|
+        [ep_json["attributes"]["guid"], ep_json]
+      end.to_h
+
+      @guid_to_apple_json[guid]
+    end
+
+    def apple_id_to_apple_json(apple_id)
+      @apple_id_to_apple_json ||= apple_episode_json.map do |ep_json|
+        [ep_json["id"], ep_json]
+      end.to_h
+
+      @apple_id_to_apple_json[apple_id]
+    end
+
+    def find_apple_episode_json_by_guid(guid)
+      # Because apple can use its own id to join to the RSS feed item,
+      # if the feed item guid is set to the apple episode id
+      guid_to_apple_json(guid) || apple_id_to_apple_json(guid)
+    end
   end
 end

@@ -79,6 +79,9 @@ describe Uncut do
     end
 
     it "allows nils in the first/last segments" do
+      uncut.segmentation = [[nil, nil]]
+      assert uncut.valid?
+
       uncut.segmentation = [[1, 2], [nil, 4], [5, 6]]
       refute uncut.valid?
 
@@ -127,6 +130,12 @@ describe Uncut do
       refute uncut.segmentation_ready?
 
       uncut.episode.segment_count = 2
+      assert uncut.segmentation_ready?
+
+      uncut.episode.segment_count = 1
+      refute uncut.segmentation_ready?
+
+      uncut.segmentation = [[nil, nil]]
       assert uncut.segmentation_ready?
     end
   end

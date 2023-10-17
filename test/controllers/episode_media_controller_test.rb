@@ -31,7 +31,7 @@ class EpisodeSegmenterControllerTest < ActionDispatch::IntegrationTest
     uncut = create(:uncut, episode: episode, status: "complete")
 
     # ad markers to match segment count
-    params[:uncut_attributes] = {id: uncut.id, ad_breaks: "[1,[2.3, 4]]"}
+    params[:uncut_attributes] = {id: uncut.id, segmentation: "[[null, 1],[1, 2.3],[4,null]]"}
 
     Episode.stub_any_instance(:copy_media, true) do
       patch episode_media_path(episode), params: {episode: params}

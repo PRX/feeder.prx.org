@@ -1,4 +1,4 @@
-<div class="col-6 mb-4">
+<div class="col-4 mb-4">
   <div class="form-floating input-group">
     <%= form.select :medium, episode_medium_options, {}, data: {action: "planner#setMedium"} %>
     <%= form.label :medium, t("helpers.label.episode.medium"), required: true %>
@@ -6,7 +6,7 @@
   </div>
 </div>
 
-<div class="col-3 mb-4">
+<div class="col-2 mb-4">
   <div class="form-floating input-group">
     <%= form.number_field :ad_breaks, min: 0, max: Episode::MAX_SEGMENT_COUNT - 1, data: {planner_target: "adBreaks", action: "planner#setAdBreaks"} %>
     <%= form.label :ad_breaks, t("helpers.label.episode.ad_breaks"), required: true %>
@@ -14,9 +14,16 @@
   </div>
 </div>
 
-<div class="col-3 mb-4">
+<div class="col-2 mb-4">
   <div class="form-floating input-group">
-    <%= form.select :publish_time, time_options, {selected: 12.hours.to_i}, data: {controller: "select-local-time"} %>
+    <%= form.select :publish_time, time_options, {selected: "12:00:00"} %>
     <%= form.label :publish_time, t(".label.publish_time"), required: true %>
+  </div>
+</div>
+
+<div class="col-4 mb-4">
+  <div class="form-floating input-group">
+    <%= form.time_zone_field :publish_time_zone %>
+    <%= form.label :publish_time_zone, t(".label.publish_time_zone"), required: true %>
   </div>
 </div>

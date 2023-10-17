@@ -110,6 +110,10 @@ module UploadsHelper
     rec.new_record? || rec.marked_for_destruction?
   end
 
+  def upload_uploaded?(rec)
+    rec.new_record? && rec.original_url.present?
+  end
+
   def upload_processing?(rec)
     %w[started created processing retrying].include?(rec&.status)
   end

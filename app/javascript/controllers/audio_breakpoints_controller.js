@@ -1,26 +1,61 @@
 import { Controller } from "@hotwired/stimulus"
 import convertToSeconds from "util/convertToSeconds"
+import convertSecondsToDuration from "util/convertSecondsToDuration"
 
 export default class extends Controller {
-  static targets = ["waveformInspector", "markersInput", "controls", "controlTemplate"]
+  static targets = [
+    "waveformInspector",
+    "markersInput",
+    "controls",
+    "controlTemplate",
+    "preRollControlTemplate",
+    "postRollControlTemplate",
+  ]
 
   static values = {
+    duration: Number,
     labelPrefix: { type: String, default: "Breakpoint" },
+    labelPreRoll: { type: String, default: "Pre-Roll" },
+    labelPostRoll: { type: String, default: "Post-Roll" },
     adBreaks: { type: Number, default: 1 },
     adBreaksValid: { type: Boolean, default: false },
-    markers: Array,
+    segments: { type: Array, default: [] },
   }
+
+  minTime = 0.000001
 
   connect() {
     this.initMarkers()
   }
 
+  durationValueChanged() {
+    const endTimeInput = this.postRollControlTemplateTarget.content.querySelector(
+      '[data-audio-breakpoint-target="endTime"]'
+    )
+
+    endTimeInput?.setAttribute("placeholder", convertSecondsToDuration(this.durationValue))
+
+    this.maxTime = this.durationValue - 0.01
+  }
+
   /**
-   * Handle external changes to incoming marker values.
+   * Handle external changes to incoming segments values.
    * Should only run when controller initializes, or we need to edit ad locations for a different episode.
    * DO NOT UPDATE THIS VALUE AS A RESULT OF EDITS IN THE AD LOCATIONS UI.
    */
-  markersValueChanged() {
+  segmentsValueChanged(value) {
+    if (!Array.isArray(value) || !value.length) return
+
+    this.preRollPoint = value[0][0]
+    this.postRollPoint = value[value.length - 1][1]
+    this.adBreaks = value && [
+      ...value.reduce((a, [, end1], index, all) => {
+        if (index > all.length - 2) return a
+        const [start2] = all[index + 1]
+        return [...a, end1 !== start2 ? [end1, start2] : end1]
+      }, []),
+    ]
+
     if (!this.breakpointMarkers) return
     this.initMarkers()
   }
@@ -34,15 +69,16 @@ export default class extends Controller {
    * Initial render of ad markers.
    */
   initMarkers() {
-    if (!this.hasMarkersValue || !this.hasAdBreaksValue || !this.adBreaksValidValue) return
+    if (!this.hasSegmentsValue || !this.hasAdBreaksValue || !this.adBreaksValidValue) return
 
+    const preRollMarker = this.breakpointMarkers?.shift()
+    const postRollMarker = this.breakpointMarkers?.pop()
     const increasedBy = Math.max(0, this.adBreaksValue - this.breakpointMarkers?.length || 0)
     const allMarkers = [...(this.breakpointMarkers || []), ...(this.inactiveMarkers || [])]
 
     this.breakpointMarkers = [...Array(this.adBreaksValue).keys()]
       .map(
-        (key) =>
-          (allMarkers[key] && [allMarkers[key].startTime, allMarkers[key].endTime]) || this.markersValue?.[key] || []
+        (key) => (allMarkers[key] && [allMarkers[key].startTime, allMarkers[key].endTime]) || this.adBreaks?.[key] || []
       )
       .map((time, index) => ({
         id: allMarkers[index]?.id || Math.random().toString(16).split(".")[1],
@@ -53,13 +89,37 @@ export default class extends Controller {
 
     this.inactiveMarkers = allMarkers.slice(this.adBreaksValue)
 
-    if (increasedBy) {
-      ;[...this.breakpointMarkers.slice(-increasedBy)].forEach(({ id, startTime, endTime }) => {
-        this.restoreBreakpointMarker({ detail: { id, startTime, endTime } })
-      })
-    }
+    this.breakpointMarkers.unshift(
+      preRollMarker || {
+        id: "preRoll",
+        labelText: this.labelPreRollValue,
+        // Minimum times can not be zero or else segment doesn't render or function properly.
+        startTime: this.minTime,
+        endTime: this.preRollPoint || this.minTime,
+      }
+    )
+
+    this.breakpointMarkers.push(
+      postRollMarker || {
+        id: "postRoll",
+        labelText: this.labelPostRollValue,
+        startTime: this.postRollPoint || this.maxTime,
+        endTime: this.durationValue,
+      }
+    )
 
     this.initialMarkers = this.initialMarkers || this.breakpointMarkers
+
+    if (increasedBy) {
+      this.breakpointMarkers
+        // Don't need to restore pre/post roll markers.
+        .slice(1, -1)
+        // Restore the number of markers the ad breaks were increased by from the end of active markers array.
+        .slice(-increasedBy)
+        .forEach(({ id, startTime, endTime }) => {
+          this.restoreBreakpointMarker({ detail: { id, startTime, endTime } })
+        })
+    }
 
     this.updateBreakpointMarkers()
   }
@@ -74,13 +134,14 @@ export default class extends Controller {
 
     if (!breakpointMarker) return
 
-    const newStartTime = (!!startTime && convertToSeconds(startTime)) || startTime
-    const newEndTime = (!!endTime && convertToSeconds(endTime)) || endTime
+    const newStartTime = convertToSeconds(startTime)
+    const newEndTime = convertToSeconds(endTime)
+    const hasEndTime = newEndTime != null
     let newBreakpointMarker = {
       ...breakpointMarker,
       changed: new Date().getMilliseconds(),
-      startTime: newEndTime ? Math.min(newStartTime, newEndTime) : newStartTime,
-      endTime: newEndTime ? Math.max(newStartTime, newEndTime) : undefined,
+      startTime: hasEndTime ? Math.max(this.minTime, Math.min(newStartTime, newEndTime, this.maxTime)) : newStartTime,
+      endTime: hasEndTime ? Math.min(this.durationValue, Math.max(newStartTime, newEndTime, this.minTime)) : undefined,
     }
     const isSegment = !!newBreakpointMarker.endTime
 
@@ -107,13 +168,15 @@ export default class extends Controller {
         }
       }
     } else {
+      const inValidStartTime =
+        newBreakpointMarker.startTime <= this.minTime || newBreakpointMarker.startTime >= this.maxTime
       const intersectingSegment = this.breakpointMarkers.find(
         ({ id: iId, startTime: iStartTime, endTime: iEndTime }) =>
           id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime
       )
 
       // Prevent point marker from being dropped in a segment.
-      if (intersectingSegment) {
+      if (intersectingSegment || inValidStartTime) {
         // If dropped on a segment, reset to original position.
         newBreakpointMarker = {
           ...newBreakpointMarker,
@@ -137,13 +200,14 @@ export default class extends Controller {
 
     if (!breakpointMarker) return
 
-    const newStartTime = (!!startTime && convertToSeconds(startTime)) || startTime
-    const newEndTime = (!!endTime && convertToSeconds(endTime)) || endTime
+    const newStartTime = convertToSeconds(startTime)
+    const newEndTime = convertToSeconds(endTime)
+    const hasEndTime = newEndTime != null
     let newBreakpointMarker = {
       ...breakpointMarker,
       changed: new Date().getMilliseconds(),
-      startTime: newEndTime ? Math.min(newStartTime, newEndTime) : newStartTime,
-      endTime: newEndTime ? Math.max(newStartTime, newEndTime) : undefined,
+      startTime: hasEndTime ? Math.min(newStartTime, newEndTime) : newStartTime,
+      endTime: hasEndTime ? Math.max(newStartTime, newEndTime) : undefined,
     }
     const isSegment = !!newBreakpointMarker.endTime
 
@@ -215,10 +279,10 @@ export default class extends Controller {
    */
   renderMarkers() {
     // Convert ad markers to markers array.
-    const markers = this.getMarkersTimesArray()
+    const newSegments = this.getSegmentsTimesArray()
 
     // Updated markers form input value.
-    this.markersInputTarget.value = markers.length ? JSON.stringify(markers) : ""
+    this.markersInputTarget.value = newSegments.length ? JSON.stringify(newSegments) : null
     this.markersInputTarget.dispatchEvent(new Event("change"))
 
     // Update waveform inspector.
@@ -237,7 +301,7 @@ export default class extends Controller {
       .sort((a, b) => (!a.startTime ? 1 : a.startTime - b.startTime))
       .map((marker, index) => ({
         ...marker,
-        labelText: `${this.labelPrefixValue} ${index + 1}`,
+        labelText: ["preRoll", "postRoll"].includes(marker.id) ? marker.labelText : `${this.labelPrefixValue} ${index}`,
       }))
   }
 
@@ -252,18 +316,31 @@ export default class extends Controller {
    * Get ad markers as times only in array format. (e.g. [start, [start, end])
    * @returns Array of arrays containing start and end times for markers.
    */
-  getMarkersTimesArray() {
+  getSegmentsTimesArray() {
     return this.breakpointMarkers
       .filter(({ startTime }) => startTime !== undefined)
-      .map(({ startTime, endTime }) => (endTime ? [startTime, endTime] : startTime))
+      .reduce((a, current, index, all) => {
+        if (index >= all.length - 1) return a
+
+        const startTime = current.endTime || current.startTime
+        const next = all[index + 1]
+        const segmentStart = startTime > this.minTime ? startTime : null
+        const segmentEnd = (this.durationValue - next.startTime) * 100 > 10 ? next.startTime : null
+
+        return [...a, [segmentStart, segmentEnd]]
+      }, [])
   }
 
   renderAdMarkerControls() {
     const controls = []
 
     this.breakpointMarkers.forEach((marker, index) => {
-      const template = this.controlTemplateTarget.content.cloneNode(true)
-      const control = template.querySelector('[data-controller*="audio-breakpoint"')
+      const templateTarget =
+        (marker.id === "preRoll" && this.preRollControlTemplateTarget) ||
+        (marker.id === "postRoll" && this.postRollControlTemplateTarget) ||
+        this.controlTemplateTarget
+      const template = templateTarget.content.cloneNode(true)
+      const control = template.querySelector('[data-controller*="audio-breakpoint"]')
       const { id, labelText, startTime, endTime } = marker
       const initialMarker = this.initialMarkers.find(({ id: iId }) => iId === id)
 
@@ -274,12 +351,19 @@ export default class extends Controller {
       control.dataset.audioBreakpointIdValue = id
       control.dataset.audioBreakpointLabelValue = labelText
 
-      if (startTime || startTime === 0) {
+      if (startTime != null && startTime > this.minTime && startTime < this.maxTime) {
         control.dataset.audioBreakpointStartTimeValue = startTime
       }
 
-      if (endTime) {
+      if (endTime != null && endTime > this.minTime && endTime < this.maxTime) {
         control.dataset.audioBreakpointEndTimeValue = endTime
+      }
+
+      if (marker.id === "postRoll") {
+        control.dataset.audioBreakpointEndTimeValue = endTime
+        control
+          .querySelector('[data-audio-breakpoint-target="startTime"]')
+          .setAttribute("placeholder", convertSecondsToDuration(this.durationValue))
       }
 
       controls.push(control)
