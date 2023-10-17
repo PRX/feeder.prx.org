@@ -96,7 +96,7 @@ module Apple
       # Make sure to poll entire set of episodes, not just the private feed
       # We want to know what episodes are missing from the private feed
       # and potentially need to be archived.
-      pub.poll!(pub.show.podcast_episodes)
+      pub.poll!(pub.show.podcast_episodes.filter(&:apple_new?))
 
       mark_as_delivered!(pub)
     end
