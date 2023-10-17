@@ -93,7 +93,10 @@ module Apple
       Apple::Show.connect_existing(apple_show_id, ac)
 
       pub = ac.build_publisher
-      pub.poll!
+      # Make sure to poll entire set of episodes, not just the private feed
+      # We want to know what episodes are missing from the private feed
+      # and potentially need to be archived.
+      pub.poll!(pub.show.podcast_episodes)
 
       mark_as_delivered!(pub)
     end
