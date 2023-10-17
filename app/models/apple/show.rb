@@ -148,9 +148,26 @@ module Apple
       self.class.get_show(api, apple_id)
     end
 
+    def sort_by_episode_properties(eps)
+      eps.sort_by do |e|
+        [
+          e.deleted_at.nil? ? 1 : -1,
+          e.published_at.present? ? 1 : -1,
+          e.published_at || e.created_at,
+          e.created_at
+        ]
+      end.reverse
+    end
+
     def podcast_feeder_episodes
       @podcast_feeder_episodes ||=
-        podcast.episodes.reset.with_deleted
+        podcast.episodes
+          .reset
+          .with_deleted
+          .group_by(&:item_guid)
+          .values
+          .map { |eps| sort_by_episode_properties(eps) }
+          .map(&:first)
     end
 
     # All the episodes -- including deleted and unpublished

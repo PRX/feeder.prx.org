@@ -33,6 +33,85 @@ describe Apple::Show do
     end
   end
 
+  describe "#podcast_feeder_episodes" do
+    it "should return an array of Episode" do
+      assert_equal apple_show.podcast_feeder_episodes.count, 1
+      assert_equal apple_show.podcast_feeder_episodes.first.class, Episode
+    end
+
+    it "includes deleted episodes" do
+      Episode.where(podcast_id: podcast.id).first.update!(deleted_at: Time.now.utc)
+
+      assert_equal apple_show.podcast_feeder_episodes.count, 1
+      assert apple_show.podcast_feeder_episodes.first.deleted?
+    end
+
+    it "de-duplicates episodes based on the item_guid" do
+      assert_equal Episode.where(podcast_id: podcast.id).length, 1
+
+      episode = Episode.where(podcast_id: podcast.id).first
+      episode.update!(original_guid: "123", deleted_at: Time.now.utc)
+
+      # add another episode with the same guid
+      episode2 = create(:episode, podcast: podcast, item_guid: "123")
+
+      assert_equal apple_show.podcast_feeder_episodes.count, 1
+      assert_equal apple_show.podcast_feeder_episodes.first.id, episode2.id
+    end
+
+    describe "#sort_by_episode_properties" do
+      it "sorts by multiple attributes in descending priority" do
+        now = Time.now.utc
+
+        recs = [
+          OpenStruct.new(deleted_at: now, published_at: now, created_at: now, id: 1),
+          OpenStruct.new(deleted_at: now, published_at: now + 1.second, created_at: now, id: 2),
+          OpenStruct.new(deleted_at: now, published_at: now + 1.second, created_at: now + 1.second, id: 3),
+          OpenStruct.new(deleted_at: nil, published_at: now + 1.second, created_at: now + 1.second, id: 4),
+          OpenStruct.new(deleted_at: nil, published_at: now + 1.second, created_at: now + 2.second, id: 5),
+          OpenStruct.new(deleted_at: nil, published_at: now + 2.second, created_at: now + 2.second, id: 6)
+        ]
+
+        assert_equal [6, 5, 4, 3, 2, 1], apple_show.sort_by_episode_properties(recs).map(&:id)
+      end
+
+      it "sorts by presence of deleted_at" do
+        now = Time.now.utc
+
+        recs = [
+          OpenStruct.new(deleted_at: now, published_at: now, created_at: now, id: 1),
+          OpenStruct.new(deleted_at: nil, published_at: now, created_at: now, id: 2)
+        ]
+
+        assert_equal [2, 1], apple_show.sort_by_episode_properties(recs).map(&:id)
+      end
+
+      it "sorts by presence of published_at" do
+        now = Time.now.utc
+
+        recs = [
+          OpenStruct.new(deleted_at: now, published_at: nil, created_at: now, id: 1),
+          OpenStruct.new(deleted_at: now, published_at: now, created_at: now, id: 2)
+        ]
+
+        # unpublished is less than published
+        assert_equal [2, 1], apple_show.sort_by_episode_properties(recs).map(&:id)
+      end
+
+      it "published_at falls back to created_at" do
+        now = Time.now.utc
+
+        recs = [
+          OpenStruct.new(deleted_at: now, published_at: nil, created_at: now, id: 1),
+          OpenStruct.new(deleted_at: now, published_at: nil, created_at: now + 1.second, id: 2)
+        ]
+
+        # unpublished is less than published
+        assert_equal [2, 1], apple_show.sort_by_episode_properties(recs).map(&:id)
+      end
+    end
+  end
+
   describe "#episodes" do
     before do
       Apple::Show.connect_existing("123", apple_config)
