@@ -23,8 +23,8 @@ module Apple
         Rails.logger.info("Probing for episode audio asset state")
         unwrapped = get_episodes(api, remaining_eps)
 
-        remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["guid"], row] }.to_h
-        remaining_eps.each { |ep| upsert_sync_log(ep, remote_ep_by_id[ep.guid]) }
+        remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["feeder_id"], row] }.to_h
+        remaining_eps.each { |ep| upsert_sync_log(ep, remote_ep_by_id[ep.id]) }
 
         remaining_eps.each do |ep|
           Rails.logger.info("Waiting for audio asset state?", {episode_id: ep.feeder_id,
