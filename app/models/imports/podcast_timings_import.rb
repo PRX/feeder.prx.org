@@ -107,9 +107,9 @@ class PodcastTimingsImport < PodcastImport
   def parse_csv
     if timings.present?
       if timings.include?("\t")
-        CSV.parse(timings, col_sep: "\t", row_sep: :auto, skip_blanks: true)
+        CSV.parse(timings, col_sep: "\t", row_sep: :auto, skip_blanks: true, liberal_parsing: true)
       else
-        CSV.parse(timings, col_sep: ",", row_sep: :auto, skip_blanks: true)
+        CSV.parse(timings, col_sep: ",", row_sep: :auto, skip_blanks: true, liberal_parsing: true)
       end
     end
   rescue
@@ -118,13 +118,16 @@ class PodcastTimingsImport < PodcastImport
 
   def find_guid_index(row)
     row.find_index do |val|
-      true if has_episode_with_guid?(val.strip)
+      true if has_episode_with_guid?(val&.strip)
     end
   end
 
+  # look for non-blank values that can be parsed to a timings array
   def find_timings_index(row)
     row.find_index do |val|
-      true unless EpisodeTimingsImport.parse_timings(val).nil?
+      if val&.strip&.present?
+        !EpisodeTimingsImport.parse_timings(val).nil?
+      end
     end
   end
 end

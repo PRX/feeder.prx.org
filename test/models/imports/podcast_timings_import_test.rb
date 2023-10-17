@@ -112,7 +112,7 @@ describe PodcastTimingsImport do
       end
     end
 
-    it "detects a guid column" do
+    it "detects a timings column" do
       import.csv = [
         ["The Title", "The Guid", "Timings", "Something Else"],
         ["aaaa", "guid1", "whatever", "whatever"],

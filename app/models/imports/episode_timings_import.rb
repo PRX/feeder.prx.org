@@ -2,7 +2,7 @@ class EpisodeTimingsImport < EpisodeImport
   store :config, accessors: [:timings], coder: JSON
 
   def self.parse_timings(str)
-    str.strip!
+    str&.strip!
     return [] if str.blank?
 
     # remove any enclosing chars
