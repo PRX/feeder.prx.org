@@ -133,7 +133,6 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: podcast_container.episode)
     }
     it "should load a deleted episode" do
-      pdf_resp_container = build(:podcast_delivery_file_api_response)
       pdf = Apple::PodcastDeliveryFile.create!(podcast_delivery: podcast_delivery, episode: podcast_container.episode)
 
       pdf.episode.destroy
