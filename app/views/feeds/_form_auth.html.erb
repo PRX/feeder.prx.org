@@ -17,9 +17,11 @@
           <% end %>
         </template>
 
-        <div class="col-12">
-          <button type="button" class="btn btn-warning" data-action="feed-tokens#addToken">Add Token</button>
-        </div>
+        <% if policy(feed).update? %>
+          <div class="col-12">
+            <button type="button" class="btn btn-warning" data-action="feed-tokens#addToken">Add Token</button>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>
