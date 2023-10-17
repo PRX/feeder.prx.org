@@ -12,10 +12,12 @@
       </div>
     </div>
 
-    <div class="card-footer" data-controller="tooltip">
-      <button type="button" class="btn btn-sm <%= episode_category_button_class(episode, "adfree") %>" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.adfree") %>" data-bs-placement="bottom" value="adfree" data-action="click->category#addCategory"><%= t(".label.adfree") %></button>
-      <button type="button" class="btn btn-sm <%= episode_category_button_class(episode, "houseadfree") %>" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.houseadfree") %>" data-bs-placement="bottom" value="houseadfree" data-action="click->category#addCategory"><%= t(".label.houseadfree") %></button>
-      <button type="button" class="btn btn-sm <%= episode_category_button_class(episode, "paidadfree") %>" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.paidadfree") %>" data-bs-placement="bottom" value="paidadfree" data-action="click->category#addCategory"><%= t(".label.paidadfree") %></button>
-    </div>
+    <% if policy(episode).update? %>
+      <div class="card-footer" data-controller="tooltip">
+        <button type="button" class="btn btn-sm <%= episode_category_button_class(episode, "adfree") %>" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.adfree") %>" data-bs-placement="bottom" value="adfree" data-action="click->category#addCategory"><%= t(".label.adfree") %></button>
+        <button type="button" class="btn btn-sm <%= episode_category_button_class(episode, "houseadfree") %>" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.houseadfree") %>" data-bs-placement="bottom" value="houseadfree" data-action="click->category#addCategory"><%= t(".label.houseadfree") %></button>
+        <button type="button" class="btn btn-sm <%= episode_category_button_class(episode, "paidadfree") %>" data-bs-toggle="tooltip" data-bs-title="<%= t(".tooltip.paidadfree") %>" data-bs-placement="bottom" value="paidadfree" data-action="click->category#addCategory"><%= t(".label.paidadfree") %></button>
+      </div>
+    <% end %>
   </div>
 </div>
