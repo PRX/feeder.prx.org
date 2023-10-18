@@ -829,6 +829,8 @@ en:
     episode_imports:
       guid: GUID
       episode: Episode
+      initializing: Initializing...
+      no_imports: No Imports
       status: Status
     form:
       title: Import

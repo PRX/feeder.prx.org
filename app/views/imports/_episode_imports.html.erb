@@ -11,7 +11,13 @@
       <%= render partial: "imports/episode_import", collection: episode_imports, cached: true %>
       <% if episode_imports.empty? %>
         <tr>
-          <td class="text-center text-muted p-4" colspan="100"><%= t(".no_imports") %></td>
+          <td class="text-center text-muted p-4" colspan="100">
+            <% if import.status_created? || import.status_started? %>
+              <%= t(".initializing") %>
+            <% else %>
+              <%= t(".no_imports") %>
+            <% end %>
+          </td>
         </tr>
       <% end %>
     </tbody>
