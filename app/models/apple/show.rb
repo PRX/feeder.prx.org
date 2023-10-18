@@ -148,15 +148,28 @@ module Apple
       self.class.get_show(api, apple_id)
     end
 
+    # In the case where there are duplicate guids in the feeds, we want to make
+    # sure that the most "current" episode is the one that maps to the remote
+    # episode.
     def sort_by_episode_properties(eps)
-      eps.sort_by do |e|
-        [
-          e.deleted_at.nil? ? 1 : -1,
-          e.published_at.present? ? 1 : -1,
-          e.published_at || e.created_at,
-          e.created_at
-        ]
-      end.reverse
+      # Sort the episodes by:
+      # 1. Non-deleted episodes first
+      # 2. Published episodes first
+      # 3. Published date most recent first
+      # 4. Created date most recent first
+      eps =
+        eps.sort_by do |e|
+          [
+            e.deleted_at.nil? ? 1 : -1,
+            e.published_at.present? ? 1 : -1,
+            e.published_at || e.created_at,
+            e.created_at
+          ]
+        end
+
+      # return what is a reverse sorted list,
+      # modeling a priority queue
+      eps.reverse
     end
 
     def podcast_feeder_episodes
