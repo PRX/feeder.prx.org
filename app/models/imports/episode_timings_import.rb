@@ -1,4 +1,6 @@
 class EpisodeTimingsImport < EpisodeImport
+  COMBINE_TIMINGS_WITHIN = 0.01
+
   store :config, accessors: [:timings], coder: JSON
 
   def self.parse_timings(str)
@@ -19,7 +21,9 @@ class EpisodeTimingsImport < EpisodeImport
 
     # all must be positive numbers, and at least 1 must have decimal places
     if floats.all?(&:present?) && floats.all?(&:positive?) && floats.any? { |f| f != f.round }
-      floats
+      floats.sort.each_with_object([]) do |f1, acc|
+        acc << f1 unless acc.any? { |f2| f1.between?(f2 - COMBINE_TIMINGS_WITHIN, f2 + COMBINE_TIMINGS_WITHIN) }
+      end
     end
   end
 

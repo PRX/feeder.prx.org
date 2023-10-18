@@ -30,6 +30,15 @@ describe EpisodeTimingsImport do
       assert_nil EpisodeTimingsImport.parse_timings("5")
       refute_nil EpisodeTimingsImport.parse_timings("5, 6.6")
     end
+
+    it "sorts timings" do
+      assert_equal [1.23, 4.56, 6], EpisodeTimingsImport.parse_timings("[ 1.23, 6, 4.56]")
+    end
+
+    it "combings timings that are close together" do
+      assert_equal [1.23, 4.56], EpisodeTimingsImport.parse_timings("1.23, 1.23, 1.23001, 4.56")
+      assert_equal [1.23, 4.56], EpisodeTimingsImport.parse_timings("1.23, 4.56, 1.23001")
+    end
   end
 
   describe "#parse_timings" do
@@ -91,7 +100,7 @@ describe EpisodeTimingsImport do
     it "validates timings" do
       assert uncut.present?
 
-      import.timings = "[3.4,1.2]"
+      import.timings = "[3abc,1.2]"
       import.import!
       assert import.status_bad_timings?
     end
