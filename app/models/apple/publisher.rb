@@ -82,7 +82,7 @@ module Apple
     end
 
     def poll_all_episodes!
-      poll!(show.podcast_episodes)
+      poll_episodes!(show.podcast_episodes)
     end
 
     def poll!(eps = episodes_to_sync)
