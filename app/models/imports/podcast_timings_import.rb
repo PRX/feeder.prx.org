@@ -126,7 +126,7 @@ class PodcastTimingsImport < PodcastImport
   def find_timings_index(row)
     row.find_index do |val|
       if val&.strip&.present?
-        !EpisodeTimingsImport.parse_timings(val).nil?
+        !EpisodeTimingsImport.parse_timings(val, true).nil?
       end
     end
   end

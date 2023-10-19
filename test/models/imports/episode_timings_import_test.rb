@@ -23,12 +23,18 @@ describe EpisodeTimingsImport do
       assert_equal [], EpisodeTimingsImport.parse_timings("[] ")
     end
 
-    it "requires at least one positive float" do
+    it "requires positive numbers" do
       assert_nil EpisodeTimingsImport.parse_timings("7.6a")
       assert_nil EpisodeTimingsImport.parse_timings("[0]")
       assert_nil EpisodeTimingsImport.parse_timings("[-4.4]")
-      assert_nil EpisodeTimingsImport.parse_timings("5")
+      assert_nil EpisodeTimingsImport.parse_timings("-4, 5")
       refute_nil EpisodeTimingsImport.parse_timings("5, 6.6")
+    end
+
+    it "requires at least one decimal when strict" do
+      assert_nil EpisodeTimingsImport.parse_timings("4,6.000000", true)
+      refute_nil EpisodeTimingsImport.parse_timings("4,6.000000", false)
+      refute_nil EpisodeTimingsImport.parse_timings("4,6.000001", true)
     end
 
     it "sorts timings" do
@@ -66,7 +72,7 @@ describe EpisodeTimingsImport do
       assert episode.present?
       assert_nil import.episode
 
-      import.timings = "8"
+      import.timings = "-2"
       import.import!
       assert import.status_bad_timings?
       assert_equal episode.id, import.episode_id
