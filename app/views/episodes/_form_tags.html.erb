@@ -6,7 +6,7 @@
 
     <div class="card-body">
       <div class="form-floating input-group">
-        <%= form.tag_select :categories, episode.categories, {}, data: {allow_new: true, allow_clear: true, category_target: "field"} %>
+        <%= form.tag_select :categories, episode.categories, {}, data: {allow_new: policy(episode).update?, allow_clear: policy(episode).update?, category_target: "field"} %>
         <%= form.label :categories %>
         <%= field_help_text t(".help.categories") %>
       </div>
