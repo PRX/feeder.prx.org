@@ -55,13 +55,9 @@ class PublishFeedJob < ApplicationJob
     rss = FeedBuilder.new(podcast, feed).to_feed_xml
     opts = default_options.merge(options)
     opts[:body] = rss
-    opts[:bucket] = feeder_storage_bucket
+    opts[:bucket] = s3_bucket
     opts[:key] = feed.path
-    @put_object = client.put_object(opts)
-  end
-
-  def feeder_storage_bucket
-    ENV["FEEDER_STORAGE_BUCKET"]
+    @put_object = s3_client.put_object(opts)
   end
 
   def default_options
@@ -69,17 +65,6 @@ class PublishFeedJob < ApplicationJob
       content_type: "application/rss+xml; charset=UTF-8",
       cache_control: "max-age=60"
     }
-  end
-
-  def client
-    if Rails.env.test? || ENV["AWS_ACCESS_KEY_ID"].present?
-      Aws::S3::Client.new(
-        credentials: Aws::Credentials.new(ENV["AWS_ACCESS_KEY_ID"], ENV["AWS_SECRET_ACCESS_KEY"]),
-        region: ENV["AWS_REGION"]
-      )
-    else
-      Aws::S3::Client.new
-    end
   end
 
   def null_publishing_item?(podcast, pub_item)
