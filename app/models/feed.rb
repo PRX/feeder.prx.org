@@ -219,6 +219,12 @@ class Feed < ApplicationRecord
   def copy_media(force = false)
     feed_images.each { |i| i.copy_media(force) }
     itunes_images.each { |i| i.copy_media(force) }
+
+    # remove old feed rss
+    if !previously_new_record? && (slug_previously_changed? || file_name_previously_changed?)
+      old_path = [podcast.path, slug_previously_was, file_name_previously_was].compact.join("/")
+      UnlinkJob.perform_later(old_path)
+    end
   end
 
   def ready_feed_image

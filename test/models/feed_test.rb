@@ -23,6 +23,26 @@ describe Feed do
     end
   end
 
+  describe "copy_media" do
+    it "removes old s3 files" do
+      removed_key = nil
+
+      UnlinkJob.stub(:perform_later, ->(key) { removed_key = key }) do
+        feed2.copy_media
+        feed2.reload.copy_media
+        assert_nil removed_key
+
+        feed2.reload.update(slug: "change-it")
+        feed2.copy_media
+        assert_equal "#{podcast.path}/adfree/feed-rss.xml", removed_key
+
+        feed2.reload.update(file_name: "change-it")
+        feed2.copy_media
+        assert_equal "#{podcast.path}/change-it/feed-rss.xml", removed_key
+      end
+    end
+  end
+
   describe "#set_public_feeds_url" do
     let(:podcast) { build_stubbed(:podcast, path: nil) }
     let(:feed) { build_stubbed(:feed, podcast: podcast, private: false, url: nil) }
