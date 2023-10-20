@@ -26,10 +26,19 @@ describe Feed do
   describe "#set_public_feeds_url" do
     let(:podcast) { build_stubbed(:podcast, path: nil) }
     let(:feed) { build_stubbed(:feed, podcast: podcast, private: false, url: nil) }
+    let(:prefix) { "https://publicfeeds.net/f/#{podcast.id}" }
 
     it "sets a default public feeds url" do
       feed.set_public_feeds_url
-      assert_equal "https://publicfeeds.net/f/#{podcast.id}/#{feed.slug}/feed-rss.xml", feed.url
+      assert_equal "#{prefix}/#{feed.slug}/feed-rss.xml", feed.url
+
+      feed.slug = nil
+      feed.set_public_feeds_url
+      assert_equal "#{prefix}/feed-rss.xml", feed.url
+
+      feed.file_name = "blah.xml"
+      feed.set_public_feeds_url
+      assert_equal "#{prefix}/blah.xml", feed.url
     end
 
     it "does not overwrite non-blank urls" do
@@ -38,7 +47,8 @@ describe Feed do
       assert_equal "https://some.where/feed.xml", feed.url
     end
 
-    it "does nothing for private feeds" do
+    it "removes public feed urls from private feeds" do
+      feed.url = "https://some.where/feed.xml"
       feed.private = true
       feed.set_public_feeds_url
       assert_nil feed.url
@@ -49,16 +59,6 @@ describe Feed do
       feed.set_public_feeds_url
       assert_nil feed.url
       ENV["PUBLIC_FEEDS_URL_PREFIX"] = old_prefix
-    end
-  end
-
-  describe "#remove_url" do
-    it "removes public feed urls from private feeds" do
-      assert feed1.public?
-      assert feed1.url.present?
-
-      feed1.update!(private: true)
-      assert feed1.url.nil?
     end
   end
 
