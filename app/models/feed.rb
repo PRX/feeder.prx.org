@@ -80,7 +80,7 @@ class Feed < ApplicationRecord
     if private?
       self.url = nil
     elsif ENV["PUBLIC_FEEDS_URL_PREFIX"].present? && podcast.present?
-      public_feeds_url = "#{ENV["PUBLIC_FEEDS_URL_PREFIX"]}/#{podcast.path}/#{published_path}"
+      public_feeds_url = "#{ENV["PUBLIC_FEEDS_URL_PREFIX"]}/#{path}"
 
       # hacky, but only default publicfeeds urls on newer records
       if url.blank? && (new_record? || created_at >= "2023-10-01")
@@ -116,11 +116,11 @@ class Feed < ApplicationRecord
   end
 
   def published_public_url
-    "#{podcast&.base_published_url}/#{published_path}"
+    "#{podcast&.base_published_url}/#{path_suffix}"
   end
 
   def published_private_url(include_token = nil)
-    private_path = "#{podcast.base_private_url}/#{published_path}"
+    private_path = "#{podcast.base_private_url}/#{path_suffix}"
 
     if include_token == true
       "#{private_path}?auth=#{tokens.first&.token}"
@@ -137,8 +137,12 @@ class Feed < ApplicationRecord
     url.present? ? url : published_url(include_token)
   end
 
-  def published_path
+  def path_suffix
     default? ? file_name : "#{slug}/#{file_name}"
+  end
+
+  def path
+    "#{podcast&.path}/#{path_suffix}"
   end
 
   def feed_episodes

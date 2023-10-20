@@ -56,16 +56,12 @@ class PublishFeedJob < ApplicationJob
     opts = default_options.merge(options)
     opts[:body] = rss
     opts[:bucket] = feeder_storage_bucket
-    opts[:key] = key(podcast, feed)
+    opts[:key] = feed.path
     @put_object = client.put_object(opts)
   end
 
   def feeder_storage_bucket
     ENV["FEEDER_STORAGE_BUCKET"]
-  end
-
-  def key(podcast, feed)
-    "#{podcast.path}/#{feed.published_path}"
   end
 
   def default_options

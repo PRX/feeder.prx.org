@@ -136,10 +136,14 @@ describe Feed do
   end
 
   describe "#published_url" do
-    it "returns default feed path" do
-      assert_equal feed1.published_path, "feed-rss.xml"
-      assert_equal feed2.published_path, "adfree/feed-rss.xml"
-      assert_equal feed3.published_path, "other/something"
+    it "returns feed paths" do
+      assert_equal feed1.path_suffix, "feed-rss.xml"
+      assert_equal feed2.path_suffix, "adfree/feed-rss.xml"
+      assert_equal feed3.path_suffix, "other/something"
+
+      assert_equal feed1.path, "#{podcast.path}/feed-rss.xml"
+      assert_equal feed2.path, "#{podcast.path}/adfree/feed-rss.xml"
+      assert_equal feed3.path, "#{podcast.path}/other/something"
     end
 
     it "returns default feed urls" do

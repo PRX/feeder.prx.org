@@ -15,11 +15,6 @@ describe PublishFeedJob do
     ENV["FEEDER_STORAGE_BUCKET"] = "test-prx-feed"
   end
 
-  it "knows the right key to write to" do
-    assert_equal job.key(podcast, podcast.default_feed), "#{podcast.path}/feed-rss.xml"
-    assert_equal job.key(podcast, feed), "#{podcast.path}/adfree/feed-rss.xml"
-  end
-
   describe "saving the rss file" do
     let(:stub_client) { Aws::S3::Client.new(stub_responses: true) }
 
