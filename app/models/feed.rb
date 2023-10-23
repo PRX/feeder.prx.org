@@ -24,8 +24,13 @@ class Feed < ApplicationRecord
   alias_attribute :tokens, :feed_tokens
   accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
 
-  has_many :apple_configs, autosave: true, dependent: :destroy, foreign_key: :public_feed_id,
-    class_name: "::Apple::Config"
+  has_one :apple_config,
+    autosave: true,
+    class_name: "::Apple::Config",
+    dependent: :destroy,
+    foreign_key: :public_feed_id,
+    inverse_of: :public_feed,
+    validate: true
 
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
@@ -158,10 +163,10 @@ class Feed < ApplicationRecord
     cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, "").gsub(/\s+/, " ").strip
   end
 
-  def publish_to_apple?(apple_config)
+  def publish_to_apple?
     apple_config.present? &&
-      apple_config.public_feed == self &&
-      apple_config.publish_enabled?
+    apple_config.public_feed == self &&
+    apple_config.publish_enabled?
   end
 
   def include_tags=(tags)

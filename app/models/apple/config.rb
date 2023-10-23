@@ -6,26 +6,26 @@ module Apple
     DEFAULT_TITLE = "Apple Delegated Delivery Subscriptions"
     DEFAULT_AUDIO_FORMAT = {"f" => "flac", "b" => 16, "c" => 2, "s" => 44100}.freeze
 
+    belongs_to :podcast, class_name: "Podcast"
     belongs_to :public_feed, class_name: "Feed"
     belongs_to :private_feed, class_name: "Feed"
-
     belongs_to :key, class_name: "Apple::Key", optional: true
 
-    has_one :podcast, through: :public_feed
-
     delegate :title, to: :podcast, prefix: "podcast"
-    delegate :id, to: :podcast, prefix: "podcast"
 
     delegate :provider_id, to: :key
     delegate :key_id, to: :key
     delegate :key_pem, to: :key
     delegate :key_pem_b64, to: :key
 
+    validates_presence_of :podcast
     validates_presence_of :public_feed
     validates_presence_of :private_feed
 
     validates_associated :public_feed
     validates_associated :private_feed
+
+    validates :podcast, uniqueness: true, allow_nil: false
 
     validates :public_feed, uniqueness: {scope: :private_feed,
                                          message: "can only have one config per public and private feed"}
@@ -61,19 +61,21 @@ module Apple
       )
     end
 
+    # this doesn't seem to be called anywhere?
+    # is this a helper for setup via console, with that stdin.get?
     def self.build_apple_config(podcast, key)
-      if has_apple_config?(podcast)
+      if podcast.apple_config
         Rails.logger.error("Found existing apple config for #{podcast.title}!")
         Rails.logger.error("Do you want to continue? (y/N)")
         raise "Stopping build_apple_config" if $stdin.gets.chomp.downcase != "y"
       end
 
-      ac = podcast.default_feed.apple_configs.first || Apple::Config.new
-      ac.public_feed = podcast.default_feed
-      ac.private_feed = find_or_build_private_feed(podcast)
-      ac.key = key
-
-      ac
+      Apple::Config.new(
+        podcast: podcast,
+        public_feed: podcast.default_feed,
+        private_feed: find_or_build_private_feed(podcast),
+        key: key
+      )
     end
 
     def self.mark_as_delivered!(apple_publisher)
@@ -98,19 +100,10 @@ module Apple
       mark_as_delivered!(pub)
     end
 
-    def one_config_per_podcast
-      return unless public_feed.present? && private_feed.present?
-      return unless podcast.present?
-
-      if podcast.feeds.map(&:apple_configs).flatten.compact.present?
-        errors.add(:podcast, "can only have one apple config")
-      end
-    end
-
     def feed_podcasts_match
       return unless public_feed.present? && private_feed.present?
 
-      if public_feed.podcast != private_feed.podcast
+      if (public_feed.podcast_id != podcast_id) || (private_feed.podcast_id != podcast_id)
         errors.add(:public_feed, "must belong to the same podcast as the private feed")
       end
     end
