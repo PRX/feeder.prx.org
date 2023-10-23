@@ -81,7 +81,7 @@ module ImportUtils
       end
     end
 
-    {name: name, email: email}
+    {name: name, email: email}.with_indifferent_access
   end
 
   def clean_string(str)

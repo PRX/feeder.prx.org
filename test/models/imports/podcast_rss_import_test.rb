@@ -55,8 +55,16 @@ describe PodcastRssImport do
       "scientists, and story-driven reporters. Presented " \
       "by radio and podcast powerhouse PRX, with support " \
       "from the Sloan Foundation."
+
     _(importer.podcast.url).must_equal "http://feeds.prx.org/transistor_stem"
     _(importer.podcast.new_feed_url).must_equal "http://feeds.prx.org/transistor_stem"
+
+    _(importer.podcast.author_name).must_equal "PRX"
+    _(importer.podcast.author_email).must_be_nil
+    _(importer.podcast.owner_name).must_equal "PRX"
+    _(importer.podcast.owner_email).must_equal "prxwpadmin@prx.org"
+    _(importer.podcast.managing_editor_name).must_equal "PRX"
+    _(importer.podcast.managing_editor_email).must_equal "prxwpadmin@prx.org"
 
     _(sns.messages.count).must_equal 2
     _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 2]
