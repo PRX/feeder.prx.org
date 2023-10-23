@@ -93,8 +93,8 @@ module Apple
       Apple::Show.connect_existing(apple_show_id, ac)
 
       pub = ac.build_publisher
-      # Poll all the episodes, to get a top-level view of what has remove state.
-      # Just the episode endpoint, for speed and avoid rate-limiting.
+      # Poll all the episodes, to get a top-level view of what has remote state.
+      # Just the episode endpoint, for speed and to avoid rate-limiting.
       pub.poll_all_episodes!
 
       # Now poll the episodes in the feed in their entirety,  to get a view of what has been added.
