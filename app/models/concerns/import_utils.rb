@@ -93,6 +93,7 @@ module ImportUtils
   def clean_text(text)
     return nil if text.blank?
     result = remove_feedburner_tracker(text)
+    result = remove_podcastchoices_link(result)
     sanitize_html(result)
   end
 
