@@ -370,8 +370,7 @@ module Apple
     def publishing_state_bridge_params(state)
       {
         request_metadata: {
-          apple_episode_id: apple_id,
-          guid: guid
+          apple_episode_id: apple_id
         },
         api_url: api.join_url("episodePublishingRequests").to_s,
         api_parameters: publishing_state_parameters(state)
