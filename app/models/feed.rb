@@ -165,8 +165,8 @@ class Feed < ApplicationRecord
 
   def publish_to_apple?
     apple_config.present? &&
-    apple_config.public_feed == self &&
-    apple_config.publish_enabled?
+      apple_config.public_feed == self &&
+      apple_config.publish_enabled?
   end
 
   def include_tags=(tags)
