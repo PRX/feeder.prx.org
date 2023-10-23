@@ -21,6 +21,12 @@
         <span class="badge rounded-pill prx-badge-<%= status %>">
           <%= t("helpers.label.episode.media_statuses.#{status.underscore}") %>
         </span>
+        <br>
+        <% if episode.ad_breaks.to_i == 0 %>
+          <span class="badge rounded-pill bg-light text-black-50"><%= t(".breaks", count: 0) %></span>
+        <% else %>
+          <span class="badge rounded-pill bg-primary"><%= t(".breaks", count: episode.ad_breaks) %></span>
+        <% end %>
       </div>
     </div>
   </div>

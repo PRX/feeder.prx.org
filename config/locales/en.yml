@@ -494,6 +494,10 @@ en:
     destroy:
       error: Cannot delete a published episode
       notice: Episode deleted
+    episode:
+      breaks:
+        one: 1 Break
+        other: "%{count} Breaks"
     episode_filters:
       my_episodes: Episodes
       filters:
