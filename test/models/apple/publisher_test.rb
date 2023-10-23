@@ -205,7 +205,7 @@ describe Apple::Publisher do
 
       it "should archive an upublished episode" do
         apple_episode.feeder_episode.update!(published_at: nil, released_at: nil)
-        refute apple_episode.published?
+        refute apple_episode.feeder_episode.published?
 
         assert_equal [], private_feed.feed_episodes
         apple_publisher.show.reload

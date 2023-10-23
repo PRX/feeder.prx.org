@@ -527,10 +527,6 @@ module Apple
       feeder_episode.deleted?
     end
 
-    def published?
-      feeder_episode.published?
-    end
-
     alias_method :container, :podcast_container
     alias_method :deliveries, :podcast_deliveries
     alias_method :delivery_files, :podcast_delivery_files
