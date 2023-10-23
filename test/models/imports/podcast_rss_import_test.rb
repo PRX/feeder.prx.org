@@ -55,6 +55,8 @@ describe PodcastRssImport do
       "scientists, and story-driven reporters. Presented " \
       "by radio and podcast powerhouse PRX, with support " \
       "from the Sloan Foundation."
+    _(importer.podcast.url).must_equal "http://feeds.prx.org/transistor_stem"
+    _(importer.podcast.new_feed_url).must_equal "http://feeds.prx.org/transistor_stem"
 
     _(sns.messages.count).must_equal 2
     _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 2]
@@ -168,6 +170,14 @@ describe PodcastRssImport do
       desc = 'desc <img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" ' \
         'height="1" width="1" alt=""/>'
       _(importer.remove_feedburner_tracker(desc)).must_equal "desc"
+    end
+
+    it "can remove podcastchoices links" do
+      desc = "Plain text. Learn more about your ad choices. Visit podcastchoices.com/adchoices. More stuff."
+      _(importer.remove_podcastchoices_link(desc)).must_equal "Plain text.  More stuff."
+
+      desc = "<p>Hello</p><p>Learn more about your ad choices. Visit <a href=\"https://podcastchoices.com/adchoices\">podcastchoices.com/adchoices</a></p><p>Extra stuff</p>"
+      _(importer.remove_podcastchoices_link(desc)).must_equal "<p>Hello</p><p>Extra stuff</p>"
     end
 
     it "can remove unsafe tags" do

@@ -145,8 +145,7 @@ class PodcastRssImport < PodcastImport
     podcast_attributes[:explicit] = explicit(feed.itunes_explicit, "false")
     podcast_attributes[:new_feed_url] = clean_string(feed.itunes_new_feed_url)
     podcast_attributes[:enclosure_prefix] ||= enclosure_prefix(feed.entries.first)
-    podcast_attributes[:feedburner_url] ||= feedburner_url(feed.feedburner_name)
-    podcast_attributes[:url] ||= feedburner_url(feed.feedburner_name)
+    podcast_attributes[:url] ||= clean_string(feed.feed_url)
 
     podcast_attributes[:author] = person(feed.itunes_author)
     podcast_attributes[:managing_editor] = person(feed.managing_editor)
@@ -203,10 +202,6 @@ class PodcastRssImport < PodcastImport
       prefix += blubrry[1]
     end
     prefix
-  end
-
-  def feedburner_url(fb_name)
-    fb_name ? "https://feeds.feedburner.com/#{clean_string(fb_name)}" : nil
   end
 
   def owner(itunes_owners)

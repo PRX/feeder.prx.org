@@ -102,6 +102,12 @@ module ImportUtils
     str.sub(regex, "").strip
   end
 
+  def remove_podcastchoices_link(str)
+    if str.present?
+      str.sub(/(<p>)?learn more about your ad choices.+podcastchoices.com\/adchoices\.?(<\/a>)?(<\/p>)?/i, "").strip
+    end
+  end
+
   def sanitize_html(text)
     return nil if text.blank?
     sanitizer = Rails::Html::WhiteListSanitizer.new
