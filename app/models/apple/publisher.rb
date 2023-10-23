@@ -155,8 +155,6 @@ module Apple
 
     def unarchive!(eps = episodes_to_unarchive)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        poll!(eps)
-
         eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
           res = Apple::Episode.unarchive(api, show, eps)
           Rails.logger.info("Un-Archived #{res.length} episodes.")
