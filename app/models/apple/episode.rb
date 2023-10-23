@@ -522,10 +522,6 @@ module Apple
       feeder_episode.apple_podcast_delivery_files
     end
 
-    def deleted?
-      feeder_episode.deleted?
-    end
-
     alias_method :container, :podcast_container
     alias_method :deliveries, :podcast_deliveries
     alias_method :delivery_files, :podcast_delivery_files
