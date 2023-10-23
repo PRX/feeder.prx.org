@@ -149,8 +149,7 @@ module Apple
     end
 
     # In the case where there are duplicate guids in the feeds, we want to make
-    # sure that the most "current" episode is the one that maps to the remote
-    # episode.
+    # sure that the most "current" episode is the one that maps to the remote state.
     def sort_by_episode_properties(eps)
       # Sort the episodes by:
       # 1. Non-deleted episodes first
@@ -167,8 +166,8 @@ module Apple
           ]
         end
 
-      # return what is a reverse sorted list,
-      # modeling a priority queue
+      # return sorted list, reversed
+      # modeling a priority queue -- most important first
       eps.reverse
     end
 
