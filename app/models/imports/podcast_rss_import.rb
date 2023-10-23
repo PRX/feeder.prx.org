@@ -185,23 +185,22 @@ class PodcastRssImport < PodcastImport
     podcast
   end
 
-  def enclosure_prefix(podcast_item)
-    prefix = ""
-    link = [podcast_item.feedburner_orig_enclosure_link,
-      podcast_item.enclosure.try(:url),
-      podcast_item.media_contents.first.try(:url)].find do |url|
-      url.try(:match, /podtrac/) || url.try(:match, /blubrry/)
+  def enclosure_prefix(item)
+    redirectors = [
+      /\/(www|dts)\.podtrac\.com(\/pts)?\/redirect\.mp3\//,
+      /\/media\.blubrry\.com\/[^\/]+\//,
+      /\/chrt\.fm\/track\/[^\/]+\//,
+      /\/chtbl\.com\/track\/[^\/]+\//,
+      /\/pdst\.fm\/e\//
+    ]
+
+    urls = [item.feedburner_orig_enclosure_link, item.enclosure.try(:url), item.media_contents.first.try(:url)]
+    url = urls.compact.find { |u| redirectors.any? { |r| u.match?(r) } }
+
+    if url.present?
+      end_index = redirectors.map { |r| url.index(r) + url[r].length if url.match?(r) }.compact.max
+      url[0...end_index]
     end
-    if (scheme = link.try(:match, /^https?:\/\//))
-      prefix += scheme.to_s
-    end
-    if (podtrac = link.try(:match, /\/(\w+\.podtrac.com\/.+?\.mp3\/)/))
-      prefix += podtrac[1]
-    end
-    if (blubrry = link.try(:match, /\/(media\.blubrry\.com\/[^\/]+\/)/))
-      prefix += blubrry[1]
-    end
-    prefix
   end
 
   def owner(itunes_owners)

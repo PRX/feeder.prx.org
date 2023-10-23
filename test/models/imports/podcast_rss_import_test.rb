@@ -136,23 +136,23 @@ describe PodcastRssImport do
         "-4b1c-bbc6-2912d79d014f/248-Atom-in-the-Garden-of-Eden.mp3"
     end
     let(:sample_link3) do
-      "http://media.blubrry.com/some_name/www.podtrac.com/pts/redirect.mp3/blah"
+      "https://pts.podtrac.com/redirect.mp3/pdst.fm/e/chtbl.com/track/7E7E1F/blah"
     end
 
     it "can make a good guess for an enclosure prefix" do
       item = feed.entries.first
-      _(importer.enclosure_prefix(item)).must_equal "https://dts.podtrac.com/redirect" \
-        ".mp3/media.blubrry.com/transistor/"
+      _(importer.enclosure_prefix(item)).must_equal "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/"
+
       item.feedburner_orig_enclosure_link = nil
       item.enclosure.url = sample_link1
       _(importer.enclosure_prefix(item)).must_equal "https://www.podtrac.com/pts/redirect.mp3/"
+
       item.feedburner_orig_enclosure_link = "something_without_those_words"
       item.enclosure.url = sample_link2
-      _(importer.enclosure_prefix(item)).must_equal "http://www.podtrac.com/pts/redirect" \
-        ".mp3/media.blubrry.com/99percentinvisible/"
+      _(importer.enclosure_prefix(item)).must_equal "http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/99percentinvisible/"
+
       item.feedburner_orig_enclosure_link = sample_link3
-      _(importer.enclosure_prefix(item)).must_equal "http://www.podtrac.com/pts/redirect.mp3" \
-        "/media.blubrry.com/some_name/"
+      _(importer.enclosure_prefix(item)).must_equal "https://pts.podtrac.com/redirect.mp3/pdst.fm/e/chtbl.com/track/7E7E1F/"
     end
 
     it "can substitute for a missing short description" do
