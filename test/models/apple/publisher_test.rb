@@ -174,6 +174,33 @@ describe Apple::Publisher do
 
           assert_equal [], apple_publisher.episodes_to_archive
         end
+
+        it "should dynamically calculate which episodes are archived" do
+          # In the case where we have some existing episodes to archive and then poll the episode endpoint
+          # and find that the episode is already archived.
+          sync_log = apple_episode.sync_log
+          res = sync_log.api_response
+          res["api_response"]["val"]["data"]["attributes"]["publishingState"] = "PUBLISHED"
+          apple_episode.feeder_episode.apple_sync_log.update!(api_response: res)
+
+          assert_equal "PUBLISHED", apple_episode.publishing_state
+
+          # model the case where the episode is destroyed, triggering an archive
+          apple_episode.feeder_episode.destroy
+          assert_equal [], private_feed.feed_episodes
+          apple_publisher.show.reload
+          apple_episode = apple_publisher.show.podcast_episodes.first
+          assert_equal [apple_episode.object_id], apple_publisher.show.podcast_episodes.map(&:object_id)
+
+          refute apple_episode.archived?
+          assert_equal [apple_episode], apple_publisher.episodes_to_archive
+
+          res["api_response"]["val"]["data"]["attributes"]["publishingState"] = "ARCHIVED"
+          apple_episode.feeder_episode.apple_sync_log.update!(api_response: res)
+
+          assert apple_episode.archived?
+          assert_equal [], apple_publisher.episodes_to_archive
+        end
       end
 
       it "should archive an upublished episode" do

@@ -111,9 +111,11 @@ module Apple
       raise "Missing Show!" unless show.apple_id.present?
 
       # delete or unpublished episodes
+      poll_episodes!(episodes_to_archive)
       archive!(episodes_to_archive)
       show.reload
 
+      poll_episodes!(episodes_to_unarchive)
       unarchive!(episodes_to_unarchive)
       show.reload
 
@@ -144,8 +146,6 @@ module Apple
 
     def archive!(eps = episodes_to_archive)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        poll!(eps)
-
         eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
           res = Apple::Episode.archive(api, show, eps)
           Rails.logger.info("Archived #{res.length} episodes.")
