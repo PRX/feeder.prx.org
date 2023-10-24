@@ -32,7 +32,7 @@ module Apple
     def self.from_apple_config(apple_config)
       if apple_config.key.blank?
         Rails.logger.info("No Apple API keys in config object, falling back to environment default keys",
-          {apple_credential_id: apple_config.id,
+          {apple_config_id: apple_config.id,
            podcast_id: apple_config.podcast_id,
            podcast_title: apple_config.podcast_title})
         from_env

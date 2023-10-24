@@ -189,7 +189,7 @@ describe PublishingPipelineState do
       # A new pipeline
       PublishingPipelineState.start_pipeline!(podcast)
       PublishingPipelineState.publish_rss!(podcast)
-      assert_equal ["created", "published_rss"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+      assert_equal ["created", "published_rss"], PublishingPipelineState.latest_pipeline(podcast).order(:id).map(&:status)
       publishing_item = PublishingPipelineState.latest_pipeline(podcast).map(&:publishing_queue_item_id).uniq
 
       # it does not retry the errored pipeline

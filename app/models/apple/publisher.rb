@@ -35,31 +35,54 @@ module Apple
       public_feed.podcast
     end
 
-    def episodes_to_sync
-      filter_episodes(show.episodes)
-    end
-
-    def filter_episodes(eps)
+    def filter_episodes_to_sync(eps)
       # Reject episodes if the audio is marked as uploaded/complete
       # or if the episode is a video
       eps
         .reject(&:synced_with_apple?)
         .reject(&:video_content_type?)
+    end
+
+    def episodes_to_sync
+      # only look at the private delegated delivery feed
+      filter_episodes_to_sync(show.apple_private_feed_episodes)
+    end
+
+    def filter_episodes_to_archive(eps)
+      eps_in_private_feed = Set.new(show.apple_private_feed_episodes)
+
+      # Episodes to archive can include:
+      # - episodes that are now excluded from the feed
+      # - episodes that are deleted or unpublished
+      # - episodes that have fallen off the end of the feed (Feed#display_episodes_count)
+      eps
+        .reject { |ep| eps_in_private_feed.include?(ep) }
+        .reject(&:apple_new?)
         .reject(&:archived?)
+    end
+
+    def episodes_to_archive
+      # look at the global list of episodes, not just the private feed
+      filter_episodes_to_archive(show.podcast_episodes)
+    end
+
+    def filter_episodes_to_unarchive(eps)
+      eps.filter(&:archived?)
+    end
+
+    def episodes_to_unarchive
+      # only look at the private delegated delivery feed
+      filter_episodes_to_unarchive(show.apple_private_feed_episodes)
     end
 
     def only_episodes_with_apple_state(eps)
       # Only select episodes that have an remote apple state,
       # as determined by the sync log
-      eps.reject do |ep|
-        Rails.logger.info("Episode lacks remote Apple state", {episode_id: ep.feeder_id}) if ep.apple_new?
-
-        ep.apple_new?
-      end
+      eps.reject(&:apple_new?)
     end
 
     def poll_all_episodes!
-      poll!(show.podcast_episodes)
+      poll_episodes!(show.podcast_episodes)
     end
 
     def poll!(eps = episodes_to_sync)
@@ -87,6 +110,15 @@ module Apple
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
+      # delete or unpublished episodes
+      poll_episodes!(episodes_to_archive)
+      archive!(episodes_to_archive)
+      show.reload
+
+      poll_episodes!(episodes_to_unarchive)
+      unarchive!(episodes_to_unarchive)
+      show.reload
+
       Rails.logger.tagged("Apple::Publisher#publish!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           # only create if needed
@@ -110,6 +142,24 @@ module Apple
 
       # success
       SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id, api_response: {success: true})
+    end
+
+    def archive!(eps = episodes_to_archive)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
+          res = Apple::Episode.archive(api, show, eps)
+          Rails.logger.info("Archived #{res.length} episodes.")
+        end
+      end
+    end
+
+    def unarchive!(eps = episodes_to_unarchive)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
+          res = Apple::Episode.unarchive(api, show, eps)
+          Rails.logger.info("Un-Archived #{res.length} episodes.")
+        end
+      end
     end
 
     def log_delivery_processing_errors(eps)
