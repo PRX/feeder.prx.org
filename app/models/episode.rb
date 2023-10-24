@@ -105,18 +105,6 @@ class Episode < ApplicationRecord
     guid
   end
 
-  def apple_file_errors?
-    # TODO: for now these are all considered audio files
-
-    apple_delivery_file_errors.present?
-  end
-
-  def apple_delivery_file_errors
-    # TODO: for now these are all considered audio files
-
-    apple_delivery_files.map { |p| p.asset_processing_state["errors"] }.flatten
-  end
-
   def apple_episode_delivery_status
     apple_episode_delivery_statuses.order(created_at: :desc).first
   end
