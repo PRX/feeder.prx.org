@@ -1,4 +1,9 @@
 <tr>
+  <td>
+    <span class="badge rounded-pill prx-badge-<%= episode_import.status %>">
+      <%= t("helpers.label.episode_import.statuses.#{episode_import.status}") %>
+    </span>
+  </td>
   <td class="align-middle">
     <% if episode_import.guid.present? %>
       <pre class="m-0 p-0"><%= episode_import.guid %></pre>
@@ -15,10 +20,5 @@
     <% else %>
       &mdash;
     <% end %>
-  </td>
-  <td>
-    <span class="badge rounded-pill prx-badge-<%= episode_import.status %>">
-      <%= t("helpers.label.episode_import.statuses.#{episode_import.status}") %>
-    </span>
   </td>
 </tr>

@@ -1,5 +1,8 @@
 <tr>
   <td><%= t("helpers.label.podcast_import.types.#{import.type}") %></td>
+  <td><%= import.episode_imports.status_complete.count %></td>
+  <td class="align-middle"><%= render "import_progress", import: import %></td>
+  <td><%= local_time_ago(import.created_at) %></td>
   <td>
     <%= link_to podcast_import_path(import.podcast_id, import), data: {turbo_frame: "_top"} do %>
       <% if import.is_a?(PodcastTimingsImport) %>
@@ -9,7 +12,5 @@
       <% end %>
     <% end %>
   </td>
-  <td><%= import.episode_imports.status_complete.count %></td>
-  <td class="align-middle"><%= render "import_progress", import: import %></td>
-  <td><%= local_time_ago(import.created_at) %></td>
+
 </tr>
