@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_16_225839) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_23_213846) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -32,6 +32,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_16_225839) do
     t.bigint "episode_id", null: false
     t.boolean "delivered", default: false
     t.datetime "created_at", null: false
+    t.string "source_url"
+    t.string "source_filename"
+    t.bigint "source_size"
+    t.text "enclosure_url"
+    t.integer "source_fetch_count", default: 0
     t.index ["episode_id", "created_at", "delivered", "id"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at"
     t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
   end
@@ -147,8 +152,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_16_225839) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.datetime "source_updated_at", precision: nil
     t.string "keyword_xid"
+    t.datetime "source_updated_at", precision: nil
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"

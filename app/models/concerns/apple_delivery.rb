@@ -14,6 +14,7 @@ module AppleDelivery
     has_many :apple_episode_delivery_statuses, -> { order(created_at: :desc) }, dependent: :destroy, class_name: "Apple::EpisodeDeliveryStatus"
 
     alias_method :podcast_container, :apple_podcast_container
+    alias_method :apple_status, :apple_episode_delivery_status
   end
 
   def apple_update_delivery_status(attrs)

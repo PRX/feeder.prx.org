@@ -54,10 +54,7 @@ module Apple
         podcast_container_id = row["request_metadata"]["podcast_container_id"]
 
         container = containers_by_id.fetch(podcast_container_id)
-        container.source_size = content_length
-        container.source_url = cdn_url
-
-        container.save!
+        container.update_source_metadata!(source_size: content_length.to_i, source_url: cdn_url)
         container
       end
     end
@@ -285,16 +282,39 @@ module Apple
       ct.zero? ? "" : "#{ct}_"
     end
 
-    def reset_source_metadata!(apple_ep)
-      count = source_fetch_count + 1
+    def source_url
+      episode.apple_status&.source_url
+    end
 
-      update!(
-        source_fetch_count: count,
+    def source_size
+      episode.apple_status&.source_size
+    end
+
+    def source_filename
+      episode.apple_status&.source_filename
+    end
+
+    def enclosure_url
+      episode.apple_status&.enclosure_url
+    end
+
+    def source_fetch_count
+      episode.apple_status&.source_fetch_count || 0
+    end
+
+    def reset_source_metadata!(apple_ep)
+      count = source_fetch_count
+      episode.apple_update_delivery_status(
         source_url: nil,
         source_size: nil,
         source_filename: filename_prefix(count) + apple_ep.enclosure_filename,
-        enclosure_url: apple_ep.enclosure_url
+        enclosure_url: apple_ep.enclosure_url,
+        source_fetch_count: count + 1
       )
+    end
+
+    def update_source_metadata!(attrs)
+      episode.apple_update_delivery_status(**attrs)
     end
 
     def needs_file_metadata?

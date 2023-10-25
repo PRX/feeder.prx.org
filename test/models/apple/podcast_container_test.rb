@@ -36,12 +36,14 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
   describe "the DTR / CDN redirect flow" do
     let(:pc) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
-    before do
-      pc.update!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
-    end
+
     describe "#reset_source_metadata!" do
       it "clears out the fields" do
         assert_equal 0, pc.source_fetch_count
+        pc.reset_source_metadata!(apple_episode)
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+
+        assert_equal 1, pc.source_fetch_count
         assert pc.source_filename.present?
         assert pc.source_filename.present?
         assert pc.source_url.present?
@@ -52,7 +54,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         end
 
         pc.reload
-        assert_equal 1, pc.source_fetch_count
+        assert_equal 2, pc.source_fetch_count
         assert pc.source_filename.present?
         refute pc.source_url.present?
         refute pc.source_size.present?
@@ -62,25 +64,45 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
 
       it "increments the source filename" do
+        assert_equal 0, pc.source_fetch_count
+        pc.reset_source_metadata!(apple_episode)
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+
         apple_episode.stub(:enclosure_filename, "new") do
           apple_episode.stub(:enclosure_url, "http://this-is-new") do
             assert_equal "foo", pc.source_filename
-            assert_equal 0, pc.source_fetch_count
-
-            pc.reset_source_metadata!(apple_episode)
-            assert_equal "1_new", pc.source_filename
             assert_equal 1, pc.source_fetch_count
 
             pc.reset_source_metadata!(apple_episode)
-            assert_equal "2_new", pc.source_filename
+            assert_equal "1_new", pc.source_filename
             assert_equal 2, pc.source_fetch_count
+
+            pc.reset_source_metadata!(apple_episode)
+            assert_equal "2_new", pc.source_filename
+            assert_equal 3, pc.source_fetch_count
           end
         end
+      end
+
+      it "increments the count based on reset count" do
+        assert_equal 0, pc.source_fetch_count
+
+        pc.reset_source_metadata!(apple_episode)
+        assert_equal 1, pc.source_fetch_count
+
+        pc.reset_source_metadata!(apple_episode)
+        assert_equal 2, pc.source_fetch_count
+
+        pc.reset_source_metadata!(apple_episode)
+        assert_equal 3, pc.source_fetch_count
       end
     end
 
     describe "#needs_file_metadata?" do
       it "is congruent with reset_source_metadata!" do
+        pc.reset_source_metadata!(apple_episode)
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+
         refute pc.needs_file_metadata?
 
         pc.reset_source_metadata!(apple_episode)
@@ -91,6 +113,9 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
     describe ".reset_source_file_metadata" do
       it "needs delivery in order to be reset" do
+        pc.reset_source_metadata!(apple_episode)
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+
         apple_episode.stub(:needs_delivery?, false) do
           Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
         end
