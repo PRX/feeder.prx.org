@@ -16,6 +16,15 @@ module AppleDelivery
     alias_method :podcast_container, :apple_podcast_container
   end
 
+  def apple_update_delivery_status(attrs)
+    new_status = (apple_episode_delivery_status&.dup || apple_episode_delivery_statuses.build)
+    new_status.assign_attributes(**attrs)
+    new_status.save!
+
+    apple_episode_delivery_statuses.reset
+    new_status
+  end
+
   def apple_episode_delivery_status
     apple_episode_delivery_statuses.order(created_at: :desc).first
   end
@@ -27,14 +36,10 @@ module AppleDelivery
   end
 
   def apple_needs_delivery!
-    apple_episode_delivery_statuses.create!(delivered: false)
-    apple_episode_delivery_statuses.reset
-    apple_episode_delivery_status
+    apple_update_delivery_status(delivered: false)
   end
 
   def apple_has_delivery!
-    apple_episode_delivery_statuses.create!(delivered: true)
-    apple_episode_delivery_statuses.reset
-    apple_episode_delivery_status
+    apple_update_delivery_status(delivered: true)
   end
 end
