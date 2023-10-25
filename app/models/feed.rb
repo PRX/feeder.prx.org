@@ -3,6 +3,7 @@ require "hash_serializer"
 class Feed < ApplicationRecord
   include FeedAudioFormat
   include FeedAdZone
+  include FeedITunesCategory
 
   DEFAULT_FILE_NAME = "feed-rss.xml".freeze
 
@@ -255,33 +256,5 @@ class Feed < ApplicationRecord
 
   def ready_image
     @ready_image ||= (ready_feed_image || ready_itunes_image)
-  end
-
-  def itunes_category
-    itunes_categories[0]&.name
-  end
-
-  def itunes_category=(value)
-    cat = itunes_categories[0] || itunes_categories.build
-
-    # allow destroying for non-default feeds
-    if custom? && value.blank?
-      cat.mark_for_destruction
-    elsif cat.name != value
-      cat.name = value
-      cat.subcategories = []
-    end
-  end
-
-  def itunes_subcategory
-    itunes_categories[0]&.subcategories&.first
-  end
-
-  def itunes_subcategory=(value)
-    if (cat = itunes_categories[0])
-      cat.subcategories = [value]
-    else
-      itunes_categories.build(subcategories: [value])
-    end
   end
 end

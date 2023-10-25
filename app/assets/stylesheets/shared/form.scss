@@ -68,6 +68,9 @@
   .invalid-feedback {
     order: 10;
   }
+  input[type="hidden"] + .invalid-feedback {
+    display: none;
+  }
 }
 
 label[required="required"],
