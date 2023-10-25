@@ -10,6 +10,7 @@ class Episode < ApplicationRecord
   include PublishingStatus
   include TextSanitizer
   include EmbedPlayerHelper
+  include AppleDelivery
 
   MAX_SEGMENT_COUNT = 10
   VALID_ITUNES_TYPES = %w[full trailer bonus]
@@ -33,15 +34,6 @@ class Episode < ApplicationRecord
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
-
-  has_one :apple_sync_log, -> { episodes }, foreign_key: :feeder_id, class_name: "SyncLog"
-  has_one :apple_podcast_delivery, class_name: "Apple::PodcastDelivery"
-  has_one :apple_podcast_container, class_name: "Apple::PodcastContainer"
-  has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
-    class_name: "Apple::PodcastDelivery"
-  has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
-    class_name: "Apple::PodcastDeliveryFile"
-  has_many :apple_episode_delivery_statuses, -> { order(created_at: :desc) }, dependent: :destroy, class_name: "Apple::EpisodeDeliveryStatus"
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
@@ -76,7 +68,6 @@ class Episode < ApplicationRecord
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
-  alias_method :podcast_container, :apple_podcast_container
 
   def self.release_episodes!(_options = {})
     podcasts = []
@@ -103,28 +94,6 @@ class Episode < ApplicationRecord
   # use guid rather than id for episode routes
   def to_param
     guid
-  end
-
-  def apple_episode_delivery_status
-    apple_episode_delivery_statuses.order(created_at: :desc).first
-  end
-
-  def apple_needs_delivery?
-    return true if apple_episode_delivery_status.nil?
-
-    apple_episode_delivery_status.delivered == false
-  end
-
-  def apple_needs_delivery!
-    apple_episode_delivery_statuses.create!(delivered: false)
-    apple_episode_delivery_statuses.reset
-    apple_episode_delivery_status
-  end
-
-  def apple_has_delivery!
-    apple_episode_delivery_statuses.create!(delivered: true)
-    apple_episode_delivery_statuses.reset
-    apple_episode_delivery_status
   end
 
   def self.generate_item_guid(podcast_id, episode_guid)
