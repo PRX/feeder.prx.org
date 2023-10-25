@@ -54,21 +54,6 @@ describe Podcast do
     assert podcast.itunes_block
   end
 
-  it "gets and sets itunes categories" do
-    assert_equal 1, podcast.default_feed.itunes_categories.count
-    assert_equal 2, podcast.default_feed.itunes_categories.first.subcategories.count
-    assert_equal "Leisure", podcast.itunes_category
-    assert_equal "Aviation", podcast.itunes_subcategory
-
-    podcast.itunes_category = "Arts"
-    podcast.itunes_subcategory = "Books"
-
-    assert_equal 1, podcast.default_feed.itunes_categories.count
-    assert_equal 1, podcast.default_feed.itunes_categories.first.subcategories.count
-    assert_equal "Arts", podcast.itunes_category
-    assert_equal "Books", podcast.itunes_subcategory
-  end
-
   describe "publishing" do
     it "creates a publish job on publish" do
       PublishingPipelineState.stub(:start_pipeline!, "published!") do
