@@ -35,6 +35,14 @@ module Apple
       "#<Apple:Show:#{object_id} show_id=#{try(:apple_id) || "nil"}>"
     end
 
+    def self.from_apple_config(apple_config)
+      api = Apple::Api.from_apple_config(apple_config)
+
+      new(api: api,
+        public_feed: apple_config.public_feed,
+        private_feed: apple_config.private_feed)
+    end
+
     def initialize(api:, public_feed:, private_feed:)
       @private_feed = private_feed
       @public_feed = public_feed

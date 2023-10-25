@@ -130,6 +130,10 @@ module Apple
       Apple::Publisher.from_apple_config(self)
     end
 
+    def build_show
+      Apple::Show.from_apple_config(self)
+    end
+
     def apple_key
       Base64.decode64(apple_key_pem_b64)
     end
