@@ -38,7 +38,7 @@ class PublishFeedJob < ApplicationJob
   rescue => e
     NewRelic::Agent.notice_error(e)
     res = PublishingPipelineState.error_apple!(feed.podcast)
-    raise e if config.sync_blocks_rss?
+    raise e if feed.apple_config.sync_blocks_rss?
     res
   end
 

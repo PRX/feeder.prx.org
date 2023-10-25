@@ -31,7 +31,6 @@ module Apple
                                          message: "can only have one config per public and private feed"}
     validates :public_feed, exclusion: {in: ->(apple_credential) { [apple_credential.private_feed] }}
 
-    validate :one_config_per_podcast, on: :create
     validate :feed_podcasts_match
 
     def self.has_apple_config?(podcast)
@@ -111,7 +110,7 @@ module Apple
     def publish_to_apple?
       return false unless key&.valid?
 
-      public_feed.publish_to_apple?(self)
+      public_feed.publish_to_apple?
     end
 
     def build_publisher
