@@ -7,7 +7,7 @@ describe Apple::Show do
   let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
   let(:public_feed) { create(:feed, podcast: podcast, private: false) }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
-  let(:apple_config) { build(:apple_config, public_feed: public_feed, private_feed: private_feed) }
+  let(:apple_config) { build(:apple_config, podcast: podcast, public_feed: public_feed, private_feed: private_feed) }
   let(:apple_show) { Apple::Show.connect_existing("123", apple_config) }
 
   before do
@@ -80,7 +80,7 @@ describe Apple::Show do
   end
 
   describe ".connect_existing" do
-    let(:apple_config) { create(:apple_config, public_feed: public_feed, private_feed: private_feed) }
+    let(:apple_config) { create(:apple_config, podcast: podcast, public_feed: public_feed, private_feed: private_feed) }
 
     it "should take in the apple show id an apple credentials object" do
       apple_config.save!
