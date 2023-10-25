@@ -20,6 +20,13 @@ class ImportsController < ApplicationController
         .paginate(params[:page], params[:per])
 
     authorize @podcast, :show?
+
+    respond_to do |format|
+      format.html
+      format.csv do
+        send_data @import.timings, filename: @import.file_name
+      end
+    end
   end
 
   # POST /imports

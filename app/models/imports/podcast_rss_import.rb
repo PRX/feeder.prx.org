@@ -14,6 +14,11 @@ class PodcastRssImport < PodcastImport
     self.audio ||= {}
   end
 
+  def file_name
+    name = File.basename(url).split("?").first
+    name.present? ? name : Feed::DEFAULT_FILE_NAME
+  end
+
   def feed_rss
     config[:feed_rss] ||= http_get(url)
   end

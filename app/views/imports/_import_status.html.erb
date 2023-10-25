@@ -6,6 +6,24 @@
   <div class="card-body row">
     <table class="table">
       <tr>
+        <td class="text-nowrap"><%= t(".type") %></td>
+        <td><%= t("helpers.label.podcast_import.types.#{import.type}") %></td>
+      </tr>
+      <tr>
+        <td class="text-nowrap"><%= t(".source") %></td>
+        <td>
+          <% if import.is_a?(PodcastTimingsImport) %>
+            <%= link_to podcast_import_path(import.podcast_id, import, format: :csv) do %>
+              <%= import.file_name %><span class="material-icons text-primary fs-4 lh-sm ms-1 align-middle">download</span>
+            <% end %>
+          <% else %>
+            <%= link_to import.url, target: :_blank do %>
+              <%= import.file_name %><span class="material-icons text-primary fs-4 lh-sm ms-1 align-middle">open_in_new</span>
+            <% end %>
+          <% end %>
+        </td>
+      </tr>
+      <tr>
         <td width="1">Status</td>
         <td class="align-middle">
           <% if import.status_created? %>
