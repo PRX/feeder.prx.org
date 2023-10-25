@@ -123,8 +123,8 @@ class PodcastsController < ApplicationController
         :id,
         :subtitle,
         :description,
-        :itunes_category,
-        :itunes_subcategory,
+        itunes_category: [],
+        itunes_subcategory: [],
         feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
         itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
       ]

@@ -107,8 +107,6 @@ class FeedsController < ApplicationController
       :title,
       :subtitle,
       :description,
-      :itunes_category,
-      :itunes_subcategory,
       :include_donation_url,
       :include_podcast_value,
       :private,
@@ -128,6 +126,8 @@ class FeedsController < ApplicationController
       :paid,
       :sonic_id,
       include_tags: [],
+      itunes_category: [],
+      itunes_subcategory: [],
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
