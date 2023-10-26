@@ -1,5 +1,5 @@
 <%= form_with(model: import.becomes(PodcastImport), method: :post, html: {autocomplete: "off"}) do |form| %>
-  <%# hacky - but we need to cast back into the child class %>
+  <%# hacky - but we need to cast back or child class methods like "import.timings" will error %>
   <% form.object = import.becomes(import.class) %>
 
   <div class="card shadow border-0">
