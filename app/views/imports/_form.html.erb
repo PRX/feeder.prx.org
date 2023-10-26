@@ -17,7 +17,6 @@
           </div>
         </div>
 
-        <%# if form.object.is_a? PodcastRssImport %>
         <% if form.object.type == "PodcastTimingsImport" %>
           <%= render "form_timings", form: form %>
         <% else %>
