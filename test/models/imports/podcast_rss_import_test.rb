@@ -186,8 +186,8 @@ describe PodcastRssImport do
     it("should create episode import placeholders") do
       importer.url = "http://feeds.prx.org/transistor_stem_duped"
       importer.import!
-      _(importer.episode_imports.having_duplicate_guids.count).must_equal 3
-      _(importer.episode_imports.non_duplicates.count).must_equal 3
+      _(importer.episode_imports.status_duplicate.count).must_equal 2
+      _(importer.episode_imports.not_status_duplicate.count).must_equal 4
     end
 
     it("should delete all import placeholders with each import") do
@@ -195,32 +195,7 @@ describe PodcastRssImport do
       importer.import!
       # invoke the creation of placeholders
       importer.create_or_update_episode_imports!
-      _(importer.episode_imports.having_duplicate_guids.count).must_equal 3
-    end
-  end
-
-  describe("#parse_feed_entries_for_dupe_guids") do
-    it "will parse feed entries for good and duped entries" do
-      importer.feed_rss = test_file("/fixtures/transistor_dupped_guids.xml")
-      good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
-      _(good_entries.length).must_equal 3
-      _(dupped_guid_entries.length).must_equal 3
-    end
-
-    it "handles entry lists of size 0" do
-      importer.stub(:feed, []) do
-        good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
-        _(good_entries.length).must_equal 0
-        _(dupped_guid_entries.length).must_equal 0
-      end
-    end
-
-    it "handles entry lists of size 1" do
-      importer.stub(:feed, [OpenStruct.new(entry_id: 1)]) do
-        good_entries, dupped_guid_entries = importer.parse_feed_entries_for_dupe_guids
-        _(good_entries.length).must_equal 1
-        _(dupped_guid_entries.length).must_equal 0
-      end
+      _(importer.episode_imports.status_duplicate.count).must_equal 2
     end
   end
 

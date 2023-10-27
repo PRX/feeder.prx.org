@@ -12,7 +12,21 @@ class ImportsController < ApplicationController
   end
 
   def show
+    @episode_imports =
+      @import.episode_imports
+        .filter_by_title(params[:q])
+        .filter_by_alias(params[:filter])
+        .order(id: :asc)
+        .paginate(params[:page], params[:per])
+
     authorize @podcast, :show?
+
+    respond_to do |format|
+      format.html
+      format.csv do
+        send_data @import.timings, filename: @import.file_name
+      end
+    end
   end
 
   # POST /imports

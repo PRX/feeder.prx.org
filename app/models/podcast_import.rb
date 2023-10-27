@@ -21,6 +21,9 @@ class PodcastImport < ApplicationRecord
     self.config ||= {}
   end
 
+  def file_name
+  end
+
   def status_from_episodes!
     with_lock do
       stats = episode_imports.group(:status).count

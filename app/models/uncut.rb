@@ -28,7 +28,7 @@ class Uncut < MediaResource
   def validate_segmentation
     return if segmentation.nil?
 
-    unless valid_segments?(segmentation) && ordered_segments?(segmentation)
+    unless valid_segments?(segmentation) && ordered_segments?(segmentation) && non_empty_segments?(segmentation)
       errors.add(:segmentation, :bad_segmentation, message: "bad segmentation")
     end
   end
@@ -96,6 +96,10 @@ class Uncut < MediaResource
 
   def ordered_segments?(segs)
     segs.flatten.compact == segs.flatten.compact.sort
+  end
+
+  def non_empty_segments?(segs)
+    segs.all? { |s1, s2| s1.nil? || s2.nil? || s1 < s2 }
   end
 
   def valid_number?(n)

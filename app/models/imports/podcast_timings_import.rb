@@ -74,7 +74,7 @@ class PodcastTimingsImport < PodcastImport
     status_started!
 
     # cleanup existing dups - they may be recreated later
-    episode_imports.having_duplicate_guids.destroy_all
+    episode_imports.status_duplicate.destroy_all
 
     guids = []
     rows = has_header ? csv[1..] : csv
@@ -85,10 +85,10 @@ class PodcastTimingsImport < PodcastImport
 
       # mark dups with a completed episode import
       if guids.include?(guid)
-        episode_imports.create!(guid: guid, timings: timings, has_duplicate_guid: true, status: :complete)
+        episode_imports.create!(guid: guid, timings: timings, status: :duplicate)
       else
         guids << guid
-        ei = episode_imports.non_duplicates.find_by_guid(guid) || episode_imports.build
+        ei = episode_imports.not_status_duplicate.find_by_guid(guid) || episode_imports.build
         ei.guid = guid
         ei.timings = timings
         ei.save!
@@ -107,9 +107,9 @@ class PodcastTimingsImport < PodcastImport
   def parse_csv
     if timings.present?
       if timings.include?("\t")
-        CSV.parse(timings, col_sep: "\t", row_sep: :auto, skip_blanks: true)
+        CSV.parse(timings, col_sep: "\t", row_sep: :auto, skip_blanks: true, liberal_parsing: true)
       else
-        CSV.parse(timings, col_sep: ",", row_sep: :auto, skip_blanks: true)
+        CSV.parse(timings, col_sep: ",", row_sep: :auto, skip_blanks: true, liberal_parsing: true)
       end
     end
   rescue
@@ -118,13 +118,16 @@ class PodcastTimingsImport < PodcastImport
 
   def find_guid_index(row)
     row.find_index do |val|
-      true if has_episode_with_guid?(val.strip)
+      true if has_episode_with_guid?(val&.strip)
     end
   end
 
+  # look for non-blank values that can be parsed to a timings array
   def find_timings_index(row)
     row.find_index do |val|
-      true unless EpisodeTimingsImport.parse_timings(val).nil?
+      if val&.strip&.present?
+        !EpisodeTimingsImport.parse_timings(val, true).nil?
+      end
     end
   end
 end

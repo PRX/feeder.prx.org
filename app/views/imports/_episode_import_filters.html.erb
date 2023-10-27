@@ -1,0 +1,44 @@
+<div class="col-12 d-flex align-items-center justify-content-between mb-2" data-controller="dynamic-form">
+  <h1 class="text-black fw-bold my-0 mb-0 me-4">
+    <%= t("helpers.label.podcast_import.types.#{import.type}") %>
+  </h1>
+
+  <div class="dropdown mx-2" data-controller="morph-if">
+    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Paging options" data-action="show.bs.dropdown->morph-if#no hide.bs.dropdown->morph-if#yes">
+      <span class="material-icons text-black-50" aria-hidden="true" aria-hidden="true">settings</span>
+      <%= t(".pages.#{search_per_page_key}") %>
+    </button>
+
+    <ul class="dropdown-menu" data-morph="not-shown">
+      <% search_per_page_options.each do |key, value| %>
+        <li>
+          <%= search_per_page_button t(".pages.#{key}"), value %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+
+  <div class="dropdown mx-2" data-controller="morph-if">
+    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Filter options" data-action="show.bs.dropdown->morph-if#no hide.bs.dropdown->morph-if#yes">
+      <span class="material-icons text-black-50" aria-hidden="true" aria-hidden="true">filter_alt</span>
+      <%= t(".filters.#{EpisodeImportFilters.filter_key(params[:filter])}") %>
+    </button>
+
+    <ul class="dropdown-menu" data-morph="not-shown">
+      <% EpisodeImportFilters::FILTERS.each do |key, value| %>
+        <li>
+          <%= search_filter_button t(".filters.#{key}"), value %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+
+  <div class="form-floating flex-grow-1 ms-2">
+    <%= search_query_field t(".search") %>
+  </div>
+
+  <%# clicking hidden reloads the episodes turbo-frame %>
+  <% data = {dynamic_form_target: "link", turbo_action: "replace"} %>
+  <% data[:controller] = "polling" if import.undone? %>
+  <%= link_to "aoeu", request.fullpath, hidden: true, data: data %>
+</div>
