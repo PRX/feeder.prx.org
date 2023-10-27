@@ -40,6 +40,12 @@ describe MediaResource do
     assert_nil mr.task
   end
 
+  it "removes query parameters" do
+    mr = MediaResource.new(episode: episode, original_url: "http://test.prxu.org/somefile.mp3?foo=bar")
+    assert_includes mr.original_url, "?foo=bar"
+    refute_includes mr.url, "?foo=bar"
+  end
+
   it "provides audio url based on guid" do
     assert_match(/https:\/\/f.prxu.org\/#{episode.podcast.path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/, media_resource.media_url)
   end

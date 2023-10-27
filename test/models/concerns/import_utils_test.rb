@@ -1,11 +1,7 @@
 require "test_helper"
 
-class TestImportUtilsModel
-  include ImportUtils
-end
-
-describe TestImportUtilsModel do
-  let(:model) { TestImportUtilsModel.new }
+describe ImportUtils do
+  let(:model) { PodcastImport.new }
   let(:emoticons) { "😀😁😂😃😄😅😆😇😈😉😊😋😌😍😎😏😐😑😒😓😔😕😖😗😘😙😚😛😜😝😞😟😠😡😢😣😤😥😦😧😨😩😪😫😬😭😮😯😰😱😲😳😴😵😶😷😸😹😺😻😼😽😾😿🙀🙁🙂🙅🙆🙇🙈🙉🙊🙋🙌🙍🙎🙏" }
 
   it "leaves utf chars alone" do

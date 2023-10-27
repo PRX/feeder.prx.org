@@ -315,6 +315,10 @@ en:
               invalid: Payment pointers must have the format $prx.wallet.example/abcd1234
         podcast_import:
           attributes:
+            timings:
+              guid_not_found: Unable to detect a guid column - check your CSV format, and confirm your guids match existing episodes in this podcast.
+              not_csv: Not a CSV file
+              timings_not_found: Unable to detect a timings column - check your CSV format.
             url:
               bad_http_response: Unable to fetch feed url
               invalid_rss: Not a valid RSS feed
@@ -421,9 +425,18 @@ en:
         credit: Credit
       podcast_import:
         import_metadata: Import Podcast Metadata
+        statuses:
+          created: Queued
+          started: Running
+          importing: Importing
+          complete: Complete
+          error: Error
+        timings: Episode Timings
+        timings_csv: Episode Timings
         type: Import Type
         types:
           PodcastRssImport: RSS
+          PodcastTimingsImport: Midroll Timings
         url: RSS Feed URL
       media_resource:
         original_url:
@@ -801,19 +814,22 @@ en:
       success: Beginning import.
       failure: Could not begin import.
       failure_get_feed: Missing or invalid URL.
-    form_main:
-      id: ID
-      status: Status
-      progress: Progress
-      episode_count: Episode Count
-      url: Feed Url
-      import_date: Import Date
-      no_imports: No imports
-    form_status:
+    form:
       title: Import
       submit: Start Import
+    form_rss:
       help:
         import_metadata: If selected, the values from the RSS feed channel will override any values added to the Metadata tab. For example, if the title in the feed differs from the podcast title previously listed, the title in the RSS feed will be used.
+    form_timings:
+      help:
+        timings: Your timings CSV file must have a column containing Episode GUIDs, and a column containing the comma-separated timestamps in seconds that you want your midrolls inserted at.
+    table:
+      episode_count: Count
+      import_date: Import Date
+      no_imports: No imports
+      progress: Progress
+      source: Source
+      status: Status
     import:
       id: Import ID
       url: URL

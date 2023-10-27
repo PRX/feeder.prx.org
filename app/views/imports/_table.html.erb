@@ -1,0 +1,28 @@
+<div class="overflow-auto text-nowrap">
+  <%= turbo_frame_tag "imports-table", data: {controller: "morphdom"} do %>
+    <table class="table table-striped shadow rounded">
+      <thead>
+        <tr class="table-secondary">
+          <th><%= t(".status") %></th>
+          <th><%= t(".progress") %></th>
+          <th><%= t(".episode_count") %></th>
+          <th><%= t(".source") %></th>
+          <th><%= t(".import_date") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= render partial: "imports/table_row", collection: imports, as: :import, cached: true %>
+        <% if imports.empty? %>
+          <tr>
+            <td class="text-center text-muted p-4" colspan="100"><%= t(".no_imports") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <% if imports.any?(&:undone?) %>
+      <%# just keep polling until the import finishes %>
+      <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+    <% end %>
+  <% end %>
+</div>

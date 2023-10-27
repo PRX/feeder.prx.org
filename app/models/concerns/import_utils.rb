@@ -14,9 +14,31 @@ module ImportUtils
   IMPORTING = "importing".freeze
   COMPLETE = "complete".freeze
   ERROR = "error".freeze
+  NOT_FOUND = "not_found".freeze
+  BAD_TIMINGS = "bad_timings".freeze
+  NO_MEDIA = "no_media".freeze
+
+  ALL_DONE = [COMPLETE, ERROR, NOT_FOUND, BAD_TIMINGS, NO_MEDIA]
+  ALL_ERRORS = [ERROR, NOT_FOUND, BAD_TIMINGS, NO_MEDIA]
 
   included do
     include Rails.application.routes.url_helpers
+
+    scope :done, -> { where(status: ALL_DONE) }
+    scope :undone, -> { where.not(status: ALL_DONE) }
+    scope :errors, -> { where(status: ALL_ERRORS) }
+  end
+
+  def done?
+    ALL_DONE.include?(status)
+  end
+
+  def undone?
+    !done?
+  end
+
+  def errors?
+    ALL_ERRORS.include?(status)
   end
 
   def enclosure_url(entry)

@@ -1,0 +1,21 @@
+<% status_label = t("helpers.label.podcast_import.statuses.#{import.status}") %>
+<% show_path = podcast_import_path(import.podcast_id, import) %>
+<tr>
+  <td><%= link_to status_label, show_path, data: {turbo_frame: "_top"} %></td>
+  <td class="align-middle">
+    <% if import.status_created? %>
+      &mdash;
+    <% else %>
+      <%= render "import_progress_bar", import: import %>
+    <% end %>
+  </td>
+  <td><%= import.episode_imports.status_complete.count %></td>
+  <td>
+    <% if import.is_a?(PodcastTimingsImport) %>
+      <%= import.file_name %>
+    <% else %>
+      <%= import.url %>
+    <% end %>
+  </td>
+  <td><%= local_time_ago(import.created_at) %></td>
+</tr>

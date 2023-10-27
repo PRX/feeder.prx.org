@@ -1,0 +1,36 @@
+<div class="card shadow border-0">
+  <div class="card-header-primary">
+    <h2 class="card-title h5"><%= t(".title") %></h2>
+  </div>
+
+  <div class="card-body row">
+    <table class="table">
+      <tr>
+        <td width="1">Status</td>
+        <td class="align-middle">
+          <% if import.status_created? %>
+            &mdash;
+          <% elsif import.undone? %>
+            <%= render "import_progress", import: import %>
+          <% else %>
+            <span class="badge rounded-pill prx-badge-<%= import.status %>">
+              <%= t("helpers.label.podcast_import.statuses.#{import.status}") %>
+            </span>
+          <% end %>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-nowrap"><%= t(".episode_count") %></td>
+        <td><%= import.episode_imports.count %></td>
+      </tr>
+      <tr>
+        <td><%= t(".complete") %></td>
+        <td><%= import.episode_imports.status_complete.count %></td>
+      </tr>
+      <tr>
+        <td><%= t(".errors") %></td>
+        <td><%= import.episode_imports.errors.count %></td>
+      </tr>
+    </table>
+  </div>
+</div>
