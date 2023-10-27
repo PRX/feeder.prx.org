@@ -46,6 +46,8 @@ module Apple
       @podcast_feeder_episodes = nil
       @podcast_episodes = nil
       @episodes = nil
+      @episode_ids = nil
+      @find_episode = nil
     end
 
     def podcast
@@ -146,22 +148,59 @@ module Apple
       self.class.get_show(api, apple_id)
     end
 
-    def podcast_feeder_episodes
-      @podcast_feeder_episodes ||=
-        podcast.episodes.reset
+    # In the case where there are duplicate guids in the feeds, we want to make
+    # sure that the most "current" episode is the one that maps to the remote state.
+    def sort_by_episode_properties(eps)
+      # Sort the episodes by:
+      # 1. Non-deleted episodes first
+      # 2. Published episodes first
+      # 3. Published date most recent first
+      # 4. Created date most recent first
+      eps =
+        eps.sort_by do |e|
+          [
+            e.deleted_at.nil? ? 1 : -1,
+            e.published_at.present? ? 1 : -1,
+            e.published_at || e.created_at,
+            e.created_at
+          ]
+        end
+
+      # return sorted list, reversed
+      # modeling a priority queue -- most important first
+      eps.reverse
     end
 
+    def podcast_feeder_episodes
+      @podcast_feeder_episodes ||=
+        podcast.episodes
+          .reset
+          .with_deleted
+          .group_by(&:item_guid)
+          .values
+          .map { |eps| sort_by_episode_properties(eps) }
+          .map(&:first)
+    end
+
+    # All the episodes -- including deleted and unpublished
     def podcast_episodes
       @podcast_episodes ||= podcast_feeder_episodes.map { |e| Apple::Episode.new(api: api, show: self, feeder_episode: e) }
     end
 
+    # Does not include deleted episodes
     def episodes
       raise "Missing apple show id" unless apple_id.present?
 
       @episodes ||= begin
         feed_episode_ids = Set.new(private_feed.feed_episodes.map(&:id))
-        podcast_episodes.filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }
+
+        podcast_episodes
+          .filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }
       end
+    end
+
+    def apple_private_feed_episodes
+      episodes
     end
 
     def episode_ids
@@ -181,6 +220,28 @@ module Apple
 
     def api_response
       public_feed.apple_sync_log&.api_response
+    end
+
+    def guid_to_apple_json(guid)
+      @guid_to_apple_json ||= apple_episode_json.map do |ep_json|
+        [ep_json["attributes"]["guid"], ep_json]
+      end.to_h
+
+      @guid_to_apple_json[guid]
+    end
+
+    def apple_id_to_apple_json(apple_id)
+      @apple_id_to_apple_json ||= apple_episode_json.map do |ep_json|
+        [ep_json["id"], ep_json]
+      end.to_h
+
+      @apple_id_to_apple_json[apple_id]
+    end
+
+    def find_apple_episode_json_by_guid(guid)
+      # Because apple can use its own id to join to the RSS feed item,
+      # if the feed item guid is set to the apple episode id
+      guid_to_apple_json(guid) || apple_id_to_apple_json(guid)
     end
   end
 end

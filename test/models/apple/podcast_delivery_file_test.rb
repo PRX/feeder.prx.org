@@ -126,4 +126,18 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       assert_equal [], podcast_delivery.podcast_delivery_files.reset
     end
   end
+
+  describe "#episode" do
+    let(:podcast_container) { create(:apple_podcast_container) }
+    let(:podcast_delivery) {
+      Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: podcast_container.episode)
+    }
+    it "should load a deleted episode" do
+      pdf = Apple::PodcastDeliveryFile.create!(podcast_delivery: podcast_delivery, episode: podcast_container.episode)
+
+      pdf.episode.destroy
+      pdf.reload
+      assert_equal pdf.episode, podcast_container.episode
+    end
+  end
 end

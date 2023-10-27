@@ -37,5 +37,20 @@ describe Apple::Config do
       c5 = build(:apple_config, public_feed: f1, private_feed: f1)
       refute c5.valid?
     end
+
+    it "is unique to a podcast" do
+      podcast = create(:podcast)
+      f1 = create(:feed, podcast: podcast)
+      f2 = create(:feed, podcast: podcast)
+      f3 = create(:feed, podcast: podcast)
+      f4 = create(:feed, podcast: podcast)
+
+      c1 = create(:apple_config, public_feed: f1, private_feed: f2)
+      assert c1.valid?
+
+      c2 = build(:apple_config, public_feed: f3, private_feed: f4)
+      refute c2.valid?
+      assert_equal ["can only have one apple config"], c2.errors[:podcast]
+    end
   end
 end

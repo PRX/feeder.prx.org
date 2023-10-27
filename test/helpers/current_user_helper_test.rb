@@ -18,9 +18,8 @@ describe CurrentUserHelper do
     it "determines if you have an app or not" do
       helper.current_user = {}
       helper.current_user_apps = {
-        "dev domain" => "https://foo.prx.dev",
-        "real domain" => "https://bar.prx.org",
-        "staging domain" => "https://baz.staging.prx.tech"
+        "app for BAR" => "https://bar.prx.org",
+        "and then BAZ" => "https://baz.staging.prx.tech"
       }
 
       refute helper.current_user_app?("foo")
@@ -34,8 +33,8 @@ describe CurrentUserHelper do
       helper.current_user = {}
       helper.current_user_apps = {
         "dev domain" => "https://foo.prx.dev",
-        "real domain" => "https://bar.prx.org",
-        "staging domain" => "https://baz.staging.prx.tech"
+        "real Bar domain" => "https://bar.prx.org",
+        "staging Baz domain" => "https://baz.staging.prx.tech"
       }
 
       assert_nil helper.current_user_app("foo")

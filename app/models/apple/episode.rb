@@ -23,8 +23,8 @@ module Apple
         Rails.logger.info("Probing for episode audio asset state")
         unwrapped = get_episodes(api, remaining_eps)
 
-        remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["guid"], row] }.to_h
-        remaining_eps.each { |ep| upsert_sync_log(ep, remote_ep_by_id[ep.guid]) }
+        remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["feeder_id"], row] }.to_h
+        remaining_eps.each { |ep| upsert_sync_log(ep, remote_ep_by_id[ep.id]) }
 
         remaining_eps.each do |ep|
           Rails.logger.info("Waiting for audio asset state?", {episode_id: ep.feeder_id,
@@ -58,23 +58,22 @@ module Apple
       api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
 
+    # Creates the `#apple_sync_log` attributes for the given episodes
+    # and returns the created `SyncLog` records
+    # This indicates that there is a remote pair for the episode
     def self.poll_episode_state(api, show, episodes)
-      guid_to_apple_json = show.apple_episode_json.map do |ep_json|
-        [ep_json["attributes"]["guid"], ep_json]
-      end.to_h
-
       # Only sync episodes that have a remote pair
-      episodes_to_sync = episodes.filter { |ep| guid_to_apple_json[ep.guid].present? }
+      episodes_to_sync = episodes.filter { |ep| show.find_apple_episode_json_by_guid(ep.guid).present? }
 
       bridge_params = episodes_to_sync.map do |ep|
-        id = guid_to_apple_json[ep.guid]["id"]
-        guid = guid_to_apple_json[ep.guid]["attributes"]["guid"]
-        Episode.get_episode_bridge_params(api, id, guid)
+        apple_json = show.find_apple_episode_json_by_guid(ep.guid)
+        apple_episode_id = apple_json["id"]
+        Episode.get_episode_bridge_params(api, ep.feeder_id, apple_episode_id)
       end
 
       results = api.bridge_remote_and_retry!("getEpisodes", bridge_params)
 
-      join_on("guid", episodes_to_sync, results).map do |(ep, row)|
+      join_on("feeder_id", episodes_to_sync, results).map do |(ep, row)|
         upsert_sync_log(ep, row)
       end
     end
@@ -142,11 +141,35 @@ module Apple
       episode_bridge_results
     end
 
-    def self.publish(api, show, episodes, state: "PUBLISH")
+    def self.archive(api, show, episodes)
+      res = alter_publish_state(api, show, episodes, "ARCHIVE")
+      # Apple purges the podcast deliveries when you archive/unarchive an episode
+      episodes.map(&:podcast_deliveries).flatten.each(&:destroy)
+
+      res
+    end
+
+    def self.unarchive(api, show, episodes)
+      res = alter_publish_state(api, show, episodes, "UNARCHIVE")
+      # Apple purges the podcast deliveries when you archive/unarchive an episode
+      episodes.map(&:podcast_deliveries).flatten.each(&:destroy)
+
+      res
+    end
+
+    def self.publish(api, show, episodes)
+      alter_publish_state(api, show, episodes, "PUBLISH")
+    end
+
+    def self.alter_publish_state(api, show, episodes, state)
       return [] if episodes.empty?
 
-      api.bridge_remote_and_retry!("publishEpisodes",
+      episode_bridge_results = api.bridge_remote_and_retry!("publishEpisodes",
         episodes.map { |e| e.publishing_state_bridge_params(state) })
+
+      join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
+        Rails.logger.info("Moving episode to #{state} state", {episode_id: ep.feeder_id, state: ep.publishing_state})
+      end
 
       # We don't get back the full episode model in the response.
       # So poll for current state
@@ -220,11 +243,11 @@ module Apple
       SyncLog.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
     end
 
-    def self.get_episode_bridge_params(api, apple_id, guid)
+    def self.get_episode_bridge_params(api, feeder_id, apple_id)
       {
         request_metadata: {
           apple_episode_id: apple_id,
-          guid: guid
+          feeder_id: feeder_id
         },
         api_url: api.join_url("episodes/#{apple_id}").to_s,
         api_parameters: {}
@@ -232,7 +255,7 @@ module Apple
     end
 
     def get_episode_bridge_params
-      self.class.get_episode_bridge_params(api, apple_id, guid)
+      self.class.get_episode_bridge_params(api, feeder_id, apple_id)
     end
 
     def create_episode_bridge_params
@@ -346,6 +369,9 @@ module Apple
 
     def publishing_state_bridge_params(state)
       {
+        request_metadata: {
+          apple_episode_id: apple_id
+        },
         api_url: api.join_url("episodePublishingRequests").to_s,
         api_parameters: publishing_state_parameters(state)
       }
@@ -388,12 +414,16 @@ module Apple
       apple_json.present?
     end
 
+    def publishing_state
+      apple_json&.dig("attributes", "publishingState")
+    end
+
     def drafting?
-      apple_json&.dig("attributes", "publishingState") == "DRAFTING"
+      publishing_state == "DRAFTING"
     end
 
     def archived?
-      apple_json&.dig("attributes", "publishingState") == "ARCHIVED"
+      publishing_state == "ARCHIVED"
     end
 
     def container_upload_complete?
