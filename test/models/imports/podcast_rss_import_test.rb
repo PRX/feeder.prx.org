@@ -56,6 +56,16 @@ describe PodcastRssImport do
       "by radio and podcast powerhouse PRX, with support " \
       "from the Sloan Foundation."
 
+    _(importer.podcast.url).must_equal "http://feeds.prx.org/transistor_stem"
+    _(importer.podcast.new_feed_url).must_equal "http://feeds.prx.org/transistor_stem"
+
+    _(importer.podcast.author_name).must_equal "PRX"
+    _(importer.podcast.author_email).must_be_nil
+    _(importer.podcast.owner_name).must_equal "PRX"
+    _(importer.podcast.owner_email).must_equal "prxwpadmin@prx.org"
+    _(importer.podcast.managing_editor_name).must_equal "PRX"
+    _(importer.podcast.managing_editor_email).must_equal "prxwpadmin@prx.org"
+
     _(sns.messages.count).must_equal 2
     _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 2]
     _(sns.messages.map { |m| m["Job"]["Tasks"].map { |t| t["Type"] } }).must_equal [["Inspect", "Copy"], ["Inspect", "Copy"]]
@@ -134,23 +144,23 @@ describe PodcastRssImport do
         "-4b1c-bbc6-2912d79d014f/248-Atom-in-the-Garden-of-Eden.mp3"
     end
     let(:sample_link3) do
-      "http://media.blubrry.com/some_name/www.podtrac.com/pts/redirect.mp3/blah"
+      "https://pts.podtrac.com/redirect.mp3/pdst.fm/e/chtbl.com/track/7E7E1F/blah"
     end
 
     it "can make a good guess for an enclosure prefix" do
       item = feed.entries.first
-      _(importer.enclosure_prefix(item)).must_equal "https://dts.podtrac.com/redirect" \
-        ".mp3/media.blubrry.com/transistor/"
+      _(importer.enclosure_prefix(item)).must_equal "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/"
+
       item.feedburner_orig_enclosure_link = nil
       item.enclosure.url = sample_link1
       _(importer.enclosure_prefix(item)).must_equal "https://www.podtrac.com/pts/redirect.mp3/"
+
       item.feedburner_orig_enclosure_link = "something_without_those_words"
       item.enclosure.url = sample_link2
-      _(importer.enclosure_prefix(item)).must_equal "http://www.podtrac.com/pts/redirect" \
-        ".mp3/media.blubrry.com/99percentinvisible/"
+      _(importer.enclosure_prefix(item)).must_equal "http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/99percentinvisible/"
+
       item.feedburner_orig_enclosure_link = sample_link3
-      _(importer.enclosure_prefix(item)).must_equal "http://www.podtrac.com/pts/redirect.mp3" \
-        "/media.blubrry.com/some_name/"
+      _(importer.enclosure_prefix(item)).must_equal "https://pts.podtrac.com/redirect.mp3/pdst.fm/e/chtbl.com/track/7E7E1F/"
     end
 
     it "can substitute for a missing short description" do
@@ -168,6 +178,14 @@ describe PodcastRssImport do
       desc = 'desc <img src="http://feeds.feedburner.com/~r/transistor_stem/~4/NHnLCsjtdQM" ' \
         'height="1" width="1" alt=""/>'
       _(importer.remove_feedburner_tracker(desc)).must_equal "desc"
+    end
+
+    it "can remove podcastchoices links" do
+      desc = "Plain text. Learn more about your ad choices. Visit podcastchoices.com/adchoices. More stuff."
+      _(importer.remove_podcastchoices_link(desc)).must_equal "Plain text.  More stuff."
+
+      desc = "<p>Hello</p><p>Learn more about your ad choices. Visit <a href=\"https://podcastchoices.com/adchoices\">podcastchoices.com/adchoices</a></p><p>Extra stuff</p>"
+      _(importer.remove_podcastchoices_link(desc)).must_equal "<p>Hello</p><p>Extra stuff</p>"
     end
 
     it "can remove unsafe tags" do

@@ -11,8 +11,6 @@ module Feedjira
       include SAXMachine
       include FeedUtilities
 
-      attr_accessor :feed_url
-
       # RSS 2.0 elements that need including
       element :title
       element :link, as: :url
@@ -49,6 +47,10 @@ module Feedjira
 
       elements :link, as: :hubs, value: :href, with: {rel: "hub"}
       elements :"atom10:link", as: :hubs, value: :href, with: {rel: "hub"}
+
+      element :link, as: :feed_url, value: :href, with: {rel: "self"}
+      element :"atom10:link", as: :feed_url, value: :href, with: {rel: "self"}
+      element :"atom:link", as: :feed_url, value: :href, with: {rel: "self"}
 
       elements :item, as: :entries, class: PodcastItem
 
