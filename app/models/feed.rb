@@ -82,12 +82,12 @@ class Feed < ApplicationRecord
     elsif ENV["PUBLIC_FEEDS_URL_PREFIX"].present? && podcast.present?
       public_feeds_url = "#{ENV["PUBLIC_FEEDS_URL_PREFIX"]}/#{path}"
 
-      # hacky, but only default publicfeeds urls on newer records
-      if url.blank? && (new_record? || created_at >= "2023-10-01")
-        self.url = public_feeds_url
-      elsif url.present? && url.include?(ENV["PUBLIC_FEEDS_URL_PREFIX"])
-        self.url = public_feeds_url
-      end
+      # if already publicfeeds... keep file_name/slug changes in sync
+      self.url = public_feeds_url if url.present? && url.include?(ENV["PUBLIC_FEEDS_URL_PREFIX"])
+
+      # otherwise, just default back to publicfeeds when blank
+      # TODO: after https://github.com/PRX/feeder.prx.org/issues/896 remove the date condition
+      self.url = public_feeds_url if url.blank? && (new_record? || created_at >= "2023-10-01")
     end
   end
 
