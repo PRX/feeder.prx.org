@@ -35,6 +35,8 @@ class DelegatedDeliveryProbesForMediaVersion < ActiveRecord::Migration[7.0]
 
         SQL
       end
+
+      add_column :apple_episode_delivery_statuses, :source_media_version_id, :bigint
     end
   end
 end

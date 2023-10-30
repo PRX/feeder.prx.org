@@ -522,10 +522,6 @@ module Apple
       feeder_episode.apple_podcast_delivery_files
     end
 
-    alias_method :container, :podcast_container
-    alias_method :deliveries, :podcast_deliveries
-    alias_method :delivery_files, :podcast_delivery_files
-
     def apple_sync_log
       feeder_episode.apple_sync_log
     end
@@ -537,5 +533,14 @@ module Apple
     def apple_mark_for_reupload!
       feeder_episode.apple_mark_for_reupload!
     end
+
+    def apple_episode_delivery_status
+      feeder_episode.apple_episode_delivery_status
+    end
+
+    alias_method :container, :podcast_container
+    alias_method :deliveries, :podcast_deliveries
+    alias_method :delivery_files, :podcast_delivery_files
+    alias_method :delivery_status, :apple_episode_delivery_status
   end
 end

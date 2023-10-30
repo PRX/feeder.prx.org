@@ -37,6 +37,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_23_213846) do
     t.bigint "source_size"
     t.text "enclosure_url"
     t.integer "source_fetch_count", default: 0
+    t.bigint "source_media_version_id"
     t.index ["episode_id", "created_at", "delivered", "id"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at"
     t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
   end
