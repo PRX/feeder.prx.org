@@ -268,11 +268,15 @@ class Episode < ApplicationRecord
     uncut&.copy_media(force)
   end
 
-  def apple_mark_for_reupload!
+  def apple_prepare_for_delivery!
     # remove the previous delivery attempt (soft delete)
     apple_podcast_deliveries.map(&:destroy)
     apple_podcast_deliveries.reset
     apple_podcast_container&.podcast_deliveries&.reset
+  end
+
+  def apple_mark_for_reupload!
+    apple_prepare_for_delivery!
     apple_needs_delivery!
   end
 

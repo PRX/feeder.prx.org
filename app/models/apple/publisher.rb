@@ -121,6 +121,8 @@ module Apple
 
       Rails.logger.tagged("Apple::Publisher#publish!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          prepare_for_delivery!(eps)
+
           # only create if needed
           sync_episodes!(eps)
           sync_podcast_containers!(eps)
@@ -142,6 +144,12 @@ module Apple
 
       # success
       SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id, api_response: {success: true})
+    end
+
+    def prepare_for_delivery!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Apple::Episode.prepare_for_delivery(api, eps)
+      end
     end
 
     def archive!(eps = episodes_to_archive)
