@@ -178,6 +178,11 @@ describe PublishingPipelineState do
 
       PublishingPipelineState.expire_pipelines!
       assert_equal ["created", "expired"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # All pipelines are in a terminal state
+      # There is nothing running:
+      assert PublishingPipelineState.running_pipelines.empty?
+      assert PublishingPipelineState.expired_pipelines.empty?
     end
   end
 
