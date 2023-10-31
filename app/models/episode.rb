@@ -272,6 +272,7 @@ class Episode < ApplicationRecord
     # remove the previous delivery attempt (soft delete)
     apple_podcast_deliveries.map(&:destroy)
     apple_podcast_deliveries.reset
+    apple_podcast_delivery_files.reset
     apple_podcast_container&.podcast_deliveries&.reset
   end
 
