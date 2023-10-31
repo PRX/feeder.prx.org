@@ -166,7 +166,7 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   def self.expire_pipelines!
-    Podcast.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
+    Podcast.with_deleted.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
       Rails.logger.tagged("PublishingPipeLineState.expire_pipelines!", "Podcast:#{podcast.id}") do
         expire!(podcast)
       end

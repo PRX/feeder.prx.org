@@ -164,6 +164,21 @@ describe PublishingPipelineState do
       refute PublishingPipelineState.expired?(podcast)
       refute PublishingPipelineState.expired?(podcast2)
     end
+
+    it "cleans up pipelines for deleted podcasts" do
+      podcast = create(:podcast)
+      pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+      pa1.update_column(:created_at, 30.minutes.ago)
+
+      assert_equal [pa1].sort, PublishingPipelineState.expired_pipelines.sort
+
+      # Now model deleting the podcast
+      podcast.destroy!
+      assert_equal [pa1].sort, PublishingPipelineState.expired_pipelines.sort
+
+      PublishingPipelineState.expire_pipelines!
+      assert_equal ["created", "expired"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+    end
   end
 
   describe ".retry_failed_pipelines!" do
