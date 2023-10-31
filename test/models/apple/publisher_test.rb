@@ -313,12 +313,14 @@ describe Apple::Publisher do
     end
 
     it "should not raise an error if there are any" do
+      refute podcast_delivery_file.processed_errors?
       assert_equal apple_publisher.raise_delivery_processing_errors([apple_episode]), true
     end
 
     describe "non completed/complete states" do
       let(:asset_processing_state) { "VALIDATION_FAILED" }
       it "should raise an error if there are any" do
+        assert podcast_delivery_file.processed_errors?
         assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
           apple_publisher.raise_delivery_processing_errors([apple_episode])
         end
