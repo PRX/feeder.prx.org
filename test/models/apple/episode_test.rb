@@ -136,6 +136,30 @@ describe Apple::Episode do
     end
   end
 
+  describe "#needs_audio_version?" do
+    let(:audio_version_id) {
+    }
+    it "should be true if the delivery status is nil or has nil attrs" do
+      assert apple_episode.delivery_statuses.destroy_all
+      assert apple_episode.delivery_status.nil?
+
+      assert_equal true, apple_episode.needs_audio_version?
+    end
+
+    it "should be true if the delivery status indicates another media version" do
+      create(:content, episode: apple_episode.feeder_episode, position: 1, status: "complete")
+      create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
+      mid = apple_episode.feeder_episode.reload.cut_media_version!
+
+      apple_episode.feeder_episode.apple_update_delivery_status(delivered: true, source_media_version_id: mid.id)
+      refute apple_episode.needs_audio_version?
+
+      apple_episode.feeder_episode.apple_update_delivery_status(source_media_version_id: -1)
+
+      assert apple_episode.needs_audio_version?
+    end
+  end
+
   describe "#synced_with_apple?" do
     let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "PUBLISH") }
 

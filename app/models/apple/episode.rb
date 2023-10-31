@@ -479,11 +479,20 @@ module Apple
       feeder_episode.reload
     end
 
+    def has_audio_version?
+      return false unless delivery_status.present? && delivery_status.source_media_version_id.present?
+
+      delivery_status.source_media_version_id == feeder_episode.media_version_id
+    end
+
+    def needs_audio_version?
+      !has_audio_version?
+    end
+
     def needs_delivery?
       return true if missing_container?
 
-      # TODO: probe for episode media version
-      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery?
+      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery? || needs_audio_version?
     end
 
     def has_delivery?
@@ -538,9 +547,14 @@ module Apple
       feeder_episode.apple_episode_delivery_status
     end
 
+    def apple_episode_delivery_statuses
+      feeder_episode.apple_episode_delivery_statuses
+    end
+
     alias_method :container, :podcast_container
     alias_method :deliveries, :podcast_deliveries
     alias_method :delivery_files, :podcast_delivery_files
     alias_method :delivery_status, :apple_episode_delivery_status
+    alias_method :delivery_statuses, :apple_episode_delivery_statuses
   end
 end

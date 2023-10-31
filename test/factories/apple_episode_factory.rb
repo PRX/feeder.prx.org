@@ -23,6 +23,12 @@ FactoryBot.define do
         container = create(:apple_podcast_container, episode: apple_episode.feeder_episode)
         delivery = create(:apple_podcast_delivery, episode: apple_episode.feeder_episode, podcast_container: container)
         _delivery_file = create(:apple_podcast_delivery_file, delivery: delivery, episode: apple_episode.feeder_episode)
+
+        create(:content, episode: apple_episode.feeder_episode, position: 1, status: "complete")
+        create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
+        v1 = apple_episode.feeder_episode.cut_media_version!
+
+        apple_episode.delivery_status.update!(delivered: true, source_media_version_id: v1.id)
       end
     end
 
