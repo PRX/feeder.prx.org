@@ -124,10 +124,11 @@ module Apple
           # only create if needed
           sync_episodes!(eps)
           sync_podcast_containers!(eps)
-          sync_podcast_deliveries!(eps)
-          sync_podcast_delivery_files!(eps)
 
           wait_for_versioned_source_metadata(eps)
+
+          sync_podcast_deliveries!(eps)
+          sync_podcast_delivery_files!(eps)
 
           # upload and mark as uploaded
           execute_upload_operations!(eps)
