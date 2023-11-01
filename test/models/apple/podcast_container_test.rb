@@ -152,11 +152,21 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
   end
 
-  describe ".probe_source_file_metadata" do
-    it "should raise if any of the episodes lack a container" do
+  describe "probing source metadata" do
+    it "should filter episodes that lack a container" do
       apple_episode.stub(:podcast_container, nil) do
-        assert_raises(RuntimeError, "missing podcast container") do
-          Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
+        apple_episode.stub(:needs_delivery?, true) do
+          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata(api, [apple_episode])
+          assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
+        end
+      end
+    end
+
+    it "should filter episodes that don't need delivery" do
+      apple_episode.stub(:podcast_container, podcast_container) do
+        apple_episode.stub(:needs_delivery?, false) do
+          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata(api, [apple_episode])
+          assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
         end
       end
     end
