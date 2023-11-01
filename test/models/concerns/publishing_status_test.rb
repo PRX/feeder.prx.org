@@ -42,9 +42,12 @@ class PublishingStatusTest < ActiveSupport::TestCase
 
   describe "#publishing_status=" do
     it "sets an episode to draft" do
-      ep = build(:episode, published_at: 10.hours.ago)
+      time = 10.hours.ago
+      ep = build(:episode, published_at: time)
+
       ep.publishing_status = "draft"
       assert_nil ep.published_at
+      assert_equal time, ep.released_at
       assert_equal "draft", ep.publishing_status
     end
 
@@ -55,11 +58,31 @@ class PublishingStatusTest < ActiveSupport::TestCase
       assert_equal "scheduled", ep.publishing_status
     end
 
-    it "sets an episode to published" do
+    it "sets an episode with no released_at to published" do
       now = Time.now
 
       Time.stub(:now, now) do
-        ep = build(:episode, published_at: nil)
+        ep = build(:episode, published_at: nil, released_at: nil)
+        ep.publishing_status = "published"
+        assert_equal now, ep.published_at
+        assert_equal now, ep.released_at
+      end
+    end
+
+    it "sets a episode with past released_at to published" do
+      time = 10.hours.ago
+      ep = build(:episode, published_at: nil, released_at: time)
+      ep.publishing_status = "published"
+      assert_equal time, ep.published_at
+      assert_equal time, ep.released_at
+    end
+
+    it "sets a episode with future released_at to published" do
+      time = 10.hours.from_now
+      now = Time.now
+
+      Time.stub(:now, now) do
+        ep = build(:episode, published_at: nil, released_at: time)
         ep.publishing_status = "published"
         assert_equal now, ep.published_at
         assert_equal now, ep.released_at
