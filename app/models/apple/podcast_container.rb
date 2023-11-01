@@ -68,18 +68,18 @@ module Apple
       end
     end
 
-    def self.wait_for_versioned_source_metadata(api, episodes)
+    def self.wait_for_versioned_source_metadata(api, episodes, wait_interval: Apple::ApiWaiting::API_WAIT_INTERVAL)
       episodes = episodes.select { |ep| ep.needs_delivery? }
       raise "Missing podcast container for episode" if episodes.map(&:podcast_container).any?(&:nil?)
 
-      wait_for(episodes) do |remaining_episodes|
+      wait_for(episodes, wait_interval: wait_interval) do |remaining_episodes|
         containers = Apple::PodcastContainer.reset_source_file_metadata(remaining_episodes)
         Rails.logger.info("Reset container source metadata", {reset_count: containers.length})
 
         containers = Apple::PodcastContainer.probe_source_file_metadata(api, remaining_episodes)
         Rails.logger.info("Updated container source metadata.", {count: containers.length})
 
-        finished = containers.group_by(&:has_current_media_version?)
+        finished = remaining_episodes.group_by(&:needs_media_version?)
 
         (finished[false] || [])
       end

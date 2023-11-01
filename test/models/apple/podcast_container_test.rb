@@ -37,6 +37,19 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   describe "the DTR / CDN redirect flow" do
     let(:pc) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
 
+    describe ".wait_for_versioned_source_metadata" do
+      it "should wait for the source metadata to be updated" do
+        Apple::PodcastContainer.stub(:reset_source_file_metadata, [pc]) do
+          Apple::PodcastContainer.stub(:probe_source_file_metadata, [pc]) do
+            apple_episode.stub(:needs_delivery?, true) do
+              res = Apple::PodcastContainer.wait_for_versioned_source_metadata(api, [apple_episode], wait_interval: 0.seconds)
+              assert_equal [false, []], res
+            end
+          end
+        end
+      end
+    end
+
     describe "#reset_source_metadata!" do
       it "clears out the fields" do
         assert_equal 0, pc.source_fetch_count
