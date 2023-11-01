@@ -41,9 +41,11 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       it "should wait for the source metadata to be updated" do
         Apple::PodcastContainer.stub(:reset_source_file_metadata, [pc]) do
           Apple::PodcastContainer.stub(:probe_source_file_metadata, [pc]) do
-            apple_episode.stub(:needs_delivery?, true) do
-              res = Apple::PodcastContainer.wait_for_versioned_source_metadata(api, [apple_episode], wait_interval: 0.seconds)
-              assert_equal [false, []], res
+            apple_episode.stub(:needs_delivery?, false) do
+              apple_episode.stub(:has_media_version?, true) do
+                res = Apple::PodcastContainer.wait_for_versioned_source_metadata(api, [apple_episode], wait_interval: 0.seconds)
+                assert_equal [false, []], res
+              end
             end
           end
         end

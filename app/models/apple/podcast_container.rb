@@ -79,7 +79,7 @@ module Apple
         containers = Apple::PodcastContainer.probe_source_file_metadata(api, remaining_episodes)
         Rails.logger.info("Updated container source metadata.", {count: containers.length})
 
-        finished = remaining_episodes.group_by(&:needs_media_version?)
+        finished = remaining_episodes.group_by(&:has_media_version?)
 
         (finished[false] || [])
       end
