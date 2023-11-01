@@ -156,16 +156,17 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     it "should filter episodes that lack a container" do
       apple_episode.stub(:podcast_container, nil) do
         apple_episode.stub(:needs_delivery?, true) do
-          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata(api, [apple_episode])
+          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
           assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
         end
       end
     end
 
     it "should filter episodes that don't need delivery" do
+      podcast_container = Apple::PodcastContainer.new
       apple_episode.stub(:podcast_container, podcast_container) do
         apple_episode.stub(:needs_delivery?, false) do
-          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata(api, [apple_episode])
+          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
           assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
         end
       end
