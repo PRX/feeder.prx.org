@@ -479,20 +479,20 @@ module Apple
       feeder_episode.reload
     end
 
-    def has_audio_version?
+    def has_media_version?
       return false unless delivery_status.present? && delivery_status.source_media_version_id.present?
 
       delivery_status.source_media_version_id == feeder_episode.media_version_id
     end
 
-    def needs_audio_version?
-      !has_audio_version?
+    def needs_media_version?
+      !has_media_version?
     end
 
     def needs_delivery?
       return true if missing_container?
 
-      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery? || needs_audio_version?
+      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery? || needs_media_version?
     end
 
     def has_delivery?
