@@ -347,17 +347,5 @@ module Apple
     def update_source_metadata!(attrs)
       episode.apple_update_delivery_status(**attrs)
     end
-
-    def needs_file_metadata?
-      source_url.nil? || source_size.nil? || source_filename.nil? || source_media_version_id.nil?
-    end
-
-    def has_current_media_version?
-      episode.media_version_id == source_media_version_id
-    end
-
-    def needs_current_media_version?
-      !has_current_media_version?
-    end
   end
 end

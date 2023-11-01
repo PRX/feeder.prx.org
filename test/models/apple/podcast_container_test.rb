@@ -100,26 +100,6 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
 
-    describe "#needs_file_metadata?" do
-      it "is congruent with reset_source_metadata!" do
-        pc.reset_source_metadata!(apple_episode)
-        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo", source_media_version_id: 1)
-
-        refute pc.needs_file_metadata?
-
-        pc.reset_source_metadata!(apple_episode)
-
-        assert pc.needs_file_metadata?
-      end
-
-      it "is true when the media version is missing" do
-        pc.reset_source_metadata!(apple_episode)
-        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo", source_media_version_id: nil)
-
-        assert pc.needs_file_metadata?
-      end
-    end
-
     describe ".reset_source_file_metadata" do
       it "needs delivery in order to be reset" do
         pc.reset_source_metadata!(apple_episode)
@@ -369,27 +349,6 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
           assert_not_nil pdf.reload.deleted_at
         end
       end
-    end
-  end
-
-  describe "#has_source_media_version?" do
-    let(:podcast_container) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
-    before do
-      create(:content, episode: episode, position: 1, status: "complete")
-      create(:content, episode: episode, position: 2, status: "complete")
-      episode.cut_media_version!
-    end
-
-    it "uses episode status to compare the source media version" do
-      podcast_container.update_source_metadata!(source_media_version_id: episode.media_version_id)
-
-      assert podcast_container.has_current_media_version?
-    end
-
-    it "uses episode status to compare the source media version" do
-      podcast_container.update_source_metadata!(source_media_version_id: episode.media_version_id - 1)
-
-      refute podcast_container.has_current_media_version?
     end
   end
 end
