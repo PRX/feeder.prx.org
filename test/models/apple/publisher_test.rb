@@ -293,4 +293,17 @@ describe Apple::Publisher do
       mock.verify
     end
   end
+
+  describe "#prepare_for_delivery" do
+    it "should poll the podcast container state" do
+      mock = Minitest::Mock.new
+      mock.expect(:call, [], [[]])
+
+      Apple::Episode.stub(:prepare_for_delivery, mock) do
+        apple_publisher.prepare_for_delivery!([])
+      end
+
+      mock.verify
+    end
+  end
 end
