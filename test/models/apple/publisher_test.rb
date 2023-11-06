@@ -294,16 +294,50 @@ describe Apple::Publisher do
     end
   end
 
-  describe "#prepare_for_delivery" do
-    it "should poll the podcast container state" do
-      mock = Minitest::Mock.new
-      mock.expect(:call, [], [[]])
+  describe "#raise_delivery_processing_errors" do
+    let(:apple_episode) { build(:apple_episode, show: apple_publisher.show) }
+    let(:asset_processing_state) { "COMPLETED" }
+    let(:asset_delivery_state) { "COMPLETE" }
 
-      Apple::Episode.stub(:prepare_for_delivery, mock) do
-        apple_publisher.prepare_for_delivery!([])
+    let(:pdf_resp_container) { build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: asset_processing_state) }
+    let(:apple_id) { {external_id: "123"} }
+
+    let(:podcast_container) { create(:apple_podcast_container, episode: apple_episode.feeder_episode) }
+    let(:podcast_delivery) { Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: apple_episode.feeder_episode) }
+    let(:podcast_delivery_file) { Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container.merge(apple_id)), podcast_delivery: podcast_delivery, episode: apple_episode.feeder_episode) }
+
+    before do
+      assert podcast_container.save!
+      assert podcast_delivery.save!
+      assert podcast_delivery_file.save!
+    end
+
+    it "should not raise an error if there are no processing errors" do
+      refute podcast_delivery_file.processed_errors?
+      assert_equal apple_publisher.raise_delivery_processing_errors([apple_episode]), true
+    end
+
+    describe "non completed/complete states" do
+      let(:asset_processing_state) { "VALIDATION_FAILED" }
+      it "should raise an error if there are processing errors" do
+        assert podcast_delivery_file.processed_errors?
+        assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
+          apple_publisher.raise_delivery_processing_errors([apple_episode])
+        end
       end
+    end
 
-      mock.verify
+    describe "#prepare_for_delivery" do
+      it "should call into the apple episode class method" do
+        mock = Minitest::Mock.new
+        mock.expect(:call, [], [[]])
+
+        Apple::Episode.stub(:prepare_for_delivery, mock) do
+          apple_publisher.prepare_for_delivery!([])
+        end
+
+        mock.verify
+      end
     end
   end
 end
