@@ -1,7 +1,6 @@
-class Api::FeedsController < ApplicationController
+class Api::FeedsController < Api::BaseController
   include ApiAdminToken
 
-  skip_before_action :authenticate!
   before_action :api_admin_token!
   before_action :skip_session
 
@@ -35,14 +34,16 @@ class Api::FeedsController < ApplicationController
 
   def feed_json(feed)
     feed
-      .slice(:private, :include_zones, :audio_format)
+      .slice(:private, :include_zones, :audio_format, :episode_offset_seconds)
       .transform_keys { |k| k.camelize(:lower) }
       .merge(tokens: feed.tokens.map { |t| token_json(t) })
+      .compact
   end
 
   def token_json(token)
     token
       .slice(:label, :token, :expires_at)
       .transform_keys { |k| k.camelize(:lower) }
+      .compact
   end
 end

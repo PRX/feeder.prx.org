@@ -4,10 +4,7 @@ module ApiAdminToken
   extend ActiveSupport::Concern
 
   def api_admin_tokens
-    # TODO: temporary until envs are shuffled
-    return [ENV["FEEDS_TOKEN"]] if ENV["FEEDS_TOKEN"].present?
-
-    ENV["API_ADMIN_TOKENS"].split(",").compact
+    ENV.fetch("API_ADMIN_TOKENS", "").split(",").compact
   end
 
   def api_admin_token?
