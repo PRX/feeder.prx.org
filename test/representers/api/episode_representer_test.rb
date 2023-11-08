@@ -71,34 +71,14 @@ describe Api::EpisodeRepresenter do
       assert_equal json["isFeedReady"], false
     end
 
-    it "has media" do
+    it "has media with no href" do
       assert_equal json["media"].size, 1
-      assert_equal json["media"].first["href"], episode.contents.first.url
-      assert_equal json["media"].first["originalUrl"], episode.contents.first.original_url
+      assert_nil json["media"].first["href"]
+      assert_nil json["media"].first["originalUrl"]
+      assert_equal json["media"].first["fileName"], episode.contents.first.file_name
 
-      # media is ready, so there's no readyMedia
+      # public endpoint never has readyMedia
       assert_nil json["readyMedia"]
-    end
-
-    it "has ready media when media is not complete" do
-      refute_empty episode.complete_media
-      refute_empty episode.media_versions
-
-      # replace with an incomplete segment
-      c1 = episode.contents.first
-      c2 = create(:content, episode: episode, status: "created")
-      episode.reload
-
-      # c2 is the latest enclosure, but incomplete (href is original_url)
-      assert_equal json["media"].size, 1
-      assert_equal json["media"].first["href"], c2.original_url
-      assert_equal json["media"].first["originalUrl"], c2.original_url
-      assert_equal json["media"].first["status"], "created"
-
-      assert_equal json["readyMedia"].size, 1
-      assert_equal json["readyMedia"].first["href"], c1.url
-      assert_equal json["readyMedia"].first["originalUrl"], c1.original_url
-      assert_equal json["readyMedia"].first["status"], "complete"
     end
 
     it "has an audio version" do
