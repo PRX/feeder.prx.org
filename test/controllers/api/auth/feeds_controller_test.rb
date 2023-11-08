@@ -4,8 +4,8 @@ describe Api::Auth::FeedsController do
   let(:account_id) { 123 }
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
   let(:feed) { create(:feed, podcast: podcast, slug: "test-slug") }
-  let(:token) { StubToken.new(account_id, ["podcast_edit"]) }
-  let(:bad_token) { StubToken.new(account_id + 100, ["podcast_edit"]) }
+  let(:token) { StubToken.new(account_id, "feeder:read-private feeder:podcast-edit") }
+  let(:bad_token) { StubToken.new(account_id + 100, "feeder:read-private feeder:podcast-edit") }
 
   let(:feed_hash) do
     {
@@ -148,20 +148,26 @@ describe Api::Auth::FeedsController do
 
       put(:update, body: update_hash.to_json, as: :json,
         params: {api_version: "v1", format: "json", podcast_id: feed.podcast_id, id: feed.id})
-      assert_response 401
+      assert_response :not_found
+    end
+
+    it "rejects show for unauthorized token" do
+      @controller.prx_auth_token = bad_token
+
+      get(:show, params: {api_version: "v1", format: "json", podcast_id: feed.podcast_id, id: feed.id})
+      assert_response :not_found
     end
   end
 
-  it "should show" do
-    get(:show, params: {api_version: "v1", format: "json", podcast_id: feed.podcast_id, id: feed.id})
-    assert_response :success
-  end
+  describe "without a token" do
+    it "should not show" do
+      get(:show, params: {api_version: "v1", format: "json", podcast_id: feed.podcast_id, id: feed.id})
+      assert_response :unauthorized
+    end
 
-  it "should list" do
-    _(feed.id).wont_be_nil
-    get(:index, params: {api_version: "v1", format: "json", podcast_id: feed.podcast_id})
-    assert_response :success
-    ids = JSON.parse(response.body)["_embedded"]["prx:items"].map { |p| p["id"] }
-    _(ids).must_include(feed.id)
+    it "should not list" do
+      get(:index, params: {api_version: "v1", format: "json", podcast_id: feed.podcast_id})
+      assert_response :unauthorized
+    end
   end
 end
