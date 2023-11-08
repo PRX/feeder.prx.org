@@ -12,7 +12,7 @@ module ApiAuthenticated
   end
 
   def cache_show?
-    false
+    true
   end
 
   def cache_index?
