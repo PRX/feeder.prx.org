@@ -51,5 +51,31 @@
         </div>
       </nav>
     <% end %>
-  </div>
+
+    <nav class="navbar-nav navbar-expand-md">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarApps" aria-controls="navbarApps" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+
+    <div class="collapse navbar-collapse d-md-none" id="navbarApps" aria-hidden="true">
+      <h2 class="visually-hidden">Your Applications</h2>
+      <ul class="navbar-nav m-2 mb-lg-0">
+        <li class="nav-item">
+          <%= link_to t(".feeder"), main_app.root_path, class: "nav-link active" %>
+        </li>
+        <% if current_user_app?("metrics") %>
+        <li class="nav-item">     
+          <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
+        </li>
+        <% end %>
+         <% if current_user_app?("augury") %>
+        <li class="nav-item">
+          <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
+        </li>
+        <% end %>
+      </ul>
+    </div>
+
+  </div>  
 </div>
