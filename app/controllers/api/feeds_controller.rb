@@ -2,7 +2,6 @@ class Api::FeedsController < Api::BaseController
   include ApiAdminToken
 
   before_action :api_admin_token!
-  before_action :skip_session
 
   def index
     max_updated_at = Feed.maximum(:updated_at)
@@ -45,5 +44,10 @@ class Api::FeedsController < Api::BaseController
       .slice(:label, :token, :expires_at)
       .transform_keys { |k| k.camelize(:lower) }
       .compact
+  end
+
+  # this controller handles its own caching
+  def cache_index?
+    false
   end
 end
