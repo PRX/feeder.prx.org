@@ -32,6 +32,14 @@
         <%= link_to t(".home"), "https://prx.org/", class: "dropdown-item" %>
       </div>
     </nav>
+    
+    <nav class="navbar-nav">
+      <h2 class="visually-hidden">Feedback link</h2>
+      <a class="nav-link nav-link-icon" href="mailto:dovetail-feedback@prx.org">
+        <span class="material-icons align-middle">feedback</span>
+      </a>
+    </nav>  
+
 
     <% if current_user %>
       <nav class="navbar-nav dropdown">
