@@ -49,9 +49,9 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def user_not_authorized(exception)
-    @policy = exception.policy.class.to_s.underscore
-    @query = exception.query
+  def user_not_authorized(exception = nil)
+    @policy = exception ? exception.policy.class.to_s.underscore : "n/a"
+    @query = exception ? exception.query : "n/a"
     render "errors/forbidden", status: :forbidden
   end
 

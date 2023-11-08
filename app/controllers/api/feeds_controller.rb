@@ -1,7 +1,8 @@
 class Api::FeedsController < ApplicationController
-  skip_before_action :authenticate!
-  before_action :authenticate_feeds_token!
+  include ApiAdminToken
 
+  skip_before_action :authenticate!
+  before_action :api_admin_token!
   before_action :skip_session
 
   def index
@@ -16,14 +17,6 @@ class Api::FeedsController < ApplicationController
   end
 
   private
-
-  def authenticate_feeds_token!
-    token = (request.headers["HTTP_AUTHORIZATION"] || "").split("Token ").last
-    feeds_token = ENV["FEEDS_TOKEN"]
-    if token.blank? || feeds_token.blank? || token != feeds_token
-      render plain: "No auth token provided", status: :unauthorized
-    end
-  end
 
   def podcasts_json(podcasts)
     podcasts.map { |p| [p.id, podcast_json(p)] }.to_h
