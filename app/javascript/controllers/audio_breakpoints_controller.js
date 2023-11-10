@@ -15,8 +15,8 @@ export default class extends Controller {
   static values = {
     duration: Number,
     labelPrefix: { type: String, default: "Breakpoint" },
-    labelPreRoll: { type: String, default: "Pre-Roll" },
-    labelPostRoll: { type: String, default: "Post-Roll" },
+    labelPreRoll: { type: String, default: "Preroll" },
+    labelPostRoll: { type: String, default: "Postroll" },
     adBreaks: { type: Number, default: 1 },
     adBreaksValid: { type: Boolean, default: false },
     segments: { type: Array, default: [] },
@@ -30,7 +30,7 @@ export default class extends Controller {
 
   durationValueChanged() {
     const endTimeInput = this.postRollControlTemplateTarget.content.querySelector(
-      '[data-audio-breakpoint-target="endTime"]'
+      '[data-audio-breakpoint-target="endTime"]',
     )
 
     endTimeInput?.setAttribute("placeholder", convertSecondsToDuration(this.durationValue))
@@ -78,7 +78,8 @@ export default class extends Controller {
 
     this.breakpointMarkers = [...Array(this.adBreaksValue).keys()]
       .map(
-        (key) => (allMarkers[key] && [allMarkers[key].startTime, allMarkers[key].endTime]) || this.adBreaks?.[key] || []
+        (key) =>
+          (allMarkers[key] && [allMarkers[key].startTime, allMarkers[key].endTime]) || this.adBreaks?.[key] || [],
       )
       .map((time, index) => ({
         id: allMarkers[index]?.id || Math.random().toString(16).split(".")[1],
@@ -96,7 +97,7 @@ export default class extends Controller {
         // Minimum times can not be zero or else segment doesn't render or function properly.
         startTime: this.minTime,
         endTime: this.preRollPoint || this.minTime,
-      }
+      },
     )
 
     this.breakpointMarkers.push(
@@ -105,7 +106,7 @@ export default class extends Controller {
         labelText: this.labelPostRollValue,
         startTime: this.postRollPoint || this.maxTime,
         endTime: this.durationValue,
-      }
+      },
     )
 
     this.initialMarkers = this.initialMarkers || this.breakpointMarkers
@@ -155,7 +156,7 @@ export default class extends Controller {
           ...newBreakpointMarker,
           startTime: Math.max(
             newBreakpointMarker.startTime,
-            previousBreakpointMarker.endTime || previousBreakpointMarker.startTime
+            previousBreakpointMarker.endTime || previousBreakpointMarker.startTime,
           ),
         }
       }
@@ -172,7 +173,7 @@ export default class extends Controller {
         newBreakpointMarker.startTime <= this.minTime || newBreakpointMarker.startTime >= this.maxTime
       const intersectingSegment = this.breakpointMarkers.find(
         ({ id: iId, startTime: iStartTime, endTime: iEndTime }) =>
-          id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime
+          id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime,
       )
 
       // Prevent point marker from being dropped in a segment.
@@ -217,7 +218,7 @@ export default class extends Controller {
           (id !== iId &&
             ((newStartTime > iStartTime && newStartTime < iEndTime) ||
               (newEndTime > iStartTime && newEndTime < iEndTime))) ||
-          (newStartTime < iStartTime && newEndTime > iEndTime)
+          (newStartTime < iStartTime && newEndTime > iEndTime),
       )
 
       if (
@@ -249,7 +250,7 @@ export default class extends Controller {
     } else {
       const intersectingSegment = this.breakpointMarkers.find(
         ({ id: iId, startTime: iStartTime, endTime: iEndTime }) =>
-          id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime
+          id !== iId && newBreakpointMarker.startTime > iStartTime && newBreakpointMarker.startTime < iEndTime,
       )
 
       // Prevent point marker from being dropped in a segment.
