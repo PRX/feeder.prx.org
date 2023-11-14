@@ -8,4 +8,8 @@ class Api::MediaResourceRepresenter < Roar::Decorator
   property :file_size, as: :size
   property :duration
   property :status, writeable: false
+
+  # TODO: deprecate
+  property :href
+  property :original_url, writeable: false
 end
