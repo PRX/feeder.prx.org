@@ -9,7 +9,7 @@ module ApiPublishedRange
     end
   end
 
-  def resources_base
+  def filtered(resources)
     if published_after.present? && published_before.present?
       super.after(published_after).before(published_before)
     elsif published_after.present?
