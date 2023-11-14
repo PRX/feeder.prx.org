@@ -9,7 +9,7 @@ module ApiUpdatedSince
     end
   end
 
-  def resources_base
+  def filtered(resources)
     if updated_since?
       super.where("updated_at >= ?", updated_since).order(updated_at: :asc)
     else
