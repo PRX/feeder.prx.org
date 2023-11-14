@@ -9,8 +9,7 @@ class Api::AuthorizationsController < Api::BaseController
     authorization
   end
 
-  # this is the only auth#show endpoint not cached, since it's specific to a user
-  def cache_show?
-    false
+  def show_cache_path
+    authorization.cache_key
   end
 end

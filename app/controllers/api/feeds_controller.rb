@@ -1,6 +1,8 @@
 class Api::FeedsController < Api::BaseController
-  include ApiAdminToken
+  include ApiAuthenticated
 
+  # only allows admin tokens, not regular token users
+  skip_before_action :authenticate_user!
   before_action :api_admin_token!
 
   def index

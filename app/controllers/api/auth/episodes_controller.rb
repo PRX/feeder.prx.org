@@ -1,9 +1,6 @@
 class Api::Auth::EpisodesController < Api::EpisodesController
-  include ApiAdminToken
   include ApiAuthenticated
   include ApiUpdatedSince
-
-  skip_before_action :authenticate_user!, if: :api_admin_token?
 
   api_versions :v1
   represent_with Api::Auth::EpisodeRepresenter
@@ -31,11 +28,6 @@ class Api::Auth::EpisodesController < Api::EpisodesController
   end
 
   def resources_base
-    @resources_base ||=
-      if api_admin_token?
-        super
-      else
-        super.merge(authorization.token_auth_episodes)
-      end
+    authorization.token_auth_episodes
   end
 end

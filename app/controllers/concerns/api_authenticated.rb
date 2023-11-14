@@ -7,15 +7,20 @@ module ApiAuthenticated
     before_action :authenticate_user!
   end
 
+  def authenticated?
+    api_admin_token? || prx_auth_token
+  end
+
   def authenticate_user!
-    user_not_authorized unless prx_auth_token
+    user_not_authorized unless authenticated?
   end
 
-  def cache_show?
-    true
+  # don't bother calculating cache keys if user will be 401'd anyways
+  def index_cache_path
+    super if authenticated?
   end
 
-  def cache_index?
-    false
+  def show_cache_path
+    super if authenticated?
   end
 end
