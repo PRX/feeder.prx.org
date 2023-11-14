@@ -67,7 +67,8 @@ class Episode < ApplicationRecord
   scope :draft, -> { where("episodes.published_at IS NULL") }
   scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
-  scope :after, ->(time) { where("#{DROP_DATE} > ?", time) }
+  scope :after, ->(time) { where("#{DROP_DATE} >= ?", time) }
+  scope :before, ->(time) { where("#{DROP_DATE} < ?", time) }
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
   scope :dropdate_asc, -> { reorder(Arel.sql("#{DROP_DATE} ASC NULLS FIRST")) }
   scope :dropdate_desc, -> { reorder(Arel.sql("#{DROP_DATE} DESC NULLS LAST")) }
