@@ -1,14 +1,15 @@
 class Authorization
   include HalApi::RepresentedModel
 
-  attr_accessor :token
+  attr_accessor :token, :api_admin
 
-  def initialize(token)
-    @token = token
+  def initialize(prx_auth_token, has_api_admin_token = false)
+    @token = prx_auth_token
+    @api_admin = has_api_admin_token
   end
 
   def user_id
-    token.user_id
+    token&.user_id
   end
 
   def to_model
@@ -20,12 +21,18 @@ class Authorization
   end
 
   def cache_key
-    token_key = OpenSSL::Digest::MD5.hexdigest([token.scopes, token.resources].map(&:to_s).join(""))
+    token_key =
+      if api_admin
+        "api-admin"
+      else
+        OpenSSL::Digest::MD5.hexdigest([token.scopes, token.resources].map(&:to_s).join(""))
+      end
+
     ActiveSupport::Cache.expand_cache_key(["PRX::Authorization", token_key])
   end
 
   def token_auth_account_ids
-    token.resources(:read_private)
+    token&.resources(:read_private) || []
   end
 
   def token_auth_account_uris
@@ -33,7 +40,7 @@ class Authorization
   end
 
   def token_auth_podcasts
-    if token.globally_authorized?("read-private")
+    if api_admin || token.globally_authorized?("read-private")
       Podcast.with_deleted.all
     else
       Podcast.where(prx_account_uri: token_auth_account_uris)
@@ -41,7 +48,7 @@ class Authorization
   end
 
   def token_auth_feeds
-    if token.globally_authorized?("read-private")
+    if api_admin || token.globally_authorized?("read-private")
       Feed.with_deleted.all
     else
       Feed.where("podcast_id IN (SELECT id FROM podcasts WHERE prx_account_uri IN (?))", token_auth_account_uris)
@@ -50,7 +57,7 @@ class Authorization
 
   # avoid joining podcasts here, as it breaks a bunch of other queries
   def token_auth_episodes
-    if token.globally_authorized?("read-private")
+    if api_admin || token.globally_authorized?("read-private")
       Episode.with_deleted.all
     else
       Episode.where("podcast_id IN (SELECT id FROM podcasts WHERE prx_account_uri IN (?))", token_auth_account_uris)
