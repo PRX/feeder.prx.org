@@ -54,6 +54,14 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
+  # TODO: deprecate
+  collection :complete_media,
+    as: :ready_media,
+    decorator: Api::MediaResourceRepresenter,
+    class: MediaResource,
+    writeable: false,
+    if: ->(_o) { !media_ready? && complete_media? }
+
   property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
 
   def self_url(episode)
