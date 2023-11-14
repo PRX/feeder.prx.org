@@ -60,8 +60,7 @@ module Apple
       )
     end
 
-    # this doesn't seem to be called anywhere?
-    # is this a helper for setup via console, with that stdin.get?
+    # TODO: this a helper for onboarding via console, retrofit when the UX catches up
     def self.build_apple_config(podcast, key)
       if podcast.apple_config
         Rails.logger.error("Found existing apple config for #{podcast.title}!")
