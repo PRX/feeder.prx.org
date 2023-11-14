@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_19_121850) do
+ActiveRecord::Schema[7.0].define(version: 2023_11_14_155433) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -25,6 +25,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_19_121850) do
     t.bigint "key_id"
     t.integer "podcast_id"
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
+    t.index ["podcast_id"], name: "index_apple_configs_on_podcast_id", unique: true
     t.index ["private_feed_id"], name: "index_apple_configs_on_private_feed_id"
     t.index ["public_feed_id"], name: "index_apple_configs_on_public_feed_id"
   end
