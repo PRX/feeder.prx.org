@@ -115,7 +115,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_19_121850) do
     t.integer "episode_id"
     t.string "guid"
     t.string "status"
-    t.boolean "has_duplicate_guid", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "type"

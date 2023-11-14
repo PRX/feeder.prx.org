@@ -164,6 +164,26 @@ describe PublishingPipelineState do
       refute PublishingPipelineState.expired?(podcast)
       refute PublishingPipelineState.expired?(podcast2)
     end
+
+    it "cleans up pipelines for deleted podcasts" do
+      podcast = create(:podcast)
+      pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+      pa1.update_column(:created_at, 30.minutes.ago)
+
+      assert_equal [pa1].sort, PublishingPipelineState.expired_pipelines.sort
+
+      # Now model deleting the podcast
+      podcast.destroy!
+      assert_equal [pa1].sort, PublishingPipelineState.expired_pipelines.sort
+
+      PublishingPipelineState.expire_pipelines!
+      assert_equal ["created", "expired"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # All pipelines are in a terminal state
+      # There is nothing running:
+      assert PublishingPipelineState.running_pipelines.empty?
+      assert PublishingPipelineState.expired_pipelines.empty?
+    end
   end
 
   describe ".retry_failed_pipelines!" do
@@ -189,7 +209,7 @@ describe PublishingPipelineState do
       # A new pipeline
       PublishingPipelineState.start_pipeline!(podcast)
       PublishingPipelineState.publish_rss!(podcast)
-      assert_equal ["created", "published_rss"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+      assert_equal ["created", "published_rss"], PublishingPipelineState.latest_pipeline(podcast).order(:id).map(&:status)
       publishing_item = PublishingPipelineState.latest_pipeline(podcast).map(&:publishing_queue_item_id).uniq
 
       # it does not retry the errored pipeline

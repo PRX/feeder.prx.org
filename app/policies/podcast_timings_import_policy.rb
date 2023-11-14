@@ -1,0 +1,2 @@
+class PodcastTimingsImportPolicy < PodcastImportPolicy
+end

@@ -32,7 +32,7 @@ module Apple
     def self.from_apple_config(apple_config)
       if apple_config.key.blank?
         Rails.logger.info("No Apple API keys in config object, falling back to environment default keys",
-          {apple_credential_id: apple_config.id,
+          {apple_config_id: apple_config.id,
            podcast_id: apple_config.podcast_id,
            podcast_title: apple_config.podcast_title})
         from_env
@@ -305,7 +305,7 @@ module Apple
     def retry_bridge_api_operation(bridge_resource, row_operations_ok, row_operation_errs, attempts = 1, batch_size: DEFAULT_BATCH_SIZE)
       return [row_operations_ok, row_operation_errs] if attempts >= ERROR_RETRIES || row_operation_errs.empty?
 
-      row_operation_errs.map { |err| Rails.logger.error("Retrying: #{err.to_json}") }
+      row_operation_errs.map { |err| Rails.logger.warn("Retrying: #{err.to_json}") }
 
       # Slice off the api response and retry the row operation
       formatted_error_operations_for_retry = row_operation_errs.map do |r|

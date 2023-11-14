@@ -110,6 +110,10 @@ class EpisodeRssImport < EpisodeImport
     [:content, :itunes_summary, :description, :title].find { |d| !entry[d].blank? }
   end
 
+  def title
+    clean_title(entry[:title])
+  end
+
   def episode_url(entry)
     url = clean_string(entry[:feedburner_orig_link] || entry[:url] || entry[:link])
     if /libsyn\.com/.match?(url)

@@ -16,28 +16,30 @@ class PodcastImport < ApplicationRecord
     error: ERROR
   }, prefix: true
 
-  scope :done, -> { where(status: [COMPLETE, ERROR]) }
-  scope :undone, -> { where.not(status: [COMPLETE, ERROR]) }
-
   def set_defaults
     self.status ||= CREATED
     self.config ||= {}
   end
 
+  def file_name
+  end
+
   def status_from_episodes!
-    stats = with_lock { episode_imports.group(:status).count }
+    with_lock do
+      stats = episode_imports.group(:status).count
 
-    if (stats.keys - [COMPLETE, ERROR]).empty?
-      if stats[ERROR]
-        status_error!
+      if (stats.keys - ALL_DONE).empty?
+        if stats.keys.empty? || stats.keys == [COMPLETE]
+          status_complete!
+        else
+          status_error!
+        end
       else
-        status_complete!
+        status_importing!
       end
-    else
-      status_importing!
-    end
 
-    unlock_podcast! if done?
+      unlock_podcast! if done?
+    end
   end
 
   def import!
@@ -45,14 +47,6 @@ class PodcastImport < ApplicationRecord
 
   def import_later
     PodcastImportJob.perform_later(self)
-  end
-
-  def done?
-    status_complete? || status_error?
-  end
-
-  def undone?
-    !done?
   end
 
   def unlock_podcast!

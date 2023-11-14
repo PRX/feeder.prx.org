@@ -105,6 +105,17 @@ describe Uncut do
       uncut.segmentation = [[0.5, 2.2], [1, 3.9999]]
       refute uncut.valid?
     end
+
+    it "requires non-empty segments" do
+      # uncut.segmentation = [[0.5, 0.5]]
+      # refute uncut.valid?
+
+      uncut.segmentation = [[0.5, 2.2], [2.2, 2.2]]
+      refute uncut.valid?
+
+      uncut.segmentation = [[0.5, 2.2], [2.2, 2.200000001], [2.200000001, 2.3]]
+      assert uncut.valid?
+    end
   end
 
   describe "#segmentation_ready?" do

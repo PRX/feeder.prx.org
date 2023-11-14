@@ -19,35 +19,96 @@ describe Apple::Show do
     it "flushes memoized attrs" do
       apple_show.instance_variable_set(:@apple_episode_json, "foo")
       apple_show.instance_variable_set(:@podcast_feeder_episodes, "foo")
+      apple_show.instance_variable_set(:@podcast_episodes, "foo")
       apple_show.instance_variable_set(:@episodes, "foo")
+      apple_show.instance_variable_set(:@episode_ids, "foo")
+      apple_show.instance_variable_set(:@find_episode, "foo")
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
       assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
+      assert_nil apple_show.instance_variable_get(:@podcast_episodes)
       assert_nil apple_show.instance_variable_get(:@episodes)
+      assert_nil apple_show.instance_variable_get(:@episode_ids)
+      assert_nil apple_show.instance_variable_get(:@find_episode)
+    end
+  end
+
+  describe "#podcast_feeder_episodes" do
+    it "should return an array of Episode" do
+      assert_equal apple_show.podcast_feeder_episodes.count, 1
+      assert_equal apple_show.podcast_feeder_episodes.first.class, Episode
     end
 
-    it "doesn't raise an error if the attr isn't memoized" do
-      apple_show.reload
+    it "includes deleted episodes" do
+      Episode.where(podcast_id: podcast.id).first.update!(deleted_at: Time.now.utc)
+
+      assert_equal apple_show.podcast_feeder_episodes.count, 1
+      assert apple_show.podcast_feeder_episodes.first.deleted?
     end
 
-    it "doesn't raise an error if the attr is nil" do
-      apple_show.instance_variable_set(:@apple_episode_json, nil)
-      apple_show.instance_variable_set(:@podcast_feeder_episodes, nil)
-      apple_show.instance_variable_set(:@episodes, nil)
-      apple_show.reload
-      assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
-      assert_nil apple_show.instance_variable_get(:@apple_episode_json)
-      assert_nil apple_show.instance_variable_get(:@episodes)
+    it "de-duplicates episodes based on the item_guid" do
+      assert_equal Episode.where(podcast_id: podcast.id).length, 1
+
+      episode = Episode.where(podcast_id: podcast.id).first
+      episode.update!(original_guid: "123", deleted_at: Time.now.utc)
+
+      # add another episode with the same guid
+      episode2 = create(:episode, podcast: podcast, item_guid: "123")
+
+      assert_equal apple_show.podcast_feeder_episodes.count, 1
+      assert_equal apple_show.podcast_feeder_episodes.first.id, episode2.id
     end
 
-    it "doesn't raise an error if the attr is false" do
-      apple_show.instance_variable_set(:@apple_episode_json, false)
-      apple_show.instance_variable_set(:@podcast_feeder_episodes, false)
-      apple_show.instance_variable_set(:@episodes, false)
-      apple_show.reload
-      assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
-      assert_nil apple_show.instance_variable_get(:@apple_episode_json)
-      assert_nil apple_show.instance_variable_get(:@episodes)
+    describe "#sort_by_episode_properties" do
+      it "sorts by multiple attributes in descending priority" do
+        now = Time.now.utc
+
+        recs = [
+          OpenStruct.new(deleted_at: now, published_at: now, created_at: now, id: 1),
+          OpenStruct.new(deleted_at: now, published_at: now + 1.second, created_at: now, id: 2),
+          OpenStruct.new(deleted_at: now, published_at: now + 1.second, created_at: now + 1.second, id: 3),
+          OpenStruct.new(deleted_at: nil, published_at: now + 1.second, created_at: now + 1.second, id: 4),
+          OpenStruct.new(deleted_at: nil, published_at: now + 1.second, created_at: now + 2.second, id: 5),
+          OpenStruct.new(deleted_at: nil, published_at: now + 2.second, created_at: now + 2.second, id: 6)
+        ]
+
+        assert_equal [6, 5, 4, 3, 2, 1], apple_show.sort_by_episode_properties(recs).map(&:id)
+      end
+
+      it "sorts by presence of deleted_at" do
+        now = Time.now.utc
+
+        recs = [
+          OpenStruct.new(deleted_at: now, published_at: now, created_at: now, id: 1),
+          OpenStruct.new(deleted_at: nil, published_at: now, created_at: now, id: 2)
+        ]
+
+        assert_equal [2, 1], apple_show.sort_by_episode_properties(recs).map(&:id)
+      end
+
+      it "sorts by presence of published_at" do
+        now = Time.now.utc
+
+        recs = [
+          OpenStruct.new(deleted_at: now, published_at: nil, created_at: now, id: 1),
+          OpenStruct.new(deleted_at: now, published_at: now, created_at: now, id: 2)
+        ]
+
+        # unpublished is less than published
+        assert_equal [2, 1], apple_show.sort_by_episode_properties(recs).map(&:id)
+      end
+
+      it "published_at falls back to created_at" do
+        now = Time.now.utc
+
+        recs = [
+          OpenStruct.new(deleted_at: now, published_at: nil, created_at: now, id: 1),
+          OpenStruct.new(deleted_at: now, published_at: nil, created_at: now + 1.second, id: 2)
+        ]
+
+        # unpublished is less than published
+        assert_equal [2, 1], apple_show.sort_by_episode_properties(recs).map(&:id)
+      end
     end
   end
 
@@ -76,6 +137,14 @@ describe Apple::Show do
       # now reload
       apple_show.reload
       refute_equal apple_show.episodes.first.feeder_episode.object_id, obj_id
+    end
+
+    it "filters out the deleted episodes" do
+      assert_equal 1, apple_show.episodes.count
+      apple_show.episodes.first.feeder_episode.update!(deleted_at: Time.now.utc)
+
+      apple_show.reload
+      assert_equal 0, apple_show.episodes.count
     end
   end
 

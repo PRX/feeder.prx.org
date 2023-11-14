@@ -14,6 +14,11 @@ class PodcastRssImport < PodcastImport
     self.audio ||= {}
   end
 
+  def file_name
+    name = File.basename(url).split("?").first
+    name.present? ? name : Feed::DEFAULT_FILE_NAME
+  end
+
   def feed_rss
     config[:feed_rss] ||= http_get(url)
   end
@@ -87,43 +92,26 @@ class PodcastRssImport < PodcastImport
   def create_or_update_episode_imports!
     update(feed_episode_count: feed.entries.count)
 
-    feed_entries, entries_with_dupe_guids = parse_feed_entries_for_dupe_guids
+    # cleanup existing dups - they may be recreated later
+    episode_imports.status_duplicate.destroy_all
 
-    episode_imports.having_duplicate_guids.destroy_all
+    # top-most guids win, others are marked dup
+    guids = []
+    feed.entries.each do |entry|
+      guid = entry.entry_id
+      entry_hash = entry.to_h.as_json.with_indifferent_access
 
-    created_imports = feed_entries.map do |entry|
-      create_or_update_episode_import!(entry)
+      if guids.include?(guid)
+        episode_imports.create!(guid: guid, entry: entry_hash, status: :duplicate)
+      else
+        guids << guid
+        ei = episode_imports.not_status_duplicate.find_by_guid(guid) || episode_imports.build
+        ei.guid = guid
+        ei.entry = entry_hash
+        ei.save!
+        ei.import_later
+      end
     end
-
-    created_imports.map(&:import_later)
-
-    created_imports += entries_with_dupe_guids.map do |entry|
-      create_or_update_episode_import!(entry, true)
-    end
-
-    created_imports
-  end
-
-  def feed_entry_to_hash(entry)
-    entry
-      .to_h
-      .as_json
-      .with_indifferent_access
-  end
-
-  def create_or_update_episode_import!(entry, has_duplicate_guid = false)
-    entry_hash = feed_entry_to_hash(entry)
-
-    if (ei = episode_imports.non_duplicates.where(guid: entry_hash[:entry_id]).first)
-      ei.update!(entry: entry_hash, has_duplicate_guid: has_duplicate_guid)
-    else
-      ei = episode_imports.create!(
-        guid: entry_hash[:entry_id],
-        entry: entry_hash,
-        has_duplicate_guid: has_duplicate_guid
-      )
-    end
-    ei
   end
 
   def feed_description(feed)
@@ -162,8 +150,7 @@ class PodcastRssImport < PodcastImport
     podcast_attributes[:explicit] = explicit(feed.itunes_explicit, "false")
     podcast_attributes[:new_feed_url] = clean_string(feed.itunes_new_feed_url)
     podcast_attributes[:enclosure_prefix] ||= enclosure_prefix(feed.entries.first)
-    podcast_attributes[:feedburner_url] ||= feedburner_url(feed.feedburner_name)
-    podcast_attributes[:url] ||= feedburner_url(feed.feedburner_name)
+    podcast_attributes[:url] ||= clean_string(feed.feed_url)
 
     podcast_attributes[:author] = person(feed.itunes_author)
     podcast_attributes[:managing_editor] = person(feed.managing_editor)
@@ -203,32 +190,27 @@ class PodcastRssImport < PodcastImport
     podcast
   end
 
-  def enclosure_prefix(podcast_item)
-    prefix = ""
-    link = [podcast_item.feedburner_orig_enclosure_link,
-      podcast_item.enclosure.try(:url),
-      podcast_item.media_contents.first.try(:url)].find do |url|
-      url.try(:match, /podtrac/) || url.try(:match, /blubrry/)
-    end
-    if (scheme = link.try(:match, /^https?:\/\//))
-      prefix += scheme.to_s
-    end
-    if (podtrac = link.try(:match, /\/(\w+\.podtrac.com\/.+?\.mp3\/)/))
-      prefix += podtrac[1]
-    end
-    if (blubrry = link.try(:match, /\/(media\.blubrry\.com\/[^\/]+\/)/))
-      prefix += blubrry[1]
-    end
-    prefix
-  end
+  def enclosure_prefix(item)
+    redirectors = [
+      /\/(www|dts)\.podtrac\.com(\/pts)?\/redirect\.mp3\//,
+      /\/media\.blubrry\.com\/[^\/]+\//,
+      /\/chrt\.fm\/track\/[^\/]+\//,
+      /\/chtbl\.com\/track\/[^\/]+\//,
+      /\/pdst\.fm\/e\//
+    ]
 
-  def feedburner_url(fb_name)
-    fb_name ? "https://feeds.feedburner.com/#{clean_string(fb_name)}" : nil
+    urls = [item.feedburner_orig_enclosure_link, item.enclosure.try(:url), item.media_contents.first.try(:url)]
+    url = urls.compact.find { |u| redirectors.any? { |r| u.match?(r) } }
+
+    if url.present?
+      end_index = redirectors.map { |r| url.index(r) + url[r].length if url.match?(r) }.compact.max
+      url[0...end_index]
+    end
   end
 
   def owner(itunes_owners)
     if (o = itunes_owners.try(:first))
-      {name: clean_string(o.name), email: clean_string(o.email)}
+      {name: clean_string(o.name), email: clean_string(o.email)}.with_indifferent_access
     end
   end
 
@@ -262,32 +244,5 @@ class PodcastRssImport < PodcastImport
     [item.itunes_subtitle, item.description, item.title].find do |field|
       !field.blank? && field.split.length < 50
     end
-  end
-
-  def parse_feed_entries_for_dupe_guids
-    sorted_entries = feed.entries.sort_by(&:entry_id)
-
-    dupped_entries = []
-    good_entries = []
-    duplicate_run = []
-
-    process_duplicate_run = lambda do
-      if duplicate_run.length > 1
-        dupped_entries += duplicate_run
-      else
-        good_entries += duplicate_run
-      end
-      duplicate_run = []
-    end
-
-    sorted_entries.each do |entry|
-      if duplicate_run.last.present? && (entry.entry_id != duplicate_run.last.entry_id)
-        process_duplicate_run.call
-      end
-      duplicate_run.push(entry)
-    end
-    process_duplicate_run.call
-
-    [good_entries, dupped_entries]
   end
 end

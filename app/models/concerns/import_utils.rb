@@ -14,9 +14,32 @@ module ImportUtils
   IMPORTING = "importing".freeze
   COMPLETE = "complete".freeze
   ERROR = "error".freeze
+  NOT_FOUND = "not_found".freeze
+  BAD_TIMINGS = "bad_timings".freeze
+  NO_MEDIA = "no_media".freeze
+  DUPLICATE = "duplicate".freeze
+
+  ALL_DONE = [COMPLETE, ERROR, NOT_FOUND, BAD_TIMINGS, NO_MEDIA, DUPLICATE]
+  ALL_ERRORS = [ERROR, NOT_FOUND, BAD_TIMINGS, NO_MEDIA, DUPLICATE]
 
   included do
     include Rails.application.routes.url_helpers
+
+    scope :done, -> { where(status: ALL_DONE) }
+    scope :undone, -> { where.not(status: ALL_DONE) }
+    scope :errors, -> { where(status: ALL_ERRORS) }
+  end
+
+  def done?
+    ALL_DONE.include?(status)
+  end
+
+  def undone?
+    !done?
+  end
+
+  def errors?
+    ALL_ERRORS.include?(status)
   end
 
   def enclosure_url(entry)
@@ -58,7 +81,7 @@ module ImportUtils
       end
     end
 
-    {name: name, email: email}
+    {name: name, email: email}.with_indifferent_access
   end
 
   def clean_string(str)
@@ -70,6 +93,7 @@ module ImportUtils
   def clean_text(text)
     return nil if text.blank?
     result = remove_feedburner_tracker(text)
+    result = remove_podcastchoices_link(result)
     sanitize_html(result)
   end
 
@@ -77,6 +101,12 @@ module ImportUtils
     return nil if str.blank?
     regex = /<img src="http:\/\/feeds\.feedburner\.com.+" height="1" width="1" alt=""\/>/
     str.sub(regex, "").strip
+  end
+
+  def remove_podcastchoices_link(str)
+    if str.present?
+      str.sub(/(<p>)?learn more about your ad choices.+podcastchoices.com\/adchoices\.?(<\/a>)?(<\/p>)?/i, "").strip
+    end
   end
 
   def sanitize_html(text)

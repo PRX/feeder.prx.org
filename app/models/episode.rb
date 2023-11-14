@@ -227,11 +227,14 @@ class Episode < ApplicationRecord
       if medium_was == "uncut" && medium == "audio"
         uncut&.mark_for_replacement
       elsif medium_was == "audio" && medium == "uncut"
-        if contents.first&.status_complete?
-          (uncut || build_uncut).tap do |u|
-            u.original_url = contents.first.url
+        if (c = contents.first)
+          build_uncut.tap do |u|
             u.file_size = contents.first.file_size
             u.duration = contents.first.duration
+
+            # use the feeder cdn url for older completed files
+            is_old = (Time.now - c.created_at) > 24.hours
+            u.original_url = (c.status_complete? && is_old) ? c.url : c.original_url
           end
         end
         contents.each(&:mark_for_replacement)

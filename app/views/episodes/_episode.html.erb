@@ -9,18 +9,20 @@
 
       <div class="episode-card-inner">
         <h2 class="episode-card-title"><%= episode.title %></h2>
-        <% if episode.subtitle.present? %>
-          <p class="card-text text-small mt-1"><%= episode.subtitle %></p>
-        <% end %>
+        <div class="d-flex mt-2 align-items-center">
+          <!--<p class="card-text text-small me-1">More optional metadata can go here | if we ever need it</p>-->
+          <% status = episode_media_status(episode) %>
+          <span class="badge rounded-pill prx-badge-<%= status %>">
+            <%= t("helpers.label.episode.media_statuses.#{status.underscore}") %>
+          </span>
+          <% if episode.ad_breaks.to_i == 0 %>
+            <span class="badge rounded-pill bg-light text-black-50 ms-1 "><%= t(".breaks", count: 0) %></span>
+          <% else %>
+            <span class="badge rounded-pill bg-primary ms-1"><%= t(".breaks", count: episode.ad_breaks) %></span>
+          <% end %>
+        </div>
 
         <%= link_to "Go to Episode", edit_episode_path(episode.guid), class: "stretched-link", data: {turbo_frame: "_top"} %>
-      </div>
-
-      <div class="episode-card-badges">
-        <% status = episode_media_status(episode) %>
-        <span class="badge rounded-pill prx-badge-<%= status %>">
-          <%= t("helpers.label.episode.media_statuses.#{status.underscore}") %>
-        </span>
       </div>
     </div>
   </div>

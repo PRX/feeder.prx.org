@@ -46,7 +46,7 @@ describe Apple::Publisher do
     end
   end
 
-  describe "#filter_episodes" do
+  describe "#filter_episodes_to_sync" do
     let(:podcast) { create(:podcast) }
 
     let(:public_feed) { create(:feed, podcast: podcast, private: false) }
@@ -73,42 +73,168 @@ describe Apple::Publisher do
       refute apple_episode.video_content_type?
 
       apple_episode.stub(:synced_with_apple?, true) do
-        assert_equal [], apple_publisher.filter_episodes([apple_episode])
+        assert_equal [], apple_publisher.filter_episodes_to_sync([apple_episode])
       end
 
       apple_episode.stub(:synced_with_apple?, false) do
-        assert_equal [apple_episode], apple_publisher.filter_episodes([apple_episode])
+        assert_equal [apple_episode], apple_publisher.filter_episodes_to_sync([apple_episode])
       end
     end
 
     it "should filter episodes that have a video mime" do
       apple_episode.stub(:synced_with_apple?, false) do
         apple_episode.stub(:video_content_type?, true) do
-          assert_equal [], apple_publisher.filter_episodes([apple_episode])
+          assert_equal [], apple_publisher.filter_episodes_to_sync([apple_episode])
         end
       end
 
       apple_episode.stub(:synced_with_apple?, false) do
         apple_episode.stub(:video_content_type?, false) do
-          assert_equal [apple_episode], apple_publisher.filter_episodes([apple_episode])
+          assert_equal [apple_episode], apple_publisher.filter_episodes_to_sync([apple_episode])
         end
       end
     end
+  end
 
-    it "should filter episodes that are archived" do
-      apple_episode.stub(:synced_with_apple?, false) do
-        apple_episode.stub(:video_content_type?, false) do
-          apple_episode.stub(:archived?, true) do
-            assert_equal [], apple_publisher.filter_episodes([apple_episode])
-          end
+  describe "Archive and Unarchive flows" do
+    let(:podcast) { create(:podcast) }
+    let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+    let(:private_feed) { create(:private_feed, podcast: podcast) }
+    let(:apple_config) { create(:apple_config, public_feed: public_feed, private_feed: private_feed) }
+    let(:episode) { create(:episode, podcast: podcast) }
+    let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
+    let(:apple_publisher) { apple_config.build_publisher }
+    let(:apple_api) { apple_publisher.api }
+    let(:apple_episode) { Apple::Episode.new(show: apple_publisher.show, feeder_episode: episode, api: apple_api) }
+
+    before do
+      Apple::Show.connect_existing("123", apple_config)
+      episode.create_apple_sync_log(external_id: "123", **apple_episode_api_response)
+    end
+
+    describe "#episodes_to_archive" do
+      it "should select episodes that are not in the private feed" do
+        # it's in the feed
+        assert_equal [episode], private_feed.feed_episodes
+        # so no archive
+        assert_equal [], apple_publisher.episodes_to_archive
+
+        private_feed.update!(exclude_tags: ["apple-excluded"])
+        episode.update!(categories: ["apple-excluded"])
+        apple_publisher.show.reload
+
+        # it's not in the feed
+        assert_equal [], private_feed.feed_episodes
+        assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_archive.map(&:feeder_id)
+      end
+
+      it "should archive episodes that are deleted" do
+        # destroy it from the feed
+        apple_episode.feeder_episode.destroy
+        assert_equal [], private_feed.feed_episodes
+        apple_publisher.show.reload
+
+        # it's deleted, but still in the list of podcast epiodes
+        assert_equal [apple_episode.feeder_id], apple_publisher.show.podcast_episodes.map(&:feeder_id)
+
+        assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_archive.map(&:feeder_id)
+      end
+
+      it "should reject episodes that don't have apple state" do
+        # Remove the apple state to model a un-synced episode
+        apple_episode.sync_log.destroy!
+        apple_episode.feeder_episode.destroy
+        assert_equal [], private_feed.feed_episodes
+        apple_publisher.show.reload
+
+        # it's deleted, but still in the list of podcast epiodes
+        assert_equal [apple_episode.feeder_id], apple_publisher.show.podcast_episodes.map(&:feeder_id)
+        apple_episode = apple_publisher.show.podcast_episodes.first
+
+        # lacks apple state
+        assert apple_episode.apple_new?
+
+        assert_equal [], apple_publisher.episodes_to_archive
+      end
+
+      describe "archived episodes" do
+        let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "ARCHIVED", apple_episode_id: "123") }
+
+        it "should reject episodes that are already archived" do
+          # Typical case where the episode is deleted and will be archived
+          apple_episode.feeder_episode.destroy
+          assert_equal [], private_feed.feed_episodes
+          apple_publisher.show.reload
+          # reload the episode
+          apple_episode = apple_publisher.show.podcast_episodes.first
+          # pointer equals
+          assert_equal [apple_episode.object_id], apple_publisher.show.podcast_episodes.map(&:object_id)
+
+          assert apple_episode.archived?
+
+          assert_equal [], apple_publisher.episodes_to_archive
+        end
+
+        it "should dynamically calculate which episodes are archived" do
+          # In the case where we have some existing episodes to archive and then poll the episode endpoint
+          # and find that the episode is already archived.
+          sync_log = apple_episode.sync_log
+          res = sync_log.api_response
+          res["api_response"]["val"]["data"]["attributes"]["publishingState"] = "PUBLISHED"
+          apple_episode.feeder_episode.apple_sync_log.update!(api_response: res)
+
+          assert_equal "PUBLISHED", apple_episode.publishing_state
+
+          # model the case where the episode is destroyed, triggering an archive
+          apple_episode.feeder_episode.destroy
+          assert_equal [], private_feed.feed_episodes
+          apple_publisher.show.reload
+          apple_episode = apple_publisher.show.podcast_episodes.first
+          assert_equal [apple_episode.object_id], apple_publisher.show.podcast_episodes.map(&:object_id)
+
+          refute apple_episode.archived?
+          assert_equal [apple_episode], apple_publisher.episodes_to_archive
+
+          res["api_response"]["val"]["data"]["attributes"]["publishingState"] = "ARCHIVED"
+          apple_episode.feeder_episode.apple_sync_log.update!(api_response: res)
+
+          assert apple_episode.archived?
+          assert_equal [], apple_publisher.episodes_to_archive
         end
       end
 
-      apple_episode.stub(:synced_with_apple?, false) do
-        apple_episode.stub(:video_content_type?, false) do
-          apple_episode.stub(:archived?, false) do
-            assert_equal [apple_episode], apple_publisher.filter_episodes([apple_episode])
-          end
+      it "should archive an upublished episode" do
+        apple_episode.feeder_episode.update!(published_at: nil, released_at: nil)
+        refute apple_episode.feeder_episode.published?
+
+        assert_equal [], private_feed.feed_episodes
+        apple_publisher.show.reload
+        # reload the episode
+        apple_episode = apple_publisher.show.podcast_episodes.first
+
+        assert_equal [apple_episode], apple_publisher.episodes_to_archive
+      end
+    end
+
+    describe "#episode_to_unarchive" do
+      let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "ARCHIVED", apple_episode_id: "123") }
+
+      it "should select episodes that are in the private feed" do
+        assert_equal [episode], private_feed.feed_episodes
+        # episodes to sync includes the archived episode
+        assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_sync.map(&:feeder_id)
+        assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
+      end
+
+      describe "non-archived episodes" do
+        let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "DRAFTING", apple_episode_id: "123") }
+
+        it "should not select the episode" do
+          assert_equal [episode], private_feed.feed_episodes
+          assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_sync.map(&:feeder_id)
+
+          # does not un-archive the episode
+          assert_equal [], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
         end
       end
     end
@@ -165,6 +291,40 @@ describe Apple::Publisher do
       end
 
       mock.verify
+    end
+  end
+
+  describe "#raise_delivery_processing_errors" do
+    let(:apple_episode) { build(:apple_episode, show: apple_publisher.show) }
+    let(:asset_processing_state) { "COMPLETED" }
+    let(:asset_delivery_state) { "COMPLETE" }
+
+    let(:pdf_resp_container) { build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: asset_processing_state) }
+    let(:apple_id) { {external_id: "123"} }
+
+    let(:podcast_container) { create(:apple_podcast_container, episode: apple_episode.feeder_episode) }
+    let(:podcast_delivery) { Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: apple_episode.feeder_episode) }
+    let(:podcast_delivery_file) { Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container.merge(apple_id)), podcast_delivery: podcast_delivery, episode: apple_episode.feeder_episode) }
+
+    before do
+      assert podcast_container.save!
+      assert podcast_delivery.save!
+      assert podcast_delivery_file.save!
+    end
+
+    it "should not raise an error if there are no processing errors" do
+      refute podcast_delivery_file.processed_errors?
+      assert_equal apple_publisher.raise_delivery_processing_errors([apple_episode]), true
+    end
+
+    describe "non completed/complete states" do
+      let(:asset_processing_state) { "VALIDATION_FAILED" }
+      it "should raise an error if there are processing errors" do
+        assert podcast_delivery_file.processed_errors?
+        assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
+          apple_publisher.raise_delivery_processing_errors([apple_episode])
+        end
+      end
     end
   end
 end

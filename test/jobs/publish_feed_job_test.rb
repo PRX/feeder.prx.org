@@ -9,29 +9,24 @@ describe PublishFeedJob do
   let(:job) { PublishFeedJob.new }
 
   it "knows the right bucket to write to" do
-    assert_equal job.feeder_storage_bucket, "test-prx-feed"
+    assert_equal job.s3_bucket, "test-prx-feed"
     ENV["FEEDER_STORAGE_BUCKET"] = "foo"
-    assert_equal job.feeder_storage_bucket, "foo"
+    assert_equal job.s3_bucket, "foo"
     ENV["FEEDER_STORAGE_BUCKET"] = "test-prx-feed"
-  end
-
-  it "knows the right key to write to" do
-    assert_equal job.key(podcast, podcast.default_feed), "#{podcast.path}/feed-rss.xml"
-    assert_equal job.key(podcast, feed), "#{podcast.path}/adfree/feed-rss.xml"
   end
 
   describe "saving the rss file" do
     let(:stub_client) { Aws::S3::Client.new(stub_responses: true) }
 
     it "can save a podcast file" do
-      job.stub(:client, stub_client) do
+      job.stub(:s3_client, stub_client) do
         refute_nil job.save_file(podcast, podcast.default_feed)
         refute_nil job.save_file(podcast, feed)
       end
     end
 
     it "can process publishing a podcast" do
-      job.stub(:client, stub_client) do
+      job.stub(:s3_client, stub_client) do
         PublishFeedJob.stub(:perform_later, nil) do
           PublishingPipelineState.start_pipeline!(podcast)
         end
@@ -46,7 +41,7 @@ describe PublishFeedJob do
     end
 
     it "will skip the publishing if the pub items are mismatched" do
-      job.stub(:client, stub_client) do
+      job.stub(:s3_client, stub_client) do
         PublishFeedJob.stub(:perform_later, nil) do
           PublishingPipelineState.start_pipeline!(podcast)
         end
@@ -58,7 +53,7 @@ describe PublishFeedJob do
     end
 
     it "will skip the publishing if the pub items are null" do
-      job.stub(:client, stub_client) do
+      job.stub(:s3_client, stub_client) do
         assert PublishingQueueItem.unfinished_items(podcast).empty?
 
         assert job.null_publishing_item?(podcast, nil)

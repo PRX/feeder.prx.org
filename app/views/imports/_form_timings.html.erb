@@ -1,0 +1,44 @@
+<div data-controller="import-timings">
+
+  <div class="col-12 <%= "d-none" if import_timings_pasted? %>" data-import-timings-target="upload">
+    <div class="form-floating input-group">
+      <% fake_cls = "form-control d-flex align-items-center prx-dragndrop" %>
+      <% fake_cls += " is-invalid" if form.object.invalid? %>
+
+      <%# fake display field; real file field is opacity-0 on top of it %>
+      <div class="<%= fake_cls %>" data-import-timings-target="fakeField">
+        <% cls = "form-control position-absolute opacity-0 z-1" %>
+        <% accept = ".csv,.tsv,text/csv,text/tsv" %>
+        <% data = {action: "import-timings#upload"} %>
+
+        <%# NOTE: name is nil, so we don't submit the actual file to Rails %>
+        <%= form.file_field :timings_csv, class: cls, accept: accept, data: data, name: nil %>
+
+        <span class="material-icons text-primary" data-import-timings-target="fileIcon">upload</span>
+        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate" data-import-timings-target="fileName">Upload CSV</div>
+        <small class="text-muted text-nowrap" data-import-timings-target="fileSize"></small>
+        <%= form.hidden_field :file_name, data: {import_timings_target: "fileNameField"}, value: "timings.csv" %>
+      </div>
+
+      <%= field_help_text t(".help.timings") %>
+
+      <% if form.object.errors.present? %>
+        <div class="invalid-feedback"><%= form.object.errors.messages_for(:timings).join(", ").capitalize %></div>
+      <% end %>
+
+      <%= form.label :timings_csv, class: ("text-danger" if form.object.errors.present?) %>
+    </div>
+
+    <div class="form-text">Upload a CSV or <a href="#" data-action="import-timings#showPaste">paste it in</a></div>
+  </div>
+
+  <div class="col-12 <%= "d-none" unless import_timings_pasted? %>" data-import-timings-target="paste">
+    <div class="form-floating">
+      <%= form.text_area :timings, rows: 1, data: {import_timings_target: "textArea"} %>
+      <%= form.label :timings %>
+      <%= form.hidden_field :pasted, data: {import_timings_target: "pastedField"}, value: true, disabled: !import_timings_pasted? %>
+    </div>
+
+    <div class="form-text">Upload a <a href="#" data-action="import-timings#showUpload">CSV</a> or paste it in</div>
+  </div>
+</div>

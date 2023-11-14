@@ -34,11 +34,14 @@ module PublishingStatus
     @publishing_status = value
 
     if value == "draft"
+      self.released_at = published_at if published_at.present?
       self.published_at = nil
     elsif value == "scheduled"
       self.published_at = released_at
     elsif value == "published"
-      self.released_at ||= Time.now unless publishing_status_was == "published"
+      if publishing_status_was == "draft" && (released_at.blank? || released_at > Time.now)
+        self.released_at = Time.now
+      end
       self.published_at = released_at
     end
   end

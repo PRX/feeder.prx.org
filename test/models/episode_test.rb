@@ -283,7 +283,7 @@ describe Episode do
       episode.medium = "uncut"
       assert episode.contents.first.marked_for_replacement?
       assert episode.uncut.new_record?
-      assert_equal episode.contents.first.url, episode.uncut.original_url
+      assert_equal episode.contents.first.original_url, episode.uncut.original_url
     end
 
     it "sets segment count for videos" do
@@ -373,6 +373,7 @@ describe Episode do
 
       # also applies to uncut media
       e.medium = "uncut"
+      e.uncut = nil
       refute e.valid?
 
       e.uncut = build(:uncut)

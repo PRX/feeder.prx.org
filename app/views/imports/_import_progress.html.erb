@@ -1,0 +1,17 @@
+<% if import.status_created? %>
+  &mdash;
+<% elsif import.undone? %>
+  <div class="progress flex-grow-1 me-2">
+    <div class="progress-bar progress-bar-striped progress-bar-animated"
+         role="progressbar"
+         style="width: <%= import_progress(import) %>%; min-width: 100px;"
+         aria-valuenow="<%= import_progress(import) %>"
+         aria-valuemin="0"
+         aria-valuemax="100">
+    </div>
+  </div>
+<% else %>
+  <span class="badge rounded-pill prx-badge-<%= import.status %>">
+    <%= t("helpers.label.podcast_import.statuses.#{import.status}") %>
+  </span>
+<% end %>

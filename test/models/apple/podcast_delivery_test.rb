@@ -142,4 +142,16 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
       assert_equal [podcast_delivery], podcast_container.podcast_deliveries.with_deleted
     end
   end
+
+  describe "#episode" do
+    let(:podcast_container) { create(:apple_podcast_container) }
+    let(:podcast_delivery) {
+      Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: podcast_container.episode)
+    }
+    it "should load a deleted episode" do
+      podcast_delivery.episode.destroy
+      podcast_delivery.reload
+      assert_equal podcast_delivery.episode, podcast_container.episode
+    end
+  end
 end

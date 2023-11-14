@@ -1,0 +1,59 @@
+
+<rss
+  xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+  xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0"
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:media="http://search.yahoo.com/mrss/"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
+  <channel>
+    <atom:link href="https://feeds-origin.megaphone.fm/the-pitchfork-review" rel="self" type="application/rss+xml"/>
+    <title>The Pitchfork Review</title>
+    <link>https://pitchfork.com/podcast</link>
+    <language>en</language>
+    <copyright/>
+    <description>Brought to you by the music critics at Pitchfork, The Pitchfork Review is a show for music fans and obsessives who can’t wait to talk about the latest releases. Co-hosted by Pitchfork editor-in-chief Puja Patel and Reviews Editor Jeremy D. Larson, this podcast pulls back the curtain on our reviews and scores, dives deep into new music, and gives an expert guide to what’s exciting, what’s great, and what’s just plain terrible.</description>
+    <image>
+      <url>
+        <![CDATA[ https://megaphone.imgix.net/podcasts/d87cab3c-a036-11ea-9081-f7835d029f14/image/Pitchfork_Review_Key_Art.jpg?ixlib=rails-4.3.1&max-w=3000&max-h=3000&fit=crop&auto=format,compress ]]>
+      </url>
+      <title>The Pitchfork Review</title>
+      <link>https://pitchfork.com/podcast</link>
+    </image>
+    <itunes:explicit>no</itunes:explicit>
+    <itunes:type>episodic</itunes:type>
+    <itunes:subtitle/>
+    <itunes:author>Pitchfork</itunes:author>
+    <itunes:summary>Brought to you by the music critics at Pitchfork, The Pitchfork Review is a show for music fans and obsessives who can’t wait to talk about the latest releases. Co-hosted by Pitchfork editor-in-chief Puja Patel and Reviews Editor Jeremy D. Larson, this podcast pulls back the curtain on our reviews and scores, dives deep into new music, and gives an expert guide to what’s exciting, what’s great, and what’s just plain terrible.</itunes:summary>
+    <content:encoded>
+      <![CDATA[ <p>Brought to you by the music critics at Pitchfork, The Pitchfork Review is a show for music fans and obsessives who can’t wait to talk about the latest releases. Co-hosted by Pitchfork editor-in-chief Puja Patel and Reviews Editor Jeremy D. Larson, this podcast pulls back the curtain on our reviews and scores, dives deep into new music, and gives an expert guide to what’s exciting, what’s great, and what’s just plain terrible.</p> ]]>
+    </content:encoded>
+    <itunes:owner>
+      <itunes:name/>
+      <itunes:email>nico_steele@condenast.com</itunes:email>
+    </itunes:owner>
+    <itunes:image href="https://megaphone.imgix.net/podcasts/d87cab3c-a036-11ea-9081-f7835d029f14/image/Pitchfork_Review_Key_Art.jpg?ixlib=rails-4.3.1&max-w=3000&max-h=3000&fit=crop&auto=format,compress"/>
+    <itunes:category text="Music">
+      <itunes:category text="Music Commentary"/>
+      <itunes:category text="Music Interviews"/>
+      <itunes:category text="Music History"/></itunes:category>
+    <item>
+      <title>Best New Music Albums From yeule and L'Rain, Plus Olivia Rodrigo Reveals Her Perfect 10 Record</title>
+      <description>Puja Patel, Jeremy Larson, and Ryan Dombal dissect recent Best New Music picks by pop futurist-turned-alt rocker yeule and the evocative, genre-flouting artist L’Rain. Plus: Olivia Rodrigo stops by to talk about one of her all-time favorite records in our new segment, My Perfect 10. Learn more about your ad choices. Visit podcastchoices.com/adchoices</description>
+      <pubDate>Thu, 12 Oct 2023 09:00:00 -0000</pubDate>
+      <itunes:title>Best New Music Albums From yeule and L'Rain, Plus Olivia Rodrigo Reveals Her Perfect 10 Record</itunes:title>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:season>2</itunes:season>
+      <itunes:episode>44</itunes:episode>
+      <itunes:author>Pitchfork</itunes:author>
+      <itunes:subtitle/>
+      <itunes:summary>Puja Patel, Jeremy Larson, and Ryan Dombal dissect recent Best New Music picks by pop futurist-turned-alt rocker yeule and the evocative, genre-flouting artist L’Rain. Plus: Olivia Rodrigo stops by to talk about one of her all-time favorite records in our new segment, My Perfect 10. Learn more about your ad choices. Visit podcastchoices.com/adchoices</itunes:summary>
+      <content:encoded>
+        <![CDATA[ <p>Puja Patel, Jeremy Larson, and Ryan Dombal dissect recent Best New Music picks by pop futurist-turned-alt rocker yeule and the evocative, genre-flouting artist L’Rain. Plus: Olivia Rodrigo stops by to talk about one of her all-time favorite records in our new segment, My Perfect 10.</p><p></p><p>Learn more about your ad choices. Visit <a href="https://podcastchoices.com/adchoices">podcastchoices.com/adchoices</a></p> ]]>
+      </content:encoded>
+      <itunes:duration>2238</itunes:duration>
+      <itunes:explicit>yes</itunes:explicit>
+      <guid isPermaLink="false">be91674e-67a2-11ee-a724-bbbc91c08613</guid>
+      <enclosure url="https://traffic.megaphone.fm/CNE1209779813.mp3" length="49153313" type="audio/mpeg"/>
+    </item>
+  </channel>
+</rss>
