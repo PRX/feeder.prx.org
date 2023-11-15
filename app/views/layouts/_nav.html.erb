@@ -20,7 +20,7 @@
 
     <nav class="navbar-nav dropdown">
       <h2 class="visually-hidden">Help Menu</h2>
-      <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-help-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-help-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Help">
         <span class="material-icons align-middle">help</span>
       </a>
       <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute shadow m-0" aria-labelledby="nav-help-dropdown">
@@ -33,10 +33,17 @@
       </div>
     </nav>
 
+    <nav class="navbar-nav">
+      <h2 class="visually-hidden">Feedback link</h2>
+      <a class="nav-link nav-link-icon" href="mailto:dovetail-feedback@prx.org" title="Feedback">
+        <span class="material-icons align-middle">feedback</span>
+      </a>
+    </nav>
+
     <% if current_user %>
       <nav class="navbar-nav dropdown">
         <h2 class="visually-hidden">User Menu</h2>
-        <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-user-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="min-width:46px">
+        <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-user-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="min-width:46px" title="User Menu">
           <% if current_user_image? %>
             <img src="<%= current_user_image %>" class="prx-header-nav-avatar" alt="<%= current_user_name %>'s avatar">
           <% else %>
@@ -51,5 +58,31 @@
         </div>
       </nav>
     <% end %>
+
+    <nav class="navbar-nav navbar-expand-md">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarApps" aria-controls="navbarApps" aria-expanded="false" aria-label="Toggle navigation" title="Application Menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+
+    <div class="collapse navbar-collapse d-md-none" id="navbarApps" aria-hidden="true">
+      <h2 class="visually-hidden">Your Applications</h2>
+      <ul class="navbar-nav m-2 mb-lg-0">
+        <li class="nav-item">
+          <%= link_to t(".feeder"), main_app.root_path, class: "nav-link active" %>
+        </li>
+        <% if current_user_app?("metrics") %>
+        <li class="nav-item">
+          <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
+        </li>
+        <% end %>
+         <% if current_user_app?("augury") %>
+        <li class="nav-item">
+          <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
+        </li>
+        <% end %>
+      </ul>
+    </div>
+
   </div>
 </div>
