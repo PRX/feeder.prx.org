@@ -153,9 +153,9 @@ describe Api::Auth::EpisodesController do
     let(:other_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id + 1}", path: "foo") }
     let(:other_unpublished_episode) { create(:episode, podcast: other_podcast, published_at: nil) }
 
-    it "includes all episodes (including unpublished and deleted)" do
+    it "includes all episodes (including unpublished and deleted) when querying updated since" do
       guids = [episode_unpublished.guid, other_unpublished_episode.guid, episode_deleted.guid]
-      get(:index, params: {api_version: "v1", format: "json"})
+      get(:index, params: {api_version: "v1", format: "json", since: "2020-01-01"})
       assert_response :success
       list = JSON.parse(response.body)
       ids = list.dig("_embedded", "prx:items").map { |i| i["id"] }
