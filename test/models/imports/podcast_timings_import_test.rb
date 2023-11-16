@@ -45,10 +45,10 @@ describe PodcastTimingsImport do
     it "queries for the maximum episode guid length" do
       assert_equal guid_length, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length
 
-      episode = create(:episode, podcast: podcast, original_guid: "abcd")
+      create(:episode, podcast: podcast, original_guid: "abcd")
       assert_equal guid_length, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length
 
-      episode2 = create(:episode, podcast: podcast, original_guid: "abcd" * 20)
+      create(:episode, podcast: podcast, original_guid: "abcd" * 20)
       assert_equal 80, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length
     end
   end
