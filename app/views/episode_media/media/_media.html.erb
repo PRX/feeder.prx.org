@@ -9,5 +9,5 @@
 <% elsif upload_complete?(media) %>
   <%= render "episode_media/media/complete", form: form, episode: episode, media: media %>
 <% else %>
-  <%= render "episode_media/media/error", form: form, episode: episode, media: media, retryable: false %>
+  <%= render "episode_media/media/error", form: form, episode: episode, media: media, retryable: media.retryable? %>
 <% end %>

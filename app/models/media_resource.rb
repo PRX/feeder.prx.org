@@ -165,6 +165,8 @@ class MediaResource < ApplicationRecord
     if %w[started created processing retrying].include?(status)
       last_event = task&.updated_at || updated_at || Time.now
       Time.now - last_event > 100
+    elsif status_error?
+      true
     else
       false
     end
