@@ -42,6 +42,16 @@ class Uncut < MediaResource
     end
   end
 
+  def sanitize_segmentation
+    (segmentation || []).filter_map do |start, stop|
+      if start.to_f < duration && stop.to_f < duration
+        [start, stop]
+      elsif start.to_f < duration
+        [start, nil]
+      end
+    end
+  end
+
   # the "inverse" of the segmentation - where are the ad break ranges?
   def ad_breaks
     if segmentation.present? && validate(:segmentation)

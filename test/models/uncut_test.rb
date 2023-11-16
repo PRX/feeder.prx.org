@@ -167,6 +167,24 @@ describe Uncut do
     end
   end
 
+  describe "#sanitize_segmentation" do
+    it "removes out-of-bounds segments" do
+      uncut.segmentation = [[nil, 5], [8, 10], [11, 15]]
+
+      uncut.duration = 15.2
+      assert_equal uncut.segmentation, uncut.sanitize_segmentation
+
+      uncut.duration = 11.2
+      assert_equal [[nil, 5], [8, 10], [11, nil]], uncut.sanitize_segmentation
+
+      uncut.duration = 11
+      assert_equal [[nil, 5], [8, 10]], uncut.sanitize_segmentation
+
+      uncut.duration = 9.4
+      assert_equal [[nil, 5], [8, nil]], uncut.sanitize_segmentation
+    end
+  end
+
   describe "#ad_breaks" do
     it "converts segments to ad breaks" do
       uncut.segmentation = nil
