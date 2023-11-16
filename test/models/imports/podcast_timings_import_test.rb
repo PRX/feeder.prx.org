@@ -48,7 +48,7 @@ describe PodcastTimingsImport do
       episode = create(:episode, podcast: podcast, original_guid: "abcd")
       assert_equal guid_length, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length
 
-      episode.update!(original_guid: "abcd" * 20)
+      episode2 = create(:episode, podcast: podcast, original_guid: "abcd" * 20)
       assert_equal 80, PodcastTimingsImport.new(podcast: podcast).maximum_guid_length
     end
   end
