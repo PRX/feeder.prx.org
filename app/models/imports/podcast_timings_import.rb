@@ -33,7 +33,7 @@ class PodcastTimingsImport < PodcastImport
   end
 
   def maximum_guid_length
-    @maximum_guid_length ||= [podcast&.episodes&.minimum("length(original_guid)"), default_guid_length].compact.max
+    @maximum_guid_length ||= [podcast&.episodes&.maximum("length(original_guid)"), default_guid_length].compact.max
   end
 
   def has_episode_with_guid?(guid)
