@@ -107,8 +107,8 @@ describe Uncut do
     end
 
     it "requires non-empty segments" do
-      # uncut.segmentation = [[0.5, 0.5]]
-      # refute uncut.valid?
+      uncut.segmentation = [[0.5, 0.5]]
+      refute uncut.valid?
 
       uncut.segmentation = [[0.5, 2.2], [2.2, 2.2]]
       refute uncut.valid?
@@ -147,6 +147,22 @@ describe Uncut do
       refute uncut.segmentation_ready?
 
       uncut.segmentation = [[nil, nil]]
+      assert uncut.segmentation_ready?
+    end
+
+    it "checks the uncut duration" do
+      uncut.episode.segment_count = 2
+      uncut.segmentation = [[1, 2.2], [3.3, nil]]
+      uncut.status = "complete"
+      assert uncut.segmentation_ready?
+
+      uncut.segmentation = [[1, 2.2], [3.3, 999]]
+      refute uncut.segmentation_ready?
+
+      uncut.segmentation = [[1, 2.2], [999, nil]]
+      refute uncut.segmentation_ready?
+
+      uncut.duration = 1000
       assert uncut.segmentation_ready?
     end
   end
