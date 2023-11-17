@@ -349,8 +349,9 @@ en:
         embed_player_url: Embeddable Player Link
         enclosure_url: Media Link
         episode_number: Episode Number
-        explicit: Explicit
-        explicits:
+        explicit_option: Explicit
+        explicit_options:
+          inherit: Inherit
           false: Clean
           true: Explicit
         item_guid: GUID

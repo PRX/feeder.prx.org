@@ -212,6 +212,19 @@ class Episode < ApplicationRecord
     (explicit || podcast&.explicit) == "true"
   end
 
+  # UI displays nil as "inherit"
+  def explicit_option
+    explicit.nil? ? "inherit" : explicit
+  end
+
+  def explicit_option=(value)
+    self.explicit = ((value == "inherit") ? nil : value)
+  end
+
+  def explicit_option_was
+    explicit_was.nil? ? "inherit" : explicit_was
+  end
+
   def item_guid
     original_guid || self.class.generate_item_guid(podcast_id, guid)
   end

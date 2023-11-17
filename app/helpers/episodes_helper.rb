@@ -9,6 +9,12 @@ module EpisodesHelper
     Episode::VALID_ITUNES_TYPES.map { |val| [I18n.t("helpers.label.episode.itunes_types.#{val}"), val] }
   end
 
+  def episode_explicit_options
+    ["inherit"].concat(Podcast::VALID_EXPLICITS).map do |val|
+      [I18n.t("helpers.label.episode.explicit_options.#{val}"), val]
+    end
+  end
+
   def episode_status_class(episode)
     case episode.publishing_status_was
     when "draft"
