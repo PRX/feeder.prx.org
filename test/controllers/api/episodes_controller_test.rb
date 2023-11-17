@@ -87,6 +87,26 @@ describe Api::EpisodesController do
     refute_includes guids, episode_deleted.guid
   end
 
+  it "should filter by published date" do
+    pubdate = episode.published_at
+
+    get(:index, params: {api_version: "v1", format: "json"})
+    assert_response :success
+    assert_equal 1, JSON.parse(response.body)["_embedded"]["prx:items"].length
+
+    get(:index, params: {api_version: "v1", format: "json", after: pubdate - 1.day, before: pubdate + 1.day})
+    assert_response :success
+    assert_equal 1, JSON.parse(response.body)["_embedded"]["prx:items"].length
+
+    get(:index, params: {api_version: "v1", format: "json", after: pubdate + 1.day})
+    assert_response :success
+    assert_empty JSON.parse(response.body)["_embedded"]["prx:items"]
+
+    get(:index, params: {api_version: "v1", format: "json", before: pubdate - 1.day})
+    assert_response :success
+    assert_empty JSON.parse(response.body)["_embedded"]["prx:items"]
+  end
+
   describe "with a valid token" do
     let(:account_id) { 123 }
     let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
