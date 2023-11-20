@@ -49,7 +49,7 @@ module EmbedPlayerHelper
 
   def embed_player_podcast_url(podcast, options, preview = false)
     params = {}
-    params[EMBED_PLAYER_FEED] = podcast.published_url
+    params[EMBED_PLAYER_FEED] = podcast.public_url
 
     if options[:all_episodes] === "all"
       params[EMBED_PLAYER_PLAYLIST] = "all"
