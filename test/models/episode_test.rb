@@ -68,8 +68,24 @@ describe Episode do
 
   it "returns a guid to use in the channel item" do
     episode.guid = "guid"
-    assert_equal episode.item_guid, "prx_#{episode.podcast_id}_guid"
-    assert_equal Episode.generate_item_guid(123, "abc"), "prx_123_abc"
+    episode.podcast_id = 123
+
+    assert_nil episode.original_guid
+    assert_equal "prx_123_guid", episode.item_guid
+
+    episode.item_guid = "changed"
+    assert_equal "changed", episode.original_guid
+    assert_equal "changed", episode.item_guid
+
+    # setting to generated value nils it out
+    episode.item_guid = "prx_123_guid"
+    assert_nil episode.original_guid
+    assert_equal "prx_123_guid", episode.item_guid
+
+    # blanks also nil out
+    episode.item_guid = ""
+    assert_nil episode.original_guid
+    assert_equal "prx_123_guid", episode.item_guid
   end
 
   it "decodes guids from channel item guids" do

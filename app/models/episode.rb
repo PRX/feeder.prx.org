@@ -140,6 +140,10 @@ class Episode < ApplicationRecord
     apple_episode_delivery_status
   end
 
+  def generate_item_guid
+    self.class.generate_item_guid(podcast_id, guid)
+  end
+
   def self.generate_item_guid(podcast_id, episode_guid)
     "prx_#{podcast_id}_#{episode_guid}"
   end
@@ -196,7 +200,6 @@ class Episode < ApplicationRecord
 
   def set_defaults
     guid
-    self.url ||= embed_player_landing_url(podcast, self)
     self.segment_count ||= 1 if new_record? && strict_validations
   end
 
@@ -214,11 +217,11 @@ class Episode < ApplicationRecord
   end
 
   def item_guid
-    original_guid || self.class.generate_item_guid(podcast_id, guid)
+    original_guid || generate_item_guid
   end
 
   def item_guid=(new_guid)
-    self.original_guid = new_guid.blank? ? nil : new_guid
+    self.original_guid = (new_guid.blank? || new_guid == generate_item_guid) ? nil : new_guid
   end
 
   def medium=(new_medium)
