@@ -1,5 +1,6 @@
 class Api::EpisodesController < Api::BaseController
   include ApiUpdatedSince
+  include ApiPublishedRange
 
   api_versions :v1
   represent_with Api::EpisodeRepresenter

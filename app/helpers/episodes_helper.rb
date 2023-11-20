@@ -75,7 +75,7 @@ module EpisodesHelper
     if episode.new_record?
       new_podcast_episode_path episode.podcast_id, uploads_retry_params(form)
     else
-      edit_episode_path episode, uploads_retry_params(form)
+      episode_path episode, uploads_retry_params(form)
     end
   end
 
