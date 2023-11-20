@@ -216,4 +216,56 @@ describe Apple::Episode do
       mock.verify
     end
   end
+
+  describe ".prepare_for_delivery" do
+    it "should filter for episodes that need delivery" do
+      mock = Minitest::Mock.new
+      mock.expect(:call, true, [])
+
+      apple_episode.feeder_episode.stub(:apple_prepare_for_delivery!, mock) do
+        apple_episode.stub(:needs_delivery?, true) do
+          assert_equal [apple_episode], Apple::Episode.prepare_for_delivery([apple_episode])
+        end
+      end
+
+      mock.verify
+    end
+
+    it "should reject delivered episodes" do
+      apple_episode.stub(:needs_delivery?, false) do
+        assert_equal [], Apple::Episode.prepare_for_delivery([apple_episode])
+      end
+    end
+
+    describe "soft deleting the delivery files" do
+      let(:container) { create(:apple_podcast_container, episode: episode, apple_episode_id: "123") }
+
+      let(:delivery) do
+        pd = Apple::PodcastDelivery.new(episode: episode, podcast_container: container)
+        pd.save!
+        pd
+      end
+
+      let(:delivery_file) do
+        pdf = Apple::PodcastDeliveryFile.new(episode: episode, podcast_delivery: delivery)
+        pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files))
+        pdf.save!
+        pdf
+      end
+
+      before do
+        assert_equal [delivery_file], apple_episode.podcast_delivery_files
+      end
+
+      it "should delete the delivery files" do
+        assert apple_episode.podcast_delivery_files.length == 1
+
+        apple_episode.stub(:needs_delivery?, true) do
+          assert_equal [apple_episode], Apple::Episode.prepare_for_delivery([apple_episode])
+        end
+
+        assert apple_episode.podcast_delivery_files.length == 0
+      end
+    end
+  end
 end
