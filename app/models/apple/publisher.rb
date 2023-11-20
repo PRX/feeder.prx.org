@@ -139,7 +139,7 @@ module Apple
 
           publish_drafting!(eps)
 
-          log_delivery_processing_errors(eps)
+          raise_delivery_processing_errors(eps)
         end
       end
 
@@ -165,17 +165,21 @@ module Apple
       end
     end
 
-    def log_delivery_processing_errors(eps)
-      eps.each do |ep|
-        ep.podcast_delivery_files.each do |pdf|
-          next unless pdf.processed_errors?
+    def raise_delivery_processing_errors(eps)
+      pdfs_with_errors = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_errors?)
 
-          Rails.logger.error("Episode has processing errors",
-            {episode_id: ep.feeder_id,
-             podcast_delivery_file_id: pdf.id,
-             asset_processing_state: pdf.asset_processing_state,
-             asset_delivery_state: pdf.asset_delivery_state})
-        end
+      pdfs_with_errors.each do |pdf|
+        Rails.logger.error("Podcast delivery file has processing errors",
+          {episode_id: pdf.episode.id,
+           podcast_delivery_file_id: pdf.id,
+           asset_processing_state: pdf.asset_processing_state,
+           asset_delivery_state: pdf.asset_delivery_state})
+      end
+
+      if pdfs_with_errors.any?
+        raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
+          "Found processing errors on #{pdfs_with_errors.length} podcast delivery files"
+        )
       end
 
       true

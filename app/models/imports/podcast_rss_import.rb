@@ -150,8 +150,7 @@ class PodcastRssImport < PodcastImport
     podcast_attributes[:explicit] = explicit(feed.itunes_explicit, "false")
     podcast_attributes[:new_feed_url] = clean_string(feed.itunes_new_feed_url)
     podcast_attributes[:enclosure_prefix] ||= enclosure_prefix(feed.entries.first)
-    podcast_attributes[:feedburner_url] ||= feedburner_url(feed.feedburner_name)
-    podcast_attributes[:url] ||= feedburner_url(feed.feedburner_name)
+    podcast_attributes[:url] ||= clean_string(feed.feed_url)
 
     podcast_attributes[:author] = person(feed.itunes_author)
     podcast_attributes[:managing_editor] = person(feed.managing_editor)
@@ -191,32 +190,27 @@ class PodcastRssImport < PodcastImport
     podcast
   end
 
-  def enclosure_prefix(podcast_item)
-    prefix = ""
-    link = [podcast_item.feedburner_orig_enclosure_link,
-      podcast_item.enclosure.try(:url),
-      podcast_item.media_contents.first.try(:url)].find do |url|
-      url.try(:match, /podtrac/) || url.try(:match, /blubrry/)
-    end
-    if (scheme = link.try(:match, /^https?:\/\//))
-      prefix += scheme.to_s
-    end
-    if (podtrac = link.try(:match, /\/(\w+\.podtrac.com\/.+?\.mp3\/)/))
-      prefix += podtrac[1]
-    end
-    if (blubrry = link.try(:match, /\/(media\.blubrry\.com\/[^\/]+\/)/))
-      prefix += blubrry[1]
-    end
-    prefix
-  end
+  def enclosure_prefix(item)
+    redirectors = [
+      /\/(www|dts)\.podtrac\.com(\/pts)?\/redirect\.mp3\//,
+      /\/media\.blubrry\.com\/[^\/]+\//,
+      /\/chrt\.fm\/track\/[^\/]+\//,
+      /\/chtbl\.com\/track\/[^\/]+\//,
+      /\/pdst\.fm\/e\//
+    ]
 
-  def feedburner_url(fb_name)
-    fb_name ? "https://feeds.feedburner.com/#{clean_string(fb_name)}" : nil
+    urls = [item.feedburner_orig_enclosure_link, item.enclosure.try(:url), item.media_contents.first.try(:url)]
+    url = urls.compact.find { |u| redirectors.any? { |r| u.match?(r) } }
+
+    if url.present?
+      end_index = redirectors.map { |r| url.index(r) + url[r].length if url.match?(r) }.compact.max
+      url[0...end_index]
+    end
   end
 
   def owner(itunes_owners)
     if (o = itunes_owners.try(:first))
-      {name: clean_string(o.name), email: clean_string(o.email)}
+      {name: clean_string(o.name), email: clean_string(o.email)}.with_indifferent_access
     end
   end
 

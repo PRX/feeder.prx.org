@@ -81,7 +81,7 @@ module ImportUtils
       end
     end
 
-    {name: name, email: email}
+    {name: name, email: email}.with_indifferent_access
   end
 
   def clean_string(str)
@@ -93,6 +93,7 @@ module ImportUtils
   def clean_text(text)
     return nil if text.blank?
     result = remove_feedburner_tracker(text)
+    result = remove_podcastchoices_link(result)
     sanitize_html(result)
   end
 
@@ -100,6 +101,12 @@ module ImportUtils
     return nil if str.blank?
     regex = /<img src="http:\/\/feeds\.feedburner\.com.+" height="1" width="1" alt=""\/>/
     str.sub(regex, "").strip
+  end
+
+  def remove_podcastchoices_link(str)
+    if str.present?
+      str.sub(/(<p>)?learn more about your ad choices.+podcastchoices.com\/adchoices\.?(<\/a>)?(<\/p>)?/i, "").strip
+    end
   end
 
   def sanitize_html(text)

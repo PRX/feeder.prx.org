@@ -40,12 +40,20 @@ class Authorization
     end
   end
 
+  def token_auth_feeds
+    if token.globally_authorized?("read-private")
+      Feed.with_deleted.all
+    else
+      Feed.where("podcast_id IN (SELECT id FROM podcasts WHERE prx_account_uri IN (?))", token_auth_account_uris)
+    end
+  end
+
   # avoid joining podcasts here, as it breaks a bunch of other queries
   def token_auth_episodes
     if token.globally_authorized?("read-private")
       Episode.with_deleted.all
     else
-      Episode.where(podcast_id: token_auth_podcasts.pluck(:id))
+      Episode.where("podcast_id IN (SELECT id FROM podcasts WHERE prx_account_uri IN (?))", token_auth_account_uris)
     end
   end
 end

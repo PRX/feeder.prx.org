@@ -39,7 +39,7 @@ class Feed < ApplicationRecord
 
   acts_as_paranoid
 
-  validates :slug, allow_nil: true, uniqueness: {scope: :podcast_id, allow_nil: false}
+  validates :slug, uniqueness: {scope: :podcast_id}, if: :podcast_id?
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
   validates_format_of :slug, without: /\A(images|\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\z/
   validates :file_name, presence: true, format: {with: /\A[0-9a-zA-Z_.-]+\z/}
@@ -55,8 +55,7 @@ class Feed < ApplicationRecord
 
   after_initialize :set_defaults
   before_validation :sanitize_text
-  before_create :set_public_feeds_url
-  before_save :remove_url, if: :private?
+  before_save :set_public_feeds_url
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
@@ -79,13 +78,18 @@ class Feed < ApplicationRecord
   end
 
   def set_public_feeds_url
-    if public? && url.blank? && ENV["PUBLIC_FEEDS_URL_PREFIX"].present?
-      self.url = "#{ENV["PUBLIC_FEEDS_URL_PREFIX"]}/#{podcast.path}/#{published_path}"
-    end
-  end
+    if private?
+      self.url = nil
+    elsif ENV["PUBLIC_FEEDS_URL_PREFIX"].present? && podcast.present?
+      public_feeds_url = "#{ENV["PUBLIC_FEEDS_URL_PREFIX"]}/#{path}"
 
-  def remove_url
-    self.url = nil
+      # if already publicfeeds... keep file_name/slug changes in sync
+      self.url = public_feeds_url if url.present? && url.include?(ENV["PUBLIC_FEEDS_URL_PREFIX"])
+
+      # otherwise, just default back to publicfeeds when blank
+      # TODO: after https://github.com/PRX/feeder.prx.org/issues/896 remove the date condition
+      self.url = public_feeds_url if url.blank? && (new_record? || created_at >= "2023-10-01")
+    end
   end
 
   def default?
@@ -113,11 +117,11 @@ class Feed < ApplicationRecord
   end
 
   def published_public_url
-    "#{podcast&.base_published_url}/#{published_path}"
+    "#{podcast&.base_published_url}/#{path_suffix}"
   end
 
   def published_private_url(include_token = nil)
-    private_path = "#{podcast.base_private_url}/#{published_path}"
+    private_path = "#{podcast.base_private_url}/#{path_suffix}"
 
     if include_token == true
       "#{private_path}?auth=#{tokens.first&.token}"
@@ -134,8 +138,12 @@ class Feed < ApplicationRecord
     url.present? ? url : published_url(include_token)
   end
 
-  def published_path
+  def path_suffix
     default? ? file_name : "#{slug}/#{file_name}"
+  end
+
+  def path
+    "#{podcast&.path}/#{path_suffix}"
   end
 
   def feed_episodes
@@ -212,6 +220,12 @@ class Feed < ApplicationRecord
   def copy_media(force = false)
     feed_images.each { |i| i.copy_media(force) }
     itunes_images.each { |i| i.copy_media(force) }
+
+    # remove old feed rss
+    if !previously_new_record? && (slug_previously_changed? || file_name_previously_changed?)
+      old_path = [podcast.path, slug_previously_was, file_name_previously_was].compact.join("/")
+      UnlinkJob.perform_later(old_path)
+    end
   end
 
   def ready_feed_image
