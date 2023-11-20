@@ -121,6 +121,7 @@ module Apple
 
       Rails.logger.tagged("Apple::Publisher#publish!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          # Soft delete any existing delivery and delivery files
           prepare_for_delivery!(eps)
 
           # only create if needed
