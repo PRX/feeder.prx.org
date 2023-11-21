@@ -109,6 +109,18 @@ describe Episode do
     assert_nil Episode.find_by_item_guid(generated_guid)
   end
 
+  it "gets and sets url" do
+    e = build_stubbed(:episode, url: nil)
+    assert_includes e.url, "play.prx.org"
+    assert_nil e[:url]
+
+    e.url = "http://some.where/else"
+    assert_equal "http://some.where/else", e[:url]
+
+    e.url = "https://play.prx.org/any/thing"
+    assert_nil e[:url]
+  end
+
   it "includes items in feed" do
     episode = create(:episode)
     assert episode.include_in_feed?

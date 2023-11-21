@@ -224,6 +224,14 @@ class Episode < ApplicationRecord
     self.original_guid = (new_guid.blank? || new_guid == generate_item_guid) ? nil : new_guid
   end
 
+  def url
+    super || embed_player_landing_url(podcast, self)
+  end
+
+  def url=(new_url)
+    super(embed_url?(new_url) ? nil : new_url)
+  end
+
   def medium=(new_medium)
     super
 
