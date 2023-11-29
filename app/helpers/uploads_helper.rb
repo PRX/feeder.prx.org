@@ -119,7 +119,7 @@ module UploadsHelper
   end
 
   def upload_problem?(rec)
-    %w[invalid error].include?(rec&.status) || upload_stalled?(rec)
+    %w[invalid error].include?(rec&.status)
   end
 
   def upload_stalled?(rec)
