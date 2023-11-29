@@ -426,6 +426,7 @@ en:
         caption: Caption
         credit: Credit
       podcast_import:
+        import_existing: Import Existing Episodes
         import_metadata: Import Podcast Metadata
         statuses:
           created: Queued
@@ -844,6 +845,7 @@ en:
       submit: Start Import
     form_rss:
       help:
+        import_existing: If selected, existing episodes in this podcast will be overwritten by any RSS item with the same GUID.
         import_metadata: If selected, the values from the RSS feed channel will override any values added to the Metadata tab. For example, if the title in the feed differs from the podcast title previously listed, the title in the RSS feed will be used.
     form_timings:
       help:

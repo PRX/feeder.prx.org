@@ -63,6 +63,7 @@ class ImportsController < ApplicationController
   def import_params
     params.fetch(:podcast_import, {}).permit(
       :file_name,
+      :import_existing,
       :import_metadata,
       :timings,
       :type,

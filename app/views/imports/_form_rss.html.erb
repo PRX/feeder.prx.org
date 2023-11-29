@@ -5,12 +5,22 @@
   </div>
 </div>
 
-<div class="col-12 prx-field-group">
+<div class="col-12 mt-2">
   <div class="form-check">
     <%= form.check_box :import_metadata, checked: true %>
     <div class="d-flex align-items-center">
       <%= form.label :import_metadata %>
       <%= help_text t(".help.import_metadata") %>
+    </div>
+  </div>
+</div>
+
+<div class="col-12">
+  <div class="form-check">
+    <%= form.check_box :import_existing, checked: true %>
+    <div class="d-flex align-items-center">
+      <%= form.label :import_existing %>
+      <%= help_text t(".help.import_existing") %>
     </div>
   </div>
 </div>

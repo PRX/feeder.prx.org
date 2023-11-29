@@ -1,7 +1,7 @@
 require "feedjira"
 
 class PodcastRssImport < PodcastImport
-  store :config, accessors: [:episodes_only, :audio, :feed_rss], coder: JSON
+  store :config, accessors: [:episodes_only, :new_episodes_only, :audio, :feed_rss], coder: JSON
 
   has_many :episode_imports, dependent: :destroy, class_name: "EpisodeRssImport", foreign_key: :podcast_import_id
 
@@ -11,6 +11,7 @@ class PodcastRssImport < PodcastImport
   def set_defaults
     super
     self.episodes_only ||= false
+    self.new_episodes_only ||= false
     self.audio ||= {}
   end
 
@@ -69,7 +70,15 @@ class PodcastRssImport < PodcastImport
   end
 
   def import_metadata=(val)
-    self.episodes_only = (val == "0") ? true : !val
+    self.episodes_only = !ActiveModel::Type::Boolean.new.cast(val)
+  end
+
+  def import_existing
+    !new_episodes_only
+  end
+
+  def import_existing=(val)
+    self.new_episodes_only = !ActiveModel::Type::Boolean.new.cast(val)
   end
 
   def config_url=(config_url)
@@ -82,7 +91,11 @@ class PodcastRssImport < PodcastImport
     create_or_update_podcast!
     create_or_update_episode_imports!
 
-    status_importing!
+    if episode_imports.any?
+      status_importing!
+    else
+      status_complete!
+    end
   rescue => err
     status_error!
     unlock_podcast!
@@ -91,6 +104,9 @@ class PodcastRssImport < PodcastImport
 
   def create_or_update_episode_imports!
     update(feed_episode_count: feed.entries.count)
+
+    # optionally skip existing
+    existing_guids = Episode.where(podcast_id: podcast_id).map(&:item_guid) if new_episodes_only
 
     # cleanup existing dups - they may be recreated later
     episode_imports.status_duplicate.destroy_all
@@ -101,7 +117,9 @@ class PodcastRssImport < PodcastImport
       guid = entry.entry_id
       entry_hash = entry.to_h.as_json.with_indifferent_access
 
-      if guids.include?(guid)
+      if new_episodes_only && existing_guids.include?(guid)
+        next
+      elsif guids.include?(guid)
         episode_imports.create!(guid: guid, entry: entry_hash, status: :duplicate)
       else
         guids << guid
