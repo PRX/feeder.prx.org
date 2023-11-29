@@ -5,6 +5,9 @@
         <th><%= t(".status") %></th>
         <th width=0><%= t(".guid") %></th>
         <th><%= t(".episode") %></th>
+        <% if import.is_a?(PodcastTimingsImport) %>
+          <th><%= t(".timings") %></th>
+        <% end %>
       </tr>
     </thead>
     <tbody>
