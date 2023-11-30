@@ -318,7 +318,7 @@ en:
             timings:
               embedded_newlines: Your CSV has columns containing newlines, or has unclosed quotes - please fix or remove those columns before importing.
               guid_not_found: Unable to detect a guid column - check your CSV format, and confirm your guids match existing episodes in this podcast.
-              not_csv: Not aaaa CSV file, or contains unclosed quotes.
+              not_csv: Not a CSV file, or contains unclosed quotes.
               timings_not_found: Unable to detect a timings column - check your CSV format.
             url:
               bad_http_response: Unable to fetch feed url
