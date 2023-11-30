@@ -90,6 +90,12 @@ describe PodcastTimingsImport do
       assert import.errors.added? :timings, :not_csv
     end
 
+    it "checks for newlines and unclosed quotes embedded in lines" do
+      import.timings = "\"foo\nbar\"\tmore\tthings\n"
+      assert import.invalid?
+      assert import.errors.added? :timings, :embedded_newlines
+    end
+
     it "detects a guid column" do
       import.csv = [
         ["The Title", "The Guid", "Something Else", "Timings"],
