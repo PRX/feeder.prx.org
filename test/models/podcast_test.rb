@@ -54,6 +54,18 @@ describe Podcast do
     assert podcast.itunes_block
   end
 
+  it "gets and sets link" do
+    p = build_stubbed(:podcast, link: nil)
+    assert_includes p.link, "play.prx.org"
+    assert_nil p[:link]
+
+    p.link = "http://some.where/else"
+    assert_equal "http://some.where/else", p[:link]
+
+    p.link = "https://play.prx.org/any/thing"
+    assert_nil p[:link]
+  end
+
   describe "publishing" do
     it "creates a publish job on publish" do
       PublishingPipelineState.stub(:start_pipeline!, "published!") do

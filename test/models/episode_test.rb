@@ -68,8 +68,24 @@ describe Episode do
 
   it "returns a guid to use in the channel item" do
     episode.guid = "guid"
-    assert_equal episode.item_guid, "prx_#{episode.podcast_id}_guid"
-    assert_equal Episode.generate_item_guid(123, "abc"), "prx_123_abc"
+    episode.podcast_id = 123
+
+    assert_nil episode.original_guid
+    assert_equal "prx_123_guid", episode.item_guid
+
+    episode.item_guid = "changed"
+    assert_equal "changed", episode.original_guid
+    assert_equal "changed", episode.item_guid
+
+    # setting to generated value nils it out
+    episode.item_guid = "prx_123_guid"
+    assert_nil episode.original_guid
+    assert_equal "prx_123_guid", episode.item_guid
+
+    # blanks also nil out
+    episode.item_guid = ""
+    assert_nil episode.original_guid
+    assert_equal "prx_123_guid", episode.item_guid
   end
 
   it "decodes guids from channel item guids" do
@@ -91,6 +107,18 @@ describe Episode do
     assert_equal episode.item_guid, "something-original"
     assert_equal Episode.find_by_item_guid("something-original"), episode
     assert_nil Episode.find_by_item_guid(generated_guid)
+  end
+
+  it "gets and sets url" do
+    e = build_stubbed(:episode, url: nil)
+    assert_includes e.url, "play.prx.org"
+    assert_nil e[:url]
+
+    e.url = "http://some.where/else"
+    assert_equal "http://some.where/else", e[:url]
+
+    e.url = "https://play.prx.org/any/thing"
+    assert_nil e[:url]
   end
 
   it "includes items in feed" do
