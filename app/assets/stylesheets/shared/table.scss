@@ -1,6 +1,7 @@
 .table {
   width: 100%;
   font-size: 0.8rem;
+  background-color: $gray-100;
 
   thead {
     th {
@@ -51,6 +52,7 @@
     a {
       font-weight: 700;
       text-decoration: none;
+      word-break: break-word;
     }
   }
 }

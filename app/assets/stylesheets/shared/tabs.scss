@@ -42,7 +42,7 @@
     }
   }
 
-  .list-group-item.active + .context-menu {
+  .nav-link.active + .context-menu {
     display: block;
   }
 }
@@ -92,6 +92,44 @@
   }
 }
 
+.prx-tab-wrapper {
+  position: relative;
+}
+
 .tab-content {
   padding: 1.5rem;
+}
+
+.prx-nav-tabs {
+  border: none;
+
+  .nav-link {
+    background: none;
+    font-weight: bold;
+    color: black;
+
+    border: none;
+    border-bottom: 3px solid $gray-300;
+
+    height: 48px;
+    padding: 0 24px;
+    cursor: pointer;
+    box-sizing: border-box;
+    opacity: 1;
+    min-width: 160px;
+    text-align: center;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+    vertical-align: top;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+
+    &.active {
+      border-color: $orange;
+    }
+  }
 }
