@@ -121,6 +121,10 @@ class Podcast < ApplicationRecord
     super(embed_url?(new_link) ? nil : new_link)
   end
 
+  def link_was
+    super || embed_player_landing_url(self)
+  end
+
   def owners=(os)
     owner = Array(os).first || {}
     self.owner_name = owner["name"]

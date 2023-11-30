@@ -245,6 +245,10 @@ class Episode < ApplicationRecord
     super(embed_url?(new_url) ? nil : new_url)
   end
 
+  def url_was
+    super || embed_player_landing_url(podcast, self)
+  end
+
   def medium=(new_medium)
     super
 
