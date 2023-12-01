@@ -9,6 +9,12 @@ module EpisodesHelper
     Episode::VALID_ITUNES_TYPES.map { |val| [I18n.t("helpers.label.episode.itunes_types.#{val}"), val] }
   end
 
+  def episode_explicit_options
+    ["inherit"].concat(Podcast::VALID_EXPLICITS).map do |val|
+      [I18n.t("helpers.label.episode.explicit_options.#{val}"), val]
+    end
+  end
+
   def episode_status_class(episode)
     case episode.publishing_status_was
     when "draft"
@@ -75,7 +81,7 @@ module EpisodesHelper
     if episode.new_record?
       new_podcast_episode_path episode.podcast_id, uploads_retry_params(form)
     else
-      edit_episode_path episode, uploads_retry_params(form)
+      episode_path episode, uploads_retry_params(form)
     end
   end
 

@@ -18,6 +18,10 @@ module EmbedPlayerHelper
   EMBED_PLAYER_SEASON = "se"
   EMBED_PLAYER_CATEGORY = "ct"
 
+  def embed_url?(value)
+    value.blank? || value.include?(ENV["PLAY_HOST"])
+  end
+
   def embed_player_landing_url(podcast, ep = nil)
     params = {}
     params[EMBED_PLAYER_FEED] = podcast&.public_url
@@ -49,7 +53,7 @@ module EmbedPlayerHelper
 
   def embed_player_podcast_url(podcast, options, preview = false)
     params = {}
-    params[EMBED_PLAYER_FEED] = podcast.published_url
+    params[EMBED_PLAYER_FEED] = podcast.public_url
 
     if options[:all_episodes] === "all"
       params[EMBED_PLAYER_PLAYLIST] = "all"

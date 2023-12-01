@@ -1,0 +1,110 @@
+/*
+ * Navigation items
+ */
+prx-navitem {
+  flex: 0 0 auto;
+  font-size: 14px;
+
+  .nav-holder {
+    height: 50px;
+    display: inline-block;
+  }
+
+  .nav-holder > a {
+    cursor: pointer;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 700;
+    line-height: 50px;
+    padding: 0 10px;
+  }
+
+  a {
+    color: #ddd;
+    background: #1a1a1a;
+    display: block;
+    padding: 0 3px;
+    font-size: 1.1em;
+    font-family: "Montserrat", sans-serif;
+  }
+
+  a.active {
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .nav-holder:hover a {
+    color: #fff;
+  }
+
+  .nav-holder.nav-user {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .nav-avatar {
+      background-image: url(https://www.prx.org/static/ta/5a7492c9f43b55cafca95618/254/assets/user.svg);
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      transform: translate3d(0, 0, 0);
+      transition: background-image 0.2s 0.1s;
+      height: 36px;
+      width: 36px;
+      border-radius: 50%;
+    }
+
+    .nav-menu {
+      background: #1a1a1a;
+      display: none;
+      min-width: 200px;
+      right: 0;
+      padding: 10px 20px;
+      position: absolute;
+      top: 70px;
+      z-index: 1030;
+      color: #fff;
+
+      ul {
+        border-top: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+        padding: 15px 0;
+        margin: 0;
+        list-style: none;
+      }
+
+      a {
+        text-decoration: none;
+        display: block;
+        font-weight: normal;
+        opacity: 0.7;
+        padding: 5px 0;
+        text-transform: none;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    &:hover .nav-menu,
+    &.focus .nav-menu {
+      display: block;
+    }
+  }
+
+  @media screen and (min-width: 768px) {
+    .nav-holder {
+      height: 73px;
+    }
+
+    .nav-holder > a {
+      line-height: 73px;
+      padding: 0 25px;
+    }
+  }
+
+  &:last-child > .nav-holder > a {
+    padding-right: 0;
+  }
+}

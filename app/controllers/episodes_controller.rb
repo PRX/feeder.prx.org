@@ -141,7 +141,7 @@ class EpisodesController < ApplicationController
       :subtitle,
       :description,
       :production_notes,
-      :explicit,
+      :explicit_option,
       :itunes_type,
       :season_number,
       :episode_number,

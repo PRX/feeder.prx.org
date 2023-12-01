@@ -66,7 +66,7 @@ module PodcastsHelper
     if podcast.new_record?
       new_podcast_path(podcast, uploads_retry_params(feed_form, image_form))
     else
-      edit_podcast_path(podcast, uploads_retry_params(feed_form, image_form))
+      podcast_path(podcast, uploads_retry_params(feed_form, image_form))
     end
   end
 
