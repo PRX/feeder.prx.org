@@ -5,6 +5,7 @@ class Api::Auth::EpisodeRepresenter < Api::EpisodeRepresenter
     decorator: Api::Auth::MediaResourceRepresenter,
     class: MediaResource
 
+  # render previous/deleted media_version, if current isn't ready
   collection :complete_media,
     as: :ready_media,
     decorator: Api::Auth::MediaResourceRepresenter,
