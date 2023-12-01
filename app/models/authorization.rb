@@ -1,4 +1,6 @@
 class Authorization
+  API_ADMIN_CACHE_KEY = "api-admin"
+
   include HalApi::RepresentedModel
 
   attr_accessor :token, :api_admin
@@ -23,7 +25,7 @@ class Authorization
   def cache_key
     token_key =
       if api_admin
-        "api-admin"
+        API_ADMIN_CACHE_KEY
       else
         OpenSSL::Digest::MD5.hexdigest([token.scopes, token.resources].map(&:to_s).join(""))
       end
