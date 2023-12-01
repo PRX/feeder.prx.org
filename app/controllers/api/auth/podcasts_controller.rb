@@ -19,6 +19,6 @@ class Api::Auth::PodcastsController < Api::PodcastsController
   end
 
   def resources_base
-    @resources_base ||= super.merge(authorization.token_auth_podcasts)
+    super.merge(authorization.token_auth_podcasts)
   end
 end
