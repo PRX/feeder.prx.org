@@ -92,12 +92,12 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     end
   end
 
-  describe "#no_media?" do
+  describe "#media?" do
     it "allows episodes to have no media" do
-      assert build_stubbed(:episode, medium: nil, segment_count: nil, contents: []).no_media?
-      refute build_stubbed(:episode, medium: "audio", segment_count: nil, contents: []).no_media?
-      refute build_stubbed(:episode, medium: nil, segment_count: 1, contents: []).no_media?
-      refute build_stubbed(:episode, medium: nil, segment_count: nil, contents: [c1]).no_media?
+      refute build_stubbed(:episode, medium: nil, segment_count: nil, contents: []).media?
+      assert build_stubbed(:episode, medium: "audio", segment_count: nil, contents: []).media?
+      assert build_stubbed(:episode, medium: nil, segment_count: 1, contents: []).media?
+      assert build_stubbed(:episode, medium: nil, segment_count: nil, contents: [c1]).media?
     end
   end
 
@@ -202,14 +202,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
 
       assert c2.marked_for_destruction?
       refute c2.marked_for_replacement?
-    end
-  end
-
-  describe "#media?" do
-    it "checks for any contents" do
-      assert ep.media?
-      assert build_stubbed(:episode, contents: [build_stubbed(:content, status: "created")]).media?
-      refute build_stubbed(:episode, contents: []).media?
     end
   end
 
