@@ -50,6 +50,32 @@ describe EnclosureUrlBuilder do
     _(expansions[:path]).must_match(/\/#{podcast.path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/)
   end
 
+  describe "uncut filenames" do
+    it "prefers the uncut filename over contents" do
+      exp = builder.podcast_episode_expansions(podcast, episode, feed)
+      assert_equal "audio.mp3", exp[:original_filename]
+
+      episode.build_uncut(original_url: "http://some.where/uncut.flac")
+
+      exp = builder.podcast_episode_expansions(podcast, episode, feed)
+      assert_equal "uncut.flac", exp[:original_filename]
+      assert_equal "uncut", exp[:original_basename]
+      assert_equal ".flac", exp[:original_extension]
+    end
+
+    it "has a default, just in case there is no undeleted media" do
+      ep_no_media = build_stubbed(:episode, podcast: podcast)
+      assert_empty ep_no_media.contents
+      assert_nil ep_no_media.uncut
+
+      # published eps should always have media in _some_ status, but just in case
+      exp = builder.podcast_episode_expansions(podcast, ep_no_media, feed)
+      assert_equal "media", exp[:original_filename]
+      assert_equal "media", exp[:original_basename]
+      assert_equal "", exp[:original_extension]
+    end
+  end
+
   describe "default feed extensions when audio format is not present" do
     before do
       feed.audio_format[:f] = nil
