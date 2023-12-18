@@ -31,8 +31,8 @@ module EpisodeMedia
     complete_media.any?
   end
 
-  def no_media?
-    medium.nil? && segment_count.nil? && !media?
+  def media?
+    medium.present? || segment_count.present? || media.present?
   end
 
   def media
@@ -79,10 +79,6 @@ module EpisodeMedia
         self.medium = "video"
       end
     end
-  end
-
-  def media?
-    media.any?
   end
 
   def media_content_type(feed = nil)

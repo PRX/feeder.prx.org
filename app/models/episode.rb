@@ -330,10 +330,10 @@ class Episode < ApplicationRecord
   end
 
   def include_in_feed?
-    if no_media?
-      true
-    else
+    if media?
       complete_media?
+    else
+      true
     end
   end
 
@@ -406,7 +406,7 @@ class Episode < ApplicationRecord
   end
 
   def validate_media_ready
-    return if published_at.blank? || no_media?
+    return unless published_at.present? && media?
 
     # media must be complete on _initial_ publish
     # otherwise - having files in any status is good enough

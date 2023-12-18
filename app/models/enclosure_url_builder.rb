@@ -38,9 +38,9 @@ class EnclosureUrlBuilder
   end
 
   def podcast_episode_expansions(podcast, episode, feed)
-    media = episode.contents.first
+    media = episode.uncut || episode.contents.first
 
-    original_url = media.try(:original_url) || ""
+    original_url = media.try(:original_url) || "media"
     original = Addressable::URI.parse(original_url).to_hash
     original = original.map { |k, v| ["original_#{k}".to_sym, v] }.to_h
 

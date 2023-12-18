@@ -136,6 +136,7 @@ describe EpisodeEntryHandler do
     podcast = create(:podcast)
     episode = EpisodeEntryHandler.create_from_entry!(podcast, entry_no_enclosure)
     episode.contents.clear
+    episode.medium = nil
     refute episode.media?
     refute episode.media_ready?
   end

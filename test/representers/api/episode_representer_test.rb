@@ -19,7 +19,7 @@ describe Api::EpisodeRepresenter do
   end
 
   it "is feed ready with no media" do
-    assert episode.no_media?
+    refute episode.media?
     assert_equal json["isFeedReady"], true
     assert_nil json["_links"]["enclosure"]
   end
