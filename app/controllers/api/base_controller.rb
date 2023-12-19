@@ -3,6 +3,7 @@ require "hal_api/errors"
 
 class Api::BaseController < ApplicationController
   include HalApi::Controller
+  include ApiAdminToken
 
   # these API endpoints use PRX JWTs, not session based auth
   skip_before_action :verify_authenticity_token
@@ -33,7 +34,11 @@ class Api::BaseController < ApplicationController
   end
 
   def authorization
-    Authorization.new(prx_auth_token) if prx_auth_token
+    if prx_auth_token
+      Authorization.new(prx_auth_token)
+    elsif api_admin_token?
+      Authorization.new(nil, true)
+    end
   end
 
   allow_params :show, [:api_version, :format, :zoom]

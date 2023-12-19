@@ -56,6 +56,9 @@ module Feeder
       config.session_store :feeder_active_record_store, key: "_feeder_session"
     end
 
+    # Version the cache by the application version
+    ENV["RAILS_APP_VERSION"] = VERSION
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

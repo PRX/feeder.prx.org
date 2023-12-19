@@ -42,9 +42,9 @@ describe Api::Auth::PodcastsController do
   describe "with wildcard token" do
     let(:token) { StubToken.new("*", ["read-private"]) }
 
-    it "includes all podcasts" do
+    it "includes all podcasts when querying updated since" do
       podcast && published_podcast && other_account_podcast && deleted_podcast
-      get(:index, params: {api_version: "v1"})
+      get(:index, params: {api_version: "v1", since: "2020-01-01"})
       assert_response :success
       assert_not_nil assigns[:podcasts]
       assert_includes assigns[:podcasts], podcast

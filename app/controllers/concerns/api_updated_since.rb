@@ -10,11 +10,17 @@ module ApiUpdatedSince
   end
 
   def filtered(resources)
-    if updated_since?
+    if updated_since_with_deleted?
+      super.with_deleted.where("updated_at >= ?", updated_since).order(updated_at: :asc)
+    elsif updated_since?
       super.where("updated_at >= ?", updated_since).order(updated_at: :asc)
     else
       super
     end
+  end
+
+  def updated_since_with_deleted?
+    updated_since? && authorization&.globally_authorized?
   end
 
   def updated_since?

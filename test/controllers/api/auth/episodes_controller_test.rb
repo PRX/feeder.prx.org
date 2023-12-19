@@ -18,6 +18,7 @@ describe Api::Auth::EpisodesController do
   let(:episode_different_podcast) { create(:episode, podcast: different_podcast) }
 
   let(:episode_unpublished) { create(:episode, podcast: podcast, published_at: nil) }
+  let(:episode_scheduled) { create(:episode_with_media, podcast: podcast, published_at: Time.now + 1.hour) }
   let(:episode_deleted) { create(:episode, deleted_at: Time.now, podcast: podcast) }
   let(:episode_hash) do
     {
@@ -152,9 +153,9 @@ describe Api::Auth::EpisodesController do
     let(:other_podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id + 1}", path: "foo") }
     let(:other_unpublished_episode) { create(:episode, podcast: other_podcast, published_at: nil) }
 
-    it "includes all episodes (including unpublished and deleted)" do
+    it "includes all episodes (including unpublished and deleted) when querying updated since" do
       guids = [episode_unpublished.guid, other_unpublished_episode.guid, episode_deleted.guid]
-      get(:index, params: {api_version: "v1", format: "json"})
+      get(:index, params: {api_version: "v1", format: "json", since: "2020-01-01"})
       assert_response :success
       list = JSON.parse(response.body)
       ids = list.dig("_embedded", "prx:items").map { |i| i["id"] }
@@ -167,6 +168,24 @@ describe Api::Auth::EpisodesController do
       post(:create, body: episode_hash.to_json, as: :json,
         params: {api_version: "v1", format: "json", podcast_id: podcast.id})
       assert_response :unauthorized
+    end
+  end
+
+  describe "with admin token" do
+    before do
+      ENV["API_ADMIN_TOKENS"] = "ABCD,EFGH"
+      @request.env["HTTP_AUTHORIZATION"] = "Token EFGH"
+      @controller.prx_auth_token = nil
+    end
+
+    it "returns unpublished episodes with media hrefs" do
+      get(:show, params: {api_version: "v1", format: "json", id: episode_scheduled.guid})
+      assert_response :success
+
+      json = JSON.parse(response.body)
+      assert_operator Time.parse(json["publishedAt"]), :>=, Time.now
+      assert_equal 1, json["media"].count
+      assert_equal episode_scheduled.contents[0].url, json["media"][0]["href"]
     end
   end
 end

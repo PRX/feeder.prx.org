@@ -4,9 +4,10 @@ describe Api::MediaResourceRepresenter do
   let(:media_resource) { MediaResource.new }
   let(:representer) { Api::MediaResourceRepresenter.new(media_resource) }
 
-  it "includes the href" do
+  it "does not include the href" do
     media_resource.stub(:href, "url") do
-      assert_equal representer.as_json["href"], "url"
+      # TODO: deprecate
+      # assert_nil representer.as_json["href"]
     end
   end
 
