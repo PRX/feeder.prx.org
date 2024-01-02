@@ -347,8 +347,8 @@ en:
           light: Light
           auto: User System Default
         accent_color: Accent Color
-        embed_player_url: Embeddable Player Link
-        enclosure_url: Media Link
+        embed_player_url: Embeddable Player URL
+        enclosure_url: Media URL
         episode_number: Episode Number
         explicit_option: Explicit
         explicit_options:
@@ -388,7 +388,7 @@ en:
         segment_count: Number of Segments
         subtitle: Subtitle
         title: Title
-        url: Episode Link
+        url: Episode URL
       feed:
         audio_type: Format
         audio_bitrate: Bitrate
@@ -459,14 +459,14 @@ en:
           true: Explicit
         id: ID
         language: Language
-        link: Homepage Link
+        link: Homepage URL
         managing_editor_email: Managing Editor Email
         managing_editor_name: Managing Editor Name
         owner_email: Feed Owner Email
         owner_name: Feed Owner Name
         payment_pointer: Micropayments Wallet
         prx_account_uri: Owner
-        public_url: Feed Link
+        public_url: Feed URL
         serial_order: Podcast Type
         serial_orders:
           false: Episodic
@@ -481,7 +481,7 @@ en:
         season: Season Number
         category: Category
         no_category: (None)
-        embed_player_url: Embeddable Player Link
+        embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
         episodes_options:
           all: All Episodes
@@ -672,7 +672,7 @@ en:
           light: Light theme for that subtle look.
           auto: Allow the users system preferences to determine the theme.
         accent_color: Choose an accent color that works for your brand.
-        warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/links will begin to function as expected within a few minutes of publishing.
+        warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/URLs will begin to function as expected within a few minutes of publishing.
       title: &player_title
         copy: Copy and Use your Embed Code
         customize: Make It Your Own
@@ -710,7 +710,7 @@ en:
     form_auth:
       title: Feed Authorization
       help:
-        auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed link for the audio to work. Remove them to revoke access to your feed.
+        auth_tokens: Auth tokens help ensure your feed stays private. They must be appended to the feed URL for the audio to work. Remove them to revoke access to your feed.
     form_auth_token:
       help:
         label: Enter a meaningful label to identify who is using this token.
@@ -723,7 +723,7 @@ en:
         url_delete: Are you sure you want to delete your public feed URL? This will point your subscribers back at your PRX feed location <b>%{published_url}</b>.<br/><br/>If you have existing subscribers at <b>{old}</b>, make sure to set the <a href="https://help.apple.com/itc/podcasts_connect/#/itcb54353390" target="_blank">New Feed URL</a> as well to avoid losing subscribers.
       help:
         new_feed_url: If your podcast feed is moving, use this field to point to the new URL where your podcast is located. The current feed should be maintained until all of your subscribers have migrated.
-        private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private link with - <strong>anyone who has access to the link will be able to use it</strong>.
+        private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private URL with - <strong>anyone who has access to the URL will be able to use it</strong>.
         url: If you already have a public URL for your podcast feed (e.g., <a href="https://support.google.com/feedburner/answer/78475?hl=en" target="_blank">feedburner</a>), enter it here. It should point to your <a href="%{published_url}" target="_blank">private feed URL</a>.
       title: Distribution
     form_main:
