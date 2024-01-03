@@ -347,8 +347,8 @@ en:
           light: Light
           auto: User System Default
         accent_color: Accent Color
-        embed_player_url: Embeddable Player Link
-        enclosure_url: Media Link
+        embed_player_url: Embeddable Player URL
+        enclosure_url: Media URL
         episode_number: Episode Number
         explicit_option: Explicit
         explicit_options:
@@ -406,8 +406,8 @@ en:
         include_donation_url: Include Donation Form
         include_podcast_value: Include Micropayments Wallet
         include_tags: Include Categories
-        itunes_category: Category
-        itunes_subcategory: Sub-Category
+        itunes_category: Apple Podcasts Category
+        itunes_subcategory: Apple Podcasts Sub-Category
         new_feed_url: New Feed URL
         paid: Paid Ads
         private: Private (unlisted)
@@ -459,14 +459,14 @@ en:
           true: Explicit
         id: ID
         language: Language
-        link: Homepage Link
+        link: Homepage URL
         managing_editor_email: Managing Editor Email
         managing_editor_name: Managing Editor Name
         owner_email: Feed Owner Email
         owner_name: Feed Owner Name
         payment_pointer: Micropayments Wallet
         prx_account_uri: Owner
-        public_url: Feed Link
+        public_url: Feed URL
         serial_order: Podcast Type
         serial_orders:
           false: Episodic
@@ -481,7 +481,7 @@ en:
         season: Season Number
         category: Category
         no_category: (None)
-        embed_player_url: Embeddable Player Link
+        embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
         episodes_options:
           all: All Episodes
@@ -523,7 +523,7 @@ en:
       confirm:
         item_guid: Are you sure you want to change the permanent GUID for this episode from <b>{old}</b> to <b>{new}</b>? This should only be done in special cases.
       help:
-        item_guid: Every podcast episode on iTunes should have a permanent, case-sensitive globally unique identifier (GUID). When an episode is added to a podcast's RSS feed, the episode is deemed "new" if no episode with that GUID exists yet in the feed. In certain rare cases, it can make sense to give an existing episode a new GUID. If you'd like to change the GUID for this episode, you may do so here.
+        item_guid: Every podcast episode on Apple Podcasts should have a permanent, case-sensitive globally unique identifier (GUID). When an episode is added to a podcast's RSS feed, the episode is deemed "new" if no episode with that GUID exists yet in the feed. In certain rare cases, it can make sense to give an existing episode a new GUID. If you'd like to change the GUID for this episode, you may do so here.
         original_guid: In most cases, you should leave this blank and let us auto-generate a globally unique identifier for you. But if you'd like to manually set your episode GUID, enter it here.
         url: If you have a public URL for this podcast episode, enter it here. If not, we'll auto generate one for you.
       embed_player_not_ready: Episode Not Saved
@@ -534,12 +534,13 @@ en:
         author_email: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
         author_name: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
         clean_title: If the title above contains any extraneous identifying information about your episode (like season number), provide a clean version of the title alone here.
-        description: Write a full description of your episode, including keywords, names of interviewees, places and topics. Feel free to incorporate links, images, and any of the other provided rich text formatting options.
+        description: Write a full description of your episode, including keywords, names of interviewees, places and topics.
         episode_number: If your episode is part of has a specific number add it here.
         episode_url: If you have a public URL for this podcast episode, enter it here.
-        explicit: In accordance with <a href="https://help.apple.com/itc/podcasts_connect/#/itc1723472cb" target="_blank">the requirements for iTunes podcast content</a>, does this episode contain explicit material?<br/><br/>Setting this field will override your <b>%{podcast_value}</b> podcast global value.
+        explicit: In accordance with <a href="https://help.apple.com/itc/podcasts_connect/#/itc1723472cb" target="_blank">the requirements for Apple Podcasts podcast content</a>, does this episode contain explicit material?<br/><br/>Setting this field will override your <b>%{podcast_value}</b> podcast global value.
+        itunes_category: Enter an alternate <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">Apple Podcasts category and subcategory</a>, differentiating this Feed from the Podcast.
         itunes_type: <p>Select the type of episode.</p> <p><strong>Full</strong> default and most common;</p> <p><strong>Trailer</strong> a short, promotional piece of content that represents a preview of a show;</p> <p><strong>Bonus</strong> extra content like behind-the-scenes information or interviews.</p>
-        production_notes: Helpful information for the production and/or ad sales teams. Example 'Descriptions of violence in segment 2.'
+        production_notes: Internal information for the production and/or ad sales teams. This content will not be visible to listeners. Example 'Descriptions of violence in segment 2.'
         season_number: If your episode is part of a season add it here.
         subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
         title: Write a short, Tweetable title. Think newspaper headline.
@@ -671,7 +672,7 @@ en:
           light: Light theme for that subtle look.
           auto: Allow the users system preferences to determine the theme.
         accent_color: Choose an accent color that works for your brand.
-        warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/links will begin to function as expected within a few minutes of publishing.
+        warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/URLs will begin to function as expected within a few minutes of publishing.
       title: &player_title
         copy: Copy and Use your Embed Code
         customize: Make It Your Own
@@ -722,7 +723,7 @@ en:
         url_delete: Are you sure you want to delete your public feed URL? This will point your subscribers back at your PRX feed location <b>%{published_url}</b>.<br/><br/>If you have existing subscribers at <b>{old}</b>, make sure to set the <a href="https://help.apple.com/itc/podcasts_connect/#/itcb54353390" target="_blank">New Feed URL</a> as well to avoid losing subscribers.
       help:
         new_feed_url: If your podcast feed is moving, use this field to point to the new URL where your podcast is located. The current feed should be maintained until all of your subscribers have migrated.
-        private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private link with - <strong>anyone who has access to the link will be able to use it</strong>.
+        private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private URL with - <strong>anyone who has access to the URL will be able to use it</strong>.
         url: If you already have a public URL for your podcast feed (e.g., <a href="https://support.google.com/feedburner/answer/78475?hl=en" target="_blank">feedburner</a>), enter it here. It should point to your <a href="%{published_url}" target="_blank">private feed URL</a>.
       title: Distribution
     form_main:
@@ -743,7 +744,7 @@ en:
         description: Enter an alternate description
         include_donation_url: In some cases, you may wish to exclude your donation URL from a private feed.
         include_podcast_value: In some cases, you may wish to exclude micropayments from a private feed.
-        itunes_category: Enter an alternate <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">iTunes category and subcategory</a>, differentiating this Feed from the Podcast.
+        itunes_category: Enter an alternate <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">Apple Podcasts category and subcategory</a>, differentiating this Feed from the Podcast.
         subtitle: Enter an alternate teaser
     form_status:
       <<: *form_status
@@ -928,17 +929,17 @@ en:
         complete: Checking the box indicates that the podcast is complete and you will not post any more episodes in the future.
         copyright: Copyright notice for content in the podcast.
         description: A full description of this podcast.
-        explicit: In accordance with <a href="https://help.apple.com/itc/podcasts_connect/#/itc1723472cb" target="_blank">the requirements for iTunes podcast content</a>, do any of your podcast episodes contain explicit material?
-        itunes_category: Select the <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">iTunes category and subcategory</a>, if applicable, that best describe this podcast.
+        explicit: In accordance with <a href="https://help.apple.com/itc/podcasts_connect/#/itc1723472cb" target="_blank">the requirements for Apple Podcasts podcast content</a>, do any of your podcast episodes contain explicit material?
+        itunes_category: Select the <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">Apple Podcasts category and subcategory</a>, if applicable, that best describe this podcast.
         language: Select which language your podcast is in.
-        managing_editor_email: Set the managing editor email for this podcast.
-        managing_editor_name: Set the managing editor name for this podcast.
-        owner_email: Set the iTunes owner email for this podcast.
-        owner_name: Set the iTunes owner name for this podcast.
-        prx_account_uri: Who is the owner of this podcast?
+        managing_editor_email: Specify an e-mail address for the editor of the content of the feed for contact questions.
+        managing_editor_name: The name of the editor of the podcast for contact questions.
+        owner_email: Set the email address that appears in the RSS feed for contact questions.
+        owner_name: Set the name of the contact that appears in the RSS feed for contact questions.
+        prx_account_uri: Select the account which owns the podcast.
         serial_order: <p>Select how your episodes should be ordered.</p> <p><strong>Episodic:</strong> episodes to be presented and recommended last-to-first; this is the default and most common order for podcasts.</p> <p><strong>Serial:</strong> Episodes presented and recommended first-to-last.</p>
         subtitle: A short description of this podcast.
-        title: What's the name of this podcast?
+        title: The name of this podcast
     form_status:
       <<: *form_status
       title: Podcast Status
