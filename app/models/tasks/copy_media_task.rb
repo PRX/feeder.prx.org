@@ -84,8 +84,8 @@ class Tasks::CopyMediaTask < ::Task
   def porter_slice_task
     input_opts = []
     input_opts << "-ss #{media_resource.slice_start}" if media_resource.slice_start.present?
+    input_opts << "-to #{media_resource.slice_end}" if media_resource.slice_end.present?
     output_opts = ["-map_metadata 0"]
-    output_opts << "-t #{media_resource.slice_end}" if media_resource.slice_end.present?
 
     {
       Type: "Transcode",

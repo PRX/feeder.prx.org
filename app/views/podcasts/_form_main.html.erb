@@ -57,6 +57,7 @@
           <% data = {action: "nested-select#change"} %>
           <%= fields.select :itunes_category, opts, {include_blank: true}, multiple: true, data: data %>
           <%= fields.label :itunes_category, required: true %>
+          <%= field_help_text t(".help.itunes_category") %>
         </div>
       </div>
 

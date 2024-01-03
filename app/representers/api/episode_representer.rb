@@ -54,6 +54,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
+  # TODO: deprecate
   collection :complete_media,
     as: :ready_media,
     decorator: Api::MediaResourceRepresenter,

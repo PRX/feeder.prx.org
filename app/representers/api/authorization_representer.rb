@@ -6,8 +6,7 @@ class Api::AuthorizationRepresenter < Api::BaseRepresenter
       title: "Get a paged collection of authorized episodes",
       profile: profile_url(:collection, :episode),
       href: api_authorization_episodes_path + "{?page,per,zoom,since}",
-      templated: true,
-      count: represented.token_auth_episodes.count
+      templated: true
     }
   end
 
@@ -34,8 +33,7 @@ class Api::AuthorizationRepresenter < Api::BaseRepresenter
       title: "Get a paged collection of authorized podcasts",
       profile: profile_url(:collection, :podcasts),
       href: api_authorization_podcasts_path + "{?page,per,zoom,since}",
-      templated: true,
-      count: represented.token_auth_podcasts.count
+      templated: true
     }
   end
 

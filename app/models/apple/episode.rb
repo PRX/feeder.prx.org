@@ -15,6 +15,18 @@ module Apple
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
+    # Cleans up old delivery/delivery files iff the episode is to be delivered
+    def self.prepare_for_delivery(episodes)
+      episodes = episodes.select { |ep| ep.needs_delivery? }
+
+      episodes.map do |ep|
+        Rails.logger.info("Preparing episode #{ep.feeder_id} for delivery", {episode_id: ep.feeder_id})
+        ep.feeder_episode.apple_prepare_for_delivery!
+
+        ep
+      end
+    end
+
     # In the case where the episodes state is not yet ready to publish, but the
     # underlying models are ready. Poll the episodes audio asset state but
     # guard against waiting for episode assets that will never be processed.
@@ -472,11 +484,6 @@ module Apple
 
     def audio_asset_state_success?
       audio_asset_state == AUDIO_ASSET_SUCCESS
-    end
-
-    def reset_for_upload!
-      container.podcast_deliveries.each(&:destroy)
-      feeder_episode.reload
     end
 
     def has_media_version?

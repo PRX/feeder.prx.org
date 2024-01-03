@@ -1,8 +1,9 @@
-class Api::FeedsController < ApplicationController
-  skip_before_action :authenticate!
-  before_action :authenticate_feeds_token!
+class Api::FeedsController < Api::BaseController
+  include ApiAuthenticated
 
-  before_action :skip_session
+  # only allows admin tokens, not regular token users
+  skip_before_action :authenticate_user!
+  before_action :api_admin_token!
 
   def index
     max_updated_at = Feed.maximum(:updated_at)
@@ -16,14 +17,6 @@ class Api::FeedsController < ApplicationController
   end
 
   private
-
-  def authenticate_feeds_token!
-    token = (request.headers["HTTP_AUTHORIZATION"] || "").split("Token ").last
-    feeds_token = ENV["FEEDS_TOKEN"]
-    if token.blank? || feeds_token.blank? || token != feeds_token
-      render plain: "No auth token provided", status: :unauthorized
-    end
-  end
 
   def podcasts_json(podcasts)
     podcasts.map { |p| [p.id, podcast_json(p)] }.to_h
@@ -42,14 +35,21 @@ class Api::FeedsController < ApplicationController
 
   def feed_json(feed)
     feed
-      .slice(:private, :include_zones, :audio_format)
+      .slice(:private, :include_zones, :audio_format, :episode_offset_seconds)
       .transform_keys { |k| k.camelize(:lower) }
       .merge(tokens: feed.tokens.map { |t| token_json(t) })
+      .compact
   end
 
   def token_json(token)
     token
       .slice(:label, :token, :expires_at)
       .transform_keys { |k| k.camelize(:lower) }
+      .compact
+  end
+
+  # this controller handles its own caching
+  def cache_index?
+    false
   end
 end

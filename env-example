@@ -63,7 +63,7 @@ PUBLIC_FEEDS_URL_PREFIX=https://publicfeeds.net/f
 # FEEDER_WEB_MASTER=
 
 # auth token access for dovetail-router
-FEEDS_TOKEN=
+API_ADMIN_TOKENS=
 
 # apple API
 APPLE_PROVIDER_ID=

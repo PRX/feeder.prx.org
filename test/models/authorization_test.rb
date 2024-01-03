@@ -40,4 +40,25 @@ describe Authorization do
     assert_equal authorization.token_auth_episodes.count, 1
     assert_equal authorization.token_auth_episodes.first, episode1
   end
+
+  describe "api admins" do
+    let(:authorization) { Authorization.new(nil, true) }
+
+    it "has no user/token/accounts" do
+      assert_nil authorization.user_id
+      assert_nil authorization.token
+      assert_empty authorization.token_auth_account_ids
+      assert_empty authorization.token_auth_account_uris
+    end
+
+    it "has a cache key" do
+      refute_nil authorization.cache_key
+      assert_match(/PRX::Authorization\/api-admin/, authorization.cache_key)
+    end
+
+    it "gets unrestricted read access" do
+      podcast1 && podcast2 && podcast3
+      assert_equal authorization.token_auth_podcasts.count, 3
+    end
+  end
 end

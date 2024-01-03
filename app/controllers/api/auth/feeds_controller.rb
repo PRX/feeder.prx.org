@@ -6,12 +6,17 @@ class Api::Auth::FeedsController < Api::BaseController
   filter_resources_by :podcast_id
 
   after_action :publish, only: [:create, :update, :destroy]
+  allow_params :index, [:format, :api_version, :podcast_id, :page, :per]
 
   def publish
     resource.podcast.publish! if resource&.podcast
   end
 
+  def included(relation)
+    relation.includes(:podcast, :feed_images, :itunes_images, :feed_tokens)
+  end
+
   def resources_base
-    @feeds ||= super.merge(authorization.token_auth_feeds)
+    authorization.token_auth_feeds
   end
 end
