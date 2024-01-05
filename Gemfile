@@ -7,8 +7,8 @@ ruby "3.3.0"
 gem "activerecord-session_store"
 gem "bootsnap", require: false
 gem "pg", "~> 1.1"
-gem "puma", "~> 5.6"
-gem "rails", "~> 7.0.7"
+gem "puma", "~> 6"
+gem "rails", "~> 7.1.2"
 
 # caching
 gem "hiredis", "~> 0.6.3"
@@ -35,6 +35,7 @@ gem "simple_calendar", "~> 2.4"
 # api views
 gem "actionpack-action_caching" # for hal_api-rails
 gem "hal_api-rails", "~> 1.2.0"
+gem "responders", "3.1.1"
 gem "jbuilder"
 gem "roar-rails", github: "PRX/roar-rails", branch: "feat/rails_7"
 
