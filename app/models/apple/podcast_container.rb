@@ -3,6 +3,7 @@
 module Apple
   class PodcastContainer < ApplicationRecord
     include Apple::ApiResponse
+    include Apple::ApiWaiting
 
     serialize :api_response, JSON
 
@@ -34,31 +35,53 @@ module Apple
 
         # Back to DTR to pick up fresh arrangements:
         container.reset_source_metadata!(episode)
-      end.compact
+        container
+      end
     end
 
     def self.probe_source_file_metadata(api, episodes)
-      containers = episodes.map(&:podcast_container)
-      raise "Missing podcast container for episode" if containers.any?(&:nil?)
-      containers = containers.filter(&:needs_file_metadata?)
+      episodes = episodes.select { |ep| ep.podcast_container.present? }
+      episodes = episodes.select { |ep| ep.needs_delivery? }
 
+      containers = episodes.map(&:podcast_container)
       containers_by_id = containers.map { |c| [c.id, c] }.to_h
 
       api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params))
         .map do |row|
         content_length = row.dig("api_response", "val", "data", "headers", "content-length")
         cdn_url = row.dig("api_response", "val", "data", "redirect_chain_end_url")
+        media_version = row.dig("api_response", "val", "data", "episode_media_version")
+
         raise "Missing content-length in response" if content_length.blank?
         raise "Missing cdn_url in response" if cdn_url.blank?
+        raise "Missing media_version in response" if media_version.blank?
 
         podcast_container_id = row["request_metadata"]["podcast_container_id"]
 
         container = containers_by_id.fetch(podcast_container_id)
-        container.source_size = content_length
-        container.source_url = cdn_url
-
-        container.save!
+        container.update_source_metadata!(
+          source_size: content_length.to_i,
+          source_url: cdn_url,
+          source_media_version_id: media_version.to_i
+        )
         container
+      end
+    end
+
+    def self.wait_for_versioned_source_metadata(api, episodes, wait_interval: 10.seconds, wait_timeout: 1.minute)
+      episodes = episodes.select { |ep| ep.needs_delivery? }
+      raise "Missing podcast container for episode" if episodes.map(&:podcast_container).any?(&:nil?)
+
+      wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
+        containers = Apple::PodcastContainer.reset_source_file_metadata(remaining_episodes)
+        Rails.logger.info("Reset container source metadata", {reset_count: containers.length})
+
+        containers = Apple::PodcastContainer.probe_source_file_metadata(api, remaining_episodes)
+        Rails.logger.info("Updated container source metadata.", {count: containers.length})
+
+        finished = remaining_episodes.group_by(&:has_media_version?)
+
+        (finished[false] || [])
       end
     end
 
@@ -217,7 +240,7 @@ module Apple
           apple_episode_id: apple_episode_id,
           podcast_container_id: id
         },
-        api_url: source_url || enclosure_url,
+        api_url: enclosure_url,
         api_parameters: {}
       }
     end
@@ -285,20 +308,44 @@ module Apple
       ct.zero? ? "" : "#{ct}_"
     end
 
-    def reset_source_metadata!(apple_ep)
-      count = source_fetch_count + 1
+    def source_url
+      episode.apple_status&.source_url
+    end
 
-      update!(
-        source_fetch_count: count,
+    def source_size
+      episode.apple_status&.source_size
+    end
+
+    def source_filename
+      episode.apple_status&.source_filename
+    end
+
+    def enclosure_url
+      episode.apple_status&.enclosure_url
+    end
+
+    def source_fetch_count
+      episode.apple_status&.source_fetch_count || 0
+    end
+
+    def source_media_version_id
+      episode.apple_status&.source_media_version_id
+    end
+
+    def reset_source_metadata!(apple_ep)
+      count = source_fetch_count
+      episode.apple_update_delivery_status(
         source_url: nil,
         source_size: nil,
+        source_media_version_id: nil,
         source_filename: filename_prefix(count) + apple_ep.enclosure_filename,
-        enclosure_url: apple_ep.enclosure_url
+        enclosure_url: apple_ep.enclosure_url,
+        source_fetch_count: count + 1
       )
     end
 
-    def needs_file_metadata?
-      source_url.nil? || source_size.nil? || source_filename.nil?
+    def update_source_metadata!(attrs)
+      episode.apple_update_delivery_status(**attrs)
     end
   end
 end

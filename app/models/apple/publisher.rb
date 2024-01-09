@@ -127,6 +127,9 @@ module Apple
           # only create if needed
           sync_episodes!(eps)
           sync_podcast_containers!(eps)
+
+          wait_for_versioned_source_metadata(eps)
+
           sync_podcast_deliveries!(eps)
           sync_podcast_delivery_files!(eps)
 
@@ -189,6 +192,15 @@ module Apple
       end
 
       true
+    end
+
+    def wait_for_versioned_source_metadata(eps)
+      Rails.logger.tagged("##{__method__}") do
+        # wait for the audio version to be created
+        (waiting_timed_out, _) =
+          Apple::PodcastContainer.wait_for_versioned_source_metadata(api, eps)
+        raise "Timed out waiting for audio version" if waiting_timed_out
+      end
     end
 
     def wait_for_upload_processing(eps)
@@ -270,12 +282,6 @@ module Apple
         # Only reset if we need delivery.
         res = Apple::PodcastContainer.create_podcast_containers(api, eps)
         Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})
-
-        reset = Apple::PodcastContainer.reset_source_file_metadata(eps)
-        Rails.logger.info("Reset podcast containers for expired source urls.", {reset_count: reset.length})
-
-        res = Apple::PodcastContainer.probe_source_file_metadata(api, eps)
-        Rails.logger.info("Updated remote file metadata on podcast containers.", {count: res.length})
       end
     end
 

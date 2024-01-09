@@ -15,6 +15,15 @@ describe Apple::Show do
       .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
   end
 
+  describe ".from_apple_config" do
+    it "can be created from an apple config" do
+      show = apple_config.build_show
+      assert show.is_a?(Apple::Show)
+      assert_equal show.public_feed, public_feed
+      assert_equal show.private_feed, private_feed
+    end
+  end
+
   describe "#reload" do
     it "flushes memoized attrs" do
       apple_show.instance_variable_set(:@apple_episode_json, "foo")
