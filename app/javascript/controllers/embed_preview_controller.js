@@ -4,6 +4,7 @@ export default class extends Controller {
   static targets = ["accentColor", "embedIframe", "embedIframeWrapper", "embedUrl", "embedHtml"]
 
   static values = {
+    embedPreviewUrl: String,
     embedUrl: String,
     embedType: String,
   }
@@ -18,8 +19,12 @@ export default class extends Controller {
       false
     )
 
-    if (this.hasEmbedIframeTarget && this.hasEmbedUrlValue) {
-      this.embedIframeTarget.setAttribute("src", this.embedUrlValue)
+    if (this.hasEmbedIframeTarget) {
+      if (this.hasEmbedPreviewUrlValue) {
+        this.embedIframeTarget.setAttribute("src", this.embedPreviewUrlValue)
+      } else if (this.hasEmbedUrlValue) {
+        this.embedIframeTarget.setAttribute("src", this.embedUrlValue)
+      }
     }
   }
 
