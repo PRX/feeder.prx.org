@@ -32,7 +32,7 @@ module EmbedPlayerHelper
   def embed_player_episode_url(ep, options = nil, preview = false)
     params = {}
 
-    if !ep.published?
+    if preview && !ep.published?
       params[EMBED_PLAYER_TITLE] = ep.title
       params[EMBED_PLAYER_SUBTITLE] = ep.podcast.title
       params[EMBED_PLAYER_IMAGE] = ep.ready_image&.url || ep.podcast.ready_image&.url
