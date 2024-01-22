@@ -11,6 +11,14 @@
     </section>
 
     <section class="container-fluid d-grid gap-4">
+      <header>
+        <h3 class="fw-bold m-0"><%= t(".title.copy") %></h3>
+
+        <div class="form-text">
+          <%= t(".help.copy") %>
+        </div>
+      </header>
+
       <%= render "episode_player/form_copy",
             embed_url: embed_player_podcast_url(podcast, player_options),
             embed_html: embed_player_podcast_iframe(podcast, player_options) %>

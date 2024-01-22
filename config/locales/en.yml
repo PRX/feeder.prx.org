@@ -656,7 +656,6 @@ en:
       notice: Media files updated
   episode_player:
     form: &player_form
-      enclosure_not_ready: No Media Files Uploaded
       help: &player_help
         copy: Copy the code for one of the following players, and place it on your webpage.
         customize: Customize the appearance of the embed.
@@ -669,7 +668,7 @@ en:
           light: Light theme for that subtle look.
           auto: Allow the users system preferences to determine the theme.
         accent_color: Choose an accent color that works for your brand.
-        warning: It looks like your episode is not yet published, or very recently published. The player below is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/URLs will begin to function as expected within a few minutes of publishing.
+        warning: It looks like your episode is not yet published, or very recently published. The player above is only a preview of how it will appear after your feed is updated with the new episode. Your copyable iframe/URLs will begin to function as expected within a few minutes of publishing.
       title: &player_title
         copy: Copy and Use your Embed Code
         customize: Make It Your Own

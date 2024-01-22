@@ -34,6 +34,10 @@ module EmbedPlayerHelper
     value.blank? || value.include?(ENV["PLAY_HOST"])
   end
 
+  def embed_episode_maybe_not_in_feed?(ep)
+    !(ep.published? && ep.published_at <= 15.minutes.ago)
+  end
+
   def embed_player_landing_url(podcast, ep = nil)
     params = {}
     params[EMBED_PLAYER_FEED] = podcast&.public_url
@@ -44,7 +48,7 @@ module EmbedPlayerHelper
   def embed_player_episode_url(ep, options = {}, preview = false)
     params = embed_params(options)
 
-    if preview && !ep.published?
+    if preview && embed_episode_maybe_not_in_feed?(ep)
       params[EMBED_PLAYER_TITLE] = ep.title
       params[EMBED_PLAYER_SUBTITLE] = ep.podcast.title
       params[EMBED_PLAYER_IMAGE] = ep.ready_image&.url || ep.podcast.ready_image&.url
