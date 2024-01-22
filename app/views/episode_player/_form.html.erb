@@ -1,18 +1,19 @@
-<div class="row my-4 mx-2" data-controller="embed-preview"
-  data-embed-preview-embed-preview-url-value="<%= embed_player_episode_url(episode, player_options, true) %>"
-  data-embed-preview-embed-url-value="<%= embed_player_episode_url(episode, player_options) %>">
+<div class="row my-4 mx-2" data-controller="dynamic-form">
   <div class="col-8">
+    <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
 
     <section class="container-fluid mb-5">
       <header>
         <h3 class="fw-bold"><%= t(".title.preview") %></h3>
       </header>
 
-      <%= render "form_preview", player_options: @player_options %>
+      <%= render "form_preview", embed_html: embed_player_episode_iframe(episode, player_options, true) %>
     </section>
 
     <section class="container-fluid d-grid gap-4">
-      <%= render "form_copy", player_options: @player_options %>
+      <%= render "form_copy",
+            embed_url: embed_player_episode_url(episode, player_options),
+            embed_html: embed_player_episode_iframe(episode, player_options) %>
 
       <div class="form-floating input-group">
         <% if episode.media_ready? %>
@@ -31,7 +32,7 @@
   <div class="col-4">
 
     <div class="container-fluid d-grid gap-4">
-      <%= render "form_sidebar", player_options: @player_options %>
+      <%= render "form_sidebar", player_options: player_options %>
 
       <div class="card border-light">
         <div class="card-footer d-grid">

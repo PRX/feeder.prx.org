@@ -2,4 +2,6 @@
 
 <%= render "episodes/tabs" %>
 
-<%= render "form", episode: @episode, player_options: @player_options %>
+<%= turbo_frame_tag "episode-player", data: {controller: "morphdom"} do %>
+  <%= render "form", episode: @episode, player_options: @player_options %>
+<% end %>
