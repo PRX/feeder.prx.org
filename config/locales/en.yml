@@ -483,9 +483,6 @@ en:
         no_category: (None)
         embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
-        episodes_options:
-          all: All Episodes
-          number: Capped Number of Episodes
   # specific pages/views
   episodes:
     confirm_destroy:
