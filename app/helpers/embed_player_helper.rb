@@ -26,6 +26,10 @@ module EmbedPlayerHelper
     accent_color: "#ff9600"
   }
 
+  HEIGHT_BASE = 200
+  HEIGHT_PLAYLIST_HEADER = 57
+  HEIGHT_PLAYLIST_ROW = 61
+
   def embed_url?(value)
     value.blank? || value.include?(ENV["PLAY_HOST"])
   end
@@ -60,13 +64,13 @@ module EmbedPlayerHelper
   end
 
   def embed_player_podcast_url(podcast, options = {}, preview = false)
-    params = embed_params(options)
+    params = embed_params(options.merge(playlist: true))
     params[EMBED_PLAYER_FEED] = podcast.public_url
     embed_url(params, preview)
   end
 
   def embed_player_podcast_iframe(podcast, options = {}, preview = false)
-    embed_player_iframe(options, embed_player_podcast_url(podcast, options, preview))
+    embed_player_iframe(options.merge(playlist: true), embed_player_podcast_url(podcast, options, preview))
   end
 
   def embed_player_type_options(selected)
@@ -84,11 +88,6 @@ module EmbedPlayerHelper
     options_for_select(opts, selected)
   end
 
-  def embed_player_all_episodes_options(selected)
-    opts = %w[all number].map { |v| [t("helpers.label.podcast_player.episodes_options.#{v}"), v] }
-    options_for_select(opts, selected)
-  end
-
   private
 
   def embed_params(options_with_defaults = {})
@@ -96,14 +95,19 @@ module EmbedPlayerHelper
       DEFAULT_OPTIONS[key.to_sym] == val
     end
 
+    # shared params
     params = {}
     params[EMBED_PLAYER_CARD] = "1" if opts[:embed_player_type] == "card"
     params[EMBED_PLAYER_THEME] = opts[:embed_player_theme] if opts[:embed_player_theme].present?
-    params[EMBED_PLAYER_ACCENT_COLOR] = opts[:accent_color] if opts[:accent_color].present?
-    params[EMBED_PLAYER_PLAYLIST] = "all" if opts[:all_episodes] === "all"
-    params[EMBED_PLAYER_PLAYLIST] = opts[:episode_number] if opts[:all_episodes] == "number" && opts[:episode_number].to_i > 1
-    params[EMBED_PLAYER_SEASON] = opts[:season] if opts[:season].to_i > 0
-    params[EMBED_PLAYER_CATEGORY] = opts[:category] if opts[:category].to_s.strip.present?
+    params[EMBED_PLAYER_ACCENT_COLOR] = opts[:accent_color].sub("#", "") if opts[:accent_color].present?
+
+    # playlist params
+    if opts[:playlist]
+      params[EMBED_PLAYER_PLAYLIST] = (opts[:episode_number].to_i > 1) ? opts[:episode_number] : "all"
+      params[EMBED_PLAYER_SEASON] = opts[:season] if opts[:season].to_i > 0
+      params[EMBED_PLAYER_CATEGORY] = opts[:category] if opts[:category].to_s.strip.present?
+    end
+
     params
   end
 
@@ -120,26 +124,37 @@ module EmbedPlayerHelper
     is_card = options[:embed_player_type] == "card"
     fixed_width = options[:max_width].to_i if options[:max_width].to_i >= 300
 
+    # calculate height for playlists
+    height =
+      if options[:episode_number].to_i.between?(1, 5)
+        HEIGHT_BASE + HEIGHT_PLAYLIST_HEADER + HEIGHT_PLAYLIST_ROW * options[:episode_number].to_i
+      elsif options[:playlist]
+        (HEIGHT_BASE + HEIGHT_PLAYLIST_HEADER + HEIGHT_PLAYLIST_ROW * 5.5).round
+      else
+        HEIGHT_BASE
+      end
+
     # defaults
     iframe_opts = {
       allow: "monetization",
       frameborder: "0",
-      scrolling: "no",
-      height: is_card ? "100%" : "200",
+      height: height,
       width: "100%",
-      style: fixed_width ? "min-width: #{fixed_width}px; max-width: #{fixed_width}px; display: block; margin-inline: auto" : "100%",
+      style: fixed_width ? "min-width: #{fixed_width}px; max-width: #{fixed_width}px; display: block; margin-inline: auto" : "min-width: 300px",
       src: src
     }
 
+    iframe_opts[:scrolling] = "no" unless options[:playlist]
     wrapper_style = "position: relative; height: 0; width: 100%; min-width: 300px;"
 
     # card styling
     if is_card
+      iframe_opts[:height] = "100%"
       iframe_opts[:style] = "position: absolute; inset: 0;"
       wrapper_style << if fixed_width
-        " padding-top: clamp(500px, calc(100% + 200px), #{fixed_width + 200}px); margin-inline: auto; max-width: #{fixed_width}px;"
+        " padding-top: clamp(#{300 + height}px, calc(100% + #{height}px), #{fixed_width + height}px); margin-inline: auto; max-width: #{fixed_width}px;"
       else
-        " padding-top: calc(100% + 200px);"
+        " padding-top: calc(100% + #{height}px);"
       end
     end
 

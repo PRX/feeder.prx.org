@@ -8,6 +8,8 @@ class EpisodePlayerController < ApplicationController
     @player_options = episode_player_params
   end
 
+  private
+
   def episode_player_params
     nilify params
       .permit(:embed_player_type, :max_width, :embed_player_theme, :accent_color)

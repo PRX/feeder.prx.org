@@ -45,7 +45,7 @@ export default class extends Controller {
       playlistSeason: search.get("se"),
       playlistCategory: search.get("ct"),
       theme: search.get("th"),
-      accentColor: search.get("ac"),
+      accentColor: search.has("ac") ? [`#${search.get("ac")}`] : null,
     }
     iframe.contentWindow.postMessage(config, url.origin)
   }
