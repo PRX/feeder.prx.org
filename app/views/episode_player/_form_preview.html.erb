@@ -2,7 +2,12 @@
   <div class="mb-4">
     <%= render "layouts/skeleton_text", lines: 4 %>
   </div>
-  <div class="lh-0"><%= embed_player_iframe(player_options) %></div>
+  <%= tag.div class: "lh-0", data: {controller: "embed-preview", embed_preview_embed_html_value: embed_html} do %>
+    <%# embed-preview-controller will handle updates, to prevent flickering %>
+    <div data-embed-preview-target="wrapper" data-morph="false">
+      <%= embed_html %>
+    </div>
+  <% end %>
   <div class="mt-4">
     <%= render "layouts/skeleton_text", lines: 4 %>
   </div>

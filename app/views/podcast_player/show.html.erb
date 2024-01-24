@@ -2,4 +2,6 @@
 
 <%= render "podcasts/tabs" %>
 
-<%= render "form", podcast: @podcast, player_options: @player_options %>
+<%= turbo_frame_tag "podcast-player", data: {controller: "morphdom"} do %>
+  <%= render "form", podcast: @podcast, player_options: @player_options %>
+<% end %>
