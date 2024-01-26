@@ -29,7 +29,7 @@ module SlackHelper
   def slack_default_options
     {
       channel: SlackHelper.slack_channel || "#tech-dev-testing",
-      username: "Dovetail Publishing",
+      username: "Dovetail Podcasts",
       icon_emoji: ":radio:"
     }
   end
