@@ -139,6 +139,7 @@ class EpisodesController < ApplicationController
       :title,
       :clean_title,
       :subtitle,
+      :summary,
       :description,
       :production_notes,
       :explicit_option,
