@@ -1,5 +1,6 @@
 class PodcastsController < ApplicationController
   include PrxAccess
+  include SlackHelper
 
   before_action :set_podcast, only: %i[show edit update destroy]
 
@@ -51,6 +52,7 @@ class PodcastsController < ApplicationController
       if @podcast.save
         @podcast.copy_media
         @podcast.publish!
+        send_slack(compose_message(@podcast))
         format.html { redirect_to podcast_url(@podcast), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
@@ -130,5 +132,18 @@ class PodcastsController < ApplicationController
         itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
       ]
     )
+  end
+
+  def compose_message(podcast)
+    title = "<#{podcast_url(podcast.id)}|#{sub_escapes(podcast.title)}>"
+    intro = "A new podcast has been created: #{title}"
+    id = "ID: #{podcast.id}"
+    planner = "<#{podcast_planner_url(podcast.id)}|Schedule episodes>"
+    imports = "<#{podcast_imports_url(podcast.id)}|Start a new import>"
+    [intro, id, planner, imports].join("\n")
+  end
+
+  def sub_escapes(text)
+    text.gsub(/[&<>]/, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;")
   end
 end
