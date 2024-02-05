@@ -1,4 +1,6 @@
 module SlackHelper
+  test_channel_id = "C06G0QM1U8Z"
+
   def self.slack_sns_client
     @slack_sns_client ||= Aws::SNS::Client.new(region: slack_sns_region)
   end
@@ -28,7 +30,7 @@ module SlackHelper
 
   def slack_default_options
     {
-      channel: SlackHelper.slack_channel || "#tech-dev-testing",
+      channel: SlackHelper.slack_channel || test_channel_id,
       username: "Dovetail Podcasts",
       icon_emoji: ":radio:"
     }
