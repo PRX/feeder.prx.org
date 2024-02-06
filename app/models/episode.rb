@@ -211,7 +211,7 @@ class Episode < ApplicationRecord
 
     if medium_changed? && medium_was.present?
       if medium_was == "uncut" && medium == "audio"
-        uncut&.mark_for_replacement
+        uncut&.mark_for_destruction
       elsif medium_was == "audio" && medium == "uncut"
         if (c = contents.first)
           build_uncut.tap do |u|
@@ -223,9 +223,9 @@ class Episode < ApplicationRecord
             u.original_url = (c.status_complete? && is_old) ? c.url : c.original_url
           end
         end
-        contents.each(&:mark_for_replacement)
+        contents.each(&:mark_for_destruction)
       else
-        contents.each(&:mark_for_replacement)
+        contents.each(&:mark_for_destruction)
       end
     end
 
