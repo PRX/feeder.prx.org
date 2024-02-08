@@ -48,8 +48,13 @@ class Tasks::CopyMediaTask < ::Task
         media_resource.duration = porter_callback_transcode[:Duration]&.to_f&./ 1000
       end
 
-      # change status, if metadata doesn't pass validations
-      media_resource.status = "invalid" if media_resource.invalid?
+      # change status, for invalid and bad-duration files
+      if media_resource.invalid?
+        media_resource.status = "invalid"
+      elsif info[:Audio].try(:[], :DurationDiscrepancy).to_i > 500
+        media_resource.status = "processing"
+        Tasks::FixMediaTask.create! { |t| t.owner = media_resource }.start!
+      end
     end
 
     media_resource.save!
