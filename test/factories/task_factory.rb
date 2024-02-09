@@ -17,4 +17,11 @@ FactoryBot.define do
     job_id { "2345" }
     result { build(:porter_image_job_results) }
   end
+
+  factory :fix_media_task, class: Tasks::FixMediaTask do
+    association :owner, factory: :content
+    status { :complete }
+    job_id { "1234" }
+    options { {destination: "s3://test-prx-up/podcast/episode/filename.mp3"} }
+  end
 end

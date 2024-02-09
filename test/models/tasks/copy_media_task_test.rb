@@ -167,5 +167,23 @@ describe Tasks::CopyMediaTask do
       assert_equal "invalid", task.media_resource.status
       assert_equal "foo", task.media_resource.medium
     end
+
+    it "runs a FixMediaTask if the duration was mismatched" do
+      task.update(status: "created")
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:DurationDiscrepancy] = 1000
+
+      Task.stub_any_instance(:start!, true) do
+        assert_difference("Tasks::FixMediaTask.count", 1) do
+          task.update(status: "complete")
+
+          # status is still processing
+          assert_equal "processing", task.media_resource.status
+
+          # latest task is now to fix
+          assert_equal Tasks::FixMediaTask, task.media_resource.task.class
+        end
+      end
+    end
   end
 end
