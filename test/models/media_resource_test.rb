@@ -133,43 +133,4 @@ describe MediaResource do
     refute mr.audio?
     refute mr.video?
   end
-
-  it "marks completed resources for replacement" do
-    mr = build_stubbed(:media_resource, status: "started")
-    refute mr.marked_for_destruction?
-    refute mr.marked_for_replacement?
-
-    mr.mark_for_replacement
-    assert mr.marked_for_destruction?
-    refute mr.marked_for_replacement?
-
-    mr.status = "complete"
-    mr.mark_for_replacement
-    assert mr.marked_for_destruction?
-    assert mr.marked_for_replacement?
-  end
-
-  it "sets both deleted_at and replaced_at on save" do
-    ep = create(:episode_with_media)
-    mr = ep.contents.first
-
-    mr.mark_for_replacement
-    ep.save!
-
-    assert mr.deleted_at.present?
-    assert mr.replaced_at.present?
-  end
-
-  it "sets just deleted_at" do
-    ep = create(:episode_with_media)
-    mr = ep.contents.first
-
-    # invalid doesn't count as "replaced"
-    mr.status = "invalid"
-    mr.mark_for_replacement
-    ep.save!
-
-    assert mr.deleted_at.present?
-    assert_nil mr.replaced_at
-  end
 end

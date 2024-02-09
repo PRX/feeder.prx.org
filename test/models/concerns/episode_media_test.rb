@@ -116,7 +116,7 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal 3, ep.contents.size
       assert_equal c1, ep.contents[0]
       assert_equal c2, ep.contents[1]
-      assert c2.marked_for_replacement?
+      assert c2.marked_for_destruction?
 
       new_content = ep.contents[2]
       assert new_content.new_record?
@@ -131,7 +131,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal c1, ep.media[0]
       assert_equal c2, ep.media[1]
       refute c2.marked_for_destruction?
-      refute c2.marked_for_replacement?
 
       new_content = ep.media[2]
       assert new_content.new_record?
@@ -148,7 +147,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal c2, ep.contents[1]
 
       assert c2.marked_for_destruction?
-      refute c2.marked_for_replacement?
     end
 
     it "ignores nil" do
@@ -156,7 +154,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
 
       assert_equal [c1, c2], ep.media
       assert ep.media.none?(&:marked_for_destruction?)
-      assert ep.media.none?(&:marked_for_replacement?)
     end
 
     it "ignores unchanged original_urls" do
@@ -164,7 +161,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
 
       assert_equal [c1, c2], ep.media
       assert ep.media.none?(&:marked_for_destruction?)
-      assert ep.media.none?(&:marked_for_replacement?)
     end
 
     it "also accepts hashes" do
@@ -172,7 +168,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
 
       assert_equal [c1, c2], ep.media
       assert ep.media.none?(&:marked_for_destruction?)
-      assert ep.media.none?(&:marked_for_replacement?)
     end
 
     it "infers episode medium audio" do
@@ -201,7 +196,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal c2, ep.contents[1]
 
       assert c2.marked_for_destruction?
-      refute c2.marked_for_replacement?
     end
   end
 

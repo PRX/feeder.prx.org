@@ -32,9 +32,6 @@ describe Uncut do
       assert_equal [uncut.url], episode.contents.pluck(:original_url).uniq
       assert_equal segs + [[0.5, 1], [3.5, nil]], episode.contents.pluck(:segmentation)
       assert_equal [false, false, false, true, true], episode.contents.map(&:changed?)
-
-      # NOTE: since only contents[0] was completed, it's the only one marked replaced
-      assert_equal [true, false, false, false, false], episode.contents.map(&:marked_for_replacement?)
       assert_equal [true, false, true, false, false], episode.contents.map(&:marked_for_destruction?)
     end
   end

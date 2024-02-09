@@ -58,7 +58,7 @@ module EpisodeMedia
         existing[position]&.each(&:mark_for_destruction)
       elsif con.replace?(existing[position]&.first)
         contents.build(con.attributes.compact)
-        existing[position]&.first&.mark_for_replacement
+        existing[position]&.first&.mark_for_destruction
       else
         con.update_resource(existing[position].first)
       end

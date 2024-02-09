@@ -133,7 +133,6 @@ describe Content do
       assert_equal [c1, c4, c3], episode.reload.contents
 
       refute_nil c2.reload.deleted_at
-      refute_nil c2.replaced_at
     end
   end
 end

@@ -50,7 +50,7 @@ class Content < MediaResource
   end
 
   def replace_resources!
-    Content.where(episode_id: episode_id, position: position).where.not(id: id).touch_all(:replaced_at, :deleted_at)
+    Content.where(episode_id: episode_id, position: position).where.not(id: id).destroy_all
   end
 
   private

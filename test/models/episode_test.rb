@@ -302,24 +302,24 @@ describe Episode do
   end
 
   describe "#medium=" do
-    it "marks existing content for replacement on change" do
-      refute episode.contents.first.marked_for_replacement?
+    it "marks existing content for destruction on change" do
+      refute episode.contents.first.marked_for_destruction?
 
       episode.medium = "audio"
-      refute episode.contents.first.marked_for_replacement?
+      refute episode.contents.first.marked_for_destruction?
 
       episode.medium = "uncut"
-      assert episode.contents.first.marked_for_replacement?
+      assert episode.contents.first.marked_for_destruction?
       assert episode.uncut.new_record?
       assert_equal episode.contents.first.original_url, episode.uncut.original_url
     end
 
     it "sets segment count for videos" do
       episode.segment_count = 2
-      refute episode.contents.first.marked_for_replacement?
+      refute episode.contents.first.marked_for_destruction?
 
       episode.medium = "video"
-      assert episode.contents.first.marked_for_replacement?
+      assert episode.contents.first.marked_for_destruction?
       assert_equal 1, episode.segment_count
     end
   end
