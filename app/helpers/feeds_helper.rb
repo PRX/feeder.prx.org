@@ -1,8 +1,6 @@
 module FeedsHelper
   def episode_offset_options
-    [300, 900, 3600, 21600, 43200, 86400].map do |value|
-      [I18n.t(value, scope: [:feeds, :helper, :episode_offset_options]), value]
-    end
+    I18n.t("feeds.helper.episode_offset_options").invert.to_a
   end
 
   def audio_format_options
