@@ -3,6 +3,8 @@ require "active_support/concern"
 module ReleaseEpisodes
   extend ActiveSupport::Concern
 
+  # publish-times for episodes in all their feeds
+  # (checking for non-zero feed.episode_offset_seconds)
   EPISODE_PUBLISH_TIMES = <<-SQL.squish
     SELECT
       e.id AS episode_id,
@@ -16,12 +18,14 @@ module ReleaseEpisodes
     AND f.deleted_at IS NULL
   SQL
 
+  # the most recent time we've called podcast.publish!
   LATEST_QUEUE_TIMES = <<-SQL.squish
     SELECT podcast_id, MAX(created_at) AS latest_queue_time
     FROM publishing_queue_items
     GROUP BY podcast_id
   SQL
 
+  # join the above 2 queries together, to get episodes/podcasts needing publish
   EPISODES_TO_RELEASE = <<-SQL.squish
     WITH
       episode_publish_times AS (#{EPISODE_PUBLISH_TIMES}),
@@ -47,6 +51,8 @@ module ReleaseEpisodes
   end
 
   class_methods do
+    # periodically called by say_when cron, to release scheduled episodes at
+    # the correct times in all their feeds
     def release!
       Rails.logger.tagged("Podcast.release!") do
         PublishingPipelineState.expire_pipelines!
