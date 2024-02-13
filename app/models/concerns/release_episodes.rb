@@ -25,6 +25,7 @@ module ReleaseEpisodes
   LATEST_QUEUE_TIMES = <<-SQL.squish
     SELECT podcast_id, MAX(created_at) AS latest_queue_time
     FROM publishing_queue_items
+    WHERE last_pipeline_state IS NOT NULL
     GROUP BY podcast_id
   SQL
 
