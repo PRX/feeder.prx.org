@@ -59,7 +59,7 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
       assert_empty Podcast.to_release
     end
 
-    it "does not care about non-published_at or deleted data" do
+    it "does not care about non-published_at, deleted, or locked data" do
       episode.update!(published_at: 1.minute.ago)
       assert_equal [episode], Episode.to_release
       assert_equal [podcast], Podcast.to_release
@@ -74,6 +74,11 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
 
       episode.update!(deleted_at: nil)
       feed.update!(deleted_at: Time.now)
+      assert_empty Episode.to_release
+      assert_empty Podcast.to_release
+
+      feed.update!(deleted_at: nil)
+      podcast.update!(locked: true)
       assert_empty Episode.to_release
       assert_empty Podcast.to_release
     end

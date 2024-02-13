@@ -13,9 +13,11 @@ module ReleaseEpisodes
       e.published_at + MAKE_INTERVAL(secs => COALESCE(f.episode_offset_seconds, 0)) AS publish_time
     FROM episodes e
     LEFT JOIN feeds f USING (podcast_id)
+    LEFT JOIN podcasts p ON (p.id = e.podcast_id)
     WHERE e.published_at IS NOT NULL
     AND e.deleted_at IS NULL
     AND f.deleted_at IS NULL
+    AND p.locked != TRUE
   SQL
 
   # the most recent time we've called podcast.publish!
