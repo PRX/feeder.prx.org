@@ -56,7 +56,7 @@ class Episode < ApplicationRecord
   after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
 
   scope :published, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at <= now()") }
-  scope :published_by, ->(offset) { where("episodes.published_at IS NOT NULL AND episodes.published_at <= ?", Time.now + offset) }
+  scope :published_by, ->(offset) { where("episodes.published_at IS NOT NULL AND episodes.published_at <= ?", Time.now - offset) }
   scope :draft, -> { where("episodes.published_at IS NULL") }
   scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
   scope :draft_or_scheduled, -> { draft.or(scheduled) }

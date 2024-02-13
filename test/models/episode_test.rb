@@ -235,6 +235,19 @@ describe Episode do
     end
   end
 
+  describe "#published_by" do
+    it "checks for published episodes with offset" do
+      e1 = create(:episode, published_at: 10.minutes.ago)
+      e2 = create(:episode, published_at: 10.minutes.from_now)
+
+      assert_equal [e1, e2], Episode.published_by(-900)
+      assert_equal [e1], Episode.published_by(-300)
+      assert_equal [e1], Episode.published_by(0)
+      assert_equal [e1], Episode.published_by(300)
+      assert_empty Episode.published_by(900)
+    end
+  end
+
   describe "#image" do
     it "replaces images" do
       refute_nil episode.image
