@@ -57,7 +57,7 @@ describe Api::FeedsController do
 
       json = JSON.parse(response.body)
       assert json.key?(podcast.id.to_s)
-      assert_equal ["slug-2", "slug-3"], json[podcast.id.to_s]["feeds"].keys
+      assert_equal ["slug-2", "slug-3"], json[podcast.id.to_s]["feeds"].keys.sort
 
       json1 = json[podcast.id.to_s]["defaultFeed"]
       json2 = json[podcast.id.to_s]["feeds"]["slug-2"]
