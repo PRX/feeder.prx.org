@@ -240,7 +240,7 @@ describe Episode do
       e1 = create(:episode, published_at: 10.minutes.ago)
       e2 = create(:episode, published_at: 10.minutes.from_now)
 
-      assert_equal [e1, e2], Episode.published_by(-900)
+      assert_equal [e1, e2].sort_by(&:id), Episode.published_by(-900).order(id: :asc)
       assert_equal [e1], Episode.published_by(-300)
       assert_equal [e1], Episode.published_by(0)
       assert_equal [e1], Episode.published_by(300)
