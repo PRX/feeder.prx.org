@@ -11,6 +11,7 @@ class Podcast < ApplicationRecord
   include AdvisoryLocks
   include EmbedPlayerHelper
   include PodcastFilters
+  include ReleaseEpisodes
 
   acts_as_paranoid
 
@@ -55,14 +56,6 @@ class Podcast < ApplicationRecord
   def self.by_prx_series(series)
     series_uri = series.links["self"].href
     Podcast.find_by(prx_uri: series_uri)
-  end
-
-  def self.release!(options = {})
-    Rails.logger.tagged("Podcast.release!") do
-      PublishingPipelineState.expire_pipelines!
-      PublishingPipelineState.retry_failed_pipelines!
-      Episode.release_episodes!(options)
-    end
   end
 
   def set_defaults
