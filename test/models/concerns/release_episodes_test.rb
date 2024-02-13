@@ -92,7 +92,7 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
       end
 
       assert_equal [podcast], publish_calls
-      assert_equal podcast.published_at, episode2.published_at
+      assert_equal podcast.published_at, episode2.reload.published_at
     end
 
     it "cleans up dead publishing pipelines" do
