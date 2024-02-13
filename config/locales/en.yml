@@ -400,7 +400,7 @@ en:
         display_episodes_count: Feed Episode Limit
         display_full_episodes_count: Feed Metadata Limit
         enclosure_prefix: Enclosure Prefix URL
-        episode_offset_seconds: Episode Publish Delay
+        episode_offset_seconds: Episode Publish Offset
         file_name: File Name
         house: House Ads
         include_donation_url: Include Donation Form
@@ -753,12 +753,18 @@ en:
       <<: *form
     helper:
       episode_offset_options:
-        "300": 5 minutes
-        "900": 15 minutes
-        "3600": 1 hour
-        "21600": 6 hours
-        "43200": 12 hours
-        "86400": 24 hours
+        "-300": 5 minutes early
+        "-900": 15 minutes early
+        "-3600": 1 hour early
+        "-21600": 6 hours early
+        "-43200": 12 hours early
+        "-86400": 24 hours early
+        "300": 5 minutes late
+        "900": 15 minutes late
+        "3600": 1 hour late
+        "21600": 6 hours late
+        "43200": 12 hours late
+        "86400": 24 hours late
       audio_format_options:
         mp3: MP3
         flac: FLAC

@@ -79,26 +79,6 @@ describe Podcast do
         refute_equal StartPublishingPipelineJob, podcast.publish!.class
       end
     end
-
-    describe ".release!" do
-      it "cleans up dead publishing pipelines" do
-        obj = Minitest::Mock.new
-        obj.expect :call, nil
-        PublishingPipelineState.stub(:expire_pipelines!, obj) do
-          Podcast.release!
-        end
-        obj.verify
-      end
-
-      it "retries latest publishing pipelines with errors" do
-        obj = Minitest::Mock.new
-        obj.expect :call, nil
-        PublishingPipelineState.stub(:retry_failed_pipelines!, obj) do
-          Podcast.release!
-        end
-        obj.verify
-      end
-    end
   end
 
   describe "episode limit" do

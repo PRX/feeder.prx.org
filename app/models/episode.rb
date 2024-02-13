@@ -11,6 +11,7 @@ class Episode < ApplicationRecord
   include TextSanitizer
   include EmbedPlayerHelper
   include AppleDelivery
+  include ReleaseEpisodes
 
   MAX_SEGMENT_COUNT = 10
   VALID_ITUNES_TYPES = %w[full trailer bonus]
@@ -69,20 +70,6 @@ class Episode < ApplicationRecord
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
-
-  def self.release_episodes!(_options = {})
-    podcasts = []
-    episodes_to_release.each do |e|
-      Rails.logger.info("Releasing episode", podcast_id: e.podcast_id, episode_id: e.id)
-      podcasts << e.podcast
-      e.touch
-    end
-    podcasts.uniq.each { |p| p.publish_updated && p.publish! }
-  end
-
-  def self.episodes_to_release
-    where("published_at > updated_at AND published_at <= now()").all
-  end
 
   def self.by_prx_story(story)
     Episode.find_by(prx_uri: story_uri(story))
