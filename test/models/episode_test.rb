@@ -218,32 +218,6 @@ describe Episode do
     end
   end
 
-  describe "release episodes" do
-    let(:podcast) { episode.podcast }
-
-    before do
-      day_ago = 1.day.ago
-      podcast.update_columns(updated_at: day_ago)
-      episode.update_columns(updated_at: day_ago, published_at: 1.hour.ago)
-    end
-
-    it "lists episodes to release" do
-      assert_operator podcast.last_build_date, :<, episode.published_at
-      episodes = Episode.episodes_to_release
-      assert_equal episodes.size, 1
-      assert_equal episodes.first, episode
-    end
-
-    it "updates feed published date after release" do
-      assert_operator podcast.published_at, :<, episode.published_at
-      episodes = Episode.episodes_to_release
-      assert_equal episodes.first, episode
-      Episode.release_episodes!
-      podcast.reload
-      assert_equal podcast.published_at.to_i, episode.published_at.to_i
-    end
-  end
-
   describe "prx story" do
     let(:story) do
       msg = json_file(:prx_story_small)

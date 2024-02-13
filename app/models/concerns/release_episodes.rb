@@ -30,7 +30,7 @@ module ReleaseEpisodes
     FROM episode_publish_times
     LEFT JOIN latest_queue_times USING (podcast_id)
     WHERE publish_time <= NOW()
-    AND publish_time > latest_queue_time
+    AND (latest_queue_time IS NULL OR publish_time > latest_queue_time)
   SQL
 
   included do
