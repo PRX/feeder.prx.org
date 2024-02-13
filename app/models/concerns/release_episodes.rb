@@ -17,6 +17,7 @@ module ReleaseEpisodes
     WHERE e.published_at IS NOT NULL
     AND e.deleted_at IS NULL
     AND f.deleted_at IS NULL
+    and p.deleted_at IS NULL
     AND p.locked != TRUE
   SQL
 
@@ -55,7 +56,7 @@ module ReleaseEpisodes
   class_methods do
     # periodically called by say_when cron, to release scheduled episodes at
     # the correct times in all their feeds
-    def release!
+    def release!(_opts = {})
       Rails.logger.tagged("Podcast.release!") do
         PublishingPipelineState.expire_pipelines!
         PublishingPipelineState.retry_failed_pipelines!
