@@ -64,7 +64,10 @@ class Tasks::CopyMediaTask < ::Task
   def fix_media!
     media_resource.status = "processing"
     media_resource.save!
-    Tasks::FixMediaTask.create! { |t| t.owner = media_resource }.start!
+
+    # fix media, but set an explicit format for ffmpeg to use if possible
+    fmt = porter_callback_inspect.dig(:Audio, :Format) || porter_callback_inspect.dig(:Video, :Format)
+    Tasks::FixMediaTask.create!(owner: owner, media_format: fmt).start!
   end
 
   def slice_media!

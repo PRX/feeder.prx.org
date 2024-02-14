@@ -1,6 +1,8 @@
 class Tasks::FixMediaTask < ::Task
   before_save :update_media_resource, if: ->(t) { t.status_changed? && t.media_resource }
 
+  attr_accessor :media_format
+
   def media_resource
     owner
   end
@@ -13,7 +15,7 @@ class Tasks::FixMediaTask < ::Task
     [
       {
         Type: "Transcode",
-        Format: "INHERIT",
+        Format: media_format || "INHERIT",
         Destination: {
           Mode: "AWS/S3",
           BucketName: ENV["FEEDER_STORAGE_BUCKET"],
