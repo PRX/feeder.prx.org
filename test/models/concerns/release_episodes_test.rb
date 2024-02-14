@@ -15,12 +15,12 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
       assert_equal [podcast], Podcast.to_release
 
       # queue item < published_at - still needs release
-      PublishingQueueItem.create!(podcast: podcast, last_pipeline_state: "started", created_at: 1.hour.ago)
+      PublishingQueueItem.create!(podcast: podcast, created_at: 1.hour.ago)
       assert_equal [episode], Episode.to_release
       assert_equal [podcast], Podcast.to_release
 
       # queue item > published_at - we're good!
-      PublishingQueueItem.create!(podcast: podcast, last_pipeline_state: "started", created_at: 1.minute.from_now)
+      PublishingQueueItem.create!(podcast: podcast, created_at: 1.minute.from_now)
       assert_empty Episode.to_release
       assert_empty Podcast.to_release
     end
@@ -35,7 +35,7 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
       assert_equal [podcast], Podcast.to_release
 
       # add a queue item, and we're good
-      PublishingQueueItem.create!(podcast: podcast, last_pipeline_state: "started")
+      PublishingQueueItem.create!(podcast: podcast)
       assert_empty Episode.to_release
       assert_empty Podcast.to_release
     end
@@ -54,7 +54,7 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
       assert_equal [podcast], Podcast.to_release
 
       # add a queue item, and we're good
-      PublishingQueueItem.create!(podcast: podcast, last_pipeline_state: "started")
+      PublishingQueueItem.create!(podcast: podcast)
       assert_empty Episode.to_release
       assert_empty Podcast.to_release
     end
