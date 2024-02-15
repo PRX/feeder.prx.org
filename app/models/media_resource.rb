@@ -174,7 +174,7 @@ class MediaResource < ApplicationRecord
     retry!
   end
 
-  def fixed?
+  def fixed_task?
     task.is_a?(Tasks::FixMediaTask)
   end
 end
