@@ -57,6 +57,7 @@ module Apple
         audio_format: DEFAULT_AUDIO_FORMAT,
         include_zones: ["billboard", "sonic_id"],
         tokens: [FeedToken.new(label: DEFAULT_TITLE)],
+        uncached: true,
         podcast: podcast
       )
     end
