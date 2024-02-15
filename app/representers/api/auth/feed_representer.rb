@@ -2,6 +2,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :id, writable: false
   property :created_at, writable: false
   property :updated_at, writable: false
+  property :uncached, writable: false
 
   property :slug
   property :file_name

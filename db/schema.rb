@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_02_06_213452) do
+ActiveRecord::Schema[7.0].define(version: 2024_02_15_160548) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -230,6 +230,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_02_06_213452) do
     t.boolean "include_donation_url", default: true
     t.text "exclude_tags"
     t.datetime "deleted_at", precision: nil
+    t.boolean "uncached", default: false
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)"
