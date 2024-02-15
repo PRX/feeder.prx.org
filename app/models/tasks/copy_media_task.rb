@@ -48,18 +48,29 @@ class Tasks::CopyMediaTask < ::Task
         media_resource.duration = porter_callback_transcode[:Duration]&.to_f&./ 1000
       end
 
-      # change status, for invalid and bad-duration files
-      if media_resource.invalid?
-        media_resource.status = "invalid"
-      elsif info[:Audio].try(:[], :DurationDiscrepancy).to_i > 500
-        media_resource.status = "processing"
-        Tasks::FixMediaTask.create! { |t| t.owner = media_resource }.start!
-      end
+      # change status, if metadata doesn't pass validations
+      media_resource.status = "invalid" if media_resource.invalid?
     end
 
     media_resource.save!
 
-    # slice uncut media (only happens if the segment_count is 1)
+    if media_resource.status_complete? && (bad_audio_duration? || bad_audio_bytes?)
+      fix_media!
+    else
+      slice_media!
+    end
+  end
+
+  def fix_media!
+    media_resource.status = "processing"
+    media_resource.save!
+
+    # fix media, but set an explicit format for ffmpeg to use if possible
+    fmt = porter_callback_inspect.dig(:Audio, :Format) || porter_callback_inspect.dig(:Video, :Format)
+    Tasks::FixMediaTask.create!(owner: owner, media_format: fmt).start!
+  end
+
+  def slice_media!
     if media_resource.is_a?(Uncut) && media_resource.segmentation_ready?
       media_resource.slice_contents!
       media_resource.episode.contents.each(&:copy_media)
