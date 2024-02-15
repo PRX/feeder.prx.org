@@ -38,3 +38,8 @@ trix-editor.trix-content[contenteditable="false"] {
   min-height: calc(3.5em + 2px);
   height: auto;
 }
+
+// hide the hidden field invalid messages
+.form-floating > .trix-hidden-field + .invalid-feedback {
+  display: none;
+}

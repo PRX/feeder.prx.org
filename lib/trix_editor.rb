@@ -26,7 +26,7 @@ module TrixEditorHelper
     }.merge(options)
 
     editor_tag = content_tag("trix-editor", "", attributes)
-    input_tag = hidden_field_tag(name, value, options.merge(id: attributes[:input]))
+    input_tag = hidden_field_tag(name, value, options.merge(id: attributes[:input], class: "trix-hidden-field"))
 
     input_tag + editor_tag + toolbar_tag
   end
