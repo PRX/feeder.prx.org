@@ -6,7 +6,11 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def source_url
-    media_resource&.href
+    if media_resource&.slice?
+      media_resource.original_url
+    else
+      media_resource&.href
+    end
   end
 
   def porter_tasks

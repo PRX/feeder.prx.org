@@ -9,6 +9,17 @@ describe Tasks::CopyMediaTask do
         assert_equal "whatev", task.source_url
       end
     end
+
+    it "is always the original url for sliced segments" do
+      task.media_resource.segmentation = [1.23, 4.56]
+      task.media_resource.original_url = "http://some.where"
+
+      assert task.media_resource.slice?
+
+      task.media_resource.stub(:href, "http://else.where") do
+        assert_equal "http://some.where", task.source_url
+      end
+    end
   end
 
   describe "#porter_tasks" do
