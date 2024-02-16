@@ -19,7 +19,12 @@ class Tasks::FixMediaTask < ::Task
         Destination: {
           Mode: "AWS/S3",
           BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-          ObjectKey: porter_escape(media_resource.path)
+          ObjectKey: porter_escape(media_resource.path),
+          ContentType: "REPLACE",
+          Parameters: {
+            CacheControl: "max-age=86400",
+            ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
+          }
         },
         FFmpeg: {
           OutputFileOptions: "-acodec copy"
