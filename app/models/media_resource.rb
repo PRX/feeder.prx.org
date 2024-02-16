@@ -92,6 +92,10 @@ class MediaResource < ApplicationRecord
     "#{path}.json"
   end
 
+  def waveform_file_name
+    "#{file_name}.json"
+  end
+
   def generate_waveform?
     false
   end

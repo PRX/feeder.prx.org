@@ -112,7 +112,12 @@ class Tasks::CopyMediaTask < ::Task
       Destination: {
         Mode: "AWS/S3",
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-        ObjectKey: porter_escape(media_resource.path)
+        ObjectKey: porter_escape(media_resource.path),
+        ContentType: "REPLACE",
+        Parameters: {
+          CacheControl: "max-age=86400",
+          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.waveform_file_name)}\""
+        }
       },
       FFmpeg: {
         OutputFileOptions: output_opts.join(" ")
@@ -128,7 +133,12 @@ class Tasks::CopyMediaTask < ::Task
       Destination: {
         Mode: "AWS/S3",
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-        ObjectKey: porter_escape(media_resource.waveform_path)
+        ObjectKey: porter_escape(media_resource.waveform_path),
+        Parameters: {
+          CacheControl: "max-age=86400",
+          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\"",
+          ContentType: "application/json"
+        }
       },
       WaveformPointBitDepth: 8
     }
