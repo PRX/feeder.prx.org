@@ -116,7 +116,7 @@ class Tasks::CopyMediaTask < ::Task
         ContentType: "REPLACE",
         Parameters: {
           CacheControl: "max-age=86400",
-          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.waveform_file_name)}\""
+          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
         }
       },
       FFmpeg: {
@@ -136,7 +136,7 @@ class Tasks::CopyMediaTask < ::Task
         ObjectKey: porter_escape(media_resource.waveform_path),
         Parameters: {
           CacheControl: "max-age=86400",
-          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\"",
+          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.waveform_file_name)}\"",
           ContentType: "application/json"
         }
       },
