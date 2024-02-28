@@ -31,7 +31,7 @@ module Apple
       api.unwrap_response(resp)
     end
 
-    def self.for_podcast(podcast)
+    def self.from_podcast(podcast)
       apple_config = podcast.apple_config
       api = Apple::Api.from_apple_config(apple_config)
 
