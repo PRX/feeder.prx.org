@@ -114,14 +114,12 @@ module Apple
       # These episodes are no longer in the private feed.
       poll_episodes!(episodes_to_archive)
       archive!(episodes_to_archive)
-      show.reload
 
       # Un-archive episodes that are re-published.
       # These episodes are in the private feed.
       # Unarchived episodes are converted to "DRAFTING" state.
       poll_episodes!(episodes_to_unarchive)
       unarchive!(episodes_to_unarchive)
-      show.reload
 
       # Calculate the episodes_to_sync based on the current state of the private feed
       deliver_and_publish!(episodes_to_sync)
