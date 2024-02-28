@@ -33,10 +33,6 @@ module Apple
 
     validate :feed_podcasts_match
 
-    def self.has_apple_config?(podcast)
-      podcast.default_feed.apple_configs.present?
-    end
-
     def self.find_or_build_private_feed(podcast)
       if (existing = podcast.feeds.find_by(slug: DEFAULT_FEED_SLUG, title: DEFAULT_TITLE))
         # TODO, handle partitions on apple models via the apple_config
