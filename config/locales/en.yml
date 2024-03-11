@@ -818,7 +818,7 @@ en:
     title:
       episode_image: Cover Image
       feed_image: Thumbnail Image
-      itunes_image: Profile Image
+      itunes_image: Cover Image
   imports:
     create:
       success: Beginning import.
