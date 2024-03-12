@@ -31,8 +31,8 @@ module EpisodeMedia
     complete_media.any?
   end
 
-  def no_media?
-    medium.nil? && segment_count.nil? && !media?
+  def media?
+    medium.present? || segment_count.present? || media.present?
   end
 
   def media
@@ -58,7 +58,7 @@ module EpisodeMedia
         existing[position]&.each(&:mark_for_destruction)
       elsif con.replace?(existing[position]&.first)
         contents.build(con.attributes.compact)
-        existing[position]&.first&.mark_for_replacement
+        existing[position]&.first&.mark_for_destruction
       else
         con.update_resource(existing[position].first)
       end
@@ -79,10 +79,6 @@ module EpisodeMedia
         self.medium = "video"
       end
     end
-  end
-
-  def media?
-    media.any?
   end
 
   def media_content_type(feed = nil)

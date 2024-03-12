@@ -125,7 +125,7 @@ module ImageFile
       last_event = task&.updated_at || updated_at || Time.now
       Time.now - last_event > 100
     else
-      false
+      status_error?
     end
   end
 

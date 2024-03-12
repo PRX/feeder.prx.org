@@ -106,24 +106,40 @@ module Apple
       end
     end
 
-    def publish!(eps = episodes_to_sync)
+    def publish!
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
-      # delete or unpublished episodes
+      # Archive deleted or unpublished episodes.
+      # These episodes are no longer in the private feed.
       poll_episodes!(episodes_to_archive)
       archive!(episodes_to_archive)
-      show.reload
 
+      # Un-archive episodes that are re-published.
+      # These episodes are in the private feed.
+      # Unarchived episodes are converted to "DRAFTING" state.
       poll_episodes!(episodes_to_unarchive)
       unarchive!(episodes_to_unarchive)
-      show.reload
 
-      Rails.logger.tagged("Apple::Publisher#publish!") do
+      # Calculate the episodes_to_sync based on the current state of the private feed
+      deliver_and_publish!(episodes_to_sync)
+
+      # success
+      SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id, api_response: {success: true})
+    end
+
+    def deliver_and_publish!(eps)
+      Rails.logger.tagged("Apple::Publisher#deliver_and_publish!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          # Soft delete any existing delivery and delivery files
+          prepare_for_delivery!(eps)
+
           # only create if needed
           sync_episodes!(eps)
           sync_podcast_containers!(eps)
+
+          wait_for_versioned_source_metadata(eps)
+
           sync_podcast_deliveries!(eps)
           sync_podcast_delivery_files!(eps)
 
@@ -139,9 +155,12 @@ module Apple
           raise_delivery_processing_errors(eps)
         end
       end
+    end
 
-      # success
-      SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id, api_response: {success: true})
+    def prepare_for_delivery!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Apple::Episode.prepare_for_delivery(eps)
+      end
     end
 
     def archive!(eps = episodes_to_archive)
@@ -180,6 +199,15 @@ module Apple
       end
 
       true
+    end
+
+    def wait_for_versioned_source_metadata(eps)
+      Rails.logger.tagged("##{__method__}") do
+        # wait for the audio version to be created
+        (waiting_timed_out, _) =
+          Apple::PodcastContainer.wait_for_versioned_source_metadata(api, eps)
+        raise "Timed out waiting for audio version" if waiting_timed_out
+      end
     end
 
     def wait_for_upload_processing(eps)
@@ -261,12 +289,6 @@ module Apple
         # Only reset if we need delivery.
         res = Apple::PodcastContainer.create_podcast_containers(api, eps)
         Rails.logger.info("Created remote and local state for podcast containers.", {count: res.length})
-
-        reset = Apple::PodcastContainer.reset_source_file_metadata(eps)
-        Rails.logger.info("Reset podcast containers for expired source urls.", {reset_count: reset.length})
-
-        res = Apple::PodcastContainer.probe_source_file_metadata(api, eps)
-        Rails.logger.info("Updated remote file metadata on podcast containers.", {count: res.length})
       end
     end
 

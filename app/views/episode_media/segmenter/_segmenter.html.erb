@@ -3,7 +3,7 @@
   data-audio-breakpoints-label-prefix-value="<%= t(".label.prefix") %>"
   data-audio-breakpoints-ad-breaks-value="<%= episode.ad_breaks %>"
   data-audio-breakpoints-ad-breaks-valid-value="<%= episode.validate(:ad_breaks) %>"
-  data-audio-breakpoints-segments-value="<%= (uncut&.segmentation || []).to_json %>"
+  data-audio-breakpoints-segments-value="<%= (uncut&.sanitize_segmentation || []).to_json %>"
   data-audio-breakpoints-target="waveformInspector"
   data-waveform-inspector-playing-class="player--playing"
   data-waveform-inspector-audio-url-value="<%= uncut&.url %>"
@@ -20,7 +20,7 @@
     audio-breakpoint:seekTo->waveform-inspector#seekToMarker
   ">
 
-  <%= form.hidden_field :segmentation, value: uncut&.segmentation&.to_json, data: {audio_breakpoints_target: "markersInput", action: "change->unsaved#change"} %>
+  <%= form.hidden_field :segmentation, value: uncut&.sanitize_segmentation&.to_json, data: {audio_breakpoints_target: "markersInput", action: "change->unsaved#change"} %>
 
   <div class="prx-waveform-inspector d-grid gap-2" data-morph="false">
     <div class="prx-waveform-inspector-container">

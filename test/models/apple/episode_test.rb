@@ -136,6 +136,30 @@ describe Apple::Episode do
     end
   end
 
+  describe "#needs_media_version?" do
+    let(:audio_version_id) {
+    }
+    it "should be true if the delivery status is nil or has nil attrs" do
+      assert apple_episode.delivery_statuses.destroy_all
+      assert apple_episode.delivery_status.nil?
+
+      assert_equal true, apple_episode.needs_media_version?
+    end
+
+    it "should be true if the delivery status indicates another media version" do
+      create(:content, episode: apple_episode.feeder_episode, position: 1, status: "complete")
+      create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
+      mid = apple_episode.feeder_episode.reload.cut_media_version!
+
+      apple_episode.feeder_episode.apple_update_delivery_status(delivered: true, source_media_version_id: mid.id)
+      refute apple_episode.needs_media_version?
+
+      apple_episode.feeder_episode.apple_update_delivery_status(source_media_version_id: -1)
+
+      assert apple_episode.needs_media_version?
+    end
+  end
+
   describe "#synced_with_apple?" do
     let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "PUBLISH") }
 
@@ -214,6 +238,58 @@ describe Apple::Episode do
       end
 
       mock.verify
+    end
+  end
+
+  describe ".prepare_for_delivery" do
+    it "should filter for episodes that need delivery" do
+      mock = Minitest::Mock.new
+      mock.expect(:call, true, [])
+
+      apple_episode.feeder_episode.stub(:apple_prepare_for_delivery!, mock) do
+        apple_episode.stub(:needs_delivery?, true) do
+          assert_equal [apple_episode], Apple::Episode.prepare_for_delivery([apple_episode])
+        end
+      end
+
+      mock.verify
+    end
+
+    it "should reject delivered episodes" do
+      apple_episode.stub(:needs_delivery?, false) do
+        assert_equal [], Apple::Episode.prepare_for_delivery([apple_episode])
+      end
+    end
+
+    describe "soft deleting the delivery files" do
+      let(:container) { create(:apple_podcast_container, episode: episode, apple_episode_id: "123") }
+
+      let(:delivery) do
+        pd = Apple::PodcastDelivery.new(episode: episode, podcast_container: container)
+        pd.save!
+        pd
+      end
+
+      let(:delivery_file) do
+        pdf = Apple::PodcastDeliveryFile.new(episode: episode, podcast_delivery: delivery)
+        pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files))
+        pdf.save!
+        pdf
+      end
+
+      before do
+        assert_equal [delivery_file], apple_episode.podcast_delivery_files
+      end
+
+      it "should delete the delivery files" do
+        assert apple_episode.podcast_delivery_files.length == 1
+
+        apple_episode.stub(:needs_delivery?, true) do
+          assert_equal [apple_episode], Apple::Episode.prepare_for_delivery([apple_episode])
+        end
+
+        assert apple_episode.podcast_delivery_files.length == 0
+      end
     end
   end
 end

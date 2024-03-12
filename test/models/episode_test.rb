@@ -68,8 +68,24 @@ describe Episode do
 
   it "returns a guid to use in the channel item" do
     episode.guid = "guid"
-    assert_equal episode.item_guid, "prx_#{episode.podcast_id}_guid"
-    assert_equal Episode.generate_item_guid(123, "abc"), "prx_123_abc"
+    episode.podcast_id = 123
+
+    assert_nil episode.original_guid
+    assert_equal "prx_123_guid", episode.item_guid
+
+    episode.item_guid = "changed"
+    assert_equal "changed", episode.original_guid
+    assert_equal "changed", episode.item_guid
+
+    # setting to generated value nils it out
+    episode.item_guid = "prx_123_guid"
+    assert_nil episode.original_guid
+    assert_equal "prx_123_guid", episode.item_guid
+
+    # blanks also nil out
+    episode.item_guid = ""
+    assert_nil episode.original_guid
+    assert_equal "prx_123_guid", episode.item_guid
   end
 
   it "decodes guids from channel item guids" do
@@ -91,6 +107,18 @@ describe Episode do
     assert_equal episode.item_guid, "something-original"
     assert_equal Episode.find_by_item_guid("something-original"), episode
     assert_nil Episode.find_by_item_guid(generated_guid)
+  end
+
+  it "gets and sets url" do
+    e = build_stubbed(:episode, url: nil)
+    assert_includes e.url, "play.prx.org"
+    assert_nil e[:url]
+
+    e.url = "http://some.where/else"
+    assert_equal "http://some.where/else", e[:url]
+
+    e.url = "https://play.prx.org/any/thing"
+    assert_nil e[:url]
   end
 
   it "includes items in feed" do
@@ -190,32 +218,6 @@ describe Episode do
     end
   end
 
-  describe "release episodes" do
-    let(:podcast) { episode.podcast }
-
-    before do
-      day_ago = 1.day.ago
-      podcast.update_columns(updated_at: day_ago)
-      episode.update_columns(updated_at: day_ago, published_at: 1.hour.ago)
-    end
-
-    it "lists episodes to release" do
-      assert_operator podcast.last_build_date, :<, episode.published_at
-      episodes = Episode.episodes_to_release
-      assert_equal episodes.size, 1
-      assert_equal episodes.first, episode
-    end
-
-    it "updates feed published date after release" do
-      assert_operator podcast.published_at, :<, episode.published_at
-      episodes = Episode.episodes_to_release
-      assert_equal episodes.first, episode
-      Episode.release_episodes!
-      podcast.reload
-      assert_equal podcast.published_at.to_i, episode.published_at.to_i
-    end
-  end
-
   describe "prx story" do
     let(:story) do
       msg = json_file(:prx_story_small)
@@ -230,6 +232,19 @@ describe Episode do
       create(:episode, prx_uri: "/api/v1/stories/80548")
       episode = Episode.by_prx_story(story)
       refute_nil episode
+    end
+  end
+
+  describe "#published_by" do
+    it "checks for published episodes with offset" do
+      e1 = create(:episode, published_at: 10.minutes.ago)
+      e2 = create(:episode, published_at: 10.minutes.from_now)
+
+      assert_equal [e1, e2].sort_by(&:id), Episode.published_by(-900).order(id: :asc)
+      assert_equal [e1], Episode.published_by(-300)
+      assert_equal [e1], Episode.published_by(0)
+      assert_equal [e1], Episode.published_by(300)
+      assert_empty Episode.published_by(900)
     end
   end
 
@@ -274,24 +289,24 @@ describe Episode do
   end
 
   describe "#medium=" do
-    it "marks existing content for replacement on change" do
-      refute episode.contents.first.marked_for_replacement?
+    it "marks existing content for destruction on change" do
+      refute episode.contents.first.marked_for_destruction?
 
       episode.medium = "audio"
-      refute episode.contents.first.marked_for_replacement?
+      refute episode.contents.first.marked_for_destruction?
 
       episode.medium = "uncut"
-      assert episode.contents.first.marked_for_replacement?
+      assert episode.contents.first.marked_for_destruction?
       assert episode.uncut.new_record?
       assert_equal episode.contents.first.original_url, episode.uncut.original_url
     end
 
     it "sets segment count for videos" do
       episode.segment_count = 2
-      refute episode.contents.first.marked_for_replacement?
+      refute episode.contents.first.marked_for_destruction?
 
       episode.medium = "video"
-      assert episode.contents.first.marked_for_replacement?
+      assert episode.contents.first.marked_for_destruction?
       assert_equal 1, episode.segment_count
     end
   end

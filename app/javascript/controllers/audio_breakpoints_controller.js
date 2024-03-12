@@ -15,8 +15,8 @@ export default class extends Controller {
   static values = {
     duration: Number,
     labelPrefix: { type: String, default: "Breakpoint" },
-    labelPreRoll: { type: String, default: "Pre-Roll" },
-    labelPostRoll: { type: String, default: "Post-Roll" },
+    labelPreRoll: { type: String, default: "Preroll" },
+    labelPostRoll: { type: String, default: "Postroll" },
     adBreaks: { type: Number, default: 1 },
     adBreaksValid: { type: Boolean, default: false },
     segments: { type: Array, default: [] },

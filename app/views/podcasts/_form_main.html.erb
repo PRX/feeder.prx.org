@@ -25,6 +25,7 @@
     <div class="card-body">
       <div class="form-floating">
         <%= form.fields_for :default_feed do |fields| %>
+          <%= fields.hidden_field :summary, value: nil %>
           <%= fields.trix_editor :description %>
         <% end %>
       </div>
@@ -57,6 +58,7 @@
           <% data = {action: "nested-select#change"} %>
           <%= fields.select :itunes_category, opts, {include_blank: true}, multiple: true, data: data %>
           <%= fields.label :itunes_category, required: true %>
+          <%= field_help_text t(".help.itunes_category") %>
         </div>
       </div>
 

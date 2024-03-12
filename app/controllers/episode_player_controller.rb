@@ -5,10 +5,14 @@ class EpisodePlayerController < ApplicationController
 
     authorize @episode, :show?
 
-    @player_options = {}
-    @player_options[:embed_player_type] = params[:embed_player_type] || "standard"
-    @player_options[:embed_player_theme] = params[:embed_player_theme] || "dark"
-    @player_options[:accent_color] = params[:accent_color] || ["#ff9600"]
-    @player_options[:episode_guid] = Episode.find_by_guid!(params[:episode_id])
+    @player_options = episode_player_params
+  end
+
+  private
+
+  def episode_player_params
+    nilify params
+      .permit(:embed_player_type, :max_width, :embed_player_theme, :accent_color)
+      .with_defaults(EmbedPlayerHelper::DEFAULT_OPTIONS)
   end
 end

@@ -6,7 +6,11 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def source_url
-    media_resource&.href
+    if media_resource&.slice?
+      media_resource.original_url
+    else
+      media_resource&.href
+    end
   end
 
   def porter_tasks
@@ -54,7 +58,23 @@ class Tasks::CopyMediaTask < ::Task
 
     media_resource.save!
 
-    # slice uncut media (only happens if the segment_count is 1)
+    if media_resource.status_complete? && (bad_audio_duration? || bad_audio_bytes?)
+      fix_media!
+    else
+      slice_media!
+    end
+  end
+
+  def fix_media!
+    media_resource.status = "processing"
+    media_resource.save!
+
+    # fix media, but set an explicit format for ffmpeg to use if possible
+    fmt = porter_callback_inspect.dig(:Audio, :Format) || porter_callback_inspect.dig(:Video, :Format)
+    Tasks::FixMediaTask.create!(owner: owner, media_format: fmt).start!
+  end
+
+  def slice_media!
     if media_resource.is_a?(Uncut) && media_resource.segmentation_ready?
       media_resource.slice_contents!
       media_resource.episode.contents.each(&:copy_media)
@@ -82,10 +102,9 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def porter_slice_task
-    input_opts = []
-    input_opts << "-ss #{media_resource.slice_start}" if media_resource.slice_start.present?
     output_opts = ["-map_metadata 0"]
-    output_opts << "-t #{media_resource.slice_end}" if media_resource.slice_end.present?
+    output_opts << "-ss #{media_resource.slice_start}" if media_resource.slice_start.present?
+    output_opts << "-to #{media_resource.slice_end}" if media_resource.slice_end.present?
 
     {
       Type: "Transcode",
@@ -93,10 +112,14 @@ class Tasks::CopyMediaTask < ::Task
       Destination: {
         Mode: "AWS/S3",
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-        ObjectKey: porter_escape(media_resource.path)
+        ObjectKey: porter_escape(media_resource.path),
+        ContentType: "REPLACE",
+        Parameters: {
+          CacheControl: "max-age=86400",
+          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
+        }
       },
       FFmpeg: {
-        InputFileOptions: input_opts.join(" "),
         OutputFileOptions: output_opts.join(" ")
       }
     }
@@ -110,7 +133,12 @@ class Tasks::CopyMediaTask < ::Task
       Destination: {
         Mode: "AWS/S3",
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-        ObjectKey: porter_escape(media_resource.waveform_path)
+        ObjectKey: porter_escape(media_resource.waveform_path),
+        Parameters: {
+          CacheControl: "max-age=86400",
+          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.waveform_file_name)}\"",
+          ContentType: "application/json"
+        }
       },
       WaveformPointBitDepth: 8
     }

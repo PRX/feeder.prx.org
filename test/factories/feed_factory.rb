@@ -40,5 +40,9 @@ FactoryBot.define do
       private { true }
       tokens { [FeedToken.new(label: "my-tok")] }
     end
+
+    factory :public_feed do
+      private { false }
+    end
   end
 end

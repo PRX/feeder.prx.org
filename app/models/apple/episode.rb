@@ -15,6 +15,18 @@ module Apple
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
+    # Cleans up old delivery/delivery files iff the episode is to be delivered
+    def self.prepare_for_delivery(episodes)
+      episodes = episodes.select { |ep| ep.needs_delivery? }
+
+      episodes.map do |ep|
+        Rails.logger.info("Preparing episode #{ep.feeder_id} for delivery", {episode_id: ep.feeder_id})
+        ep.feeder_episode.apple_prepare_for_delivery!
+
+        ep
+      end
+    end
+
     # In the case where the episodes state is not yet ready to publish, but the
     # underlying models are ready. Poll the episodes audio asset state but
     # guard against waiting for episode assets that will never be processed.
@@ -474,16 +486,20 @@ module Apple
       audio_asset_state == AUDIO_ASSET_SUCCESS
     end
 
-    def reset_for_upload!
-      container.podcast_deliveries.each(&:destroy)
-      feeder_episode.reload
+    def has_media_version?
+      return false unless delivery_status.present? && delivery_status.source_media_version_id.present?
+
+      delivery_status.source_media_version_id == feeder_episode.media_version_id
+    end
+
+    def needs_media_version?
+      !has_media_version?
     end
 
     def needs_delivery?
       return true if missing_container?
 
-      # TODO: probe for episode media version
-      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery?
+      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery? || needs_media_version?
     end
 
     def has_delivery?
@@ -522,10 +538,6 @@ module Apple
       feeder_episode.apple_podcast_delivery_files
     end
 
-    alias_method :container, :podcast_container
-    alias_method :deliveries, :podcast_deliveries
-    alias_method :delivery_files, :podcast_delivery_files
-
     def apple_sync_log
       feeder_episode.apple_sync_log
     end
@@ -537,5 +549,19 @@ module Apple
     def apple_mark_for_reupload!
       feeder_episode.apple_mark_for_reupload!
     end
+
+    def apple_episode_delivery_status
+      feeder_episode.apple_episode_delivery_status
+    end
+
+    def apple_episode_delivery_statuses
+      feeder_episode.apple_episode_delivery_statuses
+    end
+
+    alias_method :container, :podcast_container
+    alias_method :deliveries, :podcast_deliveries
+    alias_method :delivery_files, :podcast_delivery_files
+    alias_method :delivery_status, :apple_episode_delivery_status
+    alias_method :delivery_statuses, :apple_episode_delivery_statuses
   end
 end

@@ -32,9 +32,6 @@ describe Uncut do
       assert_equal [uncut.url], episode.contents.pluck(:original_url).uniq
       assert_equal segs + [[0.5, 1], [3.5, nil]], episode.contents.pluck(:segmentation)
       assert_equal [false, false, false, true, true], episode.contents.map(&:changed?)
-
-      # NOTE: since only contents[0] was completed, it's the only one marked replaced
-      assert_equal [true, false, false, false, false], episode.contents.map(&:marked_for_replacement?)
       assert_equal [true, false, true, false, false], episode.contents.map(&:marked_for_destruction?)
     end
   end
@@ -107,8 +104,8 @@ describe Uncut do
     end
 
     it "requires non-empty segments" do
-      # uncut.segmentation = [[0.5, 0.5]]
-      # refute uncut.valid?
+      uncut.segmentation = [[0.5, 0.5]]
+      refute uncut.valid?
 
       uncut.segmentation = [[0.5, 2.2], [2.2, 2.2]]
       refute uncut.valid?
@@ -148,6 +145,40 @@ describe Uncut do
 
       uncut.segmentation = [[nil, nil]]
       assert uncut.segmentation_ready?
+    end
+
+    it "checks the uncut duration" do
+      uncut.episode.segment_count = 2
+      uncut.segmentation = [[1, 2.2], [3.3, nil]]
+      uncut.status = "complete"
+      assert uncut.segmentation_ready?
+
+      uncut.segmentation = [[1, 2.2], [3.3, 999]]
+      refute uncut.segmentation_ready?
+
+      uncut.segmentation = [[1, 2.2], [999, nil]]
+      refute uncut.segmentation_ready?
+
+      uncut.duration = 1000
+      assert uncut.segmentation_ready?
+    end
+  end
+
+  describe "#sanitize_segmentation" do
+    it "removes out-of-bounds segments" do
+      uncut.segmentation = [[nil, 5], [8, 10], [11, 15]]
+
+      uncut.duration = 15.2
+      assert_equal uncut.segmentation, uncut.sanitize_segmentation
+
+      uncut.duration = 11.2
+      assert_equal [[nil, 5], [8, 10], [11, nil]], uncut.sanitize_segmentation
+
+      uncut.duration = 11
+      assert_equal [[nil, 5], [8, 10]], uncut.sanitize_segmentation
+
+      uncut.duration = 9.4
+      assert_equal [[nil, 5], [8, nil]], uncut.sanitize_segmentation
     end
   end
 

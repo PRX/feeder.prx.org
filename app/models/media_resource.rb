@@ -21,13 +21,6 @@ class MediaResource < ApplicationRecord
 
   after_create :replace_resources!
 
-  scope :complete_or_replaced, -> do
-    with_deleted
-      .status_complete
-      .where("deleted_at IS NULL OR replaced_at IS NOT NULL")
-      .order("created_at DESC")
-  end
-
   def self.build(file, position = nil)
     media =
       if file&.is_a?(Hash)
@@ -99,6 +92,10 @@ class MediaResource < ApplicationRecord
     "#{path}.json"
   end
 
+  def waveform_file_name
+    "#{file_name}.json"
+  end
+
   def generate_waveform?
     false
   end
@@ -166,7 +163,7 @@ class MediaResource < ApplicationRecord
       last_event = task&.updated_at || updated_at || Time.now
       Time.now - last_event > 100
     else
-      false
+      status_error?
     end
   end
 
@@ -181,18 +178,7 @@ class MediaResource < ApplicationRecord
     retry!
   end
 
-  def mark_for_replacement
-    mark_for_destruction
-    @marked_for_replacement = true if status_complete?
-  end
-
-  def marked_for_replacement?
-    @marked_for_replacement == true
-  end
-
-  def paranoia_destroy_attributes
-    super.tap do |attrs|
-      attrs[:replaced_at] = current_time_from_proper_timezone if marked_for_replacement?
-    end
+  def fixed_task?
+    task.is_a?(Tasks::FixMediaTask)
   end
 end

@@ -34,8 +34,8 @@ module Apple
         loop do
           # All done, return `timeout == false`
           break [false, []] if work_done?(remaining_records, waited, wait_timeout)
-          # Return `timeout == true` if we've waited too long
 
+          # Return `timeout == true` if we've waited too long
           break [true, remaining_records] if wait_timed_out?(waited, wait_timeout)
 
           sleep(wait_interval)

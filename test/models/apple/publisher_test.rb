@@ -237,6 +237,57 @@ describe Apple::Publisher do
           assert_equal [], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
         end
       end
+
+      describe "archived episodes with media already delivered to apple" do
+        let(:apple_episode_api_response) {
+          build(:apple_episode_api_response,
+            apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS,
+            publishing_state: "ARCHIVED",
+            apple_episode_id: "123")
+        }
+
+        let(:apple_episode) { build(:uploaded_apple_episode, show: apple_publisher.show, feeder_episode: episode, api: apple_api) }
+
+        it "includes the unarchived episode in the episodes to sync" do
+          assert apple_episode.audio_asset_state_success?
+          assert apple_episode.archived?
+          assert apple_episode.has_delivery?
+
+          assert_equal [apple_episode.feeder_id], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
+          # we can't sync archived episodes
+          assert_equal [], apple_publisher.episodes_to_sync.map(&:feeder_id)
+
+          unarchiver = ->(eps) do
+            eps.map do |ep|
+              sl = ep.apple_sync_log
+              attrs = sl.api_response
+              attrs["api_response"]["val"]["data"]["attributes"]["publishingState"] = "DRAFTING"
+              sl.update!(api_response: attrs)
+              sl
+            end
+          end
+
+          # assert that this includes our unarchived episode
+          deliver_and_publish = ->(eps) do
+            assert_equal [apple_episode.feeder_id], eps.map(&:feeder_id)
+            true
+          end
+
+          # eliminate calls to the apple api
+          apple_publisher.show.stub(:sync!, []) do
+            apple_publisher.stub(:poll_episodes!, []) do
+              # 1) episodes are unarchived
+              apple_publisher.stub(:unarchive!, unarchiver) do
+                # 2) then the unarchived episodes are passed in ready to have
+                # media uploaded and episode published)
+                apple_publisher.stub(:deliver_and_publish!, deliver_and_publish) do
+                  apple_publisher.publish!
+                end
+              end
+            end
+          end
+        end
+      end
     end
   end
 
@@ -324,6 +375,19 @@ describe Apple::Publisher do
         assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
           apple_publisher.raise_delivery_processing_errors([apple_episode])
         end
+      end
+    end
+
+    describe "#prepare_for_delivery" do
+      it "should call into the apple episode class method" do
+        mock = Minitest::Mock.new
+        mock.expect(:call, [], [[]])
+
+        Apple::Episode.stub(:prepare_for_delivery, mock) do
+          apple_publisher.prepare_for_delivery!([])
+        end
+
+        mock.verify
       end
     end
   end

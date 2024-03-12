@@ -36,61 +36,90 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
   describe "the DTR / CDN redirect flow" do
     let(:pc) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
-    before do
-      pc.update!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+
+    describe ".wait_for_versioned_source_metadata" do
+      it "should wait for the source metadata to be updated" do
+        Apple::PodcastContainer.stub(:reset_source_file_metadata, [pc]) do
+          Apple::PodcastContainer.stub(:probe_source_file_metadata, [pc]) do
+            apple_episode.stub(:needs_delivery?, false) do
+              apple_episode.stub(:has_media_version?, true) do
+                res = Apple::PodcastContainer.wait_for_versioned_source_metadata(api, [apple_episode], wait_interval: 0.seconds)
+                assert_equal [false, []], res
+              end
+            end
+          end
+        end
+      end
     end
+
     describe "#reset_source_metadata!" do
       it "clears out the fields" do
         assert_equal 0, pc.source_fetch_count
+        pc.reset_source_metadata!(apple_episode)
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo", source_media_version_id: 1)
+
+        assert_equal 1, pc.source_fetch_count
         assert pc.source_filename.present?
         assert pc.source_filename.present?
         assert pc.source_url.present?
         assert pc.source_size.present?
+        assert pc.source_media_version_id.present?
 
         apple_episode.stub(:enclosure_url, "http://something/transistor") do
           pc.reset_source_metadata!(apple_episode)
         end
 
         pc.reload
-        assert_equal 1, pc.source_fetch_count
+        assert_equal 2, pc.source_fetch_count
         assert pc.source_filename.present?
         refute pc.source_url.present?
         refute pc.source_size.present?
+        refute pc.source_media_version_id.present?
 
         assert_equal "1_transistor", pc.source_filename
         assert_equal "http://something/transistor", pc.enclosure_url
       end
 
       it "increments the source filename" do
+        assert_equal 0, pc.source_fetch_count
+        pc.reset_source_metadata!(apple_episode)
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo", source_media_version_id: 1)
+
         apple_episode.stub(:enclosure_filename, "new") do
           apple_episode.stub(:enclosure_url, "http://this-is-new") do
             assert_equal "foo", pc.source_filename
-            assert_equal 0, pc.source_fetch_count
-
-            pc.reset_source_metadata!(apple_episode)
-            assert_equal "1_new", pc.source_filename
             assert_equal 1, pc.source_fetch_count
 
             pc.reset_source_metadata!(apple_episode)
-            assert_equal "2_new", pc.source_filename
+            assert_equal "1_new", pc.source_filename
             assert_equal 2, pc.source_fetch_count
+
+            pc.reset_source_metadata!(apple_episode)
+            assert_equal "2_new", pc.source_filename
+            assert_equal 3, pc.source_fetch_count
           end
         end
       end
-    end
 
-    describe "#needs_file_metadata?" do
-      it "is congruent with reset_source_metadata!" do
-        refute pc.needs_file_metadata?
+      it "increments the count based on reset count" do
+        assert_equal 0, pc.source_fetch_count
 
         pc.reset_source_metadata!(apple_episode)
+        assert_equal 1, pc.source_fetch_count
 
-        assert pc.needs_file_metadata?
+        pc.reset_source_metadata!(apple_episode)
+        assert_equal 2, pc.source_fetch_count
+
+        pc.reset_source_metadata!(apple_episode)
+        assert_equal 3, pc.source_fetch_count
       end
     end
 
     describe ".reset_source_file_metadata" do
       it "needs delivery in order to be reset" do
+        pc.reset_source_metadata!(apple_episode)
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+
         apple_episode.stub(:needs_delivery?, false) do
           Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
         end
@@ -118,11 +147,22 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
   end
 
-  describe ".probe_source_file_metadata" do
-    it "should raise if any of the episodes lack a container" do
+  describe "probing source metadata" do
+    it "should filter episodes that lack a container" do
       apple_episode.stub(:podcast_container, nil) do
-        assert_raises(RuntimeError, "missing podcast container") do
-          Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
+        apple_episode.stub(:needs_delivery?, true) do
+          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
+          assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
+        end
+      end
+    end
+
+    it "should filter episodes that don't need delivery" do
+      podcast_container = Apple::PodcastContainer.new
+      apple_episode.stub(:podcast_container, podcast_container) do
+        apple_episode.stub(:needs_delivery?, false) do
+          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
+          assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
         end
       end
     end

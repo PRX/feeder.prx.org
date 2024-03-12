@@ -9,5 +9,5 @@
 <% elsif upload_complete?(image) %>
   <%= render "images/complete", form: form, image: image, delete_path: delete_path %>
 <% else %>
-  <%= render "images/error", form: form, image: image, delete_path: delete_path, retry_path: nil %>
+  <%= render "images/error", form: form, image: image, delete_path: delete_path, retry_path: image.retryable? && retry_path %>
 <% end %>

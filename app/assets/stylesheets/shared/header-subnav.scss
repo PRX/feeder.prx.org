@@ -10,7 +10,7 @@
   .nav-link {
     --#{$prefix}nav-link-font-weight: #{$font-weight-bold};
     --#{$prefix}nav-link-padding-x: #{map-get($spacers, 3)};
-    --#{$prefix}nav-link-padding-y: #{map-get($spacers, 0)};
+    --#{$prefix}nav-link-padding-y: #{map-get($spacers, 2)};
 
     display: grid;
     align-items: center;

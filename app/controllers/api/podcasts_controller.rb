@@ -13,7 +13,13 @@ class Api::PodcastsController < Api::BaseController
   end
 
   def show
-    super if visible?
+    if visible?
+      if request.format.rss?
+        render plain: FeedBuilder.new(show_resource).to_feed_xml
+      else
+        super
+      end
+    end
   end
 
   def visible?

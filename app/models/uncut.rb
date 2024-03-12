@@ -33,16 +33,22 @@ class Uncut < MediaResource
     end
   end
 
-  # TODO: not sure if/how to make this a validation - will figure out the UX first
   def segmentation_ready?
-    if status_complete? && valid? && segmentation.present?
-      if episode.segment_count.nil?
-        segmentation.present?
-      else
-        segmentation&.count.to_i == episode.segment_count
-      end
+    if status_complete? && valid? && segmentation_matches_segment_count?
+      last_start, last_end = segmentation.last
+      last_start.to_f < duration && last_end.to_f < duration
     else
       false
+    end
+  end
+
+  def sanitize_segmentation
+    (segmentation || []).filter_map do |start, stop|
+      if start.to_f < duration && stop.to_f < duration
+        [start, stop]
+      elsif start.to_f < duration
+        [start, nil]
+      end
     end
   end
 
@@ -73,6 +79,14 @@ class Uncut < MediaResource
   end
 
   private
+
+  def segmentation_matches_segment_count?
+    if segmentation.present?
+      episode.segment_count.nil? || segmentation&.count.to_i == episode.segment_count
+    else
+      false
+    end
+  end
 
   def valid_segments?(segs)
     return false unless segs.is_a?(Array) && segs.present?

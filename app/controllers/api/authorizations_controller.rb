@@ -8,4 +8,8 @@ class Api::AuthorizationsController < Api::BaseController
   def resource
     authorization
   end
+
+  def show_cache_path
+    authorization.cache_key
+  end
 end

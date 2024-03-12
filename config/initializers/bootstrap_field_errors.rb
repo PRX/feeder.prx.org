@@ -4,7 +4,7 @@
 # wrapping them in a div that breaks bootstrap layouts
 ActionView::Base.field_error_proc = proc do |html_tag, instance|
   feedback = ""
-  if html_tag.match(/^<(input|textarea|select)/) && instance.error_message.present?
+  if html_tag.match(/^<(input|textarea|select|trix-editor)/) && instance.error_message.present?
     msg = instance.error_message.join(", ").capitalize
     feedback = "<div class=\"invalid-feedback\">#{msg}</div>"
   end
@@ -12,7 +12,7 @@ ActionView::Base.field_error_proc = proc do |html_tag, instance|
   if html_tag.match?(/class="(.*?)"/)
     (html_tag.sub(/class="(.*?)"/, 'class="\1 is-invalid"') + feedback).html_safe
   else
-    (html_tag.sub(/(\/>|>)/, 'class="is-invalid" \1') + feedback).html_safe
+    (html_tag.sub(/^(<[^ ]+) /, '\1 class="is-invalid" ') + feedback).html_safe
   end
 end
 

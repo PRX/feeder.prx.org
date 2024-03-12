@@ -49,6 +49,14 @@
         <td><%= t(".errors") %></td>
         <td><%= import.episode_imports.errors.count %></td>
       </tr>
+      <% if import.is_a?(PodcastTimingsImport) %>
+        <% import.ad_breaks&.each do |breaks, count| %>
+          <tr>
+            <td><%= t(".breaks", count: breaks.to_i) %></td>
+            <td><%= count %></td>
+          </tr>
+        <% end %>
+      <% end %>
     </table>
   </div>
 </div>

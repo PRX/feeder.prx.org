@@ -10,6 +10,8 @@ class Episode < ApplicationRecord
   include PublishingStatus
   include TextSanitizer
   include EmbedPlayerHelper
+  include AppleDelivery
+  include ReleaseEpisodes
 
   MAX_SEGMENT_COUNT = 10
   VALID_ITUNES_TYPES = %w[full trailer bonus]
@@ -34,18 +36,9 @@ class Episode < ApplicationRecord
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
 
-  has_one :apple_sync_log, -> { episodes }, foreign_key: :feeder_id, class_name: "SyncLog"
-  has_one :apple_podcast_delivery, class_name: "Apple::PodcastDelivery"
-  has_one :apple_podcast_container, class_name: "Apple::PodcastContainer"
-  has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
-    class_name: "Apple::PodcastDelivery"
-  has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
-    class_name: "Apple::PodcastDeliveryFile"
-  has_many :apple_episode_delivery_statuses, -> { order(created_at: :desc) }, dependent: :destroy, class_name: "Apple::EpisodeDeliveryStatus"
-
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
-  validates :description, bytesize: {maximum: 4000}, if: :strict_validations
+  validates :description, bytesize: {maximum: 4000}, if: -> { strict_validations && description_changed? }
   validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
   alias_error_messages :item_guid, :original_guid
@@ -63,11 +56,12 @@ class Episode < ApplicationRecord
   after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
 
   scope :published, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at <= now()") }
-  scope :published_by, ->(offset) { where("episodes.published_at IS NOT NULL AND episodes.published_at <= ?", Time.now + offset) }
+  scope :published_by, ->(offset) { where("episodes.published_at IS NOT NULL AND episodes.published_at <= ?", Time.now - offset) }
   scope :draft, -> { where("episodes.published_at IS NULL") }
   scope :scheduled, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at > now()") }
   scope :draft_or_scheduled, -> { draft.or(scheduled) }
-  scope :after, ->(time) { where("#{DROP_DATE} > ?", time) }
+  scope :after, ->(time) { where("#{DROP_DATE} >= ?", time) }
+  scope :before, ->(time) { where("#{DROP_DATE} < ?", time) }
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
   scope :dropdate_asc, -> { reorder(Arel.sql("#{DROP_DATE} ASC NULLS FIRST")) }
   scope :dropdate_desc, -> { reorder(Arel.sql("#{DROP_DATE} DESC NULLS LAST")) }
@@ -76,21 +70,6 @@ class Episode < ApplicationRecord
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
-  alias_method :podcast_container, :apple_podcast_container
-
-  def self.release_episodes!(_options = {})
-    podcasts = []
-    episodes_to_release.each do |e|
-      Rails.logger.info("Releasing episode", podcast_id: e.podcast_id, episode_id: e.id)
-      podcasts << e.podcast
-      e.touch
-    end
-    podcasts.uniq.each { |p| p.publish_updated && p.publish! }
-  end
-
-  def self.episodes_to_release
-    where("published_at > updated_at AND published_at <= now()").all
-  end
 
   def self.by_prx_story(story)
     Episode.find_by(prx_uri: story_uri(story))
@@ -105,38 +84,8 @@ class Episode < ApplicationRecord
     guid
   end
 
-  def apple_file_errors?
-    # TODO: for now these are all considered audio files
-
-    apple_delivery_file_errors.present?
-  end
-
-  def apple_delivery_file_errors
-    # TODO: for now these are all considered audio files
-
-    apple_delivery_files.map { |p| p.asset_processing_state["errors"] }.flatten
-  end
-
-  def apple_episode_delivery_status
-    apple_episode_delivery_statuses.order(created_at: :desc).first
-  end
-
-  def apple_needs_delivery?
-    return true if apple_episode_delivery_status.nil?
-
-    apple_episode_delivery_status.delivered == false
-  end
-
-  def apple_needs_delivery!
-    apple_episode_delivery_statuses.create!(delivered: false)
-    apple_episode_delivery_statuses.reset
-    apple_episode_delivery_status
-  end
-
-  def apple_has_delivery!
-    apple_episode_delivery_statuses.create!(delivered: true)
-    apple_episode_delivery_statuses.reset
-    apple_episode_delivery_status
+  def generate_item_guid
+    self.class.generate_item_guid(podcast_id, guid)
   end
 
   def self.generate_item_guid(podcast_id, episode_guid)
@@ -195,7 +144,6 @@ class Episode < ApplicationRecord
 
   def set_defaults
     guid
-    self.url ||= embed_player_landing_url(podcast, self)
     self.segment_count ||= 1 if new_record? && strict_validations
   end
 
@@ -212,12 +160,37 @@ class Episode < ApplicationRecord
     (explicit || podcast&.explicit) == "true"
   end
 
+  # UI displays nil as "inherit"
+  def explicit_option
+    explicit.nil? ? "inherit" : explicit
+  end
+
+  def explicit_option=(value)
+    self.explicit = ((value == "inherit") ? nil : value)
+  end
+
+  def explicit_option_was
+    explicit_was.nil? ? "inherit" : explicit_was
+  end
+
   def item_guid
-    original_guid || self.class.generate_item_guid(podcast_id, guid)
+    original_guid || generate_item_guid
   end
 
   def item_guid=(new_guid)
-    self.original_guid = new_guid.blank? ? nil : new_guid
+    self.original_guid = (new_guid.blank? || new_guid == generate_item_guid) ? nil : new_guid
+  end
+
+  def url
+    super || embed_player_landing_url(podcast, self)
+  end
+
+  def url=(new_url)
+    super(embed_url?(new_url) ? nil : new_url)
+  end
+
+  def url_was
+    super || embed_player_landing_url(podcast, self)
   end
 
   def medium=(new_medium)
@@ -225,7 +198,7 @@ class Episode < ApplicationRecord
 
     if medium_changed? && medium_was.present?
       if medium_was == "uncut" && medium == "audio"
-        uncut&.mark_for_replacement
+        uncut&.mark_for_destruction
       elsif medium_was == "audio" && medium == "uncut"
         if (c = contents.first)
           build_uncut.tap do |u|
@@ -237,9 +210,9 @@ class Episode < ApplicationRecord
             u.original_url = (c.status_complete? && is_old) ? c.url : c.original_url
           end
         end
-        contents.each(&:mark_for_replacement)
+        contents.each(&:mark_for_destruction)
       else
-        contents.each(&:mark_for_replacement)
+        contents.each(&:mark_for_destruction)
       end
     end
 
@@ -268,11 +241,16 @@ class Episode < ApplicationRecord
     uncut&.copy_media(force)
   end
 
-  def apple_mark_for_reupload!
+  def apple_prepare_for_delivery!
     # remove the previous delivery attempt (soft delete)
     apple_podcast_deliveries.map(&:destroy)
     apple_podcast_deliveries.reset
+    apple_podcast_delivery_files.reset
     apple_podcast_container&.podcast_deliveries&.reset
+  end
+
+  def apple_mark_for_reupload!
+    apple_prepare_for_delivery!
     apple_needs_delivery!
   end
 
@@ -296,10 +274,10 @@ class Episode < ApplicationRecord
   end
 
   def include_in_feed?
-    if no_media?
-      true
-    else
+    if media?
       complete_media?
+    else
+      true
     end
   end
 
@@ -372,7 +350,7 @@ class Episode < ApplicationRecord
   end
 
   def validate_media_ready
-    return if published_at.blank? || no_media?
+    return unless published_at.present? && media?
 
     # media must be complete on _initial_ publish
     # otherwise - having files in any status is good enough

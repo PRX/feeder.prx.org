@@ -4,7 +4,7 @@ class PodcastTimingsImport < PodcastImport
   SAMPLE_ROWS = 10
   SAMPLE_PERCENT = 0.50
 
-  store :config, accessors: [:file_name, :timings, :guid_index, :timings_index, :has_header], coder: JSON
+  store :config, accessors: [:file_name, :timings, :guid_index, :timings_index, :has_header, :ad_breaks], coder: JSON
 
   has_many :episode_imports, dependent: :destroy, class_name: "EpisodeTimingsImport", foreign_key: :podcast_import_id
 
@@ -33,7 +33,7 @@ class PodcastTimingsImport < PodcastImport
   end
 
   def maximum_guid_length
-    @maximum_guid_length ||= [podcast&.episodes&.minimum("length(original_guid)"), default_guid_length].compact.max
+    @maximum_guid_length ||= [podcast&.episodes&.maximum("length(original_guid)"), default_guid_length].compact.max
   end
 
   def has_episode_with_guid?(guid)
@@ -47,6 +47,7 @@ class PodcastTimingsImport < PodcastImport
   def validate_timings
     return errors.add(:timings, :blank) if timings.blank?
     return errors.add(:timings, :not_csv) if csv.blank? || csv[0].count < 2
+    return errors.add(:timings, :embedded_newlines) if csv.any? { |row| has_newlines?(row) }
 
     # sample to find guid column
     sample_rows = csv.first(SAMPLE_ROWS)
@@ -76,6 +77,9 @@ class PodcastTimingsImport < PodcastImport
     # cleanup existing dups - they may be recreated later
     episode_imports.status_duplicate.destroy_all
 
+    # reset ad break stats
+    self.ad_breaks = {}
+
     guids = []
     rows = has_header ? csv[1..] : csv
 
@@ -93,6 +97,11 @@ class PodcastTimingsImport < PodcastImport
         ei.timings = timings
         ei.save!
         ei.import_later
+
+        breaks = ei.parse_timings
+        unless breaks.nil?
+          ad_breaks[breaks.count] = ad_breaks[breaks.count].to_i + 1
+        end
       end
     end
 
@@ -114,6 +123,10 @@ class PodcastTimingsImport < PodcastImport
     end
   rescue
     nil
+  end
+
+  def has_newlines?(row)
+    row.any? { |col| col&.include?("\n") || col&.include?("\r") }
   end
 
   def find_guid_index(row)

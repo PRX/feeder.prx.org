@@ -1,17 +1,17 @@
-<div data-controller="form-select" data-form-select-help-value="<%= t(".help.types").to_json %>">
+<div>
   <div class="form-floating input-group">
-    <%= select_tag :embed_player_type, embed_player_type_options(player_options[:embed_player_type]), class: "form-select", data: {action: "embed-preview#changeType form-select#updateHelp"} %>
+    <%= select_tag :embed_player_type, embed_player_type_options(player_options[:embed_player_type]), class: "form-select", data: {action: "dynamic-form#change"} %>
     <%= label_tag :embed_player_type, t("helpers.label.podcast_player.embed_player_type") %>
   </div>
 
-  <div class="form-text" data-form-select-target="help">
+  <div class="form-text">
     <%= t(".help.types.#{player_options[:embed_player_type] || "standard"}") %>
   </div>
 </div>
 
 <div>
   <div class="form-floating input-group">
-    <%= number_field_tag :max_width, player_options[:max_width], min: 300, class: "form-control", data: {action: "embed-preview#changeMaxWidth"}, placeholder: "100%", autocomplete: "off" %>
+    <%= number_field_tag :max_width, player_options[:max_width], min: 300, class: "form-control", placeholder: "100%", autocomplete: "off", data: {action: "dynamic-form#change"} %>
     <%= label_tag :max_width, t("helpers.label.podcast_player.max_width") %>
     <span class="input-group-text" id="basic-addon2">px</span>
   </div>
@@ -29,13 +29,13 @@
     </div>
 
     <div class="row">
-      <div class="col-12" data-controller="form-select" data-form-select-help-value="<%= t(".help.themes").to_json %>">
+      <div class="col-12">
         <div class="form-floating input-group">
-          <%= select_tag :embed_player_theme, embed_player_theme_options(player_options[:embed_player_theme]), class: "form-select", data: {action: "embed-preview#changeTheme form-select#updateHelp"} %>
+          <%= select_tag :embed_player_theme, embed_player_theme_options(player_options[:embed_player_theme]), class: "form-select", data: {action: "dynamic-form#change"} %>
           <%= label_tag :embed_player_theme, t("helpers.label.podcast_player.embed_player_theme") %>
         </div>
 
-        <div class="form-text" data-form-select-target="help">
+        <div class="form-text">
           <%= t(".help.themes.#{player_options[:embed_player_theme] || "dark"}") %>
         </div>
       </div>
@@ -45,7 +45,7 @@
       <div class="col-12">
       <%= label_tag :accent_color, t("helpers.label.podcast_player.accent_color") %>
         <div class="input-group">
-          <%= tag.input type: "color", value: player_options[:accent_color][0], class: "form-control form-control-color", data: {embed_preview_target: "accentColor", action: "embed-preview#changeAccentColor"} %>
+          <%= tag.input type: "color", name: :accent_color, value: player_options[:accent_color], class: "form-control form-control-color", data: {action: "dynamic-form#change"} %>
         </div>
 
         <div class="form-text">

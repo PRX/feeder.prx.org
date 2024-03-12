@@ -54,6 +54,18 @@ describe Podcast do
     assert podcast.itunes_block
   end
 
+  it "gets and sets link" do
+    p = build_stubbed(:podcast, link: nil)
+    assert_includes p.link, "play.prx.org"
+    assert_nil p[:link]
+
+    p.link = "http://some.where/else"
+    assert_equal "http://some.where/else", p[:link]
+
+    p.link = "https://play.prx.org/any/thing"
+    assert_nil p[:link]
+  end
+
   describe "publishing" do
     it "creates a publish job on publish" do
       PublishingPipelineState.stub(:start_pipeline!, "published!") do
@@ -65,26 +77,6 @@ describe Podcast do
       PublishingPipelineState.stub(:start_pipeline!, "published!") do
         podcast.locked = true
         refute_equal StartPublishingPipelineJob, podcast.publish!.class
-      end
-    end
-
-    describe ".release!" do
-      it "cleans up dead publishing pipelines" do
-        obj = Minitest::Mock.new
-        obj.expect :call, nil
-        PublishingPipelineState.stub(:expire_pipelines!, obj) do
-          Podcast.release!
-        end
-        obj.verify
-      end
-
-      it "retries latest publishing pipelines with errors" do
-        obj = Minitest::Mock.new
-        obj.expect :call, nil
-        PublishingPipelineState.stub(:retry_failed_pipelines!, obj) do
-          Podcast.release!
-        end
-        obj.verify
       end
     end
   end

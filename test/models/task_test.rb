@@ -53,6 +53,36 @@ describe Task do
     end
   end
 
+  describe "#bad_audio_duration?" do
+    it "checks for duration discrepancy over 500ms" do
+      refute task.bad_audio_duration?
+
+      task.result = build(:porter_job_results)
+      refute task.bad_audio_duration?
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:DurationDiscrepancy] = 500
+      refute task.bad_audio_duration?
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:DurationDiscrepancy] = 501
+      assert task.bad_audio_duration?
+    end
+  end
+
+  describe "#bad_audio_bytes?" do
+    it "checks for unidentified audio bytes" do
+      refute task.bad_audio_bytes?
+
+      task.result = build(:porter_job_results)
+      refute task.bad_audio_bytes?
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:UnidentifiedBytes] = 0
+      refute task.bad_audio_bytes?
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:UnidentifiedBytes] = 1
+      assert task.bad_audio_bytes?
+    end
+  end
+
   describe "#start!" do
     it "starts a porter job" do
       task.stub(:source_url, "http://some/file.mp3") do

@@ -21,4 +21,9 @@
       &mdash;
     <% end %>
   </td>
+  <% if episode_import.is_a?(EpisodeTimingsImport) %>
+    <td class="pb-0">
+      <code><%= episode_import.timings %></code>
+    </td>
+  <% end %>
 </tr>

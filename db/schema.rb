@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_11_14_155433) do
+ActiveRecord::Schema[7.0].define(version: 2024_02_06_213452) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -34,6 +34,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_14_155433) do
     t.bigint "episode_id", null: false
     t.boolean "delivered", default: false
     t.datetime "created_at", null: false
+    t.string "source_url"
+    t.string "source_filename"
+    t.bigint "source_size"
+    t.text "enclosure_url"
+    t.integer "source_fetch_count", default: 0
+    t.bigint "source_media_version_id"
     t.index ["episode_id", "created_at", "delivered", "id"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at"
     t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
   end
@@ -284,7 +290,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_14_155433) do
     t.string "guid"
     t.integer "status"
     t.datetime "deleted_at", precision: nil
-    t.datetime "replaced_at", precision: nil
     t.text "segmentation"
     t.index ["episode_id"], name: "index_media_resources_on_episode_id"
     t.index ["guid"], name: "index_media_resources_on_guid", unique: true
