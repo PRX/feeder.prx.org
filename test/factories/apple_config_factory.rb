@@ -3,10 +3,7 @@ FactoryBot.define do
     publish_enabled { true }
     sync_blocks_rss { true }
     key { build(:apple_key) }
-
-    transient do
-      podcast { build(:podcast) }
-    end
+    podcast
 
     # set up the private and public feeds
     before(:create) do |apple_config, evaluator|

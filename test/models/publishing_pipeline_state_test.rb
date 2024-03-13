@@ -299,6 +299,7 @@ describe PublishingPipelineState do
         f1, f2, _f3 = podcast.feeds
 
         create(:apple_config,
+          podcast: podcast,
           public_feed: f1,
           private_feed: f2,
           publish_enabled: true)

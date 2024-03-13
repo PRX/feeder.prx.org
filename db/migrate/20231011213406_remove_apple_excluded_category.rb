@@ -14,6 +14,8 @@ class RemoveAppleExcludedCategory < ActiveRecord::Migration[7.0]
       pub.poll!(eps)
 
       Apple::Config.mark_as_delivered!(pub)
+    rescue => e
+      Rails.logger.error("Error on RemoveAppleExcludedCategory", {error: e.message, backtrace: e.backtrace[0, 2].join("\n")})
     end
   end
 end

@@ -17,25 +17,36 @@ describe Apple::Config do
     end
 
     it "is unique to a public and private feed" do
-      f1 = create(:feed)
-      f2 = create(:feed)
-      f3 = create(:feed)
-      f4 = create(:feed)
+      podcast1 = create(:podcast)
+      podcast2 = create(:podcast)
+      f1 = create(:feed, podcast: podcast1)
+      f2 = create(:feed, podcast: podcast1)
+      f3 = create(:feed, podcast: podcast2)
+      f4 = create(:feed, podcast: podcast2)
 
-      c1 = create(:apple_config, public_feed: f1, private_feed: f2)
+      c1 = create(:apple_config, podcast: podcast1, public_feed: f1, private_feed: f2)
       assert c1.valid?
 
-      c2 = build(:apple_config, public_feed: f1, private_feed: f2)
+      c2 = build(:apple_config, podcast: podcast1, public_feed: f1, private_feed: f2)
       refute c2.valid?
 
-      c3 = build(:apple_config, public_feed: f1, private_feed: f3)
-      assert c3.valid?
+      c3 = build(:apple_config, podcast: podcast1, public_feed: f1, private_feed: f3)
+      refute c3.valid?
 
-      c4 = build(:apple_config, public_feed: f4, private_feed: f2)
-      assert c4.valid?
+      c4 = build(:apple_config, podcast: podcast2, public_feed: f4, private_feed: f2)
+      refute c4.valid?
 
-      c5 = build(:apple_config, public_feed: f1, private_feed: f1)
+      c5 = build(:apple_config, podcast: podcast1, public_feed: f1, private_feed: f1)
       refute c5.valid?
+
+      c6 = build(:apple_config, podcast: podcast2, public_feed: f3, private_feed: f4)
+      assert c6.valid?
+
+      c7 = build(:apple_config, podcast: podcast2, public_feed: f4, private_feed: f3)
+      assert c7.valid?
+
+      c7 = build(:apple_config, podcast: podcast2, public_feed: f4, private_feed: f4)
+      refute c7.valid?
     end
 
     it "is unique to a podcast" do
@@ -45,12 +56,12 @@ describe Apple::Config do
       f3 = create(:feed, podcast: podcast)
       f4 = create(:feed, podcast: podcast)
 
-      c1 = create(:apple_config, public_feed: f1, private_feed: f2)
+      c1 = create(:apple_config, podcast: podcast, public_feed: f1, private_feed: f2)
       assert c1.valid?
 
-      c2 = build(:apple_config, public_feed: f3, private_feed: f4)
+      c2 = build(:apple_config, podcast: podcast, public_feed: f3, private_feed: f4)
       refute c2.valid?
-      assert_equal ["can only have one apple config"], c2.errors[:podcast]
+      assert_equal ["has already been taken"], c2.errors[:podcast]
     end
   end
 end

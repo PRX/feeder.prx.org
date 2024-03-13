@@ -23,7 +23,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_02_06_213452) do
     t.boolean "publish_enabled", default: false, null: false
     t.boolean "sync_blocks_rss", default: false, null: false
     t.bigint "key_id"
+    t.integer "podcast_id"
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
+    t.index ["podcast_id"], name: "index_apple_configs_on_podcast_id", unique: true
     t.index ["private_feed_id"], name: "index_apple_configs_on_private_feed_id"
     t.index ["public_feed_id"], name: "index_apple_configs_on_public_feed_id"
   end

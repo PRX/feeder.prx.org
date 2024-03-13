@@ -31,18 +31,15 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_apple(feed)
-    feed.apple_configs.map do |config|
-      if feed.publish_to_apple?(config)
-        res = PublishAppleJob.perform_now(config)
-        PublishingPipelineState.publish_apple!(feed.podcast)
-        res
-      end
-    rescue => e
-      NewRelic::Agent.notice_error(e)
-      res = PublishingPipelineState.error_apple!(feed.podcast)
-      raise e if config.sync_blocks_rss?
-      res
-    end
+    return unless feed.publish_to_apple?
+    res = PublishAppleJob.perform_now(feed.apple_config)
+    PublishingPipelineState.publish_apple!(feed.podcast)
+    res
+  rescue => e
+    NewRelic::Agent.notice_error(e)
+    res = PublishingPipelineState.error_apple!(feed.podcast)
+    raise e if feed.apple_config.sync_blocks_rss?
+    res
   end
 
   def publish_rss(podcast, feed)

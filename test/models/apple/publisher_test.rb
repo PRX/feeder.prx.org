@@ -100,7 +100,7 @@ describe Apple::Publisher do
     let(:podcast) { create(:podcast) }
     let(:public_feed) { create(:feed, podcast: podcast, private: false) }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
-    let(:apple_config) { create(:apple_config, public_feed: public_feed, private_feed: private_feed) }
+    let(:apple_config) { create(:apple_config, podcast: podcast, public_feed: public_feed, private_feed: private_feed) }
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
     let(:apple_publisher) { apple_config.build_publisher }
