@@ -14,7 +14,7 @@ services:
       RAILS_ENV: test
       POSTGRES_HOST: db
   db:
-    image: postgres
+    image: postgres:16.2-alpine
     env_file:
       - env-example
     expose:
