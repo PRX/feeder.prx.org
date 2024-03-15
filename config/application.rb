@@ -121,7 +121,7 @@ module Feeder
         params: controller.request.params.except(*%w[controller action format id]),
         user_agent: controller.request.user_agent,
         user_id: controller.try(:api_admin_token?) ? "admin-token" : controller.prx_auth_token&.user_id&.to_i,
-        user_ip: controller.request.ip,
+        user_ip: controller.request.ip
       }
     end
 
