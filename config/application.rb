@@ -116,17 +116,18 @@ module Feeder
     end
 
     config.lograge.enabled = true
-    config.lograge.custom_options = lambda do |event|
-      exceptions = %w[controller action format id]
+    config.lograge.custom_payload do |controller|
       {
-        user_id: event.payload[:request].session.dig("prx.auth.info", "sub"),
-        params: event.payload[:params].except(*exceptions)
+        params: controller.request.params.except(*%w[controller action format id]),
+        user_agent: controller.request.user_agent,
+        user_id: controller.try(:api_admin_token?) ? "admin-token" : controller.prx_auth_token&.user_id&.to_i,
+        user_ip: controller.request.ip
       }
     end
 
     config.lograge.formatter = Class.new do |fmt|
       def fmt.call(data)
-        {msg: "Request", request: data}
+        {msg: "Request", request: data.without(*%w[unpermitted_params])}
       end
     end
 
