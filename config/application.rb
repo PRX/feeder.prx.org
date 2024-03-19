@@ -122,8 +122,9 @@ module Feeder
         params: controller.request.params.except(*exclude),
         user_agent: controller.request.user_agent,
         user_id: controller.try(:api_admin_token?) ? "admin-token" : controller.prx_auth_token&.user_id&.to_i,
-        user_ip: controller.request.ip
-      }
+        user_ip: controller.request.ip,
+        user_ref: controller.request.referrer
+      }.compact
     end
 
     config.lograge.ignore_custom = lambda do |event|
