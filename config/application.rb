@@ -117,17 +117,26 @@ module Feeder
 
     config.lograge.enabled = true
     config.lograge.custom_payload do |controller|
+      exclude = %w[controller action format id authenticity_token access_token id_token]
       {
-        params: controller.request.params.except(*%w[controller action format id]),
+        params: controller.request.params.except(*exclude),
         user_agent: controller.request.user_agent,
         user_id: controller.try(:api_admin_token?) ? "admin-token" : controller.prx_auth_token&.user_id&.to_i,
         user_ip: controller.request.ip
       }
     end
 
+    config.lograge.ignore_custom = lambda do |event|
+      if event.payload[:path] == "/" && event.payload[:status] == 302
+        true
+      elsif event.payload[:path] == "/api/v1"
+        true
+      end
+    end
+
     config.lograge.formatter = Class.new do |fmt|
       def fmt.call(data)
-        {msg: "Request", request: data.without(*%w[unpermitted_params])}
+        {msg: "Request", request: data.without(*%i[unpermitted_params])}
       end
     end
 
