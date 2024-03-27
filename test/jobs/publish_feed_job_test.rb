@@ -82,8 +82,8 @@ describe PublishFeedJob do
 
   describe "publishing to apple" do
     it "does not schedule publishing to apple if there is no apple config" do
-      assert_equal nil, feed.apple_config
-      assert_equal nil, job.publish_apple(feed)
+      assert_nil feed.apple_config
+      assert_nil job.publish_apple(feed)
     end
 
     describe "when the apple config is present" do
@@ -92,7 +92,7 @@ describe PublishFeedJob do
       it "does not schedule publishing to apple if the config is marked as not publishable" do
         apple_config.update!(publish_enabled: false)
         assert_equal apple_config, feed.apple_config.reload
-        assert_equal nil, job.publish_apple(feed)
+        assert_nil job.publish_apple(feed)
       end
 
       it "does run the apple publishing if the config is present and marked as publishable" do
