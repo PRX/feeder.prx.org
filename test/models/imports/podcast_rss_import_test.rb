@@ -147,6 +147,13 @@ describe PodcastRssImport do
       "https://pts.podtrac.com/redirect.mp3/pdst.fm/e/chtbl.com/track/7E7E1F/blah"
     end
 
+    it "looks for an owner" do
+      owner = OpenStruct.new(name: "n", email: "e")
+      importer.owner(nil).must_equal({})
+      importer.owner([]).must_equal({})
+      importer.owner([owner]).must_equal({"name" => "n", "email" => "e"})
+    end
+
     it "can make a good guess for an enclosure prefix" do
       item = feed.entries.first
       _(importer.enclosure_prefix(item)).must_equal "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/"

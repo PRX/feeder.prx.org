@@ -229,6 +229,8 @@ class PodcastRssImport < PodcastImport
   def owner(itunes_owners)
     if (o = itunes_owners.try(:first))
       {name: clean_string(o.name), email: clean_string(o.email)}.with_indifferent_access
+    else
+      {}
     end
   end
 
