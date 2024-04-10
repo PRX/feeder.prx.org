@@ -10,24 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_02_06_213452) do
+ActiveRecord::Schema[7.0].define(version: 2024_04_10_212602) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
 
   create_table "apple_configs", force: :cascade do |t|
-    t.bigint "public_feed_id", null: false
-    t.bigint "private_feed_id", null: false
+    t.bigint "feed_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "publish_enabled", default: false, null: false
     t.boolean "sync_blocks_rss", default: false, null: false
     t.bigint "key_id"
-    t.integer "podcast_id"
+    t.index ["feed_id"], name: "index_apple_configs_on_feed_id"
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
-    t.index ["podcast_id"], name: "index_apple_configs_on_podcast_id", unique: true
-    t.index ["private_feed_id"], name: "index_apple_configs_on_private_feed_id"
-    t.index ["public_feed_id"], name: "index_apple_configs_on_public_feed_id"
   end
 
   create_table "apple_episode_delivery_statuses", force: :cascade do |t|
@@ -451,8 +447,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_02_06_213452) do
     t.index ["status"], name: "index_tasks_on_status"
   end
 
-  add_foreign_key "apple_configs", "feeds", column: "private_feed_id"
-  add_foreign_key "apple_configs", "feeds", column: "public_feed_id"
+  add_foreign_key "apple_configs", "feeds"
   add_foreign_key "apple_episode_delivery_statuses", "episodes"
   add_foreign_key "episode_imports", "podcast_imports"
   add_foreign_key "feed_images", "feeds"
