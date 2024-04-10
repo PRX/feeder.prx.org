@@ -4,7 +4,7 @@ require "test_helper"
 
 describe Apple::Publisher do
   let(:podcast) { create(:podcast) }
-  let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+  let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:feed, podcast: podcast, private: true) }
   let(:apple_config) { build(:apple_config) }
   let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
@@ -49,7 +49,7 @@ describe Apple::Publisher do
   describe "#filter_episodes_to_sync" do
     let(:podcast) { create(:podcast) }
 
-    let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+    let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
 
     let(:apple_config) { build(:apple_config) }
@@ -98,9 +98,9 @@ describe Apple::Publisher do
 
   describe "Archive and Unarchive flows" do
     let(:podcast) { create(:podcast) }
-    let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+    let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
-    let(:apple_config) { create(:apple_config, podcast: podcast, public_feed: public_feed, private_feed: private_feed) }
+    let(:apple_config) { create(:apple_config, feed: private_feed) }
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
     let(:apple_publisher) { apple_config.build_publisher }

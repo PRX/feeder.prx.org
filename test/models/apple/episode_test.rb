@@ -5,7 +5,7 @@ require "test_helper"
 describe Apple::Episode do
   let(:podcast) { create(:podcast) }
 
-  let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+  let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
 
   let(:apple_config) { build(:apple_config) }

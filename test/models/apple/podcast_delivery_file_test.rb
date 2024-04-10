@@ -71,7 +71,7 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       }
       let(:podcast) { create(:podcast) }
 
-      let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+      let(:public_feed) { podcast.default_feed }
       let(:private_feed) { create(:feed, podcast: podcast, private: true, tokens: [FeedToken.new]) }
 
       let(:apple_config) { build(:apple_config) }

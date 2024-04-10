@@ -5,9 +5,9 @@ require "test_helper"
 describe Apple::Show do
   let(:podcast) { create(:episode).podcast }
   let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
-  let(:public_feed) { create(:feed, podcast: podcast, private: false) }
+  let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
-  let(:apple_config) { build(:apple_config, podcast: podcast, public_feed: public_feed, private_feed: private_feed) }
+  let(:apple_config) { build(:apple_config, feed: private_feed) }
   let(:apple_show) { Apple::Show.connect_existing("123", apple_config) }
 
   before do
@@ -158,7 +158,7 @@ describe Apple::Show do
   end
 
   describe ".connect_existing" do
-    let(:apple_config) { create(:apple_config, podcast: podcast, public_feed: public_feed, private_feed: private_feed) }
+    let(:apple_config) { create(:apple_config, feed: private_feed) }
 
     it "should take in the apple show id an apple credentials object" do
       apple_config.save!
@@ -256,7 +256,7 @@ describe Apple::Show do
 
     it "returns an authed url if private" do
       assert_equal apple_show.feed_published_url,
-        "https://p.prxu.org/#{public_feed.podcast.path}/#{public_feed.slug}/feed-rss.xml?auth=" + public_feed.tokens.first.token
+        "https://p.prxu.org/#{public_feed.podcast.path}/feed-rss.xml?auth=" + public_feed.tokens.first.token
     end
 
     it "raises an error when there is no token" do
