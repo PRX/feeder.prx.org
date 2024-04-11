@@ -104,9 +104,7 @@ module Apple
     end
 
     def publish_to_apple?
-      return false unless key&.valid?
-
-      public_feed.publish_to_apple?
+      !!key&.valid? && publish_enabled?
     end
 
     def build_publisher
