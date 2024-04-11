@@ -55,12 +55,7 @@ module Apple
         raise "Stopping build_apple_config" if $stdin.gets.chomp.downcase != "y"
       end
 
-      Apple::Config.new(
-        podcast: podcast,
-        public_feed: podcast.default_feed,
-        private_feed: find_or_build_private_feed(podcast),
-        key: key
-      )
+      Apple::Config.new(feed: find_or_build_private_feed(podcast), key: key)
     end
 
     def self.mark_as_delivered!(apple_publisher)
