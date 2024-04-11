@@ -17,6 +17,10 @@ module AppleDelivery
     alias_method :apple_status, :apple_episode_delivery_status
   end
 
+  def publish_to_apple?
+    podcast.apple_config&.publish_to_apple?
+  end
+
   def apple_update_delivery_status(attrs)
     new_status = (apple_episode_delivery_status&.dup || apple_episode_delivery_statuses.build)
     new_status.assign_attributes(**attrs)

@@ -30,6 +30,19 @@
     <div class="col-12">
       <%= render "form_dropdate", form: form, episode: episode %>
     </div>
+
+    <% if episode.persisted? && episode.publish_to_apple? %>
+      <div class="col-12 mt-4">
+        <p class="status-text">
+          <strong><%= t(".apple_status") %>:</strong>
+          <span class="badge rounded-pill prx-badge-<%= episode_apple_status(episode) %>">
+            <%= t("helpers.label.episode.media_statuses.#{episode_apple_status(episode)}") %>
+          </span>
+          <br>
+          <%= local_time_ago(episode_apple_updated_at(episode)) %>
+        </p>
+      </div>
+    <% end %>
   </div>
 
   <div class="card-footer d-flex align-items-center justify-content-between">
