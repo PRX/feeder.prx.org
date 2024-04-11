@@ -15,6 +15,24 @@ module EpisodesHelper
     end
   end
 
+  def episode_apple_status(episode)
+    if episode.apple_status.nil?
+      "not_found"
+    elsif episode.apple_status.delivered?
+      "complete"
+    else
+      "incomplete"
+    end
+  end
+
+  def episode_apple_updated_at(episode)
+    if episode.apple_status.nil?
+      Time.now
+    else
+      episode.apple_status.created_at
+    end
+  end
+
   def episode_status_class(episode)
     case episode.publishing_status_was
     when "draft"

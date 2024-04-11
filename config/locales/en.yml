@@ -384,6 +384,10 @@ en:
           draft: Draft
           published: Published
           scheduled: Scheduled
+        apple_statuses:
+          complete: Complete
+          incomplete: Incomplete
+          not_found: Unknown
         season_number: Season Number
         segment_count: Number of Segments
         subtitle: Subtitle
@@ -548,6 +552,7 @@ en:
       title_published: Published
       title_scheduled: Scheduled
       unpublish: Unpublish
+      apple_status: Apple Status
     form_tags:
       title: Categories
       help:
