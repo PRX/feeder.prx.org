@@ -149,9 +149,9 @@ describe PodcastRssImport do
 
     it "looks for an owner" do
       owner = OpenStruct.new(name: "n", email: "e")
-      importer.owner(nil).must_equal({})
-      importer.owner([]).must_equal({})
-      importer.owner([owner]).must_equal({"name" => "n", "email" => "e"})
+      _(importer.owner(nil)).must_equal({})
+      _(importer.owner([])).must_equal({})
+      _(importer.owner([owner])).must_equal({"name" => "n", "email" => "e"})
     end
 
     it "can make a good guess for an enclosure prefix" do
