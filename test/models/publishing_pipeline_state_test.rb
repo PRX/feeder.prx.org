@@ -252,7 +252,7 @@ describe PublishingPipelineState do
     describe "error!" do
       it 'sets the status to "error"' do
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_feed, ->(*args) { raise "error" }) do
+          PublishFeedJob.stub_any_instance(:publish_apple, ->(*args) { raise "error" }) do
             assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
           end
         end
@@ -264,8 +264,10 @@ describe PublishingPipelineState do
     describe "complete!" do
       it 'sets the status to "complete"' do
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_feed, "pub!") do
-            PublishingPipelineState.attempt!(podcast, perform_later: false)
+          PublishFeedJob.stub_any_instance(:publish_apple, "pub!") do
+            PublishFeedJob.stub_any_instance(:publish_rss, "pub!") do
+              PublishingPipelineState.attempt!(podcast, perform_later: false)
+            end
           end
         end
 
@@ -277,8 +279,10 @@ describe PublishingPipelineState do
         PublishingQueueItem.create!(podcast: podcast)
 
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_feed, "pub!") do
-            PublishingPipelineState.attempt!(podcast, perform_later: false)
+          PublishFeedJob.stub_any_instance(:publish_apple, "pub!") do
+            PublishFeedJob.stub_any_instance(:publish_rss, "pub!") do
+              PublishingPipelineState.attempt!(podcast, perform_later: false)
+            end
           end
         end
 
@@ -292,21 +296,13 @@ describe PublishingPipelineState do
     end
 
     describe "Apple publishing" do
-      before do
-        2.times { create(:private_feed, podcast: podcast) }
-        podcast.reload
-
-        f1, f2, _f3 = podcast.feeds
-
-        create(:apple_config,
-          podcast: podcast,
-          public_feed: f1,
-          private_feed: f2,
-          publish_enabled: true)
-      end
+      let(:f1) { podcast.default_feed }
+      let(:f2) { create(:private_feed, podcast: podcast) }
+      let(:f3) { create(:private_feed, podcast: podcast) }
+      let(:apple_config) { create(:apple_config, feed: f3, publish_enabled: true) }
 
       it "can publish via the apple configs" do
-        assert_equal 3, podcast.reload.feeds.count
+        assert [f1, f2, f3, apple_config]
 
         PublishAppleJob.stub(:perform_now, "published apple!") do
           PublishFeedJob.stub_any_instance(:save_file, "saved rss!") do

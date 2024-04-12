@@ -20,7 +20,7 @@ class Podcast < ApplicationRecord
   serialize :restrictions, JSON
 
   has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true, inverse_of: :podcast
-  has_one :apple_config, class_name: "::Apple::Config", validate: true, autosave: true, inverse_of: :podcast
+  alias_method :public_feed, :default_feed
 
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
@@ -65,6 +65,19 @@ class Podcast < ApplicationRecord
 
   def default_feed
     super || build_default_feed(podcast: self, private: false)
+  end
+
+  def apple_config
+    if defined?(@apple_config)
+      @apple_config
+    else
+      @apple_config = Apple::Config.where(feed_id: feeds.pluck(:id)).first
+    end
+  end
+
+  def reload(options = nil)
+    remove_instance_variable(:@apple_config) if defined?(@apple_config)
+    super
   end
 
   def explicit=(value)

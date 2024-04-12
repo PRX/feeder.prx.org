@@ -15,7 +15,8 @@ class PublishFeedJob < ApplicationJob
     Rails.logger.info("Starting publishing pipeline via PublishFeedJob", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id})
 
     PublishingPipelineState.start!(podcast)
-    podcast.feeds.each { |feed| publish_feed(podcast, feed) }
+    podcast.feeds.each { |feed| publish_apple(podcast, feed) }
+    podcast.feeds.each { |feed| publish_rss(podcast, feed) }
     PublishingPipelineState.complete!(podcast)
   rescue => e
     PublishingPipelineState.error!(podcast)
@@ -25,19 +26,14 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
-  def publish_feed(podcast, feed)
-    publish_apple(feed)
-    publish_rss(podcast, feed)
-  end
-
-  def publish_apple(feed)
+  def publish_apple(podcast, feed)
     return unless feed.publish_to_apple?
     res = PublishAppleJob.perform_now(feed.apple_config)
-    PublishingPipelineState.publish_apple!(feed.podcast)
+    PublishingPipelineState.publish_apple!(podcast)
     res
   rescue => e
     NewRelic::Agent.notice_error(e)
-    res = PublishingPipelineState.error_apple!(feed.podcast)
+    res = PublishingPipelineState.error_apple!(podcast)
     raise e if feed.apple_config.sync_blocks_rss?
     res
   end

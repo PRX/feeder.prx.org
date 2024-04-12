@@ -82,28 +82,28 @@ describe PublishFeedJob do
 
   describe "publishing to apple" do
     it "does not schedule publishing to apple if there is no apple config" do
-      assert_nil feed.apple_config
-      assert_nil job.publish_apple(feed)
+      assert_nil private_feed.apple_config
+      assert_nil job.publish_apple(podcast, private_feed)
     end
 
     describe "when the apple config is present" do
-      let(:apple_config) { create(:apple_config, podcast: podcast, public_feed: feed, private_feed: private_feed) }
+      let(:apple_config) { create(:apple_config, feed: private_feed) }
 
       it "does not schedule publishing to apple if the config is marked as not publishable" do
         apple_config.update!(publish_enabled: false)
-        assert_equal apple_config, feed.apple_config.reload
-        assert_nil job.publish_apple(feed)
+        assert_equal apple_config, private_feed.apple_config.reload
+        assert_nil job.publish_apple(podcast, private_feed)
       end
 
       it "does run the apple publishing if the config is present and marked as publishable" do
-        assert_equal apple_config, feed.apple_config.reload
+        assert_equal apple_config, private_feed.apple_config.reload
         PublishAppleJob.stub(:perform_now, :publishing_apple!) do
-          assert_equal :publishing_apple!, job.publish_apple(feed)
+          assert_equal :publishing_apple!, job.publish_apple(podcast, private_feed)
         end
       end
 
       it "Performs the apple publishing job based regardless of sync_blocks_rss flag" do
-        assert_equal apple_config, feed.apple_config.reload
+        assert_equal apple_config, private_feed.apple_config.reload
 
         # stub the two possible ways the job can be called
         # perform_later is not used.
@@ -111,11 +111,11 @@ describe PublishFeedJob do
           PublishAppleJob.stub(:perform_now, :perform_now) do
             apple_config.update!(sync_blocks_rss: true)
 
-            assert_equal :perform_now, job.publish_apple(feed)
+            assert_equal :perform_now, job.publish_apple(podcast, private_feed)
 
             apple_config.update!(sync_blocks_rss: false)
             feed.reload
-            assert_equal :perform_now, job.publish_apple(feed)
+            assert_equal :perform_now, job.publish_apple(podcast, private_feed)
           end
         end
       end
@@ -128,26 +128,26 @@ describe PublishFeedJob do
           PublishingPipelineState.start!(feed.podcast)
         end
         it "raises an error if the apple publishing fails" do
-          assert_equal apple_config, feed.apple_config.reload
+          assert_equal apple_config, private_feed.apple_config.reload
 
           PublishAppleJob.stub(:perform_now, ->(*, **) { raise "some apple error" }) do
             # it raises
-            assert_raises(RuntimeError) { job.publish_apple(feed) }
+            assert_raises(RuntimeError) { job.publish_apple(podcast, private_feed) }
 
             assert_equal ["created", "started", "error_apple"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
           end
         end
 
         it "does not raise an error if the apple publishing is not blocking RSS" do
-          assert_equal apple_config, feed.apple_config.reload
-          feed.apple_config.update!(sync_blocks_rss: false)
+          assert_equal apple_config, private_feed.apple_config.reload
+          private_feed.apple_config.update!(sync_blocks_rss: false)
 
           mock = Minitest::Mock.new
           mock.expect(:call, nil, [RuntimeError])
 
           PublishAppleJob.stub(:perform_now, ->(*, **) { raise "some apple error" }) do
             NewRelic::Agent.stub(:notice_error, mock) do
-              job.publish_apple(feed)
+              job.publish_apple(podcast, private_feed)
             end
           end
           assert_equal ["created", "started", "error_apple"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort

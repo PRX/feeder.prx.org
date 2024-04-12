@@ -6,32 +6,23 @@ module Apple
     DEFAULT_TITLE = "Apple Delegated Delivery Subscriptions"
     DEFAULT_AUDIO_FORMAT = {"f" => "flac", "b" => 16, "c" => 2, "s" => 44100}.freeze
 
-    belongs_to :podcast, class_name: "Podcast"
-    belongs_to :public_feed, class_name: "Feed"
-    belongs_to :private_feed, class_name: "Feed"
-    belongs_to :key, class_name: "Apple::Key", optional: true
+    belongs_to :feed
+    belongs_to :key, class_name: "Apple::Key", optional: true, validate: true, autosave: true
 
-    delegate :title, to: :podcast, prefix: "podcast"
+    validate :podcast_has_one_apple_config
+    validate :not_default_feed
 
+    # backwards-compatible "key" getters
     delegate :provider_id, to: :key
     delegate :key_id, to: :key
     delegate :key_pem, to: :key
     delegate :key_pem_b64, to: :key
 
-    validates_presence_of :podcast
-    validates_presence_of :public_feed
-    validates_presence_of :private_feed
-
-    validates_associated :public_feed
-    validates_associated :private_feed
-
-    validates :podcast, uniqueness: true, allow_nil: false
-
-    validates :public_feed, uniqueness: {scope: :private_feed,
-                                         message: "can only have one config per public and private feed"}
-    validates :public_feed, exclusion: {in: ->(apple_credential) { [apple_credential.private_feed] }}
-
-    validate :feed_podcasts_match
+    # backwards-compatible associations
+    delegate :podcast, to: :feed, allow_nil: true
+    delegate :id, :title, to: :podcast, prefix: true, allow_nil: true
+    delegate :public_feed, to: :podcast, allow_nil: true
+    alias_method :private_feed, :feed
 
     def self.find_or_build_private_feed(podcast)
       if (existing = podcast.feeds.find_by(slug: DEFAULT_FEED_SLUG, title: DEFAULT_TITLE))
@@ -64,12 +55,7 @@ module Apple
         raise "Stopping build_apple_config" if $stdin.gets.chomp.downcase != "y"
       end
 
-      Apple::Config.new(
-        podcast: podcast,
-        public_feed: podcast.default_feed,
-        private_feed: find_or_build_private_feed(podcast),
-        key: key
-      )
+      Apple::Config.new(feed: find_or_build_private_feed(podcast), key: key)
     end
 
     def self.mark_as_delivered!(apple_publisher)
@@ -99,18 +85,21 @@ module Apple
       mark_as_delivered!(pub)
     end
 
-    def feed_podcasts_match
-      return unless public_feed.present? && private_feed.present?
+    def not_default_feed
+      if feed&.default?
+        errors.add(:feed, "cannot use default feed")
+      end
+    end
 
-      if (public_feed.podcast_id != podcast_id) || (private_feed.podcast_id != podcast_id)
-        errors.add(:public_feed, "must belong to the same podcast as the private feed")
+    def podcast_has_one_apple_config
+      all_feeds = Feed.where(podcast_id: feed.podcast_id).pluck(:id)
+      if Apple::Config.where(feed_id: all_feeds).where.not(id: id).any?
+        errors.add(:feed, "podcast already has an apple config")
       end
     end
 
     def publish_to_apple?
-      return false unless key&.valid?
-
-      public_feed.publish_to_apple?
+      !!key&.valid? && publish_enabled?
     end
 
     def build_publisher
