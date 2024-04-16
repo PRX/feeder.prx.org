@@ -6,9 +6,13 @@
     </div>
 
     <div class="card-body">
-      <div class="form-floating input-group">
+      <div class="form-floating input-group mb-4">
         <%= form.tag_select :include_tags, feed.include_tags || [], {}, data: {allow_new: true, allow_clear: true} %>
         <%= form.label :include_tags %>
+      </div>
+      <div class="form-floating input-group">
+        <%= form.tag_select :exclude_tags, feed.exclude_tags || [], {}, data: {allow_new: true, allow_clear: true} %>
+        <%= form.label :exclude_tags %>
       </div>
     </div>
   </div>
