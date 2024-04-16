@@ -12,9 +12,9 @@
           <%= render "form_auth", podcast: podcast, feed: feed, form: form %>
         <% end %>
         <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
+        <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
         <% if feed.custom? %>
           <%= render "form_ad_zones", podcast: podcast, feed: feed, form: form %>
-          <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
           <%= render "form_overrides", podcast: podcast, feed: feed, form: form %>
           <%= render "form_itunes_image", podcast: podcast, feed: feed, form: form %>
           <%= render "form_feed_image", podcast: podcast, feed: feed, form: form %>
