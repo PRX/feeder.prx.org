@@ -405,6 +405,7 @@ en:
         display_full_episodes_count: Feed Metadata Limit
         enclosure_prefix: Enclosure Prefix URL
         episode_offset_seconds: Episode Publish Offset
+        exclude_tags: Exclude Categories
         file_name: File Name
         house: House Ads
         include_donation_url: Include Donation Form
