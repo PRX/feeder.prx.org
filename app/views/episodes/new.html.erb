@@ -6,4 +6,6 @@
 
 <% if action_name == "new" && !@podcast.complete && @podcast.episodes.after(Time.now).none? %>
   <%= render "missing_drafts", podcast: @podcast %>
+<% elsif action_name == "new" && @podcast.episodes.after(Time.now).before(3.days.from_now).any? %>
+  <%= render "existing_drafts", podcast: @podcast %>
 <% end %>

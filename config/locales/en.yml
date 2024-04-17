@@ -519,6 +519,11 @@ en:
         asc: A-Z
         calendar: Calendar
         recent: Recent Activity
+    existing_drafts:
+      episodes: Back to Episodes
+      dismiss: Proceed with a new draft
+      message: Please consider using the draft that already exists on this published date as there may be an ad targeted specifically to the scheduled episode draft.
+      title: An episode draft for this date already exists
     form:
       confirm: Discard unsaved changes?
     form_distribution:
