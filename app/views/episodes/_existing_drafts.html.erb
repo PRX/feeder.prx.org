@@ -1,0 +1,19 @@
+<div class="modal hide" id="existing-drafts" tabindex="-1" aria-labelledby="existing-drafts-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="fw-bold modal-title" id="existing-drafts-title"><%= t(".title") %></h5>
+      </div>
+      <div class="modal-body">
+        <p><%= t(".message").html_safe %></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><%= t(".dismiss") %></button>
+        <%= link_to t(".episodes"), podcast_episodes_path(podcast), class: "btn btn-success" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# click hidden button to immediately show modal %>
+<button type="button" class="d-none" data-bs-toggle="modal" data-bs-target="#existing-drafts" data-controller="click" data-click-immediate-value="true"></button>
