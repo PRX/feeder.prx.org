@@ -1,4 +1,4 @@
-class Metrics::HourlyDownload < ActiveRecord::Base
+class Rollups::HourlyDownload < ActiveRecord::Base
   include TimeRollups
 
   establish_connection :clickhouse
@@ -15,15 +15,5 @@ class Metrics::HourlyDownload < ActiveRecord::Base
 
   def self.rollup_zone=(name)
     @@rollup_zone = name
-  end
-
-  def hour
-    time = super
-
-    if time.present? && self.class.rollup_zone.present?
-      time.change(zone: self.class.rollup_zone)
-    else
-      time
-    end
   end
 end
