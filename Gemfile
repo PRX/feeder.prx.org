@@ -60,6 +60,7 @@ gem "loofah"
 
 # utilities
 gem "amazing_print"
+gem "aws-sdk-eventbridge"
 gem "aws-sdk-sns"
 gem "aws-sdk-sqs"
 gem "aws-sdk-s3"
