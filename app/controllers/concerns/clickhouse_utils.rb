@@ -24,6 +24,12 @@ module ClickhouseUtils
     end
   end
 
+  class_methods do
+    def clickhouse_connected?
+      ClickhouseUtils.clickhouse_connected?
+    end
+  end
+
   def clickhouse_connected?
     self.class.clickhouse_connected?
   end

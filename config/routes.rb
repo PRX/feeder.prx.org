@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     resource :planner, only: [:show, :create], controller: :podcast_planner
     resources :feeds, except: [:edit]
     resources :episodes, only: [:index, :create, :new]
+    get "rollups_demo", to: :rollups_demo
   end
 
   resources :episodes, except: [:create, :new] do

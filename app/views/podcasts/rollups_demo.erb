@@ -1,0 +1,100 @@
+<% unless clickhouse_connected? %>
+  <div class="alert alert-danger mt-2" role="alert">
+    Woh - clickhouse is not connected!
+  </div>
+<% else %>
+  <div class="alert alert-primary mt-2" role="alert">
+    Clickhouse is connected!
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-6">
+      <h1>Recent downloads</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Feed</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% Rollups::HourlyDownload.where(podcast_id: @podcast.id, hour: 7.days.ago..).rollup_day(:feed_slug).order(hour: :desc).limit(10).each do |hd| %>
+            <tr>
+              <td><%= l hd.hour.to_date %></td>
+              <td><%= hd.feed_slug %></td>
+              <td><%= hd.count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-md-6">
+      <h1>Timezone'd</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Feed</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% Rollups::HourlyDownload.where(podcast_id: @podcast.id, hour: 7.days.ago..).rollup_zone("America/Denver").rollup_day(:feed_slug).order(hour: :desc).limit(10).each do |hd| %>
+            <tr>
+              <td><%= l hd.hour.to_date %></td>
+              <td><%= hd.feed_slug %></td>
+              <td><%= hd.count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-md-6">
+      <h1>Top Subdivs This Week</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Week</th>
+            <th>Country</th>
+            <th>Subdiv</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% Rollups::DailyGeo.where(podcast_id: @podcast.id).rollup_week(:country_code, :subdiv_code).order(count: :desc).limit(10).each do |dg| %>
+            <tr>
+              <td><%= l dg.day %></td>
+              <td><%= dg.country_code %></td>
+              <td><%= dg.subdiv_code %></td>
+              <td><%= dg.count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-md-6">
+      <h1>All Time Countries</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% Rollups::DailyGeo.where(podcast_id: @podcast.id).rollup_total(:country_code).order(count: :desc).limit(10).each do |dg| %>
+            <tr>
+              <td><%= dg.country_code %></td>
+              <td><%= dg.count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>

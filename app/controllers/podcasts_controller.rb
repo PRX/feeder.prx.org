@@ -94,6 +94,11 @@ class PodcastsController < ApplicationController
     end
   end
 
+  def rollups_demo
+    @podcast = Podcast.find(params[:podcast_id])
+    authorize @podcast, :show?
+  end
+
   private
 
   def set_podcast
