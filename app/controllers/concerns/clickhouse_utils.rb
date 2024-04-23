@@ -40,7 +40,6 @@ module ClickhouseUtils
     to = CLICKHOUSE_PING_TIMEOUT
 
     begin
-      puts "PING - #{host}:#{port}"
       Net::HTTP.start(host, port, use_ssl: ssl, verify_mode: ver, connect_timeout: to, open_timeout: to)
       true
     rescue
