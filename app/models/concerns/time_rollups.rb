@@ -4,32 +4,47 @@ module TimeRollups
   extend ActiveSupport::Concern
 
   included do
-    scope :rollup_time_zone, ->(name) do
-      if defined?(@rollup_time_called) && @rollup_time_called
+    scope :rollup_zone, ->(name) do
+      if defined?(@rollup_part)
         raise "rollup_time_zone must be called before rollup_time"
       elsif !@@rollup_zone_supported
         raise "time zone not supported for: #{@@rollup_time_col}"
       end
 
-      @rollup_time_zone = name
+      @rollup_zone = name
 
       all
     end
 
     scope :rollup_time, ->(date_part, facets = []) do
-      if date_part && %w[hour day week month year].exclude?(date_part.to_s)
-        raise "invalid date part: #{date_part}"
-      end
+      @rollup_part = date_part
 
-      @rollup_time_called = true
-      time = @@rollup_time_col
-      zone = defined?(@rollup_time_zone) && @rollup_time_zone || "UTC"
-      select_time = "DATE_TRUNC('#{date_part}', #{time}, '#{zone}') AS #{time}" if date_part
-      select_count = "SUM(#{@@rollup_count_col}) AS #{@@rollup_count_col}"
-      selects = (facets + [select_time, select_count]).compact
+      select_time = rollup_select_time(@rollup_part, @rollup_zone)
+      selects = (facets + [select_time, rollup_select_count]).compact
       groups = (facets + [select_time]).compact
 
-      select(selects).group(groups)
+      # extend .order() so we can sort by the rollup columns
+      select(selects).group(groups).extending do
+        def order(*args)
+          new_args = args.map do |arg|
+            if arg.is_a?(Hash)
+              arg.map do |key, val|
+                if key.to_s == @@rollup_time_col.to_s
+                  [Arel.sql(rollup_select_time(@rollup_part, @rollup_zone)), val]
+                elsif key.to_s == @@rollup_count_col.to_s
+                  [Arel.sql(rollup_select_count), val]
+                else
+                  [key, val]
+                end
+              end.to_h
+            else
+              arg
+            end
+          end
+
+          super(*new_args)
+        end
+      end
     end
 
     scope :rollup_hour, ->(*facets) { rollup_time("day", facets) }
@@ -43,6 +58,24 @@ module TimeRollups
       @@rollup_time_col = time_col
       @@rollup_count_col = count_col
       @@rollup_zone_supported = zone_supported
+    end
+
+    protected
+
+    def self.rollup_select_time(part, zone)
+      if part
+        unless %w[hour day week month year].include?(part.to_s)
+          raise "invalid rollup date part: #{part}"
+        end
+
+        time = @@rollup_time_col
+        zone = zone.presence || "UTC"
+        "DATE_TRUNC('#{part}', #{time}, '#{zone}') AS #{time}"
+      end
+    end
+
+    def self.rollup_select_count
+      "SUM(#{@@rollup_count_col}) AS #{@@rollup_count_col}"
     end
   end
 end
