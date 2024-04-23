@@ -7,8 +7,8 @@ module TimeRollups
     scope :rollup_zone, ->(name) do
       if defined?(@rollup_part)
         raise "rollup_time_zone must be called before rollup_time"
-      elsif !@@rollup_zone_supported
-        raise "time zone not supported for: #{@@rollup_time_col}"
+      elsif !class_variable_get(:@@rollup_zone_supported)
+        raise "time zone not supported for: #{class_variable_get(:@@rollup_time_col)}"
       end
 
       @rollup_zone = name
@@ -29,9 +29,9 @@ module TimeRollups
           new_args = args.map do |arg|
             if arg.is_a?(Hash)
               arg.map do |key, val|
-                if key.to_s == @@rollup_time_col.to_s
+                if key.to_s == class_variable_get(:@@rollup_time_col).to_s
                   [Arel.sql(rollup_select_time(@rollup_part, @rollup_zone)), val]
-                elsif key.to_s == @@rollup_count_col.to_s
+                elsif key.to_s == class_variable_get(:@@rollup_count_col).to_s
                   [Arel.sql(rollup_select_count), val]
                 else
                   [key, val]
@@ -55,9 +55,9 @@ module TimeRollups
     scope :rollup_total, ->(*facets) { rollup_time(nil, facets) }
 
     def self.time_rollups(time_col, count_col, zone_supported = false)
-      @@rollup_time_col = time_col
-      @@rollup_count_col = count_col
-      @@rollup_zone_supported = zone_supported
+      class_variable_set(:@@rollup_time_col, time_col)
+      class_variable_set(:@@rollup_count_col, count_col)
+      class_variable_set(:@@rollup_zone_supported, zone_supported)
     end
 
     protected
@@ -68,14 +68,18 @@ module TimeRollups
           raise "invalid rollup date part: #{part}"
         end
 
-        time = @@rollup_time_col
-        zone = zone.presence || "UTC"
-        "DATE_TRUNC('#{part}', #{time}, '#{zone}') AS #{time}"
+        time = class_variable_get(:@@rollup_time_col)
+        if zone.present? && zone != "UTC"
+          "DATE_TRUNC('#{part}', #{time}, '#{zone}') AS #{time}"
+        else
+          "DATE_TRUNC('#{part}', #{time}) AS #{time}"
+        end
       end
     end
 
     def self.rollup_select_count
-      "SUM(#{@@rollup_count_col}) AS #{@@rollup_count_col}"
+      count = class_variable_get(:@@rollup_count_col)
+      "SUM(#{count}) AS #{count}"
     end
   end
 end
