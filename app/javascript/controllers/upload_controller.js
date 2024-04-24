@@ -21,6 +21,7 @@ export default class extends Controller {
     "success",
     "error",
     "errorMessage",
+    "nonMp3Warning",
   ]
 
   connect() {
@@ -31,8 +32,28 @@ export default class extends Controller {
     this.uploadSigningServiceUrl = this.getMeta("upload_signing_service_url")
   }
 
-  async upload(event) {
-    const config = this.getUploadConfig(event.target.files[0])
+  upload(event) {
+    const file = event.target.files[0]
+    if (this.hasNonMp3WarningTarget && file.type !== "audio/mpeg") {
+      this.modal = new bootstrap.Modal(this.nonMp3WarningTarget)
+      this.modal.show()
+    } else {
+      this.uploadFile(file)
+    }
+  }
+
+  modalCancel() {
+    this.modal.hide()
+    this.cancelUpload()
+  }
+
+  modalContinue() {
+    this.modal.hide()
+    this.uploadFile(this.fieldTarget.files[0])
+  }
+
+  async uploadFile(file) {
+    const config = this.getUploadConfig(file)
     try {
       this.evaporate = this.evaporate || (await this.getEvaporate())
       this.startUpload(config)
@@ -116,7 +137,9 @@ export default class extends Controller {
   }
 
   async cancelUpload(event) {
-    event.preventDefault()
+    if (event) {
+      event.preventDefault()
+    }
 
     // safely attempt to cancel
     if (this.evaporate) {
@@ -129,9 +152,9 @@ export default class extends Controller {
       }
     }
 
+    this.show("picker")
     this.fieldTarget.value = ""
     this.fieldTarget.dispatchEvent(new Event("change"))
-    this.show("picker")
   }
 
   show(type) {

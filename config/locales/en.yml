@@ -633,6 +633,11 @@ en:
         stereo: Stereo
       new:
         hint: Upload a file or drag it here
+      non_mp3_warning:
+        body_html: Looks like you're uploading a non-MP3 file - this can cause problems for Spotify and other apps.<br/><br/>You can either cancel and upload an MP3, or add an MP3 format to your <a href="%{href}" target="_blank">Default Feed</a>.
+        cancel: Cancel
+        continue: Continue
+        title: Woh there!
       processing:
         hint: Processing
     segmenter:
