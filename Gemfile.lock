@@ -104,6 +104,9 @@ GEM
       aws-partitions (~> 1, >= 1.651.0)
       aws-sigv4 (~> 1.5)
       jmespath (~> 1, >= 1.6.1)
+    aws-sdk-eventbridge (1.43.0)
+      aws-sdk-core (~> 3, >= 3.165.0)
+      aws-sigv4 (~> 1.1)
     aws-sdk-kms (1.60.0)
       aws-sdk-core (~> 3, >= 3.165.0)
       aws-sigv4 (~> 1.1)
@@ -488,6 +491,7 @@ DEPENDENCIES
   activerecord-session_store
   addressable
   amazing_print
+  aws-sdk-eventbridge
   aws-sdk-s3
   aws-sdk-sns
   aws-sdk-sqs

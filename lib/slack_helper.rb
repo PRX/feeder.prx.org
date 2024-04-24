@@ -1,19 +1,18 @@
 module SlackHelper
-  def self.slack_sns_client
-    @slack_sns_client ||= Aws::SNS::Client.new(region: slack_sns_region)
+  def self.slack_eventbridge_client
+    @slack_eventbridge_client ||= Aws::EventBridge::Client.new
   end
 
-  def self.slack_sns_publish(msg)
-    slack_sns_client.publish(topic_arn: slack_sns_arn, message: msg.to_json)
-  end
-
-  def self.slack_sns_arn
-    ENV["SLACK_SNS_TOPIC"].presence
-  end
-
-  def self.slack_sns_region
-    match_data = slack_sns_arn.match(/arn:aws:sns:(?<region>.+):\d+:.+/) || {}
-    match_data[:region] || ENV["AWS_REGION"].presence
+  def self.slack_event_send(msg)
+    slack_eventbridge_client.put_events({
+      entries: [
+        {
+          source: "org.prx.feeder",
+          detail_type: "Slack Message Relay Message Payload",
+          detail: msg.to_json
+        }
+      ]
+    })
   end
 
   def self.slack_channel
@@ -21,8 +20,8 @@ module SlackHelper
   end
 
   def send_slack(message, options = {})
-    if SlackHelper.slack_sns_arn && SlackHelper.slack_channel
-      SlackHelper.slack_sns_publish(slack_default_options.merge(options).merge(text: message))
+    if SlackHelper.slack_channel
+      SlackHelper.slack_event_send(slack_default_options.merge(options).merge(text: message))
     end
   end
 
