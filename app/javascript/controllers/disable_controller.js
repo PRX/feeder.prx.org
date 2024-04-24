@@ -17,14 +17,14 @@ export default class extends Controller {
     if (disable) {
       this.uploadCount++
     } else {
-      this.uploadCount--
+      this.uploadCount = Math.max(0, this.uploadCount - 1)
     }
     this.submitButtons().forEach((el) => {
       if (this.uploadCount > 0) {
         el.disabled = true
         el.dataset.disableOriginal = el.dataset.disableOriginal || el.value
         el.value = el.dataset.uploadWith || el.value
-      } else {
+      } else if (el.disabled) {
         el.disabled = false
         el.value = el.dataset.disableOriginal
       }
