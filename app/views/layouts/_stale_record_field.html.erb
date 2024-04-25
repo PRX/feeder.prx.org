@@ -1,11 +1,13 @@
-<% if form.object.lock_version_changed? %>
-  <div class="col-12 mt-4 mb-2" data-controller="toggle-value" data-toggle-value-next-value="<%= form.object.lock_version_was %>">
+<% if form.object.stale? %>
+  <div class="card-footer" data-controller="toggle-value" data-toggle-value-next-value="<%= form.object.lock_version_was %>">
     <div class="form-check">
       <%= form.hidden_field :lock_version, data: {toggle_value_target: "field"} %>
       <input id="stale_record_overwrite" class="form-check-input is-invalid" type="checkbox" data-action="toggle-value#toggle">
       <div class="d-flex align-items-center">
-        <label for="stale_record_overwrite" class="form-check-label text-danger fw-bold"><%= t(".label") %></label>
-        <span class="text-danger ms-1"><%= t(".aside") %></span>
+        <label for="stale_record_overwrite" class="form-check-label text-danger">
+          <b><%= t(".label") %></b>
+          <span class="text-danger ms-1"><%= t(".aside") %></span>
+        </label>
       </div>
     </div>
   </div>

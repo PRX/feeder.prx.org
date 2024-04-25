@@ -1,4 +1,4 @@
-<% if form.object.lock_version_changed? %>
+<% if form.object.stale? %>
   <div class="modal hide" id="stale-record" tabindex="-1" aria-labelledby="stale-record-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">

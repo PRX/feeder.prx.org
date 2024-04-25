@@ -49,6 +49,8 @@ class EpisodeMediaController < ApplicationController
         format.html { render :show, status: :unprocessable_entity }
       end
     end
+  rescue ActiveRecord::StaleObjectError
+    render :show, status: :conflict
   end
 
   private
@@ -61,6 +63,7 @@ class EpisodeMediaController < ApplicationController
 
   def episode_params
     nilify params.fetch(:episode, {}).permit(
+      :lock_version,
       :medium,
       :ad_breaks,
       contents_attributes: %i[id position original_url file_size _destroy _retry],

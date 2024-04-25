@@ -84,6 +84,8 @@ class EpisodesController < ApplicationController
         format.html { render :edit, status: :unprocessable_entity }
       end
     end
+  rescue ActiveRecord::StaleObjectError
+    render :edit, status: :conflict
   end
 
   # DELETE /episodes/1

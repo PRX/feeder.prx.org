@@ -3,7 +3,6 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception
 
-  rescue_from ActiveRecord::StaleObjectError, with: :render_stale_edit
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
   default_form_builder FeederFormBuilder
@@ -48,10 +47,6 @@ class ApplicationController < ActionController::Base
         render "errors/no_access", layout: "plain"
       end
     end
-  end
-
-  def render_stale_edit(exception)
-    render :edit, status: :conflict
   end
 
   def user_not_authorized(exception = nil)
