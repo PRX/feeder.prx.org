@@ -59,6 +59,8 @@ class FeedsController < ApplicationController
         end
       end
     end
+  rescue ActiveRecord::StaleObjectError
+    render :show, status: :conflict
   end
 
   # DELETE /feeds/1
@@ -103,6 +105,7 @@ class FeedsController < ApplicationController
 
   def nilified_feed_params
     nilify params.fetch(:feed, {}).permit(
+      :lock_version,
       :file_name,
       :title,
       :subtitle,

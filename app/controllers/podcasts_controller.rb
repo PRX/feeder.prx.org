@@ -76,6 +76,8 @@ class PodcastsController < ApplicationController
         format.html { render :edit, status: :unprocessable_entity }
       end
     end
+  rescue ActiveRecord::StaleObjectError
+    render :edit, status: :conflict
   end
 
   # DELETE /podcasts/1
@@ -107,6 +109,7 @@ class PodcastsController < ApplicationController
 
   def podcast_params
     nilify params.fetch(:podcast, {}).permit(
+      :lock_version,
       :title,
       :prx_account_uri,
       :link,
