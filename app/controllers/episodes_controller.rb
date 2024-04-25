@@ -136,6 +136,7 @@ class EpisodesController < ApplicationController
 
   def episode_params
     nilify(params.fetch(:episode, {}).permit(
+      :lock_version,
       :title,
       :clean_title,
       :subtitle,
