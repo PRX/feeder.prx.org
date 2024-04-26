@@ -23,5 +23,5 @@
 
   <%= render "confirm_destroy", episode: episode %>
 
-  <%= render "layouts/stale_record_modal", form: form, discard_path: edit_episode_path(episode) %>
+  <%= render "layouts/stale_record_modal", form: form, discard_path: edit_episode_path(episode) if episode.persisted? %>
 <% end %>
