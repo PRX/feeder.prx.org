@@ -3,14 +3,14 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="stale-record-title"><%= t(".title") %></h5>
+          <h5 class="modal-title fw-bold" id="stale-record-title"><%= t(".title") %></h5>
         </div>
         <div class="modal-body">
           <p><%= t ".body_html", model: form.object.model_name.human, ago: local_time_ago(form.object.updated_at) %></p>
         </div>
         <div class="modal-footer">
           <%= link_to t(".discard"), discard_path, class: "btn btn-discard-changed", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><%= t(".continue") %></button>
+          <button type="button" class="btn btn-warning" data-bs-dismiss="modal"><%= t(".continue") %></button>
         </div>
       </div>
     </div>

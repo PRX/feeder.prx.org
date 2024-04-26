@@ -917,10 +917,10 @@ en:
       aside: (Not Recommended)
       label: Overwrite
     stale_record_modal:
-      body_html: While you were sleeping, someone else updated this %{model} <b>%{ago}</b>.</br></br>You can either discard your changes and make them again in a fresh form, or continue editing at your own risk.
+      body_html: Another user updated this %{model} <b>%{ago}</b>.</br></br>You can either discard your changes and make them again in a fresh form, or continue editing at your own risk.
       continue: Continue Editing
       discard: Discard changes
-      title: Woh - someone else updated this!
+      title: Warning! Another user has updated this form.
   podcasts:
     confirm_destroy:
       <<: *form_status
