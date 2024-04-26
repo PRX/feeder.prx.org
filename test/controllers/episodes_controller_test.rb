@@ -71,6 +71,11 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test "optimistically locks updating episodes" do
+    patch episode_url(episode), params: {episode: {lock_version: episode.lock_version - 1}}
+    assert_response :conflict
+  end
+
   test "should destroy episode" do
     assert episode
 
