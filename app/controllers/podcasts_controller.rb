@@ -100,6 +100,7 @@ class PodcastsController < ApplicationController
 
   def set_podcast
     @podcast = Podcast.find(params[:id])
+    @podcast.locking_enabled = true
   end
 
   def published_episodes(date_range)

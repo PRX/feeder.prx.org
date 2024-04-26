@@ -96,6 +96,7 @@ class FeedsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_feed
     @feed = Feed.find(params[:id])
+    @feed.locking_enabled = true
   end
 
   # Only allow a list of trusted parameters through.

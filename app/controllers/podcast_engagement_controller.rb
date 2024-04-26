@@ -26,6 +26,7 @@ class PodcastEngagementController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
+    @podcast.locking_enabled = true
     authorize @podcast
   end
 

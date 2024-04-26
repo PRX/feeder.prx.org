@@ -58,6 +58,7 @@ class EpisodeMediaController < ApplicationController
   def set_episode
     @episode = Episode.find_by_guid!(params[:episode_id])
     @episode.strict_validations = true
+    @episode.locking_enabled = true
     @podcast = @episode.podcast
   end
 
