@@ -16,21 +16,26 @@ module EpisodesHelper
   end
 
   def episode_apple_status(episode)
-    if episode.apple_status.nil?
+    apple_episode = episode.apple_episode
+    if !apple_episode
       "not_found"
-    elsif episode.apple_status.delivered?
+    elsif apple_episode.needs_delivery?
+      "incomplete"
+    elsif apple_episode.waiting_for_asset_state?
+      "processing"
+    elsif apple_episode.audio_asset_state_error?
+      "error"
+    elsif apple_episode.synced_with_apple?
       "complete"
     else
-      "incomplete"
+      "not_found"
     end
   end
 
   def episode_apple_updated_at(episode)
-    if episode.apple_status.nil?
-      Time.now
-    else
-      episode.apple_status.created_at
-    end
+    episode.apple_sync_log&.updated_at ||
+      episode.apple_status.created_at ||
+      episode.updated_at
   end
 
   def episode_status_class(episode)
