@@ -11,14 +11,4 @@ class ApplicationRecord < ActiveRecord::Base
   def error_message_aliases
     @@error_message_aliases
   end
-
-  def locking_enabled?
-    !!(super && @locking_enabled)
-  end
-
-  attr_writer :locking_enabled
-
-  def stale?
-    try(:lock_version_changed?) || false
-  end
 end
