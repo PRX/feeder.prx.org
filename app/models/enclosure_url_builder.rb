@@ -17,12 +17,6 @@ class EnclosureUrlBuilder
     add_query_param(enclosure_url, "auth", token)
   end
 
-  # Marks the url as a `noImp`
-  # Used by Dovetail to skip the impression tracking
-  def self.mark_no_imp(enclosure_url)
-    add_query_param(enclosure_url, "noImp", "1")
-  end
-
   def podcast_episode_url(podcast, episode, feed = nil)
     feed ||= podcast.default_feed
     prefix = feed.try(:enclosure_prefix)

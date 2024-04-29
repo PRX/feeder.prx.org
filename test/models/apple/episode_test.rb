@@ -62,8 +62,8 @@ describe Apple::Episode do
   end
 
   describe "#enclosure_url" do
-    it "should add a noImp query param" do
-      assert_match(/noImp=1/, apple_episode.enclosure_url)
+    it "should add auth query param" do
+      assert_match(/auth=/, apple_episode.enclosure_url)
     end
   end
 
