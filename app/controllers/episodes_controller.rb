@@ -84,8 +84,6 @@ class EpisodesController < ApplicationController
         format.html { render :edit, status: :unprocessable_entity }
       end
     end
-  rescue ActiveRecord::StaleObjectError
-    render :edit, status: :conflict
   end
 
   # DELETE /episodes/1
@@ -110,7 +108,6 @@ class EpisodesController < ApplicationController
   def set_episode
     @episode = Episode.find_by_guid!(params[:id])
     @episode.strict_validations = true
-    @episode.locking_enabled = true
   end
 
   def set_podcast
@@ -139,7 +136,6 @@ class EpisodesController < ApplicationController
 
   def episode_params
     nilify(params.fetch(:episode, {}).permit(
-      :lock_version,
       :title,
       :clean_title,
       :subtitle,

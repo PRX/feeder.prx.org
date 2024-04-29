@@ -59,8 +59,6 @@ class FeedsController < ApplicationController
         end
       end
     end
-  rescue ActiveRecord::StaleObjectError
-    render :show, status: :conflict
   end
 
   # DELETE /feeds/1
@@ -96,7 +94,6 @@ class FeedsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_feed
     @feed = Feed.find(params[:id])
-    @feed.locking_enabled = true
   end
 
   # Only allow a list of trusted parameters through.
@@ -106,7 +103,6 @@ class FeedsController < ApplicationController
 
   def nilified_feed_params
     nilify params.fetch(:feed, {}).permit(
-      :lock_version,
       :file_name,
       :title,
       :subtitle,

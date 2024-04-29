@@ -17,8 +17,6 @@ class PodcastEngagementController < ApplicationController
         format.html { render :show, status: :unprocessable_entity }
       end
     end
-  rescue ActiveRecord::StaleObjectError
-    render :show, status: :conflict
   end
 
   private
@@ -26,7 +24,6 @@ class PodcastEngagementController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
-    @podcast.locking_enabled = true
     authorize @podcast
   end
 
@@ -35,7 +32,6 @@ class PodcastEngagementController < ApplicationController
   ### TODO include params for socmed and podcast apps
   def podcast_engagement_params
     nilify params.fetch(:podcast, {}).permit(
-      :lock_version,
       :donation_url,
       :payment_pointer
     )

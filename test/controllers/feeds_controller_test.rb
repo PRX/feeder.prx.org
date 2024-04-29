@@ -71,11 +71,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "optimistically locks updating feeds" do
-    patch podcast_feed_url(podcast, feed), params: {feed: {lock_version: feed.lock_version - 1}}
-    assert_response :conflict
-  end
-
   test "should destroy feed" do
     assert podcast
     assert feed
