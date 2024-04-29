@@ -918,6 +918,14 @@ en:
       privacy: Privacy
       status: Status
       terms: Terms
+    stale_record_field:
+      aside: (Not Recommended)
+      label: Overwrite
+    stale_record_modal:
+      body_html: Another user updated this %{model} <b>%{ago}</b>.</br></br>You can either discard your changes and make them again in a fresh form, or continue editing at your own risk.
+      continue: Continue Editing
+      discard: Discard changes
+      title: Warning! Another user has updated this form.
   podcasts:
     confirm_destroy:
       <<: *form_status
