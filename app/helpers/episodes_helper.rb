@@ -34,7 +34,7 @@ module EpisodesHelper
 
   def episode_apple_updated_at(episode)
     episode.apple_sync_log&.updated_at ||
-      episode.apple_status.created_at ||
+      episode.apple_status&.created_at ||
       episode.updated_at
   end
 
