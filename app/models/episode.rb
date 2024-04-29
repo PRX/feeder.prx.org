@@ -254,6 +254,10 @@ class Episode < ApplicationRecord
     apple_needs_delivery!
   end
 
+  def apple_episode
+    podcast.apple_config&.build_publisher&.show&.episodes&.find { |e| e.feeder_episode.id == id }
+  end
+
   def publish!
     Rails.logger.tagged("Episode#publish!") do
       apple_mark_for_reupload!
