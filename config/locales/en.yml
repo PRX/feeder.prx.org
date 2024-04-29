@@ -633,6 +633,11 @@ en:
         stereo: Stereo
       new:
         hint: Upload a file or drag it here
+      non_mp3_warning:
+        body_html: It appears you're uploading a file that isn't in MP3 format. We recommend configuring the Audio Format for your <a href="%{href}" target="_blank">Default Feed</a> to MP3 to ensure your episode is accessible on all platforms.<br/><br/>Once you've set a default format, your file will be automatically converted to the chosen file type and quality.
+        cancel: Cancel Upload
+        continue: Continue Upload
+        title: MP3 Not Provided
       processing:
         hint: Processing
     segmenter:

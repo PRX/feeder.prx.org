@@ -15,6 +15,7 @@
       <%= form.file_field :media_file, class: cls, accept: "video/*", name: nil, data: data %>
     <% else %>
       <%= form.file_field :media_file, class: cls, accept: "audio/*", name: nil, data: data %>
+      <%= render "episode_media/media/non_mp3_warning", episode: episode %>
     <% end %>
 
     <%# fake display field; real text area is opacity-0 on top of it %>
