@@ -252,14 +252,20 @@ module Apple
         poll_episodes!(eps)
 
         create_apple_episodes = eps.select(&:apple_new?)
-        # NOTE: We don't attempt to update the remote state of episodes. Once
-        # apple has parsed the feed, it will not allow changing any attributes.
+        Apple::Episode.create_episodes(api, create_apple_episodes)
+        Rails.logger.info("Created remote episodes", {count: create_apple_episodes.length})
+
+        # NOTE: We don't attempt to update the remote state of published episodes.
+        # Once apple has parsed the feed, it will not allow changing any attributes.
         #
         # It's assumed that the episodes are created solely by the PRX web UI (not
         # on Podcasts Connect).
-        Apple::Episode.create_episodes(api, create_apple_episodes)
 
-        Rails.logger.info("Created remote episodes", {count: create_apple_episodes.length})
+        # However, if the episode is drafting state,
+        # then we can try to update the episode attributes
+        draft_apple_episodes = eps.select(&:drafting?)
+        Apple::Episode.update_episodes(api, draft_apple_episodes)
+        Rails.logger.info("Updated remote episodes", {count: draft_apple_episodes.length})
 
         show.reload
       end
@@ -275,7 +281,7 @@ module Apple
     def sync_podcast_containers!(eps)
       Rails.logger.tagged("##{__method__}") do
         # TODO: right now we only create one delivery per container,
-        # Apple RSS scaping means we don't need deliveries for freemium episode images
+        # Apple RSS scraping means we don't need deliveries for freemium episode images
         # But we do need asset deliveries for apple-only (non-rss) images
 
         Rails.logger.info("Starting podcast container sync")

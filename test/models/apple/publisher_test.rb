@@ -96,6 +96,30 @@ describe Apple::Publisher do
     end
   end
 
+  describe "#sync_episodes!" do
+    it "should create new episodes" do
+      apple_publisher.stub(:poll_episodes!, []) do
+        new_ep = OpenStruct.new(drafting?: false, apple_new?: true)
+        mock = Minitest::Mock.new
+        mock.expect(:call, [], [apple_publisher.api, [new_ep]])
+        Apple::Episode.stub(:create_episodes, mock) do
+          apple_publisher.sync_episodes!([new_ep])
+        end
+      end
+    end
+
+    it "should update draft episodes" do
+      apple_publisher.stub(:poll_episodes!, []) do
+        draft_ep = OpenStruct.new(drafting?: true, apple_new?: false)
+        mock = Minitest::Mock.new
+        mock.expect(:call, [], [apple_publisher.api, [draft_ep]])
+        Apple::Episode.stub(:update_episodes, mock) do
+          apple_publisher.sync_episodes!([draft_ep])
+        end
+      end
+    end
+  end
+
   describe "Archive and Unarchive flows" do
     let(:podcast) { create(:podcast) }
     let(:public_feed) { podcast.default_feed }
