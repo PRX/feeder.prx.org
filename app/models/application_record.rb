@@ -19,6 +19,6 @@ class ApplicationRecord < ActiveRecord::Base
   attr_writer :locking_enabled
 
   def stale?
-    try(:lock_version_changed?) || false
+    !!try(:lock_version_changed?)
   end
 end
