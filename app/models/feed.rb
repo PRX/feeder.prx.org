@@ -165,7 +165,7 @@ class Feed < ApplicationRecord
   end
 
   def publish_to_apple?
-    !!apple_config&.publish_to_apple?
+    false
   end
 
   def include_tags=(tags)
