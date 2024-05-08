@@ -30,4 +30,6 @@
   </div>
 
   <%= render "confirm_destroy", podcast: podcast, feed: feed %>
+
+  <%= render "layouts/stale_record_modal", form: form, discard_path: podcast_feed_path(podcast, feed) if feed.persisted? %>
 <% end %>
