@@ -82,11 +82,11 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
       xml.itunes(:summary) { xml.cdata!(itunes_summary(@podcast)) }
     end
 
-    xml.itunes :keywords, @podcast.keywords.join(",") unless @podcast.keywords.blank?
+    # xml.itunes :keywords, @podcast.keywords.join(",") unless @podcast.keywords.blank?
 
     xml.media :copyright, @podcast.copyright unless @podcast.copyright.blank?
     xml.media :thumbnail, url: @feed_image.url if @feed_image
-    xml.media :keywords, @podcast.keywords.join(",") unless @podcast.keywords.blank?
+    # xml.media :keywords, @podcast.keywords.join(",") unless @podcast.keywords.blank?
 
     cat = @itunes_categories.first.try(:name)
     xml.media :category, cat, scheme: "http://www.itunes.com/dtds/podcast-1.0.dtd" unless cat.blank?
@@ -152,7 +152,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
             xml.itunes :image, href: @itunes_image.url
           end
 
-          xml.itunes :keywords, ep.keywords.join(",") unless ep.keywords.blank?
+          # xml.itunes :keywords, ep.keywords.join(",") unless ep.keywords.blank?
           xml.itunes(:isClosedCaptioned, "Yes") if ep.is_closed_captioned
 
           if ep.media?
