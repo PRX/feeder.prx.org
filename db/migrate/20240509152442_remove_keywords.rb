@@ -16,7 +16,7 @@ class RemoveKeywords < ActiveRecord::Migration[7.0]
     add_index :episodes, :categories_tmp, using: "gin"
 
     pod_count = 0
-    Podcast.where("categories != '[]' OR keywords != '[]'").find_each do |p|
+    Podcast.with_deleted.where("categories != '[]' OR keywords != '[]'").find_each do |p|
       pod_count += 1
 
       # NOTE: for some reason, podcast keywords are comma-separated strings
@@ -30,7 +30,7 @@ class RemoveKeywords < ActiveRecord::Migration[7.0]
     Rails.logger.info("combined categories/keywords for #{pod_count} podcasts")
 
     ep_count = 0
-    Episode.where("categories != '[]' OR keywords != '[]'").find_each do |e|
+    Episode.with_deleted.where("categories != '[]' OR keywords != '[]'").find_each do |e|
       ep_count += 1
 
       cats = decode(e.categories)
@@ -56,13 +56,13 @@ class RemoveKeywords < ActiveRecord::Migration[7.0]
     add_column :episodes, :categories_tmp, :text
     add_column :episodes, :keywords, :text
 
-    Podcast.where("ARRAY_LENGTH(categories, 1) > 0").find_each do |p|
+    Podcast.with_deleted.where("ARRAY_LENGTH(categories, 1) > 0").find_each do |p|
       ActiveRecord::Base.logger.silence do
         p.update_column :categories_tmp, p.categories.to_json
       end
     end
 
-    Episode.where("ARRAY_LENGTH(categories, 1) > 0").find_each do |e|
+    Episode.with_deleted.where("ARRAY_LENGTH(categories, 1) > 0").find_each do |e|
       ActiveRecord::Base.logger.silence do
         e.update_column :categories_tmp, e.categories.to_json
       end
