@@ -64,7 +64,7 @@ class Feed::AppleSubscription < Feed
   end
 
   def unchanged_defaults
-    return unless self.persisted?
+    return unless persisted?
 
     if title_changed? || slug_changed?
       errors.add(:feed, "cannot change properties once set")
@@ -72,14 +72,14 @@ class Feed::AppleSubscription < Feed
   end
 
   def only_apple_feed
-    existing_feed = Feed.where(podcast_id: self.podcast_id, type: "Feed::AppleSubscription")
+    existing_feed = Feed.where(podcast_id: podcast_id, type: "Feed::AppleSubscription")
     if existing_feed.present?
       errors.add(:podcast, "cannot have more than one apple subscription")
     end
   end
 
   def must_be_private
-    if self.private != true
+    if private != true
       errors.add(:feed, "must be a private feed")
     end
   end
