@@ -454,6 +454,7 @@ en:
       podcast:
         author_email: Author Email
         author_name: Author Name
+        categories: Categories
         complete: The podcast is complete
         copyright: Copyright
         description: Description
