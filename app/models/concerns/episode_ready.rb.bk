@@ -1,0 +1,50 @@
+require "active_support/concern"
+
+module EpisodeReady
+  extend ActiveSupport::Concern
+
+  included do
+    scope :with_category, ->(cats) do
+
+
+    end
+
+    scope :for_feed, ->(feed) do
+      return all unless feed.present?
+
+      # TODO: episode has_and_belongs_to_many feeds
+
+      where(podcast_id: feed.podcast_id)
+
+      # published date
+      published_by(feed.episode_offset_seconds.to_i)
+
+      # include/exclude tags
+
+      tags = match_tags.map { |cat| normalize_category(cat) }
+      cats = (ep || []).categories.map { |cat| normalize_category(cat) }
+      (tags & cats).length > 0
+
+      # normalize
+      cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, "").gsub(/\s+/, " ").strip
+
+      # limit
+      order(published_at: :desc).limit(feed.display_episodes_count.to_i)
+
+    end
+
+    # episodes (in a feed) with their media versions already cut
+    scope :feed_ready, ->(feed = nil) do
+      scope = feed ?
+
+    end
+
+    scope :feed_unready, ->(feed = nil) do
+
+    end
+  end
+
+  def is_feed?(feed)
+  end
+
+end
