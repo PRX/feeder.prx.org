@@ -164,6 +164,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_02_172959) do
     t.integer "segment_count"
     t.text "production_notes"
     t.integer "medium"
+    t.integer "lock_version", default: 0, null: false
     t.index ["guid"], name: "index_episodes_on_guid", unique: true
     t.index ["keyword_xid"], name: "index_episodes_on_keyword_xid", unique: true
     t.index ["original_guid", "podcast_id"], name: "index_episodes_on_original_guid_and_podcast_id", unique: true, where: "((deleted_at IS NULL) AND (original_guid IS NOT NULL))"
@@ -229,6 +230,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_02_172959) do
     t.text "exclude_tags"
     t.datetime "deleted_at", precision: nil
     t.string "type"
+    t.integer "lock_version", default: 0, null: false
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)"
@@ -356,6 +358,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_02_172959) do
     t.text "restrictions"
     t.string "payment_pointer"
     t.string "donation_url"
+    t.integer "lock_version", default: 0, null: false
     t.index ["path"], name: "index_podcasts_on_path", unique: true
     t.index ["prx_uri"], name: "index_podcasts_on_prx_uri", unique: true
     t.index ["source_url"], name: "index_podcasts_on_source_url", unique: true, where: "((deleted_at IS NULL) AND (source_url IS NOT NULL))"
