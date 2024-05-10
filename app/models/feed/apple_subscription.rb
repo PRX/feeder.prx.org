@@ -2,6 +2,8 @@ class Feed::AppleSubscription < Feed
   DEFAULT_FEED_SLUG = "apple-delegated-delivery-subscriptions"
   DEFAULT_TITLE = "Apple Delegated Delivery Subscriptions"
   DEFAULT_AUDIO_FORMAT = {"f" => "flac", "b" => 16, "c" => 2, "s" => 44100}.freeze
+  DEFAULT_ZONES = ["billboard", "sonic_id"]
+  DEFAULT_TOKENS = [FeedToken.new(label: DEFAULT_TITLE)]
 
   after_initialize :set_defaults
 
@@ -23,56 +25,36 @@ class Feed::AppleSubscription < Feed
     self.slug ||= DEFAULT_FEED_SLUG
     self.title ||= DEFAULT_TITLE
     self.audio_format ||= DEFAULT_AUDIO_FORMAT
+    self.display_episodes_count ||= self.podcast&.default_feed&.display_episodes_count
+    self.include_zones ||= DEFAULT_ZONES
+    self.tokens ||= DEFAULT_TOKENS
+
+    super
   end
 
   def self.model_name
     Feed.model_name
   end
 
-  def self.find_or_build_private_feed(podcast)
-    if (existing = podcast.feeds.find_by(slug: DEFAULT_FEED_SLUG, title: DEFAULT_TITLE))
-      # TODO, handle partitions on apple models via the apple_config
-      # Until then it's not safe to have multiple apple_configs for the same podcast
-      Rails.logger.error("Found existing private feed for #{podcast.title}!")
-      Rails.logger.error("Do you want to continue? (y/N)")
-      raise "Stopping find_or_build_private_feed" if $stdin.gets.chomp.downcase != "y"
-
-      return existing
-    end
-    default_feed = podcast.default_feed
-
-    Feed.new(
-      display_episodes_count: default_feed.display_episodes_count,
-      slug: DEFAULT_FEED_SLUG,
-      title: DEFAULT_TITLE,
-      audio_format: DEFAULT_AUDIO_FORMAT,
-      include_zones: ["billboard", "sonic_id"],
-      tokens: [FeedToken.new(label: DEFAULT_TITLE)],
-      podcast: podcast
-    )
-  end
-
-  # TODO: this a helper for onboarding via console, retrofit when the UX catches up
-  def self.build_apple_config(podcast, key)
-    if podcast.apple_config
-      Rails.logger.error("Found existing apple config for #{podcast.title}!")
-      Rails.logger.error("Do you want to continue? (y/N)")
-      raise "Stopping build_apple_config" if $stdin.gets.chomp.downcase != "y"
-    end
-
-    Apple::Config.new(feed: find_or_build_private_feed(podcast), key: key)
-  end
-
   def unchanged_defaults
     return unless persisted?
 
-    if title_changed? || slug_changed?
-      errors.add(:feed, "cannot change properties once set")
+    if title_changed?
+      errors.add(:title, "cannot change once set")
+    end
+    if slug_changed?
+      errors.add(:slug, "cannot change once set")
+    end
+    if file_name_changed?
+      errors.add(:file_name, "cannot change once set")
+    end
+    if audio_format_changed?
+      errors.add(:audio_format, "cannot change once set")
     end
   end
 
   def only_apple_feed
-    existing_feed = Feed.where(podcast_id: podcast_id, type: "Feed::AppleSubscription")
+    existing_feed = Feed::AppleSubscription.where(podcast_id: podcast_id).where.not(id: id)
     if existing_feed.present?
       errors.add(:podcast, "cannot have more than one apple subscription")
     end
@@ -80,7 +62,7 @@ class Feed::AppleSubscription < Feed
 
   def must_be_private
     if private != true
-      errors.add(:feed, "must be a private feed")
+      errors.add(:private, "must be a private feed")
     end
   end
 

@@ -20,6 +20,22 @@ module Apple
     delegate :public_feed, to: :podcast, allow_nil: true
     alias_method :private_feed, :feed
 
+    def find_or_build_apple_feed(podcast)
+      existing_feed = Feed.where(podcast_id: podcast.id, type: "Feed::AppleSubscription")
+      existing_feed.present? ? existing_feed : Feed::AppleSubscription.new(podcast_id: podcast.id)
+    end
+
+    # TODO: this a helper for onboarding via console, retrofit when the UX catches up
+    def self.build_apple_config(podcast, key)
+      if podcast.apple_config
+        Rails.logger.error("Found existing apple config for #{podcast.title}!")
+        Rails.logger.error("Do you want to continue? (y/N)")
+        raise "Stopping build_apple_config" if $stdin.gets.chomp.downcase != "y"
+      end
+
+      Apple::Config.new(feed: find_or_build_apple_feed(podcast), key: key)
+    end
+
     def self.mark_as_delivered!(apple_publisher)
       apple_publisher.episodes_to_sync.each do |episode|
         if episode.podcast_container&.needs_delivery? == false
