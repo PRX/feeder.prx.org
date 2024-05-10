@@ -3,10 +3,11 @@
     <strong><%= t(".title") %>:</strong>
   </p>
 
-  <%= form.collection_check_boxes(:feed_ids, episode.podcast.feeds.tab_order, :id, :friendly_title) do |b| %>
+  <% disabled = !policy(episode).create_or_update? %>
+  <%= form.collection_check_boxes(:feed_ids, episode.podcast.feeds.tab_order, :id, :friendly_title, {}, disabled: disabled) do |b| %>
     <div class="form-check">
       <%= b.check_box(class: "form-check-input") %>
-      <%= b.label(class: "form-check-label") {  b.text } %>
+      <%= b.label(class: "form-check-label") { b.text } %>
     </div>
   <% end %>
 <% end %>
