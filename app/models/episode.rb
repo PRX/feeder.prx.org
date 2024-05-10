@@ -24,6 +24,7 @@ class Episode < ApplicationRecord
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
+  deferred_has_and_belongs_to_many :feeds
   has_many :episode_imports
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
@@ -48,6 +49,7 @@ class Episode < ApplicationRecord
   validates :segment_count, numericality: {only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
   validate :validate_media_ready, if: :strict_validations
 
+  after_initialize :set_default_feeds, if: :new_record?
   before_validation :set_defaults, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
@@ -138,6 +140,11 @@ class Episode < ApplicationRecord
     else
       img.update_image(image)
     end
+  end
+
+  def set_default_feeds
+    # TODO: also the apple feed?
+    self.feed_ids = [podcast&.default_feed&.id]
   end
 
   def set_defaults

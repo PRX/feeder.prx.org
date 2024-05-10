@@ -407,6 +407,9 @@ en:
         episode_offset_seconds: Episode Publish Offset
         exclude_tags: Exclude Categories
         file_name: File Name
+        friendly_titles:
+          apple: Apple Subscriptions
+          default: Default RSS Feed
         house: House Ads
         include_donation_url: Include Donation Form
         include_podcast_value: Include Micropayments Wallet
@@ -537,6 +540,8 @@ en:
       embed_player_not_ready: Episode Not Saved
       enclosure_not_ready: No Media Files Uploaded
       title: Distribution
+    form_feeds:
+      title: Include In Feeds
     form_main:
       help:
         author_email: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
@@ -1006,7 +1011,6 @@ en:
     show:
       all_episodes: All Episodes
       create_episode: Create Episode
-      default_feed: Default RSS Feed
       engagement_settings: Engagement Settings
       feeds: Feeds
       import: Import

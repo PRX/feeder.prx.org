@@ -21,6 +21,8 @@ class Feed < ApplicationRecord
   serialize :audio_format, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
+  has_and_belongs_to_many :episodes
+
   has_many :feed_tokens, autosave: true, dependent: :destroy, inverse_of: :feed
   alias_attribute :tokens, :feed_tokens
   accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
@@ -74,6 +76,16 @@ class Feed < ApplicationRecord
     self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
     self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
+  end
+
+  def friendly_title
+    if default?
+      I18n.t("helpers.label.feed.friendly_titles.default")
+    elsif apple_config # TODO: fix this N+1
+      I18n.t("helpers.label.feed.friendly_titles.apple")
+    else
+      title
+    end
   end
 
   def set_public_feeds_url

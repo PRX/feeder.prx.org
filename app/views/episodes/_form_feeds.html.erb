@@ -1,0 +1,12 @@
+<% if episode.podcast.feeds.count > 1 %>
+  <p class="mt-2 mb-0">
+    <strong><%= t(".title") %>:</strong>
+  </p>
+
+  <%= form.collection_check_boxes(:feed_ids, episode.podcast.feeds.tab_order, :id, :friendly_title) do |b| %>
+    <div class="form-check">
+      <%= b.check_box(class: "form-check-input") %>
+      <%= b.label(class: "form-check-label") {  b.text } %>
+    </div>
+  <% end %>
+<% end %>

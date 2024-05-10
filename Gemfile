@@ -41,6 +41,7 @@ gem "roar-rails", github: "PRX/roar-rails", branch: "feat/rails_7"
 # models
 gem "addressable"
 gem "countries"
+gem "deferring"
 gem "paranoia"
 gem "sanitize"
 
