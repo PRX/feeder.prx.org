@@ -9,14 +9,30 @@ describe Feed::AppleSubscription do
     it "cannot change the default properties once saved" do
       apple_feed.title = "new apple feed"
       apple_feed.slug = "new-apple-slug"
+      apple_feed.file_name = "new_file.xml"
+      apple_feed.audio_format = {f: "flac", b: 16, c: 2, s: 44100}
       assert apple_feed.valid?
       apple_feed.save!
 
       apple_feed.title = "changed apple feed"
       refute apple_feed.valid?
       apple_feed.title = "new apple feed"
+      assert apple_feed.valid?
+
       apple_feed.slug = "changed-apple-slug"
       refute apple_feed.valid?
+      apple_feed.slug = "new-apple-slug"
+      assert apple_feed.valid?
+
+      apple_feed.file_name = "changed_file_name.xml"
+      refute apple_feed.valid?
+      apple_feed.file_name = "new_file.xml"
+      assert apple_feed.valid?
+
+      apple_feed.audio_format = {f: "wav", b: 128, c: 2, s: 44100}
+      refute apple_feed.valid?
+      apple_feed.audio_format = {f: "flac", b: 16, c: 2, s: 44100}
+      assert apple_feed.valid?
     end
 
     it "cannot have more than one apple feed on a single podcast" do
@@ -24,6 +40,7 @@ describe Feed::AppleSubscription do
       assert second_apple.valid?
 
       apple_feed.save!
+      assert apple_feed.valid?
       refute second_apple.valid?
     end
 

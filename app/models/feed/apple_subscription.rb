@@ -25,7 +25,7 @@ class Feed::AppleSubscription < Feed
     self.slug ||= DEFAULT_FEED_SLUG
     self.title ||= DEFAULT_TITLE
     self.audio_format ||= DEFAULT_AUDIO_FORMAT
-    self.display_episodes_count ||= self.podcast&.default_feed&.display_episodes_count
+    self.display_episodes_count ||= podcast&.default_feed&.display_episodes_count
     self.include_zones ||= DEFAULT_ZONES
     self.tokens ||= DEFAULT_TOKENS
 
