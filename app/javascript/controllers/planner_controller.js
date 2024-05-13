@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["adBreaks", "button", "count", "counter", "label"]
+  static targets = ["adBreaks", "button", "count", "counter", "feedIds", "label"]
   static values = { datesCount: Number }
 
   datesCountValueChanged() {
@@ -22,6 +22,10 @@ export default class extends Controller {
     this.recount()
   }
 
+  setFeedIds(event) {
+    this.recount()
+  }
+
   recount() {
     const num = this.countSelectedTargets()
 
@@ -33,8 +37,10 @@ export default class extends Controller {
       this.labelTarget.innerHTML = this.labelTarget.dataset.plural
     }
 
-    // enable button IF we have > 1 selected and a adBreak count
-    if (num > 0 && (this.adBreaksTarget.disabled || parseInt(this.adBreaksTarget.value) >= 0)) {
+    // enable button IF we have > 1 selected, adBreak count, and feeds
+    const hasAdBreaks = this.adBreaksTarget.disabled || parseInt(this.adBreaksTarget.value) >= 0
+    const hasFeeds = this.feedIdsTargets.some((el) => el.checked)
+    if (num > 0 && hasAdBreaks && hasFeeds) {
       this.buttonTarget.disabled = false
     } else {
       this.buttonTarget.disabled = true

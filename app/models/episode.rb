@@ -144,7 +144,7 @@ class Episode < ApplicationRecord
 
   def set_default_feeds
     # TODO: also the apple feed?
-    self.feed_ids = [podcast&.default_feed&.id]
+    self.feed_ids = [podcast&.default_feed&.id] if feed_ids.blank?
   end
 
   def set_defaults
