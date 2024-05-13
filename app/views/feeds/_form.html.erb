@@ -11,6 +11,9 @@
         <% if feed.custom? %>
           <%= render "form_auth", podcast: podcast, feed: feed, form: form %>
         <% end %>
+        <% if apple_feed?(feed) %>
+          <%= render "form_apple_config", podcast: podcast, feed: feed, form: form %>
+        <% end %>
         <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
         <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
         <% if feed.custom? %>

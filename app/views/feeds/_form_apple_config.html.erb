@@ -1,0 +1,42 @@
+  <div class="col-12 mb-4">
+    <div class="card shadow border-0">
+      <div class="card-header card-header-light d-flex justify-content-between">
+        <h2 class="card-title h5 flex-grow-1">Apple Subscriptions</h2>
+      </div>
+      <div class="card-body">
+        <div>
+          <%= form.fields_for :apple_config do |config_form| %>
+            <%= config_form.fields_for :key do |key_fields| %>
+              <div class="mb-4">
+                <div class="form-floating">
+                  <%= key_fields.text_field :provider_id %>
+                  <%= key_fields.label :provider_id %>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="form-floating">
+                  <%= key_fields.text_field :key_id %>
+                  <%= key_fields.label :key_id %>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="form-floating">
+                  <%= key_fields.text_field :key_pem_b64 %>
+                  <%= key_fields.label :key_pem_b64 %>
+                </div>
+              </div>
+            <% end %>
+
+            <div class="mb-4">
+              <div class="form-check">
+                <%= config_form.check_box :publish_enabled %>
+                <%= config_form.label :publish_enabled %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
