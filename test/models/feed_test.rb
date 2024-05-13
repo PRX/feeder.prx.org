@@ -326,7 +326,7 @@ describe Feed do
 
   describe "#publish_to_apple?" do
     it "returns false if the feed is not an Apple Subscription feed" do
-      refute_equal feed2.type, "Feed::AppleSubscription"
+      refute_equal feed2.type, "Feeds::AppleSubscription"
       refute feed2.publish_to_apple?
     end
   end

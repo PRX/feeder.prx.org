@@ -1,6 +1,6 @@
 require "test_helper"
 
-describe Feed::AppleSubscription do
+describe Feeds::AppleSubscription do
   let(:podcast) { create(:podcast) }
   let(:feed_1) { podcast.default_feed }
   let(:apple_feed) { build(:apple_feed, podcast: podcast) }
@@ -75,7 +75,7 @@ describe Feed::AppleSubscription do
     end
 
     it "returns false if the feed is not an Apple Subscription feed" do
-      refute_equal feed_1.type, "Feed::AppleSubscription"
+      refute_equal feed_1.type, "Feeds::AppleSubscription"
       refute feed_1.publish_to_apple?
     end
   end

@@ -1,4 +1,4 @@
-class Feed::AppleSubscription < Feed
+class Feeds::AppleSubscription < Feed
   DEFAULT_FEED_SLUG = "apple-delegated-delivery-subscriptions"
   DEFAULT_TITLE = "Apple Delegated Delivery Subscriptions"
   DEFAULT_AUDIO_FORMAT = {"f" => "flac", "b" => 16, "c" => 2, "s" => 44100}.freeze
@@ -54,8 +54,8 @@ class Feed::AppleSubscription < Feed
   end
 
   def only_apple_feed
-    existing_feed = Feed::AppleSubscription.where(podcast_id: podcast_id).where.not(id: id)
-    if existing_feed.present?
+    existing_feed = Feeds::AppleSubscription.where(podcast_id: podcast_id).where.not(id: id)
+    if existing_feed.any?
       errors.add(:podcast, "cannot have more than one apple subscription")
     end
   end

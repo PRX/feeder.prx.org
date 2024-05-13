@@ -21,8 +21,8 @@ module Apple
     alias_method :private_feed, :feed
 
     def find_or_build_apple_feed(podcast)
-      existing_feed = Feed.where(podcast_id: podcast.id, type: "Feed::AppleSubscription")
-      existing_feed.present? ? existing_feed : Feed::AppleSubscription.new(podcast_id: podcast.id)
+      existing_feed = Feed.where(podcast_id: podcast.id, type: "Feeds::AppleSubscription")
+      existing_feed.present? ? existing_feed : Feeds::AppleSubscription.new(podcast_id: podcast.id)
     end
 
     # TODO: this a helper for onboarding via console, retrofit when the UX catches up
