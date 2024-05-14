@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_04_24_214558) do
+ActiveRecord::Schema[7.0].define(version: 2024_05_02_172959) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -151,8 +151,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_24_214558) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.datetime "source_updated_at", precision: nil
     t.string "keyword_xid"
+    t.datetime "source_updated_at", precision: nil
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"
@@ -229,6 +229,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_24_214558) do
     t.boolean "include_donation_url", default: true
     t.text "exclude_tags"
     t.datetime "deleted_at", precision: nil
+    t.string "type"
     t.integer "lock_version", default: 0, null: false
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"

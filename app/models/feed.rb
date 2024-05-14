@@ -25,8 +25,6 @@ class Feed < ApplicationRecord
   alias_attribute :tokens, :feed_tokens
   accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
 
-  has_one :apple_config, class_name: "::Apple::Config", dependent: :destroy, autosave: true, validate: true
-
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
@@ -167,7 +165,7 @@ class Feed < ApplicationRecord
   end
 
   def publish_to_apple?
-    !!apple_config&.publish_to_apple?
+    false
   end
 
   def include_tags=(tags)
