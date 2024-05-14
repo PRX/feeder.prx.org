@@ -1,26 +1,26 @@
-  <div class="col-12 mb-4">
-    <div class="card shadow border-0">
-      <div class="card-header card-header-light d-flex justify-content-between">
-        <h2 class="card-title h5 flex-grow-1">Apple Subscriptions</h2>
-      </div>
-      <div class="card-body">
-        <%= form.fields_for :apple_config do |config_form| %>
-          <%= config_form.fields_for :key do |key_fields| %>
-            <div class="mb-4">
-              <div class="form-floating">
-                <%= key_fields.text_field :provider_id, disabled: true %>
-                <%= key_fields.label :provider_id %>
-              </div>
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <h2 class="card-title h5 flex-grow-1">Apple Subscriptions</h2>
+    </div>
+    <div class="card-body">
+      <%= form.fields_for :apple_config do |config_form| %>
+        <%= config_form.fields_for :key do |key_fields| %>
+          <div class="mb-4">
+            <div class="form-floating">
+              <%= key_fields.text_field :provider_id, disabled: config_form.object.persisted? %>
+              <%= key_fields.label :provider_id %>
             </div>
+          </div>
 
-            <div>
-              <div class="form-floating">
-                <%= key_fields.text_field :key_id, disabled: true %>
-                <%= key_fields.label :key_id %>
-              </div>
+          <div>
+            <div class="form-floating">
+              <%= key_fields.text_field :key_id, disabled: config_form.object.persisted? %>
+              <%= key_fields.label :key_id %>
             </div>
-          <% end %>
+          </div>
         <% end %>
-      </div>
+      <% end %>
     </div>
   </div>
+</div>
