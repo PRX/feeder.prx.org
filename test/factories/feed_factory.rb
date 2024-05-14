@@ -44,5 +44,15 @@ FactoryBot.define do
     factory :public_feed do
       private { false }
     end
+
+    factory :apple_feed, class: "Feeds::AppleSubscription" do
+      type { "Feeds::AppleSubscription" }
+      private { true }
+      tokens { [FeedToken.new(label: "apple-private")] }
+
+      after(:build) do |feed, _evaluator|
+        feed.apple_config = build(:apple_config)
+      end
+    end
   end
 end
