@@ -242,7 +242,6 @@ module Apple
 
     def enclosure_url
       url = EnclosureUrlBuilder.new.base_enclosure_url(podcast, feeder_episode, private_feed)
-      url = EnclosureUrlBuilder.mark_no_imp(url)
       EnclosureUrlBuilder.mark_authorized(url, show.private_feed)
     end
 
