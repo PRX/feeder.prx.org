@@ -24,7 +24,8 @@ class Episode < ApplicationRecord
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
-  deferred_has_and_belongs_to_many :feeds
+  has_many :episodes_feeds, dependent: :delete_all
+  has_many :feeds, through: :episodes_feeds
   has_many :episode_imports
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy

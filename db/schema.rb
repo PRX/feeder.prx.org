@@ -172,9 +172,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_09_194515) do
     t.index ["published_at", "podcast_id"], name: "index_episodes_on_published_at_and_podcast_id"
   end
 
-  create_table "episodes_feeds", id: false, force: :cascade do |t|
-    t.bigint "episode_id"
-    t.bigint "feed_id"
+  create_table "episodes_feeds", primary_key: ["episode_id", "feed_id"], force: :cascade do |t|
+    t.bigint "episode_id", null: false
+    t.bigint "feed_id", null: false
     t.index ["episode_id"], name: "index_episodes_feeds_on_episode_id"
     t.index ["feed_id"], name: "index_episodes_feeds_on_feed_id"
   end

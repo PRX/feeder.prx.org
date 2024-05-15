@@ -2,7 +2,7 @@ class CreateEpisodeFeeds < ActiveRecord::Migration[7.0]
   include TextSanitizer
 
   def up
-    create_table :episodes_feeds, id: false do |t|
+    create_table :episodes_feeds, primary_key: [:episode_id, :feed_id] do |t|
       t.belongs_to :episode
       t.belongs_to :feed
     end

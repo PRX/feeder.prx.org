@@ -150,6 +150,8 @@ GEM
       xpath (~> 3.2)
     childprocess (4.1.0)
     coderay (1.1.3)
+    composite_primary_keys (14.0.9)
+      activerecord (~> 7.0.2)
     concurrent-ruby (1.2.3)
     connection_pool (2.4.1)
     countries (5.2.0)
@@ -162,8 +164,6 @@ GEM
       irb (>= 1.3.6)
       reline (>= 0.3.1)
     declarative (0.0.20)
-    deferring (0.8.2)
-      activerecord (>= 4.2)
     diffy (3.4.2)
     docile (1.4.0)
     dotenv (2.8.1)
@@ -500,9 +500,9 @@ DEPENDENCIES
   bootsnap
   bootstrap (~> 5.2.2)
   capybara
+  composite_primary_keys
   countries
   debug
-  deferring
   dotenv-rails (~> 2.0)
   erb_lint
   excon

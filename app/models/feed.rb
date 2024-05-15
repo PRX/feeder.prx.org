@@ -21,7 +21,8 @@ class Feed < ApplicationRecord
   serialize :audio_format, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
-  has_and_belongs_to_many :episodes, -> { order("published_at desc") }
+  has_many :episodes_feeds, dependent: :delete_all
+  has_many :episodes, -> { order("published_at desc") }, through: :episodes_feeds
 
   has_many :feed_tokens, autosave: true, dependent: :destroy, inverse_of: :feed
   alias_attribute :tokens, :feed_tokens
