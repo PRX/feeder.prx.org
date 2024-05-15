@@ -24,12 +24,15 @@ class Episode < ApplicationRecord
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
+
   has_many :episodes_feeds, dependent: :delete_all
   has_many :feeds, through: :episodes_feeds
   has_many :episode_imports
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
+
+  has_one :ready_image, -> { complete_or_replaced.order("created_at DESC") }, class_name: "EpisodeImage"
   has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
 
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
@@ -122,10 +125,6 @@ class Episode < ApplicationRecord
     author = a || {}
     self.author_name = author["name"]
     self.author_email = author["email"]
-  end
-
-  def ready_image
-    images.complete_or_replaced.first
   end
 
   def image
@@ -277,14 +276,6 @@ class Episode < ApplicationRecord
 
   def path
     "#{podcast.try(:path)}/#{guid}"
-  end
-
-  def include_in_feed?
-    if media?
-      complete_media?
-    else
-      true
-    end
   end
 
   def enclosure_url(feed = nil)
