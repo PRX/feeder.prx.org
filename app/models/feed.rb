@@ -105,7 +105,7 @@ class Feed < ApplicationRecord
   # copy all episodes in default_feed to this one
   # TODO: is this always the right logic?
   def set_default_episodes
-    unless default?
+    if !default? && podcast
       default_feed = podcast.default_feed
       select = "episode_id, #{id} FROM episodes_feeds WHERE feed_id = #{default_feed.id}"
       insert = "INSERT INTO episodes_feeds SELECT #{select}"
