@@ -82,6 +82,40 @@ describe Feed do
     end
   end
 
+  describe "#set_default_episodes" do
+    it "adds default_feed.episodes to newly created feeds" do
+      e1 = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+      e2 = create(:episode, podcast: podcast, published_at: 1.minute.ago)
+
+      # new episodes are added to default feeds
+      assert_equal feed1.episode_ids, [e2.id, e1.id]
+      feed1.episodes.destroy(e2)
+      assert_equal feed1.episode_ids, [e1.id]
+
+      # new feeds copy the default feed episodes
+      new_feed = create(:feed, podcast: podcast)
+      assert_equal new_feed.episode_ids, [e1.id]
+    end
+  end
+
+  describe "#feed_episodes" do
+    it "applies episode publish offsets and limits" do
+      e1 = create(:episode, podcast: podcast, published_at: 1.day.ago)
+      e2 = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+      e3 = create(:episode, podcast: podcast, published_at: 1.minute.ago)
+      e4 = create(:episode, podcast: podcast, published_at: 1.minute.from_now)
+
+      assert_equal feed1.episode_ids, [e4.id, e3.id, e2.id, e1.id]
+      assert_equal feed1.feed_episode_ids, [e3.id, e2.id, e1.id]
+
+      feed1.episode_offset_seconds = -3600
+      assert_equal feed1.feed_episode_ids, [e4.id, e3.id, e2.id, e1.id]
+
+      feed1.display_episodes_count = 2
+      assert_equal feed1.feed_episode_ids, [e4.id, e3.id]
+    end
+  end
+
   describe "#default" do
     it "returns default feeds" do
       assert feed1.default?
@@ -186,30 +220,6 @@ describe Feed do
     end
   end
 
-  describe "#filtered_episodes" do
-    let(:ep) { create(:episode, podcast: feed1.podcast) }
-
-    it "should include episodes based on a tag" do
-      feed1.update!(include_tags: ["foo"])
-
-      assert_equal feed1.reload.filtered_episodes, []
-      ep.update!(categories: ["foo"])
-      assert_equal feed1.reload.filtered_episodes, [ep]
-    end
-
-    it "should exclude episodes based on a tag" do
-      feed1.update!(exclude_tags: ["foo"])
-
-      ep = create(:episode, podcast: feed1.podcast)
-
-      # Add the episode category so we can match the feed "exclude_tags"
-      # Using the same tag based include scheme.
-      assert_equal feed1.reload.filtered_episodes, [ep]
-      ep.update!(categories: ["foo"])
-      assert_equal feed1.reload.filtered_episodes, []
-    end
-  end
-
   describe "#feed_image" do
     it "replaces images" do
       refute_nil feed1.feed_image
@@ -297,30 +307,6 @@ describe Feed do
 
       assert_nil feed1.ready_itunes_image
       assert_nil feed1.itunes_images.with_deleted.first.replaced_at
-    end
-  end
-
-  describe "#filtered_episodes" do
-    let(:ep) { create(:episode, podcast: feed1.podcast) }
-
-    it "should include episodes based on a tag" do
-      feed1.update!(include_tags: ["foo"])
-
-      assert_equal feed1.reload.filtered_episodes, []
-      ep.update!(categories: ["foo"])
-      assert_equal feed1.reload.filtered_episodes, [ep]
-    end
-
-    it "should exclude episodes based on a tag" do
-      feed1.update!(exclude_tags: ["foo"])
-
-      ep = create(:episode, podcast: feed1.podcast)
-
-      # Add the episode category so we can match the feed "exclude_tags"
-      # Using the same tag based include scheme.
-      assert_equal feed1.reload.filtered_episodes, [ep]
-      ep.update!(categories: ["foo"])
-      assert_equal feed1.reload.filtered_episodes, []
     end
   end
 

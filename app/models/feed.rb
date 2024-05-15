@@ -21,7 +21,7 @@ class Feed < ApplicationRecord
   serialize :audio_format, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
-  has_and_belongs_to_many :episodes
+  has_and_belongs_to_many :episodes, -> { order("published_at desc") }
 
   has_many :feed_tokens, autosave: true, dependent: :destroy, inverse_of: :feed
   alias_attribute :tokens, :feed_tokens
@@ -45,7 +45,6 @@ class Feed < ApplicationRecord
   validates_format_of :slug, without: /\A(images|\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\z/
   validates :file_name, presence: true, format: {with: /\A[0-9a-zA-Z_.-]+\z/}
   validates :include_zones, placement_zones: true
-  validates :include_tags, tag_list: true
   validates :audio_format, audio_format: true
   validates :title, presence: true, unless: :default?
   validates :url, http_url: true
@@ -57,6 +56,7 @@ class Feed < ApplicationRecord
   after_initialize :set_defaults
   before_validation :sanitize_text
   before_save :set_public_feeds_url
+  after_create :set_default_episodes
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
@@ -101,6 +101,28 @@ class Feed < ApplicationRecord
       # TODO: after https://github.com/PRX/feeder.prx.org/issues/896 remove the date condition
       self.url = public_feeds_url if url.blank? && (new_record? || created_at >= "2023-10-01")
     end
+  end
+
+  # copy all episodes in default_feed to this one
+  # TODO: is this always the right logic?
+  def set_default_episodes
+    unless default?
+      default_feed = podcast.default_feed
+      select = "episode_id, #{id} FROM episodes_feeds WHERE feed_id = #{default_feed.id}"
+      insert = "INSERT INTO episodes_feeds SELECT #{select}"
+      self.class.connection.execute(insert)
+    end
+  end
+
+  # apply publish-offsets and limits to episodes
+  def feed_episodes
+    by = episode_offset_seconds.to_i
+    count = display_episodes_count
+    Episode.from(episodes.published_by(by).limit(count), :episodes)
+  end
+
+  def feed_episode_ids
+    feed_episodes.pluck(:id)
   end
 
   def default?
@@ -157,17 +179,6 @@ class Feed < ApplicationRecord
     "#{podcast&.path}/#{path_suffix}"
   end
 
-  def feed_episodes
-    include_in_feed = []
-    feed_max = display_episodes_count.to_i
-
-    filtered_episodes.each do |ep|
-      include_in_feed << ep if ep.include_in_feed?
-      break if (feed_max > 0) && (include_in_feed.size >= feed_max)
-    end
-    include_in_feed
-  end
-
   def publish_to_apple?
     !!apple_config&.publish_to_apple?
   end
@@ -180,22 +191,6 @@ class Feed < ApplicationRecord
   def exclude_tags=(tags)
     tags = Array(tags).reject(&:blank?)
     self[:exclude_tags] = tags.blank? ? nil : tags
-  end
-
-  def filtered_episodes
-    eps = podcast.episodes.published_by(episode_offset_seconds.to_i)
-
-    if include_tags.present?
-      kws = sanitize_keywords(include_tags, true)
-      eps = eps.select { |e| (sanitize_keywords(e.categories, true) & kws).any? }
-    end
-
-    if exclude_tags.present?
-      kws = sanitize_keywords(exclude_tags, true)
-      eps = eps.reject { |e| (sanitize_keywords(e.categories, true) & kws).any? }
-    end
-
-    eps
   end
 
   def enclosure_template

@@ -50,6 +50,7 @@ class Episode < ApplicationRecord
   validate :validate_media_ready, if: :strict_validations
 
   after_initialize :set_default_feeds, if: :new_record?
+  before_validation :set_default_feeds, if: :new_record?
   before_validation :set_defaults, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
