@@ -58,6 +58,7 @@ class Feed < ApplicationRecord
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
+  scope :apple, -> { where(type: "Feeds::AppleSubscription") }
   scope :tab_order, -> { order(Arel.sql("slug IS NULL DESC, created_at ASC")) }
 
   def self.enclosure_template_default
@@ -79,7 +80,7 @@ class Feed < ApplicationRecord
   def friendly_title
     if default?
       I18n.t("helpers.label.feed.friendly_titles.default")
-    elsif apple_config # TODO: fix this N+1
+    elsif apple?
       I18n.t("helpers.label.feed.friendly_titles.apple")
     else
       title
@@ -133,6 +134,10 @@ class Feed < ApplicationRecord
 
   def public?
     !private?
+  end
+
+  def apple?
+    false
   end
 
   def default_runtime_settings?
