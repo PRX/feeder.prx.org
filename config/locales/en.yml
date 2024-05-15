@@ -1087,7 +1087,7 @@ en:
         ad_breaks: Enter the number of ad breaks (midrolls) these episodes will have. Accurately entering the number of ad breaks help us to better predict ad inventory for your podcast.
         medium: Enter the file format you plan to upload for these episodes.
       label:
-        feed_ids: Include In Feeds
+        feed_ids: Include Draft in Feeds
         publish_time: Publish Time
         publish_time_zone: Time Zone
     helper:

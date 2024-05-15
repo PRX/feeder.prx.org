@@ -38,7 +38,7 @@
       <% data = {planner_target: "feedIds", action: "planner#setFeedIds"} %>
 
       <%= form.collection_check_boxes(:feed_ids, feeds, :id, :friendly_title, {checked: defaults}) do |b| %>
-        <div class="form-check col-3">
+        <div class="form-check col-3 label-wrap">
           <%= b.check_box(class: "form-check-input", data: data) %>
           <%= b.label(class: "form-check-label") { b.text } %>
         </div>
