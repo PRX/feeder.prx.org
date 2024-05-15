@@ -310,28 +310,9 @@ describe Feed do
     end
   end
 
-  describe "#apple_configs" do
-    it "has apple credentials" do
-      creds = create(:apple_config, feed: feed2)
-      assert_equal creds, feed2.apple_config
-      assert_equal feed1, feed2.apple_config.public_feed
-    end
-  end
-
   describe "#publish_to_apple?" do
-    it "returns true if the feed has apple credentials" do
-      create(:apple_config, feed: feed2, publish_enabled: true)
-      refute feed1.publish_to_apple?
-      assert feed2.publish_to_apple?
-    end
-
-    it "returns false if the creds are not marked publish_enabled?" do
-      create(:apple_config, feed: feed2, publish_enabled: false)
-      refute feed2.publish_to_apple?
-    end
-
-    it "returns false if the feed does not have apple credentials" do
-      refute feed2.apple_config
+    it "returns false if the feed is not an Apple Subscription feed" do
+      refute_equal feed2.type, "Feeds::AppleSubscription"
       refute feed2.publish_to_apple?
     end
   end
