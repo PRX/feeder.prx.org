@@ -151,6 +151,16 @@ class Episode < ApplicationRecord
     end
   end
 
+  def feed_slugs
+    feeds.pluck(:slug).map { |s| s || "default" }
+  end
+
+  def feed_slugs=(slugs)
+    self.feeds = podcast&.feeds&.filter_map do |feed|
+      feed if slugs.try(:include?, feed.slug || "default")
+    end
+  end
+
   def set_defaults
     guid
     self.segment_count ||= 1 if new_record? && strict_validations

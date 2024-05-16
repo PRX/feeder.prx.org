@@ -161,6 +161,9 @@ describe Feed do
     it "restricts some slugs already used in S3" do
       assert feed1.valid?
 
+      feed1.slug = "default"
+      refute feed1.valid?
+
       feed1.slug = "images"
       refute feed1.valid?
 
