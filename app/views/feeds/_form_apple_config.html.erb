@@ -1,9 +1,13 @@
 <div class="col-12 mb-4">
   <div class="card shadow border-0">
     <div class="card-header card-header-light d-flex justify-content-between">
-      <h2 class="card-title h5 flex-grow-1">Apple Subscriptions</h2>
+      <h2 class="card-title h5 flex-grow-1"><%= t(".title")%></h2>
     </div>
     <div class="card-body">
+      <div class="mb-4">
+        <p><%= t(".description")%></p>
+        <a href="https://help.prx.org"><%= t(".guide_link")%></a>
+      </div>
       <%= form.fields_for :apple_config do |config_form| %>
         <%= config_form.fields_for :key do |key_fields| %>
           <div class="mb-4">
