@@ -276,26 +276,6 @@ describe Episode do
     end
   end
 
-  describe "#feed_slugs" do
-    it "gets and sets feeds based on their slugs" do
-      e1 = build_stubbed(:episode)
-      f1 = e1.podcast.default_feed
-      f2 = build_stubbed(:feed, slug: "feed2")
-      f3 = build_stubbed(:feed, slug: "feed3")
-
-      e1.podcast.stub(:feeds, [f1, f2, f3]) do
-        assert_equal [], e1.feeds
-        assert_equal [], e1.feed_slugs
-
-        e1.feed_slugs = ["default", "whatev", "feed3"]
-        assert_equal [f1, f3], e1.feeds
-
-        e1.feed_slugs = ["feed3"]
-        assert_equal [f3], e1.feeds
-      end
-    end
-  end
-
   describe "#medium=" do
     it "marks existing content for destruction on change" do
       refute episode.contents.first.marked_for_destruction?
