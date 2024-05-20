@@ -48,6 +48,12 @@ class EpisodeHasFeedsTest < ActiveSupport::TestCase
       assert episode.in_feed?(f1)
       refute episode.in_feed?(f2)
       refute episode.in_feed?(f3)
+
+      episode.published_at = 1.minute.from_now
+      refute episode.in_feed?(f1)
+
+      f1.episode_offset_seconds = -61
+      assert episode.in_feed?(f1)
     end
   end
 
@@ -55,6 +61,10 @@ class EpisodeHasFeedsTest < ActiveSupport::TestCase
     it "checks if an episode is in the default feed" do
       assert episode.in_default_feed?
 
+      episode.published_at = nil
+      refute episode.in_default_feed?
+
+      episode.published_at = 1.minute.ago
       episode.feeds = [f2]
       refute episode.in_default_feed?
     end

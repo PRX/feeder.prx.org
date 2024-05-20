@@ -30,11 +30,11 @@ module EpisodeHasFeeds
   end
 
   def in_feed?(feed)
-    episodes_feeds.where(feed: feed).any?
+    published_by?(feed.episode_offset_seconds.to_i) && episodes_feeds.where(feed: feed).any?
   end
 
   def in_default_feed?
-    feeds.where(slug: nil).any?
+    published? && feeds.where(slug: nil).any?
   end
 
   def feed_slugs

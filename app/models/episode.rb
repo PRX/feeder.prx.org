@@ -110,6 +110,10 @@ class Episode < ApplicationRecord
     !published_at.nil? && published_at <= Time.now
   end
 
+  def published_by?(offset)
+    !published_at.nil? && published_at <= Time.now - offset
+  end
+
   def draft?
     published_at.nil?
   end
