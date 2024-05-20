@@ -10,14 +10,14 @@ module EpisodeHasFeeds
     after_initialize :set_default_feeds, if: :new_record?
     before_validation :set_default_feeds, if: :new_record?
 
-    # NOTE: this DOES NOT apply the display_episodes_count
+    # TODO: this doesn't filter by display_episodes_count
     scope :in_feed, ->(feed) do
       Episode.joins(:episodes_feeds)
         .where(episodes_feeds: {feed: feed})
         .published_by(feed.episode_offset_seconds.to_i)
     end
 
-    # NOTE: this DOES NOT apply the display_episodes_count
+    # TODO: this doesn't filter by display_episodes_count
     scope :in_default_feed, -> { joins(:feeds).where(feeds: {slug: nil}).published }
   end
 
@@ -29,10 +29,12 @@ module EpisodeHasFeeds
     end
   end
 
+  # TODO: this doesn't filter by display_episodes_count
   def in_feed?(feed)
     published_by?(feed.episode_offset_seconds.to_i) && episodes_feeds.where(feed: feed).any?
   end
 
+  # TODO: this doesn't filter by display_episodes_count
   def in_default_feed?
     published? && feeds.where(slug: nil).any?
   end
