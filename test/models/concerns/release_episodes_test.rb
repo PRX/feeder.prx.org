@@ -4,6 +4,7 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
   let(:episode) { create(:episode, published_at: 30.minutes.from_now) }
   let(:podcast) { episode.podcast }
   let(:feed) { podcast.default_feed }
+  # let(:feed) { create(:feed, podcast: podcast, slug: "the-feed") }
 
   describe ".to_release" do
     it "returns episodes/podcasts that need release" do
@@ -26,7 +27,7 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
     end
 
     it "handles negative feed offsets" do
-      feed.update!(episode_offset_seconds: -300)
+      feed.update!(slug: "slug", episode_offset_seconds: -300)
       assert_empty Episode.to_release
       assert_empty Podcast.to_release
 
@@ -41,7 +42,7 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
     end
 
     it "handles positive feed offsets" do
-      feed.update!(episode_offset_seconds: 300)
+      feed.update!(slug: "slug", episode_offset_seconds: 300)
       assert_empty Episode.to_release
       assert_empty Podcast.to_release
 
