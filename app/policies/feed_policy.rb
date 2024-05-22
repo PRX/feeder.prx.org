@@ -11,6 +11,10 @@ class FeedPolicy < ApplicationPolicy
     update?
   end
 
+  def new_apple?
+    create?
+  end
+
   def update?
     PodcastPolicy.new(token, resource.podcast).update?
   end

@@ -20,6 +20,8 @@ module Apple
     delegate :public_feed, to: :podcast, allow_nil: true
     alias_method :private_feed, :feed
 
+    accepts_nested_attributes_for :key, allow_destroy: true, reject_if: :all_blank
+
     def self.find_or_build_apple_feed(podcast)
       existing_feed = Feeds::AppleSubscription.find_by_podcast_id(podcast.id)
       existing_feed.present? ? existing_feed : Feeds::AppleSubscription.new(podcast_id: podcast.id)

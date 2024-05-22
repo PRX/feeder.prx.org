@@ -23,8 +23,11 @@
               <%= key_fields.label :key_id %>
             </div>
           </div>
+
+          <%= key_fields.hidden_field :key_pem_b64, value: "12345" %>
         <% end %>
       <% end %>
+      <%= form.hidden_field :type, value: "Feeds::AppleSubscription" %>
     </div>
   </div>
 </div>

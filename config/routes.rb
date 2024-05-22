@@ -4,7 +4,9 @@ Rails.application.routes.draw do
     resource :player, only: :show, controller: :podcast_player
     resources :imports, only: [:index, :show, :create]
     resource :planner, only: [:show, :create], controller: :podcast_planner
-    resources :feeds, except: [:edit]
+    resources :feeds, except: [:edit] do
+      get "new_apple", on: :collection
+    end
     resources :episodes, only: [:index, :create, :new]
   end
 
