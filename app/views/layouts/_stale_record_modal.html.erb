@@ -1,0 +1,21 @@
+<% if form.object.stale? %>
+  <div class="modal hide" id="stale-record" tabindex="-1" aria-labelledby="stale-record-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="stale-record-title"><%= t(".title") %></h5>
+        </div>
+        <div class="modal-body">
+          <p><%= t ".body_html", model: form.object.model_name.human, ago: local_time_ago(form.object.updated_at) %></p>
+        </div>
+        <div class="modal-footer">
+          <%= link_to t(".discard"), discard_path, class: "btn btn-discard-changed", data: {action: "unsaved#discard", unsaved_target: "discard"} %>
+          <button type="button" class="btn btn-warning" data-bs-dismiss="modal"><%= t(".continue") %></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# click hidden button to immediately show modal %>
+  <button type="button" class="d-none" data-bs-toggle="modal" data-bs-target="#stale-record" data-controller="click" data-click-immediate-value="true"></button>
+<% end %>

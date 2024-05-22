@@ -2,6 +2,9 @@
   <div class="card-header-primary">
     <h2 class="card-title h5"><%= t(".title") %></h2>
   </div>
+
+  <%= render "layouts/stale_record_field", form: form %>
+
   <div class="card-footer d-flex align-items-center">
 
     <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= local_time_ago(podcast.updated_at) %></p>

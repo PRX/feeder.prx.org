@@ -298,11 +298,10 @@ describe PublishingPipelineState do
     describe "Apple publishing" do
       let(:f1) { podcast.default_feed }
       let(:f2) { create(:private_feed, podcast: podcast) }
-      let(:f3) { create(:private_feed, podcast: podcast) }
-      let(:apple_config) { create(:apple_config, feed: f3, publish_enabled: true) }
+      let(:f3) { create(:apple_feed, podcast: podcast) }
 
       it "can publish via the apple configs" do
-        assert [f1, f2, f3, apple_config]
+        assert [f1, f2, f3]
 
         PublishAppleJob.stub(:perform_now, "published apple!") do
           PublishFeedJob.stub_any_instance(:save_file, "saved rss!") do
