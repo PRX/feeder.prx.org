@@ -926,7 +926,7 @@ en:
       aside: (Not Recommended)
       label: Overwrite
     stale_record_modal:
-      body_html: Another user updated this %{model} <b>%{ago}</b>.</br></br>You can either discard your changes and make them again in a fresh form, or continue editing at your own risk.
+      body_html: "This %{model} was updated by another user %{ago}. To see the latest changes, please refresh the page. If you continue editing, your changes might conflict with the other user's updates. We recommend discarding your current changes and starting fresh after refreshing the page."
       continue: Continue Editing
       discard: Discard changes
       title: Warning! Another user has updated this form.

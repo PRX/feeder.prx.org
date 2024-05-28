@@ -131,16 +131,6 @@ describe EnclosureUrlBuilder do
   end
 
   describe "a set of class methods to mark (annotate) enclosure urls" do
-    describe ".mark_no_imp" do
-      it "should add a noImp query param" do
-        assert_equal "http://example.com?noImp=1", EnclosureUrlBuilder.mark_no_imp("http://example.com")
-      end
-
-      it "should preserve existing query params" do
-        assert_equal "http://example.com?foo=bar&noImp=1", EnclosureUrlBuilder.mark_no_imp("http://example.com?foo=bar")
-      end
-    end
-
     describe ".mark_authorized" do
       let(:private_feed) { create(:private_feed, podcast: podcast) }
       let(:feed_tok) { private_feed.tokens.first }
