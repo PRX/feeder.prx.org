@@ -7,26 +7,23 @@
   <div class="row my-4 mx-2" data-controller="feed-tokens" data-feed-tokens-unsaved-outlet="form">
     <div class="col-lg-8">
       <div class="row" data-controller="feed-link">
-        <% unless apple_feed?(feed) %>
+        <% if feed.default? %>
           <%= render "form_main", podcast: podcast, feed: feed, form: form %>
-          <% if feed.custom? %>
-            <%= render "form_auth", podcast: podcast, feed: feed, form: form %>
-          <% end %>
-        <% end %>
-        <% if apple_feed?(feed) %>
-          <%= render "form_apple_config", podcast: podcast, feed: feed, form: form %>
-        <% end %>
-        <% unless apple_feed?(feed) %>
           <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
-        <% end %>
-        <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
-        <% if feed.custom? %>
+          <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
+        <% elsif apple_feed?(feed) %>
+          <%= render "form_apple_config", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
           <%= render "form_ad_zones", podcast: podcast, feed: feed, form: form %>
-          <% unless apple_feed?(feed) %>
-            <%= render "form_overrides", podcast: podcast, feed: feed, form: form %>
-            <%= render "form_itunes_image", podcast: podcast, feed: feed, form: form %>
-            <%= render "form_feed_image", podcast: podcast, feed: feed, form: form %>
-          <% end %>
+        <% else %> <%# custom feeds %>
+          <%= render "form_main", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_auth", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_ad_zones", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_overrides", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_itunes_image", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_feed_image", podcast: podcast, feed: feed, form: form %>
         <% end %>
       </div>
     </div>
