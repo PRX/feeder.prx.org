@@ -715,6 +715,10 @@ en:
       title: Ad Zones to Include
       help:
         ad_zones: Control the types of ads that should be stitched into episodes in this feed.
+    form_apple_config:
+      title: Apple Subscriptions
+      description: In order to publish episodes through Apple's Podcast Connect API, ensure you've delegated access to the PRX account in Podcast Connect.
+      guide_link: Check out our guide to step you through the setup.
     form_audio_format:
       title: Audio Format
       help:
