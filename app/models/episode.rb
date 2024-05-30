@@ -255,7 +255,11 @@ class Episode < ApplicationRecord
   end
 
   def apple_episode
-    podcast.apple_config&.build_publisher&.show&.episodes&.find { |e| e.feeder_episode.id == id }
+    return nil if !persisted? || !publish_to_apple?
+
+    if (show = podcast.apple_config&.build_publisher&.show)
+      Apple::Episode.new(api: show.api, show: show, feeder_episode: self)
+    end
   end
 
   def publish!

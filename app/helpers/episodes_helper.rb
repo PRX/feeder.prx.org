@@ -19,6 +19,8 @@ module EpisodesHelper
     apple_episode = episode.apple_episode
     if !apple_episode
       "not_found"
+    elsif apple_episode.apple_new?
+      "new"
     elsif apple_episode.needs_delivery?
       "incomplete"
     elsif apple_episode.waiting_for_asset_state?
