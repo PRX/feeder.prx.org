@@ -717,6 +717,10 @@ en:
       title: Ad Zones to Include
       help:
         ad_zones: Control the types of ads that should be stitched into episodes in this feed.
+    form_apple_config:
+      title: Apple Subscriptions
+      description: In order to publish episodes through Apple's Podcast Connect API, ensure you've delegated access to the PRX account in Podcast Connect.
+      guide_link: Check out our guide to step you through the setup.
     form_audio_format:
       title: Audio Format
       help:
@@ -924,7 +928,7 @@ en:
       aside: (Not Recommended)
       label: Overwrite
     stale_record_modal:
-      body_html: Another user updated this %{model} <b>%{ago}</b>.</br></br>You can either discard your changes and make them again in a fresh form, or continue editing at your own risk.
+      body_html: "This %{model} was updated by another user %{ago}. To see the latest changes, please refresh the page. If you continue editing, your changes might conflict with the other user's updates. We recommend discarding your current changes and starting fresh after refreshing the page."
       continue: Continue Editing
       discard: Discard changes
       title: Warning! Another user has updated this form.

@@ -68,4 +68,8 @@ module FeedsHelper
       podcast_feed_path feed.podcast, feed, uploads_retry_params(form)
     end
   end
+
+  def apple_feed?(feed)
+    feed.type == "Feeds::AppleSubscription"
+  end
 end
