@@ -10,20 +10,17 @@
       </div>
       <%= form.fields_for :apple_config do |config_form| %>
         <%= config_form.fields_for :key do |key_fields| %>
-          <div class="mb-4">
-            <div class="form-floating">
-              <%= key_fields.text_field :provider_id, disabled: config_form.object.persisted? %>
-              <%= key_fields.label :provider_id %>
-            </div>
+          <div class="mb-4 form-floating">
+            <%= key_fields.text_field :provider_id, disabled: config_form.object.persisted? %>
+            <%= key_fields.label :provider_id, "Provider ID" %>
           </div>
-
-          <div>
-            <div class="form-floating">
-              <%= key_fields.text_field :key_id, disabled: config_form.object.persisted?, data: {apple_key_target: "key", action: "keyup->apple-key#convertKeyToB64"} %>
-              <%= key_fields.label :key_id %>
-            </div>
+          <div class="form-floating input-group">
+            <%= key_fields.text_field :key_id, disabled: config_form.object.persisted?, data: {apple_key_target: "key", action: "keyup->apple-key#convertKeyToB64"} %>
+            <%= key_fields.label :key_id, "Apple Key" %>
+            <% unless config_form.object.persisted? %>
+              <%= key_fields.file_field :key_file, class: "form-control", accept: ".p8, .pem", data: {action: "apple-key#convertFileToKey"} %>
+            <% end %>
           </div>
-
           <%= key_fields.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
         <% end %>
       <% end %>

@@ -152,7 +152,7 @@ class FeedsController < ApplicationController
       apple_config_attributes: {
         id: :id,
         key_attributes: %i[id provider_id key_id key_pem_b64]
-      },
+      }
     )
   end
 end
