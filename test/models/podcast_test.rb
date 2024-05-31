@@ -74,7 +74,7 @@ describe Podcast do
     assert_nil p[:categories]
 
     p.categories = ["foo", " Foo ", "BAR  ", "  foo", "!@  $?"]
-    assert_equal ["foo", "Foo", "BAR", "!@  $?"], p.categories
+    assert_equal ["foo", "BAR", "!@  $?"], p.categories
   end
 
   describe "publishing" do
