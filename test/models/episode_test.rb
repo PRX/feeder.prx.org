@@ -173,8 +173,8 @@ describe Episode do
     assert_equal [], e.categories
     assert_nil e[:categories]
 
-    e.categories = ["foo", " Foo ", "BAR  ", "  foo", "!@  $?"]
-    assert_equal ["foo", "Foo", "BAR", "!@  $?"], e.categories
+    e.categories = ["foo", " Foo ", "BAR  ", "  fOO", "bar", "!@  $?"]
+    assert_equal ["foo", "BAR", "!@  $?"], e.categories
   end
 
   it "has a valid itunes episode type" do

@@ -24,7 +24,10 @@ module TextSanitizer
   end
 
   def sanitize_keywords(kws, strict)
-    Array(kws).map { |kw| sanitize_keyword(kw, kw.length, strict) }.uniq.reject(&:blank?)
+    Array(kws)
+      .map { |kw| sanitize_keyword(kw, kw.length, strict) }
+      .uniq(&:downcase)
+      .reject(&:blank?)
   end
 
   def sanitize_keyword(kw, max_length, strict)
