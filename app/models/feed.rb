@@ -172,13 +172,13 @@ class Feed < ApplicationRecord
     eps = podcast.episodes.published_by(episode_offset_seconds.to_i)
 
     if include_tags.present?
-      kws = sanitize_keywords(include_tags, true)
-      eps = eps.select { |e| (sanitize_keywords(e.categories, true) & kws).any? }
+      kws = sanitize_categories(include_tags, true)
+      eps = eps.select { |e| (sanitize_categories(e.categories, true) & kws).any? }
     end
 
     if exclude_tags.present?
-      kws = sanitize_keywords(exclude_tags, true)
-      eps = eps.reject { |e| (sanitize_keywords(e.categories, true) & kws).any? }
+      kws = sanitize_categories(exclude_tags, true)
+      eps = eps.reject { |e| (sanitize_categories(e.categories, true) & kws).any? }
     end
 
     eps
