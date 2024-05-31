@@ -237,7 +237,7 @@ class Episode < ApplicationRecord
   end
 
   def categories=(cats)
-    self[:categories] = sanitize_keywords(cats, false).presence
+    self[:categories] = sanitize_categories(cats, false).presence
   end
 
   def copy_media(force = false)
@@ -292,9 +292,9 @@ class Episode < ApplicationRecord
 
     identifiers = []
     %i[published_at guid].each do |attr|
-      identifiers << sanitize_keyword(send(attr), 10, true)
+      identifiers << sanitize_category(send(attr), 10, true)
     end
-    identifiers << sanitize_keyword(title || "undefined", 20, true)
+    identifiers << sanitize_category(title || "undefined", 20, true)
     self.keyword_xid = identifiers.join("_")
   end
 

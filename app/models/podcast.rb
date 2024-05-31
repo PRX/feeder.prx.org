@@ -158,7 +158,7 @@ class Podcast < ApplicationRecord
   end
 
   def categories=(cats)
-    self[:categories] = sanitize_keywords(cats, false).presence
+    self[:categories] = sanitize_categories(cats, false).presence
   end
 
   def publish!

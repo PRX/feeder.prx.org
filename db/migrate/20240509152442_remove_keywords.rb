@@ -24,7 +24,7 @@ class RemoveKeywords < ActiveRecord::Migration[7.0]
       keys = decode(p.keywords).map { |k| k.split(",").map(&:strip) }.flatten
 
       ActiveRecord::Base.logger.silence do
-        p.update_column :categories_tmp, (cats + keys).uniq.reject(&:blank?)
+        p.update_column :categories_tmp, (cats + keys).uniq(&:downcase).reject(&:blank?)
       end
     end
     Rails.logger.info("combined categories/keywords for #{pod_count} podcasts")
@@ -37,7 +37,7 @@ class RemoveKeywords < ActiveRecord::Migration[7.0]
       keys = decode(e.keywords)
 
       ActiveRecord::Base.logger.silence do
-        e.update_column :categories_tmp, (cats + keys).uniq.reject(&:blank?)
+        e.update_column :categories_tmp, (cats + keys).uniq(&:downcase).reject(&:blank?)
       end
     end
     Rails.logger.info("combined categories/keywords for #{ep_count} episodes")
