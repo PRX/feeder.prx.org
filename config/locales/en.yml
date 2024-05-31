@@ -386,8 +386,10 @@ en:
           scheduled: Scheduled
         apple_statuses:
           complete: Complete
+          error: Error
           incomplete: Incomplete
           not_found: Unknown
+          processing: Processing
         season_number: Season Number
         segment_count: Number of Segments
         subtitle: Subtitle

@@ -452,6 +452,13 @@ describe Episode do
     end
   end
 
+  describe "#apple_episode" do
+    let(:episode) { create(:episode) }
+    it "gets nil for no apple episode" do
+      assert_nil episode.apple_episode
+    end
+  end
+
   describe "#apple_needs_delivery?" do
     let(:episode) { create(:episode) }
     it "is true by default" do

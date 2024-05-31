@@ -248,6 +248,14 @@ class Episode < ApplicationRecord
     apple_needs_delivery!
   end
 
+  def apple_episode
+    return nil if !persisted? || !publish_to_apple?
+
+    if (show = podcast.apple_config&.build_publisher&.show)
+      Apple::Episode.new(api: show.api, show: show, feeder_episode: self)
+    end
+  end
+
   def publish!
     Rails.logger.tagged("Episode#publish!") do
       apple_mark_for_reupload!
