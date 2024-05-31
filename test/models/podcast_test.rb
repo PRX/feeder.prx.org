@@ -66,6 +66,17 @@ describe Podcast do
     assert_nil p[:link]
   end
 
+  it "sanitizes categories" do
+    p = build_stubbed(:podcast)
+
+    p.categories = []
+    assert_equal [], p.categories
+    assert_nil p[:categories]
+
+    p.categories = ["foo", " Foo ", "BAR  ", "  foo", "!@  $?"]
+    assert_equal ["foo", "BAR", "!@  $?"], p.categories
+  end
+
   describe "publishing" do
     it "creates a publish job on publish" do
       PublishingPipelineState.stub(:start_pipeline!, "published!") do

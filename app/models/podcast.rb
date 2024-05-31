@@ -15,8 +15,6 @@ class Podcast < ApplicationRecord
 
   acts_as_paranoid
 
-  serialize :categories, JSON
-  serialize :keywords, JSON
   serialize :restrictions, JSON
 
   has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true, inverse_of: :podcast
@@ -153,6 +151,14 @@ class Podcast < ApplicationRecord
   def managing_editor
     return nil unless managing_editor_name || managing_editor_email
     "#{managing_editor_email} (#{managing_editor_name})"
+  end
+
+  def categories
+    self[:categories] || []
+  end
+
+  def categories=(cats)
+    self[:categories] = sanitize_categories(cats, false).presence
   end
 
   def feed_episodes

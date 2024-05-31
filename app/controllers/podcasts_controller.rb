@@ -125,6 +125,7 @@ class PodcastsController < ApplicationController
       :managing_editor_email,
       :copyright,
       :complete,
+      categories: [],
       default_feed_attributes: [
         :id,
         :subtitle,

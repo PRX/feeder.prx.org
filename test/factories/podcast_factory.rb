@@ -16,7 +16,6 @@ FactoryBot.define do
     owner_email { "jesse@maximumfun.org" }
     categories { ["Humor", "Entertainment"] }
     explicit { "true" }
-    keywords { ["laffs", "comedy", "good-times"] }
     update_period { "weekly" }
     update_frequency { 1 }
     update_base { 1.year.ago }

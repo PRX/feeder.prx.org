@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_05_02_172959) do
+ActiveRecord::Schema[7.0].define(version: 2024_05_09_152442) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -142,9 +142,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_02_172959) do
     t.text "content"
     t.text "summary"
     t.string "explicit"
-    t.text "keywords"
     t.text "description"
-    t.text "categories"
     t.boolean "block"
     t.boolean "is_closed_captioned"
     t.integer "position"
@@ -165,6 +163,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_02_172959) do
     t.text "production_notes"
     t.integer "medium"
     t.integer "lock_version", default: 0, null: false
+    t.string "categories", array: true
+    t.index ["categories"], name: "index_episodes_on_categories", using: :gin
     t.index ["guid"], name: "index_episodes_on_guid", unique: true
     t.index ["keyword_xid"], name: "index_episodes_on_keyword_xid", unique: true
     t.index ["original_guid", "podcast_id"], name: "index_episodes_on_original_guid_and_podcast_id", unique: true, where: "((deleted_at IS NULL) AND (original_guid IS NOT NULL))"
@@ -329,8 +329,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_02_172959) do
     t.string "link"
     t.string "language"
     t.string "managing_editor_name"
-    t.string "categories"
-    t.string "keywords"
     t.string "update_period"
     t.integer "update_frequency"
     t.datetime "update_base", precision: nil
@@ -359,6 +357,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_02_172959) do
     t.string "payment_pointer"
     t.string "donation_url"
     t.integer "lock_version", default: 0, null: false
+    t.string "categories", array: true
+    t.index ["categories"], name: "index_podcasts_on_categories", using: :gin
     t.index ["path"], name: "index_podcasts_on_path", unique: true
     t.index ["prx_uri"], name: "index_podcasts_on_prx_uri", unique: true
     t.index ["source_url"], name: "index_podcasts_on_source_url", unique: true, where: "((deleted_at IS NULL) AND (source_url IS NOT NULL))"

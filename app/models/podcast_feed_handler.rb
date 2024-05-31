@@ -1,5 +1,5 @@
 class PodcastFeedHandler
-  FEED_ATTRS = %w[ complete copyright description explicit keywords language
+  FEED_ATTRS = %w[ complete copyright description explicit language
     subtitle summary title update_frequency update_period
     author managing_editor new_feed_url owners ].freeze
 

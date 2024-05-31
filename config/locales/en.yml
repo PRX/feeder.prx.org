@@ -454,6 +454,7 @@ en:
       podcast:
         author_email: Author Email
         author_name: Author Name
+        categories: Categories
         complete: The podcast is complete
         copyright: Copyright
         description: Description
@@ -973,6 +974,10 @@ en:
     form_status:
       <<: *form_status
       title: Podcast Status
+    form_tags:
+      title: Categories
+      help:
+        categories: Enter categories relevant to the content of your podcast. Type the category and press Enter to set it.
     index:
       title: My Podcasts
       create: New Podcast
