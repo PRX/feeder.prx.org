@@ -25,8 +25,6 @@ class Feed < ApplicationRecord
   alias_attribute :tokens, :feed_tokens
   accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
 
-  has_one :apple_config, class_name: "::Apple::Config", dependent: :destroy, autosave: true, validate: true
-
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
@@ -156,18 +154,8 @@ class Feed < ApplicationRecord
     include_in_feed
   end
 
-  def episode_categories_include?(ep, match_tags)
-    tags = match_tags.map { |cat| normalize_category(cat) }
-    cats = (ep || []).categories.map { |cat| normalize_category(cat) }
-    (tags & cats).length > 0
-  end
-
-  def normalize_category(cat)
-    cat.to_s.downcase.gsub(/[^ a-z0-9_-]/, "").gsub(/\s+/, " ").strip
-  end
-
   def publish_to_apple?
-    !!apple_config&.publish_to_apple?
+    false
   end
 
   def include_tags=(tags)
@@ -180,29 +168,20 @@ class Feed < ApplicationRecord
     self[:exclude_tags] = tags.blank? ? nil : tags
   end
 
-  def use_include_tags?
-    !include_tags.blank?
-  end
-
-  def use_exclude_tags?
-    !exclude_tags.blank?
-  end
-
   def filtered_episodes
     eps = podcast.episodes.published_by(episode_offset_seconds.to_i)
 
-    eps =
-      if use_include_tags?
-        eps.select { |ep| episode_categories_include?(ep, include_tags) }
-      else
-        eps
-      end
-
-    if use_exclude_tags?
-      eps.reject { |ep| episode_categories_include?(ep, exclude_tags) }
-    else
-      eps
+    if include_tags.present?
+      kws = sanitize_categories(include_tags, true)
+      eps = eps.select { |e| (sanitize_categories(e.categories, true) & kws).any? }
     end
+
+    if exclude_tags.present?
+      kws = sanitize_categories(exclude_tags, true)
+      eps = eps.reject { |e| (sanitize_categories(e.categories, true) & kws).any? }
+    end
+
+    eps
   end
 
   def enclosure_template

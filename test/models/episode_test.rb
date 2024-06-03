@@ -166,13 +166,15 @@ describe Episode do
     assert_includes episode.keyword_xid, "241 its a title yay"
   end
 
-  it "strips non-alphanumeric characters from all keywords" do
-    episode.update(keywords: ["Here's John,ny!?"])
-    episode.run_callbacks :save do
-      episode.save
-    end
-    refute_nil episode.reload.keywords
-    episode.keywords.each { |k| refute_match(/['?!,]/, k) }
+  it "sanitizes categories" do
+    e = build_stubbed(:episode)
+
+    e.categories = []
+    assert_equal [], e.categories
+    assert_nil e[:categories]
+
+    e.categories = ["foo", " Foo ", "BAR  ", "  fOO", "bar", "!@  $?"]
+    assert_equal ["foo", "BAR", "!@  $?"], e.categories
   end
 
   it "has a valid itunes episode type" do
@@ -447,6 +449,13 @@ describe Episode do
       assert_empty episode.apple_podcast_deliveries
       episode.publish!
       assert_empty episode.apple_podcast_deliveries
+    end
+  end
+
+  describe "#apple_episode" do
+    let(:episode) { create(:episode) }
+    it "gets nil for no apple episode" do
+      assert_nil episode.apple_episode
     end
   end
 

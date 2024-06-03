@@ -19,4 +19,6 @@
   </div>
 
   <%= render "confirm_destroy", podcast: podcast %>
+
+  <%= render "layouts/stale_record_modal", form: form, discard_path: edit_podcast_path(podcast) if podcast.persisted? %>
 <% end %>

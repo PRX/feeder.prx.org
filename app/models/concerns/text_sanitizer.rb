@@ -22,4 +22,19 @@ module TextSanitizer
     return nil if text.blank?
     Loofah.fragment(text).scrub!(:prune).text(encode_special_chars: false)
   end
+
+  def sanitize_categories(kws, strict)
+    Array(kws)
+      .map { |kw| sanitize_category(kw, kw.length, strict) }
+      .uniq(&:downcase)
+      .reject(&:blank?)
+  end
+
+  def sanitize_category(kw, max_length, strict)
+    if strict
+      kw.to_s.downcase.gsub(/[^ a-z0-9_-]/, "").gsub(/\s+/, " ").strip.slice(0, max_length)
+    else
+      kw.strip.slice(0, max_length)
+    end
+  end
 end

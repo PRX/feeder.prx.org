@@ -81,7 +81,6 @@ class EpisodeRssImport < EpisodeImport
     episode.published_at = entry[:published]
     episode.season_number = entry[:itunes_season]
     episode.subtitle = clean_string(episode_short_desc(entry))
-    episode.categories = Array(entry[:categories]).map(&:strip).reject(&:blank?)
     episode.title = clean_title(entry[:title])
 
     if entry[:itunes_summary] && entry_description_attribute(entry) != :itunes_summary
@@ -93,10 +92,14 @@ class EpisodeRssImport < EpisodeImport
     episode.original_guid = clean_string(entry[:entry_id])
     episode.is_closed_captioned = closed_captioned?(entry)
     episode.is_perma_link = entry[:is_perma_link]
-    episode.keywords = (entry[:itunes_keywords] || "").split(",").map(&:strip)
     episode.position = entry[:itunes_order]
     episode.url = episode_url(entry)
     episode.itunes_type = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
+
+    # categories setter does the work of sanitizing these
+    cats = Array(entry[:categories])
+    keys = (entry[:itunes_keywords] || "").split(",")
+    episode.categories = cats + keys
 
     episode
   end

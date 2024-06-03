@@ -7,13 +7,19 @@
   <div class="row my-4 mx-2" data-controller="feed-tokens" data-feed-tokens-unsaved-outlet="form">
     <div class="col-lg-8">
       <div class="row" data-controller="feed-link">
-        <%= render "form_main", podcast: podcast, feed: feed, form: form %>
-        <% if feed.custom? %>
+        <% if feed.default? %>
+          <%= render "form_main", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
+        <% elsif apple_feed?(feed) %>
+          <%= render "form_apple_config", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_ad_zones", podcast: podcast, feed: feed, form: form %>
+        <% else %> <%# custom feeds %>
+          <%= render "form_main", podcast: podcast, feed: feed, form: form %>
           <%= render "form_auth", podcast: podcast, feed: feed, form: form %>
-        <% end %>
-        <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
-        <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
-        <% if feed.custom? %>
+          <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
           <%= render "form_ad_zones", podcast: podcast, feed: feed, form: form %>
           <%= render "form_overrides", podcast: podcast, feed: feed, form: form %>
           <%= render "form_itunes_image", podcast: podcast, feed: feed, form: form %>
@@ -24,10 +30,14 @@
     <div class="col-lg-4 d-grid align-content-start gap-3">
       <div class="sticky-lg-top">
         <%= render "form_status", podcast: podcast, feed: feed, form: form %>
-        <%= render "form_distribution", podcast: podcast, feed: feed, form: form %>
+        <% unless apple_feed?(feed) %>
+          <%= render "form_distribution", podcast: podcast, feed: feed, form: form %>
+        <% end %>
       </div>
     </div>
   </div>
 
   <%= render "confirm_destroy", podcast: podcast, feed: feed %>
+
+  <%= render "layouts/stale_record_modal", form: form, discard_path: podcast_feed_path(podcast, feed) if feed.persisted? %>
 <% end %>

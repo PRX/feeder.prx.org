@@ -1,0 +1,13 @@
+<div class="card shadow border-0" data-controller="category">
+  <div class="card-header card-header-light d-flex justify-content-between">
+    <h2 class="card-title h5"><%= t(".title") %></h2>
+  </div>
+
+  <div class="card-body">
+    <div class="form-floating input-group">
+      <%= form.tag_select :categories, podcast.categories, {}, data: {allow_new: policy(podcast).update?, allow_clear: policy(podcast).update?, category_target: "field"} %>
+      <%= form.label :categories %>
+      <%= field_help_text t(".help.categories") %>
+    </div>
+  </div>
+</div>

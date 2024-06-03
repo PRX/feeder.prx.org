@@ -46,7 +46,6 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
     property :managing_editor_email, as: :email
   end
 
-  collection :keywords
   collection :categories
   collection :restrictions
 

@@ -43,15 +43,12 @@ describe EpisodeRssImport do
     f = episode_import.episode
     _(f.description).must_match(/For the next few episodes/)
     _(f.description).wont_match(/feedburner/)
-    _(f.categories).must_include "Indie Features"
-    f.categories.each do |tag|
-      _(tag).wont_match(/\n/)
-      _(tag).wont_be :blank?
-    end
-    _(f.categories).wont_include '\t'
     _(f.clean_title).must_equal "Sidedoor iTunes title"
     _(f.season_number).must_equal 2
     _(f.episode_number).must_equal 4
+
+    # categories and itunes:keywords are combined
+    _(f.categories).must_equal ["Indie Features", "science", "architecture", "keyword1"]
 
     # It has the podcast set and the published_at date
     _(f.podcast_id).must_equal podcast.id

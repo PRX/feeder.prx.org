@@ -386,8 +386,10 @@ en:
           scheduled: Scheduled
         apple_statuses:
           complete: Complete
+          error: Error
           incomplete: Incomplete
           not_found: Unknown
+          processing: Processing
         season_number: Season Number
         segment_count: Number of Segments
         subtitle: Subtitle
@@ -454,6 +456,7 @@ en:
       podcast:
         author_email: Author Email
         author_name: Author Name
+        categories: Categories
         complete: The podcast is complete
         copyright: Copyright
         description: Description
@@ -633,6 +636,11 @@ en:
         stereo: Stereo
       new:
         hint: Upload a file or drag it here
+      non_mp3_warning:
+        body_html: It appears you're uploading a file that isn't in MP3 format. We recommend configuring the Audio Format for your <a href="%{href}" target="_blank">Default Feed</a> to MP3 to ensure your episode is accessible on all platforms.<br/><br/>Once you've set a default format, your file will be automatically converted to the chosen file type and quality.
+        cancel: Cancel Upload
+        continue: Continue Upload
+        title: MP3 Not Provided
       processing:
         hint: Processing
     segmenter:
@@ -710,6 +718,10 @@ en:
       title: Ad Zones to Include
       help:
         ad_zones: Control the types of ads that should be stitched into episodes in this feed.
+    form_apple_config:
+      title: Apple Subscriptions
+      description: In order to publish episodes through Apple's Podcast Connect API, ensure you've delegated access to the PRX account in Podcast Connect.
+      guide_link: Check out our guide to step you through the setup.
     form_audio_format:
       title: Audio Format
       help:
@@ -913,6 +925,14 @@ en:
       privacy: Privacy
       status: Status
       terms: Terms
+    stale_record_field:
+      aside: (Not Recommended)
+      label: Overwrite
+    stale_record_modal:
+      body_html: "This %{model} was updated by another user %{ago}. To see the latest changes, please refresh the page. If you continue editing, your changes might conflict with the other user's updates. We recommend discarding your current changes and starting fresh after refreshing the page."
+      continue: Continue Editing
+      discard: Discard changes
+      title: Warning! Another user has updated this form.
   podcasts:
     confirm_destroy:
       <<: *form_status
@@ -956,6 +976,10 @@ en:
     form_status:
       <<: *form_status
       title: Podcast Status
+    form_tags:
+      title: Categories
+      help:
+        categories: Enter categories relevant to the content of your podcast. Type the category and press Enter to set it.
     index:
       title: My Podcasts
       create: New Podcast

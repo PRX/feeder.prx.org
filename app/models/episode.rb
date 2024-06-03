@@ -21,8 +21,6 @@ class Episode < ApplicationRecord
 
   acts_as_paranoid
 
-  serialize :categories, JSON
-  serialize :keywords, JSON
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
@@ -224,15 +222,11 @@ class Episode < ApplicationRecord
   end
 
   def categories
-    self[:categories] ||= []
+    self[:categories] || []
   end
 
   def categories=(cats)
-    self[:categories] = Array(cats).reject(&:blank?)
-  end
-
-  def keywords
-    self[:keywords] ||= []
+    self[:categories] = sanitize_categories(cats, false).presence
   end
 
   def copy_media(force = false)
@@ -252,6 +246,14 @@ class Episode < ApplicationRecord
   def apple_mark_for_reupload!
     apple_prepare_for_delivery!
     apple_needs_delivery!
+  end
+
+  def apple_episode
+    return nil if !persisted? || !publish_to_apple?
+
+    if (show = podcast.apple_config&.build_publisher&.show)
+      Apple::Episode.new(api: show.api, show: show, feeder_episode: self)
+    end
   end
 
   def publish!
@@ -295,17 +297,10 @@ class Episode < ApplicationRecord
 
     identifiers = []
     %i[published_at guid].each do |attr|
-      identifiers << sanitize_keyword(send(attr), 10)
+      identifiers << sanitize_category(send(attr), 10, true)
     end
-    identifiers << sanitize_keyword(title || "undefined", 20)
+    identifiers << sanitize_category(title || "undefined", 20, true)
     self.keyword_xid = identifiers.join("_")
-  end
-
-  def sanitize_keyword(kw, length)
-    kw.to_s.downcase.gsub(/[^ a-z0-9_-]/, "").gsub(/\s+/, " ").strip.slice(
-      0,
-      length
-    )
   end
 
   def sanitize_text
@@ -314,7 +309,6 @@ class Episode < ApplicationRecord
     self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
     self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
-    self.keywords = keywords.map { |kw| sanitize_keyword(kw, kw.length) }
   end
 
   def description_with_default

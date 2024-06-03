@@ -49,6 +49,8 @@ class EpisodeMediaController < ApplicationController
         format.html { render :show, status: :unprocessable_entity }
       end
     end
+  rescue ActiveRecord::StaleObjectError
+    render :show, status: :conflict
   end
 
   private
@@ -56,11 +58,13 @@ class EpisodeMediaController < ApplicationController
   def set_episode
     @episode = Episode.find_by_guid!(params[:episode_id])
     @episode.strict_validations = true
+    @episode.locking_enabled = true
     @podcast = @episode.podcast
   end
 
   def episode_params
     nilify params.fetch(:episode, {}).permit(
+      :lock_version,
       :medium,
       :ad_breaks,
       contents_attributes: %i[id position original_url file_size _destroy _retry],
