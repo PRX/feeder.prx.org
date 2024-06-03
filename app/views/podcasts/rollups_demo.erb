@@ -20,7 +20,7 @@
           </tr>
         </thead>
         <tbody>
-          <% Rollups::HourlyDownload.where(podcast_id: @podcast.id, hour: 7.days.ago..).rollup_day(:feed_slug).order(hour: :desc).limit(10).each do |hd| %>
+          <% @recent_downloads.each do |hd| %>
             <tr>
               <td><%= l hd.hour.to_date %></td>
               <td><%= hd.feed_slug %></td>
@@ -42,7 +42,7 @@
           </tr>
         </thead>
         <tbody>
-          <% Rollups::HourlyDownload.where(podcast_id: @podcast.id, hour: 7.days.ago..).rollup_zone("America/Denver").rollup_day(:feed_slug).order(hour: :desc).limit(10).each do |hd| %>
+          <% @timezoned.each do |hd| %>
             <tr>
               <td><%= l hd.hour.to_date %></td>
               <td><%= hd.feed_slug %></td>
@@ -65,7 +65,7 @@
           </tr>
         </thead>
         <tbody>
-          <% Rollups::DailyGeo.where(podcast_id: @podcast.id).rollup_week(:country_code, :subdiv_code).order(count: :desc).limit(10).each do |dg| %>
+          <% @top_subdivs.each do |dg| %>
             <tr>
               <td><%= l dg.day %></td>
               <td><%= dg.country_code %></td>
@@ -87,7 +87,7 @@
           </tr>
         </thead>
         <tbody>
-          <% Rollups::DailyGeo.where(podcast_id: @podcast.id).rollup_total(:country_code).order(count: :desc).limit(10).each do |dg| %>
+          <% @top_countries.each do |dg| %>
             <tr>
               <td><%= dg.country_code %></td>
               <td><%= dg.count %></td>
