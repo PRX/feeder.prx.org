@@ -18,6 +18,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :display_full_episodes_count
   property :episode_offset_seconds
   property :include_zones
+  property :include_tags
   property :audio_format
   property :include_podcast_value
   property :include_donation_url

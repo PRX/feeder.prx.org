@@ -121,6 +121,20 @@ describe Episode do
     assert_nil e[:url]
   end
 
+  it "includes items in feed" do
+    episode = create(:episode)
+    assert episode.include_in_feed?
+
+    episode.update(segment_count: 1)
+    refute episode.include_in_feed?
+
+    content = create(:content, episode: episode, status: "processing")
+    refute episode.reload.include_in_feed?
+
+    content.update(status: "complete")
+    assert episode.reload.include_in_feed?
+  end
+
   it "updates the podcast published date" do
     now = 1.minute.ago
     podcast = episode.podcast

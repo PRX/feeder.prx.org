@@ -21,9 +21,6 @@ class Feed < ApplicationRecord
   serialize :audio_format, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
-  has_many :episodes_feeds, dependent: :delete_all
-  has_many :episodes, -> { order("published_at desc") }, through: :episodes_feeds
-
   has_many :feed_tokens, autosave: true, dependent: :destroy, inverse_of: :feed
   alias_attribute :tokens, :feed_tokens
   accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
@@ -44,6 +41,7 @@ class Feed < ApplicationRecord
   validates_format_of :slug, without: /\A(images|\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\z/
   validates :file_name, presence: true, format: {with: /\A[0-9a-zA-Z_.-]+\z/}
   validates :include_zones, placement_zones: true
+  validates :include_tags, tag_list: true
   validates :audio_format, audio_format: true
   validates :title, presence: true, unless: :default?
   validates :url, http_url: true
@@ -55,11 +53,9 @@ class Feed < ApplicationRecord
   after_initialize :set_defaults
   before_validation :sanitize_text
   before_save :set_public_feeds_url
-  after_create :set_default_episodes
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
-  scope :apple, -> { where(type: "Feeds::AppleSubscription") }
   scope :tab_order, -> { order(Arel.sql("slug IS NULL DESC, created_at ASC")) }
 
   def self.enclosure_template_default
@@ -78,16 +74,6 @@ class Feed < ApplicationRecord
     self.title = sanitize_text_only(title) if title_changed?
   end
 
-  def friendly_title
-    if default?
-      I18n.t("helpers.label.feed.friendly_titles.default")
-    elsif apple?
-      I18n.t("helpers.label.feed.friendly_titles.apple")
-    else
-      title
-    end
-  end
-
   def set_public_feeds_url
     if private?
       self.url = nil
@@ -103,28 +89,6 @@ class Feed < ApplicationRecord
     end
   end
 
-  # copy all episodes in default_feed to this one
-  # TODO: is this always the right logic?
-  def set_default_episodes
-    if !default? && podcast
-      default_feed = podcast.default_feed
-      select = "episode_id, #{id} FROM episodes_feeds WHERE feed_id = #{default_feed.id}"
-      insert = "INSERT INTO episodes_feeds SELECT #{select}"
-      self.class.connection.execute(insert)
-    end
-  end
-
-  # apply publish-offsets and limits to episodes
-  def feed_episodes
-    by = episode_offset_seconds.to_i
-    count = display_episodes_count
-    Episode.from(episodes.published_by(by).limit(count), :episodes)
-  end
-
-  def feed_episode_ids
-    feed_episodes.pluck(:id)
-  end
-
   def default?
     slug.nil?
   end
@@ -135,10 +99,6 @@ class Feed < ApplicationRecord
 
   def public?
     !private?
-  end
-
-  def apple?
-    false
   end
 
   def default_runtime_settings?
@@ -183,6 +143,17 @@ class Feed < ApplicationRecord
     "#{podcast&.path}/#{path_suffix}"
   end
 
+  def feed_episodes
+    include_in_feed = []
+    feed_max = display_episodes_count.to_i
+
+    filtered_episodes.each do |ep|
+      include_in_feed << ep if ep.include_in_feed?
+      break if (feed_max > 0) && (include_in_feed.size >= feed_max)
+    end
+    include_in_feed
+  end
+
   def publish_to_apple?
     false
   end
@@ -195,6 +166,22 @@ class Feed < ApplicationRecord
   def exclude_tags=(tags)
     tags = Array(tags).reject(&:blank?)
     self[:exclude_tags] = tags.blank? ? nil : tags
+  end
+
+  def filtered_episodes
+    eps = podcast.episodes.published_by(episode_offset_seconds.to_i)
+
+    if include_tags.present?
+      kws = sanitize_categories(include_tags, true)
+      eps = eps.select { |e| (sanitize_categories(e.categories, true) & kws).any? }
+    end
+
+    if exclude_tags.present?
+      kws = sanitize_categories(exclude_tags, true)
+      eps = eps.reject { |e| (sanitize_categories(e.categories, true) & kws).any? }
+    end
+
+    eps
   end
 
   def enclosure_template

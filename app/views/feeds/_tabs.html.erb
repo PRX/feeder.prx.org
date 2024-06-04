@@ -1,7 +1,11 @@
 <% content_for :tabs do %>
   <div class="list-group d-flex col prx-fixed-btn-container">
     <% @feeds.each do |feed| %>
-      <%= tab_link_to feed.friendly_title, podcast_feed_path(@podcast, feed) %>
+      <% if feed.default? %>
+        <%= tab_link_to "Default Feed", podcast_feed_path(@podcast, feed) %>
+      <% else %>
+        <%= tab_link_to feed.title, podcast_feed_path(@podcast, feed) %>
+      <% end %>
     <% end %>
 
     <% if feed.new_record? %>

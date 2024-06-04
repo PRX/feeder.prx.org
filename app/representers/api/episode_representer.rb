@@ -36,7 +36,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :block
   property :is_closed_captioned
   property :is_perma_link
-  property :feed_ready?, as: :is_feed_ready
+  property :include_in_feed?, as: :is_feed_ready
   property :categories
   property :position
 

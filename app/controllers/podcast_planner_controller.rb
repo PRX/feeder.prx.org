@@ -67,7 +67,6 @@ class PodcastPlannerController < ApplicationController
       :publish_time_zone,
       :medium,
       :ad_breaks,
-      feed_ids: [],
       selected_days: [],
       selected_weeks: [],
       selected_dates: [],

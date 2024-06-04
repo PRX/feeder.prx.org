@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_05_09_194515) do
+ActiveRecord::Schema[7.0].define(version: 2024_05_09_152442) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -170,13 +170,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_09_194515) do
     t.index ["original_guid", "podcast_id"], name: "index_episodes_on_original_guid_and_podcast_id", unique: true, where: "((deleted_at IS NULL) AND (original_guid IS NOT NULL))"
     t.index ["prx_uri"], name: "index_episodes_on_prx_uri", unique: true
     t.index ["published_at", "podcast_id"], name: "index_episodes_on_published_at_and_podcast_id"
-  end
-
-  create_table "episodes_feeds", primary_key: ["episode_id", "feed_id"], force: :cascade do |t|
-    t.bigint "episode_id", null: false
-    t.bigint "feed_id", null: false
-    t.index ["episode_id"], name: "index_episodes_feeds_on_episode_id"
-    t.index ["feed_id"], name: "index_episodes_feeds_on_feed_id"
   end
 
   create_table "feed_images", id: :serial, force: :cascade do |t|

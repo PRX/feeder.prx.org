@@ -66,10 +66,6 @@ class Feeds::AppleSubscription < Feed
     end
   end
 
-  def apple?
-    true
-  end
-
   def publish_to_apple?
     !!apple_config&.publish_to_apple?
   end

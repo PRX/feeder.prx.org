@@ -91,4 +91,15 @@ describe Podcast do
       end
     end
   end
+
+  describe "episode limit" do
+    let(:episodes) { create_list(:episode, 10, podcast: podcast).reverse }
+
+    it "returns only limited number of episodes" do
+      assert_equal episodes.count, podcast.episodes.count
+      assert_equal podcast.feed_episodes.count, 10
+      podcast.display_episodes_count = 5
+      assert_equal podcast.feed_episodes.count, 5
+    end
+  end
 end

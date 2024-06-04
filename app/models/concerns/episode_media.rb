@@ -3,17 +3,6 @@ require "active_support/concern"
 module EpisodeMedia
   extend ActiveSupport::Concern
 
-  included do
-    # NOTE: this just-in-time creates new media versions
-    # TODO: convert to sql, so we don't have to load/check every episode?
-    # TODO: stop loading non-latest media versions
-    scope :feed_ready, -> { includes(media_versions: :media_resources).select { |e| e.feed_ready? } }
-  end
-
-  def feed_ready?
-    !media? || complete_media?
-  end
-
   def cut_media_version!
     latest_version = media_versions.first
     latest_media = latest_version&.media_resources || []
