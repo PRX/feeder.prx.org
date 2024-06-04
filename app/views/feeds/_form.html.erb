@@ -10,8 +10,10 @@
         <% if feed.default? %>
           <%= render "form_main", podcast: podcast, feed: feed, form: form %>
           <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
         <% elsif apple_feed?(feed) %>
           <%= render "form_apple_config", podcast: podcast, feed: feed, form: form %>
+          <%= render "form_tags", podcast: podcast, feed: feed, form: form %>
           <%= render "form_ad_zones", podcast: podcast, feed: feed, form: form %>
         <% else %> <%# custom feeds %>
           <%= render "form_main", podcast: podcast, feed: feed, form: form %>
