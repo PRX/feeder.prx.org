@@ -3,7 +3,7 @@ class ApplicationRecord < ActiveRecord::Base
   include HalApi::RepresentedModel
 
   def self.alias_error_messages(to_field, from_field)
-    aliases = self.error_message_aliases
+    aliases = error_message_aliases
     aliases[to_field.to_s] = from_field.to_s
     class_variable_set(:@@error_message_aliases, aliases)
   end
