@@ -16,17 +16,17 @@ class CreateEpisodeFeeds < ActiveRecord::Migration[7.0]
       SQL
 
       if f.include_tags.present?
-        kws = f.sanitize_keywords(f.include_tags, true)
+        kws = sanitize_categories(f.include_tags, true)
         ids = f.podcast.episodes.filter_map do |e|
-          e.id if (sanitize_keywords(e.categories, true) & kws).any?
+          e.id if (sanitize_categories(e.categories, true) & kws).any?
         end
         sql << " AND episodes.id IN (#{ids.concat([0]).join(",")})"
       end
 
       if f.exclude_tags.present?
-        kws = f.sanitize_keywords(f.exclude_tags, true)
+        kws = sanitize_categories(f.exclude_tags, true)
         ids = f.podcast.episodes.filter_map do |e|
-          e.id if (sanitize_keywords(e.categories, true) & kws).any?
+          e.id if (sanitize_categories(e.categories, true) & kws).any?
         end
         sql << " AND episodes.id NOT IN (#{ids.join(",")})" if ids.any?
       end
