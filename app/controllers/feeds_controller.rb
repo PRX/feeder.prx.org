@@ -130,6 +130,8 @@ class FeedsController < ApplicationController
       :house,
       :paid,
       :sonic_id,
+      include_tags: [],
+      exclude_tags: [],
       itunes_category: [],
       itunes_subcategory: [],
       feed_tokens_attributes: %i[id label token _destroy],

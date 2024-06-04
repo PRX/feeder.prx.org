@@ -407,13 +407,12 @@ en:
         display_full_episodes_count: Feed Metadata Limit
         enclosure_prefix: Enclosure Prefix URL
         episode_offset_seconds: Episode Publish Offset
+        exclude_tags: Exclude Categories
         file_name: File Name
-        friendly_titles:
-          apple: Apple Subscriptions
-          default: Default RSS Feed
         house: House Ads
         include_donation_url: Include Donation Form
         include_podcast_value: Include Micropayments Wallet
+        include_tags: Include Categories
         itunes_category: Apple Podcasts Category
         itunes_subcategory: Apple Podcasts Sub-Category
         new_feed_url: New Feed URL
@@ -540,8 +539,6 @@ en:
       embed_player_not_ready: Episode Not Saved
       enclosure_not_ready: No Media Files Uploaded
       title: Distribution
-    form_feeds:
-      title: Include In Feeds
     form_main:
       help:
         author_email: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
@@ -771,6 +768,10 @@ en:
     form_status:
       <<: *form_status
       title: Feed Status
+    form_tags:
+      help:
+        categories: Limit episodes that appear in this feed based on their Categories.
+      title: Episode Categories
     form:
       <<: *form
     helper:
@@ -1011,6 +1012,7 @@ en:
     show:
       all_episodes: All Episodes
       create_episode: Create Episode
+      default_feed: Default RSS Feed
       engagement_settings: Engagement Settings
       feeds: Feeds
       import: Import
@@ -1087,7 +1089,6 @@ en:
         ad_breaks: Enter the number of ad breaks (midrolls) these episodes will have. Accurately entering the number of ad breaks help us to better predict ad inventory for your podcast.
         medium: Enter the file format you plan to upload for these episodes.
       label:
-        feed_ids: Include Draft in Feeds
         publish_time: Publish Time
         publish_time_zone: Time Zone
     helper:

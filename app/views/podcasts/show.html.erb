@@ -134,7 +134,7 @@
         <div class="card-body">
           <ul class="list-group list-group-flush">
             <% @feeds.each do |feed| %>
-              <li class="list-group-item border-bottom-0 p-0"><%= link_to feed.friendly_title, podcast_feed_path(@podcast, feed) %></li>
+              <li class="list-group-item border-bottom-0 p-0"><%= link_to feed.default? ? t(".default_feed") : feed.title, podcast_feed_path(@podcast, feed) %></li>
             <% end %>
           </ul>
         </div>

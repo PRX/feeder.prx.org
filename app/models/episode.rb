@@ -24,15 +24,10 @@ class Episode < ApplicationRecord
   serialize :overrides, HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
-
-  has_many :episodes_feeds, dependent: :delete_all
-  has_many :feeds, through: :episodes_feeds
   has_many :episode_imports
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
-
-  has_one :ready_image, -> { complete_or_replaced.order("created_at DESC") }, class_name: "EpisodeImage"
   has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
 
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
@@ -53,8 +48,6 @@ class Episode < ApplicationRecord
   validates :segment_count, numericality: {only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
   validate :validate_media_ready, if: :strict_validations
 
-  after_initialize :set_default_feeds, if: :new_record?
-  before_validation :set_default_feeds, if: :new_record?
   before_validation :set_defaults, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
@@ -127,6 +120,10 @@ class Episode < ApplicationRecord
     self.author_email = author["email"]
   end
 
+  def ready_image
+    images.complete_or_replaced.first
+  end
+
   def image
     images.first
   end
@@ -140,14 +137,6 @@ class Episode < ApplicationRecord
       images.build(img.attributes.compact)
     else
       img.update_image(image)
-    end
-  end
-
-  def set_default_feeds
-    if feed_ids.blank?
-      self.feed_ids = podcast&.feeds&.filter_map do |feed|
-        feed.id if feed.default? || feed.apple?
-      end
     end
   end
 
@@ -284,6 +273,14 @@ class Episode < ApplicationRecord
 
   def path
     "#{podcast.try(:path)}/#{guid}"
+  end
+
+  def include_in_feed?
+    if media?
+      complete_media?
+    else
+      true
+    end
   end
 
   def enclosure_url(feed = nil)

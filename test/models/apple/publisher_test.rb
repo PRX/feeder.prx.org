@@ -134,7 +134,6 @@ describe Apple::Publisher do
     before do
       Apple::Show.connect_existing("123", apple_config)
       episode.create_apple_sync_log(external_id: "123", **apple_episode_api_response)
-      private_feed.episodes << episode
     end
 
     describe "#episodes_to_archive" do
@@ -144,7 +143,8 @@ describe Apple::Publisher do
         # so no archive
         assert_equal [], apple_publisher.episodes_to_archive
 
-        private_feed.episodes.delete(episode)
+        private_feed.update!(exclude_tags: ["apple-excluded"])
+        episode.update!(categories: ["apple-excluded"])
         apple_publisher.show.reload
 
         # it's not in the feed
@@ -319,8 +319,10 @@ describe Apple::Publisher do
     let(:episode) { create(:episode, podcast: podcast) }
 
     before do
-      public_feed.episodes.delete(episode)
-      private_feed.episodes << episode
+      episode.categories = ["bonus"]
+      public_feed.exclude_tags = ["bonus"]
+      public_feed.save!
+      episode.save!
     end
 
     it "should return the episodes to sync" do
@@ -328,8 +330,8 @@ describe Apple::Publisher do
         assert_equal apple_publisher.episodes_to_sync.map(&:feeder_id), [episode.id]
 
         # derived from the underlying feeds
-        assert_equal public_feed.feed_episodes.map(&:id), []
-        assert_equal private_feed.feed_episodes.map(&:id), [episode.id]
+        assert_equal public_feed.filtered_episodes.map(&:id), []
+        assert_equal private_feed.filtered_episodes.map(&:id), [episode.id]
       end
     end
 

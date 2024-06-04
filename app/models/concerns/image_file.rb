@@ -21,7 +21,7 @@ module ImageFile
     scope :complete_or_replaced, -> do
       with_deleted
         .status_complete
-        .where("#{table_name}.deleted_at IS NULL OR #{table_name}.replaced_at IS NOT NULL")
+        .where("deleted_at IS NULL OR replaced_at IS NOT NULL")
         .order("created_at DESC")
     end
 
