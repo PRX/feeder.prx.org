@@ -5,7 +5,7 @@ module Apple
     include Apple::ApiResponse
     include Apple::ApiWaiting
 
-    serialize :api_response, JSON
+    serialize :api_response, coder: JSON
 
     default_scope { includes(:apple_sync_log) }
 

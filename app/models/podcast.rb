@@ -15,7 +15,7 @@ class Podcast < ApplicationRecord
 
   acts_as_paranoid
 
-  serialize :restrictions, JSON
+  serialize :restrictions, coder: JSON
 
   has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true, inverse_of: :podcast
   alias_method :public_feed, :default_feed

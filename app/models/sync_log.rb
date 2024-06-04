@@ -16,7 +16,7 @@ class SyncLog < ApplicationRecord
                           ON id = max_id")
   end
 
-  serialize :api_response, JSON
+  serialize :api_response, coder: JSON
 
   def complete?
     updated_at.present? && external_id.present?
