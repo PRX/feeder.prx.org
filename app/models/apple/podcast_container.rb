@@ -14,8 +14,10 @@ module Apple
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
 
-    alias_attribute :deliveries, :podcast_deliveries
-    alias_attribute :delivery_files, :podcast_delivery_files
+    alias_method :deliveries, :podcast_deliveries
+    alias_method :deliveries=, :podcast_deliveries=
+    alias_method :delivery_files, :podcast_delivery_files
+    alias_method :delivery_files=, :podcast_delivery_files=
 
     FILE_STATUS_SUCCESS = "In Asset Repository"
     FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"

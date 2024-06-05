@@ -15,8 +15,10 @@ module Apple
 
     delegate :apple_episode_id, to: :podcast_container
 
-    alias_attribute :delivery_files, :podcast_delivery_files
-    alias_attribute :container, :podcast_container
+    alias_method :delivery_files, :podcast_delivery_files
+    alias_method :delivery_files=, :podcast_delivery_files=
+    alias_method :container, :podcast_container
+    alias_method :container=, :podcast_container=
 
     enum status: {
       awaiting_upload: "AWAITING_UPLOAD",

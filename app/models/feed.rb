@@ -22,7 +22,8 @@ class Feed < ApplicationRecord
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
   has_many :feed_tokens, autosave: true, dependent: :destroy, inverse_of: :feed
-  alias_attribute :tokens, :feed_tokens
+  alias_method :tokens, :feed_tokens
+  alias_method :tokens=, :feed_tokens=
   accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
 
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
