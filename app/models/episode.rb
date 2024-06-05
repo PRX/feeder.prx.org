@@ -21,7 +21,7 @@ class Episode < ApplicationRecord
 
   acts_as_paranoid
 
-  serialize :overrides, HashSerializer
+  serialize :overrides, coder: HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, touch: true
   has_many :episode_imports
