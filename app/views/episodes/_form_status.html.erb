@@ -31,6 +31,10 @@
       <%= render "form_dropdate", form: form, episode: episode %>
     </div>
 
+    <div class="col-12">
+      <%= render "form_feeds", form: form, episode: episode %>
+    </div>
+
     <% if episode.persisted? && episode.publish_to_apple? %>
       <div class="col-12 mt-4">
         <p class="status-text">

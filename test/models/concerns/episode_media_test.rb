@@ -5,6 +5,34 @@ class EpisodeMediaTest < ActiveSupport::TestCase
   let(:c2) { build_stubbed(:content, status: "complete", position: 2) }
   let(:ep) { build(:episode, segment_count: 2, contents: [c1, c2]) }
 
+  describe ".feed_ready" do
+    it "just in time creates new media versions" do
+      episode = create(:episode, segment_count: 2)
+      create(:content, episode: episode, position: 1, status: "complete")
+      create(:content, episode: episode, position: 2, status: "complete")
+      assert_empty episode.media_versions
+
+      assert_equal Episode.where(id: episode.id).feed_ready.size, 1
+      assert_equal episode.media_versions.size, 1
+    end
+  end
+
+  describe "#feed_ready?" do
+    it "indicates if an episode has complete media or needs no media" do
+      episode = build_stubbed(:episode, medium: nil, segment_count: nil)
+      assert episode.feed_ready?
+
+      episode.medium = "audio"
+      episode.stub(:complete_media, []) do
+        refute episode.feed_ready?
+      end
+
+      episode.stub(:complete_media, [{what: "ev"}]) do
+        assert episode.feed_ready?
+      end
+    end
+  end
+
   describe "#cut_media_version!" do
     it "creates new media versions" do
       episode = create(:episode, segment_count: 2)
