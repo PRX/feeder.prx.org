@@ -35,7 +35,7 @@ gem "simple_calendar", "~> 2.4"
 # api views
 gem "responders"
 gem "actionpack-action_caching" # for hal_api-rails
-gem "hal_api-rails", "~> 1.2.1"
+gem "hal_api-rails", "~> 1.2.2"
 gem "jbuilder"
 gem "roar-rails", github: "PRX/roar-rails", branch: "feat/rails_7"
 
