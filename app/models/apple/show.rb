@@ -209,7 +209,7 @@ module Apple
       raise "Missing apple show id" unless apple_id.present?
 
       @episodes ||= begin
-        feed_episode_ids = Set.new(private_feed.feed_episodes.map(&:id))
+        feed_episode_ids = Set.new(private_feed.feed_episodes.feed_ready.map(&:id))
 
         podcast_episodes
           .filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }

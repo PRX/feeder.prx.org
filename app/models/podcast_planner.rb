@@ -6,6 +6,7 @@ class PodcastPlanner
     @titles = params[:selected_titles]
     @drafts = []
     @podcast_id = params[:podcast_id]
+    @feed_ids = params[:feed_ids]&.reject(&:empty?)&.map(&:to_i)
     @start_date = params[:start_date].try(:to_date)
     @selected_days = params[:selected_days].try { reject(&:blank?) }.try { map { |day| day.to_i } }
     @period = params[:period].try(:to_i)
@@ -150,6 +151,7 @@ class PodcastPlanner
     @dates.zip(@titles || []).each do |date, title|
       @drafts.push(Episode.new(
         podcast_id: @podcast_id,
+        feed_ids: @feed_ids,
         released_at: apply_publish_time(date),
         title: generate_default_title(date, title),
         segment_count: @segment_count,
