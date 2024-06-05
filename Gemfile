@@ -8,7 +8,7 @@ gem "activerecord-session_store"
 gem "bootsnap", require: false
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.6"
-gem "rails", "~> 7.1.3.4"
+gem "rails", "~> 7.1"
 
 # caching
 gem "hiredis", "~> 0.6.3"
