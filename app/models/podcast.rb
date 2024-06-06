@@ -161,10 +161,6 @@ class Podcast < ApplicationRecord
     self[:categories] = sanitize_categories(cats, false).presence
   end
 
-  def feed_episodes
-    default_feed.feed_episodes
-  end
-
   def publish!
     if locked?
       Rails.logger.warn "Podcast #{id} is locked, skipping publish", {podcast_id: id}
