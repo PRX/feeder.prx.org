@@ -29,7 +29,6 @@ class FeedsController < ApplicationController
     authorize @feed
 
     @feed.assign_attributes(feed_params)
-    @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
     render "new"
   end
 
