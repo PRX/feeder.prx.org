@@ -15,17 +15,18 @@ class Feed < ApplicationRecord
 
   include TextSanitizer
 
-  serialize :include_zones, JSON
-  serialize :include_tags, JSON
-  serialize :exclude_tags, JSON
-  serialize :audio_format, HashSerializer
+  serialize :include_zones, coder: JSON
+  serialize :include_tags, coder: JSON
+  serialize :exclude_tags, coder: JSON
+  serialize :audio_format, coder: HashSerializer
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
   has_many :episodes_feeds, dependent: :delete_all
   has_many :episodes, -> { order("published_at desc") }, through: :episodes_feeds
 
   has_many :feed_tokens, autosave: true, dependent: :destroy, inverse_of: :feed
-  alias_attribute :tokens, :feed_tokens
+  alias_method :tokens, :feed_tokens
+  alias_method :tokens=, :feed_tokens=
   accepts_nested_attributes_for :feed_tokens, allow_destroy: true, reject_if: ->(ft) { ft[:token].blank? }
 
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed

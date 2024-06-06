@@ -18,8 +18,10 @@ module Apple
 
     delegate :apple_episode_id, to: :podcast_delivery
 
-    alias_attribute :delivery, :podcast_delivery
-    alias_attribute :container, :podcast_container
+    alias_method :delivery, :podcast_delivery
+    alias_method :delivery=, :podcast_delivery=
+    alias_method :container, :podcast_container
+    alias_method :container=, :podcast_container=
 
     PODCAST_DELIVERY_ID_ATTR = "podcast_delivery_id"
     PODCAST_DELIVERY_FILE_ID_ATTR = "podcast_delivery_file_id"
