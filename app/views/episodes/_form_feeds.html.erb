@@ -1,0 +1,15 @@
+<% if episode.podcast.feeds.count > 1 %>
+  <div class="d-flex mt-2 mb-0">
+    <strong><%= t(".title") %>:</strong>
+  </div>
+
+  <% feeds = episode.podcast.feeds.tab_order %>
+  <% disabled = !policy(episode).create_or_update? %>
+
+  <%= form.collection_check_boxes(:feed_ids, feeds, :id, :friendly_title, {}, disabled: disabled) do |b| %>
+    <div class="form-check label-wrap">
+      <%= b.check_box(class: "form-check-input") %>
+      <%= b.label(class: "form-check-label") { b.text } %>
+    </div>
+  <% end %>
+<% end %>

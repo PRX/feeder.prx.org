@@ -29,8 +29,7 @@ class EpisodesController < ApplicationController
 
   # GET /episodes/new
   def new
-    @episode = Episode.new(episode_params)
-    @episode.podcast = @podcast
+    @episode = @podcast.episodes.new(episode_params)
     @episode.clear_attribute_changes(%i[podcast_id])
     @episode.strict_validations = true
     @episode.valid? if turbo_frame_request?
@@ -46,8 +45,7 @@ class EpisodesController < ApplicationController
 
   # POST /podcasts/1/episodes
   def create
-    @episode = Episode.new(episode_params)
-    @episode.podcast = @podcast
+    @episode = @podcast.episodes.new(episode_params)
     @episode.strict_validations = true
     authorize @episode
 
@@ -159,6 +157,7 @@ class EpisodesController < ApplicationController
       :item_guid,
       :original_guid,
       categories: [],
+      feed_ids: [],
       images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
     ).tap do |p|
       p[:released_at] = released_at_zone.parse(p[:released_at]) if p[:released_at].present?

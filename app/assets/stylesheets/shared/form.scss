@@ -386,6 +386,10 @@ small {
   white-space: nowrap;
 }
 
+.form-check.label-wrap > label {
+  white-space: pre-wrap;
+}
+
 .table .form-check-input {
   font-size: 1rem;
 }
