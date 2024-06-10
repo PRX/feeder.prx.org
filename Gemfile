@@ -1,11 +1,12 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.3.1"
+ruby "3.3.2"
 
 # core
 gem "activerecord-session_store"
 gem "bootsnap", require: false
+gem "clickhouse-activerecord"
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.6"
 gem "rails", "~> 7.0.8.3"
@@ -40,6 +41,7 @@ gem "roar-rails", github: "PRX/roar-rails", branch: "feat/rails_7"
 
 # models
 gem "addressable"
+gem "composite_primary_keys" # TODO: remove after rails 7.1
 gem "countries"
 gem "paranoia"
 gem "sanitize"

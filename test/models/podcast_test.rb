@@ -66,6 +66,17 @@ describe Podcast do
     assert_nil p[:link]
   end
 
+  it "sanitizes categories" do
+    p = build_stubbed(:podcast)
+
+    p.categories = []
+    assert_equal [], p.categories
+    assert_nil p[:categories]
+
+    p.categories = ["foo", " Foo ", "BAR  ", "  foo", "!@  $?"]
+    assert_equal ["foo", "BAR", "!@  $?"], p.categories
+  end
+
   describe "publishing" do
     it "creates a publish job on publish" do
       PublishingPipelineState.stub(:start_pipeline!, "published!") do
@@ -78,17 +89,6 @@ describe Podcast do
         podcast.locked = true
         refute_equal StartPublishingPipelineJob, podcast.publish!.class
       end
-    end
-  end
-
-  describe "episode limit" do
-    let(:episodes) { create_list(:episode, 10, podcast: podcast).reverse }
-
-    it "returns only limited number of episodes" do
-      assert_equal episodes.count, podcast.episodes.count
-      assert_equal podcast.feed_episodes.count, 10
-      podcast.display_episodes_count = 5
-      assert_equal podcast.feed_episodes.count, 5
     end
   end
 end

@@ -20,10 +20,6 @@ describe Api::PodcastRepresenter do
     assert_equal json["owner"]["email"], "jesse@maximumfun.org"
   end
 
-  it "includes keywords" do
-    assert_includes json["keywords"], "laffs"
-  end
-
   it "includes categories" do
     assert_includes json["categories"], "Humor"
   end

@@ -149,7 +149,12 @@ GEM
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
     childprocess (4.1.0)
+    clickhouse-activerecord (0.6.2)
+      activerecord (~> 7.0.0)
+      bundler (>= 1.13.4)
     coderay (1.1.3)
+    composite_primary_keys (14.0.9)
+      activerecord (~> 7.0.2)
     concurrent-ruby (1.2.3)
     connection_pool (2.4.1)
     countries (5.2.0)
@@ -503,7 +508,7 @@ GEM
     parallel (1.24.0)
     paranoia (2.6.1)
       activerecord (>= 5.1, < 7.1)
-    parser (3.3.0.5)
+    parser (3.3.2.0)
       ast (~> 2.4.1)
       racc
     pg (1.5.4)
@@ -526,7 +531,7 @@ GEM
       nio4r (~> 2.0)
     pundit (2.3.0)
       activesupport (>= 3.0.0)
-    racc (1.7.3)
+    racc (1.8.0)
     rack (2.2.8.1)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
@@ -706,6 +711,8 @@ DEPENDENCIES
   bootsnap
   bootstrap (~> 5.2.2)
   capybara
+  clickhouse-activerecord
+  composite_primary_keys
   countries
   debug
   dotenv-rails (~> 2.0)
@@ -765,7 +772,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 3.3.1p55
+   ruby 3.3.2p78
 
 BUNDLED WITH
    2.4.10

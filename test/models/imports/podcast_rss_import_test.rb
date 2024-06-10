@@ -66,6 +66,9 @@ describe PodcastRssImport do
     _(importer.podcast.managing_editor_name).must_equal "PRX"
     _(importer.podcast.managing_editor_email).must_equal "prxwpadmin@prx.org"
 
+    # categories, itunes:keywords and media:keywords are combined
+    _(importer.podcast.categories).must_equal ["Some Category", "keyword1", "keyword two", "media one"]
+
     _(sns.messages.count).must_equal 2
     _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 2]
     _(sns.messages.map { |m| m["Job"]["Tasks"].map { |t| t["Type"] } }).must_equal [["Inspect", "Copy"], ["Inspect", "Copy"]]

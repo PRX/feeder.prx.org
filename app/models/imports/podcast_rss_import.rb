@@ -177,16 +177,20 @@ class PodcastRssImport < PodcastImport
     podcast_attributes[:owner_name] = owner[:name]
     podcast_attributes[:owner_email] = owner[:email]
 
-    podcast_attributes[:categories] = parse_categories(feed)
     podcast_attributes[:complete] = (clean_string(feed.itunes_complete) == "yes")
     podcast_attributes[:copyright] ||= clean_string(feed.media_copyright)
-    podcast_attributes[:keywords] = parse_keywords(feed)
     podcast_attributes[:serial_order] = feed.itunes_type && !!feed.itunes_type.match(/serial/i)
     podcast_attributes[:locked] = true # won't publish feed until this is set to false
 
     podcast_attributes[:title] = clean_string(feed.title)
     podcast_attributes[:subtitle] = clean_string(podcast_short_desc(feed))
     podcast_attributes[:description] = feed_description(feed)
+
+    # categories setter does the work of sanitizing these
+    cats = Array(feed.categories)
+    ikeys = (feed.itunes_keywords || "").split(",")
+    mkeys = (feed.media_keywords || "").split(",")
+    podcast_attributes[:categories] = cats + ikeys + mkeys
 
     podcast_attributes
   end
@@ -246,18 +250,6 @@ class PodcastRssImport < PodcastImport
     end
 
     [itunes_cats.keys.map { |n| ITunesCategory.new(name: n, subcategories: itunes_cats[n]) }.first].compact
-  end
-
-  def parse_categories(feed)
-    mcat = Array(feed.media_categories).map(&:strip)
-    rcat = Array(feed.categories).map(&:strip)
-    (mcat + rcat).compact.uniq
-  end
-
-  def parse_keywords(feed)
-    ikey = Array(feed.itunes_keywords).map(&:strip)
-    mkey = Array(feed.media_keywords).map(&:strip)
-    (ikey + mkey).compact.uniq
   end
 
   def podcast_short_desc(item)
