@@ -106,6 +106,23 @@ ops/bin/load_db.sh
 ops/bin/load_db.sh
 ```
 
+### Clickhouse Setup
+
+To view or develop charts, you'll need access to a Clickhouse database with rollup data corresponding
+to whichever Postgres stag/prod backup you used.
+
+Running a Clickhouse server with those rollups rollups locally is more the purview of the
+[castlehouse repo](https://github.com/PRX/castlehouse). If you don't want to run locally, you can connect
+to the staging/prod EC2 Clickhouse server by setting a few ENVs:
+
+```
+CLICKHOUSE_DATABASE=the-dbname
+CLICKHOUSE_USER=the-username
+CLICKHOUSE_PASSWORD=the-password
+CLICKHOUSE_HOST=123.456.789
+CLICKHOUSE_PORT=8123
+```
+
 ## Development
 
 Create a branch and/or fork the repo if you plan to make changes.

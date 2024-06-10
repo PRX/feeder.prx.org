@@ -149,6 +149,9 @@ GEM
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
     childprocess (4.1.0)
+    clickhouse-activerecord (0.6.2)
+      activerecord (~> 7.0.0)
+      bundler (>= 1.13.4)
     coderay (1.1.3)
     composite_primary_keys (14.0.9)
       activerecord (~> 7.0.2)
@@ -708,6 +711,7 @@ DEPENDENCIES
   bootsnap
   bootstrap (~> 5.2.2)
   capybara
+  clickhouse-activerecord
   composite_primary_keys
   countries
   debug
