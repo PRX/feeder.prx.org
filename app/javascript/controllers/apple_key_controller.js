@@ -1,20 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["key", "pem"]
+  static targets = ["provider", "key", "pem"]
 
   async convertFileToKey(event) {
     const keyFile = event.target.files[0]
-    let fileText = await this.readFile(keyFile)
-    let keyText = this.parseKey(fileText)
+    const fileName = keyFile.name
+    const fileText = await this.readFile(keyFile)
 
-    this.keyTarget.value = keyText
-    this.convertKeyToB64()
-  }
-
-  convertKeyToB64() {
-    let encoded = btoa(this.keyTarget.value)
-    this.pemTarget.value = encoded
+    this.convertFileName(fileName)
+    this.convertKeyToB64(fileText)
   }
 
   readFile(file) {
@@ -27,6 +22,21 @@ export default class extends Controller {
       }
       reader.readAsText(file)
     })
+  }
+
+  convertFileName(fileName) {
+    const fields = fileName.split("_")
+    const provider = fields[0]
+    const keyId = fields[1].split(".")[0]
+
+    this.providerTarget.value = provider
+    this.keyTarget.value = keyId
+  }
+
+  convertKeyToB64(fileText) {
+    const keyText = this.parseKey(fileText)
+    const encoded = btoa(keyText)
+    this.pemTarget.value = encoded
   }
 
   parseKey(text) {
