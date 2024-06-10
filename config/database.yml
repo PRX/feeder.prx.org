@@ -31,6 +31,7 @@ clickhouse: &clickhouse
   password: <%= ENV.fetch("CLICKHOUSE_PASSWORD", "") %>
   host: <%= ENV.fetch("CLICKHOUSE_HOST", "127.0.0.1") %>
   port: <%= ENV.fetch("CLICKHOUSE_PORT", "8123") %>
+  replica: true # don't try to run migrations here
 
 development:
   primary:
