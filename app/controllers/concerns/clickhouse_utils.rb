@@ -19,8 +19,8 @@ module ClickhouseUtils
     elsif defined?(@@clickhouse_at) && (Time.now - @@clickhouse_at) < CLICKHOUSE_PING_INTERVAL
       @@clickhouse_connected
     else
-      @@clickhouse_connected = clickhouse_ping
       @@clickhouse_at = Time.now
+      @@clickhouse_connected = clickhouse_ping
     end
   end
 

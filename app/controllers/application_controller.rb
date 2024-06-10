@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   include Pundit::Authorization
+  include ClickhouseUtils
 
   protect_from_forgery with: :exception
 
