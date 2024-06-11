@@ -10,22 +10,21 @@
       </div>
       <%= form.fields_for :apple_config do |config_form| %>
         <%= config_form.fields_for :key do |key_fields| %>
-          <% if config_form.object.persisted? %>
-            <div class="mb-4 form-floating">
-              <%= key_fields.text_field :provider_id, disabled: true %>
-              <%= key_fields.label :provider_id, "Provider ID" %>
-            </div>
-            <div class="form-floating input-group">
-              <%= key_fields.text_field :key_id, disabled: true %>
-              <%= key_fields.label :key_id, "Apple Key" %>
-            </div>
-          <% else %>
-            <%= key_fields.file_field :key_file, class: "form-control", accept: ".p8, .pem", data: {action: "apple-key#convertFileToKey"} %>
-
-            <%= key_fields.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
-            <%= key_fields.hidden_field :key_id, data: {apple_key_target: "key"} %>
-            <%= key_fields.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
+          <% unless config_form.object.persisted? %>
+            <%= key_fields.file_field :key_file, class: "mb-4 form-control", accept: ".p8, .pem", data: {action: "apple-key#convertFileToKey"} %>
           <% end %>
+          <div class="mb-4 form-floating">
+            <%= key_fields.text_field :provider_id, disabled: true, data: {apple_key_target: "provider"} %>
+            <%= key_fields.label :provider_id, "Provider ID" %>
+          </div>
+          <div class="form-floating">
+            <%= key_fields.text_field :key_id, disabled: true, data: {apple_key_target: "key"} %>
+            <%= key_fields.label :key_id, "Apple Key" %>
+          </div>
+
+          <%= key_fields.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
+          <%= key_fields.hidden_field :key_id, data: {apple_key_target: "key"} %>
+          <%= key_fields.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
         <% end %>
       <% end %>
       <%= form.hidden_field :type, value: "Feeds::AppleSubscription" %>

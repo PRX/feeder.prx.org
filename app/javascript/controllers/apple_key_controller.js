@@ -29,8 +29,15 @@ export default class extends Controller {
     const provider = fields[0]
     const keyId = fields[1].split(".")[0]
 
-    this.providerTarget.value = provider
-    this.keyTarget.value = keyId
+    this.providerTargets.forEach(target => target.value = provider)
+    this.providerTarget.disabled = false
+    this.providerTarget.focus()
+    this.providerTarget.disabled = true
+
+    this.keyTargets.forEach(target => target.value = keyId)
+    this.keyTarget.disabled = false
+    this.keyTarget.focus()
+    this.keyTarget.disabled = true
   }
 
   convertKeyToB64(fileText) {
