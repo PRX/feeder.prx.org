@@ -20,6 +20,6 @@ class FeedPolicy < ApplicationPolicy
   end
 
   def destroy?
-    resource.custom? && update? && resource.type != "Feeds::AppleSubscription"
+    resource.custom? && update? && resource.apple?
   end
 end

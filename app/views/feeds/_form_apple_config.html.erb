@@ -12,6 +12,8 @@
         <%= config_form.fields_for :key do |key_fields| %>
           <% unless config_form.object.persisted? %>
             <%= key_fields.file_field :key_file, class: "mb-4 form-control", accept: ".p8, .pem", data: {action: "apple-key#convertFileToKey"} %>
+
+            <%= key_fields.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
           <% end %>
           <div class="mb-4 form-floating">
             <%= key_fields.text_field :provider_id, disabled: true, data: {apple_key_target: "provider"} %>
@@ -24,7 +26,6 @@
 
           <%= key_fields.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
           <%= key_fields.hidden_field :key_id, data: {apple_key_target: "key"} %>
-          <%= key_fields.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
         <% end %>
       <% end %>
       <%= form.hidden_field :type, value: "Feeds::AppleSubscription" %>
