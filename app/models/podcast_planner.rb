@@ -1,6 +1,8 @@
 class PodcastPlanner
   attr_accessor :podcast_id, :dates, :titles, :selected_days, :week_condition, :period, :monthly_weeks, :start_date, :date_range_condition, :number_of_episodes, :end_date, :publish_time, :publish_time_zone, :segment_count, :medium, :selected_dates, :drafts
 
+  MAX_YEARS = 3
+
   def initialize(params = {})
     @dates = params[:selected_dates].try(:map, &:to_date)
     @titles = params[:selected_titles]
@@ -113,7 +115,7 @@ class PodcastPlanner
   end
 
   def past_max_date?(current_day)
-    current_day.after?(@start_date + 730.days)
+    current_day.after?(@start_date + MAX_YEARS.years)
   end
 
   def generate_dates_by_remaining_episodes
