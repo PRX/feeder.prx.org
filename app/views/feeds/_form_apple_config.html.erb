@@ -3,28 +3,32 @@
     <div class="card-header card-header-light d-flex justify-content-between">
       <h2 class="card-title h5 flex-grow-1"><%= t(".title") %></h2>
     </div>
-    <div class="card-body">
+    <div class="card-body" data-controller="apple-key">
       <div class="mb-4">
         <p><%= t(".description") %></p>
         <a href="https://help.prx.org"><%= t(".guide_link") %></a>
       </div>
       <%= form.fields_for :apple_config do |config_form| %>
         <%= config_form.fields_for :key do |key_fields| %>
-          <div class="mb-4">
-            <div class="form-floating">
-              <%= key_fields.text_field :provider_id, disabled: config_form.object.persisted? %>
-              <%= key_fields.label :provider_id %>
-            </div>
+          <% unless config_form.object.persisted? %>
+            <%= key_fields.file_field :key_file, class: "mb-4 form-control", accept: ".p8, .pem", data: {action: "apple-key#convertFileToKey"} %>
+
+            <%= key_fields.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
+          <% end %>
+          <div class="mb-4 form-floating">
+            <%= key_fields.text_field :provider_id, disabled: true, data: {apple_key_target: "provider"} %>
+            <%= key_fields.label :provider_id, "Provider ID" %>
+          </div>
+          <div class="form-floating">
+            <%= key_fields.text_field :key_id, disabled: true, data: {apple_key_target: "key"} %>
+            <%= key_fields.label :key_id, "Apple Key" %>
           </div>
 
-          <div>
-            <div class="form-floating">
-              <%= key_fields.text_field :key_id, disabled: config_form.object.persisted? %>
-              <%= key_fields.label :key_id %>
-            </div>
-          </div>
+          <%= key_fields.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
+          <%= key_fields.hidden_field :key_id, data: {apple_key_target: "key"} %>
         <% end %>
       <% end %>
+      <%= form.hidden_field :type, value: "Feeds::AppleSubscription" %>
     </div>
   </div>
 </div>

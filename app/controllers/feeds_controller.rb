@@ -22,6 +22,16 @@ class FeedsController < ApplicationController
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
   end
 
+  def new_apple
+    @feed = Feeds::AppleSubscription.new(podcast: @podcast, private: true)
+    @feed.build_apple_config
+    @feed.apple_config.build_key
+    authorize @feed
+
+    @feed.assign_attributes(feed_params)
+    render "new"
+  end
+
   # POST /feeds
   def create
     @feed = @podcast.feeds.new(feed_params)
@@ -130,11 +140,16 @@ class FeedsController < ApplicationController
       :house,
       :paid,
       :sonic_id,
+      :type,
       itunes_category: [],
       itunes_subcategory: [],
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
-      itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
+      itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
+      apple_config_attributes: {
+        id: :id,
+        key_attributes: %i[id provider_id key_id key_pem_b64]
+      }
     )
   end
 end
