@@ -9,7 +9,7 @@ class FeedsController < ApplicationController
 
   # GET /feeds/1
   def show
-    @feed.assign_attributes(feed_params)
+    @feed.assign_attributes(feed_params_with_apple)
     authorize @feed
   end
 
@@ -28,13 +28,13 @@ class FeedsController < ApplicationController
     @feed.apple_config.build_key
     authorize @feed
 
-    @feed.assign_attributes(feed_params)
+    @feed.assign_attributes(feed_params_with_apple)
     render "new"
   end
 
   # POST /feeds
   def create
-    @feed = @podcast.feeds.new(feed_params)
+    @feed = @podcast.feeds.new(feed_params_with_apple)
     @feed.slug = "" if @feed.slug.nil?
     authorize @feed
 
@@ -114,6 +114,10 @@ class FeedsController < ApplicationController
     params.fetch(:feed, {}).permit(:slug).merge(nilified_feed_params)
   end
 
+  def feed_params_with_apple
+    params.fetch(:feed, {}).permit(:slug).merge(nilified_feed_params).merge(apple_params)
+  end
+
   def nilified_feed_params
     nilify params.fetch(:feed, {}).permit(
       :lock_version,
@@ -145,7 +149,12 @@ class FeedsController < ApplicationController
       itunes_subcategory: [],
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
-      itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
+      itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
+    )
+  end
+
+  def apple_params
+    nilify params.fetch(:feed, {}).permit(
       apple_config_attributes: {
         id: :id,
         key_attributes: %i[id provider_id key_id key_pem_b64]
