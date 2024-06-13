@@ -312,6 +312,7 @@ class Episode < ApplicationRecord
     self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
     self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
+    self.original_guid = original_guid.strip if !original_guid.blank? && original_guid_changed?
   end
 
   def description_with_default
