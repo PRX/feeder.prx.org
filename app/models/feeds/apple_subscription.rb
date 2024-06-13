@@ -7,15 +7,9 @@ class Feeds::AppleSubscription < Feed
 
   after_initialize :set_defaults
 
-  has_one :apple_config, class_name: "::Apple::Config", dependent: :destroy, autosave: true, validate: true
-  has_one :key,
-    through: :apple_config,
-    class_name: "Apple::Key",
-    dependent: :destroy,
-    foreign_key: :key_id
+  has_one :apple_config, class_name: "::Apple::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
   accepts_nested_attributes_for :apple_config, allow_destroy: true, reject_if: :all_blank
-  accepts_nested_attributes_for :key, allow_destroy: true, reject_if: :all_blank
 
   validate :unchanged_defaults
   validate :only_apple_feed
@@ -28,6 +22,7 @@ class Feeds::AppleSubscription < Feed
     self.display_episodes_count ||= podcast&.default_feed&.display_episodes_count
     self.include_zones ||= DEFAULT_ZONES
     self.tokens ||= DEFAULT_TOKENS
+    self.private = true
 
     super
   end
