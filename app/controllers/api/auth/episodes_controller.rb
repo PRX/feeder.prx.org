@@ -7,6 +7,14 @@ class Api::Auth::EpisodesController < Api::EpisodesController
   filter_resources_by :podcast_id
   find_method :find_by_guid
 
+  def included(relation)
+    if action_name == "index"
+      super.includes(:feeds)
+    else
+      super
+    end
+  end
+
   def list_scoped(res)
     res
   end
