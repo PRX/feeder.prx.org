@@ -10,7 +10,6 @@ class Api::Auth::PodcastRepresenter < Api::PodcastRepresenter
     if represented.id
       {
         href: api_authorization_podcast_episodes_path(represented) + "{?page,per,zoom,since}",
-        count: represented.episodes.count,
         templated: true
       }
     end
@@ -31,7 +30,6 @@ class Api::Auth::PodcastRepresenter < Api::PodcastRepresenter
     if represented.id
       {
         href: api_authorization_podcast_feeds_path(represented) + "{?page,per,zoom,since}",
-        count: represented.feeds.count,
         templated: true
       }
     end

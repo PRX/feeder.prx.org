@@ -62,7 +62,6 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
     if represented.id
       {
         href: api_podcast_episodes_path(represented),
-        count: represented.episodes.published.count
       }
     end
   end
