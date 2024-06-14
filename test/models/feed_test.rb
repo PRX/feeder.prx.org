@@ -161,6 +161,9 @@ describe Feed do
     it "restricts some slugs already used in S3" do
       assert feed1.valid?
 
+      feed1.slug = "default"
+      refute feed1.valid?
+
       feed1.slug = "images"
       refute feed1.valid?
 
@@ -185,6 +188,22 @@ describe Feed do
       feed2.title = nil
       refute feed2.valid?
       feed2.title = "new feed"
+      assert feed2.valid?
+    end
+
+    it "does not allow episode offsets on default" do
+      feed1.episode_offset_seconds = 5
+      assert feed1.default?
+      assert feed1.invalid?
+
+      feed1.episode_offset_seconds = 0
+      assert feed1.valid?
+
+      feed1.episode_offset_seconds = nil
+      assert feed1.valid?
+
+      # non-default feeds can have offsets
+      feed2.episode_offset_seconds = 5
       assert feed2.valid?
     end
   end

@@ -53,6 +53,12 @@ describe Api::EpisodesController do
     assert_response 404
   end
 
+  it "should return not found resources not in the default feed" do
+    episode.update(feeds: [])
+    get(:show, params: {api_version: "v1", format: "json", id: episode.guid})
+    assert_response 404
+  end
+
   it "should list" do
     refute_nil episode.id
     refute_nil episode_deleted.id
