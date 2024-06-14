@@ -61,7 +61,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   link :episodes do
     if represented.id
       {
-        href: api_podcast_episodes_path(represented),
+        href: api_podcast_episodes_path(represented)
       }
     end
   end
