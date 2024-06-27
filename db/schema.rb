@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_05_09_194515) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_26_182801) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -236,8 +236,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_09_194515) do
     t.boolean "include_donation_url", default: true
     t.text "exclude_tags"
     t.datetime "deleted_at", precision: nil
-    t.string "type"
     t.integer "lock_version", default: 0, null: false
+    t.string "type"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)"
@@ -456,6 +456,21 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_09_194515) do
     t.index ["job_id"], name: "index_tasks_on_job_id"
     t.index ["owner_type", "owner_id"], name: "index_tasks_on_owner_type_and_owner_id"
     t.index ["status"], name: "index_tasks_on_status"
+  end
+
+  create_table "transcripts", force: :cascade do |t|
+    t.bigint "episode_id"
+    t.integer "status"
+    t.string "guid"
+    t.string "url"
+    t.string "original_url"
+    t.string "mime_type"
+    t.integer "file_size"
+    t.string "format"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["episode_id"], name: "index_transcripts_on_episode_id"
+    t.index ["guid"], name: "index_transcripts_on_guid", unique: true
   end
 
   add_foreign_key "apple_configs", "feeds"
