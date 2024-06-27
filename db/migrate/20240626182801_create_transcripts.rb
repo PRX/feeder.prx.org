@@ -9,7 +9,8 @@ class CreateTranscripts < ActiveRecord::Migration[7.0]
       t.string :mime_type
       t.integer :file_size
       t.string :format
-      t.timestamps
+      t.timestamp :deleted_at
+      t.timestamps null: false
     end
   end
 end

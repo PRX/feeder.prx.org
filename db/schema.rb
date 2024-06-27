@@ -467,6 +467,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_182801) do
     t.string "mime_type"
     t.integer "file_size"
     t.string "format"
+    t.datetime "deleted_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["episode_id"], name: "index_transcripts_on_episode_id"
