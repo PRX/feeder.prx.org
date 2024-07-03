@@ -31,12 +31,12 @@ export default class extends Controller {
   async upload(event) {
     const file = event.currentTarget.files[0]
     if (file) {
+      const text = await this.readFile(file)
       this.fileIconTarget.innerHTML = "description"
       this.fileNameTarget.innerHTML = file.name
       this.fileNameFieldTarget.value = file.name
       this.fileSizeTarget.innerHTML = `(${humanBytes(file.size)})`
 
-      const text = await this.readFile(file)
       this.textAreaTarget.value = text
       this.fakeFieldTarget.classList.add("is-changed")
       this.textAreaTarget.classList.add("is-changed")
