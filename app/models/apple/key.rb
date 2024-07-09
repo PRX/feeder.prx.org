@@ -2,8 +2,8 @@
 
 module Apple
   class Key < ApplicationRecord
-    validates_presence_of :provider_id
-    validates_presence_of :key_id
+    validates :provider_id, presence: true, length: {minimum: 10}
+    validates :key_id, presence: true, length: {minimum: 10}
     validates_presence_of :key_pem_b64
 
     validate :provider_id_is_valid, if: :provider_id?

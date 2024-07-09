@@ -42,11 +42,12 @@ class Feed < ApplicationRecord
 
   validates :slug, uniqueness: {scope: :podcast_id}, if: :podcast_id?
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
-  validates_format_of :slug, without: /\A(images|\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\z/
+  validates_format_of :slug, without: /\A(default|images|\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\z/
   validates :file_name, presence: true, format: {with: /\A[0-9a-zA-Z_.-]+\z/}
   validates :include_zones, placement_zones: true
   validates :audio_format, audio_format: true
   validates :title, presence: true, unless: :default?
+  validates :episode_offset_seconds, numericality: {equal_to: 0}, allow_nil: true, if: :default?
   validates :url, http_url: true
   validates :new_feed_url, http_url: true
   validates :enclosure_prefix, http_url: true

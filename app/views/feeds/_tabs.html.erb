@@ -10,7 +10,17 @@
   </div>
   <% if policy(podcast).update? %>
     <div class="fixed-bottom col-sm-12 col-md-3 col-xl-2">
-      <%= link_to "Add a Feed", new_podcast_feed_path(podcast), class: "btn btn-success d-flex sticky-md-bottom m-4 shadow" %>
+      <div class="btn-group dropup d-flex sticky-md-bottom m-4 shadow">
+        <%= link_to "Add a Feed", new_podcast_feed_path(podcast), class: "btn btn-success flex-grow-1" %>
+        <% if @feeds.none?(&:apple?) %>
+          <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split flex-grow-0 px-3 border-0 border-start" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="visually-hidden">Toggle Dropdown</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end w-100 m-0 p-0 border-0">
+            <li><%= link_to "Add Apple Feed", new_apple_podcast_feeds_path(podcast), class: "btn btn-success bg-success text-white shadow w-100" %></li>
+          </ul>
+        <% end %>
+      </div>
     </div>
   <% end %>
 <% end %>

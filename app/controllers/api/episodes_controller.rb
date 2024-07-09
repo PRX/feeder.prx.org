@@ -13,7 +13,7 @@ class Api::EpisodesController < Api::BaseController
 
   def included(relation)
     if action_name == "index"
-      relation.includes(:podcast, :images, :contents)
+      relation.includes(:images, :contents, :uncut, podcast: :default_feed)
     else
       relation
     end
@@ -39,7 +39,7 @@ class Api::EpisodesController < Api::BaseController
   end
 
   def list_scoped(res)
-    res.published
+    res.in_default_feed
   end
 
   def show
@@ -63,7 +63,7 @@ class Api::EpisodesController < Api::BaseController
       respond_with_error(HalApi::Errors::NotFound.new)
     elsif show_resource.deleted?
       respond_with_error(ResourceGone.new)
-    elsif !show_resource.published?
+    elsif !show_resource.in_default_feed?
       if EpisodePolicy.new(pundit_user, show_resource).update?
         redirect_to api_authorization_episode_path(api_version, show_resource.guid)
       else

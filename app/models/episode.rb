@@ -6,6 +6,7 @@ require "text_sanitizer"
 class Episode < ApplicationRecord
   include EpisodeAdBreaks
   include EpisodeFilters
+  include EpisodeHasFeeds
   include EpisodeMedia
   include PublishingStatus
   include TextSanitizer
@@ -25,8 +26,6 @@ class Episode < ApplicationRecord
 
   belongs_to :podcast, -> { with_deleted }, touch: true
 
-  has_many :episodes_feeds, dependent: :delete_all
-  has_many :feeds, through: :episodes_feeds
   has_many :episode_imports
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
@@ -34,6 +33,7 @@ class Episode < ApplicationRecord
 
   has_one :ready_image, -> { complete_or_replaced.order("created_at DESC") }, class_name: "EpisodeImage"
   has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  has_one :transcript, -> { order("created_at DESC") }, dependent: :destroy, inverse_of: :episode
 
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
@@ -53,8 +53,6 @@ class Episode < ApplicationRecord
   validates :segment_count, numericality: {only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
   validate :validate_media_ready, if: :strict_validations
 
-  after_initialize :set_default_feeds, if: :new_record?
-  before_validation :set_default_feeds, if: :new_record?
   before_validation :set_defaults, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
@@ -113,6 +111,10 @@ class Episode < ApplicationRecord
     !published_at.nil? && published_at <= Time.now
   end
 
+  def published_by?(offset)
+    !published_at.nil? && published_at <= Time.now - offset
+  end
+
   def draft?
     published_at.nil?
   end
@@ -140,14 +142,6 @@ class Episode < ApplicationRecord
       images.build(img.attributes.compact)
     else
       img.update_image(image)
-    end
-  end
-
-  def set_default_feeds
-    if feed_ids.blank?
-      self.feed_ids = podcast&.feeds&.filter_map do |feed|
-        feed.id if feed.default? || feed.apple?
-      end
     end
   end
 
@@ -312,6 +306,7 @@ class Episode < ApplicationRecord
     self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
     self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
+    self.original_guid = original_guid.strip if !original_guid.blank? && original_guid_changed?
   end
 
   def description_with_default

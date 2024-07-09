@@ -55,7 +55,7 @@
             </button>
           </div>
 
-          <% 24.times do |i| %>
+          <% (12 * PodcastPlanner::MAX_YEARS).times do |i| %>
             <%= render "calendar", form: form, start_date: Date.today.beginning_of_month + i.months, planner: @planner, index: i, range: 6 %>
           <% end %>
 

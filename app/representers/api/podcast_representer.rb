@@ -61,8 +61,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   link :episodes do
     if represented.id
       {
-        href: api_podcast_episodes_path(represented),
-        count: represented.episodes.published.count
+        href: api_podcast_episodes_path(represented)
       }
     end
   end

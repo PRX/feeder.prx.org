@@ -16,10 +16,28 @@ describe Apple::Config do
       refute v4.valid?
     end
 
-    it "requires the apple provider id to not have an underscore" do
-      v1 = build(:apple_key, provider_id: "foo_bar")
-      refute v1.valid?
-      assert_equal ["cannot contain an underscore"], v1.errors[:provider_id]
+    describe ".provider_id" do
+      it "requires the provider id to be a minimum of 10 characters" do
+        v1 = build(:apple_key, provider_id: "foobar")
+        refute v1.valid?
+        v2 = build(:apple_key, provider_id: "foobarfoobaz")
+        assert v2.valid?
+      end
+
+      it "requires the apple provider id to not have an underscore" do
+        v1 = build(:apple_key, provider_id: "foo_bar")
+        refute v1.valid?
+        assert_includes v1.errors[:provider_id], "cannot contain an underscore"
+      end
+    end
+
+    describe ".key_id" do
+      it "requires the key id to be a minimum of 10 characters" do
+        v1 = build(:apple_key, key_id: "foobar")
+        refute v1.valid?
+        v2 = build(:apple_key, key_id: "foobarfoobaz")
+        assert v2.valid?
+      end
     end
   end
 

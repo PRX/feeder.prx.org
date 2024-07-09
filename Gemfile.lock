@@ -160,6 +160,9 @@ GEM
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
     childprocess (4.1.0)
+    clickhouse-activerecord (1.0.9)
+      activerecord (>= 7.1)
+      bundler (>= 1.13.4)
     coderay (1.1.3)
     concurrent-ruby (1.3.1)
     connection_pool (2.4.1)
@@ -204,7 +207,7 @@ GEM
     fuzzyurl (0.2.2)
     globalid (1.2.1)
       activesupport (>= 6.1)
-    google-protobuf (3.25.3)
+    google-protobuf (3.25.3-arm64-darwin)
     googleapis-common-protos-types (1.14.0)
       google-protobuf (~> 3.18)
     hal_api-rails (1.2.2)
@@ -270,7 +273,6 @@ GEM
     matrix (0.4.2)
     method_source (1.1.0)
     mini_mime (1.1.5)
-    mini_portile2 (2.8.7)
     minitest (5.23.1)
     minitest-around (0.5.0)
       minitest (~> 5.0)
@@ -296,8 +298,7 @@ GEM
       net-protocol
     newrelic_rpm (8.13.1)
     nio4r (2.7.3)
-    nokogiri (1.16.5)
-      mini_portile2 (~> 2.8.2)
+    nokogiri (1.16.5-arm64-darwin)
       racc (~> 1.4)
     oauth2 (1.4.11)
       faraday (>= 0.17.3, < 3.0)
@@ -516,7 +517,7 @@ GEM
     parallel (1.24.0)
     paranoia (2.6.3)
       activerecord (>= 5.1, < 7.2)
-    parser (3.3.1.0)
+    parser (3.3.2.0)
       ast (~> 2.4.1)
       racc
     pg (1.5.4)
@@ -717,7 +718,7 @@ GEM
     zeitwerk (2.6.15)
 
 PLATFORMS
-  ruby
+  arm64-darwin-21
 
 DEPENDENCIES
   actionpack-action_caching
@@ -732,6 +733,7 @@ DEPENDENCIES
   bootsnap
   bootstrap (~> 5.2.2)
   capybara
+  clickhouse-activerecord
   countries
   debug
   dotenv-rails (~> 2.0)
@@ -792,7 +794,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 3.3.2p78
+   ruby 3.3.3p89
 
 BUNDLED WITH
-   2.4.10
+   2.5.11

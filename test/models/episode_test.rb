@@ -46,6 +46,12 @@ describe Episode do
     refute e2.valid?
   end
 
+  it "prevents trailing spaces on original guids" do
+    e = create(:episode, original_guid: " original ")
+    assert e.valid?
+    assert e.original_guid = "original"
+  end
+
   it "leaves title ampersands alone" do
     episode.title = "Hear & Now"
     episode.save!

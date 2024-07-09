@@ -1,5 +1,6 @@
 class Api::Auth::EpisodeRepresenter < Api::EpisodeRepresenter
   property :deleted_at, writeable: false
+  property :feed_slugs
 
   collection :media,
     decorator: Api::Auth::MediaResourceRepresenter,
