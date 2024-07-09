@@ -646,7 +646,7 @@ GEM
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
     set (1.1.0)
-    shoryuken (6.0.0)
+    shoryuken (6.2.1)
       aws-sdk-core (>= 2)
       concurrent-ruby
       thor
@@ -782,7 +782,7 @@ DEPENDENCIES
   sanitize
   say_when (~> 2.2.2)
   selenium-webdriver
-  shoryuken
+  shoryuken (~> 6.2.1)
   simple_calendar (~> 2.4)
   simplecov
   spring

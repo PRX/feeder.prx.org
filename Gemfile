@@ -57,7 +57,7 @@ gem "opentelemetry-instrumentation-all"
 
 # background workers
 gem "say_when", "~> 2.2.2"
-gem "shoryuken"
+gem "shoryuken", "~> 6.2.1"
 
 # podcast import
 gem "feedjira"
