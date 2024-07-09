@@ -1,0 +1,16 @@
+<%= turbo_frame_tag "placements-preview" do %>
+  <% @zones.each do |zone| %>
+    <div class="prx-placement prx-placement-<%= zone[:section] %>">
+      <div class="prx-zone">
+        <div class="prx-zone-name d-flex justify-content-start align-items-center">
+          <% if zone[:type] == "original" %>
+            <span class="material-icons me-2">square</span>
+          <% else %>
+            <span class="material-icons me-2">circle</span>
+          <% end %>
+          <%= zone[:name] %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

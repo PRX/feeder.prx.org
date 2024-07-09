@@ -613,6 +613,8 @@ en:
       title: Upload Files
     form_status:
       <<: *form_status
+      preview: Preview
+      preview_title: Placements Preview
       title: Media Status
     form_uncut:
       title:
