@@ -1,6 +1,8 @@
 <div class="col-12 mb-4">
   <div class="form-floating input-group" data-controller="dynamic-form">
-    <%= form.select :medium, episode_medium_options, {}, data: {action: "dynamic-form#change"} %>
+    <% action = "dynamic-form#change placement-preview#update" %>
+    <% data = {action: action, placement_preview_target: "medium"} %>
+    <%= form.select :medium, episode_medium_options, {}, data: data %>
     <%= form.label :medium, required: true %>
     <%= field_help_text t(".help.medium") %>
     <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
@@ -12,7 +14,9 @@
 <% else %>
   <div class="col-12 mb-4">
     <div class="form-floating input-group" data-controller="dynamic-form">
-      <%= form.number_field :ad_breaks, min: 0, max: Episode::MAX_SEGMENT_COUNT - 1, data: {action: "dynamic-form#change"} %>
+      <% action = "dynamic-form#change placement-preview#update" %>
+      <% data = {action: action, placement_preview_target: "adBreaks"} %>
+      <%= form.number_field :ad_breaks, min: 0, max: Episode::MAX_SEGMENT_COUNT - 1, data: data %>
       <%= form.label :ad_breaks, required: true %>
       <%= field_help_text t(".help.segment_count") %>
       <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>

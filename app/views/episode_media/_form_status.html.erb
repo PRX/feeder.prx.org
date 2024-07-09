@@ -7,7 +7,14 @@
 
     <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= l(episode.updated_at) %></p>
 
-    <button type="button" class="btn btn-success me-2" data-bs-toggle="offcanvas" data-bs-target="#placements-preview-flyout" aria-controls="placements-preview-flyout"><%= t(".preview") %></button>
+    <button type="button"
+            class="btn btn-success me-2 <%= "d-none" if episode.medium_video? %>"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#placements-preview-flyout"
+            aria-controls="placements-preview-flyout"
+            data-placement-preview-target="button">
+      <%= t(".preview") %>
+    </button>
 
     <% if policy(episode).update? %>
       <%= link_to t(".discard"), episode_media_path(episode), class: "btn btn-discard-changed d-none me-2", data: {action: "unsaved#discard", unsaved_target: "discard", turbo_frame: "_top"} %>
@@ -24,6 +31,6 @@
     <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   <div class="offcanvas-body">
-    <%= turbo_frame_tag "placements-preview", src: podcast_placements_preview_path(episode.podcast_id, episode.segment_count), loading: "lazy" %>
+    <%= turbo_frame_tag "placements-preview", src: podcast_placements_preview_path(episode.podcast_id, episode.segment_count), loading: "lazy", data: {placement_preview_target: "frame"} %>
   </div>
 </div>
