@@ -9,7 +9,7 @@ Rails.application.routes.draw do
     end
     resources :episodes, only: [:index, :create, :new]
     resources :placements_preview, only: [:show]
-    get "rollups_demo", to: :rollups_demo
+    get "rollups_demo", to: "podcasts#rollups_demo"
   end
 
   resources :episodes, except: [:create, :new] do

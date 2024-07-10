@@ -7,12 +7,12 @@ class Task < ApplicationRecord
 
   enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
 
-  serialize :options, HashSerializer
+  serialize :options, coder: HashSerializer
   def options
     self[:options] ||= {}
   end
 
-  serialize :result, HashSerializer
+  serialize :result, coder: HashSerializer
   def result
     self[:result] ||= {}
   end
