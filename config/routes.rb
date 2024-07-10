@@ -8,7 +8,7 @@ Rails.application.routes.draw do
       get "new_apple", on: :collection
     end
     resources :episodes, only: [:index, :create, :new]
-    get "rollups_demo", to: :rollups_demo
+    get "rollups_demo", to: "podcasts#rollups_demo"
   end
 
   resources :episodes, except: [:create, :new] do

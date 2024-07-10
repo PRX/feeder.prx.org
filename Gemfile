@@ -9,7 +9,7 @@ gem "bootsnap", require: false
 gem "clickhouse-activerecord"
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.6"
-gem "rails", "~> 7.0.8.3"
+gem "rails", "~> 7.1"
 
 # caching
 gem "hiredis", "~> 0.6.3"
@@ -34,14 +34,14 @@ gem "turbo-rails"
 gem "simple_calendar", "~> 2.4"
 
 # api views
+gem "responders"
 gem "actionpack-action_caching" # for hal_api-rails
-gem "hal_api-rails", "~> 1.2.0"
+gem "hal_api-rails", "~> 1.2.2"
 gem "jbuilder"
 gem "roar-rails", github: "PRX/roar-rails", branch: "feat/rails_7"
 
 # models
 gem "addressable"
-gem "composite_primary_keys" # TODO: remove after rails 7.1
 gem "countries"
 gem "paranoia"
 gem "sanitize"
@@ -56,8 +56,8 @@ gem "opentelemetry-exporter-otlp"
 gem "opentelemetry-instrumentation-all"
 
 # background workers
-gem "say_when", "~> 2.2.1"
-gem "shoryuken"
+gem "say_when", "~> 2.2.2"
+gem "shoryuken", "~> 6.2.1"
 
 # podcast import
 gem "feedjira"
@@ -69,6 +69,7 @@ gem "aws-sdk-eventbridge"
 gem "aws-sdk-sns"
 gem "aws-sdk-sqs"
 gem "aws-sdk-s3"
+gem "csv"
 gem "excon"
 gem "faraday", "~> 0.17.4"
 gem "hyperresource"

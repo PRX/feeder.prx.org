@@ -9,7 +9,7 @@ class MediaResource < ApplicationRecord
 
   acts_as_paranoid
 
-  serialize :segmentation, JSON
+  serialize :segmentation, coder: JSON
 
   enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
 
