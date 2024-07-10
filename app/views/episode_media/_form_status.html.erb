@@ -31,6 +31,6 @@
     <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   <div class="offcanvas-body">
-    <%= turbo_frame_tag "placements-preview", src: podcast_placements_preview_path(episode.podcast_id, episode.segment_count), loading: "lazy", data: {placement_preview_target: "frame"} %>
+    <%= turbo_frame_tag "placements-preview", src: podcast_placements_preview_path(episode.podcast_id, episode.segment_count || 1), loading: "lazy", data: {placement_preview_target: "frame"} %>
   </div>
 </div>

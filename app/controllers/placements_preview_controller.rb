@@ -5,6 +5,7 @@ class PlacementsPreviewController < ApplicationController
 
   # GET /podcasts/1/placements_preview/2
   def show
+    @fetch_error = cached_placements.nil?
     @zones = get_zones(params[:id].to_i)
   end
 
@@ -21,7 +22,7 @@ class PlacementsPreviewController < ApplicationController
 
   def fetch_placements
     api(root: augury_root, account: "*").tap { |a| a.href = placements_href }.get
-  rescue HyperResource::ClientError
+  rescue HyperResource::ClientError, HyperResource::ServerError
     nil
   end
 

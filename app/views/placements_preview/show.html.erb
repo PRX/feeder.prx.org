@@ -1,4 +1,10 @@
 <%= turbo_frame_tag "placements-preview", data_placement_preview_target: "frame" do %>
+  <% if @fetch_error %>
+    <div class="alert alert-danger" role="alert">
+      <%= t(".fetch_error") %>
+    </div>
+  <% end %>
+
   <% @zones.each do |zone| %>
     <div class="prx-placement prx-placement-<%= zone[:section] %>">
       <div class="prx-zone">

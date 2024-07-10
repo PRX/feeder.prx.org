@@ -934,6 +934,9 @@ en:
       continue: Continue Editing
       discard: Discard changes
       title: Warning! Another user has updated this form.
+  placements_preview:
+    show:
+      fetch_error: Error fetching placements - try again later
   podcasts:
     confirm_destroy:
       <<: *form_status
