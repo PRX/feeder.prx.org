@@ -45,7 +45,7 @@
   .navbar-nav {
     display: grid;
     align-items: center;
-    z-index: $zindex-fixed;
+    z-index: $zindex-sticky;
 
     & + .navbar-nav {
       border-inline-start: 1px solid $blue;

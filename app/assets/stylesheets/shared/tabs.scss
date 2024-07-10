@@ -6,6 +6,8 @@
 
 .prx-tabs {
   --#{$prefix}gutter-x: 0;
+
+
 }
 
 .prx-tabs-nav {
@@ -19,6 +21,10 @@
   --#{$prefix}nav-tabs-border-radius: 0;
 
   gap: var(--prx-tabs-nav-gap);
+
+  &.sticky-md-top {
+    z-index: $zindex-dropdown;
+  }
 
   .context-menu {
     display: none;
