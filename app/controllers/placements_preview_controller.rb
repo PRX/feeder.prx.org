@@ -21,8 +21,11 @@ class PlacementsPreviewController < ApplicationController
   end
 
   def fetch_placements
-    api(root: augury_root, account: "*").tap { |a| a.href = placements_href }.get
-  rescue HyperResource::ClientError, HyperResource::ServerError
+    if ENV["AUGURY_HOST"].present?
+      api(root: augury_root, account: "*").tap { |a| a.href = placements_href }.get
+    end
+  rescue HyperResource::ClientError, HyperResource::ServerError, NotImplementedError => e
+    Rails.logger.error("Error fetching placements", error: e.message)
     nil
   end
 
