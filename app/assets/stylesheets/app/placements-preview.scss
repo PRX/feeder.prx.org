@@ -1,0 +1,43 @@
+.prx-zone {
+  background: $gray-200;
+  padding: 0.5rem 1rem;
+  color: #000;
+  border: 1px solid $gray-300;
+  border-top: none;
+}
+
+@media (min-width: 992px) {
+  .prx-zone-name {
+    min-width: 10em;
+  }
+}
+
+.prx-placement-top {
+  .prx-zone-name span {
+    color: $blue-light;
+  }
+}
+
+.prx-placement-pre {
+  .prx-zone-name span {
+    color: $orange;
+  }
+}
+
+.prx-placement-mid {
+  .prx-zone-name span {
+    color: $indigo;
+  }
+}
+
+.prx-placement-post {
+  .prx-zone-name span {
+    color: $yellow;
+  }
+}
+
+.prx-placement-original {
+  .prx-zone-name span {
+    color: $green;
+  }
+}
