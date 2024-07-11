@@ -25,3 +25,8 @@ h3 {
   position: relative;
   display: block;
 }
+
+.sticky-lg-top,
+.sticky-md-top {
+  z-index: $zindex-dropdown;
+}
