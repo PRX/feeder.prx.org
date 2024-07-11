@@ -20,10 +20,6 @@
 
   gap: var(--prx-tabs-nav-gap);
 
-  &.sticky-md-top {
-    z-index: $zindex-dropdown;
-  }
-
   .context-menu {
     display: none;
     position: absolute;
