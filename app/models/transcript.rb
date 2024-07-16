@@ -6,7 +6,14 @@ class Transcript < ApplicationRecord
   has_one :task, -> { order("id desc") }, as: :owner
   has_many :tasks, as: :owner
 
+  enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
+
   def published_url
+    "#{episode.base_published_url}/#{transcript_path}"
+  end
+
+  def transcript_path
+    "transcripts/#{guid}/#{file_name}"
   end
 
   def initialize_attributes
@@ -57,7 +64,7 @@ class Transcript < ApplicationRecord
     self.status = :created
   end
 
-  def copy_transcript(force = false)
+  def copy_media(force = false)
     if force || !(status_complete? || task)
       Tasks::CopyTranscriptTask.create! do |task|
         task.owner = self
@@ -77,7 +84,7 @@ class Transcript < ApplicationRecord
   def retry!
     if retryable?
       status_retrying!
-      copy_transcript(true)
+      copy_media(true)
     end
   end
 
