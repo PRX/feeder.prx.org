@@ -793,6 +793,7 @@ en:
         mp3: MP3
         flac: FLAC
         wav: WAV
+        m4a: AAC
       audio_bitrate_options:
         "96": 96 kbps
         "112": 112 kbps
