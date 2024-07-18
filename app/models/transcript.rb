@@ -6,6 +6,9 @@ class Transcript < ApplicationRecord
   has_one :task, -> { order("id desc") }, as: :owner
   has_many :tasks, as: :owner
 
+  before_validation :initialize_attributes, on: :create
+  validates :original_url, presence: true
+
   enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
 
   def published_url
