@@ -1,5 +1,5 @@
 class AudioFormatValidator < ActiveModel::EachValidator
-  FORMATS = %w[mp3 wav flac].freeze
+  FORMATS = %w[mp3 wav flac m4a].freeze
   BIT_RATES = [96, 112, 128, 160, 192, 224, 256, 320].freeze
   BIT_DEPTHS = [16, 24, 32].freeze
   CHANNELS = [1, 2].freeze
@@ -14,7 +14,7 @@ class AudioFormatValidator < ActiveModel::EachValidator
     end
 
     # https://github.com/PRX/dovetail-cdn-arranger#inputs
-    unless %w[mp3 wav flac].include?(value["f"])
+    unless FORMATS.include?(value["f"])
       return record.errors.add attribute, "unknown audio format: #{value["f"]}"
     end
 

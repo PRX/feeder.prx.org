@@ -21,21 +21,21 @@
           </div>
         </div>
 
-        <div class="col-3 <%= display_bitdepth(feed) %>" data-toggle-field-target="field" field="wav flac">
+        <div class="col-3 <%= display_bitdepth(feed) %>" data-toggle-field-target="field" field="wav flac m4a">
           <div class="form-floating input-group">
             <%= form.select :audio_bitdepth, audio_bitdepth_options %>
             <%= form.label :audio_bitdepth %>
           </div>
         </div>
 
-        <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac">
+        <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac m4a">
           <div class="form-floating input-group">
             <%= form.select :audio_channel, audio_channel_options %>
             <%= form.label :audio_channel %>
           </div>
         </div>
 
-        <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac">
+        <div class="col-3 <%= display_audio_format(feed) %>" data-toggle-field-target="field" field="mp3 wav flac m4a">
           <div class="form-floating input-group">
             <%= form.select :audio_sample, audio_sample_options %>
             <%= form.label :audio_sample %>

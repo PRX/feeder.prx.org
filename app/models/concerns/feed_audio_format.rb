@@ -24,12 +24,12 @@ module FeedAudioFormat
   end
 
   def audio_bitdepth
-    audio_format.try(:[], :b) if %w[wav flac].include?(audio_format.try(:[], :f))
+    audio_format.try(:[], :b) if %w[wav flac m4a].include?(audio_format.try(:[], :f))
   end
 
   def audio_bitdepth=(bitdepth)
     return unless audio_format.present?
-    return unless %w[wav flac].include?(audio_format.try(:[], :f))
+    return unless %w[wav flac m4a].include?(audio_format.try(:[], :f))
 
     audio_format[:b] = bitdepth.to_i
   end
