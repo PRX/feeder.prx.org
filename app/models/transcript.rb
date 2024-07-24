@@ -64,6 +64,8 @@ class Transcript < ApplicationRecord
 
   def reset_transcript_attributes
     self.format = nil
+    self.mime_type = nil
+    self.file_size = nil
     self.status = :created
   end
 

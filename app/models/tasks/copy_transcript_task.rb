@@ -31,12 +31,8 @@ class Tasks::CopyTranscriptTask < ::Task
 
     if complete?
       info = porter_callback_inspect
-      transcript.size = porter_callback_size
-
-      # only return for actual images - not detected images in id3 tags
-      if info[:Transcript] && porter_callback_mime&.starts_with?("transcript/")
-        transcript.format = info[:Transcript][:Format]
-      end
+      transcript.file_size = porter_callback_size
+      transcript.mime_type = porter_callback_mime
 
       # change status, if metadata doesn't pass validations
       transcript.status = "invalid" if transcript.invalid?

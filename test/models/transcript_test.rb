@@ -48,7 +48,7 @@ describe Transcript do
     end
 
     it "skips creating task if one exists" do
-      task = Tasks::CopyImageTask.new
+      task = Tasks::CopyTranscriptTask.new
       transcript.status = "created"
       transcript.task = task
       transcript.copy_media
