@@ -18,6 +18,13 @@ FactoryBot.define do
     result { build(:porter_image_job_results) }
   end
 
+  factory :copy_transcript_task, class: Tasks::CopyTranscriptTask do
+    association :owner, factory: :transcript
+    status { :complete }
+    job_id { "2345" }
+    result { build(:porter_transcript_job_results) }
+  end
+
   factory :fix_media_task, class: Tasks::FixMediaTask do
     association :owner, factory: :content
     status { :complete }

@@ -7,7 +7,10 @@ class Transcript < ApplicationRecord
   has_many :tasks, as: :owner
 
   before_validation :initialize_attributes, on: :create
+
   validates :original_url, presence: true
+
+  validates :format, exclusion: {in: %w[bad]}, if: :status_complete?
 
   enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
 
