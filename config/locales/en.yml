@@ -659,7 +659,7 @@ en:
         title: Audio Segments
       segmenter:
         label:
-          prefix: Midroll
+          prefix: Break
         table:
           name: Name
           timestamps: Timestamps
