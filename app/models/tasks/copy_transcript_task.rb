@@ -32,7 +32,6 @@ class Tasks::CopyTranscriptTask < ::Task
     transcript.status = status
 
     if complete?
-      info = porter_callback_inspect
       transcript.file_size = porter_callback_size
       transcript.mime_type = porter_callback_mime
 

@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :transcript do
     episode
-    url { "http://some.where/test/fixtures/sample_transcript.txt" }
-    original_url { "test/fixtures/sample_transcript.txt" }
+    url { "http://some.where/test/fixtures/sampletranscript.pdf" }
+    original_url { "test/fixtures/sampletranscript.pdf" }
     status { "complete" }
-    format { "txt" }
+    mime_type { "application/pdf" }
   end
 end

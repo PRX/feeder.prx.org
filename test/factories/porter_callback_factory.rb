@@ -100,12 +100,9 @@ FactoryBot.define do
     Task { "Inspect" }
     Inspection do
       {
-        Extension: "txt",
-        MIME: "text",
-        Size: "60572",
-        Transcript: {
-          Format: "txt"
-        }
+        Extension: "pdf",
+        MIME: "application/pdf",
+        Size: "60572"
       }
     end
     initialize_with { attributes.with_indifferent_access }
