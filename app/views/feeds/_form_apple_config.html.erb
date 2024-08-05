@@ -6,7 +6,7 @@
     <div class="card-body" data-controller="apple-key">
       <div class="mb-4">
         <p><%= t(".description") %></p>
-        <a href="https://help.prx.org"><%= t(".guide_link") %></a>
+        <a href="https://help.prx.org/hc/en-us/articles/26602803552155-Setting-up-Apple-Podcast-Subscriptions-with-Apple-Delegated-Delivery"><%= t(".guide_link") %></a>
       </div>
       <%= form.fields_for :apple_config do |config_form| %>
         <%= config_form.fields_for :key do |key_fields| %>
