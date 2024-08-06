@@ -237,6 +237,7 @@ class Episode < ApplicationRecord
   def copy_media(force = false)
     contents.each { |c| c.copy_media(force) }
     images.each { |i| i.copy_media(force) }
+    transcript&.copy_media(force)
     uncut&.copy_media(force)
   end
 
