@@ -57,12 +57,11 @@ export default class extends Controller {
   }
 
   dedupeValues(values) {
-    const sanitizedVals = values.map((val) => {
-      return val.trim().toLowerCase()
-    })
-    const dedupedVals = [...new Set(sanitizedVals)]
-    return dedupedVals.filter((val) => {
-      return val !== null || val !== undefined || val !== ""
-    })
+    const sanitizedVals = values
+      .filter((val) => val)
+      .map((val) => {
+        return val.trim().toLowerCase()
+      })
+    return [...new Set(sanitizedVals)]
   }
 }
