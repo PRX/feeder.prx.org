@@ -35,8 +35,13 @@ export default class extends Controller {
 
   change() {
     const valueWas = this.element.dataset.valueWas
-    const values = Array.from(this.element.selectedOptions).map((o) => o.value)
+    const initialValues = Array.from(this.element.selectedOptions).map((o) => o.value)
+    const values = this.dedupeValues(initialValues)
     const valueIs = JSON.stringify(values)
+
+    if (values.length !== this.element.selectedOptions.length) {
+      Tags.getInstance(this.element).removeLastItem()
+    }
 
     if (values.length) {
       this.tagContainer.classList.remove("form-control-blank")
@@ -49,5 +54,14 @@ export default class extends Controller {
     } else {
       this.tagContainer.classList.add("is-changed")
     }
+  }
+
+  dedupeValues(values) {
+    const sanitizedVals = values
+      .filter((val) => val)
+      .map((val) => {
+        return val.trim().toLowerCase()
+      })
+    return [...new Set(sanitizedVals)]
   }
 }
