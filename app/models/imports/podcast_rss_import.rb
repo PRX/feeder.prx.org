@@ -61,6 +61,7 @@ class PodcastRssImport < PodcastImport
     @feed = nil
     self.channel = nil
     self.first_entry = nil
+    self.feed_episode_count = nil
   end
 
   def validate_rss
@@ -68,8 +69,10 @@ class PodcastRssImport < PodcastImport
       errors.add(:url, :blank)
     elsif !HttpUrlValidator.http_url?(url)
       errors.add(:url, :not_http_url)
-    else
+    elsif feed_episode_count.nil?
       self.feed_episode_count = feed.entries.count
+      channel
+      first_entry
     end
   rescue ImportUtils::HttpError
     errors.add(:url, :bad_http_response, message: "bad http response")
@@ -123,8 +126,12 @@ class PodcastRssImport < PodcastImport
     # cleanup existing dups - they may be recreated later
     episode_imports.status_duplicate.destroy_all
 
+    # we'll update existing episode imports, instead of creating new
+    existing = episode_imports.map { |ei| [ei.guid, ei] }.to_h
+
     # top-most guids win, others are marked dup
     guids = []
+    to_import = []
     feed.entries.each do |entry|
       guid = entry.entry_id
       entry_hash = entry.to_h.as_json.with_indifferent_access
@@ -135,13 +142,16 @@ class PodcastRssImport < PodcastImport
         episode_imports.create!(guid: guid, entry: entry_hash, status: :duplicate)
       else
         guids << guid
-        ei = episode_imports.not_status_duplicate.find_by_guid(guid) || episode_imports.build
+        ei = existing[guid] || episode_imports.build
         ei.guid = guid
         ei.entry = entry_hash
         ei.save!
-        ei.import_later
+        to_import << ei
       end
     end
+
+    # wait till all are created before starting any jobs
+    to_import.each(&:import_later)
   end
 
   def feed_description
