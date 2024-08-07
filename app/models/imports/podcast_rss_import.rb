@@ -1,7 +1,7 @@
 require "feedjira"
 
 class PodcastRssImport < PodcastImport
-  store :config, accessors: [:episodes_only, :new_episodes_only, :audio, :feed_rss], coder: JSON
+  store :config, accessors: [:episodes_only, :new_episodes_only, :audio, :channel, :first_entry], coder: JSON
 
   has_many :episode_imports, dependent: :destroy, class_name: "EpisodeRssImport", foreign_key: :podcast_import_id
 
@@ -21,7 +21,7 @@ class PodcastRssImport < PodcastImport
   end
 
   def feed_rss
-    config[:feed_rss] ||= http_get(url)
+    @feed_rss ||= http_get(url)
   end
 
   def feed
@@ -39,16 +39,28 @@ class PodcastRssImport < PodcastImport
     end
   end
 
+  def channel
+    config[:channel] ||= feed.as_json.with_indifferent_access.without(:entries)
+  end
+
+  def first_entry
+    config[:first_entry] ||= feed.entries.first.to_h.as_json.with_indifferent_access
+  end
+
   def url=(value)
+    @feed_rss = nil
     @feed = nil
-    self.feed_rss = nil
+    self.channel = nil
+    self.first_entry = nil
     self.feed_episode_count = nil
     super
   end
 
   def feed_rss=(value)
+    @feed_rss = value
     @feed = nil
-    super
+    self.channel = nil
+    self.first_entry = nil
   end
 
   def validate_rss
@@ -132,22 +144,22 @@ class PodcastRssImport < PodcastImport
     end
   end
 
-  def feed_description(feed)
-    result = [feed.itunes_summary, feed.description].find { |d| !d.blank? }
+  def feed_description
+    result = [channel[:itunes_summary], channel[:description]].find { |d| !d.blank? }
     clean_text(result)
   end
 
-  def update_itunes_categories(feed)
+  def update_itunes_categories
     default_feed = podcast.default_feed
-    default_feed.itunes_categories = parse_itunes_categories(feed)
+    default_feed.itunes_categories = parse_itunes_categories
     default_feed.save!
   end
 
-  def update_images(feed)
+  def update_images
     default_feed = podcast.default_feed
 
-    default_feed.itunes_image = feed.itunes_image if feed.itunes_image.present?
-    default_feed.feed_image = feed.image.url if feed.image.present?
+    default_feed.itunes_image = channel[:itunes_image] if channel[:itunes_image].present?
+    default_feed.feed_image = channel[:image][:url] if channel[:image].present?
     default_feed.save!
 
     default_feed.itunes_images.reset
@@ -160,36 +172,35 @@ class PodcastRssImport < PodcastImport
     podcast_attributes = {}
 
     %w[copyright language update_frequency update_period].each do |atr|
-      podcast_attributes[atr.to_sym] = clean_string(feed.send(atr))
+      podcast_attributes[atr.to_sym] = clean_string(channel[atr])
     end
 
-    podcast_attributes[:summary] = clean_text(feed.itunes_summary)
-    podcast_attributes[:link] = clean_string(feed.url)
-    podcast_attributes[:explicit] = explicit(feed.itunes_explicit, "false")
-    podcast_attributes[:new_feed_url] = clean_string(feed.itunes_new_feed_url)
-    podcast_attributes[:enclosure_prefix] ||= enclosure_prefix(feed.entries.first)
-    podcast_attributes[:url] ||= clean_string(feed.feed_url)
+    podcast_attributes[:summary] = clean_text(channel[:itunes_summary])
+    podcast_attributes[:link] = clean_string(channel[:url])
+    podcast_attributes[:explicit] = explicit(channel[:itunes_explicit], "false")
+    podcast_attributes[:new_feed_url] = clean_string(channel[:itunes_new_feed_url])
+    podcast_attributes[:enclosure_prefix] ||= enclosure_prefix
+    podcast_attributes[:url] ||= clean_string(channel[:feed_url])
 
-    podcast_attributes[:author] = person(feed.itunes_author)
-    podcast_attributes[:managing_editor] = person(feed.managing_editor)
+    podcast_attributes[:author] = person(channel[:itunes_author])
+    podcast_attributes[:managing_editor] = person(channel[:managing_editor])
 
-    owner = owner(feed.itunes_owners)
     podcast_attributes[:owner_name] = owner[:name]
     podcast_attributes[:owner_email] = owner[:email]
 
-    podcast_attributes[:complete] = (clean_string(feed.itunes_complete) == "yes")
-    podcast_attributes[:copyright] ||= clean_string(feed.media_copyright)
-    podcast_attributes[:serial_order] = feed.itunes_type && !!feed.itunes_type.match(/serial/i)
+    podcast_attributes[:complete] = (clean_string(channel[:itunes_complete]) == "yes")
+    podcast_attributes[:copyright] ||= clean_string(channel[:media_copyright])
+    podcast_attributes[:serial_order] = channel[:itunes_type] && !!channel[:itunes_type].match(/serial/i)
     podcast_attributes[:locked] = true # won't publish feed until this is set to false
 
-    podcast_attributes[:title] = clean_string(feed.title)
-    podcast_attributes[:subtitle] = clean_string(podcast_short_desc(feed))
-    podcast_attributes[:description] = feed_description(feed)
+    podcast_attributes[:title] = clean_string(channel[:title])
+    podcast_attributes[:subtitle] = clean_string(podcast_short_desc)
+    podcast_attributes[:description] = feed_description
 
     # categories setter does the work of sanitizing these
-    cats = Array(feed.categories)
-    ikeys = (feed.itunes_keywords || "").split(",")
-    mkeys = (feed.media_keywords || "").split(",")
+    cats = Array(channel[:categories])
+    ikeys = (channel[:itunes_keywords] || "").split(",")
+    mkeys = (channel[:media_keywords] || "").split(",")
     podcast_attributes[:categories] = cats + ikeys + mkeys
 
     podcast_attributes
@@ -206,13 +217,13 @@ class PodcastRssImport < PodcastImport
     podcast.assign_attributes(**build_podcast_attributes)
     update!(podcast: podcast)
 
-    update_itunes_categories(feed)
-    update_images(feed)
+    update_itunes_categories
+    update_images
 
     podcast
   end
 
-  def enclosure_prefix(item)
+  def enclosure_prefix
     redirectors = [
       /\/(www|dts)\.podtrac\.com(\/pts)?\/redirect\.mp3\//,
       /\/media\.blubrry\.com\/[^\/]+\//,
@@ -221,7 +232,8 @@ class PodcastRssImport < PodcastImport
       /\/pdst\.fm\/e\//
     ]
 
-    urls = [item.feedburner_orig_enclosure_link, item.enclosure.try(:url), item.media_contents.first.try(:url)]
+    item = first_entry || {}
+    urls = [item[:feedburner_orig_enclosure_link], item[:enclosure].try(:[], :url), item[:media_contents]&.first.try(:[], :url)]
     url = urls.compact.find { |u| redirectors.any? { |r| u.match?(r) } }
 
     if url.present?
@@ -230,17 +242,17 @@ class PodcastRssImport < PodcastImport
     end
   end
 
-  def owner(itunes_owners)
-    if (o = itunes_owners.try(:first))
-      {name: clean_string(o.name), email: clean_string(o.email)}.with_indifferent_access
+  def owner
+    if (o = channel[:itunes_owners].try(:first))
+      {name: clean_string(o[:name]), email: clean_string(o[:email])}.with_indifferent_access
     else
       {}
     end
   end
 
-  def parse_itunes_categories(feed)
+  def parse_itunes_categories
     itunes_cats = {}
-    Array(feed.itunes_categories).map(&:strip).select { |c| !c.blank? }.each do |cat|
+    Array(channel[:itunes_categories]).map(&:strip).select { |c| !c.blank? }.each do |cat|
       if ITunesCategoryValidator.category?(cat)
         itunes_cats[cat] ||= []
       elsif (parent_cat = ITunesCategoryValidator.subcategory?(cat))
@@ -252,8 +264,8 @@ class PodcastRssImport < PodcastImport
     [itunes_cats.keys.map { |n| ITunesCategory.new(name: n, subcategories: itunes_cats[n]) }.first].compact
   end
 
-  def podcast_short_desc(item)
-    [item.itunes_subtitle, item.description, item.title].find do |field|
+  def podcast_short_desc
+    [channel[:itunes_subtitle], channel[:description], channel[:title]].find do |field|
       !field.blank? && field.split.length < 50
     end
   end

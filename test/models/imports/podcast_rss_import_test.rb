@@ -28,7 +28,10 @@ describe PodcastRssImport do
     importer.feed
     _(importer.feed).wont_be_nil
     _(importer.feed_rss).wont_be_nil
-    _(importer.config[:feed_rss]).wont_be_nil
+    _(importer.channel).wont_be_nil
+    _(importer.first_entry).wont_be_nil
+    _(importer.config[:first_entry]).wont_be_nil
+    _(importer.config[:first_entry]).wont_be_nil
   end
 
   it "retrieves a config" do
@@ -151,37 +154,47 @@ describe PodcastRssImport do
     end
 
     it "looks for an owner" do
-      owner = OpenStruct.new(name: "n", email: "e")
-      _(importer.owner(nil)).must_equal({})
-      _(importer.owner([])).must_equal({})
-      _(importer.owner([owner])).must_equal({"name" => "n", "email" => "e"})
+      one = "<itunes:name>one</itunes:name><itunes:email>one@one.one</itunes:email>"
+      two = "<itunes:name>two</itunes:name><itunes:email>two@two.two</itunes:email>"
+      owner1 = "<itunes:owner>#{one}</itunes:owner>"
+      owner2 = "<itunes:owner>#{two}</itunes:owner>"
+
+      importer.feed_rss = "<rss></rss>"
+      _(importer.owner).must_equal({})
+
+      importer.feed_rss = "<rss><itunes:owner></itunes:owner></rss>"
+      _(importer.owner).must_equal({name: nil, email: nil}.with_indifferent_access)
+
+      importer.feed_rss = "<rss>#{owner1}#{owner2}</rss>"
+      _(importer.owner).must_equal({name: "one", email: "one@one.one"}.with_indifferent_access)
     end
 
     it "can make a good guess for an enclosure prefix" do
-      item = feed.entries.first
-      _(importer.enclosure_prefix(item)).must_equal "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/"
+      _(importer.enclosure_prefix).must_equal "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/"
 
-      item.feedburner_orig_enclosure_link = nil
-      item.enclosure.url = sample_link1
-      _(importer.enclosure_prefix(item)).must_equal "https://www.podtrac.com/pts/redirect.mp3/"
+      importer.first_entry[:feedburner_orig_enclosure_link] = nil
+      importer.first_entry[:enclosure][:url] = sample_link1
+      _(importer.enclosure_prefix).must_equal "https://www.podtrac.com/pts/redirect.mp3/"
 
-      item.feedburner_orig_enclosure_link = "something_without_those_words"
-      item.enclosure.url = sample_link2
-      _(importer.enclosure_prefix(item)).must_equal "http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/99percentinvisible/"
+      importer.first_entry[:feedburner_orig_enclosure_link] = "something_without_those_words"
+      importer.first_entry[:enclosure][:url] = sample_link2
+      _(importer.enclosure_prefix).must_equal "http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/99percentinvisible/"
 
-      item.feedburner_orig_enclosure_link = sample_link3
-      _(importer.enclosure_prefix(item)).must_equal "https://pts.podtrac.com/redirect.mp3/pdst.fm/e/chtbl.com/track/7E7E1F/"
+      importer.first_entry[:feedburner_orig_enclosure_link] = sample_link3
+      _(importer.enclosure_prefix).must_equal "https://pts.podtrac.com/redirect.mp3/pdst.fm/e/chtbl.com/track/7E7E1F/"
     end
 
     it "can substitute for a missing short description" do
-      _(importer.podcast_short_desc(feed)).must_equal "A podcast of scientific questions and stories" \
+      _(importer.podcast_short_desc).must_equal "A podcast of scientific questions and stories" \
         " featuring guest hosts and reporters."
-      feed.itunes_subtitle = nil
-      _(importer.podcast_short_desc(feed)).must_equal "A podcast of scientific questions and stories," \
+
+      importer.channel[:itunes_subtitle] = nil
+      _(importer.podcast_short_desc).must_equal "A podcast of scientific questions and stories," \
         " with many episodes hosted by key scientists" \
         " at the forefront of discovery."
-      feed.description = nil
-      _(importer.podcast_short_desc(feed)).must_equal "Transistor"
+
+      importer.channel[:description] = nil
+      _(importer.podcast_short_desc).must_equal "Transistor"
     end
 
     it "can remove feedburner tracking pixels" do
