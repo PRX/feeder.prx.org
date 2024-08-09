@@ -10,7 +10,8 @@ class Feed < ApplicationRecord
   AUDIO_MIME_TYPES = {
     "mp3" => "audio/mpeg",
     "flac" => "audio/flac",
-    "wav" => "audio/wav"
+    "wav" => "audio/wav",
+    "m4a" => "audio/mp4"
   }.freeze
 
   include TextSanitizer

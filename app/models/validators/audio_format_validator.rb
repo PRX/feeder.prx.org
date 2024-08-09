@@ -1,6 +1,6 @@
 class AudioFormatValidator < ActiveModel::EachValidator
   FORMATS = %w[mp3 wav flac m4a].freeze
-  BIT_RATES = [96, 112, 128, 160, 192, 224, 256, 320].freeze
+  BIT_RATES = [64, 96, 112, 128, 160, 192, 224, 256, 320].freeze
   BIT_DEPTHS = [16, 24, 32].freeze
   CHANNELS = [1, 2].freeze
   SAMPLE_RATES = [8000, 11025, 12000, 16000, 22050, 24000, 44100, 48000]
@@ -19,7 +19,7 @@ class AudioFormatValidator < ActiveModel::EachValidator
     end
 
     # bit rate/depth
-    if value["f"] == "mp3"
+    if %w[mp3 m4a].include?(value["f"])
       unless BIT_RATES.include?(value["b"])
         return record.errors.add attribute, "invalid bit rate: #{value["b"]}"
       end

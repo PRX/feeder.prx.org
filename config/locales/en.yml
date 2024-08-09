@@ -795,6 +795,7 @@ en:
         wav: WAV
         m4a: AAC
       audio_bitrate_options:
+        "64": 64 kbps
         "96": 96 kbps
         "112": 112 kbps
         "128": 128 kbps
