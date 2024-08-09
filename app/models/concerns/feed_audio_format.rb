@@ -13,23 +13,23 @@ module FeedAudioFormat
   end
 
   def audio_bitrate
-    audio_format.try(:[], :b) if audio_format.try(:[], :f) == "mp3"
+    audio_format.try(:[], :b) if %w[mp3 m4a].include?(audio_format.try(:[], :f))
   end
 
   def audio_bitrate=(bitrate)
     return unless audio_format.present?
-    return unless audio_format.try(:[], :f) == "mp3"
+    return unless %w[mp3 m4a].include?(audio_format.try(:[], :f))
 
     audio_format[:b] = bitrate.to_i
   end
 
   def audio_bitdepth
-    audio_format.try(:[], :b) if %w[wav flac m4a].include?(audio_format.try(:[], :f))
+    audio_format.try(:[], :b) if %w[wav flac].include?(audio_format.try(:[], :f))
   end
 
   def audio_bitdepth=(bitdepth)
     return unless audio_format.present?
-    return unless %w[wav flac m4a].include?(audio_format.try(:[], :f))
+    return unless %w[wav flac].include?(audio_format.try(:[], :f))
 
     audio_format[:b] = bitdepth.to_i
   end
