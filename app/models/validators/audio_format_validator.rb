@@ -19,7 +19,7 @@ class AudioFormatValidator < ActiveModel::EachValidator
     end
 
     # bit rate/depth
-    if value["f"] == "mp3"
+    if %w[mp3 m4a].include?(value["f"])
       unless BIT_RATES.include?(value["b"])
         return record.errors.add attribute, "invalid bit rate: #{value["b"]}"
       end
