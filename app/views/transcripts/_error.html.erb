@@ -1,0 +1,35 @@
+<div class="card shadow border-0 prx-uploads">
+  <div class="card-header-info d-flex justify-content-between align-items-center">
+    <h2 class="card-title h5"><%= t("transcripts.title.#{transcript.model_name.singular}") %></h2>
+
+    <% if policy(transcript).destroy? %>
+      <%= link_to delete_path, class: "btn btn-icon p-0" do %>
+        <span class="material-icons">delete</span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <div class="form-floating mb-4">
+      <div class="form-control d-flex align-items-center is-invalid">
+        <span class="material-icons text-danger">transcript</span>
+        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= transcript.file_name %></div>
+
+        <% if retry_path %>
+          <%= link_to retry_path, method: :put, class: "btn btn-sm btn-warning" do %>
+            <span class="material-icons">restart_alt</span> <%= t("transcripts.label.retry") %>
+          <% end %>
+        <% else %>
+          <small class="text-muted">(<%= number_to_human_size(transcript.file_size) %>)</small>
+        <% end %>
+      </div>
+
+      <div class="invalid-feedback"><%= upload_invalid_messages(transcript) || t("transcripts.error.processing") %></div>
+
+      <label class="is-invalid"><%= t("transcripts.label.transcript_file") %></label>
+    </div>
+
+    <%= form.hidden_field :id %>
+    <%= render "transcripts/meta", form: form %>
+  </div>
+</div>
