@@ -14,14 +14,14 @@
           </div>
         </div>
 
-        <div class="col-3 <%= display_bitrate(feed) %>" data-toggle-field-target="field" field="mp3">
+        <div class="col-3 <%= display_bitrate(feed) %>" data-toggle-field-target="field" field="mp3 m4a">
           <div class="form-floating input-group">
             <%= form.select :audio_bitrate, audio_bitrate_options %>
             <%= form.label :audio_bitrate %>
           </div>
         </div>
 
-        <div class="col-3 <%= display_bitdepth(feed) %>" data-toggle-field-target="field" field="wav flac m4a">
+        <div class="col-3 <%= display_bitdepth(feed) %>" data-toggle-field-target="field" field="wav flac">
           <div class="form-floating input-group">
             <%= form.select :audio_bitdepth, audio_bitdepth_options %>
             <%= form.label :audio_bitdepth %>
