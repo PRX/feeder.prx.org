@@ -1,0 +1,10 @@
+<%= turbo_frame_tag "episode-media-form-transcript", data: {controller: "morphdom"} do %>
+  <% episode.build_transcript if episode.transcript.blank? %>
+
+  <%= form.fields_for :transcript do |fields| %>
+    <% path = episode_destroy_transcript_path(episode, fields) %>
+    <% rpath = episode_retry_transcript_path(episode, fields) %>
+
+    <%= render "transcripts/form", form: fields, transcript: fields.object, delete_path: path, retry_path: rpath %>
+  <% end %>
+<% end %>

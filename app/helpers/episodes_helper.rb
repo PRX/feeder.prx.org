@@ -110,6 +110,22 @@ module EpisodesHelper
     end
   end
 
+  def episode_destroy_transcript_path(episode, form)
+    if episode.new_record?
+      new_podcast_episode_path episode.podcast_id, uploads_destroy_params(form)
+    else
+      edit_episode_path episode, uploads_destroy_params(form)
+    end
+  end
+
+  def episode_retry_transcript_path(episode, form)
+    if episode.new_record?
+      new_podcast_episode_path episode.podcast_id, uploads_retry_params(form)
+    else
+      episode_path episode, uploads_retry_params(form)
+    end
+  end
+
   def episode_media_label(episode, media)
     medium = episode.medium || "audio"
     I18n.t("helpers.label.media_resource.original_url.#{medium}", position: media.position)
