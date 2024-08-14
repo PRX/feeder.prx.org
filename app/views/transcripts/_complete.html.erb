@@ -1,12 +1,12 @@
 <div class="card shadow border-0 prx-uploads">
   <div class="card-header-info d-flex align-items-center">
-    <h2 class="card-title h5 flex-grow-1"><%= t("transcripts.title.#{transcript.model_name.singular}") %></h2>
+    <h2 class="card-title h5 flex-grow-1"><%= t("transcripts.title") %></h2>
 
     <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#transcript-modal-<%= transcript.id %>">
       <span class="material-icons">info</span>
     </button>
 
-    <%= help_text t("transcripts.help.#{transcript.model_name.singular}") %>
+    <%= help_text t("transcripts.help.transcript") %>
 
     <% if policy(transcript).destroy? %>
       <%= link_to delete_path, class: "prx-btn-help" do %>
@@ -17,7 +17,7 @@
 
   <div class="card-body">
     <div class="prx-uploads-transcript mb-4">
-      <%# image_tag transcript.url, alt: transcript.alt_text %>
+      <%= image_tag transcript.url, alt: transcript.alt_text %>
     </div>
 
     <%= form.hidden_field :id %>
@@ -25,4 +25,4 @@
   </div>
 </div>
 
-<%= render "transcripts/modal", transcript: transcript, id: "transcript-modal-#{transcript.id}", title: t("transcripts.title.#{transcript.model_name.singular}") %>
+<%= render "transcripts/modal", transcript: transcript, id: "transcript-modal-#{transcript.id}", title: t("transcripts.title") %>

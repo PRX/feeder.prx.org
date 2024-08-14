@@ -1146,3 +1146,21 @@ en:
     title: Not Authorized
     podcast_policy:
       create?: You are not authorized to create a podcast
+  transcripts:
+    error:
+      processing: There was a problem processing your transcript
+    help:
+      transcript: You can upload your transcript here. Current formats allowed are text, pdf, and json.
+    label:
+      close: Close
+      dimensions: Dimensions
+      file: File
+      format: Format
+      transcript_file: Transcript File
+      loading: Loading...
+      processing: Processing
+      retry: Retry
+      file_size: Size
+      status: Status
+      upload: Upload a file or drag it here
+    title: Transcript

@@ -1,8 +1,8 @@
 <div class="card shadow border-0 prx-uploads mb-4" data-controller="upload" data-upload-disable-outlet="form">
 
   <div class="card-header-info d-flex align-items-center">
-    <h2 class="card-title h5 flex-grow-1"><%= t("transcripts.title.#{transcript.model_name.singular}") %></h2>
-    <%= help_text t("transcripts.help.#{transcript.model_name.singular}") %>
+    <h2 class="card-title h5 flex-grow-1"><%= t("transcripts.title") %></h2>
+    <%= help_text t("transcripts.help.transcript") %>
 
     <%# delete buttons in header, after upload completes %>
     <button type="button" class="prx-btn-help d-none" data-action="upload#cancelUpload" data-upload-target="success">
@@ -61,7 +61,7 @@
       <%= form.hidden_field :file_size, value: nil, data: {upload_target: "fileSize"} %>
 
       <div class="form-control d-flex align-items-center is-changed if-visible">
-        <span class="material-icons text-primary ms-2">transcript</span>
+        <span class="material-icons text-primary ms-2">description</span>
         <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate overflow-hidden text-truncate" data-upload-target="fileName"></div>
         <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
       </div>
@@ -75,7 +75,7 @@
     <%# step 3b: something went horribly wrong! %>
     <div class="form-floating d-none" data-upload-target="error">
       <div class="form-control d-flex align-items-center is-invalid">
-        <span class="material-icons text-primary mx-2">transcript</span>
+        <span class="material-icons text-primary mx-2">description</span>
         <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate overflow-hidden text-truncate " data-upload-target="fileName"></div>
         <small class="text-muted">(<span data-upload-target="fileSize"></span>)</small>
       </div>
