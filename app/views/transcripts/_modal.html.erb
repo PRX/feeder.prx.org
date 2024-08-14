@@ -29,6 +29,10 @@
               <td><%= blank_dash(transcript.file_size) { number_to_human_size(transcript.file_size) } %></td>
             </tr>
             <tr>
+              <th scope="row" class="text-nowrap"><strong><%= t(".mime_type") %>:</strong></th>
+              <td><%= blank_dash(transcript.mime_type) %></td>
+            </tr>
+            <tr>
               <th scope="row"><strong><%= t("transcripts.label.format") %>:</strong></th>
               <td><%= blank_dash(transcript.format) %></td>
             </tr>

@@ -1,27 +1,19 @@
-<div class="card shadow border-0 prx-uploads">
-  <div class="card-header-info d-flex align-items-center">
-    <h2 class="card-title h5 flex-grow-1"><%= t("transcripts.title") %></h2>
+<%= form.hidden_field :id %>
+<div class="col-12 mb-4">
+  <div class="form-floating input-group">
+    <div class="text-secondary me-2 overflow-hidden text-truncate"><%= transcript.file_name %></div>
 
-    <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#transcript-modal-<%= transcript.id %>">
-      <span class="material-icons">info</span>
-    </button>
-
-    <%= help_text t("transcripts.help.transcript") %>
+    <label><%= t("transcripts.label.transcript_file") %></label>
 
     <% if policy(transcript).destroy? %>
       <%= link_to delete_path, class: "prx-btn-help" do %>
         <span class="material-icons">delete</span>
       <% end %>
     <% end %>
-  </div>
 
-  <div class="card-body">
-    <div class="prx-uploads-transcript mb-4">
-      <%= image_tag transcript.url, alt: transcript.alt_text %>
-    </div>
-
-    <%= form.hidden_field :id %>
-    <%= render "transcripts/meta", form: form %>
+    <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#transcript-modal-<%= transcript.id %>">
+      <span class="material-icons">info</span>
+    </button>
   </div>
 </div>
 

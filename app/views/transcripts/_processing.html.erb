@@ -1,36 +1,27 @@
-<div class="card shadow border-0 prx-uploads">
-  <div class="card-header-info d-flex justify-content-between align-items-center">
-    <h2 class="card-title h5"><%= t("transcripts.title") %></h5>
-
-    <% if policy(transcript).destroy? %>
-      <%= link_to delete_path, class: "btn btn-icon p-0" do %>
-        <span class="material-icons">delete</span>
-      <% end %>
-    <% end %>
-  </div>
-
-  <div class="card-body">
-    <div class="form-floating mb-4">
-      <div class="form-control d-flex align-items-center">
-        <div class="spinner-border text-primary ms-2" role="status">
-          <span class="visually-hidden"><%= t("transcripts.label.loading") %></span>
-        </div>
-
-        <div class="text-secondary mx-2 overflow-hidden text-truncate"><%= transcript.file_name %></div>
-        <small class="text-muted flex-grow-1">(<%= t("transcripts.label.processing") %>)</small>
-
-        <% if transcript.file_size.present? %>
-          <small class="text-muted">(<%= number_to_human_size(transcript.file_size) %>)</small>
-        <% end %>
+<div class="col-12 mb-4">
+  <div class="form-floating input-group">
+    <div class="form-control d-flex align-items-center">
+      <div class="spinner-border text-primary ms-2" role="status">
+        <span class="visually-hidden"><%= t("transcripts.label.loading") %></span>
       </div>
 
-      <label><%= t("transcripts.label.transcript_file") %></label>
+      <div class="text-secondary mx-2 overflow-hidden text-truncate"><%= transcript.file_name %></div>
+      <small class="text-muted flex-grow-1">(<%= t("transcripts.label.processing") %>)</small>
+
+      <% if transcript.file_size.present? %>
+        <small class="text-muted">(<%= number_to_human_size(transcript.file_size) %>)</small>
+      <% end %>
     </div>
 
-    <%# just keep polling until the file finishes processing %>
-    <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
+    <% if policy(transcript).destroy? %>
+      <%= link_to delete_path, class: "input-group-text prx-input-group-text" do %>
+        <span class="material-icons text-danger">delete</span>
+      <% end %>
+    <% end %>
 
-    <%= form.hidden_field :id %>
-    <%= render "transcripts/meta", form: form %>
+    <label><%= t("transcripts.label.transcript_file") %></label>
   </div>
+
+  <%# just keep polling until the file finishes processing %>
+  <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
 </div>
