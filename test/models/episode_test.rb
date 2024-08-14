@@ -429,8 +429,10 @@ describe Episode do
       refute_empty container.podcast_deliveries
       refute_empty episode.apple_podcast_deliveries
       episode.publish!
-      assert_empty episode.apple_podcast_deliveries
-      assert_empty container.podcast_deliveries
+      assert episode.apple_status.present?
+      assert episode.apple_status.delivered == false
+
+      assert episode.apple_needs_delivery?
     end
 
     it "can be called for an episode without a container" do

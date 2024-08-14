@@ -250,7 +250,6 @@ class Episode < ApplicationRecord
   end
 
   def apple_mark_for_reupload!
-    apple_prepare_for_delivery!
     apple_needs_delivery!
   end
 
