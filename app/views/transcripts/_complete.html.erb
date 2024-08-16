@@ -1,18 +1,24 @@
 <%= form.hidden_field :id %>
 <div class="col-12 mb-4">
   <div class="form-floating input-group">
-    <div class="text-secondary me-2 overflow-hidden text-truncate"><%= transcript.file_name %></div>
+    <button type="button" class="input-group-text prx-input-group-text">
+      <span class="material-icons text-primary">download</span>
+    </button>
+
+    <div class="form-control d-flex align-items-center">
+      <div class="text-secondary me-2 overflow-hidden text-truncate"><%= transcript.file_name %></div>
+    </div>
 
     <label><%= t("transcripts.label.transcript_file") %></label>
 
     <% if policy(transcript).destroy? %>
-      <%= link_to delete_path, class: "prx-btn-help" do %>
-        <span class="material-icons">delete</span>
+      <%= link_to delete_path, class: "input-group-text prx-input-group-text" do %>
+        <span class="material-icons text-danger">delete</span>
       <% end %>
     <% end %>
 
-    <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#transcript-modal-<%= transcript.id %>">
-      <span class="material-icons">info</span>
+    <button type="button" class="input-group-text prx-input-group-text" data-bs-toggle="modal" data-bs-target="#transcript-modal-<%= transcript.id %>">
+      <span class="material-icons text-primary">info</span>
     </button>
   </div>
 </div>

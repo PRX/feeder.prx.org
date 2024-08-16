@@ -158,8 +158,7 @@ class EpisodesController < ApplicationController
       :original_guid,
       categories: [],
       feed_ids: [],
-      images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
-      transcript_attributes: %i[id original_url file_size _destroy _retry]
+      images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
     ).tap do |p|
       p[:released_at] = released_at_zone.parse(p[:released_at]) if p[:released_at].present?
     end)
