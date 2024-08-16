@@ -1,9 +1,9 @@
 <%= form.hidden_field :id %>
 <div class="col-12 mb-4">
   <div class="form-floating input-group">
-    <button type="button" class="input-group-text prx-input-group-text">
+    <a type="button" class="input-group-text prx-input-group-text" href="<%= transcript.url %>">
       <span class="material-icons text-primary">download</span>
-    </button>
+    </a>
 
     <div class="form-control d-flex align-items-center">
       <div class="text-secondary me-2 overflow-hidden text-truncate"><%= transcript.file_name %></div>
