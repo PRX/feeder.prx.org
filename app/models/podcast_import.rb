@@ -52,11 +52,7 @@ class PodcastImport < ApplicationRecord
   # keep podcast locked 1 minute for every 150 episode, so we're not publishing
   # on every single media-processed callback
   def unlock_podcast_later!
-    lock_minutes = episode_imports.count / 150
-    if lock_minutes > 0
-      podcast.update!(locked_until: Time.now + lock_minutes.minutes)
-    else
-      podcast.update!(locked_until: nil)
-    end
+    lock_minutes = (episode_imports.count / 150.0).ceil
+    podcast.update!(locked_until: Time.now + lock_minutes.minutes)
   end
 end

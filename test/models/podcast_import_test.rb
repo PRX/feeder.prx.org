@@ -26,7 +26,7 @@ describe PodcastImport do
       assert import.status_importing?
     end
 
-    it "unlocks the podcast when done" do
+    it "unlocks the podcast later when done" do
       podcast.update(locked: true)
       refute_nil podcast.locked_until
       import.episode_imports.create(status: "importing")
@@ -39,8 +39,9 @@ describe PodcastImport do
 
       import.status_from_episodes!
       assert import.done?
-      refute podcast.reload.locked?
-      assert_nil podcast.locked_until
+      assert podcast.reload.locked?
+      assert podcast.locked_until > Time.now
+      assert podcast.locked_until < 2.minutes.from_now
     end
   end
 
