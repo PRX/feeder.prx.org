@@ -5,7 +5,8 @@ class AddLockedUntil < ActiveRecord::Migration[7.1]
   end
 
   def down
-    Podcast.where(locked_until: ..Time.now).update_all(locked: true)
+    add_column :podcasts, :locked, :boolean, default: false
+    Podcast.where(locked_until: Time.now..).update_all(locked: true)
     remove_column :podcasts, :locked_until
   end
 end
