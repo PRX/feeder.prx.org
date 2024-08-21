@@ -165,8 +165,12 @@ class Podcast < ApplicationRecord
     self[:locked_until] = val.present? ? "3000-01-01" : nil
   end
 
-  def locked?
+  def locked
     locked_until.present? && locked_until > Time.now
+  end
+
+  def locked?
+    locked
   end
 
   def publish!
