@@ -161,6 +161,7 @@ class Podcast < ApplicationRecord
     self[:categories] = sanitize_categories(cats, false).presence
   end
 
+  # publish locking getters/setters, for backwards compatibility in podcast API
   def locked=(val)
     self[:locked_until] = val.present? ? "3000-01-01" : nil
   end
