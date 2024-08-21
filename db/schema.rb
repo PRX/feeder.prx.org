@@ -358,7 +358,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_21_135645) do
     t.datetime "published_at", precision: nil
     t.datetime "source_updated_at", precision: nil
     t.boolean "serial_order", default: false
-    t.boolean "locked", default: false
     t.boolean "itunes_block", default: false
     t.text "restrictions"
     t.string "payment_pointer"

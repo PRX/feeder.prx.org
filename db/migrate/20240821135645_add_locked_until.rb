@@ -2,6 +2,7 @@ class AddLockedUntil < ActiveRecord::Migration[7.1]
   def up
     add_column :podcasts, :locked_until, :timestamp
     Podcast.where(locked: true).update_all(locked_until: "3000-01-01")
+    remove_column :podcasts, :locked
   end
 
   def down
