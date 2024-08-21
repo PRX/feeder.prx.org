@@ -52,7 +52,8 @@ describe PodcastImport do
 
       import.stub(:episode_imports, 78.times) do
         import.unlock_podcast_later!
-        assert_nil podcast.locked_until
+        assert podcast.locked_until > Time.now
+        assert podcast.locked_until < 2.minutes.from_now
       end
 
       import.stub(:episode_imports, 3000.times) do
