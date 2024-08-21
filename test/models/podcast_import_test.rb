@@ -28,6 +28,7 @@ describe PodcastImport do
 
     it "unlocks the podcast when done" do
       podcast.update(locked: true)
+      refute_nil podcast.locked_until
       import.episode_imports.create(status: "importing")
 
       import.status_from_episodes!
@@ -39,6 +40,25 @@ describe PodcastImport do
       import.status_from_episodes!
       assert import.done?
       refute podcast.reload.locked?
+      assert_nil podcast.locked_until
+    end
+  end
+
+  describe "#unlock_podcast_later!" do
+    it "keeps imports with lots of episodes locked for awhile" do
+      podcast.update(locked: true)
+      assert podcast.locked_until > "2999-01-01".to_date
+
+      import.stub(:episode_imports, 78.times) do
+        import.unlock_podcast_later!
+        assert_nil podcast.locked_until
+      end
+
+      import.stub(:episode_imports, 3000.times) do
+        import.unlock_podcast_later!
+        assert podcast.locked_until > 15.minutes.from_now
+        assert podcast.locked_until < 45.minutes.from_now
+      end
     end
   end
 end
