@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_26_182801) do
+ActiveRecord::Schema[7.1].define(version: 2024_08_21_135645) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -36,7 +36,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_182801) do
     t.text "enclosure_url"
     t.integer "source_fetch_count", default: 0
     t.bigint "source_media_version_id"
-    t.index ["episode_id", "created_at", "delivered", "id"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at"
+    t.index ["episode_id", "created_at"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at", include: ["delivered", "id"]
     t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
   end
 
@@ -149,8 +149,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_182801) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.string "keyword_xid"
     t.datetime "source_updated_at", precision: nil
+    t.string "keyword_xid"
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"
@@ -358,13 +358,13 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_182801) do
     t.datetime "published_at", precision: nil
     t.datetime "source_updated_at", precision: nil
     t.boolean "serial_order", default: false
-    t.boolean "locked", default: false
     t.boolean "itunes_block", default: false
     t.text "restrictions"
     t.string "payment_pointer"
     t.string "donation_url"
     t.integer "lock_version", default: 0, null: false
     t.string "categories", array: true
+    t.datetime "locked_until", precision: nil
     t.index ["categories"], name: "index_podcasts_on_categories", using: :gin
     t.index ["path"], name: "index_podcasts_on_path", unique: true
     t.index ["prx_uri"], name: "index_podcasts_on_prx_uri", unique: true

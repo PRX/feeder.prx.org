@@ -38,7 +38,7 @@ class PodcastImport < ApplicationRecord
         status_importing!
       end
 
-      unlock_podcast! if done?
+      unlock_podcast_later! if done?
     end
   end
 
@@ -49,7 +49,10 @@ class PodcastImport < ApplicationRecord
     PodcastImportJob.perform_later(self)
   end
 
-  def unlock_podcast!
-    podcast.update!(locked: false)
+  # keep podcast locked 1 minute for every 150 episode, so we're not publishing
+  # on every single media-processed callback
+  def unlock_podcast_later!
+    lock_minutes = (episode_imports.count / 150.0).ceil
+    podcast.update!(locked_until: Time.now + lock_minutes.minutes)
   end
 end
