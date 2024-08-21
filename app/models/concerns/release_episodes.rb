@@ -17,8 +17,8 @@ module ReleaseEpisodes
     WHERE e.published_at IS NOT NULL
     AND e.deleted_at IS NULL
     AND f.deleted_at IS NULL
-    and p.deleted_at IS NULL
-    AND p.locked != TRUE
+    AND p.deleted_at IS NULL
+    AND (p.locked_until IS NULL OR p.locked_until < NOW())
   SQL
 
   # the most recent time we've called podcast.publish!

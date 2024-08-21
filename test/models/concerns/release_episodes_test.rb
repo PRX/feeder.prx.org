@@ -79,9 +79,14 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
       assert_empty Podcast.to_release
 
       feed.update!(deleted_at: nil)
-      podcast.update!(locked: true)
+      podcast.update!(locked_until: Time.now + 1.minute)
       assert_empty Episode.to_release
       assert_empty Podcast.to_release
+
+      # locked_until in the past DOES get released
+      podcast.update!(locked_until: Time.now - 1.minute)
+      assert_equal [episode], Episode.to_release
+      assert_equal [podcast], Podcast.to_release
     end
   end
 
