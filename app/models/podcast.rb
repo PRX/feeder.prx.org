@@ -161,6 +161,14 @@ class Podcast < ApplicationRecord
     self[:categories] = sanitize_categories(cats, false).presence
   end
 
+  def locked=(val)
+    self[:locked_until] = val.present? ? "3000-01-01" : nil
+  end
+
+  def locked?
+    locked_until.present? && locked_until > Time.now
+  end
+
   def publish!
     if locked?
       Rails.logger.warn "Podcast #{id} is locked, skipping publish", {podcast_id: id}
