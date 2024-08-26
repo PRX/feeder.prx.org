@@ -4,7 +4,7 @@
       <%= tab_link_to @episode.title, edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
       <%= render "episode_media/tab", episode: @episode %>
       <%= tab_link_to t(".player"), episode_player_path(@episode) %>
-      <%= tab_link_to "Transcript", episode_transcripts_path(@episode) %>
+      <%= render "episode_transcripts/tab", episode: @episode %>
     <% else %>
       <%= tab_link_to t(".new"), new_podcast_episode_path(@podcast), active: true %>
     <% end %>

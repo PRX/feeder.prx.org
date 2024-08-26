@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     get "media_status", to: "episode_media#status"
     resource :player, only: :show, controller: :episode_player
     resource :transcripts, only: [:show, :update], controller: :episode_transcripts
+    get "transcript_status", to: "episode_transcripts#status"
   end
 
   resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher

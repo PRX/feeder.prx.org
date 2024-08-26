@@ -598,6 +598,7 @@ en:
       media: Media Files
       player: Embeddable Player
       segmenter: Audio Segmenter
+      transcript: Transcript
     update:
       error: Unable to save
       media_not_ready: Audio not ready
