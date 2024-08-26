@@ -708,6 +708,30 @@ en:
       <<: *player_form
     show:
       title: Embeddable Player
+  episode_transcripts:
+    form:
+      confirm: Discard unsaved changes?
+    form_status:
+      <<: *form_status
+      title: Transcript Status
+    transcripts:
+      error:
+        processing: There was a problem processing your transcript
+      help:
+        transcript: You can upload your transcript here. Current formats allowed are text, pdf, and json.
+      label:
+        close: Close
+        dimensions: Dimensions
+        file: File
+        format: Format
+        transcript_file: Transcript File
+        loading: Loading...
+        processing: Processing
+        retry: Retry
+        file_size: Size
+        status: Status
+        upload: Upload a file or drag it here
+      title: Transcript
   errors:
     no_access:
       message_html: <a href="%{href}">Your accounts</a> are not authorized to use this PRX application.<br/>If you believe this to be in error, please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>
@@ -1146,21 +1170,3 @@ en:
     title: Not Authorized
     podcast_policy:
       create?: You are not authorized to create a podcast
-  transcripts:
-    error:
-      processing: There was a problem processing your transcript
-    help:
-      transcript: You can upload your transcript here. Current formats allowed are text, pdf, and json.
-    label:
-      close: Close
-      dimensions: Dimensions
-      file: File
-      format: Format
-      transcript_file: Transcript File
-      loading: Loading...
-      processing: Processing
-      retry: Retry
-      file_size: Size
-      status: Status
-      upload: Upload a file or drag it here
-    title: Transcript
