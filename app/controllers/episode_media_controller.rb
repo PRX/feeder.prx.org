@@ -68,8 +68,7 @@ class EpisodeMediaController < ApplicationController
       :medium,
       :ad_breaks,
       contents_attributes: %i[id position original_url file_size _destroy _retry],
-      uncut_attributes: %i[id segmentation original_url file_size _destroy _retry],
-      transcript_attributes: %i[id original_url file_size _destroy _retry]
+      uncut_attributes: %i[id segmentation original_url file_size _destroy _retry]
     )
   end
 

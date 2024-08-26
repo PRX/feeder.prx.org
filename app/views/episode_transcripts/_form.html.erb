@@ -1,4 +1,4 @@
-<% data = {controller: "unsaved disable", unsaved_changed_value: episode.changed? || episode.transcript&.any?(&:changed?), unsaved_confirm_value: t(".confirm")} %>
+<% data = {controller: "unsaved disable", unsaved_changed_value: episode.changed? || episode.transcript&.changed?, unsaved_confirm_value: t(".confirm")} %>
 
 <%= form_with(model: episode, url: episode_transcripts_path(episode), html: {autocomplete: "off"}, data: data) do |form| %>
   <%# first button in form must be a submit, for enter key to work %>

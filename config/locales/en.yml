@@ -740,8 +740,12 @@ en:
         format: Format
         mime_type: MIME Type
         status: Status
+    update:
+      error: Unable to save
+      media_not_ready: Published episodes cannot have empty media
+      notice: Media files updated
     help:
-      transcript: You can upload your transcript here. Current formats allowed are text, pdf, and json.
+      transcript: You can upload your transcript here. Current formats allowed are text and json.
   errors:
     no_access:
       message_html: <a href="%{href}">Your accounts</a> are not authorized to use this PRX application.<br/>If you believe this to be in error, please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>

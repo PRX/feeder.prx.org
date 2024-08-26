@@ -1,46 +1,37 @@
 class EpisodeTranscriptsController < ApplicationController
   before_action :set_episode
 
-  # GET /episodes/1/media
+  # GET /episodes/1/transcripts
   def show
     authorize @episode, :show?
 
-    # try to ensure a segment count, so the UI doesn't break
-    if @episode.segment_count.blank? && @episode.contents.any?
-      @episode.segment_count = @episode.contents.map(&:position).max || @episode.contents.size
-    end
-
-    @episode.assign_attributes(parsed_episode_params)
+    @episode.assign_attributes(episode_params)
     @episode.valid?
   end
 
-  # GET /episodes/1/media/status
+  # GET /episodes/1/transcripts/status
   def status
     authorize @episode, :show?
     render :status, layout: false
   end
 
-  # PATCH/PUT /episodes/1/media
+  # PATCH/PUT /episodes/1/transcripts
   def update
     authorize @episode, :update?
-    @episode.assign_attributes(parsed_episode_params)
-
-    # when an uncut is destroyed, also destroy sliced contents
-    @episode.contents.each(&:mark_for_destruction) if @episode.uncut&.marked_for_destruction?
+    @episode.assign_attributes(episode_params)
 
     respond_to do |format|
       if @episode.save
-        @episode.uncut&.slice_contents!
         @episode.copy_media
-        format.html { redirect_to episode_media_path(@episode), notice: t(".notice") }
+        format.html { redirect_to episode_transcripts_path(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
 
         # some UI feedback that these files aren't ready
-        if @episode.medium_uncut?
-          (@episode.uncut || @episode.build_uncut).valid?
-        else
-          @episode.build_contents.each(&:valid?)
-        end
+        # if @episode.medium_uncut?
+        #   (@episode.uncut || @episode.build_uncut).valid?
+        # else
+        #   @episode.build_contents.each(&:valid?)
+        # end
 
         flash.now[:error] = t(".media_not_ready")
         format.html { render :show, status: :unprocessable_entity }
@@ -65,30 +56,7 @@ class EpisodeTranscriptsController < ApplicationController
   def episode_params
     nilify params.fetch(:episode, {}).permit(
       :lock_version,
-      :medium,
-      :ad_breaks,
-      contents_attributes: %i[id position original_url file_size _destroy _retry],
-      uncut_attributes: %i[id segmentation original_url file_size _destroy _retry],
       transcript_attributes: %i[id original_url file_size _destroy _retry]
     )
-  end
-
-  # NOTE: the uncut "segmentation" field is json encoded
-  def parsed_episode_params
-    episode_params.tap do |p|
-      if p[:uncut_attributes].present?
-        p[:uncut_attributes][:segmentation] = parse_segmentation(p[:uncut_attributes][:segmentation])
-      end
-    end
-  end
-
-  def parse_segmentation(str)
-    if str.blank?
-      nil
-    else
-      JSON.parse(str)
-    end
-  rescue JSON::ParserError
-    str
   end
 end
