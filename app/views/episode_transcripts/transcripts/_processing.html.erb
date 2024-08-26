@@ -2,11 +2,11 @@
   <div class="form-floating input-group">
     <div class="form-control d-flex align-items-center">
       <div class="spinner-border text-primary ms-2" role="status">
-        <span class="visually-hidden"><%= t("transcripts.label.loading") %></span>
+        <span class="visually-hidden"><%= t(".loading") %></span>
       </div>
 
       <div class="text-secondary mx-2 overflow-hidden text-truncate"><%= transcript.file_name %></div>
-      <small class="text-muted flex-grow-1">(<%= t("transcripts.label.processing") %>)</small>
+      <small class="text-muted flex-grow-1">(<%= t(".processing") %>)</small>
 
       <% if transcript.file_size.present? %>
         <small class="text-muted">(<%= number_to_human_size(transcript.file_size) %>)</small>
@@ -19,7 +19,7 @@
       <% end %>
     <% end %>
 
-    <label><%= t("transcripts.label.transcript_file") %></label>
+    <label><%= t(".transcript_file") %></label>
   </div>
 
   <%# just keep polling until the file finishes processing %>

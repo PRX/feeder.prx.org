@@ -1,15 +1,15 @@
 <div class="prx-uploads col-12 mb-4">
   <div class="card shadow border-0">
     <div class="card-header card-header-info d-flex justify-content-between">
-      <h2 class="card-title h5 flex-grow-1"><%= t("transcripts.title") %></h2>
+      <h2 class="card-title h5 flex-grow-1"><%= t(".title") %></h2>
     </div>
     <div class="card-body pb-0">
       <%= turbo_frame_tag "episode-media-form-transcript", data: {controller: "morphdom"} do %>
         <% episode.build_transcript if episode.transcript.blank? %>
 
         <%= form.fields_for :transcript do |fields| %>
-          <% path = episode_media_path(episode, uploads_destroy_params(fields)) %>
-          <% rpath = episode_media_path(episode, uploads_retry_params(fields)) %>
+          <% path = episode_transcripts_path(episode, uploads_destroy_params(fields)) %>
+          <% rpath = episode_transcripts_path(episode, uploads_retry_params(fields)) %>
 
           <%= render "episode_transcripts/transcripts/form", form: fields, transcript: fields.object, delete_path: path, retry_path: rpath %>
         <% end %>

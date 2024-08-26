@@ -10,7 +10,7 @@
     <% data[:unsaved_target] = "changed" if transcript.marked_for_destruction? %>
 
     <%# NOTE: name is nil, so we don't submit the actual file to Rails %>
-    <%= form.file_field :transcript_file, class: cls, accept: "text/plain,application/json,application/pdf", name: nil, data: data %>
+    <%= form.file_field :transcript_file, class: cls, accept: "text/plain,application/json", name: nil, data: data %>
 
     <%# fake display field; real text area is opacity-0 on top of it %>
     <% invalid_msg = upload_invalid_messages(transcript) %>
@@ -19,14 +19,14 @@
     <% fake_cls += " is-invalid" if invalid_msg %>
     <div class="<%= fake_cls %>">
       <span class="material-icons text-primary">upload</span>
-      <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= t("transcripts.label.upload") %></div>
+      <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= t(".upload") %></div>
     </div>
 
     <% if invalid_msg %>
       <div class="invalid-feedback"><%= invalid_msg %></div>
     <% end %>
 
-    <%= form.label :transcript_file, t("transcripts.label.transcript_file") %>
+    <%= form.label :transcript_file, t(".transcript_file") %>
   </div>
 
   <%# step 2: upload progressbar %>
@@ -46,7 +46,7 @@
       </button>
     </div>
 
-    <label><%= t("transcripts.label.transcript_file") %></label>
+    <label><%= t(".transcript_file") %></label>
   </div>
 
   <%# step 3a: hidden original_url field pointing to the uploaded temporary s3 file %>
@@ -66,7 +66,7 @@
       <span class="material-icons text-danger">delete</span>
     </button>
 
-    <label><%= t("transcripts.label.transcript_file") %></label>
+    <label><%= t(".transcript_file") %></label>
   </div>
 
   <%# step 3b: something went horribly wrong! %>
@@ -83,7 +83,6 @@
 
     <div class="invalid-feedback" data-upload-target="errorMessage"></div>
 
-    <label class="is-invalid"><%= t("transcripts.label.transcript_file") %></label>
+    <label class="is-invalid"><%= t(".transcript_file") %></label>
   </div>
-
 </div>

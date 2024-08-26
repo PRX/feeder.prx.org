@@ -9,7 +9,7 @@
       <div class="text-secondary me-2 overflow-hidden text-truncate"><%= transcript.file_name %></div>
     </div>
 
-    <label><%= t("transcripts.label.transcript_file") %></label>
+    <label><%= t(".transcript_file") %></label>
 
     <% if policy(transcript).destroy? %>
       <%= link_to delete_path, class: "input-group-text prx-input-group-text" do %>
@@ -23,4 +23,4 @@
   </div>
 </div>
 
-<%= render "transcripts/modal", transcript: transcript, id: "transcript-modal-#{transcript.id}", title: t("transcripts.title") %>
+<%= render "episode_transcripts/transcripts/modal", transcript: transcript, id: "transcript-modal-#{transcript.id}", title: t(".title") %>

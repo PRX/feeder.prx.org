@@ -714,24 +714,34 @@ en:
     form_status:
       <<: *form_status
       title: Transcript Status
+    form_transcript:
+      title: Transcript
+    show:
+      title: "%{title} - Transcript"
     transcripts:
-      error:
-        processing: There was a problem processing your transcript
-      help:
-        transcript: You can upload your transcript here. Current formats allowed are text, pdf, and json.
-      label:
-        close: Close
-        dimensions: Dimensions
-        file: File
-        format: Format
+      new:
         transcript_file: Transcript File
+        upload: Upload a file or drag it here
+      processing:
         loading: Loading...
         processing: Processing
+        transcript_file: Transcript File
+      complete:
+        title: Transcript
+        transcript_file: Transcript File
+      error:
         retry: Retry
+        processing: There was a problem processing your transcript
+        transcript_file: Transcript File
+      modal:
+        close: Close
+        file: File
         file_size: Size
+        format: Format
+        mime_type: MIME Type
         status: Status
-        upload: Upload a file or drag it here
-      title: Transcript
+    help:
+      transcript: You can upload your transcript here. Current formats allowed are text, pdf, and json.
   errors:
     no_access:
       message_html: <a href="%{href}">Your accounts</a> are not authorized to use this PRX application.<br/>If you believe this to be in error, please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>

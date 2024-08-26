@@ -6,7 +6,7 @@
 
       <% if retry_path %>
         <%= link_to retry_path, method: :put, class: "btn btn-sm btn-warning" do %>
-          <span class="material-icons">restart_alt</span> <%= t("transcripts.label.retry") %>
+          <span class="material-icons">restart_alt</span> <%= t(".retry") %>
         <% end %>
       <% else %>
         <small class="text-muted">(<%= number_to_human_size(transcript.file_size) %>)</small>
@@ -19,8 +19,8 @@
       <% end %>
     <% end %>
 
-    <div class="invalid-feedback"><%= upload_invalid_messages(transcript) || t("transcripts.error.processing") %></div>
+    <div class="invalid-feedback"><%= upload_invalid_messages(transcript) || t(".processing") %></div>
 
-    <label class="is-invalid"><%= t("transcripts.label.transcript_file") %></label>
+    <label class="is-invalid"><%= t(".transcript_file") %></label>
   </div>
 </div>
