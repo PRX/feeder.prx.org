@@ -2,6 +2,7 @@
   <div class="card shadow border-0">
     <div class="card-header card-header-info d-flex justify-content-between">
       <h2 class="card-title h5 flex-grow-1"><%= t(".title") %></h2>
+      <%= help_text t(".help.transcript") %>
     </div>
     <div class="card-body pb-0">
       <%= turbo_frame_tag "episode-media-form-transcript", data: {controller: "morphdom"} do %>
