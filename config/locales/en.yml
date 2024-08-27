@@ -710,32 +710,33 @@ en:
     show:
       title: Embeddable Player
   episode_transcripts:
+    transcript_labels: &transcript_labels
+      title: Transcript
+      transcript_file: Transcript File
+      transcript_help: Upload a JSON or TXT file containing the text transcript
     form:
       confirm: Discard unsaved changes?
     form_status:
       <<: *form_status
       title: Transcript Status
     form_transcript:
-      title: Transcript
-      help:
-        transcript: You can upload your transcript here. Current formats allowed are text and json.
+      <<: *transcript_labels
     show:
       title: "%{title} - Transcript"
     transcripts:
       new:
-        transcript_file: Transcript File
+        <<: *transcript_labels
         upload: Upload a file or drag it here
       processing:
+        <<: *transcript_labels
         loading: Loading...
         processing: Processing
-        transcript_file: Transcript File
       complete:
-        title: Transcript
-        transcript_file: Transcript File
+        <<: *transcript_labels
       error:
+        <<: *transcript_labels
         retry: Retry
         processing: There was a problem processing your transcript
-        transcript_file: Transcript File
       modal:
         close: Close
         file: File
@@ -746,7 +747,7 @@ en:
     update:
       error: Unable to save
       media_not_ready: Published episodes cannot have empty media
-      notice: Media files updated
+      notice: Transcript file updated
   errors:
     no_access:
       message_html: <a href="%{href}">Your accounts</a> are not authorized to use this PRX application.<br/>If you believe this to be in error, please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>
