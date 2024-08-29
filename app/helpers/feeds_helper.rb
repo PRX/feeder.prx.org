@@ -42,7 +42,7 @@ module FeedsHelper
   end
 
   def display_bitrate(feed)
-    %w[mp3 m4a].include?(feed.try(:audio_format).try(:[], :f)) ? "" : "d-none"
+    %w[mp3 mp4].include?(feed.try(:audio_format).try(:[], :f)) ? "" : "d-none"
   end
 
   def display_bitdepth(feed)
