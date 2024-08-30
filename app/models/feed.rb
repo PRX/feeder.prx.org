@@ -11,7 +11,7 @@ class Feed < ApplicationRecord
     "mp3" => "audio/mpeg",
     "flac" => "audio/flac",
     "wav" => "audio/wav",
-    "m4a" => "audio/mp4"
+    "mp4" => "audio/mp4"
   }.freeze
 
   include TextSanitizer
