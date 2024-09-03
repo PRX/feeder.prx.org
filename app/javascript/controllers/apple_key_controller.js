@@ -41,17 +41,7 @@ export default class extends Controller {
   }
 
   convertKeyToB64(fileText) {
-    const keyText = this.parseKey(fileText)
-    const encoded = btoa(keyText)
+    const encoded = btoa(fileText)
     this.pemTarget.value = encoded
-  }
-
-  parseKey(text) {
-    const strings = text.split("\n")
-    // remove "begin key" and "end key" text
-    strings.shift()
-    strings.pop()
-
-    return strings.join("")
   }
 }
