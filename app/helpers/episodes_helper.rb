@@ -67,20 +67,6 @@ module EpisodesHelper
     end
   end
 
-  def episode_transcript_status(episode)
-    if upload_problem?(episode.transcript)
-      "error"
-    elsif upload_processing?(episode.transcript)
-      "processing"
-    elsif episode.transcript.present?
-      "complete"
-    elsif episode.published_at.present?
-      "incomplete-published"
-    else
-      "incomplete"
-    end
-  end
-
   def episode_border_color(episode)
     case episode.publishing_status
     when "draft"
