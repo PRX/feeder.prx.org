@@ -13,6 +13,7 @@ class Feeds::AppleSubscription < Feed
   validate :unchanged_defaults
   validate :only_apple_feed
   validate :must_be_private
+  validate :must_have_token
 
   def set_defaults
     self.slug ||= DEFAULT_FEED_SLUG
@@ -57,6 +58,12 @@ class Feeds::AppleSubscription < Feed
   def must_be_private
     if private != true
       errors.add(:private, "must be a private feed")
+    end
+  end
+
+  def must_have_token
+    if tokens.blank?
+      errors.add(:tokens, "must have a token")
     end
   end
 
