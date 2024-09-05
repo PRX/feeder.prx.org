@@ -3,7 +3,6 @@ class Feeds::AppleSubscription < Feed
   DEFAULT_TITLE = "Apple Delegated Delivery Subscriptions"
   DEFAULT_AUDIO_FORMAT = {"f" => "flac", "b" => 16, "c" => 2, "s" => 44100}.freeze
   DEFAULT_ZONES = ["billboard", "sonic_id"]
-  DEFAULT_TOKENS = [FeedToken.new(label: DEFAULT_TITLE)]
 
   after_initialize :set_defaults
 
@@ -21,7 +20,7 @@ class Feeds::AppleSubscription < Feed
     self.audio_format ||= DEFAULT_AUDIO_FORMAT
     self.display_episodes_count ||= podcast&.default_feed&.display_episodes_count
     self.include_zones ||= DEFAULT_ZONES
-    self.tokens ||= DEFAULT_TOKENS
+    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)]
     self.private = true
 
     super
