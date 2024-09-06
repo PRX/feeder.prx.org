@@ -3,8 +3,6 @@ require "test_helper"
 class EpisodeTranscriptsControllerTest < ActionDispatch::IntegrationTest
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/123") }
   let(:episode) { create(:episode, podcast: podcast, published_at: nil) }
-  let(:transcript) { create(:transcript, episode: episode) }
-  let(:invalid_transcript) { build(:transcript, original_url: nil) }
   let(:params) { {transcript_attributes: {original_url: "test/fixtures/differenttranscript.txt"}} }
 
   setup_current_user { build(:user, account_id: 123) }
