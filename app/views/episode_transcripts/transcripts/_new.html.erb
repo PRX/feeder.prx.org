@@ -11,7 +11,7 @@
       <% data[:unsaved_target] = "changed" if transcript.marked_for_destruction? %>
 
       <%# NOTE: name is nil, so we don't submit the actual file to Rails %>
-      <%= form.file_field :transcript_file, class: cls, accept: "text/plain,application/json", name: nil, data: data %>
+      <%= form.file_field :transcript_file, class: cls, accept: ".html,.json,.srt,.vtt", name: nil, data: data %>
 
       <%# fake display field; real text area is opacity-0 on top of it %>
       <% invalid_msg = upload_invalid_messages(transcript) %>
