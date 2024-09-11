@@ -7,7 +7,7 @@ module Apple
     validates_presence_of :key_pem_b64
 
     validate :provider_id_is_valid, if: :provider_id?
-    validate :correct_key_pem_format, if: :key_pem_b64?
+    validate :key_pem_format, if: :key_pem_b64?
 
     def provider_id_is_valid
       if provider_id.include?("_")
@@ -19,13 +19,17 @@ module Apple
       Base64.decode64(key_pem_b64)
     end
 
-    def correct_key_pem_format
-      header = "-----BEGIN"
-      footer = "-----END"
-      lines = key_pem.split("\n")
-      unless lines[0].include?(header) && lines[-1].include?(footer)
-        errors.add(:key_pem, "key pem does not have correct header or footer")
+    def key_pem_format
+      unless passes_openssl_validation?
+        errors.add(:key_pem, "key format did not pass OpenSSL validation")
       end
+    end
+
+    def passes_openssl_validation?
+      OpenSSL::PKey::EC.new(key_pem)
+      true
+    rescue
+      false
     end
   end
 end
