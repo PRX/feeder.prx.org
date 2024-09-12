@@ -13,12 +13,12 @@ module FeedAudioFormat
   end
 
   def audio_bitrate
-    audio_format.try(:[], :b) if %w[mp3 m4a].include?(audio_format.try(:[], :f))
+    audio_format.try(:[], :b) if %w[mp3 mp4].include?(audio_format.try(:[], :f))
   end
 
   def audio_bitrate=(bitrate)
     return unless audio_format.present?
-    return unless %w[mp3 m4a].include?(audio_format.try(:[], :f))
+    return unless %w[mp3 mp4].include?(audio_format.try(:[], :f))
 
     audio_format[:b] = bitrate.to_i
   end

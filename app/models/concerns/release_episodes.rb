@@ -10,15 +10,18 @@ module ReleaseEpisodes
       e.id AS episode_id,
       e.podcast_id AS podcast_id,
       f.id AS feed_id,
-      e.published_at + MAKE_INTERVAL(secs => COALESCE(f.episode_offset_seconds, 0)) AS publish_time
+      GREATEST(
+        e.published_at + MAKE_INTERVAL(secs => COALESCE(f.episode_offset_seconds, 0)),
+        e.created_at
+      ) AS publish_time
     FROM episodes e
     LEFT JOIN feeds f USING (podcast_id)
     LEFT JOIN podcasts p ON (p.id = e.podcast_id)
     WHERE e.published_at IS NOT NULL
     AND e.deleted_at IS NULL
     AND f.deleted_at IS NULL
-    and p.deleted_at IS NULL
-    AND p.locked != TRUE
+    AND p.deleted_at IS NULL
+    AND (p.locked_until IS NULL OR p.locked_until < NOW())
   SQL
 
   # the most recent time we've called podcast.publish!

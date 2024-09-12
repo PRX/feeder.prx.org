@@ -1,10 +1,9 @@
 require "test_helper"
 
 class ReleaseEpisodesTest < ActiveSupport::TestCase
-  let(:episode) { create(:episode, published_at: 30.minutes.from_now) }
+  let(:episode) { create(:episode, published_at: 30.minutes.from_now, created_at: 10.days.ago) }
   let(:podcast) { episode.podcast }
   let(:feed) { podcast.default_feed }
-  # let(:feed) { create(:feed, podcast: podcast, slug: "the-feed") }
 
   describe ".to_release" do
     it "returns episodes/podcasts that need release" do
@@ -79,7 +78,30 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
       assert_empty Podcast.to_release
 
       feed.update!(deleted_at: nil)
-      podcast.update!(locked: true)
+      podcast.update!(locked_until: Time.now + 1.minute)
+      assert_empty Episode.to_release
+      assert_empty Podcast.to_release
+
+      # locked_until in the past DOES get released
+      podcast.update!(locked_until: Time.now - 1.minute)
+      assert_equal [episode], Episode.to_release
+      assert_equal [podcast], Podcast.to_release
+    end
+
+    it "handles episodes created after their published_at timestamp" do
+      episode.update!(created_at: 1.hour.ago, published_at: 1.day.ago)
+
+      # no queue items - it needs release
+      assert_equal [episode], Episode.to_release
+      assert_equal [podcast], Podcast.to_release
+
+      # queue item < ep.created_at also needs release
+      PublishingQueueItem.create!(podcast: podcast, created_at: 61.minutes.ago)
+      assert_equal [episode], Episode.to_release
+      assert_equal [podcast], Podcast.to_release
+
+      # queue item > ep.created_at and we're good
+      PublishingQueueItem.create!(podcast: podcast, created_at: 59.minutes.ago)
       assert_empty Episode.to_release
       assert_empty Podcast.to_release
     end
