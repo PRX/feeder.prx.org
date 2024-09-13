@@ -927,6 +927,7 @@ en:
       metrics: Metrics
       privacy: Privacy
       status: Status
+      feedback: Send Feedback
       terms: Terms
     stale_record_field:
       aside: (Not Recommended)

@@ -26,18 +26,12 @@
       <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute shadow m-0" aria-labelledby="nav-help-dropdown">
         <%= link_to t(".help"), "https://help.prx.org", class: "dropdown-item" %>
         <%= link_to t(".status"), "https://status.prx.org", class: "dropdown-item" %>
+        <%= link_to t(".feedback"), "mailto:dovetail-feedback@prx.org", class: "dropdown-item" %>
         <%= link_to t(".terms"), "https://exchange.prx.org/terms-of-use", class: "dropdown-item" %>
         <%= link_to t(".attribution"), "https://dovetail.prx.org/attribution", class: "dropdown-item" %>
         <%= link_to t(".privacy"), "https://exchange.prx.org/privacy-policy", class: "dropdown-item" %>
         <%= link_to t(".home"), "https://prx.org/", class: "dropdown-item" %>
       </div>
-    </nav>
-
-    <nav class="navbar-nav">
-      <h2 class="visually-hidden">Feedback link</h2>
-      <a class="nav-link nav-link-icon" href="mailto:dovetail-feedback@prx.org" title="Feedback">
-        <span class="material-icons align-middle">alternate_email</span>
-      </a>
     </nav>
 
     <% if current_user %>
