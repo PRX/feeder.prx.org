@@ -28,10 +28,10 @@
   .dropdown-item {
     min-width: 240px;
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 1rem;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.18);
+      background-color: #{$primary};
     }
   }
 
@@ -98,7 +98,7 @@
 
       .material-icons, .prx-header-nav-avatar {
         color: #{$white};
-        background-color: rgba(255, 255, 255, 0.28);
+        background-color: #{$primary};
       }
     }
 
