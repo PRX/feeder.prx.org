@@ -12,8 +12,12 @@
   }
 
   .dropdown-menu {
-    --#{$prefix}dropdown-border-radius: 0;
+    --#{$prefix}dropdown-border-radius: 3px;
     --#{$prefix}dropdown-border-width: 0;
+
+    margin-top: -7px !important;
+    margin-right: 4px !important;
+    box-shadow: rgba(0, 0, 0, 0.26) 0px 3px 6px, rgba(0, 0, 0, 0.33) 0px 3px 6px !important;
   }
 
   .dropdown-menu-dark {
@@ -22,9 +26,13 @@
   }
 
   .dropdown-item {
-    text-transform: uppercase;
-    font-weight: bold;
     min-width: 240px;
+    text-decoration: none;
+    font-size: 1rem;
+
+    &:hover {
+      background-color: #{$primary};
+    }
   }
 
   .dropdown-toggle {
@@ -32,9 +40,9 @@
       display: none;
     }
 
-    &.show {
-      background-color: $bg-show;
-    }
+    // &.show {
+    //   background-color: $bg-show;
+    // }
   }
 
   .btn {
@@ -46,10 +54,6 @@
     display: grid;
     align-items: center;
     z-index: $zindex-sticky;
-
-    & + .navbar-nav {
-      border-inline-start: 1px solid $blue;
-    }
   }
 
   .nav-link {
@@ -61,6 +65,10 @@
     display: grid;
     align-items: center;
     text-transform: uppercase;
+
+    &:focus {
+      color: var(--#{$prefix}nav-link-color);
+    }
 
     &:not(.dropdown-toggle) {
       --prx-nav-link-active-border-color: #{transparent};
@@ -78,19 +86,49 @@
     --#{$prefix}nav-link-padding-x: #{map-get($spacers, 2)};
     --#{$prefix}nav-link-padding-y: #{map-get($spacers, 2)};
 
+    color: #{$white};
+
     line-height: 0;
     align-self: stretch;
 
-    .material-icons {
-      font-size: inherit;
+    &:hover {
+      text-decoration: none;
+      --#{$prefix}nav-link-color: #{$white};
+
+      .material-icons,
+      .prx-header-nav-avatar {
+        color: #{$white};
+        background-color: #{$primary};
+      }
     }
+
+    .material-icons {
+      font-size: 0.75em;
+      // padding-inline: 0.25rem;
+      padding: 3px;
+      border-radius: 100%;
+      // transition: background-color 0.3s;
+
+      // &:hover {
+      //   transition: background-color 0s;
+      // }
+    }
+  }
+
+  .user-menu {
+    padding-inline-end: 0.825rem;
   }
 }
 
 .prx-header-nav-avatar {
   object-fit: cover;
   border-radius: 50%;
-  border: 1px solid $blue-light;
-  height: 30px;
-  width: 30px;
+  height: 31px;
+  width: 31px;
+  padding: 4px;
+  // transition: background-color 0.3s;
+
+  // &:hover {
+  //   transition: background-color 0s;
+  // }
 }
