@@ -86,7 +86,6 @@
     --#{$prefix}nav-link-padding-x: #{map-get($spacers, 2)};
     --#{$prefix}nav-link-padding-y: #{map-get($spacers, 2)};
 
-
     color: #{$white};
 
     line-height: 0;
@@ -96,7 +95,8 @@
       text-decoration: none;
       --#{$prefix}nav-link-color: #{$white};
 
-      .material-icons, .prx-header-nav-avatar {
+      .material-icons,
+      .prx-header-nav-avatar {
         color: #{$white};
         background-color: #{$primary};
       }
