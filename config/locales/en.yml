@@ -598,6 +598,7 @@ en:
       media: Media Files
       player: Embeddable Player
       segmenter: Audio Segmenter
+      transcript: Transcript
     update:
       error: Unable to save
       media_not_ready: Audio not ready
@@ -708,6 +709,45 @@ en:
       <<: *player_form
     show:
       title: Embeddable Player
+  episode_transcripts:
+    transcript_labels: &transcript_labels
+      title: Transcript
+      transcript_file: Transcript File
+      transcript_help: Upload a JSON or TXT file containing the text transcript
+    form:
+      confirm: Discard unsaved changes?
+    form_status:
+      <<: *form_status
+      title: Transcript Status
+    form_transcript:
+      <<: *transcript_labels
+    show:
+      title: "%{title} - Transcript"
+    transcripts:
+      new:
+        <<: *transcript_labels
+        upload: Upload a file or drag it here
+      processing:
+        <<: *transcript_labels
+        loading: Loading...
+        processing: Processing
+      complete:
+        <<: *transcript_labels
+      error:
+        <<: *transcript_labels
+        retry: Retry
+        processing: There was a problem processing your transcript
+      modal:
+        close: Close
+        file: File
+        file_size: Size
+        format: Format
+        mime_type: MIME Type
+        status: Status
+    update:
+      error: Unable to save
+      media_not_ready: Published episodes cannot have empty media
+      notice: Transcript file updated
   errors:
     no_access:
       message_html: <a href="%{href}">Your accounts</a> are not authorized to use this PRX application.<br/>If you believe this to be in error, please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>

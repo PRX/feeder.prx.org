@@ -1,0 +1,13 @@
+<% if upload_new?(transcript) %>
+  <% if policy(transcript).create? %>
+    <%= render "episode_transcripts/transcripts/new", form: form, transcript: transcript %>
+  <% end %>
+<% elsif upload_stalled?(transcript) %>
+  <%= render "episode_transcripts/transcripts/error", form: form, transcript: transcript, delete_path: delete_path, retry_path: retry_path %>
+<% elsif upload_processing?(transcript) %>
+  <%= render "episode_transcripts/transcripts/processing", form: form, transcript: transcript, delete_path: delete_path %>
+<% elsif upload_complete?(transcript) %>
+  <%= render "episode_transcripts/transcripts/complete", form: form, transcript: transcript, delete_path: delete_path %>
+<% else %>
+  <%= render "episode_transcripts/transcripts/error", form: form, transcript: transcript, delete_path: delete_path, retry_path: transcript.retryable? && retry_path %>
+<% end %>

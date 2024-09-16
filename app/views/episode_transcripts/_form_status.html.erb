@@ -1,0 +1,17 @@
+<div class="card shadow border-0 mb-4" data-morph="false">
+  <div class="card-header-primary">
+    <h2 class="card-title h5"><%= t(".title") %></h2>
+  </div>
+  <%= render "layouts/stale_record_field", form: form %>
+  <div class="card-footer">
+    <div class="d-flex align-items-center justify-content-end">
+      <% if policy(episode).update? %>
+        <%= link_to t(".discard"), episode_transcripts_path(episode), class: "btn btn-discard-changed d-none me-2", data: {action: "unsaved#discard", unsaved_target: "discard", turbo_frame: "_top"} %>
+
+        <% data = {disable_with: t(".updating"), upload_with: t(".uploading")} %>
+        <%= form.submit t(".update"), class: "btn btn-primary", data: data %>
+      <% end %>
+    </div>
+    <p class="status-text mt-2 mb-0 text-end"><strong><%= t(".updated_at_hint") %>:</strong> <%= l(episode.updated_at) %></p>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="col-12 mb-4">
+  <div class="form-floating input-group">
+    <div class="form-control d-flex align-items-center is-invalid">
+      <span class="material-icons text-danger">description</span>
+      <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= transcript.file_name %></div>
+
+      <% if retry_path %>
+        <%= link_to retry_path, method: :put, class: "btn btn-sm btn-warning" do %>
+          <span class="material-icons">restart_alt</span> <%= t(".retry") %>
+        <% end %>
+      <% else %>
+        <small class="text-muted">(<%= number_to_human_size(transcript.file_size) %>)</small>
+      <% end %>
+    </div>
+
+    <% if policy(transcript).destroy? %>
+      <%= link_to delete_path, class: "input-group-text prx-input-group-text" do %>
+        <span class="material-icons text-danger">delete</span>
+      <% end %>
+    <% end %>
+
+    <div class="invalid-feedback"><%= upload_invalid_messages(transcript) || t(".processing") %></div>
+
+    <label class="is-invalid"><%= t(".transcript_file") %></label>
+
+    <%= field_help_text t(".transcript_help") %>
+  </div>
+</div>
