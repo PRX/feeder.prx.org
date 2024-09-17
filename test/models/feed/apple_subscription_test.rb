@@ -48,6 +48,11 @@ describe Feeds::AppleSubscription do
       apple_feed.private = false
       refute apple_feed.valid?
     end
+
+    it "must have a token" do
+      apple_feed.tokens = []
+      refute apple_feed.valid?
+    end
   end
 
   describe "#apple_configs" do

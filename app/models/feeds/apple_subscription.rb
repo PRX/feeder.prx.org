@@ -3,7 +3,6 @@ class Feeds::AppleSubscription < Feed
   DEFAULT_TITLE = "Apple Delegated Delivery Subscriptions"
   DEFAULT_AUDIO_FORMAT = {"f" => "flac", "b" => 16, "c" => 2, "s" => 44100}.freeze
   DEFAULT_ZONES = ["billboard", "sonic_id"]
-  DEFAULT_TOKENS = [FeedToken.new(label: DEFAULT_TITLE)]
 
   after_initialize :set_defaults
 
@@ -14,6 +13,7 @@ class Feeds::AppleSubscription < Feed
   validate :unchanged_defaults
   validate :only_apple_feed
   validate :must_be_private
+  validate :must_have_token
 
   def set_defaults
     self.slug ||= DEFAULT_FEED_SLUG
@@ -21,7 +21,7 @@ class Feeds::AppleSubscription < Feed
     self.audio_format ||= DEFAULT_AUDIO_FORMAT
     self.display_episodes_count ||= podcast&.default_feed&.display_episodes_count
     self.include_zones ||= DEFAULT_ZONES
-    self.tokens ||= DEFAULT_TOKENS
+    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)]
     self.private = true
 
     super
@@ -58,6 +58,12 @@ class Feeds::AppleSubscription < Feed
   def must_be_private
     if private != true
       errors.add(:private, "must be a private feed")
+    end
+  end
+
+  def must_have_token
+    if tokens.blank?
+      errors.add(:tokens, "must have a token")
     end
   end
 
