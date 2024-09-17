@@ -16,7 +16,7 @@ module PodcastsHelper
 
   def episode_description(episode)
     desc = episode.description_with_default
-    if episode.has_apple_config?
+    if episode.podcast.has_apple_config?
       desc = episode.description.truncate_bytes(4000, omission: "")
     end
     desc
