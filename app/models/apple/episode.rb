@@ -281,6 +281,7 @@ module Apple
 
     def episode_create_parameters
       explicit = feeder_episode.explicit.present? && feeder_episode.explicit == "true"
+      desc = feeder_episode.description_with_default.truncate_bytes(4000, omission: "")
 
       {
         data:
@@ -290,7 +291,7 @@ module Apple
             guid: guid,
             title: feeder_episode.title,
             originalReleaseDate: feeder_episode.published_at.utc.iso8601,
-            description: feeder_episode.description_with_default,
+            description: desc,
             websiteUrl: feeder_episode.url,
             explicit: explicit,
             episodeNumber: feeder_episode.episode_number,
