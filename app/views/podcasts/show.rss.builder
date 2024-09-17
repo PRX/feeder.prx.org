@@ -16,11 +16,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
     xml.copyright @podcast.copyright unless @podcast.copyright.blank?
     xml.webMaster @podcast.web_master unless @podcast.web_master.blank?
 
-    if @feed.description.present?
-      xml.description { xml.cdata!(@feed.description) }
-    elsif @podcast.description.present?
-      xml.description { xml.cdata!(@podcast.description) }
-    end
+    xml.description { xml.cdata!(feed_description(@feed, @podcast)) }
 
     xml.managingEditor @podcast.managing_editor unless @podcast.managing_editor.blank?
 
