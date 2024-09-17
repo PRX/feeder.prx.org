@@ -8,15 +8,15 @@ module PodcastsHelper
   def feed_description(feed, podcast)
     desc = feed.description.present? ? feed.description : podcast.description
     desc ||= ""
-    if podcast.publish_to_apple?
+    if podcast.has_apple_config?
       desc = desc.truncate_bytes(4000, omission: "")
     end
     desc
   end
 
   def episode_description(episode)
-    desc = episode.description || ""
-    if episode.publish_to_apple?
+    desc = episode.description_with_default
+    if episode.has_apple_config?
       desc = episode.description.truncate_bytes(4000, omission: "")
     end
     desc
