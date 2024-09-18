@@ -10,7 +10,7 @@ module PodcastsHelper
   end
 
   def episode_description(episode)
-    if episode.podcast.has_apple_config?
+    if episode.podcast.has_apple_feed?
       episode.description_safe
     else
       episode.description_with_default

@@ -73,8 +73,8 @@ class Podcast < ApplicationRecord
     end
   end
 
-  def has_apple_config?
-    apple_config.present?
+  def has_apple_feed?
+    feeds.apple.exists?
   end
 
   def reload(options = nil)

@@ -7,6 +7,8 @@ class Feeds::AppleSubscription < Feed
 
   after_initialize :set_defaults
 
+  after_create :publish_feeds
+
   has_one :apple_config, class_name: "::Apple::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
   accepts_nested_attributes_for :apple_config, allow_destroy: true, reject_if: :all_blank
@@ -29,6 +31,10 @@ class Feeds::AppleSubscription < Feed
 
   def self.model_name
     Feed.model_name
+  end
+
+  def publish_feeds
+    podcast&.publish!
   end
 
   def unchanged_defaults
