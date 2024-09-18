@@ -130,6 +130,49 @@ describe Apple::Episode do
     end
   end
 
+  describe ".update_episodes" do
+    it "ignores 409 errors for some episodes" do
+      episode1 = create(:episode, podcast: podcast)
+      episode2 = create(:episode, podcast: podcast)
+      apple_episode1 = build(:apple_episode, show: apple_show, feeder_episode: episode1)
+      apple_episode2 = build(:apple_episode, show: apple_show, feeder_episode: episode2)
+
+      # Mock the bridge_remote_and_retry method to return a mix of successful and 409 error responses
+      mock_response = [
+        {
+          "api_response" => {
+            "ok" => true,
+            "err" => false,
+            "val" => {"data" => {"id" => "123", "type" => "episodes"}}
+          },
+          "request_metadata" => {"apple_episode_id" => "123", "guid" => episode1.item_guid}
+        },
+        {
+          "api_response" => {
+            "ok" => false,
+            "err" => true,
+            "val" => {"data" => {"status" => "409", "title" => "Conflict"}}
+          },
+          "request_metadata" => {"apple_episode_id" => "456", "guid" => episode2.item_guid}
+        }
+      ]
+
+      apple_api.stub :bridge_remote, OpenStruct.new(code: "200", body: mock_response.to_json) do
+        apple_episode2.feeder_episode.apple_sync_log.destroy
+        apple_episode2.feeder_episode.reload
+
+        updated_episodes = Apple::Episode.update_episodes(apple_api, [apple_episode1, apple_episode2])
+
+        assert_equal 1, updated_episodes.length, "Expected one successfully updated episode"
+        assert_equal "123", updated_episodes.first.external_id, "Expected the successful episode to be updated"
+
+        # Verify that the 409 error was ignored and didn't cause the method to raise an error
+        apple_episode2.feeder_episode.reload
+        assert_nil apple_episode2.feeder_episode.apple_sync_log, "Expected no sync log update for the episode with 409 error"
+      end
+    end
+  end
+
   describe "#needs_media_version?" do
     let(:audio_version_id) {
     }

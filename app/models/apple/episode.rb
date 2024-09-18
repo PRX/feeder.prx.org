@@ -104,8 +104,13 @@ module Apple
     def self.update_episodes(api, episodes)
       return if episodes.empty?
 
-      episode_bridge_results = api.bridge_remote_and_retry!("updateEpisodes",
-        episodes.map(&:update_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
+      (episode_bridge_results, errs) =
+        api.bridge_remote_and_retry("updateEpisodes",
+          episodes.map(&:update_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE, ignore_errors: [Apple::Api::CONFLICT])
+
+      errs.each do |err|
+        Rails.logger.warn("Error updating episode", {error: err})
+      end
 
       upsert_sync_logs(episodes, episode_bridge_results)
     end

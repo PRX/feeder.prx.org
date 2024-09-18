@@ -7,6 +7,9 @@ module Apple
     DEFAULT_BATCH_SIZE = 5
     DEFAULT_WRITE_BATCH_SIZE = 1
 
+    NOT_FOUND = 404
+    CONFLICT = 409
+
     attr_accessor :provider_id, :key_id, :key, :bridge_url
 
     def self.from_env
@@ -172,8 +175,10 @@ module Apple
     end
 
     def ok_code(resp, ignore_errors: [])
-
-      return true if ignore_errors.map(&:to_i).include?(resp.code.to_i)
+      if ignore_errors.map(&:to_i).include?(resp.code.to_i)
+        Rails.logger.info("Apple::Api#ok_code ignoring error", {code: resp.code.to_i})
+        return true
+      end
 
       SUCCESS_CODES.include?(resp.code.to_i)
     end
@@ -224,8 +229,8 @@ module Apple
         parsed.select { |row_operation| row_operation["api_response"][key] == true }
       end
 
-      # ignore 404s if requested
-      errs = errs.reject { |err| ignore_errors.map(&:to_i).include?(err.dig("api_response", "val", "data", "status").to_i) } 
+      # ignore errors if requested
+      errs = errs.reject { |err| ignore_errors.map(&:to_i).include?(err.dig("api_response", "val", "data", "status").to_i) }
 
       (fixed_errs, remaining_errors) =
         if block_given?

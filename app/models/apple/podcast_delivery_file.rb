@@ -162,7 +162,7 @@ module Apple
     def self.get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
       delivery_files_response =
         api.bridge_remote_and_retry!("getPodcastDeliveryFiles",
-          get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries), batch_size: 1, ignore_errors: [404])
+          get_delivery_podcast_delivery_files_bridge_params(podcast_deliveries), batch_size: 1, ignore_errors: [Apple::Api::NOT_FOUND])
 
       # Rather than mangling and persisting the enumerated view of the delivery files from the podcast delivery
       # Instead, re-fetch the podcast delivery file from the non-list podcast delivery file resource
@@ -183,7 +183,7 @@ module Apple
           .flatten
           .compact
 
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", formatted_bridge_params, batch_size: 1, ignore_errors: [404])
+      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", formatted_bridge_params, batch_size: 1, ignore_errors: [Apple::Api::NOT_FOUND])
     end
 
     # Map across the podcast deliveries and get the bridge params for each
