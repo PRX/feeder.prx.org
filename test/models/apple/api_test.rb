@@ -222,7 +222,7 @@ describe Apple::Api do
     end
 
     it "can optionally treat a 404 as ok, excising the missing responses" do
-      assert_equal [[ok_row], []], api.unwrap_bridge_response(OpenStruct.new(code: "200", body: [not_found_row, ok_row].to_json), ignore_not_found: true)
+      assert_equal [[ok_row], []], api.unwrap_bridge_response(OpenStruct.new(code: "200", body: [not_found_row, ok_row].to_json), ignore_errors: [404])
     end
   end
 end
