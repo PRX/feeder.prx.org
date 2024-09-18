@@ -22,6 +22,8 @@ module Apple
 
     accepts_nested_attributes_for :key
 
+    after_create :publish_feeds
+
     def self.find_or_build_apple_feed(podcast)
       existing_feed = Feeds::AppleSubscription.find_by_podcast_id(podcast.id)
       existing_feed.present? ? existing_feed : Feeds::AppleSubscription.new(podcast_id: podcast.id)
@@ -63,6 +65,10 @@ module Apple
       pub.poll!
 
       mark_as_delivered!(pub)
+    end
+
+    def publish_feeds
+      podcast&.publish!
     end
 
     def not_default_feed
