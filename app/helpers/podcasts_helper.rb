@@ -10,10 +10,10 @@ module PodcastsHelper
   end
 
   def episode_description(episode)
-    episode.description_with_default.tap do |d|
-      if episode.podcast.has_apple_config?
-        d.truncate_bytes(4000, omission: "")
-      end
+    if episode.podcast.has_apple_config?
+      episode.description_safe
+    else
+      episode.description_with_default
     end
   end
 
