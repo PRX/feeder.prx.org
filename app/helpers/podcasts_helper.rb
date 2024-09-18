@@ -10,11 +10,11 @@ module PodcastsHelper
   end
 
   def episode_description(episode)
-    desc = episode.description_with_default
-    if episode.podcast.has_apple_config?
-      desc = episode.description.truncate_bytes(4000, omission: "")
+    episode.description_with_default.tap do |d|
+      if episode.podcast.has_apple_config?
+        d.truncate_bytes(4000, omission: "")
+      end
     end
-    desc
   end
 
   def full_contact(type, item)
