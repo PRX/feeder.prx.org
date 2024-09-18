@@ -310,7 +310,7 @@ class Episode < ApplicationRecord
   end
 
   def description_with_default
-    description || subtitle || title || ""
+    [description, subtitle, title].detect { |d| d.present? } || ""
   end
 
   def feeder_cdn_host
