@@ -6,7 +6,7 @@ class Feeds::AppleSubscription < Feed
 
   after_initialize :set_defaults
 
-  after_create :publish_feeds
+  after_create :republish_public_feed
 
   has_one :apple_config, class_name: "::Apple::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
@@ -33,8 +33,8 @@ class Feeds::AppleSubscription < Feed
     Feed.model_name
   end
 
-  def publish_feeds
-    podcast&.publish!
+  def republish_public_feed
+    PublishPublicFeedJob.perform_later(podcast)
   end
 
   def unchanged_defaults
