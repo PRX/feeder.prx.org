@@ -212,23 +212,6 @@ describe Episode do
     end
   end
 
-  describe "prx story" do
-    let(:story) do
-      msg = json_file(:prx_story_small)
-      body = JSON.parse(msg)
-      href = body.dig(:_links, :self, :href)
-      resource = PrxAccess::PrxHyperResource.new(root: "https://cms.prx.org/api/vi/")
-      link = PrxAccess::PrxHyperResource::Link.new(resource, href: href)
-      PrxAccess::PrxHyperResource.new_from(body: body, resource: resource, link: link)
-    end
-
-    it "can be found by story" do
-      create(:episode, prx_uri: "/api/v1/stories/80548")
-      episode = Episode.by_prx_story(story)
-      refute_nil episode
-    end
-  end
-
   describe "#published_by" do
     it "checks for published episodes with offset" do
       e1 = create(:episode, published_at: 10.minutes.ago)

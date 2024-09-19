@@ -17,8 +17,4 @@ class Api::BaseRepresenter < HalApi::Representer
       templated: true
     }]
   end
-
-  def summary_preview
-    sanitize_links_only(represented.description)
-  end
 end

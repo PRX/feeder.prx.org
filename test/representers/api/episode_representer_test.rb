@@ -34,7 +34,6 @@ describe Api::EpisodeRepresenter do
     episode.summary = 'summary has <a href="/">a link</a>'
     episode.description = '<b>tags</b> removed, <a href="/">links remain</a>'
     assert_equal json["summary"], episode.summary
-    assert_nil json["summaryPreview"]
     assert_equal json["description"], episode.description
   end
 
@@ -42,8 +41,6 @@ describe Api::EpisodeRepresenter do
     episode.summary = nil
     episode.description = '<b>tags</b> removed, <a href="/">links remain</a>'
     assert_nil json["summary"]
-    assert_equal json["summaryPreview"],
-      'tags removed, <a href="/">links remain</a>'
     assert_equal json["description"], episode.description
   end
 
@@ -52,10 +49,6 @@ describe Api::EpisodeRepresenter do
       "/api/v1/episodes/#{episode.guid}"
     assert_equal json["_links"]["prx:podcast"]["href"],
       "/api/v1/podcasts/#{episode.podcast.id}"
-    assert_equal json["_links"]["prx:story"]["href"],
-      "https://cms.prx.org#{episode.prx_uri}"
-    assert_equal json["_links"]["prx:audio-version"]["href"],
-      "https://cms.prx.org#{episode.prx_audio_version_uri}"
   end
 
   describe "with media" do
@@ -81,8 +74,7 @@ describe Api::EpisodeRepresenter do
       assert_nil json["readyMedia"]
     end
 
-    it "has an audio version" do
-      assert_equal json["audioVersion"], "One segment audio"
+    it "has a segment count" do
       assert_equal json["segmentCount"], 1
     end
 
