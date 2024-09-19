@@ -113,7 +113,7 @@ class PodcastRssImport < PodcastImport
     end
   rescue => err
     status_error!
-    unlock_podcast!
+    unlock_podcast_later!
     raise err
   end
 

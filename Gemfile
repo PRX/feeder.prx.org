@@ -47,6 +47,7 @@ gem "paranoia"
 gem "sanitize"
 
 # monitoring/logging
+gem "logger"
 gem "lograge"
 gem "newrelic_rpm"
 gem "ougai"
@@ -72,6 +73,7 @@ gem "aws-sdk-s3"
 gem "csv"
 gem "excon"
 gem "faraday", "~> 0.17.4"
+gem "fiddle"
 gem "hyperresource"
 gem "net-http"
 gem "parallel"
@@ -80,6 +82,7 @@ group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
   gem "dotenv-rails", "~> 2.0"
   gem "erb_lint", require: false
+  gem "ostruct"
   gem "pry"
   gem "pry-byebug"
   gem "standard"

@@ -10,7 +10,7 @@ class Transcript < ApplicationRecord
 
   validates :original_url, presence: true
 
-  validates :mime_type, inclusion: {in: %w[text/plain application/json application/pdf]}, allow_blank: true
+  validates :mime_type, inclusion: {in: %w[text/plain application/json]}, if: :status_complete?, allow_blank: true
 
   enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
 

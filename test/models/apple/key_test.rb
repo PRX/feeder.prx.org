@@ -46,5 +46,13 @@ describe Apple::Config do
       c = Apple::Key.new(key_pem_b64: Base64.encode64("hello"))
       assert_equal c.key_pem, "hello"
     end
+
+    it "requires correct format of apple key" do
+      k1 = build(:apple_key)
+      k2 = build(:apple_key, key_pem_b64: Base64.encode64("not a valid pem"))
+
+      assert k1.valid?
+      refute k2.valid?
+    end
   end
 end

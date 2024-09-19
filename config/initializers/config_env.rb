@@ -1,6 +1,4 @@
 # default env vars that may not be set
-ENV["CMS_HOST"] ||= "cms.prx.org"
-ENV["CRIER_HOST"] ||= "crier.prx.org"
 ENV["FEEDER_HOST"] ||= "feeder.prx.org"
 ENV["ID_HOST"] ||= "id.prx.org"
 ENV["META_HOST"] ||= "meta.prx.org"

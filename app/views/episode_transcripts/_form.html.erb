@@ -1,0 +1,23 @@
+<% data = {controller: "unsaved disable", unsaved_changed_value: episode.changed? || episode.transcript&.changed?, unsaved_confirm_value: t(".confirm")} %>
+
+<%= form_with(model: episode, url: episode_transcripts_path(episode), html: {autocomplete: "off"}, data: data) do |form| %>
+  <%# first button in form must be a submit, for enter key to work %>
+  <%= form.submit class: "d-none" %>
+
+  <%= turbo_frame_tag "episode-form-transcript", data: {controller: "media-upload"} do %>
+    <div class="container">
+      <div class="row mt-4 mx-2">
+        <div class="col-lg-8">
+          <div class="row">
+            <%= render "form_transcript", episode: episode, form: form %>
+          </div>
+        </div>
+        <div class="col-lg-4 d-grid align-content-start gap-3">
+          <%= render "form_status", episode: episode, form: form %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%= render "layouts/stale_record_modal", form: form, discard_path: episode_transcripts_path(episode) %>
+<% end %>

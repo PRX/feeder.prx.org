@@ -100,8 +100,8 @@ FactoryBot.define do
     Task { "Inspect" }
     Inspection do
       {
-        Extension: "pdf",
-        MIME: "application/pdf",
+        Extension: "txt",
+        MIME: "text/plain",
         Size: "60572"
       }
     end

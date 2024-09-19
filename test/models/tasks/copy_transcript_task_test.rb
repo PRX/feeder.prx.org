@@ -25,7 +25,7 @@ describe Tasks::CopyTranscriptTask do
       assert_equal task.transcript.path, t[:ObjectKey]
       assert_equal "REPLACE", t[:ContentType]
       assert_equal "max-age=86400", t[:Parameters][:CacheControl]
-      assert_equal "attachment; filename=\"sampletranscript.pdf\"", t[:Parameters][:ContentDisposition]
+      assert_equal "attachment; filename=\"sampletranscript.txt\"", t[:Parameters][:ContentDisposition]
     end
 
     it "escapes http source urls" do
@@ -61,7 +61,7 @@ describe Tasks::CopyTranscriptTask do
 
       task.update(status: "complete")
       assert_equal 60572, task.transcript.file_size
-      assert_equal "application/pdf", task.transcript.mime_type
+      assert_equal "text/plain", task.transcript.mime_type
     end
 
     it "handles validation errors" do

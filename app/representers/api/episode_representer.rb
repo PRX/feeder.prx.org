@@ -25,8 +25,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :description
   property :content
   property :summary
-  property :summary_preview,
-    exec_context: :decorator, if: ->(_o) { !represented.summary }
   property :season_number
   property :episode_number
   property :itunes_type
@@ -45,7 +43,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     property :author_email, as: :email
   end
 
-  property :audio_version # NOTE: deprecated - delete when CMS goes away
   property :segment_count
   property :media_version_id, as: :media_version, writeable: false
 
@@ -73,14 +70,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
 
   link rel: :podcast, writeable: true do
     api_podcast_path(represented.podcast) if represented.id && represented.podcast
-  end
-
-  link :story do
-    URI.join(cms_root, represented.prx_uri).to_s if represented.prx_uri
-  end
-
-  link :audio_version do
-    URI.join(cms_root, represented.prx_audio_version_uri).to_s if represented.prx_audio_version_uri
   end
 
   link :podcast_feed do

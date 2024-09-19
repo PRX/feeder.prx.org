@@ -19,7 +19,6 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :subtitle
   property :description
   property :summary
-  property :summary_preview, exec_context: :decorator, if: ->(_o) { represented.summary.blank? }
   property :itunes_block
 
   property :explicit
@@ -75,11 +74,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
     end
   end
 
-  link :series do
-    URI.join(cms_root, represented.prx_uri).to_s if represented.prx_uri
-  end
-
   link :account do
-    URI.join(cms_root, represented.prx_account_uri).to_s if represented.prx_account_uri
+    URI.join(id_root, represented.prx_account_uri).to_s if represented.prx_account_uri
   end
 end

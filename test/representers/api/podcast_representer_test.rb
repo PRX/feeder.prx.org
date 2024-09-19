@@ -42,7 +42,6 @@ describe Api::PodcastRepresenter do
 
   it "has links" do
     assert_equal json["_links"]["self"]["href"], "/api/v1/podcasts/#{podcast.id}"
-    assert_equal json["_links"]["prx:series"]["href"], "https://cms.prx.org#{podcast.prx_uri}"
-    assert_equal json["_links"]["prx:account"]["href"], "https://cms.prx.org#{podcast.prx_account_uri}"
+    assert_equal json["_links"]["prx:account"]["href"], "https://id.prx.org#{podcast.prx_account_uri}"
   end
 end

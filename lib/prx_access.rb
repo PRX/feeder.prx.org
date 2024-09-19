@@ -83,7 +83,7 @@ module PrxAccess
   end
 
   def api(options = {})
-    opts = {root: cms_root, headers: default_headers}.merge(options)
+    opts = {root: id_root, headers: default_headers}.merge(options)
     if (account = opts.delete(:account))
       token = get_account_token(account)
       opts[:headers]["Authorization"] = "Bearer #{token}"
@@ -92,7 +92,7 @@ module PrxAccess
     PrxHyperResource.new(opts)
   end
 
-  def api_resource(body, root = cms_root)
+  def api_resource(body, root = id_root)
     href = body.dig(:_links, :self, :href)
     resource = api(root: root)
     link = PrxHyperResource::Link.new(resource, href: href)

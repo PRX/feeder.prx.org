@@ -5,6 +5,50 @@ describe Feeds::AppleSubscription do
   let(:feed_1) { podcast.default_feed }
   let(:apple_feed) { build(:apple_feed, podcast: podcast) }
 
+  describe "#set_defaults" do
+    let(:default_feed) { build_stubbed(:feed, display_episodes_count: 99) }
+    let(:podcast) { build_stubbed(:podcast, default_feed: default_feed) }
+
+    it "sets default values for apple subscription feeds" do
+      f = Feeds::AppleSubscription.new(podcast: podcast)
+
+      assert_equal Feeds::AppleSubscription::DEFAULT_FEED_SLUG, f.slug
+      assert_equal Feeds::AppleSubscription::DEFAULT_TITLE, f.title
+      assert_equal Feeds::AppleSubscription::DEFAULT_AUDIO_FORMAT, f.audio_format
+      assert_equal 99, f.display_episodes_count
+      assert_equal Feeds::AppleSubscription::DEFAULT_ZONES, f.include_zones
+      assert_equal true, f.private
+
+      assert_equal 1, f.tokens.length
+      assert_equal Feeds::AppleSubscription::DEFAULT_TITLE, f.tokens[0].label
+    end
+
+    it "does not override most existing values" do
+      t = FeedToken.new(label: "l1", token: "t1")
+      f = Feeds::AppleSubscription.new(
+        podcast: podcast,
+        slug: "foo",
+        title: "bar",
+        audio_format: {f: "baz"},
+        display_episodes_count: 88,
+        include_zones: ["something"],
+        private: false,
+        tokens: [t]
+      )
+
+      assert_equal "foo", f.slug
+      assert_equal "bar", f.title
+      assert_equal ({"f" => "baz"}), f.audio_format
+      assert_equal 88, f.display_episodes_count
+      assert_equal ["something"], f.include_zones
+      assert_equal true, f.private
+
+      assert_equal 1, f.tokens.length
+      assert_equal "l1", f.tokens[0].label
+      assert_equal "t1", f.tokens[0].token
+    end
+  end
+
   describe "#valid?" do
     it "cannot change the default properties once saved" do
       apple_feed.title = "new apple feed"
@@ -46,6 +90,11 @@ describe Feeds::AppleSubscription do
 
     it "must be a private feed" do
       apple_feed.private = false
+      refute apple_feed.valid?
+    end
+
+    it "must have a token" do
+      apple_feed.tokens = []
       refute apple_feed.valid?
     end
   end
