@@ -58,7 +58,6 @@ PRX_SECRET=
 ASSET_HOST=
 AUGURY_HOST=inventory.dovetail.staging.prx.tech
 CASTLE_HOST=castle.staging.prx.tech
-CMS_HOST=cms.staging.prx.tech
 DOVETAIL_HOST=dovetail.staging.prxu.org
 FEEDER_HOST=feeder.staging.prx.tech
 FEEDER_CDN_HOST=f-staging.prxu.org

@@ -1,7 +1,6 @@
 require "simplecov"
 SimpleCov.start "rails"
 
-ENV["CMS_HOST"] = "cms.prx.org"
 ENV["FEEDER_HOST"] = "feeder.prx.org"
 ENV["FEEDER_CDN_HOST"] = "f.prxu.org"
 ENV["FEEDER_CDN_PRIVATE_HOST"] = "p.prxu.org"
@@ -56,23 +55,6 @@ end
 
 def test_file(path)
   File.read(File.dirname(__FILE__) + path)
-end
-
-def stub_requests_to_prx_cms
-  stub_request(:get, "https://cms.prx.org/api/v1")
-    .to_return(status: 200, body: json_file(:prx_root), headers: {})
-
-  stub_request(:get, "https://cms.prx.org/api/v1/stories/87683")
-    .to_return(status: 200, body: json_file(:prx_story), headers: {})
-
-  stub_request(:get, "https://cms.prx.org/api/v1/accounts/45139")
-    .to_return(status: 200, body: json_file(:prx_account), headers: {})
-
-  stub_request(:get, "https://cms.prx.org/api/v1/audio_files/451642")
-    .to_return(status: 200, body: json_file(:prx_audio_file), headers: {})
-
-  stub_request(:get, "https://cms.prx.org/api/v1/story_images/203874")
-    .to_return(status: 200, body: json_file(:prx_story_image), headers: {})
 end
 
 class SnsMock
