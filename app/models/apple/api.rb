@@ -7,6 +7,9 @@ module Apple
     DEFAULT_BATCH_SIZE = 5
     DEFAULT_WRITE_BATCH_SIZE = 1
 
+    NOT_FOUND = 404
+    CONFLICT = 409
+
     attr_accessor :provider_id, :key_id, :key, :bridge_url
 
     def self.from_env
@@ -171,8 +174,11 @@ module Apple
       true
     end
 
-    def ok_code(resp, ignore_not_found: false)
-      return true if ignore_not_found && resp.code.to_i == 404
+    def ok_code(resp, ignore_errors: [])
+      if ignore_errors.map(&:to_i).include?(resp.code.to_i)
+        Rails.logger.info("Apple::Api#ok_code ignoring error", {code: resp.code.to_i})
+        return true
+      end
 
       SUCCESS_CODES.include?(resp.code.to_i)
     end
@@ -206,14 +212,14 @@ module Apple
       resp
     end
 
-    def unwrap_response(resp, ignore_not_found: false)
-      raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp, ignore_not_found: ignore_not_found)
+    def unwrap_response(resp, ignore_errors: [])
+      raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp, ignore_errors: ignore_errors)
 
       JSON.parse(resp.body)
     end
 
-    def unwrap_bridge_response(resp, ignore_not_found: false)
-      raise Apple::ApiError.new("Apple Api Bridge Error", resp) unless ok_code(resp)
+    def unwrap_bridge_response(resp, ignore_errors: [])
+      raise Apple::ApiError.new("Apple Api Bridge Error", resp) unless ok_code(resp, ignore_errors: ignore_errors)
 
       parsed = JSON.parse(resp.body)
 
@@ -223,8 +229,8 @@ module Apple
         parsed.select { |row_operation| row_operation["api_response"][key] == true }
       end
 
-      # ignore 404s if requested
-      errs = errs.reject { |err| err.dig("api_response", "val", "data", "status") == 404 } if ignore_not_found
+      # ignore errors if requested
+      errs = errs.reject { |err| ignore_errors.map(&:to_i).include?(err.dig("api_response", "val", "data", "status").to_i) }
 
       (fixed_errs, remaining_errors) =
         if block_given?
@@ -257,10 +263,10 @@ module Apple
       unwrap_bridge_response(resp, &block)
     end
 
-    def bridge_remote_and_retry(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE, ignore_not_found: false)
+    def bridge_remote_and_retry(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE, ignore_errors: [])
       resp = bridge_remote(bridge_resource, bridge_options, batch_size: batch_size)
 
-      unwrap_bridge_response(resp, ignore_not_found: ignore_not_found) do |row_operation_errors|
+      unwrap_bridge_response(resp, ignore_errors: ignore_errors) do |row_operation_errors|
         retry_bridge_api_operation(bridge_resource, [], row_operation_errors)
       end
     end
