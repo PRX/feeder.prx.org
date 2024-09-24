@@ -16,11 +16,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
     xml.copyright @podcast.copyright unless @podcast.copyright.blank?
     xml.webMaster @podcast.web_master unless @podcast.web_master.blank?
 
-    if @feed.description.present?
-      xml.description { xml.cdata!(@feed.description) }
-    elsif @podcast.description.present?
-      xml.description { xml.cdata!(@podcast.description) }
-    end
+    xml.description { xml.cdata!(feed_description(@feed, @podcast)) }
 
     xml.managingEditor @podcast.managing_editor unless @podcast.managing_editor.blank?
 
@@ -112,7 +108,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
         xml.title(ep.title)
         xml.pubDate ep.published_at.utc.rfc2822
         xml.link ep.url || ep.enclosure_url(@feed)
-        xml.description { xml.cdata!(ep.description_with_default) }
+        xml.description { xml.cdata!(episode_description(ep)) }
         # TODO: may not reflect the content_type/file_size of replaced media
         xml.enclosure(url: ep.enclosure_url(@feed), type: ep.media_content_type(@feed), length: ep.media_file_size) if ep.media?
 

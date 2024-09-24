@@ -15,6 +15,7 @@ class Episode < ApplicationRecord
   include ReleaseEpisodes
 
   MAX_SEGMENT_COUNT = 10
+  MAX_DESCRIPTION_BYTES = 4000
   VALID_ITUNES_TYPES = %w[full trailer bonus]
   DROP_DATE = "COALESCE(episodes.published_at, episodes.released_at)"
 
@@ -42,7 +43,7 @@ class Episode < ApplicationRecord
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
-  validates :description, bytesize: {maximum: 4000}, if: -> { strict_validations && description_changed? }
+  validates :description, bytesize: {maximum: MAX_DESCRIPTION_BYTES}, if: -> { strict_validations && description_changed? }
   validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
   alias_error_messages :item_guid, :original_guid
@@ -310,8 +311,13 @@ class Episode < ApplicationRecord
     self.original_guid = original_guid.strip if !original_guid.blank? && original_guid_changed?
   end
 
+  # This value is safe to use in the RSS and integrations
   def description_with_default
-    description || subtitle || title || ""
+    [description, subtitle, title].detect { |d| d.present? } || ""
+  end
+
+  def description_safe
+    description_with_default.truncate_bytes(MAX_DESCRIPTION_BYTES, omission: "")
   end
 
   def feeder_cdn_host

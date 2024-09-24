@@ -73,6 +73,10 @@ class Podcast < ApplicationRecord
     end
   end
 
+  def has_apple_feed?
+    feeds.apple.exists?
+  end
+
   def reload(options = nil)
     remove_instance_variable(:@apple_config) if defined?(@apple_config)
     super

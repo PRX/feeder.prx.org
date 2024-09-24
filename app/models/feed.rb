@@ -54,6 +54,7 @@ class Feed < ApplicationRecord
   validates :enclosure_prefix, http_url: true
   validates :display_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :display_full_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
+  validates :description, bytesize: {maximum: Episode::MAX_DESCRIPTION_BYTES}
 
   after_initialize :set_defaults
   before_validation :sanitize_text

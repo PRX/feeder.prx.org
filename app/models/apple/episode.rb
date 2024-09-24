@@ -295,7 +295,7 @@ module Apple
             guid: guid,
             title: feeder_episode.title,
             originalReleaseDate: feeder_episode.published_at.utc.iso8601,
-            description: feeder_episode.description_with_default,
+            description: feeder_episode.description_safe,
             websiteUrl: feeder_episode.url,
             explicit: explicit,
             episodeNumber: feeder_episode.episode_number,

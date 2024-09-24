@@ -39,6 +39,25 @@ describe Episode do
     assert e.valid?
   end
 
+  it "has a safe description for integrations" do
+    e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
+    e.description = "a" * 4001
+    assert e.description.bytesize == 4001
+    assert e.description_safe.bytesize == 4000
+  end
+
+  it "has a description with fallbacks" do
+    e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
+    e.title = "title"
+    e.subtitle = nil
+    e.description = ""
+    assert e.description_with_default == "title"
+    e.subtitle = "sub"
+    assert e.description_with_default == "sub"
+    e.description = "desc"
+    assert e.description_with_default == "desc"
+  end
+
   it "validates unique original guids" do
     e1 = create(:episode, original_guid: "original")
     e2 = build(:episode, original_guid: "original", podcast: e1.podcast)
