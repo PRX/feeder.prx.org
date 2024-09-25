@@ -44,7 +44,7 @@ class PublishingPipelineState < ApplicationRecord
   belongs_to :publishing_queue_item
   belongs_to :podcast, -> { with_deleted }
 
-  enum status: [
+  enum :status, [
     :created,
     :started,
     :published_rss,

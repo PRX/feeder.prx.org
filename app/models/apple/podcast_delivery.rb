@@ -20,7 +20,7 @@ module Apple
     alias_method :container, :podcast_container
     alias_method :container=, :podcast_container=
 
-    enum status: {
+    enum :status, {
       awaiting_upload: "AWAITING_UPLOAD",
       completed: "COMPLETED",
       failed: "FAILED"

@@ -23,7 +23,7 @@ class PublishingQueueItem < ApplicationRecord
   has_one :most_recent_state, -> { order(id: :desc) }, class_name: "PublishingPipelineState"
   belongs_to :podcast, -> { with_deleted }
 
-  enum last_pipeline_state: PublishingPipelineState.statuses
+  enum :last_pipeline_state, PublishingPipelineState.statuses
 
   # in the style of the delivery logs in the exchange
   def self.delivery_status
