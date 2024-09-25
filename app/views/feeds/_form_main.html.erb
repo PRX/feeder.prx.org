@@ -51,13 +51,15 @@
   </div>
 </div>
 
-<div class="col-6 mb-4">
-  <div class="form-floating input-group">
-    <%= form.select :episode_offset_seconds, episode_offset_options, include_blank: true %>
-    <%= form.label :episode_offset_seconds %>
-    <%= field_help_text t(".help.episode_offset_seconds") %>
+<% unless feed.default? %>
+  <div class="col-6 mb-4">
+    <div class="form-floating input-group">
+      <%= form.select :episode_offset_seconds, episode_offset_options, include_blank: true %>
+      <%= form.label :episode_offset_seconds %>
+      <%= field_help_text t(".help.episode_offset_seconds") %>
+    </div>
   </div>
-</div>
+<% end %>
 
 <div class="col-6 mb-4">
   <div class="form-floating input-group">
