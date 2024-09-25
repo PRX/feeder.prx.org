@@ -8,6 +8,6 @@ describe StartPublishingPipelineJob do
       StartPublishingPipelineJob.perform_now(create(:podcast))
     end
 
-    mock.verify
+    assert mock.verify
   end
 end

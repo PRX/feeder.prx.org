@@ -84,11 +84,11 @@ describe Tasks::CopyMediaTask do
 
       task.media_resource.episode.stub(:publish!, publish) do
         task.update(status: "created")
-        publish.verify
+        assert publish.verify
 
         publish.expect(:call, nil)
         task.update(status: "complete")
-        publish.verify
+        assert publish.verify
       end
     end
 
@@ -101,7 +101,7 @@ describe Tasks::CopyMediaTask do
       task.stub(:media_resource, uncut) do
         uncut.stub(:slice_contents, slice) do
           task.update_media_resource
-          slice.verify
+          assert slice.verify
         end
       end
     end
@@ -167,6 +167,7 @@ describe Tasks::CopyMediaTask do
     it "does not throw errors when owner is missing on callback" do
       task.owner = nil
       task.update(status: "complete")
+      assert_equal "complete", task.status
     end
 
     it "handles validation errors" do

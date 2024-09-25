@@ -105,6 +105,7 @@ describe Apple::Publisher do
         Apple::Episode.stub(:create_episodes, mock) do
           apple_publisher.sync_episodes!([new_ep])
         end
+        assert mock.verify
       end
     end
 
@@ -116,6 +117,7 @@ describe Apple::Publisher do
         Apple::Episode.stub(:update_episodes, mock) do
           apple_publisher.sync_episodes!([draft_ep])
         end
+        assert mock.verify
       end
     end
   end
@@ -350,7 +352,7 @@ describe Apple::Publisher do
         apple_publisher.publish_drafting!([ep])
       end
 
-      mock.verify
+      assert mock.verify
     end
   end
 
@@ -363,7 +365,7 @@ describe Apple::Publisher do
         apple_publisher.wait_for_upload_processing([])
       end
 
-      mock.verify
+      assert mock.verify
     end
   end
 

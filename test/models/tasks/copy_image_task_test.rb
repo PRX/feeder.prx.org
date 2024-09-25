@@ -57,11 +57,11 @@ describe Tasks::CopyImageTask do
 
       task.image.episode.stub(:publish!, publish) do
         task.update(status: "created")
-        publish.verify
+        assert publish.verify
 
         publish.expect(:call, nil)
         task.update(status: "complete")
-        publish.verify
+        assert publish.verify
       end
     end
 

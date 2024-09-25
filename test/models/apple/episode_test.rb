@@ -229,15 +229,9 @@ describe Apple::Episode do
       assert_equal "audio.flac", apple_episode.enclosure_filename
     end
 
-    it "calls into the episode with the private feed" do
-      expecter = ->(feed) do
-        assert_equal(feed, apple_episode.private_feed)
-      end
-
-      # make sure the episode is called with the private feed
-      apple_episode.feeder_episode.stub(:enclosure_filename, expecter) do
-        apple_episode.enclosure_filename
-      end
+    it "uses the private feed enclosure" do
+      private_feed.enclosure_template = "http://foo.bar/any/where/whatev{feed_extension}"
+      assert_equal "whatev.flac", apple_episode.enclosure_filename
     end
   end
 
@@ -259,7 +253,7 @@ describe Apple::Episode do
         end
       end
 
-      mock.verify
+      assert mock.verify
     end
   end
 
@@ -274,7 +268,7 @@ describe Apple::Episode do
         end
       end
 
-      mock.verify
+      assert mock.verify
     end
   end
 

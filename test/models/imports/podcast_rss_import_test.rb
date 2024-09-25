@@ -99,10 +99,6 @@ describe PodcastRssImport do
     _(importer.episode_imports.count).must_equal 2
   end
 
-  it "imports a feed" do
-    importer.import!
-  end
-
   it "handles audio and video in episodes" do
     importer.url = "http://feeds.prx.org/feed_with_video"
     importer.import!
@@ -131,11 +127,6 @@ describe PodcastRssImport do
     it "must have podcast set" do
       importer.podcast = nil
       _ { importer.import! }.must_raise("No podcast for import of episodes only")
-    end
-
-    it "imports with a podcast" do
-      importer.podcast = podcast
-      importer.import!
     end
   end
 
