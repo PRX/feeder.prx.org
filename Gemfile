@@ -75,6 +75,7 @@ gem "excon"
 gem "faraday", "~> 0.17.4"
 gem "fiddle"
 gem "hyperresource"
+gem "mutex_m"
 gem "net-http"
 gem "parallel"
 

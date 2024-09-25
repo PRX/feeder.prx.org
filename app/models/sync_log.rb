@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class SyncLog < ApplicationRecord
-  enum feeder_type: {
+  enum :feeder_type, {
     feeds: "feeds",
     episodes: "episodes",
     podcast_containers: "containers",

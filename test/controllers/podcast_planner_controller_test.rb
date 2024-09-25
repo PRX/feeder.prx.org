@@ -9,8 +9,8 @@ class PodcastPlannerControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "should update podcast_planner" do
-    # patch podcast_planner_url(@podcast), params: {podcast_planner: {}}
-    # assert_redirected_to podcast_planner_url(@podcast)
-  end
+  # test "should update podcast_planner" do
+  #   patch podcast_planner_url(@podcast), params: {podcast_planner: {}}
+  #   assert_redirected_to podcast_planner_url(@podcast)
+  # end
 end

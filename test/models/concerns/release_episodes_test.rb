@@ -129,7 +129,7 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
       PublishingPipelineState.stub(:expire_pipelines!, obj) do
         Podcast.release!
       end
-      obj.verify
+      assert obj.verify
     end
 
     it "retries latest publishing pipelines with errors" do
@@ -138,7 +138,7 @@ class ReleaseEpisodesTest < ActiveSupport::TestCase
       PublishingPipelineState.stub(:retry_failed_pipelines!, obj) do
         Podcast.release!
       end
-      obj.verify
+      assert obj.verify
     end
   end
 end

@@ -99,11 +99,11 @@ describe Content do
 
       c1.episode.stub(:publish!, publish) do
         c1.update(status: "processing")
-        publish.verify
+        assert publish.verify
 
         publish.expect(:call, nil)
         c1.update(status: "complete")
-        publish.verify
+        assert publish.verify
       end
     end
   end

@@ -98,7 +98,7 @@ describe Task do
 
         task.stub(:porter_start!, fake) do
           task.start!
-          fake.verify
+          assert fake.verify
         end
       end
     end

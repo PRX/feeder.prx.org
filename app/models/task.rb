@@ -5,7 +5,7 @@ class Task < ApplicationRecord
   include PorterCallback
   include PorterUtils
 
-  enum status: [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
+  enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled]
 
   serialize :options, coder: HashSerializer
   def options

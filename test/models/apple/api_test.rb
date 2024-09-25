@@ -184,13 +184,16 @@ describe Apple::Api do
       mock.expect(:call, nil, [{"api_response" => {"ok" => false, "err" => true, "val" => {"not" => "found"}}}])
       api.stub(:log_response_error, mock) { api.response(http_response) }
 
-      mock.verify
+      assert mock.verify
     end
 
     it "does not call the log error method when there is no error" do
       http_response = OpenStruct.new(code: "299", body: {so: :good}.to_json)
 
-      api.stub(:log_response_error, ->(**) { raise "should not be called" }) { api.response(http_response) }
+      api.stub(:log_response_error, ->(**) { raise "should not be called" }) do
+        res = api.response(http_response)
+        assert res[:api_response][:ok]
+      end
     end
   end
 

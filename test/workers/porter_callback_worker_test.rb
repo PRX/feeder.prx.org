@@ -4,9 +4,13 @@ describe PorterCallbackWorker do
   let(:worker) { PorterCallbackWorker.new }
 
   it "calls task" do
-    job = Minitest::Mock.new
-    Task.stub(:callback, true) do
-      worker.perform({}, job)
+    mock = Minitest::Mock.new
+    mock.expect(:call, nil, ["some-data"])
+
+    Task.stub(:callback, mock) do
+      worker.perform({}, "some-data")
     end
+
+    assert mock.verify
   end
 end
