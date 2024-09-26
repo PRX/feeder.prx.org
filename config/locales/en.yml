@@ -649,7 +649,7 @@ en:
         title: MP3 Not Provided
       processing:
         hint: Processing
-        still_processing: Your file is still being processed. Thank you for waiting.
+        still_processing: Processing is taking longer than expected. Thank you for waiting.
     segmenter:
       modal:
         label:
