@@ -61,7 +61,7 @@ class Podcast < ApplicationRecord
   end
 
   def set_guid!
-    update(guid: guid) if set_guid
+    update!(guid: guid) if set_guid
   end
 
   def set_guid
