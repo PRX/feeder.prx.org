@@ -1,33 +1,34 @@
 module Megaphone
   class Podcast
     include ActiveModel::Model
-    attr_accessor :feed, :api
+    attr_accessor :feed
+    attr_writer :api
 
     # Required attributes for a create
     # external_id is not required by megaphone, but we need it to be set!
-    CREATE_REQUIRED = %w(title subtitle summary itunes_categories language external_id)
+    CREATE_REQUIRED = %w[title subtitle summary itunes_categories language external_id]
 
     # Other attributes available on create
-    CREATE_ATTRIBUTES = CREATE_REQUIRED + %w(link copyright author background_image_file_url
+    CREATE_ATTRIBUTES = CREATE_REQUIRED + %w[link copyright author background_image_file_url
       explicit owner_name owner_email slug original_rss_url itunes_identifier podtrac_enabled
-      google_play_identifier episode_limit podcast_type advertising_tags excluded_categories)
+      google_play_identifier episode_limit podcast_type advertising_tags excluded_categories]
 
     # Update also allows the span opt in
-    UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES + %w(span_opt_in)
+    UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES + %w[span_opt_in]
 
     # Deprecated, so we shouldn't rely on these, but they show up as attributes
-    DEPRECATED = %w(category redirect_url itunes_active redirected_at itunes_rating
-      google_podcasts_identifier stitcher_identifier)
+    DEPRECATED = %w[category redirect_url itunes_active redirected_at itunes_rating
+      google_podcasts_identifier stitcher_identifier]
 
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
-    OTHER_ATTRIBUTES = %w(id created_at updated_at image_file uid network_id recurring_import
+    OTHER_ATTRIBUTES = %w[id created_at updated_at image_file uid network_id recurring_import
       episodes_count spotify_identifier default_ad_settings iheart_identifier feed_url
-      default_pre_count default_post_count cloned_feed_urls ad_free_feed_urls main_feed ad_free)
+      default_pre_count default_post_count cloned_feed_urls ad_free_feed_urls main_feed ad_free]
 
     ALL_ATTRIBUTES = (UPDATE_ATTRIBUTES + DEPRECATED + OTHER_ATTRIBUTES)
 
-    attr_accessor *ALL_ATTRIBUTES
+    attr_accessor(*ALL_ATTRIBUTES)
 
     validates_presence_of CREATE_REQUIRED
 
@@ -36,7 +37,7 @@ module Megaphone
     validates_absence_of :id, on: :create
 
     # initialize from attributes
-    def initialize(attributes={})
+    def initialize(attributes = {})
       super
     end
 
@@ -69,7 +70,7 @@ module Megaphone
         episode_limit: feed.display_episodes_count,
         external_id: podcast.guid,
         podcast_type: podcast.itunes_type,
-        advertising_tags: podcast.categories,
+        advertising_tags: podcast.categories
         # set in augury, can we get it here?
         # excluded_categories: ????? TBD,
       }
@@ -85,7 +86,7 @@ module Megaphone
       Megaphone::PagedCollection.new(Megaphone::Podcast, result)
     end
 
-    def find_by_megaphone_id(mpid = self.id)
+    def find_by_megaphone_id(mpid = id)
       result = api.get("podcasts/#{mpid}")
       (result[:items] || []).first
     end

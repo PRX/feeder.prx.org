@@ -4,8 +4,8 @@ module Megaphone
 
     DEFAULT_ENDPOINT = "https://cms.megaphone.fm/api"
 
-    PAGINATION_HEADERS = %w(link x-per-page x-page x-total)
-    PAGINATION_LINKS = %w(first last next previous)
+    PAGINATION_HEADERS = %w[link x-per-page x-page x-total]
+    PAGINATION_LINKS = %w[first last next previous]
 
     def initialize(token:, network_id:, endpoint_url: nil)
       @token = token
@@ -13,11 +13,11 @@ module Megaphone
       @endpoint_url = endpoint_url
     end
 
-    def get(path, params={}, headers={})
+    def get(path, params = {}, headers = {})
       request = {url: join_url(path), headers: headers, params: params}
       response = get_url(request)
       data = incoming_body_filter(response.body)
-      if data.kind_of?(Array)
+      if data.is_a?(Array)
         pagination = pagination_from_headers(response.env.response_headers)
         {items: data, pagination: pagination, request: request, response: response}
       else
@@ -25,15 +25,15 @@ module Megaphone
       end
     end
 
-    def post(path, body, headers={})
-      response = connection({url: join_url(path), headers: headers}).post() do |req|
+    def post(path, body, headers = {})
+      response = connection({url: join_url(path), headers: headers}).post do |req|
         req.body = outgoing_body_filter(body)
       end
       incoming_body_filter(response.body)
     end
 
-    def put(path, body, headers={})
-      connection({url: join_url(path), headers: headers}).put() do |req|
+    def put(path, body, headers = {})
+      connection({url: join_url(path), headers: headers}).put do |req|
         req.body = outgoing_body_filter(body)
       end
       incoming_body_filter(response.body)
@@ -47,7 +47,7 @@ module Megaphone
 
     def pagination_from_headers(headers)
       paging = (headers || {}).slice(*PAGINATION_HEADERS).transform_keys do |h|
-        h.sub(/^x-/, "").gsub(/-/, "_").to_sym
+        h.sub(/^x-/, "").tr("-", "_").to_sym
       end
 
       [:page, :per_page, :total].each do |k|
@@ -63,16 +63,15 @@ module Megaphone
       return {} unless link_headers.present?
       collection = LinkHeaderParser.parse(link_headers, base: mp.api.api_base)
       links = collection.group_by_relation_type
-      PAGINATION_LINKS.inject({}) do |map, key|
-        if link = (links[key] || []).first
+      PAGINATION_LINKS.each_with_object({}) do |key, map|
+        if (link = (links[key] || []).first)
           map[key] = link.target_uri
         end
-        map
       end
     end
 
     def get_url(options)
-      response = connection(options).get()
+      connection(options).get
     end
 
     def join_url(*path)
@@ -85,7 +84,7 @@ module Megaphone
     end
 
     def transform_keys(result)
-      if result.kind_of?(Array)
+      if result.is_a?(Array)
         result.map { |r| transform_keys(r) }
       elsif result.respond_to?(:deep_transform_keys)
         result.deep_transform_keys { |key| key.to_s.underscore.to_sym }
