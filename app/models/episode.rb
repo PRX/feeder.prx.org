@@ -366,4 +366,8 @@ class Episode < ApplicationRecord
       errors.add(:base, :media_not_ready, message: "media not ready")
     end
   end
+
+  def transcript?
+    transcript.present?
+  end
 end

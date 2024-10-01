@@ -219,7 +219,6 @@ describe FeedBuilder do
 
   it "displays the transcript attributes" do
     rss = builder.to_feed_xml
-    binding.pry
     _(rss).must_include "<podcast:transcript"
   end
 end
