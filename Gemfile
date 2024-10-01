@@ -73,7 +73,7 @@ gem "aws-sdk-s3"
 gem "csv"
 gem "excon"
 gem "faraday", "~> 0.17.4"
-gem 'link-header-parser', '~> 6.0', '>= 6.0.1'
+gem "link-header-parser", "~> 6.0", ">= 6.0.1"
 gem "fiddle"
 gem "hyperresource"
 gem "mutex_m"
