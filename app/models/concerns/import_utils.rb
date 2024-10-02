@@ -2,8 +2,10 @@ require "active_support/concern"
 require "prx_access"
 require "net/http"
 require "uri"
+require "text_sanitizer"
 
 module ImportUtils
+  include TextSanitizer
   extend ActiveSupport::Concern
 
   class HttpError < StandardError
@@ -110,9 +112,7 @@ module ImportUtils
   end
 
   def sanitize_html(text)
-    return nil if text.blank?
-    sanitizer = Rails::Html::WhiteListSanitizer.new
-    sanitizer.sanitize(Loofah.fragment(text).scrub!(:prune).to_s).strip
+    sanitize_white_list(text)
   end
 
   def files_match?(file, url)
