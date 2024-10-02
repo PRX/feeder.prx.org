@@ -46,4 +46,9 @@ describe TextSanitizer do
       "<caption></caption>\n</tbody>\n<tfoot></tfoot>\n</table>"
     assert_equal model.sanitize_white_list(text), text
   end
+
+  it "cleans up white space" do
+    text = " text, \r \n \r more\n     \ntext, and \r   words\n \n \r\r \n"
+    assert_equal clean_whitespace(text), "text,\nmore\ntext, and\nwords"
+  end
 end

@@ -8,7 +8,7 @@ module TextSanitizer
     return nil if text.blank?
     sanitizer = Rails::Html::WhiteListSanitizer.new
     text = sanitizer.sanitize(Loofah.fragment(text).scrub!(:prune).to_s)
-    cleanup_text(text)
+    clean_whitespace(text)
   end
 
   def sanitize_links_only(text)
@@ -18,14 +18,14 @@ module TextSanitizer
     scrubber.attributes = %w[href target nofollow]
     text = add_newlines_to_tags(text)
     text = Loofah.fragment(text).scrub!(:prune).scrub!(scrubber).to_s
-    cleanup_text(text)
+    clean_whitespace(text)
   end
 
   def sanitize_text_only(text)
     return nil if text.blank?
     text = add_newlines_to_tags(text)
     text = Loofah.fragment(text).scrub!(:prune).text(encode_special_chars: false)
-    cleanup_text(text)
+    clean_whitespace(text)
   end
 
   def sanitize_categories(kws, strict)
@@ -52,7 +52,7 @@ module TextSanitizer
       .gsub(/<br\s*\/>/i, "\n<br>")
   end
 
-  def cleanup_text(text)
+  def clean_whitespace(text)
     text.tr("\r", "\n")
       .gsub(/\s*\n\s*/, "\n")
       .squeeze(" ")
