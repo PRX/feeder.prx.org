@@ -25,7 +25,6 @@
     <div class="card-body">
       <div class="form-floating">
         <%= form.fields_for :default_feed do |fields| %>
-          <%= fields.hidden_field :summary, value: nil %>
           <%= fields.trix_editor :description %>
         <% end %>
       </div>
