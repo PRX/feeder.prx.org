@@ -25,18 +25,18 @@ describe Tasks::CopyTranscriptTask do
       assert_equal task.transcript.path, t[:ObjectKey]
       assert_equal "REPLACE", t[:ContentType]
       assert_equal "max-age=86400", t[:Parameters][:CacheControl]
-      assert_equal "attachment; filename=\"sampletranscript.txt\"", t[:Parameters][:ContentDisposition]
+      assert_equal "attachment; filename=\"sampletranscript.html\"", t[:Parameters][:ContentDisposition]
     end
 
     it "escapes http source urls" do
-      task.transcript.original_url = "http://some/where/my%20file.txt"
+      task.transcript.original_url = "http://some/where/my%20file.html"
 
       task.transcript.stub(:path, "some/where/this%20goes") do
         t = task.porter_tasks[1]
 
         assert_equal "Copy", t[:Type]
         assert_equal "some/where/this goes", t[:ObjectKey]
-        assert_equal "attachment; filename=\"my file.txt\"", t[:Parameters][:ContentDisposition]
+        assert_equal "attachment; filename=\"my file.html\"", t[:Parameters][:ContentDisposition]
       end
     end
   end
