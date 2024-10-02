@@ -7,7 +7,8 @@ module TextSanitizer
   def sanitize_white_list(text)
     return nil if text.blank?
     sanitizer = Rails::Html::WhiteListSanitizer.new
-    sanitizer.sanitize(Loofah.fragment(text).scrub!(:prune).to_s)
+    text = sanitizer.sanitize(Loofah.fragment(text).scrub!(:prune).to_s)
+    cleanup_text(text)
   end
 
   def sanitize_links_only(text)
@@ -15,12 +16,16 @@ module TextSanitizer
     scrubber = Rails::Html::PermitScrubber.new
     scrubber.tags = %w[a]
     scrubber.attributes = %w[href target nofollow]
-    Loofah.fragment(text).scrub!(:prune).scrub!(scrubber).to_s
+    text = add_newlines_to_tags(text)
+    text = Loofah.fragment(text).scrub!(:prune).scrub!(scrubber).to_s
+    cleanup_text(text)
   end
 
   def sanitize_text_only(text)
     return nil if text.blank?
-    Loofah.fragment(text).scrub!(:prune).text(encode_special_chars: false)
+    text = add_newlines_to_tags(text)
+    text = Loofah.fragment(text).scrub!(:prune).text(encode_special_chars: false)
+    cleanup_text(text)
   end
 
   def sanitize_categories(kws, strict)
@@ -36,5 +41,21 @@ module TextSanitizer
     else
       kw.strip.slice(0, max_length)
     end
+  end
+
+  def add_newlines_to_tags(text)
+    text.gsub(/<p>/i, "\n<p>")
+      .gsub(/<\/p>/i, "</p>\n")
+      .gsub(/<div>/i, "\n<div>")
+      .gsub(/<\/div>/i, "</div>\n")
+      .gsub(/<br>/i, "\n<br>")
+      .gsub(/<br\s*\/>/i, "\n<br>")
+  end
+
+  def cleanup_text(text)
+    text.tr("\r", "\n")
+      .gsub(/\s*\n\s*/, "\n")
+      .squeeze(" ")
+      .strip
   end
 end
