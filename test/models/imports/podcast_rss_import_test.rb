@@ -53,11 +53,9 @@ describe PodcastRssImport do
     _(importer.podcast.title).must_equal "Transistor"
     _(importer.podcast.subtitle).must_equal "A podcast of scientific questions and " \
       "stories featuring guest hosts and reporters."
-    _(importer.podcast.description).must_equal "Transistor is a podcast of scientific curiosities " \
-      "and current events, featuring guest hosts, " \
-      "scientists, and story-driven reporters. Presented " \
-      "by radio and podcast powerhouse PRX, with support " \
-      "from the Sloan Foundation."
+    _(importer.podcast.description).must_equal "A podcast of scientific questions and stories," \
+        " with many episodes hosted by key scientists" \
+        " at the forefront of discovery."
 
     _(importer.podcast.url).must_equal "http://feeds.prx.org/transistor_stem"
     _(importer.podcast.new_feed_url).must_equal "http://feeds.prx.org/transistor_stem"

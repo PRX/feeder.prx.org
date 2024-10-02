@@ -155,7 +155,7 @@ class PodcastRssImport < PodcastImport
   end
 
   def feed_description
-    result = [channel[:itunes_summary], channel[:description]].find { |d| !d.blank? }
+    result = [channel[:description], channel[:itunes_summary]].find { |d| !d.blank? }
     clean_text(result)
   end
 
@@ -185,7 +185,6 @@ class PodcastRssImport < PodcastImport
       podcast_attributes[atr.to_sym] = clean_string(channel[atr])
     end
 
-    podcast_attributes[:summary] = clean_text(channel[:itunes_summary])
     podcast_attributes[:link] = clean_string(channel[:url])
     podcast_attributes[:explicit] = explicit(channel[:itunes_explicit], "false")
     podcast_attributes[:new_feed_url] = clean_string(channel[:itunes_new_feed_url])
