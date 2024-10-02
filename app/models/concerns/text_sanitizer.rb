@@ -53,9 +53,10 @@ module TextSanitizer
   end
 
   def clean_whitespace(text)
-    text.tr("\r", "\n")
-      .gsub(/\s*\n\s*/, "\n")
-      .squeeze(" ")
-      .strip
+    text.gsub(/\R/, "\n") # if there is any kind of newline, make it \n
+      .gsub(/([ \t]*)\n([ \t]*)/, "\n") # get rid of whitespace on eother side of a newline
+      .gsub(/\n\n\n/, "\n\n") # no more than 2 newlines together
+      .squeeze(" ") # make all groups of spaces into a siingle space
+      .strip # get rid of leading or trailing spaces
   end
 end

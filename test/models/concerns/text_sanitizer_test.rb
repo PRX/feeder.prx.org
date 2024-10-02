@@ -49,6 +49,6 @@ describe TextSanitizer do
 
   it "cleans up white space" do
     text = " text, \r \n \r more\n     \ntext, and \r   words\n \n \r\r \n"
-    assert_equal model.clean_whitespace(text), "text,\nmore\ntext, and\nwords"
+    assert_equal model.clean_whitespace(text), "text,\n\nmore\n\ntext, and\nwords"
   end
 end
