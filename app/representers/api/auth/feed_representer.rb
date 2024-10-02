@@ -9,7 +9,6 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :title
   property :subtitle
   property :description
-  property :summary
   property :url
   property :new_feed_url
   property :enclosure_prefix
