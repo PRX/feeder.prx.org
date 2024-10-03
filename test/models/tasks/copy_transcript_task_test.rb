@@ -61,7 +61,7 @@ describe Tasks::CopyTranscriptTask do
 
       task.update(status: "complete")
       assert_equal 60572, task.transcript.file_size
-      assert_equal "text/plain", task.transcript.mime_type
+      assert_equal "text/html", task.transcript.mime_type
     end
 
     it "handles validation errors" do
