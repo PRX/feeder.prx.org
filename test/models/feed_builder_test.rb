@@ -218,7 +218,15 @@ describe FeedBuilder do
   end
 
   it "displays the transcript attributes" do
+    podcast_transcript = rss_feed.css("podcast|transcript")
+
     rss = builder.to_feed_xml
     _(rss).must_include "<podcast:transcript"
+
+    url = podcast_transcript.attribute("url").to_s
+    _(url).must_equal("http://some.where/test/fixtures/sampletranscript.html")
+
+    type = podcast_transcript.attribute("type").to_s
+    _(type).must_equal("text/html")
   end
 end
