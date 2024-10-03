@@ -719,9 +719,12 @@ en:
     transcript_labels: &transcript_labels
       title: Transcript
       transcript_file: Transcript File
-      transcript_help: Upload a JSON or TXT file containing the text transcript
+      transcript_help: Upload a file containing the text transcript
     form:
       confirm: Discard unsaved changes?
+    form_main:
+      help:
+        transcript: Enter the transcript format for this episode.
     form_status:
       <<: *form_status
       title: Transcript Status
