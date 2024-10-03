@@ -343,15 +343,32 @@ describe Apple::Publisher do
   end
 
   describe "#publish_drafting!" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show, api_response: build(:apple_episode_api_response, publishing_state: "DRAFTING")) }
+    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show, api_response: build(:apple_episode_api_response, publishing_state: "DRAFTING")) }
+    let(:episodes) { [episode1, episode2] }
+
     it "should call the episode publish drafting class method" do
       mock = Minitest::Mock.new
-      mock.expect(:call, [], [apple_publisher.api, apple_publisher.show, [episode1]])
+      mock.expect(:call, [], [Apple::Api, Apple::Show, episodes])
 
       Apple::Episode.stub(:publish, mock) do
-        apple_publisher.publish_drafting!([episode])
+        apple_publisher.publish_drafting!(episodes)
       end
 
       assert mock.verify
+    end
+
+    it "should reset the asset processing attempts" do
+      episodes.each do |ep|
+        ep.feeder_episode.apple_update_delivery_status(asset_processing_attempts: 3)
+      end
+      mock = Minitest::Mock.new
+      mock.expect(:call, [], [Apple::Api, Apple::Show, episodes])
+
+      Apple::Episode.stub(:publish, mock) { apple_publisher.publish_drafting!(episodes) }
+
+      assert_equal 0, episode1.delivery_status.asset_processing_attempts
+      assert_equal 0, episode2.delivery_status.asset_processing_attempts
     end
   end
 
