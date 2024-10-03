@@ -128,6 +128,6 @@ module EpisodesHelper
   end
 
   def episode_transcript_options
-    Transcript.formats.keys.map { |k| [I18n.t("helpers.label.transcript.formats.#{k}"), k]}
+    Transcript.formats.keys.map { |k| [I18n.t("helpers.label.transcript.formats.#{k}"), k] }
   end
 end

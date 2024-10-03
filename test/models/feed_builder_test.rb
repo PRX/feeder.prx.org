@@ -2,7 +2,7 @@ require "test_helper"
 require "feed_builder"
 
 describe FeedBuilder do
-  let(:transcript) { create(:transcript)}
+  let(:transcript) { create(:transcript) }
   let(:episode) { create(:episode_with_media, prx_uri: "/api/v1/stories/87683", transcript: transcript) }
   let(:podcast) { episode.podcast }
   let(:feed) { create(:feed, podcast: podcast, title: podcast.title, private: false) }
