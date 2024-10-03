@@ -1,9 +1,5 @@
 module Megaphone
-  class Podcast
-    include ActiveModel::Model
-    attr_accessor :feed
-    attr_writer :api
-
+  class Podcast < Megaphone::Model
     # Required attributes for a create
     # external_id is not required by megaphone, but we need it to be set!
     CREATE_REQUIRED = %w[title subtitle summary itunes_categories language external_id]
@@ -105,14 +101,6 @@ module Megaphone
       result = api.put("podcasts/#{id}", body)
       self.attributes = result.slice(*Megaphone::Podcast::ALL_ATTRIBUTES)
       self
-    end
-
-    def config
-      feed.megaphone_config
-    end
-
-    def api
-      @api ||= Megaphone::Api.new(token: config.token, network_id: config.network_id)
     end
   end
 end

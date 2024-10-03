@@ -54,5 +54,15 @@ FactoryBot.define do
         feed.apple_config = build(:apple_config)
       end
     end
+
+    factory :megaphone_feed, class: "Feeds::MegaphoneFeed" do
+      type { "Feeds::MegaphoneFeed" }
+      private { false }
+      sequence(:slug) { |n| "mp-feed-#{n}" }
+
+      after(:build) do |feed, _evaluator|
+        feed.megaphone_config = build(:megaphone_config)
+      end
+    end
   end
 end
