@@ -1,4 +1,4 @@
-<div class="prx-uploads col-12 mb-4">
+<div class="prx-uploads col-12 mb-2">
   <%= turbo_frame_tag "episode-media-form-transcript", data: {controller: "morphdom"} do %>
     <% episode.build_transcript if episode.transcript.blank? %>
 
