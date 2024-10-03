@@ -22,12 +22,7 @@ module AppleDelivery
   end
 
   def apple_update_delivery_status(attrs)
-    new_status = (apple_episode_delivery_status&.dup || apple_episode_delivery_statuses.build)
-    new_status.assign_attributes(**attrs)
-    new_status.save!
-
-    apple_episode_delivery_statuses.reset
-    new_status
+    Apple::EpisodeDeliveryStatus.update_status(self, attrs)
   end
 
   def apple_episode_delivery_status
