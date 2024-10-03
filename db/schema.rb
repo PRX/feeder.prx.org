@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_08_21_135645) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_02_215949) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -36,6 +36,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_21_135645) do
     t.text "enclosure_url"
     t.integer "source_fetch_count", default: 0
     t.bigint "source_media_version_id"
+    t.integer "asset_processing_attempts", default: 0, null: false
     t.index ["episode_id", "created_at"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at", include: ["delivered", "id"]
     t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
   end

@@ -22,7 +22,11 @@ FactoryBot.define do
       after(:build) do |apple_episode, evaluator|
         container = create(:apple_podcast_container, episode: apple_episode.feeder_episode)
         delivery = create(:apple_podcast_delivery, episode: apple_episode.feeder_episode, podcast_container: container)
-        _delivery_file = create(:apple_podcast_delivery_file, delivery: delivery, episode: apple_episode.feeder_episode)
+        _delivery_file = create(:apple_podcast_delivery_file,
+          delivery: delivery,
+          episode: apple_episode.feeder_episode,
+          api_marked_as_uploaded: true,
+          upload_operations_complete: true)
 
         create(:content, episode: apple_episode.feeder_episode, position: 1, status: "complete")
         create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")

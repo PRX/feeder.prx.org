@@ -9,5 +9,13 @@ module Apple
       episode.apple_episode_delivery_statuses.reset
       new_status
     end
+
+    def increment_asset_wait
+      self.class.update_status(episode, asset_processing_attempts: (asset_processing_attempts || 0) + 1)
+    end
+
+    def reset_asset_wait
+      self.class.update_status(episode, asset_processing_attempts: 0)
+    end
   end
 end

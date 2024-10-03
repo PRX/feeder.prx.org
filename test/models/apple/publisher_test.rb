@@ -344,12 +344,11 @@ describe Apple::Publisher do
 
   describe "#publish_drafting!" do
     it "should call the episode publish drafting class method" do
-      ep = OpenStruct.new(drafting?: true, container_upload_complete?: true)
       mock = Minitest::Mock.new
-      mock.expect(:call, [], [apple_publisher.api, apple_publisher.show, [ep]])
+      mock.expect(:call, [], [apple_publisher.api, apple_publisher.show, [episode1]])
 
       Apple::Episode.stub(:publish, mock) do
-        apple_publisher.publish_drafting!([ep])
+        apple_publisher.publish_drafting!([episode])
       end
 
       assert mock.verify
@@ -366,6 +365,36 @@ describe Apple::Publisher do
       end
 
       assert mock.verify
+    end
+  end
+
+  describe "#wait_for_asset_state" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episodes) { [episode1, episode2] }
+
+    it "should increment asset wait count for each episode" do
+      episodes.each do |ep|
+        assert_equal 0, ep.apple_episode_delivery_status.asset_processing_attempts
+      end
+
+      Apple::Episode.stub(:wait_for_asset_state, [false, []]) do
+        apple_publisher.wait_for_asset_state(episodes)
+      end
+
+      episodes.each do |ep|
+        assert_equal 1, ep.apple_episode_delivery_status.asset_processing_attempts
+      end
+    end
+
+    it "should raise an error when wait times out" do
+      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 3)
+
+      Apple::Episode.stub(:wait_for_asset_state, [true, episodes]) do
+        assert_raises(RuntimeError, "Timed out waiting for asset state. 3 attempts so far") do
+          apple_publisher.wait_for_asset_state(episodes)
+        end
+      end
     end
   end
 

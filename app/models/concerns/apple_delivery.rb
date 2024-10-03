@@ -25,8 +25,12 @@ module AppleDelivery
     Apple::EpisodeDeliveryStatus.update_status(self, attrs)
   end
 
+  def build_initial_delivery_status
+    Apple::EpisodeDeliveryStatus.new(episode: self)
+  end
+
   def apple_episode_delivery_status
-    apple_episode_delivery_statuses.order(created_at: :desc).first
+    apple_episode_delivery_statuses.order(created_at: :desc).first || build_initial_delivery_status
   end
 
   def apple_needs_delivery?

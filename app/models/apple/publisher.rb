@@ -230,8 +230,14 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
 
+        # Mark the episodes as waiting again for asset processing
+        eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
+
         (waiting_timed_out, _) = Apple::Episode.wait_for_asset_state(api, eps)
-        raise "Timed out waiting for asset state" if waiting_timed_out
+        if waiting_timed_out
+          attempts = eps.max { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }
+          raise "Timed out waiting for asset state. #{attempts} attempts so far"
+        end
       end
     end
 
@@ -363,6 +369,8 @@ module Apple
         eps = eps.select { |ep| ep.drafting? && ep.container_upload_complete? }
 
         res = Apple::Episode.publish(api, show, eps)
+        eps.each { |ep| ep.apple_episode_delivery_status.reset_asset_wait }
+
         Rails.logger.info("Published #{res.length} drafting episodes.")
       end
     end
