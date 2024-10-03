@@ -31,7 +31,8 @@ module Megaphone
 
     def self.attributes_from_episode(dte)
       {
-        title: dte.title
+        title: dte.title,
+        external_id: dte.guid
       }
     end
   end
