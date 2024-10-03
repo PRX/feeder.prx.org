@@ -27,6 +27,8 @@ defaults:
     destroy: &destroy
       success: "%{model} deleted successfully."
       failure: "There was a problem deleting the %{model}."
+  uploads:
+    still_processing: &still_processing Processing is taking longer than expected. Thank you for your patience. You can continue waiting or retry.
 
 en:
   # general config
@@ -649,7 +651,7 @@ en:
         title: MP3 Not Provided
       processing:
         hint: Processing
-        still_processing: Processing is taking longer than expected. Thank you for waiting.
+        still_processing: *still_processing
     segmenter:
       modal:
         label:
@@ -732,6 +734,7 @@ en:
         <<: *transcript_labels
         loading: Loading...
         processing: Processing
+        still_processing: *still_processing
       complete:
         <<: *transcript_labels
       error:
@@ -882,6 +885,8 @@ en:
       size: Size
       status: Status
       upload: Upload a file or drag it here
+    processing:
+      still_processing: *still_processing
     title:
       episode_image: Cover Image
       feed_image: Thumbnail Image
