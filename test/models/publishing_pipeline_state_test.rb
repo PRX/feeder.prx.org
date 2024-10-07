@@ -303,7 +303,7 @@ describe PublishingPipelineState do
       it "can publish via the apple configs" do
         assert [f1, f2, f3]
 
-        PublishAppleJob.stub(:perform_now, "published apple!") do
+        PublishAppleJob.stub(:do_perform, "published apple!") do
           PublishFeedJob.stub_any_instance(:save_file, "saved rss!") do
             PublishingPipelineState.attempt!(podcast, perform_later: false)
           end

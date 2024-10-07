@@ -96,7 +96,7 @@ describe PublishFeedJob do
       it "does run the apple publishing if the config is present and marked as publishable" do
         assert apple_feed.apple_config.present?
         assert apple_feed.apple_config.publish_enabled
-        PublishAppleJob.stub(:perform_now, :publishing_apple!) do
+        PublishAppleJob.stub(:do_perform, :publishing_apple!) do
           assert_equal :publishing_apple!, job.publish_apple(podcast, apple_feed)
         end
       end
@@ -108,14 +108,14 @@ describe PublishFeedJob do
         # stub the two possible ways the job can be called
         # perform_later is not used.
         PublishAppleJob.stub(:perform_later, :perform_later) do
-          PublishAppleJob.stub(:perform_now, :perform_now) do
+          PublishAppleJob.stub(:do_perform, :do_perform) do
             apple_feed.apple_config.update!(sync_blocks_rss: true)
 
-            assert_equal :perform_now, job.publish_apple(podcast, apple_feed)
+            assert_equal :do_perform, job.publish_apple(podcast, apple_feed)
 
             apple_feed.apple_config.update!(sync_blocks_rss: false)
             feed.reload
-            assert_equal :perform_now, job.publish_apple(podcast, apple_feed)
+            assert_equal :do_perform, job.publish_apple(podcast, apple_feed)
           end
         end
       end
@@ -127,11 +127,12 @@ describe PublishFeedJob do
           PublishingPipelineState.attempt!(feed.podcast)
           PublishingPipelineState.start!(feed.podcast)
         end
+
         it "raises an error if the apple publishing fails" do
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
 
-          PublishAppleJob.stub(:perform_now, ->(*, **) { raise "some apple error" }) do
+          PublishAppleJob.stub(:do_perform, ->(*, **) { raise "some apple error" }) do
             # it raises
             assert_raises(RuntimeError) { job.publish_apple(podcast, apple_feed) }
 
@@ -147,7 +148,7 @@ describe PublishFeedJob do
           mock = Minitest::Mock.new
           mock.expect(:call, nil, [RuntimeError])
 
-          PublishAppleJob.stub(:perform_now, ->(*, **) { raise "some apple error" }) do
+          PublishAppleJob.stub(:do_perform, ->(*, **) { raise "some apple error" }) do
             NewRelic::Agent.stub(:notice_error, mock) do
               job.publish_apple(podcast, apple_feed)
             end

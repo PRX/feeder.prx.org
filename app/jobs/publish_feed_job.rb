@@ -28,7 +28,7 @@ class PublishFeedJob < ApplicationJob
 
   def publish_apple(podcast, feed)
     return unless feed.publish_to_apple?
-    res = PublishAppleJob.perform_now(feed.apple_config)
+    res = PublishAppleJob.do_perform(feed.apple_config)
     PublishingPipelineState.publish_apple!(podcast)
     res
   rescue => e
