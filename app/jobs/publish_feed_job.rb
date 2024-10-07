@@ -21,7 +21,6 @@ class PublishFeedJob < ApplicationJob
   rescue => e
     PublishingPipelineState.error!(podcast)
     Rails.logger.error("Error publishing podcast", {podcast_id: podcast.id, error: e.message, backtrace: e.backtrace.join("\n")})
-    raise e
   ensure
     PublishingPipelineState.settle_remaining!(podcast)
   end
