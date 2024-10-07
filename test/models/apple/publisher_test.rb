@@ -419,9 +419,10 @@ describe Apple::Publisher do
       Rails.logger.stub :tagged, nil do
         Rails.logger.stub :info, ->(msg, data) { log_message = [msg, data] } do
           Apple::Episode.stub :wait_for_asset_state, [true, nil] do
-            publisher.wait_for_asset_state(eps)
-          rescue RuntimeError
-            # Ignore the exception for this test
+            error = assert_raises(RuntimeError) do
+              publisher.wait_for_asset_state(eps)
+            end
+            assert_equal "Timed out waiting for asset state", error.message
           end
         end
       end
