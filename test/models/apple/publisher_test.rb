@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "test_helper"
 
 describe Apple::Publisher do
@@ -12,6 +10,8 @@ describe Apple::Publisher do
   let(:apple_publisher) do
     Apple::Publisher.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
   end
+
+  let(:publisher) { apple_publisher }
 
   before do
     stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200")
@@ -402,6 +402,32 @@ describe Apple::Publisher do
       episodes.each do |ep|
         assert_equal 1, ep.apple_episode_delivery_status.asset_processing_attempts
       end
+    end
+
+    it "logs a timeout message with correct information" do
+      eps = [
+        OpenStruct.new(
+          podcast_delivery_files: [OpenStruct.new(api_marked_as_uploaded?: true)],
+          apple_episode_delivery_status: OpenStruct.new(
+            increment_asset_wait: nil,
+            asset_processing_attempts: 3
+          )
+        )
+      ] * 2  # Create two identical episode structures
+
+      log_message = nil
+      Rails.logger.stub :tagged, nil do
+        Rails.logger.stub :info, ->(msg, data) { log_message = [msg, data] } do
+          Apple::Episode.stub :wait_for_asset_state, [true, nil] do
+            publisher.wait_for_asset_state(eps)
+          rescue RuntimeError
+            # Ignore the exception for this test
+          end
+        end
+      end
+
+      assert_equal "Timed out waiting for asset state", log_message[0]
+      assert_equal({attempts: 3, episode_count: 2}, log_message[1])
     end
 
     it "should raise an error when wait times out" do

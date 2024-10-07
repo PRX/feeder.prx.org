@@ -235,8 +235,9 @@ module Apple
 
         (waiting_timed_out, _) = Apple::Episode.wait_for_asset_state(api, eps)
         if waiting_timed_out
-          attempts = eps.max { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }
-          raise "Timed out waiting for asset state. #{attempts} attempts so far"
+          attempts = eps.map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }.max
+          Rails.logger.info("Timed out waiting for asset state", {attempts: attempts, episode_count: eps.length})
+          raise "Timed out waiting for asset state"
         end
       end
     end
