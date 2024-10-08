@@ -5,7 +5,7 @@ module Megaphone
     DEFAULT_ENDPOINT = "https://cms.megaphone.fm/api"
 
     PAGINATION_HEADERS = %w[link x-per-page x-page x-total]
-    PAGINATION_LINKS = %w[first last next previous]
+    PAGINATION_LINKS = %i[first last next previous]
 
     def initialize(token:, network_id:, endpoint_url: nil)
       @token = token
@@ -61,12 +61,13 @@ module Megaphone
 
     def parse_links(link_headers)
       return {} unless link_headers.present?
-      collection = LinkHeaderParser.parse(link_headers, base: mp.api.api_base)
+      collection = LinkHeaderParser.parse(link_headers, base: api_base)
       links = collection.group_by_relation_type
       PAGINATION_LINKS.each_with_object({}) do |key, map|
         if (link = (links[key] || []).first)
           map[key] = link.target_uri
         end
+        map
       end
     end
 
