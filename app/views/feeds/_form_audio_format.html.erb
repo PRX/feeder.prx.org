@@ -23,7 +23,7 @@
 
         <div class="col-3 <%= display_bitdepth(feed) %>" data-toggle-field-target="field" field="wav flac">
           <div class="form-floating input-group">
-            <%= form.select :audio_bitdepth, options_for_select(audio_bitdepth_options, 32) %>
+            <%= form.select :audio_bitdepth, options_for_select(audio_bitdepth_options, 16) %>
             <%= form.label :audio_bitdepth %>
           </div>
         </div>
