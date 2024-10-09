@@ -157,7 +157,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
 
           if ep.transcript?
             xml.podcast(:transcript,
-              type: Transcript.formats[ep.transcript.format],
+              type: Transcript::MIME_TYPES[ep.transcript.format.to_sym],
               url: ep.transcript.url)
           end
 

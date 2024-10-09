@@ -1,4 +1,10 @@
 class Transcript < ApplicationRecord
+  FORMATS = {
+    html: "html",
+    json: "json",
+    vtt: "vtt",
+    srt: "srt"
+  }
   MIME_TYPES = {
     html: "text/html",
     json: "application/json",
@@ -22,7 +28,7 @@ class Transcript < ApplicationRecord
   validates :format, presence: true
 
   enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
-  enum :format, MIME_TYPES, prefix: true, default: :json
+  enum :format, FORMATS, prefix: true, default: :json
 
   def published_url
     "#{episode.base_published_url}/#{transcript_path}"
