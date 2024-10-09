@@ -1,6 +1,6 @@
 class PublishingPipelineState < ApplicationRecord
-  TERMINAL_STATUSES = [:complete, :error, :expired].freeze
-  TERMINAL_FAILURE_STATUSES = [:error, :expired].freeze
+  TERMINAL_STATUSES = [:complete, :error, :expired, :retry].freeze
+  TERMINAL_FAILURE_STATUSES = [:error, :expired, :retry].freeze
   UNIQUE_STATUSES = TERMINAL_STATUSES + [:created, :started]
 
   # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
@@ -53,7 +53,8 @@ class PublishingPipelineState < ApplicationRecord
     :error,
     :expired,
     :error_apple,
-    :error_rss
+    :error_rss,
+    :retry
   ]
 
   validate :podcast_ids_match
@@ -168,6 +169,10 @@ class PublishingPipelineState < ApplicationRecord
 
   def self.expire!(podcast)
     state_transition(podcast, :expired)
+  end
+
+  def self.retry!(podcast)
+    state_transition(podcast, :retry)
   end
 
   def self.expire_pipelines!
