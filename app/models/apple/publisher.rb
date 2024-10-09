@@ -233,11 +233,11 @@ module Apple
         # Mark the episodes as waiting again for asset processing
         eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
 
-        (waiting_timed_out, _) = Apple::Episode.wait_for_asset_state(api, eps)
+        (waiting_timed_out, remaining_eps) = Apple::Episode.wait_for_asset_state(api, eps)
         if waiting_timed_out
-          attempts = eps.map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }.max
-          Rails.logger.info("Timed out waiting for asset state", {attempts: attempts, episode_count: eps.length})
-          raise "Timed out waiting for asset state"
+          e = Apple::AssetStateTimeoutError.new(remaining_eps)
+          Rails.logger.info("Timed out waiting for asset state", {attempts: e.attempts, episode_count: e.episodes.length})
+          raise e
         end
       end
     end

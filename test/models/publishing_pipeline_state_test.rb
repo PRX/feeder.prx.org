@@ -251,13 +251,24 @@ describe PublishingPipelineState do
 
     describe "error!" do
       it 'sets the status to "error"' do
+        pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
           PublishFeedJob.stub_any_instance(:publish_apple, ->(*args) { raise "error" }) do
-            assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
+            pqi = PublishingQueueItem.ensure_queued!(podcast)
+            PublishingPipelineState.attempt!(podcast, perform_later: false)
           end
         end
 
         assert_equal ["created", "started", "error"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
+        assert_equal "error", pqi.reload.last_pipeline_state
+
+        # it retries
+        PublishingPipelineState.retry_failed_pipelines!
+        assert_equal ["created", "started", "error", "created"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
+        res_pqi = PublishingQueueItem.current_unfinished_item(podcast)
+
+        assert res_pqi.id > pqi.id
+        assert_equal "created", res_pqi.last_pipeline_state
       end
     end
 

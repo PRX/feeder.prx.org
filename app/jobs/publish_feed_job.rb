@@ -18,6 +18,9 @@ class PublishFeedJob < ApplicationJob
     podcast.feeds.each { |feed| publish_apple(podcast, feed) }
     podcast.feeds.each { |feed| publish_rss(podcast, feed) }
     PublishingPipelineState.complete!(podcast)
+  rescue Apple::AssetStateTimeoutError => e
+    PublishingPipelineState.error!(podcast)
+    Rails.logger.error("Asset processing timeout", {podcast_id: podcast.id, error: e.message, backtrace: e.backtrace.join("\n")})
   rescue => e
     PublishingPipelineState.error!(podcast)
     # TODO, we can remove this once we have a better way to track errors
