@@ -151,5 +151,6 @@ module Feeder
 
     config.log_tags = [:request_id]
     config.active_record.schema_format = :ruby
+    config.active_record.attributes_for_inspect = :all
   end
 end

@@ -161,7 +161,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
               url: ep.transcript.url)
           end
 
-          xml.content(:encoded) { xml.cdata!(ep.content) } unless ep.content.blank?
+          xml.content(:encoded) { xml.cdata!(episode_description(ep)) }
         end
       end
     end

@@ -83,9 +83,6 @@ class EpisodeRssImport < EpisodeImport
     episode.subtitle = clean_string(episode_short_desc(entry))
     episode.title = clean_title(entry[:title])
 
-    if entry[:itunes_summary] && entry_description_attribute(entry) != :itunes_summary
-      episode.summary = clean_text(entry[:itunes_summary])
-    end
     episode.author = person(entry[:itunes_author] || entry[:author] || entry[:creator])
     episode.block = (clean_string(entry[:itunes_block]) == "yes")
     episode.explicit = explicit(entry[:itunes_explicit])
@@ -110,7 +107,7 @@ class EpisodeRssImport < EpisodeImport
   end
 
   def entry_description_attribute(entry)
-    [:content, :itunes_summary, :description, :title].find { |d| !entry[d].blank? }
+    [:content, :description, :itunes_summary, :itunes_subtitle, :title].find { |d| !entry[d].blank? }
   end
 
   def title

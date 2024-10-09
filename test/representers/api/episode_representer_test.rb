@@ -7,7 +7,7 @@ describe Api::EpisodeRepresenter do
 
   it "includes basic properties" do
     assert_match(%r{/api/v1/stories/}, json["prxUri"])
-    assert_match(%r{<a href="/tina">Tina</a>}, json["summary"])
+    assert_match(%r{<a href="/tina">Tina</a>}, json["description"])
   end
 
   it "includes clean title, season, episode, and ep type info" do
@@ -30,17 +30,8 @@ describe Api::EpisodeRepresenter do
     assert_equal json["explicitContent"], true
   end
 
-  it "uses summary when not blank" do
-    episode.summary = 'summary has <a href="/">a link</a>'
+  it "uses sanitized description" do
     episode.description = '<b>tags</b> removed, <a href="/">links remain</a>'
-    assert_equal json["summary"], episode.summary
-    assert_equal json["description"], episode.description
-  end
-
-  it "uses sanitized description for nil summary" do
-    episode.summary = nil
-    episode.description = '<b>tags</b> removed, <a href="/">links remain</a>'
-    assert_nil json["summary"]
     assert_equal json["description"], episode.description
   end
 

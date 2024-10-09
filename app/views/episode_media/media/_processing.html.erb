@@ -11,6 +11,11 @@
       <% if media.file_size.present? %>
         <small class="text-muted">(<%= number_to_human_size(media.file_size) %>)</small>
       <% end %>
+      <% if upload_stalled?(media) %>
+        <%= link_to episode_media_path(media.episode, uploads_retry_params(form)), method: :put, class: "btn btn-sm btn-warning ms-2" do %>
+          <span class="material-icons">restart_alt</span> Retry
+        <% end %>
+      <% end %>
     </div>
 
     <% if policy(media).destroy? %>
@@ -21,6 +26,10 @@
 
     <label><%= episode_media_label(episode, media) %></label>
   </div>
+
+  <% if upload_stalled?(media) %>
+    <small class="text-muted"><%= t(".still_processing") %></small>
+  <% end %>
 
   <%# just keep polling until the file finishes processing %>
   <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>

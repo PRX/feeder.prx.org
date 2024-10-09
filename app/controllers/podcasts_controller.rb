@@ -166,7 +166,6 @@ class PodcastsController < ApplicationController
       default_feed_attributes: [
         :id,
         :subtitle,
-        :summary,
         :description,
         itunes_category: [],
         itunes_subcategory: [],

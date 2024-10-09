@@ -49,9 +49,6 @@ class Feeds::AppleSubscription < Feed
     if file_name_changed?
       errors.add(:file_name, "cannot change once set")
     end
-    if audio_format_changed?
-      errors.add(:audio_format, "cannot change once set")
-    end
   end
 
   def only_apple_feed

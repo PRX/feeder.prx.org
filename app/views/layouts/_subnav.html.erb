@@ -1,8 +1,8 @@
-<div class="prx-app-bar navbar justify-content-start align-items-stretch p-0 bg-white">
+<% if @podcast && policy(@podcast).show? %>
+  <div class="prx-app-bar navbar justify-content-start align-items-stretch p-0 bg-white">
 
-  <%= render "podcast_switcher/dropdown" %>
+    <%= render "podcast_switcher/dropdown" %>
 
-  <% if @podcast %>
     <nav class="prx-app-nav navbar-nav flex-row justifty-content-start">
       <% if @podcast.new_record? %>
         <%= active_link_to "Settings", main_app.new_podcast_path, class: "nav-link" %>
@@ -13,5 +13,5 @@
         <%= active_link_to "Feeds", main_app.podcast_feeds_path(@podcast), active: /\/feeds/, class: "nav-link" %>
       <% end %>
     </nav>
-  <% end %>
-</div>
+  </div>
+<% end %>

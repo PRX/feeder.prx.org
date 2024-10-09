@@ -2,10 +2,8 @@
   <% if policy(image).create? %>
     <%= render "images/new", form: form, image: image %>
   <% end %>
-<% elsif upload_stalled?(image) %>
-  <%= render "images/error", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
 <% elsif upload_processing?(image) %>
-  <%= render "images/processing", form: form, image: image, delete_path: delete_path %>
+  <%= render "images/processing", form: form, image: image, delete_path: delete_path, retry_path: retry_path %>
 <% elsif upload_complete?(image) %>
   <%= render "images/complete", form: form, image: image, delete_path: delete_path %>
 <% else %>
