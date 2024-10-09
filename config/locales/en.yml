@@ -494,6 +494,12 @@ en:
         no_category: (None)
         embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
+      transcript:
+        formats:
+          html: HTML
+          json: JSON
+          vtt: WebVTT
+          srt: SRT
   # specific pages/views
   episodes:
     confirm_destroy:
@@ -716,9 +722,12 @@ en:
     transcript_labels: &transcript_labels
       title: Transcript
       transcript_file: Transcript File
-      transcript_help: Upload a JSON or TXT file containing the text transcript
+      transcript_help: Upload a file containing the text transcript
     form:
       confirm: Discard unsaved changes?
+    form_main:
+      help:
+        transcript: Enter the transcript format for this episode.
     form_status:
       <<: *form_status
       title: Transcript Status

@@ -159,6 +159,12 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
               url: ep.enclosure_url(@feed))
           end
 
+          if ep.transcript?
+            xml.podcast(:transcript,
+              type: Transcript::MIME_TYPES[ep.transcript.format.to_sym],
+              url: ep.transcript.url)
+          end
+
           xml.content(:encoded) { xml.cdata!(episode_description(ep)) }
         end
       end

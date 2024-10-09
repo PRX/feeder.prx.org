@@ -2,7 +2,7 @@ require "test_helper"
 
 describe Transcript do
   let(:episode) { create(:episode) }
-  let(:url) { "http://sample/url/transcript.txt" }
+  let(:url) { "http://sample/url/transcript.html" }
   let(:transcript) { build_stubbed(:transcript, episode: episode) }
 
   describe "#valid?" do
@@ -17,6 +17,11 @@ describe Transcript do
 
     it "requires an original_url" do
       transcript.original_url = nil
+      refute transcript.valid?
+    end
+
+    it "must have a format" do
+      transcript.format = nil
       refute transcript.valid?
     end
   end
