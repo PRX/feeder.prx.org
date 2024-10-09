@@ -49,6 +49,19 @@ class Minitest::Spec
   include FactoryBot::Syntax::Methods
 end
 
+def capture_json_logs(&block)
+  old_logger = Rails.logger
+  log = StringIO.new
+  feeder_logger = FeederLogger.new(log)
+  feeder_logger.formatter = Ougai::Formatters::Bunyan.new
+  Rails.logger = ActiveSupport::TaggedLogging.new(feeder_logger)
+  block.call
+  log.rewind
+  log.read.split("\n").map { |line| JSON.parse(line).with_indifferent_access }
+ensure
+  Rails.logger = old_logger
+end
+
 def json_file(name)
   test_file("/fixtures/#{name}.json")
 end

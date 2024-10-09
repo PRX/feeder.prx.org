@@ -414,31 +414,27 @@ describe Apple::Publisher do
           )
         )
       ] * 2  # Create two identical episode structures
+      eps = eps.map.with_index do |e, i| # Set the feeder_id to a unique value
+        e = e.dup
+        e.feeder_id = i + 1
+        e
+      end
 
-      log_message = nil
-      Rails.logger.stub :tagged, nil do
-        Rails.logger.stub :info, ->(msg, data) { log_message = [msg, data] } do
-          Apple::Episode.stub :wait_for_asset_state, [true, nil] do
-            error = assert_raises(RuntimeError) do
-              publisher.wait_for_asset_state(eps)
-            end
-            assert_equal "Timed out waiting for asset state", error.message
+      assert publisher
+      logs = capture_json_logs do
+        Apple::Episode.stub :wait_for_asset_state, [true, eps] do
+          error = assert_raises(RuntimeError) do
+            publisher.wait_for_asset_state(eps)
           end
+          assert_equal "Timed out waiting for asset state", error.message
         end
       end
 
-      assert_equal "Timed out waiting for asset state", log_message[0]
-      assert_equal({attempts: 3, episode_count: 2}, log_message[1])
-    end
-
-    it "should raise an error when wait times out" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 3)
-
-      Apple::Episode.stub(:wait_for_asset_state, [true, episodes]) do
-        assert_raises(RuntimeError, "Timed out waiting for asset state. 3 attempts so far") do
-          apple_publisher.wait_for_asset_state(episodes)
-        end
-      end
+      log = logs[0]
+      assert_equal "Timed out waiting for asset state", log[:msg]
+      assert_equal 30, log[:level]
+      assert_equal 3, log[:attempts]
+      assert_equal 2, log[:episode_count]
     end
   end
 
