@@ -10,10 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_08_21_135645) do
+ActiveRecord::Schema[7.2].define(version: 2024_09_29_210828) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-  enable_extension "uuid-ossp"
 
   create_table "apple_configs", force: :cascade do |t|
     t.bigint "feed_id", null: false
@@ -229,12 +228,12 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_21_135645) do
     t.datetime "updated_at", precision: nil, null: false
     t.string "enclosure_prefix"
     t.string "enclosure_template"
+    t.text "exclude_tags"
     t.text "subtitle"
     t.text "description"
     t.text "summary"
     t.boolean "include_podcast_value", default: true
     t.boolean "include_donation_url", default: true
-    t.text "exclude_tags"
     t.datetime "deleted_at", precision: nil
     t.integer "lock_version", default: 0, null: false
     t.string "type"
@@ -318,6 +317,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_21_135645) do
     t.index ["episode_id"], name: "index_media_versions_on_episode_id"
   end
 
+  create_table "megaphone_configs", force: :cascade do |t|
+    t.string "token"
+    t.string "network_id"
+    t.string "network_name"
+    t.boolean "publish_enabled", default: false, null: false
+    t.bigint "feed_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "podcast_imports", force: :cascade do |t|
     t.integer "podcast_id"
     t.string "url"
@@ -365,7 +374,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_21_135645) do
     t.integer "lock_version", default: 0, null: false
     t.string "categories", array: true
     t.datetime "locked_until", precision: nil
+    t.string "guid"
     t.index ["categories"], name: "index_podcasts_on_categories", using: :gin
+    t.index ["guid"], name: "index_podcasts_on_guid"
     t.index ["path"], name: "index_podcasts_on_path", unique: true
     t.index ["prx_uri"], name: "index_podcasts_on_prx_uri", unique: true
     t.index ["source_url"], name: "index_podcasts_on_source_url", unique: true, where: "((deleted_at IS NULL) AND (source_url IS NOT NULL))"
@@ -443,8 +454,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_21_135645) do
   end
 
   create_table "tasks", id: :serial, force: :cascade do |t|
-    t.integer "owner_id"
     t.string "owner_type"
+    t.integer "owner_id"
     t.string "type"
     t.integer "status", default: 0, null: false
     t.datetime "logged_at", precision: nil
