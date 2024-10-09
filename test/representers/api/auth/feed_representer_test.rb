@@ -10,7 +10,6 @@ describe Api::Auth::FeedRepresenter do
     _(json["slug"]).must_match(/myfeed(\d+)/)
     _(json["subtitle"]).must_equal feed.subtitle
     _(json["description"]).must_equal feed.description
-    _(json["summary"]).must_equal feed.summary
   end
 
   it "has links" do

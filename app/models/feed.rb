@@ -78,7 +78,6 @@ class Feed < ApplicationRecord
   def sanitize_text
     self.description = sanitize_white_list(description) if description_changed?
     self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
-    self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
   end
 

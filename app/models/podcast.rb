@@ -1,7 +1,7 @@
 require "text_sanitizer"
 
 class Podcast < ApplicationRecord
-  FEED_ATTRS = %i[subtitle description summary url new_feed_url display_episodes_count
+  FEED_ATTRS = %i[subtitle description url new_feed_url display_episodes_count
     display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image
     ready_feed_image ready_itunes_image ready_image itunes_category itunes_subcategory itunes_categories]
   FEED_GETTERS = FEED_ATTRS.map { |s| [s, "#{s}_was".to_sym, "#{s}_changed?".to_sym] }.flatten

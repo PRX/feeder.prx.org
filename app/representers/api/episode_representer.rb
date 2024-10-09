@@ -23,8 +23,6 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :clean_title
   property :subtitle
   property :description
-  property :content
-  property :summary
   property :season_number
   property :episode_number
   property :itunes_type

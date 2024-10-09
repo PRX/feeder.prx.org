@@ -18,7 +18,6 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :title
   property :subtitle
   property :description
-  property :summary
   property :itunes_block
 
   property :explicit
