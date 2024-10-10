@@ -111,7 +111,7 @@ class Feeds::AppleSubscription < Feed
       f: "mp3",
       b: [MIN_MP3_BITRATE, af[:b]].compact.max,
       c: MP3_CHANNELS.include?(af[:c]) ? af[:c] : MP3_CHANNELS.min,
-      s: [MIN_MP3_SAMPLERATE, af[:s]].compact.max,
+      s: [MIN_MP3_SAMPLERATE, af[:s]].compact.max
     }.with_indifferent_access
   end
 end

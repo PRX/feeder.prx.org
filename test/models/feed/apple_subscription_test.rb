@@ -64,7 +64,7 @@ describe Feeds::AppleSubscription do
       create(:episode, podcast: podcast, contents: [c3])
 
       assert_nil default_feed.audio_format
-      assert_equal ({f: "mp3", b: 192, c: 2, s: 44100}).with_indifferent_access, apple_feed.guess_audio_format
+      assert_equal ({"f" => "mp3", "b" => 192, "c" => 2, "s" => 44100}), apple_feed.guess_audio_format
     end
 
     it "falls back to the default format" do
