@@ -228,12 +228,12 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_29_210828) do
     t.datetime "updated_at", precision: nil, null: false
     t.string "enclosure_prefix"
     t.string "enclosure_template"
-    t.text "exclude_tags"
     t.text "subtitle"
     t.text "description"
     t.text "summary"
     t.boolean "include_podcast_value", default: true
     t.boolean "include_donation_url", default: true
+    t.text "exclude_tags"
     t.datetime "deleted_at", precision: nil
     t.integer "lock_version", default: 0, null: false
     t.string "type"
@@ -454,8 +454,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_29_210828) do
   end
 
   create_table "tasks", id: :serial, force: :cascade do |t|
-    t.string "owner_type"
     t.integer "owner_id"
+    t.string "owner_type"
     t.string "type"
     t.integer "status", default: 0, null: false
     t.datetime "logged_at", precision: nil
