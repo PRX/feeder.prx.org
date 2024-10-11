@@ -38,7 +38,7 @@ class EpisodeTranscriptsController < ApplicationController
   def episode_params
     nilify params.fetch(:episode, {}).permit(
       :lock_version,
-      transcript_attributes: %i[id original_url file_size _destroy _retry]
+      transcript_attributes: %i[id original_url file_size format _destroy _retry]
     )
   end
 end

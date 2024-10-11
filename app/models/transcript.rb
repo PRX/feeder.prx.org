@@ -1,4 +1,17 @@
 class Transcript < ApplicationRecord
+  FORMATS = {
+    html: "html",
+    json: "json",
+    vtt: "vtt",
+    srt: "srt"
+  }
+  MIME_TYPES = {
+    html: "text/html",
+    json: "application/json",
+    vtt: "text/vtt",
+    srt: "application/srt"
+  }
+
   acts_as_paranoid
 
   belongs_to :episode
@@ -10,9 +23,12 @@ class Transcript < ApplicationRecord
 
   validates :original_url, presence: true
 
-  validates :mime_type, inclusion: {in: %w[text/plain application/json]}, if: :status_complete?, allow_blank: true
+  validates :mime_type, inclusion: {in: MIME_TYPES.values}, if: :status_complete?, allow_blank: true
+
+  validates :format, presence: true
 
   enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
+  enum :format, FORMATS, prefix: true, default: :json
 
   def published_url
     "#{episode.base_published_url}/#{transcript_path}"
@@ -66,7 +82,6 @@ class Transcript < ApplicationRecord
   end
 
   def reset_transcript_attributes
-    self.format = nil
     self.mime_type = nil
     self.file_size = nil
     self.status = :created
