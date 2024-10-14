@@ -780,6 +780,8 @@ en:
       title: Apple Subscriptions
       description: In order to publish episodes through Apple's Podcast Connect API, ensure you've delegated access to the PRX account in Podcast Connect.
       guide_link: Check out our guide to step you through the setup.
+      help:
+        display_episodes_count: You can optionally limit the number of episodes that Paid Subscribers will see in Apple Podcasts. Leave this field blank to include all.
     form_audio_format:
       title: Audio Format
       help:
