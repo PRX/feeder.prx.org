@@ -94,8 +94,8 @@ class Feeds::AppleSubscription < Feed
   end
 
   def episode_audio_format
-    episodes = podcast&.episodes&.published&.includes(:contents)&.limit(10)
-    contents = (episodes || []).map { |e| e.contents.first }.compact
+    episodes = podcast&.episodes&.published&.includes(:contents)&.limit(10) || []
+    contents = episodes.map { |e| e.contents.first }.compact
     mp3_contents = contents.select { |c| c.audio? && c.mime_type == "audio/mpeg" }
 
     if mp3_contents.any?
