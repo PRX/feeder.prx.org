@@ -27,7 +27,7 @@ class Feeds::AppleSubscription < Feed
     self.slug ||= DEFAULT_FEED_SLUG
     self.title ||= DEFAULT_TITLE
     self.audio_format ||= guess_audio_format
-    self.display_episodes_count ||= podcast&.default_feed&.display_episodes_count
+    self.display_episodes_count ||= podcast&.default_feed&.display_episodes_count if new_record?
     self.include_zones ||= DEFAULT_ZONES
     self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
     self.private = true
