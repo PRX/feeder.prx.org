@@ -255,7 +255,8 @@ describe PublishingPipelineState do
         PublishFeedJob.stub_any_instance(:save_file, nil) do
           PublishFeedJob.stub_any_instance(:publish_apple, ->(*args) { raise "error" }) do
             pqi = PublishingQueueItem.ensure_queued!(podcast)
-            PublishingPipelineState.attempt!(podcast, perform_later: false)
+
+            assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
           end
         end
 

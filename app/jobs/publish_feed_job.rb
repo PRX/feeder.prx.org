@@ -19,32 +19,51 @@ class PublishFeedJob < ApplicationJob
     podcast.feeds.each { |feed| publish_rss(podcast, feed) }
     PublishingPipelineState.complete!(podcast)
   rescue Apple::AssetStateTimeoutError => e
-    PublishingPipelineState.error!(podcast)
-    Rails.logger.error("Asset processing timeout", {podcast_id: podcast.id, error: e.message, backtrace: e.backtrace.join("\n")})
+    handle_apple_timeout_error(podcast, e)
   rescue => e
-    PublishingPipelineState.error!(podcast)
-    # TODO, we can remove this once we have a better way to track errors
-    Rails.logger.error("Error publishing podcast", {podcast_id: podcast.id, error: e.message, backtrace: e.backtrace.join("\n")})
+    handle_error(podcast, e)
   ensure
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
   def publish_apple(podcast, feed)
     return unless feed.publish_to_apple?
-    res = PublishAppleJob.do_perform(feed.apple_config)
-    PublishingPipelineState.publish_apple!(podcast)
-    res
-  rescue => e
-    NewRelic::Agent.notice_error(e)
-    res = PublishingPipelineState.error_apple!(podcast)
-    raise e if feed.apple_config.sync_blocks_rss?
-    res
+
+    begin
+      res = PublishAppleJob.do_perform(podcast.apple_config)
+      PublishingPipelineState.publish_apple!(podcast)
+      res
+    rescue => e
+      PublishingPipelineState.error_apple!(podcast)
+      NewRelic::Agent.notice_error(e)
+      raise e
+    end
   end
 
   def publish_rss(podcast, feed)
     res = save_file(podcast, feed)
     PublishingPipelineState.publish_rss!(podcast)
     res
+  rescue => e
+    handle_rss_error(podcast, feed, e)
+  end
+
+  def handle_apple_timeout_error(podcast, error, raise_error: true)
+    PublishingPipelineState.error!(podcast)
+    Rails.logger.error("Asset processing timeout", {podcast_id: podcast.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
+    raise error
+  end
+
+  def handle_rss_error(podcast, feed, error)
+    PublishingPipelineState.error!(podcast)
+    Rails.logger.error("Error publishing RSS", {podcast_id: podcast.id, feed_id: feed.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
+    raise error
+  end
+
+  def handle_error(podcast, error)
+    PublishingPipelineState.error!(podcast)
+    Rails.logger.error("Error publishing podcast", {podcast_id: podcast.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
+    raise error
   end
 
   def save_file(podcast, feed, options = {})
