@@ -2,6 +2,8 @@
 
 module Apple
   class Api
+    API_BASE = "https://api.podcastsconnect.apple.com/v1/"
+
     ERROR_RETRIES = 3
     SUCCESS_CODES = [200, 201].freeze
     DEFAULT_BATCH_SIZE = 5
@@ -79,10 +81,6 @@ module Apple
       JWT.encode(jwt_payload, ec_key, "ES256", jwt_headers)
     end
 
-    def api_base
-      "https://api.podcastsconnect.apple.com/v1/"
-    end
-
     def list_shows
       get("shows")
     end
@@ -115,8 +113,12 @@ module Apple
       res.flatten
     end
 
+    def self.join_url(api_frag)
+      URI.join(API_BASE, api_frag)
+    end
+
     def join_url(api_frag)
-      URI.join(api_base, api_frag)
+      self.class.join_url(api_frag)
     end
 
     def local_api_retry_errors(tries: ERROR_RETRIES)
