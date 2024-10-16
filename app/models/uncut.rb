@@ -1,5 +1,6 @@
 class Uncut < MediaResource
   validates :medium, inclusion: {in: %w[audio]}, if: :status_complete?
+  validates :duration, numericality: {greater_than: 0}, if: :status_complete?
   validate :validate_segmentation
 
   before_validation :set_defaults
