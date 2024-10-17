@@ -26,7 +26,7 @@ module AppleDelivery
   end
 
   def build_initial_delivery_status
-    Apple::EpisodeDeliveryStatus.new(episode: self)
+    Apple::EpisodeDeliveryStatus.default_status(self)
   end
 
   def apple_episode_delivery_status
