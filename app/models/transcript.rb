@@ -114,4 +114,10 @@ class Transcript < ApplicationRecord
   def _retry=(_val)
     retry!
   end
+
+  # mime type required for rss - not necessarily the Porter detected mime_type we store
+  # https://github.com/Podcastindex-org/podcast-namespace/blob/main/docs/1.0.md#attributes
+  def rss_mime_type
+    MIME_TYPES[format&.to_sym]
+  end
 end

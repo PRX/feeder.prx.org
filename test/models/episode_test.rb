@@ -476,4 +476,21 @@ describe Episode do
       assert episode.apple_needs_delivery?
     end
   end
+
+  describe "#ready_transcript" do
+    let(:episode) { build_stubbed(:episode) }
+
+    it "checks for a complete transcript" do
+      assert_nil episode.ready_transcript
+
+      episode.build_transcript(status: "processing")
+      assert_nil episode.ready_transcript
+
+      episode.transcript.status = "invalid"
+      assert_nil episode.ready_transcript
+
+      episode.transcript.status = "complete"
+      refute_nil episode.ready_transcript
+    end
+  end
 end

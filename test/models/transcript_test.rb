@@ -1,7 +1,7 @@
 require "test_helper"
 
 describe Transcript do
-  let(:episode) { create(:episode) }
+  let(:episode) { build_stubbed(:episode) }
   let(:url) { "http://sample/url/transcript.html" }
   let(:transcript) { build_stubbed(:transcript, episode: episode) }
 
@@ -59,6 +59,23 @@ describe Transcript do
       transcript.copy_media
 
       assert_equal task, transcript.task
+    end
+  end
+
+  describe "rss_mime_type" do
+    it "returns the mime type for the transcript format" do
+      assert_equal "text/html", transcript.rss_mime_type
+
+      transcript.format = "json"
+      assert_equal "application/json", transcript.rss_mime_type
+
+      transcript.format = nil
+      assert_nil transcript.rss_mime_type
+
+      # pretend bad data got into the db somehow
+      transcript.stub(:format, "whatev") do
+        assert_nil transcript.rss_mime_type
+      end
     end
   end
 end

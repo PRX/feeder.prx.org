@@ -365,7 +365,7 @@ class Episode < ApplicationRecord
     end
   end
 
-  def transcript?
-    transcript.present?
+  def ready_transcript
+    transcript if transcript&.status_complete?
   end
 end
