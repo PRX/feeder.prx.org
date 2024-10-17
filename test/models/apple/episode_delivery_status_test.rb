@@ -9,6 +9,15 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       it "belongs to an episode" do
         assert_equal episode, delivery_status.episode
       end
+
+      it "can belong to deleted episodes" do
+        episode.destroy
+        assert_equal episode, delivery_status.episode
+        assert_difference "Apple::EpisodeDeliveryStatus.count", +1 do
+          episode.apple_needs_delivery!
+        end
+        assert_equal episode, episode.apple_episode_delivery_statuses.first.episode
+      end
     end
 
     describe "scopes" do

@@ -11,7 +11,11 @@ FactoryBot.define do
 
     # set a complete episode factory varient
     factory :uploaded_apple_episode do
-      feeder_episode { create(:episode, apple_episode_delivery_statuses: [Apple::EpisodeDeliveryStatus.new(delivered: true)]) }
+      feeder_episode do
+        ep = create(:episode)
+        ep.apple_has_delivery!
+        ep
+      end
       transient do
         api_response do
           build(:apple_episode_api_response,

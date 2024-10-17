@@ -1,6 +1,6 @@
 module Apple
   class EpisodeDeliveryStatus < ApplicationRecord
-    belongs_to :episode, class_name: "::Episode"
+    belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
 
     def self.update_status(episode, attrs)
       new_status = (episode.apple_episode_delivery_status&.dup || new(episode: episode))
