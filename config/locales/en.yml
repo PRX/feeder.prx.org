@@ -496,6 +496,7 @@ en:
         embed_player_iframe: Embeddable Player IFrame
       transcript:
         formats:
+          text: Plain Text
           html: HTML
           json: JSON
           vtt: WebVTT
