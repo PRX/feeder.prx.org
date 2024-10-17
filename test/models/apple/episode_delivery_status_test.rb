@@ -126,4 +126,74 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe "#measure_asset_processing_duration" do
+    let(:episode) { create(:episode) }
+
+    before do
+      travel_to Time.now
+    end
+
+    after do
+      travel_back
+    end
+
+    it "returns nil when there are no delivery statuses" do
+      assert_nil episode.measure_asset_processing_duration
+    end
+
+    it "returns nil when the latest status has zero attempts" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
+      assert_nil episode.measure_asset_processing_duration
+    end
+
+    it "measures duration for contiguous increments" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 5.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 4.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 2, created_at: 3.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 3, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 4, created_at: 1.hour.ago)
+
+      assert_equal 5, episode.reload.measure_asset_processing_duration / 1.hour
+    end
+
+    it "measures duration for non-contiguous increments" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 3.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 4, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 5, created_at: 1.hour.ago)
+
+      assert_equal 3, episode.measure_asset_processing_duration / 1.hour
+    end
+
+    it "handles reset attempts correctly" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 5.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 4.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 2, created_at: 3.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 2.hours.ago)  # reset
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 1.hour.ago)
+
+      assert_equal 2, episode.measure_asset_processing_duration / 1.hour
+    end
+
+    it "returns nil when all attempts are zero" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
+
+      assert_nil episode.measure_asset_processing_duration
+    end
+
+    it "handles nil asset_processing_attempts correctly" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 1.hour.ago)
+
+      assert_nil episode.measure_asset_processing_duration
+    end
+
+    it "returns correct duration when latest attempt is zero" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 3.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
+
+      assert_nil episode.measure_asset_processing_duration
+    end
+  end
 end

@@ -436,36 +436,37 @@ describe Apple::Publisher do
     end
 
     it "logs a timeout message with correct information" do
-      eps = [
-        OpenStruct.new(
-          podcast_delivery_files: [OpenStruct.new(api_marked_as_uploaded?: true)],
-          apple_episode_delivery_status: OpenStruct.new(
-            increment_asset_wait: nil,
-            asset_processing_attempts: 3
-          )
-        )
-      ] * 2  # Create two identical episode structures
-      eps = eps.map.with_index do |e, i| # Set the feeder_id to a unique value
-        e = e.dup
-        e.feeder_id = i + 1
-        e
-      end
+      travel_to Time.now do
+        # Set up the delivery statuses
+        eps = [episode1, episode2]
+        eps.map { |e| e.feeder_episode.apple_episode_delivery_statuses.map(&:destroy) }
 
-      assert publisher
-      logs = capture_json_logs do
-        Apple::Episode.stub :wait_for_asset_state, [true, eps] do
-          error = assert_raises(RuntimeError) do
-            publisher.wait_for_asset_state(eps)
+        # Here is the log of attempts
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 0, created_at: 4.hour.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 1, created_at: 3.hour.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 2, created_at: 2.hour.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 3, created_at: 1.hour.ago)
+        eps.map(&:feeder_episode).map(&:reload)
+
+        # now simulate the asset timeout
+        assert publisher
+        logs = capture_json_logs do
+          Apple::Episode.stub :wait_for_asset_state, [true, eps] do
+            error = assert_raises(RuntimeError) do
+              publisher.wait_for_asset_state(eps)
+            end
+            assert_equal "Timed out waiting for asset state", error.message
           end
-          assert_equal "Timed out waiting for asset state", error.message
         end
-      end
 
-      log = logs[0]
-      assert_equal "Timed out waiting for asset state", log[:msg]
-      assert_equal 30, log[:level]
-      assert_equal 3, log[:attempts]
-      assert_equal 2, log[:episode_count]
+        # look at the logs
+        log = logs[0]
+        assert_equal "Timed out waiting for asset state", log[:msg]
+        assert_equal 30, log[:level]
+        assert_equal 3, log[:attempts]
+        assert_equal 4 * 60 * 60, log[:duration]
+        assert_equal 2, log[:episode_count]
+      end
     end
   end
 
