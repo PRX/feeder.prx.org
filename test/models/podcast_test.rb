@@ -16,6 +16,20 @@ describe Podcast do
     assert podcast.default_feed.private? == false
     assert podcast.default_feed.slug.nil?
     assert podcast.default_feed.file_name == Feed::DEFAULT_FILE_NAME
+    assert podcast.public_feed.present?
+    assert podcast.public_feed == podcast.default_feed
+  end
+
+  it "can set a guid on create or update" do
+    assert podcast.public_url == "http://feeds.feedburner.com/thornmorris"
+    assert podcast.guid == "95ebfb22-0002-5f78-a7aa-5acb5ac7daa9"
+    podcast.update_column(:guid, nil)
+    assert !podcast.guid.present?
+    podcast.set_guid
+    assert podcast.guid == "95ebfb22-0002-5f78-a7aa-5acb5ac7daa9"
+    podcast.update_column(:guid, nil)
+    podcast.set_guid!
+    assert podcast.guid == "95ebfb22-0002-5f78-a7aa-5acb5ac7daa9"
   end
 
   it "is episodic or serial" do

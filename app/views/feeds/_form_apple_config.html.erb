@@ -28,7 +28,16 @@
           <%= key_fields.hidden_field :key_id, data: {apple_key_target: "key"} %>
         <% end %>
       <% end %>
+
       <%= form.hidden_field :type, value: "Feeds::AppleSubscription" %>
+
+      <div class="col-6 mt-4">
+        <div class="form-floating input-group">
+          <%= form.number_field :display_episodes_count %>
+          <%= form.label :display_episodes_count %>
+          <%= field_help_text t(".help.display_episodes_count") %>
+        </div>
+      </div>
     </div>
   </div>
 </div>

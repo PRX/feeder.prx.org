@@ -92,7 +92,7 @@ class EpisodesController < ApplicationController
 
     respond_to do |format|
       if @episode.destroy
-        @episode.podcast.publish!
+        @episode.publish!
         format.html { redirect_to podcast_episodes_url(@episode.podcast_id), notice: t(".notice") }
       else
         format.html do
@@ -141,8 +141,6 @@ class EpisodesController < ApplicationController
       :title,
       :clean_title,
       :subtitle,
-      :summary,
-      :content,
       :description,
       :production_notes,
       :explicit_option,

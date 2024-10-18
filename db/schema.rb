@@ -366,7 +366,9 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_02_215949) do
     t.integer "lock_version", default: 0, null: false
     t.string "categories", array: true
     t.datetime "locked_until", precision: nil
+    t.string "guid"
     t.index ["categories"], name: "index_podcasts_on_categories", using: :gin
+    t.index ["guid"], name: "index_podcasts_on_guid"
     t.index ["path"], name: "index_podcasts_on_path", unique: true
     t.index ["prx_uri"], name: "index_podcasts_on_prx_uri", unique: true
     t.index ["source_url"], name: "index_podcasts_on_source_url", unique: true, where: "((deleted_at IS NULL) AND (source_url IS NOT NULL))"

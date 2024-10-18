@@ -1,0 +1,9 @@
+<%= form.fields_for :transcript, episode.transcript, include_id: false do |fields| %>
+  <div class="col-12 mb-4">
+    <div class="form-floating input-group">
+      <%= fields.select :format, episode_transcript_options, {} %>
+      <%= fields.label :format, required: true %>
+      <%= field_help_text t(".help.transcript") %>
+    </div>
+  </div>
+<% end %>

@@ -27,6 +27,8 @@ defaults:
     destroy: &destroy
       success: "%{model} deleted successfully."
       failure: "There was a problem deleting the %{model}."
+  uploads:
+    still_processing: &still_processing Processing is taking longer than expected. Thank you for your patience. You can continue waiting or retry.
 
 en:
   # general config
@@ -492,6 +494,13 @@ en:
         no_category: (None)
         embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
+      transcript:
+        formats:
+          text: Plain Text
+          html: HTML
+          json: JSON
+          vtt: WebVTT
+          srt: SRT
   # specific pages/views
   episodes:
     confirm_destroy:
@@ -649,6 +658,7 @@ en:
         title: MP3 Not Provided
       processing:
         hint: Processing
+        still_processing: *still_processing
     segmenter:
       modal:
         label:
@@ -713,9 +723,12 @@ en:
     transcript_labels: &transcript_labels
       title: Transcript
       transcript_file: Transcript File
-      transcript_help: Upload a JSON or TXT file containing the text transcript
+      transcript_help: Upload a file containing the text transcript
     form:
       confirm: Discard unsaved changes?
+    form_main:
+      help:
+        transcript: Enter the transcript format for this episode.
     form_status:
       <<: *form_status
       title: Transcript Status
@@ -731,6 +744,7 @@ en:
         <<: *transcript_labels
         loading: Loading...
         processing: Processing
+        still_processing: *still_processing
       complete:
         <<: *transcript_labels
       error:
@@ -767,6 +781,8 @@ en:
       title: Apple Subscriptions
       description: In order to publish episodes through Apple's Podcast Connect API, ensure you've delegated access to the PRX account in Podcast Connect.
       guide_link: Check out our guide to step you through the setup.
+      help:
+        display_episodes_count: You can optionally limit the number of episodes that Paid Subscribers will see in Apple Podcasts. Leave this field blank to include all.
     form_audio_format:
       title: Audio Format
       help:
@@ -881,6 +897,8 @@ en:
       size: Size
       status: Status
       upload: Upload a file or drag it here
+    processing:
+      still_processing: *still_processing
     title:
       episode_image: Cover Image
       feed_image: Thumbnail Image

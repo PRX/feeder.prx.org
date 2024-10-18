@@ -245,7 +245,7 @@ module Apple
         (waiting_timed_out, remaining_eps) = Apple::Episode.wait_for_asset_state(api, eps)
         if waiting_timed_out
           e = Apple::AssetStateTimeoutError.new(remaining_eps)
-          Rails.logger.info("Timed out waiting for asset state", {attempts: e.attempts, episode_count: e.episodes.length})
+          Rails.logger.info("Timed out waiting for asset state", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
           raise e
         end
       end

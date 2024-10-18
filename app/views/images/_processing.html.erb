@@ -22,10 +22,20 @@
         <% if image.size.present? %>
           <small class="text-muted">(<%= number_to_human_size(image.size) %>)</small>
         <% end %>
+
+        <% if upload_stalled?(image) %>
+          <%= link_to retry_path, method: :put, class: "btn btn-sm btn-warning ms-2" do %>
+            <span class="material-icons">restart_alt</span> <%= t("images.label.retry") %>
+          <% end %>
+        <% end %>
       </div>
 
       <label><%= t("images.label.image_file") %></label>
     </div>
+
+    <% if upload_stalled?(image) %>
+      <small class="text-muted"><%= t(".still_processing") %></small>
+    <% end %>
 
     <%# just keep polling until the file finishes processing %>
     <%= link_to "", request.fullpath, class: "d-none", data: {controller: "polling"} %>
