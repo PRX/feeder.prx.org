@@ -1,6 +1,7 @@
 require "test_helper"
 
 describe PublishFeedJob do
+  let(:stub_client) { Aws::S3::Client.new(stub_responses: true) }
   let(:episode) { create(:episode, prx_uri: "/api/v1/stories/87683") }
   let(:podcast) { episode.podcast }
   let(:feed) { create(:feed, podcast: podcast, slug: "adfree") }
@@ -16,7 +17,18 @@ describe PublishFeedJob do
   end
 
   describe "saving the rss file" do
-    let(:stub_client) { Aws::S3::Client.new(stub_responses: true) }
+    describe "#perform" do
+      it "transitions to the error state upon general error" do
+        job.stub(:s3_client, stub_client) do
+          pqi = PublishingPipelineState.start_pipeline!(podcast)
+          # Simulate some method blowing up
+          PublishingPipelineState.stub(:publish_rss!, ->(*, **) { raise "some general" }) do
+            assert_raises(RuntimeError) { job.perform(podcast, pqi) }
+            assert_equal ["created", "started", "error_rss", "error"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
+          end
+        end
+      end
+    end
 
     it "can save a podcast file" do
       job.stub(:s3_client, stub_client) do
@@ -26,22 +38,9 @@ describe PublishFeedJob do
     end
 
     it "transitions to the error state upon rss error" do
-      job.stub(:s3_client, stub_client) do
-        PublishingPipelineState.start_pipeline!(podcast)
-        assert_raises(RuntimeError) { job.handle_rss_error(podcast, feed, RuntimeError.new("rss error")) }
-        assert_equal ["created", "error"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.pluck(:status)
-      end
-    end
-
-    it "transitions to the error state upon general error" do
-      # Simulate some method blowing up
-      job.stub(:s3_client, stub_client) do
-        PublishingPipelineState.start_pipeline!(podcast)
-        PublishingPipelineState.stub(:publish_rss!, ->(*, **) { raise "some general" }) do
-          assert_raises(RuntimeError) { job.handle_rss_error(podcast, feed, RuntimeError.new("some general")) }
-          assert_equal ["created", "error"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.pluck(:status)
-        end
-      end
+      PublishingPipelineState.start_pipeline!(podcast)
+      assert_raises(RuntimeError) { job.handle_rss_error(podcast, feed, RuntimeError.new("rss error")) }
+      assert_equal ["created", "error_rss"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
     end
 
     describe "validations of the publishing pipeline" do
@@ -112,6 +111,25 @@ describe PublishFeedJob do
     before do
       assert private_feed.persisted?
       assert podcast.reload.apple_config.present?
+    end
+
+    describe "#perform" do
+      it "transitions to the error state upon general apple error" do
+        job.stub(:s3_client, stub_client) do
+          pqi = PublishingPipelineState.start_pipeline!(podcast)
+          # Simulate some method blowing up
+          PublishAppleJob.stub(:do_perform, ->(*, **) { raise "some apple error" }) do
+            assert_raises(RuntimeError) { job.perform(podcast, pqi) }
+            assert_equal ["created", "started", "error_apple", "error"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
+          end
+        end
+      end
+    end
+
+    it "transitions to the apple_error state upon general apple error" do
+      PublishingPipelineState.start_pipeline!(podcast)
+      assert_raises(RuntimeError) { job.handle_apple_error(podcast, RuntimeError.new("apple error")) }
+      assert_equal ["created", "error_apple"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.pluck(:status)
     end
 
     it "does not schedule publishing to apple if the apple config prevents it" do

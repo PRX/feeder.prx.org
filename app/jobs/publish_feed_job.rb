@@ -34,9 +34,7 @@ class PublishFeedJob < ApplicationJob
       PublishingPipelineState.publish_apple!(podcast)
       res
     rescue => e
-      PublishingPipelineState.error_apple!(podcast)
-      NewRelic::Agent.notice_error(e)
-      raise e
+      handle_apple_error(podcast, e)
     end
   end
 
@@ -54,8 +52,14 @@ class PublishFeedJob < ApplicationJob
     raise error
   end
 
+  def handle_apple_error(podcast, error)
+    PublishingPipelineState.error_apple!(podcast)
+    NewRelic::Agent.notice_error(error)
+    raise error
+  end
+
   def handle_rss_error(podcast, feed, error)
-    PublishingPipelineState.error!(podcast)
+    PublishingPipelineState.error_rss!(podcast)
     Rails.logger.error("Error publishing RSS", {podcast_id: podcast.id, feed_id: feed.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
     raise error
   end
