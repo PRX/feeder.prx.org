@@ -12,5 +12,16 @@ module Apple
     def episode_ids
       episodes.map(&:feeder_id)
     end
+
+    def log_level
+      case attempts
+      when 0..4
+        :warn
+      when 5
+        :error
+      else
+        :fatal
+      end
+    end
   end
 end

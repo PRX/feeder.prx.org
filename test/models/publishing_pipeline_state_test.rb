@@ -273,6 +273,29 @@ describe PublishingPipelineState do
       end
     end
 
+    describe "retry!" do
+      it 'sets the status to "retry"' do
+        pqi = nil
+        PublishFeedJob.stub_any_instance(:save_file, nil) do
+          PublishFeedJob.stub_any_instance(:publish_apple, ->(*args) { raise Apple::AssetStateTimeoutError.new([]) }) do
+            pqi = PublishingQueueItem.ensure_queued!(podcast)
+            PublishingPipelineState.attempt!(podcast, perform_later: false)
+          end
+        end
+
+        assert_equal ["created", "started", "retry"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
+        assert_equal "retry", pqi.reload.last_pipeline_state
+
+        # it retries
+        PublishingPipelineState.retry_failed_pipelines!
+        assert_equal ["created", "started", "retry", "created"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
+        res_pqi = PublishingQueueItem.current_unfinished_item(podcast)
+
+        assert res_pqi.id > pqi.id
+        assert_equal "created", res_pqi.last_pipeline_state
+      end
+    end
+
     describe "complete!" do
       it 'sets the status to "complete"' do
         PublishFeedJob.stub_any_instance(:save_file, nil) do

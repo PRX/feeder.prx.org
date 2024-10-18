@@ -46,10 +46,18 @@ class PublishFeedJob < ApplicationJob
     handle_rss_error(podcast, feed, e)
   end
 
-  def handle_apple_timeout_error(podcast, error, raise_error: true)
-    PublishingPipelineState.error!(podcast)
-    Rails.logger.error("Asset processing timeout", {podcast_id: podcast.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
-    raise error
+  def handle_apple_timeout_error(podcast, asset_timeout_error)
+    PublishingPipelineState.retry!(podcast)
+    Rails.logger.send(asset_timeout_error.log_level) do
+      [
+        "Asset processing timeout",
+        {
+          podcast_id: podcast.id,
+          error: asset_timeout_error.message,
+          backtrace: asset_timeout_error&.backtrace&.join("\n")
+        }
+      ]
+    end
   end
 
   def handle_apple_error(podcast, error)
