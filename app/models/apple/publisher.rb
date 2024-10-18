@@ -148,9 +148,12 @@ module Apple
           mark_delivery_files_uploaded!(eps)
 
           wait_for_upload_processing(eps)
+
+          increment_asset_wait!(eps)
           wait_for_asset_state(eps)
 
           publish_drafting!(eps)
+          reset_asset_wait!(eps)
 
           raise_delivery_processing_errors(eps)
         end
@@ -226,12 +229,26 @@ module Apple
       end
     end
 
+    def increment_asset_wait!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
+
+        # Mark the episodes as waiting again for asset processing
+        eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
+      end
+    end
+
     def wait_for_asset_state(eps)
       Rails.logger.tagged("##{__method__}") do
         eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
 
         (waiting_timed_out, _) = Apple::Episode.wait_for_asset_state(api, eps)
-        raise "Timed out waiting for asset state" if waiting_timed_out
+        if waiting_timed_out
+          attempts = eps.map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }.max
+          max_duration = eps.map { |ep| ep.feeder_episode.measure_asset_processing_duration }.compact.max
+          Rails.logger.info("Timed out waiting for asset state", {attempts: attempts, duration: max_duration, episode_count: eps.length})
+          raise "Timed out waiting for asset state"
+        end
       end
     end
 
@@ -363,7 +380,15 @@ module Apple
         eps = eps.select { |ep| ep.drafting? && ep.container_upload_complete? }
 
         res = Apple::Episode.publish(api, show, eps)
+        eps.each { |ep| ep.apple_episode_delivery_status.reset_asset_wait }
+
         Rails.logger.info("Published #{res.length} drafting episodes.")
+      end
+    end
+
+    def reset_asset_wait!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps.each { |ep| ep.apple_episode_delivery_status.reset_asset_wait }
       end
     end
 
