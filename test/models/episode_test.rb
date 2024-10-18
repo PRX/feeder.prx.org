@@ -491,7 +491,6 @@ describe Episode do
 
       episode.transcript.status = "complete"
       refute_nil episode.ready_transcript
-
     end
   end
 
