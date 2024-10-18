@@ -304,9 +304,7 @@ class Episode < ApplicationRecord
 
   def sanitize_text
     self.description = sanitize_white_list(description) if description_changed?
-    self.content = sanitize_white_list(content) if content_changed?
     self.subtitle = sanitize_text_only(subtitle) if subtitle_changed?
-    self.summary = sanitize_links_only(summary) if summary_changed?
     self.title = sanitize_text_only(title) if title_changed?
     self.original_guid = original_guid.strip if !original_guid.blank? && original_guid_changed?
   end
@@ -365,5 +363,9 @@ class Episode < ApplicationRecord
     unless is_ready
       errors.add(:base, :media_not_ready, message: "media not ready")
     end
+  end
+
+  def ready_transcript
+    transcript if transcript&.status_complete?
   end
 end

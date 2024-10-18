@@ -124,7 +124,6 @@ class FeedsController < ApplicationController
       :file_name,
       :title,
       :subtitle,
-      :summary,
       :description,
       :include_donation_url,
       :include_podcast_value,

@@ -102,6 +102,10 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
       xml.podcast :funding, "Support the Show!", "url" => @podcast.donation_url
     end
 
+    if @podcast.guid.present?
+      xml.podcast :guid, @podcast.guid
+    end
+
     @episodes.each_with_index do |ep, index|
       xml.item do
         xml.guid(ep.item_guid, isPermaLink: !!ep.is_perma_link)
@@ -155,7 +159,13 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
               url: ep.enclosure_url(@feed))
           end
 
-          xml.content(:encoded) { xml.cdata!(ep.content) } unless ep.content.blank?
+          if ep.ready_transcript
+            xml.podcast(:transcript,
+              type: ep.ready_transcript.rss_mime_type,
+              url: ep.ready_transcript.url)
+          end
+
+          xml.content(:encoded) { xml.cdata!(episode_description(ep)) }
         end
       end
     end

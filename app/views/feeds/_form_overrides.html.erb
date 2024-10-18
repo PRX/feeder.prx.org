@@ -16,7 +16,6 @@
 
         <div class="col-12 mb-4">
           <div class="form-floating input-group">
-            <%= form.hidden_field :summary, value: nil %>
             <%= form.trix_editor :description %>
             <%= form.label :description %>
             <%= field_help_text t(".help.description") %>

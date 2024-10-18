@@ -1,11 +1,14 @@
 require "text_sanitizer"
 
 class Podcast < ApplicationRecord
-  FEED_ATTRS = %i[subtitle description summary url new_feed_url display_episodes_count
+  FEED_ATTRS = %i[subtitle description url new_feed_url display_episodes_count
     display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image
     ready_feed_image ready_itunes_image ready_image itunes_category itunes_subcategory itunes_categories]
   FEED_GETTERS = FEED_ATTRS.map { |s| [s, "#{s}_was".to_sym, "#{s}_changed?".to_sym] }.flatten
   FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
+
+  # https://github.com/Podcastindex-org/podcast-namespace/blob/main/docs/1.0.md#guid
+  PODCAST_NAMESPACE = "ead4c236-bf58-58c6-a2c6-a6b28d128cb6".freeze
 
   include TextSanitizer
   include AdvisoryLocks
@@ -57,8 +60,18 @@ class Podcast < ApplicationRecord
     Podcast.find_by(prx_uri: series_uri)
   end
 
+  def set_guid!
+    update!(guid: guid) if set_guid
+  end
+
+  def set_guid
+    return unless public_url.present? && guid.blank?
+    self.guid = Digest::UUID.uuid_v5(PODCAST_NAMESPACE, public_url)
+  end
+
   def set_defaults
     self.explicit ||= "false"
+    set_guid
   end
 
   def default_feed

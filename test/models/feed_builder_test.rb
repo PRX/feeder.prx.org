@@ -2,7 +2,8 @@ require "test_helper"
 require "feed_builder"
 
 describe FeedBuilder do
-  let(:episode) { create(:episode_with_media, prx_uri: "/api/v1/stories/87683") }
+  let(:transcript) { create(:transcript) }
+  let(:episode) { create(:episode_with_media, prx_uri: "/api/v1/stories/87683", transcript: transcript) }
   let(:podcast) { episode.podcast }
   let(:feed) { create(:feed, podcast: podcast, title: podcast.title, private: false) }
   let(:builder) { FeedBuilder.new(podcast, feed) }
@@ -214,5 +215,18 @@ describe FeedBuilder do
       text = podcast_funding.text
       _(text).must_equal("Support the Show!")
     end
+  end
+
+  it "displays the transcript attributes" do
+    podcast_transcript = rss_feed.css("podcast|transcript")
+
+    rss = builder.to_feed_xml
+    _(rss).must_include "<podcast:transcript"
+
+    url = podcast_transcript.attribute("url").to_s
+    _(url).must_equal("http://some.where/test/fixtures/sampletranscript.html")
+
+    type = podcast_transcript.attribute("type").to_s
+    _(type).must_equal("text/html")
   end
 end
