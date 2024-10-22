@@ -1,5 +1,5 @@
 class PodcastsController < ApplicationController
-  include PrxAccess
+  include Prx::Api
   include SlackHelper
 
   before_action :set_podcast, only: %i[show edit update destroy]

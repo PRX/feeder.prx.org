@@ -1,5 +1,5 @@
 module EmbedPlayerHelper
-  include PrxAccess
+  include Prx::Api
 
   EMBED_PLAYER_LANDING_PATH = "/listen"
   EMBED_PLAYER_PATH = "/e"

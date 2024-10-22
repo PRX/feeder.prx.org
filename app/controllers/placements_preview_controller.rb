@@ -1,5 +1,5 @@
 class PlacementsPreviewController < ApplicationController
-  include PrxAccess
+  include Prx::Api
 
   before_action :set_podcast
 
@@ -16,27 +16,9 @@ class PlacementsPreviewController < ApplicationController
     authorize @podcast, :show?
   end
 
-  def placements_href
-    "/api/v1/podcasts/#{@podcast.id}/placements"
-  end
-
-  def fetch_placements
-    if ENV["AUGURY_HOST"].present?
-      api(root: augury_root, account: "*").tap { |a| a.href = placements_href }.get
-    end
-  rescue HyperResource::ClientError, HyperResource::ServerError, NotImplementedError => e
-    Rails.logger.error("Error fetching placements", error: e.message)
-    nil
-  end
-
-  def cached_placements
-    Rails.cache.fetch(placements_href, expires_in: 1.minute) do
-      fetch_placements
-    end
-  end
-
   def get_placement(original_count)
-    cached_placements&.find { |i| i.original_count == original_count }
+    placements = Prx::Augury.new.placements(@podcast)
+    placements&.find { |i| i.original_count == original_count }
   end
 
   def get_zones(original_count)

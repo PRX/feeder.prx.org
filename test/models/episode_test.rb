@@ -1,9 +1,6 @@
 require "test_helper"
-require "prx_access"
 
 describe Episode do
-  include PrxAccess
-
   let(:episode) { create(:episode_with_media) }
 
   it "initializes guid and overrides" do
