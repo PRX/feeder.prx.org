@@ -43,6 +43,17 @@ class Api::PodcastsController < Api::BaseController
 
   private
 
+  def show_resource
+    if params[:series_id]
+      resource = Podcast.find_by(prx_uri: "/api/v1/series/#{params[:series_id]}")
+      raise HalApi::Errors::NotFound.new if resource.nil?
+
+      @podcast = resource
+    end
+
+    super
+  end
+
   def find_base
     super.with_deleted
   end
