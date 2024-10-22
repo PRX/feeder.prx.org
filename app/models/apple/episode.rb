@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Apple
-  class Episode
+  class Episode < Integrations::Base::Episode
     include Apple::ApiWaiting
     include Apple::ApiResponse
     attr_accessor :show,
@@ -219,6 +219,14 @@ module Apple
       @show = show
       @feeder_episode = feeder_episode
       @api = api || Apple::Api.from_env
+    end
+
+    def synced_with_integration?
+      synced_with_apple?
+    end
+
+    def integration_new?
+      apple_new?
     end
 
     def api_response

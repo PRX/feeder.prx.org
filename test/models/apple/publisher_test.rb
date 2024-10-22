@@ -38,10 +38,10 @@ describe Apple::Publisher do
 
     it "should only return episodes that have an apple state" do
       episode.stub(:apple_new?, true) do
-        assert_equal apple_publisher.only_episodes_with_apple_state([episode]), []
+        assert_equal apple_publisher.only_episodes_with_integration_state([episode]), []
       end
       episode.stub(:apple_new?, false) do
-        assert_equal apple_publisher.only_episodes_with_apple_state([episode]), [episode]
+        assert_equal apple_publisher.only_episodes_with_integration_state([episode]), [episode]
       end
     end
   end
