@@ -24,7 +24,7 @@ describe Uncut do
 
       uncut.segmentation[0] = [0.5, 1]
       uncut.segmentation[2] = [3.5, nil]
-      episode.contents[0].update(status: "complete", medium: "audio")
+      episode.contents[0].update!(status: "complete", medium: "audio", duration: 1)
       uncut.slice_contents
 
       assert_equal 5, episode.contents.size
@@ -48,6 +48,18 @@ describe Uncut do
       refute uncut.valid?
 
       uncut.medium = "audio"
+      assert uncut.valid?
+    end
+
+    it "must have a duration greater than 0 when complete" do
+      assert uncut.valid?
+      assert uncut.status_created?
+
+      uncut.duration = 0
+      uncut.status = "complete"
+      refute uncut.valid?
+
+      uncut.duration = 100
       assert uncut.valid?
     end
   end

@@ -1,4 +1,19 @@
 class Transcript < ApplicationRecord
+  FORMATS = {
+    text: "text",
+    html: "html",
+    json: "json",
+    vtt: "vtt",
+    srt: "srt"
+  }
+  MIME_TYPES = {
+    text: "text/plain",
+    html: "text/html",
+    json: "application/json",
+    vtt: "text/vtt",
+    srt: "application/srt"
+  }
+
   acts_as_paranoid
 
   belongs_to :episode
@@ -10,9 +25,12 @@ class Transcript < ApplicationRecord
 
   validates :original_url, presence: true
 
-  validates :mime_type, inclusion: {in: %w[text/plain application/json]}, if: :status_complete?, allow_blank: true
+  validates :mime_type, inclusion: {in: MIME_TYPES.values}, if: :status_complete?, allow_blank: true
+
+  validates :format, presence: true
 
   enum :status, [:started, :created, :processing, :complete, :error, :retrying, :cancelled, :invalid], prefix: true
+  enum :format, FORMATS, prefix: true, default: :text
 
   def published_url
     "#{episode.base_published_url}/#{transcript_path}"
@@ -66,7 +84,6 @@ class Transcript < ApplicationRecord
   end
 
   def reset_transcript_attributes
-    self.format = nil
     self.mime_type = nil
     self.file_size = nil
     self.status = :created
@@ -98,5 +115,11 @@ class Transcript < ApplicationRecord
 
   def _retry=(_val)
     retry!
+  end
+
+  # mime type required for rss - not necessarily the Porter detected mime_type we store
+  # https://github.com/Podcastindex-org/podcast-namespace/blob/main/docs/1.0.md#attributes
+  def rss_mime_type
+    MIME_TYPES[format&.to_sym]
   end
 end
