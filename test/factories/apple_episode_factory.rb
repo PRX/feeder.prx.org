@@ -11,7 +11,11 @@ FactoryBot.define do
 
     # set a complete episode factory varient
     factory :uploaded_apple_episode do
-      feeder_episode { create(:episode, apple_episode_delivery_statuses: [Apple::EpisodeDeliveryStatus.new(delivered: true)]) }
+      feeder_episode do
+        ep = create(:episode)
+        ep.apple_has_delivery!
+        ep
+      end
       transient do
         api_response do
           build(:apple_episode_api_response,
@@ -22,7 +26,11 @@ FactoryBot.define do
       after(:build) do |apple_episode, evaluator|
         container = create(:apple_podcast_container, episode: apple_episode.feeder_episode)
         delivery = create(:apple_podcast_delivery, episode: apple_episode.feeder_episode, podcast_container: container)
-        _delivery_file = create(:apple_podcast_delivery_file, delivery: delivery, episode: apple_episode.feeder_episode)
+        _delivery_file = create(:apple_podcast_delivery_file,
+          delivery: delivery,
+          episode: apple_episode.feeder_episode,
+          api_marked_as_uploaded: true,
+          upload_operations_complete: true)
 
         create(:content, episode: apple_episode.feeder_episode, position: 1, status: "complete")
         create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
