@@ -16,7 +16,7 @@ class Transcript < ApplicationRecord
 
   acts_as_paranoid
 
-  belongs_to :episode
+  belongs_to :episode, touch: true
 
   has_one :task, -> { order("id desc") }, as: :owner
   has_many :tasks, as: :owner
