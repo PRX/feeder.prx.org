@@ -35,13 +35,11 @@ class FeedsController < ApplicationController
           ["#{sj["id"]} (#{sj["attributes"]["title"]})", sj["id"]]
         end
       end.compact
-    else
-      nil
     end
   end
 
   def used_apple_show_ids(feed)
-    Feed.apple.distinct.where('id != ?', feed.id).pluck(:apple_show_id).compact
+    Feed.apple.distinct.where("id != ?", feed.id).pluck(:apple_show_id).compact
   end
 
   def new_apple
