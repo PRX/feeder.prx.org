@@ -25,21 +25,8 @@ class FeedsController < ApplicationController
 
   def get_apple_show_options(feed)
     if !feed.edit_locked? && feed.apple? && feed.apple_show_id.blank? && feed.apple_config
-      used_ids = used_apple_show_ids(feed)
-      api = Apple::Api.from_apple_config(feed.apple_config)
-      shows_json = Apple::Show.apple_shows_json(api) || []
-      shows_json.map do |sj|
-        if used_ids.include?(sj["id"])
-          nil
-        else
-          ["#{sj["id"]} (#{sj["attributes"]["title"]})", sj["id"]]
-        end
-      end.compact
+      feed.apple_show_options
     end
-  end
-
-  def used_apple_show_ids(feed)
-    Feed.apple.distinct.where("id != ?", feed.id).pluck(:apple_show_id).compact
   end
 
   def new_apple

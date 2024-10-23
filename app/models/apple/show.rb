@@ -17,13 +17,20 @@ module Apple
     end
 
     def self.connect_existing(apple_show_id, apple_config)
-      api = Apple::Api.from_apple_config(apple_config)
+      if (sl = SyncLog.find_by(feeder_id: apple_config.public_feed.id, feeder_type: :feeds))
+        if apple_show_id.blank?
+          sl.destroy!
+        elsif sl.external_id != apple_show_id
+          sl.update(external_id: apple_show_id)
+        end
+      end
 
       SyncLog.log!(feeder_id: apple_config.public_feed.id,
         feeder_type: :feeds,
         sync_completed_at: Time.now.utc,
         external_id: apple_show_id)
 
+      api = Apple::Api.from_apple_config(apple_config)
       new(api: api,
         public_feed: apple_config.public_feed,
         private_feed: apple_config.private_feed)

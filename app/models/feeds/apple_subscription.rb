@@ -14,6 +14,8 @@ class Feeds::AppleSubscription < Feed
 
   after_create :republish_public_feed
 
+  after_save_commit :update_apple_show
+
   has_one :apple_config, class_name: "::Apple::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
   accepts_nested_attributes_for :apple_config, allow_destroy: true, reject_if: :all_blank
@@ -33,6 +35,25 @@ class Feeds::AppleSubscription < Feed
     self.private = true
 
     super
+  end
+
+  def update_apple_show
+    if previous_changes[:apple_show_id]
+      Apple::Show.connect_existing(apple_show_id, apple_config)
+    end
+  end
+
+  def apple_show_options
+    used_ids = Feed.apple.distinct.where("id != ?", id).pluck(:apple_show_id).compact
+    api = Apple::Api.from_apple_config(apple_config)
+    shows_json = Apple::Show.apple_shows_json(api) || []
+    shows_json.map do |sj|
+      if used_ids.include?(sj["id"])
+        nil
+      else
+        ["#{sj["id"]} (#{sj["attributes"]["title"]})", sj["id"]]
+      end
+    end.compact
   end
 
   def guess_audio_format
