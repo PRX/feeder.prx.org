@@ -24,7 +24,7 @@ class FeedsController < ApplicationController
   end
 
   def get_apple_show_options(feed)
-    if feed.apple? && feed.apple_show_id.blank? && feed.apple_config
+    if !feed.edit_locked? && feed.apple? && feed.apple_show_id.blank? && feed.apple_config
       used_ids = used_apple_show_ids(feed)
       api = Apple::Api.from_apple_config(feed.apple_config)
       shows_json = Apple::Show.apple_shows_json(api) || []

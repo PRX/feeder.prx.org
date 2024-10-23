@@ -836,6 +836,8 @@ en:
       title: Feed Status
     form:
       <<: *form
+      help:
+        locked: This feed is locked, to make changes please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>
     helper:
       episode_offset_options:
         "-300": 5 minutes early
