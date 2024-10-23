@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "test_helper"
 
 describe Apple::Publisher do
@@ -12,6 +10,8 @@ describe Apple::Publisher do
   let(:apple_publisher) do
     Apple::Publisher.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
   end
+
+  let(:publisher) { apple_publisher }
 
   before do
     stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200")
@@ -343,16 +343,52 @@ describe Apple::Publisher do
   end
 
   describe "#publish_drafting!" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show, api_response: build(:apple_episode_api_response, publishing_state: "DRAFTING")) }
+    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show, api_response: build(:apple_episode_api_response, publishing_state: "DRAFTING")) }
+    let(:episodes) { [episode1, episode2] }
+
     it "should call the episode publish drafting class method" do
-      ep = OpenStruct.new(drafting?: true, container_upload_complete?: true)
       mock = Minitest::Mock.new
-      mock.expect(:call, [], [apple_publisher.api, apple_publisher.show, [ep]])
+      mock.expect(:call, [], [Apple::Api, Apple::Show, episodes])
 
       Apple::Episode.stub(:publish, mock) do
-        apple_publisher.publish_drafting!([ep])
+        apple_publisher.publish_drafting!(episodes)
       end
 
       assert mock.verify
+    end
+  end
+
+  describe "#reset_asset_wait!" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episodes) { [episode1, episode2] }
+
+    it "should reset the asset processing attempts" do
+      episodes.each do |ep|
+        ep.feeder_episode.apple_update_delivery_status(asset_processing_attempts: 3)
+      end
+      assert_equal 3, episode1.delivery_status.asset_processing_attempts
+      assert_equal 3, episode2.delivery_status.asset_processing_attempts
+
+      apple_publisher.reset_asset_wait!(episodes)
+
+      assert_equal 0, episode1.delivery_status.asset_processing_attempts
+      assert_equal 0, episode2.delivery_status.asset_processing_attempts
+    end
+
+    it "should reset the asset processing attempts for non-drafting episodes" do
+      episodes.each do |ep|
+        ep.feeder_episode.apple_update_delivery_status(asset_processing_attempts: 3)
+      end
+
+      assert_equal 3, episode1.delivery_status.asset_processing_attempts
+      assert_equal 3, episode2.delivery_status.asset_processing_attempts
+
+      apple_publisher.reset_asset_wait!(episodes)
+
+      assert_equal 0, episode1.delivery_status.asset_processing_attempts
+      assert_equal 0, episode2.delivery_status.asset_processing_attempts
     end
   end
 
@@ -366,6 +402,71 @@ describe Apple::Publisher do
       end
 
       assert mock.verify
+    end
+  end
+
+  describe "#increment_asset_wait!" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episodes) { [episode1, episode2] }
+
+    it "should increment asset wait count for each episode" do
+      episodes.each do |ep|
+        assert_equal 0, ep.apple_episode_delivery_status.asset_processing_attempts
+      end
+
+      apple_publisher.increment_asset_wait!(episodes)
+
+      episodes.each do |ep|
+        assert_equal 1, ep.apple_episode_delivery_status.asset_processing_attempts
+      end
+    end
+
+    it "should only increment the episodes that are still waiting" do
+      assert 1, episode1.podcast_delivery_files.length
+      assert 1, episode2.podcast_delivery_files.length
+
+      episode2.podcast_delivery_files.first.stub(:api_marked_as_uploaded?, false) do
+        episode1.podcast_delivery_files.first.stub(:api_marked_as_uploaded?, true) do
+          apple_publisher.increment_asset_wait!(episodes)
+        end
+      end
+
+      assert_equal [1, 0], [episode1, episode2].map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }
+    end
+
+    it "logs a timeout message with correct information" do
+      travel_to Time.now do
+        # Set up the delivery statuses
+        eps = [episode1, episode2]
+        eps.map { |e| e.feeder_episode.apple_episode_delivery_statuses.map(&:destroy) }
+
+        # Here is the log of attempts
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 0, created_at: 4.hour.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 1, created_at: 3.hour.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 2, created_at: 2.hour.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 3, created_at: 1.hour.ago)
+        eps.map(&:feeder_episode).map(&:reload)
+
+        # now simulate the asset timeout
+        assert publisher
+        logs = capture_json_logs do
+          Apple::Episode.stub :wait_for_asset_state, [true, eps] do
+            error = assert_raises(RuntimeError) do
+              publisher.wait_for_asset_state(eps)
+            end
+            assert_equal "Timed out waiting for asset state", error.message
+          end
+        end
+
+        # look at the logs
+        log = logs[0]
+        assert_equal "Timed out waiting for asset state", log[:msg]
+        assert_equal 30, log[:level]
+        assert_equal 3, log[:attempts]
+        assert_equal 4 * 60 * 60, log[:duration]
+        assert_equal 2, log[:episode_count]
+      end
     end
   end
 

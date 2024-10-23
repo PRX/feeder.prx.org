@@ -52,6 +52,11 @@ class Api::EpisodesController < Api::BaseController
       raise HalApi::Errors::NotFound.new if resource.nil?
 
       @episode = resource
+    elsif params[:story_id]
+      resource = Episode.find_by(prx_uri: "/api/v1/stories/#{params[:story_id]}")
+      raise HalApi::Errors::NotFound.new if resource.nil?
+
+      @episode = resource
     end
 
     super
