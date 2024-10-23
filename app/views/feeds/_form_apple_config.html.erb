@@ -27,9 +27,34 @@
           <%= key_fields.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
           <%= key_fields.hidden_field :key_id, data: {apple_key_target: "key"} %>
         <% end %>
-      <% end %>
 
-      <%= form.hidden_field :type, value: "Feeds::AppleSubscription" %>
+        <div class="col-12 mt-4">
+          <div class="form-check">
+            <%= config_form.check_box :publish_enabled %>
+            <div class="d-flex align-items-center">
+              <%= config_form.label :publish_enabled %>
+              <%= help_text t(".help.publish_enabled") %>
+            </div>
+          </div>
+          <div class="form-check">
+            <%= config_form.check_box :sync_blocks_rss %>
+            <div class="d-flex align-items-center">
+              <%= config_form.label :sync_blocks_rss %>
+              <%= help_text t(".help.sync_blocks_rss") %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      <div class="col-12 mt-4">
+        <div class="form-floating">
+          <% if !@apple_show_options.blank? %>
+            <%= form.select :apple_show_id, @apple_show_options, {include_blank: true} %>
+          <% else %>
+            <%= form.text_field :apple_show_id %>
+          <% end %>
+          <%= form.label :apple_show_id, "Apple Show ID" %>
+        </div>
+      </div>
 
       <div class="col-6 mt-4">
         <div class="form-floating input-group">
@@ -38,6 +63,9 @@
           <%= field_help_text t(".help.display_episodes_count") %>
         </div>
       </div>
+
+      <%= form.hidden_field :type, value: "Feeds::AppleSubscription" %>
+
     </div>
   </div>
 </div>

@@ -8,6 +8,10 @@ module Apple
       :private_feed,
       :api
 
+    def self.apple_shows_json(api)
+      api.get_paged_collection("shows")
+    end
+
     def self.apple_episode_json(api, show_id)
       api.get_paged_collection("shows/#{show_id}/episodes")
     end
