@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_09_28_150204) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_23_012600) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -237,6 +237,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_28_150204) do
     t.datetime "deleted_at", precision: nil
     t.integer "lock_version", default: 0, null: false
     t.string "type"
+    t.string "apple_show_id"
+    t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)"
