@@ -6,13 +6,15 @@
 <%= form_with(url: url, model: model, method: method, html: {autocomplete: "off"}, data: data) do |form| %>
   <div class="row my-4 mx-2" data-controller="feed-tokens" data-feed-tokens-unsaved-outlet="form">
     <div class="col-lg-8">
+    <% if feed.edit_locked? %>
+      <div class="col-12">
+        <div class="alert alert-danger" role="alert">
+          <b><%= t(".title.warning") %></b>
+          <%= t(".help.locked").html_safe %>
+        </div>
+      </div>
+    <% end %>
       <div class="row" data-controller="feed-link">
-        <% if feed.edit_locked? %>
-          <div class="alert alert-danger mb-1" role="alert">
-            <b><%= t(".title.warning") %></b>
-            <%= t(".help.locked").html_safe %>
-          </div>
-        <% end %>
         <% if feed.default? %>
           <%= render "form_main", podcast: podcast, feed: feed, form: form %>
           <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
