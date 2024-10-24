@@ -178,6 +178,7 @@ describe Apple::Show do
       apple_show = Apple::Show.connect_existing("some_apple_id", apple_config)
       assert_equal apple_show.apple_id, "some_apple_id"
       apple_show = Apple::Show.connect_existing("another_apple_id", apple_config)
+      apple_show.public_feed.reload
       assert_equal apple_show.apple_id, "another_apple_id"
     end
   end
@@ -228,9 +229,8 @@ describe Apple::Show do
       apple_show.public_feed.reload
 
       apple_show.stub(:create_or_update_show, raises_exception) do
-        sync = nil
         assert_raises(Apple::ApiError) do
-          sync = apple_show.sync!
+          apple_show.sync!
         end
         assert_nil apple_show.sync_log
       end

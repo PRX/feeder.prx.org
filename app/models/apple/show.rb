@@ -21,7 +21,7 @@ module Apple
         if apple_show_id.blank?
           sl.destroy!
         elsif sl.external_id != apple_show_id
-          sl.update(external_id: apple_show_id)
+          sl.update!(external_id: apple_show_id)
         end
       end
 
