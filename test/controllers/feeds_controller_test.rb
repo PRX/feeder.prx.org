@@ -3,6 +3,7 @@ require "test_helper"
 class FeedsControllerTest < ActionDispatch::IntegrationTest
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/123") }
   let(:feed) { create(:feed, podcast: podcast, private: false) }
+  let(:locked_feed) { create(:feed, podcast: podcast, private: false, edit_locked: true) }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
   let(:update_params) { {url: "https://prx.org/a_public_url", display_episodes_count: 5} }
   let(:create_params) { {podcast: podcast, slug: "new_feed", title: "new title", private: false} }
@@ -58,6 +59,10 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "authorize update feed" do
     podcast.update(prx_account_uri: "/api/v1/accounts/456")
     patch podcast_feed_url(podcast, feed), params: {feed: update_params}
+    assert_response :forbidden
+  end
+  test "should block update on locked feed" do
+    patch podcast_feed_url(podcast, locked_feed), params: {feed: update_params}
     assert_response :forbidden
   end
 

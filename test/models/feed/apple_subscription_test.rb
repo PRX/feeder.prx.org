@@ -124,6 +124,18 @@ describe Feeds::AppleSubscription do
       apple_feed.save!
       assert_equal default_feed, apple_feed.apple_config.public_feed
     end
+
+    it "can return a list of possible apple shows" do
+      body = {
+        "data":[
+          {"id" => "1", "attributes" => { "title" => "t1" }},
+          {"id" => "2", "attributes" => { "title" => "t2"}}
+        ],
+        "links": {}
+      }.to_json
+      stub_request(:get, "https://api.podcastsconnect.apple.com/v1/shows").to_return(status: 200, body: body)
+      assert_equal apple_feed.apple_show_options, [["1 (t1)", "1"], ["2 (t2)", "2"]]
+    end
   end
 
   describe "#publish_to_apple?" do
