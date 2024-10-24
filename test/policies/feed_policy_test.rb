@@ -19,6 +19,11 @@ describe FeedPolicy do
     it "returns true if token is a member of the account" do
       assert FeedPolicy.new(member_token, feed).update?
     end
+
+    it "returns false if the feed is edit_locked" do
+      feed.edit_locked = true
+      refute FeedPolicy.new(member_token, feed).update?
+    end
   end
 
   describe "#destroy?" do

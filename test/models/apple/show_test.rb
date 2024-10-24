@@ -172,6 +172,15 @@ describe Apple::Show do
       apple_publisher = Apple::Publisher.from_apple_config(apple_config.reload)
       assert_equal apple_publisher.show.apple_id, "some_apple_id"
     end
+
+    it "should take in a new apple show id" do
+      apple_config.save!
+      apple_show = Apple::Show.connect_existing("some_apple_id", apple_config)
+      assert_equal apple_show.apple_id, "some_apple_id"
+      apple_show = Apple::Show.connect_existing("another_apple_id", apple_config)
+      apple_show.public_feed.reload
+      assert_equal apple_show.apple_id, "another_apple_id"
+    end
   end
 
   describe "#apple_id" do
@@ -220,9 +229,8 @@ describe Apple::Show do
       apple_show.public_feed.reload
 
       apple_show.stub(:create_or_update_show, raises_exception) do
-        sync = nil
         assert_raises(Apple::ApiError) do
-          sync = apple_show.sync!
+          apple_show.sync!
         end
         assert_nil apple_show.sync_log
       end

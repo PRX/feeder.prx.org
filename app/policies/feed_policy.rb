@@ -12,11 +12,11 @@ class FeedPolicy < ApplicationPolicy
   end
 
   def new_apple?
-    create?
+    update?
   end
 
   def update?
-    PodcastPolicy.new(token, resource.podcast).update?
+    PodcastPolicy.new(token, resource.podcast).update? && !resource.edit_locked?
   end
 
   def destroy?
