@@ -176,6 +176,7 @@ describe Apple::Show do
     it "should take in a new apple show id" do
       apple_config.save!
       apple_show = Apple::Show.connect_existing("some_apple_id", apple_config)
+      assert_equal apple_show.apple_id, "some_apple_id"
       apple_show = Apple::Show.connect_existing("another_apple_id", apple_config)
       assert_equal apple_show.apple_id, "another_apple_id"
     end
