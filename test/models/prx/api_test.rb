@@ -1,20 +1,18 @@
-require "prx_access"
-
-class PrxAccessTest
-  include PrxAccess
+class PrxApiTest
+  include Prx::Api
 end
 
-describe PrxAccess do
-  let(:prx_access) { PrxAccessTest.new }
-  let(:resource) { PrxAccess::PrxHyperResource.new }
+describe PrxApiTest do
+  let(:prx_api) { PrxApiTest.new }
+  let(:resource) { Prx::Api::PrxHyperResource.new }
 
   it "returns an api" do
-    refute_nil prx_access.api
+    refute_nil prx_api.api
   end
 
   it "returns root uri" do
-    refute_nil prx_access.id_root
-    refute_nil prx_access.feeder_root
+    refute_nil prx_api.id_root
+    refute_nil prx_api.feeder_root
   end
 
   it "underscores incoming hash keys" do

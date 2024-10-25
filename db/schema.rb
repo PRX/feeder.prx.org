@@ -319,6 +319,16 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_02_215949) do
     t.index ["episode_id"], name: "index_media_versions_on_episode_id"
   end
 
+  create_table "megaphone_configs", force: :cascade do |t|
+    t.string "token"
+    t.string "network_id"
+    t.string "network_name"
+    t.boolean "publish_enabled", default: false, null: false
+    t.bigint "feed_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "podcast_imports", force: :cascade do |t|
     t.integer "podcast_id"
     t.string "url"

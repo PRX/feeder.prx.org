@@ -247,7 +247,7 @@ module Apple
 
     def enclosure_url
       url = EnclosureUrlBuilder.new.base_enclosure_url(podcast, feeder_episode, private_feed)
-      EnclosureUrlBuilder.mark_authorized(url, show.private_feed)
+      EnclosureUrlBuilder.mark_authorized(url, private_feed)
     end
 
     def enclosure_filename
