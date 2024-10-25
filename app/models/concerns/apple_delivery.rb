@@ -22,16 +22,15 @@ module AppleDelivery
   end
 
   def apple_update_delivery_status(attrs)
-    new_status = (apple_episode_delivery_status&.dup || apple_episode_delivery_statuses.build)
-    new_status.assign_attributes(**attrs)
-    new_status.save!
+    Apple::EpisodeDeliveryStatus.update_status(self, attrs)
+  end
 
-    apple_episode_delivery_statuses.reset
-    new_status
+  def build_initial_delivery_status
+    Apple::EpisodeDeliveryStatus.default_status(self)
   end
 
   def apple_episode_delivery_status
-    apple_episode_delivery_statuses.order(created_at: :desc).first
+    apple_episode_delivery_statuses.order(created_at: :desc).first || build_initial_delivery_status
   end
 
   def apple_needs_delivery?
@@ -46,5 +45,17 @@ module AppleDelivery
 
   def apple_has_delivery!
     apple_update_delivery_status(delivered: true)
+  end
+
+  def measure_asset_processing_duration
+    statuses = apple_episode_delivery_statuses.to_a
+
+    last_status = statuses.shift
+    return nil unless last_status&.asset_processing_attempts.to_i.positive?
+
+    start_status = statuses.find { |status| status.asset_processing_attempts.to_i.zero? }
+    return nil unless start_status
+
+    Time.now - start_status.created_at
   end
 end
