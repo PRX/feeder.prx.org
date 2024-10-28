@@ -474,6 +474,7 @@ describe Episode do
       # now set it to true
       episode.apple_needs_delivery!
       assert episode.apple_needs_delivery?
+      assert episode.apple_episode_delivery_status.asset_processing_attempts == 0
     end
   end
 

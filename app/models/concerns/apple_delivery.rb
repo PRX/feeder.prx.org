@@ -40,7 +40,7 @@ module AppleDelivery
   end
 
   def apple_needs_delivery!
-    apple_update_delivery_status(delivered: false)
+    apple_update_delivery_status(delivered: false, asset_processing_attempts: 0)
   end
 
   def apple_has_delivery!
