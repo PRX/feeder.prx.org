@@ -26,26 +26,6 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
-  def publish_apple(podcast, feed)
-    return unless feed.publish_to_apple?
-
-    begin
-      res = PublishAppleJob.do_perform(podcast.apple_config)
-      PublishingPipelineState.publish_apple!(podcast)
-      res
-    rescue => e
-      handle_apple_error(podcast, e)
-    end
-  end
-
-  def publish_rss(podcast, feed)
-    res = save_file(podcast, feed)
-    PublishingPipelineState.publish_rss!(podcast)
-    res
-  rescue => e
-    handle_rss_error(podcast, feed, e)
-  end
-
   def handle_apple_timeout_error(podcast, asset_timeout_error)
     PublishingPipelineState.retry!(podcast)
     Rails.logger.send(asset_timeout_error.log_level) do
@@ -60,21 +40,44 @@ class PublishFeedJob < ApplicationJob
     end
   end
 
+  def handle_error(podcast, error)
+    PublishingPipelineState.error!(podcast)
+    # Two error log lines here.
+    # 1) the error message and backtrace:
+    Rails.logger.error("Error publishing podcast", {podcast_id: podcast.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
+    # 2) The second is from the job handler, which logs an error when this excetion is raised:
+    raise error
+  end
+
+  def publish_apple(podcast, feed)
+    return unless feed.publish_to_apple?
+
+    begin
+      res = PublishAppleJob.do_perform(podcast.apple_config)
+      PublishingPipelineState.publish_apple!(podcast)
+      res
+    rescue => e
+      handle_apple_error(podcast, e)
+    end
+  end
+
   def handle_apple_error(podcast, error)
     PublishingPipelineState.error_apple!(podcast)
     NewRelic::Agent.notice_error(error)
     raise error
   end
 
+  def publish_rss(podcast, feed)
+    res = save_file(podcast, feed)
+    PublishingPipelineState.publish_rss!(podcast)
+    res
+  rescue => e
+    handle_rss_error(podcast, feed, e)
+  end
+
   def handle_rss_error(podcast, feed, error)
     PublishingPipelineState.error_rss!(podcast)
     Rails.logger.error("Error publishing RSS", {podcast_id: podcast.id, feed_id: feed.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
-    raise error
-  end
-
-  def handle_error(podcast, error)
-    PublishingPipelineState.error!(podcast)
-    Rails.logger.error("Error publishing podcast", {podcast_id: podcast.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
     raise error
   end
 
