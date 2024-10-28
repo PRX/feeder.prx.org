@@ -48,6 +48,6 @@ module AppleDelivery
   end
 
   def measure_asset_processing_duration
-    Apple::EpisodeDeliveryStatus.measure_asset_processing_duration(apple_episode_delivery_statuses).first
+    Apple::EpisodeDeliveryStatus.measure_asset_processing_duration(apple_episode_delivery_statuses, Time.now.utc).first
   end
 end
