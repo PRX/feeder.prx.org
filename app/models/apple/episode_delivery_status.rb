@@ -47,7 +47,7 @@ module Apple
 
       return [nil, measure_asset_processing_duration(statuses, last_status.created_at)].flatten unless last_status&.asset_processing_attempts.to_i.positive?
 
-      end_status = while status = statuses.shift
+      end_status = while (status = statuses.shift)
         break status if status.asset_processing_attempts.to_i.zero?
       end
 
