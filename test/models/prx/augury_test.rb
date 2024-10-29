@@ -4,12 +4,12 @@ describe Prx::Augury do
   let(:augury) { Prx::Augury.new }
 
   before {
-    stub_request(:post, "https://id.prx.org/token")
+    stub_request(:post, "https://#{ENV["ID_HOST"]}/token")
       .to_return(status: 200,
         body: '{"access_token":"thisisnotatoken","token_type":"bearer"}',
         headers: {"Content-Type" => "application/json; charset=utf-8"})
 
-    stub_request(:get, "https://inventory.dovetail.prx.org/api/v1/podcasts/1234/placements")
+    stub_request(:get, "https://#{ENV["AUGURY_HOST"]}/api/v1/podcasts/1234/placements")
       .to_return(status: 200, body: json_file(:placements), headers: {})
   }
 
