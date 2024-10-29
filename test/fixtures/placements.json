@@ -1,0 +1,214 @@
+{
+    "count": 3,
+    "total": 3,
+    "_embedded": {
+        "prx:items": [
+            {
+                "id": 3063,
+                "name": "One Segment",
+                "originalCount": 1,
+                "zones": [
+                    {
+                        "id": "original_1",
+                        "name": "Original 1",
+                        "type": "original",
+                        "section": "original"
+                    },
+                    {
+                        "id": "sonic_id",
+                        "name": "Sonic",
+                        "type": "sonic_id",
+                        "section": "post"
+                    }
+                ],
+                "_links": {
+                    "self": {
+                        "href": "/api/v1/inventory/5678/placements/3063",
+                        "profile": "http://meta.prx.org/model/application-record/placement"
+                    },
+                    "profile": {
+                        "href": "http://meta.prx.org/model/application-record/placement"
+                    }
+                }
+            },
+            {
+                "id": 3129,
+                "name": "Two Segments",
+                "originalCount": 2,
+                "zones": [
+                    {
+                        "id": "house_pre",
+                        "name": "House Preroll",
+                        "type": "ad",
+                        "section": "pre"
+                    },
+                    {
+                        "id": "original_1",
+                        "name": "Original 1",
+                        "type": "original",
+                        "section": "original"
+                    },
+                    {
+                        "id": "mid_1",
+                        "name": "Midroll 1",
+                        "type": "ad",
+                        "section": "mid"
+                    },
+                    {
+                        "id": "mid_2",
+                        "name": "Midroll 2",
+                        "type": "ad",
+                        "section": "mid"
+                    },
+                    {
+                        "id": "original_2",
+                        "name": "Original 2",
+                        "type": "original",
+                        "section": "original"
+                    },
+                    {
+                        "id": "post_1",
+                        "name": "Postroll 1",
+                        "type": "ad",
+                        "section": "post"
+                    },
+                    {
+                        "id": "post_2",
+                        "name": "Postroll 2",
+                        "type": "ad",
+                        "section": "post"
+                    },
+                    {
+                        "id": "house_post",
+                        "name": "House Postroll",
+                        "type": "ad",
+                        "section": "post"
+                    },
+                    {
+                        "id": "sonic_id",
+                        "name": "Sonic",
+                        "type": "sonic_id",
+                        "section": "post"
+                    }
+                ],
+                "_links": {
+                    "self": {
+                        "href": "/api/v1/inventory/5678/placements/3129",
+                        "profile": "http://meta.prx.org/model/application-record/placement"
+                    },
+                    "profile": {
+                        "href": "http://meta.prx.org/model/application-record/placement"
+                    }
+                }
+            },
+            {
+                "id": 3064,
+                "name": "Three Segments",
+                "originalCount": 3,
+                "zones": [
+                    {
+                        "id": "house_pre",
+                        "name": "House Preroll",
+                        "type": "ad",
+                        "section": "pre"
+                    },
+                    {
+                        "id": "original_1",
+                        "name": "Original 1 (Intro)",
+                        "type": "original",
+                        "section": "original"
+                    },
+                    {
+                        "id": "pre_1",
+                        "name": "Preroll 1",
+                        "type": "ad",
+                        "section": "pre"
+                    },
+                    {
+                        "id": "pre_2",
+                        "name": "Preroll 2",
+                        "type": "ad",
+                        "section": "pre"
+                    },
+                    {
+                        "id": "original_2",
+                        "name": "Original 2",
+                        "type": "original",
+                        "section": "original"
+                    },
+                    {
+                        "id": "mid_1",
+                        "name": "Midroll 1",
+                        "type": "ad",
+                        "section": "mid"
+                    },
+                    {
+                        "id": "mid_2",
+                        "name": "Midroll 2",
+                        "type": "ad",
+                        "section": "mid"
+                    },
+                    {
+                        "id": "original_3",
+                        "name": "Original 3",
+                        "type": "original",
+                        "section": "original"
+                    },
+                    {
+                        "id": "post_1",
+                        "name": "Postroll 1",
+                        "type": "ad",
+                        "section": "post"
+                    },
+                    {
+                        "id": "post_2",
+                        "name": "Postroll 2",
+                        "type": "ad",
+                        "section": "post"
+                    },
+                    {
+                        "id": "house_post",
+                        "name": "House Postroll",
+                        "type": "ad",
+                        "section": "post"
+                    },
+                    {
+                        "id": "sonic_id",
+                        "name": "Sonic",
+                        "type": "sonic_id",
+                        "section": "post"
+                    }
+                ],
+                "_links": {
+                    "self": {
+                        "href": "/api/v1/inventory/5678/placements/3064",
+                        "profile": "http://meta.prx.org/model/application-record/placement"
+                    },
+                    "profile": {
+                        "href": "http://meta.prx.org/model/application-record/placement"
+                    }
+                }
+            }
+        ]
+    },
+    "_links": {
+        "self": {
+            "href": "/api/v1/podcasts/1234/placements",
+            "profile": "http://meta.prx.org/model/collection/application-record/placement"
+        },
+        "prx:vary": {
+            "href": "/api/v1/podcasts/1234/placements{?page,per,zoom,filters,sorts}",
+            "templated": true
+        },
+        "profile": {
+            "href": "http://meta.prx.org/model/collection/application-record/placement"
+        },
+        "curies": [
+            {
+                "name": "prx",
+                "href": "http://meta.prx.org/relation/{rel}",
+                "templated": true
+            }
+        ]
+    }
+}

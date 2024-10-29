@@ -1,9 +1,20 @@
 require "test_helper"
 
 describe Prx::Augury do
-  let(augury) { Prx::Augury.new }
+  let(:augury) { Prx::Augury.new }
+
+  before {
+    stub_request(:post, 'https://id.prx.org/token')
+      .to_return(status: 200,
+        body: '{"access_token":"thisisnotatoken","token_type":"bearer"}',
+        headers: {"Content-Type" => "application/json; charset=utf-8"})
+
+    stub_request(:get, "https://inventory.dovetail.prx.org/api/v1/podcasts/1234/placements")
+      .to_return(status: 200, body: json_file(:placements), headers: {})
+  }
 
   it "retrieves placements" do
-    assert augury.placements(1234)
+    placements = augury.placements(1234)
+    assert placements.collect { |p| p.original_count } == [1, 2, 3]
   end
 end
