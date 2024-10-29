@@ -1,4 +1,4 @@
-module PRX
+module Prx
   class Augury
     include Prx::Api
     API_PATH = "/api/v1"
@@ -11,8 +11,8 @@ module PRX
       @enabled = @root.present?
     end
 
-    def placements(podcast, options = {})
-      path = "#{API_PATH}/podcasts/#{podcast.id}/placements"
+    def placements(podcast_id, options = {})
+      path = "#{API_PATH}/podcasts/#{podcast_id}/placements"
       expires = (options[:expiration] || expiration).to_i
       Rails.cache.fetch(path, expires_in: expires) { get(root, path) }
     end

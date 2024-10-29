@@ -76,7 +76,7 @@ module Apple
       # An alternative workflow would be to swap out the existing delivery and
       # upload different audio.
       #
-      # The overall publishing workflow dependes on the assumption that there is
+      # The overall publishing workflow depends on the assumption that there is
       # a delivery present. If we don't create a delivery here, we short-circuit
       # subsequent steps (no uploads, no audio linking).
       episodes = select_episodes_for_delivery(episodes)

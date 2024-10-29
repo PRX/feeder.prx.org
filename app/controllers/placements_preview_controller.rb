@@ -17,7 +17,7 @@ class PlacementsPreviewController < ApplicationController
   end
 
   def get_placement(original_count)
-    placements = Prx::Augury.new.placements(@podcast)
+    placements = Prx::Augury.new.placements(@podcast.id)
     placements&.find { |i| i.original_count == original_count }
   end
 

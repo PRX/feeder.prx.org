@@ -1,3 +1,5 @@
+require "test_helper"
+
 class PrxApiTest
   include Prx::Api
 end
