@@ -45,6 +45,26 @@ module AppleDelivery
     apple_episode_delivery_status.mark_as_delivered!
   end
 
+  def apple_mark_as_uploaded!
+    apple_episode_delivery_status.mark_as_uploaded!
+  end
+
+  def apple_mark_as_not_uploaded!
+    apple_episode_delivery_status.mark_as_not_uploaded!
+  end
+
+  def apple_prepare_for_delivery!
+    # remove the previous delivery attempt (soft delete)
+    apple_podcast_deliveries.map(&:destroy)
+    apple_podcast_deliveries.reset
+    apple_podcast_delivery_files.reset
+    apple_podcast_container&.podcast_deliveries&.reset
+  end
+
+  def apple_mark_for_reupload!
+    apple_mark_as_not_delivered!
+  end
+
   def measure_asset_processing_duration
     statuses = apple_episode_delivery_statuses.to_a
 
