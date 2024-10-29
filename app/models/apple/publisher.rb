@@ -143,9 +143,12 @@ module Apple
           sync_podcast_deliveries!(eps)
           sync_podcast_delivery_files!(eps)
 
-          # upload and mark as uploaded
+          # upload and mark as uploaded, then update the audio container reference
           execute_upload_operations!(eps)
           mark_delivery_files_uploaded!(eps)
+          update_audio_container_reference!(eps)
+
+          mark_as_delivered!(eps)
 
           wait_for_upload_processing(eps)
 
@@ -361,16 +364,24 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
         ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
+      end
+    end
 
+    def update_audio_container_reference!(eps)
+      Rails.logger.tagged("##{__method__}") do
         # link the podcast container with the audio to the episode
         res = Apple::Episode.update_audio_container_reference(api, eps)
-        # update the feeder episode to indicate that delivery is no longer needed
+
+        Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
+      end
+    end
+
+    def mark_as_delivered!(eps)
+      Rails.logger.tagged("##{__method__}") do
         eps.each do |ep|
           Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
           ep.feeder_episode.apple_mark_as_delivered!
         end
-
-        Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
       end
     end
 
