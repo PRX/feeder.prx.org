@@ -11,7 +11,7 @@ module AppleDelivery
       class_name: "Apple::PodcastDelivery"
     has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
       class_name: "Apple::PodcastDeliveryFile"
-    has_many :apple_episode_delivery_statuses, -> { order(created_at: :desc) }, dependent: :destroy, class_name: "Apple::EpisodeDeliveryStatus"
+    has_many :apple_episode_delivery_statuses, -> { order(created_at: :desc) }, class_name: "Apple::EpisodeDeliveryStatus"
 
     alias_method :podcast_container, :apple_podcast_container
     alias_method :apple_status, :apple_episode_delivery_status
