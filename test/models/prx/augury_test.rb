@@ -4,7 +4,7 @@ describe Prx::Augury do
   let(:augury) { Prx::Augury.new }
 
   before {
-    stub_request(:post, 'https://id.prx.org/token')
+    stub_request(:post, "https://id.prx.org/token")
       .to_return(status: 200,
         body: '{"access_token":"thisisnotatoken","token_type":"bearer"}',
         headers: {"Content-Type" => "application/json; charset=utf-8"})
