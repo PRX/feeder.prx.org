@@ -22,6 +22,14 @@ module Apple
       self.class.update_status(episode, asset_processing_attempts: 0)
     end
 
+    def mark_as_uploaded!
+      self.class.update_status(episode, uploaded: true)
+    end
+
+    def mark_as_not_uploaded!
+      self.class.update_status(episode, uploaded: false)
+    end
+
     def mark_as_delivered!
       self.class.update_status(episode, delivered: true)
     end
