@@ -125,7 +125,7 @@ module EpisodesHelper
     media = episode.contents.filter { |c| c.persisted? }
     media.push(episode.uncut) if episode.uncut.present?(&:persisted?)
 
-    media.max { |a, b| a.updated_at <=> b.updated_at }.updated_at
+    media.max_by(&:updated_at).updated_at
   end
 
   def episode_category_button_class(episode, value)
