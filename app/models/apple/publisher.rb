@@ -131,29 +131,34 @@ module Apple
     def deliver_and_publish!(eps)
       Rails.logger.tagged("Apple::Publisher#deliver_and_publish!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          # Soft delete any existing delivery and delivery files
-          prepare_for_delivery!(eps)
+          # First upload the audio files
+          eps.filter(&:apple_needs_upload?).tap do |eps|
+            # Soft delete any existing delivery and delivery files
+            prepare_for_delivery!(eps)
 
-          # only create if needed
-          sync_episodes!(eps)
-          sync_podcast_containers!(eps)
+            # only create if needed
+            sync_episodes!(eps)
+            sync_podcast_containers!(eps)
 
-          wait_for_versioned_source_metadata(eps)
+            wait_for_versioned_source_metadata(eps)
 
-          sync_podcast_deliveries!(eps)
-          sync_podcast_delivery_files!(eps)
+            sync_podcast_deliveries!(eps)
+            sync_podcast_delivery_files!(eps)
 
-          # upload and mark as uploaded, then update the audio container reference
-          execute_upload_operations!(eps)
-          mark_delivery_files_uploaded!(eps)
-          update_audio_container_reference!(eps)
-
-          mark_as_delivered!(eps)
-
-          wait_for_upload_processing(eps)
+            # upload and mark as uploaded, then update the audio container reference
+            execute_upload_operations!(eps)
+            mark_delivery_files_uploaded!(eps)
+            update_audio_container_reference!(eps)
+            # finally mark as uploaded
+            mark_as_uploaded!(eps)
+          end
 
           increment_asset_wait!(eps)
+
+          wait_for_upload_processing(eps)
           wait_for_asset_state(eps)
+
+          mark_as_delivered!(eps)
 
           publish_drafting!(eps)
           reset_asset_wait!(eps)
@@ -234,9 +239,6 @@ module Apple
 
     def increment_asset_wait!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
-
-        # Mark the episodes as waiting again for asset processing
         eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
       end
     end
@@ -381,6 +383,15 @@ module Apple
         eps.each do |ep|
           Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
           ep.feeder_episode.apple_mark_as_delivered!
+        end
+      end
+    end
+
+    def mark_as_uploaded!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps.each do |ep|
+          Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
+          ep.feeder_episode.apple_mark_as_uploaded!
         end
       end
     end
