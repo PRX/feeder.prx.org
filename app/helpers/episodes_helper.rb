@@ -119,6 +119,15 @@ module EpisodesHelper
     Episode.mediums.keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
   end
 
+  def episode_media_updated_at(episode)
+    return nil if episode.contents.empty? && episode.uncut.nil?
+
+    media = episode.contents.filter { |c| c.persisted? }
+    media.push(episode.uncut) if episode.uncut.present?(&:persisted?)
+
+    media.max { |a, b| a.updated_at <=> b.updated_at }.updated_at
+  end
+
   def episode_category_button_class(episode, value)
     if episode.categories.include?(value)
       "btn-primary"
