@@ -94,6 +94,20 @@ describe PublishingQueueItem do
       assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
     end
+
+    it "includes intermediate states like error_apple" do
+      pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+      PublishingPipelineState.error_apple!(podcast)
+
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
+      assert_equal [podcast], PublishingPipeLineState.latest_failed_podcasts
+
+      _pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+
+      assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
+      assert_equal [].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
+    end
   end
 
   describe ".all_unfinished_items" do

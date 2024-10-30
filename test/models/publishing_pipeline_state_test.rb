@@ -186,6 +186,37 @@ describe PublishingPipelineState do
     end
   end
 
+  describe ".latest_failed_pipelines" do
+    it "returns the latest failed pipelines including intermediate and terminal errors" do
+      # Create a publishing queue item and associated pipeline state
+      pqi1 = PublishingQueueItem.ensure_queued!(podcast)
+      _s1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi1)
+      PublishingPipelineState.error_apple!(podcast)
+      PublishingPipelineState.complete!(podcast)
+
+      # Verify that the intermediate error is included in the latest failed pipelines
+      assert_equal [podcast], PublishingPipelineState.latest_failed_podcasts
+      assert_equal ["created", "error_apple", "complete"], PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast).map(&:status)
+
+      # Create another publishing queue item and associated pipeline state
+      pqi2 = PublishingQueueItem.ensure_queued!(podcast)
+      _s2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi2)
+      PublishingPipelineState.error!(podcast)
+
+      # Verify that the terminal error is included in the latest failed pipelines
+      assert_equal [podcast], PublishingPipelineState.latest_failed_podcasts
+      assert_equal ["created", "error"], PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast).map(&:status)
+
+      # Verify that a successful pipeline is not included in the latest failed pipelines
+      pqi3 = PublishingQueueItem.ensure_queued!(podcast)
+      _s3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi3)
+      PublishingPipelineState.complete!(podcast)
+
+      assert_equal [].sort, PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast)
+      assert ["created", "complete"], PublishingPipelineState.latest_pipelines.where(podcast: podcast).pluck(:status)
+    end
+  end
+
   describe ".retry_failed_pipelines!" do
     it "should retry failed pipelines" do
       PublishingPipelineState.start_pipeline!(podcast)
@@ -194,6 +225,22 @@ describe PublishingPipelineState do
       # it fails
       PublishingPipelineState.error!(podcast)
       assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # it retries
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+    end
+
+    it "retries pipelines with intermediate error_apple and non-error terminal status" do
+      PublishingPipelineState.start_pipeline!(podcast)
+      assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+
+      # it fails
+      PublishingPipelineState.error_apple!(podcast)
+      assert_equal ["created", "error_apple"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      PublishingPipelineState.complete!(podcast)
+      assert_equal ["created", "error_apple", "complete"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
 
       # it retries
       PublishingPipelineState.retry_failed_pipelines!
