@@ -52,11 +52,9 @@ module EpisodesHelper
   end
 
   def episode_media_status(episode)
-    all_media = episode.media.append(episode.uncut).compact.reject(&:new_record?)
-
-    if all_media.any? { |m| upload_problem?(m) }
+    if episode_all_media(episode).any? { |m| upload_problem?(m) }
       "error"
-    elsif all_media.any? { |m| upload_processing?(m) }
+    elsif episode_all_media(episode).any? { |m| upload_processing?(m) }
       "processing"
     elsif episode.media_ready?(true)
       "complete"
@@ -120,12 +118,11 @@ module EpisodesHelper
   end
 
   def episode_media_updated_at(episode)
-    return nil if episode.contents.empty? && episode.uncut.nil?
+    episode_all_media(episode).maximum(:updated_at)
+  end
 
-    media = episode.contents.filter { |c| c.persisted? }
-    media.push(episode.uncut) if episode.uncut.present?(&:persisted?)
-
-    media.max_by(&:updated_at).updated_at
+  def episode_all_media(episode)
+    episode.media.append(episode.uncut).compact.reject(&:new_record?)
   end
 
   def episode_category_button_class(episode, value)
