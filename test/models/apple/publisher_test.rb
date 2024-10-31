@@ -527,4 +527,21 @@ describe Apple::Publisher do
       end
     end
   end
+
+  describe "#update_audio_container_reference!" do
+    let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show, apple_hosted_audio_asset_container_id: nil) }
+
+    it "updates container references for episodes" do
+      assert episode.has_unlinked_container?
+
+      mock_result = episode.apple_sync_log.api_response.deep_dup
+      mock_result["api_response"]["val"]["data"]["attributes"]["appleHostedAudioAssetContainerId"] = "456"
+
+      apple_publisher.api.stub(:bridge_remote_and_retry, [[mock_result], []]) do
+        apple_publisher.update_audio_container_reference!([episode])
+      end
+
+      refute episode.has_unlinked_container?
+    end
+  end
 end

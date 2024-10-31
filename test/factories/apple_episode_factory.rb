@@ -6,7 +6,8 @@ FactoryBot.define do
     # set up transient api_response
     transient do
       feeder_episode { create(:episode) }
-      api_response { build(:apple_episode_api_response) }
+      api_response { build(:apple_episode_api_response, item_guid: feeder_episode.item_guid) }
+      apple_hosted_audio_asset_container_id { "456" }
     end
 
     # set a complete episode factory varient
@@ -17,9 +18,12 @@ FactoryBot.define do
         ep
       end
       transient do
+        apple_hosted_audio_asset_container_id { "456" }
         api_response do
           build(:apple_episode_api_response,
             publishing_state: "PUBLISH",
+            item_guid: feeder_episode.item_guid,
+            apple_hosted_audio_asset_container_id: apple_hosted_audio_asset_container_id,
             apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS)
         end
       end
