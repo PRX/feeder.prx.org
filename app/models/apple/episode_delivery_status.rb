@@ -30,12 +30,14 @@ module Apple
       self.class.update_status(episode, uploaded: false)
     end
 
+    # Whether the media file has been uploaded to Apple
+    # is a subset of whether the episode has been delivered
     def mark_as_delivered!
-      self.class.update_status(episode, delivered: true)
+      self.class.update_status(episode, delivered: true, uploaded: true)
     end
 
     def mark_as_not_delivered!
-      self.class.update_status(episode, delivered: false)
+      self.class.update_status(episode, delivered: false, uploaded: false)
     end
   end
 end

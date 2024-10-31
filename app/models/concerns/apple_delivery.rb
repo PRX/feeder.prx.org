@@ -37,6 +37,10 @@ module AppleDelivery
     apple_episode_delivery_status.delivered == false
   end
 
+  def apple_needs_upload?
+    apple_episode_delivery_status.uploaded == false
+  end
+
   def apple_mark_as_not_delivered!
     apple_episode_delivery_status.mark_as_not_delivered!
   end
