@@ -528,6 +528,42 @@ describe Apple::Publisher do
     end
   end
 
+  describe "#mark_as_uploaded!" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episodes) { [episode1, episode2] }
+
+    it "marks episodes as uploaded" do
+      episodes.each do |ep|
+        refute ep.delivery_status.uploaded
+      end
+
+      apple_publisher.mark_as_uploaded!(episodes)
+
+      episodes.each do |ep|
+        assert ep.delivery_status.uploaded
+      end
+    end
+  end
+
+  describe "#mark_as_delivered!" do
+    let(:episode1) { build(:apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:apple_episode, show: apple_publisher.show) }
+    let(:episodes) { [episode1, episode2] }
+
+    it "marks episodes as delivered" do
+      episodes.each do |ep|
+        refute ep.delivery_status.delivered
+      end
+
+      apple_publisher.mark_as_delivered!(episodes)
+
+      episodes.each do |ep|
+        assert ep.delivery_status.delivered
+      end
+    end
+  end
+
   describe "#update_audio_container_reference!" do
     let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show, apple_hosted_audio_asset_container_id: nil) }
 
