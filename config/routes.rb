@@ -35,6 +35,9 @@ Rails.application.routes.draw do
       resources :episodes, except: [:new, :edit]
       resources :feeds, only: [:index]
 
+      get "comatose/series/:series_id", to: "podcasts#show"
+      get "comatose/stories/:story_id", to: "episodes#show"
+
       root to: "base#entrypoint"
       match "*any", via: [:options], to: "base#options"
 
