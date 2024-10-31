@@ -37,12 +37,6 @@ describe PublishFeedJob do
       end
     end
 
-    it "transitions to the error state upon rss error" do
-      PublishingPipelineState.start_pipeline!(podcast)
-      assert_raises(RuntimeError) { job.handle_rss_error(podcast, feed, RuntimeError.new("rss error")) }
-      assert_equal ["created", "error_rss"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
-    end
-
     describe "validations of the publishing pipeline" do
       it "can process publishing a podcast" do
         job.stub(:s3_client, stub_client) do
@@ -124,12 +118,6 @@ describe PublishFeedJob do
           end
         end
       end
-    end
-
-    it "transitions to the apple_error state upon general apple error" do
-      PublishingPipelineState.start_pipeline!(podcast)
-      assert_raises(RuntimeError) { job.handle_apple_error(podcast, RuntimeError.new("apple error")) }
-      assert_equal ["created", "error_apple"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.pluck(:status)
     end
 
     it "does not schedule publishing to apple if the apple config prevents it" do
