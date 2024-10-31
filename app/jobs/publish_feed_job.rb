@@ -50,14 +50,14 @@ class PublishFeedJob < ApplicationJob
   end
 
   def fail_state(podcast, type, error)
-    (method, level) = case type
+    (pipeline_method, log_level) = case type
     when "apple" then [:error_apple!, :warn]
     when "rss" then [:error_rss!, :warn]
     when "apple_timeout", "error" then [:error!, :error]
     end
 
-    PublishingPipelineState.public_send(method, podcast)
-    Rails.logger.send(level, error.message, {podcast_id: podcast.id})
+    PublishingPipelineState.public_send(pipeline_method, podcast)
+    Rails.logger.send(log_level, error.message, {podcast_id: podcast.id})
     raise error
   end
 
