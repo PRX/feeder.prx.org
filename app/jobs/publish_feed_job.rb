@@ -56,7 +56,7 @@ class PublishFeedJob < ApplicationJob
   def handle_apple_error(podcast, error)
     PublishingPipelineState.error_apple!(podcast)
     NewRelic::Agent.notice_error(error)
-    raise error
+    raise error if podcast.apple_config.sync_blocks_rss
   end
 
   def publish_rss(podcast, feed)

@@ -174,6 +174,22 @@ describe PublishFeedJob do
           end
         end
 
+        it "does not raise an error if the apple publishing fails and apple sync does not block rss publishing" do
+          assert apple_feed.apple_config.present?
+          assert apple_feed.apple_config.publish_enabled
+          apple_feed.apple_config.update!(sync_blocks_rss: false)
+          feed.reload
+
+          PublishFeedJob.stub(:s3_client, stub_client) do
+            PublishAppleJob.stub(:do_perform, ->(*, **) { raise "some apple error" }) do
+              # no error raised
+              PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
+
+              assert_equal ["created", "started", "error_apple", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+            end
+          end
+        end
+
         it "raises an error if the apple publishing times out" do
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
