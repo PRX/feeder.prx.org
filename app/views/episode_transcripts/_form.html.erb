@@ -5,19 +5,24 @@
   <%= form.submit class: "d-none" %>
 
   <%= turbo_frame_tag "episode-form-transcript", data: {controller: "media-upload"} do %>
-    <div class="container">
-      <div class="row mt-4 mx-2">
-        <div class="col-lg-8">
-          <div class="row">
-            <%= render "form_transcript", episode: episode, form: form %>
-            <%= render "form_main", episode: episode, form: form %>
+    <% episode.build_transcript if episode.transcript.blank? %>
+    <% episode.transcript.clear_attribute_changes(%i[format]) %>
+
+    <%= form.fields_for :transcript do |fields| %>
+      <div class="container">
+        <div class="row mt-4 mx-2">
+          <div class="col-lg-8">
+            <div class="row">
+                <%= render "form_transcript", episode: episode, fields: fields %>
+                <%= render "form_main", fields: fields %>
+            </div>
+          </div>
+          <div class="col-lg-4 d-grid align-content-start gap-3">
+            <%= render "form_status", episode: episode, form: form %>
           </div>
         </div>
-        <div class="col-lg-4 d-grid align-content-start gap-3">
-          <%= render "form_status", episode: episode, form: form %>
-        </div>
       </div>
-    </div>
+    <% end %>
   <% end %>
 
   <%= render "layouts/stale_record_modal", form: form, discard_path: episode_transcripts_path(episode) %>
