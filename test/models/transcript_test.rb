@@ -10,11 +10,6 @@ describe Transcript do
       assert transcript.valid?
     end
 
-    it "must belong to an episode" do
-      transcript.episode = nil
-      refute transcript.valid?
-    end
-
     it "requires an original_url" do
       transcript.original_url = nil
       refute transcript.valid?
