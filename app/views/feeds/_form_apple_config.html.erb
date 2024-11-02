@@ -6,63 +6,63 @@
     <div class="card-body" data-controller="apple-key">
       <div class="mb-4">
         <p><%= t(".description") %></p>
-        <a href="https://help.prx.org/hc/en-us/articles/26602803552155-Setting-up-Apple-Podcast-Subscriptions-with-Apple-Delegated-Delivery"><%= t(".guide_link") %></a>
+        <%= t(".guide_link").html_safe %>
       </div>
       <%= form.fields_for :apple_config do |config_form| %>
         <%= config_form.fields_for :key do |key_fields| %>
           <% unless config_form.object.persisted? %>
-            <%= key_fields.file_field :key_file, class: "mb-4 form-control", accept: ".p8, .pem", data: {action: "apple-key#convertFileToKey"} %>
+            <%= key_fields.file_field :key_file, class: "mb-4 form-control", accept: ".p8, .pem", data: {action: "apple-key#convertFileToKey"}, required: true %>
 
             <%= key_fields.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
+          <% else %>
+            <div class="mb-2"><%= t(".key_uploaded") %></div>
+            <div class="mb-4 form-floating">
+              <%= key_fields.text_field :provider_id, disabled: true, data: {apple_key_target: "provider"} %>
+              <%= key_fields.label :provider_id, "Provider ID" %>
+            </div>
+            <div class="form-floating">
+              <%= key_fields.text_field :key_id, disabled: true, data: {apple_key_target: "key"} %>
+              <%= key_fields.label :key_id, "Apple Key" %>
+            </div>
           <% end %>
-          <div class="mb-4 form-floating">
-            <%= key_fields.text_field :provider_id, disabled: true, data: {apple_key_target: "provider"} %>
-            <%= key_fields.label :provider_id, "Provider ID" %>
-          </div>
-          <div class="form-floating">
-            <%= key_fields.text_field :key_id, disabled: true, data: {apple_key_target: "key"} %>
-            <%= key_fields.label :key_id, "Apple Key" %>
-          </div>
-
           <%= key_fields.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
           <%= key_fields.hidden_field :key_id, data: {apple_key_target: "key"} %>
         <% end %>
-
-        <div class="col-12 mt-4">
-          <div class="form-check">
-            <%= config_form.check_box :publish_enabled %>
-            <div class="d-flex align-items-center">
-              <%= config_form.label :publish_enabled %>
-              <%= help_text t(".help.publish_enabled") %>
+        <% if config_form.object.persisted? %>
+          <div class="col-12 mt-4">
+            <div class="form-check">
+              <%= config_form.check_box :publish_enabled %>
+              <div class="d-flex align-items-center">
+                <%= config_form.label :publish_enabled %>
+                <%= help_text t(".help.publish_enabled") %>
+              </div>
+            </div>
+            <div class="form-check">
+              <%= config_form.check_box :sync_blocks_rss %>
+              <div class="d-flex align-items-center">
+                <%= config_form.label :sync_blocks_rss %>
+                <%= help_text t(".help.sync_blocks_rss") %>
+              </div>
             </div>
           </div>
-          <div class="form-check">
-            <%= config_form.check_box :sync_blocks_rss %>
-            <div class="d-flex align-items-center">
-              <%= config_form.label :sync_blocks_rss %>
-              <%= help_text t(".help.sync_blocks_rss") %>
-            </div>
+        <% end %>
+      <% end %>
+      <% if form.object.apple_config&.persisted? %>
+        <div class="col-12 mt-4">
+          <div class="form-floating">
+            <%= form.select :apple_show_id, @apple_show_options, {include_blank: true} %>
+            <%= form.label :apple_show_id, "Apple Show ID" %>
+          </div>
+        </div>
+
+        <div class="col-6 mt-4">
+          <div class="form-floating input-group">
+            <%= form.number_field :display_episodes_count %>
+            <%= form.label :display_episodes_count %>
+            <%= field_help_text t(".help.display_episodes_count") %>
           </div>
         </div>
       <% end %>
-      <div class="col-12 mt-4">
-        <div class="form-floating">
-          <% if !@apple_show_options.blank? %>
-            <%= form.select :apple_show_id, @apple_show_options, {include_blank: true} %>
-          <% else %>
-            <%= form.text_field :apple_show_id %>
-          <% end %>
-          <%= form.label :apple_show_id, "Apple Show ID" %>
-        </div>
-      </div>
-
-      <div class="col-6 mt-4">
-        <div class="form-floating input-group">
-          <%= form.number_field :display_episodes_count %>
-          <%= form.label :display_episodes_count %>
-          <%= field_help_text t(".help.display_episodes_count") %>
-        </div>
-      </div>
 
       <%= form.hidden_field :type, value: "Feeds::AppleSubscription" %>
 
