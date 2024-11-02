@@ -25,6 +25,14 @@ class Feeds::AppleSubscription < Feed
   validate :must_be_private
   validate :must_have_token
 
+  # for soft delete, need a unique slug to be able to make another
+  def paranoia_destroy_attributes
+    {
+      deleted_at: current_time_from_proper_timezone,
+      slug: "#{slug} - #{Time.now.to_i}"
+    }
+  end
+
   def set_defaults
     self.slug ||= DEFAULT_FEED_SLUG
     self.title ||= DEFAULT_TITLE
@@ -47,13 +55,13 @@ class Feeds::AppleSubscription < Feed
     used_ids = Feed.apple.distinct.where("id != ?", id).pluck(:apple_show_id).compact
     api = Apple::Api.from_apple_config(apple_config)
     shows_json = Apple::Show.apple_shows_json(api) || []
-    shows_json.map do |sj|
-      if used_ids.include?(sj["id"])
-        nil
-      else
-        ["#{sj["id"]} (#{sj["attributes"]["title"]})", sj["id"]]
-      end
-    end.compact
+    shows_json
+      .filter { |sj| sj["attributes"]["publishingState"] != "ARCHIVED" }
+      .filter { |sj| !used_ids.include?(sj["id"]) }
+      .map { |sj| ["#{sj["id"]} (#{sj["attributes"]["title"]})", sj["id"]] }
+  rescue => err
+    logger.error(err)
+    []
   end
 
   def guess_audio_format
