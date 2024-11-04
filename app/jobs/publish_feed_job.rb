@@ -18,30 +18,47 @@ class PublishFeedJob < ApplicationJob
     podcast.feeds.each { |feed| publish_apple(podcast, feed) }
     podcast.feeds.each { |feed| publish_rss(podcast, feed) }
     PublishingPipelineState.complete!(podcast)
+  rescue Apple::AssetStateTimeoutError => e
+    fail_state(podcast, "apple_timeout", e)
   rescue => e
-    PublishingPipelineState.error!(podcast)
-    Rails.logger.error("Error publishing podcast", {podcast_id: podcast.id, error: e.message, backtrace: e.backtrace.join("\n")})
-    raise e
+    fail_state(podcast, "error", e)
   ensure
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
   def publish_apple(podcast, feed)
     return unless feed.publish_to_apple?
-    res = PublishAppleJob.perform_now(feed.apple_config)
+
+    res = PublishAppleJob.do_perform(podcast.apple_config)
     PublishingPipelineState.publish_apple!(podcast)
     res
   rescue => e
-    NewRelic::Agent.notice_error(e)
-    res = PublishingPipelineState.error_apple!(podcast)
-    raise e if feed.apple_config.sync_blocks_rss?
-    res
+    if podcast.apple_config.sync_blocks_rss
+      fail_state(podcast, "apple", e)
+    else
+      Rails.logger.error("Error publishing to Apple, but continuing to publish RSS", {podcast_id: podcast.id, error: e.message})
+      PublishingPipelineState.error_apple!(podcast)
+    end
   end
 
   def publish_rss(podcast, feed)
     res = save_file(podcast, feed)
     PublishingPipelineState.publish_rss!(podcast)
     res
+  rescue => e
+    fail_state(podcast, "rss", e)
+  end
+
+  def fail_state(podcast, type, error)
+    (pipeline_method, log_level) = case type
+    when "apple" then [:error_apple!, :warn]
+    when "rss" then [:error_rss!, :warn]
+    when "apple_timeout", "error" then [:error!, :error]
+    end
+
+    PublishingPipelineState.public_send(pipeline_method, podcast)
+    Rails.logger.send(log_level, error.message, {podcast_id: podcast.id})
+    raise error
   end
 
   def save_file(podcast, feed, options = {})

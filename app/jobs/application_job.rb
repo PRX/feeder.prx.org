@@ -21,7 +21,7 @@ class ApplicationJob < ActiveJob::Base
     ENV["FEEDER_STORAGE_BUCKET"]
   end
 
-  def s3_client
+  def self.s3_client
     if Rails.env.test? || ENV["AWS_ACCESS_KEY_ID"].present?
       Aws::S3::Client.new(
         credentials: Aws::Credentials.new(ENV["AWS_ACCESS_KEY_ID"], ENV["AWS_SECRET_ACCESS_KEY"]),
@@ -30,5 +30,9 @@ class ApplicationJob < ActiveJob::Base
     else
       Aws::S3::Client.new
     end
+  end
+
+  def s3_client
+    self.class.s3_client
   end
 end
