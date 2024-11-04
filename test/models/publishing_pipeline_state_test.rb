@@ -274,21 +274,33 @@ describe PublishingPipelineState do
     end
 
     describe "retry!" do
+      let(:podcast) { create(:podcast) }
+      let(:public_feed) { podcast.default_feed }
+      let(:private_feed) { create(:apple_feed, podcast: podcast) }
+      let(:apple_feed) { private_feed }
+      let(:apple_config) { private_feed.apple_config }
+      let(:apple_publisher) { apple_config.build_publisher }
+
       it 'sets the status to "retry"' do
+        episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+
+        # it does not trigger an exception
+        episode.apple_episode_delivery_status.update(asset_processing_attempts: 1)
+
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, ->(*args) { raise Apple::AssetStateTimeoutError.new([]) }) do
+          PublishAppleJob.stub(:do_perform, ->(*args) { raise Apple::AssetStateTimeoutError.new([episode]) }) do
             pqi = PublishingQueueItem.ensure_queued!(podcast)
             PublishingPipelineState.attempt!(podcast, perform_later: false)
           end
         end
 
-        assert_equal ["created", "started", "retry"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
+        assert_equal ["created", "started", "error_apple", "retry"], PublishingPipelineState.where(podcast: podcast).order(:id).pluck(:status)
         assert_equal "retry", pqi.reload.last_pipeline_state
 
         # it retries
         PublishingPipelineState.retry_failed_pipelines!
-        assert_equal ["created", "started", "retry", "created"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
+        assert_equal ["created", "started", "error_apple", "retry", "created"], PublishingPipelineState.where(podcast: podcast).order(:id).pluck(:status)
         res_pqi = PublishingQueueItem.current_unfinished_item(podcast)
 
         assert res_pqi.id > pqi.id
