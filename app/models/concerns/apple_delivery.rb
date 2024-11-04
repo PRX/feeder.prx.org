@@ -34,17 +34,15 @@ module AppleDelivery
   end
 
   def apple_needs_delivery?
-    return true if apple_episode_delivery_status.nil?
-
     apple_episode_delivery_status.delivered == false
   end
 
-  def apple_needs_delivery!
-    apple_update_delivery_status(delivered: false)
+  def apple_mark_as_not_delivered!
+    apple_episode_delivery_status.mark_as_not_delivered!
   end
 
-  def apple_has_delivery!
-    apple_update_delivery_status(delivered: true)
+  def apple_mark_as_delivered!
+    apple_episode_delivery_status.mark_as_delivered!
   end
 
   def measure_asset_processing_duration

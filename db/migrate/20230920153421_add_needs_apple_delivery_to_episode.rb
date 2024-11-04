@@ -20,10 +20,10 @@ class AddNeedsAppleDeliveryToEpisode < ActiveRecord::Migration[7.0]
         needs_delivery_episodes = []
         apple_episodes.each do |apple_episode|
           if (apple_episode.podcast_container.nil? || apple_episode.podcast_container.needs_delivery?) || apple_episode.apple_hosted_audio_asset_container_id.blank?
-            apple_episode.feeder_episode.apple_needs_delivery!
+            apple_episode.feeder_episode.apple_mark_as_not_delivered!
             needs_delivery_episodes << apple_episode.feeder_episode
           else
-            apple_episode.feeder_episode.apple_has_delivery!
+            apple_episode.feeder_episode.apple_mark_as_delivered!
           end
         end
 

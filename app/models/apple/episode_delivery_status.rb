@@ -21,5 +21,13 @@ module Apple
     def reset_asset_wait
       self.class.update_status(episode, asset_processing_attempts: 0)
     end
+
+    def mark_as_delivered!
+      self.class.update_status(episode, delivered: true)
+    end
+
+    def mark_as_not_delivered!
+      self.class.update_status(episode, delivered: false)
+    end
   end
 end

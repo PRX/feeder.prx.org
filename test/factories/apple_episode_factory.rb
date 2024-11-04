@@ -13,7 +13,7 @@ FactoryBot.define do
     factory :uploaded_apple_episode do
       feeder_episode do
         ep = create(:episode)
-        ep.apple_has_delivery!
+        ep.apple_mark_as_delivered!
         ep
       end
       transient do
