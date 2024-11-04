@@ -26,15 +26,6 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
-  def handle_error(podcast, error)
-    PublishingPipelineState.error!(podcast)
-    # Two error log lines here.
-    # 1) the error message and backtrace:
-    Rails.logger.error("Error publishing podcast", {podcast_id: podcast.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
-    # 2) The second is from the job handler, which logs an error when this excetion is raised:
-    raise error
-  end
-
   def publish_apple(podcast, feed)
     return unless feed.publish_to_apple?
 
