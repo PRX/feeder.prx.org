@@ -21,7 +21,9 @@
         <%= form.submit t(".update"), class: "btn btn-primary", data: data %>
       <% end %>
     </div>
-    <p class="status-text mt-2 mb-0 text-end"><strong><%= t(".updated_at_hint") %>:</strong> <%= l(episode.updated_at) %></p>
+    <% if episode_media_updated_at(episode).present? %>
+      <p class="status-text mt-2 mb-0 text-end"><strong><%= t(".updated_at_hint") %>:</strong> <%= local_time_ago(episode_media_updated_at(episode)) %></p>
+    <% end %>
   </div>
 </div>
 
