@@ -243,26 +243,6 @@ class Episode < ApplicationRecord
     uncut&.copy_media(force)
   end
 
-  def apple_prepare_for_delivery!
-    # remove the previous delivery attempt (soft delete)
-    apple_podcast_deliveries.map(&:destroy)
-    apple_podcast_deliveries.reset
-    apple_podcast_delivery_files.reset
-    apple_podcast_container&.podcast_deliveries&.reset
-  end
-
-  def apple_mark_for_reupload!
-    apple_needs_delivery!
-  end
-
-  def apple_episode
-    return nil if !persisted? || !publish_to_apple?
-
-    if (show = podcast.apple_config&.build_publisher&.show)
-      Apple::Episode.new(api: show.api, show: show, feeder_episode: self)
-    end
-  end
-
   def publish!
     Rails.logger.tagged("Episode#publish!") do
       apple_mark_for_reupload!

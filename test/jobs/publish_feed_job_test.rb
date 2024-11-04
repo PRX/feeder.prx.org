@@ -37,12 +37,6 @@ describe PublishFeedJob do
       end
     end
 
-    it "transitions to the error state upon rss error" do
-      PublishingPipelineState.start_pipeline!(podcast)
-      assert_raises(RuntimeError) { job.handle_rss_error(podcast, feed, RuntimeError.new("rss error")) }
-      assert_equal ["created", "error_rss"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
-    end
-
     describe "validations of the publishing pipeline" do
       it "can process publishing a podcast" do
         job.stub(:s3_client, stub_client) do
@@ -130,12 +124,6 @@ describe PublishFeedJob do
       end
     end
 
-    it "transitions to the apple_error state upon general apple error" do
-      PublishingPipelineState.start_pipeline!(podcast)
-      assert_raises(RuntimeError) { job.handle_apple_error(podcast, RuntimeError.new("apple error")) }
-      assert_equal ["created", "error_apple"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.pluck(:status)
-    end
-
     it "does not schedule publishing to apple if the apple config prevents it" do
       podcast.apple_config.update!(publish_enabled: false)
       assert_nil job.publish_apple(podcast, apple_feed)
@@ -189,17 +177,59 @@ describe PublishFeedJob do
             # simulate a episode waiting n times
             episodes.first.apple_episode_delivery_status.update(asset_processing_attempts: attempts)
 
-            PublishAppleJob.stub(:do_perform, ->(*, **) { raise Apple::AssetStateTimeoutError.new(episodes) }) do
-              lines = capture_json_logs do
-                PublishingQueueItem.ensure_queued!(feed.podcast)
-                PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
+            PublishFeedJob.stub(:s3_client, stub_client) do
+              PublishAppleJob.stub(:do_perform, ->(*, **) { raise Apple::AssetStateTimeoutError.new(episodes) }) do
+                lines = capture_json_logs do
+                  PublishingQueueItem.ensure_queued!(feed.podcast)
+                  PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
+                rescue
+                  nil
+                end
+
+                log = lines.find { |l| l["msg"].include?("Timeout waiting for asset state change") }
+                assert log.present?
+                assert_equal level, log["level"]
+
+                assert_equal ["created", "started", "error_apple", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(:id).pluck(:status)
               end
+            end
+          end
+        end
 
-              log = lines.find { |l| l["msg"].include?("Asset processing timeout") }
-              assert log.present?
-              assert_equal level, log["level"]
+        it "raises an error if the apple publishing times out" do
+          assert apple_feed.apple_config.present?
+          assert apple_feed.apple_config.publish_enabled
 
-              assert_equal ["created", "started", "retry", "error_apple"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+          PublishAppleJob.stub(:do_perform, ->(*, **) { raise Apple::AssetStateTimeoutError.new([]) }) do
+            assert_raises(Apple::AssetStateTimeoutError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
+
+            assert_equal ["created", "started", "error_apple", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
+          end
+        end
+
+        it "raises an error if the apple publishing times out" do
+          assert apple_feed.apple_config.present?
+          assert apple_feed.apple_config.publish_enabled
+
+          PublishAppleJob.stub(:do_perform, ->(*, **) { raise Apple::AssetStateTimeoutError.new([]) }) do
+            assert_raises(Apple::AssetStateTimeoutError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
+
+            assert_equal ["created", "started", "error_apple", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
+          end
+        end
+
+        it "does not raise an error if the apple publishing fails and apple sync does not block rss publishing" do
+          assert apple_feed.apple_config.present?
+          assert apple_feed.apple_config.publish_enabled
+          apple_feed.apple_config.update!(sync_blocks_rss: false)
+          feed.reload
+
+          PublishFeedJob.stub(:s3_client, stub_client) do
+            PublishAppleJob.stub(:do_perform, ->(*, **) { raise "some apple error" }) do
+              # no error raised
+              PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
+
+              assert_equal ["created", "started", "error_apple", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
             end
           end
         end

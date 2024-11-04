@@ -19,25 +19,11 @@ class PublishFeedJob < ApplicationJob
     podcast.feeds.each { |feed| publish_rss(podcast, feed) }
     PublishingPipelineState.complete!(podcast)
   rescue Apple::AssetStateTimeoutError => e
-    handle_apple_timeout_error(podcast, e)
+    fail_state(podcast, "apple_timeout", e)
   rescue => e
-    handle_error(podcast, e)
+    fail_state(podcast, "error", e)
   ensure
     PublishingPipelineState.settle_remaining!(podcast)
-  end
-
-  def handle_apple_timeout_error(podcast, asset_timeout_error)
-    PublishingPipelineState.retry!(podcast)
-    Rails.logger.send(asset_timeout_error.log_level) do
-      [
-        "Asset processing timeout",
-        {
-          podcast_id: podcast.id,
-          error: asset_timeout_error.message,
-          backtrace: asset_timeout_error&.backtrace&.join("\n")
-        }
-      ]
-    end
   end
 
   def handle_error(podcast, error)
@@ -52,19 +38,21 @@ class PublishFeedJob < ApplicationJob
   def publish_apple(podcast, feed)
     return unless feed.publish_to_apple?
 
-    begin
-      res = PublishAppleJob.do_perform(podcast.apple_config)
-      PublishingPipelineState.publish_apple!(podcast)
-      res
-    rescue => e
-      handle_apple_error(podcast, e)
-    end
-  end
-
-  def handle_apple_error(podcast, error)
+    res = PublishAppleJob.do_perform(podcast.apple_config)
+    PublishingPipelineState.publish_apple!(podcast)
+    res
+  rescue Apple::AssetStateTimeoutError => e
+    # Not strictly a 'fail state' because we want to retry this job
     PublishingPipelineState.error_apple!(podcast)
-    NewRelic::Agent.notice_error(error)
-    raise error
+    Rails.logger.send(e.log_level, e.message, {podcast_id: podcast.id})
+    raise e if podcast.apple_config.sync_blocks_rss
+  rescue => e
+    if podcast.apple_config.sync_blocks_rss
+      fail_state(podcast, "apple", e)
+    else
+      Rails.logger.error("Error publishing to Apple, but continuing to publish RSS", {podcast_id: podcast.id, error: e.message})
+      PublishingPipelineState.error_apple!(podcast)
+    end
   end
 
   def publish_rss(podcast, feed)
@@ -72,13 +60,27 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.publish_rss!(podcast)
     res
   rescue => e
-    handle_rss_error(podcast, feed, e)
+    fail_state(podcast, "rss", e)
   end
 
-  def handle_rss_error(podcast, feed, error)
-    PublishingPipelineState.error_rss!(podcast)
-    Rails.logger.error("Error publishing RSS", {podcast_id: podcast.id, feed_id: feed.id, error: error.message, backtrace: error&.backtrace&.join("\n")})
-    raise error
+  def apple_timeout_log_level(error)
+    error.try(:log_level) || :error
+  end
+
+  def fail_state(podcast, type, error)
+    (pipeline_method, log_level, raise_exception) =
+      case type
+      when "apple" then [:error_apple!, :warn, true]
+      when "rss" then [:error_rss!, :warn, true]
+      when "apple_timeout"
+        level = apple_timeout_log_level(error)
+        [:retry!, level, level == :fatal || level == :error]
+      when "error" then [:error!, :error, true]
+      end
+
+    PublishingPipelineState.public_send(pipeline_method, podcast)
+    Rails.logger.send(log_level, error.message, {podcast_id: podcast.id})
+    raise error if raise_exception
   end
 
   def save_file(podcast, feed, options = {})

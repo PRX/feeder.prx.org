@@ -50,4 +50,24 @@ module AppleDelivery
   def measure_asset_processing_duration
     Apple::EpisodeDeliveryStatus.measure_asset_processing_duration(apple_episode_delivery_statuses, Time.now.utc).first
   end
+
+  def apple_prepare_for_delivery!
+    # remove the previous delivery attempt (soft delete)
+    apple_podcast_deliveries.map(&:destroy)
+    apple_podcast_deliveries.reset
+    apple_podcast_delivery_files.reset
+    apple_podcast_container&.podcast_deliveries&.reset
+  end
+
+  def apple_mark_for_reupload!
+    apple_needs_delivery!
+  end
+
+  def apple_episode
+    return nil if !persisted? || !publish_to_apple?
+
+    if (show = podcast.apple_config&.build_publisher&.show)
+      Apple::Episode.new(api: show.api, show: show, feeder_episode: self)
+    end
+  end
 end
