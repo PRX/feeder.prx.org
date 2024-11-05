@@ -18,7 +18,7 @@ module AppleDelivery
   end
 
   def publish_to_apple?
-    podcast.apple_config&.publish_to_apple?
+    podcast.apple_config&.publish_to_apple? || false
   end
 
   def apple_update_delivery_status(attrs)

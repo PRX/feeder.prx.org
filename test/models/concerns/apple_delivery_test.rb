@@ -75,4 +75,24 @@ class AppleDeliveryTest < ActiveSupport::TestCase
       assert_equal episode.apple_episode_delivery_statuses.last, result
     end
   end
+
+  describe "#publish_to_apple?" do
+    let(:episode) { create(:episode) }
+
+    it "returns false when podcast has no apple config" do
+      refute episode.publish_to_apple?
+    end
+
+    it "returns false when apple config exists but publishing disabled" do
+      create(:apple_config, feed: create(:private_feed, podcast: episode.podcast), publish_enabled: false)
+      refute episode.publish_to_apple?
+    end
+
+    it "returns true when apple config exists and publishing enabled" do
+      assert episode.publish_to_apple? == false
+      create(:apple_config, feed: create(:private_feed, podcast: episode.podcast), publish_enabled: true)
+      episode.podcast.reload
+      assert episode.publish_to_apple?
+    end
+  end
 end
