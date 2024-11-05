@@ -18,16 +18,45 @@ class AppleDeliveryTest < ActiveSupport::TestCase
     end
 
     it "can be set to false" do
-      episode.apple_has_delivery!
+      episode.apple_mark_as_delivered!
       refute episode.apple_needs_delivery?
     end
 
     it "can be set to true" do
-      episode.apple_has_delivery!
+      episode.apple_mark_as_delivered!
       refute episode.apple_needs_delivery?
 
       # now set it to true
-      episode.apple_needs_delivery!
+      episode.apple_mark_as_not_delivered!
+      assert episode.apple_needs_delivery?
+    end
+  end
+
+  describe "#apple_mark_as_delivered!" do
+    let(:episode) { create(:episode) }
+
+    it "supercedes the uploaded status" do
+      episode.apple_mark_as_not_delivered!
+
+      assert episode.apple_needs_upload?
+      assert episode.apple_needs_delivery?
+
+      episode.apple_mark_as_delivered!
+
+      refute episode.apple_needs_upload?
+      refute episode.apple_needs_delivery?
+    end
+  end
+
+  describe "#apple_mark_as_uploaded!" do
+    it "sets the uploaded status" do
+      episode.apple_mark_as_uploaded!
+      assert episode.apple_episode_delivery_status.uploaded
+      refute episode.apple_needs_upload?
+    end
+
+    it "does not interact with the delivery status" do
+      episode.apple_mark_as_uploaded!
       assert episode.apple_needs_delivery?
     end
   end

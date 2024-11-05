@@ -81,18 +81,6 @@ module AppleDelivery
     Time.now - start_status.created_at
   end
 
-  def apple_prepare_for_delivery!
-    # remove the previous delivery attempt (soft delete)
-    apple_podcast_deliveries.map(&:destroy)
-    apple_podcast_deliveries.reset
-    apple_podcast_delivery_files.reset
-    apple_podcast_container&.podcast_deliveries&.reset
-  end
-
-  def apple_mark_for_reupload!
-    apple_needs_delivery!
-  end
-
   def apple_episode
     return nil if !persisted? || !publish_to_apple?
 
