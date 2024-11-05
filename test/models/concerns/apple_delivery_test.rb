@@ -124,4 +124,29 @@ class AppleDeliveryTest < ActiveSupport::TestCase
       assert episode.publish_to_apple?
     end
   end
+
+  describe "#apple_prepare_for_delivery!" do
+    let(:episode) { create(:episode) }
+    let(:container) { create(:apple_podcast_container, episode: episode) }
+    let(:delivery) { create(:apple_podcast_delivery, episode: episode, podcast_container: container) }
+    let(:delivery_file) { create(:apple_podcast_delivery_file, episode: episode, podcast_delivery: delivery) }
+
+    before do
+      delivery_file # Create the delivery file
+    end
+
+    it "soft deletes existing deliveries" do
+      assert_equal 1, episode.apple_podcast_deliveries.count
+      episode.apple_prepare_for_delivery!
+      assert_equal 0, episode.apple_podcast_deliveries.count
+      assert_equal 1, episode.apple_podcast_deliveries.with_deleted.count
+    end
+
+    it "resets associations" do
+      episode.apple_prepare_for_delivery!
+      refute episode.apple_podcast_deliveries.loaded?
+      refute episode.apple_podcast_delivery_files.loaded?
+      refute episode.apple_podcast_container.podcast_deliveries.loaded?
+    end
+  end
 end
