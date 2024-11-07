@@ -8,6 +8,16 @@ module Apple
 
     validate :provider_id_is_valid, if: :provider_id?
     validate :ec_key_format, if: :key_pem_b64?
+    validate :must_have_working_key
+
+    def must_have_working_key
+      return if Rails.env.test?
+      api = Apple::Api.from_key(self)
+      Apple::Show.apple_shows_json(api)
+    rescue => err
+      logger.error(err)
+      errors.add(:key_id, "must have a working Apple key")
+    end
 
     def provider_id_is_valid
       if provider_id.include?("_")
