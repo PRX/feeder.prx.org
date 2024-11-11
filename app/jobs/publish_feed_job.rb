@@ -59,20 +59,28 @@ class PublishFeedJob < ApplicationJob
     error.try(:log_level) || :error
   end
 
+  def should_raise?(error)
+    if error.respond_to?(:raise_publishing_error?)
+      error.raise_publishing_error?
+    else
+      true
+    end
+  end
+
   def fail_state(podcast, type, error)
-    (pipeline_method, log_level, raise_exception) =
+    (pipeline_method, log_level) =
       case type
-      when "apple" then [:error_apple!, :warn, true]
-      when "rss" then [:error_rss!, :warn, true]
+      when "apple" then [:error_apple!, :warn]
+      when "rss" then [:error_rss!, :warn]
       when "apple_timeout"
         level = apple_timeout_log_level(error)
-        [:retry!, level, %i[error fatal].include?(level)]
-      when "error" then [:error!, :error, true]
+        [:retry!, level]
+      when "error" then [:error!, :error]
       end
 
     PublishingPipelineState.public_send(pipeline_method, podcast)
     Rails.logger.send(log_level, error.message, {podcast_id: podcast.id})
-    raise error if raise_exception
+    raise error if should_raise?(error)
   end
 
   def save_file(podcast, feed, options = {})
