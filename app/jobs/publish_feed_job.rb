@@ -36,6 +36,7 @@ class PublishFeedJob < ApplicationJob
     # Not strictly a 'fail state' because we want to retry this job
     PublishingPipelineState.error_apple!(podcast)
     Rails.logger.send(e.log_level, e.message, {podcast_id: podcast.id})
+    NewRelic::Agent.notice_error(e)
     raise e if podcast.apple_config.sync_blocks_rss
   rescue => e
     if podcast.apple_config.sync_blocks_rss
