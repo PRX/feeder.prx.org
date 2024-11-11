@@ -66,7 +66,7 @@ class PublishFeedJob < ApplicationJob
       when "rss" then [:error_rss!, :warn, true]
       when "apple_timeout"
         level = apple_timeout_log_level(error)
-        [:retry!, level, level == :fatal || level == :error]
+        [:retry!, level, %i[error fatal].include?(level)]
       when "error" then [:error!, :error, true]
       end
 
