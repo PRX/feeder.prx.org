@@ -11,7 +11,7 @@ module Apple
     validate :must_have_working_key
 
     def must_have_working_key
-      return if Rails.env.test?
+      return if Rails.env.test? || !changed?
       api = Apple::Api.from_key(self)
       Apple::Show.apple_shows_json(api)
     rescue => err
