@@ -17,8 +17,9 @@ module PodcastsHelper
     end
 
     if feed.footer.present?
-      description = description.truncate_bytes(Episode::MAX_DESCRIPTION_BYTES - feed.footer.bytesize)
-      description += feed.footer
+      footer_text = "\n\n#{feed.footer}"
+      description = description.truncate_bytes(Episode::MAX_DESCRIPTION_BYTES - footer_text.bytesize)
+      description += footer_text
     end
 
     description
