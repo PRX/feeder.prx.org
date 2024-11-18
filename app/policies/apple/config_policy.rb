@@ -12,6 +12,6 @@ class Apple::ConfigPolicy < ApplicationPolicy
   end
 
   def update?
-    false
+    FeedPolicy.new(token, resource.feed).update?
   end
 end

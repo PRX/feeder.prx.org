@@ -235,6 +235,9 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_05_154932) do
     t.datetime "deleted_at", precision: nil
     t.integer "lock_version", default: 0, null: false
     t.string "type"
+    t.string "apple_show_id"
+    t.boolean "edit_locked"
+    t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)"
