@@ -14,6 +14,8 @@ class Feeds::AppleSubscription < Feed
 
   after_create :republish_public_feed
 
+  after_save_commit :update_apple_show
+
   has_one :apple_config, class_name: "::Apple::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
   accepts_nested_attributes_for :apple_config, allow_destroy: true, reject_if: :all_blank
@@ -22,6 +24,14 @@ class Feeds::AppleSubscription < Feed
   validate :only_apple_feed
   validate :must_be_private
   validate :must_have_token
+
+  # for soft delete, need a unique slug to be able to make another
+  def paranoia_destroy_attributes
+    {
+      deleted_at: current_time_from_proper_timezone,
+      slug: "#{slug} - #{Time.now.to_i}"
+    }
+  end
 
   def set_defaults
     self.slug ||= DEFAULT_FEED_SLUG
@@ -33,6 +43,25 @@ class Feeds::AppleSubscription < Feed
     self.private = true
 
     super
+  end
+
+  def update_apple_show
+    if previous_changes[:apple_show_id]
+      Apple::Show.connect_existing(apple_show_id, apple_config)
+    end
+  end
+
+  def apple_show_options
+    used_ids = Feed.apple.distinct.where("id != ?", id).pluck(:apple_show_id).compact
+    api = Apple::Api.from_apple_config(apple_config)
+    shows_json = Apple::Show.apple_shows_json(api) || []
+    shows_json
+      .filter { |sj| sj["attributes"]["publishingState"] != "ARCHIVED" }
+      .filter { |sj| !used_ids.include?(sj["id"]) }
+      .map { |sj| ["#{sj["id"]} (#{sj["attributes"]["title"]})", sj["id"]] }
+  rescue => err
+    logger.error(err)
+    []
   end
 
   def guess_audio_format
