@@ -196,7 +196,7 @@ describe PublishingPipelineState do
 
       # Verify that the intermediate error is included in the latest failed pipelines
       assert_equal [podcast], PublishingPipelineState.latest_failed_podcasts
-      assert_equal ["created", "error_apple", "complete"], PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast).map(&:status)
+      assert_equal ["created", "error_apple", "complete"], PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast).order(id: :asc).map(&:status)
 
       # Create another publishing queue item and associated pipeline state
       pqi2 = PublishingQueueItem.ensure_queued!(podcast)
