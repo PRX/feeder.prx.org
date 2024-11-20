@@ -86,7 +86,6 @@ describe Feed do
     let(:feed) { create(:feed) }
 
     it "sets a timestamp when the prefix changes" do
-      feed = create(:feed)
       assert_nil feed.enclosure_updated_at
 
       feed.update(enclosure_prefix: "http://foo.bar")
@@ -94,7 +93,6 @@ describe Feed do
     end
 
     it "sets a timestamp when the template changes" do
-      feed = create(:feed)
       assert_nil feed.enclosure_updated_at
 
       feed.update(enclosure_template: "http://foo.bar")
