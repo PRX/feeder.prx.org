@@ -58,7 +58,7 @@ class Feed < ApplicationRecord
 
   after_initialize :set_defaults
   before_validation :sanitize_text
-  before_save :set_public_feeds_url
+  before_save :set_public_feeds_url, :check_enclosure_changes
   after_create :set_default_episodes
 
   scope :default, -> { where(slug: nil) }
@@ -103,6 +103,12 @@ class Feed < ApplicationRecord
       # otherwise, just default back to publicfeeds when blank
       # TODO: after https://github.com/PRX/feeder.prx.org/issues/896 remove the date condition
       self.url = public_feeds_url if url.blank? && (new_record? || created_at >= "2023-10-01")
+    end
+  end
+
+  def check_enclosure_changes
+    if persisted? && (enclosure_prefix_changed? || enclosure_template_changed?)
+      self.enclosure_updated_at = Time.now
     end
   end
 

@@ -82,6 +82,26 @@ describe Feed do
     end
   end
 
+  describe "#check_enclosure_changes" do
+    let(:feed) { create(:feed) }
+
+    it "sets a timestamp when the prefix changes" do
+      feed = create(:feed)
+      assert_nil feed.enclosure_updated_at
+
+      feed.update(enclosure_prefix: "http://foo.bar")
+      refute_nil feed.enclosure_updated_at
+    end
+
+    it "sets a timestamp when the template changes" do
+      feed = create(:feed)
+      assert_nil feed.enclosure_updated_at
+
+      feed.update(enclosure_template: "http://foo.bar")
+      refute_nil feed.enclosure_updated_at
+    end
+  end
+
   describe "#set_default_episodes" do
     it "adds default_feed.episodes to newly created feeds" do
       e1 = create(:episode, podcast: podcast, published_at: 1.hour.ago)
