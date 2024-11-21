@@ -12,6 +12,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :url
   property :new_feed_url
   property :enclosure_prefix
+  property :enclosure_updated_at
   property :display_episodes_count
   property :display_full_episodes_count
   property :episode_offset_seconds
