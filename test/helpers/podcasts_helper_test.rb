@@ -8,7 +8,7 @@ describe PodcastsHelper do
   let(:helper) { TestHelper.new }
   let(:podcast) { build(:podcast, description: "description") }
   let(:feed1) { podcast.default_feed }
-  let(:feed2) { build(:feed, private: true, podcast: podcast, slug: "adfree", footer: "footer", description: "different") }
+  let(:feed2) { build(:feed, private: true, podcast: podcast, slug: "adfree", episode_footer: "footer", description: "different") }
   let(:episode) { build(:episode, description: "description") }
 
   describe "#feed_description" do

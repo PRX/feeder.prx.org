@@ -16,8 +16,8 @@ module PodcastsHelper
       episode.description_with_default
     end
 
-    if feed.footer.present?
-      footer_text = "\n\n#{feed.footer}"
+    if feed.episode_footer.present?
+      footer_text = "\n\n#{feed.episode_footer}"
       description = description.truncate_bytes(Episode::MAX_DESCRIPTION_BYTES - footer_text.bytesize)
       description += footer_text
     end
