@@ -8,18 +8,29 @@ module Apple
       :private_feed,
       :api
 
+    def self.apple_shows_json(api)
+      api.get_paged_collection("shows")
+    end
+
     def self.apple_episode_json(api, show_id)
       api.get_paged_collection("shows/#{show_id}/episodes")
     end
 
     def self.connect_existing(apple_show_id, apple_config)
+      if (sl = SyncLog.find_by(feeder_id: apple_config.public_feed.id, feeder_type: :feeds))
+        if apple_show_id.blank?
+          return sl.destroy!
+        elsif sl.external_id != apple_show_id
+          sl.update!(external_id: apple_show_id)
+        end
+      else
+        SyncLog.log!(feeder_id: apple_config.public_feed.id,
+          feeder_type: :feeds,
+          sync_completed_at: Time.now.utc,
+          external_id: apple_show_id)
+      end
+
       api = Apple::Api.from_apple_config(apple_config)
-
-      SyncLog.log!(feeder_id: apple_config.public_feed.id,
-        feeder_type: :feeds,
-        sync_completed_at: Time.now.utc,
-        external_id: apple_show_id)
-
       new(api: api,
         public_feed: apple_config.public_feed,
         private_feed: apple_config.private_feed)
