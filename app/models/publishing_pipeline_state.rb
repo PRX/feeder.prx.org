@@ -52,7 +52,8 @@ class PublishingPipelineState < ApplicationRecord
     :complete,
     :error,
     :expired,
-    :error_apple
+    :error_apple,
+    :error_rss
   ]
 
   validate :podcast_ids_match
@@ -151,6 +152,10 @@ class PublishingPipelineState < ApplicationRecord
 
   def self.error_apple!(podcast)
     state_transition(podcast, :error_apple)
+  end
+
+  def self.error_rss!(podcast)
+    state_transition(podcast, :error_rss)
   end
 
   def self.complete!(podcast)

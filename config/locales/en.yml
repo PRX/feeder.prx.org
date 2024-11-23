@@ -330,6 +330,9 @@ en:
     application:
       field_copy_tooltip: Copied!
     label:
+      apple/config:
+        publish_enabled: Enable publishing to Apple Podcasts Connect
+        sync_blocks_rss: Episodes must publish to Apple before the public feed
       episode:
         ad_breaks: Ad Breaks
         author_email: Author Email
@@ -779,10 +782,13 @@ en:
         ad_zones: Control the types of ads that should be stitched into episodes in this feed.
     form_apple_config:
       title: Apple Subscriptions
-      description: In order to publish episodes through Apple's Podcast Connect API, ensure you've delegated access to the PRX account in Podcast Connect.
-      guide_link: Check out our guide to step you through the setup.
+      description: Configure your credentials to publish episodes through Apple's Podcast Connect API
+      guide_link: <a href="https://help.prx.org/hc/en-us/articles/26602803552155-Setting-up-Apple-Podcast-Subscriptions-with-Apple-Delegated-Delivery" target="_blank">Check out our guide to step you through the setup.</a>
+      key_uploaded: Apple API Key Uploaded
       help:
         display_episodes_count: You can optionally limit the number of episodes that Paid Subscribers will see in Apple Podcasts. Leave this field blank to include all.
+        publish_enabled: Enable automatically publishing and updating episodes in this feed to Apple?
+        sync_blocks_rss: Block publishing to the default feed RSS until the Apple episode is published?
     form_audio_format:
       title: Audio Format
       help:
@@ -831,6 +837,8 @@ en:
       title: Feed Status
     form:
       <<: *form
+      help:
+        locked: This feed is locked, to make changes please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>
     helper:
       episode_offset_options:
         "-300": 5 minutes early

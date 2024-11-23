@@ -12,8 +12,7 @@
     <div class="fixed-bottom col-sm-12 col-md-3 col-xl-2">
       <div class="btn-group dropup d-flex sticky-md-bottom m-4 shadow">
         <%= link_to "Add a Feed", new_podcast_feed_path(podcast), class: "btn btn-success flex-grow-1" %>
-        <%# FIXME  %>
-        <% if false && @feeds.none?(&:apple?) %>
+        <% if @feeds.none?(&:apple?) %>
           <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split flex-grow-0 px-3 border-0 border-start" data-bs-toggle="dropdown" aria-expanded="false">
             <span class="visually-hidden">Toggle Dropdown</span>
           </button>

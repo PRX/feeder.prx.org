@@ -384,16 +384,20 @@ module Apple
     end
 
     def publishing_state_bridge_params(state)
+      self.class.publishing_state_bridge_params(apple_id, state)
+    end
+
+    def self.publishing_state_bridge_params(apple_id, state)
       {
         request_metadata: {
           apple_episode_id: apple_id
         },
-        api_url: api.join_url("episodePublishingRequests").to_s,
-        api_parameters: publishing_state_parameters(state)
+        api_url: Apple::Api.join_url("episodePublishingRequests").to_s,
+        api_parameters: publishing_state_params(apple_id, state)
       }
     end
 
-    def publishing_state_parameters(state)
+    def self.publishing_state_params(apple_id, state)
       {
         data: {
           type: "episodePublishingRequests",
@@ -410,6 +414,10 @@ module Apple
           }
         }
       }
+    end
+
+    def publishing_state_parameters(state)
+      self.class.publishing_state_params(apple_id, state)
     end
 
     def apple?
