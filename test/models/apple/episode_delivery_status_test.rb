@@ -14,7 +14,7 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
         episode.destroy
         assert_equal episode, delivery_status.episode
         assert_difference "Apple::EpisodeDeliveryStatus.count", +1 do
-          episode.apple_needs_delivery!
+          episode.apple_mark_as_not_delivered!
         end
         assert_equal episode, episode.apple_episode_delivery_statuses.first.episode
       end

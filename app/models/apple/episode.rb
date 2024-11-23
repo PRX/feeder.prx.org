@@ -15,10 +15,8 @@ module Apple
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
-    # Cleans up old delivery/delivery files iff the episode is to be delivered
+    # Cleans up old delivery/delivery files iff the episode is to be uploaded
     def self.prepare_for_delivery(episodes)
-      episodes = episodes.select { |ep| ep.needs_delivery? }
-
       episodes.map do |ep|
         Rails.logger.info("Preparing episode #{ep.feeder_id} for delivery", {episode_id: ep.feeder_id})
         ep.feeder_episode.apple_prepare_for_delivery!
@@ -575,5 +573,19 @@ module Apple
     alias_method :delivery_files, :podcast_delivery_files
     alias_method :delivery_status, :apple_episode_delivery_status
     alias_method :delivery_statuses, :apple_episode_delivery_statuses
+    alias_method :apple_status, :apple_episode_delivery_status
+
+    # Delegate methods to feeder_episode
+    def method_missing(method_name, *arguments, &block)
+      if feeder_episode.respond_to?(method_name)
+        feeder_episode.send(method_name, *arguments, &block)
+      else
+        super
+      end
+    end
+
+    def respond_to_missing?(method_name, include_private = false)
+      feeder_episode.respond_to?(method_name) || super
+    end
   end
 end
