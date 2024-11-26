@@ -15,6 +15,10 @@ class FeedPolicy < ApplicationPolicy
     update?
   end
 
+  def new_megaphone?
+    update?
+  end
+
   def update?
     PodcastPolicy.new(token, resource.podcast).update? && !resource.edit_locked?
   end

@@ -77,6 +77,10 @@ class Feed < ApplicationRecord
     #   a la "where's my episode?" publish tracking
   end
 
+  def integration_type
+    nil
+  end
+
   def publish_integration?
     false
   end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_11_23_174426) do
+ActiveRecord::Schema[7.2].define(version: 2024_11_26_230612) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -333,6 +333,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_23_174426) do
     t.bigint "feed_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "sync_blocks_rss", default: false, null: false
   end
 
   create_table "podcast_imports", force: :cascade do |t|

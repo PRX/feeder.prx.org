@@ -1,7 +1,11 @@
 class Feeds::MegaphoneFeed < Feed
-  has_one :megaphone_config, class_name: "::Megaphone::Config", inverse_of: :feed
+  has_one :megaphone_config, class_name: "::Megaphone::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
+
+  after_initialize :set_defaults
 
   alias_method :config, :megaphone_config
+
+  accepts_nested_attributes_for :megaphone_config, allow_destroy: true, reject_if: :all_blank
 
   def self.model_name
     Feed.model_name
@@ -9,6 +13,10 @@ class Feeds::MegaphoneFeed < Feed
 
   def integration_type
     :megaphone
+  end
+
+  def set_defaults
+    self.slug ||= "megaphone"
   end
 
   def publish_integration?
