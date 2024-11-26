@@ -14,7 +14,6 @@ FactoryBot.define do
     factory :uploaded_apple_episode do
       feeder_episode do
         ep = create(:episode)
-        ep.apple_mark_as_delivered!
         ep
       end
       transient do
@@ -36,11 +35,23 @@ FactoryBot.define do
           api_marked_as_uploaded: true,
           upload_operations_complete: true)
 
-        create(:content, episode: apple_episode.feeder_episode, position: 1, status: "complete")
-        create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
-        v1 = apple_episode.feeder_episode.cut_media_version!
+        feeder_episode = apple_episode.feeder_episode
 
-        apple_episode.delivery_status.update!(delivered: true, source_media_version_id: v1.id)
+        # The content model calls Episode#publish!
+        # and that triggers a call to Episode#apple_mark_for_reupload!
+        # This modifies state to indicate that the episode needs to be reuploaded
+        create(:content, episode: feeder_episode, position: 1, status: "complete")
+        create(:content, episode: feeder_episode, position: 2, status: "complete")
+        v1 = feeder_episode.cut_media_version!
+
+        # Now model the case where the episode is uploaded.
+        # First we've gathered file metadata from the CDN
+        feeder_episode.apple_update_delivery_status(source_size: 1.megabyte,
+          source_url: "https://cdn.example.com/episode.mp3",
+          source_media_version_id: v1.id)
+
+        # Then we've uploaded as delivered (and necessarily uploaded)
+        feeder_episode.apple_mark_as_delivered!
       end
     end
 

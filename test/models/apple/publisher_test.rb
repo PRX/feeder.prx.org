@@ -406,8 +406,8 @@ describe Apple::Publisher do
   end
 
   describe "#increment_asset_wait!" do
-    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
-    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode1) { build(:apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:apple_episode, show: apple_publisher.show) }
     let(:episodes) { [episode1, episode2] }
 
     it "should increment asset wait count for each episode" do
@@ -527,19 +527,21 @@ describe Apple::Publisher do
   end
 
   describe "#mark_as_uploaded!" do
-    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
-    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode1) { build(:apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:apple_episode, show: apple_publisher.show) }
     let(:episodes) { [episode1, episode2] }
 
     it "marks episodes as uploaded" do
       episodes.each do |ep|
         refute ep.delivery_status.uploaded
+        refute ep.delivery_status.delivered
       end
 
       apple_publisher.mark_as_uploaded!(episodes)
 
       episodes.each do |ep|
         assert ep.delivery_status.uploaded
+        refute ep.delivery_status.delivered
       end
     end
   end
@@ -551,12 +553,14 @@ describe Apple::Publisher do
 
     it "marks episodes as delivered" do
       episodes.each do |ep|
+        refute ep.delivery_status.uploaded
         refute ep.delivery_status.delivered
       end
 
       apple_publisher.mark_as_delivered!(episodes)
 
       episodes.each do |ep|
+        assert ep.delivery_status.uploaded
         assert ep.delivery_status.delivered
       end
     end
@@ -580,7 +584,7 @@ describe Apple::Publisher do
   end
 
   describe "#deliver_and_publish!" do
-    let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode) { build(:apple_episode, show: apple_publisher.show) }
 
     it "skips upload for already uploaded episodes" do
       episode.feeder_episode.apple_mark_as_uploaded!
