@@ -70,6 +70,20 @@ class Feed < ApplicationRecord
     "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
   end
 
+  def mark_as_not_delivered!(episode)
+    # for default / RSS feeds, don't do anything
+    # TODO: we could mark an episode needing to pulished in this RSS feed file
+    #   then later check to see if it is published in the feed yet
+    #   a la "where's my episode?" publish tracking
+  end
+
+  def publish_integration?
+    false
+  end
+
+  def publish_integration!
+  end
+
   def set_defaults
     self.file_name ||= DEFAULT_FILE_NAME
     self.enclosure_template ||= Feed.enclosure_template_default

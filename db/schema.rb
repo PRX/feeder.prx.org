@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_11_20_165556) do
+ActiveRecord::Schema[7.2].define(version: 2024_11_23_174426) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -24,22 +24,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_20_165556) do
     t.bigint "key_id"
     t.index ["feed_id"], name: "index_apple_configs_on_feed_id"
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
-  end
-
-  create_table "apple_episode_delivery_statuses", force: :cascade do |t|
-    t.bigint "episode_id", null: false
-    t.boolean "delivered", default: false
-    t.datetime "created_at", null: false
-    t.string "source_url"
-    t.string "source_filename"
-    t.bigint "source_size"
-    t.text "enclosure_url"
-    t.integer "source_fetch_count", default: 0
-    t.bigint "source_media_version_id"
-    t.integer "asset_processing_attempts", default: 0, null: false
-    t.boolean "uploaded", default: false
-    t.index ["episode_id", "created_at"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at", include: ["delivered", "id"]
-    t.index ["episode_id"], name: "index_apple_episode_delivery_statuses_on_episode_id"
   end
 
   create_table "apple_keys", force: :cascade do |t|
@@ -247,6 +231,23 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_20_165556) do
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)"
+  end
+
+  create_table "integrations_episode_delivery_statuses", force: :cascade do |t|
+    t.bigint "episode_id", null: false
+    t.boolean "delivered", default: false
+    t.datetime "created_at", null: false
+    t.string "source_url"
+    t.string "source_filename"
+    t.bigint "source_size"
+    t.text "enclosure_url"
+    t.integer "source_fetch_count", default: 0
+    t.bigint "source_media_version_id"
+    t.integer "asset_processing_attempts", default: 0, null: false
+    t.boolean "uploaded", default: false
+    t.integer "integration"
+    t.index ["episode_id", "created_at"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at", include: ["delivered", "id"]
+    t.index ["episode_id"], name: "index_integrations_episode_delivery_statuses_on_episode_id"
   end
 
   create_table "itunes_categories", id: :serial, force: :cascade do |t|
@@ -493,11 +494,11 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_20_165556) do
   end
 
   add_foreign_key "apple_configs", "feeds"
-  add_foreign_key "apple_episode_delivery_statuses", "episodes"
   add_foreign_key "episode_imports", "podcast_imports"
   add_foreign_key "feed_images", "feeds"
   add_foreign_key "feed_tokens", "feeds"
   add_foreign_key "feeds", "podcasts"
+  add_foreign_key "integrations_episode_delivery_statuses", "episodes"
   add_foreign_key "itunes_images", "feeds"
   add_foreign_key "media_version_resources", "media_resources"
   add_foreign_key "media_version_resources", "media_versions"

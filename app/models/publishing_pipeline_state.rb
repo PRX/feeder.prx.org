@@ -48,11 +48,11 @@ class PublishingPipelineState < ApplicationRecord
     :created,
     :started,
     :published_rss,
-    :published_apple,
+    :published_integration,
     :complete,
     :error,
     :expired,
-    :error_apple,
+    :error_integration,
     :error_rss
   ]
 
@@ -146,16 +146,17 @@ class PublishingPipelineState < ApplicationRecord
     state_transition(podcast, :published_rss)
   end
 
-  def self.publish_apple!(podcast)
-    state_transition(podcast, :published_apple)
-  end
-
-  def self.error_apple!(podcast)
-    state_transition(podcast, :error_apple)
-  end
-
   def self.error_rss!(podcast)
     state_transition(podcast, :error_rss)
+  end
+
+  # TODO: do something with the integration type?
+  def self.publish_integration!(podcast)
+    state_transition(podcast, :published_integration)
+  end
+
+  def self.error_integration!(podcast)
+    state_transition(podcast, :error_integration)
   end
 
   def self.complete!(podcast)

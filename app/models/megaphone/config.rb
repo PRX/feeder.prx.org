@@ -6,5 +6,9 @@ module Megaphone
 
     encrypts :token
     encrypts :network_id
+
+    def publish_to_megaphone?
+      valid? && publish_enabled?
+    end
   end
 end

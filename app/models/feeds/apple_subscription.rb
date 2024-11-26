@@ -25,12 +25,18 @@ class Feeds::AppleSubscription < Feed
   validate :must_be_private
   validate :must_have_token
 
+  alias_method :config, :apple_config
+
   # for soft delete, need a unique slug to be able to make another
   def paranoia_destroy_attributes
     {
       deleted_at: current_time_from_proper_timezone,
       slug: "#{slug} - #{Time.now.to_i}"
     }
+  end
+
+  def mark_as_not_delivered!(episode)
+    episode.apple_episode_delivery_status.mark_as_not_delivered!
   end
 
   def set_defaults
@@ -111,6 +117,20 @@ class Feeds::AppleSubscription < Feed
 
   def apple?
     true
+  end
+
+  def integration_type
+    :apple
+  end
+
+  def publish_integration!
+    if publish_integration?
+      apple_config.build_publisher.publish!
+    end
+  end
+
+  def publish_integration?
+    publish_to_apple?
   end
 
   def publish_to_apple?

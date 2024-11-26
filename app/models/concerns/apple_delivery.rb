@@ -11,7 +11,6 @@ module AppleDelivery
       class_name: "Apple::PodcastDelivery"
     has_many :apple_podcast_delivery_files, through: :apple_podcast_deliveries, source: :podcast_delivery_files,
       class_name: "Apple::PodcastDeliveryFile"
-    has_many :apple_episode_delivery_statuses, -> { order(created_at: :desc) }, class_name: "Apple::EpisodeDeliveryStatus"
 
     alias_method :podcast_container, :apple_podcast_container
     alias_method :apple_status, :apple_episode_delivery_status
@@ -22,15 +21,19 @@ module AppleDelivery
   end
 
   def apple_update_delivery_status(attrs)
-    Apple::EpisodeDeliveryStatus.update_status(self, attrs)
+    update_episode_delivery_status(:apple, attrs)
+  end
+
+  def apple_episode_delivery_statuses
+    episode_delivery_statuses.apple
   end
 
   def build_initial_delivery_status
-    Apple::EpisodeDeliveryStatus.default_status(self)
+    Integrations::EpisodeDeliveryStatus.default_status(:apple, self)
   end
 
   def apple_episode_delivery_status
-    apple_episode_delivery_statuses.order(created_at: :desc).first || build_initial_delivery_status
+    episode_delivery_status(:apple) || build_initial_delivery_status
   end
 
   def apple_needs_delivery?
