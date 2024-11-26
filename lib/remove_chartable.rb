@@ -32,7 +32,7 @@ class RemoveChartable
   def add_swap_fm(prefix)
     if prefix.include?(SWAP_FM_PREFIX)
       puts "add_swap_fm: swap.fm prefix already present"
-      return
+      return prefix
     end
 
     fixed = (prefix || "").gsub(/https:\//, "")
