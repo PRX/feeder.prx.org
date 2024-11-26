@@ -56,11 +56,10 @@ FactoryBot.define do
 
     factory :megaphone_feed, class: "Feeds::MegaphoneFeed" do
       type { "Feeds::MegaphoneFeed" }
-      private { false }
-      sequence(:slug) { |n| "mp-feed-#{n}" }
+      private { true }
 
       after(:build) do |feed, _evaluator|
-        feed.megaphone_config = build(:megaphone_config)
+        feed.megaphone_config = build(:megaphone_config, feed: feed)
       end
     end
   end
