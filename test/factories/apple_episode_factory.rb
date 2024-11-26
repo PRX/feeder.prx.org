@@ -12,10 +12,7 @@ FactoryBot.define do
 
     # set a complete episode factory varient
     factory :uploaded_apple_episode do
-      feeder_episode do
-        ep = create(:episode)
-        ep
-      end
+      feeder_episode { create(:episode) }
       transient do
         apple_hosted_audio_asset_container_id { "456" }
         api_response do
