@@ -47,7 +47,7 @@ FactoryBot.define do
           source_url: "https://cdn.example.com/episode.mp3",
           source_media_version_id: v1.id)
 
-        # Then we've uploaded as delivered (and necessarily uploaded)
+        # Then we've delivered (and necessarily uploaded)
         feeder_episode.apple_mark_as_delivered!
       end
     end
