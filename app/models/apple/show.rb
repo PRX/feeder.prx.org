@@ -17,17 +17,20 @@ module Apple
     end
 
     def self.connect_existing(apple_show_id, apple_config)
-      if (sl = SyncLog.find_by(feeder_id: apple_config.public_feed.id, feeder_type: :feeds))
+      if (sl = SyncLog.apple.find_by(feeder_id: apple_config.public_feed.id, feeder_type: :feeds))
         if apple_show_id.blank?
           return sl.destroy!
         elsif sl.external_id != apple_show_id
           sl.update!(external_id: apple_show_id)
         end
       else
-        SyncLog.log!(feeder_id: apple_config.public_feed.id,
+        SyncLog.log!(
+          integration: :apple,
+          feeder_id: apple_config.public_feed.id,
           feeder_type: :feeds,
           sync_completed_at: Time.now.utc,
-          external_id: apple_show_id)
+          external_id: apple_show_id
+        )
       end
 
       api = Apple::Api.from_apple_config(apple_config)
@@ -137,7 +140,13 @@ module Apple
       Rails.logger.tagged("Apple::Show#sync!") do
         apple_json = create_or_update_show(sync_log)
         public_feed.reload
-        SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: apple_json["api_response"]["val"]["data"]["id"], api_response: apple_json)
+        SyncLog.log!(
+          integration: :apple,
+          feeder_id: public_feed.id,
+          feeder_type: :feeds,
+          external_id: apple_json["api_response"]["val"]["data"]["id"],
+          api_response: apple_json
+        )
       end
     end
 

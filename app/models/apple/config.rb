@@ -96,7 +96,7 @@ module Apple
 
     def apple_data
       episode_data = [
-        SyncLog.where(feeder_type: "episodes", feeder_id: podcast.episodes.pluck(:id)),
+        SyncLog.apple.where(feeder_type: "episodes", feeder_id: podcast.episodes.pluck(:id)),
         Apple::PodcastContainer.where(episode: podcast.episodes)
       ].flatten.compact
 

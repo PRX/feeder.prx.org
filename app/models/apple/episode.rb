@@ -203,7 +203,13 @@ module Apple
       apple_id = res.dig("api_response", "val", "data", "id")
       raise "Missing remote apple id" unless apple_id.present?
 
-      sl = SyncLog.log!(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id, api_response: res)
+      sl = SyncLog.log!(
+        integration: :apple,
+        feeder_id: ep.feeder_episode.id,
+        feeder_type: :episodes,
+        external_id: apple_id,
+        api_response: res
+      )
       # reload local state
       if ep.feeder_episode.apple_sync_log.nil?
         ep.feeder_episode.reload
@@ -262,7 +268,7 @@ module Apple
     end
 
     def sync_log
-      SyncLog.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
+      SyncLog.apple.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
     end
 
     def self.get_episode_bridge_params(api, feeder_id, apple_id)

@@ -24,13 +24,17 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def publish_integration?
-    megaphone_config&.publish_to_megaphone?
+    publish_to_megaphone?
   end
 
   def publish_integration!
     if publish_integration?
-      megaphone_config.build_publisher.publish!
+      Publisher.new(self).publish!
     end
+  end
+
+  def publish_to_megaphone?
+    valid? && persisted? && config&.publish_to_megaphone?
   end
 
   def mark_as_not_delivered!(episode)

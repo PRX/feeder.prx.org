@@ -72,7 +72,7 @@ describe Apple::Episode do
 
     let(:delivery_file) do
       pdf = Apple::PodcastDeliveryFile.new(episode: episode, podcast_delivery: delivery)
-      pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files))
+      pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files, integration: :apple))
       pdf.save!
       pdf
     end
@@ -288,7 +288,7 @@ describe Apple::Episode do
 
       let(:delivery_file) do
         pdf = Apple::PodcastDeliveryFile.new(episode: episode, podcast_delivery: delivery)
-        pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files))
+        pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files, integration: :apple))
         pdf.save!
         pdf
       end

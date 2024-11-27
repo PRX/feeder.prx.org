@@ -37,6 +37,18 @@ module Megaphone
       super
     end
 
+    def self.find_by_feed(feed)
+      return nil unless feed.podcast&.guid
+      podcast = Megaphone::Podcast.new(feed: feed)
+      podcast.find_by_guid(feed.podcast.guid).items.first
+    end
+
+    # def self.find_by_megaphone_id(feed)
+    #   return nil unless feed.podcast&.guid
+    #   podcast = Megaphone::Podcast.new(feed: feed)
+    #   podcast.find_by_guid(feed.podcast.guid).items.first
+    # end
+
     def self.new_from_feed(feed)
       podcast = Megaphone::Podcast.new(attributes_from_feed(feed))
       podcast.feed = feed

@@ -79,7 +79,13 @@ module Apple
       deliver_and_publish!(episodes_to_sync)
 
       # success
-      SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id, api_response: {success: true})
+      SyncLog.log!(
+        integration: :apple,
+        feeder_id: public_feed.id,
+        feeder_type: :feeds,
+        external_id: show.apple_id,
+        api_response: {success: true}
+      )
     end
 
     def deliver_and_publish!(eps)

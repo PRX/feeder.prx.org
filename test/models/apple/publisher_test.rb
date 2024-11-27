@@ -485,7 +485,7 @@ describe Apple::Publisher do
     let(:asset_delivery_state) { "COMPLETE" }
 
     let(:pdf_resp_container) { build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: asset_processing_state) }
-    let(:apple_id) { {external_id: "123"} }
+    let(:apple_id) { {external_id: "123", integration: :apple} }
 
     let(:podcast_container) { create(:apple_podcast_container, episode: apple_episode.feeder_episode) }
     let(:podcast_delivery) { Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: apple_episode.feeder_episode) }
