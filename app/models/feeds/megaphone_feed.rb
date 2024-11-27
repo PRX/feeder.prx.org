@@ -16,7 +16,11 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def set_defaults
-    self.slug ||= "megaphone"
+    self.slug ||= "Megaphone"
+    self.title ||= "Megaphone"
+    self.private = true
+
+    super
   end
 
   def publish_integration?
