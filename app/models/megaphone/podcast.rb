@@ -1,24 +1,26 @@
 module Megaphone
-  class Podcast < Megaphone::Model
+  class Podcast < Integrations::Base::Show
+    include Megaphone::Model
+
     # Required attributes for a create
     # external_id is not required by megaphone, but we need it to be set!
-    CREATE_REQUIRED = %w[title subtitle summary itunes_categories language external_id]
+    CREATE_REQUIRED = %i[title subtitle summary itunes_categories language external_id]
 
     # Other attributes available on create
-    CREATE_ATTRIBUTES = CREATE_REQUIRED + %w[link copyright author background_image_file_url
+    CREATE_ATTRIBUTES = CREATE_REQUIRED + %i[link copyright author background_image_file_url
       explicit owner_name owner_email slug original_rss_url itunes_identifier podtrac_enabled
       google_play_identifier episode_limit podcast_type advertising_tags excluded_categories]
 
     # Update also allows the span opt in
-    UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES + %w[span_opt_in]
+    UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES + %i[span_opt_in]
 
     # Deprecated, so we shouldn't rely on these, but they show up as attributes
-    DEPRECATED = %w[category redirect_url itunes_active redirected_at itunes_rating
+    DEPRECATED = %i[category redirect_url itunes_active redirected_at itunes_rating
       google_podcasts_identifier stitcher_identifier]
 
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
-    OTHER_ATTRIBUTES = %w[id created_at updated_at image_file uid network_id recurring_import
+    OTHER_ATTRIBUTES = %i[id created_at updated_at image_file uid network_id recurring_import
       episodes_count spotify_identifier default_ad_settings iheart_identifier feed_url
       default_pre_count default_post_count cloned_feed_urls ad_free_feed_urls main_feed ad_free]
 
@@ -32,26 +34,19 @@ module Megaphone
 
     validates_absence_of :id, on: :create
 
-    # initialize from attributes
-    def initialize(attributes = {})
-      super
-    end
-
     def self.find_by_feed(feed)
-      return nil unless feed.podcast&.guid
-      podcast = Megaphone::Podcast.new(feed: feed)
-      podcast.find_by_guid(feed.podcast.guid).items.first
+      podcast = new_from_feed(feed)
+      public_feed = feed.podcast.public_feed
+      sync_log = public_feed.sync_log(:megaphone)
+      mp = podcast.find_by_megaphone_id(sync_log&.external_id)
+      mp ||= podcast.find_by_guid(feed.podcast.guid)
+      mp
     end
-
-    # def self.find_by_megaphone_id(feed)
-    #   return nil unless feed.podcast&.guid
-    #   podcast = Megaphone::Podcast.new(feed: feed)
-    #   podcast.find_by_guid(feed.podcast.guid).items.first
-    # end
 
     def self.new_from_feed(feed)
       podcast = Megaphone::Podcast.new(attributes_from_feed(feed))
-      podcast.feed = feed
+      podcast.private_feed = feed
+      podcast.config = feed.config
       podcast
     end
 
@@ -84,35 +79,54 @@ module Megaphone
       }
     end
 
-    def list
-      result = api.get("podcasts")
-      Megaphone::PagedCollection.new(Megaphone::Podcast, result)
+    def build_integration_episode(feeder_episode)
+      Megaphone::Episode.new_from_episode(private_feed, feeder_episode)
     end
 
-    def find_by_guid
-      result = api.get("podcasts", externalId: feed.podcast.guid)
-      Megaphone::PagedCollection.new(Megaphone::Podcast, result)
+    def updated_at=(d)
+      d = Time.parse(d) if d.is_a?(String)
+      @updated_at = d
+    end
+
+    def list
+      self.api_response = api.get("podcasts")
+      Megaphone::PagedCollection.new(Megaphone::Podcast, api_response)
+    end
+
+    def find_by_guid(guid = podcast.guid)
+      return nil if guid.blank?
+      self.api_response = api.get("podcasts", externalId: guid)
+      handle_response(api_response)
     end
 
     def find_by_megaphone_id(mpid = id)
-      result = api.get("podcasts/#{mpid}")
-      (result[:items] || []).first
+      return nil if mpid.blank?
+      self.api_response = api.get("podcasts/#{mpid}")
+      handle_response(api_response)
     end
 
     def create!
       validate!(:create)
-      body = as_json.slice(*Megaphone::Podcast::CREATE_ATTRIBUTES)
-      result = api.post("podcasts", body)
-      self.attributes = result.slice(*Megaphone::Podcast::ALL_ATTRIBUTES)
-      self
+      body = as_json(only: CREATE_ATTRIBUTES.map(&:to_s))
+      self.api_response = api.post("podcasts", body)
+      handle_response(api_response)
     end
 
-    def update!
+    def update!(feed = nil)
+      if feed
+        self.attributes = self.class.attributes_from_feed(feed)
+      end
       validate!(:update)
-      body = as_json.slice(*Megaphone::Podcast::UPDATE_ATTRIBUTES).to_json
-      result = api.put("podcasts/#{id}", body)
-      self.attributes = result.slice(*Megaphone::Podcast::ALL_ATTRIBUTES)
-      self
+      body = as_json(only: UPDATE_ATTRIBUTES.map(&:to_s))
+      self.api_response = api.put("podcasts/#{id}", body)
+      handle_response(api_response)
+    end
+
+    def handle_response(api_response)
+      if (item = (api_response[:items] || []).first)
+        self.attributes = item.slice(*ALL_ATTRIBUTES)
+        self
+      end
     end
   end
 end

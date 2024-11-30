@@ -1,9 +1,10 @@
 module Integrations
   module Base
     class Publisher
+      PUBLISH_CHUNK_LEN = 25
       include EpisodeSetOperations
 
-      attr_reader :show
+      attr_accessor :show
 
       def initialize(show:)
         @show = show

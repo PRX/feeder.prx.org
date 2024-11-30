@@ -4,9 +4,12 @@ module Apple
   class Show < Integrations::Base::Show
     include Apple::ApiResponse
 
-    attr_reader :public_feed,
-      :private_feed,
-      :api
+    attr_reader :api
+
+    def initialize(public_feed:, private_feed:)
+      @public_feed = public_feed
+      @private_feed = private_feed
+    end
 
     def self.apple_shows_json(api)
       api.get_paged_collection("shows")

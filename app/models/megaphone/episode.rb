@@ -1,24 +1,25 @@
 module Megaphone
-  class Episode < Megaphone::Model
-    attr_accessor :episode
+  class Episode < Integrations::Base::Episode
+    include Megaphone::Model
+    attr_accessor :private_feed
 
     # Used to form the adhash value
     ADHASH_VALUES = {"pre" => "0", "mid" => "1", "post" => "2"}.freeze
 
     # Required attributes for a create
     # external_id is not required by megaphone, but we need it to be set!
-    CREATE_REQUIRED = %w[title external_id]
+    CREATE_REQUIRED = %i[title external_id]
 
-    CREATE_ATTRIBUTES = CREATE_REQUIRED + %w[pubdate pubdate_timezone author link explicit draft
+    CREATE_ATTRIBUTES = CREATE_REQUIRED + %i[pubdate pubdate_timezone author link explicit draft
       subtitle summary background_image_file_url background_audio_file_url pre_count post_count
       insertion_points guid pre_offset post_offset expected_adhash original_filename original_url
       episode_number season_number retain_ad_locations advertising_tags ad_free]
 
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
-    OTHER_ATTRIBUTES = %w[id created_at updated_at]
+    OTHER_ATTRIBUTES = %i[id created_at updated_at]
 
-    DEPRECATED = %w[]
+    DEPRECATED = %i[]
 
     ALL_ATTRIBUTES = (CREATE_ATTRIBUTES + DEPRECATED + OTHER_ATTRIBUTES)
 
@@ -30,11 +31,11 @@ module Megaphone
 
     validates_absence_of :id, on: :create
 
-    def self.new_from_episode(dt_episode, feed = nil)
-      episode = Megaphone::Episode.new(attributes_from_episode(dt_episode))
-      episode.episode = dt_episode
-      episode.feed = feed
-      episode.set_audio_attributes
+    def self.new_from_episode(feed, feeder_episode)
+      episode = Megaphone::Episode.new(attributes_from_episode(feeder_episode))
+      episode.feeder_episode = feeder_episode
+      episode.private_feed = feed
+      episode.config = feed.config
       episode
     end
 
@@ -60,7 +61,7 @@ module Megaphone
     end
 
     def set_placement_attributes
-      placement = get_placement(episode.segment_count)
+      placement = get_placement(feeder_episode.segment_count)
       self.expected_adhash = adhash_for_placement(placement)
       self.pre_count = expected_adhash.count("0")
       self.post_count = expected_adhash.count("2")
@@ -79,8 +80,9 @@ module Megaphone
       placements&.find { |i| i.original_count == original_count }
     end
 
+    # call this before create or update, yah
     def set_audio_attributes
-      return unless episode.complete_media?
+      return unless feeder_episode.complete_media?
       self.background_audio_file_url = upload_url
       self.insertion_points = timings
       self.retain_ad_locations = true
@@ -90,7 +92,7 @@ module Megaphone
       resp = Faraday.head(enclosure_url)
       if resp.status == 302
         media_version = resp.env.response_headers["x-episode-media-version"]
-        if media_version == episode.media_version_id
+        if media_version == feeder_episode.media_version_id
           location = resp.env.response_headers["location"]
           arrangement_version_url(location, media_version)
         end
@@ -106,12 +108,16 @@ module Megaphone
     end
 
     def enclosure_url
-      url = EnclosureUrlBuilder.new.base_enclosure_url(episode.podcast, episode, feed)
-      EnclosureUrlBuilder.mark_authorized(url, feed)
+      url = EnclosureUrlBuilder.new.base_enclosure_url(
+        feeder_episode.podcast,
+        feeder_episode,
+        private_feed
+      )
+      EnclosureUrlBuilder.mark_authorized(url, private_feed)
     end
 
     def timings
-      episode.media[0..-2].map(&:duration)
+      feeder_episode.media[0..-2].map(&:duration)
     end
 
     def pre_after_original?(placement)

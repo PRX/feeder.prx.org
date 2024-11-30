@@ -88,6 +88,10 @@ class Feed < ApplicationRecord
   def publish_integration!
   end
 
+  def sync_log(integration)
+    SyncLog.latest.find_by(integration: integration, feeder_id: id, feeder_type: :feeds)
+  end
+
   def set_defaults
     self.file_name ||= DEFAULT_FILE_NAME
     self.enclosure_template ||= Feed.enclosure_template_default

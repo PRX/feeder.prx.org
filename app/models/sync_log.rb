@@ -15,7 +15,7 @@ class SyncLog < ApplicationRecord
   scope :latest, -> do
     joins("JOIN LATERAL ( SELECT max(id) as max_id
                           FROM sync_logs
-                          GROUP BY feeder_type, feeder_id, external_id  ) q
+                          GROUP BY integration, feeder_type, feeder_id, external_id  ) q
                           ON id = max_id")
   end
 

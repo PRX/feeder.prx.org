@@ -1,9 +1,5 @@
-# frozen_string_literal: true
-
 module Apple
   class Publisher < Integrations::Base::Publisher
-    PUBLISH_CHUNK_LEN = 25
-
     attr_reader :public_feed,
       :private_feed,
       :api,

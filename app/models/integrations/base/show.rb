@@ -3,12 +3,7 @@ module Integrations
     class Show
       include EpisodeSetOperations
 
-      attr_reader :feed
-
-      def initialize(public_feed:, private_feed:)
-        @public_feed = public_feed
-        @private_feed = private_feed
-      end
+      attr_accessor :public_feed, :private_feed
 
       def podcast
         private_feed.podcast

@@ -8,7 +8,7 @@ describe Megaphone::Podcast do
     it "must have required attributes" do
       podcast = Megaphone::Podcast.new_from_feed(feed)
       assert_not_nil podcast
-      assert_not_nil podcast.feed
+      assert_not_nil podcast.config
       assert_equal podcast.title, feed.title
       assert podcast.valid?
     end

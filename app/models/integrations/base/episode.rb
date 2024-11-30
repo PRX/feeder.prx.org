@@ -1,11 +1,7 @@
 module Integrations
   module Base
     class Episode
-      attr_reader :feeder_episode
-
-      def initialize(feeder_episode)
-        @feeder_episode = feeder_episode
-      end
+      attr_accessor :feeder_episode
 
       def synced_with_integration?
         raise NotImplementedError, "Subclasses must implement synced_with_integration?"

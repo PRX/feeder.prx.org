@@ -16,6 +16,22 @@ module Megaphone
     def get(path, params = {}, headers = {})
       request = {url: join_url(path), headers: headers, params: params}
       response = get_url(request)
+      result(request, response)
+    end
+
+    def post(path, body, headers = {})
+      request = {url: join_url(path), headers: headers, body: outgoing_body_filter(body)}
+      response = connection(request).post
+      result(request, response)
+    end
+
+    def put(path, body, headers = {})
+      request = {url: join_url(path), headers: headers, body: outgoing_body_filter(body)}
+      response = connection(request).put
+      result(request, response)
+    end
+
+    def result(request, response)
       data = incoming_body_filter(response.body)
       if data.is_a?(Array)
         pagination = pagination_from_headers(response.env.response_headers)
@@ -23,20 +39,6 @@ module Megaphone
       else
         {items: [data], pagination: {}, request: request, response: response}
       end
-    end
-
-    def post(path, body, headers = {})
-      response = connection({url: join_url(path), headers: headers}).post do |req|
-        req.body = outgoing_body_filter(body)
-      end
-      incoming_body_filter(response.body)
-    end
-
-    def put(path, body, headers = {})
-      connection({url: join_url(path), headers: headers}).put do |req|
-        req.body = outgoing_body_filter(body)
-      end
-      incoming_body_filter(response.body)
     end
 
     # TODO: and we need delete...
@@ -113,7 +115,7 @@ module Megaphone
       Faraday.new(url: url, headers: headers, params: params) do |builder|
         builder.request :token_auth, token
         builder.response :raise_error
-        builder.response :logger
+        builder.response :logger, Rails.logger
         builder.adapter :excon
       end
     end
