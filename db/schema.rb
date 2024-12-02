@@ -241,6 +241,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_20_165556) do
     t.string "type"
     t.string "apple_show_id"
     t.boolean "edit_locked"
+    t.string "episode_footer"
     t.datetime "enclosure_updated_at", precision: nil
     t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
