@@ -14,7 +14,7 @@ module Megaphone
 
     def publish!
       sync_podcast!
-      raise "Missing Megaphone Podcast!" unless megaphone_podcast&.id.present?
+      sync_episodes!
 
       # success
       SyncLog.log!(
@@ -26,7 +26,7 @@ module Megaphone
       )
     end
 
-    def deliver_and_publish!
+    def sync_episodes!
       episodes = episodes_to_sync
       puts "deliver_and_publish!: #{episodes.count}"
     end

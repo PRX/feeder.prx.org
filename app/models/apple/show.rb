@@ -6,11 +6,6 @@ module Apple
 
     attr_reader :api
 
-    def initialize(public_feed:, private_feed:)
-      @public_feed = public_feed
-      @private_feed = private_feed
-    end
-
     def self.apple_shows_json(api)
       api.get_paged_collection("shows")
     end

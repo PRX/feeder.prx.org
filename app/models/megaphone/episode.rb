@@ -60,6 +60,22 @@ module Megaphone
       }
     end
 
+    def synced_with_integration?
+      delivery_status&.delivered?
+    end
+
+    def integration_new?
+      false
+    end
+
+    def archived?
+      false
+    end
+
+    def delivery_status
+      feeder_episode&.episode_delivery_status(:megaphone)
+    end
+
     def set_placement_attributes
       placement = get_placement(feeder_episode.segment_count)
       self.expected_adhash = adhash_for_placement(placement)

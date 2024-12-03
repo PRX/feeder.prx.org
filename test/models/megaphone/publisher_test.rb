@@ -17,6 +17,38 @@ describe Megaphone::Publisher do
     end
   end
 
+  describe "sync_episodes!" do
+    let(:episode) { create(:episode, podcast: podcast) }
+
+    before do
+      stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/A1B2C4D5E6F7G8")
+        .to_return(status: 200, body: {id: "A1B2C4D5E6F7G8", updatedAt: (Time.now + 1.minute).utc.iso8601}.to_json, headers: {})
+
+      SyncLog.log!(
+        integration: :megaphone,
+        feeder_id: public_feed.id,
+        feeder_type: :feeds,
+        external_id: "A1B2C4D5E6F7G8",
+        api_response: {request: {}, items: {}}
+      )
+    end
+
+    it "should create new draft episodes" do
+      assert episode
+      puts episode.inspect
+      publisher.sync_episodes!
+    end
+
+    it "should update episodes" do
+    end
+
+    it "should update episodes with audio" do
+    end
+
+    it "should update episodes with incomplete audio" do
+    end
+  end
+
   describe "#sync_podcast!" do
     it "should create a new podcast" do
       stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts?externalId=95ebfb22-0002-5f78-a7aa-5acb5ac7daa9")
@@ -47,7 +79,7 @@ describe Megaphone::Publisher do
       assert_equal megaphone_podcast.id, "A1B2C4D5E6F7G8"
     end
 
-    it "should find a podcast by guid" do
+    it "should find and update a podcast by guid" do
       stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts?externalId=95ebfb22-0002-5f78-a7aa-5acb5ac7daa9")
         .to_return(status: 200, body: [{id: "DEF67890", updatedAt: "2024-11-03T14:54:02.690Z"}].to_json, headers: {})
 
