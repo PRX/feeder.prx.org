@@ -12,5 +12,20 @@ module Apple
     def episode_ids
       episodes.map(&:feeder_id)
     end
+
+    def raise_publishing_error?
+      %i[error fatal].include?(log_level)
+    end
+
+    def log_level
+      case attempts
+      when 0..4
+        :warn
+      when 5
+        :error
+      else
+        :fatal
+      end
+    end
   end
 end
