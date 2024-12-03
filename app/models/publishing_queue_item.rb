@@ -8,7 +8,7 @@ class PublishingQueueItem < ApplicationRecord
                             latest_by_status(PublishingPipelineState::TERMINAL_STATUSES)
                           }
   scope :latest_failed, -> {
-                          latest_by_status(PublishingPipelineState::TERMINAL_FAILURE_STATUSES)
+                          latest_by_status(PublishingPipelineState::FAILURE_STATUSES)
                         }
 
   scope :latest_by_status, ->(status) {
