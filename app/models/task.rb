@@ -25,6 +25,7 @@ class Task < ApplicationRecord
   scope :copy_image, -> { where(type: "Tasks::CopyImageTask") }
   scope :bad_audio_duration, -> { where("result ~ '\"DurationDiscrepancy\":([5-9]\\d[1-9]|[6-9]\\d{2}|[1-9]\d{3})'") }
   scope :bad_audio_bytes, -> { where("result ~ '\"UnidentifiedBytes\":[1-9]'") }
+  scope :bad_audio_vbr, -> { where("result ~ '\"VariableBitrate\":true'") }
 
   def self.callback(msg)
     Task.transaction do
