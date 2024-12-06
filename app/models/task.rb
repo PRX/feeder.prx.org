@@ -55,6 +55,10 @@ class Task < ApplicationRecord
     porter_callback_inspect.dig(:Audio, :UnidentifiedBytes).to_i > 0
   end
 
+  def bad_audio_vbr?
+    !!porter_callback_inspect.dig(:Audio, :VariableBitrate)
+  end
+
   def start!
     self.status = "started"
     self.options = {
