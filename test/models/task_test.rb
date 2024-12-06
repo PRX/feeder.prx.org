@@ -83,6 +83,21 @@ describe Task do
     end
   end
 
+  describe "#bad_audio_vbr?" do
+    it "checks for the vbr flag" do
+      refute task.bad_audio_vbr?
+
+      task.result = build(:porter_job_results)
+      refute task.bad_audio_vbr?
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:VariableBitrate] = false
+      refute task.bad_audio_vbr?
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:VariableBitrate] = true
+      assert task.bad_audio_vbr?
+    end
+  end
+
   describe "#start!" do
     it "starts a porter job" do
       task.stub(:source_url, "http://some/file.mp3") do
