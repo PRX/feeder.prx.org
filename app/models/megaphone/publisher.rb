@@ -27,8 +27,16 @@ module Megaphone
     end
 
     def sync_episodes!
-      episodes = episodes_to_sync
-      puts "deliver_and_publish!: #{episodes.count}"
+      Rails.logger.tagged("Megaphone::Publisher#sync_episodes!") do
+        # start with drafts, make sure they have been at least created
+        private_feed.episodes.unfinished(:megaphone).each do |ep|
+          puts ep.class.name
+          puts ep.inspect
+          # if it is new, create it - meaning no external_id
+          # create episodes that don't have an external id
+          # or can't be found by guid?
+        end
+      end
     end
 
     def sync_podcast!
