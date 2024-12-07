@@ -80,7 +80,7 @@ module Megaphone
     end
 
     def build_integration_episode(feeder_episode)
-      Megaphone::Episode.new_from_episode(private_feed, feeder_episode)
+      Megaphone::Episode.new_from_episode(self, feeder_episode)
     end
 
     def updated_at=(d)
