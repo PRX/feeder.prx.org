@@ -16,8 +16,8 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def set_defaults
-    self.slug ||= "Megaphone"
-    self.title ||= "Megaphone"
+    self.slug = "prx-#{id}"
+    self.title = podcast&.title
     self.private = true
 
     super
