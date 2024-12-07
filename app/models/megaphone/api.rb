@@ -21,13 +21,17 @@ module Megaphone
 
     def post(path, body, headers = {})
       request = {url: join_url(path), headers: headers, body: outgoing_body_filter(body)}
-      response = connection(request).post
+      response = connection(request.slice(:url, :headers)).post do |req|
+        req.body = request[:body]
+      end
       result(request, response)
     end
 
     def put(path, body, headers = {})
       request = {url: join_url(path), headers: headers, body: outgoing_body_filter(body)}
-      response = connection(request).put
+      response = connection(request.slice(:url, :headers)).put do |req|
+        req.body = request[:body]
+      end
       result(request, response)
     end
 
