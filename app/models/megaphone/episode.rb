@@ -1,7 +1,7 @@
 module Megaphone
   class Episode < Integrations::Base::Episode
     include Megaphone::Model
-    attr_accessor :private_feed
+    attr_accessor :podcast
 
     # Used to form the adhash value
     ADHASH_VALUES = {"pre" => "0", "mid" => "1", "post" => "2"}.freeze
@@ -17,7 +17,7 @@ module Megaphone
 
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
-    OTHER_ATTRIBUTES = %i[id created_at updated_at]
+    OTHER_ATTRIBUTES = %i[id podcast_id created_at updated_at]
 
     DEPRECATED = %i[]
 
@@ -31,11 +31,27 @@ module Megaphone
 
     validates_absence_of :id, on: :create
 
-    def self.new_from_episode(feed, feeder_episode)
+    def self.find_by_episode(megaphone_podcast, feeder_episode)
+      episode = new_from_episode(megaphone_podcast, feeder_episode)
+      sync_log = feeder_episode.sync_log(:megaphone)
+      mp = episode.find_by_megaphone_id(sync_log&.external_id)
+      mp ||= episode.find_by_guid(feeder_episode.guid)
+      mp
+    end
+
+    def self.new_from_episode(megaphone_podcast, feeder_episode)
+      # start with basic attributes copied from the feeder episode
       episode = Megaphone::Episode.new(attributes_from_episode(feeder_episode))
+
+      # set relations to the feeder episode and megaphone podcast
       episode.feeder_episode = feeder_episode
-      episode.private_feed = feed
-      episode.config = feed.config
+      episode.podcast = megaphone_podcast
+      episode.config = megaphone_podcast.config
+
+      # we should always be able to set these, published or not
+      # this does make a remote call to get the placements from augury
+      episode.set_placement_attributes
+
       episode
     end
 
@@ -60,6 +76,46 @@ module Megaphone
       }
     end
 
+    def find_by_guid(guid = feeder_episode.guid)
+      return nil if guid.blank?
+      self.api_response = api.get("podcasts/#{podcast.id}/episodes", externalId: guid)
+      handle_response(api_response)
+    end
+
+    def find_by_megaphone_id(mpid = id)
+      return nil if mpid.blank?
+      self.api_response = api.get("podcasts/#{podcast.id}/episodes/#{mpid}")
+      handle_response(api_response)
+    end
+
+    def create!
+      validate!(:create)
+      body = as_json(only: CREATE_ATTRIBUTES.map(&:to_s))
+      self.api_response = api.post("podcasts/#{podcast.id}/episodes", body)
+      handle_response(api_response)
+    end
+
+    def update!(feed = nil)
+      if feed
+        self.attributes = self.class.attributes_from_feed(feed)
+      end
+      validate!(:update)
+      body = as_json(only: UPDATE_ATTRIBUTES.map(&:to_s))
+      self.api_response = api.put("podcasts/#{podcast.id}/episodes/#{id}", body)
+      handle_response(api_response)
+    end
+
+    def handle_response(api_response)
+      if (item = (api_response[:items] || []).first)
+        self.attributes = item.slice(*ALL_ATTRIBUTES)
+        self
+      end
+    end
+
+    def private_feed
+      podcast.private_feed
+    end
+
     def synced_with_integration?
       delivery_status&.delivered?
     end
@@ -72,15 +128,20 @@ module Megaphone
       false
     end
 
+    def feeder_podcast
+      feeder_episode.podcast
+    end
+
     def delivery_status
       feeder_episode&.episode_delivery_status(:megaphone)
     end
 
     def set_placement_attributes
-      placement = get_placement(feeder_episode.segment_count)
-      self.expected_adhash = adhash_for_placement(placement)
-      self.pre_count = expected_adhash.count("0")
-      self.post_count = expected_adhash.count("2")
+      if (placement = get_placement(feeder_episode.segment_count))
+        self.expected_adhash = adhash_for_placement(placement)
+        self.pre_count = expected_adhash.count("0")
+        self.post_count = expected_adhash.count("2")
+      end
     end
 
     def adhash_for_placement(placement)
@@ -92,7 +153,7 @@ module Megaphone
     end
 
     def get_placement(original_count)
-      placements = Prx::Augury.new.placements(@podcast.id)
+      placements = Prx::Augury.new.placements(feeder_podcast.id)
       placements&.find { |i| i.original_count == original_count }
     end
 
@@ -125,7 +186,7 @@ module Megaphone
 
     def enclosure_url
       url = EnclosureUrlBuilder.new.base_enclosure_url(
-        feeder_episode.podcast,
+        feeder_podcast,
         feeder_episode,
         private_feed
       )
