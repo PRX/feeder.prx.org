@@ -1,7 +1,7 @@
 require "test_helper"
 
 describe Megaphone::Publisher do
-  let(:podcast) { create(:podcast) }
+  let(:podcast) { create(:podcast, id: 1234) }
   let(:public_feed) { podcast.default_feed }
   let(:feed) { create(:megaphone_feed, podcast: podcast, private: true) }
 
@@ -21,6 +21,7 @@ describe Megaphone::Publisher do
     let(:episode) { create(:episode, podcast: podcast) }
 
     before do
+      # setup the megaphone podcast
       stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/A1B2C4D5E6F7G8")
         .to_return(status: 200, body: {id: "A1B2C4D5E6F7G8", updatedAt: (Time.now + 1.minute).utc.iso8601}.to_json, headers: {})
 
@@ -31,11 +32,25 @@ describe Megaphone::Publisher do
         external_id: "A1B2C4D5E6F7G8",
         api_response: {request: {}, items: {}}
       )
+
+      # setup augury placements for the podcast
+      stub_request(:post, "https://#{ENV["ID_HOST"]}/token")
+        .to_return(status: 200,
+          body: '{"access_token":"thisisnotatoken","token_type":"bearer"}',
+          headers: {"Content-Type" => "application/json; charset=utf-8"})
+
+      stub_request(:get, "https://#{ENV["AUGURY_HOST"]}/api/v1/podcasts/#{podcast.id}/placements")
+        .to_return(status: 200, body: json_file(:placements), headers: {})
+
+      stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/A1B2C4D5E6F7G8/episodes?externalId=#{episode.guid}")
+        .to_return(status: 200, body: [].to_json, headers: {})
+
+      stub_request(:post, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/A1B2C4D5E6F7G8/episodes")
+        .to_return(status: 200, body: {id: "megaphone-episode-guid"}.to_json, headers: {})
     end
 
     it "should create new draft episodes" do
       assert episode
-      puts episode.inspect
       publisher.sync_episodes!
     end
 
