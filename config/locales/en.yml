@@ -416,6 +416,7 @@ en:
         friendly_titles:
           apple: Apple Subscriptions
           default: Default RSS Feed
+          megaphone: Megaphone Integration
         house: House Ads
         include_donation_url: Include Donation Form
         include_podcast_value: Include Micropayments Wallet

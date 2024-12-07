@@ -24,7 +24,7 @@ class FeedsController < ApplicationController
   end
 
   def get_apple_show_options(feed)
-    if feed.apple? && feed.apple_config&.key
+    if feed.integration_type == :apple && feed.apple_config&.key
       feed.apple_show_options
     end
   end

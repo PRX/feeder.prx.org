@@ -432,10 +432,6 @@ module Apple
       self.class.publishing_state_params(apple_id, state)
     end
 
-    def apple?
-      feeder_episode.apple?
-    end
-
     def apple_json
       return nil unless api_response.present?
 

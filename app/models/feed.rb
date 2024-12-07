@@ -106,8 +106,8 @@ class Feed < ApplicationRecord
   def friendly_title
     if default?
       I18n.t("helpers.label.feed.friendly_titles.default")
-    elsif apple?
-      I18n.t("helpers.label.feed.friendly_titles.apple")
+    elsif integration_type
+      I18n.t("helpers.label.feed.friendly_titles.#{integration_type}")
     else
       title
     end
@@ -166,10 +166,6 @@ class Feed < ApplicationRecord
 
   def public?
     !private?
-  end
-
-  def apple?
-    false
   end
 
   def default_runtime_settings?

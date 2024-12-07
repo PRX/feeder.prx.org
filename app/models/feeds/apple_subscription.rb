@@ -115,10 +115,6 @@ class Feeds::AppleSubscription < Feed
     end
   end
 
-  def apple?
-    true
-  end
-
   def integration_type
     :apple
   end
