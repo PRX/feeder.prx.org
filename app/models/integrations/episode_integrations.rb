@@ -27,8 +27,13 @@ module Integrations::EpisodeIntegrations
     sync_logs.send(integration.intern).order(updated_at: :desc).first
   end
 
-  def episode_delivery_status(integration)
-    episode_delivery_statuses.order(created_at: :desc).send(integration.intern).first
+  def episode_delivery_status(integration, with_default = false)
+    status = episode_delivery_statuses.order(created_at: :desc).send(integration.intern).first
+    if !status && with_default
+      Integrations::EpisodeDeliveryStatus.default_status(integration, self)
+    else
+      status
+    end
   end
 
   def update_episode_delivery_status(integration, attrs)
