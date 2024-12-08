@@ -36,8 +36,7 @@ module Megaphone
 
     def self.find_by_feed(feed)
       podcast = new_from_feed(feed)
-      public_feed = feed.podcast.public_feed
-      sync_log = public_feed.sync_log(:megaphone)
+      sync_log = podcast.public_feed.sync_log(:megaphone)
       mp = podcast.find_by_megaphone_id(sync_log&.external_id)
       mp ||= podcast.find_by_guid(feed.podcast.guid)
       mp
@@ -79,6 +78,10 @@ module Megaphone
       }
     end
 
+    def public_feed
+      private_feed.podcast&.public_feed
+    end
+
     def build_integration_episode(feeder_episode)
       Megaphone::Episode.new_from_episode(self, feeder_episode)
     end
@@ -110,6 +113,8 @@ module Megaphone
       body = as_json(only: CREATE_ATTRIBUTES.map(&:to_s))
       self.api_response = api.post("podcasts", body)
       handle_response(api_response)
+      update_sync_log
+      self
     end
 
     def update!(feed = nil)
@@ -120,6 +125,8 @@ module Megaphone
       body = as_json(only: UPDATE_ATTRIBUTES.map(&:to_s))
       self.api_response = api.put("podcasts/#{id}", body)
       handle_response(api_response)
+      update_sync_log
+      self
     end
 
     def handle_response(api_response)
@@ -127,6 +134,16 @@ module Megaphone
         self.attributes = item.slice(*ALL_ATTRIBUTES)
         self
       end
+    end
+
+    def update_sync_log
+      SyncLog.log!(
+        integration: :megaphone,
+        feeder_type: :feeds,
+        feeder_id: public_feed.id,
+        external_id: id,
+        api_response: api_response_log_item
+      )
     end
   end
 end

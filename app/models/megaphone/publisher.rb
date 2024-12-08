@@ -16,15 +16,6 @@ module Megaphone
     def publish!
       sync_podcast!
       sync_episodes!
-
-      # success
-      SyncLog.log!(
-        integration: :megaphone,
-        feeder_id: public_feed.id,
-        feeder_type: :feeds,
-        external_id: megaphone_podcast.id,
-        api_response: {success: true}
-      )
     end
 
     def sync_episodes!
@@ -59,16 +50,7 @@ module Megaphone
         if (megaphone_episode = Megaphone::Episode.find_by_episode(megaphone_podcast, ep))
           megaphone_episode.update!(ep)
         end
-
         megaphone_episode ||= create_episode!(megaphone_podcast, ep)
-
-        SyncLog.log!(
-          integration: :megaphone,
-          feeder_id: ep.id,
-          feeder_type: :episodes,
-          external_id: megaphone_episode.id,
-          api_response: megaphone_episode.api_response_log_item
-        )
         megaphone_episodes << megaphone_episode
       end
 

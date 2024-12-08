@@ -101,6 +101,7 @@ module Megaphone
       body = as_json(only: CREATE_ATTRIBUTES.map(&:to_s))
       self.api_response = api.post("podcasts/#{podcast.id}/episodes", body)
       handle_response(api_response)
+      update_sync_log
       update_delivery_status
       self
     end
@@ -113,8 +114,19 @@ module Megaphone
       body = as_json(only: UPDATE_ATTRIBUTES.map(&:to_s))
       self.api_response = api.put("podcasts/#{podcast.id}/episodes/#{id}", body)
       handle_response(api_response)
+      update_sync_log
       update_delivery_status
       self
+    end
+
+    def update_sync_log
+      SyncLog.log!(
+        integration: :megaphone,
+        feeder_id: feeder_episode.id,
+        feeder_type: :episodes,
+        external_id: id,
+        api_response: api_response_log_item
+      )
     end
 
     def handle_response(api_response)
