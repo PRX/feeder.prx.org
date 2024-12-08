@@ -26,4 +26,13 @@ describe Megaphone::Episode do
       assert episode.valid?
     end
   end
+
+  describe "#create!" do
+    it "can create a draft with no audio" do
+    end
+    it "can create a published episodes with audio" do
+    end
+    it "can create a published episodes with the wrong media vetsion from DTR" do
+    end
+  end
 end

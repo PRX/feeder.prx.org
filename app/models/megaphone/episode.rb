@@ -3,6 +3,10 @@ module Megaphone
     include Megaphone::Model
     attr_accessor :podcast
 
+    # track upload source data
+    SOURCE_ATTRIBUTES = [:source_media_version_id, :source_size, :source_fetch_count, :source_url, :source_filename]
+    attr_accessor(*SOURCE_ATTRIBUTES)
+
     # Used to form the adhash value
     ADHASH_VALUES = {"pre" => "0", "mid" => "1", "post" => "2"}.freeze
 
@@ -17,7 +21,8 @@ module Megaphone
 
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
-    OTHER_ATTRIBUTES = %i[id podcast_id created_at updated_at]
+    OTHER_ATTRIBUTES = %i[id podcast_id created_at updated_at status
+      download_url audio_file_processing audio_file_status audio_file_updated_at]
 
     DEPRECATED = %i[]
 
@@ -51,6 +56,9 @@ module Megaphone
       # we should always be able to set these, published or not
       # this does make a remote call to get the placements from augury
       episode.set_placement_attributes
+
+      # may move this later, but let's also see about audio
+      episode.set_audio_attributes
 
       episode
     end
@@ -93,6 +101,8 @@ module Megaphone
       body = as_json(only: CREATE_ATTRIBUTES.map(&:to_s))
       self.api_response = api.post("podcasts/#{podcast.id}/episodes", body)
       handle_response(api_response)
+      update_delivery_status
+      self
     end
 
     def update!(feed = nil)
@@ -103,12 +113,27 @@ module Megaphone
       body = as_json(only: UPDATE_ATTRIBUTES.map(&:to_s))
       self.api_response = api.put("podcasts/#{podcast.id}/episodes/#{id}", body)
       handle_response(api_response)
+      update_delivery_status
+      self
     end
 
     def handle_response(api_response)
       if (item = (api_response[:items] || []).first)
         self.attributes = item.slice(*ALL_ATTRIBUTES)
         self
+      end
+    end
+
+    # update delivery status after a create or update
+    def update_delivery_status
+      # if there's audio and we just uploaded it successfully, set attr, then check status
+      if feeder_episode.complete_media? && background_audio_file_url
+        attrs = source_attributes.merge(uploaded: true)
+        feeder_episode.update_episode_delivery_status(:megaphone, attrs)
+      # or if there's not audio yet or it didn't change
+      else
+        # we're done, mark it as delivered!
+        delivery_status(true).mark_as_delivered!
       end
     end
 
@@ -132,8 +157,8 @@ module Megaphone
       feeder_episode.podcast
     end
 
-    def delivery_status
-      feeder_episode&.episode_delivery_status(:megaphone)
+    def delivery_status(with_default = false)
+      feeder_episode&.episode_delivery_status(:megaphone, with_default)
     end
 
     def set_placement_attributes
@@ -160,28 +185,65 @@ module Megaphone
     # call this before create or update, yah
     def set_audio_attributes
       return unless feeder_episode.complete_media?
-      self.background_audio_file_url = upload_url
-      self.insertion_points = timings
-      self.retain_ad_locations = true
-    end
 
-    def upload_url
-      resp = Faraday.head(enclosure_url)
-      if resp.status == 302
-        media_version = resp.env.response_headers["x-episode-media-version"]
-        if media_version == feeder_episode.media_version_id
-          location = resp.env.response_headers["location"]
-          arrangement_version_url(location, media_version)
+      # check if the version is different from what was saved before
+      if !has_media_version?
+        media_info = get_media_info(enclosure_url)
+
+        # if dovetail has the right media info, we can update
+        if media_info[:media_version] == feeder_episode.media_version_id
+          self.source_media_version_id = media_info[:media_version]
+          self.source_size = media_info[:size]
+          self.source_fetch_count = (delivery_status&.source_fetch_count || 0) + 1
+          self.source_url = arrangement_version_url(media_info[:location], media_info[:media_version], source_fetch_count)
+          self.source_filename = url_filename(source_url)
+          self.background_audio_file_url = source_url
+          self.insertion_points = timings
+          self.retain_ad_locations = true
+        else
+          # if not, mark it as not uploaded and move on
+          delivery_status.mark_as_not_uploaded!
         end
       end
     end
 
-    def arrangement_version_url(location, media_version)
+    def source_attributes
+      attributes.slice(*SOURCE_ATTRIBUTES)
+    end
+
+    def get_media_info(enclosure)
+      info = {
+        enclosure_url: enclosure,
+        media_version: nil,
+        location: nil,
+        size: nil
+      }
+      resp = Faraday.head(enclosure)
+      if resp.status == 302
+        info[:media_version] = resp.env.response_headers["x-episode-media-version"]
+        info[:location] = resp.env.response_headers["location"]
+        info[:size] = resp.env.response_headers["content-length"]
+      else
+        logger.error("DTR media redirect not returned: #{resp.status}", enclosure: enclosure, resp: resp)
+        raise("DTR media redirect not returned: #{resp.status}")
+      end
+      info
+    rescue err
+      logger.error("Error getting DTR media info", enclosure: enclosure, err: err)
+      raise err
+    end
+
+    def arrangement_version_url(location, media_version, count)
       uri = URI.parse(location)
       path = uri.path.split("/")
       ext = File.extname(path.last)
-      filename = File.basename(path.last, ext) + "_" + media_version + File.extname(path.last)
+      base = File.basename(path.last, ext)
+      filename = "#{base}_#{media_version}_#{count}#{ext}"
       uri.path = (path[0..-2] + [filename]).join("/")
+    end
+
+    def url_filename(url)
+      URI.parse(url).path.split("/").last
     end
 
     def enclosure_url
