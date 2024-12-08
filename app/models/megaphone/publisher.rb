@@ -75,14 +75,6 @@ module Megaphone
 
         # if that didn't find & update a podcast, create it and set it
         @megaphone_podcast ||= Megaphone::Podcast.new_from_feed(feed).create!
-
-        SyncLog.log!(
-          integration: :megaphone,
-          feeder_id: public_feed.id,
-          feeder_type: :feeds,
-          external_id: megaphone_podcast.id,
-          api_response: megaphone_podcast.api_response_log_item
-        )
         megaphone_podcast
       end
     end
