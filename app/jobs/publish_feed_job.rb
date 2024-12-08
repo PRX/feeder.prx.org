@@ -12,11 +12,17 @@ class PublishFeedJob < ApplicationJob
     # grab the current publishing pipeline.
     return :null if null_publishing_item?(podcast, pub_item)
     return :mismatched if mismatched_publishing_item?(podcast, pub_item)
+
     Rails.logger.info("Starting publishing pipeline via PublishFeedJob", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id})
 
     PublishingPipelineState.start!(podcast)
-    podcast.feeds.each { |feed| publish_apple(podcast, feed) }
+
+    # Publish each integration for each feed (e.g. apple, megaphone)
+    podcast.feeds.each { |feed| publish_integration(podcast, feed) }
+
+    # After integrations, publish RSS, if appropriate
     podcast.feeds.each { |feed| publish_rss(podcast, feed) }
+
     PublishingPipelineState.complete!(podcast)
   rescue Apple::AssetStateTimeoutError => e
     fail_state(podcast, "apple_timeout", e)
@@ -26,18 +32,17 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
-  def publish_apple(podcast, feed)
-    return unless feed.publish_to_apple?
-
-    res = PublishAppleJob.do_perform(podcast.apple_config)
-    PublishingPipelineState.publish_apple!(podcast)
+  def publish_integration(podcast, feed)
+    return unless feed.publish_integration?
+    res = feed.publish_integration!
+    PublishingPipelineState.publish_integration!(podcast)
     res
   rescue => e
-    if podcast.apple_config.sync_blocks_rss
-      fail_state(podcast, "apple", e)
+    if feed.config.sync_blocks_rss
+      fail_state(podcast, feed.integration_type, e)
     else
-      Rails.logger.error("Error publishing to Apple, but continuing to publish RSS", {podcast_id: podcast.id, error: e.message})
-      PublishingPipelineState.error_apple!(podcast)
+      Rails.logger.error("Error publishing to #{feed.integration_type}, but continuing to publish RSS", {podcast_id: podcast.id, error: e.message})
+      PublishingPipelineState.error_integration!(podcast)
     end
   end
 
@@ -51,9 +56,9 @@ class PublishFeedJob < ApplicationJob
 
   def fail_state(podcast, type, error)
     (pipeline_method, log_level) = case type
-    when "apple" then [:error_apple!, :warn]
-    when "rss" then [:error_rss!, :warn]
     when "apple_timeout", "error" then [:error!, :error]
+    when "rss" then [:error_rss!, :warn]
+    else [:error_integration!, :warn]
     end
 
     PublishingPipelineState.public_send(pipeline_method, podcast)

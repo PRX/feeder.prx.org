@@ -1,7 +1,7 @@
 require "test_helper"
 
-class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
-  describe Apple::EpisodeDeliveryStatus do
+class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
+  describe Integrations::EpisodeDeliveryStatus do
     let(:episode) { create(:episode) }
     let(:delivery_status) { create(:apple_episode_delivery_status, episode: episode) }
 
@@ -13,8 +13,8 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       it "can belong to deleted episodes" do
         episode.destroy
         assert_equal episode, delivery_status.episode
-        assert_difference "Apple::EpisodeDeliveryStatus.count", +1 do
-          episode.apple_needs_delivery!
+        assert_difference "Integrations::EpisodeDeliveryStatus.count", +1 do
+          episode.apple_mark_as_not_delivered!
         end
         assert_equal episode, episode.apple_episode_delivery_statuses.first.episode
       end
@@ -31,32 +31,37 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
 
     describe "default values" do
       it "sets asset_processing_attempts to 0 by default" do
-        new_status = Apple::EpisodeDeliveryStatus.new
+        new_status = Integrations::EpisodeDeliveryStatus.new
         assert_equal 0, new_status.asset_processing_attempts
       end
     end
 
     describe ".update_status" do
       it "creates a new status when none exists" do
-        episode.apple_episode_delivery_statuses.destroy_all
-        assert_difference "Apple::EpisodeDeliveryStatus.count", 1 do
-          Apple::EpisodeDeliveryStatus.update_status(episode, delivered: true)
+        episode.episode_delivery_statuses.destroy_all
+        assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
+          Integrations::EpisodeDeliveryStatus.update_status(:apple, episode, delivered: true)
         end
       end
 
       it "creates a new status even when one already exists" do
         _existing_status = create(:apple_episode_delivery_status, episode: episode)
-        assert_difference "Apple::EpisodeDeliveryStatus.count", 1 do
-          Apple::EpisodeDeliveryStatus.update_status(episode, delivered: false)
+        assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
+          Integrations::EpisodeDeliveryStatus.update_status(:apple, episode, delivered: false)
         end
       end
 
       it "updates attributes of the new status" do
-        new_status = Apple::EpisodeDeliveryStatus.update_status(episode,
-          delivered: true,
-          source_url: "http://example.com/audio.mp3",
-          source_size: 1024,
-          source_filename: "audio.mp3")
+        new_status = Integrations::EpisodeDeliveryStatus.update_status(
+          :apple,
+          episode,
+          {
+            delivered: true,
+            source_url: "http://example.com/audio.mp3",
+            source_size: 1024,
+            source_filename: "audio.mp3"
+          }
+        )
 
         assert new_status.delivered
         assert_equal "http://example.com/audio.mp3", new_status.source_url
@@ -66,8 +71,8 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
 
       it "resets the episode's apple_episode_delivery_statuses association" do
         episode.apple_episode_delivery_statuses.load
-        Apple::EpisodeDeliveryStatus.update_status(episode, delivered: true)
-        refute episode.apple_episode_delivery_statuses.loaded?
+        Integrations::EpisodeDeliveryStatus.update_status(:apple, episode, delivered: true)
+        refute episode.episode_delivery_statuses.loaded?
       end
     end
 
@@ -90,7 +95,7 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
 
         it "creates a new status entry" do
           assert delivery_status.asset_processing_attempts.zero?
-          assert_difference "Apple::EpisodeDeliveryStatus.count", 1 do
+          assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
             delivery_status.increment_asset_wait
           end
         end
@@ -112,7 +117,7 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
 
         it "creates a new status entry" do
           assert delivery_status.asset_processing_attempts.zero?
-          assert_difference "Apple::EpisodeDeliveryStatus.count", 1 do
+          assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
             delivery_status.reset_asset_wait
           end
         end

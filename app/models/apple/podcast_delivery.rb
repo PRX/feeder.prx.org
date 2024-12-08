@@ -8,7 +8,7 @@ module Apple
 
     default_scope { includes(:apple_sync_log) }
 
-    has_one :apple_sync_log, -> { podcast_deliveries }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
+    has_one :apple_sync_log, -> { podcast_deliveries.apple }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
     has_many :podcast_delivery_files, dependent: :destroy
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
     belongs_to :podcast_container, class_name: "::Apple::PodcastContainer"
@@ -73,12 +73,6 @@ module Apple
       end
 
       # Don't create deliveries for containers that already have deliveries.
-      # An alternative workflow would be to swap out the existing delivery and
-      # upload different audio.
-      #
-      # The overall publishing workflow dependes on the assumption that there is
-      # a delivery present. If we don't create a delivery here, we short-circuit
-      # subsequent steps (no uploads, no audio linking).
       episodes = select_episodes_for_delivery(episodes)
       podcast_containers = episodes.map(&:podcast_container)
 
@@ -149,7 +143,7 @@ module Apple
          feeder_episode_id: podcast_container.episode.id,
          podcast_delivery_id: delivery.id})
 
-      SyncLog.log!(feeder_id: pd.id, feeder_type: :podcast_deliveries, external_id: external_id, api_response: row)
+      SyncLog.log!(integration: :apple, feeder_id: pd.id, feeder_type: :podcast_deliveries, external_id: external_id, api_response: row)
 
       # Flush the cache on the podcast container
       podcast_container.podcast_deliveries.reset
