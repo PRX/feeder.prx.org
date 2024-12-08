@@ -506,16 +506,6 @@ module Apple
       audio_asset_state == AUDIO_ASSET_SUCCESS
     end
 
-    def has_media_version?
-      return false unless delivery_status.present? && delivery_status.source_media_version_id.present?
-
-      delivery_status.source_media_version_id == feeder_episode.media_version_id
-    end
-
-    def needs_media_version?
-      !has_media_version?
-    end
-
     def needs_delivery?
       return true if missing_container?
 

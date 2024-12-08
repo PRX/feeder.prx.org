@@ -19,6 +19,16 @@ module Integrations
         feeder_episode.video_content_type?
       end
 
+      def has_media_version?
+        return false unless delivery_status.present? && delivery_status.source_media_version_id.present?
+
+        delivery_status.source_media_version_id == feeder_episode.media_version_id
+      end
+
+      def needs_media_version?
+        !has_media_version?
+      end
+
       # Delegate methods to feeder_episode
       def method_missing(method_name, *arguments, &block)
         if feeder_episode.respond_to?(method_name)
