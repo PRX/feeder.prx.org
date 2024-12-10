@@ -378,6 +378,7 @@ en:
           audio: Audio - upload multiple audio files
           uncut: Audio - upload a single file and then segment
           video: Video
+          override: Override - specify external media url
         original_guid: GUID
         released_at: Dropdate
         released_at_date: Date

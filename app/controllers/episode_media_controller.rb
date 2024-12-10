@@ -67,6 +67,8 @@ class EpisodeMediaController < ApplicationController
       :lock_version,
       :medium,
       :ad_breaks,
+      :enclosure_override_url,
+      :enclosure_override_prefix,
       contents_attributes: %i[id position original_url file_size _destroy _retry],
       uncut_attributes: %i[id segmentation original_url file_size _destroy _retry]
     )

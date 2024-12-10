@@ -54,9 +54,9 @@ module EpisodesHelper
   def episode_media_status(episode)
     if episode_all_media(episode).any? { |m| upload_problem?(m) }
       "error"
-    elsif episode_all_media(episode).any? { |m| upload_processing?(m) }
+    elsif episode_all_media(episode).any? { |m| upload_processing?(m) } || episode.override_processing?
       "processing"
-    elsif episode.media_ready?(true)
+    elsif episode.media_ready?(true) || episode.override_ready?
       "complete"
     elsif episode.published_at.present?
       "incomplete-published"
