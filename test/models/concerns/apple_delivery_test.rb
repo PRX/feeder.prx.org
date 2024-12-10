@@ -18,16 +18,45 @@ class AppleDeliveryTest < ActiveSupport::TestCase
     end
 
     it "can be set to false" do
-      episode.apple_has_delivery!
+      episode.apple_mark_as_delivered!
       refute episode.apple_needs_delivery?
     end
 
     it "can be set to true" do
-      episode.apple_has_delivery!
+      episode.apple_mark_as_delivered!
       refute episode.apple_needs_delivery?
 
       # now set it to true
-      episode.apple_needs_delivery!
+      episode.apple_mark_as_not_delivered!
+      assert episode.apple_needs_delivery?
+    end
+  end
+
+  describe "#apple_mark_as_delivered!" do
+    let(:episode) { create(:episode) }
+
+    it "supercedes the uploaded status" do
+      episode.apple_mark_as_not_delivered!
+
+      assert episode.apple_needs_upload?
+      assert episode.apple_needs_delivery?
+
+      episode.apple_mark_as_delivered!
+
+      refute episode.apple_needs_upload?
+      refute episode.apple_needs_delivery?
+    end
+  end
+
+  describe "#apple_mark_as_uploaded!" do
+    it "sets the uploaded status" do
+      episode.apple_mark_as_uploaded!
+      assert episode.apple_episode_delivery_status.uploaded
+      refute episode.apple_needs_upload?
+    end
+
+    it "does not interact with the delivery status" do
+      episode.apple_mark_as_uploaded!
       assert episode.apple_needs_delivery?
     end
   end
@@ -71,8 +100,53 @@ class AppleDeliveryTest < ActiveSupport::TestCase
 
     it "returns the new status" do
       result = episode.apple_status.increment_asset_wait
-      assert_instance_of Apple::EpisodeDeliveryStatus, result
+      assert_instance_of Integrations::EpisodeDeliveryStatus, result
       assert_equal episode.apple_episode_delivery_statuses.last, result
+    end
+  end
+
+  describe "#publish_to_apple?" do
+    let(:episode) { create(:episode) }
+
+    it "returns false when podcast has no apple config" do
+      refute episode.publish_to_apple?
+    end
+
+    it "returns false when apple config exists but publishing disabled" do
+      create(:apple_config, feed: create(:private_feed, podcast: episode.podcast), publish_enabled: false)
+      refute episode.publish_to_apple?
+    end
+
+    it "returns true when apple config exists and publishing enabled" do
+      assert episode.publish_to_apple? == false
+      create(:apple_config, feed: create(:private_feed, podcast: episode.podcast), publish_enabled: true)
+      episode.podcast.reload
+      assert episode.publish_to_apple?
+    end
+  end
+
+  describe "#apple_prepare_for_delivery!" do
+    let(:episode) { create(:episode) }
+    let(:container) { create(:apple_podcast_container, episode: episode) }
+    let(:delivery) { create(:apple_podcast_delivery, episode: episode, podcast_container: container) }
+    let(:delivery_file) { create(:apple_podcast_delivery_file, episode: episode, podcast_delivery: delivery) }
+
+    before do
+      delivery_file # Create the delivery file
+    end
+
+    it "soft deletes existing deliveries" do
+      assert_equal 1, episode.apple_podcast_deliveries.count
+      episode.apple_prepare_for_delivery!
+      assert_equal 0, episode.apple_podcast_deliveries.count
+      assert_equal 1, episode.apple_podcast_deliveries.with_deleted.count
+    end
+
+    it "resets associations" do
+      episode.apple_prepare_for_delivery!
+      refute episode.apple_podcast_deliveries.loaded?
+      refute episode.apple_podcast_delivery_files.loaded?
+      refute episode.apple_podcast_container.podcast_deliveries.loaded?
     end
   end
 end
