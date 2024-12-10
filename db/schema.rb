@@ -237,7 +237,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_20_165556) do
     t.string "type"
     t.string "apple_show_id"
     t.boolean "edit_locked"
-    t.string "episode_footer"
     t.datetime "enclosure_updated_at", precision: nil
     t.string "episode_footer"
     t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
