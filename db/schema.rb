@@ -57,10 +57,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_20_165556) do
     t.datetime "updated_at", null: false
     t.string "vendor_id", null: false
     t.string "apple_episode_id", null: false
-    t.string "source_url"
-    t.string "source_filename"
-    t.bigint "source_size"
-    t.text "enclosure_url"
     t.integer "source_fetch_count", default: 0, null: false
     t.index ["episode_id"], name: "index_apple_podcast_containers_on_episode_id", unique: true
     t.index ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true
@@ -243,6 +239,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_20_165556) do
     t.boolean "edit_locked"
     t.string "episode_footer"
     t.datetime "enclosure_updated_at", precision: nil
+    t.string "episode_footer"
     t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
