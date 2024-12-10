@@ -6,10 +6,9 @@ describe Episode do
 
   let(:episode) { create(:episode_with_media) }
 
-  it "initializes guid and overrides" do
+  it "initializes guid" do
     e = Episode.new
     refute_nil e.guid
-    refute_nil e.overrides
   end
 
   it "sets updated_at when soft deleting episodes with no content" do

@@ -24,9 +24,25 @@
         <div class="col-lg-12">
           <% if episode.medium_uncut? %>
             <%= render "form_uncut", episode: episode, form: form %>
+          <% elsif episode.medium_override? %>
+            <%# no uploads for overrides %>
           <% else %>
             <%= render "form_contents", episode: episode, form: form %>
           <% end %>
+          <div class="col-12 mb-4">
+            <div class="form-floating input-group">
+              <%= form.text_field :enclosure_override_url %>
+              <%= form.label :enclosure_override_url, required: episode.medium_override? %>
+              <%= field_help_text t(".help.enclosure_override_url") %>
+            </div>
+            <div class="form-check">
+              <%= form.check_box :enclosure_override_prefix %>
+              <div class="d-flex align-items-center">
+                <%= form.label :enclosure_override_prefix %>
+                <%= help_text t(".help.enclosure_override_prefix") %>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
