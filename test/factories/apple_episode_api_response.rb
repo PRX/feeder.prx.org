@@ -15,13 +15,14 @@ FactoryBot.define do
 
     after(:build) do |response_container, evaluator|
       response_container["api_response"] =
-        {"request_metadata" => {"apple_episode_id" => evaluator.apple_episode_id, "item_guid" => evaluator.item_guid},
+        {"request_metadata" => {"apple_episode_id" => evaluator.apple_episode_id, "guid" => evaluator.item_guid},
          "api_url" => evaluator.api_url,
          "api_parameters" => {},
          "api_response" => {"ok" => evaluator.ok,
                             "err" => evaluator.err,
                             "val" => {"data" => {"id" => "123",
                                                  "attributes" => {
+                                                   "appleHostedAudioAssetContainerId" => nil,
                                                    "appleHostedAudioAssetVendorId" => evaluator.apple_hosted_audio_asset_container_id,
                                                    "publishingState" => evaluator.publishing_state,
                                                    "guid" => evaluator.item_guid,
