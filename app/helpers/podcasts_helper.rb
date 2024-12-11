@@ -9,12 +9,20 @@ module PodcastsHelper
     [feed.description, podcast.description].detect { |d| d.present? } || ""
   end
 
-  def episode_description(episode)
-    if episode.podcast.has_apple_feed?
+  def episode_description(episode, feed)
+    description = if episode.podcast.has_apple_feed?
       episode.description_safe
     else
       episode.description_with_default
     end
+
+    if feed.episode_footer.present?
+      footer_text = "\n\n#{feed.episode_footer}"
+      description = description.truncate_bytes(Episode::MAX_DESCRIPTION_BYTES - footer_text.bytesize)
+      description += footer_text
+    end
+
+    description
   end
 
   def full_contact(type, item)
