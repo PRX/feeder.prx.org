@@ -23,7 +23,7 @@ module Megaphone
       original_count = 0
       zones.each do |zone|
         # if this is an ad zone, add it to the cue point
-        if ["ad", "sonic_id"].include?(zone[:type])
+        if ["ad", "sonic_id", "house"].include?(zone[:type])
           if current_cuepoint
             current_cuepoint.ad_count = current_cuepoint.ad_count + 1
             current_cuepoint.ad_sources << source_for_zone(zone)
@@ -48,7 +48,7 @@ module Megaphone
     end
 
     def self.source_for_zone(zone)
-      if zone[:id].match?(/^house/) || zone[:type] == "sonic_id"
+      if ["sonic_id", "house"].include?(zone[:type])
         :promo
       else
         :auto

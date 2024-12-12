@@ -8,7 +8,7 @@
   {
     "id": "house_pre",
     "name": "House Preroll",
-    "type": "ad",
+    "type": "house",
     "section": "pre"
   },
   {
@@ -62,7 +62,7 @@
   {
     "id": "house_post",
     "name": "House Postroll",
-    "type": "ad",
+    "type": "house",
     "section": "post"
   },
   {
