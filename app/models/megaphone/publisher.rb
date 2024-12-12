@@ -43,7 +43,7 @@ module Megaphone
       episodes = private_feed.episodes.unfinished(:megaphone)
       timeout_at = Time.now.utc + WAIT_TIMEOUT
 
-      while episode.size > 0 && Time.now.utc < timeout_at
+      while episodes.size > 0 && Time.now.utc < timeout_at
         sleep(wait_interval)
         episodes = check_episodes(episodes)
       end
