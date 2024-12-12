@@ -1,5 +1,8 @@
 module Megaphone
   class Publisher < Integrations::Base::Publisher
+    WAIT_INTERVAL = 5.seconds
+    WAIT_TIMEOUT = 5.minutes
+
     attr_reader :feed
 
     def initialize(feed)
@@ -37,9 +40,27 @@ module Megaphone
     # if not uploaded, and media ready, try to set that on the next update
     # if uploaded and not delivered, check mp status, see if processing done
     def check_status_episodes!
-      private_feed.episodes.unfinished(:megaphone).each do |ep|
+      episodes = private_feed.episodes.unfinished(:megaphone)
+      timeout_at = Time.now.utc + WAIT_TIMEOUT
+
+      while episode.size > 0 && Time.now.utc < timeout_at
+        sleep(wait_interval)
+        episodes = check_episodes(episodes)
+      end
+
+      # if after all those checks, still incomplete? throw an error
+      if episodes.size > 0
+        msg = "Megaphone::Publisher.check_status_episodes! timed out on: #{episodes.map(&:id)}"
+        Logger.error(msg)
+        raise msg
+      end
+    end
+
+    def check_episodes(episodes)
+      remaining = []
+
+      episodes.each do |ep|
         megaphone_episode = Megaphone::Episode.find_by_episode(megaphone_podcast, ep)
-        next unless megaphone_episode
 
         # check if it is uploaded yet
         # if not go looking for the DTR media version
@@ -51,6 +72,10 @@ module Megaphone
         status = megaphone_episode.delivery_status
         if !status.delivered? && status.uploaded?
           megaphone_episode.check_audio!
+        end
+
+        if !ep.episode_delivery_status(:megaphone).delivered?
+          remaining << ep
         end
       end
     end

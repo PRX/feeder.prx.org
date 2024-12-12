@@ -140,7 +140,7 @@ module Megaphone
       # check to see if the audio on mp matches
       if original_filename == source_filename
         if !audio_file_processing && audio_file_status == "success"
-          reset_asset_wait          replace_cuepoints!(episode)
+          replace_cuepoints!(episode)
           delivery_status(true).mark_as_delivered!
         else
           # still waiting - increment asset state
