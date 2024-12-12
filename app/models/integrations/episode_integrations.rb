@@ -23,6 +23,11 @@ module Integrations::EpisodeIntegrations
     end
   end
 
+  def publish_to_integration?(integration)
+    # see if there is an integration
+    podcast.feeds.any? { |f| f.integration_type == integration && f.publish_integration? }
+  end
+
   def sync_log(integration)
     sync_logs.send(integration.intern).order(updated_at: :desc).first
   end
