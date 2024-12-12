@@ -156,9 +156,10 @@ module Megaphone
     def replace_cuepoints!(episode)
       # retrieve the placement info from augury
       zones = get_placement_zones(feeder_episode.segment_count)
+      media = feeder_episode.media
 
       # create cuepoint instances from that
-      cuepoints = Megaphone::Cuepoint.from_placement(zones)
+      cuepoints = Megaphone::Cuepoint.from_zones_and_media(zones, media)
 
       # put those as a list to the mp api
       cuepoints_batch!(cuepoints)

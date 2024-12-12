@@ -1,0 +1,74 @@
+[
+  {
+    "id": "original_1",
+    "name": "Original 1 (Intro)",
+    "type": "original",
+    "section": "original"
+  },
+  {
+    "id": "house_pre",
+    "name": "House Preroll",
+    "type": "ad",
+    "section": "pre"
+  },
+  {
+    "id": "pre_1",
+    "name": "Preroll 1",
+    "type": "ad",
+    "section": "pre"
+  },
+  {
+    "id": "pre_2",
+    "name": "Preroll 2",
+    "type": "ad",
+    "section": "pre"
+  },
+  {
+    "id": "original_2",
+    "name": "Original 2",
+    "type": "original",
+    "section": "original"
+  },
+  {
+    "id": "mid_1",
+    "name": "Midroll 1",
+    "type": "ad",
+    "section": "mid"
+  },
+  {
+    "id": "mid_2",
+    "name": "Midroll 2",
+    "type": "ad",
+    "section": "mid"
+  },
+  {
+    "id": "original_3",
+    "name": "Original 3",
+    "type": "original",
+    "section": "original"
+  },
+  {
+    "id": "post_1",
+    "name": "Postroll 1",
+    "type": "ad",
+    "section": "post"
+  },
+  {
+    "id": "post_2",
+    "name": "Postroll 2",
+    "type": "ad",
+    "section": "post"
+  },
+  {
+    "id": "house_post",
+    "name": "House Postroll",
+    "type": "ad",
+    "section": "post"
+  },
+  {
+    "id": "sonic_id",
+    "name": "Sonic",
+    "type": "sonic_id",
+    "section": "post"
+  }
+]
