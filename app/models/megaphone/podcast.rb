@@ -11,8 +11,9 @@ module Megaphone
       explicit owner_name owner_email slug original_rss_url itunes_identifier podtrac_enabled
       google_play_identifier episode_limit podcast_type advertising_tags excluded_categories]
 
-    # Update also allows the span opt in
-    UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES + %i[span_opt_in]
+    # Update also allows the span opt in, but we don't have permissions
+    # UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES + %i[span_opt_in]
+    UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES
 
     # Deprecated, so we shouldn't rely on these, but they show up as attributes
     DEPRECATED = %i[category redirect_url itunes_active redirected_at itunes_rating
