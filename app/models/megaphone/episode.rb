@@ -119,6 +119,61 @@ module Megaphone
       self
     end
 
+    # call this when we need to update the audio on mp
+    # like when dtr wasn't ready at first
+    # so we can make that update and then mark uploaded
+    def upload_audio!
+      set_audio_attributes
+      update!
+    end
+
+    # call this when audio has been updated on mp
+    # and we're checking to see if mp is done processing
+    # so we can update cuepoints and mark delivered
+    def check_audio!
+      # Re-request the megaphone api
+      find_by_megaphone_id
+
+      # get the audip attributes
+      set_audio_attributes
+
+      # check to see if the audio on mp matches
+      if original_filename == source_filename
+        if !audio_file_processing && audio_file_status == "success"
+          reset_asset_wait          replace_cuepoints!(episode)
+          delivery_status(true).mark_as_delivered!
+        else
+          # still waiting - increment asset state
+          delivery_status(true).increment_asset_wait
+        end
+      else
+        # this would be a weird timing thing maybe, but ...
+        # if the files don't match, we need to go back and upload
+        delivery_status(true).mark_as_not_uploaded!
+      end
+    end
+
+    def replace_cuepoints!(episode)
+      # retrieve the placement info from augury
+      zones = get_placement_zones(feeder_episode.segment_count)
+
+      # create cuepoint instances from that
+      cuepoints = Megaphone::Cuepoint.from_placement(zones)
+
+      # put those as a list to the mp api
+      cuepoints_batch!(cuepoints)
+    end
+
+    def cuepoints_batch!(cuepoints)
+      # validate all the cuepoints about to be created
+      cuepoints.all? { |cp| cp.validate!(:create) }
+      body = cuepoints.map { |cp| cp.as_json_for_create }
+      self.api_response = api.put("podcasts/#{podcast.id}/episodes/#{id}/cuepoints_batch", body)
+      update_sync_log
+      update_delivery_status
+      self
+    end
+
     def update_sync_log
       SyncLog.log!(
         integration: :megaphone,
@@ -147,6 +202,7 @@ module Megaphone
         # we're done, mark it as delivered!
         delivery_status(true).mark_as_delivered!
       end
+      feeder_episode.episode_delivery_statuses.reset
     end
 
     def private_feed
@@ -174,24 +230,27 @@ module Megaphone
     end
 
     def set_placement_attributes
-      if (placement = get_placement(feeder_episode.segment_count))
-        self.expected_adhash = adhash_for_placement(placement)
+      if (zones = get_placement_zones(feeder_episode.segment_count))
+        self.expected_adhash = adhash_for_placement(zones)
         self.pre_count = expected_adhash.count("0")
         self.post_count = expected_adhash.count("2")
       end
     end
 
-    def adhash_for_placement(placement)
-      placement
-        .zones
-        .filter { |z| z["type"] == "ad" }
-        .map { |z| ADHASH_VALUES[z["section"]] }
+    def adhash_for_placement(zones)
+      zones
+        .filter { |z| z[:type] == "ad" }
+        .map { |z| ADHASH_VALUES[z[:section]] }
         .join("")
     end
 
-    def get_placement(original_count)
+    def get_placement_zones(original_count = nil)
+      if original_count.to_i < 1
+        original_count = (feeder_episode&.segment_count || 1).to_i
+      end
       placements = Prx::Augury.new.placements(feeder_podcast.id)
-      placements&.find { |i| i.original_count == original_count }
+      placement = placements&.find { |i| i.original_count == original_count }
+      (placement&.zones || []).map(&:with_indifferent_access)
     end
 
     # call this before create or update, yah
@@ -271,13 +330,13 @@ module Megaphone
       feeder_episode.media[0..-2].map(&:duration)
     end
 
-    def pre_after_original?(placement)
-      sections = placement.zones.split { |z| z[:type] == "original" }
+    def pre_after_original?(zones)
+      sections = zones.split { |z| z[:type] == "original" }
       sections[1].any? { |z| %w[ad house].include?(z[:type]) && z[:id].match(/pre/) }
     end
 
-    def post_before_original?(placement)
-      sections = placement.zones.split { |z| z[:type] == "original" }
+    def post_before_original?(zones)
+      sections = zones.split { |z| z[:type] == "original" }
       sections[-2].any? { |z| %w[ad house].include?(z[:type]) && z[:id].match(/post/) }
     end
   end

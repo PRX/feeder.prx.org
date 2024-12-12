@@ -28,7 +28,7 @@ module Integrations::EpisodeIntegrations
   end
 
   def episode_delivery_status(integration, with_default = false)
-    status = episode_delivery_statuses.order(created_at: :desc).send(integration.intern).first
+    status = episode_delivery_statuses.reset.order(created_at: :desc).send(integration.intern).first
     if !status && with_default
       Integrations::EpisodeDeliveryStatus.default_status(integration, self)
     else

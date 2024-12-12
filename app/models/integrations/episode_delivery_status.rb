@@ -36,7 +36,7 @@ module Integrations
     # Whether the media file has been uploaded to the Integration
     # is a subset of whether the episode has been delivered
     def mark_as_delivered!
-      self.class.update_status(integration, episode, delivered: true, uploaded: true)
+      self.class.update_status(integration, episode, delivered: true, uploaded: true, asset_processing_attempts: 0)
     end
 
     def mark_as_not_delivered!

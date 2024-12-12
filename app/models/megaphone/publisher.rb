@@ -40,6 +40,18 @@ module Megaphone
       private_feed.episodes.unfinished(:megaphone).each do |ep|
         megaphone_episode = Megaphone::Episode.find_by_episode(megaphone_podcast, ep)
         next unless megaphone_episode
+
+        # check if it is uploaded yet
+        # if not go looking for the DTR media version
+        if !megaphone_episode.delivery_status.uploaded?
+          megaphone_episode.upload_audio!
+        end
+
+        # check if it is uploaded, but not delivered - see if megaphone has processed
+        status = megaphone_episode.delivery_status
+        if !status.delivered? && status.uploaded?
+          megaphone_episode.check_audio!
+        end
       end
     end
 
