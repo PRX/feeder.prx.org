@@ -19,6 +19,8 @@ module Megaphone
       insertion_points guid pre_offset post_offset expected_adhash original_filename original_url
       episode_number season_number retain_ad_locations advertising_tags ad_free]
 
+    UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES
+
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
     OTHER_ATTRIBUTES = %i[id podcast_id created_at updated_at status
@@ -69,7 +71,7 @@ module Megaphone
         external_id: e.guid,
         guid: e.item_guid,
         pubdate: e.published_at,
-        pubdate_timezone: e.published_at.zone,
+        pubdate_timezone: e.published_at,
         author: e.author_name,
         link: e.url,
         explicit: e.explicit,
@@ -106,9 +108,11 @@ module Megaphone
       self
     end
 
-    def update!(feed = nil)
-      if feed
-        self.attributes = self.class.attributes_from_feed(feed)
+    def update!(episode = nil)
+      if episode
+        self.attributes = self.class.attributes_from_episode(episode)
+        set_placement_attributes
+        set_audio_attributes
       end
       validate!(:update)
       body = as_json(only: UPDATE_ATTRIBUTES.map(&:to_s))
@@ -240,7 +244,7 @@ module Megaphone
 
     def adhash_for_placement(zones)
       zones
-        .filter { |z| z[:type] == "ad" }
+        .filter { |z| ["ad", "sonic_id", "house"].include?(z[:type]) }
         .map { |z| ADHASH_VALUES[z[:section]] }
         .join("")
     end

@@ -5,8 +5,8 @@ class PlacementsPreviewController < ApplicationController
 
   # GET /podcasts/1/placements_preview/2
   def show
-    @fetch_error = cached_placements.nil?
     @zones = get_zones(params[:id].to_i)
+    @fetch_error = @zones.nil?
   end
 
   private
