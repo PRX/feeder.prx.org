@@ -254,10 +254,6 @@ class Episode < ApplicationRecord
     ENV["FEEDER_CDN_HOST"]
   end
 
-  def segment_range
-    1..segment_count.to_i
-  end
-
   def published_or_released_date
     if published_at.present?
       published_at

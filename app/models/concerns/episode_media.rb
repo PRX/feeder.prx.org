@@ -79,6 +79,10 @@ module EpisodeMedia
     uncut&.copy_media(force)
   end
 
+  def segment_range
+    1..segment_count.to_i
+  end
+
   def build_contents
     segment_range.map do |p|
       contents.find { |c| c.position == p } || contents.build(position: p)
