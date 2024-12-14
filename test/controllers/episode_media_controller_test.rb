@@ -1,6 +1,6 @@
 require "test_helper"
 
-class EpisodeSegmenterControllerTest < ActionDispatch::IntegrationTest
+class EpisodeMediaControllerTest < ActionDispatch::IntegrationTest
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/123") }
   let(:episode) { create(:episode, podcast: podcast, segment_count: 1, published_at: nil) }
   let(:params) { {ad_breaks: 2} }
@@ -40,6 +40,18 @@ class EpisodeSegmenterControllerTest < ActionDispatch::IntegrationTest
       assert_equal 3, episode.reload.segment_count
       assert_equal 3, episode.contents.size
       assert_equal [[nil, 1], [1, 2.3], [4, nil]], uncut.reload.segmentation
+    end
+  end
+
+  test "analyzes external media" do
+    assert_nil episode.reload.enclosure_override_url
+    assert_nil episode.external_media_resource
+
+    ExternalMediaResource.stub_any_instance(:analyze_media, true) do
+      patch episode_media_path(episode), params: {episode: {enclosure_override_url: "https://prx.org/a.mp3"}}
+      assert_redirected_to episode_media_path(episode)
+      assert_equal "https://prx.org/a.mp3", episode.reload.enclosure_override_url
+      assert_equal "https://prx.org/a.mp3", episode.external_media_resource.original_url
     end
   end
 
