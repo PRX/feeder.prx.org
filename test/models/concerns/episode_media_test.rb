@@ -154,7 +154,7 @@ class EpisodeMediaTest < ActiveSupport::TestCase
         refute episode.feed_ready?
 
         episode.medium = :override
-        episode.enclosure_override_url = :nil
+        episode.enclosure_override_url = nil
         assert episode.override?
         refute episode.feed_ready?
 
@@ -176,6 +176,29 @@ class EpisodeMediaTest < ActiveSupport::TestCase
         assert episode.override_ready?
         assert episode.external_media_ready?
         assert episode.feed_ready?
+      end
+    end
+
+    it "creates override media when override url set" do
+      episode = create(:episode, segment_count: 2)
+      assert_nil episode.external_media_resource
+      episode.enclosure_override_url = "https://prx.org/a.mp3"
+      ExternalMediaResource.stub_any_instance(:analyze_media, true) do
+        episode.save!
+      end
+      assert_equal episode.external_media_resource.original_url, "https://prx.org/a.mp3"
+    end
+
+    it "creates override media when override url updated" do
+      ExternalMediaResource.stub_any_instance(:analyze_media, true) do
+        episode = create(:episode, enclosure_override_url: "https://prx.org/a.mp3")
+        assert_equal episode.external_media_resource.original_url, "https://prx.org/a.mp3"
+        emr_id = episode.external_media_resource.id
+        episode.external_media_resource
+
+        episode.update(enclosure_override_url: "https://prx.org/new.mp3")
+        assert_equal episode.external_media_resource.original_url, "https://prx.org/new.mp3"
+        assert emr_id != episode.external_media_resource.id
       end
     end
 
