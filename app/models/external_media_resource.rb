@@ -3,7 +3,7 @@ class ExternalMediaResource < MediaResource
   after_create_commit :analyze_media
 
   def guid
-    self[:guid]
+    nil
   end
 
   def url
