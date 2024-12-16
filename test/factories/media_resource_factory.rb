@@ -30,5 +30,9 @@ FactoryBot.define do
       segmentation { [[1.23, 4.56]] }
       task_count { 0 }
     end
+
+    factory :external_media_resource, class: ExternalMediaResource do
+      original_url { "https://prx.org/audio.mp3" }
+    end
   end
 end

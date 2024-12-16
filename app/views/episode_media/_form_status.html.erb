@@ -6,7 +6,7 @@
   <div class="card-footer">
     <div class="d-flex align-items-center justify-content-end">
       <button type="button"
-              class="btn btn-success me-2 <%= "d-none" if episode.medium_video? %>"
+              class="btn btn-success me-2 <%= "d-none" if episode.medium_video? || episode.medium_override? %>"
               data-bs-toggle="offcanvas"
               data-bs-target="#placements-preview-flyout"
               aria-controls="placements-preview-flyout"
