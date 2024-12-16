@@ -48,6 +48,10 @@ class Task < ApplicationRecord
   def source_url
   end
 
+  def bad_audio?
+    bad_audio_duration? || bad_audio_bytes? || bad_audio_vbr?
+  end
+
   def bad_audio_duration?
     porter_callback_inspect.dig(:Audio, :DurationDiscrepancy).to_i > 500
   end

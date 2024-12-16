@@ -58,7 +58,7 @@ class Tasks::CopyMediaTask < ::Task
 
     media_resource.save!
 
-    if media_resource.status_complete? && (bad_audio_duration? || bad_audio_bytes? || bad_audio_vbr?)
+    if media_resource.status_complete? && bad_audio?
       fix_media!
     else
       slice_media!
