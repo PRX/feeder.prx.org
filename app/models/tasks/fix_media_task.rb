@@ -27,7 +27,7 @@ class Tasks::FixMediaTask < ::Task
           }
         },
         FFmpeg: {
-          OutputFileOptions: media_bitrate ? "-acodec copy -b:a #{media_bitrate}k" : "-acodec copy"
+          OutputFileOptions: media_bitrate ? "-b:a #{media_bitrate}k" : "-acodec copy"
         }
       }
     ]

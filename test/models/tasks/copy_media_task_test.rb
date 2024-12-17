@@ -215,7 +215,7 @@ describe Tasks::CopyMediaTask do
           # latest task is now to fix
           assert_equal Tasks::FixMediaTask, task.media_resource.task.class
           assert_equal "mp3", task.media_resource.task.options[:Tasks][0][:Format]
-          assert_equal "-acodec copy -b:a 192k", task.media_resource.task.options[:Tasks][0][:FFmpeg][:OutputFileOptions]
+          assert_equal "-b:a 192k", task.media_resource.task.options[:Tasks][0][:FFmpeg][:OutputFileOptions]
         end
       end
     end
