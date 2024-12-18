@@ -253,7 +253,7 @@ describe PublishingPipelineState do
       it 'sets the status to "error"' do
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, ->(*args) { raise "error" }) do
+          PublishFeedJob.stub_any_instance(:publish_integration, ->(*args) { raise "error" }) do
             pqi = PublishingQueueItem.ensure_queued!(podcast)
 
             assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
@@ -276,7 +276,7 @@ describe PublishingPipelineState do
     describe "complete!" do
       it 'sets the status to "complete"' do
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, "pub!") do
+          PublishFeedJob.stub_any_instance(:publish_integration, "pub!") do
             PublishFeedJob.stub_any_instance(:publish_rss, "pub!") do
               PublishingPipelineState.attempt!(podcast, perform_later: false)
             end
@@ -291,7 +291,7 @@ describe PublishingPipelineState do
         PublishingQueueItem.create!(podcast: podcast)
 
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, "pub!") do
+          PublishFeedJob.stub_any_instance(:publish_integration, "pub!") do
             PublishFeedJob.stub_any_instance(:publish_rss, "pub!") do
               PublishingPipelineState.attempt!(podcast, perform_later: false)
             end
@@ -315,14 +315,16 @@ describe PublishingPipelineState do
       it "can publish via the apple configs" do
         assert [f1, f2, f3]
 
-        PublishAppleJob.stub(:do_perform, "published apple!") do
-          PublishFeedJob.stub_any_instance(:save_file, "saved rss!") do
-            PublishingPipelineState.attempt!(podcast, perform_later: false)
+        f3.stub(:publish_integration!, "published apple!") do
+          podcast.stub(:feeds, [f1, f2, f3]) do
+            PublishFeedJob.stub_any_instance(:save_file, "saved rss!") do
+              PublishingPipelineState.attempt!(podcast, perform_later: false)
+            end
           end
         end
         PublishingPipelineState.complete!(podcast)
         assert_equal(
-          ["complete", "published_rss", "published_rss", "published_rss", "published_apple", "started", "created"],
+          ["complete", "published_rss", "published_rss", "published_rss", "published_integration", "started", "created"],
           PublishingPipelineState.order(id: :desc).pluck(:status)
         )
       end

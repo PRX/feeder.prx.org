@@ -172,19 +172,19 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     it "should create logs based on a returned row value" do
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-          assert_equal SyncLog.podcast_containers.count, 0
+          assert_equal SyncLog.apple.podcast_containers.count, 0
           assert_equal Apple::PodcastContainer.count, 0
 
           Apple::PodcastContainer.upsert_podcast_container(apple_episode,
             podcast_container_json_row)
-          assert_equal SyncLog.podcast_containers.count, 1
+          assert_equal SyncLog.apple.podcast_containers.count, 1
           assert_equal Apple::PodcastContainer.count, 1
 
           Apple::PodcastContainer.upsert_podcast_container(apple_episode,
             podcast_container_json_row)
 
           # The second call should not create a new log or podcast container
-          assert_equal SyncLog.podcast_containers.count, 1
+          assert_equal SyncLog.apple.podcast_containers.count, 1
           assert_equal Apple::PodcastContainer.count, 1
         end
       end
@@ -251,7 +251,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
   describe ".poll_podcast_container_state(api, episodes)" do
     it "creates new records if they dont exist" do
-      assert_equal SyncLog.podcast_containers.count, 0
+      assert_equal SyncLog.apple.podcast_containers.count, 0
 
       Apple::PodcastContainer.stub(:get_podcast_containers_via_episodes, [podcast_container_json_row]) do
         apple_episode.stub(:apple_id, apple_episode_id) do
@@ -262,7 +262,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
           end
         end
       end
-      assert_equal SyncLog.podcast_containers.count, 1
+      assert_equal SyncLog.apple.podcast_containers.count, 1
     end
   end
 

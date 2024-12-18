@@ -76,7 +76,7 @@ describe PublishFeedJob do
           pub_item = PublishingQueueItem.create(podcast: podcast)
           assert job.null_publishing_item?(podcast, pub_item)
 
-          PublishAppleJob.stub(:do_perform, :publishing_apple!) do
+          private_feed.stub(:publish_integration!, true) do
             assert_equal :null, job.perform(podcast, pub_item)
           end
 
@@ -90,7 +90,7 @@ describe PublishFeedJob do
           queue_item = PublishingPipelineState.start_pipeline!(podcast)
 
           refute job.null_publishing_item?(podcast, queue_item)
-          PublishAppleJob.stub(:do_perform, :publishing_apple!) do
+          private_feed.stub(:publish_integration!, true) do
             refute_equal :null, job.perform(podcast, queue_item)
           end
         end
@@ -112,36 +112,38 @@ describe PublishFeedJob do
         job.stub(:s3_client, stub_client) do
           pqi = PublishingPipelineState.start_pipeline!(podcast)
           # Simulate some method blowing up
-          PublishAppleJob.stub(:do_perform, ->(*, **) { raise "some apple error" }) do
-            assert_raises(RuntimeError) { job.perform(podcast, pqi) }
-            assert_equal ["created", "started", "error_apple", "error"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
+          private_feed.stub(:publish_integration!, -> { raise "random apple error" }) do
+            podcast.stub(:feeds, [private_feed]) do
+              assert_raises(RuntimeError) { job.perform(podcast, pqi) }
+              assert_equal ["created", "started", "error_integration", "error"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
+            end
           end
         end
       end
     end
 
     it "does not schedule publishing to apple if the apple config prevents it" do
-      podcast.apple_config.update!(publish_enabled: false)
-      assert_nil job.publish_apple(podcast, apple_feed)
+      apple_feed.apple_config.update!(publish_enabled: false)
+      assert_nil job.publish_integration(podcast, apple_feed)
     end
 
     it "does not schedule publishing to apple if the apple config is disabled" do
-      apple_config.update!(publish_enabled: false)
-      assert_nil job.publish_apple(podcast, apple_feed)
+      apple_feed.apple_config.update!(publish_enabled: false)
+      assert_nil job.publish_integration(podcast, apple_feed)
     end
 
     describe "when the apple config is present" do
       it "does not schedule publishing to apple if the config is marked as not publishable" do
-        podcast.apple_config.update!(publish_enabled: false)
+        apple_feed.apple_config.update!(publish_enabled: false)
 
-        assert_nil job.publish_apple(podcast, apple_feed)
+        assert_nil job.publish_integration(podcast, apple_feed)
       end
 
       it "does run the apple publishing if the config is present and marked as publishable" do
         assert apple_feed.apple_config.present?
         assert apple_feed.apple_config.publish_enabled
-        PublishAppleJob.stub(:do_perform, :publishing_apple!) do
-          assert_equal :publishing_apple!, job.publish_apple(podcast, apple_feed)
+        private_feed.stub(:publish_integration!, :publishing_apple!) do
+          assert_equal :publishing_apple!, job.publish_integration(podcast, apple_feed)
         end
       end
 
@@ -155,10 +157,11 @@ describe PublishFeedJob do
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
 
-          PublishAppleJob.stub(:do_perform, ->(*, **) { raise "some apple error" }) do
-            assert_raises(RuntimeError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
-
-            assert_equal ["created", "started", "error", "error_apple"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+          private_feed.stub(:publish_integration!, -> { raise "some apple error" }) do
+            feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
+              assert_raises(RuntimeError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
+              assert_equal ["created", "started", "error", "error_integration"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+            end
           end
         end
 
@@ -169,11 +172,12 @@ describe PublishFeedJob do
           feed.reload
 
           PublishFeedJob.stub(:s3_client, stub_client) do
-            PublishAppleJob.stub(:do_perform, ->(*, **) { raise "some apple error" }) do
-              # no error raised
-              PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
-
-              assert_equal ["created", "started", "error_apple", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+            private_feed.stub(:publish_integration!, -> { raise "some apple error" }) do
+              feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
+                # no error raised
+                PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
+                assert_equal ["created", "started", "error_integration", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+              end
             end
           end
         end
@@ -182,10 +186,11 @@ describe PublishFeedJob do
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
 
-          PublishAppleJob.stub(:do_perform, ->(*, **) { raise Apple::AssetStateTimeoutError.new([]) }) do
-            assert_raises(Apple::AssetStateTimeoutError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
-
-            assert_equal ["created", "started", "error", "error_apple"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+          private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
+            podcast.stub(:feeds, [private_feed]) do
+              assert_raises(Apple::AssetStateTimeoutError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
+              assert_equal ["created", "started", "error", "error_integration"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+            end
           end
         end
       end

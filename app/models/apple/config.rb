@@ -41,7 +41,7 @@ module Apple
     def self.mark_as_delivered!(apple_publisher)
       apple_publisher.episodes_to_sync.each do |episode|
         if episode.podcast_container&.needs_delivery? == false
-          episode.feeder_episode.apple_has_delivery!
+          episode.feeder_episode.apple_mark_as_delivered!
         end
       end
     end
@@ -96,7 +96,7 @@ module Apple
 
     def apple_data
       episode_data = [
-        SyncLog.where(feeder_type: "episodes", feeder_id: podcast.episodes.pluck(:id)),
+        SyncLog.apple.where(feeder_type: "episodes", feeder_id: podcast.episodes.pluck(:id)),
         Apple::PodcastContainer.where(episode: podcast.episodes)
       ].flatten.compact
 
