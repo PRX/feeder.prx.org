@@ -3,8 +3,12 @@ class EpisodeImage < ApplicationRecord
 
   belongs_to :episode, touch: true, optional: true
 
-  validates :height, :width, numericality: {greater_than_or_equal_to: 1400, less_than_or_equal_to: 3000}, if: :status_complete?
-  validates :width, comparison: {equal_to: :height}, if: :status_complete?
+  validates :height, :width, numericality: {greater_than_or_equal_to: 1400, less_than_or_equal_to: 3000}, if: :should_validate?
+  validates :width, comparison: {equal_to: :height}, if: :should_validate?
+
+  def should_validate?
+    status_complete? && (height_changed? || width_changed?)
+  end
 
   def destination_path
     "#{episode.path}/#{image_path}"
