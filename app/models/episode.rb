@@ -149,7 +149,11 @@ class Episode < ApplicationRecord
 
   def set_defaults
     guid
-    self.segment_count ||= 1 if new_record? && strict_validations
+    if new_record? && strict_validations
+      self.segment_count ||= 1
+    elsif segment_count.blank? && contents.any?
+      self.segment_count = contents.map(&:position).max || contents.size
+    end
   end
 
   def guid
