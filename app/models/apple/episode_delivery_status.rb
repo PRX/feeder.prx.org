@@ -21,5 +21,23 @@ module Apple
     def reset_asset_wait
       self.class.update_status(episode, asset_processing_attempts: 0)
     end
+
+    def mark_as_uploaded!
+      self.class.update_status(episode, uploaded: true)
+    end
+
+    def mark_as_not_uploaded!
+      self.class.update_status(episode, uploaded: false)
+    end
+
+    # Whether the media file has been uploaded to Apple
+    # is a subset of whether the episode has been delivered
+    def mark_as_delivered!
+      self.class.update_status(episode, delivered: true, uploaded: true)
+    end
+
+    def mark_as_not_delivered!
+      self.class.update_status(episode, delivered: false, uploaded: false)
+    end
   end
 end

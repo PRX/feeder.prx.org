@@ -6,20 +6,20 @@ FactoryBot.define do
     # set up transient api_response
     transient do
       feeder_episode { create(:episode) }
-      api_response { build(:apple_episode_api_response) }
+      api_response { build(:apple_episode_api_response, item_guid: feeder_episode.item_guid) }
+      apple_hosted_audio_asset_container_id { "456" }
     end
 
     # set a complete episode factory varient
     factory :uploaded_apple_episode do
-      feeder_episode do
-        ep = create(:episode)
-        ep.apple_has_delivery!
-        ep
-      end
+      feeder_episode { create(:episode) }
       transient do
+        apple_hosted_audio_asset_container_id { "456" }
         api_response do
           build(:apple_episode_api_response,
             publishing_state: "PUBLISH",
+            item_guid: feeder_episode.item_guid,
+            apple_hosted_audio_asset_container_id: apple_hosted_audio_asset_container_id,
             apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS)
         end
       end
@@ -32,11 +32,23 @@ FactoryBot.define do
           api_marked_as_uploaded: true,
           upload_operations_complete: true)
 
-        create(:content, episode: apple_episode.feeder_episode, position: 1, status: "complete")
-        create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
-        v1 = apple_episode.feeder_episode.cut_media_version!
+        feeder_episode = apple_episode.feeder_episode
 
-        apple_episode.delivery_status.update!(delivered: true, source_media_version_id: v1.id)
+        # The content model calls Episode#publish!
+        # and that triggers a call to Episode#apple_mark_for_reupload!
+        # This modifies state to indicate that the episode needs to be reuploaded
+        create(:content, episode: feeder_episode, position: 1, status: "complete")
+        create(:content, episode: feeder_episode, position: 2, status: "complete")
+        v1 = feeder_episode.cut_media_version!
+
+        # Now model the case where the episode is uploaded.
+        # First we've gathered file metadata from the CDN
+        feeder_episode.apple_update_delivery_status(source_size: 1.megabyte,
+          source_url: "https://cdn.example.com/episode.mp3",
+          source_media_version_id: v1.id)
+
+        # Then we've delivered (and necessarily uploaded)
+        feeder_episode.apple_mark_as_delivered!
       end
     end
 
