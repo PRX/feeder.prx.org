@@ -77,6 +77,7 @@ module EpisodeMedia
     images.each { |i| i.copy_media(force) }
     transcript&.copy_media(force)
     uncut&.copy_media(force)
+    external_media_resource&.copy_media(force)
   end
 
   def segment_range

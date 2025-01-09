@@ -1,6 +1,5 @@
 class ExternalMediaResource < MediaResource
   validates :duration, numericality: {greater_than: 0}, if: :status_complete?
-  after_create_commit :analyze_media
 
   def guid
     nil
@@ -15,6 +14,7 @@ class ExternalMediaResource < MediaResource
   end
 
   def copy_media(force = false)
+    analyze_media(force)
   end
 
   def analyze_media(force = false)
@@ -22,13 +22,6 @@ class ExternalMediaResource < MediaResource
       Tasks::AnalyzeMediaTask.create! do |task|
         task.owner = self
       end.start!
-    end
-  end
-
-  def retry!
-    if retryable?
-      status_retrying!
-      analyze_media(true)
     end
   end
 end

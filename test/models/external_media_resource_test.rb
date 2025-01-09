@@ -14,11 +14,6 @@ describe ExternalMediaResource do
       assert_equal media.media_url, media.original_url
     end
 
-    it "doesn't copy external media" do
-      # copy is a no-op
-      refute media.copy_media
-    end
-
     it "analyzes the external media" do
       Tasks::AnalyzeMediaTask.stub_any_instance(:porter_start!, true) do
         media.analyze_media
