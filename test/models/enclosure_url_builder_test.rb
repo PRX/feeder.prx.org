@@ -5,7 +5,7 @@ describe EnclosureUrlBuilder do
   let(:template) { "https://#{ENV["DOVETAIL_HOST"]}/{slug}/{guid}/{original_filename}" }
   let(:prefix) { "http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/jojego/" }
   let(:podcast) { create(:podcast, enclosure_prefix: prefix, enclosure_template: template) }
-  let(:episode) { create(:episode_with_media, podcast: podcast, prx_uri: "/api/v1/stories/87683") }
+  let(:episode) { create(:episode_with_media, podcast: podcast) }
   let(:feed) { create(:feed, podcast: podcast, slug: "no-ads-pls") }
   let(:builder) { EnclosureUrlBuilder.new }
 
@@ -116,6 +116,21 @@ describe EnclosureUrlBuilder do
   it "can make an enclosure url for a podcast and episode with template and prefix" do
     url = builder.podcast_episode_url(podcast, episode)
     _(url).must_match(/http:\/\/www.podtrac.com\/pts\/redirect.mp3\/media.blubrry.com\/jojego\/dovetail.prxu.org\/#{podcast.id}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/audio\.mp3/)
+  end
+
+  it "can make an enclosure url for an override url, but not override prefix" do
+    episode.enclosure_override_url = "https://a.io/a.mp3"
+    episode.enclosure_override_prefix = false
+
+    url = builder.podcast_episode_url(podcast, episode)
+    _(url).must_equal("http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/jojego/a.io/a.mp3")
+  end
+  it "can make an enclosure url for an override url, also override prefix" do
+    episode.enclosure_override_url = "https://a.io/a.mp3"
+    episode.enclosure_override_prefix = true
+
+    url = builder.podcast_episode_url(podcast, episode)
+    _(url).must_equal("https://a.io/a.mp3")
   end
 
   it "applies template to audio file link" do

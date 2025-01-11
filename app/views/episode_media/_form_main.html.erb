@@ -8,8 +8,7 @@
     <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
   </div>
 </div>
-
-<% if episode.medium_video? %>
+<% if episode.medium_video? || episode.medium_override? %>
   <%= form.hidden_field :segment_count, value: 1 %>
 <% else %>
   <div class="col-12 mb-4">
