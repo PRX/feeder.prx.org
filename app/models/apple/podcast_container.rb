@@ -9,7 +9,7 @@ module Apple
 
     default_scope { includes(:apple_sync_log) }
 
-    has_one :apple_sync_log, -> { podcast_containers }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
+    has_one :apple_sync_log, -> { podcast_containers.apple }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
     has_many :podcast_deliveries, dependent: :destroy
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
@@ -145,7 +145,7 @@ module Apple
          external_id: external_id,
          feeder_episode_id: episode.feeder_id})
 
-      SyncLog.log!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
+      SyncLog.log!(integration: :apple, feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
 
       # reset the episode's podcast container cached value
       pc.reload if action == :updated

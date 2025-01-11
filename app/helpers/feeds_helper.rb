@@ -72,4 +72,8 @@ module FeedsHelper
   def apple_feed?(feed)
     feed.type == "Feeds::AppleSubscription"
   end
+
+  def megaphone_feed?(feed)
+    feed.type == "Feeds::MegaphoneFeed"
+  end
 end

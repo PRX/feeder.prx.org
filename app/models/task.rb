@@ -1,5 +1,5 @@
 require "hash_serializer"
-require "prx_access"
+require "prx/api"
 
 class Task < ApplicationRecord
   include PorterCallback

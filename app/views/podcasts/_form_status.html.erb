@@ -3,11 +3,33 @@
     <h2 class="card-title h5"><%= t(".title") %></h2>
   </div>
 
+  <% if podcast.persisted? && podcast.publish_to_integration?(:megaphone) %>
+    <div class="card-body row">
+      <% integration = :megaphone %>
+      <% integration_status = podcast_integration_status(integration, podcast) %>
+      <div class="col-12">
+        <p class="status-text">
+          <strong><%= "#{integration.to_s.titleize} Status" %>:</strong>
+          <span class="badge rounded-pill prx-badge-<%= integration_status %>">
+            <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
+          </span>
+          <br>
+          <strong><%= t(".last_updated") %></strong>
+          <br>
+          <%= local_time_ago(podcast_integration_updated_at(integration, podcast)) %>
+        </p>
+      </div>
+    </div>
+  <% end %>
+
   <%= render "layouts/stale_record_field", form: form %>
 
   <div class="card-footer d-flex align-items-center">
     <% if podcast.persisted? %>
-      <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong> <br><%= local_time_ago(podcast.updated_at) %></p>
+      <p class="status-text flex-grow-1"><strong><%= t(".updated_at_hint") %></strong>
+        <br>
+        <%= local_time_ago(podcast.updated_at) %>
+      </p>
 
       <% if policy(podcast).update? %>
         <% data = {action: "unsaved#discard", unsaved_target: "discard"} %>
