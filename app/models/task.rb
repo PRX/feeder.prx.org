@@ -25,6 +25,7 @@ class Task < ApplicationRecord
   scope :copy_image, -> { where(type: "Tasks::CopyImageTask") }
   scope :bad_audio_duration, -> { where("result ~ '\"DurationDiscrepancy\":([5-9]\\d[1-9]|[6-9]\\d{2}|[1-9]\d{3})'") }
   scope :bad_audio_bytes, -> { where("result ~ '\"UnidentifiedBytes\":[1-9]'") }
+  scope :bad_audio_vbr, -> { where("result ~ '\"VariableBitrate\":true'") }
 
   def self.callback(msg)
     Task.transaction do
@@ -47,12 +48,20 @@ class Task < ApplicationRecord
   def source_url
   end
 
+  def bad_audio?
+    bad_audio_duration? || bad_audio_bytes? || bad_audio_vbr?
+  end
+
   def bad_audio_duration?
     porter_callback_inspect.dig(:Audio, :DurationDiscrepancy).to_i > 500
   end
 
   def bad_audio_bytes?
     porter_callback_inspect.dig(:Audio, :UnidentifiedBytes).to_i > 0
+  end
+
+  def bad_audio_vbr?
+    !!porter_callback_inspect.dig(:Audio, :VariableBitrate)
   end
 
   def start!

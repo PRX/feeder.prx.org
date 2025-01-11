@@ -1,7 +1,7 @@
 class Tasks::FixMediaTask < ::Task
   before_save :update_media_resource, if: ->(t) { t.status_changed? && t.media_resource }
 
-  attr_accessor :media_format
+  attr_accessor :media_format, :media_bitrate
 
   def media_resource
     owner
@@ -27,7 +27,7 @@ class Tasks::FixMediaTask < ::Task
           }
         },
         FFmpeg: {
-          OutputFileOptions: "-acodec copy"
+          OutputFileOptions: media_bitrate ? "-b:a #{media_bitrate}k" : "-acodec copy"
         }
       }
     ]
