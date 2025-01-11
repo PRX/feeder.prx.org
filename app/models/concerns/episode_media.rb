@@ -32,13 +32,11 @@ module EpisodeMedia
     # otherwise - having files in any status is good enough
     is_ready =
       if published_at_was.blank?
-        media_ready?(true) || override_ready?
+        media_ready?(true) || override_ready?(true)
       elsif medium_uncut?
         uncut.present? && !uncut.marked_for_destruction?
-      elsif override?
-        external_media_ready?
       else
-        media_ready?(false)
+        media_ready?(false) || override_ready?(false)
       end
 
     unless is_ready
@@ -247,8 +245,8 @@ module EpisodeMedia
     media.first.try(:href)
   end
 
-  def override_ready?
-    override? && external_media_ready?
+  def override_ready?(must_be_complete = true)
+    override? && external_media_ready?(must_be_complete)
   end
 
   def override_processing?
@@ -259,8 +257,12 @@ module EpisodeMedia
     medium_override? || !enclosure_override_url.blank?
   end
 
-  def external_media_ready?
-    external_media_resource&.status_complete?
+  def external_media_ready?(must_be_complete = true)
+    if must_be_complete
+      external_media_resource&.status_complete?
+    else
+      external_media_resource.present?
+    end
   end
 
   def analyze_external_media
