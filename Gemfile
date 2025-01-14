@@ -52,9 +52,6 @@ gem "lograge"
 gem "newrelic_rpm"
 gem "ougai"
 gem "ougai-formatters-customizable"
-gem "opentelemetry-sdk"
-gem "opentelemetry-exporter-otlp"
-gem "opentelemetry-instrumentation-all"
 
 # background workers
 gem "say_when", "~> 2.2.2"
