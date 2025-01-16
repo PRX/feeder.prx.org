@@ -52,9 +52,6 @@ gem "lograge"
 gem "newrelic_rpm"
 gem "ougai"
 gem "ougai-formatters-customizable"
-gem "opentelemetry-sdk"
-gem "opentelemetry-exporter-otlp"
-gem "opentelemetry-instrumentation-all"
 
 # background workers
 gem "say_when", "~> 2.2.2"
@@ -80,7 +77,8 @@ gem "net-http"
 gem "parallel"
 
 group :development, :test do
-  gem "debug", platforms: %i[mri mingw x64_mingw]
+  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
   gem "dotenv-rails", "~> 2.0"
   gem "erb_lint", require: false
   gem "ostruct"
