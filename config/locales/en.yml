@@ -522,6 +522,7 @@ en:
         other: "%{count} Breaks"
     episode_filters:
       my_episodes: Episodes
+      export: Export
       filters:
         all: All
         incomplete: Incomplete
@@ -541,6 +542,14 @@ en:
       dismiss: Proceed with a new draft
       message: Please consider using the draft that already exists on this published date as there may be an ad targeted specifically to the scheduled episode draft.
       title: An episode draft for this date already exists
+    export:
+      enclosure_url: Enclosure URL
+      filename: "%{podcast}_episodes.csv"
+      item_guid: GUID
+      player_iframe: Player Iframe
+      player_url: Player URL
+      published_at: Published At
+      title: Title
     form:
       confirm: Discard unsaved changes?
     form_distribution:

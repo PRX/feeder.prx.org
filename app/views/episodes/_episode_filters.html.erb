@@ -66,6 +66,11 @@
             <% end %>
           </ul>
         </div>
+
+        <%= link_to export_podcast_episodes_path(@podcast), class: "btn btn-primary mx-2", style: "margin:1px", data: {turbo: false} do %>
+          <span class="material-icons" aria-hidden="true" aria-hidden="true">download</span>
+          <%= t(".export") %>
+        <% end %>
       </div>
 
       <div class="col-md-4 col-12 d-flex justify-content-end mt-sm-2 mt-md-0">
