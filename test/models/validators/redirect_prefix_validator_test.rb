@@ -44,7 +44,7 @@ describe RedirectPrefixValidator do
 
     feed.enclosure_prefix = one.sub("/dovetail.prxu.org/zero.mp3", "")
     assert feed.invalid?
-    assert_includes feed.errors[:enclosure_prefix], "prefix not reachable"
+    assert feed.errors.added?(:enclosure_prefix, :unreachable)
   end
 
   it "validates duplicate https" do
@@ -55,7 +55,7 @@ describe RedirectPrefixValidator do
 
     feed.enclosure_prefix = one.sub("/dovetail.prxu.org/zero.mp3", "")
     assert feed.invalid?
-    assert_includes feed.errors[:enclosure_prefix], "prefix not reachable"
+    assert feed.errors.added?(:enclosure_prefix, :unreachable)
 
     WebMock.disable_net_connect!
   end
@@ -69,7 +69,7 @@ describe RedirectPrefixValidator do
 
     feed.enclosure_prefix = one.sub("/dovetail.prxu.org/zero.mp3", "")
     assert feed.invalid?
-    assert_includes feed.errors[:enclosure_prefix], "prefix not reachable"
+    assert feed.errors.added?(:enclosure_prefix, :unreachable)
   end
 
   it "validates too many redirects" do
@@ -87,7 +87,7 @@ describe RedirectPrefixValidator do
     feed.enclosure_prefix = one.sub("/dovetail.prxu.org/zero.mp3", "")
     validator = RedirectPrefixValidator.new(attributes: [:enclosure_prefix], max_jumps: 2)
     validator.validate(feed)
-    assert_includes feed.errors[:enclosure_prefix], "too many redirects"
+    assert feed.errors.added?(:enclosure_prefix, :too_many_redirects)
     assert_requested(r1)
     assert_requested(r2)
     assert_requested(r3)
