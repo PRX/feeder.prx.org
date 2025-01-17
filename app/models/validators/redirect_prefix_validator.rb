@@ -3,8 +3,12 @@ class RedirectPrefixValidator < ActiveModel::EachValidator
   TEST_URL = "dovetail.prxu.org/zero.mp3"
   DEFAULT_MAX_JUMPS = 10
 
+  def self.skip_validation?
+    Rails.env.test?
+  end
+
   def validate_each(record, attribute, value)
-    if value.present? && record.changes[attribute].present?
+    if value.present? && record.changes[attribute].present? && !self.class.skip_validation?
       success, jumps = head_request(File.join(value, TEST_URL))
       max_jumps = options[:max_jumps] || DEFAULT_MAX_JUMPS
 

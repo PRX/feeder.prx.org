@@ -3,6 +3,12 @@ require "test_helper"
 describe RedirectPrefixValidator do
   let(:feed) { build_stubbed(:feed, enclosure_prefix: nil) }
 
+  around do |test|
+    RedirectPrefixValidator.stub :skip_validation?, false do
+      test.call
+    end
+  end
+
   it "allows nil/blank" do
     assert feed.valid?
 
