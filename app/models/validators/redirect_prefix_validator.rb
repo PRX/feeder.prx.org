@@ -26,6 +26,8 @@ class RedirectPrefixValidator < ActiveModel::EachValidator
     uri = URI.parse(uri_str)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true if uri.scheme == "https"
+    http.read_timeout = 5.seconds
+    http.max_retries = 0
     req = Net::HTTP::Head.new(uri)
     req["User-Agent"] = TEST_AGENT
     res = http.request(req)
@@ -37,7 +39,7 @@ class RedirectPrefixValidator < ActiveModel::EachValidator
     else
       [false, jumps]
     end
-  rescue URI::InvalidURIError, Socket::ResolutionError
+  rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout
     [false, jumps]
   end
 end
