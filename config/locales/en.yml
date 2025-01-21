@@ -301,6 +301,9 @@ en:
               less_than_or_equal_to: Enter a number less than %{count}
         feed:
           attributes:
+            enclosure_prefix:
+              too_many_redirects: Too many redirects
+              unreachable: Unreachable prefix
             slug:
               invalid: Invalid slug
               taken: Must be unique
