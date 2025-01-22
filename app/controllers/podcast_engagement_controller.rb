@@ -2,6 +2,7 @@ class PodcastEngagementController < ApplicationController
   before_action :set_podcast
 
   def show
+    build_subscribe_links
   end
 
   # PATCH/PUT /podcasts/1/engagement
@@ -28,6 +29,12 @@ class PodcastEngagementController < ApplicationController
     @podcast = Podcast.find(params[:podcast_id])
     @podcast.locking_enabled = true
     authorize @podcast
+  end
+
+  def build_subscribe_links
+    @podcast.subscribe_links.build(type: "SubscribeLinks::Apple") unless @podcast.subscribe_links.include?(SubscribeLink.where(type: "SubscribeLinks::Apple"))
+
+    @podcast.subscribe_links.build(type: "SubscribeLinks::Spotify") unless @podcast.subscribe_links.include?(SubscribeLink.where(type: "SubscribeLinks::Spotify"))
   end
 
   # Only allow a list of trusted parameters through.

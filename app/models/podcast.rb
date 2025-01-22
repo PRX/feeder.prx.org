@@ -30,6 +30,7 @@ class Podcast < ApplicationRecord
   has_many :subscribe_links, dependent: :destroy
 
   accepts_nested_attributes_for :default_feed
+  accepts_nested_attributes_for :subscribe_links
 
   validates :title, presence: true
   validates :link, http_url: true

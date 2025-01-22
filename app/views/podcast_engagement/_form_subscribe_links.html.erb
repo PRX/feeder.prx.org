@@ -1,0 +1,32 @@
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <h2 class="card-title h5">Subscribe Links</h2>
+    </div>
+
+    <div class="card-body">
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tempor justo eu tellus tincidunt, nec imperdiet metus tempus. Quisque feugiat fermentum ante ac mattis. Vestibulum sollicitudin suscipit purus, ut lobortis urna. Maecenas venenatis neque non interdum sagittis. Aliquam tempus sagittis diam vel suscipit. Nulla lacinia lectus sed libero molestie maximus. Vestibulum ex odio, lobortis id tristique eu, ornare id ex. Donec et egestas sapien.</p>
+      <%= form.fields_for :subscribe_links, podcast.subscribe_links, include_id: false do |fields| %>
+        <hr>
+        <div class="row">
+          <div class="col-6 d-flex align-items-center">
+            <div class="form-check">
+              <%= fields.check_box :enabled %>
+              <div class="d-flex align-items-center">
+                <%= fields.label :enabled, t(".labels.#{fields.object.label}") %>
+                <span class="p-0 ms-1 material-icons">group</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 d-flex align-items-center">
+            <div class="form-floating input-group">
+              <%= fields.text_field :external_id %>
+              <%= fields.label :external_id, t(".ids.#{fields.object.label}") %>
+              <%= field_help_text t(".help.#{fields.object.label}") %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

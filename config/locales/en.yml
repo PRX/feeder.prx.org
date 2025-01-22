@@ -1123,6 +1123,17 @@ en:
         payment_pointer: The PRX Embeddable player support micropayments. We've created a guide to walk you through the process of collecting payments as folks listen. <a href="https://help.prx.org/hc/en-us/articles/9901810244251" target="_blank">Learn more about micropayments.</a>
     form_status:
       <<: *form_status
+    form_subscribe_links:
+      title: Subscribe Links
+      labels:
+        apple: Apple Podcasts
+        spotify: Spotify
+      ids:
+        apple: Apple ID
+        spotify: Spotify Show ID
+      help:
+        apple: Using your Apple ID, we will be able to look up your podcast wherever your podcast is found and display a list of subscription links to users using the PRX Embeddable Player. Please select the podcast players to display when possible.
+        spotify: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tempor justo eu tellus tincidunt, nec imperdiet metus tempus. Quisque feugiat fermentum ante ac mattis. Vestibulum sollicitudin suscipit purus, ut lobortis urna. Maecenas venenatis neque non interdum sagittis. Aliquam tempus sagittis diam vel suscipit. Nulla lacinia lectus sed libero molestie maximus. Vestibulum ex odio, lobortis id tristique eu, ornare id ex. Donec et egestas sapien.
     show:
       title: "%{title} - Engagement"
     update:

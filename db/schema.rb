@@ -439,9 +439,11 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
   create_table "subscribe_links", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "podcast_id"
     t.boolean "enabled"
     t.integer "external_id"
     t.string "type"
+    t.index ["podcast_id"], name: "index_subscribe_links_on_podcast_id"
   end
 
   create_table "sync_logs", force: :cascade do |t|
