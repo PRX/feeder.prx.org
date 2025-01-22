@@ -58,7 +58,7 @@ class Tasks::CopyMediaTask < ::Task
 
     media_resource.save!
 
-    if media_resource.status_complete? && (bad_audio_duration? || bad_audio_bytes?)
+    if media_resource.status_complete? && bad_audio?
       fix_media!
     else
       slice_media!
@@ -69,15 +69,29 @@ class Tasks::CopyMediaTask < ::Task
     media_resource.status = "processing"
     media_resource.save!
 
-    # fix media, but set an explicit format for ffmpeg to use if possible
+    # set an explicit format for ffmpeg to use if possible
     fmt = porter_callback_inspect.dig(:Audio, :Format) || porter_callback_inspect.dig(:Video, :Format)
-    Tasks::FixMediaTask.create!(owner: owner, media_format: fmt).start!
+
+    # set an explicit bitrate if vbr
+    bit = next_highest_bitrate if bad_audio_vbr?
+
+    Tasks::FixMediaTask.create!(owner: owner, media_format: fmt, media_bitrate: bit).start!
   end
 
   def slice_media!
     if media_resource.is_a?(Uncut) && media_resource.segmentation_ready?
       media_resource.slice_contents!
       media_resource.episode.contents.each(&:copy_media)
+    end
+  end
+
+  def next_highest_bitrate
+    bitrate = porter_callback_inspect.dig(:Audio, :Bitrate).to_i / 1000
+    if bitrate > 0
+      higher_bits = AudioFormatValidator::BIT_RATES.select { |b| b >= bitrate }
+      higher_bits.first || AudioFormatValidator::BIT_RATES.last
+    else
+      128
     end
   end
 

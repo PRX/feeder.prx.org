@@ -301,6 +301,9 @@ en:
               less_than_or_equal_to: Enter a number less than %{count}
         feed:
           attributes:
+            enclosure_prefix:
+              too_many_redirects: Too many redirects
+              unreachable: Unreachable prefix
             slug:
               invalid: Invalid slug
               taken: Must be unique
@@ -413,6 +416,7 @@ en:
         enclosure_prefix: Enclosure Prefix URL
         episode_offset_seconds: Episode Publish Offset
         file_name: File Name
+        episode_footer: Episode Description Footer
         friendly_titles:
           apple: Apple Subscriptions
           default: Default RSS Feed
@@ -521,6 +525,7 @@ en:
         other: "%{count} Breaks"
     episode_filters:
       my_episodes: Episodes
+      export: Export
       filters:
         all: All
         incomplete: Incomplete
@@ -540,6 +545,14 @@ en:
       dismiss: Proceed with a new draft
       message: Please consider using the draft that already exists on this published date as there may be an ad targeted specifically to the scheduled episode draft.
       title: An episode draft for this date already exists
+    export:
+      enclosure_url: Enclosure URL
+      filename: "%{podcast}_episodes.csv"
+      item_guid: GUID
+      player_iframe: Player Iframe
+      player_url: Player URL
+      published_at: Published At
+      title: Title
     form:
       confirm: Discard unsaved changes?
     form_distribution:
@@ -822,6 +835,7 @@ en:
         enclosure_prefix: If you have an enclosure prefix URL to set a redirect on audio requests for your podcast feed (e.g., podtrac or blubrry), enter it here.
         episode_offset_seconds: Instead of episodes immediately showing up in this feed when published, delay their appearance. AKA Windowing.
         file_name: The file name used for your private RSS feed.
+        episode_footer: Text to be included at the end of each episode's description, such as a privacy policy link.
         slug: An alphanumeric slug used to identify your feed. Also used in the private feed RSS url.
         title: An alternate title for your feed, to distinguish it from the Default Feed
     form_overrides:

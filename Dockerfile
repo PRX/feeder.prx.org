@@ -1,10 +1,11 @@
-FROM ruby:3.3.5-alpine
+FROM ruby:3.3.6-alpine
 
 LABEL org.prx.app="yes"
 LABEL org.prx.spire.publish.ecr="RAILS_APP"
 
 RUN apk -U upgrade && apk add --no-cache \
-    tzdata postgresql-dev postgresql-client build-base bash coreutils git nodejs
+    tzdata postgresql-dev postgresql-client build-base bash coreutils git nodejs \
+    libffi-dev yaml-dev
 
 ENV RAILS_ENV production
 ENV APP_HOME /app
