@@ -158,7 +158,7 @@ class Episode < ApplicationRecord
   end
 
   def explicit=(value)
-    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
+    super(Podcast::EXPLICIT_ALIASES.fetch(value, value))
   end
 
   def explicit_content

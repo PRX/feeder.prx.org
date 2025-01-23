@@ -103,7 +103,7 @@ module Feeder
     end
 
     config.representer.represented_formats = [:hal, :json]
-    config.representer.default_url_options = {host: (ENV["FEEDER_HOST"] || "feeder.prx.org")}
+    config.representer.default_url_options = {host: ENV["FEEDER_HOST"] || "feeder.prx.org"}
 
     # Logging
     module ActiveSupport::TaggedLogging::Formatter

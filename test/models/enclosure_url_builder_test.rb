@@ -82,19 +82,19 @@ describe EnclosureUrlBuilder do
     end
 
     it "keeps extensions if wav or flac" do
-      episode.contents.first.original_url.sub!(/mp3/, "wav")
+      episode.contents.first.original_url.sub!("mp3", "wav")
       expansions = builder.podcast_episode_expansions(podcast, episode, feed)
       _(expansions[:extension]).must_equal ".wav"
     end
 
     it "defaults extensions to .mp3 if not wav or flac" do
-      episode.contents.first.original_url.sub!(/mp3/, "ogg")
+      episode.contents.first.original_url.sub!("mp3", "ogg")
       expansions = builder.podcast_episode_expansions(podcast, episode, feed)
       _(expansions[:extension]).must_equal ".mp3"
     end
 
     it "keeps extensions if medium is video" do
-      episode.contents.first.original_url.sub!(/mp3/, "mp4")
+      episode.contents.first.original_url.sub!("mp3", "mp4")
       episode.contents.first.medium = "video"
       expansions = builder.podcast_episode_expansions(podcast, episode, feed)
       _(expansions[:extension]).must_equal ".mp4"
