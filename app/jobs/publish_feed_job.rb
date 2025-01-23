@@ -96,7 +96,7 @@ class PublishFeedJob < ApplicationJob
     handler = ERROR_HANDLERS[type]
     PublishingPipelineState.public_send(handler[:method], podcast)
 
-    log_level = type == "apple_timeout" ? apple_timeout_log_level(error) : handler[:level]
+    log_level = (type == "apple_timeout") ? apple_timeout_log_level(error) : handler[:level]
     Rails.logger.send(log_level, error.message, {podcast_id: podcast.id})
 
     raise error if should_raise?(error)
