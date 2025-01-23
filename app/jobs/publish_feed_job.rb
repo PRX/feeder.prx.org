@@ -26,6 +26,7 @@ class PublishFeedJob < ApplicationJob
     podcast.feeds.each { |feed| publish_rss(podcast, feed) }
     PublishingPipelineState.complete!(podcast)
   rescue Apple::AssetStateTimeoutError => e
+    # This will cap the pipeline with a :retry state, and the job will be retried
     fail_state(podcast, "apple_timeout", e)
   rescue => e
     fail_state(podcast, "error", e)
@@ -44,6 +45,7 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.error_apple!(podcast)
     Rails.logger.send(e.log_level, e.message, {podcast_id: podcast.id})
     NewRelic::Agent.notice_error(e)
+    # Short circuit the rest of the pipeline if sync_blocks_rss is enabled
     raise e if podcast.apple_config.sync_blocks_rss
   rescue => e
     if podcast.apple_config.sync_blocks_rss
