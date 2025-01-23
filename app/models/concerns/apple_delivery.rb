@@ -40,7 +40,7 @@ module AppleDelivery
   end
 
   def apple_needs_delivery!
-    apple_update_delivery_status(delivered: false)
+    apple_update_delivery_status(delivered: false, asset_processing_attempts: 0)
   end
 
   def apple_has_delivery!
@@ -48,15 +48,7 @@ module AppleDelivery
   end
 
   def measure_asset_processing_duration
-    statuses = apple_episode_delivery_statuses.to_a
-
-    last_status = statuses.shift
-    return nil unless last_status&.asset_processing_attempts.to_i.positive?
-
-    start_status = statuses.find { |status| status.asset_processing_attempts.to_i.zero? }
-    return nil unless start_status
-
-    Time.now - start_status.created_at
+    Apple::EpisodeDeliveryStatus.measure_asset_processing_duration(apple_episode_delivery_statuses)
   end
 
   def apple_prepare_for_delivery!
