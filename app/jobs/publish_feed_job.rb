@@ -7,6 +7,13 @@ class PublishFeedJob < ApplicationJob
 
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
+  ERROR_HANDLERS = {
+    "apple" => { method: :error_apple!, level: :warn },
+    "rss" => { method: :error_rss!, level: :warn },
+    "apple_timeout" => { method: :retry!, level: :info },
+    "error" => { method: :error!, level: :error }
+  }.freeze
+
   def perform(podcast, pub_item)
     # Consume the SQS message, return early, if we have racing threads trying to
     # grab the current publishing pipeline.
@@ -68,18 +75,12 @@ class PublishFeedJob < ApplicationJob
   end
 
   def fail_state(podcast, type, error)
-    (pipeline_method, log_level) =
-      case type
-      when "apple" then [:error_apple!, :warn]
-      when "rss" then [:error_rss!, :warn]
-      when "apple_timeout"
-        level = apple_timeout_log_level(error)
-        [:retry!, level]
-      when "error" then [:error!, :error]
-      end
+    handler = ERROR_HANDLERS[type]
+    PublishingPipelineState.public_send(handler[:method], podcast)
 
-    PublishingPipelineState.public_send(pipeline_method, podcast)
+    log_level = type == "apple_timeout" ? apple_timeout_log_level(error) : handler[:level]
     Rails.logger.send(log_level, error.message, {podcast_id: podcast.id})
+
     raise error if should_raise?(error)
   end
 
