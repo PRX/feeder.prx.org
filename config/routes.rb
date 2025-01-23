@@ -8,7 +8,9 @@ Rails.application.routes.draw do
       get "new_apple", on: :collection
       get "new_megaphone", on: :collection
     end
-    resources :episodes, only: [:index, :create, :new]
+    resources :episodes, only: [:index, :create, :new] do
+      get "export", on: :collection
+    end
     resources :placements_preview, only: [:show]
     get "rollups_demo", to: "podcasts#rollups_demo"
   end

@@ -1,5 +1,6 @@
 module EmbedPlayerHelper
   include Prx::Api
+  include ActionView::Helpers::TagHelper
 
   EMBED_PLAYER_LANDING_PATH = "/listen"
   EMBED_PLAYER_PATH = "/e"
