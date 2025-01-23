@@ -8,10 +8,10 @@ class PublishFeedJob < ApplicationJob
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   ERROR_HANDLERS = {
-    "apple" => { method: :error_apple!, level: :warn },
-    "rss" => { method: :error_rss!, level: :warn },
-    "apple_timeout" => { method: :retry!, level: :info },
-    "error" => { method: :error!, level: :error }
+    "apple" => {method: :error_apple!, level: :warn},
+    "rss" => {method: :error_rss!, level: :warn},
+    "apple_timeout" => {method: :retry!, level: :info},
+    "error" => {method: :error!, level: :error}
   }.freeze
 
   def perform(podcast, pub_item)
@@ -62,6 +62,22 @@ class PublishFeedJob < ApplicationJob
     fail_state(podcast, "rss", e)
   end
 
+  def save_file(podcast, feed, options = {})
+    rss = FeedBuilder.new(podcast, feed).to_feed_xml
+    opts = default_options.merge(options)
+    opts[:body] = rss
+    opts[:bucket] = s3_bucket
+    opts[:key] = feed.path
+    @put_object = s3_client.put_object(opts)
+  end
+
+  def default_options
+    {
+      content_type: "application/rss+xml; charset=UTF-8",
+      cache_control: "max-age=60"
+    }
+  end
+
   def apple_timeout_log_level(error)
     error.try(:log_level) || :error
   end
@@ -82,22 +98,6 @@ class PublishFeedJob < ApplicationJob
     Rails.logger.send(log_level, error.message, {podcast_id: podcast.id})
 
     raise error if should_raise?(error)
-  end
-
-  def save_file(podcast, feed, options = {})
-    rss = FeedBuilder.new(podcast, feed).to_feed_xml
-    opts = default_options.merge(options)
-    opts[:body] = rss
-    opts[:bucket] = s3_bucket
-    opts[:key] = feed.path
-    @put_object = s3_client.put_object(opts)
-  end
-
-  def default_options
-    {
-      content_type: "application/rss+xml; charset=UTF-8",
-      cache_control: "max-age=60"
-    }
   end
 
   def null_publishing_item?(podcast, pub_item)
