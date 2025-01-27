@@ -146,8 +146,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.datetime "source_updated_at", precision: nil
     t.string "keyword_xid"
+    t.datetime "source_updated_at", precision: nil
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"
@@ -159,7 +159,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
     t.integer "segment_count"
     t.text "production_notes"
     t.integer "medium"
-    t.integer "lock_version", default: 0, null: false
+    t.integer "lock_version"
     t.string "categories", array: true
     t.string "enclosure_override_url"
     t.boolean "enclosure_override_prefix"
@@ -171,9 +171,9 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
     t.index ["published_at", "podcast_id"], name: "index_episodes_on_published_at_and_podcast_id"
   end
 
-  create_table "episodes_feeds", primary_key: ["episode_id", "feed_id"], force: :cascade do |t|
-    t.bigint "episode_id", null: false
-    t.bigint "feed_id", null: false
+  create_table "episodes_feeds", id: false, force: :cascade do |t|
+    t.bigint "episode_id"
+    t.bigint "feed_id"
     t.index ["episode_id"], name: "index_episodes_feeds_on_episode_id"
     t.index ["feed_id"], name: "index_episodes_feeds_on_feed_id"
   end
@@ -235,12 +235,12 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
     t.boolean "include_donation_url", default: true
     t.text "exclude_tags"
     t.datetime "deleted_at", precision: nil
-    t.integer "lock_version", default: 0, null: false
+    t.integer "lock_version"
     t.string "type"
     t.string "apple_show_id"
     t.boolean "edit_locked"
-    t.datetime "enclosure_updated_at", precision: nil
     t.string "episode_footer"
+    t.datetime "enclosure_updated_at", precision: nil
     t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
@@ -366,7 +366,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
     t.text "restrictions"
     t.string "payment_pointer"
     t.string "donation_url"
-    t.integer "lock_version", default: 0, null: false
+    t.integer "lock_version"
     t.string "categories", array: true
     t.datetime "locked_until", precision: nil
     t.string "guid"

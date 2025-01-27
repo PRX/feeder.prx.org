@@ -630,6 +630,11 @@ en:
       media_not_ready: Audio not ready
       notice: Episode updated
   episode_media:
+      title:
+        enclosure_override: Enclosure Override
+      help:
+        enclosure_override_url: UNIQUE HELP TEXT
+        enclosure_override_prefix: UNIQUE HELP TEXT
     form:
       confirm: Discard unsaved changes?
     form_main:
