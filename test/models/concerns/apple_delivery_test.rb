@@ -30,6 +30,17 @@ class AppleDeliveryTest < ActiveSupport::TestCase
       episode.apple_mark_as_not_delivered!
       assert episode.apple_needs_delivery?
     end
+
+    it "resets the apple delivery asset_processing_attempts" do
+      episode.apple_mark_as_delivered!
+      refute episode.apple_needs_delivery?
+
+      episode.apple_update_delivery_status(asset_processing_attempts: 1)
+      assert_equal 1, episode.apple_status.asset_processing_attempts
+
+      episode.apple_mark_as_not_delivered!
+      assert_equal 0, episode.apple_status.asset_processing_attempts
+    end
   end
 
   describe "#apple_mark_as_delivered!" do
@@ -51,7 +62,7 @@ class AppleDeliveryTest < ActiveSupport::TestCase
   describe "#apple_mark_as_uploaded!" do
     it "sets the uploaded status" do
       episode.apple_mark_as_uploaded!
-      assert episode.apple_episode_delivery_status.uploaded
+      assert episode.apple_status.uploaded?
       refute episode.apple_needs_upload?
     end
 
@@ -65,7 +76,7 @@ class AppleDeliveryTest < ActiveSupport::TestCase
     let(:episode) { create(:episode) }
 
     it "creates a new status with incremented asset_processing_attempts" do
-      assert_difference -> { episode.apple_episode_delivery_statuses.count }, 1 do
+      assert_difference -> { episode.apple_statuses.count }, 1 do
         new_status = episode.apple_status.increment_asset_wait
         assert_equal 1, new_status.asset_processing_attempts
       end
@@ -91,8 +102,8 @@ class AppleDeliveryTest < ActiveSupport::TestCase
     end
 
     it "creates a new status with asset_processing_attempts set to 1 if no previous status exists" do
-      episode.apple_episode_delivery_statuses.destroy_all
-      assert_difference -> { episode.apple_episode_delivery_statuses.count }, 1 do
+      episode.apple_statuses.destroy_all
+      assert_difference -> { episode.apple_statuses.count }, 1 do
         new_status = episode.apple_status.increment_asset_wait
         assert_equal 1, new_status.asset_processing_attempts
       end
@@ -101,7 +112,7 @@ class AppleDeliveryTest < ActiveSupport::TestCase
     it "returns the new status" do
       result = episode.apple_status.increment_asset_wait
       assert_instance_of Apple::EpisodeDeliveryStatus, result
-      assert_equal episode.apple_episode_delivery_statuses.last, result
+      assert_equal episode.apple_statuses.last, result
     end
   end
 

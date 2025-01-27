@@ -185,7 +185,7 @@ describe Tasks::CopyMediaTask do
 
       task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:DurationDiscrepancy] = 1000
 
-      Task.stub_any_instance(:start!, true) do
+      Task.stub_any_instance(:porter_start!, true) do
         assert_difference("Tasks::FixMediaTask.count", 1) do
           task.update(status: "complete")
 
@@ -194,8 +194,47 @@ describe Tasks::CopyMediaTask do
 
           # latest task is now to fix
           assert_equal Tasks::FixMediaTask, task.media_resource.task.class
+          assert_equal "mp3", task.media_resource.task.options[:Tasks][0][:Format]
+          assert_equal "-acodec copy", task.media_resource.task.options[:Tasks][0][:FFmpeg][:OutputFileOptions]
         end
       end
+    end
+
+    it "runs a FixMediaTask if the audio was vbr" do
+      task.update(status: "created")
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:VariableBitrate] = true
+
+      Task.stub_any_instance(:porter_start!, true) do
+        assert_difference("Tasks::FixMediaTask.count", 1) do
+          task.update(status: "complete")
+
+          # status is still processing
+          assert_equal "processing", task.media_resource.status
+
+          # latest task is now to fix
+          assert_equal Tasks::FixMediaTask, task.media_resource.task.class
+          assert_equal "mp3", task.media_resource.task.options[:Tasks][0][:Format]
+          assert_equal "-b:a 192k", task.media_resource.task.options[:Tasks][0][:FFmpeg][:OutputFileOptions]
+        end
+      end
+    end
+  end
+
+  describe "#next_highest_bitrate" do
+    it "returns the next highest common bitrate" do
+      assert_equal 192, task.next_highest_bitrate
+
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = 195678
+      assert_equal 224, task.next_highest_bitrate
+
+      # 320 is the  max
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = 999999
+      assert_equal 320, task.next_highest_bitrate
+
+      # 128 is the default
+      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = nil
+      assert_equal 128, task.next_highest_bitrate
     end
   end
 end

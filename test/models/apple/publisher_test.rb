@@ -413,7 +413,7 @@ describe Apple::Publisher do
     it "should increment asset wait count for each episode" do
       episodes.each do |ep|
         assert_equal 0, ep.apple_episode_delivery_status.asset_processing_attempts
-        ep.feeder_episode.apple_mark_as_uploaded!
+        ep.feeder_episode.apple_episode_delivery_status.mark_as_uploaded!
       end
 
       apple_publisher.increment_asset_wait!(episodes)

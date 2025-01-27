@@ -15,6 +15,8 @@ module AppleDelivery
 
     alias_method :podcast_container, :apple_podcast_container
     alias_method :apple_status, :apple_episode_delivery_status
+    alias_method :apple_update_status, :apple_update_delivery_status
+    alias_method :apple_statuses, :apple_episode_delivery_statuses
   end
 
   def publish_to_apple?
@@ -30,31 +32,31 @@ module AppleDelivery
   end
 
   def apple_episode_delivery_status
-    apple_episode_delivery_statuses.order(created_at: :desc).first || build_initial_delivery_status
+    apple_statuses.order(created_at: :desc).first || build_initial_delivery_status
   end
 
   def apple_needs_delivery?
-    apple_episode_delivery_status.delivered == false
+    !apple_status.delivered?
   end
 
   def apple_needs_upload?
-    apple_episode_delivery_status.uploaded == false
-  end
-
-  def apple_mark_as_not_delivered!
-    apple_episode_delivery_status.mark_as_not_delivered!
+    !apple_status.uploaded?
   end
 
   def apple_mark_as_delivered!
-    apple_episode_delivery_status.mark_as_delivered!
+    apple_status.mark_as_delivered!
+  end
+
+  def apple_mark_as_not_delivered!
+    apple_update_status(delivered: false, asset_processing_attempts: 0)
   end
 
   def apple_mark_as_uploaded!
-    apple_episode_delivery_status.mark_as_uploaded!
+    apple_status.mark_as_uploaded!
   end
 
   def apple_mark_as_not_uploaded!
-    apple_episode_delivery_status.mark_as_not_uploaded!
+    apple_status.mark_as_not_uploaded!
   end
 
   def apple_prepare_for_delivery!
@@ -70,15 +72,7 @@ module AppleDelivery
   end
 
   def measure_asset_processing_duration
-    statuses = apple_episode_delivery_statuses.to_a
-
-    last_status = statuses.shift
-    return nil unless last_status&.asset_processing_attempts.to_i.positive?
-
-    start_status = statuses.find { |status| status.asset_processing_attempts.to_i.zero? }
-    return nil unless start_status
-
-    Time.now - start_status.created_at
+    Apple::EpisodeDeliveryStatus.measure_asset_processing_duration(apple_statuses)
   end
 
   def apple_episode

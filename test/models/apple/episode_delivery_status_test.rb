@@ -16,7 +16,7 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
         assert_difference "Apple::EpisodeDeliveryStatus.count", +1 do
           episode.apple_mark_as_not_delivered!
         end
-        assert_equal episode, episode.apple_episode_delivery_statuses.first.episode
+        assert_equal episode, episode.apple_statuses.first.episode
       end
     end
 
@@ -25,7 +25,7 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
         old_status = create(:apple_episode_delivery_status, episode: episode, created_at: 2.days.ago)
         new_status = create(:apple_episode_delivery_status, episode: episode, created_at: 1.day.ago)
 
-        assert_equal [new_status, old_status], episode.apple_episode_delivery_statuses.to_a
+        assert_equal [new_status, old_status], episode.apple_statuses.to_a
       end
     end
 
@@ -38,7 +38,7 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
 
     describe ".update_status" do
       it "creates a new status when none exists" do
-        episode.apple_episode_delivery_statuses.destroy_all
+        episode.apple_statuses.destroy_all
         assert_difference "Apple::EpisodeDeliveryStatus.count", 1 do
           Apple::EpisodeDeliveryStatus.update_status(episode, delivered: true)
         end
@@ -64,10 +64,10 @@ class Apple::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
         assert_equal "audio.mp3", new_status.source_filename
       end
 
-      it "resets the episode's apple_episode_delivery_statuses association" do
-        episode.apple_episode_delivery_statuses.load
+      it "resets the episode's apple_statuses association" do
+        episode.apple_statuses.load
         Apple::EpisodeDeliveryStatus.update_status(episode, delivered: true)
-        refute episode.apple_episode_delivery_statuses.loaded?
+        refute episode.apple_statuses.loaded?
       end
     end
 

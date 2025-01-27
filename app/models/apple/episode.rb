@@ -497,9 +497,9 @@ module Apple
     end
 
     def has_media_version?
-      return false unless delivery_status.present? && delivery_status.source_media_version_id.present?
+      return false unless apple_status.present? && apple_status.source_media_version_id.present?
 
-      delivery_status.source_media_version_id == feeder_episode.media_version_id
+      apple_status.source_media_version_id == feeder_episode.media_version_id
     end
 
     def needs_media_version?
@@ -571,9 +571,8 @@ module Apple
     alias_method :container, :podcast_container
     alias_method :deliveries, :podcast_deliveries
     alias_method :delivery_files, :podcast_delivery_files
-    alias_method :delivery_status, :apple_episode_delivery_status
-    alias_method :delivery_statuses, :apple_episode_delivery_statuses
     alias_method :apple_status, :apple_episode_delivery_status
+    alias_method :apple_statuses, :apple_episode_delivery_statuses
 
     # Delegate methods to feeder_episode
     def method_missing(method_name, *arguments, &block)
