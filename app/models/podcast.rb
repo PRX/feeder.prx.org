@@ -275,4 +275,14 @@ class Podcast < ApplicationRecord
       super
     end
   end
+
+  def subscribe_link_types
+    subscribe_links.map { |s| s.type }
+  end
+
+  def build_subscribe_links
+    SubscribeLink::TYPE_ABBREVIATIONS.keys.each do |key|
+      subscribe_links.build(type: key) unless subscribe_link_types.include?(key)
+    end
+  end
 end

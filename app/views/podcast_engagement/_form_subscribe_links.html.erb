@@ -6,7 +6,9 @@
 
     <div class="card-body">
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tempor justo eu tellus tincidunt, nec imperdiet metus tempus. Quisque feugiat fermentum ante ac mattis. Vestibulum sollicitudin suscipit purus, ut lobortis urna. Maecenas venenatis neque non interdum sagittis. Aliquam tempus sagittis diam vel suscipit. Nulla lacinia lectus sed libero molestie maximus. Vestibulum ex odio, lobortis id tristique eu, ornare id ex. Donec et egestas sapien.</p>
-      <%= form.fields_for :subscribe_links, podcast.subscribe_links, include_id: false do |fields| %>
+      <% podcast.build_subscribe_links %>
+
+      <%= form.fields_for :subscribe_links, podcast.subscribe_links do |fields| %>
         <hr>
         <div class="row">
           <div class="col-6 d-flex align-items-center">
@@ -26,6 +28,7 @@
             </div>
           </div>
         </div>
+        <%= fields.hidden_field :type %>
       <% end %>
     </div>
   </div>

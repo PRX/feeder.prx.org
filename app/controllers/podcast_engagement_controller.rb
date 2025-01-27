@@ -2,7 +2,6 @@ class PodcastEngagementController < ApplicationController
   before_action :set_podcast
 
   def show
-    build_subscribe_links
   end
 
   # PATCH/PUT /podcasts/1/engagement
@@ -31,12 +30,6 @@ class PodcastEngagementController < ApplicationController
     authorize @podcast
   end
 
-  def build_subscribe_links
-    @podcast.subscribe_links.build(type: "SubscribeLinks::Apple") unless @podcast.subscribe_links.include?(SubscribeLink.where(type: "SubscribeLinks::Apple"))
-
-    @podcast.subscribe_links.build(type: "SubscribeLinks::Spotify") unless @podcast.subscribe_links.include?(SubscribeLink.where(type: "SubscribeLinks::Spotify"))
-  end
-
   # Only allow a list of trusted parameters through.
 
   ### TODO include params for socmed and podcast apps
@@ -44,7 +37,8 @@ class PodcastEngagementController < ApplicationController
     nilify params.fetch(:podcast, {}).permit(
       :lock_version,
       :donation_url,
-      :payment_pointer
+      :payment_pointer,
+      subscribe_links_attributes: %i[id enabled external_id type]
     )
   end
 end

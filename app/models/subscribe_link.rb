@@ -6,6 +6,8 @@ class SubscribeLink < ApplicationRecord
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
 
+  enum :type, TYPE_ABBREVIATIONS, prefix: true
+
   def label
     TYPE_ABBREVIATIONS[type]
   end
