@@ -1,6 +1,6 @@
 class SubscribeLinks::Spotify < SubscribeLink
 
-  def url
+  def href
     "https://open.spotify.com/#{external_id}"
   end
 end

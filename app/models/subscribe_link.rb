@@ -21,7 +21,4 @@ class SubscribeLink < ApplicationRecord
   def label
     TYPE_ABBREVIATIONS[type]
   end
-
-  def url
-  end
 end

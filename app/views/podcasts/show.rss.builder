@@ -107,10 +107,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
     end
 
     if @podcast.subscribe_links.present?
-      @podcast.subscribe_links.each do |slink|
-
-        xml.podcast(:follow, url: slink.url)
-      end
+      xml.podcast(:follow, url: "url to the json")
     end
 
     @episodes.each_with_index do |ep, index|
