@@ -18,8 +18,19 @@
       </template>
 
       <% if policy(podcast).update? %>
-        <div class="col-12">
-          <button type="button" class="btn btn-warning" data-action="">Add Link</button>
+        <div class="dropdown flex-grow-1">
+          <button class="btn btn-primary prx-btn-icon dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Add subscribe link
+          </button>
+          <ul class="dropdown-menu">
+            <% SubscribeLink::PLATFORM_HREFS.each do |platform| %>
+              <li>
+                <button class="dropdown-item" type="button">
+                  <%= platform[:platform] %>
+                </button>
+              </li>
+            <% end %>
+          </ul>
         </div>
       <% end %>
     </div>
