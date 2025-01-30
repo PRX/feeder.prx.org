@@ -343,6 +343,8 @@ en:
         categories: Categories
         clean_title: Clean Title
         description: Description
+        enclosure_override_prefix: Include Prefix?
+        enclosure_override_url: Enclosure Override URL
         embed_player_iframe: Embeddable Player IFrame
         embed_player_type: Player Style
         embed_player_types:
@@ -630,11 +632,10 @@ en:
       media_not_ready: Audio not ready
       notice: Episode updated
   episode_media:
-      title:
-        enclosure_override: Enclosure Override
-      help:
-        enclosure_override_url: UNIQUE HELP TEXT
-        enclosure_override_prefix: UNIQUE HELP TEXT
+    enclosure_override:
+      enclosure_override_prefix_hint: UNIQUE HELP TEXT
+      enclosure_override_url_hint: UNIQUE HELP TEXT
+      title: Enclosure Override
     form:
       confirm: Discard unsaved changes?
     form_main:
