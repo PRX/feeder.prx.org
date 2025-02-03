@@ -11,8 +11,8 @@
         <%= render "form_subscribe_link", form: fields %>
       <% end %>
 
-      <template>
-        <%= form.fields_for :subscribe_links, podcast.subscribe_links.new(), child_index: "NEW_RECORD" do |fields| %>
+      <template data-subscribe-links-target="template">
+        <%= form.fields_for :subscribe_links, podcast.subscribe_links.new(platform: "NEW_PLATFORM"), child_index: "NEW_RECORD" do |fields| %>
           <%= render "form_subscribe_link", form: fields %>
         <% end %>
       </template>
@@ -23,10 +23,10 @@
             Add subscribe link
           </button>
           <ul class="dropdown-menu">
-            <% SubscribeLink::PLATFORM_HREFS.each do |platform| %>
+            <% SubscribeLink::PLATFORMS.each do |p| %>
               <li>
-                <button class="dropdown-item" type="button">
-                  <%= platform[:platform] %>
+                <button class="dropdown-item" type="button" data-action="subscribe-links#addLink" value="<%= p %>">
+                  <%= t(".labels.#{p}") %>
                 </button>
               </li>
             <% end %>

@@ -1128,12 +1128,28 @@ en:
       labels:
         apple: Apple Podcasts
         spotify: Spotify
+        overcast: Overcast
+        pocketcasts: Pocket Casts
+        youtube: Youtube Music
       ids:
         apple: Apple ID
         spotify: Spotify Show ID
       help:
         apple: Using your Apple ID, we will be able to look up your podcast wherever your podcast is found and display a list of subscription links to users using the PRX Embeddable Player. Please select the podcast players to display when possible.
         spotify: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tempor justo eu tellus tincidunt, nec imperdiet metus tempus. Quisque feugiat fermentum ante ac mattis. Vestibulum sollicitudin suscipit purus, ut lobortis urna. Maecenas venenatis neque non interdum sagittis. Aliquam tempus sagittis diam vel suscipit. Nulla lacinia lectus sed libero molestie maximus. Vestibulum ex odio, lobortis id tristique eu, ornare id ex. Donec et egestas sapien.
+    form_subscribe_link:
+      labels:
+        apple: Apple Podcasts
+        spotify: Spotify
+        overcast: Overcast
+        pocketcasts: Pocket Casts
+        youtube: Youtube Music
+      ids:
+        apple: Apple Podcasts
+        spotify: Spotify
+        overcast: Overcast
+        pocketcasts: Pocket Casts
+        youtube: Youtube Music
     show:
       title: "%{title} - Engagement"
     update:
