@@ -105,4 +105,16 @@ describe Podcast do
       end
     end
   end
+
+  describe "subscribe links" do
+    it "can only have one of each link platform" do
+      podcast.subscribe_links.create(platform: "apple", podcast: podcast, external_id: "12345")
+      podcast.subscribe_links.create(platform: "spotify", podcast: podcast, external_id: "12345")
+      podcast.save!
+      assert podcast.valid?
+
+      podcast.subscribe_links.create(platform: "apple", podcast: podcast, external_id: "54321")
+      refute podcast.valid?
+    end
+  end
 end
