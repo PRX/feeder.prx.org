@@ -633,8 +633,8 @@ en:
       notice: Episode updated
   episode_media:
     enclosure_override:
-      enclosure_override_prefix_hint: UNIQUE HELP TEXT
-      enclosure_override_url_hint: UNIQUE HELP TEXT
+      enclosure_override_prefix_hint: Enable to add the feed's enclosure prefix to the enclosure override url.
+      enclosure_override_url_hint: Specify the full URL to use as the enclosure/media url for this episode.
       title: Enclosure Override
     form:
       confirm: Discard unsaved changes?
