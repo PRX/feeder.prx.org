@@ -6,7 +6,7 @@ class SubscribeLink < ApplicationRecord
     "spotify" => "https://open.spotify.com/{external_id}",
     "overcast" => "https://overcast.fm/itunes{external_id}",
     "pocketcasts" => "https://pca.st/itunes/{external_id}",
-    "youtube" => "https://music.youtube.com/playlist?list={external_id}",
+    "youtube" => "https://music.youtube.com/playlist?list={external_id}"
   }
 
   APPLE_PLATFORMS = %w[apple overcast pocketcasts]

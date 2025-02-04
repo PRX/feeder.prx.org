@@ -4,7 +4,7 @@ class SubscribeLinkPolicy < ApplicationPolicy
   end
 
   def update?
-    true
+    PodcastPolicy.new(token, resource.podcast).update?
   end
 
   def destroy?
