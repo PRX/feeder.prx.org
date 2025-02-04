@@ -101,4 +101,20 @@ module PodcastsHelper
       language
     end
   end
+
+  def subscribe_link_platform_label(link)
+    I18n.t("helpers.label.podcast.subscribe_link.#{link.platform}")
+  end
+
+  def subscribe_link_id_label(link)
+    if link.uses_apple_id?
+      I18n.t("helpers.label.podcast.subscribe_link.id.apple")
+    elsif link.uses_unique_id?
+      I18n.t("helpers.label.podcast.subscribe_link.id.unique", platform: subscribe_link_platform_label(link))
+    end
+  end
+
+  def subscribe_link_enabled_label(link)
+    I18n.t("helpers.label.podcast.subscribe_link.enabled", platform: subscribe_link_platform_label(link))
+  end
 end

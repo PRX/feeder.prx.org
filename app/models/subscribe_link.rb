@@ -19,4 +19,12 @@ class SubscribeLink < ApplicationRecord
   scope :with_platform_id, -> { where(platform: UNIQUE_PLATFORMS) }
 
   validates :external_id, presence: true
+
+  def uses_apple_id?
+    APPLE_PLATFORMS.include?(platform)
+  end
+
+  def uses_unique_id?
+    UNIQUE_PLATFORMS.include?(platform)
+  end
 end

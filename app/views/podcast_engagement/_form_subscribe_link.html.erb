@@ -1,18 +1,18 @@
-<div class="col-12 mb-3 d-flex gap-3 align-items-top">
-  <div class="col-6 d-flex align-items-center">
-    <div class="form-floating input-group flex-grow-1">
-      <%= form.text_field :external_id %>
-      <%= form.label :external_id, t(".ids.#{form.object.platform}") %>
-      <%= field_help_text t(".help.#{form.object.platform}") %>
-    </div>
-  </div>
+<div class="col-12 mb-3 d-flex align-items-top">
   <div class="col-6 d-flex align-items-center">
     <div class="form-check flex-grow-1">
       <%= form.check_box :enabled %>
       <div class="d-flex align-items-center">
-        <%= form.label :enabled, "enabled" %>
+        <%= form.label :enabled, subscribe_link_enabled_label(form.object) %>
         <span class="p-0 ms-1 material-icons">group</span>
       </div>
+    </div>
+  </div>
+  <div class="col-6 d-flex align-items-center">
+    <div class="form-floating input-group flex-grow-1">
+      <%= form.text_field :external_id %>
+      <%= form.label :external_id, subscribe_link_id_label(form.object) %>
+      <%= field_help_text t(".help.#{form.object.platform}") %>
     </div>
   </div>
 </div>

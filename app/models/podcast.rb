@@ -291,7 +291,7 @@ class Podcast < ApplicationRecord
 
     if dupes.any?
       dupes.each do |p|
-        errors.add(:podcast, "cannot have more than one #{p} link")
+        errors.add(:podcast, "cannot have more than one #{I18n.t("helpers.label.podcast.subscribe_link.#{p}")} link")
       end
     end
   end

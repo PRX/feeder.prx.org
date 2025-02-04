@@ -486,6 +486,16 @@ en:
         serial_orders:
           false: Episodic
           true: Serial
+        subscribe_link:
+          apple: Apple Podcasts
+          spotify: Spotify
+          overcast: Overcast
+          pocketcasts: Pocket Casts
+          youtube: Youtube Music
+          id:
+            apple: Apple ID
+            unique: "%{platform} ID"
+          enabled: "Enable %{platform}"
         subtitle: Teaser
         title: Title
       podcast_player:

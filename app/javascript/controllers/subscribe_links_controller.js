@@ -5,9 +5,12 @@ export default class extends Controller {
 
   addLink(event) {
     const now = new Date().getTime()
-    console.log(event.target.value)
     const platform = event.target.value
-    const html = this.templateTarget.innerHTML.replaceAll("NEW_RECORD", now).replaceAll("NEW_PLATFORM", platform)
+
+    const template = this.templateTargets.filter((target) => {
+      return target.dataset.platform === platform
+    })
+    const html = template[0].innerHTML.replaceAll("NEW_RECORD", now).replaceAll("NEW_PLATFORM", platform)
     this.templateTarget.insertAdjacentHTML("beforeBegin", html)
   }
 }

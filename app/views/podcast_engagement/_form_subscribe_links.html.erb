@@ -17,11 +17,13 @@
         <%= render "form_subscribe_link", form: fields %>
       <% end %>
 
-      <template data-subscribe-links-target="template">
-        <%= form.fields_for :subscribe_links, podcast.subscribe_links.new(platform: "NEW_PLATFORM"), child_index: "NEW_RECORD" do |fields| %>
-          <%= render "form_subscribe_link", form: fields %>
-        <% end %>
-      </template>
+      <% SubscribeLink::PLATFORMS.each do |platform| %>
+        <template data-subscribe-links-target="template" data-platform="<%= platform %>">
+          <%= form.fields_for :subscribe_links, podcast.subscribe_links.new(platform: platform), child_index: "NEW_RECORD" do |fields| %>
+            <%= render "form_subscribe_link", form: fields %>
+          <% end %>
+        </template>
+      <% end %>
 
       <% if policy(podcast).update? %>
         <div class="dropdown flex-grow-1">
