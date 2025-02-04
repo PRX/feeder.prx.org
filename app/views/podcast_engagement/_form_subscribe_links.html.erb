@@ -1,11 +1,11 @@
 <div class="col-12 mb-4">
   <div class="card shadow border-0">
     <div class="card-header card-header-light d-flex justify-content-between">
-      <h2 class="card-title h5">Subscribe Links</h2>
+      <h2 class="card-title h5"><%= t(".title") %></h2>
     </div>
 
     <div class="card-body">
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tempor justo eu tellus tincidunt, nec imperdiet metus tempus. Quisque feugiat fermentum ante ac mattis. Vestibulum sollicitudin suscipit purus, ut lobortis urna. Maecenas venenatis neque non interdum sagittis. Aliquam tempus sagittis diam vel suscipit. Nulla lacinia lectus sed libero molestie maximus. Vestibulum ex odio, lobortis id tristique eu, ornare id ex. Donec et egestas sapien.</p>
+      <p><%= t(".description") %></p>
 
       <% if podcast.errors.messages[:podcast].present? %>
         <div class="alert alert-danger">
@@ -28,13 +28,13 @@
       <% if policy(podcast).update? %>
         <div class="dropdown flex-grow-1">
           <button class="btn btn-primary prx-btn-icon dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Add subscribe link
+            <%= t(".add") %>
           </button>
           <ul class="dropdown-menu">
             <% SubscribeLink::PLATFORMS.each do |p| %>
               <li>
                 <button class="dropdown-item" type="button" data-action="subscribe-links#addLink" data-platform="<%= p %>">
-                  <%= t(".labels.#{p}") %>
+                  <%= t("helpers.label.podcast.subscribe_link.#{p}") %>
                 </button>
               </li>
             <% end %>

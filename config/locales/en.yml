@@ -1134,32 +1134,12 @@ en:
     form_status:
       <<: *form_status
     form_subscribe_links:
-      title: Subscribe Links
-      labels:
-        apple: Apple Podcasts
-        spotify: Spotify
-        overcast: Overcast
-        pocketcasts: Pocket Casts
-        youtube: Youtube Music
-      ids:
-        apple: Apple ID
-        spotify: Spotify Show ID
+      title: Subscription Links
+      description: Please select which platforms you would like to display subscription links for users using the PRX Embeddable Player. Some platforms will require your Apple ID, while others require their own unique platform ID. We currently offer a limited selection of platforms and are working to add more in the future.
+      add: Add Subscription Link
       help:
-        apple: Using your Apple ID, we will be able to look up your podcast wherever your podcast is found and display a list of subscription links to users using the PRX Embeddable Player. Please select the podcast players to display when possible.
-        spotify: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tempor justo eu tellus tincidunt, nec imperdiet metus tempus. Quisque feugiat fermentum ante ac mattis. Vestibulum sollicitudin suscipit purus, ut lobortis urna. Maecenas venenatis neque non interdum sagittis. Aliquam tempus sagittis diam vel suscipit. Nulla lacinia lectus sed libero molestie maximus. Vestibulum ex odio, lobortis id tristique eu, ornare id ex. Donec et egestas sapien.
-    form_subscribe_link:
-      labels:
-        apple: Apple Podcasts
-        spotify: Spotify
-        overcast: Overcast
-        pocketcasts: Pocket Casts
-        youtube: Youtube Music
-      ids:
-        apple: Apple Podcasts
-        spotify: Spotify
-        overcast: Overcast
-        pocketcasts: Pocket Casts
-        youtube: Youtube Music
+        apple: This platform uses your Apple ID for lookup.
+        unique: This platform uses its unique platform ID for lookup.
     show:
       title: "%{title} - Engagement"
     update:
