@@ -7,6 +7,12 @@
     <div class="card-body">
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tempor justo eu tellus tincidunt, nec imperdiet metus tempus. Quisque feugiat fermentum ante ac mattis. Vestibulum sollicitudin suscipit purus, ut lobortis urna. Maecenas venenatis neque non interdum sagittis. Aliquam tempus sagittis diam vel suscipit. Nulla lacinia lectus sed libero molestie maximus. Vestibulum ex odio, lobortis id tristique eu, ornare id ex. Donec et egestas sapien.</p>
 
+      <% if podcast.errors.messages[:podcast].present? %>
+        <div class="alert alert-danger">
+          <%= podcast.errors.messages[:podcast].join(", ") %>
+        </div>
+      <% end %>
+
       <%= form.fields_for :subscribe_links do |fields| %>
         <%= render "form_subscribe_link", form: fields %>
       <% end %>
