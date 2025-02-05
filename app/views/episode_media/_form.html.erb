@@ -29,7 +29,9 @@
           <% else %>
             <%= render "form_contents", episode: episode, form: form %>
           <% end %>
-          <%= render "enclosure_override", episode: episode, form: form %>
+          <% if episode.override? %>
+            <%= render "enclosure_override", episode: episode, form: form %>
+          <% end %>
         </div>
       </div>
     </div>
