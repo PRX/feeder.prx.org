@@ -11,14 +11,6 @@ module EpisodeMedia
     # TODO: stop loading non-latest media versions
     scope :feed_ready, -> { includes(media_versions: :media_resources).select { |e| e.feed_ready? } }
 
-    has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
-    has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
-    has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
-    has_one :external_media_resource, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
-
-    accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
-    accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
-
     validate :validate_media_ready, if: :strict_validations
 
     after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
@@ -250,7 +242,7 @@ module EpisodeMedia
   end
 
   def override_processing?
-    override? && !external_media_ready?
+    !enclosure_override_url.blank? && !external_media_ready?
   end
 
   def override?
