@@ -26,10 +26,10 @@ class Episode < ApplicationRecord
   belongs_to :podcast, -> { with_deleted }, touch: true
 
   # See concerns/episode_media.rb for media/audio related code, e.g. the associations
-  # has_many :media_versions ...
-  # has_many :contents ...
-  # has_one :uncut ...
-  # has_one :external_media_resource ...
+  has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
+  has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  has_one :external_media_resource, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
 
   has_many :episode_imports
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
@@ -37,6 +37,8 @@ class Episode < ApplicationRecord
   has_one :ready_image, -> { complete_or_replaced.order("created_at DESC") }, class_name: "EpisodeImage"
   has_one :transcript, -> { order("created_at DESC") }, dependent: :destroy, inverse_of: :episode
 
+  accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
+  accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :transcript, allow_destroy: true, reject_if: ->(t) { t[:id].blank? && t[:original_url].blank? }
 
