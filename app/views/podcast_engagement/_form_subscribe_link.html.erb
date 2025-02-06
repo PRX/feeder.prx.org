@@ -4,7 +4,9 @@
       <%= form.check_box :enabled %>
       <div class="d-flex align-items-center">
         <%= form.label :enabled, subscribe_link_enabled_label(form.object) %>
-        <span class="p-0 ms-1 material-icons">group</span>
+        <div class="p-0 ms-2 d-flex align-items-center subscribe-icon">
+          <%= render "podcast_engagement/subscribe_icons/#{form.object.icon}", width: "1.5em", height: "1.5em" %>
+        </div>
       </div>
     </div>
   </div>

@@ -10,6 +10,15 @@ class SubscribeLink < ApplicationRecord
     "youtube_feed" => "https://music.youtube.com/library/podcasts?addrssfeed=${base64url(external_id}"
   }
 
+  PLATFORM_ICONS = {
+    "apple" => "apple",
+    "spotify" => "spotify",
+    "overcast" => "overcast",
+    "pocketcasts" => "pocketcasts",
+    "youtube" => "youtube",
+    "youtube_feed" => "youtube"
+  }
+
   APPLE_PLATFORMS = %w[apple overcast pocketcasts]
 
   UNIQUE_PLATFORMS = %w[spotify youtube]
@@ -34,5 +43,9 @@ class SubscribeLink < ApplicationRecord
 
   def uses_feed_url?
     FEED_PLATFORMS.include?(platform)
+  end
+
+  def icon
+    PLATFORM_ICONS[platform]
   end
 end
