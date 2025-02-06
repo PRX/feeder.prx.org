@@ -139,4 +139,14 @@ module PodcastsHelper
 
     SubscribeLink::PLATFORMS.filter { |p| !selected.include?(p) }
   end
+
+  def subscribe_link_external_id(podcast, platform)
+    if SubscribeLink::APPLE_PLATFORMS.include?(platform) && podcast.subscribe_links.with_apple_id.any?
+      podcast.subscribe_links.with_apple_id.first.external_id
+    elsif SubscribeLink::FEED_PLATFORMS.include?(platform)
+      podcast.public_url
+    else
+      ""
+    end
+  end
 end

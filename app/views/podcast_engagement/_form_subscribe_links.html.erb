@@ -19,7 +19,7 @@
 
       <% SubscribeLink::PLATFORMS.each do |platform| %>
         <template data-subscribe-links-target="template" data-platform="<%= platform %>">
-          <%= form.fields_for :subscribe_links, podcast.subscribe_links.new(platform: platform, external_id: (podcast.public_url if SubscribeLink::FEED_PLATFORMS.include?(platform))), child_index: "NEW_RECORD" do |fields| %>
+          <%= form.fields_for :subscribe_links, podcast.subscribe_links.new(platform: platform, external_id: subscribe_link_external_id(podcast, platform)), child_index: "NEW_RECORD" do |fields| %>
             <%= render "form_subscribe_link", form: fields %>
           <% end %>
         </template>
