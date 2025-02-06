@@ -111,6 +111,8 @@ module PodcastsHelper
       I18n.t("helpers.label.podcast.subscribe_link.id.apple")
     elsif link.uses_unique_id?
       I18n.t("helpers.label.podcast.subscribe_link.id.unique", platform: subscribe_link_platform_label(link))
+    elsif link.uses_feed_url?
+      I18n.t("helpers.label.podcast.subscribe_link.id.feed")
     end
   end
 
@@ -123,6 +125,18 @@ module PodcastsHelper
       I18n.t("podcast_engagement.form_subscribe_links.help.apple")
     elsif link.uses_unique_id?
       I18n.t("podcast_engagement.form_subscribe_links.help.unique")
+    elsif link.uses_feed_url?
+      I18n.t("podcast_engagement.form_subscribe_links.help.feed")
     end
+  end
+
+  def subscribe_link_feed_url(link)
+    link.podcast.public_url
+  end
+
+  def subscribe_link_options(podcast)
+    selected = podcast.subscribe_links.select(&:persisted?).map { |sl| sl.platform }
+
+    SubscribeLink::PLATFORMS.filter { |p| !selected.include?(p) }
   end
 end

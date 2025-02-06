@@ -10,7 +10,7 @@
   </div>
   <div class="col-6 d-flex align-items-center">
     <div class="form-floating input-group flex-grow-1">
-      <%= form.text_field :external_id %>
+      <%= form.text_field :external_id, disabled: form.object.uses_feed_url? && form.object.persisted? %>
       <%= form.label :external_id, subscribe_link_id_label(form.object) %>
       <%= field_help_text subscribe_link_help(form.object) %>
     </div>

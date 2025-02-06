@@ -441,7 +441,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
     t.datetime "updated_at", null: false
     t.bigint "podcast_id"
     t.boolean "enabled"
-    t.integer "external_id"
+    t.string "external_id"
     t.string "platform"
     t.index ["podcast_id"], name: "index_subscribe_links_on_podcast_id"
   end

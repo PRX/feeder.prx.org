@@ -492,9 +492,11 @@ en:
           overcast: Overcast
           pocketcasts: Pocket Casts
           youtube: Youtube Music
+          youtube_feed: Youtube Music (feed)
           id:
             apple: Apple ID
             unique: "%{platform} ID"
+            feed: Feed URL
           enabled: "Enable %{platform}"
         subtitle: Teaser
         title: Title
@@ -1140,6 +1142,7 @@ en:
       help:
         apple: This platform uses your Apple ID for lookup.
         unique: This platform uses its unique platform ID for lookup.
+        feed: This platform uses your public feed URL for lookup.
     show:
       title: "%{title} - Engagement"
     update:
