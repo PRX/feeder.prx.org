@@ -6,7 +6,7 @@
   <%= form.submit class: "d-none" %>
 
   <%# turbo_frame_tag "podcast-engagement" do %>
-    <div class="row my-4 mx-2" data-controller="subscribe-links">
+    <div class="row my-4 mx-2" data-controller="subscribe-links" data-subscribe-links-unsaved-outlet="form">
       <div class="col-lg-8">
         <div class="row">
           <%= render "form_main", podcast: podcast, form: form %>

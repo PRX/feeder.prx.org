@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static outlets = ["unsaved"]
   static targets = ["template"]
 
   addLink(event) {
@@ -12,5 +13,19 @@ export default class extends Controller {
     })
     const html = template[0].innerHTML.replaceAll("NEW_RECORD", now)
     this.templateTarget.insertAdjacentHTML("beforeBegin", html)
+  }
+
+  removeLink(event) {
+    const container = event.currentTarget.parentElement
+    container.classList.add("d-none")
+
+    const destroy = container.querySelector("input[name*='_destroy']")
+    destroy.value = true
+    this.unsavedOutlet.change({ target: destroy })
+  }
+
+  nukeLink(event) {
+    event.currentTarget.parentElement.remove()
+    this.unsavedOutlet.change()
   }
 }

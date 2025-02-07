@@ -38,7 +38,7 @@ class PodcastEngagementController < ApplicationController
       :lock_version,
       :donation_url,
       :payment_pointer,
-      subscribe_links_attributes: %i[id enabled external_id platform]
+      subscribe_links_attributes: %i[id enabled external_id platform _destroy]
     )
   end
 end
