@@ -1,13 +1,14 @@
 class SubscribeLink < ApplicationRecord
-  PLATFORMS = %w[apple spotify overcast pocketcasts youtube youtube_feed].freeze
+  PLATFORMS = %w[apple spotify overcast pocketcasts youtube youtube_feed amazon].freeze
 
   PLATFORM_HREFS = {
-    "apple" => "https://podcasts.apple.com/podcast/id{external_id}",
-    "spotify" => "https://open.spotify.com/{external_id}",
-    "overcast" => "https://overcast.fm/itunes{external_id}",
-    "pocketcasts" => "https://pca.st/itunes/{external_id}",
-    "youtube" => "https://music.youtube.com/playlist?list={external_id}",
-    "youtube_feed" => "https://music.youtube.com/library/podcasts?addrssfeed=${base64url(external_id}"
+    "apple" => "https://podcasts.apple.com/podcast/id${external_id}",
+    "spotify" => "https://open.spotify.com/${external_id}",
+    "overcast" => "https://overcast.fm/itunes${external_id}",
+    "pocketcasts" => "https://pca.st/itunes/${external_id}",
+    "youtube" => "https://music.youtube.com/playlist?list=${external_id}",
+    "youtube_feed" => "https://music.youtube.com/library/podcasts?addrssfeed=${base64url$(external_id}",
+    "amazon" => "https://music.amazon.com/podcasts/${external_id}"
   }
 
   PLATFORM_ICONS = {
@@ -16,12 +17,15 @@ class SubscribeLink < ApplicationRecord
     "overcast" => "overcast",
     "pocketcasts" => "pocketcasts",
     "youtube" => "youtube",
-    "youtube_feed" => "youtube"
+    "youtube_feed" => "youtube",
+    "amazon" => "generic"
   }
+
+  COMMON_PLATFORMS = %w[apple spotify overcast pocketcasts youtube youtube_feed]
 
   APPLE_PLATFORMS = %w[apple overcast pocketcasts]
 
-  UNIQUE_PLATFORMS = %w[spotify youtube]
+  UNIQUE_PLATFORMS = %w[spotify youtube amazon]
 
   FEED_PLATFORMS = %w[youtube_feed]
 

@@ -493,6 +493,7 @@ en:
           pocketcasts: Pocket Casts
           youtube: Youtube Music
           youtube_feed: Youtube Music (feed)
+          amazon: Amazon Music
           id:
             apple: Apple ID
             unique: "%{platform} ID"
