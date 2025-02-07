@@ -494,11 +494,50 @@ en:
           youtube: Youtube Music
           youtube_feed: Youtube Music (feed)
           amazon: Amazon Music
+          antenna: AntennaPod
+          anytime: Anytime Player
+          apollo: Apollo
+          breez: Breez
+          castamatic: Castamatic
+          castbox: Castbox
+          castro: Castro
+          curiocaster: CurioCaster
+          deezer: Deezer
+          fountain: Fountain
+          global: Global Player
+          goodpods: Goodpods
+          gpodder: gPodder
+          hark: Hark
+          iheart: iHeartRadio
+          lnbeats: LN Beats
+          luminary: Luminary
+          moon: Moon FM
+          pandora: Pandora
+          player: Player FM
+          podbean: Podbean
+          podaddict: Podcast Addict
+          podapp: Podcast App
+          podguru_apple: Podcast Guru (Apple)
+          podguru_feed: Podcast Guru (Feed)
+          podrepublic: Podcast Republic
+          podfriend: Podfriend
+          podlp_apple: PodLP (Apple)
+          podlp_guid: PodLP (Podcast GUID)
+          podstation: podStation
+          podurama: Podurama
+          podverse: Podverse
+          snipd: Snipd
+          sonnet: Sonnet
+          steno: Steno.fm
+          truefans: TrueFans
+          tunein: TuneIn
           id:
             apple: Apple ID
             unique: "%{platform} ID"
             feed: Feed URL
-          enabled: "Enable %{platform}"
+            guid: Podcast GUID
+            pod_index: Podcast Index Show ID
+          enabled: "%{platform}"
         subtitle: Teaser
         title: Title
       podcast_player:
@@ -1144,6 +1183,8 @@ en:
         apple: This platform uses your Apple ID for lookup.
         unique: This platform uses its unique platform ID for lookup.
         feed: This platform uses your public feed URL for lookup.
+        guid: This platform uses your podcast GUID for lookup.
+        pod_index: This platform uses your Podcast Index Show ID for lookup.
     show:
       title: "%{title} - Engagement"
     update:

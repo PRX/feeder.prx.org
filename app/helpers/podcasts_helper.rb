@@ -113,11 +113,11 @@ module PodcastsHelper
       I18n.t("helpers.label.podcast.subscribe_link.id.unique", platform: subscribe_link_platform_label(link))
     elsif link.uses_feed_url?
       I18n.t("helpers.label.podcast.subscribe_link.id.feed")
+    elsif link.uses_podcast_guid?
+      I18n.t("helpers.label.podcast.subscribe_link.id.guid")
+    elsif link.uses_pod_index_id?
+      I18n.t("helpers.label.podcast.subscribe_link.id.pod_index")
     end
-  end
-
-  def subscribe_link_enabled_label(link)
-    I18n.t("helpers.label.podcast.subscribe_link.enabled", platform: subscribe_link_platform_label(link))
   end
 
   def subscribe_link_help(link)
@@ -127,6 +127,10 @@ module PodcastsHelper
       I18n.t("podcast_engagement.form_subscribe_links.help.unique")
     elsif link.uses_feed_url?
       I18n.t("podcast_engagement.form_subscribe_links.help.feed")
+    elsif link.uses_podcast_guid?
+      I18n.t("podcast_engagement.form_subscribe_links.help.guid")
+    elsif link.uses_pod_index_id?
+      I18n.t("podcast_engagement.form_subscribe_links.help.pod_index")
     end
   end
 
