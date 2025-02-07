@@ -149,6 +149,16 @@ module PodcastsHelper
       podcast.subscribe_links.with_apple_id.first.external_id
     elsif SubscribeLink::FEED_PLATFORMS.include?(platform)
       podcast.public_url
+    elsif SubscribeLink::GUID_PLATFORMS.include?(platform)
+      podcast.guid
+    else
+      ""
+    end
+  end
+
+  def apple_id_target(link)
+    if SubscribeLink::APPLE_PLATFORMS.include?(link.platform)
+      "applefill"
     else
       ""
     end

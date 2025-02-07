@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static outlets = ["unsaved"]
-  static targets = ["template"]
+  static targets = ["template", "apple", "applefill"]
 
   addLink(event) {
     const now = new Date().getTime()
@@ -27,5 +27,12 @@ export default class extends Controller {
   nukeLink(event) {
     event.currentTarget.parentElement.remove()
     this.unsavedOutlet.change()
+  }
+
+  populateApple() {
+    this.applefillTargets.forEach((target) => {
+      target.value = this.appleTarget.value
+      target.classList.remove("form-control-blank")
+    })
   }
 }

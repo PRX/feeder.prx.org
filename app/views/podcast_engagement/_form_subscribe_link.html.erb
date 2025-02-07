@@ -11,7 +11,7 @@
   </div>
   <div class="d-flex align-items-center">
     <div class="form-floating input-group flex-grow-1">
-      <%= form.text_field :external_id, disabled: form.object.uses_feed_url? && form.object.persisted? %>
+      <%= form.text_field :external_id, data: {subscribe_links_target: apple_id_target(form.object)} %>
       <%= form.label :external_id, subscribe_link_id_label(form.object) %>
       <%= field_help_text subscribe_link_help(form.object) %>
     </div>
