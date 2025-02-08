@@ -22,17 +22,16 @@ module EpisodeMedia
 
     # media must be complete on _initial_ publish
     # otherwise - having files in any status is good enough
-    is_ready =
-      if published_at_was.blank?
-        media_ready?(true) || override_ready?(true)
-      elsif medium_uncut?
-        uncut.present? && !uncut.marked_for_destruction?
-      else
-        media_ready?(false) || override_ready?(false)
-      end
-
-    unless is_ready
+    unless enclosure_ready?(published_at_was.blank?)
       errors.add(:base, :media_not_ready, message: "media not ready")
+    end
+  end
+
+  def enclosure_ready?(must_be_complete = true)
+    if override?
+      override_ready?(must_be_complete)
+    else
+      media_ready?(must_be_complete)
     end
   end
 
@@ -87,7 +86,11 @@ module EpisodeMedia
   end
 
   def feed_ready?
-    !media? || complete_media? || override_ready?
+    if override?
+      override_ready?
+    else
+      !media? || complete_media?
+    end
   end
 
   def cut_media_version!
@@ -96,7 +99,7 @@ module EpisodeMedia
     latest_ids = latest_media.map(&:id)
 
     # backfill media_versions for newly completed media
-    if media_ready? && latest_ids != media_ids
+    if media_ready?(true) && latest_ids != media_ids
       new_version = media_versions.build
       media.each { |m| new_version.media_version_resources.build(media_resource: m) }
       new_version.save!
@@ -204,15 +207,43 @@ module EpisodeMedia
     end
   end
 
+  # 1) must_be_complete or not
+  # that is called with "true" in 2 places
+  # - in checking valid on 1st time publish
+  # - displaying "complete" for status
+  # So really this is about 1st time, must be fully ready,
+  # as there is no prior published media version to fall back on?
+  # And for status display or api responses, are media in the current version done?
+  #
+  # 2) override or not
+  # If there is an override, that is the only status to check
+  # We need a (different?) method to check contents ready for media versions
+  # but if an override is provided, we don't look at uploaded media status (uncut or contents)
+  #
+  # 3) enough segments
+  # Do we have enough media files for the segment count?
+  # That should get checked regardless of must_be_complete
+  #
+  # 4) uncut present
+  # If this is not must_be_complete, then
+  # If a single file upload, is there file uploaded, that isn't marked deleted
+  #
+  # 5) TODO: invalid or error status?
+  # should counts of files include invalid/error status files?
+  # should it be ready if any files is in error or invalid state?
   def media_ready?(must_be_complete = true)
-    if media.empty?
+    if !must_be_complete && medium_uncut?
+      uncut.present? && !uncut.marked_for_destruction?
+    elsif media.empty?
       false
-    elsif must_be_complete && !media.all?(&:status_complete?)
+    elsif segment_count.nil? && (media.size < media.map(&:position).max)
       false
-    elsif segment_count.nil?
-      media.size == media.map(&:position).max
+    elsif media.size < segment_count.to_i
+      false
+    elsif must_be_complete
+      media.all?(&:status_complete?)
     else
-      media.size >= segment_count
+      true
     end
   end
 
@@ -222,14 +253,17 @@ module EpisodeMedia
     else
       media.map(&:status).uniq
     end
+
     if !(%w[started created processing retrying] & states).empty?
       "processing"
     elsif states.any? { |s| s == "error" }
       "error"
     elsif states.any? { |s| s == "invalid" }
       "invalid"
-    elsif media_ready? || override_ready?
+    elsif enclosure_ready?(true)
       "complete"
+    else
+      "incomplete"
     end
   end
 
@@ -238,7 +272,15 @@ module EpisodeMedia
   end
 
   def override_ready?(must_be_complete = true)
-    override? && external_media_ready?(must_be_complete)
+    if override?
+      if must_be_complete
+        external_media_ready?(must_be_complete)
+      else
+        !enclosure_override_url.blank?
+      end
+    else
+      false
+    end
   end
 
   def override_processing?

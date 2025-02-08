@@ -538,7 +538,7 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     end
 
     it "handles empty contents" do
-      assert_nil build_stubbed(:episode, contents: []).media_status
+      assert_equal "incomplete", build_stubbed(:episode, contents: []).media_status
     end
   end
 
