@@ -162,19 +162,16 @@ class EpisodeMediaTest < ActiveSupport::TestCase
         episode.enclosure_override_url = url
         assert episode.override?
         refute episode.override_ready?
-        refute episode.external_media_ready?
         refute episode.feed_ready?
 
         episode.build_external_media_resource(status: "processing", original_url: url)
         assert episode.override_processing?
         refute episode.override_ready?
-        refute episode.external_media_ready?
         refute episode.feed_ready?
 
         episode.build_external_media_resource(status: "complete", original_url: url)
         refute episode.override_processing?
         assert episode.override_ready?
-        assert episode.external_media_ready?
         assert episode.feed_ready?
       end
     end
