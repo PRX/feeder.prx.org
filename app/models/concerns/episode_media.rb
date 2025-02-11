@@ -14,7 +14,7 @@ module EpisodeMedia
     validate :validate_media_ready, if: :strict_validations
 
     after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
-    after_save :analyze_external_media
+    after_save :create_external_media
   end
 
   def validate_media_ready
@@ -287,7 +287,7 @@ module EpisodeMedia
     medium_override? || !enclosure_override_url.blank?
   end
 
-  def analyze_external_media
+  def create_external_media
     if enclosure_override_url.blank?
       external_media_resource&.destroy
     elsif enclosure_override_url != external_media_resource&.original_url
