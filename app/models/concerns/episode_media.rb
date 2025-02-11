@@ -274,7 +274,7 @@ module EpisodeMedia
   def override_ready?(must_be_complete = true)
     if override?
       if must_be_complete
-        external_media_ready?(must_be_complete)
+        external_media_resource&.status_complete?
       else
         !enclosure_override_url.blank?
       end
@@ -285,14 +285,6 @@ module EpisodeMedia
 
   def override?
     medium_override? || !enclosure_override_url.blank?
-  end
-
-  def external_media_ready?(must_be_complete = true)
-    if must_be_complete
-      external_media_resource&.status_complete?
-    else
-      external_media_resource.present?
-    end
   end
 
   def analyze_external_media
