@@ -207,30 +207,16 @@ module EpisodeMedia
     end
   end
 
-  # 1) must_be_complete or not
-  # that is called with "true" in 2 places
-  # - in checking valid on 1st time publish
-  # - displaying "complete" for status
-  # So really this is about 1st time, must be fully ready,
-  # as there is no prior published media version to fall back on?
-  # And for status display or api responses, are media in the current version done?
+  # must_be_complete=true, is used for:
+  #  A) validating the episode Contents are ready-to-go on initial publish
+  #  B) helping DTR decide which (old/replaced or new) to serve, via the API "ready_media"
+  #  C) cut new media_versions, when all Contents are completed
   #
-  # 2) override or not
-  # If there is an override, that is the only status to check
-  # We need a (different?) method to check contents ready for media versions
-  # but if an override is provided, we don't look at uploaded media status (uncut or contents)
-  #
-  # 3) enough segments
-  # Do we have enough media files for the segment count?
-  # That should get checked regardless of must_be_complete
-  #
-  # 4) uncut present
-  # If this is not must_be_complete, then
-  # If a single file upload, is there file uploaded, that isn't marked deleted
-  #
-  # 5) TODO: invalid or error status?
-  # should counts of files include invalid/error status files?
-  # should it be ready if any files is in error or invalid state?
+  # otherwise, just check that this episodes has _enough_ media to stay published.
+  # and hopefully/eventually we'll finish processing it, and it will all be valid:
+  #  1) medium=audio ... must have enough files (handling segment_count=nil episodes)
+  #  2) medium=video ... same, but we enforce segment_count=1 elsewhere
+  #  3) medium=uncut ... must have a non-deleted Uncut, which we'll process/slice later
   def media_ready?(must_be_complete = true)
     if !must_be_complete && medium_uncut?
       uncut.present? && !uncut.marked_for_destruction?
