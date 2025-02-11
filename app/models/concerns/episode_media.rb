@@ -283,10 +283,6 @@ module EpisodeMedia
     end
   end
 
-  def override_processing?
-    !enclosure_override_url.blank? && !external_media_ready?
-  end
-
   def override?
     medium_override? || !enclosure_override_url.blank?
   end
