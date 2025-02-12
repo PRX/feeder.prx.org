@@ -24,8 +24,13 @@
         <div class="col-lg-12">
           <% if episode.medium_uncut? %>
             <%= render "form_uncut", episode: episode, form: form %>
+          <% elsif episode.medium_override? %>
+            <%# no uploads for overrides %>
           <% else %>
             <%= render "form_contents", episode: episode, form: form %>
+          <% end %>
+          <% if episode.override? %>
+            <%= render "enclosure_override", episode: episode, form: form %>
           <% end %>
         </div>
       </div>

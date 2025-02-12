@@ -21,8 +21,17 @@ class EnclosureUrlBuilder
     feed ||= podcast.default_feed
     prefix = feed.try(:enclosure_prefix)
 
-    url = base_enclosure_url(podcast, episode, feed)
-    enclosure_prefix_url(url, prefix)
+    base_url = if !episode.enclosure_override_url.blank?
+      episode.enclosure_override_url
+    else
+      base_enclosure_url(podcast, episode, feed)
+    end
+
+    if episode.enclosure_override_prefix
+      base_url
+    else
+      enclosure_prefix_url(base_url, prefix)
+    end
   end
 
   def base_enclosure_url(podcast, episode, feed)

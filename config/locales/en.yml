@@ -343,6 +343,8 @@ en:
         categories: Categories
         clean_title: Clean Title
         description: Description
+        enclosure_override_prefix: Include Prefix?
+        enclosure_override_url: Enclosure Override URL
         embed_player_iframe: Embeddable Player IFrame
         embed_player_type: Player Style
         embed_player_types:
@@ -381,6 +383,7 @@ en:
           audio: Audio - upload multiple audio files
           uncut: Audio - upload a single file and then segment
           video: Video
+          override: Override - specify external media url
         original_guid: GUID
         released_at: Dropdate
         released_at_date: Date
@@ -629,6 +632,10 @@ en:
       media_not_ready: Audio not ready
       notice: Episode updated
   episode_media:
+    enclosure_override:
+      enclosure_override_prefix_hint: Enable to add the feed's enclosure prefix to the enclosure override url.
+      enclosure_override_url_hint: Specify the full URL to use as the enclosure/media url for this episode.
+      title: Enclosure Override
     form:
       confirm: Discard unsaved changes?
     form_main:
