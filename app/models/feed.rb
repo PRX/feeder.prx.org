@@ -51,7 +51,7 @@ class Feed < ApplicationRecord
   validates :episode_offset_seconds, numericality: {equal_to: 0}, allow_nil: true, if: :default?
   validates :url, http_url: true
   validates :new_feed_url, http_url: true
-  validates :enclosure_prefix, http_url: true
+  validates :enclosure_prefix, http_url: true, redirect_prefix: {max_jumps: 6}, allow_blank: true
   validates :display_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :display_full_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :description, bytesize: {maximum: Episode::MAX_DESCRIPTION_BYTES}

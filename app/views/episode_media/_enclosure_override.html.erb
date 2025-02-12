@@ -1,0 +1,21 @@
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <h2 class="card-title h5"><%= t(".title") %></h2>
+    </div>
+    <div class="card-body">
+      <div class="form-floating input-group mb-2">
+        <%= form.text_field :enclosure_override_url %>
+        <%= form.label :enclosure_override_url, required: episode.medium_override? %>
+        <%= field_help_text t(".enclosure_override_url_hint") %>
+      </div>
+      <div class="form-check">
+        <%= form.check_box :enclosure_override_prefix %>
+        <div class="d-flex align-items-center">
+          <%= form.label :enclosure_override_prefix %>
+          <%= help_text t(".enclosure_override_prefix_hint") %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

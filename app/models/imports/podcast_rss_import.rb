@@ -112,6 +112,7 @@ class PodcastRssImport < PodcastImport
       status_complete!
     end
   rescue => err
+    reset_podcast if podcast.invalid?
     status_error!
     unlock_podcast_later!
     raise err
@@ -224,7 +225,10 @@ class PodcastRssImport < PodcastImport
 
     self.podcast ||= Podcast.new
     podcast.assign_attributes(**build_podcast_attributes)
-    update!(podcast: podcast)
+    if podcast.invalid?
+      podcast.restore_attributes(podcast.errors.attribute_names)
+    end
+    podcast.save!
 
     update_itunes_categories
     update_images

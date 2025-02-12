@@ -73,15 +73,7 @@ module AppleDelivery
   end
 
   def measure_asset_processing_duration
-    statuses = apple_episode_delivery_statuses.to_a
-
-    last_status = statuses.shift
-    return nil unless last_status&.asset_processing_attempts.to_i.positive?
-
-    start_status = statuses.find { |status| status.asset_processing_attempts.to_i.zero? }
-    return nil unless start_status
-
-    Time.now - start_status.created_at
+    Integrations::EpisodeDeliveryStatus.measure_asset_processing_duration(episode_delivery_statuses)
   end
 
   def apple_episode

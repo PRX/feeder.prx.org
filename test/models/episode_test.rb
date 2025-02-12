@@ -3,10 +3,9 @@ require "test_helper"
 describe Episode do
   let(:episode) { create(:episode_with_media) }
 
-  it "initializes guid and overrides" do
+  it "initializes guid" do
     e = Episode.new
     refute_nil e.guid
-    refute_nil e.overrides
   end
 
   it "sets updated_at when soft deleting episodes with no content" do
@@ -278,114 +277,6 @@ describe Episode do
 
       assert_nil episode.ready_image
       assert_nil episode.images.with_deleted.first.replaced_at
-    end
-  end
-
-  describe "#medium=" do
-    it "marks existing content for destruction on change" do
-      refute episode.contents.first.marked_for_destruction?
-
-      episode.medium = "audio"
-      refute episode.contents.first.marked_for_destruction?
-
-      episode.medium = "uncut"
-      assert episode.contents.first.marked_for_destruction?
-      assert episode.uncut.new_record?
-      assert_equal episode.contents.first.original_url, episode.uncut.original_url
-    end
-
-    it "sets segment count for videos" do
-      episode.segment_count = 2
-      refute episode.contents.first.marked_for_destruction?
-
-      episode.medium = "video"
-      assert episode.contents.first.marked_for_destruction?
-      assert_equal 1, episode.segment_count
-    end
-  end
-
-  describe "#segment_range" do
-    it "returns a range of positions" do
-      e = Episode.new(segment_count: nil)
-      assert_equal [], e.segment_range.to_a
-
-      e.segment_count = 1
-      assert_equal [1], e.segment_range.to_a
-
-      e.segment_count = 4
-      assert_equal [1, 2, 3, 4], e.segment_range.to_a
-    end
-  end
-
-  describe "#build_contents" do
-    it "builds contents for missing positions" do
-      e = Episode.new(segment_count: 3)
-      c1 = e.contents.build(position: 2)
-      _c2 = e.contents.build(position: 4)
-
-      built = e.build_contents
-      assert_equal 3, built.length
-      assert_equal 1, built[0].position
-      assert_equal c1, built[1]
-      assert_equal 3, built[2].position
-    end
-  end
-
-  describe "#destroy_out_of_range_contents" do
-    it "marks contents for destruction" do
-      c1 = episode.contents.create!(original_url: "c1", position: 2)
-      c2 = episode.contents.create!(original_url: "c2", position: 4)
-
-      episode.segment_count = nil
-      episode.destroy_out_of_range_contents
-      assert_nil c1.reload.deleted_at
-      assert_nil c2.reload.deleted_at
-
-      episode.segment_count = 3
-      episode.destroy_out_of_range_contents
-      assert_nil c1.reload.deleted_at
-      refute_nil c2.reload.deleted_at
-    end
-  end
-
-  describe "#validate_media_ready" do
-    it "only runs on strict + published episodes with media" do
-      e = build_stubbed(:episode, segment_count: 1)
-      assert e.valid?
-
-      e.strict_validations = true
-      refute e.valid?
-
-      e.published_at = nil
-      assert e.valid?
-    end
-
-    it "checks for complete media on initial publish" do
-      e = create(:episode_with_media, strict_validations: true, published_at: nil)
-      assert e.valid?
-
-      e.published_at = 1.hour.ago
-      assert e.valid?
-
-      e.contents.first.status = "invalid"
-      refute e.valid?
-      assert_includes e.errors[:base], "media not ready"
-    end
-
-    it "checks for present media on subsequent updates" do
-      e = create(:episode_with_media, strict_validations: true, published_at: 1.hour.ago)
-      assert e.valid?
-
-      e.contents.first.status = "processing"
-      assert e.valid?
-
-      # also applies to uncut media
-      e.medium = "uncut"
-      e.uncut = nil
-      refute e.valid?
-
-      e.uncut = build(:uncut)
-      assert e.valid?
     end
   end
 

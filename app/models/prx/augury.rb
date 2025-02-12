@@ -12,6 +12,7 @@ module Prx
     end
 
     def placements(podcast_id, options = {})
+      return nil unless ENV["AUGURY_HOST"].present?
       path = "#{API_PATH}/podcasts/#{podcast_id}/placements"
       expires = (options[:expiration] || expiration).to_i
       Rails.cache.fetch(path, expires_in: expires) { get(root, path) }
@@ -20,7 +21,9 @@ module Prx
     def get(root, path)
       api(root: root, account: "*").tap { |a| a.href = path }.get
     rescue HyperResource::ClientError, HyperResource::ServerError, NotImplementedError => e
-      Rails.logger.error("Error: GET #{path}", error: e.message)
+      unless e.message == "404"
+        Rails.logger.error("Error: GET #{path}", error: e.message)
+      end
       nil
     end
   end

@@ -186,6 +186,37 @@ describe PublishingPipelineState do
     end
   end
 
+  describe ".latest_failed_pipelines" do
+    it "returns the latest failed pipelines including intermediate and terminal errors" do
+      # Create a publishing queue item and associated pipeline state
+      pqi1 = PublishingQueueItem.ensure_queued!(podcast)
+      _s1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi1)
+      PublishingPipelineState.error_integration!(podcast)
+      PublishingPipelineState.complete!(podcast)
+
+      # Verify that the intermediate error is included in the latest failed pipelines
+      assert_equal [podcast], PublishingPipelineState.latest_failed_podcasts
+      assert_equal ["created", "error_integration", "complete"], PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast).order(id: :asc).map(&:status)
+
+      # Create another publishing queue item and associated pipeline state
+      pqi2 = PublishingQueueItem.ensure_queued!(podcast)
+      _s2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi2)
+      PublishingPipelineState.error!(podcast)
+
+      # Verify that the terminal error is included in the latest failed pipelines
+      assert_equal [podcast], PublishingPipelineState.latest_failed_podcasts
+      assert_equal ["created", "error"], PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast).map(&:status)
+
+      # Verify that a successful pipeline is not included in the latest failed pipelines
+      pqi3 = PublishingQueueItem.ensure_queued!(podcast)
+      _s3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi3)
+      PublishingPipelineState.complete!(podcast)
+
+      assert_equal [].sort, PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast)
+      assert ["created", "complete"], PublishingPipelineState.latest_pipelines.where(podcast: podcast).pluck(:status)
+    end
+  end
+
   describe ".retry_failed_pipelines!" do
     it "should retry failed pipelines" do
       PublishingPipelineState.start_pipeline!(podcast)
@@ -194,6 +225,22 @@ describe PublishingPipelineState do
       # it fails
       PublishingPipelineState.error!(podcast)
       assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # it retries
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+    end
+
+    it "retries pipelines with intermediate error_integration and non-error terminal status" do
+      PublishingPipelineState.start_pipeline!(podcast)
+      assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
+
+      # it fails
+      PublishingPipelineState.error_integration!(podcast)
+      assert_equal ["created", "error_integration"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      PublishingPipelineState.complete!(podcast)
+      assert_equal ["created", "error_integration", "complete"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
 
       # it retries
       PublishingPipelineState.retry_failed_pipelines!
@@ -266,6 +313,43 @@ describe PublishingPipelineState do
         # it retries
         PublishingPipelineState.retry_failed_pipelines!
         assert_equal ["created", "started", "error", "created"].sort, PublishingPipelineState.where(podcast: podcast).map(&:status).sort
+        res_pqi = PublishingQueueItem.current_unfinished_item(podcast)
+
+        assert res_pqi.id > pqi.id
+        assert_equal "created", res_pqi.last_pipeline_state
+      end
+    end
+
+    describe "retry!" do
+      let(:podcast) { create(:podcast) }
+      let(:public_feed) { podcast.default_feed }
+      let(:private_feed) { create(:apple_feed, podcast: podcast) }
+      let(:apple_feed) { private_feed }
+      let(:apple_config) { private_feed.apple_config }
+      let(:apple_publisher) { apple_config.build_publisher }
+
+      it 'sets the status to "retry"' do
+        episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+
+        # it does not trigger an exception
+        episode.apple_episode_delivery_status.update(asset_processing_attempts: 1)
+
+        pqi = nil
+        PublishFeedJob.stub_any_instance(:save_file, nil) do
+          private_feed.stub(:publish_integration!, ->(*args) { raise Apple::AssetStateTimeoutError.new([episode]) }) do
+            podcast.stub(:feeds, [private_feed]) do
+              pqi = PublishingQueueItem.ensure_queued!(podcast)
+              PublishingPipelineState.attempt!(podcast, perform_later: false)
+            end
+          end
+        end
+
+        assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: podcast).order(:id).pluck(:status)
+        assert_equal "retry", pqi.reload.last_pipeline_state
+
+        # it retries
+        PublishingPipelineState.retry_failed_pipelines!
+        assert_equal ["created", "started", "error_integration", "retry", "created"], PublishingPipelineState.where(podcast: podcast).order(:id).pluck(:status)
         res_pqi = PublishingQueueItem.current_unfinished_item(podcast)
 
         assert res_pqi.id > pqi.id

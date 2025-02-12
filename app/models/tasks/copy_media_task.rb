@@ -116,7 +116,7 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def porter_slice_task
-    output_opts = ["-map_metadata 0"]
+    output_opts = ["-map_metadata 0", "-c copy"]
     output_opts << "-ss #{media_resource.slice_start}" if media_resource.slice_start.present?
     output_opts << "-to #{media_resource.slice_end}" if media_resource.slice_end.present?
 
