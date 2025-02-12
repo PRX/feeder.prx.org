@@ -6,7 +6,12 @@ FactoryBot.define do
 
     after(:build) do |delivery_file, evaluator|
       api_response = build(:podcast_delivery_file_api_response, external_id: evaluator.external_id)
-      delivery_file.apple_sync_log = SyncLog.new(external_id: evaluator.external_id, feeder_type: :podcast_delivery_files, **api_response)
+      delivery_file.apple_sync_log = SyncLog.new(
+        integration: :apple,
+        external_id: evaluator.external_id,
+        feeder_type: :podcast_delivery_files,
+        **api_response
+      )
     end
   end
 end

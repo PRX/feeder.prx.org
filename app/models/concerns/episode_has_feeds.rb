@@ -24,7 +24,7 @@ module EpisodeHasFeeds
   def set_default_feeds
     if feeds.blank?
       self.feeds = (podcast&.feeds || []).filter_map do |feed|
-        feed if feed.default? || feed.apple?
+        feed if feed.default? || feed.integration_type
       end
     end
   end

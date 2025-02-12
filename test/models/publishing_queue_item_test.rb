@@ -95,9 +95,9 @@ describe PublishingQueueItem do
       assert_equal [].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
     end
 
-    it "includes intermediate states like error_apple" do
+    it "includes intermediate states like error_integration" do
       pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
-      PublishingPipelineState.error_apple!(podcast)
+      PublishingPipelineState.error_integration!(podcast)
 
       assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [pqi1].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
