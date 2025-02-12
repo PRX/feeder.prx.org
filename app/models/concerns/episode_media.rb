@@ -237,7 +237,7 @@ module EpisodeMedia
     states = if override?
       [external_media_resource&.status]
     else
-      media.map(&:status).uniq
+      ([uncut] + media).compact.map(&:status).uniq
     end
 
     if !(%w[started created processing retrying] & states).empty?
