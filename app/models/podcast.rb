@@ -4,8 +4,8 @@ class Podcast < ApplicationRecord
   FEED_ATTRS = %i[subtitle description url new_feed_url display_episodes_count
     display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image
     ready_feed_image ready_itunes_image ready_image itunes_category itunes_subcategory itunes_categories]
-  FEED_GETTERS = FEED_ATTRS.map { |s| [s, "#{s}_was".to_sym, "#{s}_changed?".to_sym] }.flatten
-  FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
+  FEED_GETTERS = FEED_ATTRS.map { |s| [s, :"#{s}_was", :"#{s}_changed?"] }.flatten
+  FEED_SETTERS = FEED_ATTRS.map { |s| :"#{s}=" }
 
   # https://github.com/Podcastindex-org/podcast-namespace/blob/main/docs/1.0.md#guid
   PODCAST_NAMESPACE = "ead4c236-bf58-58c6-a2c6-a6b28d128cb6".freeze
@@ -96,7 +96,7 @@ class Podcast < ApplicationRecord
   end
 
   def explicit=(value)
-    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
+    super(Podcast::EXPLICIT_ALIASES.fetch(value, value))
   end
 
   def publish_updated

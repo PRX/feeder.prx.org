@@ -12,7 +12,7 @@ class PodcastTimingsImport < PodcastImport
 
   def timings=(val)
     @csv = nil
-    super(val)
+    super
   end
 
   def csv

@@ -19,7 +19,7 @@ class ApplicationPolicy < Struct.new(:token, :resource)
 
   def authorized?(scope)
     if account_id_was.present? && account_id_was != account_id
-      token&.authorized?(account_id, scope) && token&.authorized?(account_id_was, scope)
+      token&.authorized?(account_id, scope) && token.authorized?(account_id_was, scope)
     else
       token&.authorized?(account_id, scope)
     end

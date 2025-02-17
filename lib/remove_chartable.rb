@@ -35,7 +35,7 @@ class RemoveChartable
       return prefix
     end
 
-    fixed = (prefix || "").gsub(/https:\//, "")
+    fixed = (prefix || "").gsub("https:/", "")
     fixed = if fixed.blank?
       "https://#{SWAP_FM_PREFIX}"
     else
@@ -53,7 +53,7 @@ class RemoveChartable
 
   def remove_chartable(prefix)
     # remove https:/ anywhere in the prefix (we'll put it back!)
-    fixed = (prefix || "").gsub(/https:\//, "")
+    fixed = (prefix || "").gsub("https:/", "")
 
     # remove the chartable prefix
     fixed = fixed.gsub(/(chrt\.fm|chtbl\.com)\/track\/\w+/, "")

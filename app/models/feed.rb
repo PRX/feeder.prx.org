@@ -267,6 +267,6 @@ class Feed < ApplicationRecord
   end
 
   def ready_image
-    @ready_image ||= (ready_feed_image || ready_itunes_image)
+    @ready_image ||= ready_feed_image || ready_itunes_image
   end
 end

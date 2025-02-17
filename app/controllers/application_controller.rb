@@ -59,7 +59,7 @@ class ApplicationController < ActionController::Base
     if request.headers["Turbo-Frame"]
       false
     else
-      super(jwt_ttl)
+      super
     end
   end
 
