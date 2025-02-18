@@ -13,16 +13,6 @@
         </div>
       <% end %>
 
-      <div class="d-flex align-items-center">
-        <div class="form-floating mb-4 me-2">
-          <input type="text" id="apple-id" class="form-control form-control-blank" data-subscribe-links-target="apple">
-          <label for="apple-id">Apple ID</label>
-        </div>
-        <div class="mb-4">
-          <button class="btn btn-primary prx-btn-icon" type="button" data-action="subscribe-links#populateApple">put all the apples</button>
-        </div>
-      </div>
-
       <%= form.fields_for :subscribe_links do |fields| %>
         <%= render "form_subscribe_link", form: fields %>
       <% end %>
@@ -42,11 +32,9 @@
           </button>
           <ul class="dropdown-menu">
             <% subscribe_link_options(podcast).each do |platform| %>
-              <li>
-                <button class="dropdown-item" type="button" data-action="subscribe-links#addLink" data-platform="<%= platform %>">
-                  <%= t("helpers.label.podcast.subscribe_link.#{platform}") %>
-                </button>
-              </li>
+              <button class="dropdown-item" type="button" data-action="subscribe-links#addLink" data-platform="<%= platform %>">
+                <%= t("helpers.label.podcast.subscribe_link.#{platform}") %>
+              </button>
             <% end %>
           </ul>
         </div>

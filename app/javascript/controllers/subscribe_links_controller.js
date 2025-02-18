@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static outlets = ["unsaved"]
-  static targets = ["template", "apple", "applefill"]
+  static targets = ["template"]
 
   addLink(event) {
     const now = new Date().getTime()
@@ -11,8 +11,10 @@ export default class extends Controller {
     const template = this.templateTargets.filter((target) => {
       return target.dataset.platform === platform
     })
-    const html = template[0].innerHTML.replaceAll("NEW_RECORD", now)
+    const html = template[0].innerHTML.replaceAll("NEW_RECORD", now).replaceAll("NEW_EXTERNAL_ID", "")
     this.templateTarget.insertAdjacentHTML("beforeBegin", html)
+    this.unsavedOutlet.change()
+    event.target.classList.add("d-none")
   }
 
   removeLink(event) {
@@ -27,12 +29,5 @@ export default class extends Controller {
   nukeLink(event) {
     event.currentTarget.parentElement.remove()
     this.unsavedOutlet.change()
-  }
-
-  populateApple() {
-    this.applefillTargets.forEach((target) => {
-      target.value = this.appleTarget.value
-      target.classList.remove("form-control-blank")
-    })
   }
 }

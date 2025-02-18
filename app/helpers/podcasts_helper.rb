@@ -152,15 +152,7 @@ module PodcastsHelper
     elsif SubscribeLink::GUID_PLATFORMS.include?(platform)
       podcast.guid
     else
-      ""
-    end
-  end
-
-  def apple_id_target(link)
-    if SubscribeLink::APPLE_PLATFORMS.include?(link.platform)
-      "applefill"
-    else
-      ""
+      "NEW_EXTERNAL_ID"
     end
   end
 end
