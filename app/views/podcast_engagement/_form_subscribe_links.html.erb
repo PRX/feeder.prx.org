@@ -26,17 +26,24 @@
       <% end %>
 
       <% if policy(podcast).update? %>
-        <div class="dropdown flex-grow-1">
-          <button class="btn btn-primary prx-btn-icon dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="mb-3">
+          <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#dropdownOptions" aria-expanded="false" aria-controls="dropdownOptions">
             <%= t(".add") %>
           </button>
-          <ul class="dropdown-menu">
-            <% subscribe_link_options(podcast).each do |platform| %>
-              <button class="dropdown-item" type="button" data-action="subscribe-links#addLink" data-platform="<%= platform %>">
-                <%= t("helpers.label.podcast.subscribe_link.#{platform}") %>
-              </button>
-            <% end %>
-          </ul>
+        </div>
+        <div id="dropdownOptions" class=" collapse" aria-labelledby="optionsHeader">
+          <div class="card card-body p-0">
+            <ul class="list-group list-group-flush">
+              <% subscribe_link_options(podcast).each do |option| %>
+                <button class="list-group-item list-group-item-action d-flex align-items-center" type="button" data-action="subscribe-links#addLink" data-platform="<%= option[:platform] %>">
+                  <%= t("helpers.label.podcast.subscribe_link.#{option[:platform]}") %>
+                  <div class="p-0 ms-2 d-flex align-items-center subscribe-icon">
+                    <%= render "icons/#{option[:icon]}", width: "1.5em", height: "1.5em" %>
+                  </div>
+                </button>
+              <% end %>
+            </ul>
+          </div>
         </div>
       <% end %>
     </div>

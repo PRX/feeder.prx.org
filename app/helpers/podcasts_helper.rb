@@ -141,7 +141,7 @@ module PodcastsHelper
   def subscribe_link_options(podcast)
     selected = podcast.subscribe_links.select(&:persisted?).map { |sl| sl.platform }
 
-    SubscribeLink::PLATFORMS.filter { |p| !selected.include?(p) }
+    SubscribeLink::PLATFORMS.filter { |p| !selected.include?(p) }.map { |p| {platform: p, icon: SubscribeLink::PLATFORM_ICONS[p]} }
   end
 
   def subscribe_link_external_id(podcast, platform)

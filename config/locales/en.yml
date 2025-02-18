@@ -1177,8 +1177,8 @@ en:
       <<: *form_status
     form_subscribe_links:
       title: Subscription Links
-      description: Please select which platforms you would like to display subscription links for users using the PRX Embeddable Player. Some platforms will require your Apple ID, while others require their own unique platform ID. We currently offer a limited selection of platforms and are working to add more in the future.
-      add: Add Subscription Link
+      description: Please select which platforms you would like to display subscription links for users using the PRX Embeddable Player. Platforms will require either your Apple ID, a unique platform ID, a feed URL, a podcast GUID, or a Podcast Index ID.
+      add: Add Subscription Links
       help:
         apple: This platform uses your Apple ID for lookup.
         unique: This platform uses its unique platform ID for lookup.
