@@ -7,7 +7,7 @@ class SubscribeLink < ApplicationRecord
     "overcast" => "https://overcast.fm/itunes${appleID}",
     "pocketcasts" => "https://pca.st/itunes/${appleID}",
     "youtube" => "https://music.youtube.com/playlist?list=${uniquePlatformID}",
-    "youtube_feed" => "https://music.youtube.com/library/podcasts?addrssfeed=${base64url$(feedURL}",
+    "youtube_feed" => "https://music.youtube.com/library/podcasts?addrssfeed=${base64url$(feedURL)}",
     "amazon" => "https://music.amazon.com/podcasts/${uniquePlatformID}",
     "antenna" => "https://antennapod.org/deeplink/subscribe?url=${feedURL}",
     "anytime" => "https://anytimeplayer.app/subscribe?url=${feedURL}",
@@ -107,7 +107,7 @@ class SubscribeLink < ApplicationRecord
 
   POD_INDEX_PLATFORMS = %w[curiocaster fountain podverse]
 
-  SLUG_PLATFORMS = %w[luminary podapp]
+  SLUG_PLATFORMS = %w[luminary podapp podurama]
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
 
@@ -136,7 +136,54 @@ class SubscribeLink < ApplicationRecord
     POD_INDEX_PLATFORMS.include?(platform)
   end
 
+  def uses_slug?
+    SLUG_PLATFORMS.include?(platform)
+  end
+
   def icon
     PLATFORM_ICONS[platform]
+  end
+
+  def href
+    base_href = PLATFORM_HREFS[platform]
+
+    if uses_slug?
+      base_href = base_href.gsub("${slug}", podcast.title.parameterize)
+    end
+
+    if uses_apple_id?
+      base_href.sub("${appleID}", external_id)
+    elsif uses_unique_id?
+      base_href.sub("${uniquePlatformID}", external_id)
+    elsif uses_feed_url?
+      feed_href(base_href)
+    elsif uses_podcast_guid?
+      base_href.sub("${podcastGUID}", external_id)
+    elsif uses_pod_index_id?
+      base_href.sub("${podcastIndexShowID}", external_id)
+    end
+  end
+
+  def feed_href(base_href)
+    if base_href.include?("base64url")
+      base_href.sub("${base64url$(feedURL)}", Base64.encode64(external_id))
+    elsif base_href.include?("encodeURIComponent")
+      base_href.sub("${encodeURIComponent(feedURL)}", CGI.escape(external_id))
+    elsif base_href.include?("hex")
+      base_href.sub("${hex(feedURL)}", bin_to_hex(external_id))
+    else
+      base_href.sub("${feedURL}", external_id)
+    end
+  end
+
+  def bin_to_hex(str)
+    str.each_byte.map { |b| b.to_s(16) }.join
+  end
+
+  def link_data
+    {
+      href: href,
+      text: I18n.t("helpers.label.podcast.subscribe_link.#{platform}")
+    }
   end
 end
