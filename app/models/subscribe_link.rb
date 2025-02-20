@@ -95,8 +95,6 @@ class SubscribeLink < ApplicationRecord
     "tunein" => "tunein"
   }
 
-  COMMON_PLATFORMS = %w[apple spotify overcast pocketcasts youtube youtube_feed]
-
   APPLE_PLATFORMS = %w[apple overcast pocketcasts castbox castro goodpods moon podbean podguru_apple podrepublic podfriend podlp_apple podurama sonnet]
 
   UNIQUE_PLATFORMS = %w[spotify youtube amazon deezer global hark iheart luminary pandora podapp snipd tunein]

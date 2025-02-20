@@ -3,7 +3,6 @@ class CreateSubscribeLinks < ActiveRecord::Migration[7.2]
     create_table :subscribe_links do |t|
       t.timestamps
       t.references :podcast, index: true
-      t.boolean :enabled
       t.string :external_id
       t.string :platform
     end
