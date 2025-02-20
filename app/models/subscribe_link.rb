@@ -21,7 +21,7 @@ class SubscribeLink < ApplicationRecord
     "fountain" => "https://fountain.fm/show/${podcastIndexShowID}",
     "global" => "https://www.globalplayer.com/podcasts/${uniquePlatformID}",
     "goodpods" => "https://www.goodpods.com/podcasts-aid/${appleID}",
-    "gPodder" => "https://gpodder.net/subscribe?url=${feedURL}",
+    "gpodder" => "https://gpodder.net/subscribe?url=${feedURL}",
     "hark" => "https://harkaudio.com/p/${uniquePlatformID}",
     "iheart" => "https://iheart.com/podcast/${uniquePlatformID}",
     "lnbeats" => "https://lnbeats.com/album/${podcastGUID}",
@@ -105,7 +105,7 @@ class SubscribeLink < ApplicationRecord
 
   POD_INDEX_PLATFORMS = %w[curiocaster fountain podverse]
 
-  SLUG_PLATFORMS = %w[luminary podapp podurama]
+  SLUG_PLATFORMS = %w[luminary pandora podapp podurama]
 
   belongs_to :podcast, -> { with_deleted }, optional: true, touch: true
 
