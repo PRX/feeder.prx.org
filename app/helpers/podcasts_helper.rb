@@ -134,10 +134,6 @@ module PodcastsHelper
     end
   end
 
-  def subscribe_link_feed_url(link)
-    link.podcast.public_url
-  end
-
   def subscribe_link_options(podcast)
     selected = podcast.subscribe_links.select(&:persisted?).map { |sl| sl.platform }
 
