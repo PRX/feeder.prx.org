@@ -1,4 +1,6 @@
 class EpisodesController < ApplicationController
+  include EmbedPlayerHelper
+
   before_action :set_episode, only: %i[show edit update destroy]
   before_action :set_podcast
 
@@ -20,6 +22,22 @@ class EpisodesController < ApplicationController
           .dropdate_asc
           .paginate(params[:scheduled_page], params[:per])
     end
+  end
+
+  # GET /episodes/export
+  def export
+    data = CSV.generate(headers: true) do |csv|
+      csv << %w[item_guid title published_at enclosure_url player_url player_iframe].map { |k| t(".#{k}") }
+
+      episodes_query.reorder("").dropdate_desc.includes(:contents, :uncut, podcast: :default_feed).each do |e|
+        encl = e.enclosure_url if e.enclosure_ready?
+        ep_url = embed_player_episode_url(e)
+        iframe = embed_player_episode_iframe(e)
+        csv << [e.item_guid, e.title, e.published_at || e.released_at, encl, ep_url, iframe]
+      end
+    end
+
+    send_data data, filename: t(".filename", podcast: @podcast.title.parameterize.underscore)
   end
 
   # GET /episodes/1

@@ -52,16 +52,13 @@ module EpisodesHelper
   end
 
   def episode_media_status(episode)
-    if episode_all_media(episode).any? { |m| upload_problem?(m) }
+    status = episode.media_status
+    if status == "invalid"
       "error"
-    elsif episode_all_media(episode).any? { |m| upload_processing?(m) }
-      "processing"
-    elsif episode.media_ready?(true)
-      "complete"
-    elsif episode.published_at.present?
+    elsif status == "incomplete" && episode.published_at.present?
       "incomplete-published"
     else
-      "incomplete"
+      status
     end
   end
 

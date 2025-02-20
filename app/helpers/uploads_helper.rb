@@ -118,10 +118,6 @@ module UploadsHelper
     %w[started created processing retrying].include?(rec&.status)
   end
 
-  def upload_problem?(rec)
-    %w[invalid error].include?(rec&.status)
-  end
-
   def upload_stalled?(rec)
     upload_processing?(rec) && rec.retryable?
   end

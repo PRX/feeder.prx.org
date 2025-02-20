@@ -1,5 +1,6 @@
 module EmbedPlayerHelper
   include PrxAccess
+  include ActionView::Helpers::TagHelper
 
   EMBED_PLAYER_LANDING_PATH = "/listen"
   EMBED_PLAYER_PATH = "/e"
@@ -92,6 +93,12 @@ module EmbedPlayerHelper
     options_for_select(opts, selected)
   end
 
+  def enclosure_with_token(ep)
+    url = EnclosureUrlBuilder.new.base_enclosure_url(ep.podcast, ep, ep.podcast.default_feed)
+    sep = url.include?("?") ? "&" : "?"
+    url + sep + {DOVETAIL_TOKEN => prx_jwt}.to_query
+  end
+
   private
 
   def embed_params(options_with_defaults = {})
@@ -117,11 +124,6 @@ module EmbedPlayerHelper
 
   def embed_url(params, preview = false)
     "https://#{ENV["PLAY_HOST"]}#{preview ? EMBED_PLAYER_PREVIEW_PATH : EMBED_PLAYER_PATH}?#{params.to_query}"
-  end
-
-  def enclosure_with_token(ep)
-    sep = ep.enclosure_url.include?("?") ? "&" : "?"
-    ep.enclosure_url + sep + {DOVETAIL_TOKEN => prx_jwt}.to_query
   end
 
   def embed_player_iframe(options, src = "")

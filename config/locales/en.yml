@@ -301,6 +301,9 @@ en:
               less_than_or_equal_to: Enter a number less than %{count}
         feed:
           attributes:
+            enclosure_prefix:
+              too_many_redirects: Too many redirects
+              unreachable: Unreachable prefix
             slug:
               invalid: Invalid slug
               taken: Must be unique
@@ -340,6 +343,8 @@ en:
         categories: Categories
         clean_title: Clean Title
         description: Description
+        enclosure_override_prefix: Include Prefix?
+        enclosure_override_url: Enclosure Override URL
         embed_player_iframe: Embeddable Player IFrame
         embed_player_type: Player Style
         embed_player_types:
@@ -378,6 +383,7 @@ en:
           audio: Audio - upload multiple audio files
           uncut: Audio - upload a single file and then segment
           video: Video
+          override: Override - specify external media url
         original_guid: GUID
         released_at: Dropdate
         released_at_date: Date
@@ -574,6 +580,7 @@ en:
         other: "%{count} Breaks"
     episode_filters:
       my_episodes: Episodes
+      export: Export
       filters:
         all: All
         incomplete: Incomplete
@@ -593,6 +600,14 @@ en:
       dismiss: Proceed with a new draft
       message: Please consider using the draft that already exists on this published date as there may be an ad targeted specifically to the scheduled episode draft.
       title: An episode draft for this date already exists
+    export:
+      enclosure_url: Enclosure URL
+      filename: "%{podcast}_episodes.csv"
+      item_guid: GUID
+      player_iframe: Player Iframe
+      player_url: Player URL
+      published_at: Published At
+      title: Title
     form:
       confirm: Discard unsaved changes?
     form_distribution:
@@ -669,6 +684,10 @@ en:
       media_not_ready: Audio not ready
       notice: Episode updated
   episode_media:
+    enclosure_override:
+      enclosure_override_prefix_hint: Enable to add the feed's enclosure prefix to the enclosure override url.
+      enclosure_override_url_hint: Specify the full URL to use as the enclosure/media url for this episode.
+      title: Enclosure Override
     form:
       confirm: Discard unsaved changes?
     form_main:

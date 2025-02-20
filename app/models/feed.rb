@@ -32,7 +32,7 @@ class Feed < ApplicationRecord
 
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
-  has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
+  has_many :itunes_categories, -> { order("created_at ASC") }, validate: true, autosave: true, dependent: :destroy
 
   has_one :apple_sync_log, -> { feeds }, foreign_key: :feeder_id, class_name: "SyncLog"
 
@@ -51,7 +51,7 @@ class Feed < ApplicationRecord
   validates :episode_offset_seconds, numericality: {equal_to: 0}, allow_nil: true, if: :default?
   validates :url, http_url: true
   validates :new_feed_url, http_url: true
-  validates :enclosure_prefix, http_url: true
+  validates :enclosure_prefix, http_url: true, redirect_prefix: {max_jumps: 6}, allow_blank: true
   validates :display_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :display_full_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :description, bytesize: {maximum: Episode::MAX_DESCRIPTION_BYTES}

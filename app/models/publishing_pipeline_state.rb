@@ -1,6 +1,6 @@
 class PublishingPipelineState < ApplicationRecord
-  TERMINAL_STATUSES = [:complete, :error, :expired].freeze
-  TERMINAL_FAILURE_STATUSES = [:error, :expired].freeze
+  TERMINAL_STATUSES = [:complete, :error, :expired, :retry].freeze
+  FAILURE_STATUSES = [:error, :expired, :error_apple, :retry].freeze
   UNIQUE_STATUSES = TERMINAL_STATUSES + [:created, :started]
 
   # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
@@ -53,7 +53,8 @@ class PublishingPipelineState < ApplicationRecord
     :error,
     :expired,
     :error_apple,
-    :error_rss
+    :error_rss,
+    :retry
   ]
 
   validate :podcast_ids_match
@@ -170,6 +171,10 @@ class PublishingPipelineState < ApplicationRecord
     state_transition(podcast, :expired)
   end
 
+  def self.retry!(podcast)
+    state_transition(podcast, :retry)
+  end
+
   def self.expire_pipelines!
     Podcast.with_deleted.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
       Rails.logger.tagged("PublishingPipeLineState.expire_pipelines!", "Podcast:#{podcast.id}") do
@@ -178,8 +183,16 @@ class PublishingPipelineState < ApplicationRecord
     end
   end
 
+  def self.latest_failed_publishing_queue_items
+    PublishingQueueItem.where(id: latest_failed_pipelines.select(:publishing_queue_item_id).distinct)
+  end
+
+  def self.latest_failed_podcasts
+    Podcast.where(id: latest_failed_publishing_queue_items.select(:podcast_id).distinct)
+  end
+
   def self.retry_failed_pipelines!
-    Podcast.where(id: latest_failed_pipelines.select(:podcast_id).distinct).each do |podcast|
+    latest_failed_podcasts.each do |podcast|
       Rails.logger.tagged("PublishingPipeLineState.retry_failed_pipelines!", "Podcast:#{podcast.id}") do
         start_pipeline!(podcast)
       end
