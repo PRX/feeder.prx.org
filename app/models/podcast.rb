@@ -1,4 +1,5 @@
 require "text_sanitizer"
+require "json"
 
 class Podcast < ApplicationRecord
   FEED_ATTRS = %i[subtitle description url new_feed_url display_episodes_count
@@ -292,6 +293,26 @@ class Podcast < ApplicationRecord
     if dupes.any?
       dupes.each do |p|
         errors.add(:podcast, "cannot have more than one #{I18n.t("helpers.label.podcast.subscribe_link.#{p}")} link")
+      end
+    end
+  end
+
+  def build_subscribe_links_json
+    if subscribe_links.present?
+      {
+        version: "1.0.0",
+        links: subscribe_link_data
+      }.to_json
+    end
+  end
+
+  def subscribe_link_data
+    if subscribe_links.present?
+      subscribe_links.map do |slink|
+        {
+          href: slink.href,
+          text: I18n.t("helpers.label.podcast.subscribe_link.#{slink.platform}")
+        }
       end
     end
   end
