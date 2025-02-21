@@ -12,6 +12,13 @@ class Feeds::MegaphoneFeed < Feed
 
   accepts_nested_attributes_for :megaphone_config, allow_destroy: true, reject_if: :all_blank
 
+  def paranoia_destroy_attributes
+    {
+      deleted_at: current_time_from_proper_timezone,
+      slug: "#{slug}-#{Time.now.to_i}"
+    }
+  end
+
   def must_have_token
     if tokens.blank?
       errors.add(:tokens, "must have a token")

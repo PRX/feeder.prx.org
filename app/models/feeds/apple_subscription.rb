@@ -31,7 +31,7 @@ class Feeds::AppleSubscription < Feed
   def paranoia_destroy_attributes
     {
       deleted_at: current_time_from_proper_timezone,
-      slug: "#{slug} - #{Time.now.to_i}"
+      slug: "#{slug}-#{Time.now.to_i}"
     }
   end
 
