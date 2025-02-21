@@ -11,14 +11,14 @@
       <%= form.fields_for :megaphone_config do |config_form| %>
         <div class="col-12 mb-4">
           <div class="form-floating input-group">
-            <%= config_form.text_field :token %>
+            <%= config_form.text_field :token, redacted: 4 %>
             <%= config_form.label :token, "API Token", required: true %>
             <%= field_help_text t(".help.token") %>
           </div>
         </div>
         <div class="col-12 mb-4">
           <div class="form-floating input-group">
-            <%= config_form.text_field :network_id %>
+            <%= config_form.text_field :network_id, redacted: 4 %>
             <%= config_form.label :network_id, "Network ID", required: true %>
             <%= field_help_text t(".help.network_id") %>
           </div>
