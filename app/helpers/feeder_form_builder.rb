@@ -40,9 +40,9 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   def redact_value(method, options)
     return unless options[:redacted] && (options[:disabled] || disabled?)
 
-    if val = object.public_send(method)
+    if (val = object.public_send(method))
       chars = [options[:redacted].to_i, 1].max
-      options[:value] = val.last(chars).rjust(val.length, '*')
+      options[:value] = val.last(chars).rjust(val.length, "*")
     end
   end
 
