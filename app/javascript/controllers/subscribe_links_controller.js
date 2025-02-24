@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static outlets = ["unsaved"]
-  static targets = ["template"]
+  static targets = ["template", "option"]
 
   addLink(event) {
     const now = new Date().getTime()
@@ -27,6 +27,12 @@ export default class extends Controller {
   }
 
   nukeLink(event) {
+    const platform = event.currentTarget.dataset.platform
+    const option = this.optionTargets.filter((target) => {
+      return target.dataset.platform === platform
+    })
+    option[0].classList.remove("d-none")
+
     event.currentTarget.parentElement.remove()
     this.unsavedOutlet.change()
   }

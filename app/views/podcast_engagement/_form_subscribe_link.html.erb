@@ -24,11 +24,11 @@
       </button>
       <%= form.text_field :_destroy, value: false, class: "d-none" %>
     <% else %>
-      <button type="button" class="btn btn-icon" data-action="subscribe-links#nukeLink">
+      <button type="button" class="btn btn-icon" data-action="subscribe-links#nukeLink" data-platform="<%= form.object.platform %>">
         <span class="material-icons">delete</span>
       </button>
     <% end %>
   <% end %>
-</div>
 
-<%= form.hidden_field :platform %>
+  <%= form.hidden_field :platform %>
+</div>
