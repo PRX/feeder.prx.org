@@ -576,13 +576,13 @@ en:
         author_name: If the author info of this episode should be different from that of the podcast (for example, if this episode has a guest host or is cross-posted), you can set that author info here. Setting this will override your podcast global values.
         clean_title: If the title above contains any extraneous identifying information about your episode (like season number), provide a clean version of the title alone here.
         description: Write a full description of your episode, including keywords, names of interviewees, places and topics.
-        episode_number: If your episode is part of has a specific number add it here.
+        episode_number: If your episode has a specific number, add it here.
         episode_url: If you have a public URL for this podcast episode, enter it here.
         explicit: In accordance with <a href="https://help.apple.com/itc/podcasts_connect/#/itc1723472cb" target="_blank">the requirements for Apple Podcasts podcast content</a>, does this episode contain explicit material?<br/><br/>Setting this field will override your <b>%{podcast_value}</b> podcast global value.
         itunes_category: Enter an alternate <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">Apple Podcasts category and subcategory</a>, differentiating this Feed from the Podcast.
         itunes_type: <p>Select the type of episode.</p> <p><strong>Full</strong> default and most common;</p> <p><strong>Trailer</strong> a short, promotional piece of content that represents a preview of a show;</p> <p><strong>Bonus</strong> extra content like behind-the-scenes information or interviews.</p>
         production_notes: Internal information for the production and/or ad sales teams. This content will not be visible to listeners. Example 'Descriptions of violence in segment 2.'
-        season_number: If your episode is part of a season add it here.
+        season_number: If your episode is part of a season, add it here.
         subtitle: Provide a short description for your episode listing. Think of this as a first impression for your listeners.
         title: Write a short, Tweetable title. Think newspaper headline.
     form_status:
