@@ -2,6 +2,8 @@
 
 module Apple
   class Key < ApplicationRecord
+    has_one :config, class_name: "Apple::Config", foreign_key: "key_id"
+
     validates :provider_id, presence: true, length: {minimum: 10}
     validates :key_id, presence: true, length: {minimum: 10}
     validates_presence_of :key_pem_b64

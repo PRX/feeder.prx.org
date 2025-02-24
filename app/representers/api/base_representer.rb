@@ -1,10 +1,10 @@
 require "api"
 require "hal_api/representer"
-require "prx_access"
+require "prx/api"
 require "text_sanitizer"
 
 class Api::BaseRepresenter < HalApi::Representer
-  include PrxAccess
+  include Prx::Api
   include TextSanitizer
 
   self.alternate_host = ENV["PRX_HOST"] || "www.prx.org"

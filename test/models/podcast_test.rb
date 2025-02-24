@@ -1,9 +1,6 @@
 require "test_helper"
-require "prx_access"
 
 describe Podcast do
-  include PrxAccess
-
   let(:podcast) { create(:podcast) }
 
   it "has episodes" do

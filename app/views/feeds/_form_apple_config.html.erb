@@ -14,19 +14,19 @@
             <%= key_fields.file_field :key_file, class: "mb-4 form-control", accept: ".p8, .pem", data: {action: "apple-key#convertFileToKey"}, required: true %>
 
             <%= key_fields.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
+            <%= key_fields.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
+            <%= key_fields.hidden_field :key_id, data: {apple_key_target: "key"} %>
           <% else %>
             <div class="mb-2"><%= t(".key_uploaded") %></div>
             <div class="mb-4 form-floating">
-              <%= key_fields.text_field :provider_id, disabled: true, data: {apple_key_target: "provider"} %>
+              <%= key_fields.text_field :provider_id, disabled: true, data: {apple_key_target: "provider"}, redacted: 4 %>
               <%= key_fields.label :provider_id, "Provider ID" %>
             </div>
             <div class="form-floating">
-              <%= key_fields.text_field :key_id, disabled: true, data: {apple_key_target: "key"} %>
+              <%= key_fields.text_field :key_id, disabled: true, data: {apple_key_target: "key"}, redacted: 4 %>
               <%= key_fields.label :key_id, "Apple Key" %>
             </div>
           <% end %>
-          <%= key_fields.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
-          <%= key_fields.hidden_field :key_id, data: {apple_key_target: "key"} %>
         <% end %>
         <% if config_form.object.persisted? %>
           <div class="col-12 mt-4">

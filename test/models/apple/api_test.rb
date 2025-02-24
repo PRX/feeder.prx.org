@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require "prx_access"
 require "base64"
 require "securerandom"
 
