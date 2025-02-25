@@ -111,7 +111,7 @@ class SubscribeLink < ApplicationRecord
 
   scope :with_apple_id, -> { where(platform: APPLE_PLATFORMS) }
 
-  validates :platform, presence: true, inclusion: {in: PLATFORMS}
+  validates :platform, presence: true, inclusion: {in: PLATFORMS}, uniqueness: {scope: :podcast_id}
   validates :external_id, presence: true
 
   def uses_apple_id?

@@ -53,8 +53,6 @@ class Podcast < ApplicationRecord
   }.freeze
   validates :explicit, inclusion: {in: VALID_EXPLICITS}, allow_nil: false
 
-  validate :only_one_of_each_link_platform
-
   before_validation :set_defaults, :sanitize_text
 
   scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") if text.present? }
@@ -276,24 +274,6 @@ class Podcast < ApplicationRecord
       true
     else
       super
-    end
-  end
-
-  def only_one_of_each_link_platform
-    platforms = []
-    dupes = []
-    subscribe_links.each do |slink|
-      if platforms.include?(slink.platform)
-        dupes << slink.platform
-      else
-        platforms << slink.platform
-      end
-    end
-
-    if dupes.any?
-      dupes.each do |p|
-        errors.add(:podcast, "cannot have more than one #{I18n.t("helpers.label.podcast.subscribe_link.#{p}")} link")
-      end
     end
   end
 

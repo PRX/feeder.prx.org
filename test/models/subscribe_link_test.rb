@@ -18,5 +18,14 @@ describe SubscribeLink do
       apple_link.external_id = nil
       refute apple_link.valid?
     end
+
+    it "validates unique platforms" do
+      assert apple_link.valid?
+      podcast.save!
+
+      apple_2 = SubscribeLink.create(platform: "apple", podcast: podcast, external_id: "12345")
+      assert apple_link.valid?
+      refute apple_2.valid?
+    end
   end
 end
