@@ -83,7 +83,7 @@ module Apple
 
         finished = remaining_episodes.group_by(&:has_media_version?)
 
-        (finished[false] || [])
+        finished[false] || []
       end
     end
 
@@ -276,8 +276,8 @@ module Apple
       # because we cannot infer if the podcast delivery files have expired
       return true if podcast_delivery_files.length == 0
 
-      (podcast_delivery_files.all?(&:delivered?) &&
-        podcast_delivery_files.all?(&:processed?))
+      podcast_delivery_files.all?(&:delivered?) &&
+        podcast_delivery_files.all?(&:processed?)
     end
 
     def processed_errors?
