@@ -124,7 +124,7 @@ module PodcastsHelper
     if link.uses_apple_id?
       I18n.t("podcast_engagement.form_subscribe_links.help.apple")
     elsif link.uses_unique_id?
-      I18n.t("podcast_engagement.form_subscribe_links.help.unique")
+      I18n.t("podcast_engagement.form_subscribe_links.help.unique", platform: subscribe_link_platform_label(link))
     elsif link.uses_feed_url?
       I18n.t("podcast_engagement.form_subscribe_links.help.feed")
     elsif link.uses_podcast_guid?

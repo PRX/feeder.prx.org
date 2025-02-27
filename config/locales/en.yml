@@ -538,11 +538,11 @@ en:
           truefans: TrueFans
           tunein: TuneIn
           id:
-            apple: Apple ID
+            apple: Apple Podcasts Show ID
             unique: "%{platform} ID"
-            feed: Feed URL
-            guid: Podcast GUID
-            pod_index: Podcast Index Show ID
+            feed: Public Feed URL
+            guid: "RSS podcast:guid"
+            pod_index: PodcastIndex Feed ID
           enabled: "%{platform}"
         subtitle: Teaser
         title: Title
@@ -1196,14 +1196,15 @@ en:
       <<: *form_status
     form_subscribe_links:
       title: Subscription Links
-      description: Please select which platforms you would like to display subscription links for users using the PRX Embeddable Player. Platforms will require either your Apple ID, a unique platform ID, a feed URL, a podcast GUID, or a Podcast Index ID.
+      description: Links to common platforms where your listeners can follow/subscribe to your show.
       add: Add Subscription Links
       help:
-        apple: This platform uses your Apple ID for lookup.
-        unique: This platform uses its unique platform ID for lookup.
-        feed: This platform uses your public feed URL for lookup.
-        guid: This platform uses your podcast GUID for lookup.
-        pod_index: This platform uses your Podcast Index Show ID for lookup.
+        apple: Use your Apple Podcasts Show ID.
+        unique: Use your %{platform} ID.
+        feed: Use your Public Feed URL.
+        guid: Use your <a href="https://podcasting2.org/podcast-namespace/tags/GUID" target="_blank">RSS podcast:guid.</a>
+        pod_index: Use your PodcastIndex Feed ID.
+        spotify: Use your Spotify ID.
     show:
       title: "%{title} - Engagement"
     update:
