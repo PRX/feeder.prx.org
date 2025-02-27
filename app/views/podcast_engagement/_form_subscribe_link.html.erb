@@ -4,8 +4,8 @@
       <span>
         <%= subscribe_link_platform_label(form.object) %>
       </span>
-      <div class="p-0 ms-2 d-flex align-items-center subscribe-icon">
-        <%= render "icons/#{form.object.icon}", width: "1.5em", height: "1.5em" %>
+      <div class="p-0 ms-2 d-flex align-items-center">
+        <%= image_tag("icons/#{form.object.icon}.svg", class: "subscribe-icon") %>
       </div>
     </div>
   </div>

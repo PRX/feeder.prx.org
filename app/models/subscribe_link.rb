@@ -139,7 +139,7 @@ class SubscribeLink < ApplicationRecord
   end
 
   def icon
-    PLATFORM_ICONS[platform]
+    platform.split("_").first
   end
 
   def href
