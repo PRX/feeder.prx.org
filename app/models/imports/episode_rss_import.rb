@@ -54,7 +54,7 @@ class EpisodeRssImport < EpisodeImport
 
   def entry_audio_files(entry)
     if config[:audio] && config[:audio][entry[:entry_id]]
-      {files: (config[:audio][entry[:entry_id]] || [])}
+      {files: config[:audio][entry[:entry_id]] || []}
     elsif (enclosure = enclosure_url(entry))
       {files: [enclosure]}
     end

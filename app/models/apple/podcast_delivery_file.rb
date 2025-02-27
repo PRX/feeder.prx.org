@@ -29,7 +29,7 @@ module Apple
     # Apple: ProcessingState
     processing_state = %w[PROCESSING VALIDATED VALIDATION_FAILED DUPLICATE REPLACED COMPLETED].freeze
     processing_state.map do |state|
-      define_method("processed_#{state.downcase}?") do
+      define_method(:"processed_#{state.downcase}?") do
         return false unless asset_processing_state.present?
         asset_processing_state["state"] == state
       end
@@ -38,7 +38,7 @@ module Apple
     # Apple: DeliveryState
     delivery_state = %W[AWAITING_UPLOAD UPLOAD_COMPLETE COMPLETE FAILED].freeze
     delivery_state.map do |state|
-      define_method("delivery_#{state.downcase}?") do
+      define_method(:"delivery_#{state.downcase}?") do
         return false unless asset_delivery_state.present?
         asset_delivery_state["state"] == state
       end
@@ -58,7 +58,7 @@ module Apple
         # Check the podcast delivery status to see if it's complete
         finished = updated_pdfs.group_by { |pdf| pdf.processed? || (pdf.asset_processing_state.nil? && pdf.podcast_delivery.completed?) }
         (finished[true] || []).map(&:save!)
-        (finished[false] || [])
+        finished[false] || []
       end
     end
 
@@ -69,7 +69,7 @@ module Apple
 
         finished = updated_pdfs.group_by(&:delivered?)
         (finished[true] || []).map(&:save!)
-        (finished[false] || [])
+        finished[false] || []
       end
     end
 

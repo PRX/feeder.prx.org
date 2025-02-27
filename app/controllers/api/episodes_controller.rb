@@ -35,7 +35,7 @@ class Api::EpisodesController < Api::BaseController
   end
 
   def decorate_query(res)
-    list_scoped(super(res))
+    list_scoped(super)
   end
 
   def list_scoped(res)
