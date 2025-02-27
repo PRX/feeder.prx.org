@@ -48,53 +48,6 @@ class SubscribeLink < ApplicationRecord
     "tunein" => "https://tunein.com/podcasts/${uniquePlatformID}"
   }
 
-  PLATFORM_ICONS = {
-    "apple" => "apple",
-    "spotify" => "spotify",
-    "overcast" => "overcast",
-    "pocketcasts" => "pocketcasts",
-    "youtube" => "youtube",
-    "youtube_feed" => "youtube",
-    "amazon" => "amazon",
-    "antenna" => "antenna",
-    "anytime" => "anytime",
-    "apollo" => "apollo",
-    "breez" => "breez",
-    "castamatic" => "castamatic",
-    "castbox" => "castbox",
-    "castro" => "castro",
-    "curiocaster" => "curiocaster",
-    "deezer" => "deezer",
-    "fountain" => "fountain",
-    "global" => "global",
-    "goodpods" => "goodpods",
-    "gpodder" => "gpodder",
-    "hark" => "hark",
-    "iheart" => "iheart",
-    "lnbeats" => "lnbeats",
-    "luminary" => "luminary",
-    "moon" => "moon",
-    "pandora" => "pandora",
-    "player" => "player",
-    "podbean" => "podbean",
-    "podaddict" => "podaddict",
-    "podapp" => "podapp",
-    "podguru_apple" => "podguru",
-    "podguru_feed" => "podguru",
-    "podrepublic" => "podrepublic",
-    "podfriend" => "podfriend",
-    "podlp_apple" => "podlp",
-    "podlp_guid" => "podlp",
-    "podstation" => "podstation",
-    "podurama" => "podurama",
-    "podverse" => "podverse",
-    "snipd" => "snipd",
-    "sonnet" => "sonnet",
-    "steno" => "steno",
-    "truefans" => "truefans",
-    "tunein" => "tunein"
-  }
-
   APPLE_PLATFORMS = %w[apple overcast pocketcasts castbox castro goodpods moon podbean podguru_apple podrepublic podfriend podlp_apple podurama sonnet]
 
   UNIQUE_PLATFORMS = %w[spotify youtube amazon deezer global hark iheart luminary pandora podapp snipd tunein]
