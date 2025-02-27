@@ -35,7 +35,7 @@
           <div class="card card-body p-0">
             <ul class="list-group list-group-flush">
               <% subscribe_link_options(podcast).each do |option| %>
-                <button class="list-group-item list-group-item-action d-flex align-items-center" type="button" data-action="subscribe-links#addLink" data-platform="<%= option[:platform] %>">
+                <button class="list-group-item list-group-item-action d-flex align-items-center" type="button" data-action="subscribe-links#addLink" data-platform="<%= option[:platform] %>" data-subscribe-links-target="option">
                   <%= t("helpers.label.podcast.subscribe_link.#{option[:platform]}") %>
                   <div class="p-0 ms-2 d-flex align-items-center">
                     <%= image_tag("icons/#{option[:icon]}.svg", class: "subscribe-icon") %>
