@@ -288,8 +288,8 @@ describe Apple::Show do
 
       apple_show.instance_variable_set(:@guid_to_apple_json, data)
 
-      mock = Minitest::Mock.new
-      def mock.method_missing(*)
+      mock = Object.new
+      def mock.call(*)
         raise "apple_episode_json should not have been called!"
       end
 
