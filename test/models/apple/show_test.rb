@@ -303,9 +303,8 @@ describe Apple::Show do
 
       data = {"attributes" => {"guid" => "foo", "data" => "frob"}}
       apple_show.stub(:apple_episode_json, [data]) do
-        assert_equal apple_show.guid_to_apple_json("foo"), {"attributes"=>{"guid"=>"foo", "data"=>"frob"}}
+        assert_equal apple_show.guid_to_apple_json("foo"), {"attributes" => {"guid" => "foo", "data" => "frob"}}
       end
     end
-
   end
 end
