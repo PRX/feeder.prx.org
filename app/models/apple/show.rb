@@ -76,6 +76,8 @@ module Apple
       @episodes = nil
       @episode_ids = nil
       @find_episode = nil
+      @apple_id_to_apple_json = nil
+      @guid_to_apple_json = nil
     end
 
     def podcast
