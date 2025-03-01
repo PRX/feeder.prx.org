@@ -105,6 +105,7 @@ module Megaphone
       handle_response(api_response)
       update_sync_log
       update_delivery_status
+      set_enclosure
       self
     end
 
@@ -120,6 +121,7 @@ module Megaphone
       handle_response(api_response)
       update_sync_log
       update_delivery_status
+      set_enclosure
       self
     end
 
@@ -138,13 +140,15 @@ module Megaphone
       # Re-request the megaphone api
       find_by_megaphone_id
 
-      # get the audip attributes
+      # get the audio attributes from feeder
       set_audio_attributes
 
       # check to see if the audio on mp matches
       if original_filename == source_filename
+        # if processing done, set the cuepoints and the enclosure
         if !audio_file_processing && audio_file_status == "success"
-          replace_cuepoints!(episode)
+          set_enclosure
+          replace_cuepoints!
           delivery_status(true).mark_as_delivered!
         else
           # still waiting - increment asset state
@@ -157,7 +161,12 @@ module Megaphone
       end
     end
 
-    def replace_cuepoints!(episode)
+    def set_enclosure
+      return if download_url.blank? || feeder_episode.enclosure_override_url.present?
+      feeder_episode.update(enclosure_override_url: download_url, enclosure_override_prefix: true)
+    end
+
+    def replace_cuepoints!
       # retrieve the placement info from augury
       zones = get_placement_zones(feeder_episode.segment_count)
       media = feeder_episode.media
@@ -304,8 +313,8 @@ module Megaphone
         raise("DTR media redirect not returned: #{resp.status}")
       end
       info
-    rescue err
-      logger.error("Error getting DTR media info", enclosure: enclosure, err: err)
+    rescue => err
+      logger.error("Error getting DTR media info", enclosure: enclosure, error: err)
       raise err
     end
 
