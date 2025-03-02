@@ -146,7 +146,6 @@ class Episode < ApplicationRecord
 
   def set_defaults
     guid
-    self.segment_count ||= 1 if new_record? && strict_validations
   end
 
   def guid
