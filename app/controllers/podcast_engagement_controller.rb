@@ -37,7 +37,8 @@ class PodcastEngagementController < ApplicationController
     nilify params.fetch(:podcast, {}).permit(
       :lock_version,
       :donation_url,
-      :payment_pointer
+      :payment_pointer,
+      subscribe_links_attributes: %i[id enabled external_id platform _destroy]
     )
   end
 end

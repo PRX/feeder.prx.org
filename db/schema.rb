@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -146,8 +146,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
     t.string "feedburner_orig_link"
     t.string "feedburner_orig_enclosure_link"
     t.boolean "is_perma_link"
-    t.datetime "source_updated_at", precision: nil
     t.string "keyword_xid"
+    t.datetime "source_updated_at", precision: nil
     t.integer "season_number"
     t.integer "episode_number"
     t.string "itunes_type", default: "full"
@@ -239,8 +239,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
     t.string "type"
     t.string "apple_show_id"
     t.boolean "edit_locked"
-    t.datetime "enclosure_updated_at", precision: nil
     t.string "episode_footer"
+    t.datetime "enclosure_updated_at", precision: nil
     t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
@@ -436,6 +436,16 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
     t.datetime "updated_at", null: false
     t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
     t.index ["updated_at"], name: "index_sessions_on_updated_at"
+  end
+
+  create_table "subscribe_links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "podcast_id"
+    t.boolean "enabled"
+    t.string "external_id"
+    t.string "platform"
+    t.index ["podcast_id"], name: "index_subscribe_links_on_podcast_id"
   end
 
   create_table "sync_logs", force: :cascade do |t|
