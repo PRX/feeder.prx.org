@@ -231,7 +231,7 @@ class Feed < ApplicationRecord
   end
 
   def feed_image
-    feed_images.first
+    feed_images[0]
   end
 
   def feed_image=(file)
@@ -251,7 +251,7 @@ class Feed < ApplicationRecord
   end
 
   def itunes_image
-    itunes_images.first
+    itunes_images[0]
   end
 
   def itunes_image=(file)

@@ -129,7 +129,7 @@ class Episode < ApplicationRecord
   end
 
   def image
-    images.first
+    images[0]
   end
 
   def image=(img)

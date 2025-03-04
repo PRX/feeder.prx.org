@@ -119,9 +119,6 @@ module ImageFile
     %i[alt_text caption credit].each do |key|
       img[key] = self[key]
     end
-
-    # autosave won't work; explictly save, as img is image is detached from the association
-    img.save
   end
 
   def retryable?

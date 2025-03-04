@@ -166,7 +166,7 @@ describe Api::EpisodesController do
       assert_equal c.original_url, "https://s3.amazonaws.com/prx-testing/test/audio1.mp3"
     end
 
-    it "can update audio on an episode" do
+    it "can update the image on an episode" do
       assert_equal episode_with_image.title, "Episode 1"
       assert_equal episode_with_image.image.alt_text, "valid episode image"
 
