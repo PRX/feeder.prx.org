@@ -492,6 +492,58 @@ en:
         serial_orders:
           false: Episodic
           true: Serial
+        subscribe_link:
+          apple: Apple Podcasts
+          spotify: Spotify
+          overcast: Overcast
+          pocketcasts: Pocket Casts
+          youtube: Youtube Music
+          youtube_feed: Youtube Music (feed)
+          amazon: Amazon Music
+          antenna: AntennaPod
+          anytime: Anytime Player
+          apollo: Apollo
+          breez: Breez
+          castamatic: Castamatic
+          castbox: Castbox
+          castro: Castro
+          curiocaster: CurioCaster
+          deezer: Deezer
+          fountain: Fountain
+          global: Global Player
+          goodpods: Goodpods
+          gpodder: gPodder
+          hark: Hark
+          iheart: iHeartRadio
+          lnbeats: LN Beats
+          luminary: Luminary
+          moon: Moon FM
+          pandora: Pandora
+          player: Player FM
+          podbean: Podbean
+          podaddict: Podcast Addict
+          podapp: Podcast App
+          podguru_apple: Podcast Guru (Apple)
+          podguru_feed: Podcast Guru (Feed)
+          podrepublic: Podcast Republic
+          podfriend: Podfriend
+          podlp_apple: PodLP (Apple)
+          podlp_guid: PodLP (Podcast GUID)
+          podstation: podStation
+          podurama: Podurama
+          podverse: Podverse
+          snipd: Snipd
+          sonnet: Sonnet
+          steno: Steno.fm
+          truefans: TrueFans
+          tunein: TuneIn
+          id:
+            apple: Apple Podcasts Show ID
+            unique: "%{platform} ID"
+            feed: Public Feed URL
+            guid: "RSS podcast:guid"
+            pod_index: PodcastIndex Feed ID
+          enabled: "%{platform}"
         subtitle: Teaser
         title: Title
       podcast_player:
@@ -1142,6 +1194,17 @@ en:
         payment_pointer: The PRX Embeddable player support micropayments. We've created a guide to walk you through the process of collecting payments as folks listen. <a href="https://help.prx.org/hc/en-us/articles/9901810244251" target="_blank">Learn more about micropayments.</a>
     form_status:
       <<: *form_status
+    form_subscribe_links:
+      title: Subscription Links
+      description: Links to common platforms where your listeners can follow/subscribe to your show.
+      add: Add Subscription Links
+      help:
+        apple: Use your Apple Podcasts Show ID.
+        unique: Use your %{platform} ID.
+        feed: Use your Public Feed URL.
+        guid: Use your <a href="https://podcasting2.org/podcast-namespace/tags/GUID" target="_blank">RSS podcast:guid.</a>
+        pod_index: Use your PodcastIndex Feed ID.
+        spotify: Use your Spotify ID.
     show:
       title: "%{title} - Engagement"
     update:
