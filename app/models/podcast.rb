@@ -281,19 +281,8 @@ class Podcast < ApplicationRecord
     if subscribe_links.present?
       {
         version: "1.0.0",
-        links: subscribe_link_data
+        links: subscribe_links&.map(&:as_json)
       }.to_json
-    end
-  end
-
-  def subscribe_link_data
-    if subscribe_links.present?
-      subscribe_links.map do |slink|
-        {
-          href: slink.href,
-          text: I18n.t("helpers.label.podcast.subscribe_link.#{slink.platform}")
-        }
-      end
     end
   end
 end
