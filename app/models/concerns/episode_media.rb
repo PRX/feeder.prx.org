@@ -13,8 +13,20 @@ module EpisodeMedia
 
     validate :validate_media_ready, if: :strict_validations
 
+    before_validation :set_medium_defaults
     after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
     after_save :create_external_media
+  end
+
+  def set_medium_defaults
+    self.segment_count ||= 1 if new_record? && strict_validations
+    if !medium.present?
+      self.medium = if segment_count.to_i > 1
+        "audio"
+      else
+        "uncut"
+      end
+    end
   end
 
   def validate_media_ready
@@ -162,11 +174,15 @@ module EpisodeMedia
 
     # infer episode medium
     current = contents.reject(&:marked_for_destruction?)
-    unless medium_uncut?
-      if current.all?(&:audio?)
-        self.medium = "audio"
+    if !medium.present?
+      self.medium = if current.all?(&:audio?)
+        if current.size > 1
+          "audio"
+        else
+          "uncut"
+        end
       elsif current.all?(&:video?)
-        self.medium = "video"
+        "video"
       end
     end
   end

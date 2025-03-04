@@ -3,7 +3,7 @@
 require "test_helper"
 
 describe Apple::Show do
-  let(:podcast) { create(:episode).podcast }
+  let(:podcast) { create(:episode_with_media).podcast }
   let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
@@ -62,7 +62,7 @@ describe Apple::Show do
       episode.update!(original_guid: "123", deleted_at: Time.now.utc)
 
       # add another episode with the same guid
-      episode2 = create(:episode, podcast: podcast, item_guid: "123")
+      episode2 = create(:episode_with_media, podcast: podcast, item_guid: "123")
 
       assert_equal apple_show.podcast_feeder_episodes.count, 1
       assert_equal apple_show.podcast_feeder_episodes.first.id, episode2.id

@@ -127,7 +127,7 @@ describe Apple::Publisher do
     let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
     let(:apple_config) { create(:apple_config, feed: private_feed) }
-    let(:episode) { create(:episode, podcast: podcast) }
+    let(:episode) { create(:episode_with_media, podcast: podcast) }
     let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
     let(:apple_publisher) { apple_config.build_publisher }
     let(:apple_api) { apple_publisher.api }
@@ -265,6 +265,7 @@ describe Apple::Publisher do
       end
 
       describe "archived episodes with media already delivered to apple" do
+        let(:episode) { create(:episode, podcast: podcast) }
         let(:apple_episode_api_response) {
           build(:apple_episode_api_response,
             apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS,
@@ -318,7 +319,7 @@ describe Apple::Publisher do
   end
 
   describe "#episodes_to_sync" do
-    let(:episode) { create(:episode, podcast: podcast) }
+    let(:episode) { create(:episode_with_media, podcast: podcast) }
 
     before do
       public_feed.episodes.delete(episode)

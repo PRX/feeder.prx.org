@@ -396,10 +396,16 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert ep.media.none?(&:marked_for_destruction?)
     end
 
-    it "infers episode medium audio" do
+    it "infers episode medium audio for multiple files" do
       assert_nil ep.medium
       ep.media = ["http://some.new/url.mp3", "http://some.new/url.wav"]
       assert_equal "audio", ep.medium
+    end
+
+    it "infers episode medium uncut for single files" do
+      assert_nil ep.medium
+      ep.media = ["http://some.new/url.mp3"]
+      assert_equal "uncut", ep.medium
     end
 
     it "infers episode medium video" do
@@ -407,10 +413,10 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal "video", ep.medium
     end
 
-    it "defaults to audio" do
+    it "defaults to uncut for 0 or 1 files" do
       assert_nil ep.medium
       ep.media = []
-      assert_equal "audio", ep.medium
+      assert_equal "uncut", ep.medium
     end
 
     it "handles non-arrays" do
