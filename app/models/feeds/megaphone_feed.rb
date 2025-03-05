@@ -1,6 +1,5 @@
 class Feeds::MegaphoneFeed < Feed
   DEFAULT_TITLE = "Megaphone Integration"
-  DEFAULT_SLUG = "megaphone"
 
   has_one :megaphone_config, class_name: "::Megaphone::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
@@ -34,7 +33,7 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def set_defaults
-    self.slug = DEFAULT_SLUG
+    self.slug = "prx-#{id}"
     self.title = DEFAULT_TITLE
     self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
     self.private = true
@@ -48,7 +47,7 @@ class Feeds::MegaphoneFeed < Feed
 
   def publish_integration!
     if publish_integration?
-      Publisher.new(self).publish!
+      ::Megaphone::Publisher.new(self).publish!
     end
   end
 
