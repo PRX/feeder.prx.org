@@ -70,8 +70,8 @@ module Megaphone
         title: e.title,
         external_id: e.guid,
         guid: e.item_guid,
-        pubdate: e.published_at,
-        pubdate_timezone: e.published_at,
+        pubdate: e.published_or_released_date,
+        pubdate_timezone: e.published_or_released_date&.time_zone&.name,
         author: e.author_name,
         link: e.url,
         explicit: e.explicit,
@@ -162,7 +162,8 @@ module Megaphone
     end
 
     def set_enclosure
-      return if download_url.blank? || feeder_episode.enclosure_override_url.present?
+      return unless audio_file_status == "success"
+      return if no_audio download_url.blank? || feeder_episode.enclosure_override_url.present?
       feeder_episode.update(enclosure_override_url: download_url, enclosure_override_prefix: true)
     end
 
