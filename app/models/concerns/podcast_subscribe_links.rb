@@ -17,12 +17,14 @@ module PodcastSubscribeLinks
   end
 
   def copy_subscribe_links(options = {})
-    opts = default_options.merge(options)
-    opts[:body] = build_subscribe_links_json
-    opts[:bucket] = ENV["FEEDER_STORAGE_BUCKET"]
-    opts[:key] = "#{path}/subscribelinks.json"
+    if subscribe_links.present?
+      opts = default_options.merge(options)
+      opts[:body] = build_subscribe_links_json
+      opts[:bucket] = ENV["FEEDER_STORAGE_BUCKET"]
+      opts[:key] = "#{path}/subscribelinks.json"
 
-    @put_object = s3_client.put_object(opts)
+      @put_object = s3_client.put_object(opts)
+    end
   end
 
   def default_options
