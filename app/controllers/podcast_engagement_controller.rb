@@ -11,6 +11,7 @@ class PodcastEngagementController < ApplicationController
     respond_to do |format|
       if @podcast.save
         @podcast.publish!
+        @podcast.copy_subscribe_links
         format.html { redirect_to podcast_engagement_path(@podcast), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")

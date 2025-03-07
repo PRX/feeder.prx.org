@@ -130,4 +130,11 @@ class SubscribeLink < ApplicationRecord
   def bin_to_hex(str)
     str.each_byte.map { |b| b.to_s(16) }.join
   end
+
+  def as_json
+    {
+      href: href,
+      text: I18n.t("helpers.label.podcast.subscribe_link.#{platform}")
+    }
+  end
 end
