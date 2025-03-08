@@ -28,6 +28,16 @@ describe Megaphone::Episode do
     end
   end
 
+  it "can create a arrangement_version_url" do
+    episode = Megaphone::Episode.new_from_episode(podcast, feeder_episode)
+    location = "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b.mp3"
+    media_version = 163842
+    count = 1
+
+    url = episode.arrangement_version_url(location, media_version, count)
+    assert_equal url, "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b_163842_1.mp3"
+  end
+
   describe "#create!" do
     before {
       stub_request(:post, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/mp-123-456/episodes")
@@ -47,7 +57,7 @@ describe Megaphone::Episode do
     end
     it "can create a published episodes with audio" do
     end
-    it "can create a published episodes with the wrong media vetsion from DTR" do
+    it "can create a published episodes with the wrong media version from DTR" do
     end
   end
 end
