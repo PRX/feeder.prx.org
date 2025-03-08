@@ -35,6 +35,14 @@ module Megaphone
       result(request, response)
     end
 
+    def put_base(path, body, headers = {})
+      request = {url: join_base_url(path), headers: headers, body: outgoing_body_filter(body)}
+      response = connection(request.slice(:url, :headers)).put do |req|
+        req.body = request[:body]
+      end
+      result(request, response)
+    end
+
     def result(request, response)
       data = incoming_body_filter(response.body)
       if data.is_a?(Array)
@@ -85,14 +93,18 @@ module Megaphone
       File.join(api_base, "networks", network_id, *path)
     end
 
-    def incoming_body_filter(str)
-      result = JSON.parse(str || "")
-      transform_keys(result)
+    def join_base_url(*path)
+      File.join(api_base, *path)
     end
 
-    def transform_keys(result)
+    def incoming_body_filter(str)
+      result = JSON.parse(str || "")
+      transform_keys_incoming(result)
+    end
+
+    def transform_keys_incoming(result)
       if result.is_a?(Array)
-        result.map { |r| transform_keys(r) }
+        result.map { |r| transform_keys_incoming(r) }
       elsif result.respond_to?(:deep_transform_keys)
         result.deep_transform_keys { |key| key.to_s.underscore.to_sym }
       else
@@ -100,8 +112,18 @@ module Megaphone
       end
     end
 
-    def outgoing_body_filter(attr)
-      (attr || {}).deep_transform_keys { |key| key.to_s.camelize(:lower) }.to_json
+    def outgoing_body_filter(body)
+      transform_keys_outgoing(body).to_json
+    end
+
+    def transform_keys_outgoing(result)
+      if result.is_a?(Array)
+        result.map { |r| transform_keys_outgoing(r) }
+      elsif result.respond_to?(:deep_transform_keys)
+        result.deep_transform_keys { |key| key.to_s.camelize(:lower) }
+      else
+        result
+      end
     end
 
     def default_headers

@@ -183,7 +183,7 @@ module Megaphone
       # validate all the cuepoints about to be created
       cuepoints.all? { |cp| cp.validate!(:create) }
       body = cuepoints.map { |cp| cp.as_json_for_create }
-      self.api_response = api.put("podcasts/#{podcast.id}/episodes/#{id}/cuepoints_batch", body)
+      self.api_response = api.put_base("episodes/#{id}/cuepoints_batch", body)
       update_sync_log
       update_delivery_status
       self
@@ -326,6 +326,7 @@ module Megaphone
       base = File.basename(path.last, ext)
       filename = "#{base}_#{media_version}_#{count}#{ext}"
       uri.path = (path[0..-2] + [filename]).join("/")
+      uri.to_s
     end
 
     def url_filename(url)

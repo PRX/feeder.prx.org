@@ -6,9 +6,9 @@ module Megaphone
 
     AD_SOURCES = %i[auto promo span]
 
-    CREATE_REQUIRED = %i[cuepoint_type ad_count start_time end_time ad_sources action]
+    CREATE_REQUIRED = %i[cuepoint_type ad_count start_time ad_sources]
 
-    CREATE_ATTRIBUTES = CREATE_REQUIRED + %i[title end_time is_active offset notes]
+    CREATE_ATTRIBUTES = CREATE_REQUIRED + %i[title end_time action is_active offset notes]
 
     ALL_ATTRIBUTES = CREATE_ATTRIBUTES
 
