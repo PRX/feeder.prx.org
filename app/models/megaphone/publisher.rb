@@ -4,9 +4,11 @@ module Megaphone
     WAIT_TIMEOUT = 5.minutes
 
     attr_reader :feed
+    attr_accessor :wait_interval
 
     def initialize(feed)
       @feed = feed
+      @wait_interval = WAIT_INTERVAL
     end
 
     def megaphone_podcast
