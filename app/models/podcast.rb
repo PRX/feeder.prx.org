@@ -16,6 +16,7 @@ class Podcast < ApplicationRecord
   include EmbedPlayerHelper
   include PodcastFilters
   include ReleaseEpisodes
+  include PodcastSubscribeLinks
 
   acts_as_paranoid
 
@@ -274,26 +275,6 @@ class Podcast < ApplicationRecord
       true
     else
       super
-    end
-  end
-
-  def build_subscribe_links_json
-    if subscribe_links.present?
-      {
-        version: "1.0.0",
-        links: subscribe_link_data
-      }.to_json
-    end
-  end
-
-  def subscribe_link_data
-    if subscribe_links.present?
-      subscribe_links.map do |slink|
-        {
-          href: slink.href,
-          text: I18n.t("helpers.label.podcast.subscribe_link.#{slink.platform}")
-        }
-      end
     end
   end
 end
