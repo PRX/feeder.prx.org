@@ -29,7 +29,7 @@ module PodcastSubscribeLinks
 
   def default_options
     {
-      content_type: "application/rss+xml; charset=UTF-8",
+      content_type: "application/json; charset=UTF-8",
       cache_control: "max-age=60"
     }
   end
