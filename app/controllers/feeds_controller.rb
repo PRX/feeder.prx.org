@@ -47,6 +47,7 @@ class FeedsController < ApplicationController
 
     respond_to do |format|
       if @feed.save
+        @feed.set_default_episodes unless exclude_default_episodes?
         @feed.copy_media
         @feed.podcast&.publish!
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
@@ -156,5 +157,9 @@ class FeedsController < ApplicationController
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       apple_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, {key_attributes: %i[id provider_id key_id key_pem_b64]}]
     )
+  end
+
+  def exclude_default_episodes?
+    params[:feed][:exclude_default_episodes] == "1"
   end
 end

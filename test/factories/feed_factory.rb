@@ -14,6 +14,12 @@ FactoryBot.define do
     enclosure_template { Feed.enclosure_template_default }
     enclosure_prefix { "" }
 
+    after(:create) do |feed, evaluator|
+      unless feed.default?
+        feed.set_default_episodes
+      end
+    end
+
     factory :default_feed do
       slug { nil }
       file_name { "feed-rss.xml" }
