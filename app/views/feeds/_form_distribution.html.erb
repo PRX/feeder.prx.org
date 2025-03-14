@@ -50,7 +50,7 @@
       <% end %>
 
       <% if feed.custom? %>
-        <div class="col-12 mb-4">
+        <div class="col-12 mb-2">
           <div class="form-check">
             <%= form.check_box :private, data: {action: "change->feed-tokens#togglePrivate"} %>
             <div class="d-flex align-items-center">
@@ -62,11 +62,11 @@
       <% end %>
 
       <% unless feed.persisted? %>
-        <div class="col-12 mb-4">
+        <div class="col-12 mb-2">
           <div class="form-check">
             <%= form.check_box :exclude_default_episodes %>
             <div class="d-flex align-items-center">
-              <%= form.label :exclude_default_episodes %>
+              <%= form.label :exclude_default_episodes, t(".exclude_episodes_label") %>
               <%= help_text t(".help.exclude_episodes") %>
             </div>
           </div>

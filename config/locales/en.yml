@@ -885,6 +885,7 @@ en:
         url: If you already have a public URL for your podcast feed (e.g., <a href="https://support.google.com/feedburner/answer/78475?hl=en" target="_blank">feedburner</a>), enter it here. It should point to your <a href="%{published_url}" target="_blank">private feed URL</a>.
         exclude_episodes: Exclude all episodes from the default feed from being automatically added to this feed.
       title: Distribution
+      exclude_episodes_label: Skip Default Feed Episodes
     form_main:
       confirm:
         file_name: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?
