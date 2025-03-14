@@ -11,6 +11,8 @@ describe Apple::Show do
   let(:apple_show) { Apple::Show.connect_existing("123", apple_config) }
 
   before do
+    private_feed.set_default_episodes
+
     stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200")
       .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
   end
