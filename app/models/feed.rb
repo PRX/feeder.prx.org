@@ -59,7 +59,6 @@ class Feed < ApplicationRecord
   after_initialize :set_defaults
   before_validation :sanitize_text
   before_save :set_public_feeds_url, :check_enclosure_changes
-  after_create :set_default_episodes
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }

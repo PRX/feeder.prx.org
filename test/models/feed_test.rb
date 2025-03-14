@@ -112,6 +112,7 @@ describe Feed do
 
       # new feeds copy the default feed episodes
       new_feed = create(:feed, podcast: podcast)
+      new_feed.set_default_episodes
       assert_equal new_feed.episode_ids, [e1.id]
     end
   end
