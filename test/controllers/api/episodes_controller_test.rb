@@ -220,7 +220,7 @@ describe Api::EpisodesController do
       assert_response :success
 
       episode_update.reload
-      assert_equal episode_update.medium, "audio"
+      assert_equal episode_update.medium, nil
       assert_nil episode_update.uncut
 
       contents = episode_update.contents
@@ -231,7 +231,7 @@ describe Api::EpisodesController do
       guid1 = contents.first.guid
 
       # updating with a different href should insert it
-      update_hash = {media: [{href: "s3://something/else"}]}
+      update_hash = {medium: "audio", media: [{href: "s3://something/else"}]}
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success

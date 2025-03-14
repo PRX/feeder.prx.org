@@ -20,13 +20,6 @@ module EpisodeMedia
 
   def set_medium_defaults
     self.segment_count ||= 1 if new_record? && strict_validations
-    if !medium.present?
-      self.medium = if segment_count.to_i > 1
-        "audio"
-      else
-        "uncut"
-      end
-    end
   end
 
   def validate_media_ready
@@ -174,13 +167,9 @@ module EpisodeMedia
 
     # infer episode medium
     current = contents.reject(&:marked_for_destruction?)
-    if !medium.present?
+    if !medium_uncut? && current.present?
       self.medium = if current.all?(&:audio?)
-        if current.size > 1
-          "audio"
-        else
-          "uncut"
-        end
+        "audio"
       elsif current.all?(&:video?)
         "video"
       end
