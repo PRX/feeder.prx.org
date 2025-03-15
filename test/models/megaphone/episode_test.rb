@@ -92,11 +92,11 @@ describe Megaphone::Episode do
 
       # now let's check to see if it is ready on megaphone! (it's not)
       audio_processing_json = <<~JSON
-      {
-        "originalFilename": "#{arrangement_filename}",
-        "audioFileProcessing": true,
-        "audioFileStatus": "processing"
-      }
+        {
+          "originalFilename": "#{arrangement_filename}",
+          "audioFileProcessing": true,
+          "audioFileStatus": "processing"
+        }
       JSON
 
       stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/mp-123-456/episodes/megaphone-episode-guid")
