@@ -38,7 +38,8 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def redact_value(method, options)
-    return unless options[:redacted] && (options[:disabled] || disabled?)
+    d = options[:disabled] || disabled?
+    return unless options[:redacted] && d
 
     if (val = object.public_send(method))
       chars = [options[:redacted].to_i, 1].max

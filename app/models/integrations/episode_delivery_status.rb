@@ -17,7 +17,7 @@ module Integrations
     end
 
     def self.update_status(integration, episode, attrs)
-      new_status = (episode.episode_delivery_status(integration)&.dup || default_status(integration, episode))
+      new_status = episode.episode_delivery_status(integration)&.dup || default_status(integration, episode)
       attrs[:integration] = integration
       new_status.assign_attributes(attrs)
       new_status.save!
