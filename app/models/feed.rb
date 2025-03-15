@@ -32,7 +32,7 @@ class Feed < ApplicationRecord
 
   has_many :feed_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
-  has_many :itunes_categories, validate: true, autosave: true, dependent: :destroy
+  has_many :itunes_categories, -> { order("created_at ASC") }, validate: true, autosave: true, dependent: :destroy
 
   has_one :apple_sync_log, -> { feeds.apple }, foreign_key: :feeder_id, class_name: "SyncLog"
 
@@ -249,7 +249,7 @@ class Feed < ApplicationRecord
   end
 
   def feed_image
-    feed_images.first
+    feed_images[0]
   end
 
   def feed_image=(file)
@@ -269,7 +269,7 @@ class Feed < ApplicationRecord
   end
 
   def itunes_image
-    itunes_images.first
+    itunes_images[0]
   end
 
   def itunes_image=(file)
@@ -285,6 +285,6 @@ class Feed < ApplicationRecord
   end
 
   def ready_image
-    @ready_image ||= (ready_feed_image || ready_itunes_image)
+    @ready_image ||= ready_feed_image || ready_itunes_image
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -449,6 +449,15 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_08_194342) do
     t.datetime "updated_at", null: false
     t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
     t.index ["updated_at"], name: "index_sessions_on_updated_at"
+  end
+
+  create_table "subscribe_links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "podcast_id"
+    t.string "external_id"
+    t.string "platform"
+    t.index ["podcast_id"], name: "index_subscribe_links_on_podcast_id"
   end
 
   create_table "sync_logs", force: :cascade do |t|

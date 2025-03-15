@@ -45,7 +45,7 @@ class EnclosureUrlBuilder
 
     original_url = media.try(:original_url) || "media"
     original = Addressable::URI.parse(original_url).to_hash
-    original = original.map { |k, v| ["original_#{k}".to_sym, v] }.to_h
+    original = original.map { |k, v| [:"original_#{k}", v] }.to_h
 
     base_url = media.try(:media_url) || ""
     base = Addressable::URI.parse(base_url).to_hash

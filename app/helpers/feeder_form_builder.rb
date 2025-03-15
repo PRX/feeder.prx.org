@@ -34,7 +34,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     add_changed(method, options)
     add_disabled(options)
     redact_value(method, options)
-    super(method, options)
+    super
   end
 
   def redact_value(method, options)
@@ -52,7 +52,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     add_blank_action(options)
     add_changed(method, options)
     add_disabled(options)
-    super(method, options)
+    super
   end
 
   def number_field(method, options = {})
@@ -61,14 +61,14 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     add_blank_action(options)
     add_changed(method, options)
     add_disabled(options)
-    super(method, options)
+    super
   end
 
   def check_box(method, options = {})
     options[:class] = CHECK_CLASS unless options.key?(:class)
     add_changed(method, options)
     add_disabled(options)
-    super(method, options)
+    super
   end
 
   def date_field(method, options = {})
@@ -89,7 +89,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     add_slim_select_controller(html_options)
     add_disabled(html_options)
     add_select_by_group(html_options) if html_options[:group_select]
-    super(method, choices, options, html_options, &block)
+    super
   end
 
   def tag_select(method, choices, options = {}, html_options = {}, &block)
@@ -129,7 +129,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     add_blank_action(options)
     add_changed(method, options)
     add_disabled(options)
-    super(method, options)
+    super
   end
 
   def disabled?
@@ -163,7 +163,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
     if object.present?
       changed = object.try("#{method}_changed?")
-      has_value_was = object.respond_to?("#{method}_was")
+      has_value_was = object.respond_to?(:"#{method}_was")
       value_was = object.try("#{method}_was")
       value_is = object.try(method)
 

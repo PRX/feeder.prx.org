@@ -1,11 +1,12 @@
 require "text_sanitizer"
+require "json"
 
 class Podcast < ApplicationRecord
   FEED_ATTRS = %i[subtitle description url new_feed_url display_episodes_count
     display_full_episodes_count enclosure_prefix enclosure_template feed_image itunes_image
     ready_feed_image ready_itunes_image ready_image itunes_category itunes_subcategory itunes_categories]
-  FEED_GETTERS = FEED_ATTRS.map { |s| [s, "#{s}_was".to_sym, "#{s}_changed?".to_sym] }.flatten
-  FEED_SETTERS = FEED_ATTRS.map { |s| "#{s}=".to_sym }
+  FEED_GETTERS = FEED_ATTRS.map { |s| [s, :"#{s}_was", :"#{s}_changed?"] }.flatten
+  FEED_SETTERS = FEED_ATTRS.map { |s| :"#{s}=" }
 
   # https://github.com/Podcastindex-org/podcast-namespace/blob/main/docs/1.0.md#guid
   PODCAST_NAMESPACE = "ead4c236-bf58-58c6-a2c6-a6b28d128cb6".freeze
@@ -16,6 +17,7 @@ class Podcast < ApplicationRecord
   include PodcastFilters
   include ReleaseEpisodes
   include Integrations::PodcastIntegrations
+  include PodcastSubscribeLinks
 
   acts_as_paranoid
 
@@ -28,8 +30,10 @@ class Podcast < ApplicationRecord
   has_many :feeds, dependent: :destroy
   has_many :tasks, as: :owner
   has_many :podcast_imports, dependent: :destroy
+  has_many :subscribe_links, dependent: :destroy
 
   accepts_nested_attributes_for :default_feed
+  accepts_nested_attributes_for :subscribe_links, allow_destroy: true
 
   validates :title, presence: true
   validates :link, http_url: true
@@ -97,7 +101,7 @@ class Podcast < ApplicationRecord
   end
 
   def explicit=(value)
-    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
+    super(Podcast::EXPLICIT_ALIASES.fetch(value, value))
   end
 
   def publish_updated

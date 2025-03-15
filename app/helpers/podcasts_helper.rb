@@ -118,4 +118,54 @@ module PodcastsHelper
       language
     end
   end
+
+  def subscribe_link_platform_label(link)
+    I18n.t("helpers.label.podcast.subscribe_link.#{link.platform}")
+  end
+
+  def subscribe_link_id_label(link)
+    if link.uses_apple_id?
+      I18n.t("helpers.label.podcast.subscribe_link.id.apple")
+    elsif link.uses_unique_id?
+      I18n.t("helpers.label.podcast.subscribe_link.id.unique", platform: subscribe_link_platform_label(link))
+    elsif link.uses_feed_url?
+      I18n.t("helpers.label.podcast.subscribe_link.id.feed")
+    elsif link.uses_podcast_guid?
+      I18n.t("helpers.label.podcast.subscribe_link.id.guid")
+    elsif link.uses_pod_index_id?
+      I18n.t("helpers.label.podcast.subscribe_link.id.pod_index")
+    end
+  end
+
+  def subscribe_link_help(link)
+    if link.uses_apple_id?
+      I18n.t("podcast_engagement.form_subscribe_links.help.apple")
+    elsif link.uses_unique_id?
+      I18n.t("podcast_engagement.form_subscribe_links.help.unique", platform: subscribe_link_platform_label(link))
+    elsif link.uses_feed_url?
+      I18n.t("podcast_engagement.form_subscribe_links.help.feed")
+    elsif link.uses_podcast_guid?
+      I18n.t("podcast_engagement.form_subscribe_links.help.guid")
+    elsif link.uses_pod_index_id?
+      I18n.t("podcast_engagement.form_subscribe_links.help.pod_index")
+    end
+  end
+
+  def subscribe_link_options(podcast)
+    selected = podcast.subscribe_links.select(&:persisted?).map { |sl| sl.platform }
+
+    SubscribeLink::PLATFORMS.filter { |p| !selected.include?(p) }.map { |p| {platform: p, icon: p.split("_").first} }
+  end
+
+  def subscribe_link_external_id(podcast, platform)
+    if SubscribeLink::APPLE_PLATFORMS.include?(platform) && podcast.subscribe_links.with_apple_id.any?
+      podcast.subscribe_links.with_apple_id.first.external_id
+    elsif SubscribeLink::FEED_PLATFORMS.include?(platform)
+      podcast.public_url
+    elsif SubscribeLink::GUID_PLATFORMS.include?(platform)
+      podcast.guid
+    else
+      "NEW_EXTERNAL_ID"
+    end
+  end
 end

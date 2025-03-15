@@ -130,11 +130,12 @@ class Episode < ApplicationRecord
   end
 
   def image
-    images.first
+    images[0]
   end
 
-  def image=(file)
-    img = EpisodeImage.build(file)
+  def image=(img)
+    img = EpisodeImage.new(original_url: img) if img.is_a?(String)
+    img = EpisodeImage.new(img) if img.is_a?(Hash)
 
     if !img
       images.each(&:mark_for_destruction)
@@ -156,7 +157,7 @@ class Episode < ApplicationRecord
   end
 
   def explicit=(value)
-    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
+    super(Podcast::EXPLICIT_ALIASES.fetch(value, value))
   end
 
   def explicit_content
