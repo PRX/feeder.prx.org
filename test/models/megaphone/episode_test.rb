@@ -63,12 +63,12 @@ describe Megaphone::Episode do
       source_url = "#{base_url}/audio.flac"
       arrangement_url = "#{base_url}/audio_#{media_episode.media_version_id}_0.flac"
 
-      stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.flac?auth=#{feed.tokens.first.token}").
-      to_return(status: 302, body: "", headers: {
-        "x-episode-media-version" => media_episode.media_version_id,
-        "location" => source_url,
-        "content-length" => 1000000
-      })
+      stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.flac?auth=#{feed.tokens.first.token}")
+        .to_return(status: 302, body: "", headers: {
+          "x-episode-media-version" => media_episode.media_version_id,
+          "location" => source_url,
+          "content-length" => 1000000
+        })
 
       assert media_episode.complete_media?
       assert_nil media_episode.episode_delivery_status(:megaphone)
