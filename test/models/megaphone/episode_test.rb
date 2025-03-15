@@ -90,8 +90,23 @@ describe Megaphone::Episode do
       # but we still need to see if it has been fully processed
       refute media_episode.episode_delivery_status(:megaphone).delivered
 
-      # now let's check to see if it is ready on megaphone!
-      audio_json = <<~JSON
+      # now let's check to see if it is ready on megaphone! (it's not)
+      audio_processing_json = <<~JSON
+      {
+        "originalFilename": "#{arrangement_filename}",
+        "audioFileProcessing": true,
+        "audioFileStatus": "processing"
+      }
+      JSON
+
+      stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/mp-123-456/episodes/megaphone-episode-guid")
+        .to_return(status: 200, body: audio_processing_json, headers: {})
+
+      episode.check_audio!
+      refute media_episode.episode_delivery_status(:megaphone).delivered
+
+      # let's check again to see if it is ready on megaphone! (it is)
+      audio_ready_json = <<~JSON
         {
           "originalFilename": "#{arrangement_filename}",
           "audioFileProcessing": false,
@@ -100,7 +115,7 @@ describe Megaphone::Episode do
       JSON
 
       stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/mp-123-456/episodes/megaphone-episode-guid")
-        .to_return(status: 200, body: audio_json, headers: {})
+        .to_return(status: 200, body: audio_ready_json, headers: {})
 
       cp_json = "[{\"cuepointType\":\"postroll\",\"adCount\":1,\"startTime\":\"48.0\",\"adSources\":[\"promo\"],\"action\":\"insert\",\"isActive\":true}]"
       stub_request(:put, "https://cms.megaphone.fm/api/episodes/megaphone-episode-guid/cuepoints_batch")
@@ -108,7 +123,6 @@ describe Megaphone::Episode do
         .to_return(status: 200, body: cp_json, headers: {})
 
       episode.check_audio!
-
       assert media_episode.episode_delivery_status(:megaphone).delivered
     end
 
