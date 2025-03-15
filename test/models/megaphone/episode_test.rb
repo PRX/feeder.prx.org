@@ -33,10 +33,9 @@ describe Megaphone::Episode do
     episode = Megaphone::Episode.new_from_episode(podcast, feeder_episode)
     location = "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b.mp3"
     media_version = 163842
-    count = 1
 
-    url = episode.arrangement_version_url(location, media_version, count)
-    assert_equal url, "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b_163842_1.mp3"
+    url = episode.arrangement_version_url(location, media_version)
+    assert_equal url, "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b_163842.mp3"
   end
 
   describe "#create!" do
@@ -61,7 +60,8 @@ describe Megaphone::Episode do
     it "can create a published episode with audio" do
       base_url = "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/some-digest-value"
       source_url = "#{base_url}/audio.flac"
-      arrangement_url = "#{base_url}/audio_#{media_episode.media_version_id}_0.flac"
+      arrangement_filename = "audio_#{media_episode.media_version_id}.flac"
+      arrangement_url = "#{base_url}/#{arrangement_filename}"
 
       stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.flac?auth=#{feed.tokens.first.token}")
         .to_return(status: 302, body: "", headers: {
@@ -85,9 +85,63 @@ describe Megaphone::Episode do
       assert_equal arrangement_url, episode.background_audio_file_url
       assert media_episode.sync_log(:megaphone).external_id
       assert media_episode.episode_delivery_status(:megaphone)
+      # we saved the background audio url to mp, so it is uploaded
+      assert media_episode.episode_delivery_status(:megaphone).uploaded
+      # but we still need to see if it has been fully processed
+      refute media_episode.episode_delivery_status(:megaphone).delivered
+
+      # now let's check to see if it is ready on megaphone!
+      audio_json = <<~JSON
+        {
+          "originalFilename": "#{arrangement_filename}",
+          "audioFileProcessing": false,
+          "audioFileStatus": "success"
+        }
+      JSON
+
+      stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/mp-123-456/episodes/megaphone-episode-guid")
+        .to_return(status: 200, body: audio_json, headers: {})
+
+      cp_json = "[{\"cuepointType\":\"postroll\",\"adCount\":1,\"startTime\":\"48.0\",\"adSources\":[\"promo\"],\"action\":\"insert\",\"isActive\":true}]"
+      stub_request(:put, "https://cms.megaphone.fm/api/episodes/megaphone-episode-guid/cuepoints_batch")
+        .with(body: cp_json)
+        .to_return(status: 200, body: cp_json, headers: {})
+
+      episode.check_audio!
+
+      assert media_episode.episode_delivery_status(:megaphone).delivered
     end
 
     it "can create a published episodes with the wrong media version from DTR" do
+      base_url = "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/some-digest-value"
+      source_url = "#{base_url}/audio.flac"
+
+      stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.flac?auth=#{feed.tokens.first.token}")
+        .to_return(status: 302, body: "", headers: {
+          "x-episode-media-version" => media_episode.media_version_id - 1,
+          "location" => source_url,
+          "content-length" => 1000000
+        })
+
+      assert media_episode.complete_media?
+      assert_nil media_episode.episode_delivery_status(:megaphone)
+      assert_nil media_episode.sync_log(:megaphone)
+
+      episode = Megaphone::Episode.new_from_episode(podcast, media_episode)
+
+      assert_nil episode.source_media_version_id
+      assert_nil episode.source_size
+      assert_nil episode.source_url
+
+      episode.create!
+
+      assert_nil episode.background_audio_file_url
+      assert media_episode.sync_log(:megaphone).external_id
+      assert media_episode.episode_delivery_status(:megaphone)
+      # we did not save the background audio url to mp, so it is not uploaded
+      refute media_episode.episode_delivery_status(:megaphone).uploaded
+      # and likewise not delivered, as we still need to check and wait on DTR
+      refute media_episode.episode_delivery_status(:megaphone).delivered
     end
   end
 

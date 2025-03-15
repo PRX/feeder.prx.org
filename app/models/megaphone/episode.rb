@@ -179,7 +179,7 @@ module Megaphone
 
     def set_enclosure
       return unless audio_file_status == "success"
-      return if no_audio download_url.blank? || feeder_episode.enclosure_override_url.present?
+      return if download_url.blank? || feeder_episode.enclosure_override_url.present?
       feeder_episode.update(enclosure_override_url: download_url, enclosure_override_prefix: true)
     end
 
@@ -224,13 +224,18 @@ module Megaphone
 
     # update delivery status after a create or update
     def update_delivery_status
-      # if there's audio and we just uploaded it successfully, set attr, then check status
-      if feeder_episode.complete_media? && background_audio_file_url
-        attrs = source_attributes.merge(uploaded: true)
-        feeder_episode.update_episode_delivery_status(:megaphone, attrs)
+      # if there is audio
+      if feeder_episode.complete_media? && !has_media_version?
+        # if there's audio and we just uploaded it successfully, set attr, then check status
+        if background_audio_file_url
+          attrs = source_attributes.merge(uploaded: true, delivered: false)
+          feeder_episode.update_episode_delivery_status(:megaphone, attrs)
+        # if versions don't match, and we didn't upload, it isn't delivered
+        else
+          delivery_status(true).mark_as_not_delivered!
+        end
       # or if there's not audio yet or it didn't change
       else
-        # we're done, mark it as delivered!
         delivery_status(true).mark_as_delivered!
       end
       feeder_episode.episode_delivery_statuses.reset
@@ -288,13 +293,14 @@ module Megaphone
     def set_audio_attributes
       return unless feeder_episode.complete_media?
 
-      # check if the version is different from what was saved before
+      # check if the version is different from what was saved before,
+      # need to upload and deliver
       if !has_media_version?
         media_info = get_media_info(enclosure_url)
 
         # if dovetail has the right media info, we can update
         if media_info[:media_version] == feeder_episode.media_version_id
-          audio_url = arrangement_version_url(media_info[:location], media_info[:media_version], source_fetch_count)
+          audio_url = arrangement_version_url(media_info[:location], media_info[:media_version])
 
           self.source_media_version_id = media_info[:media_version]
           self.source_size = media_info[:size]
@@ -304,9 +310,6 @@ module Megaphone
           self.background_audio_file_url = audio_url
           self.insertion_points = timings
           self.retain_ad_locations = true
-        else
-          # if not, mark it as not uploaded and move on, even if a new status
-          delivery_status(true).mark_as_not_uploaded!
         end
       end
     end
@@ -337,12 +340,12 @@ module Megaphone
       raise err
     end
 
-    def arrangement_version_url(location, media_version, count)
+    def arrangement_version_url(location, media_version)
       uri = URI.parse(location)
       path = uri.path.split("/")
       ext = File.extname(path.last)
       base = File.basename(path.last, ext)
-      filename = "#{base}_#{media_version}_#{count.to_i}#{ext}"
+      filename = "#{base}_#{media_version}#{ext}"
       uri.path = (path[0..-2] + [filename]).join("/")
       uri.to_s
     end
