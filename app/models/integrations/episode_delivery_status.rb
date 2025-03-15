@@ -25,6 +25,10 @@ module Integrations
       new_status
     end
 
+    def self.delete_status(integration, episode)
+      episode.episode_delivery_statuses.where(integration: integration).delete_all
+    end
+
     def self.default_status(integration, episode)
       new(episode: episode, integration: integration)
     end

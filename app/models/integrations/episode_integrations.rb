@@ -44,4 +44,8 @@ module Integrations::EpisodeIntegrations
   def update_episode_delivery_status(integration, attrs)
     Integrations::EpisodeDeliveryStatus.update_status(integration, self, attrs)
   end
+
+  def delete_episode_delivery_status(integration)
+    Integrations::EpisodeDeliveryStatus.delete_status(integration, self)
+  end
 end

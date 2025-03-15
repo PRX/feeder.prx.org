@@ -35,6 +35,12 @@ module Megaphone
       result(request, response)
     end
 
+    def delete(path, params = {}, headers = {})
+      request = {url: join_url(path), headers: headers, params: params}
+      response = delete_url(request)
+      result(request, response)
+    end
+
     def put_base(path, body, headers = {})
       request = {url: join_base_url(path), headers: headers, body: outgoing_body_filter(body)}
       response = connection(request.slice(:url, :headers)).put do |req|
@@ -87,6 +93,10 @@ module Megaphone
 
     def get_url(options)
       connection(options).get
+    end
+
+    def delete_url(options)
+      connection(options).delete
     end
 
     def join_url(*path)

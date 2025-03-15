@@ -125,6 +125,22 @@ module Megaphone
       self
     end
 
+    def delete!
+      self.api_response = api.delete("podcasts/#{podcast.id}/episodes/#{id}")
+      delete_sync_log
+      delete_delivery_status
+      self
+    end
+
+    def delete_sync_log
+      sync_log = feeder_episode.sync_log(:megaphone)
+      sync_log.destroy!
+    end
+
+    def delete_delivery_status
+      feeder_episode.delete_episode_delivery_status(:megaphone)
+    end
+
     # call this when we need to update the audio on mp
     # like when dtr wasn't ready at first
     # so we can make that update and then mark uploaded
@@ -278,17 +294,19 @@ module Megaphone
 
         # if dovetail has the right media info, we can update
         if media_info[:media_version] == feeder_episode.media_version_id
+          audio_url = arrangement_version_url(media_info[:location], media_info[:media_version], source_fetch_count)
+
           self.source_media_version_id = media_info[:media_version]
           self.source_size = media_info[:size]
           self.source_fetch_count = (delivery_status&.source_fetch_count || 0) + 1
-          self.source_url = arrangement_version_url(media_info[:location], media_info[:media_version], source_fetch_count)
+          self.source_url = audio_url
           self.source_filename = url_filename(source_url)
-          self.background_audio_file_url = source_url
+          self.background_audio_file_url = audio_url
           self.insertion_points = timings
           self.retain_ad_locations = true
         else
-          # if not, mark it as not uploaded and move on
-          delivery_status.mark_as_not_uploaded!
+          # if not, mark it as not uploaded and move on, even if a new status
+          delivery_status(true).mark_as_not_uploaded!
         end
       end
     end
@@ -303,12 +321,12 @@ module Megaphone
         media_version: nil,
         location: nil,
         size: nil
-      }
+      }.with_indifferent_access
       resp = Faraday.head(enclosure)
       if resp.status == 302
-        info[:media_version] = resp.env.response_headers["x-episode-media-version"]
+        info[:media_version] = resp.env.response_headers["x-episode-media-version"].to_i
         info[:location] = resp.env.response_headers["location"]
-        info[:size] = resp.env.response_headers["content-length"]
+        info[:size] = resp.env.response_headers["content-length"].to_i
       else
         logger.error("DTR media redirect not returned: #{resp.status}", enclosure: enclosure, resp: resp)
         raise("DTR media redirect not returned: #{resp.status}")
@@ -324,7 +342,7 @@ module Megaphone
       path = uri.path.split("/")
       ext = File.extname(path.last)
       base = File.basename(path.last, ext)
-      filename = "#{base}_#{media_version}_#{count}#{ext}"
+      filename = "#{base}_#{media_version}_#{count.to_i}#{ext}"
       uri.path = (path[0..-2] + [filename]).join("/")
       uri.to_s
     end

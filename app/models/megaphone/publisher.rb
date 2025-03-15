@@ -26,7 +26,7 @@ module Megaphone
     def sync_episodes!
       Rails.logger.tagged("Megaphone::Publisher#sync_episodes!") do
         # delete or unpublish episodes we aren't including in the feed anymore
-        unpublish_and_delete_episodes!
+        delete_episodes!
 
         # start with create and update, make sure they have been created at least
         create_and_update_episodes!
@@ -101,7 +101,16 @@ module Megaphone
       me.create!
     end
 
-    def unpublish_and_delete_episodes!
+    def delete_episodes!
+      megaphone_episodes = []
+      podcast.episodes.with_deleted.where.not(id: private_feed.episodes).each do |ep|
+        next unless episode.episode_delivery_status(:megaphone).present?
+        if (megaphone_episode = Megaphone::Episode.find_by_episode(megaphone_podcast, ep))
+          megaphone_episode.delete!
+          megaphone_episodes << megaphone_episode
+        end
+      end
+      megaphone_episodes
     end
 
     def sync_podcast!
