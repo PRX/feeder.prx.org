@@ -104,7 +104,7 @@ module Megaphone
     def delete_episodes!
       megaphone_episodes = []
       podcast.episodes.with_deleted.where.not(id: private_feed.episodes).each do |ep|
-        next unless episode.episode_delivery_status(:megaphone).present?
+        next unless ep.episode_delivery_status(:megaphone).present?
         if (megaphone_episode = Megaphone::Episode.find_by_episode(megaphone_podcast, ep))
           megaphone_episode.delete!
           megaphone_episodes << megaphone_episode
