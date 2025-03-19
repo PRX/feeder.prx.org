@@ -65,12 +65,15 @@ class PublishFeedJob < ApplicationJob
   end
 
   def save_file(podcast, feed, options = {})
-    rss = FeedBuilder.new(podcast, feed).to_feed_xml
+    rss = FeedBuilder.new(podcast, feed)
     opts = default_options.merge(options)
-    opts[:body] = rss
+    opts[:body] = rss.to_feed_xml
     opts[:bucket] = s3_bucket
     opts[:key] = feed.path
     @put_object = s3_client.put_object(opts)
+    Episode.where(id: rss.episodes).where(first_rss_published_at: nil).update_all(first_rss_published_at: DateTime.now) if feed.default?
+
+    @put_object
   end
 
   def default_options
