@@ -20,6 +20,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :audio_format
   property :include_podcast_value
   property :include_donation_url
+  property :serve_drafts
 
   property :feed_image, decorator: Api::ImageRepresenter, class: FeedImage
   property :itunes_image, decorator: Api::ImageRepresenter, class: ITunesImage

@@ -41,6 +41,10 @@ class Feeds::MegaphoneFeed < Feed
     super
   end
 
+  def serve_drafts
+    publish_integration?
+  end
+
   def publish_integration?
     publish_to_megaphone?
   end

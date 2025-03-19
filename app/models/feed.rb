@@ -85,6 +85,10 @@ class Feed < ApplicationRecord
     false
   end
 
+  def serve_drafts
+    false
+  end
+
   def publish_integration!
   end
 
