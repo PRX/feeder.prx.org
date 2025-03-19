@@ -54,7 +54,7 @@ module Megaphone
       podcast = feed.podcast
       itunes_categories = feed.itunes_categories.present? ? feed.itunes_categories : podcast.itunes_categories
       {
-        title: feed.title || podcast.title,
+        title: podcast.title,
         subtitle: feed.subtitle || podcast.subtitle,
         summary: feed.description || podcast.description,
         itunes_categories: (itunes_categories || []).map(&:name),
