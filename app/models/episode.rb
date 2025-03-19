@@ -8,6 +8,7 @@ class Episode < ApplicationRecord
   include EpisodeFilters
   include EpisodeHasFeeds
   include EpisodeMedia
+  include Integrations::EpisodeIntegrations
   include PublishingStatus
   include TextSanitizer
   include EmbedPlayerHelper
@@ -206,7 +207,7 @@ class Episode < ApplicationRecord
 
   def publish!
     Rails.logger.tagged("Episode#publish!") do
-      apple_mark_for_reupload!
+      feeds.each { |f| f.mark_as_not_delivered!(self) }
       podcast&.publish!
     end
   end
