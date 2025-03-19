@@ -9,7 +9,7 @@ describe Megaphone::Podcast do
       podcast = Megaphone::Podcast.new_from_feed(feed)
       assert_not_nil podcast
       assert_not_nil podcast.config
-      assert_equal podcast.title, feed.title
+      assert_equal podcast.title, dt_podcast.title
       assert podcast.valid?
     end
   end

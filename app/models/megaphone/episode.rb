@@ -16,7 +16,7 @@ module Megaphone
 
     CREATE_ATTRIBUTES = CREATE_REQUIRED + %i[pubdate pubdate_timezone author link explicit draft
       subtitle summary background_image_file_url background_audio_file_url pre_count post_count
-      insertion_points guid pre_offset post_offset expected_adhash original_filename original_url
+      insertion_points guid expected_adhash original_filename original_url
       episode_number season_number retain_ad_locations advertising_tags ad_free]
 
     UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES
@@ -24,7 +24,7 @@ module Megaphone
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
     OTHER_ATTRIBUTES = %i[id podcast_id created_at updated_at status
-      download_url audio_file_processing audio_file_status audio_file_updated_at]
+      download_url audio_file_processing audio_file_status audio_file_updated_at pre_offset post_offset]
 
     DEPRECATED = %i[]
 
@@ -145,8 +145,9 @@ module Megaphone
     # like when dtr wasn't ready at first
     # so we can make that update and then mark uploaded
     def upload_audio!
-      set_audio_attributes
-      update!
+      # basically just do an update, passing in the episode
+      # which will override the audio attributes
+      update!(feeder_episode)
     end
 
     # call this when audio has been updated on mp
@@ -331,8 +332,8 @@ module Megaphone
         info[:location] = resp.env.response_headers["location"]
         info[:size] = resp.env.response_headers["content-length"].to_i
       else
-        logger.error("DTR media redirect not returned: #{resp.status}", enclosure: enclosure, resp: resp)
-        raise("DTR media redirect not returned: #{resp.status}")
+        logger.error("DTR media redirect not returned: #{resp&.status}", enclosure: enclosure, headers: resp&.env&.response_headers)
+        raise("DTR media redirect not returned: #{resp&.status}")
       end
       info
     rescue => err
