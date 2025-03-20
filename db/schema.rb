@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_18_202734) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -148,6 +148,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
     t.string "categories", array: true
     t.string "enclosure_override_url"
     t.boolean "enclosure_override_prefix"
+    t.datetime "first_rss_published_at", precision: nil
     t.index ["categories"], name: "index_episodes_on_categories", using: :gin
     t.index ["guid"], name: "index_episodes_on_guid", unique: true
     t.index ["keyword_xid"], name: "index_episodes_on_keyword_xid", unique: true
