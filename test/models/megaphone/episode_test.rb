@@ -84,9 +84,14 @@ describe Megaphone::Episode do
 
       assert_equal arrangement_url, episode.background_audio_file_url
       assert media_episode.sync_log(:megaphone).external_id
-      assert media_episode.episode_delivery_status(:megaphone)
+      status = media_episode.episode_delivery_status(:megaphone)
+      assert status
       # we saved the background audio url to mp, so it is uploaded
-      assert media_episode.episode_delivery_status(:megaphone).uploaded
+      assert status.uploaded
+      assert_equal status.source_filename, "audio_#{media_episode.media_version_id}.flac"
+      assert_equal status.source_size, 1000000
+      assert_equal status.source_media_version_id, media_episode.media_version_id
+
       # but we still need to see if it has been fully processed
       refute media_episode.episode_delivery_status(:megaphone).delivered
 
@@ -110,7 +115,8 @@ describe Megaphone::Episode do
         {
           "originalFilename": "#{arrangement_filename}",
           "audioFileProcessing": false,
-          "audioFileStatus": "success"
+          "audioFileStatus": "success",
+          "audioFileUpdatedAt": "#{(DateTime.now + 5.minutes).utc.iso8601}"
         }
       JSON
 
