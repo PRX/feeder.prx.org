@@ -214,14 +214,22 @@ module Apple
       resp
     end
 
+    def handle_api_error(resp)
+      raise Apple::ApiError.for_response("Apple API Error", resp)
+    end
+
     def unwrap_response(resp, ignore_errors: [])
-      raise Apple::ApiError.new("Apple Api Error", resp) unless ok_code(resp, ignore_errors: ignore_errors)
+      unless ok_code(resp, ignore_errors: ignore_errors)
+        handle_api_error(resp)
+      end
 
       JSON.parse(resp.body)
     end
 
     def unwrap_bridge_response(resp, ignore_errors: [])
-      raise Apple::ApiError.new("Apple Api Bridge Error", resp) unless ok_code(resp, ignore_errors: ignore_errors)
+      unless ok_code(resp, ignore_errors: ignore_errors)
+        handle_api_error(resp)
+      end
 
       parsed = JSON.parse(resp.body)
 
@@ -280,8 +288,18 @@ module Apple
       oks
     end
 
-    def raise_bridge_api_error(err)
-      raise Apple::ApiError.new(JSON.pretty_generate(err), nil)
+    def raise_bridge_api_error(errs)
+      error_instances =
+        errs.map do |err|
+          body = err["api_response"]["val"]
+
+          # Mimic the interface to a raw api response.
+          decorated_response = OpenStruct.new(code: body.dig("data", "status"), body: JSON.pretty_generate(body))
+          Apple::ApiError.for_response("Apple API Error", decorated_response)
+        end
+      Rails.logger.warn("Apple::Api ERROR", error: errs)
+
+      raise error_instances.first
     end
 
     def development_bridge_url?
