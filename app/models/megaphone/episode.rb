@@ -4,7 +4,7 @@ module Megaphone
     attr_accessor :podcast
 
     # track upload source data
-    SOURCE_ATTRIBUTES = [:source_media_version_id, :source_size, :source_fetch_count, :source_url, :source_filename]
+    SOURCE_ATTRIBUTES = %i[source_media_version_id source_size source_fetch_count source_url source_filename]
     attr_accessor(*SOURCE_ATTRIBUTES)
 
     # Used to form the adhash value
@@ -161,7 +161,7 @@ module Megaphone
       set_audio_attributes
 
       # check to see if the audio on mp matches
-      if original_filename == source_filename
+      if audio_is_latest?
         # if processing done, set the cuepoints and the enclosure
         if !audio_file_processing && audio_file_status == "success"
           set_enclosure
@@ -176,6 +176,12 @@ module Megaphone
         # if the files don't match, we need to go back and upload
         delivery_status(true).mark_as_not_uploaded!
       end
+    end
+
+    def audio_is_latest?
+      feeder_audio_updated_at = feeder_episode.media_versions.last&.updated_at
+      megaphone_updated_at = DateTime.parse(audio_file_updated_at) if audio_file_updated_at
+      megaphone_updated_at && feeder_audio_updated_at && feeder_audio_updated_at <= megaphone_updated_at
     end
 
     def set_enclosure
@@ -316,7 +322,7 @@ module Megaphone
     end
 
     def source_attributes
-      attributes.slice(*SOURCE_ATTRIBUTES)
+      SOURCE_ATTRIBUTES.map { |a| [a, send(a)] }.to_h
     end
 
     def get_media_info(enclosure)
