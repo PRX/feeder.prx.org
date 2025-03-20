@@ -53,7 +53,7 @@ module Megaphone
       # if after all those checks, still incomplete? throw an error
       if episodes.size > 0
         msg = "Megaphone::Publisher.check_status_episodes! timed out on: #{episodes.map(&:id)}"
-        Logger.error(msg)
+        Rails.logger.error(msg)
         raise msg
       end
     end
