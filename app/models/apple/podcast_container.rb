@@ -9,7 +9,7 @@ module Apple
 
     default_scope { includes(:apple_sync_log) }
 
-    has_one :apple_sync_log, -> { podcast_containers }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
+    has_one :apple_sync_log, -> { podcast_containers.apple }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
     has_many :podcast_deliveries, dependent: :destroy
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
@@ -83,7 +83,7 @@ module Apple
 
         finished = remaining_episodes.group_by(&:has_media_version?)
 
-        (finished[false] || [])
+        finished[false] || []
       end
     end
 
@@ -145,7 +145,7 @@ module Apple
          external_id: external_id,
          feeder_episode_id: episode.feeder_id})
 
-      SyncLog.log!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
+      SyncLog.log!(integration: :apple, feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
 
       # reset the episode's podcast container cached value
       pc.reload if action == :updated
@@ -276,8 +276,8 @@ module Apple
       # because we cannot infer if the podcast delivery files have expired
       return true if podcast_delivery_files.length == 0
 
-      (podcast_delivery_files.all?(&:delivered?) &&
-        podcast_delivery_files.all?(&:processed?))
+      podcast_delivery_files.all?(&:delivered?) &&
+        podcast_delivery_files.all?(&:processed?)
     end
 
     def processed_errors?

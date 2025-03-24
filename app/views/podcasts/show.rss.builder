@@ -62,8 +62,8 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
 
     rel = full_contact("owner", @podcast) ? "owner" : "author"
     xml.itunes :owner do
-      xml.itunes :email, @podcast.send("#{rel}_email")
-      xml.itunes :name, @podcast.send("#{rel}_name") if @podcast.send("#{rel}_name")
+      xml.itunes :email, @podcast.send(:"#{rel}_email")
+      xml.itunes :name, @podcast.send(:"#{rel}_name") if @podcast.send(:"#{rel}_name")
     end
 
     if @feed.subtitle.present?
@@ -104,6 +104,10 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
 
     if @podcast.guid.present?
       xml.podcast :guid, @podcast.guid
+    end
+
+    if @podcast.subscribe_links.present?
+      xml.podcast :follow, url: @podcast.subscribe_links_path
     end
 
     @episodes.each_with_index do |ep, index|

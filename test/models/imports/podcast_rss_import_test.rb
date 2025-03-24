@@ -67,6 +67,11 @@ describe PodcastRssImport do
     _(importer.podcast.managing_editor_name).must_equal "PRX"
     _(importer.podcast.managing_editor_email).must_equal "prxwpadmin@prx.org"
 
+    # lock for some minutes, but not forever (in case there are 0 episodes)
+    _(importer.podcast.locked).must_equal true
+    _(importer.podcast.locked_until).must_be :>, 5.minutes.from_now
+    _(importer.podcast.locked_until).must_be :<, 30.minutes.from_now
+
     # categories, itunes:keywords and media:keywords are combined
     _(importer.podcast.categories).must_equal ["Some Category", "keyword1", "keyword two", "media one"]
 

@@ -21,8 +21,17 @@ class EnclosureUrlBuilder
     feed ||= podcast.default_feed
     prefix = feed.try(:enclosure_prefix)
 
-    url = base_enclosure_url(podcast, episode, feed)
-    enclosure_prefix_url(url, prefix)
+    base_url = if !episode.enclosure_override_url.blank?
+      episode.enclosure_override_url
+    else
+      base_enclosure_url(podcast, episode, feed)
+    end
+
+    if episode.enclosure_override_prefix
+      base_url
+    else
+      enclosure_prefix_url(base_url, prefix)
+    end
   end
 
   def base_enclosure_url(podcast, episode, feed)
@@ -36,7 +45,7 @@ class EnclosureUrlBuilder
 
     original_url = media.try(:original_url) || "media"
     original = Addressable::URI.parse(original_url).to_hash
-    original = original.map { |k, v| ["original_#{k}".to_sym, v] }.to_h
+    original = original.map { |k, v| [:"original_#{k}", v] }.to_h
 
     base_url = media.try(:media_url) || ""
     base = Addressable::URI.parse(base_url).to_hash

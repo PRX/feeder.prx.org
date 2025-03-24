@@ -5,6 +5,23 @@ module PodcastsHelper
 
   RSS_LANGUAGE_CODES = %w[af sq eu be bg ca zh-cn zh-tw hr cs da nl nl-be nl-nl en en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw et fo fi fr fr-be fr-ca fr-fr fr-lu fr-mc fr-ch gl gd de de-at de-de de-li de-lu de-ch el haw hu is in ga it it-it it-ch ja ko mk no pl pt pt-br pt-pt ro ro-mo ro-ro ru ru-mo ru-ru sr sk sl es es-ar es-bo es-cl es-co es-cr es-do es-ec es-sv es-gt es-hn es-mx es-ni es-pa es-py es-pe es-pr es-es es-uy es-ve sv sv-fi sv-se tr uk]
 
+  def podcast_integration_status(integration, podcast)
+    sync = podcast.public_feed.sync_log(integration)
+    if !sync
+      "not_found"
+    elsif !sync.external_id
+      "new"
+    elsif sync.updated_at <= podcast.updated_at
+      "incomplete"
+    else
+      "complete"
+    end
+  end
+
+  def podcast_integration_updated_at(integration, podcast)
+    podcast.public_feed.sync_log(integration)&.updated_at || podcast.updated_at
+  end
+
   def feed_description(feed, podcast)
     [feed.description, podcast.description].detect { |d| d.present? } || ""
   end
@@ -99,6 +116,56 @@ module PodcastsHelper
       nil
     else
       language
+    end
+  end
+
+  def subscribe_link_platform_label(link)
+    I18n.t("helpers.label.podcast.subscribe_link.#{link.platform}")
+  end
+
+  def subscribe_link_id_label(link)
+    if link.uses_apple_id?
+      I18n.t("helpers.label.podcast.subscribe_link.id.apple")
+    elsif link.uses_unique_id?
+      I18n.t("helpers.label.podcast.subscribe_link.id.unique", platform: subscribe_link_platform_label(link))
+    elsif link.uses_feed_url?
+      I18n.t("helpers.label.podcast.subscribe_link.id.feed")
+    elsif link.uses_podcast_guid?
+      I18n.t("helpers.label.podcast.subscribe_link.id.guid")
+    elsif link.uses_pod_index_id?
+      I18n.t("helpers.label.podcast.subscribe_link.id.pod_index")
+    end
+  end
+
+  def subscribe_link_help(link)
+    if link.uses_apple_id?
+      I18n.t("podcast_engagement.form_subscribe_links.help.apple")
+    elsif link.uses_unique_id?
+      I18n.t("podcast_engagement.form_subscribe_links.help.unique", platform: subscribe_link_platform_label(link))
+    elsif link.uses_feed_url?
+      I18n.t("podcast_engagement.form_subscribe_links.help.feed")
+    elsif link.uses_podcast_guid?
+      I18n.t("podcast_engagement.form_subscribe_links.help.guid")
+    elsif link.uses_pod_index_id?
+      I18n.t("podcast_engagement.form_subscribe_links.help.pod_index")
+    end
+  end
+
+  def subscribe_link_options(podcast)
+    selected = podcast.subscribe_links.select(&:persisted?).map { |sl| sl.platform }
+
+    SubscribeLink::PLATFORMS.filter { |p| !selected.include?(p) }.map { |p| {platform: p, icon: p.split("_").first} }
+  end
+
+  def subscribe_link_external_id(podcast, platform)
+    if SubscribeLink::APPLE_PLATFORMS.include?(platform) && podcast.subscribe_links.with_apple_id.any?
+      podcast.subscribe_links.with_apple_id.first.external_id
+    elsif SubscribeLink::FEED_PLATFORMS.include?(platform)
+      podcast.public_url
+    elsif SubscribeLink::GUID_PLATFORMS.include?(platform)
+      podcast.guid
+    else
+      "NEW_EXTERNAL_ID"
     end
   end
 end

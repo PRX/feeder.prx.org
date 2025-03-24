@@ -11,6 +11,13 @@ FactoryBot.define do
     end
   end
 
+  factory :analyze_media_task, class: Tasks::AnalyzeMediaTask do
+    association :owner, factory: :external_media_resource
+    status { :complete }
+    job_id { "1234" }
+    result { build(:porter_job_analyze_results) }
+  end
+
   factory :copy_image_task, class: Tasks::CopyImageTask do
     association :owner, factory: :episode_image_with_episode
     status { :complete }

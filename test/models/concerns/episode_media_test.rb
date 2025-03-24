@@ -5,6 +5,118 @@ class EpisodeMediaTest < ActiveSupport::TestCase
   let(:c2) { build_stubbed(:content, status: "complete", position: 2) }
   let(:ep) { build(:episode, segment_count: 2, contents: [c1, c2]) }
 
+  describe "#validate_media_ready" do
+    it "only runs on strict + published episodes with media" do
+      e = build_stubbed(:episode, segment_count: 1)
+      assert e.valid?
+
+      e.strict_validations = true
+      refute e.valid?
+
+      e.published_at = nil
+      assert e.valid?
+    end
+
+    it "checks for complete media on initial publish" do
+      e = create(:episode_with_media, strict_validations: true, published_at: nil)
+      assert e.valid?
+
+      e.published_at = 1.hour.ago
+      assert e.valid?
+
+      e.contents.first.status = "invalid"
+      refute e.valid?
+      assert_includes e.errors[:base], "media not ready"
+    end
+
+    it "checks for present media on subsequent updates" do
+      e = create(:episode_with_media, strict_validations: true, published_at: 1.hour.ago)
+      assert e.valid?
+
+      e.contents.first.status = "processing"
+      assert e.valid?
+
+      # also applies to uncut media
+      e.medium = "uncut"
+      e.uncut = nil
+      refute e.valid?
+
+      e.uncut = build(:uncut)
+      assert e.valid?
+    end
+  end
+
+  describe "#medium=" do
+    let(:episode) { create(:episode_with_media) }
+
+    it "marks existing content for destruction on change" do
+      refute episode.contents.first.marked_for_destruction?
+
+      episode.medium = "audio"
+      refute episode.contents.first.marked_for_destruction?
+
+      episode.medium = "uncut"
+      assert episode.contents.first.marked_for_destruction?
+      assert episode.uncut.new_record?
+      assert_equal episode.contents.first.original_url, episode.uncut.original_url
+    end
+
+    it "sets segment count for videos" do
+      episode.segment_count = 2
+      refute episode.contents.first.marked_for_destruction?
+
+      episode.medium = "video"
+      assert episode.contents.first.marked_for_destruction?
+      assert_equal 1, episode.segment_count
+    end
+  end
+
+  describe "#segment_range" do
+    it "returns a range of positions" do
+      e = Episode.new(segment_count: nil)
+      assert_equal [], e.segment_range.to_a
+
+      e.segment_count = 1
+      assert_equal [1], e.segment_range.to_a
+
+      e.segment_count = 4
+      assert_equal [1, 2, 3, 4], e.segment_range.to_a
+    end
+  end
+
+  describe "#build_contents" do
+    it "builds contents for missing positions" do
+      e = Episode.new(segment_count: 3)
+      c1 = e.contents.build(position: 2)
+      _c2 = e.contents.build(position: 4)
+
+      built = e.build_contents
+      assert_equal 3, built.length
+      assert_equal 1, built[0].position
+      assert_equal c1, built[1]
+      assert_equal 3, built[2].position
+    end
+  end
+
+  describe "#destroy_out_of_range_contents" do
+    let(:episode) { create(:episode_with_media) }
+
+    it "marks contents for destruction" do
+      c1 = episode.contents.create!(original_url: "c1", position: 2)
+      c2 = episode.contents.create!(original_url: "c2", position: 4)
+
+      episode.segment_count = nil
+      episode.destroy_out_of_range_contents
+      assert_nil c1.reload.deleted_at
+      assert_nil c2.reload.deleted_at
+
+      episode.segment_count = 3
+      episode.destroy_out_of_range_contents
+      assert_nil c1.reload.deleted_at
+      refute_nil c2.reload.deleted_at
+    end
+  end
+
   describe ".feed_ready" do
     it "just in time creates new media versions" do
       episode = create(:episode, segment_count: 2)
@@ -30,6 +142,92 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       episode.stub(:complete_media, [{what: "ev"}]) do
         assert episode.feed_ready?
       end
+    end
+  end
+
+  describe "overrides media attributes" do
+    it "mark as ready for external media complete" do
+      episode = build_stubbed(:episode, medium: :audio, segment_count: nil)
+      url = "https://prx.org/a.mp3"
+      episode.stub(:complete_media, []) do
+        refute episode.override?
+        refute episode.feed_ready?
+
+        episode.medium = :override
+        episode.enclosure_override_url = nil
+        assert episode.override?
+        refute episode.feed_ready?
+
+        episode.medium = :audio
+        episode.enclosure_override_url = url
+        assert episode.override?
+        refute episode.override_ready?
+        refute episode.feed_ready?
+
+        episode.build_external_media_resource(status: "processing", original_url: url)
+        refute episode.override_ready?
+        refute episode.feed_ready?
+
+        episode.build_external_media_resource(status: "complete", original_url: url)
+        assert episode.override_ready?
+        assert episode.feed_ready?
+      end
+    end
+
+    it "creates override media when override url set" do
+      episode = create(:episode, segment_count: 2)
+      assert_nil episode.external_media_resource
+      episode.enclosure_override_url = "https://prx.org/a.mp3"
+      ExternalMediaResource.stub_any_instance(:analyze_media, true) do
+        episode.save!
+      end
+      assert_equal episode.external_media_resource.original_url, "https://prx.org/a.mp3"
+    end
+
+    it "creates override media when override url updated" do
+      ExternalMediaResource.stub_any_instance(:analyze_media, true) do
+        episode = create(:episode, enclosure_override_url: "https://prx.org/a.mp3")
+        assert_equal episode.external_media_resource.original_url, "https://prx.org/a.mp3"
+        emr_id = episode.external_media_resource.id
+        episode.external_media_resource
+
+        episode.update(enclosure_override_url: "https://prx.org/new.mp3")
+        assert_equal episode.external_media_resource.original_url, "https://prx.org/new.mp3"
+        assert emr_id != episode.external_media_resource.id
+      end
+    end
+
+    it "overrides media content type" do
+      c1.mime_type = "some/thing1"
+      assert_equal "some/thing1", ep.media_content_type
+
+      ep.enclosure_override_url = "https://prx.org/a.mp3"
+      ep.build_external_media_resource(status: "complete", mime_type: "some/thing2")
+      assert_equal "some/thing2", ep.media_content_type
+    end
+
+    it "overrides media content type" do
+      assert_equal 96.00, ep.media_duration
+
+      ep.enclosure_override_url = "https://prx.org/a.mp3"
+      ep.build_external_media_resource(status: "complete", duration: 240)
+      assert_equal 240.00, ep.media_duration
+    end
+
+    it "overrides media file size" do
+      assert_equal 1548118, ep.media_file_size
+
+      ep.enclosure_override_url = "https://prx.org/a.mp3"
+      ep.build_external_media_resource(status: "complete", file_size: 2222222)
+      assert_equal 2222222, ep.media_file_size
+    end
+
+    it "overrides media status" do
+      assert_equal "complete", ep.media_status
+
+      ep.enclosure_override_url = "https://prx.org/a.mp3"
+      ep.build_external_media_resource(status: "processing")
+      assert_equal "processing", ep.media_status
     end
   end
 
@@ -335,7 +533,7 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     end
 
     it "handles empty contents" do
-      assert_nil build_stubbed(:episode, contents: []).media_status
+      assert_equal "incomplete", build_stubbed(:episode, contents: []).media_status
     end
   end
 
