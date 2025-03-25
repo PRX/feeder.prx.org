@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     resource :planner, only: [:show, :create], controller: :podcast_planner
     resources :feeds, except: [:edit] do
       get "new_apple", on: :collection
+      get "new_megaphone", on: :collection
     end
     resources :episodes, only: [:index, :create, :new] do
       get "export", on: :collection

@@ -191,12 +191,12 @@ describe PublishingPipelineState do
       # Create a publishing queue item and associated pipeline state
       pqi1 = PublishingQueueItem.ensure_queued!(podcast)
       _s1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi1)
-      PublishingPipelineState.error_apple!(podcast)
+      PublishingPipelineState.error_integration!(podcast)
       PublishingPipelineState.complete!(podcast)
 
       # Verify that the intermediate error is included in the latest failed pipelines
       assert_equal [podcast], PublishingPipelineState.latest_failed_podcasts
-      assert_equal ["created", "error_apple", "complete"], PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast).order(id: :asc).map(&:status)
+      assert_equal ["created", "error_integration", "complete"], PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast).order(id: :asc).map(&:status)
 
       # Create another publishing queue item and associated pipeline state
       pqi2 = PublishingQueueItem.ensure_queued!(podcast)
@@ -231,16 +231,16 @@ describe PublishingPipelineState do
       assert_equal ["created"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
     end
 
-    it "retries pipelines with intermediate error_apple and non-error terminal status" do
+    it "retries pipelines with intermediate error_integration and non-error terminal status" do
       PublishingPipelineState.start_pipeline!(podcast)
       assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
 
       # it fails
-      PublishingPipelineState.error_apple!(podcast)
-      assert_equal ["created", "error_apple"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+      PublishingPipelineState.error_integration!(podcast)
+      assert_equal ["created", "error_integration"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
 
       PublishingPipelineState.complete!(podcast)
-      assert_equal ["created", "error_apple", "complete"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+      assert_equal ["created", "error_integration", "complete"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
 
       # it retries
       PublishingPipelineState.retry_failed_pipelines!
@@ -300,7 +300,7 @@ describe PublishingPipelineState do
       it 'sets the status to "error"' do
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, ->(*args) { raise "error" }) do
+          PublishFeedJob.stub_any_instance(:publish_integration, ->(*args) { raise "error" }) do
             pqi = PublishingQueueItem.ensure_queued!(podcast)
 
             assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
@@ -336,18 +336,20 @@ describe PublishingPipelineState do
 
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishAppleJob.stub(:do_perform, ->(*args) { raise Apple::AssetStateTimeoutError.new([episode]) }) do
-            pqi = PublishingQueueItem.ensure_queued!(podcast)
-            PublishingPipelineState.attempt!(podcast, perform_later: false)
+          private_feed.stub(:publish_integration!, ->(*args) { raise Apple::AssetStateTimeoutError.new([episode]) }) do
+            podcast.stub(:feeds, [private_feed]) do
+              pqi = PublishingQueueItem.ensure_queued!(podcast)
+              PublishingPipelineState.attempt!(podcast, perform_later: false)
+            end
           end
         end
 
-        assert_equal ["created", "started", "error_apple", "retry"], PublishingPipelineState.where(podcast: podcast).order(:id).pluck(:status)
+        assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: podcast).order(:id).pluck(:status)
         assert_equal "retry", pqi.reload.last_pipeline_state
 
         # it retries
         PublishingPipelineState.retry_failed_pipelines!
-        assert_equal ["created", "started", "error_apple", "retry", "created"], PublishingPipelineState.where(podcast: podcast).order(:id).pluck(:status)
+        assert_equal ["created", "started", "error_integration", "retry", "created"], PublishingPipelineState.where(podcast: podcast).order(:id).pluck(:status)
         res_pqi = PublishingQueueItem.current_unfinished_item(podcast)
 
         assert res_pqi.id > pqi.id
@@ -358,7 +360,7 @@ describe PublishingPipelineState do
     describe "complete!" do
       it 'sets the status to "complete"' do
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, "pub!") do
+          PublishFeedJob.stub_any_instance(:publish_integration, "pub!") do
             PublishFeedJob.stub_any_instance(:publish_rss, "pub!") do
               PublishingPipelineState.attempt!(podcast, perform_later: false)
             end
@@ -373,7 +375,7 @@ describe PublishingPipelineState do
         PublishingQueueItem.create!(podcast: podcast)
 
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, "pub!") do
+          PublishFeedJob.stub_any_instance(:publish_integration, "pub!") do
             PublishFeedJob.stub_any_instance(:publish_rss, "pub!") do
               PublishingPipelineState.attempt!(podcast, perform_later: false)
             end
@@ -397,14 +399,16 @@ describe PublishingPipelineState do
       it "can publish via the apple configs" do
         assert [f1, f2, f3]
 
-        PublishAppleJob.stub(:do_perform, "published apple!") do
-          PublishFeedJob.stub_any_instance(:save_file, "saved rss!") do
-            PublishingPipelineState.attempt!(podcast, perform_later: false)
+        f3.stub(:publish_integration!, "published apple!") do
+          podcast.stub(:feeds, [f1, f2, f3]) do
+            PublishFeedJob.stub_any_instance(:save_file, "saved rss!") do
+              PublishingPipelineState.attempt!(podcast, perform_later: false)
+            end
           end
         end
         PublishingPipelineState.complete!(podcast)
         assert_equal(
-          ["complete", "published_rss", "published_rss", "published_rss", "published_apple", "started", "created"],
+          ["complete", "published_rss", "published_rss", "published_rss", "published_integration", "started", "created"],
           PublishingPipelineState.order(id: :desc).pluck(:status)
         )
       end

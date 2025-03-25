@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
 module Apple
-  class Show
+  class Show < Integrations::Base::Show
     include Apple::ApiResponse
 
-    attr_reader :public_feed,
-      :private_feed,
-      :api
+    attr_reader :api
 
     def self.apple_shows_json(api)
       api.get_paged_collection("shows")
@@ -17,17 +15,20 @@ module Apple
     end
 
     def self.connect_existing(apple_show_id, apple_config)
-      if (sl = SyncLog.find_by(feeder_id: apple_config.public_feed.id, feeder_type: :feeds))
+      if (sl = SyncLog.apple.find_by(feeder_id: apple_config.public_feed.id, feeder_type: :feeds))
         if apple_show_id.blank?
           return sl.destroy!
         elsif sl.external_id != apple_show_id
           sl.update!(external_id: apple_show_id)
         end
       else
-        SyncLog.log!(feeder_id: apple_config.public_feed.id,
+        SyncLog.log!(
+          integration: :apple,
+          feeder_id: apple_config.public_feed.id,
           feeder_type: :feeds,
           sync_completed_at: Time.now.utc,
-          external_id: apple_show_id)
+          external_id: apple_show_id
+        )
       end
 
       api = Apple::Api.from_apple_config(apple_config)
@@ -139,7 +140,13 @@ module Apple
       Rails.logger.tagged("Apple::Show#sync!") do
         apple_json = create_or_update_show(sync_log)
         public_feed.reload
-        SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: apple_json["api_response"]["val"]["data"]["id"], api_response: apple_json)
+        SyncLog.log!(
+          integration: :apple,
+          feeder_id: public_feed.id,
+          feeder_type: :feeds,
+          external_id: apple_json["api_response"]["val"]["data"]["id"],
+          api_response: apple_json
+        )
       end
     end
 
@@ -178,55 +185,8 @@ module Apple
       self.class.get_show(api, apple_id)
     end
 
-    # In the case where there are duplicate guids in the feeds, we want to make
-    # sure that the most "current" episode is the one that maps to the remote state.
-    def sort_by_episode_properties(eps)
-      # Sort the episodes by:
-      # 1. Non-deleted episodes first
-      # 2. Published episodes first
-      # 3. Published date most recent first
-      # 4. Created date most recent first
-      eps =
-        eps.sort_by do |e|
-          [
-            e.deleted_at.nil? ? 1 : -1,
-            e.published_at.present? ? 1 : -1,
-            e.published_at || e.created_at,
-            e.created_at
-          ]
-        end
-
-      # return sorted list, reversed
-      # modeling a priority queue -- most important first
-      eps.reverse
-    end
-
-    def podcast_feeder_episodes
-      @podcast_feeder_episodes ||=
-        podcast.episodes
-          .reset
-          .with_deleted
-          .group_by(&:item_guid)
-          .values
-          .map { |eps| sort_by_episode_properties(eps) }
-          .map(&:first)
-    end
-
-    # All the episodes -- including deleted and unpublished
-    def podcast_episodes
-      @podcast_episodes ||= podcast_feeder_episodes.map { |e| Apple::Episode.new(api: api, show: self, feeder_episode: e) }
-    end
-
-    # Does not include deleted episodes
-    def episodes
-      raise "Missing apple show id" unless apple_id.present?
-
-      @episodes ||= begin
-        feed_episode_ids = Set.new(private_feed.feed_episodes.feed_ready.map(&:id))
-
-        podcast_episodes
-          .filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }
-      end
+    def build_integration_episode(feeder_episode)
+      Apple::Episode.new(api: api, show: self, feeder_episode: feeder_episode)
     end
 
     def apple_private_feed_episodes

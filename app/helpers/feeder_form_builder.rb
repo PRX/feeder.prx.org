@@ -33,7 +33,18 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     add_blank_action(options)
     add_changed(method, options)
     add_disabled(options)
+    redact_value(method, options)
     super
+  end
+
+  def redact_value(method, options)
+    d = options[:disabled] || disabled?
+    return unless options[:redacted] && d
+
+    if (val = object.public_send(method))
+      chars = [options[:redacted].to_i, 1].max
+      options[:value] = val.last(chars).rjust(val.length, "*")
+    end
   end
 
   def text_area(method, options = {})

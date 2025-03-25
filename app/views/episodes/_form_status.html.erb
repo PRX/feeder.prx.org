@@ -47,6 +47,22 @@
         </p>
       </div>
     <% end %>
+    <% if episode.persisted? && episode.publish_to_integration?(:megaphone) %>
+      <% integration = :megaphone %>
+      <% integration_status = episode_integration_status(integration, episode) %>
+      <div class="col-12 mt-4">
+        <p class="status-text">
+          <strong><%= "#{integration.to_s.titleize} Status" %>:</strong>
+          <span class="badge rounded-pill prx-badge-<%= integration_status %>">
+            <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
+          </span>
+          <br>
+          <strong><%= t(".last_updated") %></strong>
+          <br>
+          <%= local_time_ago(episode_integration_updated_at(integration, episode)) %>
+        </p>
+      </div>
+    <% end %>
   </div>
 
   <%= render "layouts/stale_record_field", form: form %>

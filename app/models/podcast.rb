@@ -16,6 +16,7 @@ class Podcast < ApplicationRecord
   include EmbedPlayerHelper
   include PodcastFilters
   include ReleaseEpisodes
+  include Integrations::PodcastIntegrations
   include PodcastSubscribeLinks
 
   acts_as_paranoid

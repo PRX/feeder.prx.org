@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Apple
-  class Episode
+  class Episode < Integrations::Base::Episode
     include Apple::ApiWaiting
     include Apple::ApiResponse
     attr_accessor :show,
@@ -15,10 +15,8 @@ module Apple
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
-    # Cleans up old delivery/delivery files iff the episode is to be delivered
+    # Cleans up old delivery/delivery files iff the episode is to be uploaded
     def self.prepare_for_delivery(episodes)
-      episodes = episodes.select { |ep| ep.needs_delivery? }
-
       episodes.map do |ep|
         Rails.logger.info("Preparing episode #{ep.feeder_id} for delivery", {episode_id: ep.feeder_id})
         ep.feeder_episode.apple_prepare_for_delivery!
@@ -205,7 +203,13 @@ module Apple
       apple_id = res.dig("api_response", "val", "data", "id")
       raise "Missing remote apple id" unless apple_id.present?
 
-      sl = SyncLog.log!(feeder_id: ep.feeder_episode.id, feeder_type: :episodes, external_id: apple_id, api_response: res)
+      sl = SyncLog.log!(
+        integration: :apple,
+        feeder_id: ep.feeder_episode.id,
+        feeder_type: :episodes,
+        external_id: apple_id,
+        api_response: res
+      )
       # reload local state
       if ep.feeder_episode.apple_sync_log.nil?
         ep.feeder_episode.reload
@@ -219,6 +223,14 @@ module Apple
       @show = show
       @feeder_episode = feeder_episode
       @api = api || Apple::Api.from_env
+    end
+
+    def synced_with_integration?
+      synced_with_apple?
+    end
+
+    def integration_new?
+      apple_new?
     end
 
     def api_response
@@ -247,7 +259,7 @@ module Apple
 
     def enclosure_url
       url = EnclosureUrlBuilder.new.base_enclosure_url(podcast, feeder_episode, private_feed)
-      EnclosureUrlBuilder.mark_authorized(url, show.private_feed)
+      EnclosureUrlBuilder.mark_authorized(url, private_feed)
     end
 
     def enclosure_filename
@@ -256,7 +268,7 @@ module Apple
     end
 
     def sync_log
-      SyncLog.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
+      SyncLog.apple.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
     end
 
     def self.get_episode_bridge_params(api, feeder_id, apple_id)
@@ -420,10 +432,6 @@ module Apple
       self.class.publishing_state_params(apple_id, state)
     end
 
-    def apple?
-      feeder_episode.apple?
-    end
-
     def apple_json
       return nil unless api_response.present?
 
@@ -498,16 +506,6 @@ module Apple
       audio_asset_state == AUDIO_ASSET_SUCCESS
     end
 
-    def has_media_version?
-      return false unless delivery_status.present? && delivery_status.source_media_version_id.present?
-
-      delivery_status.source_media_version_id == feeder_episode.media_version_id
-    end
-
-    def needs_media_version?
-      !has_media_version?
-    end
-
     def needs_delivery?
       return true if missing_container?
 
@@ -575,5 +573,19 @@ module Apple
     alias_method :delivery_files, :podcast_delivery_files
     alias_method :delivery_status, :apple_episode_delivery_status
     alias_method :delivery_statuses, :apple_episode_delivery_statuses
+    alias_method :apple_status, :apple_episode_delivery_status
+
+    # Delegate methods to feeder_episode
+    def method_missing(method_name, *arguments, &block)
+      if feeder_episode.respond_to?(method_name)
+        feeder_episode.send(method_name, *arguments, &block)
+      else
+        super
+      end
+    end
+
+    def respond_to_missing?(method_name, include_private = false)
+      feeder_episode.respond_to?(method_name) || super
+    end
   end
 end
