@@ -887,7 +887,9 @@ en:
         new_feed_url: If your podcast feed is moving, use this field to point to the new URL where your podcast is located. The current feed should be maintained until all of your subscribers have migrated.
         private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private URL with - <strong>anyone who has access to the URL will be able to use it</strong>.
         url: If you already have a public URL for your podcast feed (e.g., <a href="https://support.google.com/feedburner/answer/78475?hl=en" target="_blank">feedburner</a>), enter it here. It should point to your <a href="%{published_url}" target="_blank">private feed URL</a>.
+        exclude_episodes: Exclude all episodes from the default feed from being automatically added to this feed.
       title: Distribution
+      exclude_episodes_label: Skip Default Feed Episodes
     form_megaphone_config:
       title: Megaphone Integration Configuration
       description: Below configure the API token and network ID to integrate Dovetail publishing episode audio to Megaphone.
