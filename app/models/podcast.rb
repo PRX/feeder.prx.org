@@ -56,6 +56,7 @@ class Podcast < ApplicationRecord
   validates :explicit, inclusion: {in: VALID_EXPLICITS}, allow_nil: false
 
   before_validation :set_defaults, :sanitize_text
+  after_commit :set_guid!, if: -> { guid.blank? }
 
   scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") if text.present? }
   scope :published, -> { where("published_at IS NOT NULL AND published_at <= now()") }
@@ -66,17 +67,13 @@ class Podcast < ApplicationRecord
   end
 
   def set_guid!
-    update!(guid: guid) if set_guid
-  end
-
-  def set_guid
-    return unless public_url.present? && guid.blank?
-    self.guid = Digest::UUID.uuid_v5(PODCAST_NAMESPACE, public_url)
+    return unless public_url.present? && id.present? && guid.blank?
+    new_guid = Digest::UUID.uuid_v5(PODCAST_NAMESPACE, public_url)
+    update_column(:guid, new_guid)
   end
 
   def set_defaults
     self.explicit ||= "false"
-    set_guid
   end
 
   def default_feed
