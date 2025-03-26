@@ -1,7 +1,7 @@
 module Apple
   class RetryPublishingError < StandardError
     def initialize(message)
-      super(message)
+      super
     end
   end
 end
