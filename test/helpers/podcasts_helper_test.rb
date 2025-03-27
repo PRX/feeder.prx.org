@@ -24,4 +24,14 @@ describe PodcastsHelper do
       assert_equal "description\n\nfooter", episode_description(episode, feed2)
     end
   end
+
+  describe "#episode_title" do
+    it "gets the episode title based on feed type" do
+      assert_equal episode.title, episode_title(episode, feed1)
+
+      allow(episode.podcast).to receive(:has_apple_feed?).and_return(true)
+      allow(episode).to receive(:title_safe).and_return("truncated title")
+      assert_equal "truncated title", episode_title(episode, feed1)
+    end
+  end
 end

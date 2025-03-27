@@ -42,6 +42,14 @@ module PodcastsHelper
     description
   end
 
+  def episode_title(episode, feed)
+    if episode.podcast.has_apple_feed?
+      episode.title_safe
+    else
+      episode.title
+    end
+  end
+
   def full_contact(type, item)
     name = item.try("#{type}_name")
     email = item.try("#{type}_email")
