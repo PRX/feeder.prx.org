@@ -37,6 +37,29 @@ describe PublishFeedJob do
       end
     end
 
+    describe "the first time an episode is published to the rss" do
+      it "records the timestamp when the episode is published to rss" do
+        create(:episode, podcast: podcast)
+        assert_nil podcast.episodes.second.first_rss_published_at
+
+        job.stub(:s3_client, stub_client) do
+          job.save_file(podcast, podcast.default_feed)
+          refute_nil podcast.episodes.second.first_rss_published_at
+          assert_in_delta podcast.episodes.second.first_rss_published_at, DateTime.now, 15.seconds
+        end
+      end
+
+      it "only records a timestamp if it's published to the default feed" do
+        create(:episode, podcast: podcast)
+        assert_nil podcast.episodes.second.first_rss_published_at
+
+        job.stub(:s3_client, stub_client) do
+          job.save_file(podcast, feed)
+          assert_nil podcast.episodes.second.first_rss_published_at
+        end
+      end
+    end
+
     describe "validations of the publishing pipeline" do
       it "can process publishing a podcast" do
         job.stub(:s3_client, stub_client) do
