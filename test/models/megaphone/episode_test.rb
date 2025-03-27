@@ -59,11 +59,11 @@ describe Megaphone::Episode do
 
     it "can create a published episode with audio" do
       base_url = "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/some-digest-value"
-      source_url = "#{base_url}/audio.flac"
-      arrangement_filename = "audio_#{media_episode.media_version_id}.flac"
+      source_url = "#{base_url}/audio.mp3"
+      arrangement_filename = "audio_#{media_episode.media_version_id}.mp3"
       arrangement_url = "#{base_url}/#{arrangement_filename}"
 
-      stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.flac?auth=#{feed.tokens.first.token}")
+      stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.mp3?auth=#{feed.tokens.first.token}")
         .to_return(status: 302, body: "", headers: {
           "x-episode-media-version" => media_episode.media_version_id,
           "location" => source_url,
@@ -88,7 +88,7 @@ describe Megaphone::Episode do
       assert status
       # we saved the background audio url to mp, so it is uploaded
       assert status.uploaded
-      assert_equal status.source_filename, "audio_#{media_episode.media_version_id}.flac"
+      assert_equal status.source_filename, "audio_#{media_episode.media_version_id}.mp3"
       assert_equal status.source_size, 1000000
       assert_equal status.source_media_version_id, media_episode.media_version_id
 
@@ -134,9 +134,9 @@ describe Megaphone::Episode do
 
     it "can create a published episodes with the wrong media version from DTR" do
       base_url = "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/some-digest-value"
-      source_url = "#{base_url}/audio.flac"
+      source_url = "#{base_url}/audio.mp3"
 
-      stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.flac?auth=#{feed.tokens.first.token}")
+      stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.mp3?auth=#{feed.tokens.first.token}")
         .to_return(status: 302, body: "", headers: {
           "x-episode-media-version" => media_episode.media_version_id - 1,
           "location" => source_url,

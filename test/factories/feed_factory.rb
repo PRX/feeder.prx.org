@@ -57,6 +57,7 @@ FactoryBot.define do
     factory :megaphone_feed, class: "Feeds::MegaphoneFeed" do
       type { "Feeds::MegaphoneFeed" }
       private { true }
+      audio_format { Hash(f: "mp3", b: 128, c: 2, s: 44100) }
 
       after(:build) do |feed, _evaluator|
         feed.megaphone_config = build(:megaphone_config, feed: feed)
