@@ -107,6 +107,12 @@ module Megaphone
       update_delivery_status
       set_enclosure
       self
+    rescue Faraday::ClientError => ce
+      self.api_response = ce.response
+      raise e
+    rescue => e
+      logger.error("Error creating episode in Megaphone", error: e)
+      raise e
     end
 
     def update!(episode = nil)
