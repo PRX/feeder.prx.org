@@ -1,9 +1,12 @@
 class Feeds::MegaphoneFeed < Feed
   DEFAULT_TITLE = "Megaphone Integration"
+  DEFAULT_AUDIO_FORMAT = {f: "mp3", b: 128, c: 2, s: 44100}.with_indifferent_access
 
   has_one :megaphone_config, class_name: "::Megaphone::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
-  validate :must_have_token
+  validate :must_have_token, :audio_format_must_be_mp3
+
+  validates_presence_of :audio_format, :slug, :title, :tokens
 
   after_initialize :set_defaults
 
@@ -24,6 +27,12 @@ class Feeds::MegaphoneFeed < Feed
     end
   end
 
+  def audio_format_must_be_mp3
+    if audio_format.present? && audio_format[:f] != "mp3"
+      errors.add(:audio_format, "must be mp3")
+    end
+  end
+
   def self.model_name
     Feed.model_name
   end
@@ -33,10 +42,11 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def set_defaults
-    self.slug = "prx-#{id}"
-    self.title = DEFAULT_TITLE
-    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
+    self.audio_format ||= DEFAULT_AUDIO_FORMAT
     self.private = true
+    self.slug ||= "prx-#{id}"
+    self.title ||= DEFAULT_TITLE
+    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
 
     super
   end
@@ -60,6 +70,6 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def mark_as_not_delivered!(episode)
-    episode.episode_delivery_statuses.megaphone.first&.mark_as_not_delivered!
+    episode.episode_delivery_status(:megaphone, true).mark_as_not_delivered!
   end
 end
