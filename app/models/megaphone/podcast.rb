@@ -55,8 +55,8 @@ module Megaphone
       itunes_categories = feed.itunes_categories.present? ? feed.itunes_categories : podcast.itunes_categories
       {
         title: podcast.title,
-        subtitle: feed.subtitle || podcast.subtitle,
-        summary: feed.description || podcast.description,
+        subtitle: feed.subtitle || podcast.subtitle || podcast.title,
+        summary: feed.description || podcast.description || podcast.title,
         itunes_categories: (itunes_categories || []).map(&:name),
         language: (podcast.language || "en-us").split("-").first,
         link: podcast.link,
