@@ -95,7 +95,7 @@ describe Episode do
     e.title = "a" * 121
     refute e.valid?
 
-    e.title = "a" * 119 + "'"
+    e.title = "a" * 119 + "’"
     refute e.valid?
 
     e.strict_validations = false
