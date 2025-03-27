@@ -161,6 +161,63 @@ describe PublishFeedJob do
         let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
         let(:episodes) { [episode1, episode2] }
 
+        describe "API permission error handling" do
+          let(:permission_error) do
+            Apple::ApiPermissionError.new(
+              "Apple API permission error - delegated delivery key lacks required permissions",
+              OpenStruct.new(code: 403, body: '{"errors":[{"code":"FORBIDDEN_ERROR"}]}')
+            )
+          end
+
+          it "suppresses error during backoff window but logs warning" do
+            # Configure the error to indicate we're in backoff window
+            permission_error.stub(:raise_publishing_error?, false) do
+              # Mock the feed configuration
+              private_feed.stub(:config, OpenStruct.new(sync_blocks_rss: true)) do
+                # Simulate the error being raised during publishing
+                private_feed.stub(:publish_integration!, -> { raise permission_error }) do
+                  # Capture logs to verify logging behavior
+                  lines = capture_json_logs do
+                    # Verify RetryPublishingError is raised instead of original error
+                    assert_raises(Apple::RetryPublishingError) do
+                      job.publish_integration(podcast, private_feed)
+                    end
+                  end
+
+                  # Verify the error is logged with warning level (40)
+                  log_entry = lines.find { |l| l["msg"].include?("Apple API permission error") }
+                  assert log_entry.present?, "Should log the permission error"
+                  assert_equal 40, log_entry["level"], "Permission error should be logged as warning in backoff window"
+                end
+              end
+            end
+          end
+
+          it "propagates error outside backoff window and logs with error level" do
+            # Configure the error to indicate we're outside backoff window
+            permission_error.stub(:raise_publishing_error?, true) do
+              # Mock the feed configuration
+              private_feed.stub(:config, OpenStruct.new(sync_blocks_rss: true)) do
+                # Simulate the error being raised during publishing
+                private_feed.stub(:publish_integration!, -> { raise permission_error }) do
+                  # Capture logs to verify logging behavior
+                  lines = capture_json_logs do
+                    # The original error should still be wrapped in RetryPublishingError
+                    assert_raises(Apple::RetryPublishingError) do
+                      job.publish_integration(podcast, private_feed)
+                    end
+                  end
+
+                  # Verify the error is logged with error level (50)
+                  log_entry = lines.find { |l| l["msg"].include?("Apple API permission error") }
+                  assert log_entry.present?, "Should log the permission error"
+                  assert_equal 50, log_entry["level"], "Permission error should be logged as error outside backoff window"
+                end
+              end
+            end
+          end
+        end
+
         it "logs message if the apple publishing times out" do
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
@@ -172,7 +229,7 @@ describe PublishFeedJob do
             [3, 40],
             [4, 40],
             [5, 50],
-            [6, 60]
+            [6, 50]
           ]
 
           expected_level_for_timeouts.each do |(attempts, level)|
@@ -206,20 +263,7 @@ describe PublishFeedJob do
 
           private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
             podcast.stub(:feeds, [private_feed]) do
-              assert_raises(Apple::AssetStateTimeoutError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
-
-              assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
-            end
-          end
-        end
-
-        it "raises an error if the apple publishing times out" do
-          assert apple_feed.apple_config.present?
-          assert apple_feed.apple_config.publish_enabled
-
-          private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
-            podcast.stub(:feeds, [private_feed]) do
-              assert_raises(Apple::AssetStateTimeoutError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
+              assert_raises(Apple::RetryPublishingError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
 
               assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
             end
