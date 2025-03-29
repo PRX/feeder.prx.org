@@ -74,7 +74,7 @@ module Megaphone
 
     def self.attributes_from_episode(e)
       pubdate = if e.published_or_released_date
-        e.published_or_released_date + PUBLISH_EARLY_DURATION
+        e.published_or_released_date - PUBLISH_EARLY_DURATION
       end
 
       {
