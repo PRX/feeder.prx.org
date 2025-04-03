@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
+ActiveRecord::Schema[7.2].define(version: 2025_04_03_173259) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -226,6 +226,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
     t.boolean "edit_locked"
     t.datetime "enclosure_updated_at", precision: nil
     t.string "episode_footer"
+    t.boolean "unique_guids", default: false, null: false
     t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
