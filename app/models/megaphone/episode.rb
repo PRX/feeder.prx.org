@@ -7,9 +7,6 @@ module Megaphone
     SOURCE_ATTRIBUTES = %i[source_media_version_id source_size source_fetch_count source_url source_filename]
     attr_accessor(*SOURCE_ATTRIBUTES)
 
-    # Default duration to publish early on megaphone
-    PUBLISH_EARLY_DURATION = 30.minutes.freeze
-
     # Used to form the adhash value
     ADHASH_VALUES = {"pre" => "0", "mid" => "1", "post" => "2"}.freeze
 
@@ -55,7 +52,7 @@ module Megaphone
 
     def self.new_from_episode(megaphone_podcast, feeder_episode)
       # start with basic attributes copied from the feeder episode
-      episode = Megaphone::Episode.new(attributes_from_episode(feeder_episode))
+      episode = Megaphone::Episode.new(attributes_from_episode(feeder_episode, megaphone_podcast.private_feed))
 
       # set relations to the feeder episode and megaphone podcast
       episode.feeder_episode = feeder_episode
@@ -72,9 +69,9 @@ module Megaphone
       episode
     end
 
-    def self.attributes_from_episode(e)
+    def self.attributes_from_episode(e, feed)
       pubdate = if e.published_or_released_date
-        e.published_or_released_date - PUBLISH_EARLY_DURATION
+        e.published_or_released_date + feed.episode_offset_seconds.to_i.seconds
       end
 
       {
@@ -129,7 +126,7 @@ module Megaphone
 
     def update!(episode = nil)
       if episode
-        self.attributes = self.class.attributes_from_episode(episode)
+        self.attributes = self.class.attributes_from_episode(episode, private_feed)
         set_placement_attributes
         set_audio_attributes
       end
