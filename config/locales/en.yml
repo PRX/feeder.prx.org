@@ -1,4 +1,4 @@
-fepisode_offset_optionsdefaults:
+defaults:
   form: &form
     confirm: Discard unsaved changes?
   form_status: &form_status
