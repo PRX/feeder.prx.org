@@ -896,6 +896,7 @@ en:
       help:
         publish_enabled: Enable automatically publishing and updating episodes in this feed to Megaphone?
         sync_blocks_rss: Block publishing to the default feed RSS until the Megaphone episode is published?
+        episode_offset_seconds: To publish early to Megaphone so the audio is already public and ready to serve.
     form_main:
       confirm:
         file_name: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?

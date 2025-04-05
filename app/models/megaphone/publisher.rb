@@ -66,17 +66,18 @@ module Megaphone
 
         # check if it is uploaded yet
         # if not go looking for the DTR media version
-        if !megaphone_episode.delivery_status.uploaded?
-          megaphone_episode.upload_audio!
-        end
-
-        # check if it is uploaded, but not delivered - see if megaphone has processed
         status = megaphone_episode.delivery_status
-        if !status.delivered? && status.uploaded?
+        if !status.uploaded?
+          megaphone_episode.upload_audio!
+        # check if it is uploaded, but not delivered - see if megaphone has processed
+        elsif !status.delivered?
           megaphone_episode.check_audio!
         end
 
-        if !ep.episode_delivery_status(:megaphone).delivered?
+        # make sure we get the latest status on the episode
+        ep.reload
+        episode_status = ep.episode_delivery_status(:megaphone)
+        if !episode_status.delivered? || !episode_status.uploaded?
           remaining << ep
         end
       end

@@ -32,6 +32,7 @@ class EpisodeMediaController < ApplicationController
       if @episode.save
         @episode.uncut&.slice_contents!
         @episode.copy_media
+        @episode.publish!
         format.html { redirect_to episode_media_path(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
 
