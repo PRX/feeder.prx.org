@@ -159,6 +159,7 @@ class FeedsController < ApplicationController
       :type,
       :apple_show_id,
       :episode_footer,
+      :unique_guids,
       itunes_category: [],
       itunes_subcategory: [],
       feed_tokens_attributes: %i[id label token _destroy],

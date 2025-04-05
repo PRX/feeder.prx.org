@@ -5,7 +5,7 @@ describe FeedBuilder do
   let(:transcript) { create(:transcript) }
   let(:episode) { create(:episode_with_media, prx_uri: "/api/v1/stories/87683", transcript: transcript) }
   let(:podcast) { episode.podcast }
-  let(:feed) { create(:feed, podcast: podcast, title: podcast.title, private: false) }
+  let(:feed) { create(:feed, podcast: podcast, title: podcast.title, private: false, unique_guids: true) }
   let(:builder) { FeedBuilder.new(podcast, feed) }
   let(:rss) { builder.to_feed_xml }
   let(:rss_feed) { Nokogiri::XML(rss).css("channel") }
@@ -84,6 +84,12 @@ describe FeedBuilder do
       assert_equal node.at_css("enclosure").attributes["length"].value, "774059"
       assert_equal node.css("itunes|duration").text, "0:48"
     end
+  end
+
+  it "creates a unique guid for the episode" do
+    feed.set_default_episodes
+    node = rss_feed.css("item")[0]
+    assert_equal node.css("guid").text, "prx_#{podcast.id}_#{episode.guid}_#{feed.slug}"
   end
 
   it "displays plaintext and richtext descriptions" do
