@@ -613,14 +613,22 @@ describe Apple::Publisher do
     end
 
     it "skips delivery for already delivered episodes but still publishes them" do
-      episode.feeder_episode.apple_mark_as_uploaded!
-      episode.feeder_episode.apple_mark_as_delivered!
+      episode.apple_mark_as_uploaded!
+      episode.apple_mark_as_delivered!
 
       publish_mock = Minitest::Mock.new
       publish_mock.expect(:call, nil, [[episode]])
 
-      apple_publisher.stub(:upload_media!, ->(*) { raise "Should not be called" }) do
-        apple_publisher.stub(:process_and_deliver!, ->(*) { raise "Should not be called" }) do
+      upload_media_mock = Minitest::Mock.new
+      # Called with empty array
+      upload_media_mock.expect(:call, nil, [[]])
+
+      process_and_deliver_mock = Minitest::Mock.new
+      # Called with empty array
+      process_and_deliver_mock.expect(:call, nil, [[]])
+
+      apple_publisher.stub(:upload_media!, upload_media_mock) do
+        apple_publisher.stub(:process_and_deliver!, process_and_deliver_mock) do
           apple_publisher.stub(:publish_drafting!, publish_mock) do
             apple_publisher.deliver_and_publish!([episode])
           end
@@ -628,6 +636,8 @@ describe Apple::Publisher do
       end
 
       assert publish_mock.verify
+      assert upload_media_mock.verify
+      assert process_and_deliver_mock.verify
     end
 
     it "calls delivery and publishing for episodes needing delivery" do
