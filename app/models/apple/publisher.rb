@@ -91,8 +91,11 @@ module Apple
             upload_media!(eps)
           end
 
-          process_and_deliver!(eps)
+          eps.filter(&:apple_needs_delivery?).tap do |eps|
+            process_and_deliver!(eps)
+          end
 
+          publish_drafting!(eps)
           raise_delivery_processing_errors(eps)
         end
       end
@@ -128,7 +131,6 @@ module Apple
 
       mark_as_delivered!(eps)
 
-      publish_drafting!(eps)
       reset_asset_wait!(eps)
     end
 

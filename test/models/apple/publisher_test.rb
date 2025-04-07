@@ -611,5 +611,91 @@ describe Apple::Publisher do
 
       mock.verify
     end
+
+    it "skips delivery for already delivered episodes but still publishes them" do
+      episode.feeder_episode.apple_mark_as_uploaded!
+      episode.feeder_episode.apple_mark_as_delivered!
+
+      publish_mock = Minitest::Mock.new
+      publish_mock.expect(:call, nil, [[episode]])
+
+      apple_publisher.stub(:upload_media!, ->(*) { raise "Should not be called" }) do
+        apple_publisher.stub(:process_and_deliver!, ->(*) { raise "Should not be called" }) do
+          apple_publisher.stub(:publish_drafting!, publish_mock) do
+            apple_publisher.deliver_and_publish!([episode])
+          end
+        end
+      end
+
+      assert publish_mock.verify
+    end
+
+    it "calls delivery and publishing for episodes needing delivery" do
+      episode.feeder_episode.apple_mark_as_uploaded!
+      episode.feeder_episode.apple_mark_as_not_delivered!
+
+      # Both delivery and publishing should be called
+      publish_mock = Minitest::Mock.new
+      publish_mock.expect(:call, nil, [[episode]])
+
+      delivery_mock = Minitest::Mock.new
+      delivery_mock.expect(:call, nil, [[episode]])
+
+      apple_publisher.stub(:upload_media!, ->(*) {}) do
+        apple_publisher.stub(:process_and_deliver!, delivery_mock) do
+          apple_publisher.stub(:publish_drafting!, publish_mock) do
+            apple_publisher.deliver_and_publish!([episode])
+          end
+        end
+      end
+
+      assert publish_mock.verify
+      assert delivery_mock.verify
+    end
+  end
+
+  describe "#process_and_deliver!" do
+    let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+
+    it "marks episodes as delivered and resets asset wait, but does not publish" do
+      # Setup mocks to verify method calls
+      increment_mock = Minitest::Mock.new
+      increment_mock.expect(:call, nil, [[episode]])
+
+      wait_upload_mock = Minitest::Mock.new
+      wait_upload_mock.expect(:call, nil, [[episode]])
+
+      wait_asset_mock = Minitest::Mock.new
+      wait_asset_mock.expect(:call, nil, [[episode]])
+
+      mark_delivered_mock = Minitest::Mock.new
+      mark_delivered_mock.expect(:call, nil, [[episode]])
+
+      reset_mock = Minitest::Mock.new
+      reset_mock.expect(:call, nil, [[episode]])
+
+      # Set up method stubs
+      apple_publisher.stub(:increment_asset_wait!, increment_mock) do
+        apple_publisher.stub(:wait_for_upload_processing, wait_upload_mock) do
+          apple_publisher.stub(:wait_for_asset_state, wait_asset_mock) do
+            apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
+              apple_publisher.stub(:reset_asset_wait!, reset_mock) do
+                # This should raise an error if publish_drafting! is called
+                apple_publisher.stub(:publish_drafting!, ->(*) { raise "publish_drafting! should not be called!" }) do
+                  apple_publisher.process_and_deliver!([episode])
+                end
+              end
+            end
+          end
+        end
+      end
+
+      # Verify all expected methods were called
+      assert increment_mock.verify
+      assert wait_upload_mock.verify
+      assert wait_asset_mock.verify
+      assert mark_delivered_mock.verify
+      assert reset_mock.verify
+    end
   end
 end
