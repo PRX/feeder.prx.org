@@ -9,7 +9,9 @@
       <div class="row">
         <div class="col-3">
           <div class="form-floating input-group" aria-label="audio type">
-            <%= form.select :audio_type, audio_format_options, {include_blank: true}, disabled: local_assigns[:lock_format], data: {action: "toggle-field#displayOnlyThisField"} %>
+            <% html_options = {data: {action: "toggle-field#displayOnlyThisField"}} %>
+            <% html_options[:disabled] = true if local_assigns[:lock_format] %>
+            <%= form.select :audio_type, audio_format_options, {include_blank: true}, html_options %>
             <%= form.label :audio_type %>
           </div>
         </div>
