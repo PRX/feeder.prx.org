@@ -56,7 +56,7 @@ module Feeder
 
     # Use redis if the env vars are present
     if ENV["REDIS_HOST"].present? && ENV["REDIS_PORT"].present?
-      config.cache_store = [:redis_cache_store, {url: "redis://#{ENV["REDIS_HOST"]}:#{ENV["REDIS_PORT"]}/1"}]
+      config.cache_store = [:redis_cache_store, {host: ENV["REDIS_HOST"], port: ENV["REDIS_PORT"], ssl: ENV["REDIS_SSL"].present?}]
       config.session_store :cache_store, key: "_feeder_session"
     else
       require "feeder_active_record_store"

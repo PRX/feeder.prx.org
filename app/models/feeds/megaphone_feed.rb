@@ -1,6 +1,8 @@
 class Feeds::MegaphoneFeed < Feed
   DEFAULT_TITLE = "Megaphone Integration"
   DEFAULT_AUDIO_FORMAT = {f: "mp3", b: 128, c: 2, s: 44100}.with_indifferent_access
+  # Default duration to publish early on megaphone
+  DEFAULT_OFFSET = 30.minutes.freeze
 
   has_one :megaphone_config, class_name: "::Megaphone::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
@@ -47,6 +49,7 @@ class Feeds::MegaphoneFeed < Feed
     self.slug ||= "prx-#{id}"
     self.title ||= DEFAULT_TITLE
     self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
+    self.episode_offset_seconds = DEFAULT_OFFSET if episode_offset_seconds.nil?
 
     super
   end

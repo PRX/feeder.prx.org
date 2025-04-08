@@ -896,6 +896,7 @@ en:
       help:
         publish_enabled: Enable automatically publishing and updating episodes in this feed to Megaphone?
         sync_blocks_rss: Block publishing to the default feed RSS until the Megaphone episode is published?
+        episode_offset_seconds: To publish early to Megaphone so the audio is already public and ready to serve.
     form_main:
       confirm:
         file_name: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?
@@ -932,12 +933,14 @@ en:
         "-21600": 6 hours early
         "-43200": 12 hours early
         "-86400": 24 hours early
+        "-604800": 1 week early
         "300": 5 minutes late
         "900": 15 minutes late
         "3600": 1 hour late
         "21600": 6 hours late
         "43200": 12 hours late
         "86400": 24 hours late
+        "604800": 1 week late
       audio_format_options:
         mp3: MP3
         flac: FLAC

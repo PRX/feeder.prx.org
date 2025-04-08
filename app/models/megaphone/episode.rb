@@ -16,15 +16,19 @@ module Megaphone
 
     CREATE_ATTRIBUTES = CREATE_REQUIRED + %i[pubdate pubdate_timezone author link explicit draft
       subtitle summary background_image_file_url background_audio_file_url pre_count post_count
-      insertion_points guid expected_adhash original_filename original_url
-      episode_number season_number retain_ad_locations advertising_tags ad_free]
+      insertion_points guid expected_adhash original_filename episode_number season_number
+      retain_ad_locations ad_free episode_type clean_title]
 
     UPDATE_ATTRIBUTES = CREATE_ATTRIBUTES
 
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
-    OTHER_ATTRIBUTES = %i[id podcast_id created_at updated_at status
-      download_url audio_file_processing audio_file_status audio_file_updated_at pre_offset post_offset]
+    OTHER_ATTRIBUTES = %i[id podcast_id created_at updated_at status download_url
+      audio_file_processing audio_file_status audio_file_updated_at pre_offset post_offset
+      image_file audio_file size duration uid original_url bitrate samplerate channel_mode vbr
+      id3_file id3_file_processing id3_file_size spotify_identifier custom_fields content_rating
+      promotional_content podcast_title network_id podcast_author podcast_itunes_categories
+      episode_video_thumbnail_url main_feed rss_status spotify_status cuepoints advertising_tags]
 
     DEPRECATED = %i[]
 
@@ -48,7 +52,7 @@ module Megaphone
 
     def self.new_from_episode(megaphone_podcast, feeder_episode)
       # start with basic attributes copied from the feeder episode
-      episode = Megaphone::Episode.new(attributes_from_episode(feeder_episode))
+      episode = Megaphone::Episode.new(attributes_from_episode(feeder_episode, megaphone_podcast.private_feed))
 
       # set relations to the feeder episode and megaphone podcast
       episode.feeder_episode = feeder_episode
@@ -65,23 +69,28 @@ module Megaphone
       episode
     end
 
-    def self.attributes_from_episode(e)
+    def self.attributes_from_episode(e, feed)
+      pubdate = if e.published_or_released_date
+        e.published_or_released_date + feed.episode_offset_seconds.to_i.seconds
+      end
+
       {
         title: e.title,
         external_id: e.guid,
         guid: e.item_guid,
-        pubdate: e.published_or_released_date,
-        pubdate_timezone: e.published_or_released_date&.time_zone&.name,
+        pubdate: pubdate,
+        pubdate_timezone: pubdate&.time_zone&.name,
         author: e.author_name,
         link: e.url,
         explicit: e.explicit,
         draft: e.draft?,
+        clean_title: e.clean_title,
         subtitle: e.subtitle,
         summary: e.description,
         background_image_file_url: e.ready_image&.href,
+        episode_type: e.itunes_type,
         episode_number: e.episode_number,
         season_number: e.season_number,
-        advertising_tags: e.categories,
         ad_free: e.categories.include?("adfree")
       }
     end
@@ -109,7 +118,7 @@ module Megaphone
       self
     rescue Faraday::ClientError => ce
       self.api_response = ce.response
-      raise e
+      raise ce
     rescue => e
       logger.error("Error creating episode in Megaphone", error: e)
       raise e
@@ -117,7 +126,7 @@ module Megaphone
 
     def update!(episode = nil)
       if episode
-        self.attributes = self.class.attributes_from_episode(episode)
+        self.attributes = self.class.attributes_from_episode(episode, private_feed)
         set_placement_attributes
         set_audio_attributes
       end
@@ -129,6 +138,12 @@ module Megaphone
       update_delivery_status
       set_enclosure
       self
+    rescue Faraday::ClientError => ce
+      self.api_response = ce.response
+      raise ce
+    rescue => e
+      logger.error("Error updating episode in Megaphone", error: e)
+      raise e
     end
 
     def delete!
@@ -136,6 +151,12 @@ module Megaphone
       delete_sync_log
       delete_delivery_status
       self
+    rescue Faraday::ClientError => ce
+      self.api_response = ce.response
+      raise ce
+    rescue => e
+      logger.error("Error deleting episode in Megaphone", error: e)
+      raise e
     end
 
     def delete_sync_log
@@ -163,11 +184,8 @@ module Megaphone
       # Re-request the megaphone api
       find_by_megaphone_id
 
-      # get the audio attributes from feeder
-      set_audio_attributes
-
-      # check to see if the audio on mp matches
-      if audio_is_latest?
+      # check to see if the audio on mp matches latest delivery
+      if original_filename == delivery_status(true).source_filename
         # if processing done, set the cuepoints and the enclosure
         if !audio_file_processing && audio_file_status == "success"
           set_enclosure
@@ -191,9 +209,31 @@ module Megaphone
     end
 
     def set_enclosure
-      return unless audio_file_status == "success"
-      return if download_url.blank? || feeder_episode.enclosure_override_url.present?
-      feeder_episode.update(enclosure_override_url: download_url, enclosure_override_prefix: true)
+      return if download_url.blank? || !feeder_episode.complete_media?
+      set_external_media
+      feeder_episode.update!(enclosure_override_url: download_url, enclosure_override_prefix: true)
+    end
+
+    # if it's not published yet, can't get the file from mp, create as "complete"
+    def set_external_media
+      return if feeder_episode.published?
+
+      emr_attributes = {
+        status: :complete,
+        mime_type: "audio/mpeg",
+        medium: "audio",
+        original_url: download_url,
+        file_size: feeder_episode.media_file_size_sum,
+        duration: feeder_episode.media_duration_sum,
+        bit_rate: private_feed.audio_format[:b].to_i,
+        channels: private_feed.audio_format[:c].to_i,
+        sample_rate: private_feed.audio_format[:s].to_i
+      }
+      if feeder_episode.external_media_resource
+        feeder_episode.external_media_resource.update!(emr_attributes)
+      else
+        feeder_episode.create_external_media_resource!(emr_attributes)
+      end
     end
 
     def replace_cuepoints!
@@ -237,19 +277,27 @@ module Megaphone
 
     # update delivery status after a create or update
     def update_delivery_status
-      # if there is audio
-      if feeder_episode.complete_media? && !has_media_version?
+      # if there is not audio yet, we're all done
+      if !feeder_episode.complete_media?
+        delivery_status(true).mark_as_delivered!
+      # if the audio doesn't match, either it was just uploaded, or needs it
+      elsif !has_media_version?
         # if there's audio and we just uploaded it successfully, set attr, then check status
         if background_audio_file_url
-          attrs = source_attributes.merge(uploaded: true, delivered: false)
+          attrs = source_attributes.merge(
+            enclosure_url: background_audio_file_url,
+            uploaded: true,
+            delivered: false
+          )
           feeder_episode.update_episode_delivery_status(:megaphone, attrs)
-        # if versions don't match, and we didn't upload, it isn't delivered
+        # if versions don't match, and we didn't upload, it isn't uploaded or delivered
         else
           delivery_status(true).mark_as_not_delivered!
         end
-      # or if there's not audio yet or it didn't change
       else
-        delivery_status(true).mark_as_delivered!
+        # media is complete and has the right version, that's uploaded!
+        # next pass through check_audio! should mark it delivered if mp matches and is complete
+        delivery_status(true).mark_as_uploaded!
       end
       feeder_episode.episode_delivery_statuses.reset
     end
@@ -306,7 +354,7 @@ module Megaphone
     def set_audio_attributes
       return unless feeder_episode.complete_media?
 
-      # check if the version is different from what was saved before,
+      # check if the version is different from what was uploaded before,
       # need to upload and deliver
       if !has_media_version?
         media_info = get_media_info(enclosure_url)
@@ -314,13 +362,16 @@ module Megaphone
         # if dovetail has the right media info, we can update
         if media_info[:media_version] == feeder_episode.media_version_id
           audio_url = arrangement_version_url(media_info[:location], media_info[:media_version])
+          audio_filename = url_filename(audio_url)
 
           self.source_media_version_id = media_info[:media_version]
           self.source_size = media_info[:size]
           self.source_fetch_count = (delivery_status&.source_fetch_count || 0) + 1
           self.source_url = audio_url
-          self.source_filename = url_filename(source_url)
+          self.source_filename = audio_filename
+
           self.background_audio_file_url = audio_url
+          self.original_filename = audio_filename
           self.insertion_points = timings
           self.retain_ad_locations = true
         end
@@ -364,7 +415,7 @@ module Megaphone
     end
 
     def url_filename(url)
-      URI.parse(url).path.split("/").last
+      URI.parse(url || "").path.split("/").last
     end
 
     def enclosure_url

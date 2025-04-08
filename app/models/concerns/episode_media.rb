@@ -195,16 +195,24 @@ module EpisodeMedia
     if override?
       external_media_resource&.duration
     else
-      media.inject(0.0) { |s, c| s + c.duration.to_f } + podcast.try(:duration_padding).to_f
+      media_duration_sum + podcast.try(:duration_padding).to_f
     end
+  end
+
+  def media_duration_sum
+    media.inject(0.0) { |s, c| s + c.duration.to_f }
   end
 
   def media_file_size
     if override?
       external_media_resource&.file_size
     else
-      media.inject(0) { |s, c| s + c.file_size.to_i }
+      media_file_size_sum
     end
+  end
+
+  def media_file_size_sum
+    media.inject(0) { |s, c| s + c.file_size.to_i }
   end
 
   # must_be_complete=true, is used for:
