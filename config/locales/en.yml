@@ -934,6 +934,7 @@ en:
         "-43200": 12 hours early
         "-86400": 24 hours early
         "-604800": 1 week early
+        "-6048000": 10 weeks early
         "300": 5 minutes late
         "900": 15 minutes late
         "3600": 1 hour late
@@ -941,6 +942,7 @@ en:
         "43200": 12 hours late
         "86400": 24 hours late
         "604800": 1 week late
+        "6048000": 10 weeks late
       audio_format_options:
         mp3: MP3
         flac: FLAC
