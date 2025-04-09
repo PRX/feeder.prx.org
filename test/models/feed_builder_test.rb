@@ -89,7 +89,7 @@ describe FeedBuilder do
   it "creates a unique guid for the episode" do
     feed.set_default_episodes
     node = rss_feed.css("item")[0]
-    assert_equal node.css("guid").text, "prx_#{podcast.id}_#{episode.guid}_#{feed.slug}"
+    assert_equal node.css("guid").text, "prx_#{podcast.id}_#{episode.guid}_#{feed.id}"
   end
 
   it "displays plaintext and richtext descriptions" do

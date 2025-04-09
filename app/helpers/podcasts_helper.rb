@@ -44,7 +44,7 @@ module PodcastsHelper
 
   def episode_guid(episode, feed)
     if feed.unique_guids?
-      "#{episode.item_guid}_#{feed.slug || feed.id}"
+      "#{episode.item_guid}_#{feed.id}"
     else
       episode.item_guid
     end
