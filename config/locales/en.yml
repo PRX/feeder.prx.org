@@ -919,7 +919,7 @@ en:
         include_podcast_value: In some cases, you may wish to exclude micropayments from a private feed.
         itunes_category: Enter an alternate <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">Apple Podcasts category and subcategory</a>, differentiating this Feed from the Podcast.
         subtitle: Enter an alternate teaser
-        unique_guids: If checked, each episode will have a unique GUID in the RSS for this feed, based on the public GUID and the feed slug.
+        unique_guids: Usually this is not needed, but if checked, each episode will have a unique GUID, different from the GUID in the public RSS feed.
     form_status:
       <<: *form_status
       title: Feed Status
