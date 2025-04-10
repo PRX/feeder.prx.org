@@ -42,6 +42,14 @@ module PodcastsHelper
     description
   end
 
+  def episode_guid(episode, feed)
+    if feed.unique_guids?
+      "#{episode.item_guid}_#{feed.id}"
+    else
+      episode.item_guid
+    end
+  end
+
   def full_contact(type, item)
     name = item.try("#{type}_name")
     email = item.try("#{type}_email")
