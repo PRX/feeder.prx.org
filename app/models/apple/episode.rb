@@ -305,7 +305,7 @@ module Apple
           type: "episodes",
           attributes: {
             guid: guid,
-            title: feeder_episode.title,
+            title: feeder_episode.title_safe,
             originalReleaseDate: feeder_episode.published_at.utc.iso8601,
             description: feeder_episode.description_safe,
             websiteUrl: feeder_episode.url,
