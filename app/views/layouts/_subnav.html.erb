@@ -1,12 +1,12 @@
-<% if @podcast && policy(@podcast).show? %>
+<% if !@podcast || policy(@podcast).show? %>
   <div class="prx-app-bar navbar justify-content-start align-items-stretch p-0 bg-white">
 
     <%= render "podcast_switcher/dropdown" %>
 
     <nav class="prx-app-nav navbar-nav flex-row justifty-content-start">
-      <% if @podcast.new_record? %>
+      <% if @podcast&.new_record? %>
         <%= active_link_to "Settings", main_app.new_podcast_path, class: "nav-link" %>
-      <% else %>
+      <% elsif @podcast %>
         <%= active_link_to "Podcast", main_app.podcast_path(@podcast), active: :exact, class: "nav-link" %>
         <%= active_link_to "Settings", main_app.edit_podcast_path(@podcast), active: podcast_settings_active?, class: "nav-link" %>
         <%= active_link_to "Episodes", main_app.podcast_episodes_path(@podcast), active: /\/episodes/, class: "nav-link" %>
