@@ -138,7 +138,7 @@ GEM
       parser (>= 2.4)
       smart_properties
     bigdecimal (3.1.8)
-    bindata (2.5.0)
+    bindata (2.5.1)
     bindex (0.8.1)
     bootsnap (1.15.0)
       msgpack (~> 1.2)
@@ -214,7 +214,8 @@ GEM
       roar-rails
     hashdiff (1.0.1)
     hiredis (0.6.3)
-    httpclient (2.8.3)
+    httpclient (2.9.0)
+      mutex_m
     hyperresource (0.9.4)
       faraday (>= 0.8.6)
       fuzzyurl (= 0.2.2)
@@ -327,11 +328,11 @@ GEM
       racc
     pg (1.5.4)
     popper_js (2.11.6)
-    prx_auth (1.8.0)
+    prx_auth (1.8.1)
       json (>= 1.8.1)
       json-jwt (>= 1.12.0)
       rack (>= 1.5.2)
-    prx_auth-rails (4.2.1)
+    prx_auth-rails (5.0.1)
       actionpack
       prx_auth (>= 1.8.0)
     pry (0.14.1)
@@ -597,8 +598,7 @@ DEPENDENCIES
   parallel
   paranoia
   pg (~> 1.1)
-  prx_auth
-  prx_auth-rails (~> 4.2.1)
+  prx_auth-rails (~> 5.0.1)
   pry
   pry-byebug
   puma (~> 5.6)
