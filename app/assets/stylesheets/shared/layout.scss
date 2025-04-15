@@ -30,3 +30,17 @@ h3 {
 .sticky-md-top {
   z-index: $zindex-dropdown;
 }
+
+.loading-overlay {
+  background: #eee;
+  opacity: 0.7;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  .spinner-border {
+    margin-top: 2rem;
+  }
+}
