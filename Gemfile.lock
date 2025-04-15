@@ -98,6 +98,11 @@ GEM
       tzinfo (~> 2.0, >= 2.0.5)
     addressable (2.8.1)
       public_suffix (>= 2.0.2, < 6.0)
+    administrate (1.0.0.beta3)
+      actionpack (>= 6.0, < 9.0)
+      actionview (>= 6.0, < 9.0)
+      activerecord (>= 6.0, < 9.0)
+      kaminari (~> 1.2.2)
     aes_key_wrap (1.1.0)
     amazing_print (1.4.0)
     ast (2.4.2)
@@ -555,6 +560,7 @@ DEPENDENCIES
   active_link_to
   activerecord-session_store
   addressable
+  administrate (~> 1.0.0.beta3)
   amazing_print
   aws-sdk-eventbridge
   aws-sdk-s3

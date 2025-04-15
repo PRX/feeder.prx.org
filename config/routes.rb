@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  namespace :admin do
+    resources :podcasts
+    resources :episodes
+    root to: "podcasts#index"
+  end
+
   resources :podcasts do
     resource :engagement, only: [:show, :update], controller: :podcast_engagement
     resource :player, only: :show, controller: :podcast_player
