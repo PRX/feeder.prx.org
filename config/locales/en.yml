@@ -441,6 +441,7 @@ en:
         subtitle: Teaser
         title: Title
         url: Public Feed URL
+        unique_guids: Unique GUIDs
       feed_image:
         alt_text: Alt Text
         caption: Caption
@@ -583,6 +584,8 @@ en:
         one: 1 Break
         other: "%{count} Breaks"
     episode_filters:
+      create_episode: Create Episode
+      plan_episodes: Plan Episodes
       my_episodes: Episodes
       export: Export
       filters:
@@ -669,6 +672,7 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+      loading: Loading
     edit:
       title: "%{title} - Edit"
     new:
@@ -918,6 +922,7 @@ en:
         include_podcast_value: In some cases, you may wish to exclude micropayments from a private feed.
         itunes_category: Enter an alternate <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">Apple Podcasts category and subcategory</a>, differentiating this Feed from the Podcast.
         subtitle: Enter an alternate teaser
+        unique_guids: Usually this is not needed, but if checked, each episode will have a unique GUID, different from the GUID in the public RSS feed.
     form_status:
       <<: *form_status
       title: Feed Status
@@ -934,6 +939,7 @@ en:
         "-43200": 12 hours early
         "-86400": 24 hours early
         "-604800": 1 week early
+        "-6048000": 10 weeks early
         "300": 5 minutes late
         "900": 15 minutes late
         "3600": 1 hour late
@@ -941,6 +947,7 @@ en:
         "43200": 12 hours late
         "86400": 24 hours late
         "604800": 1 week late
+        "6048000": 10 weeks late
       audio_format_options:
         mp3: MP3
         flac: FLAC
@@ -1144,6 +1151,7 @@ en:
     index:
       title: My Podcasts
       create: New Podcast
+      loading: Loading
     podcast:
       drafted_episodes:
         one: 1 Drafted Episode

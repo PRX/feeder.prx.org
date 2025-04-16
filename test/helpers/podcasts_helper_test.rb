@@ -36,4 +36,10 @@ describe PodcastsHelper do
       end
     end
   end
+
+  describe "#episode_guid" do
+    it "gets the episode guid with a feed slug" do
+      assert_equal "prx__#{episode.guid}", episode_guid(episode, feed1)
+    end
+  end
 end
