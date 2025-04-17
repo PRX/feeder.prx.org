@@ -98,6 +98,11 @@ GEM
       tzinfo (~> 2.0, >= 2.0.5)
     addressable (2.8.1)
       public_suffix (>= 2.0.2, < 6.0)
+    administrate (1.0.0.beta3)
+      actionpack (>= 6.0, < 9.0)
+      actionview (>= 6.0, < 9.0)
+      activerecord (>= 6.0, < 9.0)
+      kaminari (~> 1.2.2)
     aes_key_wrap (1.1.0)
     amazing_print (1.4.0)
     ast (2.4.2)
@@ -138,7 +143,7 @@ GEM
       parser (>= 2.4)
       smart_properties
     bigdecimal (3.1.8)
-    bindata (2.5.0)
+    bindata (2.5.1)
     bindex (0.8.1)
     bootsnap (1.15.0)
       msgpack (~> 1.2)
@@ -182,12 +187,12 @@ GEM
       dotenv (= 2.8.1)
       railties (>= 3.2)
     drb (2.2.1)
-    erb_lint (0.5.0)
+    erb_lint (0.9.0)
       activesupport
       better_html (>= 2.0.1)
       parser (>= 2.7.1.4)
       rainbow
-      rubocop
+      rubocop (>= 1)
       smart_properties
     erubi (1.13.0)
     excon (0.94.0)
@@ -214,7 +219,8 @@ GEM
       roar-rails
     hashdiff (1.0.1)
     hiredis (0.6.3)
-    httpclient (2.8.3)
+    httpclient (2.9.0)
+      mutex_m
     hyperresource (0.9.4)
       faraday (>= 0.8.6)
       fuzzyurl (= 0.2.2)
@@ -297,7 +303,7 @@ GEM
       timeout
     net-smtp (0.5.0)
       net-protocol
-    newrelic_rpm (8.13.1)
+    newrelic_rpm (9.18.0)
     nio4r (2.7.4)
     nokogiri (1.17.1-aarch64-linux)
       racc (~> 1.4)
@@ -327,11 +333,11 @@ GEM
       racc
     pg (1.5.4)
     popper_js (2.11.6)
-    prx_auth (1.8.0)
+    prx_auth (1.8.1)
       json (>= 1.8.1)
       json-jwt (>= 1.12.0)
       rack (>= 1.5.2)
-    prx_auth-rails (4.2.1)
+    prx_auth-rails (5.0.1)
       actionpack
       prx_auth (>= 1.8.0)
     pry (0.14.1)
@@ -553,6 +559,7 @@ DEPENDENCIES
   active_link_to
   activerecord-session_store
   addressable
+  administrate (~> 1.0.0.beta3)
   amazing_print
   aws-sdk-eventbridge
   aws-sdk-s3
@@ -596,8 +603,7 @@ DEPENDENCIES
   parallel
   paranoia
   pg (~> 1.1)
-  prx_auth
-  prx_auth-rails (~> 4.2.1)
+  prx_auth-rails (~> 5.0.1)
   pry
   pry-byebug
   puma (~> 5.6)

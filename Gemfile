@@ -16,9 +16,9 @@ gem "hiredis", "~> 0.6.3"
 gem "redis", "~> 5.0"
 
 # authorization
+gem "administrate", "~> 1.0.0.beta3"
 gem "oauth2", "~> 1.4.7"
-gem "prx_auth"
-gem "prx_auth-rails", "~> 4.2.1"
+gem "prx_auth-rails", "~> 5.0.1"
 gem "pundit", "~> 2.3.0"
 gem "rack-cors"
 

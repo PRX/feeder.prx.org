@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  namespace :admin do
+    resources :podcasts
+    resources :episodes
+    root to: "podcasts#index"
+  end
+
   resources :podcasts do
     resource :engagement, only: [:show, :update], controller: :podcast_engagement
     resource :player, only: :show, controller: :podcast_player
@@ -24,10 +30,6 @@ Rails.application.routes.draw do
 
   resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
   get "/uploads/signature", to: "uploads#signature", as: :uploads_signature
-
-  mount PrxAuth::Rails::Engine => "/auth", :as => "prx_auth_engine"
-  get "sessions/logout", to: "application#logout", as: :logout
-  get "sessions/refresh", to: "application#refresh", as: :refresh
 
   namespace :api do
     scope ":api_version", api_version: "v1", defaults: {format: "hal"} do
