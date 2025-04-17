@@ -584,6 +584,8 @@ en:
         one: 1 Break
         other: "%{count} Breaks"
     episode_filters:
+      create_episode: Create Episode
+      plan_episodes: Plan Episodes
       my_episodes: Episodes
       export: Export
       filters:
@@ -670,6 +672,7 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+      loading: Loading
     edit:
       title: "%{title} - Edit"
     new:
@@ -1156,6 +1159,7 @@ en:
     index:
       title: My Podcasts
       create: New Podcast
+      loading: Loading
     podcast:
       drafted_episodes:
         one: 1 Drafted Episode
