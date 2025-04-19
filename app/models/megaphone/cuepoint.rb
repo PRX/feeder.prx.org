@@ -8,7 +8,8 @@ module Megaphone
 
     CREATE_REQUIRED = %i[cuepoint_type ad_count start_time ad_sources]
 
-    CREATE_ATTRIBUTES = CREATE_REQUIRED + %i[title end_time action is_active offset notes]
+    # max_duration is undocumented, but it works to set as a # of seconds
+    CREATE_ATTRIBUTES = CREATE_REQUIRED + %i[title end_time action is_active offset notes max_duration]
 
     ALL_ATTRIBUTES = CREATE_ATTRIBUTES
 
