@@ -42,6 +42,14 @@ module PodcastsHelper
     description
   end
 
+  def episode_title(episode, feed)
+    if episode.podcast.has_apple_feed?
+      episode.title_safe
+    else
+      episode.title
+    end
+  end
+
   def episode_guid(episode, feed)
     if feed.unique_guids?
       "#{episode.item_guid}_#{feed.id}"
