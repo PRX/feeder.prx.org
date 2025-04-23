@@ -111,13 +111,7 @@ module Feeder
         data = {msg: data.to_s} unless data.is_a?(Hash)
         tags = current_tags
         data[:tags] = tags if tags.present?
-
-        # downgrade 404s to info
-        if severity == "ERROR" && data[:msg]&.include?("ActionController::RoutingError")
-          _call("INFO", time, progname, data)
-        else
-          _call(severity, time, progname, data)
-        end
+        _call(severity, time, progname, data)
       end
     end
 

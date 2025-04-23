@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  prx_auth_routes
+
   namespace :admin do
     resources :podcasts
     resources :episodes
@@ -62,4 +64,8 @@ Rails.application.routes.draw do
 
   match "/api", via: [:get], to: redirect("/api/v1")
   root "podcasts#index"
+
+  unless Rails.configuration.consider_all_requests_local
+    match "*unmatched", via: :all, to: "errors#not_found"
+  end
 end

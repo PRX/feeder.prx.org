@@ -337,7 +337,7 @@ GEM
       json (>= 1.8.1)
       json-jwt (>= 1.12.0)
       rack (>= 1.5.2)
-    prx_auth-rails (5.0.1)
+    prx_auth-rails (5.1.0)
       actionpack
       prx_auth (>= 1.8.0)
     pry (0.14.1)
@@ -603,7 +603,7 @@ DEPENDENCIES
   parallel
   paranoia
   pg (~> 1.1)
-  prx_auth-rails (~> 5.0.1)
+  prx_auth-rails (~> 5.1.0)
   pry
   pry-byebug
   puma (~> 5.6)
