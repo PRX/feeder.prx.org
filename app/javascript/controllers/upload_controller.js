@@ -5,6 +5,7 @@ import sha256 from "sha256"
 import humanBytes from "util/humanBytes"
 
 export default class extends Controller {
+  static values = { fileSizeError: String }
   static outlets = ["disable"]
   static targets = [
     "field",
@@ -40,7 +41,7 @@ export default class extends Controller {
     } else if (file.size >= 1024 * 1024 * 1024) {
       this.fileNameTargets.forEach((t) => (t.innerHTML = file.name))
       this.fileSizeTargets.forEach((t) => (t.innerHTML = humanBytes(file.size)))
-      this.onError("File too large - upload less than 1GB")
+      this.onError(this.fileSizeErrorValue)
     } else {
       this.uploadFile(file)
     }
