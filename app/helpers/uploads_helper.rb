@@ -61,7 +61,7 @@ module UploadsHelper
     if ENV["UPLOAD_SIGNING_SERVICE_URL"].present?
       ENV["UPLOAD_SIGNING_SERVICE_URL"]
     elsif Rails.env.development?
-      main_app.uploads_signature_path
+      uploads_signature_path
     end
   end
 

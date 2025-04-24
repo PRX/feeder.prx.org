@@ -1,20 +1,20 @@
 <div class="prx-header-bar navbar navbar-dark align-items-stretch p-0 bg-primary-dark">
   <div class="container-fluid align-items-stretch pe-0">
     <header class="flex-grow-1 d-flex align-items-center">
-      <%= link_to image_tag("dovetail_logo.svg", width: 152, height: 30, alt: "Dovetail from PRX"), main_app.root_path, class: "navbar-brand d-inline-flex" %>
+      <%= link_to image_tag("dovetail_logo.svg", width: 152, height: 30, alt: "Dovetail from PRX"), root_path, class: "navbar-brand d-inline-flex" %>
     </header>
 
     <nav class="navbar-nav d-none d-md-flex flex-row align-items-stretch">
       <h2 class="visually-hidden">Your Applications</h2>
 
-      <%= link_to t(".feeder"), main_app.root_path, class: "nav-link active" %>
+      <%= link_to t(".podcasts"), root_path, class: "nav-link active" %>
 
       <% if current_user_app?("metrics") %>
         <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
       <% end %>
 
-      <% if current_user_app?("augury") %>
-        <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
+      <% if current_user_app?("inventory") %>
+        <%= link_to t(".inventory"), current_user_app("inventory"), class: "nav-link" %>
       <% end %>
     </nav>
 
@@ -47,8 +47,14 @@
         <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute shadow pb-2 text-center m-0" aria-labelledby="nav-user-dropdown">
           <div class="h2 py-3 px-4 text-nowrap"><%= current_user_name %></div>
           <%= link_to t(".id"), current_user_id_profile, class: "btn btn-primary-light mb-2" %>
-          <%= link_to "Reload", main_app.refresh_path, data: {turbo: false}, class: "dropdown-item text-primary-light" %>
-          <%= link_to "Logout", main_app.logout_path, data: {turbo: false}, class: "dropdown-item text-primary-light" %>
+          <% if current_user_admin? %>
+             <%= link_to t(".admin"), admin_root_path, class: "dropdown-item text-primary-light" %>
+             <button type="button" class="dropdown-item text-primary-light" data-bs-toggle="modal" data-bs-target="#wildcard-modal">
+               <%= t(".wildcard") %>
+             </button>
+           <% end %>
+          <%= link_to t(".reload"), refresh_sessions_path, data: {turbo: false}, class: "dropdown-item text-primary-light" %>
+          <%= link_to t(".logout"), logout_sessions_path, data: {turbo: false}, class: "dropdown-item text-primary-light" %>
         </div>
       </nav>
     <% end %>
@@ -63,16 +69,16 @@
       <h2 class="visually-hidden">Your Applications</h2>
       <ul class="navbar-nav m-2 mb-lg-0">
         <li class="nav-item">
-          <%= link_to t(".feeder"), main_app.root_path, class: "nav-link active" %>
+          <%= link_to t(".podcasts"), root_path, class: "nav-link active" %>
         </li>
         <% if current_user_app?("metrics") %>
         <li class="nav-item">
           <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
         </li>
         <% end %>
-         <% if current_user_app?("augury") %>
+         <% if current_user_app?("inventory") %>
         <li class="nav-item">
-          <%= link_to t(".augury"), current_user_app("augury"), class: "nav-link" %>
+          <%= link_to t(".inventory"), current_user_app("inventory"), class: "nav-link" %>
         </li>
         <% end %>
       </ul>
@@ -80,3 +86,7 @@
 
   </div>
 </div>
+
+<% if current_user_admin? %>
+  <%= render "layouts/nav_wildcard" %>
+<% end %>
