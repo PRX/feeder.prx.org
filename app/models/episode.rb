@@ -278,10 +278,11 @@ class Episode < ApplicationRecord
 
   def head_request(uri_str = enclosure_url(podcast.default_feed), redirects = 0)
     return false if redirects >= 10
+
     uri = URI.parse(uri_str)
-    http = Net::HTTP.start(uri.host)
-    http.read_timeout = 1.second
-    res = http.head(uri.path)
+    res = Net::HTTP.start(uri.host) do |http|
+      http.head(uri.path)
+    end
 
     if res.is_a?(Net::HTTPRedirection)
       head_request(res[:location], redirects + 1)
@@ -290,7 +291,8 @@ class Episode < ApplicationRecord
     else
       false
     end
-  rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout
+  rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout, Net::OpenTimeout => e
+    Rails.logger.info(e.message)
     false
   end
 end
