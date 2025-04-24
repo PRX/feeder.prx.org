@@ -15,7 +15,7 @@ class MediaResource < ApplicationRecord
 
   before_validation :initialize_attributes, on: :create
 
-  validates :file_size, comparison: { less_than: 10000 }
+  validates :file_size, comparison: {less_than: 10000}
   validates :original_url, presence: true
   validates :medium, inclusion: {in: %w[audio video]}, if: :status_complete?
 
