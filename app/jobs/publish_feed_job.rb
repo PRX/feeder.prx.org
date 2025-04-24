@@ -78,7 +78,7 @@ class PublishFeedJob < ApplicationJob
     first_published_episodes = Episode.where(id: rss.episodes).where(first_rss_published_at: nil)
 
     first_published_episodes.each do |episode|
-      if episode.feed.default?
+      if feed.default?
         episode.update(first_rss_published_at: DateTime.now)
         episode.head_request
       end

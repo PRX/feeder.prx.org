@@ -361,7 +361,7 @@ describe Episode do
     it "returns true for a successful request" do
       uri_1 = episode_1.enclosure_url
 
-      req_1 = stub_request(:head, uri_1).to_return(status: 200)
+      stub_request(:head, uri_1).to_return(status: 200)
 
       assert_equal episode_1.head_request, true
       assert_requested :head, episode_1.enclosure_url
@@ -372,9 +372,9 @@ describe Episode do
       uri_2 = episode_2.enclosure_url
       uri_3 = episode_3.enclosure_url
 
-      req_1 = stub_request(:head, uri_1).to_return(status: 302, headers: {location: uri_2})
-      req_2 = stub_request(:head, uri_2).to_return(status: 301, headers: {location: uri_3})
-      req_3 = stub_request(:head, uri_3).to_return(status: 200)
+      stub_request(:head, uri_1).to_return(status: 302, headers: {location: uri_2})
+      stub_request(:head, uri_2).to_return(status: 301, headers: {location: uri_3})
+      stub_request(:head, uri_3).to_return(status: 200)
 
       episode_1.head_request
 
@@ -386,8 +386,8 @@ describe Episode do
     it "does not follow more than 10 redirects" do
       uri_1 = episode_1.enclosure_url
 
-      req_1 = stub_request(:head, uri_1).
-        to_return(status: 302, headers: {location: uri_1}).times(50)
+      stub_request(:head, uri_1)
+        .to_return(status: 302, headers: {location: uri_1}).times(50)
 
       episode_1.head_request
 
@@ -397,7 +397,7 @@ describe Episode do
     it "handles timeouts" do
       uri_1 = episode_1.enclosure_url
 
-      req_1 = stub_request(:head, uri_1).to_timeout
+      stub_request(:head, uri_1).to_timeout
 
       assert_equal episode_1.head_request, false
     end
