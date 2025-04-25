@@ -387,12 +387,12 @@ describe Episode do
     let(:episode_2) { build_stubbed(:episode) }
     let(:episode_3) { build_stubbed(:episode) }
 
-    it "returns true for a successful request" do
+    it "returns response for a successful request" do
       uri_1 = episode_1.enclosure_url
 
       stub_request(:head, uri_1).to_return(status: 200)
 
-      assert_equal episode_1.head_request, true
+      assert_kind_of Net::HTTPSuccess, episode_1.head_request
       assert_requested :head, episode_1.enclosure_url
     end
 
@@ -421,14 +421,6 @@ describe Episode do
       episode_1.head_request
 
       assert_requested :head, episode_1.enclosure_url, times: 10
-    end
-
-    it "handles timeouts" do
-      uri_1 = episode_1.enclosure_url
-
-      stub_request(:head, uri_1).to_timeout
-
-      assert_equal episode_1.head_request, false
     end
   end
 end

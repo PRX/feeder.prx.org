@@ -17,6 +17,10 @@ describe PublishFeedJob do
   end
 
   describe "saving the rss file" do
+    before do
+      stub_request(:head, episode.enclosure_url).to_return(status: 200)
+    end
+
     describe "#perform" do
       it "transitions to the error state upon general error" do
         job.stub(:s3_client, stub_client) do
