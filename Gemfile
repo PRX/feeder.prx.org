@@ -1,8 +1,6 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.3.7"
-
 # core
 gem "activerecord-session_store"
 gem "bootsnap", require: false
