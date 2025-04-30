@@ -140,7 +140,8 @@ module Megaphone
       {
         "Content-Type" => "application/json",
         "Accept" => "application/json",
-        "User-Agent" => "PRX-Feeder-Megaphone/1.0 (Rails-#{Rails.env})"
+        "User-Agent" => "PRX-Feeder-Megaphone/1.0 (Rails-#{Rails.env})",
+        "Authorization" => "Token #{token}"
       }
     end
 
@@ -149,10 +150,8 @@ module Megaphone
       headers = default_headers.merge(options[:headers] || {})
       params = options[:params] || {}
       Faraday.new(url: url, headers: headers, params: params) do |builder|
-        builder.request :token_auth, token
         builder.response :raise_error
         builder.response :logger, Rails.logger
-        builder.adapter :excon
       end
     end
   end
