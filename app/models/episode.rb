@@ -17,6 +17,7 @@ class Episode < ApplicationRecord
 
   MAX_SEGMENT_COUNT = 10
   MAX_DESCRIPTION_BYTES = 4000
+  MAX_TITLE_BYTES = 120
   VALID_ITUNES_TYPES = %w[full trailer bonus]
   DROP_DATE = "COALESCE(episodes.published_at, episodes.released_at)"
 
@@ -45,6 +46,7 @@ class Episode < ApplicationRecord
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
+  validates :title, bytesize: {maximum: MAX_TITLE_BYTES}, if: -> { strict_validations && title_changed? }
   validates :description, bytesize: {maximum: MAX_DESCRIPTION_BYTES}, if: -> { strict_validations && description_changed? }
   validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
@@ -258,6 +260,10 @@ class Episode < ApplicationRecord
 
   def description_safe
     description_with_default.truncate_bytes(MAX_DESCRIPTION_BYTES, omission: "")
+  end
+
+  def title_safe
+    title.present? ? title.truncate_bytes(MAX_TITLE_BYTES, omission: "") : ""
   end
 
   def feeder_cdn_host

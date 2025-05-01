@@ -21,4 +21,12 @@ class Api::Auth::PodcastsController < Api::PodcastsController
   def resources_base
     super.merge(authorization.token_auth_podcasts)
   end
+
+  def filtered(resources)
+    if params[:q].present?
+      super.filter_by_title(params[:q])
+    else
+      super
+    end
+  end
 end

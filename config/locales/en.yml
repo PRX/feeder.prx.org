@@ -309,6 +309,8 @@ en:
               taken: Must be unique
         media_resource:
           attributes:
+            file_size:
+              less_than: File too large - upload less than 1GB
             medium:
               format: "%{message}"
             original_url:
