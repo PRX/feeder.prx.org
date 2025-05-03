@@ -58,11 +58,11 @@ module Megaphone
 
     def result(request, response)
       data = incoming_body_filter(response.body)
-      if data[:items].present? && data[:items].is_a?(Array)
-        {items: data[:items], pagination: {}, request: request, response: response}
-      elsif data.is_a?(Array)
+      if data.is_a?(Array)
         pagination = pagination_from_headers(response.env.response_headers)
         {items: data, pagination: pagination, request: request, response: response}
+      elsif data[:items].present? && data[:items].is_a?(Array)
+        {items: data[:items], pagination: {}, request: request, response: response}
       else
         {items: [data], pagination: {}, request: request, response: response}
       end

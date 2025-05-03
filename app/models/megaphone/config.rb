@@ -1,5 +1,7 @@
 module Megaphone
   class Config < ApplicationRecord
+    serialize :advertising_tags, coder: JSON
+
     belongs_to :feed
 
     validates_presence_of :token, :network_id, :organization_id

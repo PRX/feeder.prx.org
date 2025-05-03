@@ -73,7 +73,7 @@ module Megaphone
         episode_limit: feed.display_episodes_count,
         external_id: podcast.guid,
         podcast_type: podcast.itunes_type,
-        advertising_tags: podcast.categories
+        advertising_tags: feed.config.advertising_tags || []
         # set in augury, can we get it here?
         # excluded_categories: ????? TBD,
       }
