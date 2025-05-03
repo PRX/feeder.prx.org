@@ -9,7 +9,7 @@ describe Megaphone::OrganizationTag do
       items: [
         {
           label: "tag 1",
-          value: "tag 1",
+          value: "tag_1",
           podcastCount: 2,
           episodeCount: 0
         }
@@ -24,7 +24,7 @@ describe Megaphone::OrganizationTag do
     tags = Megaphone::OrganizationTag.list_by_feed(feed)
     assert_equal 1, tags.size
     assert_equal "tag 1", tags.first.label
-    assert_equal "tag 1", tags.first.value
+    assert_equal "tag_1", tags.first.value
     assert_equal 2, tags.first.podcast_count
     assert_equal 0, tags.first.episode_count
   end
