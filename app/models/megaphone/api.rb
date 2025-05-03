@@ -20,6 +20,12 @@ module Megaphone
       result(request, response)
     end
 
+    def get_base(path, params = {}, headers = {})
+      request = {url: join_base_url(path), headers: headers, params: params}
+      response = get_url(request)
+      result(request, response)
+    end
+
     def post(path, body, headers = {})
       request = {url: join_url(path), headers: headers, body: outgoing_body_filter(body)}
       response = connection(request.slice(:url, :headers)).post do |req|
@@ -52,15 +58,15 @@ module Megaphone
 
     def result(request, response)
       data = incoming_body_filter(response.body)
-      if data.is_a?(Array)
+      if data[:items].present? && data[:items].is_a?(Array)
+        {items: data[:items], pagination: {}, request: request, response: response}
+      elsif data.is_a?(Array)
         pagination = pagination_from_headers(response.env.response_headers)
         {items: data, pagination: pagination, request: request, response: response}
       else
         {items: [data], pagination: {}, request: request, response: response}
       end
     end
-
-    # TODO: and we need delete...
 
     def api_base
       @endpoint_url || DEFAULT_ENDPOINT
