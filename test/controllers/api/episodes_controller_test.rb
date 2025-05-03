@@ -197,12 +197,16 @@ describe Api::EpisodesController do
       }
 
       assert_equal episode_update.contents.size, 0
+      assert_nil episode_update.medium
 
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
 
-      contents = episode_update.reload.contents
+      episode_update.reload
+
+      assert_equal "audio", episode_update.medium
+      contents = episode_update.contents
       assert_equal contents.size, 1
       assert_equal contents.first.mime_type, "audio/mpeg"
       assert_equal contents.first.file_size, 123456
@@ -243,6 +247,42 @@ describe Api::EpisodesController do
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
       assert_equal episode_update.reload.contents.size, 0
+    end
+
+    it "can add uncut to an episode" do
+      update_hash = {
+        uncut: {
+          href: "https://s3.amazonaws.com/prx-testing/test/change1.mp3"
+        }
+      }
+
+      assert_equal episode_update.contents.size, 0
+      assert_nil episode_update.uncut
+      assert_nil episode_update.medium
+
+      put(:update, body: update_hash.to_json, as: :json,
+        params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      assert_response :success
+
+      episode_update.reload
+
+      contents = episode_update.contents
+      assert_equal contents.size, 0
+
+      uncut = episode_update.uncut
+      assert_not_nil uncut
+      assert_equal "uncut", episode_update.medium
+
+      # updating with a nil should delete it
+      update_hash = {uncut: nil}
+      put(:update, body: update_hash.to_json, as: :json,
+        params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      assert_response :success
+
+      episode_update.reload
+
+      assert_nil episode_update.uncut
+      assert_nil episode_update.medium
     end
   end
 end

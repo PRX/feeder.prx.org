@@ -48,6 +48,8 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
+  property :uncut, decorator: Api::MediaResourceRepresenter, class: Uncut
+
   property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
 
   def self_url(episode)

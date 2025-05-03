@@ -133,6 +133,14 @@ module EpisodeMedia
     media.map(&:id)
   end
 
+  def uncut=(uncut)
+    super
+
+    self.medium = if uncut.present?
+      "uncut"
+    end
+  end
+
   # API updates ignore nil attributes
   def media=(files)
     return if files.nil?
