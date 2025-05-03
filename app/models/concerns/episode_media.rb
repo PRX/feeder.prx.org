@@ -134,7 +134,12 @@ module EpisodeMedia
   end
 
   def uncut=(uncut)
-    super
+    # if uncut is unchanged or missing, update other attributes
+    if (uncut && self.uncut) && (uncut.href.blank? || (self.uncut.href == uncut.href))
+      self.uncut.segmentation = uncut.segmentation if uncut.segmentation.present?
+    else
+      super
+    end
 
     self.medium = if uncut.present?
       "uncut"

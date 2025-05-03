@@ -273,6 +273,39 @@ describe Api::EpisodesController do
       assert_not_nil uncut
       assert_equal "uncut", episode_update.medium
 
+      # updating segmentation should update it
+      update_hash = {
+        segment_count: 2,
+        uncut: {
+          href: "https://s3.amazonaws.com/prx-testing/test/change1.mp3",
+          segmentation: [[nil, 10]]
+        }
+      }
+      put(:update, body: update_hash.to_json, as: :json,
+        params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      assert_response :success
+
+      episode_update.reload
+
+      assert_equal uncut.id, episode_update.uncut.id
+      assert_equal [[nil, 10]], episode_update.uncut.segmentation
+
+      # updating segmentation with no href should update not replace
+      update_hash = {
+        segment_count: 2,
+        uncut: {
+          segmentation: [[nil, 15]]
+        }
+      }
+      put(:update, body: update_hash.to_json, as: :json,
+        params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      assert_response :success
+
+      episode_update.reload
+
+      assert_equal uncut.id, episode_update.uncut.id
+      assert_equal [[nil, 15]], episode_update.uncut.segmentation
+
       # updating with a nil should delete it
       update_hash = {uncut: nil}
       put(:update, body: update_hash.to_json, as: :json,
