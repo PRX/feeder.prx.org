@@ -1,15 +1,16 @@
 module Megaphone
   class Api
-    attr_accessor :token, :network_id, :endpoint_url
+    attr_accessor :token, :network_id, :organization_id, :endpoint_url
 
     DEFAULT_ENDPOINT = "https://cms.megaphone.fm/api"
 
     PAGINATION_HEADERS = %w[link x-per-page x-page x-total]
     PAGINATION_LINKS = %i[first last next previous]
 
-    def initialize(token:, network_id:, endpoint_url: nil)
+    def initialize(token:, network_id:, organization_id:, endpoint_url: nil)
       @token = token
       @network_id = network_id
+      @organization_id = organization_id
       @endpoint_url = endpoint_url
     end
 
