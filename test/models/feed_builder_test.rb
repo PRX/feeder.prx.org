@@ -5,7 +5,7 @@ describe FeedBuilder do
   let(:transcript) { create(:transcript) }
   let(:episode) { create(:episode_with_media, prx_uri: "/api/v1/stories/87683", transcript: transcript) }
   let(:podcast) { episode.podcast }
-  let(:feed) { create(:feed, podcast: podcast, title: podcast.title, private: false) }
+  let(:feed) { create(:feed, podcast: podcast, title: podcast.title, private: false, unique_guids: true) }
   let(:builder) { FeedBuilder.new(podcast, feed) }
   let(:rss) { builder.to_feed_xml }
   let(:rss_feed) { Nokogiri::XML(rss).css("channel") }
@@ -17,6 +17,7 @@ describe FeedBuilder do
   end
 
   it "can setup the data based on the podcast" do
+    feed.set_default_episodes
     _(builder.podcast).must_equal podcast
     _(builder.feed).must_equal feed
     _(builder.episodes.count).must_equal 1
@@ -77,6 +78,7 @@ describe FeedBuilder do
   end
 
   it "displays correct episode titles" do
+    feed.set_default_episodes
     rss_feed.css("item").each_with_index do |node, _i|
       assert_match(/Episode \d+/, node.css("title").text)
       assert_equal node.at_css("enclosure").attributes["length"].value, "774059"
@@ -84,7 +86,14 @@ describe FeedBuilder do
     end
   end
 
+  it "creates a unique guid for the episode" do
+    feed.set_default_episodes
+    node = rss_feed.css("item")[0]
+    assert_equal node.css("guid").text, "prx_#{podcast.id}_#{episode.guid}_#{feed.id}"
+  end
+
   it "displays plaintext and richtext descriptions" do
+    feed.set_default_episodes
     node = rss_feed.css("item")[0]
     assert_equal node.css("description").text.strip[0..4], "<div>"
     assert_equal node.css("itunes|summary").text.strip[0..6], "<a href"
@@ -100,12 +109,14 @@ describe FeedBuilder do
 
   it "returns limited number of episodes" do
     create_list(:episode_with_media, 3, podcast: podcast)
+    feed.set_default_episodes
     feed.update(display_episodes_count: 1)
     assert_equal rss_feed.css("item").count, 1
   end
 
   it "returns episodes wih minimal tags" do
     create_list(:episode_with_media, 3, podcast: podcast)
+    feed.set_default_episodes
     feed.update(display_full_episodes_count: 1)
     assert_equal rss_feed.css("item").count, 4
     assert_equal rss_feed.xpath("//item/itunes:author").count, 1
@@ -142,6 +153,10 @@ describe FeedBuilder do
   end
 
   describe "with a guest author" do
+    before do
+      feed.set_default_episodes
+    end
+
     it "displays correct podcast and episode author names" do
       episode.update!(author_name: "Foo Bar", author_email: "foo@bar.com")
 
@@ -170,6 +185,10 @@ describe FeedBuilder do
     let(:rss_feed) { Nokogiri::XML(rss).css("channel") }
     let(:value_recipient) { rss_feed.css("podcast|value").css("podcast|valueRecipient") }
 
+    before do
+      feed.set_default_episodes
+    end
+
     it "contains payment pointer tag" do
       rss = builder.to_feed_xml
       _(rss).must_include "<podcast:value"
@@ -195,6 +214,10 @@ describe FeedBuilder do
   describe "donation url" do
     let(:podcast_funding) { rss_feed.css("podcast|funding") }
 
+    before do
+      feed.set_default_episodes
+    end
+
     it "contains funding tag" do
       rss = builder.to_feed_xml
       _(rss).must_include "<podcast:funding"
@@ -218,6 +241,7 @@ describe FeedBuilder do
   end
 
   it "displays the transcript attributes" do
+    feed.set_default_episodes
     podcast_transcript = rss_feed.css("podcast|transcript")
 
     rss = builder.to_feed_xml

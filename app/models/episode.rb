@@ -8,6 +8,7 @@ class Episode < ApplicationRecord
   include EpisodeFilters
   include EpisodeHasFeeds
   include EpisodeMedia
+  include Integrations::EpisodeIntegrations
   include PublishingStatus
   include TextSanitizer
   include EmbedPlayerHelper
@@ -16,6 +17,7 @@ class Episode < ApplicationRecord
 
   MAX_SEGMENT_COUNT = 10
   MAX_DESCRIPTION_BYTES = 4000
+  MAX_TITLE_BYTES = 120
   VALID_ITUNES_TYPES = %w[full trailer bonus]
   DROP_DATE = "COALESCE(episodes.published_at, episodes.released_at)"
 
@@ -44,6 +46,7 @@ class Episode < ApplicationRecord
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
+  validates :title, bytesize: {maximum: MAX_TITLE_BYTES}, if: -> { strict_validations && title_changed? }
   validates :description, bytesize: {maximum: MAX_DESCRIPTION_BYTES}, if: -> { strict_validations && description_changed? }
   validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
@@ -129,11 +132,12 @@ class Episode < ApplicationRecord
   end
 
   def image
-    images.first
+    images[0]
   end
 
-  def image=(file)
-    img = EpisodeImage.build(file)
+  def image=(img)
+    img = EpisodeImage.new(original_url: img) if img.is_a?(String)
+    img = EpisodeImage.new(img) if img.is_a?(Hash)
 
     if !img
       images.each(&:mark_for_destruction)
@@ -204,7 +208,7 @@ class Episode < ApplicationRecord
 
   def publish!
     Rails.logger.tagged("Episode#publish!") do
-      apple_mark_for_reupload!
+      feeds.each { |f| f.mark_as_not_delivered!(self) }
       podcast&.publish!
     end
   end
@@ -255,6 +259,10 @@ class Episode < ApplicationRecord
 
   def description_safe
     description_with_default.truncate_bytes(MAX_DESCRIPTION_BYTES, omission: "")
+  end
+
+  def title_safe
+    title.present? ? title.truncate_bytes(MAX_TITLE_BYTES, omission: "") : ""
   end
 
   def feeder_cdn_host

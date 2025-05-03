@@ -237,7 +237,7 @@ bin/rails test test/models/podcast_test.rb:9
 This entire repo is linted using:
 
 - [standardrb](https://github.com/testdouble/standard) for ruby files
-- [erblint](https://github.com/Shopify/erb-lint) for `html.erb` files
+- [erb_lint](https://github.com/Shopify/erb_lint) for `html.erb` files
   - Note this _does not_ handle indentation at the moment, but you're encouraged to
     use some other editor plugin to ensure your erb has the right indentation
 - [prettier](https://prettier.io/) for `js`, `scss`, and `md` files

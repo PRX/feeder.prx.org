@@ -1,9 +1,6 @@
 require "test_helper"
-require "prx_access"
 
 describe Episode do
-  include PrxAccess
-
   let(:episode) { create(:episode_with_media) }
 
   it "initializes guid" do
@@ -45,6 +42,19 @@ describe Episode do
     assert e.description_safe.bytesize == 4000
   end
 
+  it "has a safe title for integrations" do
+    e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
+    e.title = "a" * 121
+    assert e.title.bytesize == 121
+    assert e.title_safe.bytesize == 120
+  end
+
+  it "handles blank title in title_safe" do
+    e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
+    e.title = nil
+    assert_equal "", e.title_safe
+  end
+
   it "has a description with fallbacks" do
     e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
     e.title = "title"
@@ -74,6 +84,22 @@ describe Episode do
     episode.title = "Hear & Now"
     episode.save!
     assert_equal episode.title, "Hear & Now"
+  end
+
+  it "validates titles have a maximum of 120 bytes" do
+    e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
+
+    e.title = "a" * 120
+    assert e.valid?
+
+    e.title = "a" * 121
+    refute e.valid?
+
+    e.title = "a" * 119 + "🎧" # 4 bytes
+    refute e.valid?
+
+    e.strict_validations = false
+    assert e.valid?
   end
 
   it "must belong to a podcast" do

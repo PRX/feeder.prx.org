@@ -1,9 +1,5 @@
-# frozen_string_literal: true
-
 module Apple
-  class Publisher
-    PUBLISH_CHUNK_LEN = 25
-
+  class Publisher < Integrations::Base::Publisher
     attr_reader :public_feed,
       :private_feed,
       :api,
@@ -33,52 +29,6 @@ module Apple
 
     def podcast
       public_feed.podcast
-    end
-
-    def filter_episodes_to_sync(eps)
-      # Reject episodes if the audio is marked as uploaded/complete
-      # or if the episode is a video
-      eps
-        .reject(&:synced_with_apple?)
-        .reject(&:video_content_type?)
-    end
-
-    def episodes_to_sync
-      # only look at the private delegated delivery feed
-      filter_episodes_to_sync(show.apple_private_feed_episodes)
-    end
-
-    def filter_episodes_to_archive(eps)
-      eps_in_private_feed = Set.new(show.apple_private_feed_episodes)
-
-      # Episodes to archive can include:
-      # - episodes that are now excluded from the feed
-      # - episodes that are deleted or unpublished
-      # - episodes that have fallen off the end of the feed (Feed#display_episodes_count)
-      eps
-        .reject { |ep| eps_in_private_feed.include?(ep) }
-        .reject(&:apple_new?)
-        .reject(&:archived?)
-    end
-
-    def episodes_to_archive
-      # look at the global list of episodes, not just the private feed
-      filter_episodes_to_archive(show.podcast_episodes)
-    end
-
-    def filter_episodes_to_unarchive(eps)
-      eps.filter(&:archived?)
-    end
-
-    def episodes_to_unarchive
-      # only look at the private delegated delivery feed
-      filter_episodes_to_unarchive(show.apple_private_feed_episodes)
-    end
-
-    def only_episodes_with_apple_state(eps)
-      # Only select episodes that have an remote apple state,
-      # as determined by the sync log
-      eps.reject(&:apple_new?)
     end
 
     def poll_all_episodes!
@@ -125,39 +75,63 @@ module Apple
       deliver_and_publish!(episodes_to_sync)
 
       # success
-      SyncLog.log!(feeder_id: public_feed.id, feeder_type: :feeds, external_id: show.apple_id, api_response: {success: true})
+      SyncLog.log!(
+        integration: :apple,
+        feeder_id: public_feed.id,
+        feeder_type: :feeds,
+        external_id: show.apple_id,
+        api_response: {success: true}
+      )
     end
 
     def deliver_and_publish!(eps)
       Rails.logger.tagged("Apple::Publisher#deliver_and_publish!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          # Soft delete any existing delivery and delivery files
-          prepare_for_delivery!(eps)
+          eps.filter(&:apple_needs_upload?).tap do |eps|
+            upload_media!(eps)
+          end
 
-          # only create if needed
-          sync_episodes!(eps)
-          sync_podcast_containers!(eps)
-
-          wait_for_versioned_source_metadata(eps)
-
-          sync_podcast_deliveries!(eps)
-          sync_podcast_delivery_files!(eps)
-
-          # upload and mark as uploaded
-          execute_upload_operations!(eps)
-          mark_delivery_files_uploaded!(eps)
-
-          wait_for_upload_processing(eps)
-
-          increment_asset_wait!(eps)
-          wait_for_asset_state(eps)
+          eps.filter(&:apple_needs_delivery?).tap do |eps|
+            process_and_deliver!(eps)
+          end
 
           publish_drafting!(eps)
-          reset_asset_wait!(eps)
-
           raise_delivery_processing_errors(eps)
         end
       end
+    end
+
+    def upload_media!(eps)
+      # Soft delete any existing delivery and delivery files
+      prepare_for_delivery!(eps)
+
+      # only create if needed
+      sync_episodes!(eps)
+      sync_podcast_containers!(eps)
+
+      wait_for_versioned_source_metadata(eps)
+
+      sync_podcast_deliveries!(eps)
+      sync_podcast_delivery_files!(eps)
+
+      # upload and mark as uploaded, then update the audio container reference
+      execute_upload_operations!(eps)
+      mark_delivery_files_uploaded!(eps)
+      update_audio_container_reference!(eps)
+
+      # finally mark the episode as uploaded
+      mark_as_uploaded!(eps)
+    end
+
+    def process_and_deliver!(eps)
+      increment_asset_wait!(eps)
+
+      wait_for_upload_processing(eps)
+      wait_for_asset_state(eps)
+
+      mark_as_delivered!(eps)
+
+      reset_asset_wait!(eps)
     end
 
     def prepare_for_delivery!(eps)
@@ -231,9 +205,7 @@ module Apple
 
     def increment_asset_wait!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
-
-        # Mark the episodes as waiting again for asset processing
+        eps = eps.filter { |e| e.feeder_episode.apple_status.uploaded? }
         eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
       end
     end
@@ -361,16 +333,33 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
         ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
+      end
+    end
 
+    def update_audio_container_reference!(eps)
+      Rails.logger.tagged("##{__method__}") do
         # link the podcast container with the audio to the episode
         res = Apple::Episode.update_audio_container_reference(api, eps)
-        # update the feeder episode to indicate that delivery is no longer needed
-        eps.each do |ep|
-          Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
-          ep.feeder_episode.apple_has_delivery!
-        end
 
         Rails.logger.info("Updated remote container references for episodes.", {count: res.length})
+      end
+    end
+
+    def mark_as_delivered!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps.each do |ep|
+          Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
+          ep.feeder_episode.apple_mark_as_delivered!
+        end
+      end
+    end
+
+    def mark_as_uploaded!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps.each do |ep|
+          Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
+          ep.feeder_episode.apple_mark_as_uploaded!
+        end
       end
     end
 

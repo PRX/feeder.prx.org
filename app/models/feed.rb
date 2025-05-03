@@ -34,7 +34,7 @@ class Feed < ApplicationRecord
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_categories, -> { order("created_at ASC") }, validate: true, autosave: true, dependent: :destroy
 
-  has_one :apple_sync_log, -> { feeds }, foreign_key: :feeder_id, class_name: "SyncLog"
+  has_one :apple_sync_log, -> { feeds.apple }, foreign_key: :feeder_id, class_name: "SyncLog"
 
   accepts_nested_attributes_for :feed_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :itunes_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
@@ -59,7 +59,6 @@ class Feed < ApplicationRecord
   after_initialize :set_defaults
   before_validation :sanitize_text
   before_save :set_public_feeds_url, :check_enclosure_changes
-  after_create :set_default_episodes
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
@@ -68,6 +67,32 @@ class Feed < ApplicationRecord
 
   def self.enclosure_template_default
     "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
+  end
+
+  def mark_as_not_delivered!(episode)
+    # for default / RSS feeds, don't do anything
+    # TODO: we could mark an episode needing to pulished in this RSS feed file
+    #   then later check to see if it is published in the feed yet
+    #   a la "where's my episode?" publish tracking
+  end
+
+  def integration_type
+    nil
+  end
+
+  def publish_integration?
+    false
+  end
+
+  def serve_drafts
+    false
+  end
+
+  def publish_integration!
+  end
+
+  def sync_log(integration)
+    SyncLog.latest.find_by(integration: integration, feeder_id: id, feeder_type: :feeds)
   end
 
   def set_defaults
@@ -84,8 +109,8 @@ class Feed < ApplicationRecord
   def friendly_title
     if default?
       I18n.t("helpers.label.feed.friendly_titles.default")
-    elsif apple?
-      I18n.t("helpers.label.feed.friendly_titles.apple")
+    elsif integration_type
+      I18n.t("helpers.label.feed.friendly_titles.#{integration_type}")
     else
       title
     end
@@ -144,10 +169,6 @@ class Feed < ApplicationRecord
 
   def public?
     !private?
-  end
-
-  def apple?
-    false
   end
 
   def default_runtime_settings?
@@ -231,7 +252,7 @@ class Feed < ApplicationRecord
   end
 
   def feed_image
-    feed_images.first
+    feed_images[0]
   end
 
   def feed_image=(file)
@@ -251,7 +272,7 @@ class Feed < ApplicationRecord
   end
 
   def itunes_image
-    itunes_images.first
+    itunes_images[0]
   end
 
   def itunes_image=(file)

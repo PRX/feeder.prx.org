@@ -9,6 +9,10 @@ trix-toolbar span.trix-button-group--file-tools {
 trix-editor.trix-content {
   border: 1px solid $input-border-color;
 
+  a {
+    font-weight: normal;
+  }
+
   blockquote,
   div,
   h1,

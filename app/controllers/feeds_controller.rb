@@ -24,7 +24,7 @@ class FeedsController < ApplicationController
   end
 
   def get_apple_show_options(feed)
-    if feed.apple? && feed.apple_config&.key
+    if feed.integration_type == :apple && feed.apple_config&.key
       feed.apple_show_options
     end
   end
@@ -39,6 +39,15 @@ class FeedsController < ApplicationController
     render "new"
   end
 
+  def new_megaphone
+    @feed = Feeds::MegaphoneFeed.new(podcast: @podcast, private: true)
+    @feed.build_megaphone_config
+    authorize @feed
+
+    @feed.assign_attributes(feed_params)
+    render "new"
+  end
+
   # POST /feeds
   def create
     @feed = @podcast.feeds.new(feed_params)
@@ -47,6 +56,7 @@ class FeedsController < ApplicationController
 
     respond_to do |format|
       if @feed.save
+        @feed.set_default_episodes unless exclude_default_episodes?
         @feed.copy_media
         @feed.podcast&.publish!
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
@@ -149,12 +159,18 @@ class FeedsController < ApplicationController
       :type,
       :apple_show_id,
       :episode_footer,
+      :unique_guids,
       itunes_category: [],
       itunes_subcategory: [],
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
-      apple_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, {key_attributes: %i[id provider_id key_id key_pem_b64]}]
+      apple_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, {key_attributes: %i[id provider_id key_id key_pem_b64]}],
+      megaphone_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, :network_id, :network_name, :token]
     )
+  end
+
+  def exclude_default_episodes?
+    params[:feed][:exclude_default_episodes] == "1"
   end
 end

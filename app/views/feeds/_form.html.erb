@@ -24,6 +24,11 @@
             <%= render "form_audio_format", podcast: podcast, feed: feed, form: form %>
             <%= render "form_ad_zones", podcast: podcast, feed: feed, form: form %>
           <% end %>
+        <% elsif megaphone_feed?(feed) %>
+          <%= render "form_megaphone_config", podcast: podcast, feed: feed, form: form %>
+          <% if feed.persisted? %>
+            <%= render "form_audio_format", podcast: podcast, feed: feed, form: form, lock_format: true %>
+          <% end %>
         <% else %> <%# custom feeds %>
           <%= render "form_main", podcast: podcast, feed: feed, form: form %>
           <%= render "form_auth", podcast: podcast, feed: feed, form: form %>
@@ -38,7 +43,7 @@
     <div class="col-lg-4 d-grid align-content-start gap-3">
       <div class="sticky-lg-top">
         <%= render "form_status", podcast: podcast, feed: feed, form: form %>
-        <% unless apple_feed?(feed) %>
+        <% unless (apple_feed?(feed) || megaphone_feed?(feed)) %>
           <%= render "form_distribution", podcast: podcast, feed: feed, form: form %>
         <% end %>
       </div>

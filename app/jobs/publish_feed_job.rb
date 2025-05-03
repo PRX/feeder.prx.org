@@ -8,7 +8,6 @@ class PublishFeedJob < ApplicationJob
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   ERROR_HANDLERS = {
-    "apple" => {method: :error_apple!, level: :warn},
     "rss" => {method: :error_rss!, level: :warn},
     "apple_timeout" => {method: :retry!, level: :info},
     "error" => {method: :error!, level: :error}
@@ -19,11 +18,17 @@ class PublishFeedJob < ApplicationJob
     # grab the current publishing pipeline.
     return :null if null_publishing_item?(podcast, pub_item)
     return :mismatched if mismatched_publishing_item?(podcast, pub_item)
+
     Rails.logger.info("Starting publishing pipeline via PublishFeedJob", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id})
 
     PublishingPipelineState.start!(podcast)
-    podcast.feeds.each { |feed| publish_apple(podcast, feed) }
+
+    # Publish each integration for each feed (e.g. apple, megaphone)
+    podcast.feeds.each { |feed| publish_integration(podcast, feed) }
+
+    # After integrations, publish RSS, if appropriate
     podcast.feeds.each { |feed| publish_rss(podcast, feed) }
+
     PublishingPipelineState.complete!(podcast)
   rescue Apple::AssetStateTimeoutError => e
     # This will cap the pipeline with a :retry state, and the job will be retried
@@ -34,25 +39,24 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
-  def publish_apple(podcast, feed)
-    return unless feed.publish_to_apple?
-
-    res = PublishAppleJob.do_perform(podcast.apple_config)
-    PublishingPipelineState.publish_apple!(podcast)
+  def publish_integration(podcast, feed)
+    return unless feed.publish_integration?
+    res = feed.publish_integration!
+    PublishingPipelineState.publish_integration!(podcast)
     res
   rescue Apple::AssetStateTimeoutError => e
     # Not strictly a 'fail state' because we want to retry this job
-    PublishingPipelineState.error_apple!(podcast)
+    PublishingPipelineState.error_integration!(podcast)
     Rails.logger.send(e.log_level, e.message, {podcast_id: podcast.id})
     NewRelic::Agent.notice_error(e)
     # Short circuit the rest of the pipeline if sync_blocks_rss is enabled
-    raise e if podcast.apple_config.sync_blocks_rss
+    raise e if feed.config.sync_blocks_rss
   rescue => e
-    if podcast.apple_config.sync_blocks_rss
-      fail_state(podcast, "apple", e)
+    if feed.config.sync_blocks_rss
+      fail_state(podcast, feed.integration_type, e)
     else
-      Rails.logger.error("Error publishing to Apple, but continuing to publish RSS", {podcast_id: podcast.id, error: e.message})
-      PublishingPipelineState.error_apple!(podcast)
+      Rails.logger.error("Error publishing to #{feed.integration_type}, but continuing to publish RSS", {podcast_id: podcast.id, error: e.message})
+      PublishingPipelineState.error_integration!(podcast)
     end
   end
 
@@ -65,12 +69,15 @@ class PublishFeedJob < ApplicationJob
   end
 
   def save_file(podcast, feed, options = {})
-    rss = FeedBuilder.new(podcast, feed).to_feed_xml
+    rss = FeedBuilder.new(podcast, feed)
     opts = default_options.merge(options)
-    opts[:body] = rss
+    opts[:body] = rss.to_feed_xml
     opts[:bucket] = s3_bucket
     opts[:key] = feed.path
     @put_object = s3_client.put_object(opts)
+    Episode.where(id: rss.episodes).where(first_rss_published_at: nil).update_all(first_rss_published_at: DateTime.now) if feed.default?
+
+    @put_object
   end
 
   def default_options
@@ -93,7 +100,7 @@ class PublishFeedJob < ApplicationJob
   end
 
   def fail_state(podcast, type, error)
-    handler = ERROR_HANDLERS[type]
+    handler = ERROR_HANDLERS[type] || {method: :error_integration!, level: :warn}
     PublishingPipelineState.public_send(handler[:method], podcast)
 
     log_level = (type == "apple_timeout") ? apple_timeout_log_level(error) : handler[:level]

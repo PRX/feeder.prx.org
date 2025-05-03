@@ -201,7 +201,7 @@ class PodcastRssImport < PodcastImport
     podcast_attributes[:complete] = (clean_string(channel[:itunes_complete]) == "yes")
     podcast_attributes[:copyright] ||= clean_string(channel[:media_copyright])
     podcast_attributes[:serial_order] = channel[:itunes_type] && !!channel[:itunes_type].match(/serial/i)
-    podcast_attributes[:locked] = true # won't publish feed until this is set to false
+    podcast_attributes[:locked_until] = 10.minutes.from_now
 
     podcast_attributes[:title] = clean_string(channel[:title])
     podcast_attributes[:subtitle] = clean_string(podcast_short_desc)

@@ -1,5 +1,5 @@
 require "active_support/concern"
-require "prx_access"
+require "prx/api"
 require "net/http"
 require "uri"
 require "text_sanitizer"

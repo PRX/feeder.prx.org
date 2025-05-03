@@ -1,0 +1,62 @@
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <h2 class="card-title h5 flex-grow-1"><%= t(".title") %></h2>
+    </div>
+    <div class="card-body">
+      <div class="mb-4">
+        <p><%= t(".description") %></p>
+        <%= t(".guide_link").html_safe %>
+      </div>
+      <%= form.fields_for :megaphone_config do |config_form| %>
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= config_form.text_field :token, redacted: 4 %>
+            <%= config_form.label :token, "API Token", required: true %>
+            <%= field_help_text t(".help.token") %>
+          </div>
+        </div>
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= config_form.text_field :network_id, redacted: 4 %>
+            <%= config_form.label :network_id, "Network ID", required: true %>
+            <%= field_help_text t(".help.network_id") %>
+          </div>
+        </div>
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= config_form.text_field :network_name %>
+            <%= config_form.label :network_name, "Network Name" %>
+            <%= field_help_text t(".help.network_name") %>
+          </div>
+        </div>
+        <div class="col-6 mb-4">
+          <div class="form-floating input-group">
+            <%= form.select :episode_offset_seconds, episode_offset_options, include_blank: true %>
+            <%= form.label :episode_offset_seconds %>
+            <%= field_help_text t(".help.episode_offset_seconds") %>
+          </div>
+        </div>
+        <div class="col-12 mt-4">
+          <div class="form-check">
+            <%= config_form.check_box :publish_enabled %>
+            <div class="d-flex align-items-center">
+              <%= config_form.label :publish_enabled %>
+              <%= help_text t(".help.publish_enabled") %>
+            </div>
+          </div>
+          <div class="form-check">
+            <%= config_form.check_box :sync_blocks_rss %>
+            <div class="d-flex align-items-center">
+              <%= config_form.label :sync_blocks_rss %>
+              <%= help_text t(".help.sync_blocks_rss") %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= form.hidden_field :type, value: "Feeds::MegaphoneFeed" %>
+
+    </div>
+  </div>
+</div>

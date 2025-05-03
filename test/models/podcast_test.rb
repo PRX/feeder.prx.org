@@ -1,9 +1,6 @@
 require "test_helper"
-require "prx_access"
 
 describe Podcast do
-  include PrxAccess
-
   let(:podcast) { create(:podcast) }
 
   it "has episodes" do
@@ -20,12 +17,29 @@ describe Podcast do
     assert podcast.public_feed == podcast.default_feed
   end
 
+  it "can set a guid when id is not nil" do
+    default_guid = "79b4e97f-b349-5116-a9cf-dc479b16d518"
+    p = build(:podcast).tap(&:valid?)
+    p.default_feed.url = nil
+
+    assert_equal p.public_url, "https://f.prxu.org//feed-rss.xml"
+    assert_equal Digest::UUID.uuid_v5(Podcast::PODCAST_NAMESPACE, p.public_url), default_guid
+    assert_nil p.guid
+
+    p.save!
+    assert_not_nil p.guid
+    assert_equal "https://publicfeeds.net/f/#{p.id}/feed-rss.xml", p.public_url
+    assert_not_nil p.guid
+    assert_equal Digest::UUID.uuid_v5(Podcast::PODCAST_NAMESPACE, p.public_url), p.guid
+    assert_not_equal default_guid, p.guid
+  end
+
   it "can set a guid on create or update" do
     assert podcast.public_url == "http://feeds.feedburner.com/thornmorris"
     assert podcast.guid == "95ebfb22-0002-5f78-a7aa-5acb5ac7daa9"
     podcast.update_column(:guid, nil)
     assert !podcast.guid.present?
-    podcast.set_guid
+    podcast.set_guid!
     assert podcast.guid == "95ebfb22-0002-5f78-a7aa-5acb5ac7daa9"
     podcast.update_column(:guid, nil)
     podcast.set_guid!
