@@ -75,4 +75,11 @@ class Feeds::MegaphoneFeed < Feed
   def mark_as_not_delivered!(episode)
     episode.episode_delivery_status(:megaphone, true).mark_as_not_delivered!
   end
+
+  def advertising_tag_options
+    return [] unless persisted? && config.valid?
+    Megaphone::OrganizationTag.list_by_feed(self).map do |tag|
+      [tag.value, tag.label]
+    end
+  end
 end

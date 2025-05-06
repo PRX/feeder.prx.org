@@ -7,6 +7,7 @@ describe Megaphone::Config do
       config = build(:megaphone_config, feed: feed)
       assert_not_nil config.token
       assert_not_nil config.network_id
+      assert_not_nil config.organization_id
       assert_not_nil config.feed_id
       assert config.valid?
     end
