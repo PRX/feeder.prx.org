@@ -73,6 +73,10 @@ class PodcastRssImport < PodcastImport
       self.feed_episode_count = feed.entries.count
       channel
       first_entry
+
+      if clean_yes_no(channel[:podcast_locked])
+        errors.add(:url, :podcast_locked, message: "podcast locked")
+      end
     end
   rescue ImportUtils::HttpError
     errors.add(:url, :bad_http_response, message: "bad http response")
@@ -198,7 +202,7 @@ class PodcastRssImport < PodcastImport
     podcast_attributes[:owner_name] = owner[:name]
     podcast_attributes[:owner_email] = owner[:email]
 
-    podcast_attributes[:complete] = (clean_string(channel[:itunes_complete]) == "yes")
+    podcast_attributes[:complete] = clean_yes_no(channel[:itunes_complete])
     podcast_attributes[:copyright] ||= clean_string(channel[:media_copyright])
     podcast_attributes[:serial_order] = channel[:itunes_type] && !!channel[:itunes_type].match(/serial/i)
     podcast_attributes[:locked_until] = 10.minutes.from_now
@@ -206,6 +210,9 @@ class PodcastRssImport < PodcastImport
     podcast_attributes[:title] = clean_string(channel[:title])
     podcast_attributes[:subtitle] = clean_string(podcast_short_desc)
     podcast_attributes[:description] = feed_description
+
+    podcast_attributes[:guid] = clean_string(channel[:podcast_guid])
+    podcast_attributes[:donation_url] = clean_url(channel[:podcast_funding])
 
     # categories setter does the work of sanitizing these
     cats = Array(channel[:categories])

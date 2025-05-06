@@ -92,6 +92,10 @@ module ImportUtils
     str.strip
   end
 
+  def clean_yes_no(str)
+    (clean_string(str) || "").downcase == "yes"
+  end
+
   def clean_url(url)
     url = clean_string(url)
     return nil if url.blank?
