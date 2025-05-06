@@ -1,20 +1,27 @@
 module Megaphone
   class Api
-    attr_accessor :token, :network_id, :endpoint_url
+    attr_accessor :token, :network_id, :organization_id, :endpoint_url
 
     DEFAULT_ENDPOINT = "https://cms.megaphone.fm/api"
 
     PAGINATION_HEADERS = %w[link x-per-page x-page x-total]
     PAGINATION_LINKS = %i[first last next previous]
 
-    def initialize(token:, network_id:, endpoint_url: nil)
+    def initialize(token:, network_id:, organization_id:, endpoint_url: nil)
       @token = token
       @network_id = network_id
+      @organization_id = organization_id
       @endpoint_url = endpoint_url
     end
 
     def get(path, params = {}, headers = {})
       request = {url: join_url(path), headers: headers, params: params}
+      response = get_url(request)
+      result(request, response)
+    end
+
+    def get_base(path, params = {}, headers = {})
+      request = {url: join_base_url(path), headers: headers, params: params}
       response = get_url(request)
       result(request, response)
     end
@@ -54,12 +61,12 @@ module Megaphone
       if data.is_a?(Array)
         pagination = pagination_from_headers(response.env.response_headers)
         {items: data, pagination: pagination, request: request, response: response}
+      elsif data[:items].present? && data[:items].is_a?(Array)
+        {items: data[:items], pagination: {}, request: request, response: response}
       else
         {items: [data], pagination: {}, request: request, response: response}
       end
     end
-
-    # TODO: and we need delete...
 
     def api_base
       @endpoint_url || DEFAULT_ENDPOINT
