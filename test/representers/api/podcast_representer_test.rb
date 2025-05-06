@@ -1,7 +1,7 @@
 require "test_helper"
 
 describe Api::PodcastRepresenter do
-  let(:podcast) { create(:podcast) }
+  let(:podcast) { create(:podcast, guid: "someguid") }
   let(:representer) { Api::PodcastRepresenter.new(podcast) }
   let(:json) { JSON.parse(representer.to_json) }
 
@@ -38,6 +38,10 @@ describe Api::PodcastRepresenter do
 
   it "includes itunes block" do
     assert_equal json["itunesBlock"], false
+  end
+
+  it "includes podcast guid" do
+    assert_equal json["guid"], "someguid"
   end
 
   it "has links" do
