@@ -117,7 +117,7 @@ describe Api::EpisodesController do
     let(:account_id) { 123 }
     let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
     let(:episode_redirect) { create(:episode, podcast: podcast, published_at: nil) }
-    let(:episode_update) { create(:episode, podcast: podcast, published_at: nil) }
+    let(:episode_update) { create(:episode, podcast: podcast, published_at: nil, medium: "audio") }
     let(:episode_with_image) { create(:episode_with_media, title: "Episode 1", podcast: podcast, published_at: Time.now - 1.hour) }
 
     let(:token) do
@@ -166,6 +166,44 @@ describe Api::EpisodesController do
       assert_equal c.original_url, "https://s3.amazonaws.com/prx-testing/test/audio1.mp3"
     end
 
+    it "can update medium of an episode" do
+      update_hash = {
+        media: [{
+          href: "https://s3.amazonaws.com/prx-testing/test/change1.mp3",
+          type: "audio/mpeg",
+          size: 123456,
+          duration: "1234.5678"
+        }]
+      }
+
+      assert_equal episode_update.medium, "audio"
+      assert_equal episode_update.contents.size, 0
+
+      put(:update, body: update_hash.to_json, as: :json,
+        params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      assert_response :success
+
+      episode_update.reload
+      assert_equal episode_update.medium, "audio"
+      assert_nil episode_update.uncut
+
+      contents = episode_update.contents
+      assert_equal contents.size, 1
+
+      # updating to uncut will add an uncut, and delete the contents
+      update_hash = {medium: "uncut"}
+      put(:update, body: update_hash.to_json, as: :json,
+        params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      assert_response :success
+
+      episode_update.reload
+      assert_equal episode_update.medium, "uncut"
+      contents_with_deleted = episode_update.contents.with_deleted
+      contents = episode_update.contents
+      assert_equal contents_with_deleted.size, 1
+      assert_equal contents.size, 0
+    end
+
     it "can update the image on an episode" do
       assert_equal episode_with_image.title, "Episode 1"
       assert_equal episode_with_image.image.alt_text, "valid episode image"
@@ -196,13 +234,18 @@ describe Api::EpisodesController do
         }]
       }
 
+      assert_equal episode_update.medium, "audio"
       assert_equal episode_update.contents.size, 0
 
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
 
-      contents = episode_update.reload.contents
+      episode_update.reload
+      assert_equal episode_update.medium, nil
+      assert_nil episode_update.uncut
+
+      contents = episode_update.contents
       assert_equal contents.size, 1
       assert_equal contents.first.mime_type, "audio/mpeg"
       assert_equal contents.first.file_size, 123456
@@ -210,12 +253,14 @@ describe Api::EpisodesController do
       guid1 = contents.first.guid
 
       # updating with a different href should insert it
-      update_hash = {media: [{href: "s3://something/else"}]}
+      update_hash = {medium: "audio", media: [{href: "s3://something/else"}]}
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
 
-      contents = episode_update.reload.contents.with_deleted
+      episode_update.reload
+      assert_equal episode_update.medium, "audio"
+      contents = episode_update.contents.with_deleted
       assert_equal contents.size, 2
 
       refute_equal contents.first.guid, guid1

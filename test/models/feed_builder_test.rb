@@ -108,14 +108,14 @@ describe FeedBuilder do
   end
 
   it "returns limited number of episodes" do
-    create_list(:episode, 3, podcast: podcast)
+    create_list(:episode_with_media, 3, podcast: podcast)
     feed.set_default_episodes
     feed.update(display_episodes_count: 1)
     assert_equal rss_feed.css("item").count, 1
   end
 
   it "returns episodes wih minimal tags" do
-    create_list(:episode, 3, podcast: podcast)
+    create_list(:episode_with_media, 3, podcast: podcast)
     feed.set_default_episodes
     feed.update(display_full_episodes_count: 1)
     assert_equal rss_feed.css("item").count, 4
