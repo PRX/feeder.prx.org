@@ -93,7 +93,7 @@ module ImportUtils
   end
 
   def clean_yes_no(str)
-    (clean_string(str) || "").downcase == "yes"
+    ["yes", "true", "1"].include?((clean_string(str) || "").downcase)
   end
 
   def clean_url(url)
