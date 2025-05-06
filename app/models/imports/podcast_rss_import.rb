@@ -169,8 +169,8 @@ class PodcastRssImport < PodcastImport
   def update_images
     default_feed = podcast.default_feed
 
-    default_feed.itunes_image = channel[:itunes_image] if channel[:itunes_image].present?
-    default_feed.feed_image = channel[:image][:url] if channel[:image].present?
+    default_feed.itunes_image = clean_url(channel[:itunes_image]) if channel[:itunes_image].present?
+    default_feed.feed_image = clean_url(channel[:image][:url]) if channel[:image].present?
     default_feed.save!
 
     default_feed.itunes_images.reset
@@ -186,11 +186,11 @@ class PodcastRssImport < PodcastImport
       podcast_attributes[atr.to_sym] = clean_string(channel[atr])
     end
 
-    podcast_attributes[:link] = clean_string(channel[:url])
+    podcast_attributes[:link] = clean_url(channel[:url])
     podcast_attributes[:explicit] = explicit(channel[:itunes_explicit], "false")
-    podcast_attributes[:new_feed_url] = clean_string(channel[:itunes_new_feed_url])
+    podcast_attributes[:new_feed_url] = clean_url(channel[:itunes_new_feed_url])
     podcast_attributes[:enclosure_prefix] ||= enclosure_prefix
-    podcast_attributes[:url] ||= clean_string(channel[:feed_url])
+    podcast_attributes[:url] ||= clean_url(channel[:feed_url])
 
     podcast_attributes[:author] = person(channel[:itunes_author])
     podcast_attributes[:managing_editor] = person(channel[:managing_editor])
