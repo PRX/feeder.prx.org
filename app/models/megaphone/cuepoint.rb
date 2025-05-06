@@ -23,28 +23,26 @@ module Megaphone
       original_duration = 0
       original_count = 0
       placement.zones.each do |zone|
-        # if this is an ad zone, add it to the cue point
-        if ["ad", "house", "sonic_id", "billboard"].include?(zone[:type])
-          if current_cuepoint
-            current_cuepoint.ad_count = current_cuepoint.ad_count + 1
-            current_cuepoint.ad_sources << source_for_zone(zone)
-          else
-            section = (placement.sections || [])[original_count] || {}
-            current_cuepoint = new(
-              cuepoint_type: "#{section[:type] || zone[:section]}roll",
-              ad_count: 1,
-              start_time: original_duration,
-              ad_sources: [source_for_zone(zone)],
-              action: :insert,
-              is_active: true,
-              max_duration: section[:max_duration]
-            )
-            cuepoints << current_cuepoint
-          end
-        elsif zone[:type] == "original"
+        # if this is an ad zone (not an original), add it to the cue point
+        if zone[:type] == "original"
           current_cuepoint = nil
           original_duration += media[original_count].duration
           original_count += 1
+        elsif current_cuepoint
+          current_cuepoint.ad_count = current_cuepoint.ad_count + 1
+          current_cuepoint.ad_sources << source_for_zone(zone)
+        else
+          section = (placement.sections || [])[original_count] || {}
+          current_cuepoint = new(
+            cuepoint_type: "#{section[:type] || zone[:section]}roll",
+            ad_count: 1,
+            start_time: original_duration,
+            ad_sources: [source_for_zone(zone)],
+            action: :insert,
+            is_active: true,
+            max_duration: section[:max_duration]
+          )
+          cuepoints << current_cuepoint
         end
       end
       cuepoints
