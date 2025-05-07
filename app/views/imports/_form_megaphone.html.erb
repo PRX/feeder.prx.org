@@ -1,0 +1,16 @@
+<div class="col-12 prx-field-group">
+  <div class="form-floating">
+    <%= form.select :megaphone_podcast_id, megaphone_podcast_options(form.object), {include_blank: true} %>
+    <%= form.label :megaphone_podcast_id, "Megaphone Podcast" %>
+  </div>
+</div>
+
+<div class="col-12 mt-2">
+  <div class="form-check">
+    <%= form.check_box :override_enclosures, checked: false %>
+    <div class="d-flex align-items-center">
+      <%= form.label :override_enclosures %>
+      <%= help_text t(".help.override_enclosures") %>
+    </div>
+  </div>
+</div>
