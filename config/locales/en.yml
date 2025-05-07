@@ -467,6 +467,7 @@ en:
         types:
           PodcastRssImport: RSS
           PodcastTimingsImport: Midroll Timings
+          PodcastMegaphoneImport: Megaphone API
         url: RSS Feed URL
       media_resource:
         original_url:
