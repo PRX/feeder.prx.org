@@ -13,5 +13,10 @@ module Megaphone
     def publish_to_megaphone?
       valid? && publish_enabled?
     end
+
+    def advertising_tags=(tags)
+      tags = Array(tags).reject(&:blank?)
+      self[:advertising_tags] = tags.blank? ? nil : tags
+    end
   end
 end
