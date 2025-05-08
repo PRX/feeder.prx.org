@@ -1,6 +1,7 @@
 :root {
   --prx-tabs-nav-gap: 1px;
-  --prx-tab-bg-rgb: #{to-rgb($gray-200)};
+  --prx-tab-bg-rgb: #{to-rgb($light-blue-200)};
+  --prx-tab-bg-rgb-dark: #{to-rgb($navy-900)};
   --prx-tab-bg-opacity: 1;
 }
 
@@ -13,7 +14,7 @@
   --#{$prefix}nav-link-padding-y: #{map-get($spacers, 2)};
   --#{$prefix}nav-link-hover-color: #{$link-color};
   --#{$prefix}nav-tabs-link-active-color: #{$link-color};
-  --#{$prefix}nav-tabs-link-hover-border-color: #{$blue-light};
+  --#{$prefix}nav-tabs-link-hover-border-color: #{$light-blue-100};
   --#{$prefix}nav-tabs-link-active-border-color: #{$primary};
   --#{$prefix}nav-tabs-border-width: 0;
   --#{$prefix}nav-tabs-border-radius: 0;
@@ -40,6 +41,10 @@
     .dropdown-menu .material-icons {
       vertical-align: middle;
     }
+  }
+
+  .list-group {
+    gap: 1px;
   }
 
   .nav-link.active + .context-menu {
@@ -109,7 +114,7 @@
     color: black;
 
     border: none;
-    border-bottom: 3px solid $gray-300;
+    border-bottom: 3px solid $light-blue-300;
 
     height: 48px;
     padding: 0 24px;
@@ -131,5 +136,40 @@
     &.active {
       border-color: $orange;
     }
+  }
+}
+
+@include color-mode(dark) {
+  .nav-tabs {
+    .nav-link {
+      background: none;
+      color: $light-blue-300;
+      border-bottom: 3px solid $black;
+
+      &.active {
+        background-color: $gray-900;
+        border-bottom: 3px solid $orange;
+        color: $white;
+      }
+    }
+  }
+
+  .prx-tab-nav.nav-tabs .nav-link:is(.nav-link, .nav-link.disable),
+  .prx-tab:is(.nav-link, .nav-link.disable) {
+    background-color: rgba(var(--prx-tab-bg-rgb-dark), var(--prx-tab-bg-opacity));
+    border: none;
+    border-left: 3px solid transparent;
+    border-bottom: 1px solid $border-color-dark;
+  }
+
+  .prx-tab:is(.nav-link.active) {
+    background-color: $gray-900;
+    border-left: 3px solid $orange;
+  }
+
+  .prx-tabs-nav.nav-tabs .nav-link.active {
+    background-color: $gray-900;
+    border-left: 3px solid $orange;
+    border-bottom: none;
   }
 }

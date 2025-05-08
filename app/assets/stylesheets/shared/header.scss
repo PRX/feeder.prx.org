@@ -7,14 +7,14 @@
 
 .prx-podcast-switcher {
   width: 100%;
-  border-bottom: 1px solid $gray-200;
+  border-bottom: 1px solid $light-blue-200;
   position: relative;
   z-index: $zindex-sticky;
 
   @media (min-width: 992px) {
     min-width: 350px;
     width: auto;
-    border-right: 1px solid $gray-300;
+    border-right: 1px solid $light-blue-300;
     border-bottom: none;
   }
 
@@ -40,7 +40,7 @@
     .img-placeholder {
       width: 30px;
       height: 30px;
-      background: $gray-200;
+      background: $light-blue-200;
     }
 
     &.show {
