@@ -7,7 +7,6 @@
 
 .prx-podcast-switcher {
   width: 100%;
-  border-bottom: 1px solid $light-blue-200;
   position: relative;
   z-index: $zindex-sticky;
 
@@ -65,10 +64,6 @@
     font-weight: bold;
     color: $blue;
 
-    &:hover {
-      text-decoration: underline;
-    }
-
     &:active {
       color: $white;
     }
@@ -88,6 +83,36 @@
 
     & > * {
       margin-left: 1rem;
+    }
+  }
+}
+
+@include color-mode(dark) {
+  .prx-podcast-switcher {
+    @media (min-width: 992px) {
+      border-right: 1px solid $border-color-dark;
+    }
+
+    .btn {
+      color: $white;
+    }
+
+    .dropdown-toggle {
+      .img-placeholder {
+        background: $navy;
+      }
+    }
+
+    .dropdown-item {
+      color: $info;
+
+      &:hover {
+        color: $white;
+      }
+
+      &:active {
+        color: $white;
+      }
     }
   }
 }

@@ -1,0 +1,18 @@
+@include color-mode(dark) {
+  .highcharts-background {
+    fill: $black;
+  }
+
+  .highcharts-grid-line,
+  .highcharts-tick,
+  .highcharts-axis {
+    stroke: $border-color-dark;
+  }
+
+  .highcharts-axis-labels {
+    text {
+      color: $gray-400 !important;
+      fill: $gray-400 !important;
+    }
+  }
+}

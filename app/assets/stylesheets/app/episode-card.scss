@@ -30,6 +30,10 @@
     align-items: center;
     overflow: hidden;
 
+    &.inside-card {
+      border-bottom: 1px solid $border-color;
+    }
+
     .episode-card-date {
       font-size: 1.5rem;
       margin-right: 1rem;
@@ -40,6 +44,7 @@
       flex-direction: column;
       overflow: hidden;
       flex-grow: 1;
+      border: none;
     }
 
     .episode-card-title {
@@ -70,6 +75,45 @@
       overflow: hidden;
       position: absolute;
       text-indent: -2000vw;
+    }
+  }
+}
+
+@include color-mode(dark) {
+  .episode-card {
+    .card-body {
+      border-bottom: 1px solid $border-color-dark;
+    }
+
+    .episode-card-info {
+      color: $gray-400;
+
+      &.inside-card {
+        border-bottom: 1px solid $border-color-dark;
+      }
+
+      .episode-card-title,
+      .episode-card-title a {
+        color: $link-color-dark;
+
+        &:hover {
+          color: $link-hover-color-dark;
+        }
+      }
+    }
+  }
+
+  .prx-dashboard-card {
+    .list-group-flush > .list-group-item {
+      background: none;
+
+      a {
+        color: $link-color-dark;
+
+        &:hover {
+          color: $link-hover-color-dark;
+        }
+      }
     }
   }
 }

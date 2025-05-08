@@ -19,6 +19,10 @@ body {
   display: block;
 }
 
+.prx-tab-content {
+  background-color: $white;
+}
+
 .sticky-lg-top,
 .sticky-md-top {
   z-index: $zindex-dropdown;
@@ -32,10 +36,21 @@ h1 {
   color: $navy-900;
 }
 
+.prx-scorecard {
+  text-align: center;
+  flex: 1 1 auto;
+  border-bottom: 1px solid $border-color;
+  padding: 0.5rem 0;
+}
+
 @include color-mode(dark) {
   body {
     --#{$prefix}body-color: #{$light-blue-300};
     background-color: $navy-700;
+  }
+
+  .prx-tab-content {
+    background-color: $body-bg-dark;
   }
 
   h1 {
@@ -55,6 +70,11 @@ h1 {
   }
 
   .prx-border-light {
+    border-color: $border-color-dark;
+  }
+
+  .prx-scorecard {
+    border-top: 1px solid $border-color-dark;
     border-color: $border-color-dark;
   }
 }
