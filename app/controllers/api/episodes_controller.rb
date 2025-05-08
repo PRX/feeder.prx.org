@@ -89,6 +89,7 @@ class Api::EpisodesController < Api::BaseController
   end
 
   def process_media
+    resource&.uncut&.slice_contents!
     resource&.copy_media
   end
 
