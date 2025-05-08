@@ -238,11 +238,11 @@ module Megaphone
 
     def replace_cuepoints!
       # retrieve the placement info from augury
-      zones = get_placement_zones(feeder_episode.segment_count)
+      placement = get_placement(feeder_episode.segment_count)
       media = feeder_episode.media
 
       # create cuepoint instances from that
-      cuepoints = Megaphone::Cuepoint.from_zones_and_media(zones, media)
+      cuepoints = Megaphone::Cuepoint.from_placement_and_media(placement, media)
 
       # put those as a list to the mp api
       cuepoints_batch!(cuepoints)
@@ -342,12 +342,15 @@ module Megaphone
     end
 
     def get_placement_zones(original_count = nil)
+      get_placement(original_count)&.zones || []
+    end
+
+    def get_placement(original_count = nil)
       if original_count.to_i < 1
         original_count = (feeder_episode&.segment_count || 1).to_i
       end
       placements = Prx::Augury.new.placements(feeder_podcast.id)
-      placement = placements&.find { |i| i.original_count == original_count }
-      (placement&.zones || []).map(&:with_indifferent_access)
+      placements&.find { |p| p.original_count == original_count }
     end
 
     # call this before create or update, yah

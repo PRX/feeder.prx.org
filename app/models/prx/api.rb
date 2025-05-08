@@ -2,7 +2,7 @@ module Prx
   module Api
     class PrxHyperResource < HyperResource
       def incoming_body_filter(hash)
-        super(hash.deep_transform_keys { |key| key.to_s.underscore })
+        super(hash.with_indifferent_access.deep_transform_keys { |key| key.to_s.underscore })
       end
 
       def outgoing_body_filter(hash)
