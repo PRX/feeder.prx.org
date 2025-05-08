@@ -45,6 +45,12 @@ describe PodcastRssImport do
     _ { importer.feed }.must_raise(RuntimeError)
   end
 
+  it "fails when the feed is locked" do
+    importer.feed_rss = test_file("/fixtures/transistor_locked.xml")
+    assert !importer.valid?
+    importer.errors.messages[:url].must_equal ["podcast locked"]
+  end
+
   it "updates a podcast" do
     importer.feed_rss = test_file("/fixtures/transistor_two.xml")
     importer.create_or_update_podcast!
@@ -56,6 +62,9 @@ describe PodcastRssImport do
     _(importer.podcast.description).must_equal "A podcast of scientific questions and stories," \
         " with many episodes hosted by key scientists" \
         " at the forefront of discovery."
+
+    _(importer.podcast.guid).must_equal "notarealguid-ohno-itsnot"
+    _(importer.podcast.donation_url).must_equal "https://www.prx.org/support/transistor"
 
     _(importer.podcast.url).must_equal "http://feeds.prx.org/transistor_stem"
     _(importer.podcast.new_feed_url).must_equal "http://feeds.prx.org/transistor_stem"

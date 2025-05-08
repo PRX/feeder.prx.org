@@ -59,6 +59,10 @@ module Feedjira
       element :"media:keywords", as: :media_keywords
       elements :"media:category", as: :media_categories
 
+      element :"podcast:guid", as: :podcast_guid
+      element :"podcast:locked", as: :podcast_locked
+      element :"podcast:funding", as: :podcast_funding
+
       def published
         [last_modified, pub_date, last_built].compact.max
       end

@@ -330,6 +330,7 @@ en:
             url:
               bad_http_response: Unable to fetch feed url
               invalid_rss: Not a valid RSS feed
+              podcast_locked: Podcast is locked, importing not permitted
   # form/model helpers
   helpers:
     application:
