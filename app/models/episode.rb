@@ -72,6 +72,7 @@ class Episode < ApplicationRecord
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
   scope :dropdate_asc, -> { reorder(Arel.sql("#{DROP_DATE} ASC NULLS FIRST")) }
   scope :dropdate_desc, -> { reorder(Arel.sql("#{DROP_DATE} DESC NULLS LAST")) }
+  scope :first_publish, -> { where(first_rss_published_at: nil) }
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -280,5 +281,22 @@ class Episode < ApplicationRecord
 
   def ready_transcript
     transcript if transcript&.status_complete?
+  end
+
+  def head_request(uri_str = enclosure_url(podcast.default_feed), redirects = 0)
+    return nil if redirects >= 10
+
+    uri = URI.parse(uri_str)
+    res = Net::HTTP.start(uri.host) do |http|
+      http.head(uri.path)
+    end
+
+    if res.is_a?(Net::HTTPRedirection)
+      head_request(res[:location], redirects + 1)
+    elsif res.is_a?(Net::HTTPSuccess)
+      res
+    end
+  rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout, Net::OpenTimeout => e
+    Rails.logger.info(e.message)
   end
 end
