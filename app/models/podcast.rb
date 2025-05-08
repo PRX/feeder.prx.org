@@ -275,4 +275,8 @@ class Podcast < ApplicationRecord
       super
     end
   end
+
+  def first_publish_episodes
+    episodes.first_publish.where(id: default_feed.episode_ids)
+  end
 end

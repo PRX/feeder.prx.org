@@ -72,6 +72,7 @@ class Episode < ApplicationRecord
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
   scope :dropdate_asc, -> { reorder(Arel.sql("#{DROP_DATE} ASC NULLS FIRST")) }
   scope :dropdate_desc, -> { reorder(Arel.sql("#{DROP_DATE} DESC NULLS LAST")) }
+  scope :first_publish, -> { where(first_rss_published_at: nil) }
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number

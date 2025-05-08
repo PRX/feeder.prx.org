@@ -75,16 +75,21 @@ class PublishFeedJob < ApplicationJob
     opts[:bucket] = s3_bucket
     opts[:key] = feed.path
     @put_object = s3_client.put_object(opts)
-    first_published_episodes = Episode.where(id: rss.episodes).where(first_rss_published_at: nil)
 
-    first_published_episodes.each do |episode|
-      if feed.default?
+    update_first_publish_episodes(podcast.first_publish_episodes) if feed.default?
+
+    @put_object
+  end
+
+  def update_first_publish_episodes(episodes)
+    if episodes.count > 10
+      episodes.update_all(first_rss_published_at: DateTime.now)
+    else
+      episodes.each do |episode|
         episode.update(first_rss_published_at: DateTime.now)
         episode.head_request
       end
     end
-
-    @put_object
   end
 
   def default_options
