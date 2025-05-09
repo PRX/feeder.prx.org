@@ -43,10 +43,22 @@ h1 {
   padding: 0.5rem 0;
 }
 
+.prx-blank-lines {
+  background-color: $gray-200;
+}
+
+.prx-border-thick {
+  border: 2px solid $border-color;
+}
+
 @include color-mode(dark) {
   body {
     --#{$prefix}body-color: #{$light-blue-300};
     background-color: $navy-700;
+  }
+
+  .text-primary {
+    color: $link-color-dark !important
   }
 
   .prx-tab-content {
@@ -76,5 +88,13 @@ h1 {
   .prx-scorecard {
     border-top: 1px solid $border-color-dark;
     border-color: $border-color-dark;
+  }
+
+  .prx-blank-lines {
+    background-color: $navy;
+  }
+
+  .prx-border-thick {
+    border: 2px solid $border-color-dark;
   }
 }

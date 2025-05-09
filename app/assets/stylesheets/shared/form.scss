@@ -81,6 +81,14 @@
   .prx-input-group {
     border-color: $border-color-dark;
   }
+
+  a.input-group-text {
+    color: $link-color-dark;
+
+    &:hover {
+      color: $link-hover-color-dark;
+    }
+  }
 }
 
 label[required="required"],
@@ -552,6 +560,10 @@ input[type="number"]::-webkit-outer-spin-button {
       background-color: $gray-900;
     }
 
+    .ss-disabled ~ label::before {
+      background: $body-bg-dark;
+    }
+
     .form-control {
       background-color: $gray-900;
       border-color: $border-color-dark;
@@ -576,6 +588,7 @@ input[type="number"]::-webkit-outer-spin-button {
     .form-select {
       background: $gray-900;
       border-color: $border-color-dark;
+      color: $gray-400;
     }
   }
 
