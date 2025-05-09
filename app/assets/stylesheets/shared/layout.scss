@@ -4,7 +4,6 @@
 
 body {
   --#{$prefix}body-font-family: "Roboto", "Helvetica Neue", sans-serif;
-  --#{$prefix}body-bg: #{$gray-100};
   --#{$prefix}body-color: #{$gray-600};
 
   display: flex;
@@ -12,13 +11,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
 
-  background-image: image-url("prx-mark-outlined.svg");
-  background-repeat: repeat;
-  background-position: top left;
-}
-
-h3 {
-  color: $black;
+  background-color: $light-blue-100;
 }
 
 .prx-main {
@@ -26,33 +19,82 @@ h3 {
   display: block;
 }
 
+.prx-tab-content {
+  background-color: $white;
+}
+
 .sticky-lg-top,
 .sticky-md-top {
   z-index: $zindex-dropdown;
 }
 
-@keyframes fadeIn {
-  99% {
-    visibility: hidden;
-  }
-  100% {
-    visibility: visible;
-  }
+.prx-border-light {
+  border: 1px solid $light;
 }
 
-.loading-overlay {
-  background: #eee;
-  opacity: 0.7;
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
+h1 {
+  color: $navy-900;
+}
+
+.prx-scorecard {
   text-align: center;
-  .spinner-border {
-    margin-top: 2rem;
+  flex: 1 1 auto;
+  border-bottom: 1px solid $border-color;
+  padding: 0.5rem 0;
+}
+
+.prx-blank-lines {
+  background-color: $gray-200;
+}
+
+.prx-border-thick {
+  border: 2px solid $border-color;
+}
+
+@include color-mode(dark) {
+  body {
+    --#{$prefix}body-color: #{$light-blue-300};
+    background-color: $navy-700;
   }
 
-  animation: 500ms fadeIn forwards;
-  visibility: hidden;
+  .text-primary {
+    color: $link-color-dark !important;
+  }
+
+  .prx-tab-content {
+    background-color: $body-bg-dark;
+  }
+
+  h1 {
+    color: $light-blue-300;
+  }
+
+  .modal {
+    --#{$prefix}modal-bg: #{$navy-900};
+    --#{$prefix}modal-color: #{$white};
+    --#{$prefix}modal-border-color: #{$border-color-dark};
+    --#{$prefix}modal-header-border-color: #{$border-color-dark};
+    --#{$prefix}modal-footer-border-color: #{$border-color-dark};
+
+    .btn-close {
+      background-color: rgba(255, 255, 255);
+    }
+  }
+
+  .prx-border-light {
+    border-color: $border-color-dark;
+  }
+
+  .prx-scorecard {
+    border-top: 1px solid $border-color-dark;
+    border-color: $border-color-dark;
+  }
+
+  .prx-blank-lines {
+    background-color: $navy;
+  }
+
+  .prx-border-thick {
+    border: 2px solid $border-color-dark;
+  }
 }

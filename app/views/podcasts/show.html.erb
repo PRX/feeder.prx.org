@@ -43,9 +43,9 @@
         <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column">
           <% if @recently_published.present? %>
             <% @recently_published.each do |ep| %>
-              <div class="episode-card-info flex-fill px-3 py-2 border-bottom">
+              <div class="episode-card-info inside-card flex-fill px-3 py-2">
                 <p class="episode-card-date"><%= local_date(ep.published_at, format: :short) %></p>
-                <div class="episode-card-inner">
+                <div class="episode-card-inner inside-card">
                   <h2 class="h5 episode-card-title m-0"><%= link_to ep.title, edit_episode_path(ep) %></h2>
                 </div>
               </div>
@@ -63,13 +63,13 @@
         <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column">
           <% if @next_scheduled.present? %>
             <% @next_scheduled.each do |ep| %>
-              <div class="episode-card-info flex-fill px-3 py-2 border-bottom">
+              <div class="episode-card-info inside-card flex-fill px-3 py-2">
                 <p class="episode-card-date">
                   <% if ep.published_or_released_date.present? %>
                     <%= local_date(ep.published_or_released_date, format: :short) %>
                   <% end %>
                 </p>
-                <div class="episode-card-inner">
+                <div class="episode-card-inner inside-card">
                   <h2 class="h5 episode-card-title"><%= link_to ep.title, edit_episode_path(ep) %></h2>
                 </div>
               </div>
@@ -101,11 +101,11 @@
           </div>
           <div class="card-body p-0 episode-card h-auto border-start-0">
             <div class="d-flex justify-content-evenly">
-              <h3 class="text-center flex-fill border-bottom py-2">
+              <h3 class="prx-scorecard">
                 <span class="h1" data-podcast-metrics-target="total">&mdash;</span><br>
                 <span class="text-uppercase h6"><%= t(".total_downloads") %></span>
               </h3>
-              <h3 class="text-center flex-fill border-start border-bottom py-2">
+              <h3 class="prx-scorecard">
                 <span class="h1"><%= @metrics_guids.size %></span><br>
                 <span class="text-uppercase h6"><%= t(".published_episodes").pluralize(@metrics_guids.size) %></span>
               </h3>
@@ -123,7 +123,7 @@
 
   <div class="row">
     <div class="col-lg-6 d-grid mb-4 mb-lg-0">
-      <div class="card shadow border-0">
+      <div class="prx-dashboard-card card shadow border-0">
         <div class="card-header-light d-flex align-items-center">
           <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".feeds" %></h2>
           <%= link_to podcast_feeds_path(@podcast), class: "btn btn-primary btn-sm" do %>
@@ -142,7 +142,7 @@
     </div>
 
     <div class="col-lg-6 d-grid">
-      <div class="card shadow border-0">
+      <div class="prx-dashboard-card card shadow border-0">
         <div class="card-header-light d-flex align-items-center">
           <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".settings" %></h2>
           <%= link_to edit_podcast_path(@podcast), class: "btn btn-primary btn-sm" do %>

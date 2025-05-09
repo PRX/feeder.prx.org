@@ -3,7 +3,8 @@
 //
 
 .prx-app-bar {
-  border-bottom: 1px solid $gray-300;
+  border-bottom: 1px solid $border-color;
+  background-color: $white;
 }
 
 .prx-app-nav {
@@ -24,6 +25,31 @@
       &.active {
         --prx-nav-link-active-border-color: #{$orange};
       }
+    }
+  }
+}
+
+@include color-mode(dark) {
+  .prx-app-bar {
+    background-color: $navy-900;
+    border-bottom: 1px solid $border-color-dark;
+  }
+
+  .prx-app-nav .nav-link:not(.dropdown-toggle) {
+    &:hover {
+      color: $white;
+    }
+
+    &.active {
+      color: $white;
+    }
+  }
+
+  .nav-link {
+    color: $light-blue-300;
+
+    &.active {
+      color: $white;
     }
   }
 }

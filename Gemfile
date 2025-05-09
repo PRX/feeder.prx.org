@@ -106,3 +106,5 @@ group :test do
   gem "webdrivers"
   gem "webmock"
 end
+
+gem "dartsass-rails", "~> 0.5.1"
