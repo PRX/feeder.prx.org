@@ -23,6 +23,8 @@ export default class extends Controller {
   }, 500)
 
   connect() {
+    const isDarkMode = document.documentElement.dataset.bsTheme === "dark"
+
     this.audioElement = new Audio()
     this.audioElement.preload = "metadata"
     this.audioElement.src = this.audioUrlValue
@@ -67,7 +69,7 @@ export default class extends Controller {
       emitCueEvents: true,
       showPlayheadTime: true,
 
-      waveformColor: "rgba(0, 114, 163, 0.3)",
+      waveformColor: "rgba(0, 114, 163, 0.5)",
       playedWaveformColor: "rgba(0, 114, 163, 1)",
 
       createPointMarker: (options) => new PrxPointMarker(options),
