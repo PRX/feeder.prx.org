@@ -127,9 +127,16 @@ describe EpisodeTimingsImport do
       assert content1.present?
 
       Episode.stub_any_instance(:copy_media, true) do
+        assert episode.medium_uncut?
+        assert_equal uncut.episode.id, episode.id
+        assert episode.uncut.present?
+        assert_equal [[1.2, 3.4]], episode.uncut.segmentation
+
         episode.update!(medium: "audio")
 
         import.import!
+        episode.reload
+        assert episode.uncut.present?
         assert import.status_complete?
         assert content1.reload.deleted_at.present?
 

@@ -44,7 +44,13 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
   property :segment_count
   property :media_version_id, as: :media_version, writeable: false
 
+  property :medium
+
   collection :media,
+    decorator: Api::MediaResourceRepresenter,
+    class: MediaResource
+
+  property :uncut,
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
