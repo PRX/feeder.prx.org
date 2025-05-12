@@ -348,6 +348,11 @@ GEM
       racc
     pg (1.5.4)
     popper_js (2.11.6)
+    propshaft (1.1.0)
+      actionpack (>= 7.0.0)
+      activesupport (>= 7.0.0)
+      rack
+      railties (>= 7.0.0)
     prx_auth (1.8.1)
       json (>= 1.8.1)
       json-jwt (>= 1.12.0)
@@ -589,7 +594,7 @@ DEPENDENCIES
   aws-sdk-sns
   aws-sdk-sqs
   bootsnap
-  bootstrap (~> 5.2.2)
+  bootstrap (~> 5)
   capybara
   clickhouse-activerecord
   countries
@@ -627,6 +632,7 @@ DEPENDENCIES
   parallel
   paranoia
   pg (~> 1.1)
+  propshaft
   prx_auth-rails (~> 5.1.0)
   pry
   pry-byebug

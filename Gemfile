@@ -24,7 +24,7 @@ gem "rack-cors"
 
 # html views
 gem "active_link_to"
-gem "bootstrap", "~> 5.2.2"
+gem "bootstrap", "~> 5"
 gem "importmap-rails"
 gem "kaminari"
 gem "local_time"
@@ -32,6 +32,8 @@ gem "sprockets-rails"
 gem "stimulus-rails"
 gem "turbo-rails"
 gem "simple_calendar", "~> 2.4"
+gem "dartsass-rails", "~> 0.5.1"
+gem "propshaft"
 
 # api views
 gem "responders"
@@ -106,5 +108,3 @@ group :test do
   gem "webdrivers"
   gem "webmock"
 end
-
-gem "dartsass-rails", "~> 0.5.1"

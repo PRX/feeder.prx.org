@@ -11,8 +11,9 @@
     <link rel="icon" href="https://media.prx.org/favicon/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="https://media.prx.org/favicon/icon-180.png">
 
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <%= render "layouts/color_mode" %>
   </head>
 
   <body data-controller="blank-field confirm-field popover">
