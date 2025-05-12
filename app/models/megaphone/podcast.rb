@@ -22,7 +22,7 @@ module Megaphone
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
     OTHER_ATTRIBUTES = %i[id created_at updated_at image_file uid network_id recurring_import
-      episodes_count spotify_identifier default_ad_settings iheart_identifier feed_url
+      episodes_count spotify_identifier default_ad_settings iheart_identifier feed_url span_opt_in
       default_pre_count default_post_count cloned_feed_urls ad_free_feed_urls main_feed ad_free]
 
     ALL_ATTRIBUTES = (UPDATE_ATTRIBUTES + DEPRECATED + OTHER_ATTRIBUTES)
@@ -73,7 +73,7 @@ module Megaphone
         episode_limit: feed.display_episodes_count,
         external_id: podcast.guid,
         podcast_type: podcast.itunes_type,
-        advertising_tags: podcast.categories
+        advertising_tags: feed.config.advertising_tags || []
         # set in augury, can we get it here?
         # excluded_categories: ????? TBD,
       }

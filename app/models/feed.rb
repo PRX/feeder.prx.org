@@ -159,6 +159,10 @@ class Feed < ApplicationRecord
     feed_episodes.pluck(:id)
   end
 
+  def guid
+    podcast&.guid
+  end
+
   def default?
     slug.nil?
   end

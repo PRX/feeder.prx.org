@@ -22,6 +22,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :include_donation_url
   property :serve_drafts
   property :unique_guids
+  property :guid
 
   property :feed_image, decorator: Api::ImageRepresenter, class: FeedImage
   property :itunes_image, decorator: Api::ImageRepresenter, class: ITunesImage
