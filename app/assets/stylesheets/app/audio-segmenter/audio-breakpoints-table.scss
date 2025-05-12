@@ -103,3 +103,9 @@
     width: auto;
   }
 }
+
+@include color-mode(dark) {
+  .prx-audio-breakpoints-table {
+    --#{$prefix}table-border-color: #{$border-color-dark};
+  }
+}

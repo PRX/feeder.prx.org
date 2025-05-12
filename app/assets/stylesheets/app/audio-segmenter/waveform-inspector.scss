@@ -58,3 +58,15 @@ $module: "prx-waveform-inspector";
   display: grid;
   background-color: var(--#{$module}-scrollbar-bg);
 }
+
+@include color-mode(dark) {
+  .#{$module} {
+    --#{$module}-bg: #{$black};
+    --#{$module}-border-color: #{$border-color-dark};
+    --#{$module}-scrollbar-bg: #{tint-color($black, 50%)};
+  }
+
+  .#{$module}-view-container {
+    background-color: $black;
+  }
+}
