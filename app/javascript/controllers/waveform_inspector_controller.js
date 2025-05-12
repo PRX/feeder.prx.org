@@ -23,8 +23,6 @@ export default class extends Controller {
   }, 500)
 
   connect() {
-    const isDarkMode = document.documentElement.dataset.bsTheme === "dark"
-
     this.audioElement = new Audio()
     this.audioElement.preload = "metadata"
     this.audioElement.src = this.audioUrlValue
