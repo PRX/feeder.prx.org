@@ -1,8 +1,6 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.3.7"
-
 # core
 gem "activerecord-session_store"
 gem "bootsnap", require: false
@@ -68,11 +66,10 @@ gem "aws-sdk-sns"
 gem "aws-sdk-sqs"
 gem "aws-sdk-s3"
 gem "csv"
-gem "excon"
-gem "faraday", "~> 0.17.4"
+gem "faraday"
 gem "link-header-parser", "~> 6.0", ">= 6.0.1"
 gem "fiddle"
-gem "hyperresource"
+gem "hyperresource", github: "PRX/hyperresource", branch: "master"
 gem "mutex_m"
 gem "net-http"
 gem "parallel"
