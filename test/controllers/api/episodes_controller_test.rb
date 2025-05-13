@@ -197,12 +197,16 @@ describe Api::EpisodesController do
       }
 
       assert_equal episode_update.contents.size, 0
+      assert_nil episode_update.medium
 
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
 
-      contents = episode_update.reload.contents
+      episode_update.reload
+
+      assert_equal "audio", episode_update.medium
+      contents = episode_update.contents
       assert_equal contents.size, 1
       assert_equal contents.first.mime_type, "audio/mpeg"
       assert_equal contents.first.file_size, 123456
