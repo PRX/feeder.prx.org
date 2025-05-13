@@ -288,7 +288,9 @@ class Episode < ApplicationRecord
 
     uri = URI.parse(uri_str)
     res = Net::HTTP.start(uri.host) do |http|
-      http.head(uri.path)
+      http.max_retries = 0
+      http.read_timeout = 0.1
+      http.head(uri)
     end
 
     if res.is_a?(Net::HTTPRedirection)
@@ -296,7 +298,7 @@ class Episode < ApplicationRecord
     elsif res.is_a?(Net::HTTPSuccess)
       res
     end
-  rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout, Net::OpenTimeout => e
+  rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout => e
     Rails.logger.info(e.message)
   end
 end

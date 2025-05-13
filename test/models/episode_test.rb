@@ -383,9 +383,9 @@ describe Episode do
   end
 
   describe "#head_request" do
-    let(:episode_1) { build_stubbed(:episode) }
-    let(:episode_2) { build_stubbed(:episode) }
-    let(:episode_3) { build_stubbed(:episode) }
+    let(:episode_1) { build_stubbed(:episode_with_media) }
+    let(:episode_2) { build_stubbed(:episode_with_media) }
+    let(:episode_3) { build_stubbed(:episode_with_media) }
 
     it "returns response for a successful request" do
       uri_1 = episode_1.enclosure_url
@@ -421,6 +421,23 @@ describe Episode do
       episode_1.head_request
 
       assert_requested :head, episode_1.enclosure_url, times: 10
+    end
+
+    it "rescues errors after making head requests" do
+      uri_1 = episode_1.enclosure_url
+      stub_request(:head, uri_1).to_raise(Net::ReadTimeout)
+      uri_2 = episode_2.enclosure_url
+      stub_request(:head, uri_2).to_raise(URI::InvalidURIError)
+      uri_3 = episode_3.enclosure_url
+      stub_request(:head, uri_3).to_raise(Socket::ResolutionError)
+
+      episode_1.head_request
+      episode_2.head_request
+      episode_3.head_request
+
+      assert_requested :head, episode_1.enclosure_url
+      assert_requested :head, episode_2.enclosure_url
+      assert_requested :head, episode_3.enclosure_url
     end
   end
 end
