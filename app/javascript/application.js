@@ -4,6 +4,7 @@ import "controllers"
 import Trix from "trix"
 import "popper"
 import "bootstrap"
+import "highcharts"
 import Rails from "@rails/ujs"
 import LocalTime from "local-time"
 

@@ -45,3 +45,6 @@ notes*
 .DS_Store
 node_modules
 package-lock.json
+
+/app/assets/builds/*
+!/app/assets/builds/.keep

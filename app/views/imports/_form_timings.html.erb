@@ -15,7 +15,7 @@
         <%= form.file_field :timings_csv, class: cls, accept: accept, data: data, name: nil %>
 
         <span class="material-icons text-primary" data-import-timings-target="fileIcon">upload</span>
-        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate" data-import-timings-target="fileName">Upload CSV</div>
+        <div class="mx-2 flex-grow-1 overflow-hidden text-truncate" data-import-timings-target="fileName">Upload CSV</div>
         <small class="text-muted text-nowrap" data-import-timings-target="fileSize"></small>
         <%= form.hidden_field :file_name, data: {import_timings_target: "fileNameField"}, value: "timings.csv" %>
       </div>

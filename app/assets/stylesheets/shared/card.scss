@@ -2,6 +2,10 @@
 // Cards style overrides.
 //
 
+.card {
+  --#{$prefix}card-border-color: #{($border-color)};
+}
+
 .card-header {
   --#{$prefix}card-title-spacer-y: #{map-get($spacers, 0)};
 
@@ -46,4 +50,39 @@
   overflow: hidden;
   position: absolute;
   text-indent: -2000vw;
+}
+
+.card-header-light {
+  --#{$prefix}card-cap-bg: #{($light-blue-300)};
+}
+
+.prx-bg-light {
+  background-color: $light;
+}
+
+@include color-mode(dark) {
+  .card {
+    --#{$prefix}card-bg: #{($black)};
+    --#{$prefix}card-border-color: #{($border-color-dark)};
+    --#{$prefix}card-cap-bg: #{($navy-900)};
+    --#{$prefix}card-cap-color: #{($white)};
+    --#{$prefix}card-cap-border-color: #{($border-color-dark)};
+
+    .card-header-light {
+      --#{$prefix}card-cap-bg: #{($black)};
+      --#{$prefix}card-cap-color: #{($white)};
+    }
+
+    .card-body {
+      color: #{($gray-300)};
+    }
+
+    .card-footer {
+      background-color: var(--#{$prefix}card-bg);
+    }
+  }
+
+  .prx-bg-light {
+    background-color: $body-bg-dark;
+  }
 }

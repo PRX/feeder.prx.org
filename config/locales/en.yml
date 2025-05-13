@@ -1070,6 +1070,11 @@ en:
     show:
       title: "%{title} - Import %{id}"
   layouts:
+    color_mode_switcher:
+      title: Color Mode Switcher
+      auto: Auto (detect browser setting)
+      dark: Dark Mode
+      light: Light Mode
     confirm_field:
       cancel: Cancel
       okay: Okay

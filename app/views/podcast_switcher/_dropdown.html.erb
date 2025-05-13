@@ -1,6 +1,6 @@
 <div class="prx-podcast-switcher dropdown" data-controller="focus">
 
-  <button class="btn btn-white dropdown-toggle" type="button" id="podcast-switcher" data-bs-toggle="dropdown" aria-expanded="false" data-action="focus#focus" data-controller="hotkey">
+  <button class="btn dropdown-toggle" type="button" id="podcast-switcher" data-bs-toggle="dropdown" aria-expanded="false" data-action="focus#focus" data-controller="hotkey">
     <% if @podcast %>
       <% cache @podcast do %>
         <% if @podcast.ready_image %>

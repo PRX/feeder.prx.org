@@ -16,7 +16,7 @@
             <%= t("helpers.label.episode.media_statuses.#{status.underscore}") %>
           </span>
           <% if episode.ad_breaks.to_i == 0 %>
-            <span class="badge rounded-pill bg-light text-black-50 ms-1 "><%= t(".breaks", count: 0) %></span>
+            <span class="badge rounded-pill bg-primary ms-1 "><%= t(".breaks", count: 0) %></span>
           <% else %>
             <span class="badge rounded-pill bg-primary ms-1"><%= t(".breaks", count: episode.ad_breaks) %></span>
           <% end %>

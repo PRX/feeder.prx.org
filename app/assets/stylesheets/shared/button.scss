@@ -86,8 +86,8 @@
 
 .btn-outline-light {
   --#{$prefix}btn-bg: #{$white};
-  --#{$prefix}btn-border-color: #eee;
-  --#{$prefix}btn-color: #{color-contrast($white)};
+  --#{$prefix}btn-border-color: #{($border-color)};
+  --#{$prefix}btn-color: #{($gray-800)};
   --#{$prefix}btn-hover-bg: #{tint-color($border-color, 50%)};
   --#{$prefix}btn-hover-border-color: #{$border-color};
   --#{$prefix}btn-active-bg: #{$border-color};
@@ -99,5 +99,25 @@
   border-color: $orange;
   &:hover {
     border-color: $orange;
+  }
+}
+
+@include color-mode(dark) {
+  .dropdown-menu {
+    --#{$prefix}dropdown-color: #{($white)};
+    --#{$prefix}dropdown-bg: #{($black)};
+    --#{$prefix}dropdown-link-color: #{($info)};
+    --#{$prefix}dropdown-link-hover-color: #{($light-blue-300)};
+    --#{$prefix}dropdown-link-hover-bg: #{($primary)};
+  }
+
+  .btn-outline-light {
+    --#{$prefix}btn-bg: #{$gray-900};
+    --#{$prefix}btn-border-color: #{($border-color-dark)};
+    --#{$prefix}btn-color: #{color-contrast($black)};
+    --#{$prefix}btn-hover-bg: #{tint-color($border-color-dark, 50%)};
+    --#{$prefix}btn-hover-border-color: #{$border-color-dark};
+    --#{$prefix}btn-active-bg: #{$border-color-dark};
+    --#{$prefix}btn-active-border-color: #{$border-color-dark};
   }
 }
