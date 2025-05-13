@@ -92,6 +92,32 @@ module ImportUtils
     str.strip
   end
 
+  def clean_yes_no(str)
+    ["yes", "true", "1"].include?((clean_string(str) || "").downcase)
+  end
+
+  def clean_url(url)
+    url = clean_string(url)
+    return nil if url.blank?
+    return url.to_s if url.is_a?(URI::HTTP) || url.is_a?(URI::HTTPS)
+    return url if !url.is_a?(String)
+
+    url = if url.start_with?(/http(s)?:\/\//i)
+      url
+    elsif url.start_with?("//")
+      "https:#{url}"
+    else
+      "https://#{url}"
+    end
+
+    uri = URI.parse(url)
+    if uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+      uri.to_s
+    end
+  rescue URI::InvalidURIError
+    nil
+  end
+
   def clean_text(text)
     return nil if text.blank?
     result = remove_feedburner_tracker(text)

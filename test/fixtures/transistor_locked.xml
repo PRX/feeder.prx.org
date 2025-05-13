@@ -57,11 +57,7 @@
 		<rawvoice:subscribe feed="http://transistor.prx.org/feed/podcast/" itunes="https://itunes.apple.com/us/podcast/transistor/id964305817?at=10l9zE"/>
 		<site xmlns="com-wordpress:feed-additions:1">85675297</site>
 		<atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="self" type="application/rss+xml" href="http://feeds.prx.org/transistor_stem"/><feedburner:info uri="transistor_stem"/><atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="hub" href="http://pubsubhubbub.appspot.com/"/>
-
-		<!-- podcasting 2.0 tags for testing -->
-		<podcast:guid>notarealguid-ohno-itsnot</podcast:guid>
-		<podcast:funding>https://www.prx.org/support/transistor</podcast:funding>
-
+		<podcast:locked>yes</podcast:locked>
 		<item>
 			<title>Sidedoor from the Smithsonian: Shake it Up</title>
 			<link>http://feeds.prx.org/~r/transistor_stem/~3/NHnLCsjtdQM/</link>

@@ -119,7 +119,7 @@ class EpisodeRssImport < EpisodeImport
     if /libsyn\.com/.match?(url)
       url = nil
     end
-    url
+    clean_url(url)
   end
 
   def closed_captioned?(entry)
