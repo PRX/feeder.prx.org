@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/PRX/hyperresource.git
-  revision: 15e90de79dd6d2b087165a158009f00cb1adba05
-  branch: fix/remove_fuzzy_url
+  revision: 9368a9607e1eae89649589602d4677df0aa53fed
+  branch: master
   specs:
     hyperresource (0.9.4)
       faraday (>= 0.8.6)
