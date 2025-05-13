@@ -25,15 +25,14 @@ gem "rack-cors"
 # html views
 gem "active_link_to"
 gem "bootstrap", "~> 5"
+gem "dartsass-rails", "~> 0.5.1"
 gem "importmap-rails"
 gem "kaminari"
 gem "local_time"
-gem "sprockets-rails"
+gem "propshaft"
 gem "stimulus-rails"
 gem "turbo-rails"
 gem "simple_calendar", "~> 2.4"
-gem "dartsass-rails", "~> 0.5.1"
-gem "propshaft"
 
 # api views
 gem "responders"
