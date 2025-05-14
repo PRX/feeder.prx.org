@@ -57,7 +57,10 @@ module Megaphone
     end
 
     def as_json_for_create
-      as_json(only: CREATE_ATTRIBUTES.map(&:to_s))
+      h = as_json(only: CREATE_ATTRIBUTES.map(&:to_s))
+      h["start_time"] = h["start_time"].to_f if h.key?("start_time")
+      h["end_time"] = h["end_time"].to_f if h.key?("end_time")
+      h
     end
   end
 end

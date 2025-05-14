@@ -33,4 +33,27 @@ describe Megaphone::Cuepoint do
       assert_nil cuepoints[2].max_duration
     end
   end
+  describe "#as_json_for_create" do
+    it "returns the correct JSON with float for big decimals" do
+      cuepoint = Megaphone::Cuepoint.new(
+        cuepoint_type: "midroll",
+        ad_count: 1,
+        start_time: 30.1234,
+        ad_sources: [:auto],
+        action: :insert,
+        is_active: true,
+        max_duration: 30
+      )
+      expected_json = {
+        "cuepoint_type" => "midroll",
+        "ad_count" => 1,
+        "start_time" => 30.1234,
+        "ad_sources" => ["auto"],
+        "action" => "insert",
+        "is_active" => true,
+        "max_duration" => 30
+      }
+      assert_equal expected_json, cuepoint.as_json_for_create
+    end
+  end
 end
