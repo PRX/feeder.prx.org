@@ -14,3 +14,13 @@
     </div>
   </div>
 </div>
+
+<div class="col-12">
+  <div class="form-check">
+    <%= form.check_box :import_existing, checked: true %>
+    <div class="d-flex align-items-center">
+      <%= form.label :import_existing %>
+      <%= help_text t(".help.import_existing") %>
+    </div>
+  </div>
+</div>
