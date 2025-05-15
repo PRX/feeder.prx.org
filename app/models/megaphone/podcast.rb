@@ -35,6 +35,23 @@ module Megaphone
 
     validates_absence_of :id, on: :create
 
+    def self.list(feed)
+      podcast = Megaphone::Podcast.new
+      podcast.private_feed = feed
+      podcast.config = feed.config
+      podcast.list
+    end
+
+    def self.find_megaphone_podcast(feed, mpid)
+      podcast = Megaphone::Podcast.new
+      podcast.private_feed = feed
+      podcast.config = feed.config
+      podcast.find_by_megaphone_id(mpid)
+    end
+
+    # This is a bit of a hack, but we need to be able to find the megaphone podcast
+    # by the private feed, so we can update it.
+
     def self.find_by_feed(feed)
       podcast = new_from_feed(feed)
       sync_log = podcast.public_feed.sync_log(:megaphone)
@@ -77,6 +94,14 @@ module Megaphone
         # set in augury, can we get it here?
         # excluded_categories: ????? TBD,
       }
+    end
+
+    def initialize(attributes = {})
+      super(attributes.slice(*ALL_ATTRIBUTES))
+    end
+
+    def episodes
+      Megaphone::Episode.list(self)
     end
 
     def public_feed

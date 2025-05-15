@@ -46,7 +46,7 @@ class Feeds::MegaphoneFeed < Feed
   def set_defaults
     self.audio_format ||= DEFAULT_AUDIO_FORMAT
     self.private = true
-    self.slug ||= "prx-#{id}"
+    self.slug = "prx-#{id}" if id
     self.title ||= DEFAULT_TITLE
     self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
     self.episode_offset_seconds = DEFAULT_OFFSET if episode_offset_seconds.nil?

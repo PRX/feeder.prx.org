@@ -55,4 +55,18 @@ class PodcastImport < ApplicationRecord
     lock_minutes = (episode_imports.count / 150.0).ceil
     podcast.update!(locked_until: Time.now + lock_minutes.minutes)
   end
+
+  def parse_itunes_categories(categories)
+    itunes_cats = {}
+    Array(categories).map(&:strip).select { |c| !c.blank? }.each do |cat|
+      if ITunesCategoryValidator.category?(cat)
+        itunes_cats[cat] ||= []
+      elsif (parent_cat = ITunesCategoryValidator.subcategory?(cat))
+        itunes_cats[parent_cat] ||= []
+        itunes_cats[parent_cat] << cat
+      end
+    end
+
+    [itunes_cats.keys.map { |n| ITunesCategory.new(name: n, subcategories: itunes_cats[n]) }.first].compact
+  end
 end
