@@ -5,10 +5,11 @@ class PodcastMegaphoneImport < PodcastImport
 
   has_many :episode_imports, dependent: :destroy, class_name: "EpisodeMegaphoneImport", foreign_key: :podcast_import_id
 
-  attr_accessor :megaphone_feed
+  attr_writer :megaphone_feed
 
   def set_defaults
     @megaphone_episodes = []
+    @megaphone_feed = nil
     self.new_episodes_only ||= false
     self.override_enclosures ||= false
     super
