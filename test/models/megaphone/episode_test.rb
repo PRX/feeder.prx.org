@@ -10,7 +10,7 @@ describe Megaphone::Episode do
   before {
     stub_request(:post, "https://#{ENV["ID_HOST"]}/token")
       .to_return(status: 200,
-        body: '{"access_token":"thisisnotatoken","token_type":"bearer"}',
+        body: '{"access_token":"thisisnotatoken","token_type":"bearer"}'.freeze,
         headers: {"Content-Type" => "application/json; charset=utf-8"})
 
     stub_request(:get, "https://#{ENV["AUGURY_HOST"]}/api/v1/podcasts/#{feeder_podcast.id}/placements")
@@ -123,7 +123,7 @@ describe Megaphone::Episode do
       stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/mp-123-456/episodes/megaphone-episode-guid")
         .to_return(status: 200, body: audio_ready_json, headers: {})
 
-      cp_json = "[{\"cuepointType\":\"postroll\",\"adCount\":1,\"startTime\":\"48.0\",\"adSources\":[\"promo\"],\"action\":\"insert\",\"isActive\":true}]"
+      cp_json = "[{\"cuepointType\":\"postroll\",\"adCount\":1,\"startTime\":48.0,\"adSources\":[\"promo\"],\"action\":\"insert\",\"isActive\":true,\"maxDuration\":120}]"
       stub_request(:put, "https://cms.megaphone.fm/api/episodes/megaphone-episode-guid/cuepoints_batch")
         .with(body: cp_json)
         .to_return(status: 200, body: cp_json, headers: {})

@@ -2,7 +2,7 @@ module Prx
   module Api
     class PrxHyperResource < HyperResource
       def incoming_body_filter(hash)
-        super(hash.deep_transform_keys { |key| key.to_s.underscore })
+        super(hash.with_indifferent_access.deep_transform_keys { |key| key.to_s.underscore })
       end
 
       def outgoing_body_filter(hash)
@@ -106,7 +106,6 @@ module Prx
       oauth_options = {site: id_root, token_url: "/token"}
       client = OAuth2::Client.new(id, se, oauth_options) do |faraday|
         faraday.request :url_encoded
-        faraday.adapter :excon
       end
       client.client_credentials.get_token(account: account).token
     end

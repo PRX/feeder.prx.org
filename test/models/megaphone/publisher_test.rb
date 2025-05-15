@@ -54,14 +54,11 @@ describe Megaphone::Publisher do
       publisher.sync_episodes!
     end
 
-    it "should update episodes" do
-    end
+    it "should update episodes"
 
-    it "should update episodes with audio" do
-    end
+    it "should update episodes with audio"
 
-    it "should update episodes with incomplete audio" do
-    end
+    it "should update episodes with incomplete audio"
   end
 
   describe "#sync_podcast!" do

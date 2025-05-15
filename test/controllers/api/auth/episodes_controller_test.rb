@@ -146,6 +146,95 @@ describe Api::Auth::EpisodesController do
       assert_equal episode_update.reload.contents.with_deleted.size, 1
       assert_equal episode_update.contents.with_deleted.first.position, 1
     end
+
+    it "can add uncut to an episode" do
+      update_hash = {
+        uncut: {
+          href: "https://s3.amazonaws.com/prx-testing/test/change1.mp3"
+        }
+      }
+
+      assert_equal episode_update.contents.size, 0
+      assert_nil episode_update.uncut
+      assert_nil episode_update.medium
+
+      @controller.stub(:process_media, true) do
+        put(:update, body: update_hash.to_json, as: :json,
+          params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      end
+      assert_response :success
+
+      episode_update.reload
+
+      contents = episode_update.contents
+      assert_equal contents.size, 0
+
+      uncut = episode_update.uncut
+      assert_not_nil uncut
+      assert_equal "uncut", episode_update.medium
+
+      # put to update without setting should not delete uncut
+      @controller.stub(:process_media, true) do
+        put(:update, body: {title: "still uncut"}.to_json, as: :json,
+          params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      end
+      assert_response :success
+
+      episode_update.reload
+
+      assert_not_nil episode_update.uncut
+      assert_equal uncut.id, episode_update.uncut.id
+
+      # updating segmentation should update it
+      update_hash = {
+        segment_count: 2,
+        uncut: {
+          href: "https://s3.amazonaws.com/prx-testing/test/change1.mp3",
+          segmentation: [[nil, 10]]
+        }
+      }
+      @controller.stub(:process_media, true) do
+        put(:update, body: update_hash.to_json, as: :json,
+          params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      end
+      assert_response :success
+
+      episode_update.reload
+
+      assert_equal uncut.id, episode_update.uncut.id
+      assert_equal [[nil, 10]], episode_update.uncut.segmentation
+
+      # updating segmentation with no href should update not replace
+      update_hash = {
+        segment_count: 2,
+        uncut: {
+          segmentation: [[nil, 15]]
+        }
+      }
+      @controller.stub(:process_media, true) do
+        put(:update, body: update_hash.to_json, as: :json,
+          params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      end
+      assert_response :success
+
+      episode_update.reload
+
+      assert_equal uncut.id, episode_update.uncut.id
+      assert_equal [[nil, 15]], episode_update.uncut.segmentation
+
+      # updating with a nil should delete it
+      update_hash = {uncut: nil}
+      @controller.stub(:process_media, true) do
+        put(:update, body: update_hash.to_json, as: :json,
+          params: {id: episode_update.guid, api_version: "v1", format: "json"})
+      end
+      assert_response :success
+
+      episode_update.reload
+
+      assert_nil episode_update.uncut
+      assert_nil episode_update.medium
+    end
   end
 
   describe "with wildcard token" do

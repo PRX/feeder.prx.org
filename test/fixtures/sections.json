@@ -1,0 +1,19 @@
+[
+  {
+    "id": "pre_a",
+    "type": "pre"
+  },
+  {
+    "id": "pre_b",
+    "type": "pre"
+  },
+  {
+    "id": "mid",
+    "type": "mid",
+    "max_duration": 90
+  },
+  {
+    "id": "post",
+    "type": "post"
+  }
+]
