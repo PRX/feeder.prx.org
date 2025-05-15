@@ -162,7 +162,7 @@ class PodcastRssImport < PodcastImport
 
   def update_itunes_categories
     default_feed = podcast.default_feed
-    default_feed.itunes_categories = parse_itunes_categories
+    default_feed.itunes_categories = parse_itunes_categories(channel[:itunes_categories])
     default_feed.save!
   end
 
@@ -200,7 +200,7 @@ class PodcastRssImport < PodcastImport
 
     podcast_attributes[:complete] = (clean_string(channel[:itunes_complete]) == "yes")
     podcast_attributes[:copyright] ||= clean_string(channel[:media_copyright])
-    podcast_attributes[:serial_order] = channel[:itunes_type] && !!channel[:itunes_type].match(/serial/i)
+    podcast_attributes[:itunes_type] = channel[:itunes_type]
     podcast_attributes[:locked_until] = 10.minutes.from_now
 
     podcast_attributes[:title] = clean_string(channel[:title])
@@ -261,20 +261,6 @@ class PodcastRssImport < PodcastImport
     else
       {}
     end
-  end
-
-  def parse_itunes_categories
-    itunes_cats = {}
-    Array(channel[:itunes_categories]).map(&:strip).select { |c| !c.blank? }.each do |cat|
-      if ITunesCategoryValidator.category?(cat)
-        itunes_cats[cat] ||= []
-      elsif (parent_cat = ITunesCategoryValidator.subcategory?(cat))
-        itunes_cats[parent_cat] ||= []
-        itunes_cats[parent_cat] << cat
-      end
-    end
-
-    [itunes_cats.keys.map { |n| ITunesCategory.new(name: n, subcategories: itunes_cats[n]) }.first].compact
   end
 
   def podcast_short_desc
