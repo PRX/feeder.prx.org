@@ -48,7 +48,7 @@ class Api::EpisodesController < Api::BaseController
 
   def show_resource
     if params[:guid_resource]
-      resource = Episode.find_by_item_guid(params[:id])
+      resource = find_base.find_by_item_guid(params[:id])
       raise HalApi::Errors::NotFound.new if resource.nil?
 
       @episode = resource
