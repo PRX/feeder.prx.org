@@ -76,9 +76,13 @@ class PublishFeedJob < ApplicationJob
     opts[:key] = feed.path
     @put_object = s3_client.put_object(opts)
 
-    update_first_publish_episodes(rss.episodes) if feed.default?
+    update_first_publish_episodes(first_publish_episodes(rss.episodes)) if feed.default?
 
     @put_object
+  end
+
+  def first_publish_episodes(episodes)
+    Episode.first_publish.where(id: episodes)
   end
 
   def update_first_publish_episodes(episodes)
