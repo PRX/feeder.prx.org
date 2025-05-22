@@ -19,7 +19,8 @@ describe PodcastMegaphoneImport do
   end
 
   before do
-    stub_requests
+    stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/7c8e5a1b-9d21-4f6c-b830-e42a87c3f9d2")
+      .to_return(status: 200, body: test_file("/fixtures/megaphone_podcast.json"), headers: {})
   end
 
   it "retrieves podcast from megaphone" do
@@ -48,9 +49,4 @@ describe PodcastMegaphoneImport do
     _(p.display_episodes_count).must_equal 5000
     _(p.itunes_type).must_equal "episodic"
   end
-end
-
-def stub_requests
-  stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/7c8e5a1b-9d21-4f6c-b830-e42a87c3f9d2")
-    .to_return(status: 200, body: test_file("/fixtures/megaphone_podcast.json"), headers: {})
 end

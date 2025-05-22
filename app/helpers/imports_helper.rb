@@ -21,9 +21,7 @@ module ImportsHelper
 
   def megaphone_podcast_options(import)
     feed = Feeds::MegaphoneFeed.where(podcast: import.podcast).first
-    megaphone_podcast = Megaphone::Podcast.new_from_feed(feed)
-    podcasts = megaphone_podcast.list
-    podcasts.items.map do |podcast|
+    Megaphone::Podcast.list(feed).map do |podcast|
       o = [podcast.title, podcast.id]
       puts o.inspect
       o

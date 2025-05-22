@@ -44,12 +44,13 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def set_defaults
-    self.audio_format ||= DEFAULT_AUDIO_FORMAT
-    self.private = true
-    self.slug = "prx-#{id}" if id
+    self.slug ||= "prx-#{SecureRandom.uuid}"
     self.title ||= DEFAULT_TITLE
-    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
+    self.audio_format ||= DEFAULT_AUDIO_FORMAT
     self.episode_offset_seconds = DEFAULT_OFFSET if episode_offset_seconds.nil?
+    self.include_zones ||= []
+    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
+    self.private = true
 
     super
   end

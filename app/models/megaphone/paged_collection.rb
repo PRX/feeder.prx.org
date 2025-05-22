@@ -1,9 +1,13 @@
 class Megaphone::PagedCollection
-  attr_accessor :model, :items, :per_page, :page, :total, :links
+  attr_accessor :api, :model, :items, :per_page, :page, :total, :links
 
-  def initialize(model, result)
+  def initialize(api, model, result)
+    @api = api
     @model = model
+    set_result(result)
+  end
 
+  def set_result(result)
     @items = (result[:items] || []).map { |i| model.new(i) }
 
     paging = result[:pagination] || {}
@@ -15,5 +19,23 @@ class Megaphone::PagedCollection
 
   def count
     items.length
+  end
+
+  def next_page
+    links[:next]
+  end
+
+  def next?
+    next_page.present?
+  end
+
+  def all_items
+    items_all = items
+    while next?
+      result = api.get_base(next_page)
+      set_result(result)
+      items_all += items
+    end
+    items_all
   end
 end

@@ -100,6 +100,10 @@ module Megaphone
       super(attributes.slice(*ALL_ATTRIBUTES))
     end
 
+    def to_h
+      as_json.with_indifferent_access.slice(*ALL_ATTRIBUTES)
+    end
+
     def episodes
       Megaphone::Episode.list(self)
     end
@@ -119,7 +123,7 @@ module Megaphone
 
     def list
       self.api_response = api.get("podcasts")
-      Megaphone::PagedCollection.new(Megaphone::Podcast, api_response)
+      Megaphone::PagedCollection.new(api, Megaphone::Podcast, api_response).all_items
     end
 
     def find_by_guid(guid = podcast.guid)

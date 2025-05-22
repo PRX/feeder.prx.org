@@ -85,6 +85,7 @@ module Megaphone
         title: e.title,
         external_id: e.guid,
         guid: e.item_guid,
+        parent_id: e.original_guid,
         pubdate: pubdate,
         pubdate_timezone: pubdate&.time_zone&.name,
         author: e.author_name,
@@ -106,9 +107,13 @@ module Megaphone
       super(attributes.slice(*ALL_ATTRIBUTES))
     end
 
+    def to_h
+      as_json.with_indifferent_access.slice(*ALL_ATTRIBUTES)
+    end
+
     def list
       self.api_response = api.get("podcasts/#{podcast.id}/episodes")
-      Megaphone::PagedCollection.new(Megaphone::Episode, api_response)
+      Megaphone::PagedCollection.new(api, Megaphone::Episode, api_response).all_items
     end
 
     def find_by_guid(guid = feeder_episode.guid)
@@ -458,6 +463,10 @@ module Megaphone
     def post_before_original?(zones)
       sections = zones.split { |z| z[:type] == "original" }
       sections[-2].any? { |z| %w[ad house].include?(z[:type]) && z[:id].match(/post/) }
+    end
+
+    def item_guid
+      guid || parent_id || id
     end
   end
 end
