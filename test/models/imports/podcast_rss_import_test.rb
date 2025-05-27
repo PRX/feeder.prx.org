@@ -48,7 +48,7 @@ describe PodcastRssImport do
   it "fails when the feed is locked" do
     importer.feed_rss = test_file("/fixtures/transistor_locked.xml")
     assert !importer.valid?
-    importer.errors.messages[:url].must_equal ["podcast locked"]
+    _(importer.errors.messages[:url]).must_equal ["podcast locked"]
   end
 
   it "updates a podcast" do

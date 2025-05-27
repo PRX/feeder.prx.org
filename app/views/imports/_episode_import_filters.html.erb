@@ -1,11 +1,11 @@
 <div class="col-12 d-flex align-items-center justify-content-between mb-2" data-controller="dynamic-form">
-  <h1 class="text-black fw-bold my-0 mb-0 me-4">
+  <h1 class="fw-bold my-0 mb-0 me-4">
     <%= t("helpers.label.podcast_import.types.#{import.type}") %>
   </h1>
 
   <div class="dropdown mx-2" data-controller="morph-if">
     <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Paging options" data-action="show.bs.dropdown->morph-if#no hide.bs.dropdown->morph-if#yes">
-      <span class="material-icons text-black-50" aria-hidden="true" aria-hidden="true">settings</span>
+      <span class="material-icons" aria-hidden="true" aria-hidden="true">settings</span>
       <%= t(".pages.#{search_per_page_key}") %>
     </button>
 
@@ -20,7 +20,7 @@
 
   <div class="dropdown mx-2" data-controller="morph-if">
     <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Filter options" data-action="show.bs.dropdown->morph-if#no hide.bs.dropdown->morph-if#yes">
-      <span class="material-icons text-black-50" aria-hidden="true" aria-hidden="true">filter_alt</span>
+      <span class="material-icons" aria-hidden="true" aria-hidden="true">filter_alt</span>
       <%= t(".filters.#{EpisodeImportFilters.filter_key(params[:filter])}") %>
     </button>
 
