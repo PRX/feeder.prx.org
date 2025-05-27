@@ -1,4 +1,14 @@
 GIT
+  remote: https://github.com/PRX/hyperresource.git
+  revision: 9368a9607e1eae89649589602d4677df0aa53fed
+  branch: master
+  specs:
+    hyperresource (0.9.4)
+      faraday (>= 0.8.6)
+      json
+      uri_template (>= 0.5.2)
+
+GIT
   remote: https://github.com/PRX/roar-rails.git
   revision: bd93d7f75f2fc91fac35137dcf0c2d5783889acc
   branch: feat/rails_7
@@ -194,19 +204,21 @@ GEM
       rubocop (>= 1)
       smart_properties
     erubi (1.13.0)
-    excon (0.94.0)
     factory_bot (6.4.6)
       activesupport (>= 5.0.0)
     factory_bot_rails (6.4.3)
       factory_bot (~> 6.4)
       railties (>= 5.0.0)
-    faraday (0.17.6)
-      multipart-post (>= 1.2, < 3)
+    faraday (2.13.1)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
+    faraday-net_http (3.3.0)
+      net-http
     feedjira (3.2.2)
       loofah (>= 2.3.1)
       sax-machine (>= 1.0)
     fiddle (1.1.2)
-    fuzzyurl (0.2.2)
     globalid (1.2.1)
       activesupport (>= 6.1)
     google-protobuf (4.30.2-aarch64-linux)
@@ -230,11 +242,6 @@ GEM
     hiredis (0.6.3)
     httpclient (2.9.0)
       mutex_m
-    hyperresource (0.9.4)
-      faraday (>= 0.8.6)
-      fuzzyurl (= 0.2.2)
-      json
-      uri_template (>= 0.5.2)
     i18n (1.14.6)
       concurrent-ruby (~> 1.0)
     importmap-rails (1.1.5)
@@ -289,6 +296,7 @@ GEM
     matrix (0.4.2)
     method_source (1.1.0)
     mini_mime (1.1.5)
+    mini_portile2 (2.8.8)
     minitest (5.25.4)
     minitest-around (0.5.0)
       minitest (~> 5.0)
@@ -299,7 +307,6 @@ GEM
     msgpack (1.6.0)
     multi_json (1.15.0)
     multi_xml (0.6.0)
-    multipart-post (2.3.0)
     mutex_m (0.2.0)
     net-http (0.3.1)
       uri
@@ -314,13 +321,8 @@ GEM
       net-protocol
     newrelic_rpm (9.18.0)
     nio4r (2.7.4)
-    nokogiri (1.17.1-aarch64-linux)
-      racc (~> 1.4)
-    nokogiri (1.17.1-arm64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.17.1-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.17.1-x86_64-linux)
+    nokogiri (1.17.1)
+      mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     oauth2 (1.4.11)
       faraday (>= 0.17.3, < 3.0)
@@ -337,7 +339,7 @@ GEM
     parallel (1.26.3)
     paranoia (3.0.0)
       activerecord (>= 6, < 8.1)
-    parser (3.3.7.0)
+    parser (3.3.8.0)
       ast (~> 2.4.1)
       racc
     pg (1.5.4)
@@ -536,7 +538,7 @@ GEM
       nokogiri (~> 1.6)
       rubyzip (>= 1.3.0)
       selenium-webdriver (~> 4.0)
-    webmock (3.18.1)
+    webmock (3.25.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
@@ -581,14 +583,13 @@ DEPENDENCIES
   debug
   dotenv-rails (~> 2.0)
   erb_lint
-  excon
   factory_bot_rails
-  faraday (~> 0.17.4)
+  faraday
   feedjira
   fiddle
   hal_api-rails (~> 1.2.2)
   hiredis (~> 0.6.3)
-  hyperresource
+  hyperresource!
   importmap-rails
   jbuilder
   kaminari
@@ -636,9 +637,6 @@ DEPENDENCIES
   web-console
   webdrivers
   webmock
-
-RUBY VERSION
-   ruby 3.3.7p123
 
 BUNDLED WITH
    2.6.7
