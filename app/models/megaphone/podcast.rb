@@ -104,8 +104,8 @@ module Megaphone
       as_json.with_indifferent_access.slice(*ALL_ATTRIBUTES)
     end
 
-    def episodes
-      Megaphone::Episode.list(self)
+    def episodes(published_only = true)
+      Megaphone::Episode.list(self, published_only)
     end
 
     def public_feed

@@ -67,6 +67,7 @@ class ImportsController < ApplicationController
       :import_metadata,
       :megaphone_podcast_id,
       :override_enclosures,
+      :import_drafts,
       :timings,
       :type,
       :url

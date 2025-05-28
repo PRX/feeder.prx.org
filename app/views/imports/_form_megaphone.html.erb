@@ -7,6 +7,16 @@
 
 <div class="col-12 mt-2">
   <div class="form-check">
+    <%= form.check_box :import_drafts, checked: false %>
+    <div class="d-flex align-items-center">
+      <%= form.label :import_drafts %>
+      <%= help_text t(".help.import_drafts") %>
+    </div>
+  </div>
+</div>
+
+<div class="col-12 mt-2">
+  <div class="form-check">
     <%= form.check_box :override_enclosures, checked: false %>
     <div class="d-flex align-items-center">
       <%= form.label :override_enclosures %>

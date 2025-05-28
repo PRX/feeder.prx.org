@@ -42,11 +42,11 @@ module Megaphone
 
     validates_absence_of :id, on: :create
 
-    def self.list(megaphone_podcast)
+    def self.list(megaphone_podcast, published_only = true)
       episode = Megaphone::Episode.new
       episode.podcast = megaphone_podcast
       episode.config = megaphone_podcast.config
-      episode.list
+      episode.list(published_only)
     end
 
     def self.find_by_episode(megaphone_podcast, feeder_episode)
@@ -111,8 +111,10 @@ module Megaphone
       as_json.with_indifferent_access.slice(*ALL_ATTRIBUTES)
     end
 
-    def list
-      self.api_response = api.get("podcasts/#{podcast.id}/episodes")
+    def list(published_only = true)
+      options = {}
+      options = {draft: false} if published_only
+      self.api_response = api.get("podcasts/#{podcast.id}/episodes", options)
       Megaphone::PagedCollection.new(api, Megaphone::Episode, api_response).all_items
     end
 

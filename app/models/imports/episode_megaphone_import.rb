@@ -10,14 +10,15 @@ class EpisodeMegaphoneImport < EpisodeImport
 
   def import!
     status_started!
-    # set_audio_metadata!
+    set_audio_metadata!
 
     status_importing!
     create_or_update_episode!
-    # set_file_resources!
+    set_file_resources!
 
-    # episode.save!
-    # episode.copy_media
+    episode.save!
+    episode.uncut&.slice_contents!
+    episode.copy_media
 
     status_complete!
   rescue => err
@@ -25,39 +26,62 @@ class EpisodeMegaphoneImport < EpisodeImport
     raise err
   end
 
-  def audio_content_params
-    audio&.fetch("files")&.each_with_index&.map do |url, index|
-      {position: index, original_url: url}
-    end
-  end
-
-  def image_contents_params
-    if (image = entry[:itunes_image])
-      {original_url: image}
-    end
-  end
-
   def set_audio_metadata!
-    audio_files = entry_audio_files(entry)
+    audio_files = megaphone_audio_files(entry)
     update!(audio: audio_files)
   end
 
   def set_file_resources!
-    content = audio_content_params
-    episode.media = content
-    episode.segment_count = content&.size
-    episode.image = image_contents_params
+    if upload_audio?
+      if !episode.uncut.present?
+        ad_breaks = entry_ad_breaks(entry)
+        episode.segment_count = ad_breaks.length + 1
+        episode.uncut = Uncut.new(href: entry_audio_file(entry))
+        if ad_breaks.size > 0
+          episode.uncut.ad_breaks = ad_breaks
+        end
+      end
+    elsif (entry[:expected_adhash] || "").match?("1")
+      # base segment count on the adhash - we don't know how many breaks there are
+      # but we know there is at least one ad break if the adhash contains a "1"
+      episode.segment_count = 2
+    end
+
+    if !episode.image.present? && entry[:image_file].present?
+      episode.image = entry[:image_file]
+    end
+
     episode.save!
-    episode.images.reset
+
     episode.contents.reset
+    episode.images.reset
   end
 
-  def entry_audio_files(entry)
-    if config[:audio] && config[:audio][entry[:entry_id]]
-      {files: config[:audio][entry[:entry_id]] || []}
-    elsif (enclosure = enclosure_url(entry))
-      {files: [enclosure]}
-    end
+  def upload_audio?
+    audio[:files].present? &&
+      audio[:files].length > 1 &&
+      audio[:files].all? { |f| (f || "").start_with?("http") }
+  end
+
+  # eventually replace this with a call to a lamdda to join the audio and id3 files
+  def entry_audio_file(entry)
+    path = upload_path(entry)
+    upload_audio(path)
+    "s3://#{ENV["UPLOAD_BUCKET_NAME"]}/#{path}"
+  end
+
+  # filter out if they are at the start or very end of the file
+  def entry_ad_breaks(entry)
+    return [] if entry[:insertion_points].blank? || entry[:duration].blank?
+    min_s = 1
+    max_s = entry[:duration].to_f - 1.0
+    entry[:insertion_points].select { |num| num > min_s && num < max_s }
+  end
+
+  def megaphone_audio_files(entry)
+    id3_file = entry[:id3_file]
+    audio_file = entry[:audio_file]
+    {files: [id3_file, audio_file]}
   end
 
   def create_or_update_episode!
@@ -75,60 +99,59 @@ class EpisodeMegaphoneImport < EpisodeImport
   end
 
   def update_episode_with_entry!
-    episode.clean_title = entry[:itunes_title]
-    episode.description = entry_description(entry)
-    episode.episode_number = entry[:itunes_episode]
-    episode.published_at = entry[:published]
-    episode.season_number = entry[:itunes_season]
-    episode.subtitle = clean_string(episode_short_desc(entry))
+    episode.original_guid = clean_string(entry[:guid] || entry[:parent_id] || entry[:id])
+    if entry[:draft]
+      episode.released_at = entry[:pubdate]
+    else
+      episode.published_at = entry[:pubdate]
+    end
     episode.title = clean_title(entry[:title])
-
-    episode.author = person(entry[:itunes_author] || entry[:author] || entry[:creator])
-    episode.block = (clean_string(entry[:itunes_block]) == "yes")
-    episode.explicit = explicit(entry[:itunes_explicit])
-    episode.original_guid = clean_string(entry[:entry_id])
-    episode.is_closed_captioned = closed_captioned?(entry)
-    episode.is_perma_link = entry[:is_perma_link]
-    episode.position = entry[:itunes_order]
-    episode.url = episode_url(entry)
-    episode.itunes_type = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
-
-    # categories setter does the work of sanitizing these
-    cats = Array(entry[:categories])
-    keys = (entry[:itunes_keywords] || "").split(",")
-    episode.categories = cats + keys
+    episode.clean_title = clean_title(entry[:clean_title])
+    episode.subtitle = clean_string(entry[:subtitle])
+    episode.description = clean_text(entry[:summary])
+    episode.episode_number = entry[:episode_number]
+    episode.season_number = entry[:season_number]
+    episode.url = entry[:link]
+    episode.author = person(entry[:author])
+    episode.explicit = explicit(entry[:explicit])
+    episode.itunes_type = entry[:episode_type] || "full"
+    episode.categories = ["adfree"] if entry[:ad_free]
 
     episode
   end
 
-  def entry_description(entry)
-    atr = entry_description_attribute(entry)
-    clean_text(entry[atr])
-  end
-
-  def entry_description_attribute(entry)
-    [:content, :description, :itunes_summary, :itunes_subtitle, :title].find { |d| !entry[d].blank? }
-  end
-
-  def title
-    clean_title(entry[:title])
-  end
-
-  def episode_url(entry)
-    url = clean_string(entry[:feedburner_orig_link] || entry[:url] || entry[:link])
-    if /libsyn\.com/.match?(url)
-      url = nil
+  def upload_audio(path)
+    audio_files = audio[:files]
+    return if audio_files.blank? || audio_files.length < 2
+    combined_file = Tempfile.new(["megaphone_combined_audio", ".mp3"])
+    combined_file.binmode
+    audio_files.each do |url|
+      download_file(combined_file, url)
     end
-    url
+    combined_file.rewind
+
+    # upload the combined file to S3
+    put_file(combined_file, path)
+  ensure
+    combined_file&.close
+    combined_file&.unlink
   end
 
-  def closed_captioned?(entry)
-    (clean_string(entry[:itunes_is_closed_captioned]) == "yes")
+  def put_file(file, path)
+    bucket = Aws::S3::Resource.new.bucket(ENV["UPLOAD_BUCKET_NAME"])
+    bucket.object(path).put(body: file)
   end
 
-  def episode_short_desc(item)
-    [item[:itunes_subtitle], item[:description], item[:title]].find do |field|
-      !field.blank? && field.split.length < 50
+  def upload_path(entry)
+    filename = entry[:original_filename] || (entry[:id] + ".mp3")
+    "#{uploads_prefix}/#{Date.today.strftime("%Y-%m-%d")}/#{SecureRandom.uuid}/#{filename}"
+  end
+
+  def uploads_prefix
+    if ENV["UPLOAD_BUCKET_PREFIX"].present?
+      ENV["UPLOAD_BUCKET_PREFIX"]
+    else
+      Rails.env
     end
   end
 end

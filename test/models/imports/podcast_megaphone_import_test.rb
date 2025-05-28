@@ -25,7 +25,7 @@ describe PodcastMegaphoneImport do
 
   it "retrieves podcast from megaphone" do
     importer.megaphone_feed = megaphone_feed
-    mp = importer.find_megaphone_podcast
+    mp = importer.megaphone_podcast
     _(mp).wont_be_nil
     _(mp.id).must_equal "7c8e5a1b-9d21-4f6c-b830-e42a87c3f9d2"
   end

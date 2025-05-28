@@ -1,9 +1,7 @@
 require "feedjira"
 
 class PodcastMegaphoneImport < PodcastImport
-  store :config, accessors: [:megaphone_podcast_id, :megaphone_podcast_json, :override_enclosures, :new_episodes_only], coder: JSON
-
-  has_many :episode_imports, dependent: :destroy, class_name: "EpisodeMegaphoneImport", foreign_key: :podcast_import_id
+  store :config, accessors: [:megaphone_podcast_id, :megaphone_podcast_json, :override_enclosures, :new_episodes_only, :published_only], coder: JSON
 
   attr_writer :megaphone_feed
 
@@ -12,6 +10,7 @@ class PodcastMegaphoneImport < PodcastImport
     @megaphone_feed = nil
     self.new_episodes_only ||= false
     self.override_enclosures ||= false
+    self.published_only ||= false
     super
   end
 
@@ -102,7 +101,7 @@ class PodcastMegaphoneImport < PodcastImport
 
   # returns a paged collection of episodes
   def megaphone_episodes
-    @megaphone_episodes ||= megaphone_podcast.episodes
+    @megaphone_episodes ||= megaphone_podcast.episodes(published_only)
   end
 
   def create_or_update_episode_imports!
@@ -127,10 +126,10 @@ class PodcastMegaphoneImport < PodcastImport
       if new_episodes_only && existing_guids.include?(guid)
         next
       elsif guids.include?(guid)
-        episode_imports.create!(guid: guid, entry: entry_hash, status: :duplicate)
+        episode_imports.create!(guid: guid, entry: entry_hash, status: :duplicate, type: "EpisodeMegaphoneImport")
       else
         guids << guid
-        ei = existing[guid] || episode_imports.build
+        ei = existing[guid] || episode_imports.build(type: "EpisodeMegaphoneImport")
         ei.guid = guid
         ei.entry = entry_hash
         ei.save!
@@ -145,5 +144,13 @@ class PodcastMegaphoneImport < PodcastImport
 
   def import_existing=(val)
     self.new_episodes_only = !ActiveModel::Type::Boolean.new.cast(val)
+  end
+
+  def import_drafts
+    !published_only
+  end
+
+  def import_drafts=(val)
+    self.published_only = !ActiveModel::Type::Boolean.new.cast(val)
   end
 end
