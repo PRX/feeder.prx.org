@@ -1,4 +1,6 @@
 require "say_when"
+require "say_when/processor/active_job_strategy"
+require "say_when/storage/active_record_strategy"
 
 # Specify a logger for SayWhen
 SayWhen.logger = Rails.logger
