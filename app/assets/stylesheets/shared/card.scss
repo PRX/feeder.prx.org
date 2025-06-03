@@ -58,6 +58,7 @@
 
 .prx-bg-light {
   background-color: $light;
+  color: $navy;
 }
 
 @include color-mode(dark) {
@@ -84,5 +85,6 @@
 
   .prx-bg-light {
     background-color: $body-bg-dark;
+    color: $white;
   }
 }
