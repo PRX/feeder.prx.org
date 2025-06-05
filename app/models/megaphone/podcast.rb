@@ -35,6 +35,23 @@ module Megaphone
 
     validates_absence_of :id, on: :create
 
+    def self.list(feed)
+      podcast = Megaphone::Podcast.new
+      podcast.private_feed = feed
+      podcast.config = feed.config
+      podcast.list
+    end
+
+    def self.find_megaphone_podcast(feed, mpid)
+      podcast = Megaphone::Podcast.new
+      podcast.private_feed = feed
+      podcast.config = feed.config
+      podcast.find_by_megaphone_id(mpid)
+    end
+
+    # This is a bit of a hack, but we need to be able to find the megaphone podcast
+    # by the private feed, so we can update it.
+
     def self.find_by_feed(feed)
       podcast = new_from_feed(feed)
       sync_log = podcast.public_feed.sync_log(:megaphone)
@@ -79,6 +96,18 @@ module Megaphone
       }
     end
 
+    def initialize(attributes = {})
+      super(attributes.slice(*ALL_ATTRIBUTES))
+    end
+
+    def to_h
+      as_json.with_indifferent_access.slice(*ALL_ATTRIBUTES)
+    end
+
+    def episodes(published_only = true)
+      Megaphone::Episode.list(self, published_only)
+    end
+
     def public_feed
       private_feed.podcast&.public_feed
     end
@@ -94,7 +123,7 @@ module Megaphone
 
     def list
       self.api_response = api.get("podcasts")
-      Megaphone::PagedCollection.new(Megaphone::Podcast, api_response)
+      Megaphone::PagedCollection.new(api, Megaphone::Podcast, api_response).all_items
     end
 
     def find_by_guid(guid = podcast.guid)
