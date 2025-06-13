@@ -7,6 +7,8 @@
     <%= link_to podcast_import_path(import.podcast_id, import), data: {turbo_frame: "_top"} do %>
       <% if import.is_a?(PodcastTimingsImport) %>
         <%= import.file_name %>
+      <% elsif import.is_a?(PodcastMegaphoneImport) %>
+        <%= import.megaphone_podcast_id %>
       <% else %>
         <%= import.url %>
       <% end %>
