@@ -1,8 +1,6 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.3.6"
-
 # core
 gem "activerecord-session_store"
 gem "bootsnap", require: false
@@ -16,19 +14,20 @@ gem "hiredis", "~> 0.6.3"
 gem "redis", "~> 5.0"
 
 # authorization
+gem "administrate", "~> 1.0.0.beta3"
 gem "oauth2", "~> 1.4.7"
-gem "prx_auth"
-gem "prx_auth-rails", "~> 4.2.1"
+gem "prx_auth-rails", "~> 5.1.0"
 gem "pundit", "~> 2.3.0"
 gem "rack-cors"
 
 # html views
 gem "active_link_to"
-gem "bootstrap", "~> 5.2.2"
+gem "bootstrap", "~> 5"
+gem "dartsass-rails", "~> 0.5.1"
 gem "importmap-rails"
 gem "kaminari"
 gem "local_time"
-gem "sprockets-rails"
+gem "propshaft"
 gem "stimulus-rails"
 gem "turbo-rails"
 gem "simple_calendar", "~> 2.4"
@@ -68,10 +67,10 @@ gem "aws-sdk-sns"
 gem "aws-sdk-sqs"
 gem "aws-sdk-s3"
 gem "csv"
-gem "excon"
-gem "faraday", "~> 0.17.4"
+gem "faraday"
+gem "link-header-parser", "~> 6.0", ">= 6.0.1"
 gem "fiddle"
-gem "hyperresource"
+gem "hyperresource", github: "PRX/hyperresource", branch: "master"
 gem "mutex_m"
 gem "net-http"
 gem "parallel"

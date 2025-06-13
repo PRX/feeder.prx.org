@@ -1,0 +1,34 @@
+<div class="col-12 mb-3 d-flex align-items-top">
+  <div class="d-flex align-items-center flex-grow-1">
+    <div class="d-flex align-items-center">
+      <span>
+        <%= subscribe_link_platform_label(form.object) %>
+      </span>
+      <div class="p-0 ms-2 d-flex align-items-center">
+        <%= image_tag("icons/#{form.object.icon}.svg", class: "subscribe-icon") %>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex align-items-center">
+    <div class="form-floating input-group flex-grow-1">
+      <%= form.text_field :external_id %>
+      <%= form.label :external_id, subscribe_link_id_label(form.object) %>
+      <%= field_help_text subscribe_link_help(form.object) %>
+    </div>
+  </div>
+
+  <% if policy(form.object).destroy? %>
+    <% if form.object.persisted? %>
+      <button type="button" class="btn btn-icon" data-action="subscribe-links#removeLink">
+        <span class="material-icons">delete</span>
+      </button>
+      <%= form.text_field :_destroy, value: false, class: "d-none" %>
+    <% else %>
+      <button type="button" class="btn btn-icon" data-action="subscribe-links#nukeLink" data-platform="<%= form.object.platform %>">
+        <span class="material-icons">delete</span>
+      </button>
+    <% end %>
+  <% end %>
+
+  <%= form.hidden_field :platform %>
+</div>

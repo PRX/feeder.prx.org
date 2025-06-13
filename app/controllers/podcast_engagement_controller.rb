@@ -11,6 +11,7 @@ class PodcastEngagementController < ApplicationController
     respond_to do |format|
       if @podcast.save
         @podcast.publish!
+        @podcast.copy_subscribe_links
         format.html { redirect_to podcast_engagement_path(@podcast), notice: t(".notice") }
       else
         flash.now[:error] = t(".error")
@@ -37,7 +38,8 @@ class PodcastEngagementController < ApplicationController
     nilify params.fetch(:podcast, {}).permit(
       :lock_version,
       :donation_url,
-      :payment_pointer
+      :payment_pointer,
+      subscribe_links_attributes: %i[id enabled external_id platform _destroy]
     )
   end
 end

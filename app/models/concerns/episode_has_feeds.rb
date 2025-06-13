@@ -23,9 +23,7 @@ module EpisodeHasFeeds
 
   def set_default_feeds
     if feeds.blank?
-      self.feeds = (podcast&.feeds || []).filter_map do |feed|
-        feed if feed.default? || feed.apple?
-      end
+      self.feeds = (podcast&.feeds || []).select { |feed| feed.default? || feed.integration_type }
     end
   end
 
@@ -44,8 +42,6 @@ module EpisodeHasFeeds
   end
 
   def feed_slugs=(slugs)
-    self.feeds = (podcast&.feeds || []).filter_map do |feed|
-      feed if slugs.try(:include?, feed.slug || "default")
-    end
+    self.feeds = (podcast&.feeds || []).select { |feed| slugs.try(:include?, feed.slug || "default") }
   end
 end

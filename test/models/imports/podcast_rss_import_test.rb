@@ -45,6 +45,12 @@ describe PodcastRssImport do
     _ { importer.feed }.must_raise(RuntimeError)
   end
 
+  it "fails when the feed is locked" do
+    importer.feed_rss = test_file("/fixtures/transistor_locked.xml")
+    assert !importer.valid?
+    _(importer.errors.messages[:url]).must_equal ["podcast locked"]
+  end
+
   it "updates a podcast" do
     importer.feed_rss = test_file("/fixtures/transistor_two.xml")
     importer.create_or_update_podcast!
@@ -57,6 +63,9 @@ describe PodcastRssImport do
         " with many episodes hosted by key scientists" \
         " at the forefront of discovery."
 
+    _(importer.podcast.guid).must_equal "notarealguid-ohno-itsnot"
+    _(importer.podcast.donation_url).must_equal "https://www.prx.org/support/transistor"
+
     _(importer.podcast.url).must_equal "http://feeds.prx.org/transistor_stem"
     _(importer.podcast.new_feed_url).must_equal "http://feeds.prx.org/transistor_stem"
 
@@ -66,6 +75,11 @@ describe PodcastRssImport do
     _(importer.podcast.owner_email).must_equal "prxwpadmin@prx.org"
     _(importer.podcast.managing_editor_name).must_equal "PRX"
     _(importer.podcast.managing_editor_email).must_equal "prxwpadmin@prx.org"
+
+    # lock for some minutes, but not forever (in case there are 0 episodes)
+    _(importer.podcast.locked).must_equal true
+    _(importer.podcast.locked_until).must_be :>, 5.minutes.from_now
+    _(importer.podcast.locked_until).must_be :<, 30.minutes.from_now
 
     # categories, itunes:keywords and media:keywords are combined
     _(importer.podcast.categories).must_equal ["Some Category", "keyword1", "keyword two", "media one"]

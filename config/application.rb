@@ -56,7 +56,7 @@ module Feeder
 
     # Use redis if the env vars are present
     if ENV["REDIS_HOST"].present? && ENV["REDIS_PORT"].present?
-      config.cache_store = [:redis_cache_store, {url: "redis://#{ENV["REDIS_HOST"]}:#{ENV["REDIS_PORT"]}/1"}]
+      config.cache_store = [:redis_cache_store, {host: ENV["REDIS_HOST"], port: ENV["REDIS_PORT"], ssl: ENV["REDIS_SSL"].present?}]
       config.session_store :cache_store, key: "_feeder_session"
     else
       require "feeder_active_record_store"
@@ -103,7 +103,7 @@ module Feeder
     end
 
     config.representer.represented_formats = [:hal, :json]
-    config.representer.default_url_options = {host: (ENV["FEEDER_HOST"] || "feeder.prx.org")}
+    config.representer.default_url_options = {host: ENV["FEEDER_HOST"] || "feeder.prx.org"}
 
     # Logging
     module ActiveSupport::TaggedLogging::Formatter
@@ -152,5 +152,9 @@ module Feeder
     config.log_tags = [:request_id]
     config.active_record.schema_format = :ruby
     config.active_record.attributes_for_inspect = :all
+
+    config.active_record.encryption.primary_key = ENV["ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY"]
+    config.active_record.encryption.deterministic_key = ENV["ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY"]
+    config.active_record.encryption.key_derivation_salt = ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"]
   end
 end

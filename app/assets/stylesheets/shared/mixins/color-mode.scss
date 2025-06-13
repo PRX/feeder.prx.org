@@ -1,0 +1,11 @@
+@mixin color-mode($mode) {
+  @if $mode == dark {
+    @media (prefers-color-scheme: dark) {
+      @content;
+    }
+  } @else if $mode == light {
+    @media (prefers-color-scheme: light) {
+      @content;
+    }
+  }
+}

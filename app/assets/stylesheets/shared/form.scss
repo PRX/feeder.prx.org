@@ -73,6 +73,24 @@
   }
 }
 
+.input-group-text {
+  background: $light-blue-200;
+}
+
+@include color-mode(dark) {
+  .prx-input-group {
+    border-color: $border-color-dark;
+  }
+
+  a.input-group-text {
+    color: $link-color-dark;
+
+    &:hover {
+      color: $link-hover-color-dark;
+    }
+  }
+}
+
 label[required="required"],
 label[required="true"] {
   &::after {
@@ -94,7 +112,7 @@ label[required="true"] {
     z-index: 6;
 
     &.is-invalid {
-      color: $form-feedback-invalid-color;
+      color: $form-feedback-invalid-color !important;
     }
   }
 
@@ -197,6 +215,36 @@ label[required="true"] {
   }
 }
 
+// fake file-uploader UI comes after the file input
+.prx-file-upload {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+}
+input[type="file"] {
+  &:focus ~ .prx-file-upload {
+    box-shadow: $input-focus-box-shadow;
+  }
+  &.is-changed ~ .prx-file-upload {
+    border-color: $orange;
+  }
+  &.is-changed:focus ~ .prx-file-upload {
+    box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($orange, $input-btn-focus-color-opacity);
+  }
+  &.is-invalid ~ .prx-file-upload {
+    border-color: $red;
+  }
+  &.is-invalid:focus ~ .prx-file-upload {
+    box-shadow: 0 0 $input-btn-focus-blur $input-btn-focus-width rgba($red, $input-btn-focus-color-opacity);
+  }
+
+  // keep label floated
+  ~ label {
+    transform: $form-floating-label-transform !important;
+  }
+}
+
 // slightly different layout for checkboxes with help text
 .form-check {
   .form-check-input.is-changed:not(.is-invalid) {
@@ -251,6 +299,10 @@ label[required="true"] {
   .ss-multi-selected .ss-add {
     margin-top: 12px;
     margin-right: 8px;
+  }
+
+  &.form-select.is-invalid:not([multiple]):not([size]) {
+    background-repeat: no-repeat;
   }
 }
 
@@ -382,7 +434,6 @@ small {
 
 .form-check-label,
 .form-check > label {
-  color: black;
   white-space: nowrap;
 }
 
@@ -450,4 +501,182 @@ small {
 .input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating) {
   border-top-right-radius: $input-border-radius;
   border-bottom-right-radius: $input-border-radius;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@include color-mode(dark) {
+  .form-text {
+    color: $gray-300;
+  }
+
+  .form-control {
+    background-color: $gray-900;
+    border-color: $border-color-dark;
+    color: $gray-400;
+
+    &:focus {
+      box-shadow: $input-focus-box-shadow;
+      background-color: $gray-900;
+      border-color: $primary;
+      color: $gray-400;
+    }
+
+    &.is-invalid {
+      border-color: $red;
+    }
+
+    &[disabled="disabled"] {
+      background-color: $gray-800;
+      border-color: $border-color-dark;
+      color: $gray-500;
+
+      & ~ label:before,
+      & ~ label:after {
+        background: $gray-800;
+      }
+    }
+  }
+
+  .form-floating {
+    > label {
+      color: $light-blue-300;
+    }
+
+    > label::before,
+    > label::after,
+    :focus ~ label::after,
+    :not(:placeholder-shown) ~ label::after,
+    .form-control-plaintext ~ label::after,
+    .form-select ~ label::after {
+      background-color: $gray-900;
+    }
+
+    .ss-disabled ~ label::before {
+      background: $body-bg-dark;
+    }
+
+    .form-control {
+      background-color: $gray-900;
+      border-color: $border-color-dark;
+      color: $gray-400;
+
+      &.is-invalid {
+        border-color: $red;
+      }
+
+      &[disabled="disabled"] {
+        background-color: $gray-800;
+        border-color: $border-color-dark;
+        color: $gray-500;
+
+        & ~ label:before,
+        & ~ label:after {
+          background: $gray-800;
+        }
+      }
+    }
+
+    .form-select {
+      background: $gray-900;
+      border-color: $border-color-dark;
+      color: $gray-400;
+    }
+  }
+
+  .ss-main {
+    &.form-select {
+      background: $gray-900;
+      border-color: $border-color-dark;
+
+      .ss-deselect svg path,
+      .ss-arrow path {
+        stroke: $gray-400;
+        visibility: visible;
+      }
+    }
+  }
+
+  .ss-content {
+    &.form-select {
+      background: $gray-900;
+      border-color: $border-color-dark;
+    }
+    .ss-list {
+      background: $gray-900;
+      border-color: $border-color-dark;
+
+      .ss-deselect,
+      .ss-option {
+        color: $white;
+      }
+    }
+    .ss-option {
+      background: $gray-900;
+      color: $gray-400;
+      border-color: $border-color-dark;
+    }
+    .ss-search {
+      input {
+        background: $gray-900;
+        color: $gray-400;
+        border-color: $border-color-dark;
+      }
+    }
+  }
+
+  .ss-single-selected .ss-deselect {
+    color: transparent;
+
+    &::before,
+    &::after {
+      background: $gray-900;
+    }
+  }
+
+  .ss-values {
+    color: $gray-400;
+  }
+
+  .input-group-text,
+  .prx-input-group-text {
+    background: $gray-900;
+    color: $gray-400;
+    border-color: $border-color-dark;
+
+    a:hover {
+      background-color: $primary;
+
+      .material-icons {
+        color: $gray-400;
+      }
+    }
+  }
+
+  .flatpickr-day.selected {
+    color: $black;
+  }
+
+  .form-check-input {
+    border-color: $border-color-dark;
+  }
+
+  .list-group {
+    --#{$prefix}list-group-color: #{($white)};
+    --#{$prefix}list-group-bg: #{($navy-900)};
+    --#{$prefix}list-group-action-color: #{($gray-200)};
+    --#{$prefix}list-group-action-hover-color: #{($gray-200)};
+    --#{$prefix}list-group-action-hover-bg: #{($navy-900)};
+    --#{$prefix}list-group-action-active-color: #{($gray-200)};
+    --#{$prefix}list-group-action-active-bg: #{($navy-900)};
+    --#{$prefix}list-group-border-color: #{($border-color-dark)};
+  }
 }

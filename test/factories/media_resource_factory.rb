@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :media_resource do
-    association :episode, factory: :episode, prx_uri: "/api/v1/stories/80548"
+    association :episode, factory: :episode
     sequence(:guid) { |n| "ca047dce-9df5-4132-a04b-31d24c7c55a#{n}" }
 
     mime_type { "audio/mpeg" }
@@ -29,6 +29,10 @@ FactoryBot.define do
     factory :uncut, class: Uncut do
       segmentation { [[1.23, 4.56]] }
       task_count { 0 }
+    end
+
+    factory :external_media_resource, class: ExternalMediaResource do
+      original_url { "https://prx.org/audio.mp3" }
     end
   end
 end

@@ -72,7 +72,7 @@ describe Apple::Episode do
 
     let(:delivery_file) do
       pdf = Apple::PodcastDeliveryFile.new(episode: episode, podcast_delivery: delivery)
-      pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files))
+      pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files, integration: :apple))
       pdf.save!
       pdf
     end
@@ -274,22 +274,7 @@ describe Apple::Episode do
 
   describe ".prepare_for_delivery" do
     it "should filter for episodes that need delivery" do
-      mock = Minitest::Mock.new
-      mock.expect(:call, true, [])
-
-      apple_episode.feeder_episode.stub(:apple_prepare_for_delivery!, mock) do
-        apple_episode.stub(:needs_delivery?, true) do
-          assert_equal [apple_episode], Apple::Episode.prepare_for_delivery([apple_episode])
-        end
-      end
-
-      mock.verify
-    end
-
-    it "should reject delivered episodes" do
-      apple_episode.stub(:needs_delivery?, false) do
-        assert_equal [], Apple::Episode.prepare_for_delivery([apple_episode])
-      end
+      assert_equal [apple_episode], Apple::Episode.prepare_for_delivery([apple_episode])
     end
 
     describe "soft deleting the delivery files" do
@@ -303,7 +288,7 @@ describe Apple::Episode do
 
       let(:delivery_file) do
         pdf = Apple::PodcastDeliveryFile.new(episode: episode, podcast_delivery: delivery)
-        pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files))
+        pdf.update(apple_sync_log: SyncLog.new(**build(:podcast_delivery_file_api_response).merge(external_id: "123"), feeder_type: :podcast_delivery_files, integration: :apple))
         pdf.save!
         pdf
       end

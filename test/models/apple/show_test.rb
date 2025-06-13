@@ -11,6 +11,8 @@ describe Apple::Show do
   let(:apple_show) { Apple::Show.connect_existing("123", apple_config) }
 
   before do
+    private_feed.set_default_episodes
+
     stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200")
       .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
   end
@@ -32,6 +34,8 @@ describe Apple::Show do
       apple_show.instance_variable_set(:@episodes, "foo")
       apple_show.instance_variable_set(:@episode_ids, "foo")
       apple_show.instance_variable_set(:@find_episode, "foo")
+      apple_show.instance_variable_set(:@apple_id_to_apple_json, "foo")
+      apple_show.instance_variable_set(:@guid_to_apple_json, "foo")
       apple_show.reload
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
       assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
@@ -39,6 +43,8 @@ describe Apple::Show do
       assert_nil apple_show.instance_variable_get(:@episodes)
       assert_nil apple_show.instance_variable_get(:@episode_ids)
       assert_nil apple_show.instance_variable_get(:@find_episode)
+      assert_nil apple_show.instance_variable_get(:@apple_id_to_apple_json)
+      assert_nil apple_show.instance_variable_get(:@guid_to_apple_json)
     end
   end
 
@@ -274,6 +280,32 @@ describe Apple::Show do
 
       assert_raise(RuntimeError) do
         apple_show.feed_published_url
+      end
+    end
+  end
+
+  describe "#guid_to_apple_json" do
+    it "should memoize the guid_to_apple_json without calling apple_episode_json" do
+      data = {"foo" => "bar"}
+
+      apple_show.instance_variable_set(:@guid_to_apple_json, data)
+
+      mock = Object.new
+      def mock.call(*)
+        raise "apple_episode_json should not have been called!"
+      end
+
+      apple_show.stub(:apple_episode_json, mock) do
+        assert_equal "bar", apple_show.guid_to_apple_json("foo")
+      end
+    end
+
+    it "falls back to apple_episode_json when not memoized" do
+      apple_show.reload
+
+      data = {"attributes" => {"guid" => "foo", "data" => "frob"}}
+      apple_show.stub(:apple_episode_json, [data]) do
+        assert_equal apple_show.guid_to_apple_json("foo"), {"attributes" => {"guid" => "foo", "data" => "frob"}}
       end
     end
   end

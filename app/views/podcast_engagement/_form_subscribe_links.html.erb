@@ -1,0 +1,51 @@
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <h2 class="card-title h5"><%= t(".title") %></h2>
+    </div>
+
+    <div class="card-body">
+      <p><%= t(".description") %></p>
+
+      <% if podcast.errors.messages[:podcast].present? %>
+        <div class="alert alert-danger">
+          <%= podcast.errors.messages[:podcast].join(", ") %>
+        </div>
+      <% end %>
+
+      <%= form.fields_for :subscribe_links do |fields| %>
+        <%= render "form_subscribe_link", form: fields %>
+      <% end %>
+
+      <% SubscribeLink::PLATFORMS.each do |platform| %>
+        <template data-subscribe-links-target="template" data-platform="<%= platform %>">
+          <%= form.fields_for :subscribe_links, podcast.subscribe_links.new(platform: platform, external_id: subscribe_link_external_id(podcast, platform)), child_index: "NEW_RECORD" do |fields| %>
+            <%= render "form_subscribe_link", form: fields %>
+          <% end %>
+        </template>
+      <% end %>
+
+      <% if policy(podcast).update? %>
+        <div class="mb-3">
+          <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#dropdownOptions" aria-expanded="false" aria-controls="dropdownOptions">
+            <%= t(".add") %>
+          </button>
+        </div>
+        <div id="dropdownOptions" class="collapse" aria-labelledby="optionsHeader">
+          <div class="card card-body p-0">
+            <ul class="list-group list-group-flush">
+              <% subscribe_link_options(podcast).each do |option| %>
+                <button class="list-group-item list-group-item-action d-flex align-items-center" type="button" data-action="subscribe-links#addLink" data-platform="<%= option[:platform] %>" data-subscribe-links-target="option">
+                  <%= t("helpers.label.podcast.subscribe_link.#{option[:platform]}") %>
+                  <div class="p-0 ms-2 d-flex align-items-center">
+                    <%= image_tag("icons/#{option[:icon]}.svg", class: "subscribe-icon") %>
+                  </div>
+                </button>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

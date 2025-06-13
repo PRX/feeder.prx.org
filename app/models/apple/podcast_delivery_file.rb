@@ -11,7 +11,7 @@ module Apple
 
     default_scope { includes(:apple_sync_log) }
 
-    has_one :apple_sync_log, -> { podcast_delivery_files }, foreign_key: :feeder_id, class_name: "SyncLog", autosave: true, dependent: :delete
+    has_one :apple_sync_log, -> { podcast_delivery_files.apple }, foreign_key: :feeder_id, class_name: "SyncLog", autosave: true, dependent: :delete
     belongs_to :podcast_delivery
     has_one :podcast_container, through: :podcast_delivery
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
@@ -29,7 +29,7 @@ module Apple
     # Apple: ProcessingState
     processing_state = %w[PROCESSING VALIDATED VALIDATION_FAILED DUPLICATE REPLACED COMPLETED].freeze
     processing_state.map do |state|
-      define_method("processed_#{state.downcase}?") do
+      define_method(:"processed_#{state.downcase}?") do
         return false unless asset_processing_state.present?
         asset_processing_state["state"] == state
       end
@@ -38,7 +38,7 @@ module Apple
     # Apple: DeliveryState
     delivery_state = %W[AWAITING_UPLOAD UPLOAD_COMPLETE COMPLETE FAILED].freeze
     delivery_state.map do |state|
-      define_method("delivery_#{state.downcase}?") do
+      define_method(:"delivery_#{state.downcase}?") do
         return false unless asset_delivery_state.present?
         asset_delivery_state["state"] == state
       end
@@ -58,7 +58,7 @@ module Apple
         # Check the podcast delivery status to see if it's complete
         finished = updated_pdfs.group_by { |pdf| pdf.processed? || (pdf.asset_processing_state.nil? && pdf.podcast_delivery.completed?) }
         (finished[true] || []).map(&:save!)
-        (finished[false] || [])
+        finished[false] || []
       end
     end
 
@@ -69,7 +69,7 @@ module Apple
 
         finished = updated_pdfs.group_by(&:delivered?)
         (finished[true] || []).map(&:save!)
-        (finished[false] || [])
+        finished[false] || []
       end
     end
 
@@ -94,7 +94,7 @@ module Apple
       join_on(PODCAST_DELIVERY_FILE_ID_ATTR, pdfs, episode_bridge_results).each do |(pdf, row)|
         external_id = row.dig("api_response", "val", "data", "id")
         pdf.update!(api_marked_as_uploaded: true)
-        SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
+        SyncLog.log!(integration: :apple, feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
       end
 
       api.raise_bridge_api_error(errs) if errs.present?
@@ -287,7 +287,7 @@ module Apple
          feeder_episode_id: pdf.episode.id,
          podcast_delivery_file_id: pdf.podcast_delivery.id})
 
-      SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
+      SyncLog.log!(integration: :apple, feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
 
       # Flush the cache on the podcast container
       podcast_delivery.delivery_files.reset

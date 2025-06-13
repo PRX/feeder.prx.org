@@ -38,10 +38,10 @@ describe Apple::Publisher do
 
     it "should only return episodes that have an apple state" do
       episode.stub(:apple_new?, true) do
-        assert_equal apple_publisher.only_episodes_with_apple_state([episode]), []
+        assert_equal apple_publisher.only_episodes_with_integration_state([episode]), []
       end
       episode.stub(:apple_new?, false) do
-        assert_equal apple_publisher.only_episodes_with_apple_state([episode]), [episode]
+        assert_equal apple_publisher.only_episodes_with_integration_state([episode]), [episode]
       end
     end
   end
@@ -413,6 +413,7 @@ describe Apple::Publisher do
     it "should increment asset wait count for each episode" do
       episodes.each do |ep|
         assert_equal 0, ep.apple_episode_delivery_status.asset_processing_attempts
+        ep.feeder_episode.apple_mark_as_uploaded!
       end
 
       apple_publisher.increment_asset_wait!(episodes)
@@ -422,15 +423,12 @@ describe Apple::Publisher do
       end
     end
 
-    it "should only increment the episodes that are still waiting" do
+    it "only increments the episodes that are still waiting" do
       assert 1, episode1.podcast_delivery_files.length
       assert 1, episode2.podcast_delivery_files.length
 
-      episode2.podcast_delivery_files.first.stub(:api_marked_as_uploaded?, false) do
-        episode1.podcast_delivery_files.first.stub(:api_marked_as_uploaded?, true) do
-          apple_publisher.increment_asset_wait!(episodes)
-        end
-      end
+      episode1.feeder_episode.apple_mark_as_uploaded!
+      apple_publisher.increment_asset_wait!(episodes)
 
       assert_equal [1, 0], [episode1, episode2].map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }
     end
@@ -487,7 +485,7 @@ describe Apple::Publisher do
     let(:asset_delivery_state) { "COMPLETE" }
 
     let(:pdf_resp_container) { build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: asset_processing_state) }
-    let(:apple_id) { {external_id: "123"} }
+    let(:apple_id) { {external_id: "123", integration: :apple} }
 
     let(:podcast_container) { create(:apple_podcast_container, episode: apple_episode.feeder_episode) }
     let(:podcast_delivery) { Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: apple_episode.feeder_episode) }
@@ -525,6 +523,189 @@ describe Apple::Publisher do
 
         mock.verify
       end
+    end
+  end
+
+  describe "#mark_as_uploaded!" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episodes) { [episode1, episode2] }
+
+    it "marks episodes as uploaded" do
+      episodes.each do |ep|
+        refute ep.delivery_status.uploaded
+      end
+
+      apple_publisher.mark_as_uploaded!(episodes)
+
+      episodes.each do |ep|
+        assert ep.delivery_status.uploaded
+      end
+    end
+  end
+
+  describe "#mark_as_delivered!" do
+    let(:episode1) { build(:apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:apple_episode, show: apple_publisher.show) }
+    let(:episodes) { [episode1, episode2] }
+
+    it "marks episodes as delivered" do
+      episodes.each do |ep|
+        refute ep.delivery_status.delivered
+      end
+
+      apple_publisher.mark_as_delivered!(episodes)
+
+      episodes.each do |ep|
+        assert ep.delivery_status.delivered
+      end
+    end
+  end
+
+  describe "#update_audio_container_reference!" do
+    let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show, apple_hosted_audio_asset_container_id: nil) }
+
+    it "updates container references for episodes" do
+      assert episode.has_unlinked_container?
+
+      mock_result = episode.apple_sync_log.api_response.deep_dup
+      mock_result["api_response"]["val"]["data"]["attributes"]["appleHostedAudioAssetContainerId"] = "456"
+
+      apple_publisher.api.stub(:bridge_remote_and_retry, [[mock_result], []]) do
+        apple_publisher.update_audio_container_reference!([episode])
+      end
+
+      refute episode.has_unlinked_container?
+    end
+  end
+
+  describe "#deliver_and_publish!" do
+    let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+
+    it "skips upload for already uploaded episodes" do
+      episode.feeder_episode.apple_mark_as_uploaded!
+
+      mock = Minitest::Mock.new
+      episode.feeder_episode.stub(:apple_prepare_for_delivery!, ->(*) { raise "Should not be called" }) do
+        mock.expect(:call, nil, [[]])
+        apple_publisher.stub(:upload_media!, mock) do
+          apple_publisher.stub(:process_and_deliver!, ->(*) {}) do
+            apple_publisher.deliver_and_publish!([episode])
+          end
+        end
+      end
+
+      assert mock.verify
+    end
+
+    it "processes uploads for non-uploaded episodes" do
+      refute episode.delivery_status.uploaded
+
+      mock = Minitest::Mock.new
+      mock.expect(:call, nil, [[episode]])
+      apple_publisher.stub(:upload_media!, mock) do
+        apple_publisher.stub(:process_and_deliver!, ->(*) {}) do
+          apple_publisher.deliver_and_publish!([episode])
+        end
+      end
+
+      mock.verify
+    end
+
+    it "skips delivery for already delivered episodes but still publishes them" do
+      episode.apple_mark_as_uploaded!
+      episode.apple_mark_as_delivered!
+
+      publish_mock = Minitest::Mock.new
+      publish_mock.expect(:call, nil, [[episode]])
+
+      upload_media_mock = Minitest::Mock.new
+      # Called with empty array
+      upload_media_mock.expect(:call, nil, [[]])
+
+      process_and_deliver_mock = Minitest::Mock.new
+      # Called with empty array
+      process_and_deliver_mock.expect(:call, nil, [[]])
+
+      apple_publisher.stub(:upload_media!, upload_media_mock) do
+        apple_publisher.stub(:process_and_deliver!, process_and_deliver_mock) do
+          apple_publisher.stub(:publish_drafting!, publish_mock) do
+            apple_publisher.deliver_and_publish!([episode])
+          end
+        end
+      end
+
+      assert publish_mock.verify
+      assert upload_media_mock.verify
+      assert process_and_deliver_mock.verify
+    end
+
+    it "calls delivery and publishing for episodes needing delivery" do
+      episode.feeder_episode.apple_mark_as_uploaded!
+      episode.feeder_episode.apple_mark_as_not_delivered!
+
+      # Both delivery and publishing should be called
+      publish_mock = Minitest::Mock.new
+      publish_mock.expect(:call, nil, [[episode]])
+
+      delivery_mock = Minitest::Mock.new
+      delivery_mock.expect(:call, nil, [[episode]])
+
+      apple_publisher.stub(:upload_media!, ->(*) {}) do
+        apple_publisher.stub(:process_and_deliver!, delivery_mock) do
+          apple_publisher.stub(:publish_drafting!, publish_mock) do
+            apple_publisher.deliver_and_publish!([episode])
+          end
+        end
+      end
+
+      assert publish_mock.verify
+      assert delivery_mock.verify
+    end
+  end
+
+  describe "#process_and_deliver!" do
+    let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+
+    it "marks episodes as delivered and resets asset wait, but does not publish" do
+      # Setup mocks to verify method calls
+      increment_mock = Minitest::Mock.new
+      increment_mock.expect(:call, nil, [[episode]])
+
+      wait_upload_mock = Minitest::Mock.new
+      wait_upload_mock.expect(:call, nil, [[episode]])
+
+      wait_asset_mock = Minitest::Mock.new
+      wait_asset_mock.expect(:call, nil, [[episode]])
+
+      mark_delivered_mock = Minitest::Mock.new
+      mark_delivered_mock.expect(:call, nil, [[episode]])
+
+      reset_mock = Minitest::Mock.new
+      reset_mock.expect(:call, nil, [[episode]])
+
+      # Set up method stubs
+      apple_publisher.stub(:increment_asset_wait!, increment_mock) do
+        apple_publisher.stub(:wait_for_upload_processing, wait_upload_mock) do
+          apple_publisher.stub(:wait_for_asset_state, wait_asset_mock) do
+            apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
+              apple_publisher.stub(:reset_asset_wait!, reset_mock) do
+                # This should raise an error if publish_drafting! is called
+                apple_publisher.stub(:publish_drafting!, ->(*) { raise "publish_drafting! should not be called!" }) do
+                  apple_publisher.process_and_deliver!([episode])
+                end
+              end
+            end
+          end
+        end
+      end
+
+      # Verify all expected methods were called
+      assert increment_mock.verify
+      assert wait_upload_mock.verify
+      assert wait_asset_mock.verify
+      assert mark_delivered_mock.verify
+      assert reset_mock.verify
     end
   end
 end

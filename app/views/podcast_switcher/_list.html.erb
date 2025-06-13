@@ -2,7 +2,7 @@
   <% if @podcast_switcher_podcasts.present? %>
     <%= render partial: "podcast_switcher/podcast", collection: @podcast_switcher_podcasts, cached: true %>
   <% else %>
-    <li class="text-center text-secondary">
+    <li class="text-center ">
       <%= t("podcast_switcher.dropdown.empty") %>
     </li>
   <% end %>
@@ -10,7 +10,7 @@
   <li><hr class="dropdown-divider"></li>
 
   <li>
-    <%= link_to main_app.root_path, class: "dropdown-item", data: {turbo: false} do %>
+    <%= link_to root_path, class: "dropdown-item", data: {turbo: false} do %>
       <%= t("podcast_switcher.dropdown.all") %> (<%= @podcast_switcher_count %>) &gt;
     <% end %>
   </li>

@@ -32,6 +32,7 @@ class EpisodeMediaController < ApplicationController
       if @episode.save
         @episode.uncut&.slice_contents!
         @episode.copy_media
+        @episode.publish!
         format.html { redirect_to episode_media_path(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
 
@@ -67,6 +68,8 @@ class EpisodeMediaController < ApplicationController
       :lock_version,
       :medium,
       :ad_breaks,
+      :enclosure_override_url,
+      :enclosure_override_prefix,
       contents_attributes: %i[id position original_url file_size _destroy _retry],
       uncut_attributes: %i[id segmentation original_url file_size _destroy _retry]
     )

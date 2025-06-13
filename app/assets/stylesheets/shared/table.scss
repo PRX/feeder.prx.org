@@ -1,17 +1,21 @@
 .table {
+  --#{$prefix}table-bg: #{($light-blue-100)};
+  --#{$prefix}table-striped-bg: #{($light-blue-200)};
+  --#{$prefix}table-active-bg: #{($light-blue-300)};
+
   width: 100%;
   font-size: 0.8rem;
-  background-color: $gray-100;
+  background-color: $light-blue-100;
 
   thead {
     th {
-      background: #e0e0e0;
-      border: #fff;
+      background: $light-blue-300;
+      border-color: $white;
       padding: 0 0.5rem;
       line-height: 3rem;
       white-space: nowrap;
       color: $gray-700;
-      border-bottom-color: #fff;
+      border-bottom-color: $white;
 
       .sortable {
         color: $gray-700;
@@ -37,9 +41,16 @@
     }
   }
 
+  tbody {
+    tr:nth-of-type(odd) {
+      background-color: var(--#{$prefix}table-striped-bg);
+      color: var(--#{$prefix}table-striped-color);
+    }
+  }
+
   td,
   th {
-    border-bottom-color: rgba(0, 0, 0, 0.12);
+    border-bottom-color: $light-blue-300;
     color: $gray-700;
     font-weight: 400;
     vertical-align: top;
@@ -75,4 +86,97 @@
   justify-content: center;
   align-items: center;
   padding-top: 52px;
+}
+
+@include color-mode(dark) {
+  .table {
+    background-color: $navy;
+
+    thead {
+      th {
+        background: $navy-700;
+        color: $white;
+        border-bottom-color: $navy-900;
+      }
+    }
+
+    tbody {
+      tr:nth-of-type(odd) {
+        background-color: $navy-700;
+        color: $white;
+      }
+    }
+
+    td,
+    th {
+      color: $white;
+      border-bottom-color: $navy-700;
+    }
+  }
+
+  .table-loading {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+@include color-mode(dark) {
+  .table {
+    --#{$prefix}table-color: #{($white)};
+    --#{$prefix}table-bg: #{($gray-900)};
+    --#{$prefix}table-border-color: #{($border-color-dark)};
+    --#{$prefix}table-striped-bg: #{($gray-800)};
+    --#{$prefix}table-striped-color: #{($white)};
+    --#{$prefix}table-active-bg: #{($gray-700)};
+    --#{$prefix}table-active-color: #{($white)};
+    --#{$prefix}table-hover-bg: #{($navy-700)};
+    --#{$prefix}table-hover-color: #{($white)};
+
+    .table-secondary {
+      --#{$prefix}table-bg: #{($gray-800)};
+      --#{$prefix}table-striped-bg: #{($gray-700)};
+      --#{$prefix}table-active-bg: #{($gray-600)};
+    }
+
+    thead th {
+      background: $black;
+
+      .sortable,
+      .sortable span.material-icons {
+        color: $light-blue-200;
+
+        &:hover {
+          color: $info;
+        }
+      }
+    }
+
+    td {
+      a:link,
+      a:visited {
+        color: $info;
+      }
+    }
+
+    td.table-success,
+    td.table-warning {
+      color: $black;
+    }
+
+    td.table-danger {
+      color: $white;
+    }
+  }
+
+  .pagination {
+    --#{$prefix}pagination-color: #{($info)};
+    --#{$prefix}pagination-bg: #{($navy-700)};
+    --#{$prefix}pagination-border-color: #{($border-color-dark)};
+    --#{$prefix}pagination-hover-color: #{($navy)};
+    --#{$prefix}pagination-hover-bg: #{($info)};
+    --#{$prefix}pagination-hover-border-color: #{($border-color-dark)};
+    --#{$prefix}pagination-active-bg: #{($primary)};
+    --#{$prefix}pagination-disabled-color: #{($gray-300)};
+    --#{$prefix}pagination-disabled-bg: #{($gray-900)};
+    --#{$prefix}pagination-disabled-border-color: #{($border-color-dark)};
+  }
 }

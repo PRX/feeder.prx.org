@@ -2,7 +2,7 @@
   <div class="form-floating input-group">
     <div class="form-control d-flex align-items-center is-invalid">
       <span class="material-icons text-danger">description</span>
-      <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= transcript.file_name %></div>
+      <div class="mx-2 flex-grow-1 overflow-hidden text-truncate"><%= transcript.file_name %></div>
 
       <% if retry_path %>
         <%= link_to retry_path, method: :put, class: "btn btn-sm btn-warning" do %>

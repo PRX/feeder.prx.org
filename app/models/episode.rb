@@ -8,6 +8,7 @@ class Episode < ApplicationRecord
   include EpisodeFilters
   include EpisodeHasFeeds
   include EpisodeMedia
+  include Integrations::EpisodeIntegrations
   include PublishingStatus
   include TextSanitizer
   include EmbedPlayerHelper
@@ -16,6 +17,7 @@ class Episode < ApplicationRecord
 
   MAX_SEGMENT_COUNT = 10
   MAX_DESCRIPTION_BYTES = 4000
+  MAX_TITLE_BYTES = 120
   VALID_ITUNES_TYPES = %w[full trailer bonus]
   DROP_DATE = "COALESCE(episodes.published_at, episodes.released_at)"
 
@@ -23,26 +25,28 @@ class Episode < ApplicationRecord
 
   acts_as_paranoid
 
-  serialize :overrides, coder: HashSerializer
-
   belongs_to :podcast, -> { with_deleted }, touch: true
 
-  has_many :episode_imports
-  has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  # See concerns/episode_media.rb for media/audio related code, e.g. the associations
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
+  has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  has_one :external_media_resource, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+
+  has_many :episode_imports
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
 
   has_one :ready_image, -> { complete_or_replaced.order("created_at DESC") }, class_name: "EpisodeImage"
-  has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_one :transcript, -> { order("created_at DESC") }, dependent: :destroy, inverse_of: :episode
 
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
-  accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
+  accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :transcript, allow_destroy: true, reject_if: ->(t) { t[:id].blank? && t[:original_url].blank? }
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
+  validates :title, bytesize: {maximum: MAX_TITLE_BYTES}, if: -> { strict_validations && title_changed? }
   validates :description, bytesize: {maximum: MAX_DESCRIPTION_BYTES}, if: -> { strict_validations && description_changed? }
   validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
@@ -53,12 +57,10 @@ class Episode < ApplicationRecord
   validates :explicit, inclusion: {in: %w[true false]}, allow_nil: true
   validates :segment_count, presence: true, if: :strict_validations
   validates :segment_count, numericality: {only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_SEGMENT_COUNT}, allow_nil: true
-  validate :validate_media_ready, if: :strict_validations
 
   before_validation :set_defaults, :set_external_keyword, :sanitize_text
 
   after_save :publish_updated, if: ->(e) { e.published_at_previously_changed? }
-  after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
 
   scope :published, -> { where("episodes.published_at IS NOT NULL AND episodes.published_at <= now()") }
   scope :published_by, ->(offset) { where("episodes.published_at IS NOT NULL AND episodes.published_at <= ?", Time.now - offset) }
@@ -70,8 +72,7 @@ class Episode < ApplicationRecord
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
   scope :dropdate_asc, -> { reorder(Arel.sql("#{DROP_DATE} ASC NULLS FIRST")) }
   scope :dropdate_desc, -> { reorder(Arel.sql("#{DROP_DATE} DESC NULLS LAST")) }
-
-  enum :medium, [:audio, :uncut, :video], prefix: true
+  scope :first_publish, -> { where(first_rss_published_at: nil) }
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -132,11 +133,12 @@ class Episode < ApplicationRecord
   end
 
   def image
-    images.first
+    images[0]
   end
 
-  def image=(file)
-    img = EpisodeImage.build(file)
+  def image=(img)
+    img = EpisodeImage.new(original_url: img) if img.is_a?(String)
+    img = EpisodeImage.new(img) if img.is_a?(Hash)
 
     if !img
       images.each(&:mark_for_destruction)
@@ -158,7 +160,7 @@ class Episode < ApplicationRecord
   end
 
   def explicit=(value)
-    super Podcast::EXPLICIT_ALIASES.fetch(value, value)
+    super(Podcast::EXPLICIT_ALIASES.fetch(value, value))
   end
 
   def explicit_content
@@ -198,36 +200,6 @@ class Episode < ApplicationRecord
     super || embed_player_landing_url(podcast, self)
   end
 
-  def medium=(new_medium)
-    super
-
-    if medium_changed? && medium_was.present?
-      if medium_was == "uncut" && medium == "audio"
-        uncut&.mark_for_destruction
-      elsif medium_was == "audio" && medium == "uncut"
-        if (c = contents.first)
-          build_uncut.tap do |u|
-            u.file_size = contents.first.file_size
-            u.duration = contents.first.duration
-
-            # use the feeder cdn url for older completed files
-            is_old = (Time.now - c.created_at) > 24.hours
-            u.original_url = (c.status_complete? && is_old) ? c.url : c.original_url
-          end
-        end
-        contents.each(&:mark_for_destruction)
-      else
-        contents.each(&:mark_for_destruction)
-      end
-    end
-
-    self.segment_count = 1 if medium_video?
-  end
-
-  def overrides
-    self[:overrides] ||= HashWithIndifferentAccess.new
-  end
-
   def categories
     self[:categories] || []
   end
@@ -236,16 +208,9 @@ class Episode < ApplicationRecord
     self[:categories] = sanitize_categories(cats, false).presence
   end
 
-  def copy_media(force = false)
-    contents.each { |c| c.copy_media(force) }
-    images.each { |i| i.copy_media(force) }
-    transcript&.copy_media(force)
-    uncut&.copy_media(force)
-  end
-
   def publish!
     Rails.logger.tagged("Episode#publish!") do
-      apple_mark_for_reupload!
+      feeds.each { |f| f.mark_as_not_delivered!(self) }
       podcast&.publish!
     end
   end
@@ -298,24 +263,12 @@ class Episode < ApplicationRecord
     description_with_default.truncate_bytes(MAX_DESCRIPTION_BYTES, omission: "")
   end
 
+  def title_safe
+    title.present? ? title.truncate_bytes(MAX_TITLE_BYTES, omission: "") : ""
+  end
+
   def feeder_cdn_host
     ENV["FEEDER_CDN_HOST"]
-  end
-
-  def segment_range
-    1..segment_count.to_i
-  end
-
-  def build_contents
-    segment_range.map do |p|
-      contents.find { |c| c.position == p } || contents.build(position: p)
-    end
-  end
-
-  def destroy_out_of_range_contents
-    if segment_count.present? && segment_count.positive?
-      contents.where.not(position: segment_range.to_a).destroy_all
-    end
   end
 
   def published_or_released_date
@@ -326,26 +279,26 @@ class Episode < ApplicationRecord
     end
   end
 
-  def validate_media_ready
-    return unless published_at.present? && media?
-
-    # media must be complete on _initial_ publish
-    # otherwise - having files in any status is good enough
-    is_ready =
-      if published_at_was.blank?
-        media_ready?(true)
-      elsif medium_uncut?
-        uncut.present? && !uncut.marked_for_destruction?
-      else
-        media_ready?(false)
-      end
-
-    unless is_ready
-      errors.add(:base, :media_not_ready, message: "media not ready")
-    end
-  end
-
   def ready_transcript
     transcript if transcript&.status_complete?
+  end
+
+  def head_request(uri_str = enclosure_url(podcast.default_feed), redirects = 0)
+    return nil if redirects >= 10
+
+    uri = URI.parse(uri_str)
+    res = Net::HTTP.start(uri.host) do |http|
+      http.max_retries = 0
+      http.read_timeout = 0.1
+      http.head(uri)
+    end
+
+    if res.is_a?(Net::HTTPRedirection)
+      head_request(res[:location], redirects + 1)
+    elsif res.is_a?(Net::HTTPSuccess)
+      res
+    end
+  rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout => e
+    Rails.logger.info(e.message)
   end
 end

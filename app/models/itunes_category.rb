@@ -6,6 +6,6 @@ class ITunesCategory < ApplicationRecord
   validates_with ITunesCategoryValidator
 
   def subcategories=(subcats)
-    super subcats.select(&:present?)
+    super(subcats.select(&:present?))
   end
 end

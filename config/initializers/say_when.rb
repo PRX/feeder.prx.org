@@ -13,6 +13,10 @@ SayWhen.configure do |options|
   options[:processor_strategy] = :active_job
 
   options[:queue] = :feeder_default
+
+  # now that it is configured, load the strategies
+  require "say_when/processor/active_job_strategy"
+  require "say_when/storage/active_record_strategy"
 end
 
 begin

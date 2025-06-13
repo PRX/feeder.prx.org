@@ -110,8 +110,9 @@ module ImageFile
     self.status = :created
   end
 
+  # only replace if there is a new image url, different from current
   def replace?(img)
-    original_url != img.try(:original_url)
+    original_url && (original_url != img.try(:original_url))
   end
 
   def update_image(img)

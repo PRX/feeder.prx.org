@@ -118,6 +118,8 @@ describe Api::EpisodesController do
     let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
     let(:episode_redirect) { create(:episode, podcast: podcast, published_at: nil) }
     let(:episode_update) { create(:episode, podcast: podcast, published_at: nil) }
+    let(:episode_with_image) { create(:episode_with_media, title: "Episode 1", podcast: podcast, published_at: Time.now - 1.hour) }
+
     let(:token) do
       StubToken.new(account_id,
         ["member feeder:read-private feeder:podcast-edit feeder:podcast-create feeder:episode feeder:episode-draft"])
@@ -164,6 +166,26 @@ describe Api::EpisodesController do
       assert_equal c.original_url, "https://s3.amazonaws.com/prx-testing/test/audio1.mp3"
     end
 
+    it "can update the image on an episode" do
+      assert_equal episode_with_image.title, "Episode 1"
+      assert_equal episode_with_image.image.alt_text, "valid episode image"
+
+      update_hash = {
+        image: {
+          altText: "new alt text"
+        },
+        title: "new title"
+      }
+
+      put(:update, body: update_hash.to_json, as: :json,
+        params: {id: episode_with_image.guid, api_version: "v1", format: "json"})
+      assert_response :success
+
+      episode_with_image.reload
+      assert_equal episode_with_image.title, "new title"
+      assert_equal episode_with_image.image.alt_text, "new alt text"
+    end
+
     it "can update audio on an episode" do
       update_hash = {
         media: [{
@@ -175,12 +197,16 @@ describe Api::EpisodesController do
       }
 
       assert_equal episode_update.contents.size, 0
+      assert_nil episode_update.medium
 
       put(:update, body: update_hash.to_json, as: :json,
         params: {id: episode_update.guid, api_version: "v1", format: "json"})
       assert_response :success
 
-      contents = episode_update.reload.contents
+      episode_update.reload
+
+      assert_equal "audio", episode_update.medium
+      contents = episode_update.contents
       assert_equal contents.size, 1
       assert_equal contents.first.mime_type, "audio/mpeg"
       assert_equal contents.first.file_size, 123456

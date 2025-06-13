@@ -43,3 +43,25 @@ trix-editor.trix-content[contenteditable="false"] {
 .form-floating > .trix-hidden-field + .invalid-feedback {
   display: none;
 }
+
+@include color-mode(dark) {
+  .trix-button-row {
+    .trix-button-group {
+      border-color: $border-color-dark;
+
+      .trix-button {
+        background-color: $light-blue-300;
+        border-color: $border-color-dark;
+
+        &.trix-active {
+          background-color: $light-blue-100;
+        }
+      }
+    }
+  }
+
+  .trix-content {
+    background-color: $light-blue-300;
+    border-color: $border-color-dark;
+  }
+}

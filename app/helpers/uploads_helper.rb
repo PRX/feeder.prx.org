@@ -61,7 +61,7 @@ module UploadsHelper
     if ENV["UPLOAD_SIGNING_SERVICE_URL"].present?
       ENV["UPLOAD_SIGNING_SERVICE_URL"]
     elsif Rails.env.development?
-      main_app.uploads_signature_path
+      uploads_signature_path
     end
   end
 
@@ -116,10 +116,6 @@ module UploadsHelper
 
   def upload_processing?(rec)
     %w[started created processing retrying].include?(rec&.status)
-  end
-
-  def upload_problem?(rec)
-    %w[invalid error].include?(rec&.status)
   end
 
   def upload_stalled?(rec)

@@ -138,6 +138,11 @@ git checkout -b feat/this_is_my_new_feature
 Run the rails development server at [feeder.prx.test](http://feeder.prx.test):
 
 ```sh
+# run the server and watch/compile sass files
+bin/dev
+
+# or if you're not changing styles, and want binding.pry to work
+bin/rails dartsass:build
 bin/rails server
 ```
 
@@ -207,6 +212,7 @@ for processed files. Then, to start the worker in development:
 bin/rails sqs:create
 
 # now you can start the web/worker in different terminals
+bin/rails dartsass:watch
 bin/rails server
 bin/rails worker
 
@@ -237,7 +243,7 @@ bin/rails test test/models/podcast_test.rb:9
 This entire repo is linted using:
 
 - [standardrb](https://github.com/testdouble/standard) for ruby files
-- [erblint](https://github.com/Shopify/erb-lint) for `html.erb` files
+- [erb_lint](https://github.com/Shopify/erb_lint) for `html.erb` files
   - Note this _does not_ handle indentation at the moment, but you're encouraged to
     use some other editor plugin to ensure your erb has the right indentation
 - [prettier](https://prettier.io/) for `js`, `scss`, and `md` files
