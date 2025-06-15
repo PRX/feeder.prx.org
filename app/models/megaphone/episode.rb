@@ -23,7 +23,7 @@ module Megaphone
 
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
-    OTHER_ATTRIBUTES = %i[id podcast_id created_at updated_at status download_url
+    OTHER_ATTRIBUTES = %i[id podcast_id created_at updated_at status download_url parent_id
       audio_file_processing audio_file_status audio_file_updated_at pre_offset post_offset
       image_file audio_file size duration uid original_url bitrate samplerate channel_mode vbr
       id3_file id3_file_processing id3_file_size spotify_identifier custom_fields content_rating
@@ -41,6 +41,13 @@ module Megaphone
     validates_presence_of :id, on: :update
 
     validates_absence_of :id, on: :create
+
+    def self.list(megaphone_podcast, published_only = true)
+      episode = Megaphone::Episode.new
+      episode.podcast = megaphone_podcast
+      episode.config = megaphone_podcast.config
+      episode.list(published_only)
+    end
 
     def self.find_by_episode(megaphone_podcast, feeder_episode)
       episode = new_from_episode(megaphone_podcast, feeder_episode)
@@ -78,6 +85,7 @@ module Megaphone
         title: e.title,
         external_id: e.guid,
         guid: e.item_guid,
+        parent_id: e.original_guid,
         pubdate: pubdate,
         pubdate_timezone: pubdate&.time_zone&.name,
         author: e.author_name,
@@ -93,6 +101,21 @@ module Megaphone
         season_number: e.season_number,
         ad_free: e.categories.include?("adfree")
       }
+    end
+
+    def initialize(attributes = {})
+      super(attributes.slice(*ALL_ATTRIBUTES))
+    end
+
+    def to_h
+      as_json.with_indifferent_access.slice(*ALL_ATTRIBUTES)
+    end
+
+    def list(published_only = true)
+      options = {}
+      options = {draft: false} if published_only
+      self.api_response = api.get("podcasts/#{podcast.id}/episodes", options)
+      Megaphone::PagedCollection.new(api, Megaphone::Episode, api_response).all_items
     end
 
     def find_by_guid(guid = feeder_episode.guid)
@@ -442,6 +465,10 @@ module Megaphone
     def post_before_original?(zones)
       sections = zones.split { |z| z[:type] == "original" }
       sections[-2].any? { |z| %w[ad house].include?(z[:type]) && z[:id].match(/post/) }
+    end
+
+    def item_guid
+      guid || parent_id || id
     end
   end
 end

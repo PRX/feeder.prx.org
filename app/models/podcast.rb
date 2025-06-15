@@ -238,6 +238,10 @@ class Podcast < ApplicationRecord
     serial_order ? "serial" : "episodic"
   end
 
+  def itunes_type=(itype)
+    self.serial_order = !!itype&.match(/serial/i)
+  end
+
   def sanitize_text
     self.title = sanitize_text_only(title) if title_changed?
   end

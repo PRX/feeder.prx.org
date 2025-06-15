@@ -24,3 +24,13 @@
     </div>
   </div>
 </div>
+
+<div class="col-12 mt-2">
+  <div class="form-check">
+    <%= form.check_box :replace_files, checked: true %>
+    <div class="d-flex align-items-center">
+      <%= form.label :replace_files %>
+      <%= help_text t(".help.replace_files") %>
+    </div>
+  </div>
+</div>

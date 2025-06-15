@@ -4,7 +4,7 @@ describe EpisodeRssImport do
   let(:user) { create(:user) }
   let(:podcast) { create(:podcast) }
 
-  let(:importer) { create(:podcast_import, podcast: podcast) }
+  let(:importer) { create(:podcast_rss_import, podcast: podcast) }
 
   let(:feed) { Feedjira.parse(test_file("/fixtures/transistor_two.xml")) }
   let(:entry) { feed.entries.first }
@@ -27,6 +27,10 @@ describe EpisodeRssImport do
   end
 
   let(:sns) { SnsMock.new }
+
+  before do
+    stub_requests
+  end
 
   around do |test|
     sns.reset
@@ -160,4 +164,9 @@ describe EpisodeRssImport do
       %w[UnClean y N 1 0].each { |x| _(episode_import.explicit(x)).must_be_nil }
     end
   end
+end
+
+def stub_requests
+  stub_request(:get, "http://feeds.prx.org/transistor_stem")
+    .to_return(status: 200, body: test_file("/fixtures/transistor_two.xml"), headers: {})
 end
