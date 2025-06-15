@@ -43,9 +43,12 @@ class EpisodeRssImport < EpisodeImport
   end
 
   def set_file_resources!
-    content = audio_content_params
-    episode.media = content
-    episode.segment_count = content&.size
+    if !podcast_import.metadata_only
+      content = audio_content_params
+      episode.media = content
+      episode.segment_count = content&.size
+    end
+
     episode.image = image_contents_params
     episode.save!
     episode.images.reset

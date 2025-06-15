@@ -1,7 +1,7 @@
 require "feedjira"
 
 class PodcastRssImport < PodcastImport
-  store :config, accessors: [:episodes_only, :new_episodes_only, :audio, :channel, :first_entry], coder: JSON
+  store :config, accessors: [:episodes_only, :metadata_only, :new_episodes_only, :audio, :channel, :first_entry], coder: JSON
 
   has_many :episode_imports, dependent: :destroy, class_name: "EpisodeRssImport", foreign_key: :podcast_import_id
 
@@ -11,6 +11,7 @@ class PodcastRssImport < PodcastImport
   def set_defaults
     super
     self.episodes_only ||= false
+    self.metadata_only ||= false
     self.new_episodes_only ||= false
     self.audio ||= {}
   end
@@ -82,6 +83,14 @@ class PodcastRssImport < PodcastImport
     errors.add(:url, :bad_http_response, message: "bad http response")
   rescue
     errors.add(:url, :invalid_rss, message: "invalid rss")
+  end
+
+  def replace_files
+    !metadata_only
+  end
+
+  def replace_files=(val)
+    self.metadata_only = !ActiveModel::Type::Boolean.new.cast(val)
   end
 
   def import_metadata

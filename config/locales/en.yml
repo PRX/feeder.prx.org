@@ -1037,6 +1037,7 @@ en:
       help:
         import_existing: If selected, existing episodes in this podcast will be overwritten by any RSS item with the same GUID.
         import_metadata: If selected, the values from the RSS feed channel will override any values added to the Metadata tab. For example, if the title in the feed differs from the podcast title previously listed, the title in the RSS feed will be used.
+        replace_files: If selected, any existing episode audio will be replaced with the audio from the RSS feed.
     form_timings:
       help:
         timings: Your timings CSV file must have a column containing Episode GUIDs, and a column containing the comma-separated timestamps in seconds that you want your midrolls inserted at.
