@@ -11,6 +11,9 @@
         <%= active_link_to "Settings", edit_podcast_path(@podcast), active: podcast_settings_active?, class: "nav-link" %>
         <%= active_link_to "Episodes", podcast_episodes_path(@podcast), active: /\/episodes/, class: "nav-link" %>
         <%= active_link_to "Feeds", podcast_feeds_path(@podcast), active: /\/feeds/, class: "nav-link" %>
+        <% if ENV["RAILS_ENV"] == "development" %>
+          <%= active_link_to "Metrics", podcast_metrics_path(@podcast), active: /\/metrics/, class: "nav-link" %>
+        <% end %>
       <% end %>
     </nav>
   </div>
