@@ -32,7 +32,7 @@ module Megaphone
           current_cuepoint.ad_count = current_cuepoint.ad_count + 1
           current_cuepoint.ad_sources << source_for_zone(zone)
         else
-          section = (placement.sections || [])[original_count] || {}
+          section = section_for_count(placement, original_count)
           current_cuepoint = new(
             cuepoint_type: "#{section[:type] || zone[:section]}roll",
             ad_count: 1,
@@ -46,6 +46,15 @@ module Megaphone
         end
       end
       cuepoints
+    end
+
+    def self.section_for_count(placement, count)
+      sections = if placement.respond_to?(:sections)
+        placement.sections || []
+      else
+        []
+      end
+      sections[count] || {}
     end
 
     def self.source_for_zone(zone)
