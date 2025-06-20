@@ -1,0 +1,141 @@
+<% if Rails.env.development? %>
+  <% content_for :title, "#{@podcast.title} - #{t(".title")}" %>
+
+  <%= turbo_frame_tag "podcast-metrics", data: {controller: "morphdom"} do %>
+    <div class="container col-12 my-2">
+      <div class="card p-4">
+        <div class="card-body">
+          <div class="row d-flex flex-wrap gx-4">
+            <div class="col">
+              <div>line graph will go here</div>
+            </div>
+            <div class="col d-flex align-items-center">
+              <table class="table table-striped shadow rounded">
+                <thead>
+                  <tr class="table-secondary">
+                    <th>Episode</th>
+                    <th>Release Date</th>
+                    <th>Downloads</th>
+                    <th>All Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container col-12 mb-2">
+      <div class="row gx-2">
+        <div class="col-6 mb-2">
+          <div class="card">
+            <div class="card-header card-header-primary-light d-flex">
+              <h5>Countries</h5>
+            </div>
+            <div class="card-body">
+              <div class="col-12">
+                <div class="">
+                  map graph will go here
+                </div>
+              </div>
+              <div class="col-12">
+                <table class="table table-striped shadow rounded">
+                  <thead>
+                    <tr class="table-secondary">
+                      <th>Country</th>
+                      <th>Downloads</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 mb-2">
+          <div class="card">
+            <div class="card-header card-header-primary-light d-flex">
+              <h5>Metros (DMA)</h5>
+            </div>
+            <div class="card-body">
+              <div class="col-12">
+                <div class="">
+                  map graph will go here
+                </div>
+              </div>
+              <div class="col-12">
+                <table class="table table-striped shadow rounded">
+                  <thead>
+                    <tr class="table-secondary">
+                      <th>Metro</th>
+                      <th>Downloads</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 mb-2">
+          <div class="card">
+            <div class="card-header card-header-primary-light d-flex">
+              <h5>App & Browser</h5>
+            </div>
+            <div class="card-body">
+              <div class="col">
+                <div>bar graph will go here</div>
+              </div>
+              <div class="col-12">
+                <table class="table table-striped shadow rounded">
+                  <thead>
+                    <tr class="table-secondary">
+                      <th>App or Browser</th>
+                      <th>Downloads</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 mb-2">
+          <div class="card">
+            <div class="card-header card-header-primary-light d-flex">
+              <h5>Operating System</h5>
+            </div>
+            <div class="card-body">
+              <div class="col">
+                <div>bar graph will go here</div>
+              </div>
+              <div class="col-12">
+                <table class="table table-striped shadow rounded">
+                  <thead>
+                    <tr class="table-secondary">
+                      <th>Operating System</th>
+                      <th>Downloads</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
