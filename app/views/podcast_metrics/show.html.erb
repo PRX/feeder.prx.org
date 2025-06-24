@@ -7,7 +7,11 @@
         <div class="card-body">
           <div class="row d-flex flex-wrap gx-4">
             <div class="col">
-              <%= render "chart", options: chart_options(parse_datetime(@recent_downloads), line_options) %>
+              <% if @recent_downloads.present? %>
+                <%= render "chart", options: chart_options(parse_datetime(@recent_downloads), line_options) %>
+              <% else %>
+                No data to display.
+              <% end %>
             </div>
             <div class="col d-flex align-items-center">
               <table class="table table-striped shadow rounded">
@@ -92,7 +96,11 @@
             </div>
             <div class="card-body">
               <div class="col">
-                <div>bar graph will go here</div>
+                <% if @recent_downloads.present? %>
+                  <%= render "chart", options: chart_options(parse_datetime(@recent_downloads), bar_options) %>
+                <% else %>
+                  No data to display.
+                <% end %>
               </div>
               <div class="col-12">
                 <table class="table table-striped shadow rounded">
@@ -117,7 +125,11 @@
             </div>
             <div class="card-body">
               <div class="col">
-                <div>bar graph will go here</div>
+                <% if @recent_downloads.present? %>
+                  <%= render "chart", options: chart_options(parse_datetime(@recent_downloads), bar_options) %>
+                <% else %>
+                  No data to display.
+                <% end %>
               </div>
               <div class="col-12">
                 <table class="table table-striped shadow rounded">

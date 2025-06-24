@@ -28,6 +28,17 @@ module PodcastMetricsHelper
     }
   end
 
+  def bar_options
+    {
+      chart: {
+        type: "bar"
+      },
+      xaxis: {
+        type: "datetime"
+      }
+    }
+  end
+
   def parse_datetime(data)
     data.map do |d|
       [d["hour"].strftime("%F"), d["count"]]

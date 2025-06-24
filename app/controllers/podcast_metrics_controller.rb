@@ -7,7 +7,7 @@ class PodcastMetricsController < ApplicationController
     if clickhouse_connected?
       @recent_downloads =
         Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, hour: 7.days.ago..)
+          .where(podcast_id: @podcast.id, hour: 30.days.ago..)
           .select(:feed_slug, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
           .group(:feed_slug, "DATE_TRUNC('DAY', hour) AS hour")
           .order(Arel.sql("DATE_TRUNC('DAY', hour) DESC"))
