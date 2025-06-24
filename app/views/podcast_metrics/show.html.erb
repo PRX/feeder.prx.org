@@ -5,9 +5,9 @@
     <div class="container col-12 my-2">
       <div class="card p-4">
         <div class="card-body">
-          <div class="row d-flex flex-wrap gx-4" data-controller="apex">
+          <div class="row d-flex flex-wrap gx-4">
             <div class="col">
-              <div data-apex-target="chart"></div>
+              <%= render "chart", options: chart_options(parse_datetime(@recent_downloads), line_options) %>
             </div>
             <div class="col d-flex align-items-center">
               <table class="table table-striped shadow rounded">
