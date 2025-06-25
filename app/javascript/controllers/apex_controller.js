@@ -4,8 +4,7 @@ import ApexCharts from "apexcharts"
 export default class extends Controller {
   static values = {
     series: Object,
-    options: Object,
-    xaxis: String
+    options: Object
   }
   static targets = ["chart"]
 
@@ -13,7 +12,7 @@ export default class extends Controller {
     const options = {
       chart: this.optionsValue,
       series: [this.seriesValue],
-      xaxis: { type: this.xaxisValue },
+      xaxis: { type: "datetime" },
       yaxis: {
         title: { text: "Downloads" },
       },

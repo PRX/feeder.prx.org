@@ -7,8 +7,8 @@
         <div class="card-body">
           <div class="row d-flex flex-wrap gx-4">
             <% if @recent_downloads.present? %>
-              <div class="col h-auto">
-                <%= render "chart", options: chart_options(type: "line", height: "500", width: "100%"), series: parse_series(@recent_downloads), xaxis: "datetime" %>
+              <div class="col">
+                <%= render "chart", options: chart_options(type: "line", height: "500", width: "100%"), series: parse_series(@recent_downloads) %>
               </div>
               <div class="col d-flex align-items-center">
                 <table class="table table-striped shadow rounded">
@@ -102,7 +102,7 @@
             <div class="card-body">
               <div class="col">
                 <% if @recent_downloads.present? %>
-                  <%= render "chart", options: chart_options(type: "bar", width: "100%"), series: parse_series(@recent_downloads), xaxis: "datetime" %>
+                  <%= render "chart", options: chart_options(type: "bar", width: "100%"), series: parse_series(@recent_downloads) %>
                 <% else %>
                   No data to display.
                 <% end %>
@@ -131,7 +131,7 @@
             <div class="card-body">
               <div class="col">
                 <% if @recent_downloads.present? %>
-                  <%= render "chart", options: chart_options(type: "bar", width: "100%"), series: parse_series(@recent_downloads), xaxis: "datetime" %>
+                  <%= render "chart", options: chart_options(type: "bar", width: "100%"), series: parse_series(@recent_downloads) %>
                 <% else %>
                   No data to display.
                 <% end %>
