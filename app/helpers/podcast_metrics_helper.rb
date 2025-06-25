@@ -1,41 +1,17 @@
 module PodcastMetricsHelper
-  def chart_options(series, opts)
+  def chart_options(type:, height: "", width: "")
     {
-      chart: {
-        type: opts[:chart][:type],
-        height: "100%",
-        width: "100%"
-      },
-      series: [
-        {
-          data: series
-        }
-      ],
-      xaxis: {
-        type: opts[:xaxis][:type]
-      }
+      type: type,
+      height: height,
+      width: width,
+      zoom: { enabled: false }
     }
   end
 
-  def line_options
+  def parse_series(data)
     {
-      chart: {
-        type: "line"
-      },
-      xaxis: {
-        type: "datetime"
-      }
-    }
-  end
-
-  def bar_options
-    {
-      chart: {
-        type: "bar"
-      },
-      xaxis: {
-        type: "datetime"
-      }
+      name: data[0][:feed_slug],
+      data: parse_datetime(data)
     }
   end
 

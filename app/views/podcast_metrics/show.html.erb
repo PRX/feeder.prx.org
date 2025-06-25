@@ -6,28 +6,33 @@
       <div class="card p-4">
         <div class="card-body">
           <div class="row d-flex flex-wrap gx-4">
-            <div class="col">
-              <% if @recent_downloads.present? %>
-                <%= render "chart", options: chart_options(parse_datetime(@recent_downloads), line_options) %>
-              <% else %>
-                No data to display.
-              <% end %>
-            </div>
-            <div class="col d-flex align-items-center">
-              <table class="table table-striped shadow rounded">
-                <thead>
-                  <tr class="table-secondary">
-                    <th>Episode</th>
-                    <th>Release Date</th>
-                    <th>Downloads</th>
-                    <th>All Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-
-                </tbody>
-              </table>
-            </div>
+            <% if @recent_downloads.present? %>
+              <div class="col h-auto">
+                <%= render "chart", options: chart_options(type: "line", height: "500", width: "100%"), series: parse_series(@recent_downloads), xaxis: "datetime" %>
+              </div>
+              <div class="col d-flex align-items-center">
+                <table class="table table-striped shadow rounded">
+                  <thead>
+                    <tr class="table-secondary">
+                      <th>Day</th>
+                      <th>Feed</th>
+                      <th>Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @recent_downloads.each do |dl| %>
+                      <tr>
+                        <td><%= l dl.hour.to_date %></td>
+                        <td><%= dl.feed_slug %></td>
+                        <td><%= dl.count %></td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              No data to display.
+            <% end %>
           </div>
         </div>
       </div>
@@ -97,7 +102,7 @@
             <div class="card-body">
               <div class="col">
                 <% if @recent_downloads.present? %>
-                  <%= render "chart", options: chart_options(parse_datetime(@recent_downloads), bar_options) %>
+                  <%= render "chart", options: chart_options(type: "bar", width: "100%"), series: parse_series(@recent_downloads), xaxis: "datetime" %>
                 <% else %>
                   No data to display.
                 <% end %>
@@ -126,7 +131,7 @@
             <div class="card-body">
               <div class="col">
                 <% if @recent_downloads.present? %>
-                  <%= render "chart", options: chart_options(parse_datetime(@recent_downloads), bar_options) %>
+                  <%= render "chart", options: chart_options(type: "bar", width: "100%"), series: parse_series(@recent_downloads), xaxis: "datetime" %>
                 <% else %>
                   No data to display.
                 <% end %>
