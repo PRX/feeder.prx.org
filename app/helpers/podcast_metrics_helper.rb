@@ -4,7 +4,7 @@ module PodcastMetricsHelper
       type: type,
       height: height,
       width: width,
-      zoom: { enabled: false }
+      zoom: {enabled: false}
     }
   end
 

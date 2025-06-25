@@ -4,7 +4,7 @@ import ApexCharts from "apexcharts"
 export default class extends Controller {
   static values = {
     series: Object,
-    options: Object
+    options: Object,
   }
   static targets = ["chart"]
 
