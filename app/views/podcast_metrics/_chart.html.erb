@@ -1,6 +1,5 @@
 <div
   data-controller="apex"
-  data-apex-series-value="<%= series.to_json %>"
-  data-apex-options-value="<%= options.to_json %>">
+  data-apex-options-value="<%= chart.merge(series).merge(options).to_json %>">
   <div data-apex-target="chart"></div>
 </div>

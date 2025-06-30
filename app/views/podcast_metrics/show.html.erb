@@ -8,7 +8,7 @@
           <div class="row d-flex flex-wrap gx-4">
             <% if @episode_rollups.present? %>
               <div class="col">
-                <%= render "chart", options: chart_options(type: "line", height: "500", width: "100%"), series: parse_episode_downloads(@episode_rollups, @date_start, @date_end) %>
+                <%= render "chart", chart: chart_options(type: "line", height: "800", width: "100%"), series: series_options(parse_episode_downloads(@episode_rollups, @date_start, @date_end)), options: line_options %>
               </div>
               <div class="col align-items-center">
                 <div class="col my-4">
@@ -115,26 +115,68 @@
               <h5>App & Browser</h5>
             </div>
             <div class="card-body">
-              <div class="col">
-                <%# if @recent_downloads.present? %>
-                  <%# render "chart", options: chart_options(type: "bar", width: "100%"), series: parse_series(@recent_downloads) %>
-                <%# else %>
-                  No data to display.
-                <%# end %>
-              </div>
-              <div class="col-12">
-                <table class="table table-striped shadow rounded">
-                  <thead>
-                    <tr class="table-secondary">
-                      <th>App or Browser</th>
-                      <th>Downloads</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  </tbody>
-                </table>
-              </div>
+              <% if @agent_apps.present? %>
+                <div class="col">
+                    <%= render "chart", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_apps)), options: bar_options %>
+                </div>
+                <div class="col my-4">
+                  <%= paginate @agent_apps, param_name: :agent_apps %>
+                </div>
+                <div class="col-12">
+                  <table class="table table-striped shadow rounded">
+                    <thead>
+                      <tr class="table-secondary">
+                        <th>App or Browser</th>
+                        <th>Downloads</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% @agent_apps.each do |app| %>
+                        <tr>
+                          <td><%= PodcastMetricsHelper::AGENT_TAGS[app[:code].to_s.to_sym] %></td>
+                          <td><%= app[:count] %></td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                No data to display.
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 mb-2">
+          <div class="card">
+            <div class="card-header card-header-primary-light d-flex">
+              <h5>Type</h5>
+            </div>
+            <div class="card-body">
+              <% if @agent_types.present? %>
+                <div class="col">
+                    <%= render "chart", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_types)), options: bar_options %>
+                </div>
+                <div class="col-12">
+                  <table class="table table-striped shadow rounded">
+                    <thead>
+                      <tr class="table-secondary">
+                        <th>Type</th>
+                        <th>Downloads</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% @agent_types.each do |app| %>
+                        <tr>
+                          <td><%= PodcastMetricsHelper::AGENT_TAGS[app[:code].to_s.to_sym] %></td>
+                          <td><%= app[:count] %></td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                No data to display.
+              <% end %>
             </div>
           </div>
         </div>
@@ -144,26 +186,34 @@
               <h5>Operating System</h5>
             </div>
             <div class="card-body">
-              <div class="col">
-                <%# if @recent_downloads.present? %>
-                  <%# render "chart", options: chart_options(type: "bar", width: "100%"), series: parse_series(@recent_downloads) %>
-                <%# else %>
-                  No data to display.
-                <%# end %>
-              </div>
-              <div class="col-12">
-                <table class="table table-striped shadow rounded">
-                  <thead>
-                    <tr class="table-secondary">
-                      <th>Operating System</th>
-                      <th>Downloads</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  </tbody>
-                </table>
-              </div>
+              <% if @agent_os.present? %>
+                <div class="col">
+                    <%= render "chart", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_os)), options: bar_options %>
+                </div>
+                <div class="col my-4">
+                  <%= paginate @agent_os, param_name: :agent_os %>
+                </div>
+                <div class="col-12">
+                  <table class="table table-striped shadow rounded">
+                    <thead>
+                      <tr class="table-secondary">
+                        <th>OS</th>
+                        <th>Downloads</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% @agent_os.each do |app| %>
+                        <tr>
+                          <td><%= PodcastMetricsHelper::AGENT_TAGS[app[:code].to_s.to_sym] %></td>
+                          <td><%= app[:count] %></td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                No data to display.
+              <% end %>
             </div>
           </div>
         </div>

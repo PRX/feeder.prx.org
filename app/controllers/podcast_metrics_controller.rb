@@ -38,40 +38,43 @@ class PodcastMetricsController < ApplicationController
           .group(:podcast_id)
           .order(:podcast_id)
 
-      @top_subdivs =
-        Rollups::DailyGeo
-          .where(podcast_id: @podcast.id)
-          .select(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day", "SUM(count) AS count")
-          .group(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day")
-          .order(Arel.sql("SUM(count) AS count DESC"))
-          .limit(10)
-      @top_countries =
-        Rollups::DailyGeo
-          .where(podcast_id: @podcast.id)
-          .select(:country_code, "SUM(count) AS count")
-          .group(:country_code)
-          .order(Arel.sql("SUM(count) AS count DESC"))
-          .limit(10)
-      @agents =
+      # @top_subdivs =
+      #   Rollups::DailyGeo
+      #     .where(podcast_id: @podcast.id)
+      #     .select(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day", "SUM(count) AS count")
+      #     .group(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day")
+      #     .order(Arel.sql("SUM(count) AS count DESC"))
+      #     .limit(10)
+      # @top_countries =
+      #   Rollups::DailyGeo
+      #     .where(podcast_id: @podcast.id)
+      #     .select(:country_code, "SUM(count) AS count")
+      #     .group(:country_code)
+      #     .order(Arel.sql("SUM(count) AS count DESC"))
+      #     .limit(10)
+      @agent_apps_query =
         Rollups::DailyAgent
           .where(podcast_id: @podcast.id)
-          .select("*")
-          .group("*")
-          .limit(10)
-      @geos =
-        Rollups::DailyGeo
+          .select("agent_name_id AS code", "SUM(count) AS count")
+          .group("agent_name_id AS code")
+          .order(Arel.sql("SUM(count) AS count DESC"))
+      @agent_types =
+        Rollups::DailyAgent
           .where(podcast_id: @podcast.id)
-          .select("*")
-          .group("*")
+          .select("agent_type_id AS code", "SUM(count) AS count")
+          .group("agent_type_id AS code")
+          .order(Arel.sql("SUM(count) AS count DESC"))
           .limit(10)
-      @uniques =
-        Rollups::DailyUnique
+      @agent_os_query =
+        Rollups::DailyAgent
           .where(podcast_id: @podcast.id)
-          .select("*")
-          .group("*")
-          .limit(10)
+          .select("agent_os_id AS code", "SUM(count) AS count")
+          .group("agent_os_id AS code")
+          .order(Arel.sql("SUM(count) AS count DESC"))
 
       @episode_rollups = episode_rollups(@episodes, @recent_downloads_by_episode, @alltime_downloads_by_episode)
+      @agent_apps = Kaminari.paginate_array(@agent_apps_query).page(params[:agent_apps]).per(10)
+      @agent_os = Kaminari.paginate_array(@agent_os_query).page(params[:agent_os]).per(10)
     end
   end
 
