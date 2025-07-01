@@ -1,0 +1,27 @@
+<%= turbo_frame_tag geo_type.to_s, class: "col-6 mb-2" do %>
+  <div class="card">
+    <div class="card-header card-header-primary-light d-flex">
+      <h5><%= geo_type %></h5>
+    </div>
+    <div class="card-body">
+      <div class="col-12">
+        <div class="">
+          map graph will go here
+        </div>
+      </div>
+      <div class="col-12">
+        <table class="table table-striped shadow rounded">
+          <thead>
+            <tr class="table-secondary">
+              <th><%= geo_type %></th>
+              <th>Downloads</th>
+            </tr>
+          </thead>
+          <tbody>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% end %>

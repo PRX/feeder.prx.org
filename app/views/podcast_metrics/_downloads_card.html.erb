@@ -1,0 +1,50 @@
+<%= turbo_frame_tag "downloads" do %>
+  <div class="card p-4">
+    <div class="card-body">
+      <div class="row d-flex flex-wrap gx-4">
+        <% if episode_rollups.present? %>
+          <div class="col">
+            <%= render "chart", chart: chart_options(type: "line", height: "800", width: "100%"), series: series_options(parse_episode_downloads(episode_rollups, date_start, date_end)), options: options %>
+          </div>
+          <div class="col align-items-center">
+            <div class="col my-4">
+              <table class="table table-striped shadow rounded">
+                <thead>
+                  <tr class="table-secondary">
+                    <th>Episode</th>
+                    <th>Publish Date</th>
+                    <th>Downloads this date range</th>
+                    <th>All time downloads</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="fw-bold">All Episodes</td>
+                    <td></td>
+                    <td class="fw-bold"><%= total_recent.first[:count] %></td>
+                    <td class="fw-bold"><%= total_alltime.first[:count] %></td>
+                  </tr>
+                  <% episode_rollups.each do |er| %>
+                    <% @sum = sum_rollups(er[:rollups]) %>
+                    <% @total = sum_rollups(er[:totals]) %>
+                    <tr>
+                      <td><%= er[:ep][:title] %></td>
+                      <td><%= er[:ep][:published_at] %></td>
+                      <td><% if @sum %><%= @sum %><% else %>&mdash;<% end %></td>
+                      <td><% if @total %><%= @total %><% else %>&mdash;<% end %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+            <div class="col my-4">
+              <%= paginate episodes %>
+            </div>
+          </div>
+        <% else %>
+          No data to display.
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

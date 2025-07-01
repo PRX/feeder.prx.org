@@ -1,223 +1,28 @@
 <% if Rails.env.development? && clickhouse_connected? %>
   <% content_for :title, "#{@podcast.title} - #{t(".title")}" %>
 
-  <%= turbo_frame_tag "podcast-metrics" do %>
-    <div class="container col-12 my-2">
-      <div class="card p-4">
-        <div class="card-body">
-          <div class="row d-flex flex-wrap gx-4">
-            <% if @episode_rollups.present? %>
-              <div class="col">
-                <%= render "chart", chart: chart_options(type: "line", height: "800", width: "100%"), series: series_options(parse_episode_downloads(@episode_rollups, @date_start, @date_end)), options: line_options %>
-              </div>
-              <div class="col align-items-center">
-                <div class="col my-4">
-                  <table class="table table-striped shadow rounded">
-                    <thead>
-                      <tr class="table-secondary">
-                        <th>Episode</th>
-                        <th>Publish Date</th>
-                        <th>Downloads this date range</th>
-                        <th>All time downloads</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td class="fw-bold">All Episodes</td>
-                        <td></td>
-                        <td class="fw-bold"><%= @recent_downloads_total.first[:count] %></td>
-                        <td class="fw-bold"><%= @alltime_downloads_total.first[:count] %></td>
-                      </tr>
-                      <% @episode_rollups.each do |er| %>
-                        <% @sum = sum_rollups(er[:rollups]) %>
-                        <% @total = sum_rollups(er[:totals]) %>
-                        <tr>
-                          <td><%= er[:ep][:title] %></td>
-                          <td><%= er[:ep][:published_at] %></td>
-                          <td><% if @sum %><%= @sum %><% else %>&mdash;<% end %></td>
-                          <td><% if @total %><%= @total %><% else %>&mdash;<% end %></td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="col my-4">
-                  <%= paginate @episodes %>
-                </div>
-              </div>
-            <% else %>
-              No data to display.
-            <% end %>
-          </div>
-        </div>
+  <div class="container col-12 my-2">
+    <%= render "downloads_card", episodes: @episodes, episode_rollups: @episode_rollups, date_start: @date_start, date_end: @date_end, options: line_options, total_recent: @recent_downloads_total, total_alltime: @alltime_downloads_total %>
+  </div>
+
+  <div class="container col-12 mb-2">
+    <div class="row gx-2">
+      <div class="col-6 mb-2">
+        <%= render "geo_card", geo_type: "Countries" %>
       </div>
-    </div>
-
-    <div class="container col-12 mb-2">
-      <div class="row gx-2">
-        <div class="col-6 mb-2">
-          <div class="card">
-            <div class="card-header card-header-primary-light d-flex">
-              <h5>Countries</h5>
-            </div>
-            <div class="card-body">
-              <div class="col-12">
-                <div class="">
-                  map graph will go here
-                </div>
-              </div>
-              <div class="col-12">
-                <table class="table table-striped shadow rounded">
-                  <thead>
-                    <tr class="table-secondary">
-                      <th>Country</th>
-                      <th>Downloads</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 mb-2">
-          <div class="card">
-            <div class="card-header card-header-primary-light d-flex">
-              <h5>Metros (DMA)</h5>
-            </div>
-            <div class="card-body">
-              <div class="col-12">
-                <div class="">
-                  map graph will go here
-                </div>
-              </div>
-              <div class="col-12">
-                <table class="table table-striped shadow rounded">
-                  <thead>
-                    <tr class="table-secondary">
-                      <th>Metro</th>
-                      <th>Downloads</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 mb-2">
-          <div class="card">
-            <div class="card-header card-header-primary-light d-flex">
-              <h5>App & Browser</h5>
-            </div>
-            <div class="card-body">
-              <% if @agent_apps.present? %>
-                <div class="col">
-                    <%= render "chart", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_apps)), options: bar_options %>
-                </div>
-                <div class="col my-4">
-                  <%= paginate @agent_apps, param_name: :agent_apps %>
-                </div>
-                <div class="col-12">
-                  <table class="table table-striped shadow rounded">
-                    <thead>
-                      <tr class="table-secondary">
-                        <th>App or Browser</th>
-                        <th>Downloads</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <% @agent_apps.each do |app| %>
-                        <tr>
-                          <td><%= PodcastMetricsHelper::AGENT_TAGS[app[:code].to_s.to_sym] %></td>
-                          <td><%= app[:count] %></td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
-              <% else %>
-                No data to display.
-              <% end %>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 mb-2">
-          <div class="card">
-            <div class="card-header card-header-primary-light d-flex">
-              <h5>Type</h5>
-            </div>
-            <div class="card-body">
-              <% if @agent_types.present? %>
-                <div class="col">
-                    <%= render "chart", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_types)), options: bar_options %>
-                </div>
-                <div class="col-12">
-                  <table class="table table-striped shadow rounded">
-                    <thead>
-                      <tr class="table-secondary">
-                        <th>Type</th>
-                        <th>Downloads</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <% @agent_types.each do |app| %>
-                        <tr>
-                          <td><%= PodcastMetricsHelper::AGENT_TAGS[app[:code].to_s.to_sym] %></td>
-                          <td><%= app[:count] %></td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
-              <% else %>
-                No data to display.
-              <% end %>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 mb-2">
-          <div class="card">
-            <div class="card-header card-header-primary-light d-flex">
-              <h5>Operating System</h5>
-            </div>
-            <div class="card-body">
-              <% if @agent_os.present? %>
-                <div class="col">
-                    <%= render "chart", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_os)), options: bar_options %>
-                </div>
-                <div class="col my-4">
-                  <%= paginate @agent_os, param_name: :agent_os %>
-                </div>
-                <div class="col-12">
-                  <table class="table table-striped shadow rounded">
-                    <thead>
-                      <tr class="table-secondary">
-                        <th>OS</th>
-                        <th>Downloads</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <% @agent_os.each do |app| %>
-                        <tr>
-                          <td><%= PodcastMetricsHelper::AGENT_TAGS[app[:code].to_s.to_sym] %></td>
-                          <td><%= app[:count] %></td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
-              <% else %>
-                No data to display.
-              <% end %>
-            </div>
-          </div>
-        </div>
+      <div class="col-6 mb-2">
+        <%= render "geo_card", geo_type: "Metros" %>
       </div>
+      <div class="col-6 mb-2">
+        <%= render "agent_card", agent: @agent_apps, agent_label: "App or Browser", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_apps)), options: bar_options, turbo_tag: "agent_apps" %>
+      </div>
+      <div class="col-6 mb-2">
+        <%= render "agent_card", agent: @agent_types, agent_label: "Agent Type", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_types)), options: bar_options, turbo_tag: "agent_types" %>
+      </div>
+      <div class="col-6 mb-2">
+        <%= render "agent_card", agent: @agent_os, agent_label: "Operating System", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_os)), options: bar_options, turbo_tag: "agent_os" %>
+      </div>
+
     </div>
-  <% end %>
+  </div>
 <% end %>

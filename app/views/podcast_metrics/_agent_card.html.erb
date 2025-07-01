@@ -1,0 +1,37 @@
+<%= turbo_frame_tag turbo_tag.to_s do %>
+  <div class="card">
+    <div class="card-header card-header-primary-light d-flex">
+      <h5><%= agent_label %></h5>
+    </div>
+    <div class="card-body">
+      <% if agent.present? %>
+        <div class="col">
+            <%= render "chart", chart: chart, series: series, options: options %>
+        </div>
+        <div class="col my-4">
+          <%= paginate agent, param_name: turbo_tag %>
+        </div>
+        <div class="col-12">
+          <table class="table table-striped shadow rounded">
+            <thead>
+              <tr class="table-secondary">
+                <th><%= agent_label %></th>
+                <th>Downloads</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% agent.each do |a| %>
+                <tr>
+                  <td><%= PodcastMetricsHelper::AGENT_TAGS[a[:code].to_s.to_sym] %></td>
+                  <td><%= a[:count] %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        No data to display.
+      <% end %>
+    </div>
+  </div>
+<% end %>
