@@ -138,7 +138,7 @@ class PodcastRssImport < PodcastImport
     guids = []
     to_import = []
     feed.entries.each do |entry|
-      guid = entry.entry_id
+      guid = clean_string(entry.entry_id)
       entry_hash = entry.to_h.as_json.with_indifferent_access
 
       if new_episodes_only && existing_guids.include?(guid)
