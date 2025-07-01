@@ -75,7 +75,7 @@ class EpisodeRssImport < EpisodeImport
   end
 
   def update_episode_with_entry!
-    episode.clean_title = entry[:itunes_title]
+    episode.clean_title = clean_title(entry[:itunes_title])
     episode.description = entry_description(entry)
     episode.episode_number = entry[:itunes_episode]
     episode.published_at = entry[:published]
