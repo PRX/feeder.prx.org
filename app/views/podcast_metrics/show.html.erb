@@ -2,27 +2,32 @@
   <% content_for :title, "#{@podcast.title} - #{t(".title")}" %>
 
   <div class="container col-12 my-2">
-    <%= render "downloads_card", episodes: @episodes, episode_rollups: @episode_rollups, date_start: @date_start, date_end: @date_end, options: line_options, total_recent: @recent_downloads_total, total_alltime: @alltime_downloads_total %>
+    <%= render "downloads_card", episodes: @episodes, episode_rollups: @episode_rollups, total_recent: @recent_downloads_total, total_alltime: @alltime_downloads_total, date_start: @date_start, date_end: @date_end %>
   </div>
 
   <div class="container col-12 mb-2">
-    <div class="row gx-2">
-      <div class="col-6 mb-2">
-        <%= render "geo_card", geo_type: "Countries" %>
+    <div class="col">
+      <div class="row gx-2">
+        <div class="col-6 mb-2">
+          <%= render "geo_card", geo_type: "Countries" %>
+        </div>
+        <div class="col-6 mb-2">
+          <%= render "geo_card", geo_type: "Metros" %>
+        </div>
       </div>
-      <div class="col-6 mb-2">
-        <%= render "geo_card", geo_type: "Metros" %>
+    </div>
+    <div class="col">
+      <div class="row gx-2">
+        <div class="col-4 mb-2">
+          <%= render "agent_card", agents: @agent_apps, agents_title: "App or Browser", turbo_tag: "agent_apps" %>
+        </div>
+        <div class="col-4 mb-2">
+          <%= render "agent_card", agents: @agent_types, agents_title: "Agent Types", turbo_tag: "agent_types" %>
+        </div>
+        <div class="col-4 mb-2">
+          <%= render "agent_card", agents: @agent_os, agents_title: "Operating System", turbo_tag: "agent_os" %>
+        </div>
       </div>
-      <div class="col-6 mb-2">
-        <%= render "agent_card", agent: @agent_apps, agent_label: "App or Browser", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_apps)), options: bar_options, turbo_tag: "agent_apps" %>
-      </div>
-      <div class="col-6 mb-2">
-        <%= render "agent_card", agent: @agent_types, agent_label: "Agent Type", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_types)), options: bar_options, turbo_tag: "agent_types" %>
-      </div>
-      <div class="col-6 mb-2">
-        <%= render "agent_card", agent: @agent_os, agent_label: "Operating System", chart: chart_options(type: "bar", height: "300", width: "100%"), series: series_options(parse_agent_data(@agent_os)), options: bar_options, turbo_tag: "agent_os" %>
-      </div>
-
     </div>
   </div>
 <% end %>
