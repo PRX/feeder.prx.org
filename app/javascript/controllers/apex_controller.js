@@ -3,7 +3,6 @@ import ApexCharts from "apexcharts"
 
 const DEFAULT_OPTIONS = {
   chart: {
-    height: "100%",
     width: "100%",
     zoom: { enabled: false },
     animations: {
@@ -79,6 +78,9 @@ export default class extends Controller {
     const type_options = {}
     if (this.typeValue === "line") {
       Object.assign(type_options, LINE_DEFAULTS)
+      Object.assign(options.chart, {
+        height: "700px",
+      })
     } else if (this.typeValue === "bar") {
       Object.assign(type_options, BAR_DEFAULTS)
       Object.assign(options.chart, {
