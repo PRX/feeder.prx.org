@@ -11,6 +11,10 @@ const DEFAULT_OPTIONS = {
       animateGradually: {
         delay: 50,
       },
+      dynamicAnimation: {
+        enabled: true,
+        speed: 1000,
+      },
     },
   },
   tooltip: {
@@ -61,7 +65,7 @@ export default class extends Controller {
     type: String,
     series: Array,
   }
-  static targets = ["chart", "episode"]
+  static targets = ["chart", "episodebox", "dateview"]
 
   connect() {
     const options = Object.assign({}, DEFAULT_OPTIONS)
@@ -77,6 +81,9 @@ export default class extends Controller {
       Object.assign(type_options, LINE_DEFAULTS)
     } else if (this.typeValue === "bar") {
       Object.assign(type_options, BAR_DEFAULTS)
+      Object.assign(options.chart, {
+        height: "350px",
+      })
     }
     Object.assign(options, series, type_options)
 
@@ -85,6 +92,39 @@ export default class extends Controller {
   }
 
   toggleSeries(event) {
-    ApexCharts.exec(this.idValue, "toggleSeries", event.target.dataset.series)
+    if (event.target.checked) {
+      ApexCharts.exec(this.idValue, "showSeries", event.target.dataset.series)
+    } else {
+      ApexCharts.exec(this.idValue, "hideSeries", event.target.dataset.series)
+    }
+  }
+
+  updateSeries(event) {
+    ApexCharts.exec(this.idValue, "updateSeries", event.params.series)
+    this.episodeboxTargets.forEach((target) => {
+      if (target.checked) {
+        ApexCharts.exec(this.idValue, "showSeries", target.dataset.series)
+      } else {
+        ApexCharts.exec(this.idValue, "hideSeries", target.dataset.series)
+      }
+    })
+    this.dateviewTargets.forEach((el) => {
+      if (el === event.target) {
+        el.classList.add("active")
+      } else {
+        el.classList.remove("active")
+      }
+    })
+  }
+
+  resetSeries(event) {
+    ApexCharts.exec(this.idValue, "updateSeries", event.params.series)
+    this.episodeboxTargets.forEach((el) => {
+      el.checked = true
+      ApexCharts.exec(this.idValue, "showSeries", el.dataset.series)
+    })
+    this.dateviewTargets.forEach((el) => {
+      el.classList.remove("active")
+    })
   }
 }

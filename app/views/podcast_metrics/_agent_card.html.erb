@@ -1,15 +1,15 @@
 <%= turbo_frame_tag turbo_tag.to_s do %>
-  <div class="card">
-    <div class="card-header card-header-primary-light d-flex">
-      <h5><%= agents_title %></h5>
-    </div>
-    <div class="card-body">
-      <% if agents.present? %>
+  <% if agents.present? %>
+    <div class="card shadow border-0">
+      <div class="card-header card-header-primary-light d-flex">
+        <h5><%= agents_title %></h5>
+      </div>
+      <div class="card-body">
         <div data-controller="apex"
           data-apex-id-value="<%= SecureRandom.uuid %>"
           data-apex-type-value="bar"
           data-apex-series-value="<%= parse_agent_data(agents).to_json %>">
-          <div class="col" style="height: 300px;">
+          <div class="col">
             <div data-apex-target="chart"></div>
           </div>
           <div class="col align-items-center">
@@ -31,14 +31,11 @@
                 </tbody>
               </table>
             </div>
-            <div class="col my-4">
-              <%= paginate agents, param_name: turbo_tag %>
-            </div>
           </div>
         </div>
-      <% else %>
-        No data to display.
-      <% end %>
+      </div>
     </div>
-  </div>
+  <% else %>
+    No data to display.
+  <% end %>
 <% end %>

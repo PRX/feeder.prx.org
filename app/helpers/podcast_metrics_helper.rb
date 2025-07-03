@@ -1,6 +1,6 @@
 module PodcastMetricsHelper
-  def parse_episode_downloads(data, date_start, date_end)
-    data.map do |d|
+  def parse_episode_downloads(episode_rollups, date_start, date_end)
+    episode_rollups.map do |d|
       {
         name: d[:ep].title,
         data: fill_missing_dates(d[:rollups], date_start, date_end)
@@ -9,7 +9,7 @@ module PodcastMetricsHelper
   end
 
   def fill_missing_dates(rollups, date_start, date_end)
-    date_range = (date_start.to_date..date_end.to_date).to_a
+    date_range = (date_start.to_date..(date_end.to_date - 1.day)).to_a
 
     date_range.map do |date|
       rollup = rollups.select { |r| r.hour.to_date == date }
@@ -48,5 +48,13 @@ module PodcastMetricsHelper
 
   def sum_rollups(rollups)
     rollups.map { |r| r[:count] }.reduce(:+)
+  end
+
+  def rollups_date_range_options
+    [
+      ["Last 7 Days", 7.days.ago],
+      ["Last 14 Days", 14.days.ago],
+      ["Last 28 Days", 28.days.ago]
+    ]
   end
 end

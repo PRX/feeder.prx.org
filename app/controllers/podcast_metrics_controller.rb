@@ -8,17 +8,19 @@ class PodcastMetricsController < ApplicationController
       @podcast.episodes
         .published
         .order(published_at: :desc)
-        .paginate(params[:page], params[:per])
-    @date_start = 30.days.ago
-    @date_end = Time.zone.now
+        .paginate(params[:episode_rollups], params[:per])
+
+    @date_start = metrics_params[:date_start]
+    @date_end = metrics_params[:date_end]
+    @date_trunc = metrics_params[:date_trunc]
 
     if clickhouse_connected?
       @recent_downloads_by_episode =
         Rollups::HourlyDownload
           .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
-          .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
-          .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('DAY', hour) DESC"))
+          .select(:episode_id, "DATE_TRUNC('#{@date_trunc}', hour) AS hour", "SUM(count) AS count")
+          .group(:episode_id, "DATE_TRUNC('#{@date_trunc}', hour) AS hour")
+          .order(Arel.sql("DATE_TRUNC('#{@date_trunc}', hour) DESC"))
       @alltime_downloads_by_episode =
         Rollups::HourlyDownload
           .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
@@ -82,6 +84,16 @@ class PodcastMetricsController < ApplicationController
 
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
+  end
+
+  def metrics_params
+    params
+      .permit(:podcast_id, :date_start, :date_end, :date_trunc)
+      .with_defaults(
+        date_start: 30.days.ago,
+        date_end: Time.zone.now,
+        date_trunc: "DAY"
+      )
   end
 
   def episode_rollups(episodes, rollups, totals)
