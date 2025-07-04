@@ -165,6 +165,18 @@ module ImportUtils
     end
   end
 
+  def download_file(io, url)
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true if uri.scheme == "https"
+    request = Net::HTTP::Get.new uri.path
+    http.request(request) do |response|
+      response.read_body do |chunk|
+        io.write chunk
+      end
+    end
+  end
+
   private
 
   def enclosure_url_from_entry(entry)

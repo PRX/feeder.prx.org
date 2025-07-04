@@ -7,5 +7,11 @@ FactoryBot.define do
 
     factory :podcast_timings_import, class: PodcastTimingsImport do
     end
+
+    factory :podcast_rss_import, class: PodcastRssImport do
+    end
+
+    factory :podcast_megaphone_import, class: PodcastMegaphoneImport do
+    end
   end
 end

@@ -11,7 +11,7 @@
       <%= turbo_frame_tag "import-settings" do %>
         <div class="col-12 mb-4 prx-field-group">
           <div class="form-floating" data-controller="dynamic-form">
-            <%= form.select :type, t("helpers.label.podcast_import.types").to_a.map(&:reverse), {}, data: {action: "dynamic-form#change"} %>
+            <%= form.select :type, import_types(import), {}, data: {action: "dynamic-form#change"} %>
             <%= form.label :type, required: true %>
             <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
           </div>
@@ -19,6 +19,8 @@
 
         <% if form.object.type == "PodcastTimingsImport" %>
           <%= render "form_timings", form: form %>
+        <% elsif form.object.type == "PodcastMegaphoneImport" %>
+          <%= render "form_megaphone", form: form %>
         <% else %>
           <%= render "form_rss", form: form %>
         <% end %>
