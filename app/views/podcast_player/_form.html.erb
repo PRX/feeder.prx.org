@@ -31,7 +31,7 @@
     <div class="container-fluid d-grid gap-4">
       <%= render "episode_player/form_sidebar", player_options: player_options %>
 
-      <div class="card border-light">
+      <div class="card">
         <div class="card-header-light"><%= t(".title.playlist") %></div>
 
         <div class="card-body">
@@ -71,7 +71,7 @@
         </div>
       </div>
 
-      <div class="card border-light">
+      <div class="card">
         <div class="card-footer d-grid">
           <%= link_to t(".label.clear"), podcast_player_path(podcast), class: "btn btn-primary" %>
         </div>

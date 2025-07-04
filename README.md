@@ -138,6 +138,11 @@ git checkout -b feat/this_is_my_new_feature
 Run the rails development server at [feeder.prx.test](http://feeder.prx.test):
 
 ```sh
+# run the server and watch/compile sass files
+bin/dev
+
+# or if you're not changing styles, and want binding.pry to work
+bin/rails dartsass:build
 bin/rails server
 ```
 
@@ -207,6 +212,7 @@ for processed files. Then, to start the worker in development:
 bin/rails sqs:create
 
 # now you can start the web/worker in different terminals
+bin/rails dartsass:watch
 bin/rails server
 bin/rails worker
 

@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :media_resource do
-    association :episode, factory: :episode, prx_uri: "/api/v1/stories/80548"
+    association :episode, factory: :episode
     sequence(:guid) { |n| "ca047dce-9df5-4132-a04b-31d24c7c55a#{n}" }
 
     mime_type { "audio/mpeg" }

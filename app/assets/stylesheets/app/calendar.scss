@@ -18,10 +18,32 @@
       line-height: 1;
     }
 
+    tbody {
+      tr:nth-of-type(odd) {
+        .bg-primary {
+          --bs-table-bg-type: $primary;
+        }
+
+        .bg-danger {
+          --bs-table-bg-type: $danger;
+        }
+
+        .bg-warning {
+          --bs-table-bg-type: $warning;
+        }
+      }
+    }
+
     .day.current-month:hover {
       background-color: $primary !important;
       color: $light;
       cursor: pointer;
     }
+  }
+}
+
+@include color-mode(dark) {
+  .simple-calendar :is(thead th, td) {
+    border-color: $border-color-dark;
   }
 }

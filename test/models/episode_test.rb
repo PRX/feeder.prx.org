@@ -381,4 +381,63 @@ describe Episode do
       refute_nil episode.ready_transcript
     end
   end
+
+  describe "#head_request" do
+    let(:episode_1) { build_stubbed(:episode_with_media) }
+    let(:episode_2) { build_stubbed(:episode_with_media) }
+    let(:episode_3) { build_stubbed(:episode_with_media) }
+
+    it "returns response for a successful request" do
+      uri_1 = episode_1.enclosure_url
+
+      stub_request(:head, uri_1).to_return(status: 200)
+
+      assert_kind_of Net::HTTPSuccess, episode_1.head_request
+      assert_requested :head, episode_1.enclosure_url
+    end
+
+    it "handles redirects" do
+      uri_1 = episode_1.enclosure_url
+      uri_2 = episode_2.enclosure_url
+      uri_3 = episode_3.enclosure_url
+
+      stub_request(:head, uri_1).to_return(status: 302, headers: {location: uri_2})
+      stub_request(:head, uri_2).to_return(status: 301, headers: {location: uri_3})
+      stub_request(:head, uri_3).to_return(status: 200)
+
+      episode_1.head_request
+
+      assert_requested :head, episode_1.enclosure_url
+      assert_requested :head, episode_2.enclosure_url
+      assert_requested :head, episode_3.enclosure_url
+    end
+
+    it "does not follow more than 10 redirects" do
+      uri_1 = episode_1.enclosure_url
+
+      stub_request(:head, uri_1)
+        .to_return(status: 302, headers: {location: uri_1}).times(50)
+
+      episode_1.head_request
+
+      assert_requested :head, episode_1.enclosure_url, times: 10
+    end
+
+    it "rescues errors after making head requests" do
+      uri_1 = episode_1.enclosure_url
+      stub_request(:head, uri_1).to_raise(Net::ReadTimeout)
+      uri_2 = episode_2.enclosure_url
+      stub_request(:head, uri_2).to_raise(URI::InvalidURIError)
+      uri_3 = episode_3.enclosure_url
+      stub_request(:head, uri_3).to_raise(Socket::ResolutionError)
+
+      episode_1.head_request
+      episode_2.head_request
+      episode_3.head_request
+
+      assert_requested :head, episode_1.enclosure_url
+      assert_requested :head, episode_2.enclosure_url
+      assert_requested :head, episode_3.enclosure_url
+    end
+  end
 end

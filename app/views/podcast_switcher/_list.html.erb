@@ -2,7 +2,7 @@
   <% if @podcast_switcher_podcasts.present? %>
     <%= render partial: "podcast_switcher/podcast", collection: @podcast_switcher_podcasts, cached: true %>
   <% else %>
-    <li class="text-center text-secondary">
+    <li class="text-center ">
       <%= t("podcast_switcher.dropdown.empty") %>
     </li>
   <% end %>

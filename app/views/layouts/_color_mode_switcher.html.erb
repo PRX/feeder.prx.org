@@ -1,0 +1,27 @@
+<nav class="navbar-nav dropdown" data-controller="color-mode">
+  <h2 class="visually-hidden"><%= t(".title") %></h2>
+
+  <a class="nav-link nav-link-icon dropdown-toggle" href="#" id="nav-color-mode-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="material-icons align-middle opacity-0" data-color-mode-target="placeholder">brightness_1</span>
+    <span class="material-icons align-middle d-none" data-color-mode-target="auto">brightness_6</span>
+    <span class="material-icons align-middle d-none" data-color-mode-target="dark">dark_mode</span>
+    <span class="material-icons align-middle d-none" data-color-mode-target="light">light_mode</span>
+  </a>
+
+  <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark position-absolute shadow m-0" aria-labelledby="nav-color-mode-dropdown">
+    <button type="button" class="dropdown-item" data-action="color-mode#auto" data-color-mode-target="auto">
+      <span class="material-icons align-middle">brightness_6</span>
+      <%= t(".auto") %>
+    </button>
+
+    <button type="button" class="dropdown-item" data-action="color-mode#dark" data-color-mode-target="dark">
+      <span class="material-icons align-middle">dark_mode</span>
+      <%= t(".dark") %>
+    </button>
+
+    <button type="button" class="dropdown-item" data-action="color-mode#light" data-color-mode-target="light">
+      <span class="material-icons align-middle">light_mode</span>
+      <%= t(".light") %>
+    </button>
+  </div>
+</nav>

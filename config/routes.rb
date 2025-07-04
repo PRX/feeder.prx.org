@@ -21,6 +21,7 @@ Rails.application.routes.draw do
     end
     resources :placements_preview, only: [:show]
     get "rollups_demo", to: "podcasts#rollups_demo"
+    resource :metrics, controller: :podcast_metrics
   end
 
   resources :episodes, except: [:create, :new] do

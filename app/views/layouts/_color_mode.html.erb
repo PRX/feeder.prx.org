@@ -1,0 +1,18 @@
+<script>
+  // prevent flickering of color mode on initial page load
+  function setColorMode() {
+    let mode = localStorage.getItem("colormode")
+    if (!mode && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      mode = "dark"
+    }
+    if (mode === "dark") {
+      document.documentElement.dataset.bsTheme = "dark"
+    } else {
+      delete document.documentElement.dataset.bsTheme
+    }
+  }
+
+  // set color mode now, and when the browser setting changes
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", setColorMode)
+  setColorMode()
+</script>

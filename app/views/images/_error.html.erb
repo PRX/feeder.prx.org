@@ -13,7 +13,7 @@
     <div class="form-floating mb-4">
       <div class="form-control d-flex align-items-center is-invalid">
         <span class="material-icons text-danger">image</span>
-        <div class="text-secondary mx-2 flex-grow-1 overflow-hidden text-truncate"><%= image.file_name %></div>
+        <div class="mx-2 flex-grow-1 overflow-hidden text-truncate"><%= image.file_name %></div>
 
         <% if retry_path %>
           <%= link_to retry_path, method: :put, class: "btn btn-sm btn-warning" do %>
