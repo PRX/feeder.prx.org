@@ -19,6 +19,7 @@ describe PublishFeedJob do
   describe "saving the rss file" do
     before do
       stub_request(:head, episode.enclosure_url).to_return(status: 200)
+      stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
     end
 
     describe "#perform" do
@@ -287,6 +288,7 @@ describe PublishFeedJob do
         end
 
         it "does not raise an error if the apple publishing fails and apple sync does not block rss publishing" do
+          stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
           apple_feed.apple_config.update!(sync_blocks_rss: false)
