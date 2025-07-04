@@ -52,6 +52,12 @@ describe PodcastMegaphoneImport do
     _(p.display_episodes_count).must_equal 5000
     _(p.itunes_type).must_equal "episodic"
   end
+  it "updates the feed" do
+    megaphone_feed.config.advertising_tags.must_be_nil
+    importer.megaphone_feed = megaphone_feed
+    importer.update_feed!
+    megaphone_feed.config.advertising_tags.must_equal ["Business & Finance", "Arts & Crafts"]
+  end
 
   it "updates delivery sync" do
     importer.megaphone_feed = megaphone_feed

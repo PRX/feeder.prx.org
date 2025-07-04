@@ -18,6 +18,7 @@ class PodcastMegaphoneImport < PodcastImport
     status_started!
 
     create_or_update_podcast!
+    update_feed!
     finish_sync!
 
     create_or_update_episode_imports!
@@ -46,6 +47,12 @@ class PodcastMegaphoneImport < PodcastImport
     update_images
 
     podcast
+  end
+
+  def update_feed!
+    conf = megaphone_feed.config
+    conf.advertising_tags = megaphone_podcast.advertising_tags
+    conf.save!
   end
 
   def finish_sync!
