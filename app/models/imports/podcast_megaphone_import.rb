@@ -18,6 +18,8 @@ class PodcastMegaphoneImport < PodcastImport
     status_started!
 
     create_or_update_podcast!
+    finish_sync!
+
     create_or_update_episode_imports!
 
     if episode_imports.any?
@@ -43,9 +45,14 @@ class PodcastMegaphoneImport < PodcastImport
     podcast.save!
     update_images
 
-    megaphone_podcast.update_sync_log
-
     podcast
+  end
+
+  def finish_sync!
+    if override_enclosures
+      megaphone_podcast.external_id = podcast.guid
+      megaphone_podcast.update!
+    end
   end
 
   def megaphone_podcast(mf = megaphone_feed, mpid = megaphone_podcast_id)
@@ -81,6 +88,10 @@ class PodcastMegaphoneImport < PodcastImport
     podcast_attributes[:owner_email] = megaphone_podcast.owner_email
     podcast_attributes[:display_episodes_count] = megaphone_podcast.episode_limit
     podcast_attributes[:itunes_type] = megaphone_podcast.podcast_type
+
+    # lock until we finish importing all episodes
+    # and setting enclosure overrides, sync logs, and episode delivery status
+    podcast_attributes[:locked_until] = 1.day.from_now
 
     podcast_attributes
   end

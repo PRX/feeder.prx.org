@@ -5,7 +5,7 @@ describe PodcastMegaphoneImport do
   let(:podcast) { create(:podcast, default_feed: default_feed) }
   let(:megaphone_feed) { create(:megaphone_feed, podcast: podcast) }
 
-  let(:importer) { PodcastMegaphoneImport.create(podcast: podcast, megaphone_podcast_id: "7c8e5a1b-9d21-4f6c-b830-e42a87c3f9d2") }
+  let(:importer) { PodcastMegaphoneImport.create(podcast: podcast, megaphone_podcast_id: "7c8e5a1b-9d21-4f6c-b830-e42a87c3f9d2", override_enclosures: true) }
   let(:sns) { SnsMock.new }
 
   around do |test|
@@ -20,6 +20,9 @@ describe PodcastMegaphoneImport do
 
   before do
     stub_request(:get, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/7c8e5a1b-9d21-4f6c-b830-e42a87c3f9d2")
+      .to_return(status: 200, body: test_file("/fixtures/megaphone_podcast.json"), headers: {})
+
+    stub_request(:put, "https://cms.megaphone.fm/api/networks/this-is-a-network-id/podcasts/7c8e5a1b-9d21-4f6c-b830-e42a87c3f9d2")
       .to_return(status: 200, body: test_file("/fixtures/megaphone_podcast.json"), headers: {})
   end
 
@@ -48,5 +51,20 @@ describe PodcastMegaphoneImport do
     _(p.owner_email).must_equal "help@prx.org"
     _(p.display_episodes_count).must_equal 5000
     _(p.itunes_type).must_equal "episodic"
+  end
+
+  it "updates delivery sync" do
+    importer.megaphone_feed = megaphone_feed
+    importer.finish_sync!
+  end
+
+  it "creates or updates episode imports" do
+    importer.megaphone_feed = megaphone_feed
+    importer.create_or_update_episode_imports!
+  end
+
+  it "imports the full show" do
+    importer.megaphone_feed = megaphone_feed
+    importer.import!
   end
 end
