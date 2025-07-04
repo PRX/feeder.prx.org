@@ -13,7 +13,7 @@ class PublishingStatusTest < ActiveSupport::TestCase
     stub_request(:get, podping_url)
       .with(
         headers: {
-          "Authorization" => ENV["PODPING_AUTH_TOKEN"],
+          "Authorization" => "test_token",
           "User-Agent" => "PRX"
         }
       )
