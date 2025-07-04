@@ -4,6 +4,7 @@ class PublishFeedJob < ApplicationJob
   queue_as :feeder_publishing
 
   include PodcastsHelper
+  include PublishingNotify
 
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
@@ -63,6 +64,7 @@ class PublishFeedJob < ApplicationJob
   def publish_rss(podcast, feed)
     res = save_file(podcast, feed)
     PublishingPipelineState.publish_rss!(podcast)
+    notify_rss_published(podcast, feed)
     res
   rescue => e
     fail_state(podcast, "rss", e)

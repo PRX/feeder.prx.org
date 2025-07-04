@@ -22,6 +22,7 @@ ENV["SLACK_CHANNEL_ID"] = ""
 ENV["ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY"] = "thisisamadeupkeythisisamadeupkey"
 ENV["ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY"] = "andthisisanotheronetoothankyouuu"
 ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"] = "maybeyouarefeelingsaltyaboutthis"
+ENV["PODPING_AUTH_TOKEN"] = "test_token"
 
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"

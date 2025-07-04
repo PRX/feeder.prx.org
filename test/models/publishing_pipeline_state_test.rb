@@ -397,6 +397,7 @@ describe PublishingPipelineState do
       let(:f3) { create(:apple_feed, podcast: podcast) }
 
       it "can publish via the apple configs" do
+        stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
         assert [f1, f2, f3]
 
         f3.stub(:publish_integration!, "published apple!") do

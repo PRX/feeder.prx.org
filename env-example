@@ -63,6 +63,8 @@ ID_HOST=id.staging.prx.tech
 PLAY_HOST=play.staging.prx.tech
 PRX_HOST=beta.staging.prx.tech
 PUBLIC_FEEDS_URL_PREFIX=https://publicfeeds.net/f
+PODPING_HOST=podping.cloud
+PODPING_AUTH_TOKEN=
 
 # RSS settings
 # FEEDER_GENERATOR=
