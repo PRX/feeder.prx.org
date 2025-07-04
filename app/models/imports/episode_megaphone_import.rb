@@ -1,11 +1,12 @@
 class EpisodeMegaphoneImport < EpisodeImport
-  store :config, accessors: [:entry, :audio], coder: JSON
+  store :config, accessors: [:entry, :audio, :synced_at], coder: JSON
 
   validates :guid, presence: true
 
   def set_defaults
     super
     self.audio ||= {files: []}
+    self.synced_at = nil
   end
 
   def import!
@@ -17,8 +18,8 @@ class EpisodeMegaphoneImport < EpisodeImport
     set_file_resources!
 
     episode.save!
-    episode.uncut&.slice_contents!
     episode.copy_media
+    update_enclosure_override!
 
     status_complete!
   rescue => err
@@ -120,6 +121,30 @@ class EpisodeMegaphoneImport < EpisodeImport
     episode
   end
 
+  def update_enclosure_override!
+    return if !podcast_import.override_enclosures || audio[:files].blank?
+
+    emr_attributes = {
+      status: :complete,
+      mime_type: "audio/mpeg",
+      medium: "audio",
+      original_url: entry[:download_url],
+      file_size: audio_file_size,
+      duration: entry[:duration].to_f,
+      bit_rate: entry[:bitrate].to_i,
+      channels: entry[:channel_mode].match?(/mono/i) ? 1 : 2,
+      sample_rate: entry[:samplerate].to_f
+    }
+
+    if episode.external_media_resource
+      episode.external_media_resource.update!(emr_attributes)
+    else
+      episode.create_external_media_resource!(emr_attributes)
+    end
+
+    episode.update!(enclosure_override_url: entry[:download_url], enclosure_override_prefix: true)
+  end
+
   def upload_audio(path)
     audio_files = audio[:files]
     return if audio_files.blank? || audio_files.length < 2
@@ -135,6 +160,66 @@ class EpisodeMegaphoneImport < EpisodeImport
   ensure
     combined_file&.close
     combined_file&.unlink
+  end
+
+  def finish_sync!
+    # Going to update the sync log, the episode delivery status, and the megaphone episode
+    return if !podcast_import.override_enclosures
+
+    # if already synced, do
+    return if synced_at.present?
+
+    delivery_status = update_delivery_status
+    self.synced_at ||= delivery_status&.created_at
+    save!
+  end
+
+  def update_delivery_status
+    # For the sync log, set the megaphone external id for this episode
+    feed = Feeds::MegaphoneFeed.where(podcast: podcast).first
+    return if feed.nil?
+
+    megaphone_podcast = Megaphone::Podcast.find_by_feed(feed)
+    return if megaphone_podcast.nil?
+
+    megaphone_episode = Megaphone::Episode.new_from_episode(megaphone_podcast, episode)
+
+    # override the values with what's in megaphone now
+    megaphone_episode.find_by_megaphone_id(entry[:id])
+
+    # do not override the audio
+    megaphone_episode.background_audio_file_url = nil
+
+    # get the media version id
+    version_id = episode.media_version_id
+
+    # get the filename with version id
+    audio_url = megaphone_episode.arrangement_version_url(megaphone_episode.enclosure_url, version_id)
+    audio_filename = megaphone_episode.url_filename(audio_url)
+
+    # now change values we want to have match feeder
+    # this should also update the sync log
+    megaphone_episode.external_id = episode.guid
+    megaphone_episode.original_filename = audio_filename
+
+    megaphone_episode.update!
+
+    # from that also derive the delivery status info
+    delivery_status_attrs = {
+      source_media_version_id: version_id,
+      source_filename: audio_filename,
+      source_size: audio_file_size,
+      uploaded: true,
+      delivered: true
+    }
+
+    delivery_status = episode.update_episode_delivery_status(:megaphone, delivery_status_attrs)
+    self.synced_at = delivery_status.created_at
+    save!
+  end
+
+  def audio_file_size
+    entry[:id3_file_size].to_i + entry[:size].to_i
   end
 
   def put_file(file, path)
