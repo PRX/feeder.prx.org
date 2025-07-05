@@ -42,6 +42,8 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
       xml.itunes :"new-feed-url", @feed.new_feed_url
     end
 
+    xml.itunes :applepodcastsverify, @feed.apple_verify_token if @feed.apple_verify_token.present?
+
     xml.itunes :block, "Yes" if @podcast.itunes_block || @feed.try(:private)
 
     xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
