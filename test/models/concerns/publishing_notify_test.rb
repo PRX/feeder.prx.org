@@ -8,7 +8,7 @@ class PublishingStatusTest < ActiveSupport::TestCase
 
   test "notify_rss_published sends Podping notification" do
     _(feed.public?).must_equal true
-    podping_url = "https://podping.cloud/?url=#{CGI.escape(feed.published_public_url)}"
+    podping_url = "https://podping.cloud/?url=#{CGI.escape(feed.url)}"
 
     stub_request(:get, podping_url)
       .with(
