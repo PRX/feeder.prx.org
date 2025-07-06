@@ -110,6 +110,8 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
       xml.podcast :follow, url: @podcast.subscribe_links_path
     end
 
+    xml.podcast :podping, usesPodping: "true" if podping_enabled?(@feed)
+
     @episodes.each_with_index do |ep, index|
       xml.item do
         xml.guid(episode_guid(ep, @feed), isPermaLink: !!ep.is_perma_link)

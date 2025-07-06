@@ -15,7 +15,7 @@ module PublishingNotify
     podping_host = ENV["PODPING_HOST"] || "podping.cloud"
     url = "https://#{podping_host}/"
     headers = podping_headers
-    params = {url: feed.published_public_url}
+    params = {url: feed.url}
 
     connection = Faraday.new(url: url, headers: headers, params: params) do |builder|
       builder.response :raise_error
