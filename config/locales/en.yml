@@ -892,6 +892,7 @@ en:
         private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private URL with - <strong>anyone who has access to the URL will be able to use it</strong>.
         url: If you use a service to manage your podcast feed to generate a public URL for distribution, enter that URL here. This is the address you give to podcast platforms so listeners can subscribe to your show. It’s separate from the private feed URL we use to manage your podcast content.
         exclude_episodes: Exclude all episodes from the default feed from being automatically added to this feed.
+        import_locked: Tell other hosting services this feed should not be imported.
       title: Distribution
       exclude_episodes_label: Skip Default Feed Episodes
     form_megaphone_config:
