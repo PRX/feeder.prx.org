@@ -402,7 +402,7 @@ describe PublishingPipelineState do
 
         f3.stub(:publish_integration!, "published apple!") do
           podcast.stub(:feeds, [f1, f2, f3]) do
-            PublishFeedJob.stub_any_instance(:save_file, "saved rss!") do
+            PublishFeedJob.stub_any_instance(:save_file, FeedBuilder.new(podcast, f1)) do
               PublishingPipelineState.attempt!(podcast, perform_later: false)
             end
           end

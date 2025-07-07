@@ -4,7 +4,6 @@ class PublishFeedJob < ApplicationJob
   queue_as :feeder_publishing
 
   include PodcastsHelper
-  include PublishingNotify
 
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
@@ -62,12 +61,19 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_rss(podcast, feed)
-    res = save_file(podcast, feed)
+    rss_builder = save_file(podcast, feed)
+    after_publish_rss(podcast, feed, rss_builder.episodes)
     PublishingPipelineState.publish_rss!(podcast)
-    notify_rss_published(podcast, feed)
-    res
+    rss_builder
   rescue => e
     fail_state(podcast, "rss", e)
+  end
+
+  def after_publish_rss(podcast, feed, episodes)
+    if feed.default?
+      update_first_publish_episodes(first_publish_episodes(episodes))
+    end
+    notify_rss_published(podcast, feed)
   end
 
   def save_file(podcast, feed, options = {})
@@ -77,10 +83,7 @@ class PublishFeedJob < ApplicationJob
     opts[:bucket] = s3_bucket
     opts[:key] = feed.path
     @put_object = s3_client.put_object(opts)
-
-    update_first_publish_episodes(first_publish_episodes(rss.episodes)) if feed.default?
-
-    @put_object
+    rss
   end
 
   def first_publish_episodes(episodes)
