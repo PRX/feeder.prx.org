@@ -61,6 +61,16 @@
         </div>
       <% end %>
 
+      <div class="col-12 mb-2">
+        <div class="form-check">
+          <%= form.check_box :import_locked %>
+          <div class="d-flex align-items-center">
+            <%= form.label :import_locked %>
+            <%= help_text t(".help.import_locked") %>
+          </div>
+        </div>
+      </div>
+
       <% unless feed.persisted? %>
         <div class="col-12 mb-2">
           <div class="form-check">
