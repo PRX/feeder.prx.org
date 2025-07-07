@@ -1,13 +1,31 @@
 <div class="d-flex">
   <div class="me-2">
     <div class="btn-group">
+      <button class="btn btn-primary dropdown-toggle" type="button" id="time-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+        Time specificity
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="time-options">
+        <% date_trunc_options.each do |option| %>
+          <li>
+            <button class="dropdown-item" type="button" data-action="apex#updateTrunc click#submit" value="<%= option[1] %>">
+              <%= option[0] %>
+            </button>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+
+    <%= form.hidden_field :date_trunc, data: {apex_target: "datetrunc"}, value: date_trunc %>
+  </div>
+  <div class="me-2">
+    <div class="btn-group">
       <button class="btn btn-primary dropdown-toggle" type="button" id="rollups-date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
         View date range
       </button>
       <ul class="dropdown-menu" aria-labelledby="rollups-date-range-options">
         <% rollups_date_range_options.each do |option| %>
           <li>
-            <button class="dropdown-item" type="button" data-action="apex#updateSeries" data-apex-series-param="<%= parse_episode_downloads(episode_rollups, option[1], date_end).to_json %>" data-apex-target="dateview">
+            <button class="dropdown-item" type="button" data-action="apex#updateSeries" data-apex-series-param="<%= parse_episode_downloads(episode_rollups, option[1], date_end, date_trunc).to_json %>" data-apex-target="dateview">
               <%= option[0] %>
             </button>
           </li>
@@ -16,6 +34,6 @@
     </div>
   </div>
   <div class="">
-    <button class="btn btn-primary" data-action="apex#resetSeries" data-apex-series-param="<%= parse_episode_downloads(episode_rollups, date_start, date_end).to_json %>">Reset</button>
+    <button class="btn btn-primary" data-action="apex#resetSeries" data-apex-series-param="<%= parse_episode_downloads(episode_rollups, date_start, date_end, date_trunc).to_json %>">Reset</button>
   </div>
 </div>

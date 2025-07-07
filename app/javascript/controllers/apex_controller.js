@@ -16,19 +16,15 @@ const DEFAULT_OPTIONS = {
       },
     },
   },
-  tooltip: {
-    fixed: {
-      enabled: true,
-      position: "topRight",
-    },
-  },
   yaxis: {
     title: { text: "Downloads" },
   },
 }
 
 const LINE_DEFAULTS = {
-  xaxis: { type: "datetime" },
+  xaxis: {
+    type: "datetime",
+  },
   stroke: {
     curve: "smooth",
     width: 2,
@@ -63,31 +59,19 @@ export default class extends Controller {
     id: String,
     type: String,
     series: Array,
+    trunc: String,
   }
-  static targets = ["chart", "episodebox", "dateview"]
+  static targets = ["chart", "episodebox", "dateview", "datetrunc"]
 
   connect() {
     const options = Object.assign({}, DEFAULT_OPTIONS)
-    Object.assign(options.chart, {
-      id: this.idValue,
-      type: this.typeValue,
-    })
+
     const series = {
       series: this.seriesValue,
     }
-    const type_options = {}
-    if (this.typeValue === "line") {
-      Object.assign(type_options, LINE_DEFAULTS)
-      Object.assign(options.chart, {
-        height: "700px",
-      })
-    } else if (this.typeValue === "bar") {
-      Object.assign(type_options, BAR_DEFAULTS)
-      Object.assign(options.chart, {
-        height: "350px",
-      })
-    }
-    Object.assign(options, series, type_options)
+    const typeOptions = this.setChartTypeDefaults(options, this.typeValue, this.truncValue)
+
+    Object.assign(options, series, typeOptions)
 
     const chart = new ApexCharts(this.chartTarget, options)
     chart.render()
@@ -128,5 +112,72 @@ export default class extends Controller {
     this.dateviewTargets.forEach((el) => {
       el.classList.remove("active")
     })
+  }
+
+  updateTrunc(event) {
+    this.datetruncTarget.value = event.target.value
+  }
+
+  setDateTimeLabel(trunc) {
+    // seemed to work at one point, but doesn't seem to work at the moment?
+    if (trunc === "DAY") {
+      return "MMM d"
+    } else if (trunc === "MONTH") {
+      return "MMMM d yyyy"
+    } else if (trunc === "HOUR") {
+      return "MMM d, h:mmtt"
+    } else {
+      return "MMM d"
+    }
+  }
+
+  updateChartOptions(options, type) {
+    if (type === "line") {
+      Object.assign(options.chart, {
+        id: this.idValue,
+        type: this.typeValue,
+        height: "700px",
+      })
+    } else if (type === "bar") {
+      Object.assign(options.chart, {
+        id: this.idValue,
+        type: this.typeValue,
+        height: "350px",
+      })
+    }
+  }
+
+  setChartTypeDefaults(options, type, trunc) {
+    this.updateChartOptions(options, type)
+    if (type === "line") {
+      const typeOptions = Object.assign({}, LINE_DEFAULTS)
+      return Object.assign(typeOptions, {
+        xaxis: {
+          labels: {
+            datetimeUTC: false,
+            format: this.setDateTimeLabel(trunc),
+          },
+        },
+        tooltip: {
+          x: {
+            format: this.setDateTimeLabel(trunc),
+          },
+        },
+      })
+    } else if (type === "bar") {
+      const typeOptions = Object.assign({}, BAR_DEFAULTS)
+
+      return Object.assign(typeOptions, {
+        tooltip: {
+          y: {
+            title: {
+              formatter: function () {
+                return ""
+              },
+            },
+          },
+        },
+      })
+    }
   }
 }
