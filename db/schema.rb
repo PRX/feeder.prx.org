@@ -229,6 +229,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_06_201302) do
     t.string "episode_footer"
     t.boolean "unique_guids", default: false, null: false
     t.boolean "import_locked", default: true, null: false
+    t.string "apple_verify_token"
     t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
