@@ -1,24 +1,23 @@
 <% if Rails.env.development? && clickhouse_connected? %>
   <% content_for :title, "#{@podcast.title} - #{t(".title")}" %>
 
-  <%= form_with(url: podcast_metrics_path(@podcast), method: :get, data: {controller: "click", click_debounce_value: 200}) do |form| %>
-    <div class="container col-12 d-flex align-items-center justify-content-between my-4">
-      <h1 class="fw-bold my-0 mb-0 me-4">Metrics at a Glance</h1>
-      <div class="">
-        <div class="d-flex justify-items-end">
-          <div class="form-floating input-group me-2">
-            <%= form.date_field :date_start, max: DateTime.now - 1.day, data: {action: "click#submit"}, value: @date_start %>
-            <%= form.label :date_start, "Start Date" %>
-          </div>
-          <div class="form-floating input-group">
-            <%= form.date_field :date_end, max: DateTime.now, data: {action: "click#submit"}, value: @date_end %>
-            <%= form.label :date_end, "End Date" %>
+  <%= form_with(url: podcast_metrics_path(@podcast), method: :get, id: "metrics", data: {controller: "click", click_debounce_value: 200}) do |form| %>
+    <div data-controller="apex"
+      data-apex-id-value="<%= SecureRandom.uuid %>"
+      data-apex-type-value="line"
+      data-apex-episode-rollups-value="<%= @episode_rollups.to_json %>"
+      data-apex-date-range-value="<%= generate_date_range(@date_start, @date_end, @date_trunc).to_json %>">
+      <div class="container col-12 d-flex align-items-center justify-content-between my-4">
+        <h1 class="fw-bold my-0 mb-0 me-4">Metrics at a Glance</h1>
+        <div class="">
+          <div class="d-flex justify-items-end">
+            <%= render "filter_dates", form: form, date_start: @date_start, date_end: @date_end %>
           </div>
         </div>
       </div>
-    </div>
-    <div class="container col-12 my-4">
-      <%= render "downloads_card", form: form, episodes: @episodes, episode_rollups: @episode_rollups, total_recent: @recent_downloads_total, total_alltime: @alltime_downloads_total, date_start: @date_start, date_end: @date_end, date_trunc: @date_trunc %>
+      <div class="container col-12 my-4">
+        <%= render "downloads_card", form: form, episodes: @episodes, episode_rollups: @episode_rollups, total_recent: @recent_downloads_total, total_alltime: @alltime_downloads_total, date_start: @date_start, date_end: @date_end, date_trunc: @date_trunc %>
+      </div>
     </div>
 
     <div class="container col-12 mb-2">

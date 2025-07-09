@@ -90,8 +90,8 @@ class PodcastMetricsController < ApplicationController
     params
       .permit(:podcast_id, :date_start, :date_end, :date_trunc)
       .with_defaults(
-        date_start: 30.days.ago,
-        date_end: Time.zone.now,
+        date_start: 30.days.ago.utc,
+        date_end: Time.zone.now.utc,
         date_trunc: "DAY"
       )
   end

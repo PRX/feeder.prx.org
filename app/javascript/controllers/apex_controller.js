@@ -58,12 +58,10 @@ export default class extends Controller {
   static values = {
     id: String,
     type: String,
-    dateStart: String,
-    dateEnd: String,
-    trunc: String,
     episodeRollups: Array,
+    dateRange: Array,
   }
-  static targets = ["chart", "episodebox", "dateview", "datetrunc"]
+  static targets = ["chart", "episodebox", "dateview", "datetrunc", "start"]
 
   connect() {
     const options = Object.assign({}, DEFAULT_OPTIONS)
@@ -84,33 +82,8 @@ export default class extends Controller {
     }
   }
 
-  updateSeries(event) {
-    ApexCharts.exec(this.idValue, "updateSeries", event.params.series)
-    this.episodeboxTargets.forEach((target) => {
-      if (target.checked) {
-        ApexCharts.exec(this.idValue, "showSeries", target.dataset.series)
-      } else {
-        ApexCharts.exec(this.idValue, "hideSeries", target.dataset.series)
-      }
-    })
-    this.dateviewTargets.forEach((el) => {
-      if (el === event.target) {
-        el.classList.add("active")
-      } else {
-        el.classList.remove("active")
-      }
-    })
-  }
-
-  resetSeries(event) {
-    ApexCharts.exec(this.idValue, "updateSeries", event.params.series)
-    this.episodeboxTargets.forEach((el) => {
-      el.checked = true
-      ApexCharts.exec(this.idValue, "showSeries", el.dataset.series)
-    })
-    this.dateviewTargets.forEach((el) => {
-      el.classList.remove("active")
-    })
+  updateDateStart(event) {
+    this.startTarget.value = event.target.value
   }
 
   buildEpisodeRollupsSeries() {
@@ -119,7 +92,7 @@ export default class extends Controller {
         series: this.episodeRollupsValue.map((d) => {
           return {
             name: d.ep.title,
-            data: this.alignRollupsOnDateRange(d.rollups, this.generateDateRange()),
+            data: this.alignRollupsOnDateRange(d.rollups, this.dateRangeValue),
           }
         }),
       }
@@ -128,56 +101,25 @@ export default class extends Controller {
     }
   }
 
-  generateDateRange() {
-    if (this.dateStartValue && this.dateEndValue && this.truncValue) {
-      const range = []
-      if (this.truncValue === "MONTH") {
-      } else if (this.truncValue === "DAY") {
-        const start = new Date(this.dateStartValue)
-        const end = new Date(this.dateEndValue)
-        const startDay = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()))
-        const endDay = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()))
-
-        for (let time = startDay.getTime(); time <= endDay.getTime(); time += this.timestampInterval()) {
-          range.push(new Date(time))
-        }
-      }
-
-      return range
-    } else {
-      return []
-    }
-  }
-
   alignRollupsOnDateRange(rollups, range) {
     return range.map((date) => {
+      const utcDate = new Date(date).toUTCString()
       const rollup = rollups.filter((r) => {
-        return new Date(r.hour).toUTCString() === date.toUTCString()
+        return new Date(r.hour).toUTCString() === utcDate
       })
 
       if (rollup[0]) {
         return {
-          x: date.toUTCString(),
+          x: utcDate,
           y: rollup[0].count,
         }
       } else {
         return {
-          x: date.toUTCString(),
+          x: utcDate,
           y: 0,
         }
       }
     })
-  }
-
-  timestampInterval() {
-    if (this.truncValue === "HOUR") {
-      return 3600000
-    } else if (this.truncValue === "WEEK") {
-      return 604800000
-    } else {
-      // default to "DAY" interval
-      return 86400000
-    }
   }
 
   updateTrunc(event) {

@@ -1,16 +1,9 @@
 <%= turbo_frame_tag "downloads" do %>
   <% if episode_rollups.present? %>
-    <div class="card shadow border-0"
-      data-controller="apex"
-      data-apex-id-value="<%= SecureRandom.uuid %>"
-      data-apex-type-value="line"
-      data-apex-trunc-value="<%= date_trunc %>"
-      data-apex-episode-rollups-value="<%= episode_rollups.to_json %>"
-      data-apex-date-start-value="<%= date_start.to_s %>"
-      data-apex-date-end-value="<%= date_end.to_s %>">
+    <div class="card shadow border-0">
       <div class="card-header card-header-light d-flex justify-content-between">
         <h2 class="card-title h5 flex-grow-1">Downloads</h2>
-        <%# render "dateview", form: form, episode_rollups: episode_rollups, date_start: date_start, date_end: date_end, date_trunc: date_trunc %>
+        <%= render "dateview", form: form, date_trunc: date_trunc %>
       </div>
       <div class="card-body">
         <div class="row d-flex flex-wrap gx-4">
