@@ -58,17 +58,16 @@ export default class extends Controller {
   static values = {
     id: String,
     type: String,
-    series: Array,
+    dateStart: String,
+    dateEnd: String,
     trunc: String,
+    episodeRollups: Array,
   }
   static targets = ["chart", "episodebox", "dateview", "datetrunc"]
 
   connect() {
     const options = Object.assign({}, DEFAULT_OPTIONS)
-
-    const series = {
-      series: this.seriesValue,
-    }
+    const series = this.buildEpisodeRollupsSeries()
     const typeOptions = this.setChartTypeDefaults(options, this.typeValue, this.truncValue)
 
     Object.assign(options, series, typeOptions)
@@ -114,6 +113,73 @@ export default class extends Controller {
     })
   }
 
+  buildEpisodeRollupsSeries() {
+    if (this.episodeRollupsValue) {
+      return {
+        series: this.episodeRollupsValue.map((d) => {
+          return {
+            name: d.ep.title,
+            data: this.alignRollupsOnDateRange(d.rollups, this.generateDateRange()),
+          }
+        }),
+      }
+    } else {
+      return []
+    }
+  }
+
+  generateDateRange() {
+    if (this.dateStartValue && this.dateEndValue && this.truncValue) {
+      const range = []
+      if (this.truncValue === "MONTH") {
+      } else if (this.truncValue === "DAY") {
+        const start = new Date(this.dateStartValue)
+        const end = new Date(this.dateEndValue)
+        const startDay = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()))
+        const endDay = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()))
+
+        for (let time = startDay.getTime(); time <= endDay.getTime(); time += this.timestampInterval()) {
+          range.push(new Date(time))
+        }
+      }
+
+      return range
+    } else {
+      return []
+    }
+  }
+
+  alignRollupsOnDateRange(rollups, range) {
+    return range.map((date) => {
+      const rollup = rollups.filter((r) => {
+        return new Date(r.hour).toUTCString() === date.toUTCString()
+      })
+
+      if (rollup[0]) {
+        return {
+          x: date.toUTCString(),
+          y: rollup[0].count,
+        }
+      } else {
+        return {
+          x: date.toUTCString(),
+          y: 0,
+        }
+      }
+    })
+  }
+
+  timestampInterval() {
+    if (this.truncValue === "HOUR") {
+      return 3600000
+    } else if (this.truncValue === "WEEK") {
+      return 604800000
+    } else {
+      // default to "DAY" interval
+      return 86400000
+    }
+  }
+
   updateTrunc(event) {
     this.datetruncTarget.value = event.target.value
   }
@@ -131,40 +197,34 @@ export default class extends Controller {
     }
   }
 
-  updateChartOptions(options, type) {
+  setChartTypeDefaults(options, type, trunc) {
     if (type === "line") {
       Object.assign(options.chart, {
         id: this.idValue,
         type: this.typeValue,
         height: "700px",
       })
+      const typeOptions = Object.assign({}, LINE_DEFAULTS)
+      // return Object.assign(typeOptions, {
+      //   xaxis: {
+      //     labels: {
+      //       datetimeUTC: true,
+      //       format: this.setDateTimeLabel(trunc),
+      //     },
+      //   },
+      //   tooltip: {
+      //     x: {
+      //       format: this.setDateTimeLabel(trunc),
+      //     },
+      //   },
+      // })
+      return typeOptions
     } else if (type === "bar") {
       Object.assign(options.chart, {
         id: this.idValue,
         type: this.typeValue,
         height: "350px",
       })
-    }
-  }
-
-  setChartTypeDefaults(options, type, trunc) {
-    this.updateChartOptions(options, type)
-    if (type === "line") {
-      const typeOptions = Object.assign({}, LINE_DEFAULTS)
-      return Object.assign(typeOptions, {
-        xaxis: {
-          labels: {
-            datetimeUTC: false,
-            format: this.setDateTimeLabel(trunc),
-          },
-        },
-        tooltip: {
-          x: {
-            format: this.setDateTimeLabel(trunc),
-          },
-        },
-      })
-    } else if (type === "bar") {
       const typeOptions = Object.assign({}, BAR_DEFAULTS)
 
       return Object.assign(typeOptions, {
