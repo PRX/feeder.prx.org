@@ -1,14 +1,16 @@
 <%= turbo_frame_tag turbo_tag.to_s do %>
   <% if agents.present? %>
-    <div class="card shadow border-0">
+    <div class="card shadow border-0"
+      data-controller="apex"
+      data-apex-id-value="<%= SecureRandom.uuid %>"
+      data-apex-chart-type-value="bar"
+      data-apex-series-type-value="agents"
+      data-apex-series-data-value="<%= parse_agent_data(agents).to_json %>">
       <div class="card-header card-header-primary-light d-flex">
         <h5><%= agents_title %></h5>
       </div>
       <div class="card-body">
-        <div data-controller="apex"
-          data-apex-id-value="<%= SecureRandom.uuid %>"
-          data-apex-type-value="bar"
-          data-apex-series-value="<%= parse_agent_data(agents).to_json %>">
+        <div>
           <div class="col">
             <div data-apex-target="chart"></div>
           </div>

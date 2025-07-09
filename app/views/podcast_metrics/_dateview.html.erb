@@ -6,8 +6,9 @@
       </button>
       <ul class="dropdown-menu" aria-labelledby="time-options">
         <% date_trunc_options.each do |option| %>
+          <% active = option[1] == date_trunc %>
           <li>
-            <button class="dropdown-item" type="button" data-action="apex#updateTrunc click#submit" value="<%= option[1] %>">
+            <button class="dropdown-item <%= "active" if active %>" type="button" aria-current="<%= active %>" data-action="apex#updateTrunc click#submit" value="<%= option[1] %>">
               <%= option[0] %>
             </button>
           </li>

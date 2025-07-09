@@ -57,21 +57,24 @@ const BAR_DEFAULTS = {
 export default class extends Controller {
   static values = {
     id: String,
-    type: String,
-    episodeRollups: Array,
+    chartType: String,
+    seriesType: String,
+    seriesData: Array,
     dateRange: Array,
   }
   static targets = ["chart", "episodebox", "dateview", "datetrunc", "start"]
 
   connect() {
-    const options = Object.assign({}, DEFAULT_OPTIONS)
-    const series = this.buildEpisodeRollupsSeries()
-    const typeOptions = this.setChartTypeDefaults(options, this.typeValue, this.truncValue)
+    if (this.seriesDataValue.length) {
+      const options = Object.assign({}, DEFAULT_OPTIONS)
+      const series = this.buildSeries()
+      const typeOptions = this.setChartTypeDefaults(options, this.chartTypeValue, this.truncValue)
 
-    Object.assign(options, series, typeOptions)
+      Object.assign(options, series, typeOptions)
 
-    const chart = new ApexCharts(this.chartTarget, options)
-    chart.render()
+      const chart = new ApexCharts(this.chartTarget, options)
+      chart.render()
+    }
   }
 
   toggleSeries(event) {
@@ -86,15 +89,37 @@ export default class extends Controller {
     this.startTarget.value = event.target.value
   }
 
+  buildSeries() {
+    if (this.seriesTypeValue === "episodeRollups" && this.dateRangeValue.length) {
+      return this.buildEpisodeRollupsSeries()
+    } else if (this.seriesTypeValue === "agents") {
+      return this.buildAgentSeries()
+    }
+  }
+
   buildEpisodeRollupsSeries() {
-    if (this.episodeRollupsValue) {
+    if (this.seriesDataValue.length) {
       return {
-        series: this.episodeRollupsValue.map((d) => {
+        series: this.seriesDataValue.map((d) => {
           return {
             name: d.ep.title,
             data: this.alignRollupsOnDateRange(d.rollups, this.dateRangeValue),
           }
         }),
+      }
+    } else {
+      return []
+    }
+  }
+
+  buildAgentSeries() {
+    if (this.seriesDataValue.length) {
+      return {
+        series: [
+          {
+            data: this.seriesDataValue,
+          },
+        ],
       }
     } else {
       return []
@@ -126,24 +151,24 @@ export default class extends Controller {
     this.datetruncTarget.value = event.target.value
   }
 
-  setDateTimeLabel(trunc) {
-    // seemed to work at one point, but doesn't seem to work at the moment?
-    if (trunc === "DAY") {
-      return "MMM d"
-    } else if (trunc === "MONTH") {
-      return "MMMM d yyyy"
-    } else if (trunc === "HOUR") {
-      return "MMM d, h:mmtt"
-    } else {
-      return "MMM d"
-    }
-  }
+  // setDateTimeLabel(trunc) {
+  //   // seemed to work at one point, but doesn't seem to work at the moment?
+  //   if (trunc === "DAY") {
+  //     return "MMM d"
+  //   } else if (trunc === "MONTH") {
+  //     return "MMMM d yyyy"
+  //   } else if (trunc === "HOUR") {
+  //     return "MMM d, h:mmtt"
+  //   } else {
+  //     return "MMM d"
+  //   }
+  // }
 
   setChartTypeDefaults(options, type, trunc) {
     if (type === "line") {
       Object.assign(options.chart, {
         id: this.idValue,
-        type: this.typeValue,
+        type: type,
         height: "700px",
       })
       const typeOptions = Object.assign({}, LINE_DEFAULTS)
@@ -164,7 +189,7 @@ export default class extends Controller {
     } else if (type === "bar") {
       Object.assign(options.chart, {
         id: this.idValue,
-        type: this.typeValue,
+        type: type,
         height: "350px",
       })
       const typeOptions = Object.assign({}, BAR_DEFAULTS)

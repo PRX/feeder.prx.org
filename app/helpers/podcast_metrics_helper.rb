@@ -4,16 +4,12 @@ module PodcastMetricsHelper
   end
 
   def parse_agent_data(agents)
-    [
+    agents.map do |a|
       {
-        data: agents.map do |a|
-          {
-            x: a.label,
-            y: a.count
-          }
-        end
+        x: a.label,
+        y: a.count
       }
-    ]
+    end
   end
 
   def sum_rollups(rollups)
