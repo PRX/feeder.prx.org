@@ -39,7 +39,7 @@ describe SubscribeLink do
     end
 
     it "substitutes uniquePlatformID variable using the external id for unique platforms" do
-      assert_equal unique_link.href, "https://open.spotify.com/99999"
+      assert_equal unique_link.href, "https://open.spotify.com/show/99999"
     end
 
     it "substitutes feedURL variable using the external id for feed platforms, and encodes it as necessary" do

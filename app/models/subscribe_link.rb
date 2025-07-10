@@ -3,7 +3,7 @@ class SubscribeLink < ApplicationRecord
 
   PLATFORM_HREFS = {
     "apple" => "https://podcasts.apple.com/podcast/id${appleID}",
-    "spotify" => "https://open.spotify.com/${uniquePlatformID}",
+    "spotify" => "https://open.spotify.com/show/${uniquePlatformID}",
     "overcast" => "https://overcast.fm/itunes${appleID}",
     "pocketcasts" => "https://pca.st/itunes/${appleID}",
     "youtube" => "https://music.youtube.com/playlist?list=${uniquePlatformID}",
