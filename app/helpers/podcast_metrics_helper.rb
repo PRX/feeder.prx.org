@@ -16,7 +16,7 @@ module PodcastMetricsHelper
     rollups.map { |r| r[:count] }.reduce(:+)
   end
 
-  def date_trunc_options
+  def interval_options
     [
       # ["Hourly", "HOUR"],
       ["Daily", "DAY"],

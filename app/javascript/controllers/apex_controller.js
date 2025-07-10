@@ -22,9 +22,6 @@ const DEFAULT_OPTIONS = {
 }
 
 const LINE_DEFAULTS = {
-  xaxis: {
-    type: "datetime",
-  },
   stroke: {
     curve: "smooth",
     width: 2,
@@ -61,15 +58,15 @@ export default class extends Controller {
     seriesType: String,
     seriesData: Array,
     dateRange: Array,
+    interval: String,
   }
-  static targets = ["chart", "episodebox", "dateview", "datetrunc", "start"]
+  static targets = ["chart", "episodebox", "dateview", "interval", "start"]
 
   connect() {
     if (this.seriesDataValue.length) {
       const options = Object.assign({}, DEFAULT_OPTIONS)
       const series = this.buildSeries()
-      const typeOptions = this.setChartTypeDefaults(options, this.chartTypeValue, this.truncValue)
-
+      const typeOptions = this.setChartTypeDefaults(options, this.chartTypeValue)
       Object.assign(options, series, typeOptions)
 
       const chart = new ApexCharts(this.chartTarget, options)
@@ -147,24 +144,21 @@ export default class extends Controller {
     })
   }
 
-  updateTrunc(event) {
-    this.datetruncTarget.value = event.target.value
+  updateInterval(event) {
+    this.intervalTarget.value = event.target.value
   }
 
-  // setDateTimeLabel(trunc) {
-  //   // seemed to work at one point, but doesn't seem to work at the moment?
-  //   if (trunc === "DAY") {
-  //     return "MMM d"
-  //   } else if (trunc === "MONTH") {
-  //     return "MMMM d yyyy"
-  //   } else if (trunc === "HOUR") {
-  //     return "MMM d, h:mmtt"
-  //   } else {
-  //     return "MMM d"
-  //   }
-  // }
+  setDateTimeLabel() {
+    if (this.intervalValue === "MONTH") {
+      return "MMMM yyyy"
+    } else if (this.intervalValue === "HOUR") {
+      return "MMM d, h:mmtt"
+    } else {
+      return "MMM d"
+    }
+  }
 
-  setChartTypeDefaults(options, type, trunc) {
+  setChartTypeDefaults(options, type) {
     if (type === "line") {
       Object.assign(options.chart, {
         id: this.idValue,
@@ -172,19 +166,19 @@ export default class extends Controller {
         height: "700px",
       })
       const typeOptions = Object.assign({}, LINE_DEFAULTS)
-      // return Object.assign(typeOptions, {
-      //   xaxis: {
-      //     labels: {
-      //       datetimeUTC: true,
-      //       format: this.setDateTimeLabel(trunc),
-      //     },
-      //   },
-      //   tooltip: {
-      //     x: {
-      //       format: this.setDateTimeLabel(trunc),
-      //     },
-      //   },
-      // })
+      Object.assign(typeOptions, {
+        xaxis: {
+          type: "datetime",
+          labels: {
+            format: this.setDateTimeLabel(),
+          },
+        },
+        tooltip: {
+          x: {
+            format: this.setDateTimeLabel(),
+          },
+        },
+      })
       return typeOptions
     } else if (type === "bar") {
       Object.assign(options.chart, {

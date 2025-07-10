@@ -5,10 +5,10 @@
         Time specificity
       </button>
       <ul class="dropdown-menu" aria-labelledby="time-options">
-        <% date_trunc_options.each do |option| %>
-          <% active = option[1] == date_trunc %>
+        <% interval_options.each do |option| %>
+          <% active = option[1] == interval %>
           <li>
-            <button class="dropdown-item <%= "active" if active %>" type="button" aria-current="<%= active %>" data-action="apex#updateTrunc click#submit" value="<%= option[1] %>">
+            <button class="dropdown-item <%= "active" if active %>" type="button" aria-current="<%= active %>" data-action="apex#updateInterval click#submit" value="<%= option[1] %>">
               <%= option[0] %>
             </button>
           </li>
@@ -16,6 +16,6 @@
       </ul>
     </div>
 
-    <%= form.hidden_field :date_trunc, data: {apex_target: "datetrunc"}, value: date_trunc %>
+    <%= form.hidden_field :interval, data: {apex_target: "interval"}, value: interval %>
   </div>
 </div>
