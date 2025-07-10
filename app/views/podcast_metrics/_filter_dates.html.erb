@@ -6,7 +6,7 @@
   <%= form.date_field :date_end, max: DateTime.now, data: {action: "click#submit"}, value: date_end %>
   <%= form.label :date_end, "End Date" %>
 </div>
-<div class="btn-group">
+<div class="btn-group me-2">
   <button class="btn btn-primary dropdown-toggle" type="button" id="rollups-date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
     Date Presets
   </button>
@@ -20,3 +20,20 @@
     <% end %>
   </ul>
 </div>
+<div class="btn-group">
+  <button class="btn btn-primary dropdown-toggle" type="button" id="time-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+    Time specificity
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="time-options">
+    <% interval_options(date_start, date_end).each do |option| %>
+      <% active = option[1] == interval %>
+      <li>
+        <button class="dropdown-item <%= "active" if active %>" type="button" aria-current="<%= active %>" data-action="apex#updateInterval click#submit" value="<%= option[1] %>">
+          <%= option[0] %>
+        </button>
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+<%= form.hidden_field :interval, data: {apex_target: "interval"}, value: interval %>

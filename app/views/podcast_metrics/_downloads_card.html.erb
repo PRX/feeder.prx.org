@@ -1,66 +1,45 @@
-<%= turbo_frame_tag "downloads" do %>
-  <% if episode_rollups.present? %>
-    <div class="card shadow border-0"
-      data-controller="apex"
-      data-apex-id-value="<%= SecureRandom.uuid %>"
-      data-apex-chart-type-value="line"
-      data-apex-series-type-value="episodeRollups"
-      data-apex-interval-value="<%= interval %>"
-      data-apex-series-data-value="<%= episode_rollups.to_json %>"
-      data-apex-date-range-value="<%= generate_date_range(date_start, date_end, interval).to_json %>">
-      <div class="card-header card-header-light d-flex justify-content-between">
-        <h2 class="card-title h5 flex-grow-1">Downloads</h2>
-        <%= render "dateview", form: form, interval: interval, date_start: date_start, date_end: date_end %>
-      </div>
-      <div class="card-body">
-        <div class="row d-flex flex-wrap gx-4">
-          <div class="col">
-            <div data-apex-target="chart"></div>
-          </div>
-          <div class="col align-items-center">
-            <div class="col my-4">
-              <table class="table table-striped shadow rounded">
-                <thead>
-                  <tr class="table-secondary">
-                    <th>Episode</th>
-                    <th>Publish Date</th>
-                    <th>Downloads</th>
-                    <th>All-time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="fw-bold">All Episodes</td>
-                    <td></td>
-                    <td class="fw-bold"><%= total_recent.first[:count] %></td>
-                    <td class="fw-bold"><%= total_alltime.first[:count] %></td>
-                  </tr>
-                  <% episode_rollups.each_with_index do |er, i| %>
-                    <% sum = sum_rollups(er[:rollups]) %>
-                    <% total = sum_rollups(er[:totals]) %>
-                    <% title = er[:ep][:title] %>
-                    <tr class="align-items-center">
-                      <td class="d-flex align-items-center">
-                        <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex#toggleSeries" data-series="<%= title %>" data-apex-target="episodebox">
-                        <span class="material-icons me-2" aria-label="hidden" style="color: <%= line_chart_colors[i] %>">circle</span>
-                        <span class="text-nowrap overflow-hidden"><%= title %></span>
-                      </td>
-                      <td><%= er[:ep][:published_at].strftime("%Y-%m-%d") %></td>
-                      <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>
-                      <td><% if total %><%= total %><% else %>&mdash;<% end %></td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-              <div class="col my-4">
-                <%= paginate @episodes, param_name: :episode_rollups %>
-              </div>
-            </div>
-          </div>
-        </div>
+<div class="row d-flex flex-wrap gx-4">
+  <div class="col">
+    <div data-apex-target="chart" data-chart="episodeRollups"></div>
+  </div>
+  <div class="col align-items-center">
+    <div class="col my-4">
+      <table class="table table-striped shadow rounded">
+        <thead>
+          <tr class="table-secondary">
+            <th>Episode</th>
+            <th>Publish Date</th>
+            <th>Downloads</th>
+            <th>All-time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-bold">All Episodes</td>
+            <td></td>
+            <td class="fw-bold"><%= total_recent.first[:count] %></td>
+            <td class="fw-bold"><%= total_alltime.first[:count] %></td>
+          </tr>
+          <% episode_rollups.each_with_index do |er, i| %>
+            <% sum = sum_rollups(er[:rollups]) %>
+            <% total = sum_rollups(er[:totals]) %>
+            <% title = er[:ep][:title] %>
+            <tr class="align-items-center">
+              <td class="d-flex align-items-center">
+                <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex#toggleSeries" data-series="<%= title %>" data-apex-target="episodebox">
+                <span class="material-icons me-2" aria-label="hidden" style="color: <%= line_chart_colors[i] %>">circle</span>
+                <span class="text-nowrap overflow-hidden"><%= title %></span>
+              </td>
+              <td><%= er[:ep][:published_at].strftime("%Y-%m-%d") %></td>
+              <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>
+              <td><% if total %><%= total %><% else %>&mdash;<% end %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <div class="col my-4">
+        <%= paginate @episodes, param_name: :episode_rollups %>
       </div>
     </div>
-  <% else %>
-    No data to display.
-  <% end %>
-<% end %>
+  </div>
+</div>

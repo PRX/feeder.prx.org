@@ -40,6 +40,11 @@ class PodcastMetricsController < ApplicationController
           .group(:podcast_id)
           .order(:podcast_id)
 
+      @uniques =
+        Rollups::DailyUnique
+          .where(podcast_id: @podcast.id, day: (@date_start.to_date..@date_end.to_date))
+          .order(day: :asc)
+
       # @top_subdivs =
       #   Rollups::DailyGeo
       #     .where(podcast_id: @podcast.id)

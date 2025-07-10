@@ -60,16 +60,23 @@ export default class extends Controller {
     dateRange: Array,
     interval: String,
   }
-  static targets = ["chart", "episodebox", "dateview", "interval", "start"]
+  static targets = ["chart", "episodebox", "dateview", "interval", "start", "main"]
 
   connect() {
+    this.buildChart()
+  }
+
+  buildChart() {
     if (this.seriesDataValue.length) {
       const options = Object.assign({}, DEFAULT_OPTIONS)
       const series = this.buildSeries()
       const typeOptions = this.setChartTypeDefaults(options, this.chartTypeValue)
       Object.assign(options, series, typeOptions)
 
-      const chart = new ApexCharts(this.chartTarget, options)
+      const target = this.chartTargets.filter((el) => {
+        return el.dataset.chart === this.seriesTypeValue
+      })[0]
+      const chart = new ApexCharts(target, options)
       chart.render()
     }
   }
@@ -89,6 +96,8 @@ export default class extends Controller {
   buildSeries() {
     if (this.seriesTypeValue === "episodeRollups" && this.dateRangeValue.length) {
       return this.buildEpisodeRollupsSeries()
+    } else if (this.seriesTypeValue === "uniques") {
+      return this.buildUniquesSeries()
     } else if (this.seriesTypeValue === "agents") {
       return this.buildAgentSeries()
     }
@@ -106,6 +115,23 @@ export default class extends Controller {
       }
     } else {
       return []
+    }
+  }
+
+  buildUniquesSeries() {
+    if (this.seriesDataValue.length) {
+      return {
+        series: [
+          {
+            data: this.seriesDataValue.map((d) => {
+              return {
+                x: d["day"],
+                y: d["last_7_rolling"],
+              }
+            }),
+          },
+        ],
+      }
     }
   }
 
@@ -146,6 +172,21 @@ export default class extends Controller {
 
   updateInterval(event) {
     this.intervalTarget.value = event.target.value
+  }
+
+  changeMainCard(event) {
+    this.seriesTypeValue = event.params.chart
+    this.seriesDataValue = event.params.series
+
+    ApexCharts.exec(this.idValue, "destroy")
+    this.mainTargets.forEach((el) => {
+      if (el.dataset.chart === this.seriesTypeValue) {
+        el.classList.remove("d-none")
+      } else {
+        el.classList.add("d-none")
+      }
+    })
+    this.buildChart()
   }
 
   setDateTimeLabel() {
