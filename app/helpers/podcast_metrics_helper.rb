@@ -16,13 +16,28 @@ module PodcastMetricsHelper
     rollups.map { |r| r[:count] }.reduce(:+)
   end
 
-  def interval_options
-    [
-      # ["Hourly", "HOUR"],
-      ["Daily", "DAY"],
-      ["Weekly", "WEEK"],
-      ["Monthly", "MONTH"]
-    ]
+  def interval_options(date_start, date_end)
+    day_count = (date_start.to_date..date_end.to_date).to_a.length
+    if day_count > 60
+      [
+        ["Daily", "DAY"],
+        ["Weekly", "WEEK"],
+        ["Monthly", "MONTH"]
+      ]
+    elsif day_count < 30
+      [
+        ["Hourly", "HOUR"],
+        ["Daily", "DAY"],
+        ["Weekly", "WEEK"]
+      ]
+    else
+      [
+        ["Hourly", "HOUR"],
+        ["Daily", "DAY"],
+        ["Weekly", "WEEK"],
+        ["Monthly", "MONTH"]
+      ]
+    end
   end
 
   def rollups_date_range_options
@@ -40,12 +55,12 @@ module PodcastMetricsHelper
     ]
   end
 
-  def generate_date_range(start_date, end_date, interval)
+  def generate_date_range(date_start, date_end, interval)
     if interval == "DAY"
-      (start_date.to_date..end_date.to_date).to_a
+      (date_start.to_date..date_end.to_date).to_a
     elsif interval == "WEEK"
-      start_week = start_date.to_date.beginning_of_week
-      end_week = end_date.to_date.beginning_of_week
+      start_week = date_start.to_date.beginning_of_week
+      end_week = date_end.to_date.beginning_of_week
       range = []
       i = 0
       while start_week + i.weeks <= end_week
@@ -55,8 +70,8 @@ module PodcastMetricsHelper
 
       range
     elsif interval == "MONTH"
-      start_month = start_date.to_date.beginning_of_month
-      end_month = end_date.to_date.beginning_of_month
+      start_month = date_start.to_date.beginning_of_month
+      end_month = date_end.to_date.beginning_of_month
       range = []
       i = 0
       while start_month + i.months <= end_month
@@ -66,6 +81,16 @@ module PodcastMetricsHelper
 
       range
     elsif interval == "HOUR"
+      start_hour = date_start.to_datetime.beginning_of_hour
+      end_hour = date_end.to_datetime.beginning_of_hour
+      range = []
+      i = 0
+      while start_hour + i.hours <= end_hour
+        range << start_hour + i.hours
+        i += 1
+      end
+
+      range
     end
   end
 end

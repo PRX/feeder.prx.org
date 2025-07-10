@@ -5,7 +5,7 @@
         Time specificity
       </button>
       <ul class="dropdown-menu" aria-labelledby="time-options">
-        <% interval_options.each do |option| %>
+        <% interval_options(date_start, date_end).each do |option| %>
           <% active = option[1] == interval %>
           <li>
             <button class="dropdown-item <%= "active" if active %>" type="button" aria-current="<%= active %>" data-action="apex#updateInterval click#submit" value="<%= option[1] %>">
