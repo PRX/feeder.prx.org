@@ -413,6 +413,7 @@ en:
         title: Title
         url: Episode URL
       feed:
+        apple_verify_token: Apple Podcasts Verify Token
         audio_type: Format
         audio_bitrate: Bitrate
         audio_bitdepth: Bitdepth
@@ -892,6 +893,7 @@ en:
         private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private URL with - <strong>anyone who has access to the URL will be able to use it</strong>.
         url: If you use a service to manage your podcast feed to generate a public URL for distribution, enter that URL here. This is the address you give to podcast platforms so listeners can subscribe to your show. It’s separate from the private feed URL we use to manage your podcast content.
         exclude_episodes: Exclude all episodes from the default feed from being automatically added to this feed.
+        import_locked: Tell other hosting services this feed should not be imported.
       title: Distribution
       exclude_episodes_label: Skip Default Feed Episodes
     form_megaphone_config:
@@ -906,6 +908,7 @@ en:
         file_name: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?
         slug: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?
       help:
+        apple_verify_token: To <a href="https://podcasters.apple.com/support/5497-claim-your-show" target="_blank">claim your show on Apple Podcasts</a>, provide the token to verify ownership.
         display_episodes_count: You can optionally limit the number of episodes that will be publicly available in your feed. Your oldest episodes will disappear as you publish newer ones. Leave this field blank to include all.
         display_full_episodes_count: You can optionally <a href="https://help.prx.org/hc/en-us/articles/360055869313-Limiting-Episode-Metadata" target="_blank">reduce the size of your RSS feed</a> by trimming metadata from your oldest feed episodes. This many of your newest episodes will include <i>all</i> metadata, and older episodes will omit certain RSS fields. Leave this field blank to include all metadata on every episode.
         enclosure_prefix: If you have an enclosure prefix URL to set a redirect on audio requests for your podcast feed (e.g., podtrac or blubrry), enter it here.
