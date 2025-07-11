@@ -13,6 +13,7 @@ class PodcastMetricsController < ApplicationController
     @date_start = metrics_params[:date_start]
     @date_end = metrics_params[:date_end]
     @interval = metrics_params[:interval]
+    @date_range = generate_date_range(@date_start, @date_end, @interval)
 
     if clickhouse_connected?
       @recent_downloads_by_episode =
@@ -113,5 +114,19 @@ class PodcastMetricsController < ApplicationController
         end
       }
     end
+  end
+
+  def generate_date_range(date_start, date_end, interval)
+    start_range = date_start.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
+    end_range = date_end.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
+    range = []
+    i = 0
+
+    while start_range + i.send(:"#{interval.downcase.pluralize}") <= end_range
+      range << start_range + i.send(:"#{interval.downcase.pluralize}")
+      i += 1
+    end
+
+    range
   end
 end

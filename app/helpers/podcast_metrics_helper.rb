@@ -54,43 +54,4 @@ module PodcastMetricsHelper
       ["Year to Date", Time.zone.now.utc.beginning_of_year.to_date]
     ]
   end
-
-  def generate_date_range(date_start, date_end, interval)
-    if interval == "DAY"
-      (date_start.to_date..date_end.to_date).to_a
-    elsif interval == "WEEK"
-      start_week = date_start.to_date.beginning_of_week
-      end_week = date_end.to_date.beginning_of_week
-      range = []
-      i = 0
-      while start_week + i.weeks <= end_week
-        range << start_week + i.weeks
-        i += 1
-      end
-
-      range
-    elsif interval == "MONTH"
-      start_month = date_start.to_date.beginning_of_month
-      end_month = date_end.to_date.beginning_of_month
-      range = []
-      i = 0
-      while start_month + i.months <= end_month
-        range << start_month + i.months
-        i += 1
-      end
-
-      range
-    elsif interval == "HOUR"
-      start_hour = date_start.to_datetime.beginning_of_hour
-      end_hour = date_end.to_datetime.beginning_of_hour
-      range = []
-      i = 0
-      while start_hour + i.hours <= end_hour
-        range << start_hour + i.hours
-        i += 1
-      end
-
-      range
-    end
-  end
 end

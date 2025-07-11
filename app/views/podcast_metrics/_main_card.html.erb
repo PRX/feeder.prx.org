@@ -6,7 +6,7 @@
     data-apex-series-type-value="episodeRollups"
     data-apex-interval-value="<%= interval %>"
     data-apex-series-data-value="<%= episode_rollups.to_json %>"
-    data-apex-date-range-value="<%= generate_date_range(date_start, date_end, interval).to_json %>">
+    data-apex-date-range-value="<%= date_range.to_json %>">
     <div class="card-header card-header-light d-flex justify-content-between">
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item"><button class="nav-link active" id="downloads-tab" data-bs-toggle="tab" data-bs-target="#downloads" type="button" role="tab" aria-controls="downloads" aria-selected="true" data-action="apex#changeMainCard" data-apex-chart-param="episodeRollups" data-apex-series-param="<%= episode_rollups.to_json %>">Downloads</button></li>
@@ -16,10 +16,10 @@
     </div>
     <div class="card-body">
       <div class="" data-apex-target="main" data-chart="episodeRollups">
-        <%= render "downloads_card", form: form, episodes: episodes, episode_rollups: episode_rollups, total_recent: total_recent, total_alltime: total_alltime, date_start: date_start, date_end: date_end, interval: interval %>
+        <%= render "downloads_card", form: form, episodes: episodes, episode_rollups: episode_rollups, total_recent: total_recent, total_alltime: total_alltime %>
       </div>
       <div class="d-none" data-apex-target="main" data-chart="uniques">
-        <%= render "uniques_card", uniques: uniques, date_start: date_start, date_end: date_end %>
+        <%= render "uniques_card", uniques: uniques %>
       </div>
     </div>
   </div>
