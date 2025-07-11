@@ -101,10 +101,12 @@ class EpisodeMegaphoneImport < EpisodeImport
 
   def update_episode_with_entry!
     episode.original_guid = clean_string(entry[:guid] || entry[:parent_id] || entry[:id])
-    if entry[:draft]
+    if entry[:pubdate]
+      # always set released_at if there is a pubdate
       episode.released_at = entry[:pubdate]
-    else
-      episode.published_at = entry[:pubdate]
+      if !entry[:draft]
+        episode.published_at = entry[:pubdate]
+      end
     end
     episode.title = clean_title(entry[:title])
     episode.clean_title = clean_title(entry[:clean_title])
