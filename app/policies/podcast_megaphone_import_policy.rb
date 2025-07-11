@@ -1,0 +1,2 @@
+class PodcastMegaphoneImportPolicy < PodcastImportPolicy
+end

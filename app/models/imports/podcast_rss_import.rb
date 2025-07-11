@@ -1,7 +1,7 @@
 require "feedjira"
 
 class PodcastRssImport < PodcastImport
-  store :config, accessors: [:episodes_only, :new_episodes_only, :audio, :channel, :first_entry], coder: JSON
+  store :config, accessors: [:episodes_only, :metadata_only, :new_episodes_only, :audio, :channel, :first_entry], coder: JSON
 
   has_many :episode_imports, dependent: :destroy, class_name: "EpisodeRssImport", foreign_key: :podcast_import_id
 
@@ -11,6 +11,7 @@ class PodcastRssImport < PodcastImport
   def set_defaults
     super
     self.episodes_only ||= false
+    self.metadata_only ||= false
     self.new_episodes_only ||= false
     self.audio ||= {}
   end
@@ -82,6 +83,14 @@ class PodcastRssImport < PodcastImport
     errors.add(:url, :bad_http_response, message: "bad http response")
   rescue
     errors.add(:url, :invalid_rss, message: "invalid rss")
+  end
+
+  def replace_files
+    !metadata_only
+  end
+
+  def replace_files=(val)
+    self.metadata_only = !ActiveModel::Type::Boolean.new.cast(val)
   end
 
   def import_metadata
@@ -166,7 +175,7 @@ class PodcastRssImport < PodcastImport
 
   def update_itunes_categories
     default_feed = podcast.default_feed
-    default_feed.itunes_categories = parse_itunes_categories
+    default_feed.itunes_categories = parse_itunes_categories(channel[:itunes_categories])
     default_feed.save!
   end
 
@@ -204,7 +213,7 @@ class PodcastRssImport < PodcastImport
 
     podcast_attributes[:complete] = clean_yes_no(channel[:itunes_complete])
     podcast_attributes[:copyright] ||= clean_string(channel[:media_copyright])
-    podcast_attributes[:serial_order] = channel[:itunes_type] && !!channel[:itunes_type].match(/serial/i)
+    podcast_attributes[:itunes_type] = channel[:itunes_type]
     podcast_attributes[:locked_until] = 10.minutes.from_now
 
     podcast_attributes[:title] = clean_string(channel[:title])
@@ -268,20 +277,6 @@ class PodcastRssImport < PodcastImport
     else
       {}
     end
-  end
-
-  def parse_itunes_categories
-    itunes_cats = {}
-    Array(channel[:itunes_categories]).map(&:strip).select { |c| !c.blank? }.each do |cat|
-      if ITunesCategoryValidator.category?(cat)
-        itunes_cats[cat] ||= []
-      elsif (parent_cat = ITunesCategoryValidator.subcategory?(cat))
-        itunes_cats[parent_cat] ||= []
-        itunes_cats[parent_cat] << cat
-      end
-    end
-
-    [itunes_cats.keys.map { |n| ITunesCategory.new(name: n, subcategories: itunes_cats[n]) }.first].compact
   end
 
   def podcast_short_desc
