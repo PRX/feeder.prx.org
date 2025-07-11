@@ -22,9 +22,7 @@ module ImportsHelper
   def megaphone_podcast_options(import)
     feed = Feeds::MegaphoneFeed.where(podcast: import.podcast).first
     Megaphone::Podcast.list(feed).map do |podcast|
-      o = [podcast.title, podcast.id]
-      puts o.inspect
-      o
+      [podcast.title, podcast.id]
     end
   end
 end
