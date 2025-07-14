@@ -1,21 +1,31 @@
 class PodcastMetricsController < ApplicationController
-  before_action :set_podcast
+  before_action :set_podcast, :set_date_range
 
   def show
-    authorize @podcast, :show?
+    # @top_subdivs =
+    #   Rollups::DailyGeo
+    #     .where(podcast_id: @podcast.id)
+    #     .select(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day", "SUM(count) AS count")
+    #     .group(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day")
+    #     .order(Arel.sql("SUM(count) AS count DESC"))
+    #     .limit(10)
+    # @top_countries =
+    #   Rollups::DailyGeo
+    #     .where(podcast_id: @podcast.id)
+    #     .select(:country_code, "SUM(count) AS count")
+    #     .group(:country_code)
+    #     .order(Arel.sql("SUM(count) AS count DESC"))
+    #     .limit(10)
+  end
 
-    @episodes =
-      @podcast.episodes
-        .published
-        .order(published_at: :desc)
-        .paginate(params[:episode_rollups], params[:per])
-
-    @date_start = metrics_params[:date_start]
-    @date_end = metrics_params[:date_end]
-    @interval = metrics_params[:interval]
-    @date_range = generate_date_range(@date_start, @date_end, @interval)
-
+  def downloads
     if clickhouse_connected?
+      @episodes =
+        @podcast.episodes
+          .published
+          .order(published_at: :desc)
+          .paginate(params[:episode_rollups], params[:per])
+
       @recent_downloads_by_episode =
         Rollups::HourlyDownload
           .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
@@ -41,55 +51,71 @@ class PodcastMetricsController < ApplicationController
           .group(:podcast_id)
           .order(:podcast_id)
 
+      @episode_rollups = episode_rollups(@episodes, @recent_downloads_by_episode, @alltime_downloads_by_episode)
+    end
+
+    render partial: "downloads_card", locals: {
+      interval: @interval,
+      episode_rollups: @episode_rollups,
+      date_range: @date_range,
+      total_recent: @recent_downloads_total,
+      total_alltime: @alltime_downloads_total,
+      episodes: @episodes
+    }
+  end
+
+  def uniques
+    if clickhouse_connected?
       @uniques =
         Rollups::DailyUnique
           .where(podcast_id: @podcast.id, day: (@date_start.to_date..@date_end.to_date))
           .order(day: :asc)
-
-      # @top_subdivs =
-      #   Rollups::DailyGeo
-      #     .where(podcast_id: @podcast.id)
-      #     .select(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day", "SUM(count) AS count")
-      #     .group(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day")
-      #     .order(Arel.sql("SUM(count) AS count DESC"))
-      #     .limit(10)
-      # @top_countries =
-      #   Rollups::DailyGeo
-      #     .where(podcast_id: @podcast.id)
-      #     .select(:country_code, "SUM(count) AS count")
-      #     .group(:country_code)
-      #     .order(Arel.sql("SUM(count) AS count DESC"))
-      #     .limit(10)
-      @agent_apps_query =
-        Rollups::DailyAgent
-          .where(podcast_id: @podcast.id)
-          .select("agent_name_id AS code", "SUM(count) AS count")
-          .group("agent_name_id AS code")
-          .order(Arel.sql("SUM(count) AS count DESC"))
-      @agent_types_query =
-        Rollups::DailyAgent
-          .where(podcast_id: @podcast.id)
-          .select("agent_type_id AS code", "SUM(count) AS count")
-          .group("agent_type_id AS code")
-          .order(Arel.sql("SUM(count) AS count DESC"))
-      @agent_os_query =
-        Rollups::DailyAgent
-          .where(podcast_id: @podcast.id)
-          .select("agent_os_id AS code", "SUM(count) AS count")
-          .group("agent_os_id AS code")
-          .order(Arel.sql("SUM(count) AS count DESC"))
-
-      @episode_rollups = episode_rollups(@episodes, @recent_downloads_by_episode, @alltime_downloads_by_episode)
-      @agent_apps = Kaminari.paginate_array(@agent_apps_query).page(params[:agent_apps]).per(10)
-      @agent_types = Kaminari.paginate_array(@agent_types_query).page(params[:agent_types]).per(10)
-      @agent_os = Kaminari.paginate_array(@agent_os_query).page(params[:agent_os]).per(10)
     end
+
+    render partial: "uniques_card", locals: {
+      interval: @interval,
+      uniques: @uniques,
+      date_range: @date_range
+    }
+  end
+
+  def agents
+    @agent_apps_query =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id)
+        .select("agent_name_id AS code", "SUM(count) AS count")
+        .group("agent_name_id AS code")
+        .order(Arel.sql("SUM(count) AS count DESC"))
+    @agent_types_query =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id)
+        .select("agent_type_id AS code", "SUM(count) AS count")
+        .group("agent_type_id AS code")
+        .order(Arel.sql("SUM(count) AS count DESC"))
+    @agent_os_query =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id)
+        .select("agent_os_id AS code", "SUM(count) AS count")
+        .group("agent_os_id AS code")
+        .order(Arel.sql("SUM(count) AS count DESC"))
+
+    @agent_apps = Kaminari.paginate_array(@agent_apps_query).page(params[:agent_apps]).per(10)
+    @agent_types = Kaminari.paginate_array(@agent_types_query).page(params[:agent_types]).per(10)
+    @agent_os = Kaminari.paginate_array(@agent_os_query).page(params[:agent_os]).per(10)
   end
 
   private
 
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
+    authorize @podcast, :show?
+  end
+
+  def set_date_range
+    @date_start = metrics_params[:date_start]
+    @date_end = metrics_params[:date_end]
+    @interval = metrics_params[:interval]
+    @date_range = generate_date_range(@date_start, @date_end, @interval)
   end
 
   def metrics_params

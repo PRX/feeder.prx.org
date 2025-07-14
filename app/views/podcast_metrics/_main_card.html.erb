@@ -1,26 +1,19 @@
-<%= turbo_frame_tag "apex-main" do %>
-  <div class="card shadow border-0"
-    data-controller="apex"
-    data-apex-id-value="<%= SecureRandom.uuid %>"
-    data-apex-chart-type-value="line"
-    data-apex-series-type-value="episodeRollups"
-    data-apex-interval-value="<%= interval %>"
-    data-apex-series-data-value="<%= episode_rollups.to_json %>"
-    data-apex-date-range-value="<%= date_range.to_json %>">
-    <div class="card-header card-header-light d-flex justify-content-between">
-      <ul class="nav nav-tabs card-header-tabs">
-        <li class="nav-item"><button class="nav-link active" id="downloads-tab" data-bs-toggle="tab" data-bs-target="#downloads" type="button" role="tab" aria-controls="downloads" aria-selected="true" data-action="apex#changeMainCard" data-apex-chart-param="episodeRollups" data-apex-series-param="<%= episode_rollups.to_json %>">Downloads</button></li>
-        <li class="nav-item"><button class="nav-link" id="uniques-tab" data-bs-toggle="tab" data-bs-target="#uniques" type="button" role="tab" aria-controls="uniques" aria-selected="false" data-action="apex#changeMainCard" data-apex-chart-param="uniques" data-apex-series-param="<%= uniques.to_json %>">Unique Listeners</button></li>
-        <li class="nav-item"><button class="nav-link" id="dropday-tab" data-bs-toggle="tab" data-bs-target="#dropday" type="button" role="tab" aria-controls="dropday" aria-selected="false">Dropday Downloads</button></li>
-      </ul>
+<div class="card shadow border-0"
+  data-controller="apex"
+  data-apex-id-value="<%= SecureRandom.uuid %>">
+  <div class="card-header card-header-light d-flex justify-content-between">
+    <ul class="nav nav-tabs card-header-tabs">
+      <li class="nav-item"><button class="nav-link active" id="downloads-tab" data-bs-toggle="tab" data-bs-target="#downloads" type="button" role="tab" aria-controls="downloads" aria-selected="true" data-action="apex#changeMainCard" data-apex-chart-param="episodeRollups">Downloads</button></li>
+      <li class="nav-item"><button class="nav-link" id="uniques-tab" data-bs-toggle="tab" data-bs-target="#uniques" type="button" role="tab" aria-controls="uniques" aria-selected="false" data-action="apex#changeMainCard" data-apex-chart-param="uniques">Unique Listeners</button></li>
+      <li class="nav-item"><button class="nav-link" id="dropday-tab" data-bs-toggle="tab" data-bs-target="#dropday" type="button" role="tab" aria-controls="dropday" aria-selected="false">Dropday Downloads</button></li>
+    </ul>
+  </div>
+  <div class="card-body">
+    <div class="" data-apex-target="main" data-chart="episodeRollups">
+      <%= turbo_frame_tag "downloads", src: downloads_podcast_metrics_path(podcast), loading: "lazy" %>
     </div>
-    <div class="card-body">
-      <div class="" data-apex-target="main" data-chart="episodeRollups">
-        <%= render "downloads_card", form: form, episodes: episodes, episode_rollups: episode_rollups, total_recent: total_recent, total_alltime: total_alltime %>
-      </div>
-      <div class="d-none" data-apex-target="main" data-chart="uniques">
-        <%= render "uniques_card", uniques: uniques %>
-      </div>
+    <div class="d-none" data-apex-target="main" data-chart="uniques">
+      <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast), loading: "lazy" %>
     </div>
   </div>
-<% end %>
+</div>

@@ -16,9 +16,6 @@ const DEFAULT_OPTIONS = {
       },
     },
   },
-  yaxis: {
-    title: { text: "Downloads" },
-  },
 }
 
 const LINE_DEFAULTS = {
@@ -70,7 +67,7 @@ export default class extends Controller {
     if (this.seriesDataValue.length) {
       const options = Object.assign({}, DEFAULT_OPTIONS)
       const series = this.buildSeries()
-      const typeOptions = this.setChartTypeDefaults(options, this.chartTypeValue)
+      const typeOptions = this.setChartTypeDefaults(options, this.seriesTypeValue)
       Object.assign(options, series, typeOptions)
 
       const target = this.chartTargets.filter((el) => {
@@ -81,16 +78,12 @@ export default class extends Controller {
     }
   }
 
-  toggleSeries(event) {
-    if (event.target.checked) {
-      ApexCharts.exec(this.idValue, "showSeries", event.target.dataset.series)
-    } else {
-      ApexCharts.exec(this.idValue, "hideSeries", event.target.dataset.series)
-    }
-  }
-
   updateDateStart(event) {
     this.startTarget.value = event.target.value
+  }
+
+  updateInterval(event) {
+    this.intervalTarget.value = event.target.value
   }
 
   buildSeries() {
@@ -170,23 +163,22 @@ export default class extends Controller {
     })
   }
 
-  updateInterval(event) {
-    this.intervalTarget.value = event.target.value
+  toggleSeries(event) {
+    if (event.target.checked) {
+      ApexCharts.exec(this.idValue, "showSeries", event.target.dataset.series)
+    } else {
+      ApexCharts.exec(this.idValue, "hideSeries", event.target.dataset.series)
+    }
   }
 
   changeMainCard(event) {
-    this.seriesTypeValue = event.params.chart
-    this.seriesDataValue = event.params.series
-
-    ApexCharts.exec(this.idValue, "destroy")
     this.mainTargets.forEach((el) => {
-      if (el.dataset.chart === this.seriesTypeValue) {
+      if (el.dataset.chart === event.params.chart) {
         el.classList.remove("d-none")
       } else {
         el.classList.add("d-none")
       }
     })
-    this.buildChart()
   }
 
   setDateTimeLabel() {
@@ -199,11 +191,11 @@ export default class extends Controller {
     }
   }
 
-  setChartTypeDefaults(options, type) {
-    if (type === "line") {
+  setChartTypeDefaults(options, seriesType) {
+    if (seriesType === "episodeRollups") {
       Object.assign(options.chart, {
         id: this.idValue,
-        type: type,
+        type: "line",
         height: "700px",
       })
       const typeOptions = Object.assign({}, LINE_DEFAULTS)
@@ -219,12 +211,39 @@ export default class extends Controller {
             format: this.setDateTimeLabel(),
           },
         },
+        yaxis: {
+          title: { text: "Downloads" },
+        },
       })
       return typeOptions
-    } else if (type === "bar") {
+    } else if (seriesType === "uniques") {
       Object.assign(options.chart, {
         id: this.idValue,
-        type: type,
+        type: "line",
+        height: "700px",
+      })
+      const typeOptions = Object.assign({}, LINE_DEFAULTS)
+      Object.assign(typeOptions, {
+        xaxis: {
+          type: "datetime",
+          labels: {
+            format: this.setDateTimeLabel(),
+          },
+        },
+        tooltip: {
+          x: {
+            format: this.setDateTimeLabel(),
+          },
+        },
+        yaxis: {
+          title: { text: "Unique Listeners" },
+        },
+      })
+      return typeOptions
+    } else if (seriesType === "agents") {
+      Object.assign(options.chart, {
+        id: this.idValue,
+        type: "bar",
         height: "350px",
       })
       const typeOptions = Object.assign({}, BAR_DEFAULTS)
