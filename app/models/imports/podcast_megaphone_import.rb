@@ -154,6 +154,9 @@ class PodcastMegaphoneImport < PodcastImport
         to_import << ei
       end
     end
+
+    # wait till all are created before starting any jobs
+    to_import.each(&:import_later)
   end
 
   def import_existing
