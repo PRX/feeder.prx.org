@@ -62,14 +62,6 @@ class Tasks::CopyMediaTask < ::Task
       fix_media!
     else
       slice_media!
-      complete_import!
-    end
-  end
-
-  def complete_import!
-    imports = EpisodeMegaphoneImport.where(episode: media_resource.episode)
-    imports.each do |import|
-      import.finish_sync!
     end
   end
 
