@@ -124,7 +124,7 @@ class EpisodeMegaphoneImport < EpisodeImport
   end
 
   def update_enclosure_override!
-    return if !podcast_import.override_enclosures || audio[:files].blank?
+    return if !podcast_import.override_enclosures || !upload_audio?
 
     emr_attributes = {
       status: :complete,
@@ -134,7 +134,7 @@ class EpisodeMegaphoneImport < EpisodeImport
       file_size: audio_file_size,
       duration: entry[:duration].to_f,
       bit_rate: entry[:bitrate].to_i,
-      channels: entry[:channel_mode].match?(/mono/i) ? 1 : 2,
+      channels: (entry[:channel_mode] || "").match?(/mono/i) ? 1 : 2,
       sample_rate: entry[:samplerate].to_f
     }
 
