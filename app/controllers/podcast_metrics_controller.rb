@@ -2,23 +2,48 @@ class PodcastMetricsController < ApplicationController
   before_action :set_podcast, :set_date_range
 
   def show
-    # @top_subdivs =
-    #   Rollups::DailyGeo
-    #     .where(podcast_id: @podcast.id)
-    #     .select(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day", "SUM(count) AS count")
-    #     .group(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .limit(10)
-    # @top_countries =
-    #   Rollups::DailyGeo
-    #     .where(podcast_id: @podcast.id)
-    #     .select(:country_code, "SUM(count) AS count")
-    #     .group(:country_code)
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .limit(10)
   end
 
   def downloads
+    if clickhouse_connected?
+      @recent_downloads_total =
+        Rollups::HourlyDownload
+          .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
+          .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+          .group("DATE_TRUNC('#{@interval}', hour) AS hour")
+          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) DESC"))
+      @alltime_downloads_total =
+        Rollups::HourlyDownload
+          .where(podcast_id: @podcast.id)
+          .select("SUM(count) AS count")
+          .group(:podcast_id)
+          .order(:podcast_id)
+    end
+
+    render partial: "downloads_card", locals: {
+      interval: @interval,
+      date_range: @date_range,
+      total_recent: @recent_downloads_total,
+      total_alltime: @alltime_downloads_total
+    }
+  end
+
+  def uniques
+    if clickhouse_connected?
+      @uniques =
+        Rollups::DailyUnique
+          .where(podcast_id: @podcast.id, day: (@date_start.to_date..@date_end.to_date))
+          .order(day: :asc)
+    end
+
+    render partial: "uniques_card", locals: {
+      interval: @interval,
+      uniques: @uniques,
+      date_range: @date_range
+    }
+  end
+
+  def rollups
     if clickhouse_connected?
       @episodes =
         @podcast.episodes
@@ -38,45 +63,32 @@ class PodcastMetricsController < ApplicationController
           .select(:episode_id, "SUM(count) AS count")
           .group(:episode_id)
 
-      @recent_downloads_total =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
-          .select("SUM(count) AS count")
-          .group(:podcast_id)
-          .order(:podcast_id)
-      @alltime_downloads_total =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id)
-          .select("SUM(count) AS count")
-          .group(:podcast_id)
-          .order(:podcast_id)
-
       @episode_rollups = episode_rollups(@episodes, @recent_downloads_by_episode, @alltime_downloads_by_episode)
-    end
 
-    render partial: "downloads_card", locals: {
-      interval: @interval,
-      episode_rollups: @episode_rollups,
-      date_range: @date_range,
-      total_recent: @recent_downloads_total,
-      total_alltime: @alltime_downloads_total,
-      episodes: @episodes
-    }
+      render partial: "rollups_card", locals: {
+        interval: @interval,
+        episode_rollups: @episode_rollups,
+        date_range: @date_range,
+        episodes: @episodes
+      }
+    end
   end
 
-  def uniques
-    if clickhouse_connected?
-      @uniques =
-        Rollups::DailyUnique
-          .where(podcast_id: @podcast.id, day: (@date_start.to_date..@date_end.to_date))
-          .order(day: :asc)
-    end
-
-    render partial: "uniques_card", locals: {
-      interval: @interval,
-      uniques: @uniques,
-      date_range: @date_range
-    }
+  def geos
+    # @top_subdivs =
+    #   Rollups::DailyGeo
+    #     .where(podcast_id: @podcast.id)
+    #     .select(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day", "SUM(count) AS count")
+    #     .group(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day")
+    #     .order(Arel.sql("SUM(count) AS count DESC"))
+    #     .limit(10)
+    # @top_countries =
+    #   Rollups::DailyGeo
+    #     .where(podcast_id: @podcast.id)
+    #     .select(:country_code, "SUM(count) AS count")
+    #     .group(:country_code)
+    #     .order(Arel.sql("SUM(count) AS count DESC"))
+    #     .limit(10)
   end
 
   def agents

@@ -1,19 +1,15 @@
-<div class="card shadow border-0"
-  data-controller="apex"
-  data-apex-id-value="<%= SecureRandom.uuid %>">
+<div class="card shadow border-0">
   <div class="card-header card-header-light d-flex justify-content-between">
     <ul class="nav nav-tabs card-header-tabs">
-      <li class="nav-item"><button class="nav-link active" id="downloads-tab" data-bs-toggle="tab" data-bs-target="#downloads" type="button" role="tab" aria-controls="downloads" aria-selected="true" data-action="apex#changeMainCard" data-apex-chart-param="episodeRollups">Downloads</button></li>
+      <li class="nav-item"><button class="nav-link active" id="downloads-tab" data-bs-toggle="tab" data-bs-target="#downloads" type="button" role="tab" aria-controls="downloads" aria-selected="true" data-action="apex#changeMainCard" data-apex-chart-param="downloads">Downloads</button></li>
       <li class="nav-item"><button class="nav-link" id="uniques-tab" data-bs-toggle="tab" data-bs-target="#uniques" type="button" role="tab" aria-controls="uniques" aria-selected="false" data-action="apex#changeMainCard" data-apex-chart-param="uniques">Unique Listeners</button></li>
+      <li class="nav-item"><button class="nav-link" id="rollups-tab" data-bs-toggle="tab" data-bs-target="#rollups" type="button" role="tab" aria-controls="rollups" aria-selected="false" data-action="apex#changeMainCard" data-apex-chart-param="rollups">Episode Rollups</button></li>
       <li class="nav-item"><button class="nav-link" id="dropday-tab" data-bs-toggle="tab" data-bs-target="#dropday" type="button" role="tab" aria-controls="dropday" aria-selected="false">Dropday Downloads</button></li>
     </ul>
   </div>
   <div class="card-body">
-    <div class="" data-apex-target="main" data-chart="episodeRollups">
-      <%= turbo_frame_tag "downloads", src: downloads_podcast_metrics_path(podcast), loading: "lazy" %>
-    </div>
-    <div class="d-none" data-apex-target="main" data-chart="uniques">
-      <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast), loading: "lazy" %>
-    </div>
+    <%= turbo_frame_tag "downloads", src: downloads_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), loading: "lazy", data: {apex_target: "main", chart: "downloads"} %>
+    <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end), loading: "lazy", data: {apex_target: "main", chart: "uniques"}, class: "d-none" %>
+    <%= turbo_frame_tag "rollups", src: rollups_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), loading: "lazy", data: {apex_target: "main", chart: "rollups"}, class: "d-none" %>
   </div>
 </div>

@@ -1,0 +1,47 @@
+<%= turbo_frame_tag "rollups" do %>
+  <div class="row d-flex flex-wrap gx-4"
+    data-controller="apex"
+    data-apex-id-value="<%= SecureRandom.uuid %>"
+    data-apex-series-type-value="episodeRollups"
+    data-apex-interval-value="<%= interval %>"
+    data-apex-series-data-value="<%= episode_rollups.to_json %>"
+    data-apex-date-range-value="<%= date_range.to_json %>">
+    <div class="col">
+      <div data-apex-target="chart" data-chart="episodeRollups"></div>
+    </div>
+    <div class="col align-items-center">
+      <div class="col my-4">
+        <table class="table table-striped shadow rounded">
+          <thead>
+            <tr class="table-secondary">
+              <th>Episode</th>
+              <th>Publish Date</th>
+              <th>Downloads</th>
+              <th>All-time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% episode_rollups.each_with_index do |er, i| %>
+              <% sum = sum_rollups(er[:rollups]) %>
+              <% total = sum_rollups(er[:totals]) %>
+              <% title = er[:ep][:title] %>
+              <tr class="align-items-center">
+                <td class="d-flex align-items-center">
+                  <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex#toggleSeries" data-series="<%= title %>" data-apex-target="episodebox">
+                  <span class="material-icons me-2" aria-label="hidden" style="color: <%= line_chart_colors[i] %>">circle</span>
+                  <span class="text-nowrap overflow-hidden"><%= title %></span>
+                </td>
+                <td><%= er[:ep][:published_at].strftime("%Y-%m-%d") %></td>
+                <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>
+                <td><% if total %><%= total %><% else %>&mdash;<% end %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <div class="col my-4">
+          <%= paginate episodes, param_name: :episode_rollups %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

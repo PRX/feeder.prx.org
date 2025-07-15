@@ -15,6 +15,9 @@ const DEFAULT_OPTIONS = {
         speed: 1000,
       },
     },
+    toolbar: {
+      show: false,
+    },
   },
 }
 
@@ -51,7 +54,6 @@ const BAR_DEFAULTS = {
 export default class extends Controller {
   static values = {
     id: String,
-    chartType: String,
     seriesType: String,
     seriesData: Array,
     dateRange: Array,
@@ -87,12 +89,28 @@ export default class extends Controller {
   }
 
   buildSeries() {
-    if (this.seriesTypeValue === "episodeRollups" && this.dateRangeValue.length) {
-      return this.buildEpisodeRollupsSeries()
+    if (this.seriesTypeValue === "downloads" && this.dateRangeValue.length) {
+      return this.buildDownloadsSeries()
     } else if (this.seriesTypeValue === "uniques") {
       return this.buildUniquesSeries()
+    } else if (this.seriesTypeValue === "episodeRollups" && this.dateRangeValue.length) {
+      return this.buildEpisodeRollupsSeries()
     } else if (this.seriesTypeValue === "agents") {
       return this.buildAgentSeries()
+    }
+  }
+
+  buildDownloadsSeries() {
+    if (this.seriesDataValue.length) {
+      return {
+        series: [
+          {
+            data: this.alignDownloadsOnDateRange(this.seriesDataValue, this.dateRangeValue),
+          },
+        ],
+      }
+    } else {
+      return []
     }
   }
 
@@ -102,7 +120,7 @@ export default class extends Controller {
         series: this.seriesDataValue.map((d) => {
           return {
             name: d.ep.title,
-            data: this.alignRollupsOnDateRange(d.rollups, this.dateRangeValue),
+            data: this.alignDownloadsOnDateRange(d.rollups, this.dateRangeValue),
           }
         }),
       }
@@ -142,17 +160,17 @@ export default class extends Controller {
     }
   }
 
-  alignRollupsOnDateRange(rollups, range) {
+  alignDownloadsOnDateRange(downloads, range) {
     return range.map((date) => {
       const utcDate = new Date(date).toUTCString()
-      const rollup = rollups.filter((r) => {
+      const match = downloads.filter((r) => {
         return new Date(r.hour).toUTCString() === utcDate
       })
 
-      if (rollup[0]) {
+      if (match[0]) {
         return {
           x: utcDate,
-          y: rollup[0].count,
+          y: match[0].count,
         }
       } else {
         return {
@@ -192,11 +210,11 @@ export default class extends Controller {
   }
 
   setChartTypeDefaults(options, seriesType) {
-    if (seriesType === "episodeRollups") {
+    if (seriesType === "episodeRollups" || seriesType === "downloads") {
       Object.assign(options.chart, {
         id: this.idValue,
         type: "line",
-        height: "700px",
+        height: "550px",
       })
       const typeOptions = Object.assign({}, LINE_DEFAULTS)
       Object.assign(typeOptions, {
@@ -220,7 +238,7 @@ export default class extends Controller {
       Object.assign(options.chart, {
         id: this.idValue,
         type: "line",
-        height: "700px",
+        height: "550px",
       })
       const typeOptions = Object.assign({}, LINE_DEFAULTS)
       Object.assign(typeOptions, {
