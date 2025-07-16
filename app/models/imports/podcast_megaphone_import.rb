@@ -52,6 +52,7 @@ class PodcastMegaphoneImport < PodcastImport
   def update_feed!
     conf = megaphone_feed.config
     conf.advertising_tags = megaphone_podcast.advertising_tags
+    conf.slug = megaphone_podcast.slug if megaphone_podcast.slug.present?
     conf.save!
   end
 

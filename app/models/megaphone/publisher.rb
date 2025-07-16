@@ -25,6 +25,9 @@ module Megaphone
 
     def sync_episodes!
       Rails.logger.tagged("Megaphone::Publisher#sync_episodes!") do
+        # complete import on any episodes
+        complete_import!
+
         # delete or unpublish episodes we aren't including in the feed anymore
         delete_episodes!
 
@@ -33,6 +36,15 @@ module Megaphone
 
         # check if the upload has completed and the audio has finished processing
         check_status_episodes!
+      end
+    end
+
+    def complete_import!
+      EpisodeMegaphoneImport.where(
+        episode_id: private_feed.episodes,
+        status: EpisodeMegaphoneImport::COMPLETE
+      ).each do |import|
+        import.finish_sync!
       end
     end
 

@@ -106,21 +106,6 @@ describe Tasks::CopyMediaTask do
       end
     end
 
-    it "completes megaphone import on complete" do
-      podcast = task.media_resource.episode.podcast
-      pi = create(:podcast_megaphone_import, podcast: podcast, override_enclosures: true)
-      emi = EpisodeMegaphoneImport.create!(podcast_import: pi, episode: task.media_resource.episode, status: "complete", guid: "guid")
-      eds = create(:megaphone_episode_delivery_status, episode: task.media_resource.episode)
-
-      assert_nil emi.synced_at
-      EpisodeMegaphoneImport.stub_any_instance(:update_delivery_status, eds) do
-        task.update_media_resource
-      end
-
-      emi.reload
-      refute_nil emi.synced_at
-    end
-
     it "updates audio metadata on complete" do
       task.media_resource.reset_media_attributes
 
