@@ -1,5 +1,5 @@
 class SubscribeLink < ApplicationRecord
-  PLATFORMS = %w[apple spotify overcast pocketcasts youtube youtube_feed amazon antenna anytime apollo breez castamatic castbox castro curiocaster deezer fountain global goodpods gpodder hark iheart lnbeats luminary moon pandora player podbean podaddict podapp podguru_apple podguru_feed podrepublic podfriend podlp_apple podlp_guid podstation podurama podverse snipd sonnet steno truefans tunein].freeze
+  PLATFORMS = %w[apple spotify overcast pocketcasts youtube youtube_feed amazon antenna anytime breez castamatic castbox castro curiocaster deezer fountain global goodpods gpodder hark iheart lnbeats luminary moon pandora player podbean podaddict podapp podguru_apple podguru_feed podrepublic podfriend podlp_apple podlp_guid podstation podurama podverse snipd sonnet steno truefans tunein].freeze
 
   PLATFORM_HREFS = {
     "apple" => "https://podcasts.apple.com/podcast/id${appleID}",
@@ -11,7 +11,6 @@ class SubscribeLink < ApplicationRecord
     "amazon" => "https://music.amazon.com/podcasts/${uniquePlatformID}",
     "antenna" => "https://antennapod.org/deeplink/subscribe?url=${feedURL}",
     "anytime" => "https://anytimeplayer.app/subscribe?url=${feedURL}",
-    "apollo" => "https://shows.apollopods.com/show?feedUrl=${feedURL}",
     "breez" => "https://breez.link/p?feedURL=${encodeURIComponent(feedURL)}",
     "castamatic" => "https://castamatic.com/guid/${podcastGUID}",
     "castbox" => "https://castbox.fm/vic/${appleID}",
@@ -52,7 +51,7 @@ class SubscribeLink < ApplicationRecord
 
   UNIQUE_PLATFORMS = %w[spotify youtube amazon deezer global hark iheart luminary pandora podapp snipd tunein]
 
-  FEED_PLATFORMS = %w[youtube_feed antenna anytime apollo breez gpodder player podaddict podguru_feed podstation]
+  FEED_PLATFORMS = %w[youtube_feed antenna anytime breez gpodder player podaddict podguru_feed podstation]
 
   GUID_PLATFORMS = %w[castamatic lnbeats podlp_guid steno truefans]
 
