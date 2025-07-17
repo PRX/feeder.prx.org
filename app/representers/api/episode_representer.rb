@@ -49,6 +49,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     class: MediaResource
 
   property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
+  property :podcast_image, decorator: Api::ImageRepresenter
 
   def self_url(episode)
     api_episode_path(id: episode.guid)
