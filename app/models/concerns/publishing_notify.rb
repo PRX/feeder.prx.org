@@ -26,7 +26,7 @@ module PublishingNotify
   end
 
   def podping_enabled?(feed)
-    ENV["PODPING_AUTH_TOKEN"].present? && feed.public?
+    ENV["PODPING_AUTH_TOKEN"].present? && feed&.public? && feed&.url.present?
   end
 
   def podping_headers

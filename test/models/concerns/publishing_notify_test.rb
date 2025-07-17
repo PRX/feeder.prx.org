@@ -22,4 +22,13 @@ class PublishingStatusTest < ActiveSupport::TestCase
     notify_rss_published(podcast, feed)
     assert_requested :get, podping_url
   end
+
+  test "notify_rss_published handles a feed with a null url" do
+    stub_request(:get, "https://podping.cloud/?url")
+      .to_return(status: 200, body: "", headers: {})
+
+    feed.url = nil
+    notify_rss_published(podcast, feed)
+    assert_requested :get, "https://podping.cloud/?url", times: 0
+  end
 end
