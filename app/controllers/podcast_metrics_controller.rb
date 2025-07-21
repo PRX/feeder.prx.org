@@ -12,12 +12,14 @@ class PodcastMetricsController < ApplicationController
           .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
           .group("DATE_TRUNC('#{@interval}', hour) AS hour")
           .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) DESC"))
+          .load_async
       @alltime_downloads_total =
         Rollups::HourlyDownload
           .where(podcast_id: @podcast.id)
           .select("SUM(count) AS count")
           .group(:podcast_id)
           .order(:podcast_id)
+          .load_async
     end
 
     render partial: "downloads_card", locals: {
@@ -57,11 +59,13 @@ class PodcastMetricsController < ApplicationController
           .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
           .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
           .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) DESC"))
+          .load_async
       @alltime_downloads_by_episode =
         Rollups::HourlyDownload
           .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
           .select(:episode_id, "SUM(count) AS count")
           .group(:episode_id)
+          .load_async
 
       @episode_rollups = episode_rollups(@episodes, @recent_downloads_by_episode, @alltime_downloads_by_episode)
 
@@ -98,18 +102,21 @@ class PodcastMetricsController < ApplicationController
         .select("agent_name_id AS code", "SUM(count) AS count")
         .group("agent_name_id AS code")
         .order(Arel.sql("SUM(count) AS count DESC"))
+        .load_async
     @agent_types_query =
       Rollups::DailyAgent
         .where(podcast_id: @podcast.id)
         .select("agent_type_id AS code", "SUM(count) AS count")
         .group("agent_type_id AS code")
         .order(Arel.sql("SUM(count) AS count DESC"))
+        .load_async
     @agent_os_query =
       Rollups::DailyAgent
         .where(podcast_id: @podcast.id)
         .select("agent_os_id AS code", "SUM(count) AS count")
         .group("agent_os_id AS code")
         .order(Arel.sql("SUM(count) AS count DESC"))
+        .load_async
 
     @agent_apps = Kaminari.paginate_array(@agent_apps_query).page(params[:agent_apps]).per(10)
     @agent_types = Kaminari.paginate_array(@agent_types_query).page(params[:agent_types]).per(10)
