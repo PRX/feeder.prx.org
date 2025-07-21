@@ -1,141 +1,46 @@
-<% if Rails.env.development? %>
+<% if Rails.env.development? && clickhouse_connected? %>
   <% content_for :title, "#{@podcast.title} - #{t(".title")}" %>
 
-  <%= turbo_frame_tag "podcast-metrics", data: {controller: "morphdom"} do %>
-    <div class="container col-12 my-2">
-      <div class="card p-4">
-        <div class="card-body">
-          <div class="row d-flex flex-wrap gx-4">
-            <div class="col">
-              <div>line graph will go here</div>
-            </div>
-            <div class="col d-flex align-items-center">
-              <table class="table table-striped shadow rounded">
-                <thead>
-                  <tr class="table-secondary">
-                    <th>Episode</th>
-                    <th>Release Date</th>
-                    <th>Downloads</th>
-                    <th>All Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-
-                </tbody>
-              </table>
-            </div>
+  <%= form_with(url: podcast_metrics_path(@podcast), method: :get, id: "metrics", data: {controller: "click", click_debounce_value: 200}) do |form| %>
+    <div data-controller="apex">
+      <div class="container col-12 d-flex align-items-center justify-content-between my-4">
+        <h1 class="fw-bold my-0 mb-0 me-4">Metrics at a Glance</h1>
+        <div class="">
+          <div class="d-flex justify-items-end">
+            <%= render "filter_dates", form: form, date_start: @date_start, date_end: @date_end %>
           </div>
         </div>
+      </div>
+      <div class="container col-12 my-4">
+        <%= render "downloads_card", form: form, episodes: @episodes, episode_rollups: @episode_rollups, total_recent: @recent_downloads_total, total_alltime: @alltime_downloads_total, date_start: @date_start, date_end: @date_end, interval: @interval %>
       </div>
     </div>
 
     <div class="container col-12 mb-2">
-      <div class="row gx-2">
-        <div class="col-6 mb-2">
-          <div class="card">
-            <div class="card-header card-header-primary-light d-flex">
-              <h5>Countries</h5>
-            </div>
-            <div class="card-body">
-              <div class="col-12">
-                <div class="">
-                  map graph will go here
-                </div>
-              </div>
-              <div class="col-12">
-                <table class="table table-striped shadow rounded">
-                  <thead>
-                    <tr class="table-secondary">
-                      <th>Country</th>
-                      <th>Downloads</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  </tbody>
-                </table>
-              </div>
-            </div>
+      <div class="col mb-4">
+        <div class="row gx-2">
+          <div class="col-6 mb-2">
+            <%= render "geo_card", geo_type: "Countries" %>
+          </div>
+          <div class="col-6 mb-2">
+            <%= render "geo_card", geo_type: "Metros" %>
           </div>
         </div>
-        <div class="col-6 mb-2">
-          <div class="card">
-            <div class="card-header card-header-primary-light d-flex">
-              <h5>Metros (DMA)</h5>
-            </div>
-            <div class="card-body">
-              <div class="col-12">
-                <div class="">
-                  map graph will go here
-                </div>
-              </div>
-              <div class="col-12">
-                <table class="table table-striped shadow rounded">
-                  <thead>
-                    <tr class="table-secondary">
-                      <th>Metro</th>
-                      <th>Downloads</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  </tbody>
-                </table>
-              </div>
-            </div>
+      </div>
+      <div class="col mb-4">
+        <div class="row gx-2">
+          <div class="col-4 mb-2">
+            <%= render "agent_card", agents: @agent_apps, agents_title: "App or Browser", turbo_tag: "agent_apps" %>
           </div>
-        </div>
-        <div class="col-6 mb-2">
-          <div class="card">
-            <div class="card-header card-header-primary-light d-flex">
-              <h5>App & Browser</h5>
-            </div>
-            <div class="card-body">
-              <div class="col">
-                <div>bar graph will go here</div>
-              </div>
-              <div class="col-12">
-                <table class="table table-striped shadow rounded">
-                  <thead>
-                    <tr class="table-secondary">
-                      <th>App or Browser</th>
-                      <th>Downloads</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div class="col-4 mb-2">
+            <%= render "agent_card", agents: @agent_types, agents_title: "Agent Types", turbo_tag: "agent_types" %>
           </div>
-        </div>
-        <div class="col-6 mb-2">
-          <div class="card">
-            <div class="card-header card-header-primary-light d-flex">
-              <h5>Operating System</h5>
-            </div>
-            <div class="card-body">
-              <div class="col">
-                <div>bar graph will go here</div>
-              </div>
-              <div class="col-12">
-                <table class="table table-striped shadow rounded">
-                  <thead>
-                    <tr class="table-secondary">
-                      <th>Operating System</th>
-                      <th>Downloads</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div class="col-4 mb-2">
+            <%= render "agent_card", agents: @agent_os, agents_title: "Operating System", turbo_tag: "agent_os" %>
           </div>
         </div>
       </div>
     </div>
+    <%= form.submit class: "d-none", data: {click_target: "submit"} %>
   <% end %>
 <% end %>

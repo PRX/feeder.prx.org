@@ -1,0 +1,21 @@
+<div class="d-flex">
+  <div class="me-2">
+    <div class="btn-group">
+      <button class="btn btn-primary dropdown-toggle" type="button" id="time-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+        Time specificity
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="time-options">
+        <% interval_options(date_start, date_end).each do |option| %>
+          <% active = option[1] == interval %>
+          <li>
+            <button class="dropdown-item <%= "active" if active %>" type="button" aria-current="<%= active %>" data-action="apex#updateInterval click#submit" value="<%= option[1] %>">
+              <%= option[0] %>
+            </button>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+
+    <%= form.hidden_field :interval, data: {apex_target: "interval"}, value: interval %>
+  </div>
+</div>
