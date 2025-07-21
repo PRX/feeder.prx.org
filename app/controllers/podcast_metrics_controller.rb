@@ -1,5 +1,6 @@
 class PodcastMetricsController < ApplicationController
-  before_action :set_podcast, :set_date_range
+  before_action :set_podcast
+  before_action :set_date_range, only: %i[show downloads uniques rollups agents]
 
   def show
   end
@@ -50,7 +51,7 @@ class PodcastMetricsController < ApplicationController
       @episodes =
         @podcast.episodes
           .published
-          .order(published_at: :desc)
+          .order(first_rss_published_at: :desc)
           .paginate(params[:episode_rollups], params[:per])
 
       @recent_downloads_by_episode =
@@ -76,6 +77,39 @@ class PodcastMetricsController < ApplicationController
         episodes: @episodes
       }
     end
+  end
+
+  def dropdays
+    @episodes =
+      @podcast.episodes
+        .published
+        .order(first_rss_published_at: :desc)
+        .paginate(params[:episode_dropdays], params[:per])
+
+    @dropdays = @episodes.map do |ep|
+      if ep[:first_rss_published_at]
+        Rollups::HourlyDownload
+          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + 7.days)))
+          .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
+          .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
+          .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
+      else
+        []
+      end
+    end.flatten
+    @alltime_downloads_by_episode =
+      Rollups::HourlyDownload
+        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
+        .select(:episode_id, "SUM(count) AS count")
+        .group(:episode_id)
+        .load_async
+
+    @episode_dropdays = episode_rollups(@episodes, @dropdays, @alltime_downloads_by_episode)
+
+    render partial: "dropdays_card", locals: {
+      episode_dropdays: @episode_dropdays,
+      episodes: @episodes
+    }
   end
 
   def geos
@@ -156,6 +190,17 @@ class PodcastMetricsController < ApplicationController
         end,
         totals: totals.select do |r|
           r["episode_id"] == ep.guid
+        end
+      }
+    end
+  end
+
+  def episode_dropdays(episodes, dropdays)
+    episodes.map do |ep|
+      {
+        ep: ep,
+        dropdays: dropdays.select do |d|
+          d["episode_id"] == ep.guid
         end
       }
     end

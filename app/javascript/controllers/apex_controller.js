@@ -95,6 +95,8 @@ export default class extends Controller {
       return this.buildUniquesSeries()
     } else if (this.seriesTypeValue === "episodeRollups" && this.dateRangeValue.length) {
       return this.buildEpisodeRollupsSeries()
+    } else if (this.seriesTypeValue === "dropdays") {
+      return this.buildDropdaysSeries()
     } else if (this.seriesTypeValue === "agents") {
       return this.buildAgentSeries()
     }
@@ -146,6 +148,19 @@ export default class extends Controller {
     }
   }
 
+  buildDropdaysSeries() {
+    if (this.seriesDataValue.length) {
+      return {
+        series: this.seriesDataValue.map((d) => {
+          return {
+            name: d.ep.title,
+            data: this.normalizeDropdayDownloads(d.rollups),
+          }
+        }),
+      }
+    }
+  }
+
   buildAgentSeries() {
     if (this.seriesDataValue.length) {
       return {
@@ -177,6 +192,20 @@ export default class extends Controller {
           x: utcDate,
           y: 0,
         }
+      }
+    })
+  }
+
+  normalizeDropdayDownloads(downloads) {
+    const counts = downloads.map((d) => d.count)
+    while (counts.length < 8) {
+      counts.push(0)
+    }
+    return counts.map((c, i) => {
+      const accumArr = counts.slice(0, i + 1)
+      return {
+        x: i,
+        y: accumArr.reduce((sum, val) => sum + val, 0),
       }
     })
   }
@@ -255,6 +284,25 @@ export default class extends Controller {
         },
         yaxis: {
           title: { text: "Unique Listeners" },
+        },
+      })
+      return typeOptions
+    } else if (seriesType === "dropdays") {
+      Object.assign(options.chart, {
+        id: this.idValue,
+        type: "line",
+        height: "550px",
+      })
+      const typeOptions = Object.assign({}, LINE_DEFAULTS)
+      Object.assign(typeOptions, {
+        xaxis: {
+          type: "numeric",
+          tickAmount: 7,
+          decimalsInFloat: 0,
+          title: "Days Since Drop",
+        },
+        yaxis: {
+          title: { text: "Downloads" },
         },
       })
       return typeOptions

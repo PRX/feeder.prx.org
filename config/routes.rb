@@ -25,6 +25,7 @@ Rails.application.routes.draw do
       get "downloads"
       get "uniques"
       get "rollups"
+      get "dropdays"
     end
   end
 
