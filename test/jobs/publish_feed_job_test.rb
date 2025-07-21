@@ -19,6 +19,7 @@ describe PublishFeedJob do
   describe "saving the rss file" do
     before do
       stub_request(:head, episode.enclosure_url).to_return(status: 200)
+      stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
     end
 
     describe "#perform" do
@@ -55,7 +56,8 @@ describe PublishFeedJob do
         assert_nil podcast.episodes.first.first_rss_published_at
 
         job.stub(:s3_client, stub_client) do
-          job.save_file(podcast, podcast.default_feed)
+          rss_builder = FeedBuilder.new(podcast, podcast.default_feed)
+          job.after_publish_rss(podcast, podcast.default_feed, rss_builder.episodes)
           refute_nil podcast.episodes.first.first_rss_published_at
           assert_in_delta podcast.episodes.first.first_rss_published_at, DateTime.now, 15.seconds
         end
@@ -71,7 +73,8 @@ describe PublishFeedJob do
         stub_head_3 = stub_request(:head, episode_3.enclosure_url)
 
         job.stub(:s3_client, stub_client) do
-          job.save_file(podcast, podcast.default_feed)
+          rss_builder = FeedBuilder.new(podcast, podcast.default_feed)
+          job.after_publish_rss(podcast, podcast.default_feed, rss_builder.episodes)
 
           assert_requested(stub_head_1)
           assert_requested(stub_head_2)
@@ -287,6 +290,7 @@ describe PublishFeedJob do
         end
 
         it "does not raise an error if the apple publishing fails and apple sync does not block rss publishing" do
+          stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
           apple_feed.apple_config.update!(sync_blocks_rss: false)

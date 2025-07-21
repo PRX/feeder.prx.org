@@ -111,7 +111,11 @@ module Megaphone
     end
 
     def join_base_url(*path)
-      File.join(api_base, *path)
+      if path.first.starts_with?(api_base)
+        File.join(*path)
+      else
+        File.join(api_base, *path)
+      end
     end
 
     def incoming_body_filter(str)

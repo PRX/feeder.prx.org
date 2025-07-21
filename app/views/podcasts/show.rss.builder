@@ -42,6 +42,8 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
       xml.itunes :"new-feed-url", @feed.new_feed_url
     end
 
+    xml.itunes :applepodcastsverify, @feed.apple_verify_token if @feed.apple_verify_token.present?
+
     xml.itunes :block, "Yes" if @podcast.itunes_block || @feed.try(:private)
 
     xml.itunes :author, @podcast.author_name unless @podcast.author_name.blank?
@@ -109,6 +111,10 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
     if @podcast.subscribe_links.present?
       xml.podcast :follow, url: @podcast.subscribe_links_path
     end
+
+    xml.podcast :podping, usesPodping: "true" if podping_enabled?(@feed)
+
+    xml.podcast :locked, @feed.import_locked ? "yes" : "no"
 
     @episodes.each_with_index do |ep, index|
       xml.item do

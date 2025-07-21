@@ -283,6 +283,10 @@ class Episode < ApplicationRecord
     transcript if transcript&.status_complete?
   end
 
+  def podcast_image
+    podcast&.itunes_image || podcast&.feed_image
+  end
+
   def head_request(uri_str = enclosure_url(podcast.default_feed), redirects = 0)
     return nil if redirects >= 10
 
