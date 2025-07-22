@@ -71,6 +71,9 @@ class PodcastMetricsController < ApplicationController
       @episode_rollups = episode_rollups(@episodes, @recent_downloads_by_episode, @alltime_downloads_by_episode)
 
       render partial: "rollups_card", locals: {
+        podcast: @podcast,
+        date_start: @date_start,
+        date_end: @date_end,
         interval: @interval,
         episode_rollups: @episode_rollups,
         date_range: @date_range,
