@@ -50,6 +50,22 @@ describe MediaResource do
     assert_match(/https:\/\/f.prxu.org\/#{episode.podcast.path}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/ca047dce-9df5-4132-a04b-31d24c7c55a(\d+).mp3/, media_resource.media_url)
   end
 
+  describe "#file_name" do
+    it "returns original url filenames" do
+      mr = MediaResource.new
+      assert_nil mr.file_name
+
+      mr.original_url = ""
+      assert_nil mr.file_name
+
+      mr.original_url = "http://test.prxu.org/somefile.mp3?foo=bar"
+      assert_equal "somefile.mp3", mr.file_name
+
+      mr.original_url = "not a uri"
+      assert_equal "not a uri", mr.file_name
+    end
+  end
+
   describe "#retryable?" do
     it "allows retrying stale processing" do
       mr = build_stubbed(:media_resource)
