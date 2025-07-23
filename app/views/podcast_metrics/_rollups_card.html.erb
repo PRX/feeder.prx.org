@@ -1,13 +1,12 @@
 <%= turbo_frame_tag "rollups" do %>
   <div class="row d-flex flex-wrap gx-4"
-    data-controller="apex"
-    data-apex-id-value="<%= SecureRandom.uuid %>"
-    data-apex-series-type-value="episodeRollups"
-    data-apex-interval-value="<%= interval %>"
-    data-apex-series-data-value="<%= episode_rollups.to_json %>"
-    data-apex-date-range-value="<%= date_range.to_json %>">
+    data-controller="apex-rollups"
+    data-apex-rollups-id-value="<%= SecureRandom.uuid %>"
+    data-apex-rollups-interval-value="<%= interval %>"
+    data-apex-rollups-series-data-value="<%= episode_rollups.to_json %>"
+    data-apex-rollups-date-range-value="<%= date_range.to_json %>">
     <div class="col">
-      <div data-apex-target="chart" data-chart="episodeRollups"></div>
+      <div data-apex-rollups-target="chart" data-chart="episodeRollups"></div>
     </div>
     <div class="col align-items-center">
       <div class="col my-4">
@@ -27,7 +26,7 @@
               <% title = er[:ep][:title] %>
               <tr class="align-items-center">
                 <td class="d-flex align-items-center">
-                  <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex#toggleSeries" data-series="<%= title %>" data-apex-target="episodebox">
+                  <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-rollups#toggleSeries" data-series="<%= title %>">
                   <span class="material-icons me-2" aria-label="hidden" style="color: <%= line_chart_colors[i] %>">circle</span>
                   <span class="text-nowrap overflow-hidden"><%= title %></span>
                 </td>

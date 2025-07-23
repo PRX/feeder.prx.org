@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       get "uniques"
       get "rollups"
       get "dropdays"
+      get "agents"
     end
   end
 

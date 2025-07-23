@@ -1,6 +1,6 @@
 class PodcastMetricsController < ApplicationController
   before_action :set_podcast
-  before_action :set_date_range, only: %i[show downloads uniques rollups agents]
+  before_action :set_date_range, only: %i[show downloads uniques rollups]
 
   def show
   end
@@ -158,6 +158,12 @@ class PodcastMetricsController < ApplicationController
     @agent_apps = Kaminari.paginate_array(@agent_apps_query).page(params[:agent_apps]).per(10)
     @agent_types = Kaminari.paginate_array(@agent_types_query).page(params[:agent_types]).per(10)
     @agent_os = Kaminari.paginate_array(@agent_os_query).page(params[:agent_os]).per(10)
+
+    render partial: "agents", locals: {
+      agent_apps: @agent_apps,
+      agent_types: @agent_types,
+      agent_os: @agent_os
+    }
   end
 
   private

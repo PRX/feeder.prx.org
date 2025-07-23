@@ -1,14 +1,11 @@
 <%= turbo_frame_tag "uniques" do %>
   <div class="row d-flex flex-wrap gx-4"
-    data-controller="apex"
-    data-apex-id-value="<%= SecureRandom.uuid %>"
-    data-apex-chart-type-value="line"
-    data-apex-series-type-value="uniques"
-    data-apex-interval-value="<%= interval %>"
-    data-apex-series-data-value="<%= uniques.to_json %>"
-    data-apex-date-range-value="<%= date_range.to_json %>">
+    data-controller="apex-uniques"
+    data-apex-uniques-id-value="<%= SecureRandom.uuid %>"
+    data-apex-uniques-series-data-value="<%= uniques.to_json %>"
+    data-apex-uniques-date-range-value="<%= date_range.to_json %>">
     <div class="col">
-      <div data-apex-target="chart" data-chart="uniques"></div>
+      <div data-apex-uniques-target="chart" data-chart="uniques"></div>
     </div>
   </div>
 <% end %>

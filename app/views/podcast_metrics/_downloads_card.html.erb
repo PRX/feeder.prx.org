@@ -1,13 +1,12 @@
 <%= turbo_frame_tag "downloads" do %>
   <div class="row d-flex flex-wrap gx-4"
-    data-controller="apex"
-    data-apex-id-value="<%= SecureRandom.uuid %>"
-    data-apex-series-type-value="downloads"
-    data-apex-interval-value="<%= interval %>"
-    data-apex-series-data-value="<%= total_recent.to_json %>"
-    data-apex-date-range-value="<%= date_range.to_json %>">
+    data-controller="apex-downloads"
+    data-apex-downloads-id-value="<%= SecureRandom.uuid %>"
+    data-apex-downloads-interval-value="<%= interval %>"
+    data-apex-downloads-series-data-value="<%= total_recent.to_json %>"
+    data-apex-downloads-date-range-value="<%= date_range.to_json %>">
     <div class="col">
-      <div data-apex-target="chart" data-chart="downloads"></div>
+      <div data-apex-downloads-target="chart" data-chart="downloads"></div>
     </div>
   </div>
 <% end %>
