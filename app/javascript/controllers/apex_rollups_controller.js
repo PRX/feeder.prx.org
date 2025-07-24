@@ -4,6 +4,7 @@ import {
   DEFAULT_OPTIONS,
   LINE_DEFAULTS,
   alignDownloadsOnDateRange,
+  mapColors,
   setDateTimeLabel,
   apexToggleSeries,
 } from "util/apex"
@@ -22,7 +23,8 @@ export default class extends Controller {
     const options = Object.assign({}, DEFAULT_OPTIONS)
     Object.assign(options.chart, {
       id: this.idValue,
-      type: "line",
+      type: "area",
+      stacked: true,
       height: "550px",
     })
     const series = this.buildSeries()
@@ -38,10 +40,15 @@ export default class extends Controller {
         x: {
           format: setDateTimeLabel(this.intervalValue),
         },
+        inverseOrder: true,
       },
       yaxis: {
         title: { text: "Downloads" },
       },
+      dataLabels: {
+        enabled: false,
+      },
+      colors: mapColors(this.seriesDataValue).slice().reverse(),
     })
 
     Object.assign(options, series, typeOptions)
@@ -54,12 +61,14 @@ export default class extends Controller {
   buildSeries() {
     if (this.seriesDataValue.length) {
       return {
-        series: this.seriesDataValue.map((d) => {
-          return {
-            name: d.ep.title,
-            data: alignDownloadsOnDateRange(d.rollups, this.dateRangeValue),
-          }
-        }),
+        series: this.seriesDataValue
+          .map((d) => {
+            return {
+              name: d.ep.title,
+              data: alignDownloadsOnDateRange(d.rollups, this.dateRangeValue),
+            }
+          })
+          .reverse(),
       }
     } else {
       return []

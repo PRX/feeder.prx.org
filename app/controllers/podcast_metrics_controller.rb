@@ -191,7 +191,7 @@ class PodcastMetricsController < ApplicationController
   end
 
   def episode_rollups(episodes, rollups, totals)
-    episodes.map do |ep|
+    episodes.to_enum(:each_with_index).map do |ep, i|
       {
         ep: ep,
         rollups: rollups.select do |r|
@@ -199,18 +199,20 @@ class PodcastMetricsController < ApplicationController
         end,
         totals: totals.select do |r|
           r["episode_id"] == ep.guid
-        end
+        end,
+        color: colors[i]
       }
     end
   end
 
   def episode_dropdays(episodes, dropdays)
-    episodes.map do |ep|
+    episodes.to_enum(:each_with_index).map do |ep, i|
       {
         ep: ep,
         dropdays: dropdays.select do |d|
           d["episode_id"] == ep.guid
-        end
+        end,
+        color: colors[i]
       }
     end
   end
@@ -227,5 +229,20 @@ class PodcastMetricsController < ApplicationController
     end
 
     range
+  end
+
+  def colors
+    [
+      "#007EB2",
+      "#FF9600",
+      "#75BBE1",
+      "#FFC107",
+      "#6F42C1",
+      "#DC3545",
+      "#198754",
+      "#D63384",
+      "#20C997",
+      "#555555"
+    ]
   end
 end

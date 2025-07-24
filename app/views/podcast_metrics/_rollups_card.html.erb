@@ -27,7 +27,7 @@
               <tr class="align-items-center">
                 <td class="d-flex align-items-center">
                   <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-rollups#toggleSeries" data-series="<%= title %>">
-                  <span class="material-icons me-2" aria-label="hidden" style="color: <%= line_chart_colors[i] %>">circle</span>
+                  <span class="material-icons me-2" aria-label="hidden" style="color: <%= er[:color] %>">circle</span>
                   <span class="text-nowrap overflow-hidden"><%= title %></span>
                 </td>
                 <td><%= er[:ep][:published_at].strftime("%Y-%m-%d") %></td>

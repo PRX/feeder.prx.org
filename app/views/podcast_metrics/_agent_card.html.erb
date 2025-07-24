@@ -1,4 +1,4 @@
-<%= turbo_frame_tag turbo_tag.to_s do %>
+<%= turbo_frame_tag agent_label.to_s do %>
   <% if agents.present? %>
     <div class="card shadow border-0"
       data-controller="apex-agents"
@@ -30,6 +30,9 @@
                   <% end %>
                 </tbody>
               </table>
+              <div class="col my-4">
+                <%= paginate agents, param_name: agent_label %>
+              </div>
             </div>
           </div>
         </div>

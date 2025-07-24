@@ -1,13 +1,13 @@
 <%= turbo_frame_tag "agents" do %>
   <div class="row gx-2">
     <div class="col-4 mb-2">
-      <%= render "agent_card", agents: @agent_apps, agents_title: "App or Browser", turbo_tag: "agent_apps" %>
+      <%= render "agent_card", agents: @agent_apps, agents_title: "App or Browser", agent_label: "agent_apps" %>
     </div>
     <div class="col-4 mb-2">
-      <%= render "agent_card", agents: @agent_types, agents_title: "Agent Types", turbo_tag: "agent_types" %>
+      <%= render "agent_card", agents: @agent_types, agents_title: "Agent Types", agent_label: "agent_types" %>
     </div>
     <div class="col-4 mb-2">
-      <%= render "agent_card", agents: @agent_os, agents_title: "Operating System", turbo_tag: "agent_os" %>
+      <%= render "agent_card", agents: @agent_os, agents_title: "Operating System", agent_label: "agent_os" %>
     </div>
   </div>
 <% end %>

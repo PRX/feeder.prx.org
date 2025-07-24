@@ -25,18 +25,6 @@ export const LINE_DEFAULTS = {
     curve: "smooth",
     width: 2,
   },
-  colors: [
-    "#007EB2",
-    "#FF9600",
-    "#75BBE1",
-    "#FFC107",
-    "#6F42C1",
-    "#DC3545",
-    "#198754",
-    "#D63384",
-    "#20C997",
-    "#555555",
-  ],
   legend: {
     show: false,
   },
@@ -48,6 +36,10 @@ export const BAR_DEFAULTS = {
       horizontal: true,
     },
   },
+}
+
+export function mapColors(data) {
+  return data.map((d) => d.color)
 }
 
 export function alignDownloadsOnDateRange(downloads, range) {
