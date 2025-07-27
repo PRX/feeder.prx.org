@@ -58,7 +58,19 @@ class PodcastMegaphoneImport < PodcastImport
 
   def finish_sync!
     if override_enclosures
+      # set required attributes
+      megaphone_podcast.title ||= podcast.title || "Untitled #{podcast.guid}"
+      megaphone_podcast.subtitle ||= megaphone_podcast.title
+      megaphone_podcast.summary ||= megaphone_podcast.title
+      megaphone_podcast.language ||= "en-us"
+      if megaphone_podcast.itunes_categories.blank?
+        megaphone_podcast.itunes_categories = ["Arts"]
+      end
+
+      # associate the podcast with the megaphone podcast
       megaphone_podcast.external_id = podcast.guid
+
+      # update the megaphone podcast!
       megaphone_podcast.update!
     end
   end

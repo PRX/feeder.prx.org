@@ -60,7 +60,15 @@ describe PodcastMegaphoneImport do
   end
 
   it "updates delivery sync" do
+    importer.override_enclosures = true
     importer.megaphone_feed = megaphone_feed
+    importer.megaphone_podcast.title = nil
+    importer.megaphone_podcast.subtitle = nil
+    importer.megaphone_podcast.summary = nil
+    importer.megaphone_podcast.language = nil
+    importer.megaphone_podcast.itunes_categories = nil
+    importer.megaphone_podcast.external_id = nil
+
     importer.finish_sync!
   end
 
