@@ -7,6 +7,7 @@ export default class extends Controller {
     id: String,
     seriesData: Array,
     dateRange: Array,
+    selection: String,
   }
 
   static targets = ["chart"]
@@ -50,12 +51,27 @@ export default class extends Controller {
             data: this.seriesDataValue.map((d) => {
               return {
                 x: d["day"],
-                y: d["last_7_rolling"],
+                y: d[this.selectionValue],
               }
             }),
           },
         ],
       }
     }
+  }
+
+  changeSeries(event) {
+    const series = [
+      {
+        data: this.seriesDataValue.map((d) => {
+          return {
+            x: d["day"],
+            y: d[event.target.value],
+          }
+        }),
+      },
+    ]
+
+    ApexCharts.exec(this.idValue, "updateSeries", series)
   }
 }

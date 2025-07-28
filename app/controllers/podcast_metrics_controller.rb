@@ -32,15 +32,21 @@ class PodcastMetricsController < ApplicationController
   end
 
   def uniques
+    @selection = metrics_params[:uniques_selection]
+
     if clickhouse_connected?
       @uniques =
         Rollups::DailyUnique
-          .where(podcast_id: @podcast.id, day: (@date_start.to_date..@date_end.to_date))
-          .order(day: :asc)
+          .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
+          .select("DATE_TRUNC('#{@interval}', day) AS day, MAX(#{@selection}) AS #{@selection}")
+          .group("DATE_TRUNC('#{@interval}', day) AS day")
+          .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
+          .load_async
     end
 
     render partial: "uniques_card", locals: {
       interval: @interval,
+      selection: @selection,
       uniques: @uniques,
       date_range: @date_range
     }
@@ -96,6 +102,7 @@ class PodcastMetricsController < ApplicationController
           .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
           .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
           .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
+          .load_async
       else
         []
       end
@@ -183,11 +190,12 @@ class PodcastMetricsController < ApplicationController
 
   def metrics_params
     params
-      .permit(:podcast_id, :date_start, :date_end, :interval, :dropday_range)
+      .permit(:podcast_id, :date_start, :date_end, :interval, :uniques_selection, :dropday_range)
       .with_defaults(
         date_start: 30.days.ago.utc,
         date_end: Time.zone.now.utc,
         interval: "DAY",
+        uniques_selection: "last_7_rolling",
         dropday_range: 7
       )
   end

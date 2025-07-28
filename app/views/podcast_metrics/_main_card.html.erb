@@ -10,6 +10,9 @@
       <div class="" data-apex-target="main" data-chart="downloads">
         <%= render "filter_interval", podcast: podcast, date_start: date_start, date_end: date_end, interval: interval, path: "downloads" %>
       </div>
+      <div class="d-none" data-apex-target="main" data-chart="uniques">
+        <%= render "filter_uniques_range", podcast: podcast, date_start: date_start, date_end: date_end, path: "uniques" %>
+      </div>
       <div class="d-none" data-apex-target="main" data-chart="rollups">
         <%= render "filter_interval", podcast: podcast, date_start: date_start, date_end: date_end, interval: interval, path: "rollups" %>
       </div>
