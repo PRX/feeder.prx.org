@@ -1,8 +1,4 @@
 module PodcastMetricsHelper
-  def line_chart_colors
-    ["#007EB2", "#FF9600", "#75BBE1", "#FFC107", "#6F42C1", "#DC3545", "#198754", "#D63384", "#20C997", "#555555"]
-  end
-
   def parse_agent_data(agents)
     agents.map do |a|
       {
@@ -52,6 +48,17 @@ module PodcastMetricsHelper
       ["Last 6 Months", 6.months.ago.utc.to_date],
       ["Last Year", 1.year.ago.utc.to_date],
       ["Year to Date", Time.zone.now.utc.beginning_of_year.to_date]
+    ]
+  end
+
+  def dropday_range_options
+    [
+      ["7 Days", 7],
+      ["14 Days", 14],
+      ["28 Days", 28],
+      ["30 Days", 30],
+      ["60 Days", 60],
+      ["90 Days", 90]
     ]
   end
 end

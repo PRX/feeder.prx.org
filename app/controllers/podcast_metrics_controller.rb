@@ -92,7 +92,7 @@ class PodcastMetricsController < ApplicationController
     @dropdays = @episodes.map do |ep|
       if ep[:first_rss_published_at]
         Rollups::HourlyDownload
-          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + 7.days)))
+          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + metrics_params[:dropday_range].to_i.days)))
           .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
           .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
           .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
@@ -111,7 +111,8 @@ class PodcastMetricsController < ApplicationController
 
     render partial: "dropdays_card", locals: {
       episode_dropdays: @episode_dropdays,
-      episodes: @episodes
+      episodes: @episodes,
+      dropday_range: metrics_params[:dropday_range]
     }
   end
 
@@ -182,11 +183,12 @@ class PodcastMetricsController < ApplicationController
 
   def metrics_params
     params
-      .permit(:podcast_id, :date_start, :date_end, :interval)
+      .permit(:podcast_id, :date_start, :date_end, :interval, :dropday_range)
       .with_defaults(
         date_start: 30.days.ago.utc,
         date_end: Time.zone.now.utc,
-        interval: "DAY"
+        interval: "DAY",
+        dropday_range: 7
       )
   end
 

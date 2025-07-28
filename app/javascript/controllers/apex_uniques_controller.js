@@ -22,9 +22,6 @@ export default class extends Controller {
     Object.assign(typeOptions, {
       xaxis: {
         type: "datetime",
-        labels: {
-          format: setDateTimeLabel("DAY"),
-        },
       },
       tooltip: {
         x: {

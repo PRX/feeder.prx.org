@@ -6,6 +6,7 @@ export default class extends Controller {
   static values = {
     id: String,
     seriesData: Array,
+    range: Number,
   }
 
   static targets = ["chart"]
@@ -21,7 +22,7 @@ export default class extends Controller {
     Object.assign(typeOptions, {
       xaxis: {
         type: "numeric",
-        tickAmount: 7,
+        tickAmount: this.rangeValue,
         decimalsInFloat: 0,
         title: "Days Since Drop",
       },
@@ -53,7 +54,7 @@ export default class extends Controller {
 
   normalizeDropdayDownloads(downloads) {
     const counts = downloads.map((d) => d.count)
-    while (counts.length < 8) {
+    while (counts.length < this.rangeValue + 1) {
       counts.push(0)
     }
     return counts.map((c, i) => {

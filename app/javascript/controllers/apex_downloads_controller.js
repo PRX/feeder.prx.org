@@ -25,9 +25,6 @@ export default class extends Controller {
     Object.assign(typeOptions, {
       xaxis: {
         type: "datetime",
-        labels: {
-          format: setDateTimeLabel(this.intervalValue),
-        },
       },
       tooltip: {
         x: {

@@ -2,7 +2,8 @@
   <div class="row d-flex flex-wrap gx-4"
     data-controller="apex-dropdays"
     data-apex-dropdays-id-value="<%= SecureRandom.uuid %>"
-    data-apex-dropdays-series-data-value="<%= episode_dropdays.to_json %>">
+    data-apex-dropdays-series-data-value="<%= episode_dropdays.to_json %>"
+    data-apex-dropdays-range-value="<%= dropday_range %>">
     <div class="col">
       <div data-apex-dropdays-target="chart" data-chart="dropdays"></div>
     </div>
@@ -13,19 +14,19 @@
             <tr class="table-secondary">
               <th>Episode</th>
               <th>Publish Date</th>
-              <th>7 day Downloads</th>
+              <th><%= "#{dropday_range} Day Downloads" %></th>
               <th>All-time</th>
             </tr>
           </thead>
           <tbody>
-            <% episode_dropdays.each_with_index do |ep, i| %>
+            <% episode_dropdays.each do |ep| %>
               <% sum = sum_rollups(ep[:rollups]) %>
               <% total = sum_rollups(ep[:totals]) %>
               <% title = ep[:ep][:title] %>
               <tr class="align-items-center">
                 <td class="d-flex align-items-center">
                   <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-dropdays#toggleSeries" data-series="<%= title %>">
-                  <span class="material-icons me-2" aria-label="hidden" style="color: <%= line_chart_colors[i] %>">circle</span>
+                  <span class="material-icons me-2" aria-label="hidden" style="color: <%= ep[:color] %>">circle</span>
                   <span class="text-nowrap overflow-hidden"><%= title %></span>
                 </td>
                 <td><%= ep[:ep][:published_at].strftime("%Y-%m-%d") %></td>

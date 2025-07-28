@@ -7,8 +7,14 @@
         <li class="nav-item"><button class="nav-link" id="rollups-tab" data-bs-toggle="tab" data-bs-target="#rollups" type="button" role="tab" aria-controls="rollups" aria-selected="false" data-action="apex#changeMainCard" data-apex-form-param="<%= form %>" data-apex-chart-param="rollups">Episode Rollups</button></li>
         <li class="nav-item"><button class="nav-link" id="dropdays-tab" data-bs-toggle="tab" data-bs-target="#dropdays" type="button" role="tab" aria-controls="dropdays" aria-selected="false" data-action="apex#changeMainCard" data-apex-form-param="<%= form %>" data-apex-chart-param="dropdays">Dropday Downloads</button></li>
       </ul>
+      <div class="" data-apex-target="main" data-chart="downloads">
+        <%= render "filter_interval", podcast: podcast, date_start: date_start, date_end: date_end, interval: interval, path: "downloads" %>
+      </div>
       <div class="d-none" data-apex-target="main" data-chart="rollups">
         <%= render "filter_interval", podcast: podcast, date_start: date_start, date_end: date_end, interval: interval, path: "rollups" %>
+      </div>
+      <div class="d-none" data-apex-target="main" data-chart="dropdays">
+        <%= render "filter_dropday_range", podcast: podcast, path: "dropdays" %>
       </div>
     </div>
     <div class="card-body">

@@ -21,20 +21,17 @@ export default class extends Controller {
 
   connect() {
     const options = Object.assign({}, DEFAULT_OPTIONS)
+    const series = this.buildSeries()
     Object.assign(options.chart, {
       id: this.idValue,
       type: "area",
       stacked: true,
       height: "550px",
     })
-    const series = this.buildSeries()
     const typeOptions = Object.assign({}, LINE_DEFAULTS)
     Object.assign(typeOptions, {
       xaxis: {
         type: "datetime",
-        labels: {
-          format: setDateTimeLabel(this.intervalValue),
-        },
       },
       tooltip: {
         x: {

@@ -5,13 +5,13 @@ export const DEFAULT_OPTIONS = {
     width: "100%",
     zoom: { enabled: false },
     animations: {
-      speed: 1000,
+      speed: 500,
       animateGradually: {
-        delay: 50,
+        delay: 10,
       },
       dynamicAnimation: {
         enabled: true,
-        speed: 1000,
+        speed: 500,
       },
     },
     toolbar: {
@@ -69,6 +69,26 @@ export function setDateTimeLabel(interval) {
     return "MMM d, h:mmtt"
   } else {
     return "MMM d"
+  }
+}
+
+export function setDateTimeFormatter(interval) {
+  if (interval === "MONTH") {
+    return {
+      month: "MMMM yyyy",
+      day: "MMM d",
+    }
+  } else if (interval === "HOUR") {
+    return {
+      day: "dddd, h:mmtt",
+      hour: "d/M/yy, h:mmtt",
+    }
+  } else {
+    return {
+      month: "MMM d",
+      day: "d/M/yy",
+      hour: "MMM d, h:mmtt",
+    }
   }
 }
 
