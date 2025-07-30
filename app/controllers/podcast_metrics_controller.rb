@@ -6,13 +6,19 @@ class PodcastMetricsController < ApplicationController
   end
 
   def downloads
+    @episodes =
+      @podcast.episodes
+        .published
+        .order(first_rss_published_at: :desc)
+        .paginate(params[:episode_rollups], params[:per])
+
     if clickhouse_connected?
       @recent_downloads_total =
         Rollups::HourlyDownload
           .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
           .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
           .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) DESC"))
+          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
           .load_async
       @alltime_downloads_total =
         Rollups::HourlyDownload
@@ -21,13 +27,52 @@ class PodcastMetricsController < ApplicationController
           .group(:podcast_id)
           .order(:podcast_id)
           .load_async
+
+      @episodes_recent =
+        Rollups::HourlyDownload
+          .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
+          .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+          .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
+          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
+          .load_async
+      @episodes_alltime =
+        Rollups::HourlyDownload
+          .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
+          .select(:episode_id, "SUM(count) AS count")
+          .group(:episode_id)
+          .load_async
+      @others_recent =
+        Rollups::HourlyDownload
+          .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
+          .where.not(episode_id: @episodes.pluck(:guid))
+          .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+          .group("DATE_TRUNC('#{@interval}', hour) AS hour")
+          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
+          .load_async
+      @others_alltime =
+        Rollups::HourlyDownload
+          .where(podcast_id: @podcast.id)
+          .where.not(episode_id: @episodes.pluck(:guid))
+          .select(:episode_id, "SUM(count) AS count")
+          .group(:episode_id)
+          .load_async
     end
+
+    @episode_rollups = episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
+    @others_rollups = {
+      recent: @others_recent,
+      alltime: @others_alltime,
+      color: "#E0E0E0"
+    }
 
     render partial: "downloads_card", locals: {
       interval: @interval,
       date_range: @date_range,
+      episodes: @episodes,
       total_recent: @recent_downloads_total,
-      total_alltime: @alltime_downloads_total
+      total_alltime: @alltime_downloads_total,
+      episode_rollups: @episode_rollups,
+      others_rollups: @others_rollups
     }
   end
 
@@ -74,6 +119,29 @@ class PodcastMetricsController < ApplicationController
           .group(:episode_id)
           .load_async
 
+      @recent_downloads_total =
+        Rollups::HourlyDownload
+          .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
+          .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+          .group("DATE_TRUNC('#{@interval}', hour) AS hour")
+          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) DESC"))
+          .load_async
+      @alltime_downloads_total =
+        Rollups::HourlyDownload
+          .where(podcast_id: @podcast.id)
+          .select("SUM(count) AS count")
+          .group(:podcast_id)
+          .order(:podcast_id)
+          .load_async
+      @all_other_total =
+        Rollups::HourlyDownload
+          .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
+          .where.not(episode_id: @episodes.pluck(:guid))
+          .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+          .group("DATE_TRUNC('#{@interval}', hour) AS hour")
+          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) DESC"))
+          .load_async
+
       @episode_rollups = episode_rollups(@episodes, @recent_downloads_by_episode, @alltime_downloads_by_episode)
 
       render partial: "rollups_card", locals: {
@@ -83,7 +151,11 @@ class PodcastMetricsController < ApplicationController
         interval: @interval,
         episode_rollups: @episode_rollups,
         date_range: @date_range,
-        episodes: @episodes
+        episodes: @episodes,
+        total_recent: @recent_downloads_total,
+        total_alltime: @alltime_downloads_total,
+        all_other:
+        @all_other_total
       }
     end
   end

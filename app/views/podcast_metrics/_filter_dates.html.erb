@@ -3,7 +3,7 @@
   <%= form.label :date_start, "Start Date" %>
 </div>
 <div class="form-floating input-group me-2">
-  <%= form.date_field :date_end, max: DateTime.now, data: {action: "click#submit"}, value: date_end %>
+  <%= form.date_field :date_end, max: DateTime.now, data: {action: "click#submit", apex_target: "end"}, value: date_end %>
   <%= form.label :date_end, "End Date" %>
 </div>
 <div class="btn-group">
@@ -13,7 +13,7 @@
   <ul class="dropdown-menu" aria-labelledby="rollups-date-range-options">
     <% rollups_date_range_options.each do |option| %>
       <li>
-        <button class="dropdown-item" type="button" data-action="apex#updateDateStart click#submit" value="<%= option[1].to_s %>" data-apex-target="dateview">
+        <button class="dropdown-item" type="button" data-action="apex#updateDates click#submit" value="<%= option[1].to_s %>" data-apex-target="dateview">
           <%= option[0] %>
         </button>
       </li>

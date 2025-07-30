@@ -1,10 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["start", "main"]
+  static targets = ["start", "end", "main"]
 
-  updateDateStart(event) {
-    this.startTarget.value = event.target.value
+  updateDates(event) {
+    const [startDate, endDate] = JSON.parse(event.target.value)
+    this.startTarget.value = startDate
+    this.endTarget.value = endDate
   }
 
   changeMainCard(event) {

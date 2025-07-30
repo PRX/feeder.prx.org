@@ -38,10 +38,6 @@ export const BAR_DEFAULTS = {
   },
 }
 
-export function mapColors(data) {
-  return data.map((d) => d.color)
-}
-
 export function alignDownloadsOnDateRange(downloads, range) {
   return range.map((date) => {
     const match = downloads.filter((r) => {

@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import ApexCharts from "apexcharts"
-import { DEFAULT_OPTIONS, LINE_DEFAULTS, mapColors, apexToggleSeries } from "util/apex"
+import { DEFAULT_OPTIONS, LINE_DEFAULTS, apexToggleSeries } from "util/apex"
 
 export default class extends Controller {
   static values = {
@@ -16,6 +16,7 @@ export default class extends Controller {
     Object.assign(options.chart, {
       id: this.idValue,
       type: "line",
+      stacked: false,
       height: "550px",
     })
     const typeOptions = Object.assign({}, LINE_DEFAULTS)
@@ -29,7 +30,6 @@ export default class extends Controller {
       yaxis: {
         title: { text: "Downloads" },
       },
-      colors: mapColors(this.seriesDataValue),
     })
     const series = this.buildSeries()
     Object.assign(options, series, typeOptions)
@@ -46,6 +46,7 @@ export default class extends Controller {
           return {
             name: d.ep.title,
             data: this.normalizeDropdayDownloads(d.rollups),
+            color: d.color,
           }
         }),
       }

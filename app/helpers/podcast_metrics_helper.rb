@@ -36,18 +36,26 @@ module PodcastMetricsHelper
     end
   end
 
+  def chart_view_options
+    [
+      ["All Downloads", "all"],
+      ["By Episode (linear)", "line"],
+      ["By Episode (stacked)", "stacked"]
+    ]
+  end
+
   def rollups_date_range_options
     [
-      ["Last 7 Days", 7.days.ago.utc.to_date],
-      ["Week to Date", Time.zone.now.utc.beginning_of_week.to_date],
-      ["Last 14 Days", 14.days.ago.utc.to_date],
-      ["Last 28 Days", 28.days.ago.utc.to_date],
-      ["Last Month", 1.month.ago.utc.to_date],
-      ["Month to Date", Time.zone.now.utc.beginning_of_month.to_date],
-      ["Last 3 Months", 3.months.ago.utc.to_date],
-      ["Last 6 Months", 6.months.ago.utc.to_date],
-      ["Last Year", 1.year.ago.utc.to_date],
-      ["Year to Date", Time.zone.now.utc.beginning_of_year.to_date]
+      ["Last 7 Days", [7.days.ago.utc.to_date, Time.zone.now.utc.to_date].to_json],
+      ["Week to Date", [Time.zone.now.utc.beginning_of_week.to_date, Time.zone.now.utc.to_date].to_json],
+      ["Last 14 Days", [14.days.ago.utc.to_date, Time.zone.now.utc.to_date].to_json],
+      ["Last 28 Days", [28.days.ago.utc.to_date, Time.zone.now.utc.to_date].to_json],
+      ["Last Month", [1.month.ago.utc.to_date, Time.zone.now.utc.to_date].to_json],
+      ["Month to Date", [Time.zone.now.utc.beginning_of_month.to_date, Time.zone.now.utc.to_date].to_json],
+      ["Last 3 Months", [3.months.ago.utc.to_date, Time.zone.now.utc.to_date].to_json],
+      ["Last 6 Months", [6.months.ago.utc.to_date, Time.zone.now.utc.to_date].to_json],
+      ["Last Year", [1.year.ago.utc.to_date, Time.zone.now.utc.to_date].to_json],
+      ["Year to Date", [Time.zone.now.utc.beginning_of_year.to_date, Time.zone.now.utc.to_date].to_json]
     ]
   end
 

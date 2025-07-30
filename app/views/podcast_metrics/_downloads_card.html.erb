@@ -2,11 +2,56 @@
   <div class="row d-flex flex-wrap gx-4"
     data-controller="apex-downloads"
     data-apex-downloads-id-value="<%= SecureRandom.uuid %>"
-    data-apex-downloads-interval-value="<%= interval %>"
-    data-apex-downloads-series-data-value="<%= total_recent.to_json %>"
-    data-apex-downloads-date-range-value="<%= date_range.to_json %>">
+    data-apex-downloads-selected-episodes-value="<%= episode_rollups.to_json %>"
+    data-apex-downloads-all-other-value="<%= others_rollups.to_json %>"
+    data-apex-downloads-date-range-value="<%= date_range.to_json %>"
+    data-apex-downloads-interval-value="<%= interval %>">
     <div class="col">
       <div data-apex-downloads-target="chart" data-chart="downloads"></div>
+    </div>
+    <div class="col align-items-center">
+      <div class="col my-4">
+        <table class="table table-striped shadow rounded">
+          <thead>
+            <tr class="table-secondary">
+              <th>Episode</th>
+              <th>Publish Date</th>
+              <th>Downloads</th>
+              <th>All-time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="align-items-center">
+              <td class="d-flex align-items-center">
+                <input id="allother" type="checkbox" class="form-check-input mt-0 me-2" data-action="click->apex-downloads#toggleSeries" data-series="All Other Episodes" checked="true">
+                <span class="material-icons me-2" aria-label="hidden" style="color: <%= others_rollups[:color] %>">circle</span>
+                <span class="text-nowrap overflow-hidden">All Other Episodes</span>
+              </td>
+              <td></td>
+              <td><%= sum_rollups(others_rollups[:recent]) %></td>
+              <td><%= sum_rollups(others_rollups[:alltime]) %></td>
+            </tr>
+            <% episode_rollups.each_with_index do |er, i| %>
+              <% sum = sum_rollups(er[:rollups]) %>
+              <% total = sum_rollups(er[:totals]) %>
+              <% title = er[:ep][:title] %>
+              <tr class="align-items-center">
+                <td class="d-flex align-items-center">
+                  <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-downloads#toggleSeries" data-series="<%= title %>">
+                  <span class="material-icons me-2" aria-label="hidden" style="color: <%= er[:color] %>">circle</span>
+                  <span class="text-nowrap overflow-hidden"><%= title %></span>
+                </td>
+                <td><%= er[:ep][:published_at].strftime("%Y-%m-%d") %></td>
+                <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>
+                <td><% if total %><%= total %><% else %>&mdash;<% end %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <div class="col my-4">
+          <%= paginate episodes, param_name: :episode_rollups %>
+        </div>
+      </div>
     </div>
   </div>
 <% end %>
