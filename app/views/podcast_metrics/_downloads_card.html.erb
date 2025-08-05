@@ -1,7 +1,7 @@
 <%= turbo_frame_tag "downloads" do %>
   <div class="row d-flex flex-wrap gx-4">
     <div class="col">
-      <div class="col has-episodes"
+      <div class="col has-episodes has-chart-types"
         data-controller="apex-downloads"
         data-apex-downloads-id-value="<%= SecureRandom.uuid %>"
         data-apex-downloads-total-recent-value="<%= total_recent.to_json %>"
@@ -11,7 +11,9 @@
         data-apex-downloads-interval-value="<%= interval %>"
         data-apex-downloads-options-value="stacked">
         <div class="d-flex justify-content-end">
-          <%= render "filter_types" %>
+          <div class="me-2"><%= bar_chart_button("Downloads") %></div>
+          <div class="me-2"><%= area_chart_button("Downloads") %></div>
+          <div class="me-2"><%= line_chart_button("Downloads") %></div>
         </div>
         <div data-apex-downloads-target="chart" data-chart="downloads"></div>
         </div>
@@ -28,7 +30,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="align-items-center" data-apex-toggles-target="breakdown">
+              <tr class="align-items-center" data-apex-nav-target="breakdown">
                 <td class="d-flex align-items-center">
                   <input id="allother" type="checkbox" class="form-check-input mt-0 me-2" data-action="click->apex-toggles#toggleSeriesForAll" data-apex-toggles-series-param="All Other Episodes" checked="true">
                   <span class="material-icons me-2" aria-label="hidden" style="color: <%= others_rollups[:color] %>">circle</span>
@@ -44,8 +46,8 @@
                 <% title = er[:ep][:title] %>
                 <tr class="align-items-center">
                   <td class="d-flex align-items-center">
-                    <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-toggles#toggleSeriesForAll" data-apex-toggles-series-param="<%= title %>" data-apex-toggles-target="breakdown">
-                    <span class="material-icons me-2" data-apex-toggles-target="breakdown" aria-label="hidden" style="color: <%= er[:color] %>">circle</span>
+                    <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-toggles#toggleSeriesForAll" data-apex-toggles-series-param="<%= title %>" data-apex-nav-target="breakdown">
+                    <span class="material-icons me-2" data-apex-nav-target="breakdown" aria-label="hidden" style="color: <%= er[:color] %>">circle</span>
                     <span class="text-nowrap overflow-hidden"><%= title %></span>
                   </td>
                   <td><%= er[:ep][:published_at].strftime("%Y-%m-%d") %></td>
@@ -55,7 +57,7 @@
               <% end %>
             </tbody>
           </table>
-          <div class="col my-4" data-apex-toggles-target="breakdown">
+          <div class="col my-4" data-apex-nav-target="breakdown">
             <%= paginate episodes, param_name: :episode_rollups %>
           </div>
         </div>

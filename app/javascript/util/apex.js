@@ -1,3 +1,5 @@
+import ApexCharts from "apexcharts"
+
 export const DEFAULT_OPTIONS = {
   chart: {
     width: "100%",
@@ -118,4 +120,12 @@ export function setDateTimeLabel(interval) {
   } else {
     return "MMM d"
   }
+}
+
+export function updateOptions(id, options) {
+  ApexCharts.exec(id, "updateOptions", options)
+}
+
+export function updateSeries(id, series) {
+  ApexCharts.exec(id, "updateSeries", series)
 }

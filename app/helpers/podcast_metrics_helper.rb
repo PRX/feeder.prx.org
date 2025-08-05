@@ -77,4 +77,28 @@ module PodcastMetricsHelper
       ["Calendar Month", {selection: "calendar_month", interval: "MONTH"}]
     ]
   end
+
+  def bar_chart_button(outlet)
+    tag.div data: {controller: "apex-toggles", "apex-toggles-apex-#{outlet.downcase}-outlet": ".has-chart-types"} do
+      tag.button class: "btn btn-light btn-icon", type: "button", data: {action: "apex-toggles#changeType", apex_toggles_outlet_param: outlet, apex_toggles_type_param: "bar"} do
+        tag.span "bar_chart", class: "material-icons"
+      end
+    end
+  end
+
+  def area_chart_button(outlet)
+    tag.div data: {controller: "apex-toggles", "apex-toggles-apex-#{outlet.downcase}-outlet": ".has-chart-types"} do
+      tag.button class: "btn btn-light btn-icon", type: "button", data: {action: "apex-toggles#changeType", apex_toggles_outlet_param: outlet, apex_toggles_type_param: "area"} do
+        tag.span "area_chart", class: "material-icons"
+      end
+    end
+  end
+
+  def line_chart_button(outlet)
+    tag.div data: {controller: "apex-toggles", "apex-toggles-apex-#{outlet.downcase}-outlet": ".has-chart-types"} do
+      tag.button class: "btn btn-light btn-icon", type: "button", data: {action: "apex-toggles#changeType", apex_toggles_outlet_param: outlet, apex_toggles_type_param: "line"} do
+        tag.span "show_chart", class: "material-icons"
+      end
+    end
+  end
 end

@@ -7,6 +7,8 @@ import {
   LINE_CHART,
   DATETIME_OPTIONS,
   alignDownloadsOnDateRange,
+  updateOptions,
+  updateSeries,
 } from "util/apex"
 
 export default class extends Controller {
@@ -30,7 +32,7 @@ export default class extends Controller {
     chart.render()
   }
 
-  buildOptions(type) {
+  buildOptions() {
     const options = Object.assign({}, DEFAULT_OPTIONS, DATETIME_OPTIONS, {
       series: this.buildStackedSeries(),
       yaxis: {
@@ -79,21 +81,25 @@ export default class extends Controller {
     }
   }
 
-  updateOptions(event) {
-    if (event.params.type === "bar") {
-      ApexCharts.exec(this.idValue, "updateOptions", BAR_CHART)
-    } else if (event.params.type === "area") {
-      ApexCharts.exec(this.idValue, "updateOptions", AREA_CHART)
-    } else if (event.params.type === "line") {
-      ApexCharts.exec(this.idValue, "updateOptions", LINE_CHART)
+  changeType(type) {
+    const options = {}
+
+    if (type === "bar") {
+      Object.assign(options, BAR_CHART)
+    } else if (type === "area") {
+      Object.assign(options, AREA_CHART)
+    } else if (type === "line") {
+      Object.assign(options, LINE_CHART)
     }
+
+    updateOptions(this.idValue, options)
   }
 
-  updateSeries(event) {
-    if (event.params.series === "totals") {
-      ApexCharts.exec(this.idValue, "updateSeries", this.buildTotalSeries())
-    } else if (event.params.series === "episodes") {
-      ApexCharts.exec(this.idValue, "updateSeries", this.buildStackedSeries())
+  changeBreakdown(breakdown) {
+    if (breakdown === "totals") {
+      updateSeries(this.idValue, this.buildTotalSeries())
+    } else if (breakdown === "episodes") {
+      updateSeries(this.idValue, this.buildStackedSeries())
     }
   }
 

@@ -2,7 +2,6 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static outlets = ["apex-downloads"]
-  static targets = ["breakdown"]
 
   toggleSeriesForAll(event) {
     this.apexDownloadsOutlets.forEach((chart) => {
@@ -11,20 +10,11 @@ export default class extends Controller {
   }
 
   changeBreakdown(event) {
-    this.apexDownloadsOutlet.updateSeries(event)
-  }
-
-  toggleEpisodeUI(event) {
-    this.breakdownTargets.forEach((target) => {
-      if (event.params.breakdown === "totals") {
-        target.classList.add("d-none")
-      } else if (event.params.breakdown === "episodes") {
-        target.classList.remove("d-none")
-      }
-    })
+    this.apexDownloadsOutlet.changeBreakdown(event.target.value)
   }
 
   changeType(event) {
-    this.apexDownloadsOutlet.updateOptions(event)
+    const outlet = `apex${event.params.outlet}Outlet`
+    this[outlet].changeType(event.params.type)
   }
 }
