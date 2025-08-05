@@ -1,6 +1,6 @@
 class PodcastMetricsController < ApplicationController
   before_action :set_podcast
-  before_action :set_date_range, only: %i[show downloads uniques rollups]
+  before_action :set_date_range, only: %i[show downloads uniques]
 
   def show
   end
@@ -62,7 +62,7 @@ class PodcastMetricsController < ApplicationController
     @others_rollups = {
       recent: @others_recent,
       alltime: @others_alltime,
-      color: "#E0E0E0"
+      color: "#D0D0D0"
     }
 
     render partial: "downloads_card", locals: {
@@ -95,69 +95,6 @@ class PodcastMetricsController < ApplicationController
       uniques: @uniques,
       date_range: @date_range
     }
-  end
-
-  def rollups
-    if clickhouse_connected?
-      @episodes =
-        @podcast.episodes
-          .published
-          .order(first_rss_published_at: :desc)
-          .paginate(params[:episode_rollups], params[:per])
-
-      @recent_downloads_by_episode =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
-          .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-          .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) DESC"))
-          .load_async
-      @alltime_downloads_by_episode =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
-          .select(:episode_id, "SUM(count) AS count")
-          .group(:episode_id)
-          .load_async
-
-      @recent_downloads_total =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
-          .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-          .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) DESC"))
-          .load_async
-      @alltime_downloads_total =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id)
-          .select("SUM(count) AS count")
-          .group(:podcast_id)
-          .order(:podcast_id)
-          .load_async
-      @all_other_total =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
-          .where.not(episode_id: @episodes.pluck(:guid))
-          .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-          .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) DESC"))
-          .load_async
-
-      @episode_rollups = episode_rollups(@episodes, @recent_downloads_by_episode, @alltime_downloads_by_episode)
-
-      render partial: "rollups_card", locals: {
-        podcast: @podcast,
-        date_start: @date_start,
-        date_end: @date_end,
-        interval: @interval,
-        episode_rollups: @episode_rollups,
-        date_range: @date_range,
-        episodes: @episodes,
-        total_recent: @recent_downloads_total,
-        total_alltime: @alltime_downloads_total,
-        all_other:
-        @all_other_total
-      }
-    end
   end
 
   def dropdays

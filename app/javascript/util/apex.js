@@ -1,5 +1,3 @@
-import ApexCharts from "apexcharts"
-
 export const DEFAULT_OPTIONS = {
   chart: {
     width: "100%",
@@ -7,7 +5,7 @@ export const DEFAULT_OPTIONS = {
     animations: {
       speed: 500,
       animateGradually: {
-        delay: 10,
+        enabled: false,
       },
       dynamicAnimation: {
         enabled: true,
@@ -18,15 +16,69 @@ export const DEFAULT_OPTIONS = {
       show: false,
     },
   },
-}
-
-export const LINE_DEFAULTS = {
   stroke: {
     curve: "smooth",
     width: 2,
   },
   legend: {
     show: false,
+  },
+}
+
+export const DATETIME_OPTIONS = {
+  xaxis: {
+    type: "datetime",
+    labels: {
+      datetimeFormatter: {
+        year: "yyyy",
+        month: "MMM d",
+        day: "MMM d",
+        hour: "MMM d, h:mmtt",
+      },
+    },
+  },
+  tooltip: {
+    enabled: true,
+    shared: true,
+    hideEmptySeries: false,
+    intersect: false,
+    x: {
+      format: "MMM d, h:mmtt",
+    },
+  },
+  dataLabels: {
+    enabled: false,
+  },
+  fill: {
+    type: "gradient",
+    gradient: {
+      shade: "light",
+      type: "vertical",
+      opacityFrom: 0.9,
+      opacityTo: 0.3,
+      stops: [0, 100],
+    },
+  },
+}
+
+export const BAR_CHART = {
+  chart: {
+    type: "bar",
+    stacked: true,
+  },
+}
+
+export const AREA_CHART = {
+  chart: {
+    type: "area",
+    stacked: true,
+  },
+}
+
+export const LINE_CHART = {
+  chart: {
+    type: "line",
+    stacked: false,
   },
 }
 
@@ -66,28 +118,4 @@ export function setDateTimeLabel(interval) {
   } else {
     return "MMM d"
   }
-}
-
-export function setDateTimeFormatter(interval) {
-  if (interval === "MONTH") {
-    return {
-      month: "MMMM yyyy",
-      day: "MMM d",
-    }
-  } else if (interval === "HOUR") {
-    return {
-      day: "dddd, h:mmtt",
-      hour: "d/M/yy, h:mmtt",
-    }
-  } else {
-    return {
-      month: "MMM d",
-      day: "d/M/yy",
-      hour: "MMM d, h:mmtt",
-    }
-  }
-}
-
-export function apexToggleSeries(chartId, series) {
-  ApexCharts.exec(chartId, "toggleSeries", series)
 }

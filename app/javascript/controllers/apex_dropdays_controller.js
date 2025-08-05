@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import ApexCharts from "apexcharts"
-import { DEFAULT_OPTIONS, LINE_DEFAULTS, apexToggleSeries } from "util/apex"
+import { DEFAULT_OPTIONS } from "util/apex"
 
 export default class extends Controller {
   static values = {
@@ -19,7 +19,8 @@ export default class extends Controller {
       stacked: false,
       height: "550px",
     })
-    const typeOptions = Object.assign({}, LINE_DEFAULTS)
+    // const typeOptions = Object.assign({}, LINE_DEFAULTS)
+    const typeOptions = {}
     Object.assign(typeOptions, {
       xaxis: {
         type: "numeric",
@@ -68,6 +69,6 @@ export default class extends Controller {
   }
 
   toggleSeries(event) {
-    apexToggleSeries(this.idValue, event.target.dataset.series)
+    // apexToggleSeries(this.idValue, event.target.dataset.series)
   }
 }

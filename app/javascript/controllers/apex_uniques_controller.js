@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import ApexCharts from "apexcharts"
-import { DEFAULT_OPTIONS, LINE_DEFAULTS, setDateTimeLabel } from "util/apex"
+import { DEFAULT_OPTIONS, setDateTimeLabel } from "util/apex"
 
 export default class extends Controller {
   static values = {
@@ -19,7 +19,8 @@ export default class extends Controller {
       type: "line",
       height: "550px",
     })
-    const typeOptions = Object.assign({}, LINE_DEFAULTS)
+    // const typeOptions = Object.assign({}, LINE_DEFAULTS)
+    const typeOptions = {}
     Object.assign(typeOptions, {
       xaxis: {
         type: "datetime",

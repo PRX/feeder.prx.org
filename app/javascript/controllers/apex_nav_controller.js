@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static outlets = ["apex-toggles"]
   static targets = ["start", "end", "main"]
 
   updateDates(event) {
@@ -17,5 +18,9 @@ export default class extends Controller {
         el.classList.add("d-none")
       }
     })
+  }
+
+  toggleUI(event) {
+    this.apexTogglesOutlet.toggleEpisodeUI(event)
   }
 }

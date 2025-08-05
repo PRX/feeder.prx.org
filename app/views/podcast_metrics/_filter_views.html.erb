@@ -1,0 +1,12 @@
+<div class="btn-group" data-controller="apex-toggles" data-apex-toggles-apex-downloads-outlet=".has-episodes">
+  <button class="btn btn-primary dropdown-toggle" type="button" id="view-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+    Breakdown
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="view-options">
+    <% chart_breakdown_options.each do |option| %>
+      <li>
+        <button class="dropdown-item" data-action="click->apex-toggles#changeBreakdown click->apex-nav#toggleUI" data-apex-toggles-series-param="<%= option[1] %>" data-apex-nav-breakdown-param="<%= option[1] %>" type="button"><%= option[0] %></button>
+      </li>
+    <% end %>
+  </ul>
+</div>

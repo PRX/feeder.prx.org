@@ -36,11 +36,10 @@ module PodcastMetricsHelper
     end
   end
 
-  def chart_view_options
+  def chart_breakdown_options
     [
-      ["All Downloads", "all"],
-      ["By Episode (linear)", "line"],
-      ["By Episode (stacked)", "stacked"]
+      ["Totals", "totals"],
+      ["By Episode", "episodes"]
     ]
   end
 
