@@ -1,13 +1,14 @@
 import { Controller } from "@hotwired/stimulus"
 import ApexCharts from "apexcharts"
-import { DEFAULT_OPTIONS, BAR_CHART, DATETIME_OPTIONS, alignDownloadsOnDateRange } from "util/apex"
+import { DEFAULT_OPTIONS, LINE_CHART, DATETIME_OPTIONS, alignDownloadsOnDateRange } from "util/apex"
 
 export default class extends Controller {
   static values = {
     id: String,
-    downloads: Object,
+    selectedEpisodes: Array,
     dateRange: Array,
     interval: String,
+    options: String,
   }
 
   static targets = ["chart"]
@@ -22,7 +23,7 @@ export default class extends Controller {
 
   buildOptions() {
     const options = Object.assign({}, DEFAULT_OPTIONS, DATETIME_OPTIONS, {
-      series: this.buildTotalSeries(),
+      series: this.buildSeries(),
       yaxis: {
         title: { text: "Downloads" },
       },
@@ -33,18 +34,19 @@ export default class extends Controller {
         id: this.idValue,
         height: "550px",
       },
-      BAR_CHART.chart
+      LINE_CHART.chart
     )
+
     return options
   }
 
-  buildTotalSeries() {
-    return [
-      {
-        name: "All Episodes",
-        data: alignDownloadsOnDateRange(this.downloadsValue.rollups, this.dateRangeValue),
-        color: this.downloadsValue.color,
-      },
-    ]
+  buildSeries() {
+    return this.selectedEpisodesValue.map((obj) => {
+      return {
+        name: obj.ep.title,
+        data: alignDownloadsOnDateRange(obj.rollups, this.dateRangeValue),
+        color: obj.color,
+      }
+    })
   }
 }

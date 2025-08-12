@@ -24,7 +24,7 @@ Rails.application.routes.draw do
     resource :metrics, controller: :podcast_metrics do
       get "downloads"
       get "uniques"
-      get "rollups"
+      get "episodes"
       get "dropdays"
       get "agents"
     end

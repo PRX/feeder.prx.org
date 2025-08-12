@@ -1,20 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
+import ApexCharts from "apexcharts"
 
 export default class extends Controller {
-  static outlets = ["apex-downloads"]
-
-  toggleSeriesForAll(event) {
-    this.apexDownloadsOutlets.forEach((chart) => {
-      chart.toggleSeries(event)
-    })
-  }
-
-  changeBreakdown(event) {
-    this.apexDownloadsOutlet.changeBreakdown(event.target.value)
-  }
-
-  changeType(event) {
-    const outlet = `apex${event.params.outlet}Outlet`
-    this[outlet].changeType(event.params.type)
+  toggleSeries(event) {
+    ApexCharts.exec(event.params.id, "toggleSeries", event.params.series)
   }
 }

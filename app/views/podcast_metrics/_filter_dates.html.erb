@@ -1,19 +1,19 @@
 <div class="form-floating input-group me-2">
-  <%= form.date_field :date_start, max: DateTime.now - 1.day, data: {action: "click#submit", apex_target: "start"}, value: date_start %>
+  <%= form.date_field :date_start, max: DateTime.now - 1.day, data: {action: "click#submit", apex_nav_target: "start"}, value: date_start %>
   <%= form.label :date_start, "Start Date" %>
 </div>
 <div class="form-floating input-group me-2">
-  <%= form.date_field :date_end, max: DateTime.now, data: {action: "click#submit", apex_target: "end"}, value: date_end %>
+  <%= form.date_field :date_end, max: DateTime.now, data: {action: "click#submit", apex_nav_target: "end"}, value: date_end %>
   <%= form.label :date_end, "End Date" %>
 </div>
 <div class="btn-group">
-  <button class="btn btn-primary dropdown-toggle" type="button" id="rollups-date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+  <button class="btn btn-primary dropdown-toggle" type="button" id="date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
     Date Presets
   </button>
-  <ul class="dropdown-menu" aria-labelledby="rollups-date-range-options">
-    <% rollups_date_range_options.each do |option| %>
+  <ul class="dropdown-menu" aria-labelledby="date-range-options">
+    <% date_range_options.each do |option| %>
       <li>
-        <button class="dropdown-item" type="button" data-action="apex#updateDates click#submit" value="<%= option[1].to_s %>" data-apex-target="dateview">
+        <button class="dropdown-item" type="button" data-action="apex-nav#updateDates click#submit" value="<%= option[1].to_s %>">
           <%= option[0] %>
         </button>
       </li>

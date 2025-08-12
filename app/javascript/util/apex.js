@@ -7,7 +7,8 @@ export const DEFAULT_OPTIONS = {
     animations: {
       speed: 500,
       animateGradually: {
-        enabled: false,
+        enabled: true,
+        delay: 15,
       },
       dynamicAnimation: {
         enabled: true,
@@ -66,14 +67,7 @@ export const DATETIME_OPTIONS = {
 export const BAR_CHART = {
   chart: {
     type: "bar",
-    stacked: true,
-  },
-}
-
-export const AREA_CHART = {
-  chart: {
-    type: "area",
-    stacked: true,
+    stacked: false,
   },
 }
 

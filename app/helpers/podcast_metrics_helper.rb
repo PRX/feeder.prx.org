@@ -36,14 +36,7 @@ module PodcastMetricsHelper
     end
   end
 
-  def chart_breakdown_options
-    [
-      ["Totals", "totals"],
-      ["By Episode", "episodes"]
-    ]
-  end
-
-  def rollups_date_range_options
+  def date_range_options
     [
       ["Last 7 Days", [7.days.ago.utc.to_date, Time.zone.now.utc.to_date].to_json],
       ["Week to Date", [Time.zone.now.utc.beginning_of_week.to_date, Time.zone.now.utc.to_date].to_json],
@@ -76,29 +69,5 @@ module PodcastMetricsHelper
       ["Calendar Week", {selection: "calendar_week", interval: "WEEK"}],
       ["Calendar Month", {selection: "calendar_month", interval: "MONTH"}]
     ]
-  end
-
-  def bar_chart_button(outlet)
-    tag.div data: {controller: "apex-toggles", "apex-toggles-apex-#{outlet.downcase}-outlet": ".has-chart-types"} do
-      tag.button class: "btn btn-light btn-icon", type: "button", data: {action: "apex-toggles#changeType", apex_toggles_outlet_param: outlet, apex_toggles_type_param: "bar"} do
-        tag.span "bar_chart", class: "material-icons"
-      end
-    end
-  end
-
-  def area_chart_button(outlet)
-    tag.div data: {controller: "apex-toggles", "apex-toggles-apex-#{outlet.downcase}-outlet": ".has-chart-types"} do
-      tag.button class: "btn btn-light btn-icon", type: "button", data: {action: "apex-toggles#changeType", apex_toggles_outlet_param: outlet, apex_toggles_type_param: "area"} do
-        tag.span "area_chart", class: "material-icons"
-      end
-    end
-  end
-
-  def line_chart_button(outlet)
-    tag.div data: {controller: "apex-toggles", "apex-toggles-apex-#{outlet.downcase}-outlet": ".has-chart-types"} do
-      tag.button class: "btn btn-light btn-icon", type: "button", data: {action: "apex-toggles#changeType", apex_toggles_outlet_param: outlet, apex_toggles_type_param: "line"} do
-        tag.span "show_chart", class: "material-icons"
-      end
-    end
   end
 end
