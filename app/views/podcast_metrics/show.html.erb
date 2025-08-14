@@ -28,7 +28,7 @@
         </div>
       </div>
       <div class="col mb-4">
-        <%= turbo_frame_tag "agents", src: agents_podcast_metrics_path(podcast: @podcast), loading: "lazy" %>
+        <%# turbo_frame_tag "agents", src: agents_podcast_metrics_path(podcast: @podcast), loading: "lazy" %>
       </div>
     </div>
     <%= form.submit class: "d-none", data: {click_target: "submit"} %>

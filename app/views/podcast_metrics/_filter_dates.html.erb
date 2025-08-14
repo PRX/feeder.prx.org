@@ -1,9 +1,9 @@
 <div class="form-floating input-group me-2">
-  <%= form.date_field :date_start, max: DateTime.now - 1.day, data: {action: "click#submit", apex_nav_target: "start"}, value: date_start %>
+  <%= form.date_field :date_start, min: DateTime.now - 18.months, max: DateTime.now - 1.day, data: {action: "click#submit", apex_nav_target: "start"}, value: date_start %>
   <%= form.label :date_start, "Start Date" %>
 </div>
 <div class="form-floating input-group me-2">
-  <%= form.date_field :date_end, max: DateTime.now, data: {action: "click#submit", apex_nav_target: "end"}, value: date_end %>
+  <%= form.date_field :date_end, min: DateTime.now - 18.months, max: DateTime.now, data: {action: "click#submit", apex_nav_target: "end"}, value: date_end %>
   <%= form.label :date_end, "End Date" %>
 </div>
 <div class="btn-group">

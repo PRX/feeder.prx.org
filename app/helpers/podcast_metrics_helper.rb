@@ -12,28 +12,13 @@ module PodcastMetricsHelper
     rollups.map { |r| r[:count] }.reduce(:+)
   end
 
-  def interval_options(date_start, date_end)
-    day_count = (date_start.to_date..date_end.to_date).to_a.length
-    if day_count > 60
-      [
-        ["Daily", "DAY"],
-        ["Weekly", "WEEK"],
-        ["Monthly", "MONTH"]
-      ]
-    elsif day_count < 30
-      [
-        ["Hourly", "HOUR"],
-        ["Daily", "DAY"],
-        ["Weekly", "WEEK"]
-      ]
-    else
-      [
-        ["Hourly", "HOUR"],
-        ["Daily", "DAY"],
-        ["Weekly", "WEEK"],
-        ["Monthly", "MONTH"]
-      ]
-    end
+  def interval_options
+    [
+      ["Hourly", "HOUR"],
+      ["Daily", "DAY"],
+      ["Weekly", "WEEK"],
+      ["Monthly", "MONTH"]
+    ]
   end
 
   def date_range_options

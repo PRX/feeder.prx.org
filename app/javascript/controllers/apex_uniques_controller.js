@@ -1,11 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 import ApexCharts from "apexcharts"
-import { DEFAULT_OPTIONS, setDateTimeLabel } from "util/apex"
+import { buildDateTimeChart, dynamicBarAndAreaChart } from "util/apex"
 
 export default class extends Controller {
   static values = {
     id: String,
-    seriesData: Array,
+    seriesData: Object,
     dateRange: Array,
     selection: String,
   }
@@ -13,63 +13,41 @@ export default class extends Controller {
   static targets = ["chart"]
 
   connect() {
-    const options = Object.assign({}, DEFAULT_OPTIONS)
-    Object.assign(options.chart, {
-      id: this.idValue,
-      type: "line",
-      height: "550px",
-    })
-    // const typeOptions = Object.assign({}, LINE_DEFAULTS)
-    const typeOptions = {}
-    Object.assign(typeOptions, {
-      xaxis: {
-        type: "datetime",
-      },
-      tooltip: {
-        x: {
-          format: setDateTimeLabel("DAY"),
-        },
-      },
-      yaxis: {
-        title: { text: "Unique Listeners" },
-      },
-    })
     const series = this.buildSeries()
+    const chart = buildDateTimeChart(
+      this.idValue,
+      series,
+      this.chartTarget,
+      dynamicBarAndAreaChart(this.dateRangeValue)
+    )
 
-    Object.assign(options, series, typeOptions)
-
-    const target = this.chartTarget
-
-    const chart = new ApexCharts(target, options)
     chart.render()
   }
 
   buildSeries() {
-    if (this.seriesDataValue.length) {
-      return {
-        series: [
-          {
-            data: this.seriesDataValue.map((d) => {
-              return {
-                x: d["day"],
-                y: d[this.selectionValue],
-              }
-            }),
-          },
-        ],
-      }
-    }
+    return [
+      {
+        data: this.seriesDataValue.rollups.map((d) => {
+          return {
+            x: d["day"],
+            y: d[this.selectionValue],
+          }
+        }),
+        color: this.seriesDataValue.color,
+      },
+    ]
   }
 
   changeSeries(event) {
     const series = [
       {
-        data: this.seriesDataValue.map((d) => {
+        data: this.seriesDataValue.rollups.map((d) => {
           return {
             x: d["day"],
             y: d[event.target.value],
           }
         }),
+        color: this.seriesDataValue.color,
       },
     ]
 

@@ -1,6 +1,6 @@
 import ApexCharts from "apexcharts"
 
-export const DEFAULT_OPTIONS = {
+const DEFAULT_OPTIONS = {
   chart: {
     width: "100%",
     zoom: { enabled: false },
@@ -19,16 +19,12 @@ export const DEFAULT_OPTIONS = {
       show: false,
     },
   },
-  stroke: {
-    curve: "smooth",
-    width: 2,
-  },
   legend: {
     show: false,
   },
 }
 
-export const DATETIME_OPTIONS = {
+const DATETIME_OPTIONS = {
   xaxis: {
     type: "datetime",
     labels: {
@@ -52,15 +48,21 @@ export const DATETIME_OPTIONS = {
   dataLabels: {
     enabled: false,
   },
-  fill: {
-    type: "gradient",
-    gradient: {
-      shade: "light",
-      type: "vertical",
-      opacityFrom: 0.9,
-      opacityTo: 0.3,
-      stops: [0, 100],
-    },
+}
+
+const NUMERIC_OPTIONS = {
+  xaxis: {
+    type: "numeric",
+    decimalsInFloat: 0,
+  },
+  tooltip: {
+    enabled: true,
+    shared: true,
+    hideEmptySeries: false,
+    intersect: false,
+  },
+  dataLabels: {
+    enabled: false,
   },
 }
 
@@ -68,6 +70,22 @@ export const BAR_CHART = {
   chart: {
     type: "bar",
     stacked: false,
+    height: "550px",
+  },
+  options: {
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "vertical",
+        opacityFrom: 0.9,
+        opacityTo: 0.6,
+        stops: [0, 100],
+      },
+    },
+    stroke: {
+      width: 1,
+    },
   },
 }
 
@@ -75,18 +93,80 @@ export const LINE_CHART = {
   chart: {
     type: "line",
     stacked: false,
+    height: "550px",
   },
-}
-
-export const BAR_DEFAULTS = {
-  plotOptions: {
-    bar: {
-      horizontal: true,
+  options: {
+    stroke: {
+      curve: "smooth",
+      width: 2,
     },
   },
 }
 
-export function alignDownloadsOnDateRange(downloads, range) {
+export const AREA_CHART = {
+  chart: {
+    type: "area",
+    stacked: false,
+    height: "550px",
+  },
+  options: {
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "vertical",
+        opacityFrom: 0.9,
+        opacityTo: 0.6,
+        stops: [0, 100],
+      },
+    },
+    stroke: {
+      width: 1,
+    },
+  },
+}
+
+export function buildDateTimeChart(id, series, target, type) {
+  const options = Object.assign({ series: series }, DEFAULT_OPTIONS, DATETIME_OPTIONS, type.options)
+  Object.assign(options.chart, { id: id }, type.chart)
+  return new ApexCharts(target, options)
+}
+
+export function dynamicBarAndAreaChart(dateRange) {
+  if (dateRange.length <= 200) {
+    return BAR_CHART
+  } else {
+    return AREA_CHART
+  }
+}
+
+export function buildNumericChart(id, series, target, type) {
+  const options = Object.assign({ series: series }, DEFAULT_OPTIONS, NUMERIC_OPTIONS, type.options)
+  Object.assign(options.chart, { id: id }, type.chart)
+  return new ApexCharts(target, options)
+}
+
+export function buildDownloadsSeries(data, dateRange) {
+  if (Array.isArray(data)) {
+    return data.map((episodeRollup) => {
+      return {
+        name: episodeRollup.episode.title,
+        data: alignDownloadsOnDateRange(episodeRollup.rollups, dateRange),
+        color: episodeRollup.color,
+      }
+    })
+  } else {
+    return [
+      {
+        name: "All Episodes",
+        data: alignDownloadsOnDateRange(data.rollups, dateRange),
+        color: data.color,
+      },
+    ]
+  }
+}
+
+function alignDownloadsOnDateRange(downloads, range) {
   return range.map((date) => {
     const match = downloads.filter((r) => {
       return r.hour === date
@@ -106,20 +186,12 @@ export function alignDownloadsOnDateRange(downloads, range) {
   })
 }
 
-export function setDateTimeLabel(interval) {
-  if (interval === "MONTH") {
-    return "MMMM yyyy"
-  } else if (interval === "HOUR") {
-    return "MMM d, h:mmtt"
-  } else {
-    return "MMM d"
-  }
-}
-
-export function updateOptions(id, options) {
-  ApexCharts.exec(id, "updateOptions", options)
-}
-
-export function updateSeries(id, series) {
-  ApexCharts.exec(id, "updateSeries", series)
-}
+// export function setDateTimeLabel(interval) {
+//   if (interval === "MONTH") {
+//     return "MMMM yyyy"
+//   } else if (interval === "HOUR") {
+//     return "MMM d, h:mmtt"
+//   } else {
+//     return "MMM d"
+//   }
+// }

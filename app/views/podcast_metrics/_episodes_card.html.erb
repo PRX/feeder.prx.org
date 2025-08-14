@@ -25,14 +25,14 @@
             <% episode_rollups.each_with_index do |er, i| %>
               <% sum = sum_rollups(er[:rollups]) %>
               <% total = sum_rollups(er[:totals]) %>
-              <% title = er[:ep][:title] %>
+              <% title = er[:episode][:title] %>
               <tr class="align-items-center">
                 <td class="d-flex align-items-center">
                   <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-toggles#toggleSeries" data-apex-toggles-series-param="<%= title %>" data-apex-toggles-id-param="<%= chart_id %>">
                   <span class="material-icons me-2" aria-label="hidden" style="color: <%= er[:color] %>">circle</span>
-                  <span class="text-nowrap overflow-hidden"><%= link_to title, episode_path(er[:ep][:guid]), data: {turbo_frame: "_top"} %></span>
+                  <span class="text-nowrap overflow-hidden"><%= link_to title, episode_path(er[:episode][:guid]), data: {turbo_frame: "_top"} %></span>
                 </td>
-                <td><%= er[:ep][:published_at].strftime("%Y-%m-%d") %></td>
+                <td><%= er[:episode][:published_at].strftime("%Y-%m-%d") %></td>
                 <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>
                 <td><% if total %><%= total %><% else %>&mdash;<% end %></td>
               </tr>
@@ -40,7 +40,7 @@
           </tbody>
         </table>
         <div class="col my-4">
-          <%= paginate episodes, param_name: :episode_rollups %>
+          <%= paginate episodes, param_name: :episodes %>
         </div>
       </div>
     </div>
