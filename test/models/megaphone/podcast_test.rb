@@ -10,6 +10,8 @@ describe Megaphone::Podcast do
       assert_not_nil podcast
       assert_not_nil podcast.config
       assert_equal podcast.title, dt_podcast.title
+      assert_not_nil dt_podcast.ready_itunes_image.href
+      assert_equal podcast.background_image_file_url, dt_podcast.ready_itunes_image.href
       assert podcast.valid?
     end
   end
