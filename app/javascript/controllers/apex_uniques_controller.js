@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import ApexCharts from "apexcharts"
-import { buildDateTimeChart, dynamicBarAndAreaChart } from "util/apex"
+import { buildDateTimeChart, dynamicBarAndAreaType } from "util/apex"
 
 export default class extends Controller {
   static values = {
@@ -14,11 +14,13 @@ export default class extends Controller {
 
   connect() {
     const series = this.buildSeries()
+    const title = "Unique Listeners"
     const chart = buildDateTimeChart(
       this.idValue,
       series,
       this.chartTarget,
-      dynamicBarAndAreaChart(this.dateRangeValue)
+      dynamicBarAndAreaType(this.dateRangeValue),
+      title
     )
 
     chart.render()
@@ -27,6 +29,7 @@ export default class extends Controller {
   buildSeries() {
     return [
       {
+        name: "Unique Listeners",
         data: this.seriesDataValue.rollups.map((d) => {
           return {
             x: d["day"],
@@ -41,6 +44,7 @@ export default class extends Controller {
   changeSeries(event) {
     const series = [
       {
+        name: "Unique Listeners",
         data: this.seriesDataValue.rollups.map((d) => {
           return {
             x: d["day"],

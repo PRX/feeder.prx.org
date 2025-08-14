@@ -36,6 +36,9 @@ const DATETIME_OPTIONS = {
       },
     },
   },
+  yaxis: {
+    show: true,
+  },
   tooltip: {
     enabled: true,
     shared: true,
@@ -66,7 +69,7 @@ const NUMERIC_OPTIONS = {
   },
 }
 
-export const BAR_CHART = {
+export const BAR_TYPE = {
   chart: {
     type: "bar",
     stacked: false,
@@ -89,7 +92,7 @@ export const BAR_CHART = {
   },
 }
 
-export const LINE_CHART = {
+export const LINE_TYPE = {
   chart: {
     type: "line",
     stacked: false,
@@ -103,7 +106,7 @@ export const LINE_CHART = {
   },
 }
 
-export const AREA_CHART = {
+export const AREA_TYPE = {
   chart: {
     type: "area",
     stacked: false,
@@ -126,17 +129,18 @@ export const AREA_CHART = {
   },
 }
 
-export function buildDateTimeChart(id, series, target, type) {
+export function buildDateTimeChart(id, series, target, type, title = "") {
   const options = Object.assign({ series: series }, DEFAULT_OPTIONS, DATETIME_OPTIONS, type.options)
   Object.assign(options.chart, { id: id }, type.chart)
+  addYaxisTitle(options.yaxis, title)
   return new ApexCharts(target, options)
 }
 
-export function dynamicBarAndAreaChart(dateRange) {
+export function dynamicBarAndAreaType(dateRange) {
   if (dateRange.length <= 200) {
-    return BAR_CHART
+    return BAR_TYPE
   } else {
-    return AREA_CHART
+    return AREA_TYPE
   }
 }
 
@@ -186,12 +190,6 @@ function alignDownloadsOnDateRange(downloads, range) {
   })
 }
 
-// export function setDateTimeLabel(interval) {
-//   if (interval === "MONTH") {
-//     return "MMMM yyyy"
-//   } else if (interval === "HOUR") {
-//     return "MMM d, h:mmtt"
-//   } else {
-//     return "MMM d"
-//   }
-// }
+function addYaxisTitle(yaxis, title = "") {
+  Object.assign(yaxis, { title: { text: title } })
+}

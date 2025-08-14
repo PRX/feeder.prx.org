@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { buildNumericChart, LINE_CHART } from "util/apex"
+import { buildNumericChart, LINE_TYPE } from "util/apex"
 
 export default class extends Controller {
   static values = {
@@ -12,7 +12,7 @@ export default class extends Controller {
 
   connect() {
     const series = this.buildSeries()
-    const chart = buildNumericChart(this.idValue, series, this.chartTarget, LINE_CHART)
+    const chart = buildNumericChart(this.idValue, series, this.chartTarget, LINE_TYPE)
 
     chart.render()
   }

@@ -4,9 +4,8 @@
   </button>
   <ul class="dropdown-menu" aria-labelledby="time-options">
     <% interval_options.each do |option| %>
-      <% active_true = "active" if interval == option[1] %>
       <li>
-        <%= active_link_to option[0], send("#{path}_podcast_metrics_path", podcast: podcast, date_start: date_start, date_end: date_end, interval: option[1]), class: "dropdown-item #{active_true}", data: {turbo_frame: path} %>
+        <%= link_to option[0], send("#{path}_podcast_metrics_path", podcast: podcast, date_start: date_start, date_end: date_end, interval: option[1]), class: "dropdown-item", data: {turbo_frame: path} %>
       </li>
     <% end %>
   </ul>

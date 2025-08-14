@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { buildDateTimeChart, buildDownloadsSeries, dynamicBarAndAreaChart } from "util/apex"
+import { buildDateTimeChart, buildDownloadsSeries, dynamicBarAndAreaType } from "util/apex"
 
 export default class extends Controller {
   static values = {
@@ -13,11 +13,13 @@ export default class extends Controller {
 
   connect() {
     const series = buildDownloadsSeries(this.downloadsValue, this.dateRangeValue)
+    const title = `Downloads by ${this.intervalValue.toLowerCase()}`
     const chart = buildDateTimeChart(
       this.idValue,
       series,
       this.chartTarget,
-      dynamicBarAndAreaChart(this.dateRangeValue)
+      dynamicBarAndAreaType(this.dateRangeValue),
+      title
     )
 
     chart.render()
