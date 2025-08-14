@@ -79,7 +79,7 @@ module Megaphone
         link: podcast.link,
         copyright: podcast.copyright,
         author: podcast.author_name,
-        background_image_file_url: feed.ready_itunes_image || podcast.ready_itunes_image,
+        background_image_file_url: (feed.ready_itunes_image || podcast.ready_itunes_image)&.href,
         explicit: podcast.explicit,
         owner_name: podcast.owner_name,
         owner_email: podcast.owner_email,
