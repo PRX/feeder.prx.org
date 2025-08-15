@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-import ApexCharts from "apexcharts"
 import {} from "util/apex"
 
 export default class extends Controller {
@@ -11,31 +10,7 @@ export default class extends Controller {
 
   static targets = ["chart"]
 
-  connect() {
-    // const options = Object.assign({}, DEFAULT_OPTIONS)
-    // Object.assign(options.chart, {
-    //   id: this.idValue,
-    //   type: "bar",
-    //   height: "350px",
-    // })
-    // const typeOptions = Object.assign({}, BAR_DEFAULTS)
-    // const series = this.buildSeries()
-    // Object.assign(typeOptions, {
-    //   tooltip: {
-    //     y: {
-    //       title: {
-    //         formatter: function () {
-    //           return ""
-    //         },
-    //       },
-    //     },
-    //   },
-    // })
-    // Object.assign(options, series, typeOptions)
-    // const target = this.chartTarget
-    // const chart = new ApexCharts(target, options)
-    // chart.render()
-  }
+  connect() {}
 
   buildSeries() {
     if (this.seriesDataValue.length) {
