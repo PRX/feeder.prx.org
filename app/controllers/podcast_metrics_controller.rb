@@ -6,12 +6,6 @@ class PodcastMetricsController < ApplicationController
   end
 
   def downloads
-    @episodes =
-      @podcast.episodes
-        .published
-        .order(first_rss_published_at: :desc)
-        .paginate(params[:episode_rollups], params[:per])
-
     if clickhouse_connected?
       @downloads_within_date_range =
         Rollups::HourlyDownload
@@ -103,7 +97,7 @@ class PodcastMetricsController < ApplicationController
     @dropdays = @episodes.map do |ep|
       if ep[:first_rss_published_at]
         Rollups::HourlyDownload
-          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + metrics_params[:dropday_range].to_i.days)))
+          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + dropdays_params[:dropday_range].to_i.days)))
           .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
           .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
           .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
@@ -124,7 +118,7 @@ class PodcastMetricsController < ApplicationController
     render partial: "dropdays_card", locals: {
       episode_dropdays: @episode_dropdays,
       episodes: @episodes,
-      dropday_range: metrics_params[:dropday_range]
+      dropday_range: dropdays_params[:dropday_range]
     }
   end
 
@@ -195,21 +189,30 @@ class PodcastMetricsController < ApplicationController
 
   def metrics_params
     params
-      .permit(:podcast_id, :date_start, :date_end, :interval, :dropday_range)
+      .permit(:podcast_id, :date_start, :date_end, :interval, :uniques_selection, :dropday_range)
       .with_defaults(
         date_start: 30.days.ago.utc,
         date_end: Time.zone.now.utc,
-        interval: "DAY",
-        dropday_range: 7
+        interval: "DAY"
       )
   end
 
   def uniques_params
-    metrics_params
+    params
       .permit(:uniques_selection)
       .with_defaults(
         uniques_selection: "last_7_rolling"
       )
+      .merge(metrics_params)
+  end
+
+  def dropdays_params
+    params
+      .permit(:dropday_range)
+      .with_defaults(
+        dropday_range: 7
+      )
+      .merge(metrics_params)
   end
 
   def episode_rollups(episodes, rollups, totals)
