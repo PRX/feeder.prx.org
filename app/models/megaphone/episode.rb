@@ -207,8 +207,8 @@ module Megaphone
       # Re-request the megaphone api
       find_by_megaphone_id
 
-      # check to see if the audio on mp matches latest delivery
-      if original_filename == delivery_status(true).source_filename
+      # check if the audio on feeder is newer than megaphone audio
+      if audio_is_latest?
         # if processing done, set the cuepoints and the enclosure
         if !audio_file_processing && audio_file_status == "success"
           set_enclosure
