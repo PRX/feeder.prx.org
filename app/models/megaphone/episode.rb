@@ -370,7 +370,7 @@ module Megaphone
     end
 
     def adhash_for_placement(zones)
-      (zones || {})
+      (zones || [])
         .filter { |z| ["ad", "sonic_id", "house"].include?(z[:type]) }
         .map { |z| ADHASH_VALUES[z[:section]] }
         .join("")
