@@ -98,8 +98,7 @@ module Megaphone
         background_image_file_url: e.ready_image&.href,
         episode_type: e.itunes_type,
         episode_number: e.episode_number,
-        season_number: e.season_number,
-        ad_free: e.categories.include?("adfree")
+        season_number: e.season_number
       }
     end
 
@@ -260,15 +259,23 @@ module Megaphone
     end
 
     def replace_cuepoints!
-      # retrieve the placement info from augury
-      placement = get_placement(feeder_episode.segment_count)
-      media = feeder_episode.media
-
-      # create cuepoint instances from that
-      cuepoints = Megaphone::Cuepoint.from_placement_and_media(placement, media)
+      cuepoints = get_cuepoints || []
 
       # put those as a list to the mp api
       cuepoints_batch!(cuepoints)
+    end
+
+    def get_cuepoints
+      if ad_free?
+        []
+      else
+        # retrieve the placement info from augury
+        placement = get_placement(feeder_episode.segment_count)
+        media = feeder_episode.media
+
+        # create cuepoint instances from that
+        Megaphone::Cuepoint.from_placement_and_media(placement, media)
+      end
     end
 
     def cuepoints_batch!(cuepoints)
@@ -350,7 +357,12 @@ module Megaphone
     end
 
     def set_placement_attributes
-      if (zones = get_placement_zones(feeder_episode.segment_count))
+      self.expected_adhash = ""
+      self.pre_count = 0
+      self.post_count = 0
+
+      if !ad_free?
+        zones = get_placement_zones(feeder_episode.segment_count)
         self.expected_adhash = adhash_for_placement(zones)
         self.pre_count = expected_adhash.count("0")
         self.post_count = expected_adhash.count("2")
@@ -358,7 +370,7 @@ module Megaphone
     end
 
     def adhash_for_placement(zones)
-      zones
+      (zones || [])
         .filter { |z| ["ad", "sonic_id", "house"].include?(z[:type]) }
         .map { |z| ADHASH_VALUES[z[:section]] }
         .join("")
@@ -431,7 +443,8 @@ module Megaphone
     end
 
     def arrangement_version_url(location, media_version)
-      uri = URI.parse(location)
+      uri = Addressable::URI.parse(location)
+      uri.query_values = uri.query_values&.except("exp")
       path = uri.path.split("/")
       ext = File.extname(path.last)
       base = File.basename(path.last, ext)

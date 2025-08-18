@@ -31,11 +31,11 @@ describe Megaphone::Episode do
 
   it "can create a arrangement_version_url" do
     episode = Megaphone::Episode.new_from_episode(podcast, feeder_episode)
-    location = "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b.mp3"
+    location = "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b.mp3?le=thisisnotalisteneridentifier&exp=1755382993"
     media_version = 163842
 
     url = episode.arrangement_version_url(location, media_version)
-    assert_equal url, "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b_163842.mp3"
+    assert_equal url, "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b_163842.mp3?le=thisisnotalisteneridentifier"
   end
 
   describe "#create!" do
@@ -55,6 +55,14 @@ describe Megaphone::Episode do
       assert_nil episode.background_audio_file_url
       assert feeder_episode.sync_log(:megaphone).external_id
       assert feeder_episode.episode_delivery_status(:megaphone)
+    end
+    it "can set cuepoints for adfree" do
+      feeder_episode.categories = ["foobar", "adfree"]
+      episode = Megaphone::Episode.new_from_episode(podcast, feeder_episode)
+      assert episode.ad_free?
+      assert_equal 0, episode.post_count
+      assert_equal "", episode.expected_adhash
+      assert_equal 0, episode.get_cuepoints.size
     end
 
     it "can create a published episode with audio" do
@@ -82,6 +90,10 @@ describe Megaphone::Episode do
 
       episode.create!
 
+      refute episode.ad_free?
+      assert_equal "2", episode.expected_adhash
+      assert_equal 1, episode.post_count
+      assert_equal 1, episode.get_cuepoints.size
       assert_equal arrangement_url, episode.background_audio_file_url
       assert media_episode.sync_log(:megaphone).external_id
       status = media_episode.episode_delivery_status(:megaphone)
