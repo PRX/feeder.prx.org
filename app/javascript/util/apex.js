@@ -57,6 +57,7 @@ const NUMERIC_OPTIONS = {
   xaxis: {
     type: "numeric",
     decimalsInFloat: 0,
+    tickPlacement: "on",
   },
   tooltip: {
     enabled: true,
@@ -144,9 +145,12 @@ export function dynamicBarAndAreaType(dateRange) {
   }
 }
 
-export function buildNumericChart(id, series, target, type) {
+export function buildNumericChart(id, series, target, type, title = "") {
   const options = Object.assign({ series: series }, DEFAULT_OPTIONS, NUMERIC_OPTIONS, type.options)
+  const xdataLength = series[0].data.length - 1
+  Object.assign(options.xaxis, { tickAmount: xdataLength })
   Object.assign(options.chart, { id: id }, type.chart)
+  addXaxisTitle(options.xaxis, title)
   return new ApexCharts(target, options)
 }
 
@@ -192,4 +196,8 @@ function alignDownloadsOnDateRange(downloads, range) {
 
 function addYaxisTitle(yaxis, title = "") {
   Object.assign(yaxis, { title: { text: title } })
+}
+
+function addXaxisTitle(xaxis, title = "") {
+  Object.assign(xaxis, { title: { text: title } })
 }

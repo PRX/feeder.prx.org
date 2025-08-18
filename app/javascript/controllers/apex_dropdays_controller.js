@@ -6,13 +6,15 @@ export default class extends Controller {
     id: String,
     seriesData: Array,
     range: Number,
+    interval: String,
   }
 
   static targets = ["chart"]
 
   connect() {
     const series = this.buildSeries()
-    const chart = buildNumericChart(this.idValue, series, this.chartTarget, LINE_TYPE)
+    const title = `${this.intervalValue.toLowerCase()}s since episode drop`
+    const chart = buildNumericChart(this.idValue, series, this.chartTarget, LINE_TYPE, title)
 
     chart.render()
   }

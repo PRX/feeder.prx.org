@@ -6,7 +6,8 @@
       data-controller="apex-dropdays"
       data-apex-dropdays-id-value="<%= chart_id %>"
       data-apex-dropdays-series-data-value="<%= episode_dropdays.to_json %>"
-      data-apex-dropdays-range-value="<%= dropday_range %>">
+      data-apex-dropdays-range-value="<%= dropday_range %>"
+      data-apex-dropdays-interval-value="<%= interval %>">
       <div data-apex-dropdays-target="chart"></div>
     </div>
     <div class="col align-items-center" data-controller="apex-toggles">
@@ -16,7 +17,7 @@
             <tr class="table-secondary">
               <th>Episode</th>
               <th>Publish Date</th>
-              <th><%= "#{dropday_range} Day Downloads" %></th>
+              <th><%= "#{dropday_range} #{interval.capitalize} Downloads" %></th>
               <th>All-time</th>
             </tr>
           </thead>

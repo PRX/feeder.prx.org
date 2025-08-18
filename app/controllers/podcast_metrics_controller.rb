@@ -1,6 +1,6 @@
 class PodcastMetricsController < ApplicationController
   before_action :set_podcast
-  before_action :set_date_range, only: %i[show downloads episodes uniques]
+  before_action :set_date_range, except: %i[dropdays]
 
   def show
   end
@@ -94,13 +94,14 @@ class PodcastMetricsController < ApplicationController
         .order(first_rss_published_at: :desc)
         .paginate(params[:episode_dropdays], params[:per])
 
+    @interval = dropdays_params[:interval]
     @dropdays = @episodes.map do |ep|
       if ep[:first_rss_published_at]
         Rollups::HourlyDownload
-          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + dropdays_params[:dropday_range].to_i.days)))
-          .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
-          .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
+          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + dropdays_params[:dropday_range].to_i.send(:"#{@interval.downcase}s"))))
+          .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+          .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
+          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
           .load_async
       else
         []
@@ -118,7 +119,8 @@ class PodcastMetricsController < ApplicationController
     render partial: "dropdays_card", locals: {
       episode_dropdays: @episode_dropdays,
       episodes: @episodes,
-      dropday_range: dropdays_params[:dropday_range]
+      dropday_range: dropdays_params[:dropday_range],
+      interval: @interval
     }
   end
 
@@ -208,7 +210,7 @@ class PodcastMetricsController < ApplicationController
 
   def dropdays_params
     params
-      .permit(:dropday_range)
+      .permit(:dropday_range, :interval)
       .with_defaults(
         dropday_range: 7
       )
