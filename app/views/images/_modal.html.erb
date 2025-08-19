@@ -1,11 +1,14 @@
-<div id="<%= id %>" class="modal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
+<div id="<%= id %>" class="modal" tabindex="-1" data-bs-theme="dark">
+  <div class="modal-dialog modal-dialog-centered modal-fullscreen">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title"><%= title %></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= t("images.label.close") %>"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body text-center">
+        <%= image_tag image.url, alt: image.alt_text %>
+      </div>
+      <div class="modal-footer">
         <table class="table table-sm m-0">
           <tbody>
             <tr>
