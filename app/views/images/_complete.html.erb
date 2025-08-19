@@ -17,10 +17,12 @@
 
   <div class="card-body">
     <div class="prx-uploads-image mb-4">
-      <%= image_tag image.url, alt: image.alt_text %>
+      <button type="button" class="btn m-0 p-0 border-0" data-bs-toggle="modal" data-bs-target="#image-modal-<%= image.id %>">
+        <%= image_tag image.url, alt: image.alt_text %>
+      </button>
 
       <% if image.width.present? && image.height.present? %>
-        <aside><%= image.width %>x<%= image.height %></aside>
+        <aside class="bg-light text-dark"><%= image.width %>x<%= image.height %></aside>
       <% end %>
     </div>
 
