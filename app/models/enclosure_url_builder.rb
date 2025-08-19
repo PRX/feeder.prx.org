@@ -21,16 +21,13 @@ class EnclosureUrlBuilder
     feed ||= podcast.default_feed
     prefix = feed.try(:enclosure_prefix)
 
-    base_url = if !episode.enclosure_override_url.blank?
+    if episode.enclosure_override_url.blank?
+      url = base_enclosure_url(podcast, episode, feed)
+      enclosure_prefix_url(url, prefix)
+    elsif episode.enclosure_override_prefix?
+      enclosure_prefix_url(episode.enclosure_override_url, prefix)
+    else
       episode.enclosure_override_url
-    else
-      base_enclosure_url(podcast, episode, feed)
-    end
-
-    if episode.enclosure_override_prefix
-      base_url
-    else
-      enclosure_prefix_url(base_url, prefix)
     end
   end
 
