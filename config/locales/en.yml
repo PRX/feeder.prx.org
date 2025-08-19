@@ -349,7 +349,7 @@ en:
         categories: Categories
         clean_title: Clean Title
         description: Description
-        enclosure_override_prefix: Use Enclosure Override URL as is? (i.e. no prefix?)
+        enclosure_override_prefix: Include Prefix?
         enclosure_override_url: Enclosure Override URL
         embed_player_iframe: Embeddable Player IFrame
         embed_player_type: Player Style
@@ -698,7 +698,7 @@ en:
       notice: Episode updated
   episode_media:
     enclosure_override:
-      enclosure_override_prefix_hint: Enable to use the Enclosure Override Url as is, and not include any prefix.
+      enclosure_override_prefix_hint: Enable to add the feed's enclosure prefix to the enclosure override url.
       enclosure_override_url_hint: Specify the full URL to use as the enclosure/media url for this episode.
       title: Enclosure Override
     form:

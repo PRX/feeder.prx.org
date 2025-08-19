@@ -144,7 +144,7 @@ class EpisodeMegaphoneImport < EpisodeImport
       episode.create_external_media_resource!(emr_attributes)
     end
 
-    episode.update!(enclosure_override_url: entry[:download_url])
+    episode.update!(enclosure_override_url: entry[:download_url], enclosure_override_prefix: true)
   end
 
   def upload_audio(path)
