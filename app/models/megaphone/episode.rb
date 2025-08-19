@@ -233,7 +233,7 @@ module Megaphone
     def set_enclosure
       return if download_url.blank? || !feeder_episode.complete_media?
       set_external_media
-      feeder_episode.update!(enclosure_override_url: download_url, enclosure_override_prefix: true)
+      feeder_episode.update!(enclosure_override_url: download_url)
     end
 
     # if it's not published yet, can't get the file from mp, create as "complete"
