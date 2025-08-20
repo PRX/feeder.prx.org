@@ -18,7 +18,7 @@ class PodcastMetricsController < ApplicationController
 
     @downloads = {
       rollups: @downloads_within_date_range,
-      color: colors[0]
+      color: primary_blue
     }
 
     render partial: "downloads_card", locals: {
@@ -76,7 +76,7 @@ class PodcastMetricsController < ApplicationController
 
     @uniques = {
       rollups: @uniques_rollups,
-      color: colors[0]
+      color: primary_blue
     }
 
     render partial: "uniques_card", locals: {
@@ -114,7 +114,7 @@ class PodcastMetricsController < ApplicationController
         .group(:episode_id)
         .load_async
 
-    @episode_dropdays = episode_rollups(@episodes, @dropdays, @alltime_downloads_by_episode)
+    @episode_dropdays = episode_dropdays(@episodes, @dropdays, @alltime_downloads_by_episode)
 
     render partial: "dropdays_card", locals: {
       episode_dropdays: @episode_dropdays,
@@ -232,12 +232,15 @@ class PodcastMetricsController < ApplicationController
     end
   end
 
-  def episode_dropdays(episodes, dropdays)
+  def episode_dropdays(episodes, rollups, totals)
     episodes.to_enum(:each_with_index).map do |episode, i|
       {
         episode: episode,
-        dropdays: dropdays.select do |d|
-          d["episode_id"] == episode.guid
+        rollups: rollups.select do |r|
+          r["episode_id"] == episode.guid
+        end,
+        totals: totals.select do |r|
+          r["episode_id"] == episode.guid
         end,
         color: colors[i]
       }
@@ -271,5 +274,9 @@ class PodcastMetricsController < ApplicationController
       "#20C997",
       "#555555"
     ]
+  end
+
+  def primary_blue
+    "#0072a3"
   end
 end

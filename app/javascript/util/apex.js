@@ -78,17 +78,8 @@ export const BAR_TYPE = {
   },
   options: {
     fill: {
-      type: "gradient",
-      gradient: {
-        shade: "light",
-        type: "vertical",
-        opacityFrom: 0.9,
-        opacityTo: 0.6,
-        stops: [0, 100],
-      },
-    },
-    stroke: {
-      width: 1,
+      type: "solid",
+      opacity: 0.8,
     },
   },
 }
@@ -113,14 +104,8 @@ export const AREA_TYPE = {
   },
   options: {
     fill: {
-      type: "gradient",
-      gradient: {
-        shade: "light",
-        type: "vertical",
-        opacityFrom: 0.9,
-        opacityTo: 0.6,
-        stops: [0, 100],
-      },
+      type: "solid",
+      opacity: 0.8,
     },
     stroke: {
       width: 1,
