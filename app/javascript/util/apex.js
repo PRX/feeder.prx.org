@@ -3,6 +3,7 @@ import ApexCharts from "apexcharts"
 const DEFAULT_OPTIONS = {
   chart: {
     width: "100%",
+    height: "400px",
     zoom: { enabled: false },
     animations: {
       speed: 500,
@@ -74,7 +75,6 @@ export const BAR_TYPE = {
   chart: {
     type: "bar",
     stacked: false,
-    height: "550px",
   },
   options: {
     fill: {
@@ -97,7 +97,6 @@ export const LINE_TYPE = {
   chart: {
     type: "line",
     stacked: false,
-    height: "550px",
   },
   options: {
     stroke: {
@@ -111,7 +110,6 @@ export const AREA_TYPE = {
   chart: {
     type: "area",
     stacked: false,
-    height: "550px",
   },
   options: {
     fill: {

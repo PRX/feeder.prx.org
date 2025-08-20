@@ -1,12 +1,10 @@
 <%= turbo_frame_tag "uniques" do %>
-  <div class="row d-flex flex-wrap gx-4"
+  <div class="col metrics-chart"
     data-controller="apex-uniques"
     data-apex-uniques-id-value="<%= SecureRandom.uuid %>"
     data-apex-uniques-series-data-value="<%= uniques.to_json %>"
     data-apex-uniques-date-range-value="<%= date_range.to_json %>"
     data-apex-uniques-selection-value="<%= selection %>">
-    <div class="col">
-      <div data-apex-uniques-target="chart" data-chart="uniques"></div>
-    </div>
+    <div data-apex-uniques-target="chart" data-chart="uniques"></div>
   </div>
 <% end %>

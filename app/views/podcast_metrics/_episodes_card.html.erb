@@ -1,8 +1,8 @@
 <% chart_id = SecureRandom.uuid %>
 
 <%= turbo_frame_tag "episodes" do %>
-  <div class="row d-flex flex-wrap gx-4">
-    <div class="col"
+  <div class="row d-flex flex-wrap gx-4 h-100">
+    <div class="col metrics-chart"
       data-controller="apex-episodes"
       data-apex-episodes-id-value="<%= chart_id %>"
       data-apex-episodes-selected-episodes-value="<%= episode_rollups.to_json %>"
@@ -10,39 +10,34 @@
       data-apex-episodes-interval-value="<%= interval %>">
       <div data-apex-episodes-target="chart"></div>
     </div>
-    <div class="col align-items-center" data-controller="apex-toggles">
-      <div class="col my-4">
-        <table class="table table-striped shadow rounded">
-          <thead>
-            <tr class="table-secondary">
-              <th>Episode</th>
-              <th>Publish Date</th>
-              <th>Downloads</th>
-              <th>All-time</th>
+    <div class="col align-items-center metrics-table" data-controller="apex-toggles">
+      <table class="table table-sm table-striped shadow rounded">
+        <thead class="table-primary">
+          <tr>
+            <td>Episode</td>
+            <td>Publish Date</td>
+            <td>Downloads</td>
+            <td>All-time</td>
+          </tr>
+        </thead>
+        <tbody>
+          <% episode_rollups.each_with_index do |er, i| %>
+            <% sum = sum_rollups(er[:rollups]) %>
+            <% total = sum_rollups(er[:totals]) %>
+            <% title = er[:episode][:title] %>
+            <tr class="align-items-center">
+              <td class="d-flex align-items-center">
+                <input id="episode<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-toggles#toggleSeries" data-apex-toggles-series-param="<%= title %>" data-apex-toggles-id-param="<%= chart_id %>">
+                <span class="material-icons me-2" aria-label="hidden" style="color: <%= er[:color] %>">circle</span>
+                <span class="text-nowrap overflow-hidden"><%= link_to title, episode_path(er[:episode][:guid]), data: {turbo_frame: "_top"} %></span>
+              </td>
+              <td><%= er[:episode][:published_at].strftime("%Y-%m-%d") %></td>
+              <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>
+              <td><% if total %><%= total %><% else %>&mdash;<% end %></td>
             </tr>
-          </thead>
-          <tbody>
-            <% episode_rollups.each_with_index do |er, i| %>
-              <% sum = sum_rollups(er[:rollups]) %>
-              <% total = sum_rollups(er[:totals]) %>
-              <% title = er[:episode][:title] %>
-              <tr class="align-items-center">
-                <td class="d-flex align-items-center">
-                  <input id="<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-toggles#toggleSeries" data-apex-toggles-series-param="<%= title %>" data-apex-toggles-id-param="<%= chart_id %>">
-                  <span class="material-icons me-2" aria-label="hidden" style="color: <%= er[:color] %>">circle</span>
-                  <span class="text-nowrap overflow-hidden"><%= link_to title, episode_path(er[:episode][:guid]), data: {turbo_frame: "_top"} %></span>
-                </td>
-                <td><%= er[:episode][:published_at].strftime("%Y-%m-%d") %></td>
-                <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>
-                <td><% if total %><%= total %><% else %>&mdash;<% end %></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-        <div class="col my-4">
-          <%= paginate episodes, param_name: :episodes %>
-        </div>
-      </div>
+          <% end %>
+        </tbody>
+      </table>
     </div>
   </div>
 <% end %>
