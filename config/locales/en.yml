@@ -1094,12 +1094,14 @@ en:
       help: Help Docs
       home: PRX
       id: Manage Account
+      insights: Insights
       inventory: Inventory
       logout: Logout
       metrics: Metrics
       podcasts: Podcasts
       privacy: Privacy
       reload: Reload
+      spots: Spots
       status: Status
       terms: Terms
       wildcard: Wildcard Access
