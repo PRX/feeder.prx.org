@@ -427,7 +427,10 @@ module Megaphone
         location: nil,
         size: nil
       }.with_indifferent_access
-      resp = Faraday.head(enclosure)
+
+      headers = {"User-Agent" => "PRX-Feeder-Megaphone/1.0 (Rails-#{Rails.env}) #{SecureRandom.alphanumeric(10)}"}
+      resp = Faraday.head(enclosure, nil, headers)
+
       if resp.status == 302
         info[:media_version] = resp.env.response_headers["x-episode-media-version"].to_i
         info[:location] = resp.env.response_headers["location"]
