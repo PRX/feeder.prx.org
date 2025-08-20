@@ -72,6 +72,7 @@ describe Megaphone::Episode do
       arrangement_url = "#{base_url}/#{arrangement_filename}"
 
       stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.mp3?auth=#{feed.tokens.first.token}")
+        .with { |req| req.headers["User-Agent"].match?(/PRX-Feeder-Megaphone\/1.0 \(Rails-test\) [[:alnum:]]+/) }
         .to_return(status: 302, body: "", headers: {
           "x-episode-media-version" => media_episode.media_version_id,
           "location" => source_url,
@@ -149,6 +150,7 @@ describe Megaphone::Episode do
       source_url = "#{base_url}/audio.mp3"
 
       stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.mp3?auth=#{feed.tokens.first.token}")
+        .with { |req| req.headers["User-Agent"].match?(/PRX-Feeder-Megaphone\/1.0 \(Rails-test\) [[:alnum:]]+/) }
         .to_return(status: 302, body: "", headers: {
           "x-episode-media-version" => media_episode.media_version_id - 1,
           "location" => source_url,
