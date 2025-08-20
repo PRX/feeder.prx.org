@@ -1,0 +1,12 @@
+<div class="btn-group">
+  <button class="btn btn-primary dropdown-toggle" type="button" id="dropday-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+    Dropday Range
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropday-options">
+    <% dropday_range_options.each do |option| %>
+      <li>
+        <%= link_to option[0], send("#{path}_podcast_metrics_path", podcast: podcast, dropday_range: option[1][0], interval: option[1][1]), class: "dropdown-item", data: {turbo_frame: path} %>
+      </li>
+    <% end %>
+  </ul>
+</div>
