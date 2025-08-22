@@ -1,18 +1,17 @@
 <% if Rails.env.development? && clickhouse_connected? %>
   <% content_for :title, "#{@podcast.title} - #{t(".title")}" %>
 
-  <%= form_with(url: podcast_metrics_path(@podcast), method: :get, id: "metrics", data: {controller: "click", click_debounce_value: 200}) do |form| %>
     <div data-controller="apex-nav">
       <div class="container col-12 d-flex align-items-center justify-content-between my-4">
         <h1 class="fw-bold my-0 mb-0 me-4">Metrics at a Glance</h1>
         <div class="">
           <div class="d-flex justify-items-end">
-            <%= render "filter_dates", form: form, date_start: @date_start, date_end: @date_end, interval: @interval %>
+            <%= render "filter_dates", date_start: @date_start, date_end: @date_end, interval: @interval %>
           </div>
         </div>
       </div>
       <div class="container col-12 my-4">
-        <%= render "main_card", form: form, podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval %>
+        <%= render "main_card", podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval %>
       </div>
     </div>
 
@@ -31,6 +30,5 @@
         <%# turbo_frame_tag "agents", src: agents_podcast_metrics_path(podcast: @podcast), loading: "lazy" %>
       </div>
     </div>
-    <%= form.submit class: "d-none", data: {click_target: "submit"} %>
-  <% end %>
+
 <% end %>

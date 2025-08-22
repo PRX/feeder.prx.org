@@ -21,19 +21,19 @@
       </div>
     </div>
     <div class="card-body metrics-card-body">
-      <%= turbo_frame_tag "downloads", src: downloads_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), loading: "lazy", data: {apex_nav_target: "tab", tab: "downloads"} do %>
+      <%= turbo_frame_tag "downloads", src: downloads_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", tab: "downloads"} do %>
         <div class="h-100 d-flex justify-content-center align-items-center">
           <div class="spinner-border text-primary" role="status">
           </div>
         </div>
       <% end %>
-      <%= turbo_frame_tag "episodes", src: episodes_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), loading: "lazy", data: {apex_nav_target: "tab", tab: "episodes"}, class: "d-none" do %>
+      <%= turbo_frame_tag "episodes", src: episodes_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", tab: "episodes"}, class: "d-none" do %>
         <div class="h-100 d-flex justify-content-center align-items-center">
           <div class="spinner-border text-primary" role="status">
           </div>
         </div>
       <% end %>
-      <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end), loading: "lazy", data: {apex_nav_target: "tab", tab: "uniques"}, class: "d-none" do %>
+      <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end), data: {apex_nav_target: "tab", tab: "uniques"}, class: "d-none" do %>
         <div class="h-100 d-flex justify-content-center align-items-center">
           <div class="spinner-border text-primary" role="status">
           </div>

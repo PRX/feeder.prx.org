@@ -22,6 +22,9 @@ class PodcastMetricsController < ApplicationController
     }
 
     render partial: "downloads_card", locals: {
+      podcast: @podcast,
+      date_start: @date_start,
+      date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
       downloads: @downloads
@@ -54,6 +57,9 @@ class PodcastMetricsController < ApplicationController
     @episode_rollups = episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
 
     render partial: "episodes_card", locals: {
+      podcast: @podcast,
+      date_start: @date_start,
+      date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
       episodes: @episodes,
@@ -80,6 +86,9 @@ class PodcastMetricsController < ApplicationController
     }
 
     render partial: "uniques_card", locals: {
+      podcast: @podcast,
+      date_start: @date_start,
+      date_end: @date_end,
       interval: @interval,
       selection: @selection,
       uniques: @uniques,

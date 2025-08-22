@@ -1,12 +1,34 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["start", "end", "tab"]
+  static targets = ["start", "end", "mainStart", "mainEnd", "tab"]
 
   updateDates(event) {
     const [startDate, endDate] = JSON.parse(event.target.value)
-    this.startTarget.value = startDate
-    this.endTarget.value = endDate
+    this.mainStartTarget.value = startDate
+    this.mainEndTarget.value = endDate
+
+    this.mainStartTarget.focus()
+    this.mainStartTarget.blur()
+    event.target.focus()
+  }
+
+  updateStartDate(event) {
+    this.startTargets.forEach((target) => {
+      target.addEventListener("change", function () {
+        target.value = event.target.value
+      })
+      target.dispatchEvent(new Event("change"))
+    })
+  }
+
+  updateEndDate(event) {
+    this.endTargets.forEach((target) => {
+      target.addEventListener("change", function () {
+        target.value = event.target.value
+      })
+      target.dispatchEvent(new Event("change"))
+    })
   }
 
   changeTab(event) {

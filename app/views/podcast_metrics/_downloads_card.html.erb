@@ -1,10 +1,16 @@
 <%= turbo_frame_tag "downloads" do %>
-  <div class="col metrics-chart"
-    data-controller="apex-downloads"
-    data-apex-downloads-id-value="<%= SecureRandom.uuid %>"
-    data-apex-downloads-downloads-value="<%= downloads.to_json %>"
-    data-apex-downloads-date-range-value="<%= date_range.to_json %>"
-    data-apex-downloads-interval-value="<%= interval %>">
-    <div data-apex-downloads-target="chart"></div>
-  </div>
+  <%= form_with(url: downloads_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), method: :get, id: "downloads_metrics", data: {controller: "click", click_debounce_value: 200}) do |form| %>
+    <div class="col metrics-chart"
+      data-controller="apex-downloads"
+      data-apex-downloads-id-value="<%= SecureRandom.uuid %>"
+      data-apex-downloads-downloads-value="<%= downloads.to_json %>"
+      data-apex-downloads-date-range-value="<%= date_range.to_json %>"
+      data-apex-downloads-interval-value="<%= interval %>">
+      <div data-apex-downloads-target="chart"></div>
+    </div>
+
+    <%= form.date_field :date_start, class: "d-none", data: {apex_nav_target: "start", action: "change->click#submit"}, value: date_start %>
+    <%= form.date_field :date_end, class: "d-none", data: {apex_nav_target: "end", action: "change->click#submit"}, value: date_end %>
+    <%= form.submit class: "d-none", data: {click_target: "submit"} %>
+  <% end %>
 <% end %>
