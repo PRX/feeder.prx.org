@@ -34,14 +34,25 @@ export default class extends Controller {
   normalizeDropdayDownloads(downloads) {
     const counts = downloads.map((d) => d.count)
     while (counts.length < this.rangeValue + 1) {
-      counts.push(0)
+      counts.push(null)
     }
     return counts.map((c, i) => {
       const accumArr = counts.slice(0, i + 1)
       return {
-        x: i,
-        y: accumArr.reduce((sum, val) => sum + val, 0),
+        x: i + 1,
+        y: this.accumulateDownloads(
+          c,
+          accumArr.reduce((sum, val) => sum + val, 0)
+        ),
       }
     })
+  }
+
+  accumulateDownloads(val, reducer) {
+    if (val === null) {
+      return null
+    } else {
+      return reducer
+    }
   }
 }

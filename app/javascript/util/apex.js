@@ -63,7 +63,7 @@ const NUMERIC_OPTIONS = {
   tooltip: {
     enabled: true,
     shared: true,
-    hideEmptySeries: false,
+    hideEmptySeries: true,
     intersect: false,
   },
   dataLabels: {
