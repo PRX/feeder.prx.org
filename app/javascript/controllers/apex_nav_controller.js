@@ -14,91 +14,57 @@ export default class extends Controller {
   }
 
   updateStartDate(event) {
-    this.startDateTargets.forEach((target) => {
-      target.addEventListener("change", function () {
-        target.value = event.target.value
-      })
-      target.dispatchEvent(new Event("change"))
-    })
+    this.updateAllTargets(this.startDateTargets, event.target.value)
   }
 
   updateEndDate(event) {
-    this.endDateTargets.forEach((target) => {
+    this.updateAllTargets(this.endDateTargets, event.target.value)
+  }
+
+  updateInterval(event) {
+    this.updateSpecificTargets(this.intervalTargets, event.target.value, event.params.path)
+  }
+
+  updateUniques(event) {
+    this.updateAllTargets(this.uniquesTargets, event.target.value)
+
+    if (event.target.value === "calendar_week") {
+      this.updateSpecificTargets(this.intervalTargets, "WEEK", event.params.path)
+    } else if (event.target.value === "calendar_month") {
+      this.updateSpecificTargets(this.intervalTargets, "MONTH", event.params.path)
+    } else {
+      this.updateSpecificTargets(this.intervalTargets, "DAY", event.params.path)
+    }
+  }
+
+  updateDropdays(event) {
+    this.updateAllTargets(this.dropdaysTargets, event.target.value)
+
+    if ([7, 14, 28, 30, 60, 90].includes(parseInt(event.target.value))) {
+      this.updateSpecificTargets(this.intervalTargets, "DAY", event.params.path)
+    } else if ([24, 48, 72].includes(parseInt(event.target.value))) {
+      this.updateSpecificTargets(this.intervalTargets, "HOUR", event.params.path)
+    }
+  }
+
+  updateAllTargets(targets, value) {
+    targets.forEach((target) => {
       target.addEventListener("change", function () {
-        target.value = event.target.value
+        target.value = value
       })
       target.dispatchEvent(new Event("change"))
     })
   }
 
-  updateInterval(event) {
-    this.intervalTargets.forEach((target) => {
-      if (event.params.path === target.dataset.path) {
+  updateSpecificTargets(targets, value, path) {
+    targets.forEach((target) => {
+      if (path === target.dataset.path) {
         target.addEventListener("change", function () {
-          target.value = event.target.value
+          target.value = value
         })
         target.dispatchEvent(new Event("change"))
       }
     })
-  }
-
-  updateUniques(event) {
-    this.uniquesTarget.value = event.target.value
-
-    if (event.target.value === "calendar_week") {
-      this.intervalTargets.forEach((target) => {
-        if (event.params.path === target.dataset.path) {
-          target.addEventListener("change", function () {
-            target.value = "WEEK"
-          })
-          target.dispatchEvent(new Event("change"))
-        }
-      })
-    } else if (event.target.value === "calendar_month") {
-      this.intervalTargets.forEach((target) => {
-        if (event.params.path === target.dataset.path) {
-          target.addEventListener("change", function () {
-            target.value = "MONTH"
-          })
-          target.dispatchEvent(new Event("change"))
-        }
-      })
-    } else {
-      this.intervalTargets.forEach((target) => {
-        if (event.params.path === target.dataset.path) {
-          target.addEventListener("change", function () {
-            target.value = "DAY"
-          })
-          target.dispatchEvent(new Event("change"))
-        }
-      })
-    }
-    this.uniquesTarget.dispatchEvent(new Event("change"))
-  }
-
-  updateDropdays(event) {
-    this.dropdaysTarget.value = event.target.value
-
-    if ([7, 14, 28, 30, 60, 90].includes(parseInt(event.target.value))) {
-      this.intervalTargets.forEach((target) => {
-        if (event.params.path === target.dataset.path) {
-          target.addEventListener("change", function () {
-            target.value = "DAY"
-          })
-          target.dispatchEvent(new Event("change"))
-        }
-      })
-    } else if ([24, 48, 72].includes(parseInt(event.target.value))) {
-      this.intervalTargets.forEach((target) => {
-        if (event.params.path === target.dataset.path) {
-          target.addEventListener("change", function () {
-            target.value = "HOUR"
-          })
-          target.dispatchEvent(new Event("change"))
-        }
-      })
-    }
-    this.dropdaysTarget.dispatchEvent(new Event("change"))
   }
 
   changeTab(event) {
