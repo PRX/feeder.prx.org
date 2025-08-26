@@ -2,6 +2,7 @@ class PodcastMetricsController < ApplicationController
   before_action :set_podcast
   before_action :set_date_range, except: %i[dropdays]
   before_action :set_uniques, only: %i[show uniques]
+  before_action :set_dropday_range, only: %i[show dropdays]
 
   def show
   end
@@ -103,10 +104,17 @@ class PodcastMetricsController < ApplicationController
         .paginate(params[:episode_dropdays], params[:per])
 
     @interval = dropdays_params[:interval]
+    @fudged_range = if @interval == "DAY"
+      # first day is not a "complete" day
+      # fudged range matches chart selection
+      @dropday_range.to_i - 1
+    elsif @interval == "HOUR"
+      @dropday_range.to_i
+    end
     @dropdays = @episodes.map do |ep|
       if ep[:first_rss_published_at]
         Rollups::HourlyDownload
-          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + dropdays_params[:dropday_range].to_i.send(:"#{@interval.downcase}s"))))
+          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + @fudged_range.send(:"#{@interval.downcase}s"))))
           .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
           .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
           .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
@@ -125,9 +133,10 @@ class PodcastMetricsController < ApplicationController
     @episode_dropdays = episode_dropdays(@episodes, @dropdays, @alltime_downloads_by_episode)
 
     render partial: "dropdays_card", locals: {
+      podcast: @podcast,
       episode_dropdays: @episode_dropdays,
       episodes: @episodes,
-      dropday_range: dropdays_params[:dropday_range],
+      dropday_range: @dropday_range,
       interval: @interval
     }
   end
@@ -199,6 +208,10 @@ class PodcastMetricsController < ApplicationController
 
   def set_uniques
     @uniques_selection = uniques_params[:uniques_selection]
+  end
+
+  def set_dropday_range
+    @dropday_range = dropdays_params[:dropday_range]
   end
 
   def metrics_params

@@ -33,7 +33,7 @@ export default class extends Controller {
 
   normalizeDropdayDownloads(downloads) {
     const counts = downloads.map((d) => d.count)
-    while (counts.length < this.rangeValue + 1) {
+    while (counts.length < this.rangeValue) {
       counts.push(null)
     }
     return counts.map((c, i) => {

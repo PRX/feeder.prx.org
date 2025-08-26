@@ -38,14 +38,14 @@ module PodcastMetricsHelper
 
   def dropday_range_options
     [
-      ["7 Days", [7, "DAY"]],
-      ["14 Days", [14, "DAY"]],
-      ["28 Days", [28, "DAY"]],
-      ["30 Days", [30, "DAY"]],
-      ["60 Days", [60, "DAY"]],
-      ["90 Days", [90, "DAY"]],
-      ["24 Hours", [24, "HOUR"]],
-      ["48 Hours", [48, "HOUR"]]
+      ["7 Days", 7],
+      ["14 Days", 14],
+      ["28 Days", 28],
+      ["30 Days", 30],
+      ["60 Days", 60],
+      ["90 Days", 90],
+      ["24 Hours", 24],
+      ["48 Hours", 48]
     ]
   end
 

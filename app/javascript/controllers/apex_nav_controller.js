@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["startDate", "endDate", "interval", "uniques", "mainStart", "mainEnd", "tab"]
+  static targets = ["startDate", "endDate", "interval", "uniques", "dropdays", "mainStart", "mainEnd", "tab"]
 
   updateDates(event) {
     const [startDate, endDate] = JSON.parse(event.target.value)
@@ -74,6 +74,31 @@ export default class extends Controller {
       })
     }
     this.uniquesTarget.dispatchEvent(new Event("change"))
+  }
+
+  updateDropdays(event) {
+    this.dropdaysTarget.value = event.target.value
+
+    if ([7, 14, 28, 30, 60, 90].includes(parseInt(event.target.value))) {
+      this.intervalTargets.forEach((target) => {
+        if (event.params.path === target.dataset.path) {
+          target.addEventListener("change", function () {
+            target.value = "DAY"
+          })
+          target.dispatchEvent(new Event("change"))
+        }
+      })
+    } else if ([24, 48, 72].includes(parseInt(event.target.value))) {
+      this.intervalTargets.forEach((target) => {
+        if (event.params.path === target.dataset.path) {
+          target.addEventListener("change", function () {
+            target.value = "HOUR"
+          })
+          target.dispatchEvent(new Event("change"))
+        }
+      })
+    }
+    this.dropdaysTarget.dispatchEvent(new Event("change"))
   }
 
   changeTab(event) {
