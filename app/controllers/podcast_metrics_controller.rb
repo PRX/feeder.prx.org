@@ -1,6 +1,7 @@
 class PodcastMetricsController < ApplicationController
   before_action :set_podcast
   before_action :set_date_range, except: %i[dropdays]
+  before_action :set_uniques, only: %i[show uniques]
 
   def show
   end
@@ -68,13 +69,11 @@ class PodcastMetricsController < ApplicationController
   end
 
   def uniques
-    @selection = uniques_params[:uniques_selection]
-
     if clickhouse_connected?
       @uniques_rollups =
         Rollups::DailyUnique
           .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
-          .select("DATE_TRUNC('#{@interval}', day) AS day, MAX(#{@selection}) AS #{@selection}")
+          .select("DATE_TRUNC('#{@interval}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
           .group("DATE_TRUNC('#{@interval}', day) AS day")
           .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
           .load_async
@@ -90,7 +89,7 @@ class PodcastMetricsController < ApplicationController
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
-      selection: @selection,
+      uniques_selection: @uniques_selection,
       uniques: @uniques,
       date_range: @date_range
     }
@@ -196,6 +195,10 @@ class PodcastMetricsController < ApplicationController
     @date_end = metrics_params[:date_end]
     @interval = metrics_params[:interval]
     @date_range = generate_date_range(@date_start, @date_end, @interval)
+  end
+
+  def set_uniques
+    @uniques_selection = uniques_params[:uniques_selection]
   end
 
   def metrics_params

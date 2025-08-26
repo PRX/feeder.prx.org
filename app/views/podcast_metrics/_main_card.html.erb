@@ -14,7 +14,7 @@
         <%= render "filter_interval", podcast: podcast, date_start: date_start, date_end: date_end, interval: interval, path: "episodes" %>
       </div>
       <div class="d-none" data-apex-nav-target="tab" data-tab="uniques">
-        <%= render "filter_uniques_range", podcast: podcast, date_start: date_start, date_end: date_end, path: "uniques" %>
+        <%= render "filter_uniques_range", podcast: podcast, date_start: date_start, date_end: date_end, interval: interval, uniques_selection: uniques_selection, path: "uniques" %>
       </div>
       <div class="d-none" data-apex-nav-target="tab" data-tab="dropdays">
         <%= render "filter_dropday_range", podcast: podcast, path: "dropdays" %>
@@ -33,7 +33,7 @@
           </div>
         </div>
       <% end %>
-      <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end), data: {apex_nav_target: "tab", tab: "uniques"}, class: "d-none" do %>
+      <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, uniques_selection: uniques_selection, interval: interval), data: {apex_nav_target: "tab", tab: "uniques"}, class: "d-none" do %>
         <div class="h-100 d-flex justify-content-center align-items-center">
           <div class="spinner-border text-primary" role="status">
           </div>

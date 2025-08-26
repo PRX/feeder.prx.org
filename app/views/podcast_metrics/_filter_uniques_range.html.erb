@@ -1,12 +1,6 @@
-<div class="btn-group">
-  <button class="btn btn-primary dropdown-toggle" type="button" id="uniques-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-    Selection
-  </button>
-  <ul class="dropdown-menu" aria-labelledby="uniques-options">
-    <% uniques_options.each do |option| %>
-      <li>
-        <%= link_to option[0], uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: option[1][:interval], uniques_selection: option[1][:selection]), class: "dropdown-item", data: {turbo_frame: path} %>
-      </li>
-    <% end %>
-  </ul>
-</div>
+<%= form_with(url: podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), method: :get, id: "metrics") do |form| %>
+  <div class="form-floating">
+    <%= form.select :selection, uniques_selection_options, {selected: uniques_selection}, data: {action: "apex-nav#updateUniques", apex_nav_path_param: path}, class: "form-select form-select-sm" %>
+    <%= form.label :selection %>
+  </div>
+<% end %>

@@ -49,12 +49,12 @@ module PodcastMetricsHelper
     ]
   end
 
-  def uniques_options
+  def uniques_selection_options
     [
-      ["Last 7 Rolling", {selection: "last_7_rolling", interval: "DAY"}],
-      ["Last 28 Rolling", {selection: "last_28_rolling", interval: "DAY"}],
-      ["Calendar Week", {selection: "calendar_week", interval: "WEEK"}],
-      ["Calendar Month", {selection: "calendar_month", interval: "MONTH"}]
+      ["Daily (7-Day Window)", "last_7_rolling"],
+      ["Daily (28-Day Window)", "last_28_rolling"],
+      ["Weekly", "calendar_week"],
+      ["Monthly", "calendar_month"]
     ]
   end
 end
