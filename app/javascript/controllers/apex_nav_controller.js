@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["start", "end", "mainStart", "mainEnd", "tab"]
+  static targets = ["startDate", "endDate", "interval", "mainStart", "mainEnd", "tab"]
 
   updateDates(event) {
     const [startDate, endDate] = JSON.parse(event.target.value)
@@ -14,7 +14,7 @@ export default class extends Controller {
   }
 
   updateStartDate(event) {
-    this.startTargets.forEach((target) => {
+    this.startDateTargets.forEach((target) => {
       target.addEventListener("change", function () {
         target.value = event.target.value
       })
@@ -23,11 +23,22 @@ export default class extends Controller {
   }
 
   updateEndDate(event) {
-    this.endTargets.forEach((target) => {
+    this.endDateTargets.forEach((target) => {
       target.addEventListener("change", function () {
         target.value = event.target.value
       })
       target.dispatchEvent(new Event("change"))
+    })
+  }
+
+  updateInterval(event) {
+    this.intervalTargets.forEach((target) => {
+      if (event.params.path === target.dataset.path) {
+        target.addEventListener("change", function () {
+          target.value = event.target.value
+        })
+        target.dispatchEvent(new Event("change"))
+      }
     })
   }
 
