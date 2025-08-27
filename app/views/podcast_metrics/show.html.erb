@@ -1,5 +1,5 @@
 <% if Rails.env.development? && clickhouse_connected? %>
-  <% content_for :title, "#{@podcast.title} - #{t(".title")}" %>
+  <% content_for :title, "#{@podcast.title} - Metrics" %>
 
     <div data-controller="apex-nav">
       <div class="container col-12 d-flex align-items-center justify-content-between my-4">

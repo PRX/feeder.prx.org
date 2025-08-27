@@ -6,15 +6,7 @@ const DEFAULT_OPTIONS = {
     height: "400px",
     zoom: { enabled: false },
     animations: {
-      speed: 500,
-      animateGradually: {
-        enabled: true,
-        delay: 15,
-      },
-      dynamicAnimation: {
-        enabled: true,
-        speed: 500,
-      },
+      enabled: false,
     },
     toolbar: {
       show: false,
