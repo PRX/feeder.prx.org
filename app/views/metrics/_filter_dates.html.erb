@@ -1,4 +1,4 @@
-<%= form_with(url: podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), method: :get, id: "metrics") do |form| %>
+<%= form_with(url: url, method: :get, id: "metrics") do |form| %>
   <div class="row d-flex gx-1">
     <div class="col form-floating input-group">
       <%= form.date_field :date_start, min: DateTime.now - 18.months, max: DateTime.now - 1.day, data: {apex_nav_target: "mainStart", action: "apex-nav#updateStartDate"}, class: "form-control form-control-sm", value: date_start %>

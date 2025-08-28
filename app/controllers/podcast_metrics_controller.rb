@@ -23,8 +23,9 @@ class PodcastMetricsController < ApplicationController
       color: primary_blue
     }
 
-    render partial: "downloads_card", locals: {
-      podcast: @podcast,
+    render partial: "metrics/downloads_card", locals: {
+      url: downloads_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      form_id: "podcast_downloads_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
@@ -58,8 +59,9 @@ class PodcastMetricsController < ApplicationController
 
     @episode_rollups = episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
 
-    render partial: "episodes_card", locals: {
-      podcast: @podcast,
+    render partial: "metrics/episodes_card", locals: {
+      url: episodes_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      form_id: "podcast_episodes_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
@@ -85,8 +87,9 @@ class PodcastMetricsController < ApplicationController
       color: primary_blue
     }
 
-    render partial: "uniques_card", locals: {
-      podcast: @podcast,
+    render partial: "metrics/uniques_card", locals: {
+      url: uniques_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, uniques_selection: @uniques_selection, interval: @interval),
+      form_id: "podcast_uniques_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
@@ -132,10 +135,10 @@ class PodcastMetricsController < ApplicationController
 
     @episode_dropdays = episode_dropdays(@episodes, @dropdays, @alltime_downloads_by_episode)
 
-    render partial: "dropdays_card", locals: {
-      podcast: @podcast,
+    render partial: "metrics/dropdays_card", locals: {
+      url: dropdays_podcast_metrics_path(podcast: @podcast, interval: @interval, dropday_range: @dropday_range),
+      form_id: "podcast_dropdays_metrics",
       episode_dropdays: @episode_dropdays,
-      episodes: @episodes,
       dropday_range: @dropday_range,
       interval: @interval
     }

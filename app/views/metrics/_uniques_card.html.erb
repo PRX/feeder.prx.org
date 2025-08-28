@@ -1,5 +1,5 @@
 <%= turbo_frame_tag "uniques" do %>
-  <%= form_with(url: uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, uniques_selection: uniques_selection, interval: interval), method: :get, id: "uniques_metrics", data: {controller: "click", click_debounce_value: 200}) do |form| %>
+  <%= form_with(url: url, method: :get, id: form_id, data: {controller: "click", click_debounce_value: 200}) do |form| %>
     <div class="col metrics-chart"
       data-controller="apex-uniques"
       data-apex-uniques-id-value="<%= SecureRandom.uuid %>"

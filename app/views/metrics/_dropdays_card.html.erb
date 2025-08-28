@@ -1,7 +1,7 @@
 <% chart_id = SecureRandom.uuid %>
 
 <%= turbo_frame_tag "dropdays" do %>
-  <%= form_with(url: dropdays_podcast_metrics_path(podcast: podcast, interval: interval, dropday_range: dropday_range), method: :get, id: "dropdays_metrics", data: {controller: "click", click_debounce_value: 200}) do |form| %>
+  <%= form_with(url: url, method: :get, id: form_id, data: {controller: "click", click_debounce_value: 200}) do |form| %>
     <div class="row d-flex flex-wrap gx-4 h-100">
       <div class="col metrics-chart"
         data-controller="apex-dropdays"
