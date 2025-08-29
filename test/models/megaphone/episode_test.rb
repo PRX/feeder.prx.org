@@ -31,11 +31,11 @@ describe Megaphone::Episode do
 
   it "can create a arrangement_version_url" do
     episode = Megaphone::Episode.new_from_episode(podcast, feeder_episode)
-    location = "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b.mp3"
+    location = "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b.mp3?le=thisisnotalisteneridentifier&exp=1755382993"
     media_version = 163842
 
     url = episode.arrangement_version_url(location, media_version)
-    assert_equal url, "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b_163842.mp3"
+    assert_equal url, "https://f.development.prxu.org/8772/d66b53b2-737c-49b0-b2bf-b3ca01199599/17d3420a-8d62-4493-ba9a-6a8675ed205b_163842.mp3?le=thisisnotalisteneridentifier"
   end
 
   describe "#create!" do
@@ -56,6 +56,14 @@ describe Megaphone::Episode do
       assert feeder_episode.sync_log(:megaphone).external_id
       assert feeder_episode.episode_delivery_status(:megaphone)
     end
+    it "can set cuepoints for adfree" do
+      feeder_episode.categories = ["foobar", "adfree"]
+      episode = Megaphone::Episode.new_from_episode(podcast, feeder_episode)
+      assert episode.ad_free?
+      assert_equal 0, episode.post_count
+      assert_equal "", episode.expected_adhash
+      assert_equal 0, episode.get_cuepoints.size
+    end
 
     it "can create a published episode with audio" do
       base_url = "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/some-digest-value"
@@ -64,6 +72,7 @@ describe Megaphone::Episode do
       arrangement_url = "#{base_url}/#{arrangement_filename}"
 
       stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.mp3?auth=#{feed.tokens.first.token}")
+        .with { |req| req.headers["User-Agent"].match?(/PRX-Feeder-Megaphone\/1.0 \(Rails-test\) [[:alnum:]]+/) }
         .to_return(status: 302, body: "", headers: {
           "x-episode-media-version" => media_episode.media_version_id,
           "location" => source_url,
@@ -82,6 +91,10 @@ describe Megaphone::Episode do
 
       episode.create!
 
+      refute episode.ad_free?
+      assert_equal "2", episode.expected_adhash
+      assert_equal 1, episode.post_count
+      assert_equal 1, episode.get_cuepoints.size
       assert_equal arrangement_url, episode.background_audio_file_url
       assert media_episode.sync_log(:megaphone).external_id
       status = media_episode.episode_delivery_status(:megaphone)
@@ -137,6 +150,7 @@ describe Megaphone::Episode do
       source_url = "#{base_url}/audio.mp3"
 
       stub_request(:head, "https://dovetail.prxu.org/#{feeder_podcast.id}/#{feed.slug}/#{media_episode.guid}/audio.mp3?auth=#{feed.tokens.first.token}")
+        .with { |req| req.headers["User-Agent"].match?(/PRX-Feeder-Megaphone\/1.0 \(Rails-test\) [[:alnum:]]+/) }
         .to_return(status: 302, body: "", headers: {
           "x-episode-media-version" => media_episode.media_version_id - 1,
           "location" => source_url,

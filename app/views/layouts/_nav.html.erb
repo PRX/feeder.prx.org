@@ -16,6 +16,14 @@
       <% if current_user_app?("inventory") %>
         <%= link_to t(".inventory"), current_user_app("inventory"), class: "nav-link" %>
       <% end %>
+
+      <% if current_user_app?("spots") %>
+        <%= link_to t(".spots"), current_user_app("spots"), class: "nav-link" %>
+      <% end %>
+
+      <% if current_user_app?("insights") %>
+        <%= link_to t(".insights"), current_user_app("insights"), class: "nav-link" %>
+      <% end %>
     </nav>
 
     <%= render "layouts/color_mode_switcher" %>
@@ -71,18 +79,32 @@
       <h2 class="visually-hidden">Your Applications</h2>
       <ul class="navbar-nav m-2 mb-lg-0">
         <li class="nav-item">
-          <%= link_to t(".podcasts"), root_path, class: "nav-link active" %>
+          <%= link_to t(".podcasts"), root_path, class: "nav-link" %>
         </li>
+
         <% if current_user_app?("metrics") %>
-        <li class="nav-item">
-          <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
-        </li>
+          <li class="nav-item">
+            <%= link_to t(".metrics"), current_user_app("metrics"), class: "nav-link" %>
+          </li>
         <% end %>
-         <% if current_user_app?("inventory") %>
-        <li class="nav-item">
-          <%= link_to t(".inventory"), current_user_app("inventory"), class: "nav-link" %>
-        </li>
+
+        <% if current_user_app?("inventory") %>
+          <li class="nav-item">
+            <%= link_to t(".inventory"), current_user_app("inventory"), class: "nav-link active" %>
+          </li>
         <% end %>
+
+        <li class="nav-item">
+          <% if current_user_app?("spots") %>
+            <%= link_to t(".spots"), current_user_app("spots"), class: "nav-link" %>
+          <% end %>
+        </li>
+
+        <li class="nav-item">
+          <% if current_user_app?("insights") %>
+            <%= link_to t(".insights"), current_user_app("insights"), class: "nav-link" %>
+          <% end %>
+        </li>
       </ul>
     </div>
 

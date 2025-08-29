@@ -125,6 +125,8 @@ class MediaResource < ApplicationRecord
       uri = URI.parse(original_url)
       File.basename(uri.path)
     end
+  rescue URI::InvalidURIError
+    original_url
   end
 
   def copy_media(force = false)
