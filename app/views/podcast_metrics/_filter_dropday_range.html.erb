@@ -1,0 +1,6 @@
+<%= form_with(url: podcast_metrics_path(podcast: podcast, interval: interval), method: :get, id: "metrics") do |form| %>
+  <div class="form-floating">
+    <%= form.select :selection, dropday_range_options, {selected: dropday_range}, data: {action: "apex-nav#updateDropdays", apex_nav_path_param: path}, class: "form-select form-select-sm" %>
+    <%= form.label :selection %>
+  </div>
+<% end %>

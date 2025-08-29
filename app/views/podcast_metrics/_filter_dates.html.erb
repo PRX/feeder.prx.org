@@ -1,22 +1,26 @@
-<div class="form-floating input-group me-2">
-  <%= form.date_field :date_start, max: DateTime.now - 1.day, data: {action: "click#submit", apex_target: "start"}, value: date_start %>
-  <%= form.label :date_start, "Start Date" %>
-</div>
-<div class="form-floating input-group me-2">
-  <%= form.date_field :date_end, max: DateTime.now, data: {action: "click#submit"}, value: date_end %>
-  <%= form.label :date_end, "End Date" %>
-</div>
-<div class="btn-group">
-  <button class="btn btn-primary dropdown-toggle" type="button" id="rollups-date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-    Date Presets
-  </button>
-  <ul class="dropdown-menu" aria-labelledby="rollups-date-range-options">
-    <% rollups_date_range_options.each do |option| %>
-      <li>
-        <button class="dropdown-item" type="button" data-action="apex#updateDateStart click#submit" value="<%= option[1].to_s %>" data-apex-target="dateview">
-          <%= option[0] %>
-        </button>
-      </li>
-    <% end %>
-  </ul>
-</div>
+<%= form_with(url: podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), method: :get, id: "metrics") do |form| %>
+  <div class="row d-flex gx-1">
+    <div class="col form-floating input-group">
+      <%= form.date_field :date_start, min: DateTime.now - 18.months, max: DateTime.now - 1.day, data: {apex_nav_target: "mainStart", action: "apex-nav#updateStartDate"}, class: "form-control form-control-sm", value: date_start %>
+      <%= form.label :date_start, "Start Date" %>
+    </div>
+    <div class="col form-floating input-group">
+      <%= form.date_field :date_end, min: DateTime.now - 18.months, max: DateTime.now, data: {apex_nav_target: "mainEnd", action: "apex-nav#updateEndDate"}, class: "form-control form-control-sm", value: date_end %>
+      <%= form.label :date_end, "End Date" %>
+    </div>
+    <div class="col btn-group">
+      <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+        Date Presets
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="date-range-options">
+        <% date_range_options.each do |option| %>
+          <li>
+            <button class="dropdown-item" type="button" data-action="apex-nav#updateDates" value="<%= option[1].to_s %>">
+              <%= option[0] %>
+            </button>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+<% end %>
