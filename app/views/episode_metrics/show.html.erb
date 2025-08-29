@@ -1,0 +1,9 @@
+<% if Rails.env.development? && clickhouse_connected? %>
+  <% content_for :title, "#{@episode.title} - Metrics" %>
+
+  <%= render "episodes/tabs" %>
+
+  <%= render "overview", episode: @episode %>
+
+  <%= render "metrics", episode: @episode, date_start: @date_start, date_end: @date_end, interval: @interval %>
+<% end %>

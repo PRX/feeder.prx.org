@@ -1,0 +1,20 @@
+<%= turbo_frame_tag "main_card" do %>
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <ul class="col-2 nav nav-pills nav-justified card-header-pills">
+        <li class="nav-item"><button class="nav-link disabled" id="downloads-tab" data-bs-toggle="tab" data-bs-target="#downloads" type="button" role="tab" aria-controls="downloads" aria-selected="true" data-action="apex-nav#changeTab" data-apex-nav-card-param="main" data-apex-nav-tab-param="downloads">Downloads</button></li>
+      </ul>
+      <div class="col-2" data-apex-nav-target="tab" data-tab="downloads">
+        <%= render "metrics/filter_interval", url: episode_metrics_path(episode), interval: interval, path: "downloads" %>
+      </div>
+    </div>
+    <div class="card-body metrics-card-body">
+      <%= turbo_frame_tag "downloads", src: downloads_episode_metrics_path(episode: episode, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", tab: "downloads"} do %>
+        <div class="h-100 d-flex justify-content-center align-items-center">
+          <div class="spinner-border text-primary" role="status">
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
