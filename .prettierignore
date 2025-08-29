@@ -1,4 +1,5 @@
 # Ignore artifacts:
+app/assets/builds
 build
 coverage
 

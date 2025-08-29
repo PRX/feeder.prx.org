@@ -53,10 +53,10 @@ describe PodcastMegaphoneImport do
     _(p.itunes_type).must_equal "episodic"
   end
   it "updates the feed" do
-    megaphone_feed.config.advertising_tags.must_be_nil
+    _(megaphone_feed.config.advertising_tags).must_be_nil
     importer.megaphone_feed = megaphone_feed
     importer.update_feed!
-    megaphone_feed.config.advertising_tags.must_equal ["Business & Finance", "Arts & Crafts"]
+    _(megaphone_feed.config.advertising_tags).must_equal ["Business & Finance", "Arts & Crafts"]
   end
 
   it "updates delivery sync" do
@@ -69,16 +69,24 @@ describe PodcastMegaphoneImport do
     importer.megaphone_podcast.itunes_categories = nil
     importer.megaphone_podcast.external_id = nil
 
+    assert_nil importer.megaphone_podcast.title
     importer.finish_sync!
+    assert_equal "PRX Expounds...", importer.reload.megaphone_podcast.title
   end
 
   it "creates or updates episode imports" do
     importer.megaphone_feed = megaphone_feed
+
+    assert_nil importer.feed_episode_count
     importer.create_or_update_episode_imports!
+    assert_equal 0, importer.feed_episode_count
   end
 
   it "imports the full show" do
     importer.megaphone_feed = megaphone_feed
+
+    assert_nil importer.feed_episode_count
     importer.import!
+    assert_equal 0, importer.feed_episode_count
   end
 end

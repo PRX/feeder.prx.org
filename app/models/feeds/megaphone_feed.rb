@@ -10,7 +10,7 @@ class Feeds::MegaphoneFeed < Feed
 
   validates_presence_of :audio_format, :slug, :title, :tokens
 
-  after_initialize :set_defaults
+  before_validation :set_tokens
 
   alias_method :config, :megaphone_config
 
@@ -49,10 +49,13 @@ class Feeds::MegaphoneFeed < Feed
     self.audio_format ||= DEFAULT_AUDIO_FORMAT
     self.episode_offset_seconds = DEFAULT_OFFSET if episode_offset_seconds.nil?
     self.include_zones ||= []
-    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
     self.private = true
 
     super
+  end
+
+  def set_tokens
+    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
   end
 
   def serve_drafts

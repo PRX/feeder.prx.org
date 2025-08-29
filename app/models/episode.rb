@@ -29,6 +29,7 @@ class Episode < ApplicationRecord
 
   # See concerns/episode_media.rb for media/audio related code, e.g. the associations
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
+  has_many :latest_media_version, -> { latest }, class_name: "MediaVersion"
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_one :external_media_resource, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
