@@ -94,13 +94,13 @@ module EpisodeMedia
   end
 
   def cut_media_version!
-    latest_version = media_versions.first
-    latest_media = latest_version&.media_resources || []
-    latest_ids = latest_media.map(&:id)
+    latest_version = latest_media_version[-1]
+    latest_media = latest_version&.media_version_resources || []
+    latest_ids = latest_media.map(&:media_resource_id)
 
     # backfill media_versions for newly completed media
     if media_ready?(true) && latest_ids != media_ids
-      new_version = media_versions.build
+      new_version = latest_media_version.build
       media.each { |m| new_version.media_version_resources.build(media_resource: m) }
       new_version.save!
       new_version
