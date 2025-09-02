@@ -23,7 +23,7 @@
     <div class="row">
       <div class="col-8 mb-4">
         <div>
-          <iframe src="<%= embed_player_episode_url(episode) %>" frameborder="0" class="w-100"></iframe>
+          <%= embed_player_episode_iframe(episode) %>
         </div>
         <div class="lh-sm"><%= sanitize(episode.description) %></div>
       </div>
