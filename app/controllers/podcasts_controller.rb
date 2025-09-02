@@ -138,6 +138,8 @@ class PodcastsController < ApplicationController
   def set_podcast
     @podcast = Podcast.find(params[:id])
     @podcast.locking_enabled = true
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def published_episodes(date_range)

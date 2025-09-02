@@ -124,6 +124,8 @@ class FeedsController < ApplicationController
   def set_feed
     @feed = Feed.find(params[:id])
     @feed.locking_enabled = true
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   # Only allow a list of trusted parameters through.

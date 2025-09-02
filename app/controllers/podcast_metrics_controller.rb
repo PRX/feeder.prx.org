@@ -197,6 +197,8 @@ class PodcastMetricsController < ApplicationController
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
     authorize @podcast, :show?
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def set_date_range

@@ -1,13 +1,19 @@
 class PodcastPlayerController < ApplicationController
-  def show
-    @podcast = Podcast.find(params[:podcast_id])
+  before_action :set_podcast
 
+  def show
     authorize @podcast, :show?
 
     @player_options = podcast_player_params
   end
 
   private
+
+  def set_podcast
+    @podcast = Podcast.find(params[:podcast_id])
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
+  end
 
   def podcast_player_params
     nilify params
