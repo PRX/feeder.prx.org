@@ -30,6 +30,8 @@ class PodcastPlannerController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def set_beginning_of_week
