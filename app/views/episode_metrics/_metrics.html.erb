@@ -1,6 +1,6 @@
 <div data-controller="apex-nav">
   <div class="container col-12 d-flex align-items-center justify-content-between my-4">
-    <h1 class="fw-bold my-0 mb-0 me-4">Episode Metrics</h1>
+    <h1 class="fw-bold my-0 mb-0 me-4"><%= t(".header") %></h1>
     <div class="">
       <div class="d-flex justify-items-end">
         <%= render "metrics/filter_dates", url: episode_metrics_path(episode: episode), episode: episode, date_start: date_start, date_end: date_end, interval: interval %>

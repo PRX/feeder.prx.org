@@ -1,5 +1,5 @@
 <% if Rails.env.development? && clickhouse_connected? %>
-  <% content_for :title, "#{@episode.title} - Metrics" %>
+  <% content_for :title, t(".title", title: @episode.title) %>
 
   <%= render "episodes/tabs" %>
 

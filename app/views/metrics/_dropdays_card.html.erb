@@ -15,10 +15,10 @@
         <table class="table table-sm table-striped shadow rounded">
           <thead class="table-primary">
             <tr>
-              <td>10 Most Recent Episodes</td>
-              <td>Publish Date</td>
-              <td><%= "#{dropday_range} #{interval.capitalize} Downloads" %></td>
-              <td>All-time</td>
+              <td><%= t(".table_header.episodes") %></td>
+              <td><%= t(".table_header.published_at") %></td>
+              <td><%= t(".table_header.downloads", range: dropday_range, interval: interval.capitalize) %></td>
+              <td><%= t(".table_header.all_time") %></td>
             </tr>
           </thead>
           <tbody>

@@ -11,11 +11,11 @@
       </div>
       <div>
         <%= link_to episode.enclosure_url, class: "btn btn-sm btn-success" do %>
-          Audio File Link
+          <%= t(".audio_link") %>
           <span class="material-icons">link</span>
         <% end %>
         <%= link_to episode.url, class: "btn btn-sm btn-success" do %>
-          Episode URL
+          <%= t(".episode_url") %>
           <span class="material-icons">open_in_new</span>
         <% end %>
       </div>
@@ -30,16 +30,16 @@
       <div class="col-4 mb-4">
         <div class="card shadow border-0">
           <div class="card-header card-header-light">
-            Where's my Episode?
+            <%= t(".card_header") %>
           </div>
           <div class="card-body">
-            The episode is published on Dovetail but might still be working its way across the web to all the places Podcasts are found.
+            <%= t(".card_body") %>
           </div>
           <div class="card-footer p-0">
             <ul class="list-group list-group-flush">
-              <li class="list-group-item">RSS</li>
-              <li class="list-group-item">Apple Podcasts</li>
-              <li class="list-group-item">Spotify</li>
+              <li class="list-group-item"><%= t(".rss") %></li>
+              <li class="list-group-item"><%= t(".apple") %></li>
+              <li class="list-group-item"><%= t(".spotify") %></li>
             </ul>
           </div>
         </div>

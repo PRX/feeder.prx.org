@@ -454,6 +454,37 @@ en:
         alt_text: Alt Text
         caption: Caption
         credit: Credit
+      metrics:
+        interval:
+          hour: Hourly
+          day: Daily
+          week: Weekly
+          month: Monthly
+        date_presets:
+          7_days: Last 7 Days
+          date_week: Week to Date
+          14_days: Last 14 Days
+          28_days: Last 28 Days
+          1_month: Last Month
+          date_month: Month to Date
+          3_months: Last 3 Months
+          6_months: Last 6 Months
+          1_year: Last Year
+          date_year: Year to Date
+        dropdays:
+          "7": 7 Days
+          "14": 14 Days
+          "28": 28 Days
+          "30": 30 Days
+          "60": 60 Days
+          "90": 90 Days
+          "24": 24 Hours
+          "48": 48 Hours
+        uniques:
+          last_7_rolling: Daily (7-Day Window)
+          last_28_rolling: Daily (28-Day Window)
+          calendar_week: Weekly
+          calendar_month: Monthly
       podcast_import:
         import_existing: Import Existing Episodes
         import_metadata: Import Podcast Metadata
@@ -777,6 +808,22 @@ en:
       error: Unable to save
       media_not_ready: Published episodes cannot have empty media
       notice: Media files updated
+  episode_metrics:
+    show:
+      title: "%{title} - Metrics"
+    main_card:
+      tabs:
+        downloads: Downloads
+    metrics:
+      header: Episode Metrics
+    overview:
+      audio_link: Audio File Link
+      episode_url: Episode URL
+      card_header: Where's my Episode?
+      card_body: The episode is published on Dovetail but might still be working its way across the web to all the places Podcasts are found.
+      rss: RSS
+      apple: Apple Podcasts
+      spotify: Spotify
   episode_player:
     form: &player_form
       help: &player_help
@@ -1121,6 +1168,23 @@ en:
       continue: Continue Editing
       discard: Discard changes
       title: Warning! Another user has updated this form.
+  metrics:
+    dropdays_card:
+      table_header:
+        episodes: 10 Most Recent Episodes
+        published_at: Publish Date
+        downloads: "%{range} %{interval} Downloads"
+        all_time: All-time
+    episodes_card:
+      table_header:
+        episodes: 10 Most Recent Episodes
+        published_at: Publish Date
+        downloads: Downloads
+        all_time: All-time
+    filter_dates:
+      date_start: Start Date
+      date_end: End Date
+      presets: Date Presets
   placements_preview:
     show:
       fetch_error: Error fetching placements - try again later
@@ -1256,6 +1320,16 @@ en:
     update:
       error: Unable to save
       notice: Engagement settings updated
+  podcast_metrics:
+    show:
+      title: "%{title} - Metrics"
+      header: Metrics at a Glance
+    main_card:
+      tabs:
+        downloads: Downloads
+        episodes: Episodes
+        uniques: Unique Listeners
+        dropdays: Drop Day Downloads
   podcast_planner:
     create:
       success: Episode drafts generated.
