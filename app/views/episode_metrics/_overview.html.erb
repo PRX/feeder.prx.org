@@ -1,1 +1,49 @@
-<div><%= episode.title %></div>
+<div class="container">
+  <div class="my-4">
+    <div class="col-12 d-flex justify-content-between">
+      <div>
+        <h1 class="fw-bold lh-1"><%= episode.title %></h1>
+        <div class="d-flex gap-2 align-items-center">
+          <p><%= local_date(episode.first_rss_published_at, format: :full_month) %></p>
+          <p>&bull;</p>
+          <p><%= episode.readable_episode_duration %></p>
+        </div>
+      </div>
+      <div>
+        <%= link_to episode.enclosure_url, class: "btn btn-sm btn-success" do %>
+          Audio File Link
+          <span class="material-icons">link</span>
+        <% end %>
+        <%= link_to episode.url, class: "btn btn-sm btn-success" do %>
+          Episode URL
+          <span class="material-icons">open_in_new</span>
+        <% end %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-8 mb-4">
+        <div>
+          <iframe src="<%= embed_player_episode_url(episode) %>" frameborder="0" class="w-100"></iframe>
+        </div>
+        <div class="lh-sm"><%= sanitize(episode.description) %></div>
+      </div>
+      <div class="col-4 mb-4">
+        <div class="card shadow border-0">
+          <div class="card-header card-header-light">
+            Where's my Episode?
+          </div>
+          <div class="card-body">
+            The episode is published on Dovetail but might still be working its way across the web to all the places Podcasts are found.
+          </div>
+          <div class="card-footer p-0">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">RSS</li>
+              <li class="list-group-item">Apple Podcasts</li>
+              <li class="list-group-item">Spotify</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
