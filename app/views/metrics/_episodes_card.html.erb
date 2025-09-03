@@ -30,7 +30,7 @@
                 <td class="d-flex align-items-center">
                   <input id="episode<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-toggles#toggleSeries" data-apex-toggles-series-param="<%= title %>" data-apex-toggles-id-param="<%= chart_id %>">
                   <span class="material-icons me-2" aria-label="hidden" style="color: <%= er[:color] %>">circle</span>
-                  <span class="text-nowrap overflow-hidden"><%= link_to title, episode_path(er[:episode][:guid]), data: {turbo_frame: "_top"} %></span>
+                  <span class="text-nowrap overflow-hidden"><%= link_to title, episode_metrics_path(episode_id: er[:episode][:guid], date_start: date_start, date_end: date_end, interval: interval), data: {turbo_frame: "_top"} %></span>
                 </td>
                 <td><%= er[:episode][:published_at].strftime("%Y-%m-%d") %></td>
                 <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>

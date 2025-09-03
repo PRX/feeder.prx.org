@@ -30,7 +30,7 @@
                 <td class="d-flex align-items-center">
                   <input id="dropday<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-toggles#toggleSeries" data-apex-toggles-series-param="<%= title %>" data-apex-toggles-id-param="<%= chart_id %>">
                   <span class="material-icons me-2" aria-label="hidden" style="color: <%= ed[:color] %>">circle</span>
-                  <span class="text-nowrap overflow-hidden"><%= link_to title, episode_path(ed[:episode][:guid]), data: {turbo_frame: "_top"} %></span>
+                  <span class="text-nowrap overflow-hidden"><%= link_to title, episode_metrics_path(episode_id: ed[:episode][:guid], date_start: ed[:episode].utc_publish_date, date_end: ed[:episode].utc_publish_date + dropday_range.to_i.send("#{interval.downcase}s"), interval: interval), data: {turbo_frame: "_top"} %></span>
                 </td>
                 <td><%= ed[:episode][:published_at].strftime("%Y-%m-%d") %></td>
                 <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>
