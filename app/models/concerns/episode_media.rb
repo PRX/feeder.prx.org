@@ -94,7 +94,13 @@ module EpisodeMedia
   end
 
   def cut_media_version!
-    latest_version = latest_media_version[-1]
+    latest_version =
+      if latest_media_version.loaded?
+        latest_media_version[-1]
+      else
+        media_versions.latest(id).first
+      end
+
     latest_media = latest_version&.media_version_resources || []
     latest_ids = latest_media.map(&:media_resource_id)
 
