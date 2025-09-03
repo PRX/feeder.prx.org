@@ -13,3 +13,9 @@ class Date
     Time.zone.now.utc.to_date - 1.day
   end
 end
+
+class ActiveSupport::TimeWithZone
+  def utc_date
+    utc.to_date
+  end
+end

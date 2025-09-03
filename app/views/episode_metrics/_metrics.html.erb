@@ -3,7 +3,7 @@
     <h1 class="fw-bold my-0 mb-0 me-4"><%= t(".header") %></h1>
     <div class="">
       <div class="d-flex justify-items-end">
-        <%= render "metrics/filter_dates", url: episode_metrics_path(episode: episode), episode: episode, date_start: date_start, date_end: date_end, interval: interval %>
+        <%= render "metrics/filter_dates", url: episode_metrics_path(episode: episode), episode: episode, date_start: date_start, date_end: date_end, interval: interval, date_range_options: date_range_options(episode), date_filter_min: date_filter_min(episode) %>
       </div>
     </div>
   </div>

@@ -56,8 +56,8 @@ class EpisodeMetricsController < ApplicationController
     params
       .permit(:episode_id, :date_start, :date_end, :interval)
       .with_defaults(
-        date_start: 30.days.ago.utc,
-        date_end: Time.zone.now.utc,
+        date_start: 28.days.ago.utc_date,
+        date_end: Date.utc_today,
         interval: "DAY"
       )
   end

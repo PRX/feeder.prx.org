@@ -10,6 +10,8 @@ export default class extends Controller {
 
     this.mainStartTarget.focus()
     this.mainStartTarget.blur()
+    this.mainEndTarget.focus()
+    this.mainEndTarget.blur()
     event.target.focus()
   }
 

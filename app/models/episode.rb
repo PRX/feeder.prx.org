@@ -313,4 +313,8 @@ class Episode < ApplicationRecord
       str + "#{v.to_i}#{k.to_s.to(2)} "
     end.strip
   end
+
+  def utc_publish_date
+    first_rss_published_at.utc_date
+  end
 end

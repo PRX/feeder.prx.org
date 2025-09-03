@@ -3,5 +3,6 @@ class Rollups::HourlyDownload < ActiveRecord::Base
 
   INTERVALS = %i[HOUR DAY WEEK MONTH]
   DROPDAY_OPTIONS = [7, 14, 28, 30, 60, 90, 24, 48]
-  PODCAST_DATE_PRESETS = %i[7_days date_week 14_days 28_days 1_month date_month 3_months 6_months 1_year date_year]
+  PODCAST_DATE_PRESETS = %i[7_days_last 14_days_last 28_days_last 1_month_last 3_months_last 6_months_last 1_year_last date_week date_month date_year]
+  EPISODE_DATE_PRESETS = %i[all_time 7_days_drop 14_days_drop 28_days_drop 1_month_drop 3_months_drop 7_days_last 14_days_last 28_days_last 1_month_last 3_months_last date_week date_month]
 end
