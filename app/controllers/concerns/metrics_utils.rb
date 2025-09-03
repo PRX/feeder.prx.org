@@ -36,10 +36,11 @@ module MetricsUtils
     "#0072a3"
   end
 
-  def single_rollups(downloads)
+  def single_rollups(downloads, label = I18n.t(".helpers.label.metrics.chart.all_episodes"))
     {
       rollups: downloads,
-      color: primary_blue
+      color: primary_blue,
+      label: label
     }
   end
 

@@ -455,6 +455,8 @@ en:
         caption: Caption
         credit: Credit
       metrics:
+        chart:
+          all_episodes: All Episodes
         interval:
           hour: Hourly
           day: Daily
