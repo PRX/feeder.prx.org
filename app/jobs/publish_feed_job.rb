@@ -18,7 +18,7 @@ class PublishFeedJob < ApplicationJob
     # grab the current publishing pipeline.
     return :null if null_publishing_item?(podcast, pub_item)
     return :mismatched if mismatched_publishing_item?(podcast, pub_item)
-    set_job_id_on_current_item(podcast)
+    set_job_id_on_publishing_item(podcast)
 
     Rails.logger.info("Starting publishing pipeline via PublishFeedJob", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id})
 
@@ -163,7 +163,7 @@ class PublishFeedJob < ApplicationJob
 
   private
 
-  def set_job_id_on_current_item(podcast)
+  def set_job_id_on_publishing_item(podcast)
     current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
 
     return unless current_pub_item && current_pub_item.job_id.nil?
