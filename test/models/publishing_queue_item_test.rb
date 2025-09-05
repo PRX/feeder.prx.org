@@ -198,7 +198,7 @@ describe PublishingQueueItem do
       PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pod1_pqi1)
       PublishingPipelineState.complete!(podcast)
 
-      # create a new request that was debouced
+      # create a new request that was debounced
       pod1_pqi2 = PublishingQueueItem.create!(podcast: podcast)
 
       pod1_pqi3 = PublishingQueueItem.create!(podcast: podcast)
@@ -217,7 +217,7 @@ describe PublishingQueueItem do
         {"id" => pod1_pqi2.id, "podcast_id" => podcast.id, "last_pipeline_state" => nil, "status" => nil},
         {"id" => pod1_pqi3.id, "podcast_id" => podcast.id, "last_pipeline_state" => "started", "status" => 1},
         {"id" => pod2_pqi1.id, "podcast_id" => podcast2.id, "last_pipeline_state" => "created", "status" => 0}
-      ], PublishingQueueItem.delivery_status.order(podcast_id: :asc, created_at: :asc).as_json(except: [:created_at, :updated_at])
+      ], PublishingQueueItem.delivery_status.order(podcast_id: :asc, created_at: :asc).as_json(except: [:created_at, :updated_at, :job_id])
     end
   end
 end
