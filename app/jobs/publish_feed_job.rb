@@ -14,11 +14,12 @@ class PublishFeedJob < ApplicationJob
   }.freeze
 
   def perform(podcast, pub_item)
+    set_job_id_on_publishing_item(podcast)
+
     # Consume the SQS message, return early, if we have racing threads trying to
     # grab the current publishing pipeline.
     return :null if null_publishing_item?(podcast, pub_item)
     return :mismatched if mismatched_publishing_item?(podcast, pub_item)
-    set_job_id_on_publishing_item(podcast)
 
     Rails.logger.info("Starting publishing pipeline via PublishFeedJob", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id})
 
