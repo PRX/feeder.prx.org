@@ -170,10 +170,5 @@ class PublishFeedJob < ApplicationJob
     return unless current_pub_item && current_pub_item.job_id.nil?
 
     current_pub_item.update!(job_id: job_id)
-    Rails.logger.info("Set job_id on PublishingQueueItem", {
-      podcast_id: podcast.id,
-      publishing_queue_item_id: current_pub_item.id,
-      job_id: job_id
-    })
   end
 end
