@@ -1177,6 +1177,13 @@ en:
       discard: Discard changes
       title: Warning! Another user has updated this form.
   metrics:
+    agent_card:
+      table_header:
+        agent_apps: App & Browser
+        agent_types: Form Factor
+        agent_os: Operating System
+        downloads: Downloads
+        all_time: All-time
     dropdays_card:
       table_header:
         episodes: 10 Most Recent Episodes
@@ -1338,6 +1345,11 @@ en:
         episodes: Episodes
         uniques: Unique Listeners
         dropdays: Drop Day Downloads
+    agents_card:
+      tabs:
+        apps: App & Browser
+        types: Form Factor
+        os: Operating System
   podcast_planner:
     create:
       success: Episode drafts generated.
