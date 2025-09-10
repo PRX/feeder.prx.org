@@ -1,4 +1,6 @@
 class PodcastMetricsController < ApplicationController
+  include MetricsUtils
+
   before_action :set_podcast
   before_action :set_date_range, except: %i[dropdays]
   before_action :set_uniques, only: %i[show uniques]
@@ -18,13 +20,11 @@ class PodcastMetricsController < ApplicationController
           .load_async
     end
 
-    @downloads = {
-      rollups: @downloads_within_date_range,
-      color: primary_blue
-    }
+    @downloads = single_rollups(@downloads_within_date_range)
 
-    render partial: "downloads_card", locals: {
-      podcast: @podcast,
+    render partial: "metrics/downloads_card", locals: {
+      url: downloads_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      form_id: "podcast_downloads_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
@@ -56,10 +56,11 @@ class PodcastMetricsController < ApplicationController
           .load_async
     end
 
-    @episode_rollups = episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
+    @episode_rollups = multiple_episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
 
-    render partial: "episodes_card", locals: {
-      podcast: @podcast,
+    render partial: "metrics/episodes_card", locals: {
+      url: episodes_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      form_id: "podcast_episodes_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
@@ -80,13 +81,11 @@ class PodcastMetricsController < ApplicationController
           .load_async
     end
 
-    @uniques = {
-      rollups: @uniques_rollups,
-      color: primary_blue
-    }
+    @uniques = single_rollups(@uniques_rollups)
 
-    render partial: "uniques_card", locals: {
-      podcast: @podcast,
+    render partial: "metrics/uniques_card", locals: {
+      url: uniques_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, uniques_selection: @uniques_selection, interval: @interval),
+      form_id: "podcast_uniques_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
@@ -130,12 +129,12 @@ class PodcastMetricsController < ApplicationController
         .group(:episode_id)
         .load_async
 
-    @episode_dropdays = episode_dropdays(@episodes, @dropdays, @alltime_downloads_by_episode)
+    @episode_dropdays = multiple_episode_rollups(@episodes, @dropdays, @alltime_downloads_by_episode)
 
-    render partial: "dropdays_card", locals: {
-      podcast: @podcast,
+    render partial: "metrics/dropdays_card", locals: {
+      url: dropdays_podcast_metrics_path(podcast: @podcast, interval: @interval, dropday_range: @dropday_range),
+      form_id: "podcast_dropdays_metrics",
       episode_dropdays: @episode_dropdays,
-      episodes: @episodes,
       dropday_range: @dropday_range,
       interval: @interval
     }
@@ -220,8 +219,8 @@ class PodcastMetricsController < ApplicationController
     params
       .permit(:podcast_id, :date_start, :date_end, :interval)
       .with_defaults(
-        date_start: 30.days.ago.utc,
-        date_end: Time.zone.now.utc,
+        date_start: 30.days.ago.utc_date,
+        date_end: Date.utc_today,
         interval: "DAY"
       )
   end
@@ -242,68 +241,5 @@ class PodcastMetricsController < ApplicationController
         dropday_range: 7
       )
       .merge(metrics_params)
-  end
-
-  def episode_rollups(episodes, rollups, totals)
-    episodes.to_enum(:each_with_index).map do |episode, i|
-      {
-        episode: episode,
-        rollups: rollups.select do |r|
-          r["episode_id"] == episode.guid
-        end,
-        totals: totals.select do |r|
-          r["episode_id"] == episode.guid
-        end,
-        color: colors[i]
-      }
-    end
-  end
-
-  def episode_dropdays(episodes, rollups, totals)
-    episodes.to_enum(:each_with_index).map do |episode, i|
-      {
-        episode: episode,
-        rollups: rollups.select do |r|
-          r["episode_id"] == episode.guid
-        end,
-        totals: totals.select do |r|
-          r["episode_id"] == episode.guid
-        end,
-        color: colors[i]
-      }
-    end
-  end
-
-  def generate_date_range(date_start, date_end, interval)
-    start_range = date_start.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
-    end_range = date_end.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
-    range = []
-    i = 0
-
-    while start_range + i.send(:"#{interval.downcase.pluralize}") <= end_range
-      range << start_range + i.send(:"#{interval.downcase.pluralize}")
-      i += 1
-    end
-
-    range
-  end
-
-  def colors
-    [
-      "#007EB2",
-      "#FF9600",
-      "#75BBE1",
-      "#FFC107",
-      "#6F42C1",
-      "#DC3545",
-      "#198754",
-      "#D63384",
-      "#20C997",
-      "#555555"
-    ]
-  end
-
-  def primary_blue
-    "#0072a3"
   end
 end
