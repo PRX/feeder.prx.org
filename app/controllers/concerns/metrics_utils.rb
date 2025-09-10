@@ -36,6 +36,10 @@ module MetricsUtils
     "#0072a3"
   end
 
+  def faded_gray
+    "#90909090"
+  end
+
   def single_rollups(downloads, label = I18n.t(".helpers.label.metrics.chart.all_episodes"))
     {
       rollups: downloads,
@@ -59,15 +63,15 @@ module MetricsUtils
     end
   end
 
-  def agents_alltime_rollups(rollups)
+  def agents_alltime_rollups(rollups, other)
     {
-      series: rollups.map { |r| r.count },
-      labels: rollups.map { |r| r.label },
-      colors: colors
+      series: rollups.map { |r| r.count }.concat(other.map { |o| o.count }),
+      labels: rollups.map { |r| r.label } << "other",
+      colors: colors << faded_gray
     }
   end
 
-  def agents_rollups(all_time, over_time)
+  def agents_rollups(all_time, over_time, other)
     rollups = all_time.to_enum(:each_with_index).map do |agent, i|
       {
         rollups: over_time.select do |r|
@@ -79,7 +83,7 @@ module MetricsUtils
     end
 
     {
-      all: agents_alltime_rollups(all_time),
+      all: agents_alltime_rollups(all_time, other),
       rollups: rollups
     }
   end

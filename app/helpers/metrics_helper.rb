@@ -89,4 +89,22 @@ module MetricsHelper
   def uniques_selection_options
     Rollups::DailyUnique::UNIQUE_OPTIONS.map { |opt| [I18n.t(".helpers.label.metrics.uniques.#{opt}"), opt] }
   end
+
+  def agent_downloads_with_percent(rollups, totals)
+    sum = if rollups.is_a?(Integer)
+      rollups
+    else
+      sum_rollups(rollups)
+    end
+    total_downloads = if totals.is_a?(Integer)
+      totals
+    elsif totals.present?
+      sum_rollups(totals)
+    else
+      0
+    end
+    percent = ((sum.to_f / total_downloads.to_f) * 100).truncate(1)
+
+    "#{sum} (#{percent}%)"
+  end
 end

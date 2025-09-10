@@ -14,7 +14,6 @@ export default class extends Controller {
 
   connect() {
     const chart = this.buildChart()
-    // debugger
 
     chart.render()
   }
