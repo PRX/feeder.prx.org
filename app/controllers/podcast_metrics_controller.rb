@@ -157,7 +157,7 @@ class PodcastMetricsController < ApplicationController
     #     .limit(10)
   end
 
-  def agents
+  def agent_apps
     @agent_apps_alltime =
       Rollups::DailyAgent
         .where(podcast_id: @podcast.id)
@@ -173,23 +173,16 @@ class PodcastMetricsController < ApplicationController
         .group("DATE_TRUNC('#{@interval}', day) AS day", "agent_name_id AS code")
         .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
         .load_async
-    # @agent_os_alltime =
-    #   Rollups::DailyAgent
-    #     .where(podcast_id: @podcast.id)
-    #     .select("agent_os_id AS code", "SUM(count) AS count")
-    #     .group("agent_os_id AS code")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .limit(10)
-    #     .load_async
 
-    render partial: "metrics/agents_apps_card", locals: {
-      url: agents_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+    render partial: "metrics/agent_card", locals: {
+      url: agent_apps_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
       form_id: "podcast_agents_apps_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
-      agent_apps: agents_rollups(@agent_apps_alltime, @agent_apps)
+      agents: agents_rollups(@agent_apps_alltime, @agent_apps),
+      agents_path: "agent_apps"
     }
   end
 
@@ -204,20 +197,21 @@ class PodcastMetricsController < ApplicationController
         .load_async
     @agent_types =
       Rollups::DailyAgent
-        .where(podcast_id: @podcast.id, day: (@date_start..@date_end), agent_type_id: @agent_apps_alltime.pluck(:code))
+        .where(podcast_id: @podcast.id, day: (@date_start..@date_end), agent_type_id: @agent_types_alltime.pluck(:code))
         .select("DATE_TRUNC('#{@interval}', day) AS day", "agent_type_id AS code", "SUM(count) AS count")
         .group("DATE_TRUNC('#{@interval}', day) AS day", "agent_type_id AS code")
         .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
         .load_async
 
-    render partial: "metrics/agents_types_card", locals: {
-      url: agents_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+    render partial: "metrics/agent_card", locals: {
+      url: agent_types_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
       form_id: "podcast_agents_types_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
-      agent_apps: agents_rollups(@agent_types_alltime, @agent_types)
+      agents: agents_rollups(@agent_types_alltime, @agent_types),
+      agents_path: "agent_types"
     }
   end
 
@@ -232,20 +226,21 @@ class PodcastMetricsController < ApplicationController
         .load_async
     @agent_os =
       Rollups::DailyAgent
-        .where(podcast_id: @podcast.id, day: (@date_start..@date_end), agent_os_id: @agent_apps_alltime.pluck(:code))
+        .where(podcast_id: @podcast.id, day: (@date_start..@date_end), agent_os_id: @agent_os_alltime.pluck(:code))
         .select("DATE_TRUNC('#{@interval}', day) AS day", "agent_os_id AS code", "SUM(count) AS count")
         .group("DATE_TRUNC('#{@interval}', day) AS day", "agent_os_id AS code")
         .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
         .load_async
 
-    render partial: "metrics/agents_os_card", locals: {
-      url: agents_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+    render partial: "metrics/agent_card", locals: {
+      url: agent_os_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
       form_id: "podcast_agents_os_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
-      agent_apps: agents_rollups(@agent_os_alltime, @agent_os)
+      agents: agents_rollups(@agent_os_alltime, @agent_os),
+      agents_path: "agent_os"
     }
   end
 

@@ -107,13 +107,21 @@ export const AREA_TYPE = {
 
 export const PIE_TYPE = {
   chart: {
-    type: "pie",
+    type: "donut",
     stacked: false,
   },
   options: {
     fill: {
       type: "solid",
-      opacity: 0.8,
+      opacity: 1,
+    },
+    plotOptions: {
+      pie: {
+        customScale: 0.8,
+        donut: {
+          size: "33%",
+        },
+      },
     },
   },
 }
