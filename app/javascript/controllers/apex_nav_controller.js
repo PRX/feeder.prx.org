@@ -71,10 +71,12 @@ export default class extends Controller {
 
   changeTab(event) {
     this.tabTargets.forEach((el) => {
-      if (el.dataset.tab.includes(event.params.tab)) {
-        el.classList.remove("d-none")
-      } else {
-        el.classList.add("d-none")
+      if (el.dataset.card.includes(event.params.card)) {
+        if (el.dataset.tab.includes(event.params.tab)) {
+          el.classList.remove("d-none")
+        } else {
+          el.classList.add("d-none")
+        }
       }
     })
   }

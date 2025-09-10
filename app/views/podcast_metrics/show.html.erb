@@ -13,6 +13,9 @@
       <div class="container col-12 my-4">
         <%= render "main_card", podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval, uniques_selection: @uniques_selection, dropday_range: @dropday_range %>
       </div>
+      <div class="container col-12 my-4">
+        <%= render "agents_card", podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval %>
+      </div>
     </div>
 
     <div class="container col-12 mb-2">
@@ -31,4 +34,7 @@
       </div>
     </div>
 
+    <div data-controller="apex-nav">
+
+    </div>
 <% end %>

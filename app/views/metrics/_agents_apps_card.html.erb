@@ -1,0 +1,50 @@
+<%= turbo_frame_tag "agents_apps" do %>
+  <%= form_with(url: url, method: :get, id: form_id, data: {controller: "click", click_debounce_value: 200}) do |form| %>
+    <div class="row d-flex flex-wrap gx-4 h-100">
+      <div class="col metrics-chart"
+        data-controller="apex-agents"
+        data-apex-agents-id-value="<%= SecureRandom.uuid %>"
+        data-apex-agents-agents-value="<%= agent_apps.to_json %>"
+        data-apex-agents-title-value="All-time">
+        <div data-apex-agents-target="chart"></div>
+      </div>
+      <div class="col metrics-chart"
+        data-controller="apex-agents"
+        data-apex-agents-id-value="<%= SecureRandom.uuid %>"
+        data-apex-agents-agents-value="<%= agent_apps.to_json %>"
+        data-apex-agents-date-range-value="<%= date_range.to_json %>"
+        data-apex-agents-interval-value="<%= interval %>"
+        data-apex-agents-title-value="Over time">
+        <div data-apex-agents-target="chart"></div>
+      </div>
+      <div class="col align-items-center metrics-table">
+        <table class="table table-sm table-striped shadow rounded">
+          <thead class="table-primary">
+            <tr>
+              <td>App</td>
+              <td>Downloads</td>
+              <td>All-time</td>
+            </tr>
+          </thead>
+          <tbody>
+            <% agent_apps[:rollups].each_with_index do |agent, i| %>
+              <tr class="align-items-center">
+                <td class="d-flex align-items-center">
+                  <span class="material-icons me-2" aria-label="hidden" style="color: <%= agent[:color] %>">circle</span>
+                  <span class="text-nowrap overflow-hidden"><%= agent[:label] %></span>
+                </td>
+                <td><%= sum_rollups(agent[:rollups]) %></td>
+                <td><%= agent_apps[:all][:series][i] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <%= form.date_field :date_start, class: "d-none", data: {apex_nav_target: "startDate", action: "change->click#submit"}, value: date_start %>
+    <%= form.date_field :date_end, class: "d-none", data: {apex_nav_target: "endDate", action: "change->click#submit"}, value: date_end %>
+    <%= form.select :interval, interval_options, {selected: interval}, class: "d-none", data: {apex_nav_target: "interval", action: "change->click#submit", path: "agentsapps"} %>
+    <%= form.submit class: "d-none", data: {click_target: "submit"} %>
+  <% end %>
+<% end %>

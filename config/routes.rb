@@ -27,6 +27,8 @@ Rails.application.routes.draw do
       get "episodes"
       get "dropdays"
       get "agents"
+      get "agent_types"
+      get "agent_os"
     end
   end
 

@@ -105,6 +105,19 @@ export const AREA_TYPE = {
   },
 }
 
+export const PIE_TYPE = {
+  chart: {
+    type: "pie",
+    stacked: false,
+  },
+  options: {
+    fill: {
+      type: "solid",
+      opacity: 0.8,
+    },
+  },
+}
+
 export function buildDateTimeChart(id, series, target, type, title = "") {
   const options = Object.assign({ series: series }, DEFAULT_OPTIONS, DATETIME_OPTIONS, type.options)
   Object.assign(options.chart, { id: id }, type.chart)
@@ -129,6 +142,16 @@ export function buildNumericChart(id, series, target, type, title = "") {
   return new ApexCharts(target, options)
 }
 
+export function buildPieChart(id, series, target, type, title = "") {
+  const options = Object.assign(
+    { series: series.series, labels: series.labels, colors: series.colors, title: { text: title } },
+    DEFAULT_OPTIONS,
+    type.options
+  )
+  Object.assign(options.chart, { id: id }, type.chart)
+  return new ApexCharts(target, options)
+}
+
 export function buildDownloadsSeries(data, dateRange) {
   if (Array.isArray(data)) {
     return data.map((episodeRollup) => {
@@ -149,10 +172,10 @@ export function buildDownloadsSeries(data, dateRange) {
   }
 }
 
-function alignDownloadsOnDateRange(downloads, range) {
+export function alignDownloadsOnDateRange(downloads, range, column = "hour") {
   return range.map((date) => {
     const match = downloads.filter((r) => {
-      return r.hour === date
+      return r[`${column}`] === date
     })
 
     if (match[0]) {

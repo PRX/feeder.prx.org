@@ -58,4 +58,29 @@ module MetricsUtils
       }
     end
   end
+
+  def agents_alltime_rollups(rollups)
+    {
+      series: rollups.map { |r| r.count },
+      labels: rollups.map { |r| r.label },
+      colors: colors
+    }
+  end
+
+  def agents_rollups(all_time, over_time)
+    rollups = all_time.to_enum(:each_with_index).map do |agent, i|
+      {
+        rollups: over_time.select do |r|
+          r["code"] == agent[:code]
+        end,
+        color: colors[i],
+        label: agent.label
+      }
+    end
+
+    {
+      all: agents_alltime_rollups(all_time),
+      rollups: rollups
+    }
+  end
 end

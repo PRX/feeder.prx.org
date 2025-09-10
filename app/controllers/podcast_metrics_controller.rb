@@ -158,37 +158,95 @@ class PodcastMetricsController < ApplicationController
   end
 
   def agents
-    # @agent_apps_query =
-    #   Rollups::DailyAgent
-    #     .where(podcast_id: @podcast.id)
-    #     .select("agent_name_id AS code", "SUM(count) AS count")
-    #     .group("agent_name_id AS code")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .load_async
-    # @agent_types_query =
-    #   Rollups::DailyAgent
-    #     .where(podcast_id: @podcast.id)
-    #     .select("agent_type_id AS code", "SUM(count) AS count")
-    #     .group("agent_type_id AS code")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .load_async
-    # @agent_os_query =
+    @agent_apps_alltime =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id)
+        .select("agent_name_id AS code", "SUM(count) AS count")
+        .group("agent_name_id AS code")
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .limit(10)
+        .load_async
+    @agent_apps =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id, day: (@date_start..@date_end), agent_name_id: @agent_apps_alltime.pluck(:code))
+        .select("DATE_TRUNC('#{@interval}', day) AS day", "agent_name_id AS code", "SUM(count) AS count")
+        .group("DATE_TRUNC('#{@interval}', day) AS day", "agent_name_id AS code")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
+        .load_async
+    # @agent_os_alltime =
     #   Rollups::DailyAgent
     #     .where(podcast_id: @podcast.id)
     #     .select("agent_os_id AS code", "SUM(count) AS count")
     #     .group("agent_os_id AS code")
     #     .order(Arel.sql("SUM(count) AS count DESC"))
+    #     .limit(10)
     #     .load_async
 
-    # @agent_apps = Kaminari.paginate_array(@agent_apps_query).page(params[:agent_apps]).per(10)
-    # @agent_types = Kaminari.paginate_array(@agent_types_query).page(params[:agent_types]).per(10)
-    # @agent_os = Kaminari.paginate_array(@agent_os_query).page(params[:agent_os]).per(10)
+    render partial: "metrics/agents_apps_card", locals: {
+      url: agents_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      form_id: "podcast_agents_apps_metrics",
+      date_start: @date_start,
+      date_end: @date_end,
+      interval: @interval,
+      date_range: @date_range,
+      agent_apps: agents_rollups(@agent_apps_alltime, @agent_apps)
+    }
+  end
 
-    # render partial: "agents", locals: {
-    #   agent_apps: @agent_apps,
-    #   agent_types: @agent_types,
-    #   agent_os: @agent_os
-    # }
+  def agent_types
+    @agent_types_alltime =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id)
+        .select("agent_type_id AS code", "SUM(count) AS count")
+        .group("agent_type_id AS code")
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .limit(10)
+        .load_async
+    @agent_types =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id, day: (@date_start..@date_end), agent_type_id: @agent_apps_alltime.pluck(:code))
+        .select("DATE_TRUNC('#{@interval}', day) AS day", "agent_type_id AS code", "SUM(count) AS count")
+        .group("DATE_TRUNC('#{@interval}', day) AS day", "agent_type_id AS code")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
+        .load_async
+
+    render partial: "metrics/agents_types_card", locals: {
+      url: agents_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      form_id: "podcast_agents_types_metrics",
+      date_start: @date_start,
+      date_end: @date_end,
+      interval: @interval,
+      date_range: @date_range,
+      agent_apps: agents_rollups(@agent_types_alltime, @agent_types)
+    }
+  end
+
+  def agent_os
+    @agent_os_alltime =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id)
+        .select("agent_os_id AS code", "SUM(count) AS count")
+        .group("agent_os_id AS code")
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .limit(10)
+        .load_async
+    @agent_os =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id, day: (@date_start..@date_end), agent_os_id: @agent_apps_alltime.pluck(:code))
+        .select("DATE_TRUNC('#{@interval}', day) AS day", "agent_os_id AS code", "SUM(count) AS count")
+        .group("DATE_TRUNC('#{@interval}', day) AS day", "agent_os_id AS code")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
+        .load_async
+
+    render partial: "metrics/agents_os_card", locals: {
+      url: agents_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      form_id: "podcast_agents_os_metrics",
+      date_start: @date_start,
+      date_end: @date_end,
+      interval: @interval,
+      date_range: @date_range,
+      agent_apps: agents_rollups(@agent_os_alltime, @agent_os)
+    }
   end
 
   private

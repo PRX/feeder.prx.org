@@ -1,13 +1,4 @@
 module MetricsHelper
-  def parse_agent_data(agents)
-    agents.map do |a|
-      {
-        x: a.label,
-        y: a.count
-      }
-    end
-  end
-
   def sum_rollups(rollups)
     rollups.map { |r| r[:count] }.reduce(:+)
   end
