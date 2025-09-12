@@ -6,6 +6,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :slug
   property :file_name
   property :private
+  property :label
   property :title
   property :subtitle
   property :description
