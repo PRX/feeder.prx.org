@@ -917,7 +917,8 @@ en:
         file_name: The file name used for your private RSS feed.
         episode_footer: Text to be included at the end of each episode's description, such as a privacy policy link.
         slug: An alphanumeric slug used to identify your feed. Also used in the private feed RSS url.
-        label: Optionally override your podcast title for this feed, which might be visible to listeners in certain contexts.
+        label: A label to help you identify this feed while publishing episodes. Will not be visible to listeners.
+        title: Optionally override your podcast title for this feed, which might be visible to listeners in certain contexts.
     form_overrides:
       title: Overrides
       help:
