@@ -1,5 +1,5 @@
 class Feeds::MegaphoneFeed < Feed
-  DEFAULT_TITLE = "Megaphone Integration"
+  DEFAULT_LABEL = "Megaphone Integration"
   DEFAULT_AUDIO_FORMAT = {f: "mp3", b: 128, c: 2, s: 44100}.with_indifferent_access
   # Default duration to publish early on megaphone
   DEFAULT_OFFSET = 30.minutes.freeze
@@ -45,7 +45,7 @@ class Feeds::MegaphoneFeed < Feed
 
   def set_defaults
     self.slug ||= "prx-#{SecureRandom.uuid}"
-    self.title ||= DEFAULT_TITLE
+    self.label ||= DEFAULT_LABEL
     self.audio_format ||= DEFAULT_AUDIO_FORMAT
     self.episode_offset_seconds = DEFAULT_OFFSET if episode_offset_seconds.nil?
     self.include_zones ||= []
@@ -55,7 +55,7 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def set_tokens
-    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
+    self.tokens = [FeedToken.new(label: DEFAULT_LABEL)] if tokens.empty?
   end
 
   def serve_drafts

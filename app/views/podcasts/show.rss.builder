@@ -7,7 +7,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
   "xmlns:podcast" => "https://podcastindex.org/namespace/1.0",
   "version" => "2.0" do
   xml.channel do
-    xml.title @feed.title || @podcast.title
+    xml.title @feed.title.presence || @podcast.title
     xml.link @podcast.link
     xml.pubDate @podcast.pub_date.utc.rfc2822 if @podcast.pub_date.present?
     xml.lastBuildDate @podcast.last_build_date.utc.rfc2822

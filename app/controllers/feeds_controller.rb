@@ -139,6 +139,7 @@ class FeedsController < ApplicationController
     nilify params.fetch(:feed, {}).permit(
       :lock_version,
       :file_name,
+      :label,
       :title,
       :subtitle,
       :description,

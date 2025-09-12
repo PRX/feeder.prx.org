@@ -47,7 +47,7 @@ class Feed < ApplicationRecord
   validates :file_name, presence: true, format: {with: /\A[0-9a-zA-Z_.-]+\z/}
   validates :include_zones, placement_zones: true
   validates :audio_format, audio_format: true
-  validates :title, presence: true, unless: :default?
+  validates :label, presence: true, unless: :default?
   validates :episode_offset_seconds, numericality: {equal_to: 0}, allow_nil: true, if: :default?
   validates :url, http_url: true
   validates :new_feed_url, http_url: true
@@ -106,13 +106,13 @@ class Feed < ApplicationRecord
     self.title = sanitize_text_only(title) if title_changed?
   end
 
-  def friendly_title
+  def label
     if default?
-      I18n.t("helpers.label.feed.friendly_titles.default")
+      I18n.t("helpers.label.feed.labels.default")
     elsif integration_type
-      I18n.t("helpers.label.feed.friendly_titles.#{integration_type}")
+      I18n.t("helpers.label.feed.labels.#{integration_type}")
     else
-      title
+      super
     end
   end
 
