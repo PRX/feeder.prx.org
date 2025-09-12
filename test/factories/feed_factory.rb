@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :feed do
     sequence(:slug) { |n| "myfeed#{n}" }
+    sequence(:label) { |n| "My Feed #{n}" }
 
     file_name { "feed-rss.xml" }
     audio_format { Hash(f: "flac", b: 16, c: 2, s: 44100) }
