@@ -228,8 +228,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_12_174433) do
     t.datetime "enclosure_updated_at", precision: nil
     t.string "episode_footer"
     t.boolean "unique_guids", default: false, null: false
-    t.boolean "import_locked", default: true, null: false
     t.string "apple_verify_token"
+    t.boolean "import_locked", default: true, null: false
     t.text "label"
     t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
@@ -414,6 +414,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_12_174433) do
     t.integer "last_pipeline_state"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "job_id"
     t.index ["podcast_id", "created_at"], name: "index_publishing_queue_items_on_podcast_id_and_created_at"
     t.index ["podcast_id"], name: "index_publishing_queue_items_on_podcast_id"
   end
