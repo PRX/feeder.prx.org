@@ -832,6 +832,11 @@ en:
       rss: RSS
       apple: Apple Podcasts
       spotify: Spotify
+    agents_card:
+      tabs:
+        apps: App & Browser
+        types: Form Factor
+        os: Operating System
   episode_player:
     form: &player_form
       help: &player_help

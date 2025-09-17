@@ -10,6 +10,9 @@
   <div class="container col-12 my-4">
     <%= render "main_card", episode: episode, date_start: date_start, date_end: date_end, interval: interval %>
   </div>
+  <div class="container col-12 my-4">
+    <%= render "agents_card", episode: episode, date_start: date_start, date_end: date_end, interval: interval %>
+  </div>
 </div>
 
 <div class="container col-12 mb-2">
@@ -22,8 +25,5 @@
         <%# render "geo_card", geo_type: "Metros" %>
       </div>
     </div>
-  </div>
-  <div class="col mb-4">
-    <%# turbo_frame_tag "agents", src: agents_podcast_metrics_path(podcast: @podcast), loading: "lazy" %>
   </div>
 </div>

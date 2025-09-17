@@ -27,7 +27,7 @@
                   <span class="text-nowrap overflow-hidden"><%= agent[:label] %></span>
                 </td>
                 <td><%= agent_downloads_with_percent(agent[:rollups], totals_in_range) %></td>
-                <td><%= agent_downloads_with_percent(agents[:all][:series][i], total_alltime[0][:count]) %></td>
+                <td><%= agent_downloads_with_percent(agents[:all][:series][i], total_alltime) %></td>
               </tr>
             <% end %>
           </tbody>

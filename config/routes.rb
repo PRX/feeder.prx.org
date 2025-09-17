@@ -40,7 +40,9 @@ Rails.application.routes.draw do
     resource :metrics, only: [:show], controller: :episode_metrics do
       get "downloads"
       get "geos"
-      get "agents"
+      get "agent_apps"
+      get "agent_types"
+      get "agent_os"
     end
   end
 
