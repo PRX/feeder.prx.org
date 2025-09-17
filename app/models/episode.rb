@@ -306,15 +306,7 @@ class Episode < ApplicationRecord
     Rails.logger.info(e.message)
   end
 
-  def readable_episode_duration
-    total_duration = ActiveSupport::Duration.build(media.pluck(:duration).reduce(:+))
-
-    total_duration.parts.reduce("") do |str, (k, v)|
-      str + "#{v.to_i}#{k.to_s.to(2)} "
-    end.strip
-  end
-
-  def utc_publish_date
+  def first_publish_utc_date
     first_rss_published_at.utc_date
   end
 end

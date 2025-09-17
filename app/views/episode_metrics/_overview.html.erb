@@ -4,9 +4,9 @@
       <div>
         <h1 class="fw-bold lh-1"><%= episode.title %></h1>
         <div class="d-flex gap-2 align-items-center">
-          <p><%= local_date(episode.first_rss_published_at, format: :full_month) %></p>
+          <p><%= local_date(episode.published_at, format: :full_month) %></p>
           <p>&bull;</p>
-          <p><%= episode.readable_episode_duration %></p>
+          <p><%= episode.media_duration.to_time_summary %></p>
         </div>
       </div>
       <div>

@@ -47,7 +47,7 @@ module MetricsHelper
       elsif count == "date"
         Date.utc_today.send(:"beginning_of_#{interval}")
       else
-        episode.utc_publish_date
+        episode.first_publish_utc_date
       end
 
       date_end = if type == "drop"
