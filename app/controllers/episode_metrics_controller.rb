@@ -21,7 +21,7 @@ class EpisodeMetricsController < ApplicationController
     @downloads = single_rollups(@downloads_within_date_range, @episode.title)
 
     render partial: "metrics/downloads_card", locals: {
-      url: downloads_episode_metrics_path(episode: @episode, date_start: @date_start, date_end: @date_end, interval: @interval),
+      url: request.fullpath,
       form_id: "episode_downloads_metrics",
       date_start: @date_start,
       date_end: @date_end,

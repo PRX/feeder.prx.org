@@ -9,7 +9,7 @@ module MetricsHelper
   end
 
   def sum_rollups(rollups)
-    rollups.map { |r| r[:count] }.reduce(:+)
+    rollups.sum(&:count)
   end
 
   def interval_options

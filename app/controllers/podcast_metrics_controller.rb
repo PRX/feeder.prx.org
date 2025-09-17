@@ -23,7 +23,7 @@ class PodcastMetricsController < ApplicationController
     @downloads = single_rollups(@downloads_within_date_range)
 
     render partial: "metrics/downloads_card", locals: {
-      url: downloads_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      url: request.fullpath,
       form_id: "podcast_downloads_metrics",
       date_start: @date_start,
       date_end: @date_end,
@@ -59,7 +59,7 @@ class PodcastMetricsController < ApplicationController
     @episode_rollups = multiple_episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
 
     render partial: "metrics/episodes_card", locals: {
-      url: episodes_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      url: request.fullpath,
       form_id: "podcast_episodes_metrics",
       date_start: @date_start,
       date_end: @date_end,
@@ -84,7 +84,7 @@ class PodcastMetricsController < ApplicationController
     @uniques = single_rollups(@uniques_rollups)
 
     render partial: "metrics/uniques_card", locals: {
-      url: uniques_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, uniques_selection: @uniques_selection, interval: @interval),
+      url: request.fullpath,
       form_id: "podcast_uniques_metrics",
       date_start: @date_start,
       date_end: @date_end,
@@ -132,7 +132,7 @@ class PodcastMetricsController < ApplicationController
     @episode_dropdays = multiple_episode_rollups(@episodes, @dropdays, @alltime_downloads_by_episode)
 
     render partial: "metrics/dropdays_card", locals: {
-      url: dropdays_podcast_metrics_path(podcast: @podcast, interval: @interval, dropday_range: @dropday_range),
+      url: request.fullpath,
       form_id: "podcast_dropdays_metrics",
       episode_dropdays: @episode_dropdays,
       dropday_range: @dropday_range,
