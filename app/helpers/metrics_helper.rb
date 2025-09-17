@@ -56,15 +56,7 @@ module MetricsHelper
         Date.utc_today
       end
 
-      [I18n.t(".helpers.label.metrics.date_presets.#{opt}"), date_preset(date_start, date_end, episode)]
-    end
-  end
-
-  def guard_date_start(date_start, episode = nil)
-    if episode && date_start < episode.utc_publish_date
-      episode.utc_publish_date
-    else
-      date_start
+      [I18n.t(".helpers.label.metrics.date_presets.#{opt}"), date_preset(date_start, date_end)]
     end
   end
 
@@ -76,19 +68,11 @@ module MetricsHelper
     end
   end
 
-  def date_preset(date_start, date_end, episode = nil)
+  def date_preset(date_start, date_end)
     [
-      guard_date_start(date_start, episode),
+      date_start,
       guard_date_end(date_end)
     ].to_json
-  end
-
-  def date_filter_min(episode = nil)
-    if episode
-      episode.utc_publish_date
-    else
-      Date.utc_yesterday - 18.months
-    end
   end
 
   def dropday_range_options
