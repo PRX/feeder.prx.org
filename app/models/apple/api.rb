@@ -246,7 +246,7 @@ module Apple
 
     def bridge_remote(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE)
       url = bridge_url
-      Rails.logger.info("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge", {param_count: bridge_options.count})
+      Rails.logger.debug("Apple::Api BRIDGE #{bridge_resource} #{url.hostname}:#{url.port}/bridge", {param_count: bridge_options.count})
 
       body = {
         batch_size: batch_size,
@@ -338,7 +338,7 @@ module Apple
     end
 
     def get_uri(uri)
-      Rails.logger.info("Apple::Api GET #{uri}")
+      Rails.logger.debug("Apple::Api GET #{uri}")
 
       req = Net::HTTP::Get.new(uri)
       req = set_headers(req)
@@ -350,7 +350,7 @@ module Apple
 
     def update_remote(method_class, api_frag, data_body)
       method_label = method_class.name.demodulize.upcase
-      Rails.logger.info("Apple::Api #{method_label} #{join_url(api_frag)}")
+      Rails.logger.debug("Apple::Api #{method_label} #{join_url(api_frag)}")
 
       uri = join_url(api_frag)
 
