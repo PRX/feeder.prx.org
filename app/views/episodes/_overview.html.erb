@@ -37,8 +37,18 @@
           </div>
           <div class="card-footer p-0">
             <ul class="list-group list-group-flush">
-              <li class="list-group-item"><%= t(".rss") %></li>
-              <li class="list-group-item"><%= t(".apple") %></li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><%= t(".rss") %></span>
+                <span class="badge rounded-pill prx-badge-<%= episode_media_status(episode) %>">
+                  <%= t("helpers.label.episode.media_statuses.#{episode_media_status(episode)}") %>
+                </span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><%= t(".apple") %></span>
+                <span class="badge rounded-pill prx-badge-<%= episode_apple_status(episode) %>">
+                  <%= t("helpers.label.episode.apple_statuses.#{episode_apple_status(episode)}") %>
+                </span>
+              </li>
               <li class="list-group-item"><%= t(".spotify") %></li>
             </ul>
           </div>

@@ -2,12 +2,15 @@
   <div class="list-group d-flex col mw-100">
     <% if @episode.persisted? %>
       <% if Rails.env.development? && @episode.published? %>
-        <%= tab_link_to "Overview", episode_metrics_path(@episode.guid) %>
+        <%= tab_link_to "Overview", episode_overview_path(@episode.guid) %>
       <% end %>
       <%= tab_link_to "Settings", edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
       <%= render "episode_media/tab", episode: @episode %>
       <%= tab_link_to t(".transcript"), episode_transcripts_path(@episode) %>
       <%= tab_link_to t(".player"), episode_player_path(@episode) %>
+      <% if Rails.env.development? && @episode.published? %>
+        <%= tab_link_to "Metrics", episode_metrics_path(@episode.guid) %>
+      <% end %>
     <% else %>
       <%= tab_link_to t(".new"), new_podcast_episode_path(@podcast), active: true %>
     <% end %>
