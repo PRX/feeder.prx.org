@@ -30,7 +30,7 @@ module Apple
       episodes.map do |episode|
         container = episode.container
 
-        Rails.logger.info("Resetting source url for podcast container",
+        Rails.logger.debug("Resetting source url for podcast container",
           podcast_container_id: container.id,
           source_size: container.source_size,
           source_url: container.source_url)
