@@ -1,4 +1,4 @@
-<%= form_with(url: url, method: :get, id: "metrics") do |form| %>
+<%= form_with(url: url, method: :get, id: "metrics_dates_filter") do |form| %>
   <div class="row d-flex gx-1">
     <div class="col form-floating input-group">
       <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "mainStart", action: "apex-nav#updateStartDate"}, class: "form-control form-control-sm", value: date_start %>

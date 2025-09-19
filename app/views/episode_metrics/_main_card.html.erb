@@ -9,10 +9,7 @@
     </div>
     <div class="card-body metrics-card-body">
       <%= turbo_frame_tag "downloads", src: downloads_episode_metrics_path(episode: episode, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", tab: "downloads"} do %>
-        <div class="h-100 d-flex justify-content-center align-items-center">
-          <div class="spinner-border text-primary" role="status">
-          </div>
-        </div>
+        <%= render "metrics/loading_card" %>
       <% end %>
     </div>
   </div>

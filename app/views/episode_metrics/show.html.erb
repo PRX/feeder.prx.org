@@ -1,9 +1,7 @@
-<% if Rails.env.development? && clickhouse_connected? %>
-  <% content_for :title, t(".title", title: @episode.title) %>
+<% content_for :title, t(".title", title: @episode.title) %>
 
-  <%= render "episodes/tabs" %>
+<%= render "episodes/tabs" %>
 
-  <%= render "overview", episode: @episode %>
+<%= render "overview", episode: @episode %>
 
-  <%= render "metrics", episode: @episode, date_start: @date_start, date_end: @date_end, interval: @interval %>
-<% end %>
+<%= render "metrics", episode: @episode, date_start: @date_start, date_end: @date_end, interval: @interval %>

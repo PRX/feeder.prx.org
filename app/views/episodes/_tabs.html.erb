@@ -1,7 +1,7 @@
 <% content_for :tabs do %>
   <div class="list-group d-flex col mw-100">
     <% if @episode.persisted? %>
-      <% if Rails.env.development? && clickhouse_connected? && @episode.published? %>
+      <% if @episode.published? %>
         <%= tab_link_to "Overview", episode_metrics_path(@episode.guid) %>
         <%= tab_link_to "Settings", edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
       <% else %>

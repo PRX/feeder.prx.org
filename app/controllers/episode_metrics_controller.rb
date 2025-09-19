@@ -2,6 +2,7 @@ class EpisodeMetricsController < ApplicationController
   include MetricsUtils
 
   before_action :set_episode
+  before_action :check_clickhouse, except: %i[show]
   before_action :set_date_range
 
   def show
@@ -16,19 +17,19 @@ class EpisodeMetricsController < ApplicationController
           .group("DATE_TRUNC('#{@interval}', hour) AS hour")
           .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
           .load_async
+
+      @downloads = single_rollups(@downloads_within_date_range, @episode.title)
+
+      render partial: "metrics/downloads_card", locals: {
+        url: request.fullpath,
+        form_id: "episode_downloads_metrics",
+        date_start: @date_start,
+        date_end: @date_end,
+        interval: @interval,
+        date_range: @date_range,
+        downloads: @downloads
+      }
     end
-
-    @downloads = single_rollups(@downloads_within_date_range, @episode.title)
-
-    render partial: "metrics/downloads_card", locals: {
-      url: request.fullpath,
-      form_id: "episode_downloads_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: @interval,
-      date_range: @date_range,
-      downloads: @downloads
-    }
   end
 
   def geos

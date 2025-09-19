@@ -2,6 +2,7 @@ class PodcastMetricsController < ApplicationController
   include MetricsUtils
 
   before_action :set_podcast
+  before_action :check_clickhouse, except: %i[show]
   before_action :set_date_range, except: %i[dropdays]
   before_action :set_uniques, only: %i[show uniques]
   before_action :set_dropday_range, only: %i[show dropdays]
@@ -10,15 +11,13 @@ class PodcastMetricsController < ApplicationController
   end
 
   def downloads
-    if clickhouse_connected?
-      @downloads_within_date_range =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
-          .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-          .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-          .load_async
-    end
+    @downloads_within_date_range =
+      Rollups::HourlyDownload
+        .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
+        .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+        .group("DATE_TRUNC('#{@interval}', hour) AS hour")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
+        .load_async
 
     @downloads = single_rollups(@downloads_within_date_range)
 
@@ -40,21 +39,19 @@ class PodcastMetricsController < ApplicationController
         .order(first_rss_published_at: :desc)
         .paginate(params[:episodes], params[:per])
 
-    if clickhouse_connected?
-      @episodes_recent =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
-          .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-          .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-          .load_async
-      @episodes_alltime =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
-          .select(:episode_id, "SUM(count) AS count")
-          .group(:episode_id)
-          .load_async
-    end
+    @episodes_recent =
+      Rollups::HourlyDownload
+        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
+        .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+        .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
+        .load_async
+    @episodes_alltime =
+      Rollups::HourlyDownload
+        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
+        .select(:episode_id, "SUM(count) AS count")
+        .group(:episode_id)
+        .load_async
 
     @episode_rollups = multiple_episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
 
@@ -71,15 +68,13 @@ class PodcastMetricsController < ApplicationController
   end
 
   def uniques
-    if clickhouse_connected?
-      @uniques_rollups =
-        Rollups::DailyUnique
-          .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
-          .select("DATE_TRUNC('#{@interval}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
-          .group("DATE_TRUNC('#{@interval}', day) AS day")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
-          .load_async
-    end
+    @uniques_rollups =
+      Rollups::DailyUnique
+        .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
+        .select("DATE_TRUNC('#{@interval}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
+        .group("DATE_TRUNC('#{@interval}', day) AS day")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
+        .load_async
 
     @uniques = single_rollups(@uniques_rollups)
 
