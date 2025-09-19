@@ -86,12 +86,14 @@ module Apple
 
     def deliver_and_publish!(eps)
       Rails.logger.tagged("Apple::Publisher#deliver_and_publish!") do
-        eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          eps.filter(&:apple_needs_upload?).tap do |eps|
+        eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          eps.tap do |eps|
             upload_media!(eps)
           end
+        end
 
-          eps.filter(&:apple_needs_delivery?).tap do |eps|
+        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          eps.tap do |eps|
             process_and_deliver!(eps)
           end
 
@@ -121,6 +123,10 @@ module Apple
 
       # finally mark the episode as uploaded
       mark_as_uploaded!(eps)
+
+      # The episodes start waiting after they are uploaded.
+      # Increment the wait counter.
+      increment_asset_wait!(eps)
     end
 
     def process_and_deliver!(eps)
