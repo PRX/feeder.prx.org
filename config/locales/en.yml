@@ -725,6 +725,7 @@ en:
       rss: RSS
       apple: Apple Podcasts
       spotify: Spotify
+      title: "%{title} - Overview"
     edit:
       title: "%{title} - Edit"
     new:
