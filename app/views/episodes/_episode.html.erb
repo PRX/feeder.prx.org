@@ -22,7 +22,7 @@
           <% end %>
         </div>
 
-        <%= link_to "Go to Episode", edit_episode_path(episode.guid), class: "stretched-link", data: {turbo_frame: "_top"} %>
+        <%= link_to "Go to Episode", episode_path(episode.guid), class: "stretched-link", data: {turbo_frame: "_top"} %>
       </div>
     </div>
   </div>

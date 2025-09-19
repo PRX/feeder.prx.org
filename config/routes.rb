@@ -21,7 +21,7 @@ Rails.application.routes.draw do
     end
     resources :placements_preview, only: [:show]
     get "rollups_demo", to: "podcasts#rollups_demo"
-    resource :metrics, controller: :podcast_metrics do
+    resource :metrics, only: [:show], controller: :podcast_metrics do
       get "downloads"
       get "uniques"
       get "episodes"
@@ -31,10 +31,16 @@ Rails.application.routes.draw do
   end
 
   resources :episodes, except: [:create, :new] do
+    get "overview"
     resource :media, only: [:show, :update], controller: :episode_media
     get "media_status", to: "episode_media#status"
     resource :player, only: :show, controller: :episode_player
     resource :transcripts, only: [:show, :update], controller: :episode_transcripts
+    resource :metrics, only: [:show], controller: :episode_metrics do
+      get "downloads"
+      get "geos"
+      get "agents"
+    end
   end
 
   resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher

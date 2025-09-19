@@ -1,0 +1,5 @@
+<% content_for :title, t(".title", title: @episode.title) %>
+
+<%= render "episodes/tabs" %>
+
+<%= render "metrics", episode: @episode, date_start: @date_start, date_end: @date_end, interval: @interval %>

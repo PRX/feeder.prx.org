@@ -1,0 +1,61 @@
+<div class="container">
+  <div class="my-4">
+    <div class="col-12 d-flex justify-content-between">
+      <div>
+        <h1 class="fw-bold lh-1"><%= episode.title %></h1>
+        <div class="d-flex gap-2 align-items-center">
+          <p><%= local_date(episode.published_at, format: :full_month) %></p>
+          <p>&bull;</p>
+          <p><%= episode.media_duration.to_time_summary %></p>
+        </div>
+      </div>
+      <div>
+        <%= link_to episode.enclosure_url, class: "btn btn-sm btn-success" do %>
+          <%= t(".audio_link") %>
+          <span class="material-icons">link</span>
+        <% end %>
+        <%= link_to episode.url, class: "btn btn-sm btn-success" do %>
+          <%= t(".episode_url") %>
+          <span class="material-icons">open_in_new</span>
+        <% end %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-8 mb-4">
+        <div>
+          <%= embed_player_episode_iframe(episode) %>
+        </div>
+        <div class="lh-sm"><%= sanitize(episode.description) %></div>
+      </div>
+      <div class="col-4 mb-4">
+        <div class="card shadow border-0">
+          <div class="card-header card-header-light">
+            <%= t(".card_header") %>
+          </div>
+          <div class="card-body">
+            <%= t(".card_body") %>
+          </div>
+          <div class="card-footer p-0">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><%= t(".rss") %></span>
+                <% if episode.first_rss_published_at %>
+                  <span class="badge rounded-pill prx-badge-<%= episode.publishing_status %>">
+                    <%= t("helpers.label.episode.publishing_statuses.#{episode.publishing_status}") %>
+                  </span>
+                <% end %>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><%= t(".apple") %></span>
+                <span class="badge rounded-pill prx-badge-<%= episode_apple_status(episode) %>">
+                  <%= t("helpers.label.episode.apple_statuses.#{episode_apple_status(episode)}") %>
+                </span>
+              </li>
+              <li class="list-group-item"><%= t(".spotify") %></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

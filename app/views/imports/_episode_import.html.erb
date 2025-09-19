@@ -12,7 +12,7 @@
     <% end %>
   <td class="text-truncate">
     <% if episode_import.episode %>
-      <%= link_to edit_episode_path(episode_import.episode.guid), data: {turbo_frame: "_top"} do %>
+      <%= link_to episode_path(episode_import.episode.guid), data: {turbo_frame: "_top"} do %>
         <%= episode_import.episode.title %>
       <% end %>
     <% elsif episode_import.try(:title) %>

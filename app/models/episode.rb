@@ -306,4 +306,8 @@ class Episode < ApplicationRecord
   rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout => e
     Rails.logger.info(e.message)
   end
+
+  def first_publish_utc_date
+    first_rss_published_at.utc_date
+  end
 end
