@@ -25,33 +25,33 @@ module MetricsHelper
   end
 
   def podcast_date_presets
-    Rollups::HourlyDownload::PODCAST_DATE_PRESETS.map do |opt|
-      count, interval = opt.to_s.split("_")
-      date_end = Date.utc_today
-      date_start = if count.to_i > 0
-        count.to_i.send(interval).ago.utc_date
-      else
-        Date.utc_today.send(:"beginning_of_#{interval}")
-      end
-
-      [I18n.t(".helpers.label.metrics.date_presets.#{opt}"), date_preset(date_start, date_end)]
-    end
+    metrics_date_presets(Rollups::HourlyDownload::PODCAST_DATE_PRESETS)
   end
 
   def episode_date_presets(episode)
-    Rollups::HourlyDownload::EPISODE_DATE_PRESETS.map do |opt|
+    metrics_date_presets(Rollups::HourlyDownload::EPISODE_DATE_PRESETS, episode)
+  end
+
+  def metrics_date_presets(options, episode = nil)
+    options.map do |opt|
       count, interval, type = opt.to_s.split("_")
 
       date_start = if type == "last"
         count.to_i.send(interval).ago.utc_date
+      elsif type == "previous"
+        (Date.utc_today - count.to_i.send(interval)).send(:"beginning_of_#{interval.singularize}")
       elsif count == "date"
-        Date.utc_today.send(:"beginning_of_#{interval}")
-      else
+        Date.utc_today.send(:"beginning_of_#{interval.singularize}")
+      elsif episode
         episode.first_publish_utc_date
+      else
+        Date.utc_today - 1.day
       end
 
       date_end = if type == "drop"
         date_start + count.to_i.send(interval)
+      elsif type == "previous"
+        (date_start + (count.to_i - 1).send(interval)).send(:"end_of_#{interval.singularize}")
       else
         Date.utc_today
       end

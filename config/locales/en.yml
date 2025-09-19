@@ -466,10 +466,10 @@ en:
           7_days_last: Last 7 Days
           14_days_last: Last 14 Days
           28_days_last: Last 28 Days
-          1_month_last: Last Month
-          3_months_last: Last 3 Months
-          6_months_last: Last 6 Months
-          1_year_last: Last Year
+          1_month_previous: Previous Month
+          3_months_previous: Previous 3 Months
+          6_months_previous: Previous 6 Months
+          1_year_previous: Previous Year
           date_week: Week to Date
           date_month: Month to Date
           date_year: Year to Date
