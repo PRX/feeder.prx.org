@@ -104,10 +104,10 @@ module Apple
     end
 
     def upload_media!(eps)
-      # Soft delete any existing delivery and delivery files
+      # Soft delete any existing delivery and delivery files.
       prepare_for_delivery!(eps)
 
-      # only create if needed
+      # Only create if needed.
       sync_episodes!(eps)
       sync_podcast_containers!(eps)
 
@@ -116,12 +116,12 @@ module Apple
       sync_podcast_deliveries!(eps)
       sync_podcast_delivery_files!(eps)
 
-      # upload and mark as uploaded, then update the audio container reference
+      # Upload and mark as uploaded, then update the audio container reference.
       execute_upload_operations!(eps)
       mark_delivery_files_uploaded!(eps)
       update_audio_container_reference!(eps)
 
-      # finally mark the episode as uploaded
+      # Mark the episode as uploaded.
       mark_as_uploaded!(eps)
 
       # The episodes start waiting after they are uploaded.
