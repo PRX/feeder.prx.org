@@ -22,11 +22,7 @@
           <% end %>
         </div>
 
-        <% if episode.published? %>
-          <%= link_to "Go to Episode", episode_metrics_path(episode.guid), class: "stretched-link", data: {turbo_frame: "_top"} %>
-        <% else %>
-          <%= link_to "Go to Episode", edit_episode_path(episode.guid), class: "stretched-link", data: {turbo_frame: "_top"} %>
-        <% end %>
+        <%= link_to "Go to Episode", episode_path(episode.guid), class: "stretched-link", data: {turbo_frame: "_top"} %>
       </div>
     </div>
   </div>

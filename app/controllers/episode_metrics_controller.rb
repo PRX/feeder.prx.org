@@ -9,27 +9,25 @@ class EpisodeMetricsController < ApplicationController
   end
 
   def downloads
-    if clickhouse_connected?
-      @downloads_within_date_range =
-        Rollups::HourlyDownload
-          .where(episode_id: @episode.guid, hour: (@date_start..@date_end))
-          .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-          .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-          .load_async
+    @downloads_within_date_range =
+      Rollups::HourlyDownload
+        .where(episode_id: @episode.guid, hour: (@date_start..@date_end))
+        .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+        .group("DATE_TRUNC('#{@interval}', hour) AS hour")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
+        .load_async
 
-      @downloads = single_rollups(@downloads_within_date_range, @episode.title)
+    @downloads = single_rollups(@downloads_within_date_range, @episode.title)
 
-      render partial: "metrics/downloads_card", locals: {
-        url: request.fullpath,
-        form_id: "episode_downloads_metrics",
-        date_start: @date_start,
-        date_end: @date_end,
-        interval: @interval,
-        date_range: @date_range,
-        downloads: @downloads
-      }
-    end
+    render partial: "metrics/downloads_card", locals: {
+      url: request.fullpath,
+      form_id: "episode_downloads_metrics",
+      date_start: @date_start,
+      date_end: @date_end,
+      interval: @interval,
+      date_range: @date_range,
+      downloads: @downloads
+    }
   end
 
   def geos
