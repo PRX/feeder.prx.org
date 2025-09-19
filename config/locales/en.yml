@@ -717,6 +717,14 @@ en:
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
       loading: Loading
+    overview:
+      audio_link: Audio File Link
+      episode_url: Episode URL
+      card_header: Where's my Episode?
+      card_body: The episode is published on Dovetail but might still be working its way across the web to all the places Podcasts are found.
+      rss: RSS
+      apple: Apple Podcasts
+      spotify: Spotify
     edit:
       title: "%{title} - Edit"
     new:
@@ -824,14 +832,6 @@ en:
         downloads: Downloads
     metrics:
       header: Episode Metrics
-    overview:
-      audio_link: Audio File Link
-      episode_url: Episode URL
-      card_header: Where's my Episode?
-      card_body: The episode is published on Dovetail but might still be working its way across the web to all the places Podcasts are found.
-      rss: RSS
-      apple: Apple Podcasts
-      spotify: Spotify
   episode_player:
     form: &player_form
       help: &player_help

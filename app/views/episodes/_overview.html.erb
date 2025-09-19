@@ -39,9 +39,11 @@
             <ul class="list-group list-group-flush">
               <li class="list-group-item d-flex justify-content-between align-items-center">
                 <span><%= t(".rss") %></span>
-                <span class="badge rounded-pill prx-badge-<%= episode_media_status(episode) %>">
-                  <%= t("helpers.label.episode.media_statuses.#{episode_media_status(episode)}") %>
-                </span>
+                <% if episode.first_rss_published_at %>
+                  <span class="badge rounded-pill prx-badge-<%= episode.publishing_status %>">
+                    <%= t("helpers.label.episode.publishing_statuses.#{episode.publishing_status}") %>
+                  </span>
+                <% end %>
               </li>
               <li class="list-group-item d-flex justify-content-between align-items-center">
                 <span><%= t(".apple") %></span>
