@@ -21,16 +21,16 @@
       </div>
     </div>
     <div class="card-body metrics-card-body">
-      <%= turbo_frame_tag "downloads", src: downloads_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", tab: "downloads"} do %>
+      <%= turbo_frame_tag "downloads", src: downloads_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", card: "main", tab: "downloads"} do %>
         <%= render "metrics/loading_card" %>
       <% end %>
-      <%= turbo_frame_tag "episodes", src: episodes_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", tab: "episodes"}, class: "d-none" do %>
+      <%= turbo_frame_tag "episodes", src: episodes_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", card: "main", tab: "episodes"}, class: "d-none" do %>
         <%= render "metrics/loading_card" %>
       <% end %>
-      <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, uniques_selection: uniques_selection, interval: interval), data: {apex_nav_target: "tab", tab: "uniques"}, class: "d-none" do %>
+      <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, uniques_selection: uniques_selection, interval: interval), data: {apex_nav_target: "tab", card: "main", tab: "uniques"}, class: "d-none" do %>
         <%= render "metrics/loading_card" %>
       <% end %>
-      <%= turbo_frame_tag "dropdays", src: dropdays_podcast_metrics_path(podcast: podcast, interval: interval, dropday_range: dropday_range), loading: "lazy", data: {apex_nav_target: "tab", tab: "dropdays"}, class: "d-none" do %>
+      <%= turbo_frame_tag "dropdays", src: dropdays_podcast_metrics_path(podcast: podcast, interval: interval, dropday_range: dropday_range), loading: "lazy", data: {apex_nav_target: "tab", card: "main", tab: "dropdays"}, class: "d-none" do %>
         <%= render "metrics/loading_card" %>
       <% end %>
     </div>
