@@ -22,7 +22,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
       post podcast_episodes_url(podcast), params: {episode: params}
     end
 
-    assert_redirected_to edit_episode_url(Episode.last)
+    assert_redirected_to episode_url(Episode.last)
   end
 
   test "authorizes creating episodes" do
@@ -56,7 +56,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     Episode.stub_any_instance(:copy_media, true) do
       patch episode_url(episode), params: {episode: params}
 
-      assert_redirected_to edit_episode_url(episode)
+      assert_redirected_to episode_url(episode)
     end
   end
 

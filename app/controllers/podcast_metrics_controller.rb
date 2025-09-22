@@ -2,6 +2,7 @@ class PodcastMetricsController < ApplicationController
   include MetricsUtils
 
   before_action :set_podcast
+  before_action :check_clickhouse, except: %i[show]
   before_action :set_date_range, except: %i[dropdays]
   before_action :set_uniques, only: %i[show uniques]
   before_action :set_dropday_range, only: %i[show dropdays]
@@ -11,20 +12,18 @@ class PodcastMetricsController < ApplicationController
   end
 
   def downloads
-    if clickhouse_connected?
-      @downloads_within_date_range =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
-          .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-          .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-          .load_async
-    end
+    @downloads_within_date_range =
+      Rollups::HourlyDownload
+        .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
+        .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+        .group("DATE_TRUNC('#{@interval}', hour) AS hour")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
+        .load_async
 
     @downloads = single_rollups(@downloads_within_date_range)
 
     render partial: "metrics/downloads_card", locals: {
-      url: downloads_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      url: request.fullpath,
       form_id: "podcast_downloads_metrics",
       date_start: @date_start,
       date_end: @date_end,
@@ -41,26 +40,24 @@ class PodcastMetricsController < ApplicationController
         .order(first_rss_published_at: :desc)
         .paginate(params[:episodes], params[:per])
 
-    if clickhouse_connected?
-      @episodes_recent =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
-          .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-          .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-          .load_async
-      @episodes_alltime =
-        Rollups::HourlyDownload
-          .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
-          .select(:episode_id, "SUM(count) AS count")
-          .group(:episode_id)
-          .load_async
-    end
+    @episodes_recent =
+      Rollups::HourlyDownload
+        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
+        .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
+        .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
+        .load_async
+    @episodes_alltime =
+      Rollups::HourlyDownload
+        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
+        .select(:episode_id, "SUM(count) AS count")
+        .group(:episode_id)
+        .load_async
 
     @episode_rollups = multiple_episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
 
     render partial: "metrics/episodes_card", locals: {
-      url: episodes_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval),
+      url: request.fullpath,
       form_id: "podcast_episodes_metrics",
       date_start: @date_start,
       date_end: @date_end,
@@ -72,20 +69,18 @@ class PodcastMetricsController < ApplicationController
   end
 
   def uniques
-    if clickhouse_connected?
-      @uniques_rollups =
-        Rollups::DailyUnique
-          .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
-          .select("DATE_TRUNC('#{@interval}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
-          .group("DATE_TRUNC('#{@interval}', day) AS day")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
-          .load_async
-    end
+    @uniques_rollups =
+      Rollups::DailyUnique
+        .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
+        .select("DATE_TRUNC('#{@interval}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
+        .group("DATE_TRUNC('#{@interval}', day) AS day")
+        .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
+        .load_async
 
     @uniques = single_rollups(@uniques_rollups)
 
     render partial: "metrics/uniques_card", locals: {
-      url: uniques_podcast_metrics_path(podcast: @podcast, date_start: @date_start, date_end: @date_end, uniques_selection: @uniques_selection, interval: @interval),
+      url: request.fullpath,
       form_id: "podcast_uniques_metrics",
       date_start: @date_start,
       date_end: @date_end,
@@ -133,7 +128,7 @@ class PodcastMetricsController < ApplicationController
     @episode_dropdays = multiple_episode_rollups(@episodes, @dropdays, @alltime_downloads_by_episode)
 
     render partial: "metrics/dropdays_card", locals: {
-      url: dropdays_podcast_metrics_path(podcast: @podcast, interval: @interval, dropday_range: @dropday_range),
+      url: request.fullpath,
       form_id: "podcast_dropdays_metrics",
       episode_dropdays: @episode_dropdays,
       dropday_range: @dropday_range,

@@ -4,9 +4,9 @@
       <div>
         <h1 class="fw-bold lh-1"><%= episode.title %></h1>
         <div class="d-flex gap-2 align-items-center">
-          <p><%= local_date(episode.first_rss_published_at, format: :full_month) %></p>
+          <p><%= local_date(episode.published_at, format: :full_month) %></p>
           <p>&bull;</p>
-          <p><%= episode.readable_episode_duration %></p>
+          <p><%= episode.media_duration.to_time_summary %></p>
         </div>
       </div>
       <div>
@@ -37,8 +37,20 @@
           </div>
           <div class="card-footer p-0">
             <ul class="list-group list-group-flush">
-              <li class="list-group-item"><%= t(".rss") %></li>
-              <li class="list-group-item"><%= t(".apple") %></li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><%= t(".rss") %></span>
+                <% if episode.first_rss_published_at %>
+                  <span class="badge rounded-pill prx-badge-<%= episode.publishing_status %>">
+                    <%= t("helpers.label.episode.publishing_statuses.#{episode.publishing_status}") %>
+                  </span>
+                <% end %>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><%= t(".apple") %></span>
+                <span class="badge rounded-pill prx-badge-<%= episode_apple_status(episode) %>">
+                  <%= t("helpers.label.episode.apple_statuses.#{episode_apple_status(episode)}") %>
+                </span>
+              </li>
               <li class="list-group-item"><%= t(".spotify") %></li>
             </ul>
           </div>

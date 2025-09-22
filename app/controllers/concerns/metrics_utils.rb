@@ -3,6 +3,14 @@ require "active_support/concern"
 module MetricsUtils
   extend ActiveSupport::Concern
 
+  def check_clickhouse
+    unless clickhouse_connected?
+      render partial: "metrics/error_card", locals: {
+        metrics_path: params[:action]
+      }
+    end
+  end
+
   def generate_date_range(date_start, date_end, interval)
     start_range = date_start.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
     end_range = date_end.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")

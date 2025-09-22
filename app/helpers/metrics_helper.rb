@@ -1,6 +1,6 @@
 module MetricsHelper
   def sum_rollups(rollups)
-    rollups.map { |r| r[:count] }.reduce(:+)
+    rollups.sum(&:count)
   end
 
   def interval_options
@@ -16,46 +16,38 @@ module MetricsHelper
   end
 
   def podcast_date_presets
-    Rollups::HourlyDownload::PODCAST_DATE_PRESETS.map do |opt|
-      count, interval = opt.to_s.split("_")
-      date_end = Date.utc_today
-      date_start = if count.to_i > 0
-        count.to_i.send(interval).ago.utc_date
-      else
-        Date.utc_today.send(:"beginning_of_#{interval}")
-      end
-
-      [I18n.t(".helpers.label.metrics.date_presets.#{opt}"), date_preset(date_start, date_end)]
-    end
+    metrics_date_presets(Rollups::HourlyDownload::PODCAST_DATE_PRESETS)
   end
 
   def episode_date_presets(episode)
-    Rollups::HourlyDownload::EPISODE_DATE_PRESETS.map do |opt|
+    metrics_date_presets(Rollups::HourlyDownload::EPISODE_DATE_PRESETS, episode)
+  end
+
+  def metrics_date_presets(options, episode = nil)
+    options.map do |opt|
       count, interval, type = opt.to_s.split("_")
 
       date_start = if type == "last"
         count.to_i.send(interval).ago.utc_date
+      elsif type == "previous"
+        (Date.utc_today - count.to_i.send(interval)).send(:"beginning_of_#{interval.singularize}")
       elsif count == "date"
-        Date.utc_today.send(:"beginning_of_#{interval}")
+        Date.utc_today.send(:"beginning_of_#{interval.singularize}")
+      elsif episode
+        episode.first_publish_utc_date
       else
-        episode.utc_publish_date
+        Date.utc_today - 1.day
       end
 
       date_end = if type == "drop"
         date_start + count.to_i.send(interval)
+      elsif type == "previous"
+        (date_start + (count.to_i - 1).send(interval)).send(:"end_of_#{interval.singularize}")
       else
         Date.utc_today
       end
 
-      [I18n.t(".helpers.label.metrics.date_presets.#{opt}"), date_preset(date_start, date_end, episode)]
-    end
-  end
-
-  def guard_date_start(date_start, episode = nil)
-    if episode && date_start < episode.utc_publish_date
-      episode.utc_publish_date
-    else
-      date_start
+      [I18n.t(".helpers.label.metrics.date_presets.#{opt}"), date_preset(date_start, date_end)]
     end
   end
 
@@ -67,19 +59,11 @@ module MetricsHelper
     end
   end
 
-  def date_preset(date_start, date_end, episode = nil)
+  def date_preset(date_start, date_end)
     [
-      guard_date_start(date_start, episode),
+      date_start,
       guard_date_end(date_end)
     ].to_json
-  end
-
-  def date_filter_min(episode = nil)
-    if episode
-      episode.utc_publish_date
-    else
-      Date.utc_yesterday - 18.months
-    end
   end
 
   def dropday_range_options
