@@ -1,7 +1,17 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["startDate", "endDate", "interval", "uniques", "dropdays", "mainStart", "mainEnd", "tab"]
+  static targets = [
+    "startDate",
+    "endDate",
+    "interval",
+    "intervalInput",
+    "uniques",
+    "dropdays",
+    "mainStart",
+    "mainEnd",
+    "tab",
+  ]
 
   updateDates(event) {
     const [startDate, endDate] = JSON.parse(event.target.value)
@@ -24,6 +34,8 @@ export default class extends Controller {
   }
 
   updateInterval(event) {
+    event.preventDefault()
+
     this.updateSpecificTargets(this.intervalTargets, event.target.value, event.params.path)
   }
 
@@ -51,9 +63,7 @@ export default class extends Controller {
 
   updateAllTargets(targets, value) {
     targets.forEach((target) => {
-      target.addEventListener("change", function () {
-        target.value = value
-      })
+      target.value = value
       target.dispatchEvent(new Event("change"))
     })
   }
@@ -61,9 +71,19 @@ export default class extends Controller {
   updateSpecificTargets(targets, value, path) {
     targets.forEach((target) => {
       if (path === target.dataset.path) {
-        target.addEventListener("change", function () {
-          target.value = value
-        })
+        target.value = value
+        target.dispatchEvent(new Event("change"))
+      }
+    })
+  }
+
+  updateInputs(event) {
+    event.preventDefault()
+    const inputTargets = `${event.params.input}InputTargets`
+
+    this[inputTargets].forEach((target) => {
+      if (target.value !== event.target.value) {
+        target.value = event.target.value
         target.dispatchEvent(new Event("change"))
       }
     })
