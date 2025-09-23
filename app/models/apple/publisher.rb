@@ -87,9 +87,7 @@ module Apple
     def upload_and_deliver!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_deliver!") do
         eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          eps.tap do |eps|
-            upload_media!(eps)
-          end
+          upload_media!(eps)
         end
 
         eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
