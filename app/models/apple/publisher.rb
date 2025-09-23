@@ -72,7 +72,7 @@ module Apple
       unarchive!(episodes_to_unarchive)
 
       # Calculate the episodes_to_sync based on the current state of the private feed
-      upload_and_deliver!(episodes_to_sync)
+      upload_and_process!(episodes_to_sync)
 
       # success
       SyncLog.log!(
@@ -84,8 +84,8 @@ module Apple
       )
     end
 
-    def upload_and_deliver!(eps)
-      Rails.logger.tagged("Apple::Publisher#upload_and_deliver!") do
+    def upload_and_process!(eps)
+      Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
         eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
           upload_media!(eps)
         end

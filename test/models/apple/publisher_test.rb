@@ -294,7 +294,7 @@ describe Apple::Publisher do
           end
 
           # assert that this includes our unarchived episode
-          upload_and_deliver = ->(eps) do
+          upload_and_process = ->(eps) do
             assert_equal [apple_episode.feeder_id], eps.map(&:feeder_id)
             true
           end
@@ -306,7 +306,7 @@ describe Apple::Publisher do
               apple_publisher.stub(:unarchive!, unarchiver) do
                 # 2) then the unarchived episodes are passed in ready to have
                 # media uploaded and episode published)
-                apple_publisher.stub(:upload_and_deliver!, upload_and_deliver) do
+                apple_publisher.stub(:upload_and_process!, upload_and_process) do
                   apple_publisher.publish!
                 end
               end
@@ -579,7 +579,7 @@ describe Apple::Publisher do
     end
   end
 
-  describe "#upload_and_deliver!" do
+  describe "#upload_and_process!" do
     let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
     it "skips upload for already uploaded episodes" do
@@ -593,7 +593,7 @@ describe Apple::Publisher do
 
       apple_publisher.stub(:upload_media!, upload_mock) do
         apple_publisher.stub(:process_delivery!, ->(*) {}) do
-          apple_publisher.upload_and_deliver!([episode])
+          apple_publisher.upload_and_process!([episode])
         end
       end
 
@@ -607,7 +607,7 @@ describe Apple::Publisher do
       mock.expect(:call, nil, [[episode]])
       apple_publisher.stub(:upload_media!, mock) do
         apple_publisher.stub(:process_delivery!, ->(*) {}) do
-          apple_publisher.upload_and_deliver!([episode])
+          apple_publisher.upload_and_process!([episode])
         end
       end
 
@@ -628,7 +628,7 @@ describe Apple::Publisher do
       apple_publisher.stub(:upload_media!, ->(*) {}) do
         apple_publisher.stub(:process_delivery!, delivery_mock) do
           apple_publisher.stub(:publish_drafting!, publish_mock) do
-            apple_publisher.upload_and_deliver!([episode])
+            apple_publisher.upload_and_process!([episode])
           end
         end
       end
@@ -678,7 +678,7 @@ describe Apple::Publisher do
       apple_publisher.stub(:upload_media!, upload_mock) do
         apple_publisher.stub(:process_delivery!, delivery_mock) do
           apple_publisher.stub(:publish_drafting!, publish_mock) do
-            apple_publisher.upload_and_deliver!(episodes)
+            apple_publisher.upload_and_process!(episodes)
           end
         end
       end
@@ -710,7 +710,7 @@ describe Apple::Publisher do
         apple_publisher.stub(:increment_asset_wait!, increment_mock) do
           apple_publisher.stub(:process_delivery!, ->(*) {}) do
             apple_publisher.stub(:publish_drafting!, ->(*) {}) do
-              apple_publisher.upload_and_deliver!([episode])
+              apple_publisher.upload_and_process!([episode])
             end
           end
         end
