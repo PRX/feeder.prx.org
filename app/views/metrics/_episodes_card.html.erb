@@ -1,7 +1,7 @@
 <% chart_id = SecureRandom.uuid %>
 
 <%= turbo_frame_tag "episodes" do %>
-  <%= form_with(url: episodes_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), method: :get, id: "episodes_metrics", data: {controller: "click", click_debounce_value: 200}) do |form| %>
+  <%= form_with(url: url, method: :get, id: form_id, data: {controller: "click", click_debounce_value: 200}) do |form| %>
     <div class="row d-flex flex-wrap gx-4 h-100">
       <div class="col metrics-chart"
         data-controller="apex-episodes"
@@ -15,10 +15,10 @@
         <table class="table table-sm table-striped shadow rounded">
           <thead class="table-primary">
             <tr>
-              <td>Episode</td>
-              <td>Publish Date</td>
-              <td>Downloads</td>
-              <td>All-time</td>
+              <td><%= t(".table_header.episodes") %></td>
+              <td><%= t(".table_header.published_at") %></td>
+              <td><%= t(".table_header.downloads") %></td>
+              <td><%= t(".table_header.all_time") %></td>
             </tr>
           </thead>
           <tbody>
@@ -30,7 +30,7 @@
                 <td class="d-flex align-items-center">
                   <input id="episode<%= title %>" type="checkbox" class="form-check-input mt-0 me-2" checked="true" data-action="click->apex-toggles#toggleSeries" data-apex-toggles-series-param="<%= title %>" data-apex-toggles-id-param="<%= chart_id %>">
                   <span class="material-icons me-2" aria-label="hidden" style="color: <%= er[:color] %>">circle</span>
-                  <span class="text-nowrap overflow-hidden"><%= link_to title, episode_path(er[:episode][:guid]), data: {turbo_frame: "_top"} %></span>
+                  <span class="text-nowrap overflow-hidden"><%= link_to title, episode_metrics_path(episode_id: er[:episode][:guid], date_start: date_start, date_end: date_end, interval: interval), data: {turbo_frame: "_top"} %></span>
                 </td>
                 <td><%= er[:episode][:published_at].strftime("%Y-%m-%d") %></td>
                 <td><% if sum %><%= sum %><% else %>&mdash;<% end %></td>

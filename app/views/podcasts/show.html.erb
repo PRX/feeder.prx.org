@@ -46,7 +46,7 @@
               <div class="episode-card-info inside-card flex-fill px-3 py-2">
                 <p class="episode-card-date"><%= local_date(ep.published_at, format: :short) %></p>
                 <div class="episode-card-inner inside-card">
-                  <h2 class="h5 episode-card-title m-0"><%= link_to ep.title, edit_episode_path(ep) %></h2>
+                  <h2 class="h5 episode-card-title m-0"><%= link_to ep.title, episode_path(ep) %></h2>
                 </div>
               </div>
             <% end %>
@@ -70,7 +70,7 @@
                   <% end %>
                 </p>
                 <div class="episode-card-inner inside-card">
-                  <h2 class="h5 episode-card-title"><%= link_to ep.title, edit_episode_path(ep) %></h2>
+                  <h2 class="h5 episode-card-title"><%= link_to ep.title, episode_path(ep) %></h2>
                 </div>
               </div>
             <% end %>

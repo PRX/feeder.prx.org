@@ -141,7 +141,7 @@ export function buildDownloadsSeries(data, dateRange) {
   } else {
     return [
       {
-        name: "All Episodes",
+        name: data.label,
         data: alignDownloadsOnDateRange(data.rollups, dateRange),
         color: data.color,
       },
