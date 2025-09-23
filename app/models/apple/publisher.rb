@@ -92,6 +92,9 @@ module Apple
 
         eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
           process_delivery!(eps)
+        end
+
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           publish_drafting!(eps)
           raise_delivery_processing_errors(eps)
         end
