@@ -43,7 +43,7 @@ class EpisodeMetricsController < ApplicationController
         .order(Arel.sql("SUM(count) AS count DESC"))
         .limit(10)
         .load_async
-    @agent_apps =
+    @agent_apps_in_range =
       Rollups::DailyAgent
         .where(episode_id: @episode.guid, day: (@date_start..@date_end), agent_name_id: @agent_apps_alltime.pluck(:code))
         .select("DATE_TRUNC('#{@interval}', day) AS day", "agent_name_id AS code", "SUM(count) AS count")
@@ -58,7 +58,7 @@ class EpisodeMetricsController < ApplicationController
       date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
-      agents: agents_rollups(@agent_apps_alltime, @agent_apps),
+      agents: agents_rollups(@agent_apps_alltime, @agent_apps_in_range),
       agents_path: "agent_apps",
       total_alltime: @total_agents,
       totals_in_range: @totals_in_range
@@ -74,7 +74,7 @@ class EpisodeMetricsController < ApplicationController
         .order(Arel.sql("SUM(count) AS count DESC"))
         .limit(10)
         .load_async
-    @agent_types =
+    @agent_types_in_range =
       Rollups::DailyAgent
         .where(episode_id: @episode.guid, day: (@date_start..@date_end), agent_type_id: @agent_types_alltime.pluck(:code))
         .select("DATE_TRUNC('#{@interval}', day) AS day", "agent_type_id AS code", "SUM(count) AS count")
@@ -89,7 +89,7 @@ class EpisodeMetricsController < ApplicationController
       date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
-      agents: agents_rollups(@agent_types_alltime, @agent_types),
+      agents: agents_rollups(@agent_types_alltime, @agent_types_in_range),
       agents_path: "agent_types",
       total_alltime: @total_agents,
       totals_in_range: @totals_in_range
@@ -105,7 +105,7 @@ class EpisodeMetricsController < ApplicationController
         .order(Arel.sql("SUM(count) AS count DESC"))
         .limit(10)
         .load_async
-    @agent_os =
+    @agent_os_in_range =
       Rollups::DailyAgent
         .where(episode_id: @episode.guid, day: (@date_start..@date_end), agent_os_id: @agent_os_alltime.pluck(:code))
         .select("DATE_TRUNC('#{@interval}', day) AS day", "agent_os_id AS code", "SUM(count) AS count")
@@ -120,7 +120,7 @@ class EpisodeMetricsController < ApplicationController
       date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
-      agents: agents_rollups(@agent_os_alltime, @agent_os),
+      agents: agents_rollups(@agent_os_alltime, @agent_os_in_range),
       agents_path: "agent_os",
       total_alltime: @total_agents,
       totals_in_range: @totals_in_range

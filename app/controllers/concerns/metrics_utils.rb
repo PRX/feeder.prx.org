@@ -44,10 +44,6 @@ module MetricsUtils
     "#0072a3"
   end
 
-  def faded_gray
-    "#90909090"
-  end
-
   def single_rollups(downloads, label = I18n.t(".helpers.label.metrics.chart.all_episodes"))
     {
       rollups: downloads,
