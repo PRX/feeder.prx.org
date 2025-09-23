@@ -33,6 +33,8 @@ class EpisodeTranscriptsController < ApplicationController
     @episode = Episode.find_by_guid!(params[:episode_id])
     @episode.locking_enabled = true
     @podcast = @episode.podcast
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def episode_params

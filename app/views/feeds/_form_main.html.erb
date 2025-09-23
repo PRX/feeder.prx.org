@@ -1,15 +1,23 @@
 <% if feed.default? %>
-  <div class="col-6 mb-4">
+  <div class="col-12 mb-4">
     <div class="form-floating input-group">
-      <%= form.text_field :title, value: "Default Feed", disabled: true %>
-      <%= form.label :title %>
+      <%= form.text_field :label, disabled: true %>
+      <%= form.label :label, required: true %>
     </div>
   </div>
 <% else %>
-  <div class="col-12 mb-4">
+  <div class="col-6 mb-4">
+    <div class="form-floating input-group">
+      <%= form.text_field :label %>
+      <%= form.label :label, required: true %>
+      <%= field_help_text t(".help.label") %>
+    </div>
+  </div>
+
+  <div class="col-6 mb-4">
     <div class="form-floating input-group">
       <%= form.text_field :title %>
-      <%= form.label :title, required: true %>
+      <%= form.label :title %>
       <%= field_help_text t(".help.title") %>
     </div>
   </div>

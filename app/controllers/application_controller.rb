@@ -42,4 +42,13 @@ class ApplicationController < ActionController::Base
       end
     end
   end
+
+  # shared handler for prod 404s (prevent logging errors)
+  def render_not_found(err)
+    if Rails.configuration.consider_all_requests_local
+      raise err
+    else
+      render file: Rails.public_path.join("404.html"), status: :not_found
+    end
+  end
 end

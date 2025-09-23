@@ -26,6 +26,8 @@ class FeedsController < ApplicationController
   def get_apple_show_options(feed)
     if feed.integration_type == :apple && feed.apple_config&.key
       feed.apple_show_options
+    else
+      []
     end
   end
 
@@ -124,6 +126,8 @@ class FeedsController < ApplicationController
   def set_feed
     @feed = Feed.find(params[:id])
     @feed.locking_enabled = true
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   # Only allow a list of trusted parameters through.
@@ -135,6 +139,7 @@ class FeedsController < ApplicationController
     nilify params.fetch(:feed, {}).permit(
       :lock_version,
       :file_name,
+      :label,
       :title,
       :subtitle,
       :description,

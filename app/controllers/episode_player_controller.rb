@@ -1,14 +1,20 @@
 class EpisodePlayerController < ApplicationController
-  def show
-    @episode = Episode.find_by_guid!(params[:episode_id])
-    @podcast = @episode.podcast
+  before_action :set_episode
 
+  def show
     authorize @episode, :show?
 
     @player_options = episode_player_params
   end
 
   private
+
+  def set_episode
+    @episode = Episode.find_by_guid!(params[:episode_id])
+    @podcast = @episode.podcast
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
+  end
 
   def episode_player_params
     nilify params

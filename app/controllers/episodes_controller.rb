@@ -63,6 +63,7 @@ class EpisodesController < ApplicationController
   end
 
   # GET /episodes/1/edit
+  # /episodes/ec20a58f-02e0-409e-8b4c-7bd89e52f7f7/edit
   def edit
     @episode.assign_attributes(episode_params)
     authorize @episode, :show?
@@ -139,6 +140,8 @@ class EpisodesController < ApplicationController
     end
     @episode.strict_validations = true
     @episode.locking_enabled = true
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def set_podcast

@@ -14,6 +14,8 @@ class PlacementsPreviewController < ApplicationController
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
     authorize @podcast, :show?
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def get_placement(original_count)

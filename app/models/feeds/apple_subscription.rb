@@ -1,6 +1,6 @@
 class Feeds::AppleSubscription < Feed
   DEFAULT_FEED_SLUG = "apple-delegated-delivery-subscriptions"
-  DEFAULT_TITLE = "Apple Delegated Delivery Subscriptions"
+  DEFAULT_LABEL = "Apple Subscriptions"
   DEFAULT_AUDIO_FORMAT = {f: "mp3", b: 128, c: 2, s: 44100}.with_indifferent_access
   DEFAULT_ZONES = ["billboard", "sonic_id"]
 
@@ -10,7 +10,7 @@ class Feeds::AppleSubscription < Feed
   MP3_CHANNELS = [1, 2]
   MIN_MP3_SAMPLERATE = 44100
 
-  after_initialize :set_defaults
+  before_validation :set_tokens
 
   after_create :republish_public_feed
 
@@ -41,14 +41,17 @@ class Feeds::AppleSubscription < Feed
 
   def set_defaults
     self.slug ||= DEFAULT_FEED_SLUG
-    self.title ||= DEFAULT_TITLE
+    self[:label] ||= DEFAULT_LABEL
     self.audio_format ||= guess_audio_format
     self.display_episodes_count ||= podcast&.default_feed&.display_episodes_count if new_record?
     self.include_zones ||= DEFAULT_ZONES
-    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
     self.private = true
 
     super
+  end
+
+  def set_tokens
+    self.tokens = [FeedToken.new(label: DEFAULT_LABEL)] if tokens.empty?
   end
 
   def update_apple_show

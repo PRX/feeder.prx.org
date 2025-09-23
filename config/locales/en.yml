@@ -427,15 +427,16 @@ en:
         episode_offset_seconds: Episode Publish Offset
         file_name: File Name
         episode_footer: Episode Description Footer
-        friendly_titles:
-          apple: Apple Subscriptions
-          default: Default RSS Feed
-          megaphone: Megaphone Integration
         house: House Ads
         include_donation_url: Include Donation Form
         include_podcast_value: Include Micropayments Wallet
         itunes_category: Apple Podcasts Category
         itunes_subcategory: Apple Podcasts Sub-Category
+        label: Label
+        labels:
+          apple: Apple Subscriptions
+          default: Default RSS Feed
+          megaphone: Megaphone Integration
         new_feed_url: New Feed URL
         paid: Paid Ads
         private: Private (unlisted)
@@ -443,7 +444,7 @@ en:
         slug: Slug
         sonic_id: Sonic IDs
         subtitle: Teaser
-        title: Title
+        title: Override Title
         url: Public Feed URL
         unique_guids: Unique GUIDs
       feed_image:
@@ -985,7 +986,8 @@ en:
         file_name: The file name used for your private RSS feed.
         episode_footer: Text to be included at the end of each episode's description, such as a privacy policy link.
         slug: An alphanumeric slug used to identify your feed. Also used in the private feed RSS url.
-        title: An alternate title for your feed, to distinguish it from the Default Feed
+        label: A label to help you identify this feed while publishing episodes. Will not be visible to listeners.
+        title: Optionally override your podcast title for this feed, which might be visible to listeners in certain contexts.
     form_overrides:
       title: Overrides
       help:

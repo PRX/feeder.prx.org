@@ -256,8 +256,12 @@ class EpisodeMediaTest < ActiveSupport::TestCase
 
       # new version when processing completes
       c3.update(status: "complete")
-      v2 = episode.reload.cut_media_version!
+      episode.reload
+      v2 = episode.cut_media_version!
+      v3 = episode.cut_media_version!
+
       refute_equal v1, v2
+      assert_equal v2, v3
       assert_equal [c1, c3], v2.media_resources
       assert_equal 2, episode.media_versions.size
     end

@@ -61,6 +61,8 @@ class EpisodeMediaController < ApplicationController
     @episode.strict_validations = true
     @episode.locking_enabled = true
     @podcast = @episode.podcast
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def episode_params

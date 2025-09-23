@@ -13,14 +13,15 @@ describe Feeds::AppleSubscription do
       f = Feeds::AppleSubscription.new(podcast: podcast)
 
       assert_equal Feeds::AppleSubscription::DEFAULT_FEED_SLUG, f.slug
-      assert_equal Feeds::AppleSubscription::DEFAULT_TITLE, f.title
+      assert_equal Feeds::AppleSubscription::DEFAULT_LABEL, f[:label]
       assert_equal Feeds::AppleSubscription::DEFAULT_AUDIO_FORMAT, f.audio_format
       assert_equal 99, f.display_episodes_count
       assert_equal Feeds::AppleSubscription::DEFAULT_ZONES, f.include_zones
       assert_equal true, f.private
 
+      assert f.valid?
       assert_equal 1, f.tokens.length
-      assert_equal Feeds::AppleSubscription::DEFAULT_TITLE, f.tokens[0].label
+      assert_equal Feeds::AppleSubscription::DEFAULT_LABEL, f.tokens[0].label
     end
 
     it "does not override most existing values" do
@@ -107,11 +108,6 @@ describe Feeds::AppleSubscription do
 
     it "must be a private feed" do
       apple_feed.private = false
-      refute apple_feed.valid?
-    end
-
-    it "must have a token" do
-      apple_feed.tokens = []
       refute apple_feed.valid?
     end
   end

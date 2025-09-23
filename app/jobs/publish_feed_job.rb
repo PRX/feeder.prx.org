@@ -14,6 +14,8 @@ class PublishFeedJob < ApplicationJob
   }.freeze
 
   def perform(podcast, pub_item)
+    set_job_id_on_publishing_item(podcast)
+
     # Consume the SQS message, return early, if we have racing threads trying to
     # grab the current publishing pipeline.
     return :null if null_publishing_item?(podcast, pub_item)
@@ -158,5 +160,15 @@ class PublishFeedJob < ApplicationJob
     end
 
     mismatch
+  end
+
+  private
+
+  def set_job_id_on_publishing_item(podcast)
+    current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
+
+    return unless current_pub_item && current_pub_item.job_id.nil?
+
+    current_pub_item.update!(job_id: job_id)
   end
 end

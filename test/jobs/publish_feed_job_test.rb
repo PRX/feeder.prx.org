@@ -113,6 +113,11 @@ describe PublishFeedJob do
           refute_nil rss
           refute_nil job.put_object
           assert_nil job.copy_object
+
+          # it sets the job id on the publishing queue item
+          pub_item.reload
+          refute_nil pub_item.job_id
+          assert_equal pub_item.job_id, job.job_id
         end
       end
 

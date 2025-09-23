@@ -203,10 +203,10 @@ describe Feed do
       assert_equal feed.enclosure_template, Feed.enclosure_template_default
     end
 
-    it "has a title if it is not default" do
-      feed2.title = nil
+    it "has a label if it is not default" do
+      feed2.label = nil
       refute feed2.valid?
-      feed2.title = "new feed"
+      feed2.label = "new feed"
       assert feed2.valid?
     end
 
