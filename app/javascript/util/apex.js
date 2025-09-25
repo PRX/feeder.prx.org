@@ -149,10 +149,10 @@ export function buildDownloadsSeries(data, dateRange) {
   }
 }
 
-function alignDownloadsOnDateRange(downloads, range) {
+export function alignDownloadsOnDateRange(downloads, range, column = "hour") {
   return range.map((date) => {
     const match = downloads.filter((r) => {
-      return r.hour === date
+      return r[`${column}`] === date
     })
 
     if (match[0]) {

@@ -1,28 +1,37 @@
 import { Controller } from "@hotwired/stimulus"
-import {} from "util/apex"
+import { buildDateTimeChart, alignDownloadsOnDateRange, LINE_TYPE } from "util/apex"
 
 export default class extends Controller {
   static values = {
     id: String,
-    seriesData: Array,
+    agents: Array,
     dateRange: Array,
+    interval: String,
+    title: String,
   }
 
   static targets = ["chart"]
 
-  connect() {}
+  connect() {
+    const title = `Downloads by ${this.intervalValue.toLowerCase()}`
+    const chart = buildDateTimeChart(this.idValue, this.buildAgentsSeries(), this.chartTarget, LINE_TYPE, title)
 
-  buildSeries() {
-    if (this.seriesDataValue.length) {
+    chart.render()
+  }
+
+  buildAgentsSeries() {
+    return this.agentsValue.map((agent) => {
       return {
-        series: [
-          {
-            data: this.seriesDataValue,
-          },
-        ],
+        name: agent.label,
+        data: alignDownloadsOnDateRange(agent.rollups, this.stripDateRange(), "day"),
+        color: agent.color,
       }
-    } else {
-      return []
-    }
+    })
+  }
+
+  stripDateRange() {
+    return this.dateRangeValue.map((date) => {
+      return date.substring(0, 10)
+    })
   }
 }
