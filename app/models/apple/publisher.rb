@@ -72,7 +72,7 @@ module Apple
       unarchive!(episodes_to_unarchive)
 
       # Calculate the episodes_to_sync based on the current state of the private feed
-      deliver_and_publish!(episodes_to_sync)
+      upload_and_process!(episodes_to_sync)
 
       # success
       SyncLog.log!(
@@ -84,17 +84,17 @@ module Apple
       )
     end
 
-    def deliver_and_publish!(eps)
-      Rails.logger.tagged("Apple::Publisher#deliver_and_publish!") do
+    def upload_and_process!(eps)
+      Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
+        eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          upload_media!(eps)
+        end
+
+        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
+          process_delivery!(eps)
+        end
+
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          eps.filter(&:apple_needs_upload?).tap do |eps|
-            upload_media!(eps)
-          end
-
-          eps.filter(&:apple_needs_delivery?).tap do |eps|
-            process_and_deliver!(eps)
-          end
-
           publish_drafting!(eps)
           raise_delivery_processing_errors(eps)
         end
@@ -102,10 +102,10 @@ module Apple
     end
 
     def upload_media!(eps)
-      # Soft delete any existing delivery and delivery files
+      # Soft delete any existing delivery and delivery files.
       prepare_for_delivery!(eps)
 
-      # only create if needed
+      # Only create if needed.
       sync_episodes!(eps)
       sync_podcast_containers!(eps)
 
@@ -114,16 +114,20 @@ module Apple
       sync_podcast_deliveries!(eps)
       sync_podcast_delivery_files!(eps)
 
-      # upload and mark as uploaded, then update the audio container reference
+      # Upload and mark as uploaded, then update the audio container reference.
       execute_upload_operations!(eps)
       mark_delivery_files_uploaded!(eps)
       update_audio_container_reference!(eps)
 
-      # finally mark the episode as uploaded
+      # Mark the episode as uploaded.
       mark_as_uploaded!(eps)
+
+      # The episodes start waiting after they are uploaded.
+      # Increment the wait counter.
+      increment_asset_wait!(eps)
     end
 
-    def process_and_deliver!(eps)
+    def process_delivery!(eps)
       increment_asset_wait!(eps)
 
       wait_for_upload_processing(eps)
