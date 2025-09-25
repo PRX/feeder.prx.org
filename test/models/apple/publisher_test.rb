@@ -315,6 +315,62 @@ describe Apple::Publisher do
         end
       end
     end
+
+    describe "#archive! chunking behavior" do
+      it "should pass chunked episodes to Apple::Episode.archive, not all episodes" do
+        # Create simple doubles instead of full episodes
+        episodes = (1..30).map { |i| OpenStruct.new(feeder_id: i) }
+
+        # Track which episode IDs are passed to Apple::Episode.archive
+        archive_calls = []
+        archive_mock = ->(api, show, eps) do
+          archive_calls << eps.map(&:feeder_id)
+          []  # return empty array
+        end
+
+        Apple::Episode.stub(:archive, archive_mock) do
+          apple_publisher.archive!(episodes)
+        end
+
+        # Should have been called twice: first chunk of 25, second chunk of 5
+        assert_equal 2, archive_calls.length
+        assert_equal 25, archive_calls[0].length
+        assert_equal 5, archive_calls[1].length
+
+        # Verify episodes were properly chunked (no duplicates across calls)
+        all_processed_ids = archive_calls.flatten
+        expected_ids = (1..30).to_a
+        assert_equal expected_ids.sort, all_processed_ids.sort
+      end
+    end
+
+    describe "#unarchive! chunking behavior" do
+      it "should pass chunked episodes to Apple::Episode.unarchive, not all episodes" do
+        # Create simple doubles instead of full episodes
+        episodes = (1..30).map { |i| OpenStruct.new(feeder_id: i) }
+
+        # Track which episode IDs are passed to Apple::Episode.unarchive
+        unarchive_calls = []
+        unarchive_mock = ->(api, show, eps) do
+          unarchive_calls << eps.map(&:feeder_id)
+          []  # return empty array
+        end
+
+        Apple::Episode.stub(:unarchive, unarchive_mock) do
+          apple_publisher.unarchive!(episodes)
+        end
+
+        # Should have been called twice: first chunk of 25, second chunk of 5
+        assert_equal 2, unarchive_calls.length
+        assert_equal 25, unarchive_calls[0].length
+        assert_equal 5, unarchive_calls[1].length
+
+        # Verify episodes were properly chunked (no duplicates across calls)
+        all_processed_ids = unarchive_calls.flatten
+        expected_ids = (1..30).to_a
+        assert_equal expected_ids.sort, all_processed_ids.sort
+      end
+    end
   end
 
   describe "#episodes_to_sync" do
