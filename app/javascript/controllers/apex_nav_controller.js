@@ -5,7 +5,7 @@ export default class extends Controller {
     "startDate",
     "endDate",
     "interval",
-    "intervalInput",
+    "uniquesInterval",
     "uniques",
     "dropdays",
     "mainStart",
@@ -36,18 +36,18 @@ export default class extends Controller {
   updateInterval(event) {
     event.preventDefault()
 
-    this.updateSpecificTargets(this.intervalTargets, event.target.value, event.params.path)
+    this.updateAllTargets(this.intervalTargets, event.target.value)
   }
 
   updateUniques(event) {
     this.updateAllTargets(this.uniquesTargets, event.target.value)
 
     if (event.target.value === "calendar_week") {
-      this.updateSpecificTargets(this.intervalTargets, "WEEK", event.params.path)
+      this.updateSpecificTargets(this.uniquesIntervalTargets, "WEEK", event.params.path)
     } else if (event.target.value === "calendar_month") {
-      this.updateSpecificTargets(this.intervalTargets, "MONTH", event.params.path)
+      this.updateSpecificTargets(this.uniquesIntervalTargets, "MONTH", event.params.path)
     } else {
-      this.updateSpecificTargets(this.intervalTargets, "DAY", event.params.path)
+      this.updateSpecificTargets(this.uniquesIntervalTargets, "DAY", event.params.path)
     }
   }
 
@@ -72,18 +72,6 @@ export default class extends Controller {
     targets.forEach((target) => {
       if (path === target.dataset.path) {
         target.value = value
-        target.dispatchEvent(new Event("change"))
-      }
-    })
-  }
-
-  updateInputs(event) {
-    event.preventDefault()
-    const inputTargets = `${event.params.input}InputTargets`
-
-    this[inputTargets].forEach((target) => {
-      if (target.value !== event.target.value) {
-        target.value = event.target.value
         target.dispatchEvent(new Event("change"))
       }
     })

@@ -487,8 +487,6 @@ en:
           "30": 30 Days
           "60": 60 Days
           "90": 90 Days
-          "24": 24 Hours
-          "48": 48 Hours
         uniques:
           last_7_rolling: Daily (7-Day Window)
           last_28_rolling: Daily (28-Day Window)
