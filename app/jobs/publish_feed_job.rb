@@ -45,17 +45,11 @@ class PublishFeedJob < ApplicationJob
     res = feed.publish_integration!
     PublishingPipelineState.publish_integration!(podcast)
     res
-  rescue Apple::ApiPermissionError, Apple::AssetStateTimeoutError => e
+  rescue Apple::AssetStateTimeoutError => e
     PublishingPipelineState.error_integration!(podcast)
 
     if feed.config.sync_blocks_rss
-      # Handle permission errors with exponential backoff
-      if e.raise_publishing_error?(feed)
-        Rails.logger.error(e.message, {podcast_id: podcast.id})
-        NewRelic::Agent.notice_error(e)
-      end
-
-      Rails.logger.send(e.log_level(feed), e.message, {podcast_id: podcast.id})
+      Rails.logger.send(e.log_level, e.message, {podcast_id: podcast.id})
       raise Apple::RetryPublishingError.new(e.message)
     end
   rescue => e
