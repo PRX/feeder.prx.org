@@ -1,0 +1,6 @@
+<%= form_with(url: url, method: :get, id: "metrics_uniques_filter") do |form| %>
+  <div class="form-floating">
+    <%= form.select :selection, uniques_selection_options, {selected: uniques_selection}, data: {action: "apex-nav#updateUniques", apex_nav_path_param: path}, class: "form-select form-select-sm" %>
+    <%= form.label :selection %>
+  </div>
+<% end %>

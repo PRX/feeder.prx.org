@@ -94,13 +94,13 @@ module EpisodeMedia
   end
 
   def cut_media_version!
-    latest_version = media_versions.first
-    latest_media = latest_version&.media_resources || []
-    latest_ids = latest_media.map(&:id)
+    latest_version = latest_media_version[-1]
+    latest_media = latest_version&.media_version_resources || []
+    latest_ids = latest_media.map(&:media_resource_id)
 
     # backfill media_versions for newly completed media
     if media_ready?(true) && latest_ids != media_ids
-      new_version = media_versions.build
+      new_version = latest_media_version.build
       media.each { |m| new_version.media_version_resources.build(media_resource: m) }
       new_version.save!
       new_version
@@ -131,6 +131,19 @@ module EpisodeMedia
 
   def media_ids
     media.map(&:id)
+  end
+
+  def uncut=(uncut)
+    # if uncut is unchanged or missing, update other attributes
+    if (uncut && self.uncut) && (uncut.href.blank? || (self.uncut.href == uncut.href))
+      self.uncut.segmentation = uncut.segmentation if uncut.segmentation.present?
+    else
+      super
+    end
+
+    self.medium = if uncut.present?
+      "uncut"
+    end
   end
 
   # API updates ignore nil attributes
@@ -195,16 +208,24 @@ module EpisodeMedia
     if override?
       external_media_resource&.duration
     else
-      media.inject(0.0) { |s, c| s + c.duration.to_f } + podcast.try(:duration_padding).to_f
+      media_duration_sum + podcast.try(:duration_padding).to_f
     end
+  end
+
+  def media_duration_sum
+    media.inject(0.0) { |s, c| s + c.duration.to_f }
   end
 
   def media_file_size
     if override?
       external_media_resource&.file_size
     else
-      media.inject(0) { |s, c| s + c.file_size.to_i }
+      media_file_size_sum
     end
+  end
+
+  def media_file_size_sum
+    media.inject(0) { |s, c| s + c.file_size.to_i }
   end
 
   # must_be_complete=true, is used for:

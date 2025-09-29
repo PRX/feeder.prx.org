@@ -53,6 +53,8 @@ class ImportsController < ApplicationController
 
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def set_import
@@ -65,6 +67,9 @@ class ImportsController < ApplicationController
       :file_name,
       :import_existing,
       :import_metadata,
+      :megaphone_podcast_id,
+      :override_enclosures,
+      :import_drafts,
       :timings,
       :type,
       :url

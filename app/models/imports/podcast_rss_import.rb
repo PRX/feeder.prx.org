@@ -1,7 +1,7 @@
 require "feedjira"
 
 class PodcastRssImport < PodcastImport
-  store :config, accessors: [:episodes_only, :new_episodes_only, :audio, :channel, :first_entry], coder: JSON
+  store :config, accessors: [:episodes_only, :metadata_only, :new_episodes_only, :audio, :channel, :first_entry], coder: JSON
 
   has_many :episode_imports, dependent: :destroy, class_name: "EpisodeRssImport", foreign_key: :podcast_import_id
 
@@ -11,6 +11,7 @@ class PodcastRssImport < PodcastImport
   def set_defaults
     super
     self.episodes_only ||= false
+    self.metadata_only ||= false
     self.new_episodes_only ||= false
     self.audio ||= {}
   end
@@ -73,11 +74,23 @@ class PodcastRssImport < PodcastImport
       self.feed_episode_count = feed.entries.count
       channel
       first_entry
+
+      if clean_yes_no(channel[:podcast_locked])
+        errors.add(:url, :podcast_locked, message: "podcast locked")
+      end
     end
   rescue ImportUtils::HttpError
     errors.add(:url, :bad_http_response, message: "bad http response")
   rescue
     errors.add(:url, :invalid_rss, message: "invalid rss")
+  end
+
+  def replace_files
+    !metadata_only
+  end
+
+  def replace_files=(val)
+    self.metadata_only = !ActiveModel::Type::Boolean.new.cast(val)
   end
 
   def import_metadata
@@ -134,7 +147,7 @@ class PodcastRssImport < PodcastImport
     guids = []
     to_import = []
     feed.entries.each do |entry|
-      guid = entry.entry_id
+      guid = clean_string(entry.entry_id)
       entry_hash = entry.to_h.as_json.with_indifferent_access
 
       if new_episodes_only && existing_guids.include?(guid)
@@ -162,15 +175,15 @@ class PodcastRssImport < PodcastImport
 
   def update_itunes_categories
     default_feed = podcast.default_feed
-    default_feed.itunes_categories = parse_itunes_categories
+    default_feed.itunes_categories = parse_itunes_categories(channel[:itunes_categories])
     default_feed.save!
   end
 
   def update_images
     default_feed = podcast.default_feed
 
-    default_feed.itunes_image = channel[:itunes_image] if channel[:itunes_image].present?
-    default_feed.feed_image = channel[:image][:url] if channel[:image].present?
+    default_feed.itunes_image = clean_url(channel[:itunes_image]) if channel[:itunes_image].present?
+    default_feed.feed_image = clean_url(channel[:image][:url]) if channel[:image].present?
     default_feed.save!
 
     default_feed.itunes_images.reset
@@ -186,11 +199,11 @@ class PodcastRssImport < PodcastImport
       podcast_attributes[atr.to_sym] = clean_string(channel[atr])
     end
 
-    podcast_attributes[:link] = clean_string(channel[:url])
+    podcast_attributes[:link] = clean_url(channel[:url])
     podcast_attributes[:explicit] = explicit(channel[:itunes_explicit], "false")
-    podcast_attributes[:new_feed_url] = clean_string(channel[:itunes_new_feed_url])
+    podcast_attributes[:new_feed_url] = clean_url(channel[:itunes_new_feed_url])
     podcast_attributes[:enclosure_prefix] ||= enclosure_prefix
-    podcast_attributes[:url] ||= clean_string(channel[:feed_url])
+    podcast_attributes[:url] ||= clean_url(channel[:feed_url])
 
     podcast_attributes[:author] = person(channel[:itunes_author])
     podcast_attributes[:managing_editor] = person(channel[:managing_editor])
@@ -198,14 +211,17 @@ class PodcastRssImport < PodcastImport
     podcast_attributes[:owner_name] = owner[:name]
     podcast_attributes[:owner_email] = owner[:email]
 
-    podcast_attributes[:complete] = (clean_string(channel[:itunes_complete]) == "yes")
+    podcast_attributes[:complete] = clean_yes_no(channel[:itunes_complete])
     podcast_attributes[:copyright] ||= clean_string(channel[:media_copyright])
-    podcast_attributes[:serial_order] = channel[:itunes_type] && !!channel[:itunes_type].match(/serial/i)
+    podcast_attributes[:itunes_type] = channel[:itunes_type]
     podcast_attributes[:locked_until] = 10.minutes.from_now
 
     podcast_attributes[:title] = clean_string(channel[:title])
     podcast_attributes[:subtitle] = clean_string(podcast_short_desc)
     podcast_attributes[:description] = feed_description
+
+    podcast_attributes[:guid] = clean_string(channel[:podcast_guid])
+    podcast_attributes[:donation_url] = clean_url(channel[:podcast_funding])
 
     # categories setter does the work of sanitizing these
     cats = Array(channel[:categories])
@@ -261,20 +277,6 @@ class PodcastRssImport < PodcastImport
     else
       {}
     end
-  end
-
-  def parse_itunes_categories
-    itunes_cats = {}
-    Array(channel[:itunes_categories]).map(&:strip).select { |c| !c.blank? }.each do |cat|
-      if ITunesCategoryValidator.category?(cat)
-        itunes_cats[cat] ||= []
-      elsif (parent_cat = ITunesCategoryValidator.subcategory?(cat))
-        itunes_cats[parent_cat] ||= []
-        itunes_cats[parent_cat] << cat
-      end
-    end
-
-    [itunes_cats.keys.map { |n| ITunesCategory.new(name: n, subcategories: itunes_cats[n]) }.first].compact
   end
 
   def podcast_short_desc

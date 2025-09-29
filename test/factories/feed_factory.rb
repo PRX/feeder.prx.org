@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :feed do
     sequence(:slug) { |n| "myfeed#{n}" }
+    sequence(:label) { |n| "My Feed #{n}" }
 
     file_name { "feed-rss.xml" }
     audio_format { Hash(f: "flac", b: 16, c: 2, s: 44100) }
@@ -57,6 +58,7 @@ FactoryBot.define do
     factory :megaphone_feed, class: "Feeds::MegaphoneFeed" do
       type { "Feeds::MegaphoneFeed" }
       private { true }
+      audio_format { Hash(f: "mp3", b: 128, c: 2, s: 44100) }
 
       after(:build) do |feed, _evaluator|
         feed.megaphone_config = build(:megaphone_config, feed: feed)

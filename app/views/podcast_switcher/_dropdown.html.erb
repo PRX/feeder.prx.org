@@ -1,6 +1,6 @@
 <div class="prx-podcast-switcher dropdown" data-controller="focus">
 
-  <button class="btn btn-white dropdown-toggle" type="button" id="podcast-switcher" data-bs-toggle="dropdown" aria-expanded="false" data-action="focus#focus">
+  <button class="btn dropdown-toggle" type="button" id="podcast-switcher" data-bs-toggle="dropdown" aria-expanded="false" data-action="focus#focus" data-controller="hotkey">
     <% if @podcast %>
       <% cache @podcast do %>
         <% if @podcast.ready_image %>
@@ -19,7 +19,7 @@
   <ul class="dropdown-menu p-2 shadow" aria-labelledby="podcast-switcher">
     <%# turbo-stream search form %>
     <li class="search-filter mb-2">
-      <%= form_with(url: main_app.podcast_switcher_path, html: {autocomplete: "off"}, data: {controller: "search"}) do |f| %>
+      <%= form_with(url: podcast_switcher_path, html: {autocomplete: "off"}, data: {controller: "search"}) do |f| %>
         <div class="form-floating">
           <%= f.search_text_field :q, {}, id: "podcast_switcher", data: {focus_target: "field"} %>
           <%= f.label :q, t(".search"), for: "podcast_switcher" %>
@@ -29,7 +29,7 @@
     </li>
 
     <%# lazy-loaded list of podcasts %>
-    <%= turbo_frame_tag "podcast-switcher-list", src: main_app.podcast_switcher_path, loading: "lazy" do %>
+    <%= turbo_frame_tag "podcast-switcher-list", src: podcast_switcher_path, loading: "lazy" do %>
       <li class="d-flex justify-content-center">
         <div class="spinner-border text-primary m-5" role="status"></div>
       </li>
@@ -37,7 +37,7 @@
       <li><hr class="dropdown-divider"></li>
 
       <li>
-        <%= link_to main_app.root_path, class: "dropdown-item" do %>
+        <%= link_to root_path, class: "dropdown-item" do %>
           <%= t(".all") %> &gt;
         <% end %>
       </li>
@@ -48,7 +48,7 @@
     <%# optional new podcast link %>
     <% if policy(Podcast.new).new? %>
       <li>
-        <%= link_to main_app.new_podcast_path, class: "dropdown-item"  do %>
+        <%= link_to new_podcast_path, class: "dropdown-item"  do %>
           <%= t(".create") %> &gt;
         <% end %>
       </li>

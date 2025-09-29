@@ -3,6 +3,7 @@ class ErrorsController < ActionController::Base
 
   layout false
   skip_forgery_protection
+  skip_before_action :authenticate!
 
   def not_found
     render file: Rails.public_path.join("404.html"), status: :not_found

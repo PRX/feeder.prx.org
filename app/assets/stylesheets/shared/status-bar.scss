@@ -9,7 +9,7 @@ prx-status-bar {
   height: $status_bar-height;
   box-sizing: content-box;
   background-color: $white;
-  border: $status_bar-border_size solid $gray-300;
+  border: $status_bar-border_size solid $light-blue-300;
   font-size: 1rem;
   line-height: $status_bar-height;
   color: $gray-600;
@@ -32,7 +32,7 @@ prx-status-bar {
 
   .status-bar-label,
   .status-bar-title {
-    border-left: 1px solid $gray-200;
+    border-left: 1px solid $light-blue-200;
     padding: 0 14px;
     white-space: nowrap;
   }

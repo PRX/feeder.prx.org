@@ -1,0 +1,24 @@
+<% if current_user_wildcard? %>
+  <div class="alert alert-danger m-0 py-2 rounded-0" role="alert">
+    <%= t(".alert") %>
+    <%= link_to t(".revert"), refresh_sessions_path, data: {turbo: false} %>
+  </div>
+<% end %>
+
+<div class="modal fade" id="wildcard-modal" tabindex="-1" aria-labelledby="wildcard-modal-label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="wildcard-modal-label">***<%= t(".title") %>***</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= t(".close") %>"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0"><%= t(".description") %></p>
+      </div>
+      <div class="modal-footer">
+        <%= link_to t(".total"), refresh_sessions_path(wildcard: true), class: "btn btn-danger", data: {turbo: false} %>
+        <%= link_to t(".readonly"), refresh_sessions_path(wildcard: "readonly"), class: "btn btn-primary", data: {turbo: false} %>
+      </div>
+    </div>
+  </div>
+</div>

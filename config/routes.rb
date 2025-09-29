@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  prx_auth_routes
+
+  namespace :admin do
+    resources :podcasts
+    resources :episodes
+    root to: "podcasts#index"
+  end
+
   resources :podcasts do
     resource :engagement, only: [:show, :update], controller: :podcast_engagement
     resource :player, only: :show, controller: :podcast_player
@@ -13,21 +21,30 @@ Rails.application.routes.draw do
     end
     resources :placements_preview, only: [:show]
     get "rollups_demo", to: "podcasts#rollups_demo"
+    resource :metrics, only: [:show], controller: :podcast_metrics do
+      get "downloads"
+      get "uniques"
+      get "episodes"
+      get "dropdays"
+      get "agents"
+    end
   end
 
   resources :episodes, except: [:create, :new] do
+    get "overview"
     resource :media, only: [:show, :update], controller: :episode_media
     get "media_status", to: "episode_media#status"
     resource :player, only: :show, controller: :episode_player
     resource :transcripts, only: [:show, :update], controller: :episode_transcripts
+    resource :metrics, only: [:show], controller: :episode_metrics do
+      get "downloads"
+      get "geos"
+      get "agents"
+    end
   end
 
   resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
   get "/uploads/signature", to: "uploads#signature", as: :uploads_signature
-
-  mount PrxAuth::Rails::Engine => "/auth", :as => "prx_auth_engine"
-  get "sessions/logout", to: "application#logout", as: :logout
-  get "sessions/refresh", to: "application#refresh", as: :refresh
 
   namespace :api do
     scope ":api_version", api_version: "v1", defaults: {format: "hal"} do

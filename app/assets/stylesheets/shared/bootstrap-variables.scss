@@ -16,9 +16,18 @@ $gray-700: #535355;
 $gray-800: #323233;
 $gray-900: #1a1a1a;
 
+$navy: #003a57;
+$navy-700: #05283a;
+$navy-900: #062433;
+
+$light-blue-100: #f7faff;
+$light-blue-200: #e9eef6;
+$light-blue-300: #d0dcee;
+
 $blue: #0072a3;
-$blue-dark: #003a57;
-$blue-light: #8cd2f4;
+$blue-dark: $navy;
+$blue-light: $light-blue-100;
+
 $indigo: #6610f2;
 $purple: #6f42c1;
 $pink: #d63384;
@@ -31,18 +40,18 @@ $teal: #20c997;
 $cyan: #75bbe1;
 
 $primary: $blue;
-$secondary: $gray-700;
+$secondary: $navy;
 $success: $green;
 $info: $cyan;
 $warning: $yellow;
 $danger: $red;
-$light: $gray-100;
+$light: $light-blue-100;
 $dark: $gray-900;
 
 $theme-colors: (
   "primary": $primary,
   "primary-dark": $blue-dark,
-  "primary-light": $blue-light,
+  "primary-light": $light-blue-100,
   "secondary": $secondary,
   "success": $success,
   "info": $info,
@@ -52,9 +61,16 @@ $theme-colors: (
   "dark": $dark,
 );
 
+$border-color: $light-blue-300;
+$border-color-dark: $gray-700;
+$body-bg-dark: $gray-900;
+$link-color-dark: $info;
+$link-hover-color-dark: $light-blue-300;
+
 // Typography
 
 $text-muted: $gray-700;
+$text-muted-dark: $gray-500;
 
 $line-height-base: 2;
 $line-height-xs: 1.1;
@@ -93,8 +109,8 @@ $input-btn-padding-y: 0.75rem;
 $input-btn-padding-x: 0.75rem;
 
 $input-color: $gray-800;
-$input-border-color: $gray-200;
-$input-disabled-bg: #eee;
+$input-border-color: $light-blue-300;
+$input-disabled-bg: $gray-200;
 
 // Buttons
 

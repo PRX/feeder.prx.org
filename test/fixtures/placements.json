@@ -21,6 +21,18 @@
             "section": "post"
           }
         ],
+        "sections": [
+          {
+            "id": "pre",
+            "type": "pre",
+            "max_duration": null
+          },
+          {
+            "id": "post",
+            "type": "post",
+            "max_duration": 120
+          }
+        ],
         "_links": {
           "self": {
             "href": "/api/v1/inventory/5678/placements/3063",
@@ -89,6 +101,23 @@
             "name": "Sonic",
             "type": "sonic_id",
             "section": "post"
+          }
+        ],
+        "sections": [
+          {
+            "id": "pre",
+            "type": "pre",
+            "max_duration": null
+          },
+          {
+            "id": "mid",
+            "type": "mid",
+            "max_duration": null
+          },
+          {
+            "id": "post",
+            "type": "post",
+            "max_duration": null
           }
         ],
         "_links": {
@@ -177,6 +206,28 @@
             "name": "Sonic",
             "type": "sonic_id",
             "section": "post"
+          }
+        ],
+        "sections": [
+          {
+            "id": "pre_a",
+            "type": "pre",
+            "max_duration": null
+          },
+          {
+            "id": "pre_b",
+            "type": "pre",
+            "max_duration": null
+          },
+          {
+            "id": "mid",
+            "type": "mid",
+            "max_duration": null
+          },
+          {
+            "id": "post",
+            "type": "post",
+            "max_duration": null
           }
         ],
         "_links": {

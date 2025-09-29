@@ -5,7 +5,7 @@ module SearchHelper
       type: "button",
       class: "dropdown-item text-decoration-none",
       name: name,
-      data: {action: "dynamic-form#change"},
+      data: {action: "dynamic-form#change", controller: "dropdown-select"},
       value: value
     }
 

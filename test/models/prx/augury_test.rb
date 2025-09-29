@@ -6,7 +6,7 @@ describe Prx::Augury do
   before {
     stub_request(:post, "https://#{ENV["ID_HOST"]}/token")
       .to_return(status: 200,
-        body: '{"access_token":"thisisnotatoken","token_type":"bearer"}',
+        body: '{"access_token":"thisisnotatoken","token_type":"bearer"}'.freeze,
         headers: {"Content-Type" => "application/json; charset=utf-8"})
 
     stub_request(:get, "https://#{ENV["AUGURY_HOST"]}/api/v1/podcasts/1234/placements")

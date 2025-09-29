@@ -7,7 +7,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
   "xmlns:podcast" => "https://podcastindex.org/namespace/1.0",
   "version" => "2.0" do
   xml.channel do
-    xml.title @feed.title || @podcast.title
+    xml.title @feed.title.presence || @podcast.title
     xml.link @podcast.link
     xml.pubDate @podcast.pub_date.utc.rfc2822 if @podcast.pub_date.present?
     xml.lastBuildDate @podcast.last_build_date.utc.rfc2822
@@ -41,6 +41,8 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
     unless @feed.new_feed_url.blank?
       xml.itunes :"new-feed-url", @feed.new_feed_url
     end
+
+    xml.itunes :applepodcastsverify, @feed.apple_verify_token if @feed.apple_verify_token.present?
 
     xml.itunes :block, "Yes" if @podcast.itunes_block || @feed.try(:private)
 
@@ -110,10 +112,14 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
       xml.podcast :follow, url: @podcast.subscribe_links_path
     end
 
+    xml.podcast :podping, usesPodping: "true" if podping_enabled?(@feed)
+
+    xml.podcast :locked, @feed.import_locked ? "yes" : "no"
+
     @episodes.each_with_index do |ep, index|
       xml.item do
-        xml.guid(ep.item_guid, isPermaLink: !!ep.is_perma_link)
-        xml.title(ep.title)
+        xml.guid(episode_guid(ep, @feed), isPermaLink: !!ep.is_perma_link)
+        xml.title(episode_title(ep, @feed))
         xml.pubDate ep.published_at.utc.rfc2822
         xml.link ep.url || ep.enclosure_url(@feed)
         xml.description { xml.cdata!(episode_description(ep, @feed)) }

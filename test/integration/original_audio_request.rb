@@ -11,7 +11,6 @@ describe "Get Original Audio Integration Test" do
     client = OAuth2::Client.new(client_id, client_secret, oauth_options) do |faraday|
       faraday.request :url_encoded
       faraday.response :logger
-      faraday.adapter :excon
     end
 
     token = client.client_credentials.get_token(account: 125347).token

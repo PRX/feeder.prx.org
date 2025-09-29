@@ -2,6 +2,7 @@ module Apple
   module ApiWaiting
     API_WAIT_INTERVAL = 2.seconds
     API_WAIT_TIMEOUT = 5.minutes
+    LOG_INTERVAL = 1.minute
 
     extend ActiveSupport::Concern
     included do
@@ -29,6 +30,7 @@ module Apple
 
       def self.wait_for(remaining_records, wait_timeout: API_WAIT_TIMEOUT, wait_interval: API_WAIT_INTERVAL)
         t_beg = current_time
+        last_log_time = t_beg
 
         waited = 0
         loop do
@@ -41,7 +43,11 @@ module Apple
           sleep(wait_interval)
 
           waited = current_time - t_beg
-          Rails.logger.info(".wait_for", {remaining_record_count: remaining_records.count, have_waited: waited})
+
+          if (current_time - last_log_time) >= LOG_INTERVAL
+            Rails.logger.info(".wait_for", {remaining_record_count: remaining_records.count, have_waited: waited})
+            last_log_time = current_time
+          end
 
           remaining_records = yield(remaining_records)
         end

@@ -17,6 +17,11 @@ describe PublishFeedJob do
   end
 
   describe "saving the rss file" do
+    before do
+      stub_request(:head, episode.enclosure_url).to_return(status: 200)
+      stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
+    end
+
     describe "#perform" do
       it "transitions to the error state upon general error" do
         job.stub(:s3_client, stub_client) do
@@ -37,6 +42,64 @@ describe PublishFeedJob do
       end
     end
 
+    describe "#update_first_publish_episodes" do
+      it "only records a timestamp if it's published to the default feed" do
+        assert_nil podcast.episodes.first.first_rss_published_at
+
+        job.stub(:s3_client, stub_client) do
+          job.save_file(podcast, feed)
+          assert_nil podcast.episodes.first.first_rss_published_at
+        end
+      end
+
+      it "records the timestamp when the episode is published to rss" do
+        assert_nil podcast.episodes.first.first_rss_published_at
+
+        job.stub(:s3_client, stub_client) do
+          rss_builder = FeedBuilder.new(podcast, podcast.default_feed)
+          job.after_publish_rss(podcast, podcast.default_feed, rss_builder.episodes)
+          refute_nil podcast.episodes.first.first_rss_published_at
+          assert_in_delta podcast.episodes.first.first_rss_published_at, DateTime.now, 15.seconds
+        end
+      end
+
+      it "makes head requests for first published episodes if 10 or less" do
+        episode_1 = create(:episode_with_media, podcast: podcast)
+        episode_2 = create(:episode_with_media, podcast: podcast)
+        episode_3 = create(:episode_with_media, podcast: podcast)
+
+        stub_head_1 = stub_request(:head, episode_1.enclosure_url)
+        stub_head_2 = stub_request(:head, episode_2.enclosure_url)
+        stub_head_3 = stub_request(:head, episode_3.enclosure_url)
+
+        job.stub(:s3_client, stub_client) do
+          rss_builder = FeedBuilder.new(podcast, podcast.default_feed)
+          job.after_publish_rss(podcast, podcast.default_feed, rss_builder.episodes)
+
+          assert_requested(stub_head_1)
+          assert_requested(stub_head_2)
+          assert_requested(stub_head_3)
+        end
+      end
+
+      it "does not make head requests if there are more than 10 episodes being published for the first time" do
+        mock_eps = Minitest::Mock.new
+        mock_eps.expect :count, 11
+        mock_eps.expect :update_all, true do |opts|
+          assert opts[:first_rss_published_at].is_a?(DateTime)
+        end
+        mock_eps.expect :first, {enclosure_url: "mock_url"}
+
+        job.stub(:episodes, mock_eps) do
+          stub = stub_request(:head, mock_eps.first[:enclosure_url])
+          job.update_first_publish_episodes(mock_eps)
+
+          assert_not_requested(stub)
+          mock_eps.verify
+        end
+      end
+    end
+
     describe "validations of the publishing pipeline" do
       it "can process publishing a podcast" do
         job.stub(:s3_client, stub_client) do
@@ -50,6 +113,11 @@ describe PublishFeedJob do
           refute_nil rss
           refute_nil job.put_object
           assert_nil job.copy_object
+
+          # it sets the job id on the publishing queue item
+          pub_item.reload
+          refute_nil pub_item.job_id
+          assert_equal pub_item.job_id, job.job_id
         end
       end
 
@@ -271,6 +339,7 @@ describe PublishFeedJob do
         end
 
         it "does not raise an error if the apple publishing fails and apple sync does not block rss publishing" do
+          stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
           apple_feed.apple_config.update!(sync_blocks_rss: false)

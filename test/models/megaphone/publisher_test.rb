@@ -18,7 +18,11 @@ describe Megaphone::Publisher do
   end
 
   describe "sync_episodes!" do
-    let(:episode) { create(:episode, podcast: podcast) }
+    let(:episode) do
+      create(:episode, podcast: podcast).tap do |e|
+        e.feeds << feed
+      end
+    end
 
     before do
       # setup the megaphone podcast
@@ -54,13 +58,19 @@ describe Megaphone::Publisher do
       publisher.sync_episodes!
     end
 
-    it "should update episodes" do
-    end
+    it "completes megaphone imports" do
+      assert episode.in_feed?(feed)
+      pi = create(:podcast_megaphone_import, podcast: podcast, override_enclosures: true)
+      emi = EpisodeMegaphoneImport.create!(podcast_import: pi, episode: episode, status: "complete", guid: "guid")
+      eds = create(:megaphone_episode_delivery_status, episode: episode)
 
-    it "should update episodes with audio" do
-    end
+      assert_nil emi.synced_at
+      EpisodeMegaphoneImport.stub_any_instance(:update_delivery_status, eds) do
+        publisher.complete_import!
+      end
 
-    it "should update episodes with incomplete audio" do
+      emi.reload
+      refute_nil emi.synced_at
     end
   end
 

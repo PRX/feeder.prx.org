@@ -92,6 +92,10 @@ describe Api::EpisodeRepresenter do
       assert_equal json["_links"]["prx:podcast-feed"]["href"],
         episode.podcast.published_url
     end
+    it "has the podcast image" do
+      assert episode.podcast_image.href.present?
+      assert_equal json["podcastImage"]["href"], episode.podcast_image.href
+    end
 
     it "can represent a sad, podcast-less episode" do
       episode.podcast_id = nil

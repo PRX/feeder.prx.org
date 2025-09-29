@@ -1,7 +1,7 @@
 class EpisodesController < ApplicationController
   include EmbedPlayerHelper
 
-  before_action :set_episode, only: %i[show edit update destroy]
+  before_action :set_episode, only: %i[show overview edit update destroy]
   before_action :set_podcast
 
   # GET /episodes
@@ -42,7 +42,11 @@ class EpisodesController < ApplicationController
 
   # GET /episodes/1
   def show
-    redirect_to edit_episode_url(@episode)
+    if Rails.env.development? && @episode.published?
+      redirect_to episode_overview_path(@episode.guid)
+    else
+      redirect_to edit_episode_url(@episode)
+    end
   end
 
   # GET /episodes/new
@@ -54,7 +58,12 @@ class EpisodesController < ApplicationController
     authorize @episode, :create?
   end
 
+  # GET /episodes/1/overview
+  def overview
+  end
+
   # GET /episodes/1/edit
+  # /episodes/ec20a58f-02e0-409e-8b4c-7bd89e52f7f7/edit
   def edit
     @episode.assign_attributes(episode_params)
     authorize @episode, :show?
@@ -71,7 +80,7 @@ class EpisodesController < ApplicationController
       if @episode.save
         @episode.copy_media
         @episode.publish!
-        format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
+        format.html { redirect_to episode_url(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
         flash.now[:error] = t(".media_not_ready")
         format.html { render :edit, status: :unprocessable_entity }
@@ -91,7 +100,7 @@ class EpisodesController < ApplicationController
       if @episode.save
         @episode.copy_media
         @episode.publish!
-        format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
+        format.html { redirect_to episode_url(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
         flash.now[:error] = t(".media_not_ready")
         format.html { render :edit, status: :unprocessable_entity }
@@ -124,9 +133,15 @@ class EpisodesController < ApplicationController
   private
 
   def set_episode
-    @episode = Episode.find_by_guid!(params[:id])
+    @episode = if params[:id]
+      Episode.find_by_guid!(params[:id])
+    elsif params[:episode_id]
+      Episode.find_by_guid!(params[:episode_id])
+    end
     @episode.strict_validations = true
     @episode.locking_enabled = true
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def set_podcast

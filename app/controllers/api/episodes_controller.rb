@@ -13,7 +13,13 @@ class Api::EpisodesController < Api::BaseController
 
   def included(relation)
     if action_name == "index"
-      relation.includes(:images, :contents, :uncut, podcast: :default_feed)
+      relation.includes(
+        :contents,
+        :images,
+        :uncut,
+        latest_media_version: %i[media_resources],
+        podcast: {default_feed: %i[feed_images itunes_images]}
+      )
     else
       relation
     end
@@ -48,7 +54,7 @@ class Api::EpisodesController < Api::BaseController
 
   def show_resource
     if params[:guid_resource]
-      resource = Episode.find_by_item_guid(params[:id])
+      resource = find_base.find_by_item_guid(params[:id])
       raise HalApi::Errors::NotFound.new if resource.nil?
 
       @episode = resource
@@ -89,6 +95,7 @@ class Api::EpisodesController < Api::BaseController
   end
 
   def process_media
+    resource&.uncut&.slice_contents!
     resource&.copy_media
   end
 

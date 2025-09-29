@@ -8,6 +8,8 @@ class PublishFeedJob < ApplicationJob
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   def perform(podcast, pub_item)
+    set_job_id_on_publishing_item(podcast)
+
     # Consume the SQS message, return early, if we have racing threads trying to
     # grab the current publishing pipeline.
     return :null if null_publishing_item?(podcast, pub_item)
@@ -63,21 +65,45 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_rss(podcast, feed)
-    res = save_file(podcast, feed)
+    rss_builder = save_file(podcast, feed)
+    after_publish_rss(podcast, feed, rss_builder.episodes)
     PublishingPipelineState.publish_rss!(podcast)
-    res
+    rss_builder
   rescue => e
     PublishingPipelineState.error_rss!(podcast)
     raise e
   end
 
+  def after_publish_rss(podcast, feed, episodes)
+    if feed.default?
+      update_first_publish_episodes(first_publish_episodes(episodes))
+    end
+    notify_rss_published(podcast, feed)
+  end
+
   def save_file(podcast, feed, options = {})
-    rss = FeedBuilder.new(podcast, feed).to_feed_xml
+    rss = FeedBuilder.new(podcast, feed)
     opts = default_options.merge(options)
-    opts[:body] = rss
+    opts[:body] = rss.to_feed_xml
     opts[:bucket] = s3_bucket
     opts[:key] = feed.path
     @put_object = s3_client.put_object(opts)
+    rss
+  end
+
+  def first_publish_episodes(episodes)
+    Episode.first_publish.where(id: episodes)
+  end
+
+  def update_first_publish_episodes(episodes)
+    if episodes.count > 10
+      episodes.update_all(first_rss_published_at: DateTime.now)
+    else
+      episodes.each do |episode|
+        episode.update(first_rss_published_at: DateTime.now)
+        episode.head_request
+      end
+    end
   end
 
   def default_options
@@ -115,5 +141,15 @@ class PublishFeedJob < ApplicationJob
     end
 
     mismatch
+  end
+
+  private
+
+  def set_job_id_on_publishing_item(podcast)
+    current_pub_item = PublishingQueueItem.current_unfinished_item(podcast)
+
+    return unless current_pub_item && current_pub_item.job_id.nil?
+
+    current_pub_item.update!(job_id: job_id)
   end
 end

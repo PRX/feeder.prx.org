@@ -11,9 +11,9 @@ module ApiUpdatedSince
 
   def filtered(resources)
     if updated_since_with_deleted?
-      super.with_deleted.where("updated_at >= ?", updated_since).reorder(updated_at: :asc, id: :asc)
+      super.with_deleted.where(updated_at: updated_since..).reorder(updated_at: :asc, id: :asc)
     elsif updated_since?
-      super.where("updated_at >= ?", updated_since).reorder(updated_at: :asc, id: :asc)
+      super.where(updated_at: updated_since..).reorder(updated_at: :asc, id: :asc)
     else
       super
     end

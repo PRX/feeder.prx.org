@@ -2,6 +2,7 @@ require "text_sanitizer"
 
 module PodcastsHelper
   include TextSanitizer
+  include PublishingNotify
 
   RSS_LANGUAGE_CODES = %w[af sq eu be bg ca zh-cn zh-tw hr cs da nl nl-be nl-nl en en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw et fo fi fr fr-be fr-ca fr-fr fr-lu fr-mc fr-ch gl gd de de-at de-de de-li de-lu de-ch el haw hu is in ga it it-it it-ch ja ko mk no pl pt pt-br pt-pt ro ro-mo ro-ro ru ru-mo ru-ru sr sk sl es es-ar es-bo es-cl es-co es-cr es-do es-ec es-sv es-gt es-hn es-mx es-ni es-pa es-py es-pe es-pr es-es es-uy es-ve sv sv-fi sv-se tr uk]
 
@@ -42,6 +43,22 @@ module PodcastsHelper
     description
   end
 
+  def episode_title(episode, feed)
+    if episode.podcast.has_apple_feed?
+      episode.title_safe
+    else
+      episode.title
+    end
+  end
+
+  def episode_guid(episode, feed)
+    if feed.unique_guids?
+      "#{episode.item_guid}_#{feed.id}"
+    else
+      episode.item_guid
+    end
+  end
+
   def full_contact(type, item)
     name = item.try("#{type}_name")
     email = item.try("#{type}_email")
@@ -69,7 +86,7 @@ module PodcastsHelper
     parts = request.path.split("/").select(&:present?)
 
     # don't include podcast#show, or any episodes/feeds paths
-    parts[0] == "podcasts" && parts[2] && parts[2] != "episodes" && parts[2] != "feeds"
+    parts[0] == "podcasts" && parts[2] && parts[2] != "episodes" && parts[2] != "feeds" && parts[2] != "metrics"
   end
 
   def podcast_metadata_active?

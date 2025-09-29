@@ -309,6 +309,8 @@ en:
               taken: Must be unique
         media_resource:
           attributes:
+            file_size:
+              less_than: File too large - upload less than 1GB
             medium:
               format: "%{message}"
             original_url:
@@ -328,6 +330,7 @@ en:
             url:
               bad_http_response: Unable to fetch feed url
               invalid_rss: Not a valid RSS feed
+              podcast_locked: Podcast is locked, importing not permitted
   # form/model helpers
   helpers:
     application:
@@ -410,6 +413,7 @@ en:
         title: Title
         url: Episode URL
       feed:
+        apple_verify_token: Apple Podcasts Verify Token
         audio_type: Format
         audio_bitrate: Bitrate
         audio_bitdepth: Bitdepth
@@ -423,15 +427,16 @@ en:
         episode_offset_seconds: Episode Publish Offset
         file_name: File Name
         episode_footer: Episode Description Footer
-        friendly_titles:
-          apple: Apple Subscriptions
-          default: Default RSS Feed
-          megaphone: Megaphone Integration
         house: House Ads
         include_donation_url: Include Donation Form
         include_podcast_value: Include Micropayments Wallet
         itunes_category: Apple Podcasts Category
         itunes_subcategory: Apple Podcasts Sub-Category
+        label: Label
+        labels:
+          apple: Apple Subscriptions
+          default: Default RSS Feed
+          megaphone: Megaphone Integration
         new_feed_url: New Feed URL
         paid: Paid Ads
         private: Private (unlisted)
@@ -439,8 +444,9 @@ en:
         slug: Slug
         sonic_id: Sonic IDs
         subtitle: Teaser
-        title: Title
+        title: Override Title
         url: Public Feed URL
+        unique_guids: Unique GUIDs
       feed_image:
         alt_text: Alt Text
         caption: Caption
@@ -449,6 +455,45 @@ en:
         alt_text: Alt Text
         caption: Caption
         credit: Credit
+      metrics:
+        chart:
+          all_episodes: All Episodes
+        interval:
+          hour: Hourly
+          day: Daily
+          week: Weekly
+          month: Monthly
+        date_presets:
+          7_days_last: Last 7 Days
+          14_days_last: Last 14 Days
+          28_days_last: Last 28 Days
+          1_month_previous: Previous Month
+          3_months_previous: Previous 3 Months
+          6_months_previous: Previous 6 Months
+          1_year_previous: Previous Year
+          date_week: Week to Date
+          date_month: Month to Date
+          date_year: Year to Date
+          7_days_drop: 7 days since drop
+          14_days_drop: 14 days since drop
+          28_days_drop: 28 days since drop
+          1_month_drop: 1 month since drop
+          3_months_drop: 3 months since drop
+          all_time: All-time
+        dropdays:
+          "7": 7 Days
+          "14": 14 Days
+          "28": 28 Days
+          "30": 30 Days
+          "60": 60 Days
+          "90": 90 Days
+          "24": 24 Hours
+          "48": 48 Hours
+        uniques:
+          last_7_rolling: Daily (7-Day Window)
+          last_28_rolling: Daily (28-Day Window)
+          calendar_week: Weekly
+          calendar_month: Monthly
       podcast_import:
         import_existing: Import Existing Episodes
         import_metadata: Import Podcast Metadata
@@ -464,6 +509,7 @@ en:
         types:
           PodcastRssImport: RSS
           PodcastTimingsImport: Midroll Timings
+          PodcastMegaphoneImport: Megaphone API
         url: RSS Feed URL
       media_resource:
         original_url:
@@ -583,6 +629,8 @@ en:
         one: 1 Break
         other: "%{count} Breaks"
     episode_filters:
+      create_episode: Create Episode
+      plan_episodes: Plan Episodes
       my_episodes: Episodes
       export: Export
       filters:
@@ -669,6 +717,16 @@ en:
       search: Search Episodes
       draft_or_scheduled: Draft or Scheduled Episodes
       published: Published Episodes
+      loading: Loading
+    overview:
+      audio_link: Audio File Link
+      episode_url: Episode URL
+      card_header: Where's my Episode?
+      card_body: The episode is published on Dovetail but might still be working its way across the web to all the places Podcasts are found.
+      rss: RSS
+      apple: Apple Podcasts
+      spotify: Spotify
+      title: "%{title} - Overview"
     edit:
       title: "%{title} - Edit"
     new:
@@ -768,6 +826,14 @@ en:
       error: Unable to save
       media_not_ready: Published episodes cannot have empty media
       notice: Media files updated
+  episode_metrics:
+    show:
+      title: "%{title} - Metrics"
+    main_card:
+      tabs:
+        downloads: Downloads
+    metrics:
+      header: Episode Metrics
   episode_player:
     form: &player_form
       help: &player_help
@@ -841,10 +907,6 @@ en:
       error: Unable to save
       media_not_ready: Published episodes cannot have empty media
       notice: Transcript file updated
-  errors:
-    no_access:
-      message_html: <a href="%{href}">Your accounts</a> are not authorized to use this PRX application.<br/>If you believe this to be in error, please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>
-      title: Not Authorized
   feeds:
     confirm_destroy:
       <<: *form_status
@@ -886,8 +948,9 @@ en:
       help:
         new_feed_url: If your podcast feed is moving, use this field to point to the new URL where your podcast is located. The current feed should be maintained until all of your subscribers have migrated.
         private: Your feed can be public or private. Leave unchecked to keep it a Public Feed. If you check this box this feed becomes Private and you'll need to generate an authorization token. Be careful who you share your private URL with - <strong>anyone who has access to the URL will be able to use it</strong>.
-        url: If you already have a public URL for your podcast feed (e.g., <a href="https://support.google.com/feedburner/answer/78475?hl=en" target="_blank">feedburner</a>), enter it here. It should point to your <a href="%{published_url}" target="_blank">private feed URL</a>.
+        url: If you use a service to manage your podcast feed to generate a public URL for distribution, enter that URL here. This is the address you give to podcast platforms so listeners can subscribe to your show. It’s separate from the private feed URL we use to manage your podcast content.
         exclude_episodes: Exclude all episodes from the default feed from being automatically added to this feed.
+        import_locked: Tell other hosting services this feed should not be imported.
       title: Distribution
       exclude_episodes_label: Skip Default Feed Episodes
     form_megaphone_config:
@@ -896,11 +959,13 @@ en:
       help:
         publish_enabled: Enable automatically publishing and updating episodes in this feed to Megaphone?
         sync_blocks_rss: Block publishing to the default feed RSS until the Megaphone episode is published?
+        episode_offset_seconds: To publish early to Megaphone so the audio is already public and ready to serve.
     form_main:
       confirm:
         file_name: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?
         slug: Woh there! Changing your PRX feed url could break things for your subscribers - are you sure?
       help:
+        apple_verify_token: To <a href="https://podcasters.apple.com/support/5497-claim-your-show" target="_blank">claim your show on Apple Podcasts</a>, provide the token to verify ownership.
         display_episodes_count: You can optionally limit the number of episodes that will be publicly available in your feed. Your oldest episodes will disappear as you publish newer ones. Leave this field blank to include all.
         display_full_episodes_count: You can optionally <a href="https://help.prx.org/hc/en-us/articles/360055869313-Limiting-Episode-Metadata" target="_blank">reduce the size of your RSS feed</a> by trimming metadata from your oldest feed episodes. This many of your newest episodes will include <i>all</i> metadata, and older episodes will omit certain RSS fields. Leave this field blank to include all metadata on every episode.
         enclosure_prefix: If you have an enclosure prefix URL to set a redirect on audio requests for your podcast feed (e.g., podtrac or blubrry), enter it here.
@@ -908,7 +973,8 @@ en:
         file_name: The file name used for your private RSS feed.
         episode_footer: Text to be included at the end of each episode's description, such as a privacy policy link.
         slug: An alphanumeric slug used to identify your feed. Also used in the private feed RSS url.
-        title: An alternate title for your feed, to distinguish it from the Default Feed
+        label: A label to help you identify this feed while publishing episodes. Will not be visible to listeners.
+        title: Optionally override your podcast title for this feed, which might be visible to listeners in certain contexts.
     form_overrides:
       title: Overrides
       help:
@@ -917,6 +983,7 @@ en:
         include_podcast_value: In some cases, you may wish to exclude micropayments from a private feed.
         itunes_category: Enter an alternate <a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12" target="_blank">Apple Podcasts category and subcategory</a>, differentiating this Feed from the Podcast.
         subtitle: Enter an alternate teaser
+        unique_guids: Usually this is not needed, but if checked, each episode will have a unique GUID, different from the GUID in the public RSS feed.
     form_status:
       <<: *form_status
       title: Feed Status
@@ -932,12 +999,16 @@ en:
         "-21600": 6 hours early
         "-43200": 12 hours early
         "-86400": 24 hours early
+        "-604800": 1 week early
+        "-6048000": 10 weeks early
         "300": 5 minutes late
         "900": 15 minutes late
         "3600": 1 hour late
         "21600": 6 hours late
         "43200": 12 hours late
         "86400": 24 hours late
+        "604800": 1 week late
+        "6048000": 10 weeks late
       audio_format_options:
         mp3: MP3
         flac: FLAC
@@ -1027,6 +1098,7 @@ en:
       help:
         import_existing: If selected, existing episodes in this podcast will be overwritten by any RSS item with the same GUID.
         import_metadata: If selected, the values from the RSS feed channel will override any values added to the Metadata tab. For example, if the title in the feed differs from the podcast title previously listed, the title in the RSS feed will be used.
+        replace_files: If selected, any existing episode audio will be replaced with the audio from the RSS feed.
     form_timings:
       help:
         timings: Your timings CSV file must have a column containing Episode GUIDs, and a column containing the comma-separated timestamps in seconds that you want your midrolls inserted at.
@@ -1062,24 +1134,43 @@ en:
     show:
       title: "%{title} - Import %{id}"
   layouts:
+    color_mode_switcher:
+      title: Color Mode Switcher
+      auto: Auto (detect browser setting)
+      dark: Dark Mode
+      light: Light Mode
     confirm_field:
       cancel: Cancel
       okay: Okay
       title: Really Change?
     nav:
       account: PRX Account
+      admin: Podcasts Admin
       attribution: Attribution
-      augury: Inventory
       dovetail: Dovetail
-      feeder: Podcasts
+      feedback: Send Feedback
       help: Help Docs
       home: PRX
       id: Manage Account
+      insights: Insights
+      inventory: Inventory
+      logout: Logout
       metrics: Metrics
+      podcasts: Podcasts
       privacy: Privacy
+      reload: Reload
+      spots: Spots
       status: Status
-      feedback: Send Feedback
       terms: Terms
+      wildcard: Wildcard Access
+    nav_wildcard:
+      alert: Woh, wildcard access!
+      close: Close
+      description: Get access to everything! Everywhere!
+      readonly: Just Readonly
+      revert: Go back to normal
+      title: Wildcard Access
+      total: Total Wildcard!
     stale_record_field:
       aside: (Not Recommended)
       label: Overwrite
@@ -1088,6 +1179,23 @@ en:
       continue: Continue Editing
       discard: Discard changes
       title: Warning! Another user has updated this form.
+  metrics:
+    dropdays_card:
+      table_header:
+        episodes: 10 Most Recent Episodes
+        published_at: Publish Date
+        downloads: "%{range} %{interval} Downloads"
+        all_time: All-time
+    episodes_card:
+      table_header:
+        episodes: 10 Most Recent Episodes
+        published_at: Publish Date
+        downloads: Downloads
+        all_time: All-time
+    filter_dates:
+      date_start: Start Date
+      date_end: End Date
+      presets: Date Presets
   placements_preview:
     show:
       fetch_error: Error fetching placements - try again later
@@ -1141,6 +1249,7 @@ en:
     index:
       title: My Podcasts
       create: New Podcast
+      loading: Loading
     podcast:
       drafted_episodes:
         one: 1 Drafted Episode
@@ -1222,6 +1331,16 @@ en:
     update:
       error: Unable to save
       notice: Engagement settings updated
+  podcast_metrics:
+    show:
+      title: "%{title} - Metrics"
+      header: Metrics at a Glance
+    main_card:
+      tabs:
+        downloads: Downloads
+        episodes: Episodes
+        uniques: Unique Listeners
+        dropdays: Drop Day Downloads
   podcast_planner:
     create:
       success: Episode drafts generated.

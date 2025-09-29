@@ -25,6 +25,9 @@ module Megaphone
 
     def sync_episodes!
       Rails.logger.tagged("Megaphone::Publisher#sync_episodes!") do
+        # complete import on any episodes
+        complete_import!
+
         # delete or unpublish episodes we aren't including in the feed anymore
         delete_episodes!
 
@@ -33,6 +36,15 @@ module Megaphone
 
         # check if the upload has completed and the audio has finished processing
         check_status_episodes!
+      end
+    end
+
+    def complete_import!
+      EpisodeMegaphoneImport.where(
+        episode_id: private_feed.episodes,
+        status: EpisodeMegaphoneImport::COMPLETE
+      ).each do |import|
+        import.finish_sync!
       end
     end
 
@@ -66,17 +78,18 @@ module Megaphone
 
         # check if it is uploaded yet
         # if not go looking for the DTR media version
-        if !megaphone_episode.delivery_status.uploaded?
-          megaphone_episode.upload_audio!
-        end
-
-        # check if it is uploaded, but not delivered - see if megaphone has processed
         status = megaphone_episode.delivery_status
-        if !status.delivered? && status.uploaded?
+        if !status.uploaded?
+          megaphone_episode.upload_audio!
+        # check if it is uploaded, but not delivered - see if megaphone has processed
+        elsif !status.delivered?
           megaphone_episode.check_audio!
         end
 
-        if !ep.episode_delivery_status(:megaphone).delivered?
+        # make sure we get the latest status on the episode
+        ep.reload
+        episode_status = ep.episode_delivery_status(:megaphone)
+        if !episode_status.delivered? || !episode_status.uploaded?
           remaining << ep
         end
       end

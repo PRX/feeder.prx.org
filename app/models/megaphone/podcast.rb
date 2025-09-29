@@ -22,7 +22,7 @@ module Megaphone
     # All other attributes we might expect back from the Megaphone API
     # (some documented, others not so much)
     OTHER_ATTRIBUTES = %i[id created_at updated_at image_file uid network_id recurring_import
-      episodes_count spotify_identifier default_ad_settings iheart_identifier feed_url
+      episodes_count spotify_identifier default_ad_settings iheart_identifier feed_url span_opt_in
       default_pre_count default_post_count cloned_feed_urls ad_free_feed_urls main_feed ad_free]
 
     ALL_ATTRIBUTES = (UPDATE_ATTRIBUTES + DEPRECATED + OTHER_ATTRIBUTES)
@@ -34,6 +34,23 @@ module Megaphone
     validates_presence_of :id, on: :update
 
     validates_absence_of :id, on: :create
+
+    def self.list(feed)
+      podcast = Megaphone::Podcast.new
+      podcast.private_feed = feed
+      podcast.config = feed.config
+      podcast.list
+    end
+
+    def self.find_megaphone_podcast(feed, mpid)
+      podcast = Megaphone::Podcast.new
+      podcast.private_feed = feed
+      podcast.config = feed.config
+      podcast.find_by_megaphone_id(mpid)
+    end
+
+    # This is a bit of a hack, but we need to be able to find the megaphone podcast
+    # by the private feed, so we can update it.
 
     def self.find_by_feed(feed)
       podcast = new_from_feed(feed)
@@ -55,14 +72,14 @@ module Megaphone
       itunes_categories = feed.itunes_categories.present? ? feed.itunes_categories : podcast.itunes_categories
       {
         title: podcast.title,
-        subtitle: feed.subtitle || podcast.subtitle,
-        summary: feed.description || podcast.description,
+        subtitle: feed.subtitle || podcast.subtitle || podcast.title,
+        summary: feed.description || podcast.description || podcast.title,
         itunes_categories: (itunes_categories || []).map(&:name),
         language: (podcast.language || "en-us").split("-").first,
         link: podcast.link,
         copyright: podcast.copyright,
         author: podcast.author_name,
-        background_image_file_url: feed.ready_itunes_image || podcast.ready_itunes_image,
+        background_image_file_url: (feed.ready_itunes_image || podcast.ready_itunes_image)&.href,
         explicit: podcast.explicit,
         owner_name: podcast.owner_name,
         owner_email: podcast.owner_email,
@@ -73,10 +90,22 @@ module Megaphone
         episode_limit: feed.display_episodes_count,
         external_id: podcast.guid,
         podcast_type: podcast.itunes_type,
-        advertising_tags: podcast.categories
+        advertising_tags: feed.config.advertising_tags || []
         # set in augury, can we get it here?
         # excluded_categories: ????? TBD,
       }
+    end
+
+    def initialize(attributes = {})
+      super(attributes.slice(*ALL_ATTRIBUTES))
+    end
+
+    def to_h
+      as_json.with_indifferent_access.slice(*ALL_ATTRIBUTES)
+    end
+
+    def episodes(published_only = true)
+      Megaphone::Episode.list(self, published_only)
     end
 
     def public_feed
@@ -94,7 +123,7 @@ module Megaphone
 
     def list
       self.api_response = api.get("podcasts")
-      Megaphone::PagedCollection.new(Megaphone::Podcast, api_response)
+      Megaphone::PagedCollection.new(api, Megaphone::Podcast, api_response).all_items
     end
 
     def find_by_guid(guid = podcast.guid)

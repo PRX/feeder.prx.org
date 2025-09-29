@@ -12,7 +12,11 @@ module Megaphone
     end
 
     def api
-      @api ||= Megaphone::Api.new(token: config.token, network_id: config.network_id)
+      @api ||= Megaphone::Api.new(
+        token: config.token,
+        network_id: config.network_id,
+        organization_id: config.organization_id
+      )
     end
 
     def api_response_log_item

@@ -42,6 +42,19 @@ describe Episode do
     assert e.description_safe.bytesize == 4000
   end
 
+  it "has a safe title for integrations" do
+    e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
+    e.title = "a" * 121
+    assert e.title.bytesize == 121
+    assert e.title_safe.bytesize == 120
+  end
+
+  it "handles blank title in title_safe" do
+    e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
+    e.title = nil
+    assert_equal "", e.title_safe
+  end
+
   it "has a description with fallbacks" do
     e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
     e.title = "title"
@@ -71,6 +84,22 @@ describe Episode do
     episode.title = "Hear & Now"
     episode.save!
     assert_equal episode.title, "Hear & Now"
+  end
+
+  it "validates titles have a maximum of 120 bytes" do
+    e = build_stubbed(:episode, segment_count: 2, published_at: nil, strict_validations: true)
+
+    e.title = "a" * 120
+    assert e.valid?
+
+    e.title = "a" * 121
+    refute e.valid?
+
+    e.title = "a" * 119 + "🎧" # 4 bytes
+    refute e.valid?
+
+    e.strict_validations = false
+    assert e.valid?
   end
 
   it "must belong to a podcast" do
@@ -350,6 +379,65 @@ describe Episode do
 
       episode.transcript.status = "complete"
       refute_nil episode.ready_transcript
+    end
+  end
+
+  describe "#head_request" do
+    let(:episode_1) { build_stubbed(:episode_with_media) }
+    let(:episode_2) { build_stubbed(:episode_with_media) }
+    let(:episode_3) { build_stubbed(:episode_with_media) }
+
+    it "returns response for a successful request" do
+      uri_1 = episode_1.enclosure_url
+
+      stub_request(:head, uri_1).to_return(status: 200)
+
+      assert_kind_of Net::HTTPSuccess, episode_1.head_request
+      assert_requested :head, episode_1.enclosure_url
+    end
+
+    it "handles redirects" do
+      uri_1 = episode_1.enclosure_url
+      uri_2 = episode_2.enclosure_url
+      uri_3 = episode_3.enclosure_url
+
+      stub_request(:head, uri_1).to_return(status: 302, headers: {location: uri_2})
+      stub_request(:head, uri_2).to_return(status: 301, headers: {location: uri_3})
+      stub_request(:head, uri_3).to_return(status: 200)
+
+      episode_1.head_request
+
+      assert_requested :head, episode_1.enclosure_url
+      assert_requested :head, episode_2.enclosure_url
+      assert_requested :head, episode_3.enclosure_url
+    end
+
+    it "does not follow more than 10 redirects" do
+      uri_1 = episode_1.enclosure_url
+
+      stub_request(:head, uri_1)
+        .to_return(status: 302, headers: {location: uri_1}).times(50)
+
+      episode_1.head_request
+
+      assert_requested :head, episode_1.enclosure_url, times: 10
+    end
+
+    it "rescues errors after making head requests" do
+      uri_1 = episode_1.enclosure_url
+      stub_request(:head, uri_1).to_raise(Net::ReadTimeout)
+      uri_2 = episode_2.enclosure_url
+      stub_request(:head, uri_2).to_raise(URI::InvalidURIError)
+      uri_3 = episode_3.enclosure_url
+      stub_request(:head, uri_3).to_raise(Socket::ResolutionError)
+
+      episode_1.head_request
+      episode_2.head_request
+      episode_3.head_request
+
+      assert_requested :head, episode_1.enclosure_url
+      assert_requested :head, episode_2.enclosure_url
+      assert_requested :head, episode_3.enclosure_url
     end
   end
 end

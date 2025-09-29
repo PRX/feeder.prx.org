@@ -2,7 +2,7 @@
   <div class="row mb-2">
     <div class="col-12 d-flex align-items-center justify-content-between mb-4">
 
-      <h1 class="text-black fw-bold my-0 mb-0 me-4"><%= t(".my_episodes") %></h1>
+      <h1 class="fw-bold my-0 mb-0 me-4"><%= t(".my_episodes") %></h1>
 
       <div class="d-flex justify-items-end">
         <% if @podcast && policy(@podcast.episodes.new).create? %>
@@ -24,7 +24,7 @@
       <div class="col-md-8 col-12 d-flex justify-items-start">
         <div class="dropdown me-2">
           <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Sorting options">
-            <span class="material-icons text-black-50" aria-hidden="true" aria-hidden="true">sort</span>
+            <span class="material-icons" aria-hidden="true" aria-hidden="true">sort</span>
             <%= t(".sorts.#{EpisodeFilters.sort_key(params[:sort])}") %>
           </button>
 
@@ -39,7 +39,7 @@
 
         <div class="dropdown mx-2">
           <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Paging options">
-            <span class="material-icons text-black-50" aria-hidden="true" aria-hidden="true">settings</span>
+            <span class="material-icons" aria-hidden="true" aria-hidden="true">settings</span>
             <%= t(".pages.#{search_per_page_key}") %>
           </button>
 
@@ -54,7 +54,7 @@
 
         <div class="dropdown mx-2">
           <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Filter options">
-            <span class="material-icons text-black-50" aria-hidden="true" aria-hidden="true">filter_alt</span>
+            <span class="material-icons" aria-hidden="true" aria-hidden="true">filter_alt</span>
             <%= t(".filters.#{EpisodeFilters.filter_key(params[:filter])}") %>
           </button>
 
@@ -84,5 +84,5 @@
   </div>
 
   <%# clicking hidden reloads the episodes turbo-frame %>
-  <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link" data-turbo-action="replace"></a>
+  <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link" data-turbo-action="replace" data-turbo-frame="episodes"></a>
 </div>

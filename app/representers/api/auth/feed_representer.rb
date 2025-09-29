@@ -6,6 +6,7 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :slug
   property :file_name
   property :private
+  property :label
   property :title
   property :subtitle
   property :description
@@ -21,6 +22,8 @@ class Api::Auth::FeedRepresenter < Api::BaseRepresenter
   property :include_podcast_value
   property :include_donation_url
   property :serve_drafts
+  property :unique_guids
+  property :guid
 
   property :feed_image, decorator: Api::ImageRepresenter, class: FeedImage
   property :itunes_image, decorator: Api::ImageRepresenter, class: ITunesImage

@@ -1,0 +1,44 @@
+<%= turbo_frame_tag agent_label.to_s do %>
+  <% if agents.present? %>
+    <div class="card shadow border-0"
+      data-controller="apex-agents"
+      data-apex-agents-id-value="<%= SecureRandom.uuid %>"
+      data-apex-agents-series-data-value="<%= parse_agent_data(agents).to_json %>">
+      <div class="card-header card-header-primary-light d-flex">
+        <h5><%= agents_title %></h5>
+      </div>
+      <div class="card-body">
+        <div>
+          <div class="col">
+            <div data-apex-agents-target="chart"></div>
+          </div>
+          <div class="col align-items-center">
+            <div class="col my-4">
+              <table class="table table-striped shadow rounded">
+                <thead>
+                  <tr class="table-secondary">
+                    <th><%= agents_title %></th>
+                    <th>Downloads</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% agents.each do |a| %>
+                    <tr>
+                      <td><%= a.label %></td>
+                      <td><%= a.count %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+              <div class="col my-4">
+                <%= paginate agents, param_name: agent_label %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    No data to display.
+  <% end %>
+<% end %>

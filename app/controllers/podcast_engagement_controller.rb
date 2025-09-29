@@ -29,6 +29,8 @@ class PodcastEngagementController < ApplicationController
     @podcast = Podcast.find(params[:podcast_id])
     @podcast.locking_enabled = true
     authorize @podcast
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   # Only allow a list of trusted parameters through.

@@ -17,6 +17,7 @@ class Episode < ApplicationRecord
 
   MAX_SEGMENT_COUNT = 10
   MAX_DESCRIPTION_BYTES = 4000
+  MAX_TITLE_BYTES = 120
   VALID_ITUNES_TYPES = %w[full trailer bonus]
   DROP_DATE = "COALESCE(episodes.published_at, episodes.released_at)"
 
@@ -28,6 +29,7 @@ class Episode < ApplicationRecord
 
   # See concerns/episode_media.rb for media/audio related code, e.g. the associations
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
+  has_many :latest_media_version, -> { latest }, class_name: "MediaVersion"
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_one :external_media_resource, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
@@ -45,6 +47,7 @@ class Episode < ApplicationRecord
 
   validates :podcast_id, :guid, presence: true
   validates :title, presence: true
+  validates :title, bytesize: {maximum: MAX_TITLE_BYTES}, if: -> { strict_validations && title_changed? }
   validates :description, bytesize: {maximum: MAX_DESCRIPTION_BYTES}, if: -> { strict_validations && description_changed? }
   validates :url, http_url: true
   validates :original_guid, presence: true, uniqueness: {scope: :podcast_id}, allow_nil: true
@@ -70,6 +73,7 @@ class Episode < ApplicationRecord
   scope :filter_by_title, ->(text) { where("episodes.title ILIKE ?", "%#{text}%") if text.present? }
   scope :dropdate_asc, -> { reorder(Arel.sql("#{DROP_DATE} ASC NULLS FIRST")) }
   scope :dropdate_desc, -> { reorder(Arel.sql("#{DROP_DATE} DESC NULLS LAST")) }
+  scope :first_publish, -> { where(first_rss_published_at: nil) }
 
   alias_attribute :number, :episode_number
   alias_attribute :season, :season_number
@@ -260,6 +264,10 @@ class Episode < ApplicationRecord
     description_with_default.truncate_bytes(MAX_DESCRIPTION_BYTES, omission: "")
   end
 
+  def title_safe
+    title.present? ? title.truncate_bytes(MAX_TITLE_BYTES, omission: "") : ""
+  end
+
   def feeder_cdn_host
     ENV["FEEDER_CDN_HOST"]
   end
@@ -274,5 +282,32 @@ class Episode < ApplicationRecord
 
   def ready_transcript
     transcript if transcript&.status_complete?
+  end
+
+  def podcast_image
+    podcast&.itunes_image || podcast&.feed_image
+  end
+
+  def head_request(uri_str = enclosure_url(podcast.default_feed), redirects = 0)
+    return nil if redirects >= 10
+
+    uri = URI.parse(uri_str)
+    res = Net::HTTP.start(uri.host) do |http|
+      http.max_retries = 0
+      http.read_timeout = 0.1
+      http.head(uri)
+    end
+
+    if res.is_a?(Net::HTTPRedirection)
+      head_request(res[:location], redirects + 1)
+    elsif res.is_a?(Net::HTTPSuccess)
+      res
+    end
+  rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout => e
+    Rails.logger.info(e.message)
+  end
+
+  def first_publish_utc_date
+    first_rss_published_at.utc_date
   end
 end

@@ -90,7 +90,7 @@ module ReleaseEpisodes
 
       feeds.select { |f| f.podcast_id == p.id }.map do |f|
         offset = (f.episode_offset_seconds.to_i == 0) ? "offset 0" : "offset #{f.episode_offset_seconds}".green
-        puts "  #{f.id}: #{f.title || "Default"} - #{offset}"
+        puts "  #{f.id}: #{f.slug || "default"} - #{offset}"
 
         res.select { |r| r["feed_id"] == f.id }.map do |row|
           e = eps.find { |rec| rec.id == row["episode_id"] }

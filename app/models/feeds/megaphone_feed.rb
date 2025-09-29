@@ -1,11 +1,16 @@
 class Feeds::MegaphoneFeed < Feed
-  DEFAULT_TITLE = "Megaphone Integration"
+  DEFAULT_LABEL = "Megaphone Integration"
+  DEFAULT_AUDIO_FORMAT = {f: "mp3", b: 128, c: 2, s: 44100}.with_indifferent_access
+  # Default duration to publish early on megaphone
+  DEFAULT_OFFSET = 30.minutes.freeze
 
   has_one :megaphone_config, class_name: "::Megaphone::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
-  validate :must_have_token
+  validate :must_have_token, :audio_format_must_be_mp3
 
-  after_initialize :set_defaults
+  validates_presence_of :audio_format, :slug, :title, :tokens
+
+  before_validation :set_tokens
 
   alias_method :config, :megaphone_config
 
@@ -24,6 +29,12 @@ class Feeds::MegaphoneFeed < Feed
     end
   end
 
+  def audio_format_must_be_mp3
+    if audio_format.present? && audio_format[:f] != "mp3"
+      errors.add(:audio_format, "must be mp3")
+    end
+  end
+
   def self.model_name
     Feed.model_name
   end
@@ -33,12 +44,18 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def set_defaults
-    self.slug = "prx-#{id}"
-    self.title = DEFAULT_TITLE
-    self.tokens = [FeedToken.new(label: DEFAULT_TITLE)] if tokens.empty?
+    self.slug ||= "prx-#{SecureRandom.uuid}"
+    self.label ||= DEFAULT_LABEL
+    self.audio_format ||= DEFAULT_AUDIO_FORMAT
+    self.episode_offset_seconds = DEFAULT_OFFSET if episode_offset_seconds.nil?
+    self.include_zones ||= []
     self.private = true
 
     super
+  end
+
+  def set_tokens
+    self.tokens = [FeedToken.new(label: DEFAULT_LABEL)] if tokens.empty?
   end
 
   def serve_drafts
@@ -60,6 +77,13 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def mark_as_not_delivered!(episode)
-    episode.episode_delivery_statuses.megaphone.first&.mark_as_not_delivered!
+    episode.episode_delivery_status(:megaphone, true).mark_as_not_delivered!
+  end
+
+  def advertising_tag_options
+    return [] unless persisted? && config.valid?
+    Megaphone::OrganizationTag.list_by_feed(self).map do |tag|
+      [tag.value, tag.label]
+    end
   end
 end

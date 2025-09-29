@@ -118,16 +118,16 @@ describe EnclosureUrlBuilder do
     _(url).must_match(/http:\/\/www.podtrac.com\/pts\/redirect.mp3\/media.blubrry.com\/jojego\/dovetail.prxu.org\/#{podcast.id}\/ba047dce-9df5-4132-a04b-31d24c7c55a(\d+)\/audio\.mp3/)
   end
 
-  it "can make an enclosure url for an override url, but not override prefix" do
+  it "can make an enclosure url for an override url, and include prefix" do
     episode.enclosure_override_url = "https://a.io/a.mp3"
-    episode.enclosure_override_prefix = false
+    episode.enclosure_override_prefix = true
 
     url = builder.podcast_episode_url(podcast, episode)
     _(url).must_equal("http://www.podtrac.com/pts/redirect.mp3/media.blubrry.com/jojego/a.io/a.mp3")
   end
-  it "can make an enclosure url for an override url, also override prefix" do
+  it "can make an enclosure url for an override url, but no prefix" do
     episode.enclosure_override_url = "https://a.io/a.mp3"
-    episode.enclosure_override_prefix = true
+    episode.enclosure_override_prefix = false
 
     url = builder.podcast_episode_url(podcast, episode)
     _(url).must_equal("https://a.io/a.mp3")

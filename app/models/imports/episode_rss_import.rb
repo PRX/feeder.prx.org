@@ -43,9 +43,12 @@ class EpisodeRssImport < EpisodeImport
   end
 
   def set_file_resources!
-    content = audio_content_params
-    episode.media = content
-    episode.segment_count = content&.size
+    if !podcast_import.metadata_only
+      content = audio_content_params
+      episode.media = content
+      episode.segment_count = content&.size
+    end
+
     episode.image = image_contents_params
     episode.save!
     episode.images.reset
@@ -75,7 +78,7 @@ class EpisodeRssImport < EpisodeImport
   end
 
   def update_episode_with_entry!
-    episode.clean_title = entry[:itunes_title]
+    episode.clean_title = clean_title(entry[:itunes_title])
     episode.description = entry_description(entry)
     episode.episode_number = entry[:itunes_episode]
     episode.published_at = entry[:published]
@@ -119,7 +122,7 @@ class EpisodeRssImport < EpisodeImport
     if /libsyn\.com/.match?(url)
       url = nil
     end
-    url
+    clean_url(url)
   end
 
   def closed_captioned?(entry)

@@ -38,7 +38,7 @@ class SyncLog < ApplicationRecord
       feeder_id: feeder_id,
       external_id: external_id
     )
-    sync_log.update!(api_response: api_response)
+    sync_log.update!(api_response: api_response, updated_at: Time.now.utc)
     sync_log
   end
 end

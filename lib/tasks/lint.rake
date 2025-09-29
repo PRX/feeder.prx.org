@@ -20,8 +20,8 @@ task :lint do
   LintUtils.puts("linting standardrb")
   exit1 = system("bundle exec standardrb")
 
-  LintUtils.puts("linting erblint")
-  exit2 = system("bundle exec erblint --lint-all --format compact")
+  LintUtils.puts("linting erb_lint")
+  exit2 = system("bundle exec erb_lint --lint-all --format compact")
 
   LintUtils.puts("linting prettier")
   exit3 = system("npx prettier --check .")
@@ -34,8 +34,8 @@ namespace "lint" do
     LintUtils.puts("fixing standardrb")
     exit1 = system("bundle exec standardrb --fix")
 
-    LintUtils.puts("fixing erblint")
-    exit2 = system("bundle exec erblint --lint-all --autocorrect")
+    LintUtils.puts("fixing erb_lint")
+    exit2 = system("bundle exec erb_lint --lint-all --autocorrect")
 
     LintUtils.puts("fixing prettier")
     exit3 = system("npx prettier --write --list-different .")

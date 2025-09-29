@@ -26,6 +26,8 @@ class FeedsController < ApplicationController
   def get_apple_show_options(feed)
     if feed.integration_type == :apple && feed.apple_config&.key
       feed.apple_show_options
+    else
+      []
     end
   end
 
@@ -124,6 +126,8 @@ class FeedsController < ApplicationController
   def set_feed
     @feed = Feed.find(params[:id])
     @feed.locking_enabled = true
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   # Only allow a list of trusted parameters through.
@@ -135,6 +139,7 @@ class FeedsController < ApplicationController
     nilify params.fetch(:feed, {}).permit(
       :lock_version,
       :file_name,
+      :label,
       :title,
       :subtitle,
       :description,
@@ -159,13 +164,16 @@ class FeedsController < ApplicationController
       :type,
       :apple_show_id,
       :episode_footer,
+      :unique_guids,
+      :import_locked,
+      :apple_verify_token,
       itunes_category: [],
       itunes_subcategory: [],
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       apple_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, {key_attributes: %i[id provider_id key_id key_pem_b64]}],
-      megaphone_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, :network_id, :network_name, :token]
+      megaphone_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, :token, :network_id, :network_name, :organization_id, advertising_tags: []]
     )
   end
 

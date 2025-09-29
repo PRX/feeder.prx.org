@@ -1,0 +1,26 @@
+<%= form_with(url: url, method: :get, id: "metrics_dates_filter") do |form| %>
+  <div class="row d-flex gx-1">
+    <div class="col form-floating input-group">
+      <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "mainStart", action: "apex-nav#updateStartDate"}, class: "form-control form-control-sm", value: date_start %>
+      <%= form.label :date_start, t(".date_start") %>
+    </div>
+    <div class="col form-floating input-group">
+      <%= form.date_field :date_end, max: Date.utc_today, data: {apex_nav_target: "mainEnd", action: "apex-nav#updateEndDate"}, class: "form-control form-control-sm", value: date_end %>
+      <%= form.label :date_end, t(".date_end") %>
+    </div>
+    <div class="col btn-group">
+      <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+        <%= t(".presets") %>
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="date-range-options">
+        <% date_range_options.each do |option| %>
+          <li>
+            <button class="dropdown-item" type="button" data-action="apex-nav#updateDates" value="<%= option[1].to_s %>">
+              <%= option[0] %>
+            </button>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+<% end %>

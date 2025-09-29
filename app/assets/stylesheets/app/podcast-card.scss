@@ -23,3 +23,16 @@
     border-top-width: 1px;
   }
 }
+
+@include color-mode(dark) {
+  .prx-podcast.card {
+    .card-title {
+      color: $link-color-dark;
+    }
+
+    &:hover {
+      --#{$prefix}link-hover-color: #{($navy)};
+      background-color: var(--#{$prefix}link-hover-color);
+    }
+  }
+}

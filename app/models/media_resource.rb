@@ -15,8 +15,8 @@ class MediaResource < ApplicationRecord
 
   before_validation :initialize_attributes, on: :create
 
+  validates :file_size, comparison: {less_than: 1.gigabyte}, allow_nil: true
   validates :original_url, presence: true
-
   validates :medium, inclusion: {in: %w[audio video]}, if: :status_complete?
 
   after_create :replace_resources!
@@ -125,6 +125,8 @@ class MediaResource < ApplicationRecord
       uri = URI.parse(original_url)
       File.basename(uri.path)
     end
+  rescue URI::InvalidURIError
+    original_url
   end
 
   def copy_media(force = false)

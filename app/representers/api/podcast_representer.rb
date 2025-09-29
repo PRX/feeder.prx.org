@@ -28,6 +28,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   property :locked
   property :payment_pointer
   property :donation_url
+  property :guid
 
   nested :owner do
     property :owner_name, as: :name

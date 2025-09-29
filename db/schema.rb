@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_12_174433) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -148,6 +148,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
     t.string "categories", array: true
     t.string "enclosure_override_url"
     t.boolean "enclosure_override_prefix"
+    t.datetime "first_rss_published_at", precision: nil
     t.index ["categories"], name: "index_episodes_on_categories", using: :gin
     t.index ["guid"], name: "index_episodes_on_guid", unique: true
     t.index ["keyword_xid"], name: "index_episodes_on_keyword_xid", unique: true
@@ -226,6 +227,10 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
     t.boolean "edit_locked"
     t.datetime "enclosure_updated_at", precision: nil
     t.string "episode_footer"
+    t.boolean "unique_guids", default: false, null: false
+    t.string "apple_verify_token"
+    t.boolean "import_locked", default: true, null: false
+    t.text "label"
     t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
@@ -333,6 +338,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "sync_blocks_rss", default: false, null: false
+    t.string "organization_id"
+    t.text "advertising_tags"
   end
 
   create_table "podcast_imports", force: :cascade do |t|
@@ -407,6 +414,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_20_170043) do
     t.integer "last_pipeline_state"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "job_id"
     t.index ["podcast_id", "created_at"], name: "index_publishing_queue_items_on_podcast_id_and_created_at"
     t.index ["podcast_id"], name: "index_publishing_queue_items_on_podcast_id"
   end

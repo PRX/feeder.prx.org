@@ -1,10 +1,13 @@
 .prx-badge-incomplete,
-.prx-badge-duplicate {
+.prx-badge-duplicate,
+.prx-badge-scheduled,
+.prx-badge-draft {
   background: $warning;
   color: $black;
 }
 
-.prx-badge-complete {
+.prx-badge-complete,
+.prx-badge-published {
   background: $success;
 }
 
