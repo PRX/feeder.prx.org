@@ -227,4 +227,84 @@ describe Apple::Api do
       assert_equal [[ok_row], []], api.unwrap_bridge_response(OpenStruct.new(code: "200", body: [not_found_row, ok_row].to_json), ignore_errors: [::Apple::Api::NOT_FOUND])
     end
   end
+
+  describe "#handle_api_error" do
+    it "raises a regular ApiError for normal errors" do
+      response = OpenStruct.new(code: 404, body: '{"errors":[{"status": "404", "code": "NOT_FOUND"}]}')
+
+      error = assert_raises(Apple::ApiError) do
+        api.handle_api_error(response)
+      end
+
+      assert_instance_of Apple::ApiError, error
+      assert error.message.include?("Apple API Error")
+    end
+
+    it "raises ApiPermissionError for authorization errors" do
+      permission_error_body = {
+        errors: [
+          {
+            id: "88258fa2-8d8c-46ff-b3a6-80a650ef9ed4",
+            status: "403",
+            code: "FORBIDDEN_ERROR",
+            title: "This request is forbidden for security reasons",
+            detail: "The API key in use does not allow this request"
+          }
+        ]
+      }.to_json
+
+      response = OpenStruct.new(code: 403, body: permission_error_body)
+
+      error = assert_raises(Apple::ApiPermissionError) do
+        api.handle_api_error(response)
+      end
+
+      assert_instance_of Apple::ApiPermissionError, error
+      assert error.message.include?("Apple API permission error")
+    end
+  end
+
+  describe "#raise_bridge_api_error" do
+    it "raises the first error in the list with proper error class" do
+      permission_error = {
+        "api_response" => {
+          "val" => {
+            "data" => {"status" => 403},
+            "errors" => [
+              {
+                "code" => "FORBIDDEN_ERROR",
+                "detail" => "The API key in use does not allow this request"
+              }
+            ]
+          }
+        }
+      }
+
+      not_found_error = {
+        "api_response" => {
+          "val" => {
+            "data" => {"status" => 404}
+          }
+        }
+      }
+
+      # The permission error should be recognized and raised as ApiPermissionError
+      error = assert_raises(Apple::ApiPermissionError) do
+        api.raise_bridge_api_error([permission_error])
+      end
+      assert_instance_of Apple::ApiPermissionError, error
+
+      # A basic error should be raised as ApiError
+      error = assert_raises(Apple::ApiError) do
+        api.raise_bridge_api_error([not_found_error])
+      end
+      assert_instance_of Apple::ApiError, error
+
+      # When multiple errors present, it should raise the first one
+      error = assert_raises(Apple::ApiPermissionError) do
+        api.raise_bridge_api_error([permission_error, not_found_error])
+      end
+      assert_instance_of Apple::ApiPermissionError, error
+    end
+  end
 end
