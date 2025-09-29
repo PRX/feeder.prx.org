@@ -289,7 +289,9 @@ module Apple
     end
 
     def raise_bridge_api_error(errs)
-      Rails.logger.warn("Apple::Api ERROR", error: errs)
+      errs.each do |err|
+        Rails.logger.warn("Apple::Api Bridge Error", error: err)
+      end
       raise Apple::ApiError.new(JSON.pretty_generate(errs.first), nil)
     end
 
