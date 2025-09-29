@@ -46,15 +46,26 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.publish_integration!(podcast)
     res
   rescue Apple::AssetStateTimeoutError => e
+    # Apple timeout errors indicate the async publishing job is still in progress
+    # We always mark the integration as errored in the pipeline state
     PublishingPipelineState.error_integration!(podcast)
 
     if feed.config.sync_blocks_rss
+      # When sync_blocks_rss is enabled, Apple publishing must succeed before RSS
+      # Log at the error's specified level and raise RetryPublishingError to retry the entire pipeline
       Rails.logger.send(e.log_level, e.message, {podcast_id: podcast.id})
       raise Apple::RetryPublishingError.new(e.message)
+    else
+      # When sync_blocks_rss is disabled, we allow RSS publishing to continue despite timeout
+      # The integration error is recorded in pipeline state but doesn't block RSS delivery
+      Rails.logger.info("Apple publishing timed out, continuing to RSS", {podcast_id: podcast.id})
     end
   rescue => e
+    # All other integration errors (network failures, API errors, etc.)
     PublishingPipelineState.error_integration!(podcast)
 
+    # Re-raise the error if sync_blocks_rss is enabled, blocking RSS publishing
+    # Otherwise, swallow the error and allow RSS publishing to proceed
     raise e if feed.config.sync_blocks_rss
   end
 
