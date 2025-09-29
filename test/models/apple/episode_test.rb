@@ -308,4 +308,114 @@ describe Apple::Episode do
       end
     end
   end
+
+  describe ".probe_asset_state" do
+    let(:episode1) { create(:episode, podcast: podcast) }
+    let(:episode2) { create(:episode, podcast: podcast) }
+    let(:container1) { create(:apple_podcast_container, episode: episode1, apple_episode_id: "ep1") }
+    let(:container2) { create(:apple_podcast_container, episode: episode2, apple_episode_id: "ep2") }
+
+    let(:apple_episode1) { build(:apple_episode, show: apple_show, feeder_episode: episode1) }
+    let(:apple_episode2) { build(:apple_episode, show: apple_show, feeder_episode: episode2) }
+
+    it "partitions episodes into ready and waiting sets" do
+      # Setup episode1 to be waiting (delivery settled, asset state not finished)
+      delivery1 = create(:apple_podcast_delivery, episode: episode1, podcast_container: container1)
+      create(:apple_podcast_delivery_file,
+        delivery: delivery1,
+        episode: episode1,
+        api_marked_as_uploaded: true,
+        upload_operations_complete: true)
+
+      # Setup episode2 with finished asset state (SUCCESS)
+      delivery2 = create(:apple_podcast_delivery, episode: episode2, podcast_container: container2)
+      create(:apple_podcast_delivery_file,
+        delivery: delivery2,
+        episode: episode2,
+        api_marked_as_uploaded: true,
+        upload_operations_complete: true)
+
+      episode2.apple_sync_log.update!(
+        **build(:apple_episode_api_response,
+          item_guid: episode2.item_guid,
+          apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS)
+      )
+
+      mock_responses = [
+        {
+          "request_metadata" => {"feeder_id" => episode1.id},
+          "api_response" => {
+            "ok" => true,
+            "val" => {
+              "data" => {
+                "id" => "ep1",
+                "attributes" => {"appleHostedAudioAssetState" => "UNSPECIFIED"}
+              }
+            }
+          }
+        },
+        {
+          "request_metadata" => {"feeder_id" => episode2.id},
+          "api_response" => {
+            "ok" => true,
+            "val" => {
+              "data" => {
+                "id" => "ep2",
+                "attributes" => {"appleHostedAudioAssetState" => Apple::Episode::AUDIO_ASSET_SUCCESS}
+              }
+            }
+          }
+        }
+      ]
+
+      Apple::Episode.stub(:get_episodes, mock_responses) do
+        (ready, waiting) = Apple::Episode.probe_asset_state(apple_api, [apple_episode1, apple_episode2])
+
+        assert_equal 1, waiting.length, "Expected one episode waiting"
+        assert_equal episode1.id, waiting.first.feeder_id, "Expected episode1 to be waiting"
+
+        assert_equal 1, ready.length, "Expected one episode ready"
+        assert_equal episode2.id, ready.first.feeder_id, "Expected episode2 to be ready"
+      end
+    end
+
+    it "returns empty arrays when no episodes provided" do
+      Apple::Episode.stub(:get_episodes, []) do
+        (ready, waiting) = Apple::Episode.probe_asset_state(apple_api, [])
+
+        assert_equal 0, ready.length
+        assert_equal 0, waiting.length
+      end
+    end
+  end
+
+  describe ".wait_for_asset_state" do
+    let(:episode1) { create(:episode, podcast: podcast) }
+    let(:container1) { create(:apple_podcast_container, episode: episode1, apple_episode_id: "ep1") }
+    let(:apple_episode1) { build(:apple_episode, show: apple_show, feeder_episode: episode1) }
+
+    it "waits for episodes with unfinished asset state" do
+      delivery1 = create(:apple_podcast_delivery, episode: episode1, podcast_container: container1)
+      create(:apple_podcast_delivery_file,
+        delivery: delivery1,
+        episode: episode1,
+        api_marked_as_uploaded: true,
+        upload_operations_complete: true)
+
+      call_count = 0
+      Apple::Episode.stub(:probe_asset_state, lambda { |api, eps|
+        call_count += 1
+        if call_count == 1
+          [[], eps]
+        else
+          [eps, []]
+        end
+      }) do
+        result = Apple::Episode.wait_for_asset_state(apple_api, [apple_episode1])
+
+        assert_equal 2, call_count, "Expected probe_asset_state to be called twice"
+        assert_equal [apple_episode1], result
+      end
+    end
+  end
 end
