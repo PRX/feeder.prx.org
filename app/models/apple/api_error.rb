@@ -22,6 +22,5 @@ module Apple
 
       resp
     end
-
   end
 end

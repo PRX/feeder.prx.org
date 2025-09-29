@@ -227,5 +227,4 @@ describe Apple::Api do
       assert_equal [[ok_row], []], api.unwrap_bridge_response(OpenStruct.new(code: "200", body: [not_found_row, ok_row].to_json), ignore_errors: [::Apple::Api::NOT_FOUND])
     end
   end
-
 end

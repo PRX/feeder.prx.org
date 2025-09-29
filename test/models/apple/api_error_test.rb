@@ -11,5 +11,4 @@ describe Apple::ApiError do
       assert_equal exception.message, "message\nHTTP resp code:200\nbody"
     end
   end
-
 end
