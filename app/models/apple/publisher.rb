@@ -147,42 +147,17 @@ module Apple
 
     def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL, &finisher_block)
       Rails.logger.tagged("##{__method__}") do
-        remaining_eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
+        remaining_eps = filter_episodes_awaiting_asset_state(eps)
 
         self.class.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
           wait_interval: wait_interval) do |waiting_eps|
-          # Probe episodes in batches and partition into ready/waiting
-          ready_acc = []
-          waiting_acc = []
+          ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)
 
-          waiting_eps.each_slice(PUBLISH_CHUNK_LEN) do |batch|
-            ready, waiting = Apple::Episode.probe_asset_state(api, batch)
-            ready_acc.concat(ready)
-            waiting_acc.concat(waiting)
-          end
+          process_ready_episodes(ready_episodes, finisher_block)
+          check_for_stuck_episodes(still_waiting_episodes)
 
-          # Process ready episodes immediately
-          if ready_acc.any?
-            Rails.logger.info("Processing #{ready_acc.length} ready episodes")
-
-            finisher_block.call(ready_acc) if finisher_block.present?
-          end
-
-          # Note: If there are stuck jobs, this will abort the wait_for loop and
-          # cause the job to fail. A new job will launch and the former stuck
-          # episodes will be start the delivery process over. The non-stuck
-          # waiting episodes will pick up waiting here where they left off.
-          check_for_stuck_episodes(waiting_acc)
-
-          waiting_acc.each do |ep|
-            Rails.logger.info("Waiting for audio asset state", {episode_id: ep.feeder_id,
-                                                                 asset_state: ep.audio_asset_state,
-                                                                 waiting_for_asset_state: ep.waiting_for_asset_state?})
-          end
-
-          # Continue waiting for remaining episodes
-          waiting_acc
+          still_waiting_episodes
         end
       end
     end
@@ -457,6 +432,30 @@ module Apple
         end
         raise Apple::AssetStateTimeoutError.new(stuck)
       end
+    end
+
+    def filter_episodes_awaiting_asset_state(eps)
+      eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
+    end
+
+    def partition_episodes_by_readiness(waiting_eps)
+      ready_acc = []
+      waiting_acc = []
+
+      waiting_eps.each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        ready, waiting = Apple::Episode.probe_asset_state(api, batch)
+        ready_acc.concat(ready)
+        waiting_acc.concat(waiting)
+      end
+
+      [ready_acc, waiting_acc]
+    end
+
+    def process_ready_episodes(ready_episodes, finisher_block)
+      return unless ready_episodes.any?
+
+      Rails.logger.info("Processing #{ready_episodes.length} ready episodes")
+      finisher_block.call(ready_episodes) if finisher_block.present?
     end
   end
 end
