@@ -169,7 +169,10 @@ module Apple
             finisher_block.call(ready_acc) if finisher_block.present?
           end
 
-          # Check for stuck episodes and log essential debugging info
+          # Note: If there are stuck jobs, this will abort the wait_for loop and
+          # cause the job to fail. A new job will launch and the former stuck
+          # episodes will be start the delivery process over. The non-stuck
+          # waiting episodes will pick up waiting here where they left off.
           check_for_stuck_episodes(waiting_acc)
 
           waiting_acc.each do |ep|
@@ -452,9 +455,6 @@ module Apple
           })
           ep.apple_mark_for_reupload!
         end
-        # Note: This will abort the wait_for loop and fail the entire batch.
-        # Non-stuck waiting episodes will be retried on the next job attempt.
-        # Future enhancement: Could mark stuck episodes for re-upload retry.
         raise Apple::AssetStateTimeoutError.new(stuck)
       end
     end
