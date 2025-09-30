@@ -38,7 +38,6 @@ module Apple
       [ready, waiting]
     end
 
-
     def self.get_episodes(api, episodes)
       return [] if episodes.empty?
 
