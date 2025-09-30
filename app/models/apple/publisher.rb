@@ -61,22 +61,6 @@ module Apple
       end
     end
 
-    def fix_archived_episodes!
-      # We have a stale state summary before we start syncing episodes, somehow!
-      prior_episode_publishing_state_mutants = episodes_to_sync.select(&:archived?)
-      if prior_episode_publishing_state_mutants.any?
-        Rails.logger.warn("Discovered archived episodes!", {episode_ids: prior_episode_publishing_state_mutants.map(&:id)})
-      end
-      poll_episodes!(episodes_to_sync)
-      publishing_state_mutants = episodes_to_sync.select(&:archived?)
-
-      if publishing_state_mutants.any?
-        Rails.logger.warn("Discovered some episodes to sync are archived, unarchive them first.", {episode_ids: publishing_state_mutants.map(&:id)})
-        unarchive!(publishing_state_mutants)
-        publishing_state_mutants.each { |ep| ep.feeder_episode.reload }
-      end
-    end
-
     def publish!
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
@@ -91,8 +75,6 @@ module Apple
       # Unarchived episodes are converted to "DRAFTING" state.
       poll_episodes!(episodes_to_unarchive)
       unarchive!(episodes_to_unarchive)
-
-      fix_archived_episodes!
 
       # Calculate the episodes_to_sync based on the current state of the private feed
       upload_and_process!(episodes_to_sync)
