@@ -154,7 +154,11 @@ module Apple
           wait_interval: wait_interval) do |waiting_eps|
           ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)
 
-          process_ready_episodes(ready_episodes, finisher_block)
+          if ready_episodes.any?
+            Rails.logger.info("Processing #{ready_episodes.length} ready episodes")
+            finisher_block.call(ready_episodes) if finisher_block.present?
+          end
+
           check_for_stuck_episodes(still_waiting_episodes)
 
           still_waiting_episodes
@@ -409,7 +413,6 @@ module Apple
     def check_for_stuck_episodes(waiting)
       return if waiting.empty?
 
-      # Log essential debugging info for waiting episodes
       Rails.logger.info("Waiting for asset state processing", {
         episode_count: waiting.length,
         episode_ids: waiting.map(&:feeder_id),
@@ -449,13 +452,6 @@ module Apple
       end
 
       [ready_acc, waiting_acc]
-    end
-
-    def process_ready_episodes(ready_episodes, finisher_block)
-      return unless ready_episodes.any?
-
-      Rails.logger.info("Processing #{ready_episodes.length} ready episodes")
-      finisher_block.call(ready_episodes) if finisher_block.present?
     end
   end
 end

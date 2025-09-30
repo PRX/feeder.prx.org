@@ -767,8 +767,8 @@ describe Apple::Publisher do
 
       # Stub wait_for_asset_state to use fast timeouts
       original_wait_for_asset_state = apple_publisher.method(:wait_for_asset_state)
-      wait_for_asset_state_stub = ->(eps, **_kwargs) {
-        original_wait_for_asset_state.call(eps, wait_timeout: 0.seconds, wait_interval: 0.seconds)
+      wait_for_asset_state_stub = ->(eps, **_kwargs, &block) {
+        original_wait_for_asset_state.call(eps, wait_timeout: 0.seconds, wait_interval: 0.seconds, &block)
       }
 
       # Set up method stubs
@@ -812,8 +812,8 @@ describe Apple::Publisher do
 
       # Stub wait_for_asset_state to use fast timeouts
       original_wait_for_asset_state = apple_publisher.method(:wait_for_asset_state)
-      wait_for_asset_state_stub = ->(eps, **_kwargs) {
-        original_wait_for_asset_state.call(eps, wait_timeout: 100.0.seconds, wait_interval: 0.0.seconds)
+      wait_for_asset_state_stub = ->(eps, **_kwargs, &block) {
+        original_wait_for_asset_state.call(eps, wait_timeout: 100.0.seconds, wait_interval: 0.0.seconds, &block)
       }
 
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
@@ -855,8 +855,8 @@ describe Apple::Publisher do
 
       # Stub wait_for_asset_state to use fast timeouts
       original_wait_for_asset_state = apple_publisher.method(:wait_for_asset_state)
-      wait_for_asset_state_stub = ->(eps, **_kwargs) {
-        original_wait_for_asset_state.call(eps, wait_timeout: 0.seconds, wait_interval: 0.seconds)
+      wait_for_asset_state_stub = ->(eps, **_kwargs, &block) {
+        original_wait_for_asset_state.call(eps, wait_timeout: 0.seconds, wait_interval: 0.seconds, &block)
       }
 
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
@@ -918,8 +918,8 @@ describe Apple::Publisher do
 
       # Stub wait_for_asset_state to use fast timeouts
       original_wait_for_asset_state = apple_publisher.method(:wait_for_asset_state)
-      wait_for_asset_state_stub = ->(eps, **_kwargs) {
-        original_wait_for_asset_state.call(eps, wait_timeout: 100.seconds, wait_interval: 0.seconds)
+      wait_for_asset_state_stub = ->(eps, **_kwargs, &block) {
+        original_wait_for_asset_state.call(eps, wait_timeout: 100.seconds, wait_interval: 0.seconds, &block)
       }
 
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
@@ -972,8 +972,8 @@ describe Apple::Publisher do
         episode2.feeder_episode.stub(:measure_asset_processing_duration, 600) do
           # Stub wait_for_asset_state to force timeout
           original_wait_for_asset_state = apple_publisher.method(:wait_for_asset_state)
-          wait_for_asset_state_stub = ->(eps, **_kwargs) {
-            original_wait_for_asset_state.call(eps, wait_timeout: 0.seconds, wait_interval: 0.seconds)
+          wait_for_asset_state_stub = ->(eps, **_kwargs, &block) {
+            original_wait_for_asset_state.call(eps, wait_timeout: 0.seconds, wait_interval: 0.seconds, &block)
           }
 
           apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
