@@ -274,20 +274,7 @@ describe PublishFeedJob do
 
           private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
             podcast.stub(:feeds, [private_feed]) do
-              assert_raises(Apple::AssetStateTimeoutError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
-
-              assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
-            end
-          end
-        end
-
-        it "raises an error if the apple publishing times out" do
-          assert apple_feed.apple_config.present?
-          assert apple_feed.apple_config.publish_enabled
-
-          private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
-            podcast.stub(:feeds, [private_feed]) do
-              assert_raises(Apple::AssetStateTimeoutError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
+              assert_raises(Apple::RetryPublishingError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
 
               assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
             end
@@ -308,6 +295,52 @@ describe PublishFeedJob do
                 PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
                 assert_equal ["created", "started", "error_integration", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
               end
+            end
+          end
+        end
+
+        it "raises an error and blocks RSS when non-timeout error occurs with sync_blocks_rss enabled" do
+          assert apple_feed.apple_config.present?
+          assert apple_feed.apple_config.publish_enabled
+          apple_feed.apple_config.update!(sync_blocks_rss: true)
+
+          private_feed.stub(:publish_integration!, -> { raise StandardError.new("some apple error") }) do
+            podcast.stub(:feeds, [private_feed]) do
+              assert_raises(StandardError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
+
+              assert_equal ["created", "started", "error_integration", "error"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
+            end
+          end
+        end
+
+        it "does not raise when timeout occurs with sync_blocks_rss disabled" do
+          stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
+          assert apple_feed.apple_config.present?
+          assert apple_feed.apple_config.publish_enabled
+          apple_feed.apple_config.update!(sync_blocks_rss: false)
+          feed.reload
+
+          PublishFeedJob.stub(:s3_client, stub_client) do
+            private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
+              feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
+                # no error raised, continues to RSS
+                PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
+                assert_equal ["created", "started", "error_integration", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+              end
+            end
+          end
+        end
+
+        it "raises RetryPublishingError when timeout occurs with sync_blocks_rss enabled" do
+          assert apple_feed.apple_config.present?
+          assert apple_feed.apple_config.publish_enabled
+          apple_feed.apple_config.update!(sync_blocks_rss: true)
+
+          private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
+            podcast.stub(:feeds, [private_feed]) do
+              assert_raises(Apple::RetryPublishingError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
+
+              assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
             end
           end
         end
