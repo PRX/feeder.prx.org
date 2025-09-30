@@ -139,10 +139,13 @@ module Apple
 
       # Wait for the audio asset to be processed by Apple
       # Mark episodes as delivered as they are processed
-      wait_for_asset_state(eps)
+      wait_for_asset_state(eps) do |ready_eps|
+        mark_as_delivered!(ready_eps)
+        reset_asset_wait!(ready_eps)
+      end
     end
 
-    def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL)
+    def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL, &finisher_block)
       Rails.logger.tagged("##{__method__}") do
         remaining_eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
 
@@ -163,8 +166,7 @@ module Apple
           if ready_acc.any?
             Rails.logger.info("Processing #{ready_acc.length} ready episodes")
 
-            mark_as_delivered!(ready_acc)
-            reset_asset_wait!(ready_acc)
+            finisher_block.call(ready_acc) if finisher_block.present?
           end
 
           # Check for stuck episodes and log essential debugging info
