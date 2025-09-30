@@ -38,31 +38,6 @@ module Apple
       [ready, waiting]
     end
 
-    # In the case where the episodes state is not yet ready to publish, but the
-    # underlying models are ready. Poll the episodes audio asset state but
-    # guard against waiting for episode assets that will never be processed.
-    def self.wait_for_asset_state(api, eps)
-      wait_for(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL) do |remaining_eps|
-        (_ready, waiting) = probe_asset_state(api, remaining_eps)
-
-        waiting.each do |ep|
-          Rails.logger.info("Waiting for audio asset state?", {episode_id: ep.feeder_id,
-                                                               delivery_file_count: ep.podcast_delivery_files.count,
-                                                               delivery_files_processed_errors: ep.podcast_delivery_files.all?(&:processed_errors?),
-                                                               delivery_files_processed: ep.podcast_delivery_files.all?(&:processed?),
-                                                               delivery_files_delivered: ep.podcast_delivery_files.all?(&:delivered?),
-                                                               asset_state: ep.audio_asset_state,
-                                                               has_podcast_audio: ep&.podcast_container&.has_podcast_audio?,
-                                                               waiting_for_asset_state: ep.waiting_for_asset_state?})
-        end
-
-        if waiting.length > 0
-          Rails.logger.info("Waiting for asset state processing", {audio_asset_states: waiting.map(&:audio_asset_state).uniq})
-        end
-
-        waiting
-      end
-    end
 
     def self.get_episodes(api, episodes)
       return [] if episodes.empty?

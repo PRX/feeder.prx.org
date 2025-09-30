@@ -1,9 +1,14 @@
 module Apple
   class Publisher < Integrations::Base::Publisher
+    include Apple::ApiWaiting
     attr_reader :public_feed,
       :private_feed,
       :api,
       :show
+
+    EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
+    EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
+    STUCK_EPISODE_TIMEOUT = 1.hour.freeze
 
     def self.from_apple_config(apple_config)
       api = Apple::Api.from_apple_config(apple_config)
@@ -149,11 +154,50 @@ module Apple
       increment_asset_wait!(eps)
 
       wait_for_upload_processing(eps)
+
+      # Wait for the audio asset to be processed by Apple
+      # Mark episodes as delivered as they are processed
       wait_for_asset_state(eps)
+    end
 
-      mark_as_delivered!(eps)
+    def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL)
+      Rails.logger.tagged("##{__method__}") do
+        remaining_eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
 
-      reset_asset_wait!(eps)
+        self.class.wait_for(remaining_eps,
+          wait_timeout: wait_timeout,
+          wait_interval: wait_interval) do |waiting_eps|
+          # Probe episodes in batches and partition into ready/waiting
+          ready_acc = []
+          waiting_acc = []
+
+          waiting_eps.each_slice(PUBLISH_CHUNK_LEN) do |batch|
+            ready, waiting = Apple::Episode.probe_asset_state(api, batch)
+            ready_acc.concat(ready)
+            waiting_acc.concat(waiting)
+          end
+
+          # Process ready episodes immediately
+          if ready_acc.any?
+            Rails.logger.info("Processing #{ready_acc.length} ready episodes")
+
+            mark_as_delivered!(ready_acc)
+            reset_asset_wait!(ready_acc)
+          end
+
+          # Check for stuck episodes and log essential debugging info
+          check_for_stuck_episodes(waiting_acc)
+
+          waiting_acc.each do |ep|
+            Rails.logger.info("Waiting for audio asset state", {episode_id: ep.feeder_id,
+                                                                 asset_state: ep.audio_asset_state,
+                                                                 waiting_for_asset_state: ep.waiting_for_asset_state?})
+          end
+
+          # Continue waiting for remaining episodes
+          waiting_acc
+        end
+      end
     end
 
     def prepare_for_delivery!(eps)
@@ -229,19 +273,6 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         eps = eps.filter { |e| e.feeder_episode.apple_status.uploaded? }
         eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
-      end
-    end
-
-    def wait_for_asset_state(eps)
-      Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
-
-        (waiting_timed_out, remaining_eps) = Apple::Episode.wait_for_asset_state(api, eps)
-        if waiting_timed_out
-          e = Apple::AssetStateTimeoutError.new(remaining_eps)
-          Rails.logger.info("Timed out waiting for asset state", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
-          raise e
-        end
       end
     end
 
@@ -408,6 +439,39 @@ module Apple
     def remove_audio_container_reference(eps, apple_mark_for_reupload: true)
       Rails.logger.tagged("##{__method__}") do
         Apple::Episode.remove_audio_container_reference(api, show, eps, apple_mark_for_reupload: apple_mark_for_reupload)
+      end
+    end
+
+    private
+
+    def check_for_stuck_episodes(waiting)
+      return if waiting.empty?
+
+      # Log essential debugging info for waiting episodes
+      Rails.logger.info("Waiting for asset state processing", {
+        episode_count: waiting.length,
+        episode_ids: waiting.map(&:feeder_id),
+        audio_asset_states: waiting.map(&:audio_asset_state).uniq
+      })
+
+      # Check for stuck episodes (>1 hour)
+      stuck = waiting.filter { |ep|
+        duration = ep.feeder_episode.measure_asset_processing_duration
+        duration && duration > STUCK_EPISODE_TIMEOUT
+      }
+
+      if stuck.any?
+        stuck.each do |ep|
+          Rails.logger.error("Episodes stuck for over 1 hour", {
+            episode_id: ep.feeder_id,
+            duration: ep.feeder_episode.measure_asset_processing_duration
+          })
+          ep.apple_mark_for_reupload!
+        end
+        # Note: This will abort the wait_for loop and fail the entire batch.
+        # Non-stuck waiting episodes will be retried on the next job attempt.
+        # Future enhancement: Could mark stuck episodes for re-upload retry.
+        raise Apple::AssetStateTimeoutError.new(stuck)
       end
     end
   end
