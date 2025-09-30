@@ -488,6 +488,72 @@ describe Apple::Publisher do
 
       assert_equal [1, 0], [episode1, episode2].map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }
     end
+
+    it "logs a timeout message with correct information" do
+      travel_to Time.now do
+        # Set up the delivery statuses
+        eps = [episode1, episode2]
+        eps.each { |e| e.feeder_episode.apple_episode_delivery_statuses.map(&:destroy) }
+
+        # Here is the log of attempts
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 0, created_at: 4.hour.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 1, created_at: 3.hour.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 2, created_at: 2.hour.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 3, created_at: 1.hour.ago)
+        eps.map(&:feeder_episode).each(&:reload)
+
+        # Mark episodes as having uploaded files
+        eps.each do |ep|
+          ep.podcast_delivery_files.each { |pdf| pdf.apple_sync_log.update!(**build(:podcast_delivery_file_api_response, asset_delivery_state: "COMPLETE")) }
+        end
+
+        # now simulate the asset timeout
+        logs = capture_json_logs do
+          # Stub wait_for to call the block once then return timeout
+          wait_for_stub = ->(_remaining, wait_timeout:, wait_interval:, &block) {
+            # Call the block once to simulate one iteration before timing out
+            block.call(eps)
+            [true, eps]  # Return timeout with remaining episodes
+          }
+
+          Apple::Publisher.stub :wait_for, wait_for_stub do
+            # Need to stub probe_asset_state since it will be called
+            Apple::Episode.stub :probe_asset_state, [[], eps] do
+              # Stub check_for_stuck_episodes to prevent stuck detection from interfering
+              publisher.stub :check_for_stuck_episodes, nil do
+                error = assert_raises(RuntimeError) do
+                  publisher.wait_for_asset_state(eps)
+                end
+                expected_err = "Timeout waiting for asset state change: Episodes: [#{episode1.feeder_id}, #{episode2.feeder_id}], Attempts: 3, Asset Wait Duration: #{4 * 60 * 60}.0"
+                assert_equal expected_err, error.message
+              end
+            end
+          end
+        end
+
+        # look at the logs
+        log = logs.find { |l| l[:msg] == "Timed out waiting for asset state" }
+        assert log, "Should have timeout log message"
+        assert_equal 30, log[:level]
+        assert_equal 3, log[:attempts]
+        assert_equal 4 * 60 * 60, log[:asset_wait_duration]
+        assert_equal 2, log[:episode_count]
+      end
+    end
+
+    it "should raise an error when wait times out" do
+      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 3)
+
+      wait_for_stub = ->(_remaining, wait_timeout:, wait_interval:, &block) {
+        [true, episodes]  # Just return timeout tuple, don't call block
+      }
+
+      Apple::Publisher.stub(:wait_for, wait_for_stub) do
+        assert_raises(RuntimeError, "Timed out waiting for asset state. 3 attempts so far") do
+          apple_publisher.wait_for_asset_state(episodes)
+        end
+      end
+    end
   end
 
   describe "#raise_delivery_processing_errors" do
@@ -983,9 +1049,12 @@ describe Apple::Publisher do
                   Apple::Episode.stub(:probe_asset_state, probe_mock) do
                     apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
                       apple_publisher.stub(:reset_asset_wait!, ->(*) {}) do
-                        # Should complete without error (timeout is handled gracefully)
-                        # The wait_for loop will exit after timeout with remaining episodes still waiting
-                        apple_publisher.process_delivery!([episode1, episode2])
+                        # Should raise timeout error when timeout is reached
+                        error = assert_raises(Apple::AssetStateTimeoutError) do
+                          apple_publisher.process_delivery!([episode1, episode2])
+                        end
+
+                        assert_equal 2, error.episodes.length, "Error should contain both episodes"
                       end
                     end
                   end

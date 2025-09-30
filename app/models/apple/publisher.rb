@@ -149,7 +149,7 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         remaining_eps = filter_episodes_awaiting_asset_state(eps)
 
-        self.class.wait_for(remaining_eps,
+        (timed_out, final_waiting) = self.class.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
           wait_interval: wait_interval) do |waiting_eps|
           ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)
@@ -162,6 +162,12 @@ module Apple
           check_for_stuck_episodes(still_waiting_episodes)
 
           still_waiting_episodes
+        end
+
+        if timed_out
+          e = Apple::AssetStateTimeoutError.new(final_waiting)
+          Rails.logger.info("Timed out waiting for asset state", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
+          raise e
         end
       end
     end
