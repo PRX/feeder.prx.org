@@ -8,7 +8,7 @@ class PublishFeedJob < ApplicationJob
   attr_accessor :podcast, :episodes, :rss, :put_object, :copy_object
 
   def perform(podcast, pub_item)
-    Rails.logger.tagged("podcast:#{podcast.id}") do
+    Rails.logger.tagged("publish-feed-job:#{podcast.id}") do
       set_job_id_on_publishing_item(podcast)
 
       # Consume the SQS message, return early, if we have racing threads trying to
