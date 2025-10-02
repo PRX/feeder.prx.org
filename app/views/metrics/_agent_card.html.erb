@@ -1,0 +1,43 @@
+<%= turbo_frame_tag agents_path do %>
+  <%= form_with(url: url, method: :get, id: form_id, data: {controller: "click", click_debounce_value: 200}) do |form| %>
+    <div class="row d-flex flex-wrap gx-4 h-100">
+      <div class="col-6 metrics-chart"
+        data-controller="apex-agents"
+        data-apex-agents-id-value="<%= SecureRandom.uuid %>"
+        data-apex-agents-agents-value="<%= agents.to_json %>"
+        data-apex-agents-date-range-value="<%= date_range.to_json %>"
+        data-apex-agents-interval-value="<%= interval %>"
+        data-apex-agents-title-value="Over time">
+        <div data-apex-agents-target="chart"></div>
+      </div>
+      <div class="col-6 align-items-center metrics-table">
+        <table class="table table-sm table-striped shadow rounded">
+          <thead class="table-primary">
+            <tr>
+              <td><%= t(".table_header.#{agents_path}") %></td>
+              <td><%= t(".table_header.downloads") %></td>
+              <td><%= t(".table_header.all_time") %></td>
+            </tr>
+          </thead>
+          <tbody>
+            <% agents.each_with_index do |agent, i| %>
+              <tr class="align-items-center">
+                <td class="d-flex align-items-center">
+                  <span class="material-icons me-2" aria-label="hidden" style="color: <%= agent[:color] %>">circle</span>
+                  <span class="text-nowrap overflow-hidden"><%= agent[:label] %></span>
+                </td>
+                <td><%= agent_downloads_with_percent(agent[:rollups], totals_in_range) %></td>
+                <td><%= agent_downloads_with_percent(agent[:all_time], total_alltime) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <%= form.date_field :date_start, class: "d-none", data: {apex_nav_target: "startDate", action: "change->click#submit"}, value: date_start %>
+    <%= form.date_field :date_end, class: "d-none", data: {apex_nav_target: "endDate", action: "change->click#submit"}, value: date_end %>
+    <%= form.select :interval, interval_options, {selected: interval}, class: "d-none", data: {apex_nav_target: "interval", action: "change->click#submit", path: agents_path} %>
+    <%= form.submit class: "d-none", data: {click_target: "submit"} %>
+  <% end %>
+<% end %>
