@@ -25,41 +25,17 @@ module Apple
       end
     end
 
-    # In the case where the episodes state is not yet ready to publish, but the
-    # underlying models are ready. Poll the episodes audio asset state but
-    # guard against waiting for episode assets that will never be processed.
-    def self.wait_for_asset_state(api, eps)
-      wait_for(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL) do |remaining_eps|
-        Rails.logger.info("Probing for episode audio asset state")
-        unwrapped = get_episodes(api, remaining_eps)
+    def self.probe_asset_state(api, episodes)
+      Rails.logger.info("Probing for episode audio asset state")
+      unwrapped = get_episodes(api, episodes)
 
-        remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["feeder_id"], row] }.to_h
-        remaining_eps.each { |ep| upsert_sync_log(ep, remote_ep_by_id[ep.id]) }
+      remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["feeder_id"], row] }.to_h
+      episodes.each { |ep| upsert_sync_log(ep, remote_ep_by_id[ep.id]) }
 
-        remaining_eps.each do |ep|
-          Rails.logger.info("Waiting for audio asset state?", {episode_id: ep.feeder_id,
-                                                               delivery_file_count: ep.podcast_delivery_files.count,
-                                                               delivery_files_processed_errors: ep.podcast_delivery_files.all?(&:processed_errors?),
-                                                               delivery_files_processed: ep.podcast_delivery_files.all?(&:processed?),
-                                                               delivery_files_delivered: ep.podcast_delivery_files.all?(&:delivered?),
-                                                               asset_state: ep.audio_asset_state,
-                                                               has_podcast_audio: ep&.podcast_container&.has_podcast_audio?,
-                                                               waiting_for_asset_state: ep.waiting_for_asset_state?})
-        end
+      ready = episodes.reject(&:waiting_for_asset_state?)
+      waiting = episodes.select(&:waiting_for_asset_state?)
 
-        rem =
-          remaining_eps.filter do |ep|
-            if ep.waiting_for_asset_state?
-              true
-            end
-          end
-
-        if rem.length > 0
-          Rails.logger.info("Waiting for asset state processing", {audio_asset_states: rem.map(&:audio_asset_state).uniq})
-        end
-
-        rem
-      end
+      [ready, waiting]
     end
 
     def self.get_episodes(api, episodes)

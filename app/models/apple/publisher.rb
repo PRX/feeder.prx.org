@@ -1,9 +1,14 @@
 module Apple
   class Publisher < Integrations::Base::Publisher
+    include Apple::ApiWaiting
     attr_reader :public_feed,
       :private_feed,
       :api,
       :show
+
+    EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
+    EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
+    STUCK_EPISODE_TIMEOUT = 1.hour.freeze
 
     def self.from_apple_config(apple_config)
       api = Apple::Api.from_apple_config(apple_config)
@@ -131,11 +136,40 @@ module Apple
       increment_asset_wait!(eps)
 
       wait_for_upload_processing(eps)
-      wait_for_asset_state(eps)
 
-      mark_as_delivered!(eps)
+      # Wait for the audio asset to be processed by Apple
+      # Mark episodes as delivered as they are processed
+      wait_for_asset_state(eps) do |ready_eps|
+        mark_as_delivered!(ready_eps)
+        reset_asset_wait!(ready_eps)
+      end
+    end
 
-      reset_asset_wait!(eps)
+    def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL, &finisher_block)
+      Rails.logger.tagged("##{__method__}") do
+        remaining_eps = filter_episodes_awaiting_asset_state(eps)
+
+        (timed_out, final_waiting) = self.class.wait_for(remaining_eps,
+          wait_timeout: wait_timeout,
+          wait_interval: wait_interval) do |waiting_eps|
+          ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)
+
+          if ready_episodes.any?
+            Rails.logger.info("Processing #{ready_episodes.length} ready episodes")
+            finisher_block.call(ready_episodes) if finisher_block.present?
+          end
+
+          check_for_stuck_episodes(still_waiting_episodes)
+
+          still_waiting_episodes
+        end
+
+        if timed_out
+          e = Apple::AssetStateTimeoutError.new(final_waiting)
+          Rails.logger.info("Timed out waiting for asset state", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
+          raise e
+        end
+      end
     end
 
     def prepare_for_delivery!(eps)
@@ -211,19 +245,6 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         eps = eps.filter { |e| e.feeder_episode.apple_status.uploaded? }
         eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
-      end
-    end
-
-    def wait_for_asset_state(eps)
-      Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
-
-        (waiting_timed_out, remaining_eps) = Apple::Episode.wait_for_asset_state(api, eps)
-        if waiting_timed_out
-          e = Apple::AssetStateTimeoutError.new(remaining_eps)
-          Rails.logger.info("Timed out waiting for asset state", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
-          raise e
-        end
       end
     end
 
@@ -391,6 +412,52 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         Apple::Episode.remove_audio_container_reference(api, show, eps, apple_mark_for_reupload: apple_mark_for_reupload)
       end
+    end
+
+    private
+
+    def check_for_stuck_episodes(waiting)
+      return if waiting.empty?
+
+      Rails.logger.info("Waiting for asset state processing", {
+        episode_count: waiting.length,
+        episode_ids: waiting.map(&:feeder_id),
+        audio_asset_states: waiting.map(&:audio_asset_state).uniq
+      })
+
+      # Check for stuck episodes (>1 hour)
+      stuck = waiting.filter { |ep|
+        duration = ep.feeder_episode.measure_asset_processing_duration
+        duration && duration > STUCK_EPISODE_TIMEOUT
+      }
+
+      if stuck.any?
+        stuck.each do |ep|
+          Rails.logger.error("Episodes stuck for over 1 hour", {
+            episode_id: ep.feeder_id,
+            duration: ep.feeder_episode.measure_asset_processing_duration
+          })
+          ep.apple_mark_for_reupload!
+        end
+        raise Apple::AssetStateTimeoutError.new(stuck)
+      end
+    end
+
+    def filter_episodes_awaiting_asset_state(eps)
+      eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
+    end
+
+    def partition_episodes_by_readiness(waiting_eps)
+      ready_acc = []
+      waiting_acc = []
+
+      waiting_eps.each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        ready, waiting = Apple::Episode.probe_asset_state(api, batch)
+        ready_acc.concat(ready)
+        waiting_acc.concat(waiting)
+      end
+
+      [ready_acc, waiting_acc]
     end
   end
 end
