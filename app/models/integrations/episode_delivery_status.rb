@@ -41,10 +41,6 @@ module Integrations
       self.class.update_status(integration, episode, asset_processing_attempts: (asset_processing_attempts || 0) + 1)
     end
 
-    def reset_asset_wait
-      self.class.update_status(integration, episode, asset_processing_attempts: 0)
-    end
-
     def mark_as_uploaded!
       self.class.update_status(integration, episode, uploaded: true)
     end

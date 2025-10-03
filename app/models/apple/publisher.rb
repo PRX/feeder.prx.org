@@ -147,8 +147,8 @@ module Apple
         # Wait for the audio asset to be processed by Apple
         # Mark episodes as delivered as they are processed
         wait_for_asset_state(eps) do |ready_eps|
+          log_asset_wait_duration!(ready_eps)
           mark_as_delivered!(ready_eps)
-          reset_asset_wait!(ready_eps)
         end
       end
     end
@@ -403,22 +403,19 @@ module Apple
         eps = eps.select { |ep| ep.drafting? && ep.container_upload_complete? }
 
         res = Apple::Episode.publish(api, show, eps)
-        eps.each { |ep| ep.apple_episode_delivery_status.reset_asset_wait }
 
         Rails.logger.info("Published #{res.length} drafting episodes.")
       end
     end
 
-    def reset_asset_wait!(eps)
+    def log_asset_wait_duration!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        Rails.logger.info("Resetting asset wait counters", {episode_count: eps.length})
         eps.each do |ep|
-          duration = ep.feeder_episode.measure_asset_processing_duration
+          duration = ep&.feeder_episode&.measure_asset_processing_duration
           Rails.logger.info("Episode asset processing complete", {
             episode_id: ep.feeder_id,
             asset_wait_duration: duration
           })
-          ep.apple_episode_delivery_status.reset_asset_wait
         end
       end
     end
