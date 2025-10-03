@@ -415,36 +415,40 @@ describe Apple::Publisher do
     end
   end
 
-  describe "#reset_asset_wait!" do
+  describe "#mark_as_delivered!" do
     let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
     let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
     let(:episodes) { [episode1, episode2] }
 
-    it "should reset the asset processing attempts" do
+    it "should reset the asset processing attempts when marking as delivered" do
       episodes.each do |ep|
         ep.feeder_episode.apple_update_delivery_status(asset_processing_attempts: 3)
       end
       assert_equal 3, episode1.delivery_status.asset_processing_attempts
       assert_equal 3, episode2.delivery_status.asset_processing_attempts
 
-      apple_publisher.reset_asset_wait!(episodes)
+      apple_publisher.mark_as_delivered!(episodes)
 
       assert_equal 0, episode1.delivery_status.asset_processing_attempts
       assert_equal 0, episode2.delivery_status.asset_processing_attempts
     end
 
-    it "should reset the asset processing attempts for non-drafting episodes" do
+    it "should mark episodes as delivered and reset asset processing attempts" do
       episodes.each do |ep|
-        ep.feeder_episode.apple_update_delivery_status(asset_processing_attempts: 3)
+        ep.feeder_episode.apple_update_delivery_status(asset_processing_attempts: 3, delivered: false)
       end
 
       assert_equal 3, episode1.delivery_status.asset_processing_attempts
       assert_equal 3, episode2.delivery_status.asset_processing_attempts
+      refute episode1.delivery_status.delivered
+      refute episode2.delivery_status.delivered
 
-      apple_publisher.reset_asset_wait!(episodes)
+      apple_publisher.mark_as_delivered!(episodes)
 
       assert_equal 0, episode1.delivery_status.asset_processing_attempts
       assert_equal 0, episode2.delivery_status.asset_processing_attempts
+      assert episode1.delivery_status.delivered
+      assert episode2.delivery_status.delivered
     end
   end
 
@@ -617,24 +621,6 @@ describe Apple::Publisher do
 
       episodes.each do |ep|
         assert ep.delivery_status.uploaded
-      end
-    end
-  end
-
-  describe "#mark_as_delivered!" do
-    let(:episode1) { build(:apple_episode, show: apple_publisher.show) }
-    let(:episode2) { build(:apple_episode, show: apple_publisher.show) }
-    let(:episodes) { [episode1, episode2] }
-
-    it "marks episodes as delivered" do
-      episodes.each do |ep|
-        refute ep.delivery_status.delivered
-      end
-
-      apple_publisher.mark_as_delivered!(episodes)
-
-      episodes.each do |ep|
-        assert ep.delivery_status.delivered
       end
     end
   end
@@ -825,12 +811,6 @@ describe Apple::Publisher do
         assert_equal [episode], eps
       }
 
-      reset_called = false
-      reset_mock = ->(eps) {
-        reset_called = true
-        assert_equal [episode], eps
-      }
-
       # Stub wait_for_asset_state to use fast timeouts
       original_wait_for_asset_state = apple_publisher.method(:wait_for_asset_state)
       wait_for_asset_state_stub = ->(eps, **_kwargs, &block) {
@@ -843,9 +823,7 @@ describe Apple::Publisher do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
             Apple::Episode.stub(:probe_asset_state, probe_mock) do
               apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
-                apple_publisher.stub(:reset_asset_wait!, reset_mock) do
-                  apple_publisher.process_delivery!([episode])
-                end
+                apple_publisher.process_delivery!([episode])
               end
             end
           end
@@ -856,7 +834,6 @@ describe Apple::Publisher do
       assert increment_mock.verify
       assert wait_upload_mock.verify
       assert mark_delivered_called
-      assert reset_called
     end
 
     it "continues waiting for episodes not ready yet" do
@@ -888,7 +865,7 @@ describe Apple::Publisher do
             apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
               Apple::Episode.stub(:probe_asset_state, probe_mock) do
                 apple_publisher.stub(:mark_as_delivered!, ->(*) {}) do
-                  apple_publisher.stub(:reset_asset_wait!, ->(*) {}) do
+                  apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
                     apple_publisher.process_delivery!([episode])
                   end
                 end
@@ -930,7 +907,7 @@ describe Apple::Publisher do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
             Apple::Episode.stub(:probe_asset_state, probe_mock) do
               apple_publisher.stub(:mark_as_delivered!, ->(*) {}) do
-                apple_publisher.stub(:reset_asset_wait!, ->(*) {}) do
+                apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
                   apple_publisher.process_delivery!(episodes)
                 end
               end
@@ -976,12 +953,6 @@ describe Apple::Publisher do
         delivered_episodes.concat(eps)
       }
 
-      # Track which episodes had reset called
-      reset_episodes = []
-      reset_mock = ->(eps) {
-        reset_episodes.concat(eps)
-      }
-
       # Stub wait_for_asset_state to use fast timeouts
       original_wait_for_asset_state = apple_publisher.method(:wait_for_asset_state)
       wait_for_asset_state_stub = ->(eps, **_kwargs, &block) {
@@ -994,9 +965,7 @@ describe Apple::Publisher do
             apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
               Apple::Episode.stub(:probe_asset_state, probe_mock) do
                 apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
-                  apple_publisher.stub(:reset_asset_wait!, reset_mock) do
-                    apple_publisher.process_delivery!([episode1, episode2, episode3])
-                  end
+                  apple_publisher.process_delivery!([episode1, episode2, episode3])
                 end
               end
             end
@@ -1007,7 +976,6 @@ describe Apple::Publisher do
       # Verify all three episodes were eventually processed
       assert_equal 3, probe_call_count
       assert_equal [episode1, episode2, episode3].map(&:feeder_id).sort, delivered_episodes.map(&:feeder_id).sort
-      assert_equal [episode1, episode2, episode3].map(&:feeder_id).sort, reset_episodes.map(&:feeder_id).sort
     end
 
     it "times out when wait_for exceeds timeout without stuck episodes" do
@@ -1048,7 +1016,7 @@ describe Apple::Publisher do
                 apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
                   Apple::Episode.stub(:probe_asset_state, probe_mock) do
                     apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
-                      apple_publisher.stub(:reset_asset_wait!, ->(*) {}) do
+                      apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
                         # Should raise timeout error when timeout is reached
                         error = assert_raises(Apple::AssetStateTimeoutError) do
                           apple_publisher.process_delivery!([episode1, episode2])

@@ -107,41 +107,49 @@ module Apple
     end
 
     def upload_media!(eps)
-      # Soft delete any existing delivery and delivery files.
-      prepare_for_delivery!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Rails.logger.info("Starting media upload", {episode_count: eps.length})
 
-      # Only create if needed.
-      sync_episodes!(eps)
-      sync_podcast_containers!(eps)
+        # Soft delete any existing delivery and delivery files.
+        prepare_for_delivery!(eps)
 
-      wait_for_versioned_source_metadata(eps)
+        # Only create if needed.
+        sync_episodes!(eps)
+        sync_podcast_containers!(eps)
 
-      sync_podcast_deliveries!(eps)
-      sync_podcast_delivery_files!(eps)
+        wait_for_versioned_source_metadata(eps)
 
-      # Upload and mark as uploaded, then update the audio container reference.
-      execute_upload_operations!(eps)
-      mark_delivery_files_uploaded!(eps)
-      update_audio_container_reference!(eps)
+        sync_podcast_deliveries!(eps)
+        sync_podcast_delivery_files!(eps)
 
-      # Mark the episode as uploaded.
-      mark_as_uploaded!(eps)
+        # Upload and mark as uploaded, then update the audio container reference.
+        execute_upload_operations!(eps)
+        mark_delivery_files_uploaded!(eps)
+        update_audio_container_reference!(eps)
 
-      # The episodes start waiting after they are uploaded.
-      # Increment the wait counter.
-      increment_asset_wait!(eps)
+        # Mark the episode as uploaded.
+        mark_as_uploaded!(eps)
+
+        # The episodes start waiting after they are uploaded.
+        # Increment the wait counter.
+        increment_asset_wait!(eps)
+      end
     end
 
     def process_delivery!(eps)
-      increment_asset_wait!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Rails.logger.info("Starting delivery processing", {episode_count: eps.length})
 
-      wait_for_upload_processing(eps)
+        increment_asset_wait!(eps)
 
-      # Wait for the audio asset to be processed by Apple
-      # Mark episodes as delivered as they are processed
-      wait_for_asset_state(eps) do |ready_eps|
-        mark_as_delivered!(ready_eps)
-        reset_asset_wait!(ready_eps)
+        wait_for_upload_processing(eps)
+
+        # Wait for the audio asset to be processed by Apple
+        # Mark episodes as delivered as they are processed
+        wait_for_asset_state(eps) do |ready_eps|
+          log_asset_wait_duration!(ready_eps)
+          mark_as_delivered!(ready_eps)
+        end
       end
     end
 
@@ -349,14 +357,16 @@ module Apple
     end
 
     def execute_upload_operations!(eps)
-      Rails.logger.tagged("##{__method__}") do
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Rails.logger.info("Executing upload operations", {episode_count: eps.length})
         Apple::UploadOperation.execute_upload_operations(api, eps)
       end
     end
 
     def mark_delivery_files_uploaded!(eps)
-      Rails.logger.tagged("##{__method__}") do
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
+        Rails.logger.info("Marking delivery files as uploaded", {file_count: pdfs.length})
         ::Apple::PodcastDeliveryFile.mark_uploaded(api, pdfs)
       end
     end
@@ -393,15 +403,20 @@ module Apple
         eps = eps.select { |ep| ep.drafting? && ep.container_upload_complete? }
 
         res = Apple::Episode.publish(api, show, eps)
-        eps.each { |ep| ep.apple_episode_delivery_status.reset_asset_wait }
 
         Rails.logger.info("Published #{res.length} drafting episodes.")
       end
     end
 
-    def reset_asset_wait!(eps)
-      Rails.logger.tagged("##{__method__}") do
-        eps.each { |ep| ep.apple_episode_delivery_status.reset_asset_wait }
+    def log_asset_wait_duration!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        eps.each do |ep|
+          duration = ep&.feeder_episode&.measure_asset_processing_duration
+          Rails.logger.info("Episode asset processing complete", {
+            episode_id: ep.feeder_id,
+            asset_wait_duration: duration
+          })
+        end
       end
     end
 
