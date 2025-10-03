@@ -412,7 +412,14 @@ module Apple
     def reset_asset_wait!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         Rails.logger.info("Resetting asset wait counters", {episode_count: eps.length})
-        eps.each { |ep| ep.apple_episode_delivery_status.reset_asset_wait }
+        eps.each do |ep|
+          duration = ep.feeder_episode.measure_asset_processing_duration
+          Rails.logger.info("Episode asset processing complete", {
+            episode_id: ep.feeder_id,
+            asset_wait_duration: duration
+          })
+          ep.apple_episode_delivery_status.reset_asset_wait
+        end
       end
     end
 
