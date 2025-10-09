@@ -37,4 +37,3 @@ pin "convert-string" # @0.1.0
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin_all_from "app/javascript/custom", under: "custom"
 pin_all_from "app/javascript/util", under: "util"
-pin "@googlemaps/js-api-loader", to: "https://ga.jspm.io/npm:@googlemaps/js-api-loader@1.16.10/dist/index.mjs"

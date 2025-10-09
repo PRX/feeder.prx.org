@@ -121,20 +121,33 @@ class PodcastMetricsController < ApplicationController
   end
 
   def geos
-    # @top_subdivs =
-    #   Rollups::DailyGeo
-    #     .where(podcast_id: @podcast.id)
-    #     .select(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day", "SUM(count) AS count")
-    #     .group(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .limit(10)
-    # @top_countries =
-    #   Rollups::DailyGeo
-    #     .where(podcast_id: @podcast.id)
-    #     .select(:country_code, "SUM(count) AS count")
-    #     .group(:country_code)
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .limit(10)
+    @top_subdivs =
+      Rollups::DailyGeo
+        .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
+        .select(:country_code, :subdiv_code, "DATE_TRUNC('#{minimum_interval(@interval)}', day) AS day", "SUM(count) AS count")
+        .group(:country_code, :subdiv_code, "DATE_TRUNC('#{minimum_interval(@interval)}', day) AS day")
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .limit(10)
+    @top_countries =
+      Rollups::DailyGeo
+        .where(podcast_id: @podcast.id)
+        .select(:country_code, "SUM(count) AS count")
+        .group(:country_code)
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .limit(10)
+
+    # binding.pry
+
+    render partial: "metrics/geo_card", locals: {
+      url: request.fullpath,
+      form_id: "podcast_geos_apps_metrics",
+      date_start: @date_start,
+      date_end: @date_end,
+      interval: minimum_interval(@interval),
+      date_range: @date_range,
+      geos: @top_subdivs,
+      geo_type: "States"
+    }
   end
 
   def agent_apps

@@ -1,0 +1,12 @@
+<%= turbo_frame_tag "geos_card" do %>
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <div>geos</div>
+    </div>
+    <div class="card-body metrics-card-body">
+      <%= turbo_frame_tag "geos", src: geos_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval) do %>
+        <%= render "metrics/loading_card" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

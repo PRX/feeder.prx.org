@@ -1,0 +1,34 @@
+<%= turbo_frame_tag "geos", class: "col-6 mb-2" do %>
+  <% id = "new_map" %>
+  <div class="row d-flex flex-wrap gx-4 h-100">
+    <div class="col-6 metrics-chart"
+      data-controller="apex-geos"
+      data-apex-geos-id-value="<%= id %>"
+      data-apex-geos-api-key-value="<%= ENV["GOOGLE_MAPS_API_KEY"] %>"
+      data-apex-geos-data-value="<%= geos.to_json %>">
+      <div class="h-100" id="<%= id %>"></div>
+    </div>
+    <div class="col-6 align-items-center metrics-table">
+      <table class="table table-sm table-striped shadow rounded">
+        <thead class="table-primary">
+          <tr>
+            <td><%= "State" %></td>
+            <td><%= "Downloads" %></td>
+            <td><%= "All time" %></td>
+          </tr>
+        </thead>
+        <tbody>
+          <% geos.each_with_index do |geo, i| %>
+            <tr class="align-items-center">
+              <td class="d-flex align-items-center">
+                <span class="text-nowrap overflow-hidden"><%= geo[:country_code] + "-" + geo[:subdiv_code] %></span>
+              </td>
+              <td><%= geo[:count] %></td>
+              <td><%=  %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>
