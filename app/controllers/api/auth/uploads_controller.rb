@@ -1,4 +1,6 @@
 class Api::Auth::UploadsController < Api::BaseController
+  include ApiAuthenticated
+
   before_action :authorize_uploading
 
   def self.s3_signer
@@ -10,8 +12,10 @@ class Api::Auth::UploadsController < Api::BaseController
   end
 
   def show
-    put_url = s3_signer.presigned_request(:put_object, bucket: s3_bucket, key: s3_key, use_accelerate_endpoint: s3_accelerate)
-    get_url = s3_signer.presigned_request(:get_object, bucket: s3_bucket, key: s3_key, use_accelerate_endpoint: s3_accelerate)
+    opts = {bucket: s3_bucket, key: s3_key, use_accelerate_endpoint: s3_accelerate, expires_in: 30.minutes.to_i}
+    exp = Time.now.to_i + opts[:expires_in]
+    put_url = s3_signer.presigned_request(:put_object, opts)
+    get_url = s3_signer.presigned_request(:get_object, opts)
 
     render json: {
       filename: s3_filename,
@@ -27,11 +31,13 @@ class Api::Auth::UploadsController < Api::BaseController
         },
         "prx:upload" => {
           href: put_url.first,
-          method: "PUT"
+          method: "PUT",
+          expiration: exp
         },
         "prx:download" => {
           href: get_url.first,
-          method: "GET"
+          method: "GET",
+          expiration: exp
         }
       }
     }
