@@ -8,6 +8,7 @@ describe Api::Auth::UploadsController do
   before do
     class << @controller; attr_accessor :prx_auth_token; end
     @controller.prx_auth_token = token
+    ENV["UPLOAD_BUCKET_PREFIX"] = "uploads"
   end
 
   it "returns signed urls" do
