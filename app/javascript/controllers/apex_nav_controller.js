@@ -1,7 +1,17 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["startDate", "endDate", "interval", "uniques", "dropdays", "mainStart", "mainEnd", "tab"]
+  static targets = [
+    "startDate",
+    "endDate",
+    "interval",
+    "uniquesInterval",
+    "uniques",
+    "dropdays",
+    "mainStart",
+    "mainEnd",
+    "tab",
+  ]
 
   updateDates(event) {
     const [startDate, endDate] = JSON.parse(event.target.value)
@@ -24,18 +34,20 @@ export default class extends Controller {
   }
 
   updateInterval(event) {
-    this.updateSpecificTargets(this.intervalTargets, event.target.value, event.params.path)
+    event.preventDefault()
+
+    this.updateAllTargets(this.intervalTargets, event.target.value)
   }
 
   updateUniques(event) {
     this.updateAllTargets(this.uniquesTargets, event.target.value)
 
     if (event.target.value === "calendar_week") {
-      this.updateSpecificTargets(this.intervalTargets, "WEEK", event.params.path)
+      this.updateSpecificTargets(this.uniquesIntervalTargets, "WEEK", event.params.path)
     } else if (event.target.value === "calendar_month") {
-      this.updateSpecificTargets(this.intervalTargets, "MONTH", event.params.path)
+      this.updateSpecificTargets(this.uniquesIntervalTargets, "MONTH", event.params.path)
     } else {
-      this.updateSpecificTargets(this.intervalTargets, "DAY", event.params.path)
+      this.updateSpecificTargets(this.uniquesIntervalTargets, "DAY", event.params.path)
     }
   }
 
@@ -51,9 +63,7 @@ export default class extends Controller {
 
   updateAllTargets(targets, value) {
     targets.forEach((target) => {
-      target.addEventListener("change", function () {
-        target.value = value
-      })
+      target.value = value
       target.dispatchEvent(new Event("change"))
     })
   }
@@ -61,9 +71,7 @@ export default class extends Controller {
   updateSpecificTargets(targets, value, path) {
     targets.forEach((target) => {
       if (path === target.dataset.path) {
-        target.addEventListener("change", function () {
-          target.value = value
-        })
+        target.value = value
         target.dispatchEvent(new Event("change"))
       }
     })
@@ -71,10 +79,12 @@ export default class extends Controller {
 
   changeTab(event) {
     this.tabTargets.forEach((el) => {
-      if (el.dataset.tab.includes(event.params.tab)) {
-        el.classList.remove("d-none")
-      } else {
-        el.classList.add("d-none")
+      if (el.dataset.card.includes(event.params.card)) {
+        if (el.dataset.tab.includes(event.params.tab)) {
+          el.classList.remove("d-none")
+        } else {
+          el.classList.add("d-none")
+        }
       }
     })
   }

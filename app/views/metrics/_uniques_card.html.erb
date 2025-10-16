@@ -11,7 +11,7 @@
 
     <%= form.date_field :date_start, class: "d-none", data: {apex_nav_target: "startDate", action: "change->click#submit"}, value: date_start %>
     <%= form.date_field :date_end, class: "d-none", data: {apex_nav_target: "endDate", action: "change->click#submit"}, value: date_end %>
-    <%= form.select :interval, interval_options, {selected: interval}, class: "d-none", data: {apex_nav_target: "interval", action: "change->click#submit", path: "uniques"} %>
+    <%= form.select :uniques_interval, interval_options, {selected: uniques_interval}, class: "d-none", data: {apex_nav_target: "uniquesInterval", action: "change->click#submit", path: "uniques"} %>
     <%= form.select :uniques_selection, uniques_selection_options, {selected: uniques_selection}, class: "d-none", data: {apex_nav_target: "uniques", action: "change->click#submit", path: "uniques"} %>
     <%= form.submit class: "d-none", data: {click_target: "submit"} %>
   <% end %>
