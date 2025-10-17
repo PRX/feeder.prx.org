@@ -8,12 +8,7 @@ module MetricsHelper
   end
 
   def main_card_options
-    [
-      ["downloads", "downloads"],
-      ["episodes", "episodes"],
-      ["uniques", "uniques"],
-      ["dropdays", "dropdays"]
-    ]
+    %i[downloads episodes uniques dropdays]
   end
 
   def date_range_options(episode = nil)

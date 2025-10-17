@@ -5,11 +5,8 @@ export default class extends Controller {
     "startDate",
     "endDate",
     "interval",
-    "uniquesInterval",
     "uniques",
     "dropdays",
-    "mainStart",
-    "mainEnd",
     "tab",
     "card",
     "mainCard"
@@ -24,8 +21,6 @@ export default class extends Controller {
     this.tabTargets.forEach(el => {
       if (el.dataset.card === "main") {
         if (el.dataset.tab === this.mainCardValue) {
-          el.classList.add("active")
-          el.setAttribute("aria-selected", "true")
           el.click()
         }
       }
@@ -34,59 +29,20 @@ export default class extends Controller {
 
   updateDates(event) {
     const [startDate, endDate] = JSON.parse(event.target.value)
-    this.mainStartTarget.value = startDate
-    this.mainEndTarget.value = endDate
 
-    this.mainStartTarget.focus()
-    this.mainStartTarget.blur()
-    this.mainEndTarget.focus()
-    this.mainEndTarget.blur()
-    event.target.focus()
+    this.updateInput(this.startDateTarget, startDate)
+    this.updateInput(this.endDateTarget, endDate)
   }
 
-  updateStartDate(event) {
-    this.updateAllTargets(this.startDateTargets, event.target.value)
+  updateTarget(event) {
+    let target = this[`${event.params.target}Target`]
+
+    this.updateInput(target, event.target.value)
   }
 
-  updateEndDate(event) {
-    this.updateAllTargets(this.endDateTargets, event.target.value)
-  }
-
-  updateInterval(event) {
-    event.preventDefault()
-
-    this.updateAllTargets(this.intervalTargets, event.target.value)
-  }
-
-  updateUniques(event) {
-    this.uniquesTarget.value = event.target.value
-    this.uniquesTarget.dispatchEvent(new Event("change"))
-  }
-
-  updateDropdays(event) {
-    this.updateAllTargets(this.dropdaysTargets, event.target.value)
-
-    // if ([7, 14, 28, 30, 60, 90].includes(parseInt(event.target.value))) {
-    //   this.updateSpecificTargets(this.intervalTargets, "DAY", event.params.path)
-    // } else if ([24, 48, 72].includes(parseInt(event.target.value))) {
-    //   this.updateSpecificTargets(this.intervalTargets, "HOUR", event.params.path)
-    // }
-  }
-
-  updateAllTargets(targets, value) {
-    targets.forEach((target) => {
-      target.value = value
-      target.dispatchEvent(new Event("change"))
-    })
-  }
-
-  updateSpecificTargets(targets, value, path) {
-    targets.forEach((target) => {
-      if (path === target.dataset.path) {
-        target.value = value
-        target.dispatchEvent(new Event("change"))
-      }
-    })
+  updateInput(target, value) {
+    target.value = value
+    target.dispatchEvent(new Event("change"))
   }
 
   displayCard(event) {
@@ -100,6 +56,6 @@ export default class extends Controller {
       }
     })
 
-    this.mainCardTarget.value = event.params.tab
+    this[`${event.params.card}CardTarget`].value = event.params.tab
   }
 }

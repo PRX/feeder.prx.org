@@ -1,14 +1,14 @@
 <div class="row d-flex gx-1">
   <div class="col form-floating">
-    <%= form.select :interval, interval_options, {selected: interval}, value: interval, data: {action: "apex-nav#updateInterval"}, class: "form-select form-select-sm" %>
+    <%= form.select :interval, interval_options, {selected: interval}, value: interval, data: {action: "apex-nav#updateTarget", apex_nav_target_param: "interval"}, class: "form-select form-select-sm" %>
     <%= form.label :interval %>
   </div>
   <div class="col form-floating input-group">
-    <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "mainStart", action: "apex-nav#updateStartDate"}, class: "form-control form-control-sm", value: date_start %>
+    <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "mainStart", action: "apex-nav#updateTarget", apex_nav_target_param: "startDate"}, class: "form-control form-control-sm", value: date_start %>
     <%= form.label :date_start, t(".date_start") %>
   </div>
   <div class="col form-floating input-group">
-    <%= form.date_field :date_end, max: Date.utc_today, data: {apex_nav_target: "mainEnd", action: "apex-nav#updateEndDate"}, class: "form-control form-control-sm", value: date_end %>
+    <%= form.date_field :date_end, max: Date.utc_today, data: {apex_nav_target: "mainEnd", action: "apex-nav#updateTarget", apex_nav_target_param: "endDate"}, class: "form-control form-control-sm", value: date_end %>
     <%= form.label :date_end, t(".date_end") %>
   </div>
   <div class="col btn-group">

@@ -197,7 +197,6 @@ class PodcastMetricsController < ApplicationController
 
   def set_uniques
     @uniques_selection = metrics_params[:uniques_selection]
-    # @uniques_interval = metrics_params[:uniques_interval]
   end
 
   def set_dropday_range
@@ -237,24 +236,6 @@ class PodcastMetricsController < ApplicationController
         dropday_range: 7
       )
   end
-
-  # def uniques_params
-  #   params
-  #     .permit(:uniques_selection, :uniques_interval)
-  #     .with_defaults(
-  #       uniques_selection: "last_7_rolling",
-  #     )
-  #     .merge(metrics_params)
-  # end
-
-  # def dropdays_params
-  #   params
-  #     .permit(:dropday_range, :interval)
-  #     .with_defaults(
-  #       dropday_range: 7
-  #     )
-  #     .merge(metrics_params)
-  # end
 
   def uniques_interval(selection)
     if selection == "calendar_week"
