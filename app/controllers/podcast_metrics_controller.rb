@@ -10,6 +10,7 @@ class PodcastMetricsController < ApplicationController
   before_action :set_total_agents, only: %i[agent_apps agent_types agent_os]
 
   def show
+    @url = request.fullpath
   end
 
   def downloads
@@ -17,8 +18,6 @@ class PodcastMetricsController < ApplicationController
     @downloads = single_rollups(@downloads_within_date_range)
 
     render partial: "metrics/downloads_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_downloads_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
@@ -66,9 +65,9 @@ class PodcastMetricsController < ApplicationController
     @uniques_rollups =
       Rollups::DailyUnique
         .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
-        .select("DATE_TRUNC('#{@uniques_interval}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
-        .group("DATE_TRUNC('#{@uniques_interval}', day) AS day")
-        .order(Arel.sql("DATE_TRUNC('#{@uniques_interval}', day) ASC"))
+        .select("DATE_TRUNC('#{uniques_interval(@uniques_selection)}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
+        .group("DATE_TRUNC('#{uniques_interval(@uniques_selection)}', day) AS day")
+        .order(Arel.sql("DATE_TRUNC('#{uniques_interval(@uniques_selection)}', day) ASC"))
         .load_async
 
     @uniques = single_rollups(@uniques_rollups)
@@ -78,7 +77,7 @@ class PodcastMetricsController < ApplicationController
       form_id: "podcast_uniques_metrics",
       date_start: @date_start,
       date_end: @date_end,
-      uniques_interval: @uniques_interval,
+      interval: uniques_interval(@uniques_selection),
       uniques_selection: @uniques_selection,
       uniques: @uniques,
       date_range: @date_range
@@ -233,11 +232,15 @@ class PodcastMetricsController < ApplicationController
 
   def metrics_params
     params
-      .permit(:podcast_id, :date_start, :date_end, :interval)
+      .permit(:podcast_id, :date_start, :date_end, :interval, :main_card, :agents_card, :uniques_selection, :dropday_range)
       .with_defaults(
         date_start: 30.days.ago.utc_date,
         date_end: Date.utc_today,
-        interval: "DAY"
+        interval: "DAY",
+        main_card: "downloads",
+        agents_card: "agent_apps",
+        uniques_selection: "last_7_rolling",
+        dropday_range: 7
       )
   end
 
@@ -246,7 +249,6 @@ class PodcastMetricsController < ApplicationController
       .permit(:uniques_selection, :uniques_interval)
       .with_defaults(
         uniques_selection: "last_7_rolling",
-        uniques_interval: "DAY"
       )
       .merge(metrics_params)
   end
@@ -258,5 +260,15 @@ class PodcastMetricsController < ApplicationController
         dropday_range: 7
       )
       .merge(metrics_params)
+  end
+
+  def uniques_interval(selection)
+    if selection == "calendar_week"
+      "WEEK"
+    elsif selection == "calendar_month"
+      "MONTH"
+    else
+      "DAY"
+    end
   end
 end
