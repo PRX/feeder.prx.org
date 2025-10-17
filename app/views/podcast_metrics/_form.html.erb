@@ -6,7 +6,7 @@
     </div>
   </div>
   <div class="container col-12 my-4">
-    <%= render "main_card", podcast: podcast, date_start: date_start, date_end: date_end, interval: interval, uniques_selection: uniques_selection, dropday_range: dropday_range %>
+    <%= render "main_card", form: form, podcast: podcast, date_start: date_start, date_end: date_end, interval: interval, uniques_selection: uniques_selection, dropday_range: dropday_range %>
   </div>
   <div class="container col-12 mb-2">
     <div class="col mb-4">
@@ -27,5 +27,8 @@
   <%= form.date_field :date_start, class: "d-none", data: {apex_nav_target: "startDate", action: "change->click#submit"}, value: date_start %>
   <%= form.date_field :date_end, class: "d-none", data: {apex_nav_target: "endDate", action: "change->click#submit"}, value: date_end %>
   <%= form.select :interval, interval_options, {selected: interval}, class: "d-none", data: {apex_nav_target: "interval", action: "change->click#submit"} %>
+  <%= form.select :uniques_selection, uniques_selection_options, {selected: uniques_selection}, class: "d-none", data: {apex_nav_target: "uniques", action: "change->click#submit", path: "uniques"} %>
+  <%= form.select :dropday_range, dropday_range_options, {selected: dropday_range}, class: "d-none", data: {apex_nav_target: "dropdays", action: "change->click#submit", path: "dropdays"} %>
+  <%= form.select :main_card, main_card_options, {selected: main_card}, class: "d-none", data: {apex_nav_target: "mainCard"} %>
   <%= form.submit class: "d-none", data: {click_target: "submit"} %>
 <% end %>

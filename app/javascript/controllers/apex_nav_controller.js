@@ -11,7 +11,26 @@ export default class extends Controller {
     "mainStart",
     "mainEnd",
     "tab",
+    "card",
+    "mainCard"
   ]
+
+  static values = {
+    mainCard: String,
+    agentsCard: String
+  }
+
+  connect() {
+    this.tabTargets.forEach(el => {
+      if (el.dataset.card === "main") {
+        if (el.dataset.tab === this.mainCardValue) {
+          el.classList.add("active")
+          el.setAttribute("aria-selected", "true")
+          el.click()
+        }
+      }
+    })
+  }
 
   updateDates(event) {
     const [startDate, endDate] = JSON.parse(event.target.value)
@@ -40,25 +59,18 @@ export default class extends Controller {
   }
 
   updateUniques(event) {
-    this.updateAllTargets(this.uniquesTargets, event.target.value)
-
-    if (event.target.value === "calendar_week") {
-      this.updateSpecificTargets(this.uniquesIntervalTargets, "WEEK", event.params.path)
-    } else if (event.target.value === "calendar_month") {
-      this.updateSpecificTargets(this.uniquesIntervalTargets, "MONTH", event.params.path)
-    } else {
-      this.updateSpecificTargets(this.uniquesIntervalTargets, "DAY", event.params.path)
-    }
+    this.uniquesTarget.value = event.target.value
+    this.uniquesTarget.dispatchEvent(new Event("change"))
   }
 
   updateDropdays(event) {
     this.updateAllTargets(this.dropdaysTargets, event.target.value)
 
-    if ([7, 14, 28, 30, 60, 90].includes(parseInt(event.target.value))) {
-      this.updateSpecificTargets(this.intervalTargets, "DAY", event.params.path)
-    } else if ([24, 48, 72].includes(parseInt(event.target.value))) {
-      this.updateSpecificTargets(this.intervalTargets, "HOUR", event.params.path)
-    }
+    // if ([7, 14, 28, 30, 60, 90].includes(parseInt(event.target.value))) {
+    //   this.updateSpecificTargets(this.intervalTargets, "DAY", event.params.path)
+    // } else if ([24, 48, 72].includes(parseInt(event.target.value))) {
+    //   this.updateSpecificTargets(this.intervalTargets, "HOUR", event.params.path)
+    // }
   }
 
   updateAllTargets(targets, value) {
@@ -77,8 +89,8 @@ export default class extends Controller {
     })
   }
 
-  changeTab(event) {
-    this.tabTargets.forEach((el) => {
+  displayCard(event) {
+    this.cardTargets.forEach((el) => {
       if (el.dataset.card.includes(event.params.card)) {
         if (el.dataset.tab.includes(event.params.tab)) {
           el.classList.remove("d-none")
@@ -87,5 +99,7 @@ export default class extends Controller {
         }
       }
     })
+
+    this.mainCardTarget.value = event.params.tab
   }
 }

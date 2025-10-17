@@ -7,6 +7,15 @@ module MetricsHelper
     Rollups::HourlyDownload::INTERVALS.map { |i| [I18n.t(".helpers.label.metrics.interval.#{i.downcase}"), i] }
   end
 
+  def main_card_options
+    [
+      ["downloads", "downloads"],
+      ["episodes", "episodes"],
+      ["uniques", "uniques"],
+      ["dropdays", "dropdays"]
+    ]
+  end
+
   def date_range_options(episode = nil)
     if episode
       episode_date_presets(episode)

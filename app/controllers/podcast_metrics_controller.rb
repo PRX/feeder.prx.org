@@ -8,6 +8,7 @@ class PodcastMetricsController < ApplicationController
   before_action :set_uniques, only: %i[show uniques]
   before_action :set_dropday_range, only: %i[show dropdays]
   before_action :set_total_agents, only: %i[agent_apps agent_types agent_os]
+  before_action :set_tabs
 
   def show
     @url = request.fullpath
@@ -18,8 +19,6 @@ class PodcastMetricsController < ApplicationController
     @downloads = single_rollups(@downloads_within_date_range)
 
     render partial: "metrics/downloads_card", locals: {
-      date_start: @date_start,
-      date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
       downloads: @downloads
@@ -50,13 +49,10 @@ class PodcastMetricsController < ApplicationController
     @episode_rollups = multiple_episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
 
     render partial: "metrics/episodes_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_episodes_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
-      episodes: @episodes,
       episode_rollups: @episode_rollups
     }
   end
@@ -73,11 +69,6 @@ class PodcastMetricsController < ApplicationController
     @uniques = single_rollups(@uniques_rollups)
 
     render partial: "metrics/uniques_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_uniques_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: uniques_interval(@uniques_selection),
       uniques_selection: @uniques_selection,
       uniques: @uniques,
       date_range: @date_range
@@ -111,8 +102,6 @@ class PodcastMetricsController < ApplicationController
     @episode_dropdays = multiple_episode_rollups(@episodes, @dropdays, @alltime_downloads_by_episode)
 
     render partial: "metrics/dropdays_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_dropdays_metrics",
       episode_dropdays: @episode_dropdays,
       dropday_range: @dropday_range,
       interval: "DAY"
@@ -207,12 +196,12 @@ class PodcastMetricsController < ApplicationController
   end
 
   def set_uniques
-    @uniques_selection = uniques_params[:uniques_selection]
-    @uniques_interval = uniques_params[:uniques_interval]
+    @uniques_selection = metrics_params[:uniques_selection]
+    # @uniques_interval = metrics_params[:uniques_interval]
   end
 
   def set_dropday_range
-    @dropday_range = dropdays_params[:dropday_range]
+    @dropday_range = metrics_params[:dropday_range]
   end
 
   def set_total_agents
@@ -230,6 +219,11 @@ class PodcastMetricsController < ApplicationController
         .load_async
   end
 
+  def set_tabs
+    @main_card = metrics_params[:main_card]
+    @agents_card = metrics_params[:agents_card]
+  end
+
   def metrics_params
     params
       .permit(:podcast_id, :date_start, :date_end, :interval, :main_card, :agents_card, :uniques_selection, :dropday_range)
@@ -244,23 +238,23 @@ class PodcastMetricsController < ApplicationController
       )
   end
 
-  def uniques_params
-    params
-      .permit(:uniques_selection, :uniques_interval)
-      .with_defaults(
-        uniques_selection: "last_7_rolling",
-      )
-      .merge(metrics_params)
-  end
+  # def uniques_params
+  #   params
+  #     .permit(:uniques_selection, :uniques_interval)
+  #     .with_defaults(
+  #       uniques_selection: "last_7_rolling",
+  #     )
+  #     .merge(metrics_params)
+  # end
 
-  def dropdays_params
-    params
-      .permit(:dropday_range, :interval)
-      .with_defaults(
-        dropday_range: 7
-      )
-      .merge(metrics_params)
-  end
+  # def dropdays_params
+  #   params
+  #     .permit(:dropday_range, :interval)
+  #     .with_defaults(
+  #       dropday_range: 7
+  #     )
+  #     .merge(metrics_params)
+  # end
 
   def uniques_interval(selection)
     if selection == "calendar_week"

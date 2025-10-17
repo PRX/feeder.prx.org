@@ -308,6 +308,6 @@ class Episode < ApplicationRecord
   end
 
   def first_publish_utc_date
-    first_rss_published_at.utc_date
+    first_rss_published_at&.utc_date
   end
 end
