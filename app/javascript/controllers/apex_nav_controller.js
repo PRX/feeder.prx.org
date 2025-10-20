@@ -9,7 +9,8 @@ export default class extends Controller {
     "dropdays",
     "tab",
     "card",
-    "mainCard"
+    "mainCard",
+    "agentsCard"
   ]
 
   static values = {
@@ -21,6 +22,10 @@ export default class extends Controller {
     this.tabTargets.forEach(el => {
       if (el.dataset.card === "main") {
         if (el.dataset.tab === this.mainCardValue) {
+          el.click()
+        }
+      } else if (el.dataset.card === "agents") {
+        if (el.dataset.tab === this.agentsCardValue) {
           el.click()
         }
       }

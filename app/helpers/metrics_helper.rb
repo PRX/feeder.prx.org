@@ -11,6 +11,10 @@ module MetricsHelper
     %i[downloads episodes uniques dropdays]
   end
 
+  def agents_card_options
+    %i[agent_apps agent_types agent_os]
+  end
+
   def date_range_options(episode = nil)
     if episode
       episode_date_presets(episode)

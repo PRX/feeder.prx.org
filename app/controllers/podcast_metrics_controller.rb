@@ -7,7 +7,7 @@ class PodcastMetricsController < ApplicationController
   before_action :set_date_range, except: %i[dropdays]
   before_action :set_uniques, only: %i[show uniques]
   before_action :set_dropday_range, only: %i[show dropdays]
-  before_action :set_total_agents, only: %i[agent_apps agent_types agent_os]
+  before_action :set_total_agents, only: %i[show agent_apps agent_types agent_os]
   before_action :set_tabs
 
   def show
@@ -130,15 +130,11 @@ class PodcastMetricsController < ApplicationController
     @agent_apps_in_range = agent_daterange_query("name", @podcast, @date_start, @date_end, @interval, @agent_apps_alltime)
 
     render partial: "metrics/agent_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_agents_apps_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
       interval: minimum_interval(@interval),
       date_range: @date_range,
       agents: agents_rollups(@agent_apps_alltime, @agent_apps_in_range),
       agents_path: "agent_apps",
-      total_alltime: @total_agents,
+      total_agents: @total_agents,
       totals_in_range: @totals_in_range
     }
   end
@@ -148,15 +144,11 @@ class PodcastMetricsController < ApplicationController
     @agent_types_in_range = agent_daterange_query("type", @podcast, @date_start, @date_end, @interval, @agent_types_alltime)
 
     render partial: "metrics/agent_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_agents_types_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
       interval: minimum_interval(@interval),
       date_range: @date_range,
       agents: agents_rollups(@agent_types_alltime, @agent_types_in_range),
       agents_path: "agent_types",
-      total_alltime: @total_agents,
+      total_agents: @total_agents,
       totals_in_range: @totals_in_range
     }
   end
@@ -166,15 +158,11 @@ class PodcastMetricsController < ApplicationController
     @agent_os_in_range = agent_daterange_query("os", @podcast, @date_start, @date_end, @interval, @agent_os_alltime)
 
     render partial: "metrics/agent_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_agents_os_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
       interval: minimum_interval(@interval),
       date_range: @date_range,
       agents: agents_rollups(@agent_os_alltime, @agent_os_in_range),
       agents_path: "agent_os",
-      total_alltime: @total_agents,
+      total_agents: @total_agents,
       totals_in_range: @totals_in_range
     }
   end
