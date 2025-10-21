@@ -71,7 +71,7 @@ class Feed < ApplicationRecord
 
   def mark_as_not_delivered!(episode)
     # for default / RSS feeds, don't do anything
-    # TODO: we could mark an episode needing to pulished in this RSS feed file
+    # TODO: we could mark an episode needing to be published in this RSS feed file
     #   then later check to see if it is published in the feed yet
     #   a la "where's my episode?" publish tracking
   end
