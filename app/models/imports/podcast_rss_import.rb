@@ -1,7 +1,7 @@
 require "feedjira"
 
 class PodcastRssImport < PodcastImport
-  store :config, accessors: [:episodes_only, :metadata_only, :new_episodes_only, :audio, :channel, :first_entry], coder: JSON
+  store :config, accessors: [:id3_timings, :episodes_only, :metadata_only, :new_episodes_only, :audio, :channel, :first_entry], coder: JSON
 
   has_many :episode_imports, dependent: :destroy, class_name: "EpisodeRssImport", foreign_key: :podcast_import_id
 
@@ -13,6 +13,7 @@ class PodcastRssImport < PodcastImport
     self.episodes_only ||= false
     self.metadata_only ||= false
     self.new_episodes_only ||= false
+    self.id3_timings ||= false
     self.audio ||= {}
   end
 
