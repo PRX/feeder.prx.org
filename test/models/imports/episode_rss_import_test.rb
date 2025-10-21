@@ -66,15 +66,15 @@ describe EpisodeRssImport do
     _(sns.messages.count).must_equal 2
     _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 3]
     _(sns.messages.map { |m| m["Job"]["Tasks"].map { |v| v["Type"] } }).must_equal [["Inspect", "Copy"], ["Inspect", "Copy", "Waveform"]]
-    _(sns.messages.map { |m| m["Job"]["Source"] })
+    _(sns.messages.map { |m| m["Job"]["Source"] }.sort_by { |a| a["URL"] })
       .must_equal([
-        {"Mode" => "HTTP", "URL" => "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"},
-        {"Mode" => "HTTP", "URL" => "https://cdn-transistor.prx.org/shake.jpg"}
+        {"Mode" => "HTTP", "URL" => "https://cdn-transistor.prx.org/shake.jpg"},
+        {"Mode" => "HTTP", "URL" => "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"}
       ])
 
     importer.reload
     _(f.image.status).must_equal "created"
-    _(f.contents.map(&:status)).must_equal ["created"]
+    _(f.uncut.status).must_equal "created"
   end
 
   it "creates correctly for libsyn entries" do
