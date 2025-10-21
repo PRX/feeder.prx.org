@@ -58,14 +58,14 @@ describe EpisodeRssImport do
     _(f.podcast_id).must_equal podcast.id
     _(f.published_at).must_equal Time.zone.parse("2017-01-20 03:04:12")
 
-    _(f.contents.count).must_equal 1
-    _(f.contents.first.status).must_equal "created"
+    _(f.uncut).wont_be_nil
+    _(f.uncut.status).must_equal "created"
 
     _(f.images.count).must_equal 1
 
     _(sns.messages.count).must_equal 2
-    _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 2]
-    _(sns.messages.map { |m| m["Job"]["Tasks"].map { |v| v["Type"] } }).must_equal [["Inspect", "Copy"], ["Inspect", "Copy"]]
+    _(sns.messages.map { |m| m["Job"]["Tasks"].length }).must_equal [2, 3]
+    _(sns.messages.map { |m| m["Job"]["Tasks"].map { |v| v["Type"] } }).must_equal [["Inspect", "Copy"], ["Inspect", "Copy", "Waveform"]]
     _(sns.messages.map { |m| m["Job"]["Source"] })
       .must_equal([
         {"Mode" => "HTTP", "URL" => "https://dts.podtrac.com/redirect.mp3/media.blubrry.com/transistor/cdn-transistor.prx.org/wp-content/uploads/Smithsonian3_Transistor.mp3"},
