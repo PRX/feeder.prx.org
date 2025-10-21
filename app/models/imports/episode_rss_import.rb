@@ -44,9 +44,14 @@ class EpisodeRssImport < EpisodeImport
 
   def set_file_resources!
     if !podcast_import.metadata_only
-      content = audio_content_params
-      episode.media = content
-      episode.segment_count = content&.size
+      if content&.size.to_i <= 0 || podcast_import.id3_timings
+        href = audio_content_params&.first&.fetch(:original_url)
+        episode.uncut = Uncut.new(href: href)
+      else
+        content = audio_content_params
+        episode.media = content
+        episode.segment_count = content&.size
+      end
     end
 
     episode.image = image_contents_params
