@@ -14,11 +14,12 @@ class Tasks::CopyMediaTask < ::Task
   end
 
   def porter_tasks
-    tasks = [{Type: "Inspect"}]
-    tasks << porter_copy_task unless media_resource.slice?
-    tasks << porter_slice_task if media_resource.slice?
-    tasks << porter_waveform_task if media_resource.generate_waveform?
-    tasks
+    [].tap do |tasks|
+      tasks << porter_inspect_task(media_resource)
+      tasks << porter_copy_task unless media_resource.slice?
+      tasks << porter_slice_task if media_resource.slice?
+      tasks << porter_waveform_task if media_resource.generate_waveform?
+    end
   end
 
   def update_media_resource
@@ -35,6 +36,9 @@ class Tasks::CopyMediaTask < ::Task
         media_resource.channels = info[:Audio][:Channels].to_i
         media_resource.duration = info[:Audio][:Duration].to_f / 1000
         media_resource.bit_rate = info[:Audio][:Bitrate].to_i / 1000
+        if info[:Audio][:Tags] && media_resource.is_a?(Uncut)
+          media_resource.segmentation_from_tags(info[:Audio][:Tags])
+        end
       end
 
       # only return for actual videos - not detected images in id3 tags
@@ -97,8 +101,13 @@ class Tasks::CopyMediaTask < ::Task
 
   private
 
-  def porter_inspect_task
-    {Type: "Inspect"}
+  # Always try to get id3 tags for `Uncut`, just in case we want to use them for segmentation
+  def porter_inspect_task(media_resource)
+    {Type: "Inspect"}.tap do |t|
+      if media_resource.is_a?(Uncut)
+        t[:MatchTags] = Uncut::MATCH_TAGS
+      end
+    end
   end
 
   def porter_copy_task
