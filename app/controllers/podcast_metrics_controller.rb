@@ -177,6 +177,7 @@ class PodcastMetricsController < ApplicationController
   end
 
   def set_date_range
+    @date_preset = metrics_params[:date_preset]
     @date_start = metrics_params[:date_start]
     @date_end = metrics_params[:date_end]
     @interval = metrics_params[:interval]

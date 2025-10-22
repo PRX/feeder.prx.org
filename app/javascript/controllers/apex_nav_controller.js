@@ -46,6 +46,10 @@ export default class extends Controller {
     this.updateInput(target, event.target.value)
   }
 
+  updateCustomPreset() {
+    this.datePresetTarget.value = "custom"
+  }
+
   updateInput(target, value) {
     target.value = value
     target.dispatchEvent(new Event("change"))
