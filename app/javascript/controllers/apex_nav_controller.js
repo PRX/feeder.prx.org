@@ -11,16 +11,16 @@ export default class extends Controller {
     "card",
     "mainCard",
     "agentsCard",
-    "datePreset"
+    "datePreset",
   ]
 
   static values = {
     mainCard: String,
-    agentsCard: String
+    agentsCard: String,
   }
 
   connect() {
-    this.tabTargets.forEach(el => {
+    this.tabTargets.forEach((el) => {
       if (el.dataset.card === "main") {
         if (el.dataset.tab === this.mainCardValue) {
           el.click()

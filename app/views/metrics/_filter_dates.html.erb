@@ -20,7 +20,7 @@
     <ul class="dropdown-menu" aria-labelledby="date-range-options">
       <% podcast_date_preset_options.each do |option| %>
         <li>
-          <button class="dropdown-item <%= active_preset(date_preset, option)%>" type="button" data-action="apex-nav#updateDates apex-nav#updateTarget" data-apex-nav-dates-param="<%= dates_from_preset(option[1]).to_json %>" data-apex-nav-target-param="datePreset" value="<%= option[1] %>">
+          <button class="dropdown-item <%= active_preset(date_preset, option) %>" type="button" data-action="apex-nav#updateDates apex-nav#updateTarget" data-apex-nav-dates-param="<%= dates_from_preset(option[1]).to_json %>" data-apex-nav-target-param="datePreset" value="<%= option[1] %>">
             <%= option[0] %>
           </button>
         </li>

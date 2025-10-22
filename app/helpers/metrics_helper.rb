@@ -83,7 +83,7 @@ module MetricsHelper
 
   def date_start_from_preset(type, count, interval)
     if type == "last"
-        count.to_i.send(interval).ago.utc_date
+      count.to_i.send(interval).ago.utc_date
     elsif type == "previous"
       (Date.utc_today - count.to_i.send(interval)).send(:"beginning_of_#{interval.singularize}")
     elsif type == "todate"
