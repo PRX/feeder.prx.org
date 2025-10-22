@@ -15,63 +15,32 @@ module MetricsHelper
     %i[agent_apps agent_types agent_os]
   end
 
-  def date_range_options(episode = nil)
-    if episode
-      episode_date_presets(episode)
+  def podcast_date_preset_options
+    Rollups::HourlyDownload::PODCAST_DATE_PRESETS.map do |preset|
+      [I18n.t(".helpers.label.metrics.date_presets.#{preset}"), preset.to_s]
+    end
+  end
+
+  def episode_date_preset_options
+    Rollups::HourlyDownload::EPISODE_DATE_PRESETS.map do |preset|
+      [I18n.t(".helpers.label.metrics.date_presets.#{preset}"), preset.to_s]
+    end
+  end
+
+  def dates_from_preset(preset, episode = nil)
+    type, count, interval = preset.to_s.split("_")
+
+    date_start = if date_start_from_preset(type, count, interval)
+      date_start_from_preset(type, count, interval)
+    elsif episode
+      episode.first_publish_utc_date
     else
-      podcast_date_presets
+      Date.utc_today - 1.day
     end
-  end
 
-  def podcast_date_presets
-    metrics_date_presets(Rollups::HourlyDownload::PODCAST_DATE_PRESETS)
-  end
+    date_end = date_end_from_preset(date_start, type, count, interval)
 
-  def episode_date_presets(episode)
-    metrics_date_presets(Rollups::HourlyDownload::EPISODE_DATE_PRESETS, episode)
-  end
-
-  def metrics_date_presets(options, episode = nil)
-    options.map do |opt|
-      count, interval, type = opt.to_s.split("_")
-
-      date_start = if type == "last"
-        count.to_i.send(interval).ago.utc_date
-      elsif type == "previous"
-        (Date.utc_today - count.to_i.send(interval)).send(:"beginning_of_#{interval.singularize}")
-      elsif count == "date"
-        Date.utc_today.send(:"beginning_of_#{interval.singularize}")
-      elsif episode
-        episode.first_publish_utc_date
-      else
-        Date.utc_today - 1.day
-      end
-
-      date_end = if type == "drop"
-        date_start + count.to_i.send(interval)
-      elsif type == "previous"
-        (date_start + (count.to_i - 1).send(interval)).send(:"end_of_#{interval.singularize}")
-      else
-        Date.utc_today
-      end
-
-      [I18n.t(".helpers.label.metrics.date_presets.#{opt}"), date_preset(date_start, date_end)]
-    end
-  end
-
-  def guard_date_end(date_end)
-    if date_end > Date.utc_today
-      Date.utc_today
-    else
-      date_end
-    end
-  end
-
-  def date_preset(date_start, date_end)
-    [
-      date_start,
-      guard_date_end(date_end)
-    ].to_json
+    [date_start, guard_date_end(date_end)]
   end
 
   def dropday_range_options
@@ -98,5 +67,35 @@ module MetricsHelper
     percent = ((sum.to_f / total_downloads.to_f) * 100).truncate(1)
 
     "#{sum} (#{percent}%)"
+  end
+
+  private
+
+  def date_start_from_preset(type, count, interval)
+    if type == "last"
+        count.to_i.send(interval).ago.utc_date
+    elsif type == "previous"
+      (Date.utc_today - count.to_i.send(interval)).send(:"beginning_of_#{interval.singularize}")
+    elsif type == "todate"
+      Date.utc_today.send(:"beginning_of_#{interval.singularize}")
+    end
+  end
+
+  def date_end_from_preset(date_start, type, count, interval)
+    if type == "drop"
+      date_start + count.to_i.send(interval)
+    elsif type == "previous"
+      (date_start + (count.to_i - 1).send(interval)).send(:"end_of_#{interval.singularize}")
+    else
+      Date.utc_today
+    end
+  end
+
+  def guard_date_end(date_end)
+    if date_end > Date.utc_today
+      Date.utc_today
+    else
+      date_end
+    end
   end
 end

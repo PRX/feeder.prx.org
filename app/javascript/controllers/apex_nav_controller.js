@@ -10,7 +10,8 @@ export default class extends Controller {
     "tab",
     "card",
     "mainCard",
-    "agentsCard"
+    "agentsCard",
+    "datePreset"
   ]
 
   static values = {
@@ -33,7 +34,7 @@ export default class extends Controller {
   }
 
   updateDates(event) {
-    const [startDate, endDate] = JSON.parse(event.target.value)
+    const [startDate, endDate] = event.params.dates
 
     this.updateInput(this.startDateTarget, startDate)
     this.updateInput(this.endDateTarget, endDate)
