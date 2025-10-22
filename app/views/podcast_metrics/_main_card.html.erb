@@ -24,7 +24,7 @@
       <%= turbo_frame_tag "uniques", src: uniques_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, uniques_selection: uniques_selection), data: {apex_nav_target: "card", card: "main", tab: "uniques"}, class: "d-none", loading: "lazy" do %>
         <%= render "metrics/loading_card" %>
       <% end %>
-      <%= turbo_frame_tag "dropdays", src: dropdays_podcast_metrics_path(podcast: podcast, interval: interval, dropday_range: dropday_range), loading: "lazy", data: {apex_nav_target: "card", card: "main", tab: "dropdays"}, class: "d-none", loading: "lazy" do %>
+      <%= turbo_frame_tag "dropdays", src: dropdays_podcast_metrics_path(podcast: podcast, interval: interval, dropday_range: dropday_range), data: {apex_nav_target: "card", card: "main", tab: "dropdays"}, class: "d-none", loading: "lazy" do %>
         <%= render "metrics/loading_card" %>
       <% end %>
     </div>
