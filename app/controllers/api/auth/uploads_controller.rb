@@ -44,13 +44,7 @@ class Api::Auth::UploadsController < Api::BaseController
   end
 
   def authorize_uploading
-    raise Pundit::NotAuthorizedError.new unless authorize_uploading?
-  end
-
-  def authorize_uploading?
-    %i[podcast_create podcast_edit podcast_delete episode episode_draft].any? do |scope|
-      current_user.globally_authorized?(scope) || current_user.resources(scope).present?
-    end
+    authorize MediaResource.new, :upload?
   end
 
   private

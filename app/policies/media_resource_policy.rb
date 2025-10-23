@@ -14,4 +14,10 @@ class MediaResourcePolicy < ApplicationPolicy
   def destroy?
     update?
   end
+
+  def upload?
+    %i[podcast_create podcast_edit podcast_delete episode episode_draft].any? do |scope|
+      token.globally_authorized?(scope) || token.resources(scope).present?
+    end
+  end
 end
