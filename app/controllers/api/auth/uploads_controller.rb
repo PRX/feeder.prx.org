@@ -65,7 +65,7 @@ class Api::Auth::UploadsController < Api::BaseController
   end
 
   def s3_accelerate
-    !!(params[:accelerate] && %w[0 false no off].exclude?(params[:accelerate].downcase))
+    !!ActiveModel::Type::Boolean.new.cast(params[:accelerate])
   end
 
   # skip magical hal_api-rails stuff
