@@ -11,7 +11,6 @@ class PodcastMetricsController < ApplicationController
   before_action :set_tabs
 
   def show
-    @url = request.fullpath
   end
 
   def downloads

@@ -12,6 +12,7 @@ export default class extends Controller {
     "mainCard",
     "agentsCard",
     "datePreset",
+    "visiblePreset",
   ]
 
   static values = {
@@ -35,9 +36,13 @@ export default class extends Controller {
 
   updateDates(event) {
     const [startDate, endDate] = event.params.dates
+    const presetLabel = event.params.preset
 
-    this.updateInput(this.startDateTarget, startDate)
-    this.updateInput(this.endDateTarget, endDate)
+    this.startDateTarget.value = startDate
+    this.endDateTarget.value = endDate
+    this.visiblePresetTarget.value = presetLabel
+    this.datePresetTarget.value = event.target.value
+    this.datePresetTarget.dispatchEvent(new Event("change"))
   }
 
   updateTarget(event) {
@@ -47,6 +52,7 @@ export default class extends Controller {
   }
 
   updateCustomPreset() {
+    this.visiblePresetTarget.value = "Custom"
     this.datePresetTarget.value = "custom"
   }
 

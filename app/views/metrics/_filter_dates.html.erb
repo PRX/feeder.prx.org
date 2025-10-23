@@ -1,31 +1,32 @@
 <div class="row d-flex gx-1">
   <div class="col form-floating">
-    <%= form.select :interval, interval_options, {selected: interval}, value: interval, data: {action: "apex-nav#updateTarget", apex_nav_target_param: "interval"}, class: "form-select form-select-sm" %>
+    <%= form.select :interval, interval_options, {selected: interval}, value: interval, data: {action: "change->click#submit"}, class: "form-select form-select-sm" %>
     <%= form.label :interval %>
   </div>
   <div class="col form-floating">
-    <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "mainStart", action: "apex-nav#updateTarget apex-nav#updateCustomPreset", apex_nav_target_param: "startDate"}, class: "form-control form-control-sm", value: date_start %>
+    <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "startDate", action: "apex-nav#updateCustomPreset change->click#submit"}, class: "form-control form-control-sm", value: date_start %>
     <%= form.label :date_start, t(".date_start") %>
   </div>
   <div class="col form-floating">
-    <%= form.date_field :date_end, max: Date.utc_today, data: {apex_nav_target: "mainEnd", action: "apex-nav#updateTarget apex-nav#updateCustomPreset", apex_nav_target_param: "endDate"}, class: "form-control form-control-sm", value: date_end %>
+    <%= form.date_field :date_end, max: Date.utc_today, data: {apex_nav_target: "endDate", action: "apex-nav#updateCustomPreset change->click#submit"}, class: "form-control form-control-sm", value: date_end %>
     <%= form.label :date_end, t(".date_end") %>
   </div>
   <div class="col form-floating btn-group">
-    <%= form.text_field :date_preset, value: label_for_preset(date_preset), readonly: true, class: "form-control form-control-sm" %>
-    <%= form.label :date_preset, "Date Preset" %>
+    <%= form.text_field :visible_date_preset, data: {apex_nav_target: "visiblePreset"}, value: label_for_preset(date_preset), readonly: true, class: "form-control form-control-sm" %>
+    <%= form.label :visible_date_preset, "Date Preset" %>
+    <%= form.text_field :date_preset, class: "d-none", data: {apex_nav_target: "datePreset", action: "change->click#submit"}, value: date_preset %>
+
     <button class="btn btn-sm btn-outline-light dropdown-toggle dropdown-toggle-split" type="button" id="date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
       <span class="visually-hidden">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" aria-labelledby="date-range-options">
       <% podcast_date_preset_options.each do |option| %>
         <li>
-          <button class="dropdown-item <%= active_preset(date_preset, option) %>" type="button" data-action="apex-nav#updateDates apex-nav#updateTarget" data-apex-nav-dates-param="<%= dates_from_preset(option[1]).to_json %>" data-apex-nav-target-param="datePreset" value="<%= option[1] %>">
+          <button class="dropdown-item <%= active_preset(date_preset, option) %>" type="button" data-action="apex-nav#updateDates" data-apex-nav-dates-param="<%= dates_from_preset(option[1]).to_json %>" data-apex-nav-preset-param="<%= label_for_preset(option[1]) %>" value="<%= option[1] %>">
             <%= option[0] %>
           </button>
         </li>
       <% end %>
     </ul>
-
   </div>
 </div>
