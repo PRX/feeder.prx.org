@@ -8,10 +8,16 @@
         <li class="nav-item"><button class="nav-link" id="dropdays-tab" data-bs-toggle="tab" data-bs-target="#dropdays" type="button" role="tab" aria-controls="dropdays" aria-selected="false" data-action="apex-nav#displayCard" data-apex-nav-card-param="main" data-apex-nav-tab-param="dropdays" data-apex-nav-target="tab" data-card="main" data-tab="dropdays"><%= t(".tabs.dropdays") %></button></li>
       </ul>
       <div class="col-2 d-none" data-apex-nav-target="card" data-card="main" data-tab="uniques">
-        <%= render "metrics/filter_uniques_range", form: form, uniques_selection: uniques_selection %>
+        <div class="form-floating">
+          <%= form.select :uniques_selection, uniques_selection_options, {selected: uniques_selection}, data: {action: "change->click#submit"}, class: "form-select form-select-sm" %>
+          <%= form.label :uniques_selection %>
+        </div>
       </div>
       <div class="col-2 d-none" data-apex-nav-target="card" data-card="main" data-tab="dropdays">
-        <%= render "metrics/filter_dropday_range", form: form, dropday_range: dropday_range %>
+        <div class="form-floating">
+          <%= form.select :dropday_range, dropday_range_options, {selected: dropday_range}, data: {action: "change->click#submit"}, class: "form-select form-select-sm" %>
+          <%= form.label :dropday_range %>
+        </div>
       </div>
     </div>
     <div class="card-body metrics-card-body">

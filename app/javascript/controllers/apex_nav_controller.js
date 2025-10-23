@@ -5,8 +5,6 @@ export default class extends Controller {
     "startDate",
     "endDate",
     "interval",
-    "uniques",
-    "dropdays",
     "tab",
     "card",
     "mainCard",
@@ -45,20 +43,9 @@ export default class extends Controller {
     this.datePresetTarget.dispatchEvent(new Event("change"))
   }
 
-  updateTarget(event) {
-    let target = this[`${event.params.target}Target`]
-
-    this.updateInput(target, event.target.value)
-  }
-
   updateCustomPreset() {
     this.visiblePresetTarget.value = "Custom"
     this.datePresetTarget.value = "custom"
-  }
-
-  updateInput(target, value) {
-    target.value = value
-    target.dispatchEvent(new Event("change"))
   }
 
   displayCard(event) {

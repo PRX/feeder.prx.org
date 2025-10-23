@@ -24,8 +24,6 @@
     <%= render "agents_card", form: form, podcast: podcast, date_start: date_start, date_end: date_end, interval: interval %>
   </div>
 
-  <%= form.select :uniques_selection, uniques_selection_options, {selected: uniques_selection}, class: "d-none", data: {apex_nav_target: "uniques", action: "change->click#submit", path: "uniques"} %>
-  <%= form.select :dropday_range, dropday_range_options, {selected: dropday_range}, class: "d-none", data: {apex_nav_target: "dropdays", action: "change->click#submit", path: "dropdays"} %>
   <%= form.select :main_card, main_card_options, {selected: main_card}, class: "d-none", data: {apex_nav_target: "mainCard"} %>
   <%= form.select :agents_card, agents_card_options, {selected: agents_card}, class: "d-none", data: {apex_nav_target: "agentsCard"} %>
   <%= form.submit class: "d-none", data: {click_target: "submit"} %>
