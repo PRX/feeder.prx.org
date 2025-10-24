@@ -20,7 +20,7 @@
       <span class="visually-hidden">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" aria-labelledby="date-range-options">
-      <% podcast_date_preset_options.each do |option| %>
+      <% date_preset_options(model).each do |option| %>
         <li>
           <button class="dropdown-item <%= active_preset(date_preset, option) %>" type="button" data-action="apex-nav#updateDates" data-apex-nav-dates-param="<%= dates_from_preset(option[1]).to_json %>" data-apex-nav-preset-param="<%= label_for_preset(option[1]) %>" value="<%= option[1] %>">
             <%= option[0] %>

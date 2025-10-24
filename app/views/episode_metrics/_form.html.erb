@@ -1,12 +1,12 @@
-<%= form_with(url: podcast_metrics_path(podcast), method: :get, id: "podcast_metrics", data: {controller: "apex-nav click", apex_nav_main_card_value: main_card, apex_nav_agents_card_value: agents_card, click_debounce_value: 200}) do |form| %>
+<%= form_with(url: episode_metrics_path(episode), method: :get, id: "episode_metrics", data: {controller: "apex-nav click", apex_nav_main_card_value: main_card, apex_nav_agents_card_value: agents_card, click_debounce_value: 200}) do |form| %>
   <div class="container col-12 d-flex align-items-center justify-content-between my-4">
     <h1 class="fw-bold my-0 mb-0 me-4"><%= t(".header") %></h1>
     <div class="d-flex justify-items-end">
-      <%= render "metrics/filter_dates", form: form, date_preset: date_preset, model: :podcast, date_start: date_start, date_end: date_end, interval: interval %>
+      <%= render "metrics/filter_dates", form: form, date_preset: date_preset, model: :episode, date_start: date_start, date_end: date_end, interval: interval %>
     </div>
   </div>
   <div class="container col-12 my-4">
-    <%= render "main_card", form: form, podcast: podcast, date_start: date_start, date_end: date_end, interval: interval, uniques_selection: uniques_selection, dropday_range: dropday_range %>
+    <%= render "main_card", form: form, episode: episode, date_start: date_start, date_end: date_end, interval: interval %>
   </div>
   <div class="container col-12 mb-2">
     <div class="col mb-4">
@@ -21,10 +21,10 @@
     </div>
   </div>
   <div class="container col-12 my-4">
-    <%= render "agents_card", form: form, podcast: podcast, date_start: date_start, date_end: date_end, interval: interval %>
+    <%= render "agents_card", form: form, episode: episode, date_start: date_start, date_end: date_end, interval: interval %>
   </div>
 
-  <%= form.select :main_card, main_card_options, {selected: main_card}, class: "d-none", data: {apex_nav_target: "mainCard"} %>
+  <%= form.select :main_card, episode_main_card_options, {selected: main_card}, class: "d-none", data: {apex_nav_target: "mainCard"} %>
   <%= form.select :agents_card, agents_card_options, {selected: agents_card}, class: "d-none", data: {apex_nav_target: "agentsCard"} %>
   <%= form.submit class: "d-none", data: {click_target: "submit"} %>
 <% end %>

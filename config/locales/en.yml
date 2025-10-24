@@ -832,7 +832,7 @@ en:
     main_card:
       tabs:
         downloads: Downloads
-    metrics:
+    form:
       header: Episode Metrics
     overview:
       audio_link: Audio File Link
@@ -1354,6 +1354,7 @@ en:
   podcast_metrics:
     show:
       title: "%{title} - Metrics"
+    form:
       header: Metrics at a Glance
     main_card:
       tabs:

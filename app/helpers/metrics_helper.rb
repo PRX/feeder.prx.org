@@ -11,8 +11,20 @@ module MetricsHelper
     %i[downloads episodes uniques dropdays]
   end
 
+  def episode_main_card_options
+    %i[downloads]
+  end
+
   def agents_card_options
     %i[agent_apps agent_types agent_os]
+  end
+
+  def date_preset_options(model = :podcast)
+    if model == :podcast
+      podcast_date_preset_options
+    elsif model == :episode
+      episode_date_preset_options
+    end
   end
 
   def podcast_date_preset_options
