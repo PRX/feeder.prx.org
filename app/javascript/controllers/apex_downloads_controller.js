@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { buildDateTimeChart, buildDownloadsSeries, dynamicBarAndAreaType } from "util/apex"
+import { buildDateTimeChart, buildDownloadsSeries, dynamicBarAndAreaType, destroyChart } from "util/apex"
 
 export default class extends Controller {
   static values = {
@@ -23,5 +23,9 @@ export default class extends Controller {
     )
 
     chart.render()
+  }
+
+  disconnect() {
+    destroyChart(this.idValue)
   }
 }
