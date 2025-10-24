@@ -19,11 +19,11 @@ module MetricsHelper
     %i[agent_apps agent_types agent_os]
   end
 
-  def date_preset_options(model = :podcast)
-    if model == :podcast
-      podcast_date_preset_options
-    elsif model == :episode
+  def date_preset_options(episode = nil)
+    if episode
       episode_date_preset_options
+    else
+      podcast_date_preset_options
     end
   end
 
