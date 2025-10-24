@@ -69,6 +69,7 @@ Rails.application.routes.draw do
         end
 
         resources :episodes, except: [:new, :edit], module: :auth
+        resource :upload, only: [:show], module: :auth
       end
     end
   end
