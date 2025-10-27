@@ -28,7 +28,7 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.complete!(podcast)
   # Top-level error handling, capping the entire pipeline's error status
   # All of the intermediate errors are handled in the publish_integration and publish_rss
-  rescue Apple::RetryPublishingError => e
+  rescue Apple::RetryPublishingError
     # Terminal state: retry
     PublishingPipelineState.retry!(podcast)
   rescue => e
@@ -54,7 +54,7 @@ class PublishFeedJob < ApplicationJob
       # When sync_blocks_rss is enabled, Apple publishing must succeed before RSS
       # Log at the error's specified level (INFO, WARN, or ERROR)
       e.log_error!
-      # Finally we retry:
+      # Finally, retry:
       raise Apple::RetryPublishingError.new(e.message)
     else
       # When sync_blocks_rss is disabled, we allow RSS publishing to continue despite timeout
