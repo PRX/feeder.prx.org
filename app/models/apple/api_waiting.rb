@@ -20,11 +20,7 @@ module Apple
       end
 
       def self.work_done?(remaining_records, waited, wait_timeout)
-        if remaining_records.empty?
-          true
-        else
-          false
-        end
+        remaining_records.empty?
       end
 
       def self.wait_for(remaining_records, wait_timeout: API_WAIT_TIMEOUT, wait_interval: API_WAIT_INTERVAL)
