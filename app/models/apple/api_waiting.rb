@@ -21,7 +21,6 @@ module Apple
 
       def self.work_done?(remaining_records, waited, wait_timeout)
         if remaining_records.empty?
-          Rails.logger.info("Done waiting for Apple Api work", waited: waited, wait_timeout: wait_timeout)
           true
         else
           false
