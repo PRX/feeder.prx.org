@@ -4,11 +4,11 @@
     <%= form.label :interval %>
   </div>
   <div class="col form-floating input-group">
-    <%= form.date_field :date_start, max: Date.utc_yesterday, data: {action: "change->click#submit"}, class: "form-control form-control-sm", value: date_start %>
+    <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "startDate", action: "change->click#submit"}, class: "form-control form-control-sm", value: date_start %>
     <%= form.label :date_start, t(".date_start") %>
   </div>
   <div class="col form-floating input-group">
-    <%= form.date_field :date_end, max: Date.utc_today, data: {action: "change->click#submit"}, class: "form-control form-control-sm", value: date_end %>
+    <%= form.date_field :date_end, max: Date.utc_today, data: {apex_nav_target: "endDate", action: "change->click#submit"}, class: "form-control form-control-sm", value: date_end %>
     <%= form.label :date_end, t(".date_end") %>
   </div>
   <div class="col btn-group">
@@ -16,9 +16,9 @@
       <%= t(".presets") %>
     </button>
     <ul class="dropdown-menu" aria-labelledby="date-range-options">
-      <% date_range_options.each do |option| %>
+      <% date_preset_options.each do |option| %>
         <li>
-          <button class="dropdown-item" type="button" data-action="" value="<%= option[1].to_s %>">
+          <button class="dropdown-item" type="button" data-action="apex-nav#updateDates" data-apex-nav-dates-param="<%= dates_from_preset(option[1]).to_json %>" value="<%= option[1].to_s %>">
             <%= option[0] %>
           </button>
         </li>

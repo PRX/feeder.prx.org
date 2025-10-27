@@ -163,8 +163,9 @@ class PodcastMetricsController < ApplicationController
 
   def metrics_params
     params
-      .permit(:podcast_id, :date_start, :date_end, :interval, :uniques_selection, :dropday_range, :main_card, :agents_card)
+      .permit(:podcast_id, :date_preset, :date_start, :date_end, :interval, :uniques_selection, :dropday_range, :main_card, :agents_card)
       .with_defaults(
+        date_preset: "last_30_days",
         date_start: 30.days.ago.utc_date,
         date_end: Date.utc_today,
         interval: "DAY",

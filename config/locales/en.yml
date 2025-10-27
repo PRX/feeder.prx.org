@@ -464,21 +464,22 @@ en:
           week: Weekly
           month: Monthly
         date_presets:
-          7_days_last: Last 7 Days
-          14_days_last: Last 14 Days
-          28_days_last: Last 28 Days
-          1_month_previous: Previous Month
-          3_months_previous: Previous 3 Months
-          6_months_previous: Previous 6 Months
-          1_year_previous: Previous Year
-          date_week: Week to Date
-          date_month: Month to Date
-          date_year: Year to Date
-          7_days_drop: 7 days since drop
-          14_days_drop: 14 days since drop
-          28_days_drop: 28 days since drop
-          1_month_drop: 1 month since drop
-          3_months_drop: 3 months since drop
+          last_7_days: Last 7 Days
+          last_14_days: Last 14 Days
+          last_28_days: Last 28 Days
+          last_30_days: Last 30 Days
+          previous_1_month: Previous Month
+          previous_3_months: Previous 3 Months
+          previous_6_months: Previous 6 Months
+          previous_1_year: Previous Year
+          todate_1_week: Week to Date
+          todate_1_month: Month to Date
+          todate_1_year: Year to Date
+          drop_7_days: 7 days since drop
+          drop_14_days: 14 days since drop
+          drop_28_days: 28 days since drop
+          drop_1_month: 1 month since drop
+          drop_3_months: 3 months since drop
           all_time: All-time
         dropdays:
           "7": 7 Days
