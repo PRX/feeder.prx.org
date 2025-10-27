@@ -12,6 +12,10 @@ module MetricsHelper
     rollups.sum(&:count)
   end
 
+  def podcast_main_card_options
+    %i[downloads episodes uniques dropdays]
+  end
+
   def interval_options
     Rollups::HourlyDownload::INTERVALS.map { |i| [I18n.t(".helpers.label.metrics.interval.#{i.downcase}"), i] }
   end

@@ -7,6 +7,7 @@ class PodcastMetricsController < ApplicationController
   before_action :set_date_range, except: %i[dropdays]
   before_action :set_uniques, only: %i[show uniques]
   before_action :set_dropday_range, only: %i[show dropdays]
+  before_action :set_tabs
 
   def show
   end
@@ -153,6 +154,11 @@ class PodcastMetricsController < ApplicationController
 
   def set_dropday_range
     @dropday_range = metrics_params[:dropday_range]
+  end
+
+  def set_tabs
+    @main_card = metrics_params[:main_card]
+    @agents_card = metrics_params[:agents_card]
   end
 
   def metrics_params

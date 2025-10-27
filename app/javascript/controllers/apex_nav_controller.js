@@ -1,7 +1,22 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["startDate", "endDate", "interval", "uniques", "dropdays", "mainStart", "mainEnd", "tab"]
+  static targets = ["startDate", "endDate", "interval", "uniques", "dropdays", "mainStart", "mainEnd", "tab", "card", "mainCard"]
+
+  static values = {
+    mainCard: String,
+    agentsCard: String
+  }
+
+  connect() {
+    this.tabTargets.forEach(tab => {
+      if (tab.dataset.card === "main") {
+        if (tab.dataset.tab === this.mainCardValue) {
+          tab.click()
+        }
+      }
+    })
+  }
 
   updateDates(event) {
     const [startDate, endDate] = JSON.parse(event.target.value)
@@ -69,13 +84,17 @@ export default class extends Controller {
     })
   }
 
-  changeTab(event) {
-    this.tabTargets.forEach((el) => {
-      if (el.dataset.tab.includes(event.params.tab)) {
-        el.classList.remove("d-none")
-      } else {
-        el.classList.add("d-none")
+  displayCard(event) {
+    this.cardTargets.forEach((card) => {
+      if (card.dataset.card.includes(event.params.card)) {
+        if (card.dataset.tab.includes(event.params.tab)) {
+          card.classList.remove("d-none")
+        } else {
+          card.classList.add("d-none")
+        }
       }
     })
+
+    this.mainCardTarget.value = event.params.tab
   }
 }
