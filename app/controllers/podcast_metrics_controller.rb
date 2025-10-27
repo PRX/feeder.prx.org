@@ -16,10 +16,6 @@ class PodcastMetricsController < ApplicationController
     @downloads = single_rollups(@downloads_within_date_range)
 
     render partial: "metrics/downloads_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_downloads_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
       downloads: @downloads
@@ -50,13 +46,10 @@ class PodcastMetricsController < ApplicationController
     @episode_rollups = multiple_episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
 
     render partial: "metrics/episodes_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_episodes_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
-      episodes: @episodes,
       episode_rollups: @episode_rollups
     }
   end
@@ -73,11 +66,6 @@ class PodcastMetricsController < ApplicationController
     @uniques = single_rollups(@uniques_rollups)
 
     render partial: "metrics/uniques_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_uniques_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: uniques_interval(@uniques_selection),
       uniques_selection: @uniques_selection,
       uniques: @uniques,
       date_range: @date_range
@@ -111,8 +99,6 @@ class PodcastMetricsController < ApplicationController
     @episode_dropdays = multiple_episode_rollups(@episodes, @dropdays, @alltime_downloads_by_episode)
 
     render partial: "metrics/dropdays_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_dropdays_metrics",
       episode_dropdays: @episode_dropdays,
       dropday_range: @dropday_range,
       interval: "DAY"
@@ -171,13 +157,15 @@ class PodcastMetricsController < ApplicationController
 
   def metrics_params
     params
-      .permit(:podcast_id, :date_start, :date_end, :interval, :uniques_selection, :dropday_range)
+      .permit(:podcast_id, :date_start, :date_end, :interval, :uniques_selection, :dropday_range, :main_card, :agents_card)
       .with_defaults(
         date_start: 30.days.ago.utc_date,
         date_end: Date.utc_today,
         interval: "DAY",
         uniques_selection: "last_7_rolling",
-        dropday_range: 7
+        dropday_range: 7,
+        main_card: "downloads",
+        agents_card: "agent_apps"
       )
   end
 
