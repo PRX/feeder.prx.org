@@ -1,5 +1,6 @@
 class EpisodeMetricsController < ApplicationController
   include MetricsUtils
+  include MetricsQueries
 
   before_action :set_episode
   before_action :check_clickhouse, except: %i[show]
@@ -9,14 +10,7 @@ class EpisodeMetricsController < ApplicationController
   end
 
   def downloads
-    @downloads_within_date_range =
-      Rollups::HourlyDownload
-        .where(episode_id: @episode.guid, hour: (@date_start..@date_end))
-        .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-        .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-        .load_async
-
+    @downloads_within_date_range = downloads_date_range_query(@episode, @date_start, @date_end, @interval)
     @downloads = single_rollups(@downloads_within_date_range, @episode.title)
 
     render partial: "metrics/downloads_card", locals: {

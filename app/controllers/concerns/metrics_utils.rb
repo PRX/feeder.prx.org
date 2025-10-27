@@ -66,4 +66,12 @@ module MetricsUtils
       }
     end
   end
+
+  def minimum_interval(interval)
+    if interval == "HOUR"
+      "DAY"
+    else
+      interval
+    end
+  end
 end

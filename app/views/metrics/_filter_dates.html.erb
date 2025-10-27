@@ -1,5 +1,9 @@
 <%= form_with(url: url, method: :get, id: "metrics_dates_filter") do |form| %>
   <div class="row d-flex gx-1">
+    <div class="col form-floating">
+      <%= form.select :interval, interval_options, {selected: interval}, value: interval, data: {action: "apex-nav#updateInterval", apex_nav_path_param: path}, class: "form-select form-select-sm" %>
+      <%= form.label :interval %>
+    </div>
     <div class="col form-floating input-group">
       <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "mainStart", action: "apex-nav#updateStartDate"}, class: "form-control form-control-sm", value: date_start %>
       <%= form.label :date_start, t(".date_start") %>
