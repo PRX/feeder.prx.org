@@ -54,7 +54,7 @@ class PublishFeedJob < ApplicationJob
       # When sync_blocks_rss is enabled, Apple publishing must succeed before RSS
       # Log at the error's specified level (INFO, WARN, or ERROR)
       e.log_error!
-      # Otherwise we retry:
+      # Finally we retry:
       raise Apple::RetryPublishingError.new(e.message)
     else
       # When sync_blocks_rss is disabled, we allow RSS publishing to continue despite timeout
