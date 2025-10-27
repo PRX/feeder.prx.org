@@ -12,7 +12,7 @@ module Apple
 
       def self.wait_timed_out?(waited, wait_timeout)
         if waited > wait_timeout
-          Rails.logger.info("Timed out waiting for Apple API to process", waited: waited, wait_timeout: wait_timeout)
+          Rails.logger.info("Apple::ApiWaiting: Timed out waiting", waited: waited, wait_timeout: wait_timeout)
           true
         else
           false
