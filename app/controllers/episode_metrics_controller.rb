@@ -5,6 +5,7 @@ class EpisodeMetricsController < ApplicationController
   before_action :set_episode
   before_action :check_clickhouse, except: %i[show]
   before_action :set_date_range
+  before_action :set_tabs
 
   def show
   end
@@ -14,10 +15,6 @@ class EpisodeMetricsController < ApplicationController
     @downloads = single_rollups(@downloads_within_date_range, @episode.title)
 
     render partial: "metrics/downloads_card", locals: {
-      url: request.fullpath,
-      form_id: "episode_downloads_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
       downloads: @downloads
@@ -39,19 +36,28 @@ class EpisodeMetricsController < ApplicationController
   end
 
   def set_date_range
+    @date_preset = metrics_params[:date_preset]
     @date_start = metrics_params[:date_start]
     @date_end = metrics_params[:date_end]
     @interval = metrics_params[:interval]
     @date_range = generate_date_range(@date_start, @date_end, @interval)
   end
 
+  def set_tabs
+    @main_card = metrics_params[:main_card]
+    @agents_card = metrics_params[:agents_card]
+  end
+
   def metrics_params
     params
-      .permit(:episode_id, :date_start, :date_end, :interval)
+      .permit(:episode_id, :date_preset, :date_start, :date_end, :interval, :main_card, :agents_card)
       .with_defaults(
-        date_start: 28.days.ago.utc_date,
+        date_preset: "last_30_days",
+        date_start: 30.days.ago.utc_date,
         date_end: Date.utc_today,
-        interval: "DAY"
+        interval: "DAY",
+        main_card: "downloads",
+        agents_card: "agent_apps"
       )
   end
 end

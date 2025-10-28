@@ -2,13 +2,11 @@
   <div class="card shadow border-0">
     <div class="card-header card-header-light d-flex justify-content-between">
       <ul class="col-2 nav nav-pills nav-justified card-header-pills">
+        <li class="nav-item"><button class="nav-link" id="downloads-tab" data-bs-toggle="tab" data-bs-target="#downloads" type="button" role="tab" aria-controls="downloads" aria-selected="false" data-action="apex-nav#displayCard" data-apex-nav-card-param="main" data-apex-nav-tab-param="downloads" data-apex-nav-target="tab" data-card="main" data-tab="downloads"><%= t(".tabs.downloads") %></button></li>
       </ul>
-      <div class="col-2" data-apex-nav-target="tab" data-tab="downloads">
-        <%= render "metrics/filter_interval", url: episode_metrics_path(episode), interval: interval, path: "downloads" %>
-      </div>
     </div>
     <div class="card-body metrics-card-body">
-      <%= turbo_frame_tag "downloads", src: downloads_episode_metrics_path(episode: episode, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", tab: "downloads"} do %>
+      <%= turbo_frame_tag "downloads", src: downloads_episode_metrics_path(episode: episode, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "card", card: "main", tab: "downloads"}, class: "d-none" do %>
         <%= render "metrics/loading_card" %>
       <% end %>
     </div>
