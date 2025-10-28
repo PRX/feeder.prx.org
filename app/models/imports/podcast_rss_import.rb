@@ -102,6 +102,14 @@ class PodcastRssImport < PodcastImport
     self.episodes_only = !ActiveModel::Type::Boolean.new.cast(val)
   end
 
+  def metadata_timings
+    !!id3_timings
+  end
+
+  def metadata_timings=(val)
+    self.id3_timings = ActiveModel::Type::Boolean.new.cast(val)
+  end
+
   def import_existing
     !new_episodes_only
   end
