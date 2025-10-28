@@ -4,21 +4,25 @@
     <%= form.label :interval %>
   </div>
   <div class="col form-floating input-group">
-    <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "startDate", action: "change->click#submit"}, class: "form-control form-control-sm", value: date_start %>
+    <%= form.date_field :date_start, max: Date.utc_yesterday, data: {apex_nav_target: "startDate", action: "change->click#submit apex-nav#updateDatePreset", apex_nav_preset_param: "custom"}, class: "form-control form-control-sm", value: date_start %>
     <%= form.label :date_start, t(".date_start") %>
   </div>
   <div class="col form-floating input-group">
-    <%= form.date_field :date_end, max: Date.utc_today, data: {apex_nav_target: "endDate", action: "change->click#submit"}, class: "form-control form-control-sm", value: date_end %>
+    <%= form.date_field :date_end, max: Date.utc_today, data: {apex_nav_target: "endDate", action: "change->click#submit apex-nav#updateDatePreset", apex_nav_preset_param: "custom"}, class: "form-control form-control-sm", value: date_end %>
     <%= form.label :date_end, t(".date_end") %>
   </div>
-  <div class="col btn-group">
-    <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-      <%= t(".presets") %>
+  <div class="col form-floating btn-group">
+    <%= form.text_field nil, value: label_for_date_preset(date_preset), readonly: true, class: "form-control form-control-sm" %>
+    <%= form.label :date_preset, "Date Preset" %>
+    <%= form.hidden_field :date_preset, value: date_preset, class: "d-none", data: {apex_nav_target: "datePreset"} %>
+
+    <button class="btn btn-sm btn-outline-light dropdown-toggle dropdown-toggle-split" type="button" id="date-range-options" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+        <span class="visually-hidden">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" aria-labelledby="date-range-options">
-      <% date_preset_options.each do |option| %>
+      <% date_preset_options(episode).each do |option| %>
         <li>
-          <button class="dropdown-item" type="button" data-action="apex-nav#updateDates" data-apex-nav-dates-param="<%= dates_from_preset(option[1]).to_json %>" value="<%= option[1].to_s %>">
+          <button class="dropdown-item <%= active_preset(option[1].to_s, date_preset) %>" type="button" data-action="apex-nav#updateDates apex-nav#updateDatePreset" data-apex-nav-dates-param="<%= dates_from_preset(option[1]).to_json %>" value="<%= option[1].to_s %>">
             <%= option[0] %>
           </button>
         </li>

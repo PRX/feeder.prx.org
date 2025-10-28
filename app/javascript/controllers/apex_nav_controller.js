@@ -1,15 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["startDate", "endDate", "interval", "uniques", "dropdays", "tab", "card", "mainCard"]
+  static targets = ["datePreset", "startDate", "endDate", "interval", "uniques", "dropdays", "tab", "card", "mainCard"]
 
   static values = {
     mainCard: String,
-    agentsCard: String
+    agentsCard: String,
   }
 
   connect() {
-    this.tabTargets.forEach(tab => {
+    this.tabTargets.forEach((tab) => {
       if (tab.dataset.card === "main") {
         if (tab.dataset.tab === this.mainCardValue) {
           tab.click()
@@ -22,12 +22,21 @@ export default class extends Controller {
     const [startDate, endDate] = event.params.dates
     this.startDateTarget.value = startDate
     this.endDateTarget.value = endDate
+    this.datePresetTarget.value = event.target.value
 
     this.startDateTarget.focus()
     this.startDateTarget.blur()
     this.endDateTarget.focus()
     this.endDateTarget.blur()
     event.target.focus()
+  }
+
+  updateDatePreset(event) {
+    if (event.params.preset) {
+      this.datePresetTarget.value = event.params.preset
+    } else {
+      this.datePresetTarget.value = event.target.value
+    }
   }
 
   displayCard(event) {

@@ -481,6 +481,7 @@ en:
           drop_1_month: 1 month since drop
           drop_3_months: 3 months since drop
           all_time: All-time
+          custom: Custom
         dropdays:
           "7": 7 Days
           "14": 14 Days

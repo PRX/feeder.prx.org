@@ -30,13 +30,13 @@ module MetricsHelper
 
   def podcast_date_preset_options
     Rollups::HourlyDownload::PODCAST_DATE_PRESETS.map do |preset|
-      [I18n.t(".helpers.label.metrics.date_presets.#{preset}"), preset.to_s]
+      [label_for_date_preset(preset), preset.to_s]
     end
   end
 
   def episode_date_preset_options
     Rollups::HourlyDownload::EPISODE_DATE_PRESETS.map do |preset|
-      [I18n.t(".helpers.label.metrics.date_presets.#{preset}"), preset.to_s]
+      [label_for_date_preset(preset), preset.to_s]
     end
   end
 
@@ -84,6 +84,16 @@ module MetricsHelper
     else
       date_end
     end
+  end
+
+  def active_preset(option, selected)
+    if option == selected
+      "active"
+    end
+  end
+
+  def label_for_date_preset(preset)
+    I18n.t(".helpers.label.metrics.date_presets.#{preset}")
   end
 
   def dropday_range_options
