@@ -483,6 +483,7 @@ en:
           all_time: All-time
           custom: Custom
         dropdays:
+          dropday_range: Days from Drop
           "7": 7 Days
           "14": 14 Days
           "28": 28 Days
@@ -492,6 +493,7 @@ en:
           "24": 24 Hours
           "48": 48 Hours
         uniques:
+          uniques_selection: Display Uniques
           last_7_rolling: Daily (7-Day Window)
           last_28_rolling: Daily (28-Day Window)
           calendar_week: Weekly

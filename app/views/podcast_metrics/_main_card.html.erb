@@ -10,13 +10,13 @@
       <div class="col-2 d-none" data-apex-nav-target="card" data-card="main" data-tab="uniques">
         <div class="form-floating">
           <%= form.select :uniques_selection, uniques_selection_options, {selected: uniques_selection}, data: {action: "change->click#submit"}, class: "form-select form-select-sm" %>
-          <%= form.label :uniques_selection %>
+          <%= form.label :uniques_selection, I18n.t(".helpers.label.metrics.uniques.uniques_selection") %>
         </div>
       </div>
       <div class="col-2 d-none" data-apex-nav-target="card" data-card="main" data-tab="dropdays">
         <div class="form-floating">
           <%= form.select :dropday_range, dropday_range_options, {selected: dropday_range}, data: {action: "change->click#submit"}, class: "form-select form-select-sm" %>
-          <%= form.label :dropday_range %>
+          <%= form.label :dropday_range, I18n.t(".helpers.label.metrics.dropdays.dropday_range") %>
         </div>
       </div>
     </div>
