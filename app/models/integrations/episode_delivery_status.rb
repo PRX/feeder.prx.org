@@ -5,15 +5,19 @@ module Integrations
     enum :integration, Integrations::INTEGRATIONS
 
     def self.measure_asset_processing_duration(episode_delivery_statuses)
+      # Relies on episode_delivery_statuses being ordered by created_at DESC
+      # (enforced by association: has_many :episode_delivery_statuses, -> { order(created_at: :desc) })
       statuses = episode_delivery_statuses.to_a
 
-      last_status = statuses.shift
-      return nil unless last_status&.asset_processing_attempts.to_i.positive?
+      latest_status = statuses.shift
+      return nil unless latest_status&.asset_processing_attempts.to_i.positive?
 
+      # Find the most recent status where asset processing started (attempts == 0)
       start_status = statuses.find { |status| status.asset_processing_attempts.to_i.zero? }
       return nil unless start_status
 
-      Time.now - start_status.created_at
+      # Measure from start to the latest status creation time
+      Time.now.utc - start_status.created_at
     end
 
     def self.update_status(integration, episode, attrs)
@@ -35,10 +39,6 @@ module Integrations
 
     def increment_asset_wait
       self.class.update_status(integration, episode, asset_processing_attempts: (asset_processing_attempts || 0) + 1)
-    end
-
-    def reset_asset_wait
-      self.class.update_status(integration, episode, asset_processing_attempts: 0)
     end
 
     def mark_as_uploaded!

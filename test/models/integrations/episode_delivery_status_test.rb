@@ -107,28 +107,6 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
           assert_equal "http://example.com/audio.mp3", new_status.source_url
         end
       end
-
-      describe "#reset_asset_wait" do
-        it "resets the asset_processing_attempts count to zero" do
-          delivery_status.update(asset_processing_attempts: 5)
-          new_status = delivery_status.reset_asset_wait
-          assert_equal 0, new_status.asset_processing_attempts
-        end
-
-        it "creates a new status entry" do
-          assert delivery_status.asset_processing_attempts.zero?
-          assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
-            delivery_status.reset_asset_wait
-          end
-        end
-
-        it "maintains other attributes" do
-          delivery_status.update(delivered: true, source_url: "http://example.com/audio.mp3")
-          new_status = delivery_status.reset_asset_wait
-          assert new_status.delivered
-          assert_equal "http://example.com/audio.mp3", new_status.source_url
-        end
-      end
     end
   end
 
