@@ -29,6 +29,6 @@
     </div>
   </div>
 
-  <%= form.select :main_card, episode_main_card_options, {selected: main_card}, class: "d-none", data: {apex_nav_target: "mainCard"} %>
+  <%= form.text_field :main_card, value: main_card, class: "d-none", data: {apex_nav_target: "mainCard"} %>
   <%= form.submit class: "d-none", data: {click_target: "submit"} %>
 <% end %>
