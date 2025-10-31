@@ -225,6 +225,9 @@ describe Uncut do
       uncut.ad_breaks = [2]
       assert_equal [[nil, 2], [2, nil]], uncut.segmentation
 
+      uncut.ad_breaks = [2, 3]
+      assert_equal [[nil, 2], [2, 3], [3, nil]], uncut.segmentation
+
       uncut.ad_breaks = [[2, 3]]
       assert_equal [[nil, 2], [3, nil]], uncut.segmentation
 

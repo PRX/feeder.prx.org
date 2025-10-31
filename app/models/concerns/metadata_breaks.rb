@@ -10,7 +10,11 @@ module MetadataBreaks
     (tags || {}).values.each do |tag|
       breaks += tag.scan(MATCH_TAGS_REGEX).flatten
     end
-    breaks.map { |b| parse_break(b) }
+    breaks.map { |b| parse_break(b) }.sort(&method(:compare_breaks)).uniq
+  end
+
+  def compare_breaks(a, b)
+    Array(a).first <=> Array(b).first
   end
 
   # look for a comma, and use as start of the break and duration
@@ -18,20 +22,21 @@ module MetadataBreaks
     if break_str.include?(",")
       start_str, duration_str = break_str.split(",", 2).map(&:strip)
       start_time = parse_break_time(start_str)
-      if duration_str.to_i > 0
-        end_time = start_time + duration_str.to_i
+      duration_time = parse_break_time(duration_str).to_f
+      if duration_time > 0.0
+        end_time = start_time.to_f + duration_time
         [start_time, end_time]
       else
         start_time
       end
     else
-      [parse_break_time(break_str), nil]
+      parse_break_time(break_str)
     end
   end
 
-  # parse breaks with either integer milliseconds or hh:mm:ss:ms] format
+  # parse breaks with either integer milliseconds or hh:mm:ss:ms format
   def parse_break_time(break_str)
-    if break_str.match?(/^\d+$/)
+    bt = if break_str.match?(/^\d+$/)
       break_str.to_i
     elsif (match = break_str.match(TIMING_TAG_REGEX))
       hours = match[:hours].to_i
@@ -40,5 +45,6 @@ module MetadataBreaks
       milliseconds = match[:milliseconds].to_i
       (hours * 3600 + minutes * 60 + seconds) * 1000 + milliseconds
     end
+    bt.to_f / 1000 if bt.present?
   end
 end
