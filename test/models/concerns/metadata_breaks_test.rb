@@ -11,7 +11,7 @@ describe TestMetadataBreaks do
     it "extracts breaks from tags" do
       tags = {
         "comment" => "PREROLL_1;AIS_AD_BREAK_1=491677,0;",
-        "custom" => "AIS_AD_BREAK_2=30000;AIS_AD_BREAK_POST=300000;trash=none;AIS_AD_BREAK_3=30000",
+        "custom" => "AIS_AD_BREAK_2=30000;AIS_AD_BREAK_POST=300000;trash=none;AIS_AD_BREAK_3=30000"
       }
       result = metadata_breaks.breaks_from_tags(tags)
       assert_equal [30.0, 300.0, 491.677], result
