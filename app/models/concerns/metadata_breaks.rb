@@ -10,11 +10,7 @@ module MetadataBreaks
     (tags || {}).values.each do |tag|
       breaks += tag.scan(MATCH_TAGS_REGEX).flatten
     end
-    breaks.map { |b| parse_break(b) }.sort(&method(:compare_breaks)).uniq
-  end
-
-  def compare_breaks(a, b)
-    Array(a).first <=> Array(b).first
+    breaks.map { |b| parse_break(b) }.sort { |a, b| Array(a).first <=> Array(b).first }.uniq
   end
 
   # look for a comma, and use as start of the break and duration
