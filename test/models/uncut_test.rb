@@ -237,11 +237,14 @@ describe Uncut do
       uncut.ad_breaks = [[2, 3], [5, 6]]
       assert_equal [[nil, 2], [3, 5], [6, nil]], uncut.segmentation
 
+      uncut.ad_breaks = [[nil, 2], [5, 6]]
+      assert_equal [[2, 5], [6, nil]], uncut.segmentation
+
       uncut.ad_breaks = [[0, 2], [5, 6]]
       assert_equal [[2, 5], [6, nil]], uncut.segmentation
 
-      uncut.ad_breaks = [[nil, 2], [5, 6]]
-      assert_equal [[2, 5], [6, nil]], uncut.segmentation
+      uncut.ad_breaks = [[0.6, 2], [5, 6]]
+      assert_equal [[nil, 0.6], [2, 5], [6, nil]], uncut.segmentation
 
       uncut.ad_breaks = [[1, 2], [6, nil]]
       assert_equal [[nil, 1], [2, 6]], uncut.segmentation
@@ -254,6 +257,12 @@ describe Uncut do
 
       uncut.ad_breaks = [[1, 2], [6, 47.8]]
       assert_equal [[nil, 1], [2, 6]], uncut.segmentation
+
+      uncut.ad_breaks = [[1, 2], [6, 55]]
+      assert_equal [[nil, 1], [2, 6]], uncut.segmentation
+
+      uncut.ad_breaks = [[1, 2], [6, 47.1]]
+      assert_equal [[nil, 1], [2, 6], [47.1, nil]], uncut.segmentation
     end
   end
 end
