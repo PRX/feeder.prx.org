@@ -16,6 +16,15 @@ describe TestMetadataBreaks do
       result = metadata_breaks.breaks_from_tags(tags)
       assert_equal [30.0, 300.0, 491.677], result
     end
+
+    it "handles invalid tags" do
+      tags = {
+        "comment" => "PREROLL_1;AIS_AD_BREAK_1=boo;AIS_AD_BREAK_2=boo,0;AIS_AD_BREAK_3=1000,boo",
+        "custom" => "AIS_AD_BREAK_3=30000"
+      }
+      result = metadata_breaks.breaks_from_tags(tags)
+      assert_equal [1.0, 30.0], result
+    end
   end
 
   describe "#parse_break" do
