@@ -107,7 +107,7 @@ class Tasks::CopyMediaTask < ::Task
   def porter_inspect_task(media_resource)
     {Type: "Inspect"}.tap do |t|
       if media_resource.is_a?(Uncut)
-        t[:IncludeMetadata] = {Values: {StringIncludes: MetadataBreaks::MATCH_TAGS}}
+        t[:IncludeMetadata] = {Values: {StringMatches: MetadataBreaks::MATCH_TAGS}}
       end
     end
   end
