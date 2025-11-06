@@ -9,19 +9,19 @@ describe TestMetadataBreaks do
 
   describe "#breaks_from_tags" do
     it "extracts breaks from tags" do
-      tags = {
-        "comment" => "PREROLL_1;AIS_AD_BREAK_1=491677,0;",
-        "custom" => "AIS_AD_BREAK_2=30000;AIS_AD_BREAK_POST=300000;trash=none;AIS_AD_BREAK_3=30000"
-      }
+      tags = [
+        {key: "comment", value: "PREROLL_1;AIS_AD_BREAK_1=491677,0;"},
+        {key: "custom", value: "AIS_AD_BREAK_2=30000;AIS_AD_BREAK_POST=300000;trash=none;AIS_AD_BREAK_3=30000"}
+      ]
       result = metadata_breaks.breaks_from_tags(tags)
       assert_equal [30.0, 300.0, 491.677], result
     end
 
     it "handles invalid tags" do
-      tags = {
-        "comment" => "PREROLL_1;AIS_AD_BREAK_1=boo;AIS_AD_BREAK_2=boo,0;AIS_AD_BREAK_3=1000,boo",
-        "custom" => "AIS_AD_BREAK_3=30000"
-      }
+      tags = [
+        {key: "comment", value: "PREROLL_1;AIS_AD_BREAK_1=boo;AIS_AD_BREAK_2=boo,0;AIS_AD_BREAK_3=1000,boo"},
+        {key: "custom", value: "AIS_AD_BREAK_3=30000"}
+      ]
       result = metadata_breaks.breaks_from_tags(tags)
       assert_equal [1.0, 30.0], result
     end

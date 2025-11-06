@@ -7,8 +7,8 @@ module MetadataBreaks
 
   def breaks_from_tags(tags)
     breaks = []
-    (tags || {}).values.each do |tag|
-      breaks += tag.scan(MATCH_TAGS_REGEX).flatten
+    (tags || []).each do |tag|
+      breaks += tag[:value].scan(MATCH_TAGS_REGEX).flatten
     end
     breaks.map { |b| parse_break(b) }.compact.sort { |a, b| Array(a).first <=> Array(b).first }.uniq
   end
