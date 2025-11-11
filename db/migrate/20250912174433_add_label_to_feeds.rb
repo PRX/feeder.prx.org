@@ -7,7 +7,8 @@ class AddLabelToFeeds < ActiveRecord::Migration[7.2]
 
     # nil out titles that are exactly the same as the podcast
     Feed.with_deleted.custom.joins(:podcast).where("feeds.title = podcasts.title").find_each do |f|
-      f.update!(title: nil)
+      f.label = nil
+      f.save!(validate: false)
     end
   end
 

@@ -15,7 +15,7 @@
   </div>
 </div>
 
-<div class="col-12">
+<div class="col-12 mt-2">
   <div class="form-check">
     <%= form.check_box :import_existing, checked: true %>
     <div class="d-flex align-items-center">
@@ -31,6 +31,16 @@
     <div class="d-flex align-items-center">
       <%= form.label :replace_files %>
       <%= help_text t(".help.replace_files") %>
+    </div>
+  </div>
+</div>
+
+<div class="col-12 mt-2">
+  <div class="form-check">
+    <%= form.check_box :metadata_timings, checked: true %>
+    <div class="d-flex align-items-center">
+      <%= form.label :metadata_timings %>
+      <%= help_text t(".help.metadata_timings") %>
     </div>
   </div>
 </div>

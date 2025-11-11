@@ -1,4 +1,7 @@
 class Uncut < MediaResource
+  DURATION_TOLERANCE = 0.5 # half a second
+  include MetadataBreaks
+
   validates :medium, inclusion: {in: %w[audio]}, if: :status_complete?
   validates :duration, numericality: {greater_than: 0}, if: :status_complete?
   validate :validate_segmentation
@@ -71,12 +74,32 @@ class Uncut < MediaResource
   def ad_breaks=(breaks)
     self.segmentation =
       if breaks.is_a?(Array) && breaks.present?
-        breaks.prepend(nil).append(nil).each_cons(2).map do |start, stop|
+        breaks = breaks.prepend(nil) if add_start_time?(breaks)
+        breaks = breaks.append(nil) if add_end_time?(breaks)
+        breaks.each_cons(2).map do |start, stop|
           [start.try(:last) || start, stop.try(:first) || stop]
         end
       else
         breaks
       end
+  end
+
+  # If there is already a first 0 or nil, don't add another
+  def add_start_time?(breaks)
+    return true if !breaks.first.is_a?(Array)
+    first_val = breaks.first.first
+    within_tolerance = first_val.to_f < DURATION_TOLERANCE
+    !within_tolerance
+  end
+
+  # If there is already a last ~duration or nil, don't add another
+  def add_end_time?(breaks)
+    return true if !breaks.last.is_a?(Array)
+    return false if breaks.last.last.nil?
+
+    last_val = [breaks.last.last.to_f, duration.to_f].min
+    within_tolerance = duration.to_f - last_val < DURATION_TOLERANCE
+    !within_tolerance
   end
 
   private
