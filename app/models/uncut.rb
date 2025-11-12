@@ -1,5 +1,6 @@
 class Uncut < MediaResource
   DURATION_TOLERANCE = 0.5 # half a second
+  DEFAULT_SEGMENTATION = [[nil, nil]].freeze
   include MetadataBreaks
 
   validates :medium, inclusion: {in: %w[audio]}, if: :status_complete?
@@ -9,7 +10,7 @@ class Uncut < MediaResource
   before_validation :set_defaults
 
   def set_defaults
-    self.segmentation ||= [[nil, nil]]
+    self.segmentation ||= DEFAULT_SEGMENTATION
   end
 
   def slice_contents
@@ -72,6 +73,11 @@ class Uncut < MediaResource
   end
 
   def ad_breaks=(breaks)
+    breaks = (breaks || [])
+      .compact
+      .reject { |item| !item.is_a?(Array) && item.to_f == 0.0 }
+      .sort { |a, b| Array(a).first.to_f <=> Array(b).first.to_f }
+      .uniq
     self.segmentation =
       if breaks.is_a?(Array) && breaks.present?
         breaks = breaks.prepend(nil) if add_start_time?(breaks)
@@ -80,26 +86,41 @@ class Uncut < MediaResource
           [start.try(:last) || start, stop.try(:first) || stop]
         end
       else
-        breaks
+        DEFAULT_SEGMENTATION
       end
   end
 
   # If there is already a first 0 or nil, don't add another
   def add_start_time?(breaks)
-    return true if !breaks.first.is_a?(Array)
-    first_val = breaks.first.first
-    within_tolerance = first_val.to_f < DURATION_TOLERANCE
-    !within_tolerance
+    first_val = if breaks.first.is_a?(Array)
+      breaks.first.first
+    else
+      breaks.first
+    end
+    if first_val.nil? || first_val.to_f <= 0.0
+      false
+    else
+      within_tolerance = first_val.to_f < DURATION_TOLERANCE
+      !within_tolerance
+    end
   end
 
   # If there is already a last ~duration or nil, don't add another
   def add_end_time?(breaks)
-    return true if !breaks.last.is_a?(Array)
-    return false if breaks.last.last.nil?
-
-    last_val = [breaks.last.last.to_f, duration.to_f].min
-    within_tolerance = duration.to_f - last_val < DURATION_TOLERANCE
-    !within_tolerance
+    last_val = if breaks.last.is_a?(Array)
+      breaks.last.last
+    else
+      breaks.last
+    end
+    if last_val.nil?
+      false
+    elsif duration.to_f <= 0.0
+      true
+    else
+      last_val = [last_val.to_f, duration.to_f].min
+      within_tolerance = duration.to_f - last_val < DURATION_TOLERANCE
+      !within_tolerance
+    end
   end
 
   private

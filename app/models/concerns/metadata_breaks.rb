@@ -10,7 +10,7 @@ module MetadataBreaks
     (tags || []).each do |tag|
       breaks += tag[:value].scan(MATCH_TAGS_REGEX).flatten
     end
-    breaks.map { |b| parse_break(b) }.compact.sort { |a, b| Array(a).first <=> Array(b).first }.uniq
+    breaks.map { |b| parse_break(b) }.compact.sort { |a, b| Array(a).first.to_f <=> Array(b).first.to_f }.uniq
   end
 
   # look for a comma, and use as start of the break and duration
@@ -22,7 +22,7 @@ module MetadataBreaks
       if duration_time > 0.0
         end_time = start_time.to_f + duration_time
         [start_time, end_time]
-      else
+      elsif !start_time.nil? && start_time > 0.0
         start_time
       end
     else
