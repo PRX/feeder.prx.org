@@ -398,11 +398,49 @@ module Apple
       end
     end
 
+    def verify_publishing_state!(eps)
+      # Capture initial state before polling to detect drift
+      initial_states = eps.to_h { |ep| [ep.feeder_id, ep.publishing_state] }
+
+      poll_episodes!(eps)
+
+      drifted_count =
+        eps.count do |ep|
+          initial_state = initial_states[ep.feeder_id]
+          if ep.publishing_state != initial_state
+            Rails.logger.warn("Episode publishing state found to be out of sync", {
+              episode_id: ep.feeder_id,
+              local_expected_state: initial_state,
+              remote_actual_state: ep.publishing_state
+            })
+            true
+          else
+            false
+          end
+        end
+      if drifted_count.positive?
+        raise Apple::RetryPublishingError.new("Detected #{drifted_count} episodes with publishing state drift")
+      end
+
+      true
+    end
+
     def publish_drafting!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.select { |ep| ep.drafting? && ep.container_upload_complete? }
+        # Guard: verify all episodes are in a consistent local state in local and remote state
+        verify_publishing_state!(eps)
 
-        res = Apple::Episode.publish(api, show, eps)
+        drafting_eps, non_ready_eps = eps.partition { |ep| ep.drafting? && ep.container_upload_complete? }
+        non_ready_eps.each do |ep|
+          Rails.logger.info("Skipping publish for non-ready episode", {episode_id: ep.feeder_id,
+                                                                     publishing_state: ep.publishing_state,
+                                                                     container_upload_complete: ep.container_upload_complete?})
+        end
+
+        Rails.logger.info("Publishing #{drafting_eps.length} drafting episodes.", {drafting_episode_ids: drafting_eps.map(&:feeder_id)}) if drafting_eps.any?
+        Rails.logger.info("Skip publishing #{non_ready_eps.length} non-ready episodes.", {non_ready_episode_ids: non_ready_eps.map(&:feeder_id)}) if non_ready_eps.any?
+
+        res = Apple::Episode.publish(api, show, drafting_eps)
 
         Rails.logger.info("Published #{res.length} drafting episodes.")
       end
