@@ -220,7 +220,16 @@ describe Uncut do
   describe "#ad_breaks=" do
     it "converts ad breaks to segmentations" do
       uncut.ad_breaks = nil
-      assert_nil uncut.segmentation
+      assert_equal [[nil, nil]], uncut.segmentation
+
+      uncut.ad_breaks = []
+      assert_equal [[nil, nil]], uncut.segmentation
+
+      uncut.ad_breaks = [nil]
+      assert_equal [[nil, nil]], uncut.segmentation
+
+      uncut.ad_breaks = [0.0]
+      assert_equal [[nil, nil]], uncut.segmentation
 
       uncut.ad_breaks = [2]
       assert_equal [[nil, 2], [2, nil]], uncut.segmentation

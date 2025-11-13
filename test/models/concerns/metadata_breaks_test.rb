@@ -25,6 +25,14 @@ describe TestMetadataBreaks do
       result = metadata_breaks.breaks_from_tags(tags)
       assert_equal [1.0, 30.0], result
     end
+
+    it "handles 0 values" do
+      tags = [
+        {key: "comment", value: "PREROLL_1;POSTROLL_1;AIS_AD_BREAK_1=0,0;"}
+      ]
+      result = metadata_breaks.breaks_from_tags(tags)
+      assert_equal [], result
+    end
   end
 
   describe "#parse_break" do
