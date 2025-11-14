@@ -426,7 +426,7 @@ module Apple
 
     def publish_drafting!(eps)
       Rails.logger.tagged("##{__method__}") do
-        # Guard: verify all episodes are in a consistent local state in local and remote state
+        # Guard: verify all episodes are in a consistent local and remote state
         verify_publishing_state!(eps)
 
         drafting_eps, non_ready_eps = eps.partition { |ep| ep.drafting? && ep.container_upload_complete? }
