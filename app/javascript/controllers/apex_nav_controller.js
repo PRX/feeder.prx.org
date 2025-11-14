@@ -1,81 +1,52 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["startDate", "endDate", "interval", "uniques", "dropdays", "mainStart", "mainEnd", "tab"]
+  static targets = ["datePreset", "startDate", "endDate", "interval", "uniques", "dropdays", "tab", "card", "mainCard"]
 
-  updateDates(event) {
-    const [startDate, endDate] = JSON.parse(event.target.value)
-    this.mainStartTarget.value = startDate
-    this.mainEndTarget.value = endDate
-
-    this.mainStartTarget.focus()
-    this.mainStartTarget.blur()
-    this.mainEndTarget.focus()
-    this.mainEndTarget.blur()
-    event.target.focus()
+  static values = {
+    mainCard: String,
+    agentsCard: String,
   }
 
-  updateStartDate(event) {
-    this.updateAllTargets(this.startDateTargets, event.target.value)
+  connect() {
+    this.setCurrentTab(this.tabTargets, "main", this.mainCardValue)
+    this.displayCard(this.cardTargets, "main", this.mainCardValue)
   }
 
-  updateEndDate(event) {
-    this.updateAllTargets(this.endDateTargets, event.target.value)
+  updateDatePreset(event) {
+    this.datePresetTarget.value = event.target.value
+    this.datePresetTarget.dispatchEvent(new Event("change"))
   }
 
-  updateInterval(event) {
-    this.updateSpecificTargets(this.intervalTargets, event.target.value, event.params.path)
-  }
-
-  updateUniques(event) {
-    this.updateAllTargets(this.uniquesTargets, event.target.value)
-
-    if (event.target.value === "calendar_week") {
-      this.updateSpecificTargets(this.intervalTargets, "WEEK", event.params.path)
-    } else if (event.target.value === "calendar_month") {
-      this.updateSpecificTargets(this.intervalTargets, "MONTH", event.params.path)
-    } else {
-      this.updateSpecificTargets(this.intervalTargets, "DAY", event.params.path)
-    }
-  }
-
-  updateDropdays(event) {
-    this.updateAllTargets(this.dropdaysTargets, event.target.value)
-
-    if ([7, 14, 28, 30, 60, 90].includes(parseInt(event.target.value))) {
-      this.updateSpecificTargets(this.intervalTargets, "DAY", event.params.path)
-    } else if ([24, 48, 72].includes(parseInt(event.target.value))) {
-      this.updateSpecificTargets(this.intervalTargets, "HOUR", event.params.path)
-    }
-  }
-
-  updateAllTargets(targets, value) {
-    targets.forEach((target) => {
-      target.addEventListener("change", function () {
-        target.value = value
-      })
-      target.dispatchEvent(new Event("change"))
+  setCurrentTab(tabs, cardValue, tabValue) {
+    tabs.forEach((tab) => {
+      if (tab.dataset.card === cardValue) {
+        if (tab.dataset.tab === tabValue) {
+          tab.ariaCurrent = true
+          tab.classList.add("active")
+        } else {
+          tab.ariaCurrent = false
+          tab.classList.remove("active")
+        }
+      }
     })
   }
 
-  updateSpecificTargets(targets, value, path) {
-    targets.forEach((target) => {
-      if (path === target.dataset.path) {
-        target.addEventListener("change", function () {
-          target.value = value
-        })
-        target.dispatchEvent(new Event("change"))
+  displayCard(cards, cardValue, tabValue) {
+    cards.forEach((card) => {
+      if (card.dataset.card.includes(cardValue)) {
+        if (card.dataset.tab.includes(tabValue)) {
+          card.classList.remove("d-none")
+        } else {
+          card.classList.add("d-none")
+        }
       }
     })
   }
 
   changeTab(event) {
-    this.tabTargets.forEach((el) => {
-      if (el.dataset.tab.includes(event.params.tab)) {
-        el.classList.remove("d-none")
-      } else {
-        el.classList.add("d-none")
-      }
-    })
+    const card = this[`${event.params.card}CardTarget`]
+    card.value = event.params.tab
+    card.dispatchEvent(new Event("change"))
   }
 }

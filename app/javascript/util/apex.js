@@ -176,3 +176,7 @@ function addYaxisTitle(yaxis, title = "") {
 function addXaxisTitle(xaxis, title = "") {
   Object.assign(xaxis, { title: { text: title } })
 }
+
+export function destroyChart(chartId) {
+  ApexCharts.exec(chartId, "destroy")
+}

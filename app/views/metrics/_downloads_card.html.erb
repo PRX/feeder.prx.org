@@ -1,17 +1,10 @@
 <%= turbo_frame_tag "downloads" do %>
-  <%= form_with(url: url, method: :get, id: form_id, data: {controller: "click", click_debounce_value: 200}) do |form| %>
-    <div class="col metrics-chart"
-      data-controller="apex-downloads"
-      data-apex-downloads-id-value="<%= SecureRandom.uuid %>"
-      data-apex-downloads-downloads-value="<%= downloads.to_json %>"
-      data-apex-downloads-date-range-value="<%= date_range.to_json %>"
-      data-apex-downloads-interval-value="<%= interval %>">
-      <div data-apex-downloads-target="chart"></div>
-    </div>
-
-    <%= form.date_field :date_start, class: "d-none", data: {apex_nav_target: "startDate", action: "change->click#submit"}, value: date_start %>
-    <%= form.date_field :date_end, class: "d-none", data: {apex_nav_target: "endDate", action: "change->click#submit"}, value: date_end %>
-    <%= form.select :interval, interval_options, {selected: interval}, class: "d-none", data: {apex_nav_target: "interval", action: "change->click#submit", path: "downloads"} %>
-    <%= form.submit class: "d-none", data: {click_target: "submit"} %>
-  <% end %>
+  <div class="col metrics-chart"
+    data-controller="apex-downloads"
+    data-apex-downloads-id-value="<%= SecureRandom.uuid %>"
+    data-apex-downloads-downloads-value="<%= downloads.to_json %>"
+    data-apex-downloads-date-range-value="<%= date_range.to_json %>"
+    data-apex-downloads-interval-value="<%= interval %>">
+    <div data-apex-downloads-target="chart"></div>
+  </div>
 <% end %>

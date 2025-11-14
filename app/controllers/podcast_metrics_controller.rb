@@ -1,31 +1,22 @@
 class PodcastMetricsController < ApplicationController
   include MetricsUtils
+  include MetricsQueries
 
   before_action :set_podcast
   before_action :check_clickhouse, except: %i[show]
   before_action :set_date_range, except: %i[dropdays]
   before_action :set_uniques, only: %i[show uniques]
   before_action :set_dropday_range, only: %i[show dropdays]
+  before_action :set_tabs
 
   def show
   end
 
   def downloads
-    @downloads_within_date_range =
-      Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
-        .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-        .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-        .load_async
-
+    @downloads_within_date_range = downloads_date_range_query(@podcast, @date_start, @date_end, @interval)
     @downloads = single_rollups(@downloads_within_date_range)
 
     render partial: "metrics/downloads_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_downloads_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
       downloads: @downloads
@@ -56,13 +47,10 @@ class PodcastMetricsController < ApplicationController
     @episode_rollups = multiple_episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
 
     render partial: "metrics/episodes_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_episodes_metrics",
       date_start: @date_start,
       date_end: @date_end,
       interval: @interval,
       date_range: @date_range,
-      episodes: @episodes,
       episode_rollups: @episode_rollups
     }
   end
@@ -71,19 +59,14 @@ class PodcastMetricsController < ApplicationController
     @uniques_rollups =
       Rollups::DailyUnique
         .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
-        .select("DATE_TRUNC('#{@interval}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
-        .group("DATE_TRUNC('#{@interval}', day) AS day")
-        .order(Arel.sql("DATE_TRUNC('#{@interval}', day) ASC"))
+        .select("DATE_TRUNC('#{uniques_interval(@uniques_selection)}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
+        .group("DATE_TRUNC('#{uniques_interval(@uniques_selection)}', day) AS day")
+        .order(Arel.sql("DATE_TRUNC('#{uniques_interval(@uniques_selection)}', day) ASC"))
         .load_async
 
     @uniques = single_rollups(@uniques_rollups)
 
     render partial: "metrics/uniques_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_uniques_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: @interval,
       uniques_selection: @uniques_selection,
       uniques: @uniques,
       date_range: @date_range
@@ -97,22 +80,12 @@ class PodcastMetricsController < ApplicationController
         .order(first_rss_published_at: :desc)
         .paginate(params[:episode_dropdays], params[:per])
 
-    @interval = dropdays_params[:interval]
-    @fudged_range = if @interval == "DAY"
-      # first day is not a "complete" day
-      # fudged range matches chart selection
-      @dropday_range.to_i - 1
-    elsif @interval == "HOUR"
-      @dropday_range.to_i
-    end
     @dropdays = @episodes.map do |ep|
       if ep[:first_rss_published_at]
-        Rollups::HourlyDownload
-          .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + @fudged_range.send(:"#{@interval.downcase}s"))))
-          .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-          .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
-          .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-          .load_async
+        date_start = ep.first_rss_published_at
+        date_end = ep.first_rss_published_at + (@dropday_range.to_i - 1).days
+
+        downloads_date_range_query(ep, date_start, date_end, "DAY")
       else
         []
       end
@@ -127,11 +100,9 @@ class PodcastMetricsController < ApplicationController
     @episode_dropdays = multiple_episode_rollups(@episodes, @dropdays, @alltime_downloads_by_episode)
 
     render partial: "metrics/dropdays_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_dropdays_metrics",
       episode_dropdays: @episode_dropdays,
       dropday_range: @dropday_range,
-      interval: @interval
+      interval: "DAY"
     }
   end
 
@@ -152,38 +123,13 @@ class PodcastMetricsController < ApplicationController
     #     .limit(10)
   end
 
-  def agents
-    # @agent_apps_query =
-    #   Rollups::DailyAgent
-    #     .where(podcast_id: @podcast.id)
-    #     .select("agent_name_id AS code", "SUM(count) AS count")
-    #     .group("agent_name_id AS code")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .load_async
-    # @agent_types_query =
-    #   Rollups::DailyAgent
-    #     .where(podcast_id: @podcast.id)
-    #     .select("agent_type_id AS code", "SUM(count) AS count")
-    #     .group("agent_type_id AS code")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .load_async
-    # @agent_os_query =
-    #   Rollups::DailyAgent
-    #     .where(podcast_id: @podcast.id)
-    #     .select("agent_os_id AS code", "SUM(count) AS count")
-    #     .group("agent_os_id AS code")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .load_async
+  def agent_apps
+  end
 
-    # @agent_apps = Kaminari.paginate_array(@agent_apps_query).page(params[:agent_apps]).per(10)
-    # @agent_types = Kaminari.paginate_array(@agent_types_query).page(params[:agent_types]).per(10)
-    # @agent_os = Kaminari.paginate_array(@agent_os_query).page(params[:agent_os]).per(10)
+  def agent_types
+  end
 
-    # render partial: "agents", locals: {
-    #   agent_apps: @agent_apps,
-    #   agent_types: @agent_types,
-    #   agent_os: @agent_os
-    # }
+  def agent_os
   end
 
   private
@@ -196,45 +142,45 @@ class PodcastMetricsController < ApplicationController
   end
 
   def set_date_range
-    @date_start = metrics_params[:date_start]
-    @date_end = metrics_params[:date_end]
+    @date_preset = metrics_params[:date_preset]
+    @date_start, @date_end = dates_from_preset(@date_preset)
     @interval = metrics_params[:interval]
     @date_range = generate_date_range(@date_start, @date_end, @interval)
   end
 
   def set_uniques
-    @uniques_selection = uniques_params[:uniques_selection]
+    @uniques_selection = metrics_params[:uniques_selection]
   end
 
   def set_dropday_range
-    @dropday_range = dropdays_params[:dropday_range]
+    @dropday_range = metrics_params[:dropday_range]
+  end
+
+  def set_tabs
+    @main_card = metrics_params[:main_card]
+    @agents_card = metrics_params[:agents_card]
   end
 
   def metrics_params
     params
-      .permit(:podcast_id, :date_start, :date_end, :interval)
+      .permit(:podcast_id, :date_preset, :date_start, :date_end, :interval, :uniques_selection, :dropday_range, :main_card, :agents_card)
       .with_defaults(
-        date_start: 30.days.ago.utc_date,
-        date_end: Date.utc_today,
-        interval: "DAY"
+        date_preset: "last_30_days",
+        interval: "DAY",
+        uniques_selection: "last_7_rolling",
+        dropday_range: 7,
+        main_card: "downloads",
+        agents_card: "agent_apps"
       )
   end
 
-  def uniques_params
-    params
-      .permit(:uniques_selection)
-      .with_defaults(
-        uniques_selection: "last_7_rolling"
-      )
-      .merge(metrics_params)
-  end
-
-  def dropdays_params
-    params
-      .permit(:dropday_range, :interval)
-      .with_defaults(
-        dropday_range: 7
-      )
-      .merge(metrics_params)
+  def uniques_interval(selection)
+    if selection == "calendar_week"
+      "WEEK"
+    elsif selection == "calendar_month"
+      "MONTH"
+    else
+      "DAY"
+    end
   end
 end
