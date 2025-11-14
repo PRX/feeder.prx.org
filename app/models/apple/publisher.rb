@@ -437,7 +437,6 @@ module Apple
         end
 
         Rails.logger.info("Publishing #{drafting_eps.length} drafting episodes.", {drafting_episode_ids: drafting_eps.map(&:feeder_id)}) if drafting_eps.any?
-        Rails.logger.info("Skip publishing #{non_ready_eps.length} non-ready episodes.", {non_ready_episode_ids: non_ready_eps.map(&:feeder_id)}) if non_ready_eps.any?
 
         res = Apple::Episode.publish(api, show, drafting_eps)
 
