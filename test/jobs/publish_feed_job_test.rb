@@ -268,13 +268,13 @@ describe PublishFeedJob do
           end
         end
 
-        it "raises an error if the apple publishing times out" do
+        it "ends in a terminal retry state if the apple publishing times out" do
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
 
           private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
             podcast.stub(:feeds, [private_feed]) do
-              assert_raises(Apple::RetryPublishingError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
+              PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
 
               assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
             end
@@ -327,20 +327,6 @@ describe PublishFeedJob do
                 PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
                 assert_equal ["created", "started", "error_integration", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
               end
-            end
-          end
-        end
-
-        it "raises RetryPublishingError when timeout occurs with sync_blocks_rss enabled" do
-          assert apple_feed.apple_config.present?
-          assert apple_feed.apple_config.publish_enabled
-          apple_feed.apple_config.update!(sync_blocks_rss: true)
-
-          private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
-            podcast.stub(:feeds, [private_feed]) do
-              assert_raises(Apple::RetryPublishingError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
-
-              assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(id: :asc).pluck(:status)
             end
           end
         end

@@ -12,7 +12,7 @@ module Apple
 
       def self.wait_timed_out?(waited, wait_timeout)
         if waited > wait_timeout
-          Rails.logger.info("Timed out waiting for Apple API to process", waited: waited, wait_timeout: wait_timeout)
+          Rails.logger.info("Apple::ApiWaiting: Timed out waiting", waited: waited, wait_timeout: wait_timeout)
           true
         else
           false
@@ -20,12 +20,7 @@ module Apple
       end
 
       def self.work_done?(remaining_records, waited, wait_timeout)
-        if remaining_records.empty?
-          Rails.logger.info("Done waiting for Apple Api work", waited: waited, wait_timeout: wait_timeout)
-          true
-        else
-          false
-        end
+        remaining_records.empty?
       end
 
       def self.wait_for(remaining_records, wait_timeout: API_WAIT_TIMEOUT, wait_interval: API_WAIT_INTERVAL)

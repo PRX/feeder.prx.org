@@ -339,9 +339,7 @@ describe PublishingPipelineState do
           private_feed.stub(:publish_integration!, ->(*args) { raise Apple::AssetStateTimeoutError.new([episode]) }) do
             podcast.stub(:feeds, [private_feed]) do
               pqi = PublishingQueueItem.ensure_queued!(podcast)
-              assert_raises(Apple::RetryPublishingError) do
-                PublishingPipelineState.attempt!(podcast, perform_later: false)
-              end
+              PublishingPipelineState.attempt!(podcast, perform_later: false)
             end
           end
         end

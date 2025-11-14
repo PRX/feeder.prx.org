@@ -17,6 +17,22 @@ module Apple
       %i[error fatal].include?(log_level)
     end
 
+    def podcast_id
+      episodes.first&.podcast_id
+    end
+
+    def log_error!
+      Rails.logger.send(
+        log_level,
+        message,
+        {
+          podcast_id: podcast_id,
+          attempts: attempts,
+          asset_wait_duration: asset_wait_duration
+        }
+      )
+    end
+
     def log_level
       case attempts
       when 0..4
