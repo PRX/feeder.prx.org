@@ -404,20 +404,19 @@ module Apple
 
       poll_episodes!(eps)
 
-      drifted_count =
-        eps.count do |ep|
-          initial_state = initial_states[ep.feeder_id]
-          if ep.publishing_state != initial_state
+      drifted_count = eps.count do |ep|
+        initial_state = initial_states[ep.feeder_id]
+        (ep.publishing_state != initial_state).tap do |drifted|
+          if drifted
             Rails.logger.warn("Episode publishing state found to be out of sync", {
               episode_id: ep.feeder_id,
               local_expected_state: initial_state,
               remote_actual_state: ep.publishing_state
             })
-            true
-          else
-            false
           end
         end
+      end
+
       if drifted_count.positive?
         raise Apple::RetryPublishingError.new("Detected #{drifted_count} episodes with publishing state drift")
       end
