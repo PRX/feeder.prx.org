@@ -1,0 +1,31 @@
+<%= turbo_frame_tag "agents_card" do %>
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <ul class="col-6 nav nav-pills nav-justified card-header-pills">
+        <li class="nav-item"><button class="nav-link active" id="apps-tab" data-bs-toggle="tab" data-bs-target="#apps" type="button" role="tab" aria-controls="apps" aria-selected="true" data-action="apex-nav#changeTab" data-apex-nav-card-param="agents" data-apex-nav-tab-param="agent_apps"><%= t(".tabs.apps") %></button></li>
+        <li class="nav-item"><button class="nav-link" id="types-tab" data-bs-toggle="tab" data-bs-target="#types" type="button" role="tab" aria-controls="types" aria-selected="false" data-action="apex-nav#changeTab" data-apex-nav-card-param="agents" data-apex-nav-tab-param="agent_types"><%= t(".tabs.types") %></button></li>
+        <li class="nav-item"><button class="nav-link" id="os-tab" data-bs-toggle="tab" data-bs-target="#os" type="button" role="tab" aria-controls="os" aria-selected="false" data-action="apex-nav#changeTab" data-apex-nav-card-param="agents" data-apex-nav-tab-param="agent_os"><%= t(".tabs.os") %></button></li>
+      </ul>
+    </div>
+    <div class="card-body metrics-card-body">
+      <%= turbo_frame_tag "agent_apps", src: agent_apps_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", card: "agents", tab: "agent_apps"} do %>
+        <div class="h-100 d-flex justify-content-center align-items-center">
+          <div class="spinner-border text-primary" role="status">
+          </div>
+        </div>
+      <% end %>
+      <%= turbo_frame_tag "agent_types", src: agent_types_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", card: "agents", tab: "agent_types"}, class: "d-none" do %>
+        <div class="h-100 d-flex justify-content-center align-items-center">
+          <div class="spinner-border text-primary" role="status">
+          </div>
+        </div>
+      <% end %>
+      <%= turbo_frame_tag "agent_os", src: agent_os_podcast_metrics_path(podcast: podcast, date_start: date_start, date_end: date_end, interval: interval), data: {apex_nav_target: "tab", card: "agents", tab: "agent_os"}, class: "d-none" do %>
+        <div class="h-100 d-flex justify-content-center align-items-center">
+          <div class="spinner-border text-primary" role="status">
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

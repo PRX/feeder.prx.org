@@ -3,29 +3,26 @@
 <div data-controller="apex-nav">
   <div class="container col-12 d-flex align-items-center justify-content-between my-4">
     <h1 class="fw-bold my-0 mb-0 me-4"><%= t(".header") %></h1>
-    <div class="">
-      <div class="d-flex justify-items-end">
-        <%= render "metrics/filter_dates", url: podcast_metrics_path(podcast: @podcast), podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval, date_range_options: date_range_options %>
+    <div class="d-flex justify-items-end">
+      <%= render "metrics/filter_dates", url: podcast_metrics_path(podcast: @podcast), podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval, date_range_options: date_range_options %>
+    </div>
+  </div>
+  <div class="container col-12 my-4">
+    <%= render "main_card", podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval, uniques_selection: @uniques_selection, uniques_interval: @uniques_interval, dropday_range: @dropday_range %>
+  </div>
+  <div class="container col-12 mb-2">
+    <div class="col mb-4">
+      <div class="row gx-2">
+        <div class="col-6 mb-2">
+          <%= render "geo_card", geo_type: "Countries" %>
+        </div>
+        <div class="col-6 mb-2">
+          <%= render "geo_card", geo_type: "Metros" %>
+        </div>
       </div>
     </div>
   </div>
   <div class="container col-12 my-4">
-    <%= render "main_card", podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval, uniques_selection: @uniques_selection, dropday_range: @dropday_range %>
-  </div>
-</div>
-
-<div class="container col-12 mb-2">
-  <div class="col mb-4">
-    <div class="row gx-2">
-      <div class="col-6 mb-2">
-        <%= render "geo_card", geo_type: "Countries" %>
-      </div>
-      <div class="col-6 mb-2">
-        <%= render "geo_card", geo_type: "Metros" %>
-      </div>
-    </div>
-  </div>
-  <div class="col mb-4">
-    <%# turbo_frame_tag "agents", src: agents_podcast_metrics_path(podcast: @podcast), loading: "lazy" %>
+    <%= render "agents_card", podcast: @podcast, date_start: @date_start, date_end: @date_end, interval: @interval %>
   </div>
 </div>

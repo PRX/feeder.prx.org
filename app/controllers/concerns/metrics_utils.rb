@@ -66,4 +66,25 @@ module MetricsUtils
       }
     end
   end
+
+  def agents_rollups(all_time, over_time)
+    all_time.to_enum(:each_with_index).map do |agent, i|
+      {
+        all_time: agent[:count],
+        rollups: over_time.select do |r|
+          r["code"] == agent[:code]
+        end,
+        color: colors[i],
+        label: agent.label
+      }
+    end
+  end
+
+  def minimum_interval(interval)
+    if interval == "HOUR"
+      "DAY"
+    else
+      interval
+    end
+  end
 end
