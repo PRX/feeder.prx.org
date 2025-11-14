@@ -406,7 +406,7 @@ describe Apple::Publisher do
     it "should not raise error when episodes remain in same state" do
       apple_publisher.stub(:poll_episodes!, nil) do
         result = apple_publisher.verify_publishing_state!(episodes)
-        assert_nil result
+        assert result == true
       end
     end
 
