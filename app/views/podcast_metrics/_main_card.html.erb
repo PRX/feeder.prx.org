@@ -1,11 +1,11 @@
 <%= turbo_frame_tag "main_card" do %>
   <div class="card shadow border-0">
     <div class="card-header card-header-light d-flex justify-content-between">
-      <ul class="col-8 nav nav-pills nav-justified card-header-pills">
-        <li class="nav-item"><button class="nav-link" id="downloads-tab" data-bs-toggle="tab" data-bs-target="#downloads" type="button" role="tab" aria-controls="downloads" aria-selected="false" data-action="apex-nav#displayCard" data-apex-nav-card-param="main" data-apex-nav-tab-param="downloads" data-apex-nav-target="tab" data-card="main" data-tab="downloads"><%= t(".tabs.downloads") %></button></li>
-        <li class="nav-item"><button class="nav-link" id="episodes-tab" data-bs-toggle="tab" data-bs-target="#episodes" type="button" role="tab" aria-controls="episodes" aria-selected="false" data-action="apex-nav#displayCard" data-apex-nav-card-param="main" data-apex-nav-tab-param="episodes" data-apex-nav-target="tab" data-card="main" data-tab="episodes"><%= t(".tabs.episodes") %></button></li>
-        <li class="nav-item"><button class="nav-link" id="uniques-tab" data-bs-toggle="tab" data-bs-target="#uniques" type="button" role="tab" aria-controls="uniques" aria-selected="false" data-action="apex-nav#displayCard" data-apex-nav-card-param="main" data-apex-nav-tab-param="uniques" data-apex-nav-target="tab" data-card="main" data-tab="uniques"><%= t(".tabs.uniques") %></button></li>
-        <li class="nav-item"><button class="nav-link" id="dropdays-tab" data-bs-toggle="tab" data-bs-target="#dropdays" type="button" role="tab" aria-controls="dropdays" aria-selected="false" data-action="apex-nav#displayCard" data-apex-nav-card-param="main" data-apex-nav-tab-param="dropdays" data-apex-nav-target="tab" data-card="main" data-tab="dropdays"><%= t(".tabs.dropdays") %></button></li>
+      <ul class="col-8 nav nav-tabs nav-justified card-header-tabs">
+        <li class="nav-item"><button class="nav-link" id="downloads-tab" type="button" role="tab" aria-controls="downloads" data-action="apex-nav#changeTab" data-apex-nav-card-param="main" data-apex-nav-tab-param="downloads" data-apex-nav-target="tab" data-card="main" data-tab="downloads"><%= t(".tabs.downloads") %></button></li>
+        <li class="nav-item"><button class="nav-link" id="episodes-tab" type="button" role="tab" aria-controls="episodes" data-action="apex-nav#changeTab" data-apex-nav-card-param="main" data-apex-nav-tab-param="episodes" data-apex-nav-target="tab" data-card="main" data-tab="episodes"><%= t(".tabs.episodes") %></button></li>
+        <li class="nav-item"><button class="nav-link" id="uniques-tab" type="button" role="tab" aria-controls="uniques" data-action="apex-nav#changeTab" data-apex-nav-card-param="main" data-apex-nav-tab-param="uniques" data-apex-nav-target="tab" data-card="main" data-tab="uniques"><%= t(".tabs.uniques") %></button></li>
+        <li class="nav-item"><button class="nav-link" id="dropdays-tab" type="button" role="tab" aria-controls="dropdays" data-action="apex-nav#changeTab" data-apex-nav-card-param="main" data-apex-nav-tab-param="dropdays" data-apex-nav-target="tab" data-card="main" data-tab="dropdays"><%= t(".tabs.dropdays") %></button></li>
       </ul>
       <div class="col-2 d-none" data-apex-nav-target="card" data-card="main" data-tab="uniques">
         <div class="form-floating">

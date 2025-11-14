@@ -9,26 +9,8 @@ export default class extends Controller {
   }
 
   connect() {
-    this.tabTargets.forEach((tab) => {
-      if (tab.dataset.card === "main") {
-        if (tab.dataset.tab === this.mainCardValue) {
-          tab.click()
-        }
-      }
-    })
-  }
-
-  updateDates(event) {
-    const [startDate, endDate] = event.params.dates
-    this.startDateTarget.value = startDate
-    this.endDateTarget.value = endDate
-    this.datePresetTarget.value = event.target.value
-
-    this.startDateTarget.focus()
-    this.startDateTarget.blur()
-    this.endDateTarget.focus()
-    this.endDateTarget.blur()
-    event.target.focus()
+    this.setCurrentTab(this.tabTargets, "main", this.mainCardValue)
+    this.displayCard(this.cardTargets, "main", this.mainCardValue)
   }
 
   updateDatePreset(event) {
@@ -36,17 +18,35 @@ export default class extends Controller {
     this.datePresetTarget.dispatchEvent(new Event("change"))
   }
 
-  displayCard(event) {
-    this.cardTargets.forEach((card) => {
-      if (card.dataset.card.includes(event.params.card)) {
-        if (card.dataset.tab.includes(event.params.tab)) {
+  setCurrentTab(tabs, cardValue, tabValue) {
+    tabs.forEach((tab) => {
+      if (tab.dataset.card === cardValue) {
+        if (tab.dataset.tab === tabValue) {
+          tab.ariaCurrent = true
+          tab.classList.add("active")
+        } else {
+          tab.ariaCurrent = false
+          tab.classList.remove("active")
+        }
+      }
+    })
+  }
+
+  displayCard(cards, cardValue, tabValue) {
+    cards.forEach((card) => {
+      if (card.dataset.card.includes(cardValue)) {
+        if (card.dataset.tab.includes(tabValue)) {
           card.classList.remove("d-none")
         } else {
           card.classList.add("d-none")
         }
       }
     })
+  }
 
-    this.mainCardTarget.value = event.params.tab
+  changeTab(event) {
+    const card = this[`${event.params.card}CardTarget`]
+    card.value = event.params.tab
+    card.dispatchEvent(new Event("change"))
   }
 }
