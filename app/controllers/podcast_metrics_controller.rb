@@ -143,8 +143,7 @@ class PodcastMetricsController < ApplicationController
 
   def set_date_range
     @date_preset = metrics_params[:date_preset]
-    @date_start = metrics_params[:date_start]
-    @date_end = metrics_params[:date_end]
+    @date_start, @date_end = dates_from_preset(@date_preset)
     @interval = metrics_params[:interval]
     @date_range = generate_date_range(@date_start, @date_end, @interval)
   end
@@ -167,8 +166,6 @@ class PodcastMetricsController < ApplicationController
       .permit(:podcast_id, :date_preset, :date_start, :date_end, :interval, :uniques_selection, :dropday_range, :main_card, :agents_card)
       .with_defaults(
         date_preset: "last_30_days",
-        date_start: 30.days.ago.utc_date,
-        date_end: Date.utc_today,
         interval: "DAY",
         uniques_selection: "last_7_rolling",
         dropday_range: 7,

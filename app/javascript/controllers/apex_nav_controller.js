@@ -32,11 +32,8 @@ export default class extends Controller {
   }
 
   updateDatePreset(event) {
-    if (event.params.preset) {
-      this.datePresetTarget.value = event.params.preset
-    } else {
-      this.datePresetTarget.value = event.target.value
-    }
+    this.datePresetTarget.value = event.target.value
+    this.datePresetTarget.dispatchEvent(new Event("change"))
   }
 
   displayCard(event) {
