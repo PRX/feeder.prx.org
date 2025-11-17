@@ -100,7 +100,6 @@ module Apple
         end
 
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          publish_drafting!(eps)
           raise_delivery_processing_errors(eps)
         end
       end
@@ -145,9 +144,11 @@ module Apple
         wait_for_upload_processing(eps)
 
         # Wait for the audio asset to be processed by Apple
-        # Mark episodes as delivered as they are processed
         wait_for_asset_state(eps) do |ready_eps|
           log_asset_wait_duration!(ready_eps)
+          # Publish the ready episodes
+          publish_drafting!(ready_eps)
+          # Then mark them as delivered
           mark_as_delivered!(ready_eps)
         end
       end

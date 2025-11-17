@@ -681,22 +681,16 @@ describe Apple::Publisher do
       episode.feeder_episode.apple_mark_as_uploaded!
       episode.feeder_episode.apple_mark_as_not_delivered!
 
-      # Both delivery and publishing should be called
-      publish_mock = Minitest::Mock.new
-      publish_mock.expect(:call, nil, [[episode]])
-
+      # Delivery should be called (which now includes publishing)
       delivery_mock = Minitest::Mock.new
       delivery_mock.expect(:call, nil, [[episode]])
 
       apple_publisher.stub(:upload_media!, ->(*) {}) do
         apple_publisher.stub(:process_delivery!, delivery_mock) do
-          apple_publisher.stub(:publish_drafting!, publish_mock) do
-            apple_publisher.upload_and_process!([episode])
-          end
+          apple_publisher.upload_and_process!([episode])
         end
       end
 
-      assert publish_mock.verify
       assert delivery_mock.verify
     end
 
@@ -834,6 +828,39 @@ describe Apple::Publisher do
       assert increment_mock.verify
       assert wait_upload_mock.verify
       assert mark_delivered_called
+    end
+
+    it "publishes episodes before marking them as delivered" do
+      # Mark episode as having uploaded files
+      episode.podcast_delivery_files.each { |pdf| pdf.apple_sync_log.update!(**build(:podcast_delivery_file_api_response, asset_delivery_state: "COMPLETE")) }
+
+      # Track only the critical ordering: publish must happen before mark_as_delivered
+      call_order = []
+
+      # Stub wait_for_asset_state to use fast timeouts and return episode as ready
+      original_wait_for_asset_state = apple_publisher.method(:wait_for_asset_state)
+      wait_for_asset_state_stub = ->(eps, **_kwargs, &block) {
+        original_wait_for_asset_state.call(eps, wait_timeout: 0.seconds, wait_interval: 0.seconds, &block)
+      }
+
+      apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
+        apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
+          apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
+            Apple::Episode.stub(:probe_asset_state, ->(api, eps) { [eps, []] }) do
+              apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
+                apple_publisher.stub(:publish_drafting!, ->(eps) { call_order << :publish; assert_equal [episode], eps }) do
+                  apple_publisher.stub(:mark_as_delivered!, ->(eps) { call_order << :mark_delivered; assert_equal [episode], eps }) do
+                    apple_publisher.process_delivery!([episode])
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+
+      # Verify the critical business rule: publish happens before mark_as_delivered
+      assert_equal [:publish, :mark_delivered], call_order, "Episodes must be published before being marked as delivered"
     end
 
     it "continues waiting for episodes not ready yet" do
