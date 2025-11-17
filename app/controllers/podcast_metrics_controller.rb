@@ -33,6 +33,7 @@ class PodcastMetricsController < ApplicationController
     @episodes_recent =
       Rollups::HourlyDownload
         .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
+        .final
         .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
         .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
         .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
@@ -40,6 +41,7 @@ class PodcastMetricsController < ApplicationController
     @episodes_alltime =
       Rollups::HourlyDownload
         .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
+        .final
         .select(:episode_id, "SUM(count) AS count")
         .group(:episode_id)
         .load_async
@@ -59,6 +61,7 @@ class PodcastMetricsController < ApplicationController
     @uniques_rollups =
       Rollups::DailyUnique
         .where(podcast_id: @podcast.id, day: (@date_start..@date_end))
+        .final
         .select("DATE_TRUNC('#{uniques_interval(@uniques_selection)}', day) AS day, MAX(#{@uniques_selection}) AS #{@uniques_selection}")
         .group("DATE_TRUNC('#{uniques_interval(@uniques_selection)}', day) AS day")
         .order(Arel.sql("DATE_TRUNC('#{uniques_interval(@uniques_selection)}', day) ASC"))

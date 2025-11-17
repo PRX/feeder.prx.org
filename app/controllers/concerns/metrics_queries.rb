@@ -9,6 +9,7 @@ module MetricsQueries
 
     Rollups::HourlyDownload
       .where("#{model_column}": model_id, hour: (date_start..date_end))
+      .final
       .select(model_column.to_s, "DATE_TRUNC('#{interval}', hour) AS hour", "SUM(count) AS count")
       .group(model_column.to_s, "DATE_TRUNC('#{interval}', hour) AS hour")
       .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
@@ -20,6 +21,7 @@ module MetricsQueries
 
     Rollups::DailyAgent
       .where("#{model_column}": model_id)
+      .final
       .select("agent_#{agent}_id AS code", "SUM(count) AS count")
       .group("agent_#{agent}_id AS code")
       .order(Arel.sql("SUM(count) AS count DESC"))
@@ -32,6 +34,7 @@ module MetricsQueries
 
     Rollups::DailyAgent
       .where("#{model_column}": model_id, day: (date_start..date_end), "agent_#{agent}_id": alltime.pluck(:code))
+      .final
       .select("DATE_TRUNC('#{minimum_interval(interval)}', day) AS day", "agent_#{agent}_id AS code", "SUM(count) AS count")
       .group("DATE_TRUNC('#{minimum_interval(interval)}', day) AS day", "agent_#{agent}_id AS code")
       .order(Arel.sql("DATE_TRUNC('#{minimum_interval(interval)}', day) ASC"))
