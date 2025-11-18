@@ -91,16 +91,16 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
-        eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          upload_media!(eps)
+        eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+          upload_media!(batch)
         end
 
-        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          process_delivery!(eps)
+        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+          process_delivery!(batch)
         end
 
-        eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          raise_delivery_processing_errors(eps)
+        eps.each_slice(PUBLISH_CHUNK_LEN) do |batch|
+          raise_delivery_processing_errors(batch)
         end
       end
     end
