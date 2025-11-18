@@ -16,7 +16,7 @@ module EpisodesHelper
   end
 
   def episode_integration_status(integration, episode)
-    return "not_publishable" unless episode.publish_to_integration?(integration)
+    return "not_publishable" unless episode.integration_feed_episode?(integration)
 
     # Check for Apple-specific error state
     if integration == :apple && episode.apple_episode&.audio_asset_state_error?
@@ -24,6 +24,7 @@ module EpisodesHelper
     end
 
     status = episode.episode_delivery_status(integration, true)
+
     if !status
       "not_found"
     elsif status.new_record?

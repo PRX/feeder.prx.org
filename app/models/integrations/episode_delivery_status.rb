@@ -58,14 +58,5 @@ module Integrations
     def mark_as_not_delivered!
       self.class.update_status(integration, episode, delivered: false, uploaded: false)
     end
-
-    def integration_feed
-      case integration.to_sym
-      when :apple
-        episode.podcast.feeds.find_by(type: "Feeds::AppleSubscription")
-      when :megaphone
-        episode.podcast.feeds.find_by(type: "Feeds::MegaphoneFeed")
-      end
-    end
   end
 end

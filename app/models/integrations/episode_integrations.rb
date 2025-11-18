@@ -25,7 +25,16 @@ module Integrations::EpisodeIntegrations
 
   def publish_to_integration?(integration)
     # see if there is an integration
-    podcast.feeds.any? { |f| f.integration_type == integration && f.publish_integration? && f.feed_episodes.where(id: id).exists? }
+    podcast.feeds.any? { |f| f.integration_type == integration && f.publish_integration? }
+  end
+
+  def integration_feed_episode?(integration)
+    feed = integration_feed(integration)
+    publish_to_integration?(integration) && feed&.feed_episode_ids&.include?(id)
+  end
+
+  def integration_feed(integration)
+    podcast.feeds.find { |f| f.integration_type == integration }
   end
 
   def sync_log(integration)
