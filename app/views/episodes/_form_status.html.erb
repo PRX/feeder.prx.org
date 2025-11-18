@@ -35,7 +35,7 @@
       <%= render "form_feeds", form: form, episode: episode %>
     </div>
 
-    <% if episode.persisted? && episode.publish_to_apple? %>
+    <% if episode.persisted? && episode.publish_to_integration?(:apple) %>
       <div class="col-12 mt-4">
         <p class="status-text">
           <strong><%= t(".apple_status") %>:</strong>
