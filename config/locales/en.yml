@@ -383,6 +383,7 @@ en:
           incomplete: Incomplete
           incomplete_published: Incomplete
           invalid: Invalid
+          new: New
           not_publishable: Not Included for Publishing
           processing: Processing
         medium: File Format
@@ -406,6 +407,7 @@ en:
           complete: Complete
           error: Error
           incomplete: Incomplete
+          new: New
           not_found: Unknown
           not_publishable: Not Included for Publishing
           processing: Processing
