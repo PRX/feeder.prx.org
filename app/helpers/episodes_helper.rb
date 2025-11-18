@@ -16,6 +16,8 @@ module EpisodesHelper
   end
 
   def episode_integration_status(integration, episode)
+    return "not_publishable" unless episode.publish_to_integration?(integration)
+
     status = episode.episode_delivery_status(integration, true)
     if !status
       "not_found"

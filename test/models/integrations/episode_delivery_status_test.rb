@@ -85,6 +85,57 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       end
     end
 
+    describe "#integration_feed" do
+      let(:podcast) { create(:podcast) }
+      let(:episode) { create(:episode, podcast: podcast) }
+
+      it "returns the apple feed for apple integration" do
+        apple_feed = create(:apple_feed, podcast: podcast)
+        delivery_status = create(:apple_episode_delivery_status, episode: episode)
+
+        assert_equal apple_feed, delivery_status.integration_feed
+      end
+
+      it "returns the megaphone feed for megaphone integration" do
+        megaphone_feed = create(:megaphone_feed, podcast: podcast)
+        megaphone_status = Integrations::EpisodeDeliveryStatus.create!(
+          episode: episode,
+          integration: :megaphone
+        )
+
+        assert_equal megaphone_feed, megaphone_status.integration_feed
+      end
+
+      it "returns nil when no matching feed exists for apple" do
+        delivery_status = create(:apple_episode_delivery_status, episode: episode)
+
+        assert_nil delivery_status.integration_feed
+      end
+
+      it "returns nil when no matching feed exists for megaphone" do
+        megaphone_status = Integrations::EpisodeDeliveryStatus.create!(
+          episode: episode,
+          integration: :megaphone
+        )
+
+        assert_nil megaphone_status.integration_feed
+      end
+
+      it "returns only the correct feed type when both exist" do
+        apple_feed = create(:apple_feed, podcast: podcast)
+        megaphone_feed = create(:megaphone_feed, podcast: podcast)
+
+        apple_status = create(:apple_episode_delivery_status, episode: episode)
+        megaphone_status = Integrations::EpisodeDeliveryStatus.create!(
+          episode: episode,
+          integration: :megaphone
+        )
+
+        assert_equal apple_feed, apple_status.integration_feed
+        assert_equal megaphone_feed, megaphone_status.integration_feed
+      end
+    end
+
     describe "Asset waits and counting" do
       describe "#increment_asset_wait" do
         it "increments the asset_processing_attempts count" do
