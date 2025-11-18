@@ -99,9 +99,7 @@ module Apple
           process_delivery!(batch)
         end
 
-        eps.each_slice(PUBLISH_CHUNK_LEN) do |batch|
-          raise_delivery_processing_errors(batch)
-        end
+        raise_delivery_processing_errors(eps)
       end
     end
 
