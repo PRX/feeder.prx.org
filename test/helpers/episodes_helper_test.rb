@@ -41,6 +41,19 @@ describe EpisodesHelper do
       assert_equal "processing", helper.episode_integration_status(:apple, episode)
     end
 
+    it "returns 'error' when apple episode has audio asset state error" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      delivery_status = create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false)
+
+      # Create an apple episode with error state
+      api_response = build(:apple_episode_api_response,
+        item_guid: episode.item_guid,
+        apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_FAILURE)
+      apple_episode = create(:apple_episode, feeder_episode: episode, api_response: api_response)
+
+      assert_equal "error", helper.episode_integration_status(:apple, episode)
+    end
+
     it "returns 'complete' when episode is delivered" do
       apple_feed = create(:apple_feed, podcast: podcast)
       delivery_status = create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: true)
