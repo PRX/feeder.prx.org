@@ -7,65 +7,57 @@ end
 describe EpisodesHelper do
   let(:helper) { TestHelper.new }
   let(:podcast) { create(:podcast) }
-  let(:episode) { create(:episode, podcast: podcast) }
 
   describe "#episode_integration_status" do
     it "returns 'not_publishable' when episode does not publish to the integration" do
-      # No integration feed exists, so publish_to_integration? returns false
+      episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
       assert_equal "not_publishable", helper.episode_integration_status(:apple, episode)
       assert_equal "not_publishable", helper.episode_integration_status(:megaphone, episode)
     end
 
-    it "returns 'new' when episode publishes to integration but has no delivery status yet" do
-      apple_feed = create(:apple_feed, podcast: podcast)
-      # Make sure the episode is included in the feed
-      apple_feed.reload
+    describe "with apple feed" do
+      let(:apple_feed) { create(:apple_feed, podcast: podcast) }
+      let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
 
-      # Mock the publish_to_integration? to return true
-      episode.stub :publish_to_integration?, true do
+      before { apple_feed }
+
+      it "returns 'new' when episode has no delivery status yet" do
         assert_equal "new", helper.episode_integration_status(:apple, episode)
+      end
+
+      it "returns 'incomplete' when episode has delivery status but not uploaded" do
+        create(:apple_episode_delivery_status, episode: episode, uploaded: false, delivered: false)
+        assert_equal "incomplete", helper.episode_integration_status(:apple, episode)
+      end
+
+      it "returns 'processing' when episode is uploaded but not delivered" do
+        create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false)
+        assert_equal "processing", helper.episode_integration_status(:apple, episode)
+      end
+
+      it "returns 'error' when apple episode has audio asset state error" do
+        create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false)
+        api_response = build(:apple_episode_api_response,
+          item_guid: episode.item_guid,
+          apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_FAILURE)
+        create(:apple_episode, feeder_episode: episode, api_response: api_response)
+
+        assert_equal "error", helper.episode_integration_status(:apple, episode)
+      end
+
+      it "returns 'complete' when episode is delivered" do
+        create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: true)
+        assert_equal "complete", helper.episode_integration_status(:apple, episode)
       end
     end
 
-    it "returns 'incomplete' when episode has delivery status but not uploaded" do
-      apple_feed = create(:apple_feed, podcast: podcast)
-      delivery_status = create(:apple_episode_delivery_status, episode: episode, uploaded: false, delivered: false)
+    describe "with megaphone feed" do
+      let(:megaphone_feed) { create(:megaphone_feed, podcast: podcast) }
+      let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
 
-      assert_equal "incomplete", helper.episode_integration_status(:apple, episode)
-    end
+      before { megaphone_feed }
 
-    it "returns 'processing' when episode is uploaded but not delivered" do
-      apple_feed = create(:apple_feed, podcast: podcast)
-      delivery_status = create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false)
-
-      assert_equal "processing", helper.episode_integration_status(:apple, episode)
-    end
-
-    it "returns 'error' when apple episode has audio asset state error" do
-      apple_feed = create(:apple_feed, podcast: podcast)
-      delivery_status = create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false)
-
-      # Create an apple episode with error state
-      api_response = build(:apple_episode_api_response,
-        item_guid: episode.item_guid,
-        apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_FAILURE)
-      apple_episode = create(:apple_episode, feeder_episode: episode, api_response: api_response)
-
-      assert_equal "error", helper.episode_integration_status(:apple, episode)
-    end
-
-    it "returns 'complete' when episode is delivered" do
-      apple_feed = create(:apple_feed, podcast: podcast)
-      delivery_status = create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: true)
-
-      assert_equal "complete", helper.episode_integration_status(:apple, episode)
-    end
-
-    it "works for megaphone integration" do
-      megaphone_feed = create(:megaphone_feed, podcast: podcast)
-
-      # Mock the publish_to_integration? to return true for megaphone
-      episode.stub :publish_to_integration?, true do
+      it "returns 'new' when episode has no delivery status yet" do
         assert_equal "new", helper.episode_integration_status(:megaphone, episode)
       end
     end
