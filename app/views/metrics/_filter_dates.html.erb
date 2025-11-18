@@ -3,8 +3,8 @@
     <%= form.select :interval, interval_options, {selected: interval}, value: interval, data: {action: "change->click#submit"}, class: "form-select form-select-sm" %>
     <%= form.label :interval %>
   </div>
-  <div class="col form-floating btn-group">
-    <%= form.text_field nil, value: label_for_date_preset(date_preset), readonly: true, class: "form-control form-control-sm" %>
+  <div class="col-9 form-floating btn-group">
+    <%= form.text_field nil, value: label_for_date_preset_field(date_preset, date_start, date_end), readonly: true, class: "form-control form-control-sm" %>
     <%= form.label :date_preset, "Date Preset" %>
     <%= form.hidden_field :date_preset, value: date_preset, data: {apex_nav_target: "datePreset", action: "change->click#submit"} %>
     <%= form.hidden_field :date_start, value: nil, data: {apex_nav_target: "startDate"} %>

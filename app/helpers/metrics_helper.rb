@@ -26,13 +26,13 @@ module MetricsHelper
 
   def podcast_date_preset_options
     Rollups::HourlyDownload::PODCAST_DATE_PRESETS.map do |preset|
-      [label_for_date_preset(preset), preset.to_s]
+      [label_for_date_preset_option(preset), preset.to_s]
     end
   end
 
   def episode_date_preset_options
     Rollups::HourlyDownload::EPISODE_DATE_PRESETS.map do |preset|
-      [label_for_date_preset(preset), preset.to_s]
+      [label_for_date_preset_option(preset), preset.to_s]
     end
   end
 
@@ -42,7 +42,15 @@ module MetricsHelper
     end
   end
 
-  def label_for_date_preset(preset)
+  def label_for_date_preset_field(preset, date_start, date_end)
+    preset_label = label_for_date_preset_option(preset)
+    date_start_label = date_start.strftime("%b %d, %Y")
+    date_end_label = date_end.strftime("%b %d, %Y")
+
+    "#{preset_label}: #{date_start_label} - #{date_end_label}"
+  end
+
+  def label_for_date_preset_option(preset)
     I18n.t(".helpers.label.metrics.date_presets.#{preset}")
   end
 

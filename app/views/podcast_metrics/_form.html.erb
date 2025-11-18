@@ -1,10 +1,12 @@
 <% data = {controller: "apex-nav click", apex_nav_main_card_value: main_card, click_debounce_value: 200} %>
 
 <%= form_with(url: podcast_metrics_path(podcast), method: :get, id: "podcast_metrics_tab", data: data) do |form| %>
-  <div class="container col-12 d-flex align-items-center justify-content-between my-4">
-    <h1 class="fw-bold my-0 mb-0 me-4"><%= t(".header") %></h1>
-    <div class="">
-      <div class="d-flex justify-items-end">
+  <div class="container col-12 align-items-center my-4">
+    <div class="row justify-content-between">
+      <div class="col-4">
+        <h1 class="fw-bold my-0 mb-0 me-4"><%= t(".header") %></h1>
+      </div>
+      <div class="col-5">
         <%= render "metrics/filter_dates", form: form, date_preset: date_preset, date_start: date_start, date_end: date_end, interval: interval, episode: nil %>
       </div>
     </div>
