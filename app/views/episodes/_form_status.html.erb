@@ -39,11 +39,11 @@
       <div class="col-12 mt-4">
         <p class="status-text">
           <strong><%= t(".apple_status") %>:</strong>
-          <span class="badge rounded-pill prx-badge-<%= episode_apple_status(episode) %>">
-            <%= t("helpers.label.episode.media_statuses.#{episode_apple_status(episode)}") %>
+          <span class="badge rounded-pill prx-badge-<%= episode_integration_status(:apple, episode) %>">
+            <%= t("helpers.label.episode.media_statuses.#{episode_integration_status(:apple, episode)}") %>
           </span>
           <br>
-          <%= local_time_ago(episode_apple_updated_at(episode)) %>
+          <%= local_time_ago(episode_integration_updated_at(:apple, episode)) %>
         </p>
       </div>
     <% end %>

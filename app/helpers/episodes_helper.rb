@@ -35,34 +35,16 @@ module EpisodesHelper
   end
 
   def episode_integration_updated_at(integration, episode)
-    episode.sync_log(integration)&.updated_at ||
-      episode.episode_delivery_status(integration)&.created_at ||
-      episode.updated_at
-  end
-
-  def episode_apple_status(episode)
-    apple_episode = episode.apple_episode
-    if !apple_episode
-      "not_found"
-    elsif apple_episode.apple_new?
-      "new"
-    elsif apple_episode.needs_delivery?
-      "incomplete"
-    elsif apple_episode.waiting_for_asset_state?
-      "processing"
-    elsif apple_episode.audio_asset_state_error?
-      "error"
-    elsif apple_episode.synced_with_apple?
-      "complete"
+    case integration
+    when :apple
+      episode.apple_sync_log&.updated_at ||
+        episode.apple_status&.created_at ||
+        episode.updated_at
     else
-      "not_found"
+      episode.sync_log(integration)&.updated_at ||
+        episode.episode_delivery_status(integration)&.created_at ||
+        episode.updated_at
     end
-  end
-
-  def episode_apple_updated_at(episode)
-    episode.apple_sync_log&.updated_at ||
-      episode.apple_status&.created_at ||
-      episode.updated_at
   end
 
   def episode_status_class(episode)
