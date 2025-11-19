@@ -36,16 +36,18 @@
     </div>
 
     <% if episode.persisted? && episode.publish_to_integration?(:apple) %>
+      <% integration = :apple %>
+      <% integration_status = episode_integration_status(integration, episode) %>
       <div class="col-12 mt-4">
         <p class="status-text">
-          <strong><%= t(".apple_status") %>:</strong>
-          <span class="badge rounded-pill prx-badge-<%= episode_integration_status(:apple, episode) %>">
-            <%= t("helpers.label.episode.media_statuses.#{episode_integration_status(:apple, episode)}") %>
+          <strong><%= integration.to_s.titleize %> Status:</strong>
+          <span class="badge rounded-pill prx-badge-<%= integration_status %>">
+            <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
           </span>
           <br>
-          <strong><%= t(".last_updated") %></strong>
+          <strong><%= integration.to_s.titleize %> <%= t(".last_updated") %></strong>
           <br>
-          <%= local_time_ago(episode_integration_updated_at(:apple, episode)) %>
+          <%= local_time_ago(episode_integration_updated_at(integration, episode)) %>
         </p>
       </div>
     <% end %>
@@ -59,7 +61,7 @@
             <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
           </span>
           <br>
-          <strong><%= t(".last_updated") %></strong>
+          <strong><%= integration.to_s.titleize %> <%= t(".last_updated") %></strong>
           <br>
           <%= local_time_ago(episode_integration_updated_at(integration, episode)) %>
         </p>
