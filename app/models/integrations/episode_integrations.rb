@@ -37,6 +37,15 @@ module Integrations::EpisodeIntegrations
     podcast.feeds.find { |f| f.integration_type == integration }
   end
 
+  def integration_error_state?(integration)
+    case integration
+    when :apple
+      apple_episode&.audio_asset_state_error?
+    else
+      false
+    end
+  end
+
   def sync_log(integration)
     sync_logs.send(integration.intern).order(updated_at: :desc).first
   end
