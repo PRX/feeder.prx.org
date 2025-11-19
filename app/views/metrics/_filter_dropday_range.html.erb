@@ -1,6 +1,0 @@
-<%= form_with(url: url, method: :get, id: "metrics_dropday_filter") do |form| %>
-  <div class="form-floating">
-    <%= form.select :selection, dropday_range_options, {selected: dropday_range}, data: {action: "apex-nav#updateDropdays", apex_nav_path_param: path}, class: "form-select form-select-sm" %>
-    <%= form.label :selection %>
-  </div>
-<% end %>
