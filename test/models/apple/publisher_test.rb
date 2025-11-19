@@ -848,8 +848,14 @@ describe Apple::Publisher do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
             Apple::Episode.stub(:probe_asset_state, ->(api, eps) { [eps, []] }) do
               apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
-                apple_publisher.stub(:publish_drafting!, ->(eps) { call_order << :publish; assert_equal [episode], eps }) do
-                  apple_publisher.stub(:mark_as_delivered!, ->(eps) { call_order << :mark_delivered; assert_equal [episode], eps }) do
+                apple_publisher.stub(:publish_drafting!, ->(eps) {
+                  call_order << :publish
+                  assert_equal [episode], eps
+                }) do
+                  apple_publisher.stub(:mark_as_delivered!, ->(eps) {
+                    call_order << :mark_delivered
+                    assert_equal [episode], eps
+                  }) do
                     apple_publisher.process_delivery!([episode])
                   end
                 end
