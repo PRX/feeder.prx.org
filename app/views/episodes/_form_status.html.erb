@@ -56,7 +56,7 @@
       <% integration_status = episode_integration_status(integration, episode) %>
       <div class="col-12 mt-4">
         <p class="status-text">
-          <strong><%= "#{integration.to_s.titleize} Status" %>:</strong>
+          <strong><%= integration.to_s.titleize %> Status:</strong>
           <span class="badge rounded-pill prx-badge-<%= integration_status %>">
             <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
           </span>
