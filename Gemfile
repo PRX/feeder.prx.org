@@ -74,6 +74,7 @@ gem "hyperresource", github: "PRX/hyperresource", branch: "master"
 gem "mutex_m"
 gem "net-http"
 gem "parallel"
+gem "openssl", "~> 3.3.1"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
