@@ -132,6 +132,10 @@ class Feeds::AppleSubscription < Feed
     publish_to_apple?
   end
 
+  def serve_drafts
+    publish_integration?
+  end
+
   def publish_to_apple?
     !!apple_config&.publish_to_apple?
   end

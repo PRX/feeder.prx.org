@@ -57,6 +57,14 @@
 
         <div class="col-6 mt-4">
           <div class="form-floating input-group">
+            <%= form.select :episode_offset_seconds, apple_episode_offset_options, include_blank: true %>
+            <%= form.label :episode_offset_seconds %>
+            <%= field_help_text t(".help.episode_offset_seconds") %>
+          </div>
+        </div>
+
+        <div class="col-6 mt-4">
+          <div class="form-floating input-group">
             <%= form.number_field :display_episodes_count %>
             <%= form.label :display_episodes_count %>
             <%= field_help_text t(".help.display_episodes_count") %>
