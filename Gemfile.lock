@@ -341,6 +341,7 @@ GEM
       multi_xml (~> 0.5)
       rack (>= 1.2, < 4)
     oj (3.13.23)
+    openssl (3.3.2)
     ostruct (0.6.0)
     ougai (1.9.1)
       oj (~> 3.10)
@@ -624,6 +625,7 @@ DEPENDENCIES
   net-http
   newrelic_rpm
   oauth2 (~> 1.4.7)
+  openssl (~> 3.3.1)
   ostruct
   ougai
   ougai-formatters-customizable
