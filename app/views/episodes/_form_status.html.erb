@@ -43,6 +43,8 @@
             <%= t("helpers.label.episode.media_statuses.#{episode_integration_status(:apple, episode)}") %>
           </span>
           <br>
+          <strong><%= t(".last_updated") %></strong>
+          <br>
           <%= local_time_ago(episode_integration_updated_at(:apple, episode)) %>
         </p>
       </div>

@@ -695,6 +695,7 @@ en:
       title_scheduled: Scheduled
       unpublish: Unpublish
       apple_status: Apple Status
+      last_updated: Last Updated
     form_tags:
       title: Categories
       help:
