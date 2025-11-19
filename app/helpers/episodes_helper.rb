@@ -33,10 +33,8 @@ module EpisodesHelper
       "incomplete"
     elsif !status.delivered?
       "processing"
-    elsif status.delivered?
-      "complete"
     else
-      "not_found"
+      "complete"
     end
   end
 
