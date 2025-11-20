@@ -42,6 +42,7 @@ module EpisodesHelper
         episode.apple_status&.created_at ||
         episode.updated_at
     else
+      # Falls back on the episode's updated_at
       episode.sync_log(integration)&.updated_at ||
         episode.episode_delivery_status(integration)&.created_at ||
         episode.updated_at

@@ -62,4 +62,24 @@ describe EpisodesHelper do
       end
     end
   end
+
+  describe "#episode_integration_updated_at" do
+    let(:episode) { create(:episode, podcast: podcast, updated_at: 1.day.ago) }
+
+    it "returns episode updated_at when no sync logs or delivery status exist" do
+      assert_equal episode.updated_at, helper.episode_integration_updated_at(:megaphone, episode)
+    end
+
+    it "returns apple_sync_log updated_at for apple integration" do
+      episode.create_apple_sync_log!(external_id: "123", api_response: {})
+      episode.apple_sync_log.update!(updated_at: 2.hours.ago)
+      assert_equal episode.apple_sync_log.updated_at, helper.episode_integration_updated_at(:apple, episode)
+    end
+
+    it "returns sync_log updated_at for non-apple integrations" do
+      sync_log = SyncLog.create!(feeder_id: episode.id, feeder_type: :episodes, external_id: "456",
+                                 api_response: {}, integration: :megaphone, updated_at: 3.hours.ago)
+      assert_equal sync_log.updated_at, helper.episode_integration_updated_at(:megaphone, episode)
+    end
+  end
 end
