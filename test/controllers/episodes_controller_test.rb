@@ -104,4 +104,51 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     delete episode_url(episode)
     assert_redirected_to podcast_episodes_url(podcast)
   end
+
+  # Error Handling Tests
+
+  test "shows apple integration error state when asset processing fails" do
+    _apple_feed = create(:apple_feed, podcast: podcast)
+    error_episode = create(:episode, podcast: podcast, published_at: 1.hour.ago, segment_count: 1)
+
+    # Create delivery status showing uploaded but not delivered (processing state)
+    create(:apple_episode_delivery_status, episode: error_episode, uploaded: true, delivered: false)
+
+    # Create apple episode with error state
+    api_response = build(:apple_episode_api_response,
+      item_guid: error_episode.item_guid,
+      apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_FAILURE)
+    create(:apple_episode, feeder_episode: error_episode, api_response: api_response)
+
+    get edit_episode_url(error_episode)
+    assert_response :success
+    assert_select ".prx-badge-error", text: /Error/
+  end
+
+  test "shows error badge when delivery file has validation errors" do
+    _apple_feed = create(:apple_feed, podcast: podcast)
+    error_episode = create(:episode, podcast: podcast, published_at: 1.hour.ago, segment_count: 1)
+
+    # Create delivery status
+    create(:apple_episode_delivery_status, episode: error_episode, uploaded: true, delivered: false)
+
+    # Create apple episode with successful audio asset state
+    api_response = build(:apple_episode_api_response,
+      item_guid: error_episode.item_guid,
+      apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS)
+    _apple_episode = create(:apple_episode, feeder_episode: error_episode, api_response: api_response)
+
+    # Create podcast container, delivery, and delivery file with validation error
+    container = create(:apple_podcast_container, episode: error_episode)
+    delivery = create(:apple_podcast_delivery, episode: error_episode, podcast_container: container)
+    pdf = create(:apple_podcast_delivery_file, episode: error_episode, podcast_delivery: delivery)
+
+    # Update the sync log with validation error
+    pdf.apple_sync_log.update!(**build(:podcast_delivery_file_api_response, asset_processing_state: "VALIDATION_FAILED"))
+    error_episode.apple_episode.podcast_delivery_files.reset
+
+    get edit_episode_url(error_episode)
+    assert_response :success
+    assert_select ".prx-badge-error", text: /Error/
+  end
 end

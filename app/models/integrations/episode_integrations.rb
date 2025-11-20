@@ -40,7 +40,7 @@ module Integrations::EpisodeIntegrations
   def integration_error_state?(integration)
     case integration
     when :apple
-      apple_episode&.audio_asset_state_error?
+      apple_episode&.audio_asset_state_error? || apple_episode&.delivery_file_errors?
     else
       false
     end
