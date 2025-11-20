@@ -105,6 +105,38 @@ export const AREA_TYPE = {
   },
 }
 
+export const SPARKLINE_TYPE = {
+  chart: {
+    height: "100%",
+    sparkline: {
+      enabled: true,
+    },
+    type: "area",
+    stacked: false,
+  },
+  options: {
+    xaxis: {
+      type: "datetime",
+    },
+    tooltip: {
+      enabled: false,
+    },
+    fill: {
+      type: "gradient",
+      opacity: 0.9,
+    },
+    stroke: {
+      width: 1,
+    },
+  },
+}
+
+export function buildSparklineChart(id, series, target) {
+  const options = Object.assign({ series: series }, DEFAULT_OPTIONS, SPARKLINE_TYPE.options)
+  Object.assign(options.chart, { id: id }, SPARKLINE_TYPE.chart)
+  return new ApexCharts(target, options)
+}
+
 export function buildDateTimeChart(id, series, target, type, title = "") {
   const options = Object.assign({ series: series }, DEFAULT_OPTIONS, DATETIME_OPTIONS, type.options)
   Object.assign(options.chart, { id: id }, type.chart)
@@ -175,4 +207,8 @@ function addYaxisTitle(yaxis, title = "") {
 
 function addXaxisTitle(xaxis, title = "") {
   Object.assign(xaxis, { title: { text: title } })
+}
+
+export function destroyChart(chartId) {
+  ApexCharts.exec(chartId, "destroy")
 }

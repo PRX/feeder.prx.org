@@ -1,27 +1,34 @@
 import { Controller } from "@hotwired/stimulus"
-import { buildDateTimeChart, buildDownloadsSeries, dynamicBarAndAreaType } from "util/apex"
+import { buildSparklineChart, destroyChart } from "util/apex"
 
 export default class extends Controller {
   static values = {
     id: String,
-    downloads: Object,
-    dateRange: Array,
-    interval: String,
+    downloads: Array,
   }
 
   static targets = ["chart"]
 
   connect() {
-    const series = buildDownloadsSeries(this.downloadsValue, this.dateRangeValue)
-    const title = `Downloads by ${this.intervalValue.toLowerCase()}`
-    const chart = buildDateTimeChart(
-      this.idValue,
-      series,
-      this.chartTarget,
-      dynamicBarAndAreaType(this.dateRangeValue),
-      title
-    )
+    const seriesData = this.downloadsValue.map((rollup) => {
+      return {
+        x: rollup.hour,
+        y: rollup.count,
+      }
+    })
+    const series = [
+      {
+        name: "Downloads",
+        data: seriesData,
+      },
+    ]
+
+    const chart = buildSparklineChart(this.idValue, series, this.chartTarget)
 
     chart.render()
+  }
+
+  disconnect() {
+    destroyChart(this.idValue)
   }
 }

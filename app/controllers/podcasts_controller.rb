@@ -18,6 +18,25 @@ class PodcastsController < ApplicationController
     authorize @podcast
 
     @recently_published = @podcast.episodes.published.dropdate_desc.limit(3)
+    @alltime_downloads_by_episode = @recently_published.map do |ep|
+      Rollups::HourlyDownload
+        .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..Date.utc_today))
+        .final
+        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
+        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
+        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
+        .load_async
+    end.flatten
+
+    @episode_rollups =
+      @recently_published.map do |episode|
+        {
+          episode: episode,
+          downloads: @alltime_downloads_by_episode.select do |r|
+            r["episode_id"] == episode.guid
+          end
+        }
+      end
     @next_scheduled = @podcast.episodes.draft_or_scheduled.dropdate_asc.limit(3)
 
     @metrics_jwt = prx_jwt
