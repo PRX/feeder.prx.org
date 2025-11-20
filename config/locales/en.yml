@@ -830,11 +830,6 @@ en:
   episode_metrics:
     show:
       title: "%{title} - Metrics"
-    main_card:
-      tabs:
-        downloads: Downloads
-    metrics:
-      header: Episode Metrics
   episode_player:
     form: &player_form
       help: &player_help
@@ -1194,10 +1189,6 @@ en:
         published_at: Publish Date
         downloads: Downloads
         all_time: All-time
-    filter_dates:
-      date_start: Start Date
-      date_end: End Date
-      presets: Date Presets
   placements_preview:
     show:
       fetch_error: Error fetching placements - try again later
@@ -1336,13 +1327,6 @@ en:
   podcast_metrics:
     show:
       title: "%{title} - Metrics"
-      header: Metrics at a Glance
-    main_card:
-      tabs:
-        downloads: Downloads
-        episodes: Episodes
-        uniques: Unique Listeners
-        dropdays: Drop Day Downloads
   podcast_planner:
     create:
       success: Episode drafts generated.
