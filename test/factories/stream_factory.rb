@@ -1,0 +1,12 @@
+FactoryBot.define do
+  factory :stream do
+    url { "https://some.where/the/stream.aac" }
+    status { "enabled" }
+    start_date { 10.days.ago }
+    end_date { nil }
+    record_days { [0, 2] }
+    record_hours { [15, 16, 17] }
+    create_as { "clips" }
+    expiration { 2592000 }
+  end
+end

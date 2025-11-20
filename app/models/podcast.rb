@@ -25,6 +25,7 @@ class Podcast < ApplicationRecord
 
   has_one :default_feed, -> { default }, class_name: "Feed", validate: true, autosave: true, inverse_of: :podcast
   alias_method :public_feed, :default_feed
+  has_one :stream, validate: true, autosave: true
 
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
