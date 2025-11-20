@@ -78,7 +78,7 @@ describe EpisodesHelper do
 
     it "returns sync_log updated_at for non-apple integrations" do
       sync_log = SyncLog.create!(feeder_id: episode.id, feeder_type: :episodes, external_id: "456",
-                                 api_response: {}, integration: :megaphone, updated_at: 3.hours.ago)
+        api_response: {}, integration: :megaphone, updated_at: 3.hours.ago)
       assert_equal sync_log.updated_at, helper.episode_integration_updated_at(:megaphone, episode)
     end
   end
