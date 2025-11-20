@@ -132,10 +132,9 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     # Create delivery status
     create(:apple_episode_delivery_status, episode: error_episode, uploaded: true, delivered: false)
 
-    # Create apple episode with successful audio asset state
+    # Create apple episode without audio asset state (still indeterminate since file failed validation)
     api_response = build(:apple_episode_api_response,
-      item_guid: error_episode.item_guid,
-      apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS)
+      item_guid: error_episode.item_guid)
     _apple_episode = create(:apple_episode, feeder_episode: error_episode, api_response: api_response)
 
     # Create podcast container, delivery, and delivery file with validation error
