@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_09_12_174433) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_19_222707) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -459,6 +459,22 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_12_174433) do
     t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
 
+  create_table "streams", force: :cascade do |t|
+    t.bigint "podcast_id"
+    t.string "url"
+    t.string "status"
+    t.date "start_date"
+    t.date "end_date"
+    t.text "record_days"
+    t.text "record_hours"
+    t.string "create_as"
+    t.integer "expiration"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "deleted_at", precision: nil
+    t.index ["podcast_id"], name: "index_streams_on_podcast_id"
+  end
+
   create_table "subscribe_links", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -525,4 +541,5 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_12_174433) do
   add_foreign_key "publishing_pipeline_states", "podcasts"
   add_foreign_key "publishing_pipeline_states", "publishing_queue_items"
   add_foreign_key "publishing_queue_items", "podcasts"
+  add_foreign_key "streams", "podcasts"
 end
