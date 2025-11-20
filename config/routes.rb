@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     resource :player, only: :show, controller: :podcast_player
     resources :imports, only: [:index, :show, :create]
     resource :planner, only: [:show, :create], controller: :podcast_planner
+    resource :stream, only: [:show, :create], controller: :podcast_stream
     resources :feeds, except: [:edit] do
       get "new_apple", on: :collection
       get "new_megaphone", on: :collection

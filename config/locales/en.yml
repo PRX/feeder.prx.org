@@ -1300,11 +1300,12 @@ en:
       total_downloads: Total Downloads
       view_metrics: View Metrics
     tabs:
-      metadata: Metadata
       engagement: Engagement Settings
-      player: Embeddable Player
       import: Import
+      metadata: Metadata
       planner: Plan Episodes
+      player: Embeddable Player
+      stream: Live Stream Recording
     update:
       error: Unable to save
       notice: Podcast updated
@@ -1418,6 +1419,9 @@ en:
       <<: *podcast_player_form
     form_sidebar:
       <<: *podcast_player_form
+  podcast_stream:
+    show:
+      title: "%{title} - Live Stream Recording"
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
