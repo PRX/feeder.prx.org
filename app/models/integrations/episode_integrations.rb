@@ -27,8 +27,6 @@ module Integrations::EpisodeIntegrations
     integration_episode_method = "#{integration}_episode"
     if respond_to?(integration_episode_method)
       send(integration_episode_method)
-    else
-      nil
     end
   end
 
