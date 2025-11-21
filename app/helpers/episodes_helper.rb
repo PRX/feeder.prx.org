@@ -36,17 +36,9 @@ module EpisodesHelper
   end
 
   def episode_integration_updated_at(integration, episode)
-    case integration
-    when :apple
-      episode.apple_sync_log&.updated_at ||
-        episode.apple_status&.created_at ||
-        episode.updated_at
-    else
-      # Falls back on the episode's updated_at
-      episode.sync_log(integration)&.updated_at ||
-        episode.episode_delivery_status(integration)&.created_at ||
-        episode.updated_at
-    end
+    episode.sync_log(integration)&.updated_at ||
+      episode.episode_delivery_status(integration)&.created_at ||
+      episode.updated_at
   end
 
   def episode_status_class(episode)
