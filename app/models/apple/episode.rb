@@ -482,6 +482,10 @@ module Apple
       podcast_delivery_files.any?(&:processed_errors?)
     end
 
+    def error_state?
+      audio_asset_state_error? || delivery_file_errors?
+    end
+
     def audio_asset_state_success?
       audio_asset_state == AUDIO_ASSET_SUCCESS
     end

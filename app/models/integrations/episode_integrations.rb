@@ -23,6 +23,15 @@ module Integrations::EpisodeIntegrations
     end
   end
 
+  def integration_episode(integration)
+    integration_episode_method = "#{integration}_episode"
+    if respond_to?(integration_episode_method)
+      send(integration_episode_method)
+    else
+      nil
+    end
+  end
+
   def publish_to_integration?(integration)
     # see if there is an integration
     podcast.feeds.any? { |f| f.integration_type == integration && f.publish_integration? }
@@ -38,9 +47,9 @@ module Integrations::EpisodeIntegrations
   end
 
   def integration_error_state?(integration)
-    case integration
-    when :apple
-      apple_episode&.audio_asset_state_error? || apple_episode&.delivery_file_errors?
+    integration_episode_method = "#{integration}_episode"
+    if respond_to?(integration_episode_method)
+      send(integration_episode_method)&.error_state? || false
     else
       false
     end
