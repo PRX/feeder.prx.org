@@ -35,37 +35,22 @@
       <%= render "form_feeds", form: form, episode: episode %>
     </div>
 
-    <% if episode.persisted? && episode.publish_to_integration?(:apple) %>
-      <% integration = :apple %>
-      <% integration_status = episode_integration_status(integration, episode) %>
-      <div class="col-12 mt-4">
-        <p class="status-text">
-          <strong><%= integration.to_s.titleize %> Status:</strong>
-          <span class="badge rounded-pill prx-badge-<%= integration_status %>">
-            <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
-          </span>
-          <br>
-          <strong><%= integration.to_s.titleize %> <%= t(".last_updated") %></strong>
-          <br>
-          <%= local_time_ago(episode_integration_updated_at(integration, episode)) %>
-        </p>
-      </div>
-    <% end %>
-    <% if episode.persisted? && episode.publish_to_integration?(:megaphone) %>
-      <% integration = :megaphone %>
-      <% integration_status = episode_integration_status(integration, episode) %>
-      <div class="col-12 mt-4">
-        <p class="status-text">
-          <strong><%= integration.to_s.titleize %> Status:</strong>
-          <span class="badge rounded-pill prx-badge-<%= integration_status %>">
-            <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
-          </span>
-          <br>
-          <strong><%= integration.to_s.titleize %> <%= t(".last_updated") %></strong>
-          <br>
-          <%= local_time_ago(episode_integration_updated_at(integration, episode)) %>
-        </p>
-      </div>
+    <% [:apple, :megaphone].each do |integration| %>
+      <% if episode.persisted? && episode.publish_to_integration?(integration) %>
+        <% integration_status = episode_integration_status(integration, episode) %>
+        <div class="col-12 mt-4">
+          <p class="status-text">
+            <strong><%= integration.to_s.titleize %> Status:</strong>
+            <span class="badge rounded-pill prx-badge-<%= integration_status %>">
+              <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
+            </span>
+            <br>
+            <strong><%= integration.to_s.titleize %> <%= t(".last_updated") %></strong>
+            <br>
+            <%= local_time_ago(episode_integration_updated_at(integration, episode)) %>
+          </p>
+        </div>
+      <% end %>
     <% end %>
   </div>
 
