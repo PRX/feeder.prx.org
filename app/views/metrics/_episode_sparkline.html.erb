@@ -1,0 +1,8 @@
+<%= turbo_frame_tag "episode_sparkline" do %>
+  <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"
+    data-controller="apex-downloads"
+    data-apex-downloads-id-value="<%= episode.guid %>"
+    data-apex-downloads-downloads-value="<%= downloads.to_json %>">
+    <div data-apex-downloads-target="chart"></div>
+  </div>
+<% end %>

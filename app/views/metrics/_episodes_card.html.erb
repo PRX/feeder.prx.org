@@ -1,14 +1,8 @@
-<% chart_id = SecureRandom.uuid %>
-
 <div class="episode-card-info inside-card flex-fill px-3 py-2 position-relative">
   <p class="episode-card-date"><%= local_date(episode.published_at, format: :short) %></p>
   <div class="episode-card-inner inside-card">
     <h2 class="h5 episode-card-title m-0 z-1"><%= link_to episode.title, episode_path(episode) %></h2>
   </div>
-  <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"
-    data-controller="apex-downloads"
-    data-apex-downloads-id-value="<%= chart_id %>"
-    data-apex-downloads-downloads-value="<%= downloads.to_json %>">
-    <div data-apex-downloads-target="chart"></div>
-  </div>
+  <%= turbo_frame_tag "episode_sparkline", src: episode_sparkline_podcast_metrics_path(podcast_id: podcast.id, episode_id: episode.guid) do %>
+  <% end %>
 </div>

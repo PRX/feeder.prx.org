@@ -2,12 +2,30 @@ class PodcastMetricsController < ApplicationController
   include MetricsUtils
 
   before_action :set_podcast
-  before_action :check_clickhouse, except: %i[show]
-  before_action :set_date_range, except: %i[dropdays]
-  before_action :set_uniques, only: %i[show uniques]
-  before_action :set_dropday_range, only: %i[show dropdays]
+  # before_action :check_clickhouse, except: %i[show]
+  # before_action :set_date_range, except: %i[dropdays]
+  # before_action :set_uniques, only: %i[show uniques]
+  # before_action :set_dropday_range, only: %i[show dropdays]
 
   def show
+  end
+
+  def episode_sparkline
+    @episode = Episode.find_by(guid: params[:episode_id])
+
+    @alltime_downloads =
+      Rollups::HourlyDownload
+        .where(episode_id: @episode[:guid], hour: (@episode.first_rss_published_at..Date.utc_today))
+        .final
+        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
+        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
+        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
+        .load_async
+
+    render partial: "metrics/episode_sparkline", locals: {
+      episode: @episode,
+      downloads: @alltime_downloads
+    }
   end
 
   def downloads

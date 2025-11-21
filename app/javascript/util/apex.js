@@ -111,6 +111,9 @@ export const SPARKLINE_TYPE = {
     sparkline: {
       enabled: true,
     },
+    animations: {
+      enabled: true,
+    },
     type: "area",
     stacked: false,
   },
