@@ -17,7 +17,9 @@ class PodcastsController < ApplicationController
   def show
     authorize @podcast
 
-    @recently_published = @podcast.episodes.published.dropdate_desc.limit(3)
+    @recently_published_episodes = @podcast.episodes.published.dropdate_desc.limit(4)
+    @episode_trend_pairs = episode_trend_pairs(@recently_published_episodes)
+    @recently_published = @recently_published_episodes[0..2]
     @next_scheduled = @podcast.episodes.draft_or_scheduled.dropdate_asc.limit(3)
 
     @metrics_jwt = prx_jwt
@@ -188,5 +190,17 @@ class PodcastsController < ApplicationController
 
   def sub_escapes(text)
     text.gsub(/[&<>]/, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;")
+  end
+
+  def episode_trend_pairs(episodes)
+    pairs = []
+    episodes.each_with_index do |ep, i|
+      pairs << {
+        episode: ep,
+        prev_episode: episodes[i + 1]
+      }
+    end
+
+    pairs.slice(0, pairs.length - 1)
   end
 end
