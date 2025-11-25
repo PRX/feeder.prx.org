@@ -23,7 +23,8 @@ class PodcastStreamController < ApplicationController
 
   def set_stream
     @podcast = Podcast.find(params[:podcast_id])
-    @stream = @podcast.stream || @podcast.build_stream
+    @stream = @podcast.stream_recording || @podcast.build_stream_recording
+    @stream.clear_attribute_changes(%i[podcast_id])
     @stream.locking_enabled = true
     authorize @stream
   rescue ActiveRecord::RecordNotFound => e
@@ -31,7 +32,7 @@ class PodcastStreamController < ApplicationController
   end
 
   def stream_params
-    nilify params.fetch(:stream, {}).permit(
+    nilify params.fetch(:stream_recording, {}).permit(
       :lock_version,
       :url,
       :status,

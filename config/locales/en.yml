@@ -331,6 +331,11 @@ en:
               bad_http_response: Unable to fetch feed url
               invalid_rss: Not a valid RSS feed
               podcast_locked: Podcast is locked, importing not permitted
+        stream_recording:
+          attributes:
+            url:
+              invalid_content_type: Not an audio stream
+              unreachable: Unreachable stream url
   # form/model helpers
   helpers:
     application:
@@ -607,6 +612,8 @@ en:
         no_category: (None)
         embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
+      stream_recording:
+        url: Stream URL
       transcript:
         formats:
           text: Plain Text
@@ -1420,8 +1427,19 @@ en:
     form_sidebar:
       <<: *podcast_player_form
   podcast_stream:
+    form:
+      confirm: Discard unsaved changes?
+    form_main:
+      help:
+        url: Something something what is this
+    form_status:
+      <<: *form_status
+      title: Stream Recording Status
     show:
       title: "%{title} - Live Stream Recording"
+    update:
+      error: Unable to save
+      notice: Live Stream Recording updated
   podcast_switcher:
     dropdown:
       all: View all my Podcasts

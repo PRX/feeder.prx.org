@@ -13,7 +13,7 @@ class StreamRecording < ApplicationRecord
   scope :active, ->(now = Time.now) { all }
   scope :recording, ->(now = Time.now) { all }
 
-  validates :url, presence: true, http_url: true
+  validates :url, presence: true, http_url: true, http_head: /audio\/.+/
   validates :start_date, presence: true, if: :status_enabled?
   validates :end_date, comparison: {greater_than: :start_date}, allow_nil: true, if: :start_date
   validates :record_days, inclusion: {in: ALL_DAYS}, allow_nil: true

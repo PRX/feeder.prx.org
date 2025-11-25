@@ -1,6 +1,7 @@
 <% data = {controller: "unsaved disable", unsaved_changed_value: stream.changed?, unsaved_confirm_value: t(".confirm")} %>
+<% html = {autocomplete: "off"} %>
 
-<%= form_with(model: stream, url: podcast_stream_path(podcast), html: {autocomplete: "off"}, data: data) do |form| %>
+<%= form_with(model: stream, url: podcast_stream_path(podcast), method: :put, html: html, data: data) do |form| %>
   <%# first button in form must be a submit, for enter key to work %>
   <%= form.submit class: "d-none" %>
 
