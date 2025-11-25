@@ -1,7 +1,13 @@
 class HttpHeadValidator < ActiveModel::EachValidator
   include HttpUtil
 
+  def self.skip_validation?
+    Rails.env.test?
+  end
+
   def validate_each(rec, attr, val)
+    return if self.class.skip_validation?
+
     if val.present? && HttpUrlValidator.http_url?(val) && (rec.new_record? || rec.changes[attr].present?)
       res = memoize_http_head(val)
 

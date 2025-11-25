@@ -16,7 +16,6 @@ module HttpUtil
 
     req = Net::HTTP::Head.new(uri)
     req["User-Agent"] = user_agent
-    puts "HTTP HEAD [#{uri}]"
     res = http.request(req)
 
     if res.is_a?(Net::HTTPRedirection) && max_redirects > 0
