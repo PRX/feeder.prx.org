@@ -18,7 +18,7 @@ describe Api::Auth::UploadsController do
       assert_equal :put_object, method
       assert_equal ENV["UPLOAD_BUCKET_NAME"], args[:bucket]
       assert_equal false, args[:use_accelerate_endpoint]
-      assert_equal 1800, args[:expires_in]
+      assert_equal 3600, args[:expires_in]
       assert_match(/^uploads\/#{Date.utc_today}\/[0-9a-f-]+\/foo.mp3$/, args[:key])
       true
     end
@@ -27,7 +27,7 @@ describe Api::Auth::UploadsController do
       assert_equal :get_object, method
       assert_equal ENV["UPLOAD_BUCKET_NAME"], args[:bucket]
       assert_equal false, args[:use_accelerate_endpoint]
-      assert_equal 1800, args[:expires_in]
+      assert_equal 3600, args[:expires_in]
       assert_match(/^uploads\/#{Date.utc_today}\/[0-9a-f-]+\/foo.mp3$/, args[:key])
       true
     end
