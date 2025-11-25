@@ -1,17 +1,17 @@
 require "test_helper"
 
-describe Stream do
-  let(:stream) { build_stubbed(:stream) }
+describe StreamRecording do
+  let(:stream) { build_stubbed(:stream_recording) }
 
   describe "#set_defaults" do
     it "sets unchanged defaults" do
-      stream = Stream.new
+      stream = StreamRecording.new
       assert_equal "disabled", stream.status
       refute stream.status_changed?
       assert_equal "clips", stream.create_as
       refute stream.create_as_changed?
 
-      stream = Stream.new(status: "enabled")
+      stream = StreamRecording.new(status: "enabled")
       assert_equal "enabled", stream.status
       assert stream.status_changed?
     end

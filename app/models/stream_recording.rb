@@ -1,4 +1,4 @@
-class Stream < ApplicationRecord
+class StreamRecording < ApplicationRecord
   ALL_DAYS = (0..6).to_a
   ALL_HOURS = (0..23).to_a
 

@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :stream do
+  factory :stream_recording do
     url { "https://some.where/the/stream.aac" }
     status { "enabled" }
     start_date { 10.days.ago }

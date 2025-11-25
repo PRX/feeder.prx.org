@@ -459,8 +459,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_19_222707) do
     t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
 
-  create_table "streams", force: :cascade do |t|
+  create_table "stream_recordings", force: :cascade do |t|
     t.bigint "podcast_id"
+    t.integer "lock_version", default: 0, null: false
     t.string "url"
     t.string "status"
     t.date "start_date"
@@ -472,7 +473,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_19_222707) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "deleted_at", precision: nil
-    t.index ["podcast_id"], name: "index_streams_on_podcast_id"
+    t.index ["podcast_id"], name: "index_stream_recordings_on_podcast_id"
   end
 
   create_table "subscribe_links", force: :cascade do |t|
@@ -541,5 +542,5 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_19_222707) do
   add_foreign_key "publishing_pipeline_states", "podcasts"
   add_foreign_key "publishing_pipeline_states", "publishing_queue_items"
   add_foreign_key "publishing_queue_items", "podcasts"
-  add_foreign_key "streams", "podcasts"
+  add_foreign_key "stream_recordings", "podcasts"
 end

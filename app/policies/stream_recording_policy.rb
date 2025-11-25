@@ -1,4 +1,4 @@
-class StreamPolicy < ApplicationPolicy
+class StreamRecordingPolicy < ApplicationPolicy
   def show?
     PodcastPolicy.new(token, resource.podcast).show?
   end
