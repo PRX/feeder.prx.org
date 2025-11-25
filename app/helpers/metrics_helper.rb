@@ -13,7 +13,7 @@ module MetricsHelper
   end
 
   def parse_trend(trend)
-    return if trend.nil?
+    return if trend.blank?
 
     if trend > 0
       {

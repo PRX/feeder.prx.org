@@ -125,11 +125,18 @@ export const SPARKLINE_TYPE = {
       enabled: false,
     },
     fill: {
+      colors: ["#F3EAFF"],
       type: "gradient",
-      opacity: 0.9,
+      gradient: {
+        type: "diagonal1",
+        gradientToColors: ["#DBFBFB"],
+        opacityFrom: 1,
+        opacityTo: 1,
+      },
     },
     stroke: {
       width: 1,
+      colors: ["#00000000"],
     },
   },
 }

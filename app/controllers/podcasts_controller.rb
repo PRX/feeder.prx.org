@@ -17,7 +17,7 @@ class PodcastsController < ApplicationController
   def show
     authorize @podcast
 
-    @recently_published_episodes = @podcast.episodes.published.dropdate_desc.limit(4)
+    @recently_published_episodes = @podcast.episodes.published.dropdate_desc.limit(5)
     @episode_trend_pairs = episode_trend_pairs(@recently_published_episodes)
     @recently_published = @recently_published_episodes[0..2]
     @next_scheduled = @podcast.episodes.draft_or_scheduled.dropdate_asc.limit(3)
