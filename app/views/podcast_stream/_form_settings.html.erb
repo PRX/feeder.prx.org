@@ -1,0 +1,29 @@
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <h5 class="card-title flex-grow-1"><%= t(".title") %></h5>
+    </div>
+
+    <div class="card-body pb-0">
+      <p class=""><%= t(".hint") %></p>
+
+      <div class="row">
+        <div class="col-6 mb-4">
+          <div class="form-floating input-group">
+            <%= form.select :record_days, stream_record_days_options, {include_blank: true}, multiple: true %>
+            <%= form.label :record_days %>
+            <%= field_help_text t(".help.record_days") %>
+          </div>
+        </div>
+
+        <div class="col-6 mb-4">
+          <div class="form-floating input-group">
+            <%= form.select :record_hours, stream_record_hours_options, {include_blank: true}, multiple: true %>
+            <%= form.label :record_hours %>
+            <%= field_help_text t(".help.record_hours") %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

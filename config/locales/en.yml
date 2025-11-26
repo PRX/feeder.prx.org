@@ -613,6 +613,8 @@ en:
         embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
       stream_recording:
+        record_hours: Hours of the Day
+        record_days: Days of the Week
         url: Stream URL
       transcript:
         formats:
@@ -1432,6 +1434,11 @@ en:
     form_main:
       help:
         url: Something something what is this
+    form_settings:
+      help:
+        record_days: todo
+      hint: Define which days and hours of the stream you want to create clips or episodes from.
+      title: Recording Settings
     form_status:
       <<: *form_status
       title: Stream Recording Status
