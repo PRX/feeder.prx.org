@@ -4,7 +4,7 @@ FactoryBot.define do
     status { "enabled" }
     start_date { 10.days.ago }
     end_date { nil }
-    record_days { [0, 2] }
+    record_days { [1, 3] }
     record_hours { [15, 16, 17] }
     create_as { "clips" }
     expiration { 2592000 }

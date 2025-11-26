@@ -1,5 +1,5 @@
 class StreamRecording < ApplicationRecord
-  ALL_DAYS = (0..6).to_a
+  ALL_DAYS = (1..7).to_a
   ALL_HOURS = (0..23).to_a
 
   enum :status, %w[enabled disabled paused].to_enum_h, prefix: true
@@ -29,12 +29,8 @@ class StreamRecording < ApplicationRecord
     set_default(:create_as, "clips")
   end
 
-  def record_days
-    super || ALL_DAYS
-  end
-
   def record_days=(val)
-    days = Array(val).reject(&:blank?).map(&:to_i)
+    days = Array(val).reject(&:blank?).map(&:to_i).uniq.sort
     if days.empty? || days == ALL_DAYS
       super(nil)
     else
@@ -42,12 +38,8 @@ class StreamRecording < ApplicationRecord
     end
   end
 
-  def record_hours
-    super || ALL_HOURS
-  end
-
   def record_hours=(val)
-    hours = Array(val).reject(&:blank?).map(&:to_i)
+    hours = Array(val).reject(&:blank?).map(&:to_i).uniq.sort
     if hours.empty? || hours == ALL_HOURS
       super(nil)
     else

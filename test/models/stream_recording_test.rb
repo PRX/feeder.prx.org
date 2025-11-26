@@ -19,39 +19,39 @@ describe StreamRecording do
 
   describe "#record_days" do
     it "validates integer days of week" do
-      stream.record_days = [0, 1, 2, 3, 4, 5, 6]
+      stream.record_days = [1, 2, 3, 4, 5, 6, 7]
       assert stream.valid?
 
-      stream.record_days = [0, 6]
+      stream.record_days = [1, 7]
       assert stream.valid?
 
-      stream.record_days = [-1, 6]
+      stream.record_days = [0, 7]
       refute stream.valid?
 
-      stream.record_days = [7]
+      stream.record_days = [8]
       refute stream.valid?
     end
 
     it "handles strings" do
-      stream.record_days = ["0", 1, "3"]
-      assert_equal [0, 1, 3], stream.record_days
+      stream.record_days = ["1", "4", 2]
+      assert_equal [1, 2, 4], stream.record_days
 
-      stream.record_days = "4"
-      assert_equal [4], stream.record_days
+      stream.record_days = "5"
+      assert_equal [5], stream.record_days
     end
 
-    it "assumes you want all days if blank" do
+    it "sets to nil if you want all days" do
       stream.record_days = nil
-      assert_equal (0..6).to_a, stream.record_days
-      assert_nil stream[:record_days]
+      assert_nil stream.record_days
 
       stream.record_days = [""]
-      assert_equal (0..6).to_a, stream.record_days
-      assert_nil stream[:record_days]
+      assert_nil stream.record_days
 
-      stream.record_days = 0..6
-      assert_equal (0..6).to_a, stream.record_days
-      assert_nil stream[:record_days]
+      stream.record_days = 1..7
+      assert_nil stream.record_days
+
+      stream.record_days = (1..7).to_a.shuffle
+      assert_nil stream.record_days
     end
   end
 
@@ -71,25 +71,25 @@ describe StreamRecording do
     end
 
     it "handles strings" do
-      stream.record_hours = ["0", 10, "22"]
+      stream.record_hours = ["0", "22", 10]
       assert_equal [0, 10, 22], stream.record_hours
 
       stream.record_hours = "4"
       assert_equal [4], stream.record_hours
     end
 
-    it "assumes you want all hours if blank" do
+    it "sets to nil if you want all hours" do
       stream.record_hours = nil
-      assert_equal (0..23).to_a, stream.record_hours
-      assert_nil stream[:record_hours]
+      assert_nil stream.record_hours
 
       stream.record_hours = [""]
-      assert_equal (0..23).to_a, stream.record_hours
-      assert_nil stream[:record_hours]
+      assert_nil stream.record_hours
 
       stream.record_hours = 0..23
-      assert_equal (0..23).to_a, stream.record_hours
-      assert_nil stream[:record_hours]
+      assert_nil stream.record_hours
+
+      stream.record_hours = (0..23).to_a.shuffle
+      assert_nil stream.record_hours
     end
   end
 end
