@@ -8,6 +8,7 @@
       <% if policy(@podcast).update? %>
         <%= tab_link_to t(".planner"), podcast_planner_path(@podcast) %>
       <% end %>
+      <%= tab_link_to t(".stream"), podcast_stream_path(@podcast) %>
     <% else %>
       <%= tab_link_to t(".metadata"), new_podcast_path, active: true %>
     <% end %>
