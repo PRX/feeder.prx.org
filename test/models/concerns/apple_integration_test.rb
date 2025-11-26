@@ -1,6 +1,6 @@
 require "test_helper"
 
-class AppleDeliveryTest < ActiveSupport::TestCase
+class AppleIntegrationTest < ActiveSupport::TestCase
   let(:episode) { create(:episode_with_media) }
 
   describe "#apple_episode" do

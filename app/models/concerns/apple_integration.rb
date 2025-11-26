@@ -1,6 +1,6 @@
 require "active_support/concern"
 
-module AppleDelivery
+module AppleIntegration
   extend ActiveSupport::Concern
 
   included do

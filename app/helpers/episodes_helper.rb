@@ -16,50 +16,28 @@ module EpisodesHelper
   end
 
   def episode_integration_status(integration, episode)
+    return "not_publishable" unless episode.integration_feed_episode?(integration)
+
     status = episode.episode_delivery_status(integration, true)
+
     if !status
       "not_found"
     elsif status.new_record?
       "new"
     elsif !status.uploaded?
       "incomplete"
+    elsif episode.integration_error_state?(integration)
+      "error"
     elsif !status.delivered?
       "processing"
-    elsif status.delivered?
-      "complete"
     else
-      "not_found"
+      "complete"
     end
   end
 
   def episode_integration_updated_at(integration, episode)
     episode.sync_log(integration)&.updated_at ||
       episode.episode_delivery_status(integration)&.created_at ||
-      episode.updated_at
-  end
-
-  def episode_apple_status(episode)
-    apple_episode = episode.apple_episode
-    if !apple_episode
-      "not_found"
-    elsif apple_episode.apple_new?
-      "new"
-    elsif apple_episode.needs_delivery?
-      "incomplete"
-    elsif apple_episode.waiting_for_asset_state?
-      "processing"
-    elsif apple_episode.audio_asset_state_error?
-      "error"
-    elsif apple_episode.synced_with_apple?
-      "complete"
-    else
-      "not_found"
-    end
-  end
-
-  def episode_apple_updated_at(episode)
-    episode.apple_sync_log&.updated_at ||
-      episode.apple_status&.created_at ||
       episode.updated_at
   end
 
