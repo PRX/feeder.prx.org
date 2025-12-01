@@ -11,7 +11,7 @@ describe StreamRecording do
       create(:stream_recording, end_date: 2.days.ago)
 
       config = StreamRecording.config
-      assert_equal 2, config.count == 2
+      assert_equal 2, config.count
       assert_equal [s1.id, s2.id].sort, config.pluck(:id).sort
       assert_equal [PorterUtils.callback_sqs], config.pluck(:callback).uniq
     end
