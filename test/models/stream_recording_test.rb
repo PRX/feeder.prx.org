@@ -3,6 +3,20 @@ require "test_helper"
 describe StreamRecording do
   let(:stream) { build_stubbed(:stream_recording) }
 
+  describe ".config" do
+    it "generates configuration json for active streams" do
+      s1 = create(:stream_recording, record_days: nil, record_hours: nil)
+      s2 = create(:stream_recording, start_date: 7.days.from_now)
+      create(:stream_recording, status: "paused")
+      create(:stream_recording, end_date: 2.days.ago)
+
+      config = StreamRecording.config
+      assert_equal 2, config.count
+      assert_equal [s1.id, s2.id].sort, config.pluck(:id).sort
+      assert_equal [PorterUtils.callback_sqs], config.pluck(:callback).uniq
+    end
+  end
+
   describe "#set_defaults" do
     it "sets unchanged defaults" do
       stream = StreamRecording.new
