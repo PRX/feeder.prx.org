@@ -56,11 +56,7 @@ export default class extends Controller {
     }
 
     // fix material-style floating labels as selection changes
-    if (newVal.length > 0) {
-      this.select.selectEl.classList.remove("form-control-blank")
-    } else {
-      this.select.selectEl.classList.add("form-control-blank")
-    }
+    this.blankLater(newVal)
 
     return true
   }
@@ -68,6 +64,16 @@ export default class extends Controller {
   selectLater(val) {
     setTimeout(() => {
       this.select.setSelected([val])
+    }, 1)
+  }
+
+  blankLater(val) {
+    setTimeout(() => {
+      if (val.length > 0) {
+        this.select.selectEl.classList.remove("form-control-blank")
+      } else {
+        this.select.selectEl.classList.add("form-control-blank")
+      }
     }, 1)
   }
 }
