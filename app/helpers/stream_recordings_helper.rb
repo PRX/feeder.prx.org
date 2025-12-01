@@ -1,4 +1,16 @@
 module StreamRecordingsHelper
+  def stream_status_options
+    StreamRecording.statuses.keys.map { |k| [I18n.t("helpers.label.stream_recording.statuses.#{k}"), k] }
+  end
+
+  def stream_create_as_options
+    StreamRecording.create_as.keys.map { |k| [I18n.t("helpers.label.stream_recording.create_as_opts.#{k}"), k] }
+  end
+
+  def stream_expiration_options
+    I18n.t("helpers.label.stream_recording.expirations").invert.to_a
+  end
+
   def stream_record_days_options(val)
     label = I18n.t("helpers.label.stream_recording.record_all_days")
     all = [label, "", {selected: val.blank?, data: {mandatory: true}}]

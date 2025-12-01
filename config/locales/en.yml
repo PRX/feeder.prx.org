@@ -613,10 +613,30 @@ en:
         embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
       stream_recording:
+        create_as: Create As
+        create_as_opts:
+          clips: Clips
+          episodes: Episodes
+        end_date: Recording End Date
+        expiration: Expire Clips After
+        expirations:
+          "86400": 1 day
+          "604800": 1 week
+          "2592000": 1 month
+          "5184000": 2 months
+          "7776000": 3 months
+          "15552000": 6 months
+          "31536000": 1 year
         record_all_days: Every Day
         record_all_hours: Every Hour
         record_days: Days of the Week
         record_hours: Hours of the Day
+        start_date: Recording Start Date
+        status: Recording State
+        statuses:
+          disabled: Disabled
+          enabled: Recording
+          paused: Paused
         url: Stream URL
       transcript:
         formats:
@@ -1438,12 +1458,19 @@ en:
         url: Something something what is this
     form_settings:
       help:
+        end_date: todo
         record_days: todo
+        record_hours: todo
+        start_date: todo
       hint: Define which days and hours of the stream you want to create clips or episodes from.
       title: Recording Settings
     form_status:
       <<: *form_status
       title: Stream Recording Status
+      help:
+        create_as: todo
+        expiration: todo
+        status: todo
     show:
       title: "%{title} - Live Stream Recording"
     update:

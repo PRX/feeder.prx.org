@@ -3,6 +3,26 @@
     <h2 class="card-title h5"><%= t(".title") %></h2>
   </div>
 
+  <div class="card-body pb-0">
+    <div class="form-floating input-group mb-4">
+      <%= form.select :status, stream_status_options %>
+      <%= form.label :status %>
+      <%= field_help_text t(".help.status") %>
+    </div>
+
+    <div class="form-floating input-group mb-4">
+      <%= form.select :create_as, stream_create_as_options %>
+      <%= form.label :create_as %>
+      <%= field_help_text t(".help.create_as") %>
+    </div>
+
+    <div class="form-floating input-group mb-4">
+      <%= form.select :expiration, stream_expiration_options, {include_blank: true} %>
+      <%= form.label :expiration %>
+      <%= field_help_text t(".help.expiration") %>
+    </div>
+  </div>
+
   <%= render "layouts/stale_record_field", form: form %>
 
   <div class="card-footer">
