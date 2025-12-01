@@ -10,8 +10,8 @@ class StreamRecording < ApplicationRecord
 
   belongs_to :podcast, -> { with_deleted }, touch: true, optional: true
 
-  scope :active, ->(now = Time.now) { all }
-  scope :recording, ->(now = Time.now) { all }
+  scope :active, ->(now = Time.now) { status_enabled.where("end_date IS NULL OR end_date > ?", now) }
+  scope :recording, ->(now = Time.now) { active.where("start_date > ?", now) }
 
   validates :url, presence: true, http_url: true, http_head: /audio\/.+/
   validates :start_date, presence: true, if: :status_enabled?
@@ -21,12 +21,32 @@ class StreamRecording < ApplicationRecord
   validates :expiration, numericality: {greater_than: 0}, allow_nil: true
 
   after_initialize :set_defaults
+  after_save :write_config
 
   acts_as_paranoid
+
+  def self.config
+    active.map do |s|
+      {
+        id: s.id,
+        gid: s.to_global_id.to_s,
+        podcast_id: s.podcast_id,
+        start_date: s.start_date,
+        end_date: s.end_date,
+        record_days: s.record_days,
+        record_hours: s.record_hours,
+        callback: PorterUtils.callback_sqs
+      }
+    end
+  end
 
   def set_defaults
     set_default(:status, "disabled")
     set_default(:create_as, "clips")
+  end
+
+  def write_config
+    StreamRecordingConfigJob.perform_later
   end
 
   def record_days=(val)
