@@ -31,6 +31,7 @@ class StreamRecording < ApplicationRecord
         id: s.id,
         gid: s.to_global_id.to_s,
         podcast_id: s.podcast_id,
+        url: s.url,
         start_date: s.start_date,
         end_date: s.end_date,
         record_days: s.record_days,
