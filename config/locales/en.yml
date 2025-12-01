@@ -613,8 +613,10 @@ en:
         embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
       stream_recording:
-        record_hours: Hours of the Day
+        record_all_days: Every Day
+        record_all_hours: Every Hour
         record_days: Days of the Week
+        record_hours: Hours of the Day
         url: Stream URL
       transcript:
         formats:
