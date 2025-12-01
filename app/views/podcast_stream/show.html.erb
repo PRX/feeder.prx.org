@@ -1,0 +1,5 @@
+<% content_for :title, t(".title", title: @podcast.title) %>
+
+<%= render "podcasts/tabs" %>
+
+<%= render "form", podcast: @podcast, stream: @stream %>
