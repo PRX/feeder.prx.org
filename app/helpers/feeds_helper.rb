@@ -3,6 +3,10 @@ module FeedsHelper
     I18n.t("feeds.helper.episode_offset_options").invert.to_a
   end
 
+  def apple_episode_offset_options
+    I18n.t("feeds.helper.apple_episode_offset_options").invert.to_a
+  end
+
   def audio_format_options
     AudioFormatValidator::FORMATS.map do |value|
       [I18n.t(value, scope: [:feeds, :helper, :audio_format_options]), value]

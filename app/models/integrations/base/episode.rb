@@ -15,6 +15,10 @@ module Integrations
         raise NotImplementedError, "Subclasses must implement archived?"
       end
 
+      def error_state?
+        false
+      end
+
       def ad_free?
         feeder_episode.categories.include?("adfree")
       end

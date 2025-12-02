@@ -12,7 +12,7 @@ class Episode < ApplicationRecord
   include PublishingStatus
   include TextSanitizer
   include EmbedPlayerHelper
-  include AppleDelivery
+  include AppleIntegration
   include ReleaseEpisodes
 
   MAX_SEGMENT_COUNT = 10
