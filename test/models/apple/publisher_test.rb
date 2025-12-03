@@ -872,9 +872,11 @@ describe Apple::Publisher do
       apple_publisher.stub(:increment_asset_wait!, increment_mock) do
         apple_publisher.stub(:wait_for_upload_processing, wait_upload_mock) do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
-            Apple::Episode.stub(:probe_asset_state, probe_mock) do
-              apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
-                apple_publisher.process_delivery!([episode])
+            apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
+              Apple::Episode.stub(:probe_asset_state, probe_mock) do
+                apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
+                  apple_publisher.process_delivery!([episode])
+                end
               end
             end
           end
@@ -953,10 +955,12 @@ describe Apple::Publisher do
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
             apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
-              Apple::Episode.stub(:probe_asset_state, probe_mock) do
-                apple_publisher.stub(:mark_as_delivered!, ->(*) {}) do
-                  apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
-                    apple_publisher.process_delivery!([episode])
+              apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
+                Apple::Episode.stub(:probe_asset_state, probe_mock) do
+                  apple_publisher.stub(:mark_as_delivered!, ->(*) {}) do
+                    apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
+                      apple_publisher.process_delivery!([episode])
+                    end
                   end
                 end
               end
@@ -995,10 +999,12 @@ describe Apple::Publisher do
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
-            Apple::Episode.stub(:probe_asset_state, probe_mock) do
-              apple_publisher.stub(:mark_as_delivered!, ->(*) {}) do
-                apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
-                  apple_publisher.process_delivery!(episodes)
+            apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
+              Apple::Episode.stub(:probe_asset_state, probe_mock) do
+                apple_publisher.stub(:mark_as_delivered!, ->(*) {}) do
+                  apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
+                    apple_publisher.process_delivery!(episodes)
+                  end
                 end
               end
             end
@@ -1053,9 +1059,11 @@ describe Apple::Publisher do
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
             apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
-              Apple::Episode.stub(:probe_asset_state, probe_mock) do
-                apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
-                  apple_publisher.process_delivery!([episode1, episode2, episode3])
+              apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
+                Apple::Episode.stub(:probe_asset_state, probe_mock) do
+                  apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
+                    apple_publisher.process_delivery!([episode1, episode2, episode3])
+                  end
                 end
               end
             end
@@ -1104,15 +1112,17 @@ describe Apple::Publisher do
             apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
               apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
                 apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
-                  Apple::Episode.stub(:probe_asset_state, probe_mock) do
-                    apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
-                      apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
-                        # Should raise timeout error when timeout is reached
-                        error = assert_raises(Apple::AssetStateTimeoutError) do
-                          apple_publisher.process_delivery!([episode1, episode2])
-                        end
+                  apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
+                    Apple::Episode.stub(:probe_asset_state, probe_mock) do
+                      apple_publisher.stub(:mark_as_delivered!, mark_delivered_mock) do
+                        apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
+                          # Should raise timeout error when timeout is reached
+                          error = assert_raises(Apple::AssetStateTimeoutError) do
+                            apple_publisher.process_delivery!([episode1, episode2])
+                          end
 
-                        assert_equal 2, error.episodes.length, "Error should contain both episodes"
+                          assert_equal 2, error.episodes.length, "Error should contain both episodes"
+                        end
                       end
                     end
                   end
