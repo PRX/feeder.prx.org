@@ -17,13 +17,13 @@ module MetricsHelper
 
     if trend > 0
       {
-        percent: "#{(trend * 100).round(2)}%",
+        percent: "+#{(trend * 100).round(2)}%",
         color: modified_trend_color(trend, "text-success"),
         direction: modified_trend_direction(trend, "up")
       }
     elsif trend < 0
       {
-        percent: "#{(trend * -100).round(2)}%",
+        percent: "-#{(trend * -100).round(2)}%",
         color: modified_trend_color(trend, "text-danger"),
         direction: modified_trend_direction(trend, "down")
       }
