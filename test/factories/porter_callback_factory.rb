@@ -29,7 +29,8 @@ FactoryBot.define do
           Layout: "stereo",
           Layer: "3",
           Samples: nil,
-          Frames: "57143"
+          Frames: "57143",
+          Tags: [{key: "comment", value: "AIS_AD_BREAK_1=3000"}]
         },
         Video: {
           Duration: 8725,
