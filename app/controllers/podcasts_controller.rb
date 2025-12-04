@@ -196,11 +196,22 @@ class PodcastsController < ApplicationController
   end
 
   def episode_trend_pairs(episodes, trend_episodes)
+    paired_trend_episodes = []
+
     episodes.map.with_index do |ep, i|
-      {
-        episode: ep,
-        prev_episode: trend_episodes[i]
-      }
+      if ep.in_default_feed?
+        paired_trend_episodes << trend_episodes[paired_trend_episodes.length]
+
+        {
+          episode: ep,
+          prev_episode: paired_trend_episodes.last
+        }
+      else
+        {
+          episode: ep,
+          prev_episode: nil
+        }
+      end
     end
   end
 end
