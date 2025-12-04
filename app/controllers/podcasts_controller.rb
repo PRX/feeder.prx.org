@@ -17,8 +17,9 @@ class PodcastsController < ApplicationController
   def show
     authorize @podcast
 
-    @recently_published_episodes = @podcast.episodes.published.dropdate_desc.limit(5)
-    @episode_trend_pairs = episode_trend_pairs(@recently_published_episodes)
+    @recently_published_episodes = @podcast.episodes.published.dropdate_desc.limit(4)
+    @trend_episodes = @podcast.default_feed.episodes.published.dropdate_desc.where.not(first_rss_published_at: nil).offset(1).limit(4)
+    @episode_trend_pairs = episode_trend_pairs(@recently_published_episodes, @trend_episodes)
 
     # @recently_published is used for the prod branch
     @recently_published = @recently_published_episodes[0..2]
@@ -194,15 +195,12 @@ class PodcastsController < ApplicationController
     text.gsub(/[&<>]/, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;")
   end
 
-  def episode_trend_pairs(episodes)
-    pairs = []
-    episodes.each_with_index do |ep, i|
-      pairs << {
+  def episode_trend_pairs(episodes, trend_episodes)
+    episodes.map.with_index do |ep, i|
+      {
         episode: ep,
-        prev_episode: episodes[i + 1]
+        prev_episode: trend_episodes[i]
       }
     end
-
-    pairs.slice(0, pairs.length - 1)
   end
 end
