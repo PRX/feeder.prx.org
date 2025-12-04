@@ -11,7 +11,8 @@ class PodcastMetricsController < ApplicationController
     @episode = Episode.find_by(guid: metrics_params[:episode_id])
     @prev_episode = Episode.find_by(guid: metrics_params[:prev_episode_id])
 
-    @alltime_downloads =
+    @episode_trend = calculate_episode_trend(@episode, @prev_episode)
+    @sparkline_downloads =
       Rollups::HourlyDownload
         .where(episode_id: @episode[:guid], hour: (@episode.first_rss_published_at..Date.utc_today))
         .final
@@ -20,11 +21,9 @@ class PodcastMetricsController < ApplicationController
         .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
         .load_async
 
-    @episode_trend = calculate_episode_trend(@episode, @prev_episode)
-
     render partial: "metrics/episode_sparkline", locals: {
       episode: @episode,
-      downloads: @alltime_downloads,
+      downloads: @sparkline_downloads,
       episode_trend: @episode_trend
     }
   end
@@ -220,25 +219,24 @@ class PodcastMetricsController < ApplicationController
   end
 
   def calculate_episode_trend(episode, prev_episode)
-    return nil if (episode.first_rss_published_at + 1.day) > Date.utc_today
     return nil unless episode.present? && prev_episode.present?
+    return nil if (episode.first_rss_published_at + 1.day) > Time.now
 
-    dropday_downloads = episode_dropday_query(episode)
-    previous_ep_dropday = episode_dropday_query(prev_episode)
+    ep_dropday_sum = episode_dropday_query(episode)
+    previous_ep_dropday_sum = episode_dropday_query(prev_episode)
 
-    ep_sum = dropday_downloads.sum(&:count)
-    prev_ep_sum = previous_ep_dropday.sum(&:count)
+    return nil if ep_dropday_sum <= 0 || previous_ep_dropday_sum <= 0
 
-    ((ep_sum.to_f / prev_ep_sum.to_f) - 1).round(2)
+    ((ep_dropday_sum.to_f / previous_ep_dropday_sum.to_f) - 1).round(2)
   end
 
   def episode_dropday_query(ep)
+    lowerbound = ep.first_rss_published_at.beginning_of_hour
+    upperbound = lowerbound + 24.hours
+
     Rollups::HourlyDownload
-      .where(episode_id: ep[:guid], hour: (ep.first_rss_published_at..(ep.first_rss_published_at + 1.day)))
+      .where(episode_id: ep[:guid], hour: (lowerbound..upperbound))
       .final
-      .select(:episode_id, "DATE_TRUNC('HOUR', hour) AS hour", "SUM(count) AS count")
-      .group(:episode_id, "DATE_TRUNC('HOUR', hour) AS hour")
-      .order(Arel.sql("DATE_TRUNC('HOUR', hour) ASC"))
-      .load_async
+      .sum(:count)
   end
 end
