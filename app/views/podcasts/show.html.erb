@@ -41,17 +41,27 @@
           <% end %>
         </div>
         <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column">
-          <% if @recently_published.present? %>
-            <% @recently_published.each do |ep| %>
-              <div class="episode-card-info inside-card flex-fill px-3 py-2">
-                <p class="episode-card-date"><%= local_date(ep.published_at, format: :short) %></p>
-                <div class="episode-card-inner inside-card">
-                  <h2 class="h5 episode-card-title m-0"><%= link_to ep.title, episode_path(ep) %></h2>
-                </div>
-              </div>
+          <% if Rails.env.development? %>
+            <% if @episode_trend_pairs.present? %>
+              <% @episode_trend_pairs.each do |pair| %>
+                <%= render "metrics/episodes_card", podcast: @podcast, episode: pair[:episode], prev_episode: pair[:prev_episode] %>
+              <% end %>
+            <% else %>
+              <p class="text-muted text-center m-2"><%= t(".no_published") %></p>
             <% end %>
           <% else %>
-            <p class="text-muted text-center m-2"><%= t(".no_published") %></p>
+            <% if @recently_published.present? %>
+              <% @recently_published.each do |ep| %>
+                <div class="episode-card-info inside-card flex-fill px-3 py-2">
+                  <p class="episode-card-date"><%= local_date(ep.published_at, format: :short) %></p>
+                  <div class="episode-card-inner inside-card">
+                    <h2 class="h5 episode-card-title m-0"><%= link_to ep.title, episode_path(ep) %></h2>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <p class="text-muted text-center m-2"><%= t(".no_published") %></p>
+            <% end %>
           <% end %>
         </div>
       </div>
