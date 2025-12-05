@@ -219,7 +219,7 @@ class PodcastMetricsController < ApplicationController
   end
 
   def calculate_episode_trend(episode, prev_episode)
-    return nil unless episode.in_default_feed? && prev_episode.present?
+    return nil unless episode.in_default_feed? && episode.first_rss_published_at.present? && prev_episode.present?
     return nil if (episode.first_rss_published_at + 1.day) > Time.now
 
     ep_dropday_sum = episode_dropday_query(episode)
