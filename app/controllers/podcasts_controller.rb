@@ -1,6 +1,7 @@
 class PodcastsController < ApplicationController
   include Prx::Api
   include SlackHelper
+  include MetricsQueries
 
   before_action :set_podcast, only: %i[show edit update destroy]
 
@@ -20,6 +21,9 @@ class PodcastsController < ApplicationController
     @recently_published_episodes = @podcast.episodes.published.dropdate_desc.limit(4)
     @trend_episodes = @podcast.default_feed.episodes.published.dropdate_desc.where.not(first_rss_published_at: nil).offset(1).limit(4)
     @episode_trend_pairs = episode_trend_pairs(@recently_published_episodes, @trend_episodes)
+    @alltime_downloads = alltime_downloads(@podcast).sum(&:count)
+    @daterange_downloads = daterange_downloads(@podcast).sum(&:count)
+    @episode_count = @podcast.episodes.published.length
 
     # @recently_published is used for the prod branch
     @recently_published = @recently_published_episodes[0..2]

@@ -91,6 +91,22 @@
       </div>
     </div>
 
+    <% if Rails.env.development? %>
+      <div class="col-lg-8 d-flex">
+        <div class="col w-100">
+          <div class="row mb-4">
+            <%= render "metrics/score_card", score: number_with_delimiter(@daterange_downloads), label: "downloads", sublabel: "last 28 days" %>
+            <%= render "metrics/score_card", score: number_with_delimiter(@alltime_downloads), label: "downloads", sublabel: "all-time" %>
+            <%= render "metrics/score_card", score: number_with_delimiter(@episode_count), label: "episodes", sublabel: "all-time" %>
+          </div>
+          <div class="row">
+            <%# render "metrics/score_card" %>
+            <%# render "metrics/score_card" %>
+          </div>
+
+        </div>
+      </div>
+    <% else %>
     <% if current_user_app?("metrics") %>
       <div class="col-lg-8 d-grid">
         <div class="card shadow border-0"
@@ -128,6 +144,7 @@
           </div>
         </div>
       </div>
+    <% end %>
     <% end %>
   </div>
 

@@ -55,6 +55,14 @@ module MetricsUtils
     "#0072a3"
   end
 
+  def light_pink
+    "#f3eaff"
+  end
+
+  def light_blue
+    "#dbfbfb"
+  end
+
   def single_rollups(downloads, label = I18n.t(".helpers.label.metrics.chart.all_episodes"))
     {
       rollups: downloads,
@@ -63,17 +71,19 @@ module MetricsUtils
     }
   end
 
-  def multiple_episode_rollups(episodes, rollups, totals)
-    episodes.to_enum(:each_with_index).map do |episode, i|
+  def multiple_episode_rollups(episodes, rollups)
+    episodes.map.with_index do |episode, i|
+      color = if i == 0
+        "orange"
+      else
+        [light_blue, light_pink]
+      end
       {
         episode: episode,
         rollups: rollups.select do |r|
           r["episode_id"] == episode.guid
         end,
-        totals: totals.select do |r|
-          r["episode_id"] == episode.guid
-        end,
-        color: colors[i]
+        color: color
       }
     end
   end
