@@ -44,7 +44,7 @@
           <% if Rails.env.development? %>
             <% if @episode_trend_pairs.present? %>
               <% @episode_trend_pairs.each do |pair| %>
-                <%= render "metrics/episodes_card", podcast: @podcast, episode: pair[:episode], prev_episode: pair[:prev_episode] %>
+                <%= render "metrics/episode_card", podcast: @podcast, episode: pair[:episode], prev_episode: pair[:prev_episode] %>
               <% end %>
             <% else %>
               <p class="text-muted text-center m-2"><%= t(".no_published") %></p>
@@ -93,18 +93,7 @@
 
     <% if Rails.env.development? %>
       <div class="col-lg-8 d-flex">
-        <div class="col w-100">
-          <div class="row mb-4">
-            <%= render "metrics/score_card", score: number_with_delimiter(@daterange_downloads), label: "downloads", sublabel: "last 28 days" %>
-            <%= render "metrics/score_card", score: number_with_delimiter(@alltime_downloads), label: "downloads", sublabel: "all-time" %>
-            <%= render "metrics/score_card", score: number_with_delimiter(@episode_count), label: "episodes", sublabel: "all-time" %>
-          </div>
-          <div class="row">
-            <%# render "metrics/score_card" %>
-            <%# render "metrics/score_card" %>
-          </div>
-
-        </div>
+        <%= render "metrics/scorecard_dashboard", daterange_downloads: @daterange_downloads, alltime_downloads: @alltime_downloads, episode_count: @episode_count, podcast: @podcast %>
       </div>
     <% else %>
     <% if current_user_app?("metrics") %>

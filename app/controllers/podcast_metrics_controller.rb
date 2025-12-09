@@ -1,5 +1,6 @@
 class PodcastMetricsController < ApplicationController
   include MetricsUtils
+  include MetricsQueries
 
   before_action :set_podcast
   # before_action :check_clickhouse, except: %i[show]
@@ -52,20 +53,15 @@ class PodcastMetricsController < ApplicationController
 
   def episodes
     @episodes = @podcast.episodes.published.dropdate_desc.limit(10)
+    @date_range = generate_date_range(Date.utc_today - 28.days, Date.utc_today, "DAY")
 
-    @episodes_downloads =
-      Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: ((Date.utc_today - 28.days)..Date.utc_today))
-        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
-        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
-        .load_async
+    @episodes_downloads = daterange_downloads(@episodes)
 
     @episode_rollups = multiple_episode_rollups(@episodes, @episodes_downloads)
 
     render partial: "metrics/episodes_card", locals: {
-      episodes: @episodes,
-      episode_rollups: @episode_rollups
+      episode_rollups: @episode_rollups,
+      date_range: @date_range
     }
   end
 

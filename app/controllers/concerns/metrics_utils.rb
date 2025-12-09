@@ -63,6 +63,10 @@ module MetricsUtils
     "#dbfbfb"
   end
 
+  def orange
+    "#ff9601"
+  end
+
   def single_rollups(downloads, label = I18n.t(".helpers.label.metrics.chart.all_episodes"))
     {
       rollups: downloads,
@@ -74,9 +78,9 @@ module MetricsUtils
   def multiple_episode_rollups(episodes, rollups)
     episodes.map.with_index do |episode, i|
       color = if i == 0
-        "orange"
+        orange
       else
-        [light_blue, light_pink]
+        light_blue
       end
       {
         episode: episode,

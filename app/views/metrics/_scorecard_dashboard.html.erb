@@ -1,0 +1,34 @@
+<div class="container">
+  <div class="row mb-4 justify-content-between">
+    <div class="col ps-0 pe-2">
+      <%= render "metrics/score_card", score: number_with_delimiter(daterange_downloads), label: "downloads", sublabel: "last 28 days" %>
+    </div>
+    <div class="col px-2">
+      <%= render "metrics/score_card", score: number_with_delimiter(alltime_downloads), label: "downloads", sublabel: "all-time" %>
+    </div>
+    <div class="col pe-0 ps-2">
+      <%= render "metrics/score_card", score: number_with_delimiter(episode_count), label: "episodes", sublabel: "all-time" %>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col ps-0 pe-2">
+      <div class="card shadow">
+        <div class="card-header d-flex justify-content-between">
+          <span>Episode Downloads</span>
+          <span>Last 28 Days</span>
+        </div>
+        <div class="card-body metrics-card-body">
+          <%= turbo_frame_tag "episodes", src: episodes_podcast_metrics_path(podcast_id: podcast.id), loading: "lazy" do %>
+            <%= render "metrics/loading_card" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="col pe-0 ps-2">
+      <div class="card shadow">
+        <div class="card-body">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

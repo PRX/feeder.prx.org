@@ -3,7 +3,7 @@ import ApexCharts from "apexcharts"
 const DEFAULT_OPTIONS = {
   chart: {
     width: "100%",
-    height: "400px",
+    height: "100%",
     zoom: { enabled: false },
     animations: {
       enabled: false,
@@ -33,13 +33,7 @@ const DATETIME_OPTIONS = {
     show: true,
   },
   tooltip: {
-    enabled: true,
-    shared: true,
-    hideEmptySeries: false,
-    intersect: false,
-    x: {
-      format: "MMM d, h:mmtt",
-    },
+    enabled: false,
   },
   dataLabels: {
     enabled: false,
@@ -84,7 +78,10 @@ export const LINE_TYPE = {
   options: {
     stroke: {
       curve: "smooth",
-      width: 2,
+      width: 3,
+    },
+    markers: {
+      showNullDataPoints: false,
     },
   },
 }
@@ -173,11 +170,16 @@ export function buildNumericChart(id, series, target, type, title = "") {
 
 export function buildDownloadsSeries(data, dateRange) {
   if (Array.isArray(data)) {
-    return data.map((episodeRollup) => {
+    return data.map((episodeRollup, i) => {
+      let zIndex = 1
+      if (i === 0) {
+        zIndex = 2
+      }
       return {
         name: episodeRollup.episode.title,
         data: alignDownloadsOnDateRange(episodeRollup.rollups, dateRange),
         color: episodeRollup.color,
+        zIndex: zIndex,
       }
     })
   } else {
@@ -205,7 +207,7 @@ function alignDownloadsOnDateRange(downloads, range) {
     } else {
       return {
         x: date,
-        y: 0,
+        y: null,
       }
     }
   })
