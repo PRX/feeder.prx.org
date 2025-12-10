@@ -237,6 +237,7 @@ class PodcastMetricsController < ApplicationController
     Rollups::HourlyDownload
       .where(episode_id: ep[:guid], hour: (lowerbound..upperbound))
       .final
+      .load_async
       .sum(:count)
   end
 end
