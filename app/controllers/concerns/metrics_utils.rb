@@ -56,11 +56,11 @@ module MetricsUtils
   end
 
   def light_pink
-    "#f3eaff"
+    "#e7d4ff"
   end
 
   def light_blue
-    "#dbfbfb"
+    "#aafff5"
   end
 
   def orange
@@ -70,7 +70,7 @@ module MetricsUtils
   def single_rollups(downloads, label = I18n.t(".helpers.label.metrics.chart.all_episodes"))
     {
       rollups: downloads,
-      color: primary_blue,
+      color: light_blue,
       label: label
     }
   end

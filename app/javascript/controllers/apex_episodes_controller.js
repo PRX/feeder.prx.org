@@ -14,7 +14,7 @@ export default class extends Controller {
   connect() {
     const series = buildDownloadsSeries(this.rollupsValue, this.dateRangeValue)
 
-    const chart = buildDateTimeChart(this.idValue, series, this.chartTarget, LINE_TYPE)
+    const chart = buildDateTimeChart(this.idValue, series, this.chartTarget, LINE_TYPE, this.dateRangeValue)
 
     chart.render()
   }

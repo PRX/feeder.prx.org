@@ -13,20 +13,31 @@
   <div class="row">
     <div class="col ps-0 pe-2">
       <div class="card shadow">
-        <div class="card-header d-flex justify-content-between">
-          <span>Episode Downloads</span>
-          <span>Last 28 Days</span>
-        </div>
-        <div class="card-body metrics-card-body">
-          <%= turbo_frame_tag "episodes", src: episodes_podcast_metrics_path(podcast_id: podcast.id), loading: "lazy" do %>
-            <%= render "metrics/loading_card" %>
-          <% end %>
+        <div class="col">
+          <div class="card-header d-flex justify-content-between">
+            <span>Episode Downloads</span>
+            <span>Last 28 Days</span>
+          </div>
+          <div class="card-body metrics-card-body">
+            <%= turbo_frame_tag "episodes", src: episodes_podcast_metrics_path(podcast_id: podcast.id), loading: "lazy" do %>
+              <%= render "metrics/loading_card" %>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>
     <div class="col pe-0 ps-2">
       <div class="card shadow">
-        <div class="card-body">
+        <div class="col">
+          <div class="card-header d-flex justify-content-between">
+            <span>Monthly Downloads</span>
+            <span>Past Year</span>
+          </div>
+          <div class="card-body metrics-card-body">
+            <%= turbo_frame_tag "monthly", src: monthly_downloads_podcast_metrics_path(podcast_id: podcast.id), loading: "lazy" do %>
+              <%= render "metrics/loading_card" %>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>

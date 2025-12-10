@@ -29,23 +29,15 @@ class PodcastMetricsController < ApplicationController
     }
   end
 
-  def downloads
-    @downloads_within_date_range =
-      Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
-        .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-        .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-        .load_async
+  def monthly_downloads
+    @date_start = (Date.utc_today - 11.months).beginning_of_month
+    @date_end = Date.utc_today
+    @date_range = generate_date_range(@date_start, @date_end.beginning_of_month, "MONTH")
+    @downloads_within_date_range = daterange_downloads(@podcast, @date_start, @date_end, "MONTH")
 
-    @downloads = single_rollups(@downloads_within_date_range)
+    @downloads = single_rollups(@downloads_within_date_range, "Downloads")
 
-    render partial: "metrics/downloads_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_downloads_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: @interval,
+    render partial: "metrics/monthly_card", locals: {
       date_range: @date_range,
       downloads: @downloads
     }

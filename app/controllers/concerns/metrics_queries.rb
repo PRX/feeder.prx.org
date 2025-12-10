@@ -14,7 +14,7 @@ module MetricsQueries
       .load_async
   end
 
-  def daterange_downloads(model, date_start = Date.utc_today - 28.days, date_end = Date.utc_today, interval = "DAY")
+  def daterange_downloads(model, date_start = Date.utc_today - 28.days, date_end = Time.now, interval = "DAY")
     model_id, column = model_attrs(model)
 
     Rollups::HourlyDownload
@@ -24,6 +24,16 @@ module MetricsQueries
       .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
       .final
       .load_async
+  end
+
+  def alltime_downloads_by_month(model)
+    model_id, column = model_attrs(model)
+
+    Rollups::HourlyDownload
+      .where("#{column}": model_id)
+      .select(column, "DATE_TRUNC('MONTH', hour) AS hour", "SUM(count) AS count")
+      .group(column, "DATE_TRUNC('MONTH', hour) AS hour")
+      .order(Arel.sql("DATE_TRUNC('MONTH', hour) AS hour"))
   end
 
   def model_attrs(model)
