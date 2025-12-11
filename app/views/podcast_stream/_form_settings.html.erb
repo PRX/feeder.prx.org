@@ -1,0 +1,47 @@
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-light d-flex justify-content-between">
+      <h5 class="card-title flex-grow-1"><%= t(".title") %></h5>
+    </div>
+
+    <div class="card-body pb-0">
+      <p class=""><%= t(".hint") %></p>
+
+      <div class="row">
+        <div class="col-6 mb-4">
+          <div class="form-floating input-group">
+            <% data = {slim_select_exclusive_value: [""]} %>
+            <%= form.select :record_days, stream_record_days_options(stream.record_days), {}, multiple: true, data: data %>
+            <%= form.label :record_days %>
+            <%= field_help_text t(".help.record_days") %>
+          </div>
+        </div>
+
+        <div class="col-6 mb-4">
+          <div class="form-floating input-group">
+            <% data = {slim_select_exclusive_value: [""]} %>
+            <%= form.select :record_hours, stream_record_hours_options(stream.record_hours), {}, multiple: true, data: data %>
+            <%= form.label :record_hours %>
+            <%= field_help_text t(".help.record_hours") %>
+          </div>
+        </div>
+
+        <div class="col-6 mb-4">
+          <div class="form-floating input-group">
+            <%= form.date_field :start_date %>
+            <%= form.label :start_date %>
+            <%= field_help_text t(".help.start_date") %>
+          </div>
+        </div>
+
+        <div class="col-6 mb-4">
+          <div class="form-floating input-group">
+            <%= form.date_field :end_date %>
+            <%= form.label :end_date %>
+            <%= field_help_text t(".help.end_date") %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
