@@ -26,16 +26,6 @@ module MetricsQueries
       .load_async
   end
 
-  def alltime_downloads_by_month(model)
-    model_id, column = model_attrs(model)
-
-    Rollups::HourlyDownload
-      .where("#{column}": model_id)
-      .select(column, "DATE_TRUNC('MONTH', hour) AS hour", "SUM(count) AS count")
-      .group(column, "DATE_TRUNC('MONTH', hour) AS hour")
-      .order(Arel.sql("DATE_TRUNC('MONTH', hour) AS hour"))
-  end
-
   def model_attrs(model)
     model_id = if model.is_a?(Enumerable)
       model.pluck(:guid)
