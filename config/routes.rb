@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       get "monthly_downloads"
       get "feeds"
       get "seasons"
+      get "countries"
       get "uniques"
       get "episodes"
       get "dropdays"

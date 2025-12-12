@@ -180,21 +180,37 @@ class PodcastMetricsController < ApplicationController
     }
   end
 
-  def geos
-    # @top_subdivs =
-    #   Rollups::DailyGeo
-    #     .where(podcast_id: @podcast.id)
-    #     .select(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day", "SUM(count) AS count")
-    #     .group(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .limit(10)
-    # @top_countries =
-    #   Rollups::DailyGeo
-    #     .where(podcast_id: @podcast.id)
-    #     .select(:country_code, "SUM(count) AS count")
-    #     .group(:country_code)
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .limit(10)
+  def countries
+    date_start = (Date.utc_today - 28.days).to_s
+    date_end = Date.utc_today.to_s
+
+    top_countries =
+      Rollups::DailyGeo
+        .where(podcast_id: @podcast.id, day: date_start..date_end)
+        .select(:country_code, "SUM(count) AS count")
+        .group(:country_code)
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .final
+        .limit(10)
+        .load_async
+
+    top_country_codes = top_countries.pluck(:country_code)
+
+    other_countries =
+      Rollups::DailyGeo
+        .where(podcast_id: @podcast.id, day: date_start..date_end)
+        .where.not(country_code: top_country_codes)
+        .select("'Other' AS country_code", "SUM(count) AS count")
+        .final
+        .load_async
+
+    @country_rollups = []
+    @country_rollups << top_countries
+    @country_rollups << other_countries
+
+    render partial: "metrics/countries_card", locals: {
+      countries: @country_rollups.flatten
+    }
   end
 
   def agents
