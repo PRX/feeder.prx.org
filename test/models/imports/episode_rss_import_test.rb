@@ -75,6 +75,7 @@ describe EpisodeRssImport do
     importer.reload
     _(f.image.status).must_equal "created"
     _(f.uncut.status).must_equal "created"
+    _(f.segment_count).must_equal 1
   end
 
   it "creates correctly for libsyn entries" do
