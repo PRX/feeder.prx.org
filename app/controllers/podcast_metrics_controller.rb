@@ -59,10 +59,11 @@ class PodcastMetricsController < ApplicationController
 
   def feeds
     feed_slugs = @podcast.feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
+    date_start = (Date.utc_today - 28.days)
 
     @downloads_by_feed =
       Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, feed_slug: feed_slugs)
+        .where(podcast_id: @podcast.id, feed_slug: feed_slugs, hour: (date_start..))
         .select(:feed_slug, "SUM(count) AS count")
         .group(:feed_slug)
         .order(Arel.sql("SUM(count) AS count DESC"))
