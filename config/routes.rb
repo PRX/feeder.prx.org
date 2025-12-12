@@ -22,6 +22,7 @@ Rails.application.routes.draw do
     resources :placements_preview, only: [:show]
     get "rollups_demo", to: "podcasts#rollups_demo"
     resource :metrics, only: [:show], controller: :podcast_metrics do
+      get "episode_sparkline"
       get "downloads"
       get "uniques"
       get "episodes"
