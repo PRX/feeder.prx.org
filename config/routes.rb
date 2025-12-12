@@ -25,6 +25,7 @@ Rails.application.routes.draw do
       get "episode_sparkline"
       get "monthly_downloads"
       get "feeds"
+      get "seasons"
       get "uniques"
       get "episodes"
       get "dropdays"

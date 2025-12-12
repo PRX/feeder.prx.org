@@ -25,7 +25,6 @@ export default class extends Controller {
     ]
 
     const chart = buildSparkbarChart(this.idValue, series, this.chartTarget)
-    // debugger
 
     chart.render()
   }

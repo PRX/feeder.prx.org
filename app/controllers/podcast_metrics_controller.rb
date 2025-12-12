@@ -70,7 +70,6 @@ class PodcastMetricsController < ApplicationController
         .final
         .load_async
 
-    @total_downloads = @downloads_by_feed.sum(&:count)
     feeds_with_downloads = []
 
     @feeds = @downloads_by_feed.map do |rollup|
@@ -91,9 +90,25 @@ class PodcastMetricsController < ApplicationController
     @podcast.feeds.each { |feed| @feeds << {feed: feed} if feeds_with_downloads.exclude?(feed) }
 
     render partial: "metrics/feeds_card", locals: {
-      podcast: @podcast,
-      feeds: @feeds,
-      total_downloads: @total_downloads
+      feeds: @feeds
+    }
+  end
+
+  def seasons
+    published_seasons = @podcast.episodes.published.pluck(:season_number).uniq
+
+    @season_rollups = published_seasons.map do |season|
+      episodes = @podcast.episodes.published.where(season_number: season)
+      rollup = alltime_downloads(episodes, "podcast_id")
+
+      {
+        season_number: season,
+        downloads: rollup.first
+      }
+    end
+
+    render partial: "metrics/seasons_card", locals: {
+      seasons: @season_rollups
     }
   end
 
