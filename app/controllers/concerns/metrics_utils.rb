@@ -6,8 +6,19 @@ module MetricsUtils
   def check_clickhouse
     unless clickhouse_connected?
       render partial: "metrics/error_card", locals: {
-        metrics_path: params[:action]
+        metrics_path: params[:action],
+        card_type: card_type(params[:action].to_sym)
       }
+    end
+  end
+
+  def card_type(action)
+    blank_type = %i[episode_sparkline]
+
+    if blank_type.include?(action)
+      "blank"
+    else
+      "error"
     end
   end
 
@@ -44,25 +55,39 @@ module MetricsUtils
     "#0072a3"
   end
 
+  def light_pink
+    "#e7d4ff"
+  end
+
+  def light_blue
+    "#aafff5"
+  end
+
+  def orange
+    "#ff9601"
+  end
+
   def single_rollups(downloads, label = I18n.t(".helpers.label.metrics.chart.all_episodes"))
     {
       rollups: downloads,
-      color: primary_blue,
+      color: light_blue,
       label: label
     }
   end
 
-  def multiple_episode_rollups(episodes, rollups, totals)
-    episodes.to_enum(:each_with_index).map do |episode, i|
+  def multiple_episode_rollups(episodes, rollups)
+    episodes.map.with_index do |episode, i|
+      color = if i == 0
+        orange
+      else
+        light_blue
+      end
       {
         episode: episode,
         rollups: rollups.select do |r|
           r["episode_id"] == episode.guid
         end,
-        totals: totals.select do |r|
-          r["episode_id"] == episode.guid
-        end,
-        color: colors[i]
+        color: color
       }
     end
   end

@@ -1,0 +1,8 @@
+<div class="episode-card-info inside-card flex-fill px-3 py-2 position-relative">
+  <p class="episode-card-date z-1"><%= local_date(episode.published_at, format: :short) %></p>
+  <div class="episode-card-inner inside-card">
+    <h2 class="h5 episode-card-title m-0 z-1"><%= link_to episode.title, episode_path(episode) %></h2>
+  </div>
+  <%# turbo_frame_tag "episode_sparkline", src: episode_sparkline_podcast_metrics_path(podcast_id: podcast.id, episode_id: episode.guid, prev_episode_id: prev_episode.guid), loading: "lazy" do %>
+  <%# end %>
+</div>
