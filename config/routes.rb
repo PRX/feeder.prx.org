@@ -24,6 +24,7 @@ Rails.application.routes.draw do
     resource :metrics, only: [:show], controller: :podcast_metrics do
       get "episode_sparkline"
       get "monthly_downloads"
+      get "feeds"
       get "uniques"
       get "episodes"
       get "dropdays"

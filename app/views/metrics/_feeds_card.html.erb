@@ -1,0 +1,10 @@
+<%= turbo_frame_tag "feeds" do %>
+  <ul class="list-group list-group-flush">
+    <% feeds.map do |feed| %>
+      <li class="list-group-item d-flex justify-content-between">
+        <span><%= feed[:feed].title || "Default Feed" %></span>
+        <span><%= number_with_delimiter(feed[:downloads]&.count) || 0 %></span>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

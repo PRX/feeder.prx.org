@@ -137,6 +137,56 @@
     <% end %>
   </div>
 
+  <% if Rails.env.development? %>
+  <div class="row">
+    <% if uses_multiple_feeds(@podcast) %>
+      <div class="col-lg-6 d-grid mb-4">
+        <div class="card shadow">
+          <div class="card-header d-flex align-items-center">
+            <span>Downloads by Feed</span>
+          </div>
+          <div class="card-body p-0">
+            <%= turbo_frame_tag "feeds", src: feeds_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
+              <%= render "metrics/loading_card" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <% if uses_seasons(@podcast) %>
+      <div class="col-lg-6 d-grid mb-4">
+        <div class="prx-dashboard-card card shadow">
+          <div class="card-header d-flex align-items-center">
+            <span>Downloads by Season</span>
+          </div>
+          <div class="card-body p-0">
+            something in the body
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <div class="col-lg-6 d-grid mb-4">
+      <div class="prx-dashboard-card card shadow">
+        <div class="card-header d-flex align-items-center">
+          <span>Downloads by Country</span>
+        </div>
+        <div class="card-body">
+          something in the body
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 d-grid mb-4">
+      <div class="prx-dashboard-card card shadow">
+        <div class="card-header d-flex align-items-center">
+          <span>Downloads by Device</span>
+        </div>
+        <div class="card-body">
+          something in the body
+        </div>
+      </div>
+    </div>
+  </div>
+  <% else %>
   <div class="row">
     <div class="col-lg-6 d-grid mb-4 mb-lg-0">
       <div class="prx-dashboard-card card shadow border-0">
@@ -176,4 +226,5 @@
       </div>
     </div>
   </div>
+  <% end %>
 </div>

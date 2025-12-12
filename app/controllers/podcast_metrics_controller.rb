@@ -57,6 +57,45 @@ class PodcastMetricsController < ApplicationController
     }
   end
 
+  def feeds
+    feed_slugs = @podcast.feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
+
+    @downloads_by_feed =
+      Rollups::HourlyDownload
+        .where(podcast_id: @podcast.id, feed_slug: feed_slugs)
+        .select(:feed_slug, "SUM(count) AS count")
+        .group(:feed_slug)
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .final
+        .load_async
+
+    @total_downloads = @downloads_by_feed.sum(&:count)
+    feeds_with_downloads = []
+
+    @feeds = @downloads_by_feed.map do |rollup|
+      feed = if rollup[:feed_slug].blank?
+        @podcast.default_feed
+      else
+        @podcast.feeds.where(slug: rollup[:feed_slug]).first
+      end
+
+      feeds_with_downloads << feed
+
+      {
+        feed: feed,
+        downloads: rollup
+      }
+    end
+
+    @podcast.feeds.each { |feed| @feeds << {feed: feed} if feeds_with_downloads.exclude?(feed) }
+
+    render partial: "metrics/feeds_card", locals: {
+      podcast: @podcast,
+      feeds: @feeds,
+      total_downloads: @total_downloads
+    }
+  end
+
   def uniques
     @uniques_rollups =
       Rollups::DailyUnique
