@@ -14,7 +14,7 @@ class PodcastMetricsController < ApplicationController
     @episode_trend = calculate_episode_trend(@episode, @prev_episode)
     @sparkline_downloads =
       Rollups::HourlyDownload
-        .where(episode_id: @episode[:guid], hour: (@episode.first_rss_published_at..Date.utc_today))
+        .where(episode_id: @episode[:guid], hour: (@episode.first_rss_published_at..))
         .final
         .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
         .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
@@ -235,7 +235,7 @@ class PodcastMetricsController < ApplicationController
     upperbound = lowerbound + 24.hours
 
     Rollups::HourlyDownload
-      .where(episode_id: ep[:guid], hour: (lowerbound..upperbound))
+      .where(episode_id: ep[:guid], hour: (lowerbound...upperbound))
       .final
       .load_async
       .sum(:count)
