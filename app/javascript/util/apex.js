@@ -87,6 +87,13 @@ export const BAR_TYPE = {
         gradientToColors: [lightPink],
       },
     },
+    states: {
+      hover: {
+        filter: {
+          type: "none",
+        },
+      },
+    },
   },
 }
 
@@ -203,6 +210,13 @@ export const SPARKBAR_TYPE = {
       bar: {
         horizontal: true,
         barHeight: "90%",
+      },
+    },
+    states: {
+      hover: {
+        filter: {
+          type: "none",
+        },
       },
     },
   },
