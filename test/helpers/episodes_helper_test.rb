@@ -9,6 +9,12 @@ describe EpisodesHelper do
   let(:podcast) { create(:podcast) }
 
   describe "#episode_integration_status" do
+    it "returns 'draft' when episode is a draft" do
+      draft_episode = create(:episode, podcast: podcast, published_at: nil)
+      assert_equal "draft", helper.episode_integration_status(:apple, draft_episode)
+      assert_equal "draft", helper.episode_integration_status(:megaphone, draft_episode)
+    end
+
     it "returns 'not_publishable' when episode does not publish to the integration" do
       episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
       assert_equal "not_publishable", helper.episode_integration_status(:apple, episode)
