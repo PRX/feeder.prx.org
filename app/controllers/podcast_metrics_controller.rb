@@ -90,6 +90,7 @@ class PodcastMetricsController < ApplicationController
     @podcast.feeds.each { |feed| @feeds << {feed: feed} if feeds_with_downloads.exclude?(feed) }
 
     render partial: "metrics/feeds_card", locals: {
+      podcast: @podcast,
       feeds: @feeds
     }
   end

@@ -143,11 +143,11 @@
       <div class="col-lg-6 d-grid mb-4">
         <div class="card shadow">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Downloads by Feed</span>
+            <span class="h4 fw-bold mb-0">Downloads by Feed</span>
             <span>Last 28 Days</span>
           </div>
           <div class="card-body p-0">
-            <%= turbo_frame_tag "feeds", src: feeds_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
+            <%= turbo_frame_tag "feeds", src: feeds_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy", target: "_top" do %>
               <%= render "metrics/loading_card" %>
             <% end %>
           </div>
@@ -158,7 +158,7 @@
       <div class="col-lg-6 d-grid mb-4">
         <div class="card shadow">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Downloads by Season</span>
+            <span class="h4 fw-bold mb-0">Downloads by Season</span>
             <span>All-Time</span>
           </div>
           <div class="card-body p-0">
@@ -172,7 +172,7 @@
     <div class="col-lg-6 d-grid mb-4">
       <div class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Downloads by Country</span>
+          <span class="h4 fw-bold mb-0">Downloads by Country</span>
           <span>Last 28 Days</span>
         </div>
         <div class="card-body p-0">
@@ -185,7 +185,7 @@
     <div class="col-lg-6 d-grid mb-4">
       <div class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Downloads by App</span>
+          <span class="h4 fw-bold mb-0">Downloads by App</span>
           <span>Last 28 Days</span>
         </div>
         <div class="card-body p-0">
