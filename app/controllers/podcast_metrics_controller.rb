@@ -2,7 +2,7 @@ class PodcastMetricsController < ApplicationController
   include MetricsUtils
 
   before_action :set_podcast
-  before_action :check_clickhouse, except: %i[show]
+  # before_action :check_clickhouse, except: %i[show]
 
   def show
   end
@@ -12,9 +12,10 @@ class PodcastMetricsController < ApplicationController
     @prev_episode = Episode.find_by(guid: metrics_params[:prev_episode_id])
 
     @episode_trend = calculate_episode_trend(@episode, @prev_episode)
+
     @sparkline_downloads =
       Rollups::HourlyDownload
-        .where(episode_id: @episode[:guid], hour: (@episode.first_rss_published_at..))
+        .where(episode_id: @episode[:guid], hour: (publish_hour(@episode)..publish_hour(@episode) + 6.months))
         .final
         .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
         .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
@@ -219,7 +220,7 @@ class PodcastMetricsController < ApplicationController
   end
 
   def calculate_episode_trend(episode, prev_episode)
-    return nil unless episode.in_default_feed? && episode.first_rss_published_at.present? && prev_episode.present?
+    return nil unless episode.first_rss_published_at.present? && prev_episode.present?
     return nil if (episode.first_rss_published_at + 1.day) > Time.now
 
     ep_dropday_sum = episode_dropday_query(episode)
@@ -227,11 +228,11 @@ class PodcastMetricsController < ApplicationController
 
     return nil if ep_dropday_sum <= 0 || previous_ep_dropday_sum <= 0
 
-    ((ep_dropday_sum.to_f / previous_ep_dropday_sum.to_f) - 1).round(2)
+    ((ep_dropday_sum.to_f / previous_ep_dropday_sum.to_f) - 1).round(3)
   end
 
   def episode_dropday_query(ep)
-    lowerbound = ep.first_rss_published_at.beginning_of_hour
+    lowerbound = publish_hour(ep)
     upperbound = lowerbound + 24.hours
 
     Rollups::HourlyDownload
@@ -239,5 +240,13 @@ class PodcastMetricsController < ApplicationController
       .final
       .load_async
       .sum(:count)
+  end
+
+  def publish_hour(episode)
+    if episode.first_rss_published_at.present?
+      episode.first_rss_published_at.beginning_of_hour
+    else
+      episode.published_at.beginning_of_hour
+    end
   end
 end
