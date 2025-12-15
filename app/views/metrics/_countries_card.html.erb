@@ -2,7 +2,7 @@
   <ul class="list-group list-group-flush position-relative">
     <% countries.map do |country| %>
       <li class="list-group-item d-flex justify-content-between">
-        <span class="z-1"><%= country[:country_code] %></span>
+        <span class="z-1"><%= country.country_label %></span>
         <span class="z-1"><%= number_with_delimiter(country[:count]) || 0 %></span>
       </li>
     <% end %>
