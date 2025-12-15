@@ -2,7 +2,7 @@
   <ul class="list-group list-group-flush position-relative">
     <% agents.map do |agent| %>
       <li class="list-group-item d-flex justify-content-between">
-        <span class="z-1"><%= agent.label %></span>
+        <span class="z-1"><%= Rollups::DailyAgent.label_for(agent[:code]) %></span>
         <span class="z-1"><%= number_with_delimiter(agent[:count]) || 0 %></span>
       </li>
     <% end %>
