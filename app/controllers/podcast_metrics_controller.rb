@@ -2,12 +2,31 @@ class PodcastMetricsController < ApplicationController
   include MetricsUtils
 
   before_action :set_podcast
-  before_action :check_clickhouse, except: %i[show]
-  before_action :set_date_range, except: %i[dropdays]
-  before_action :set_uniques, only: %i[show uniques]
-  before_action :set_dropday_range, only: %i[show dropdays]
+  # before_action :check_clickhouse, except: %i[show]
 
   def show
+  end
+
+  def episode_sparkline
+    @episode = Episode.find_by(guid: metrics_params[:episode_id])
+    @prev_episode = Episode.find_by(guid: metrics_params[:prev_episode_id])
+
+    @episode_trend = calculate_episode_trend(@episode, @prev_episode)
+
+    @sparkline_downloads =
+      Rollups::HourlyDownload
+        .where(episode_id: @episode[:guid], hour: (publish_hour(@episode)..publish_hour(@episode) + 6.months))
+        .final
+        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
+        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
+        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
+        .load_async
+
+    render partial: "metrics/episode_sparkline", locals: {
+      episode: @episode,
+      downloads: @sparkline_downloads,
+      episode_trend: @episode_trend
+    }
   end
 
   def downloads
@@ -195,46 +214,39 @@ class PodcastMetricsController < ApplicationController
     render_not_found(e)
   end
 
-  def set_date_range
-    @date_start = metrics_params[:date_start]
-    @date_end = metrics_params[:date_end]
-    @interval = metrics_params[:interval]
-    @date_range = generate_date_range(@date_start, @date_end, @interval)
-  end
-
-  def set_uniques
-    @uniques_selection = uniques_params[:uniques_selection]
-  end
-
-  def set_dropday_range
-    @dropday_range = dropdays_params[:dropday_range]
-  end
-
   def metrics_params
     params
-      .permit(:podcast_id, :date_start, :date_end, :interval)
-      .with_defaults(
-        date_start: 30.days.ago.utc_date,
-        date_end: Date.utc_today,
-        interval: "DAY"
-      )
+      .permit(:podcast_id, :episode_id, :prev_episode_id)
   end
 
-  def uniques_params
-    params
-      .permit(:uniques_selection)
-      .with_defaults(
-        uniques_selection: "last_7_rolling"
-      )
-      .merge(metrics_params)
+  def calculate_episode_trend(episode, prev_episode)
+    return nil unless episode.first_rss_published_at.present? && prev_episode.present?
+    return nil if (episode.first_rss_published_at + 1.day) > Time.now
+
+    ep_dropday_sum = episode_dropday_query(episode)
+    previous_ep_dropday_sum = episode_dropday_query(prev_episode)
+
+    return nil if ep_dropday_sum <= 0 || previous_ep_dropday_sum <= 0
+
+    ((ep_dropday_sum.to_f / previous_ep_dropday_sum.to_f) - 1).round(3)
   end
 
-  def dropdays_params
-    params
-      .permit(:dropday_range, :interval)
-      .with_defaults(
-        dropday_range: 7
-      )
-      .merge(metrics_params)
+  def episode_dropday_query(ep)
+    lowerbound = publish_hour(ep)
+    upperbound = lowerbound + 24.hours
+
+    Rollups::HourlyDownload
+      .where(episode_id: ep[:guid], hour: (lowerbound...upperbound))
+      .final
+      .load_async
+      .sum(:count)
+  end
+
+  def publish_hour(episode)
+    if episode.first_rss_published_at.present?
+      episode.first_rss_published_at.beginning_of_hour
+    else
+      episode.published_at.beginning_of_hour
+    end
   end
 end
