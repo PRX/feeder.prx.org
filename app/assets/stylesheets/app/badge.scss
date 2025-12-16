@@ -26,6 +26,11 @@
   color: $black;
 }
 
+.prx-badge-not_publishable {
+  background: $gray-400;
+  color: $black;
+}
+
 .prx-badge-incomplete-published,
 .prx-badge-invalid,
 .prx-badge-not_found,

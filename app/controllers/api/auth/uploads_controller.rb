@@ -12,7 +12,7 @@ class Api::Auth::UploadsController < Api::BaseController
   end
 
   def show
-    opts = {bucket: s3_bucket, key: s3_key, use_accelerate_endpoint: s3_accelerate, expires_in: 30.minutes.to_i}
+    opts = {bucket: s3_bucket, key: s3_key, use_accelerate_endpoint: s3_accelerate, expires_in: 1.hour.to_i}
     exp = Time.now.to_i + opts[:expires_in]
     put_url = s3_signer.presigned_request(:put_object, opts)
     get_url = s3_signer.presigned_request(:get_object, opts)

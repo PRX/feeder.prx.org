@@ -81,6 +81,7 @@ Rails.application.routes.draw do
   root "podcasts#index"
 
   unless Rails.configuration.consider_all_requests_local
+    match "/", via: :all, to: "errors#not_allowed"
     match "*unmatched", via: :all, to: "errors#not_found"
   end
 end

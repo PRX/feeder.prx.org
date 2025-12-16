@@ -91,18 +91,15 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
-        eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          upload_media!(eps)
+        eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+          upload_media!(batch)
         end
 
-        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          process_delivery!(eps)
+        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+          process_delivery!(batch)
         end
 
-        eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
-          publish_drafting!(eps)
-          raise_delivery_processing_errors(eps)
-        end
+        raise_delivery_processing_errors(eps)
       end
     end
 
@@ -145,9 +142,11 @@ module Apple
         wait_for_upload_processing(eps)
 
         # Wait for the audio asset to be processed by Apple
-        # Mark episodes as delivered as they are processed
         wait_for_asset_state(eps) do |ready_eps|
           log_asset_wait_duration!(ready_eps)
+          # Publish the ready episodes
+          publish_drafting!(ready_eps)
+          # Then mark them as delivered
           mark_as_delivered!(ready_eps)
         end
       end
@@ -398,11 +397,47 @@ module Apple
       end
     end
 
+    def verify_publishing_state!(eps)
+      # Capture initial state before polling to detect drift
+      initial_states = eps.to_h { |ep| [ep.feeder_id, ep.publishing_state] }
+
+      poll_episodes!(eps)
+
+      drifted_count = eps.count do |ep|
+        initial_state = initial_states[ep.feeder_id]
+        (ep.publishing_state != initial_state).tap do |drifted|
+          if drifted
+            Rails.logger.warn("Episode publishing state found to be out of sync", {
+              episode_id: ep.feeder_id,
+              local_expected_state: initial_state,
+              remote_actual_state: ep.publishing_state
+            })
+          end
+        end
+      end
+
+      if drifted_count.positive?
+        raise Apple::RetryPublishingError.new("Detected #{drifted_count} episodes with publishing state drift")
+      end
+
+      true
+    end
+
     def publish_drafting!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.select { |ep| ep.drafting? && ep.container_upload_complete? }
+        # Guard: verify all episodes are in a consistent local and remote state
+        verify_publishing_state!(eps)
 
-        res = Apple::Episode.publish(api, show, eps)
+        drafting_eps, non_ready_eps = eps.partition { |ep| ep.drafting? && ep.container_upload_complete? }
+        non_ready_eps.each do |ep|
+          Rails.logger.info("Skipping publish for non-ready episode", {episode_id: ep.feeder_id,
+                                                                     publishing_state: ep.publishing_state,
+                                                                     container_upload_complete: ep.container_upload_complete?})
+        end
+
+        Rails.logger.info("Publishing #{drafting_eps.length} drafting episodes.", {drafting_episode_ids: drafting_eps.map(&:feeder_id)}) if drafting_eps.any?
+
+        res = Apple::Episode.publish(api, show, drafting_eps)
 
         Rails.logger.info("Published #{res.length} drafting episodes.")
       end
