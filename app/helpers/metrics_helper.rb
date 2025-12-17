@@ -116,4 +116,16 @@ module MetricsHelper
   def uniques_selection_options
     Rollups::DailyUnique::UNIQUE_OPTIONS.map { |opt| [I18n.t(".helpers.label.metrics.uniques.#{opt}"), opt] }
   end
+
+  def uses_multiple_feeds(model)
+    model.feeds.length > 1
+  end
+
+  def uses_seasons(model)
+    if model.is_a?(Podcast)
+      model.episodes.published.where.not(season_number: nil).length > 0
+    elsif model.is_a?(Episode)
+      model.season_number.present?
+    end
+  end
 end

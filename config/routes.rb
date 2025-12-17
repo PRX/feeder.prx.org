@@ -23,7 +23,10 @@ Rails.application.routes.draw do
     get "rollups_demo", to: "podcasts#rollups_demo"
     resource :metrics, only: [:show], controller: :podcast_metrics do
       get "episode_sparkline"
-      get "downloads"
+      get "monthly_downloads"
+      get "feeds"
+      get "seasons"
+      get "countries"
       get "uniques"
       get "episodes"
       get "dropdays"

@@ -1,5 +1,6 @@
 class PodcastMetricsController < ApplicationController
   include MetricsUtils
+  include MetricsQueries
 
   before_action :set_podcast
   # before_action :check_clickhouse, except: %i[show]
@@ -29,60 +30,87 @@ class PodcastMetricsController < ApplicationController
     }
   end
 
-  def downloads
-    @downloads_within_date_range =
-      Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
-        .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-        .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-        .load_async
+  def monthly_downloads
+    @date_start = (Date.utc_today - 11.months).beginning_of_month
+    @date_end = Date.utc_today
+    @date_range = generate_date_range(@date_start, @date_end.beginning_of_month, "MONTH")
+    @downloads_within_date_range = daterange_downloads(@podcast, @date_start, @date_end, "MONTH")
 
-    @downloads = single_rollups(@downloads_within_date_range)
+    @downloads = single_rollups(@downloads_within_date_range, "Downloads")
 
-    render partial: "metrics/downloads_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_downloads_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: @interval,
+    render partial: "metrics/monthly_card", locals: {
       date_range: @date_range,
       downloads: @downloads
     }
   end
 
   def episodes
-    @episodes =
-      @podcast.episodes
-        .published
-        .order(first_rss_published_at: :desc)
-        .paginate(params[:episodes], params[:per])
+    @episodes = @podcast.episodes.published.dropdate_desc.limit(10)
+    @date_range = generate_date_range(Date.utc_today - 28.days, Date.utc_today, "DAY")
 
-    @episodes_recent =
-      Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
-        .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-        .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-        .load_async
-    @episodes_alltime =
-      Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
-        .select(:episode_id, "SUM(count) AS count")
-        .group(:episode_id)
-        .load_async
+    @episodes_downloads = daterange_downloads(@episodes)
 
-    @episode_rollups = multiple_episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
+    @episode_rollups = multiple_episode_rollups(@episodes, @episodes_downloads)
 
     render partial: "metrics/episodes_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_episodes_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: @interval,
-      date_range: @date_range,
-      episodes: @episodes,
-      episode_rollups: @episode_rollups
+      episode_rollups: @episode_rollups,
+      date_range: @date_range
+    }
+  end
+
+  def feeds
+    feed_slugs = @podcast.feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
+    date_start = (Date.utc_today - 28.days)
+
+    @downloads_by_feed =
+      Rollups::HourlyDownload
+        .where(podcast_id: @podcast.id, feed_slug: feed_slugs, hour: (date_start..))
+        .select(:feed_slug, "SUM(count) AS count")
+        .group(:feed_slug)
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .final
+        .load_async
+
+    feeds_with_downloads = []
+
+    @feeds = @downloads_by_feed.map do |rollup|
+      feed = if rollup[:feed_slug].blank?
+        @podcast.default_feed
+      else
+        @podcast.feeds.where(slug: rollup[:feed_slug]).first
+      end
+
+      feeds_with_downloads << feed
+
+      {
+        feed: feed,
+        downloads: rollup
+      }
+    end
+
+    @podcast.feeds.each { |feed| @feeds << {feed: feed} if feeds_with_downloads.exclude?(feed) }
+
+    render partial: "metrics/feeds_card", locals: {
+      podcast: @podcast,
+      feeds: @feeds
+    }
+  end
+
+  def seasons
+    published_seasons = @podcast.episodes.published.pluck(:season_number).uniq
+
+    @season_rollups = published_seasons.map do |season|
+      episodes = @podcast.episodes.published.where(season_number: season)
+      rollup = alltime_downloads(episodes, "podcast_id")
+
+      {
+        season_number: season,
+        downloads: rollup.first
+      }
+    end
+
+    render partial: "metrics/seasons_card", locals: {
+      seasons: @season_rollups
     }
   end
 
@@ -154,55 +182,69 @@ class PodcastMetricsController < ApplicationController
     }
   end
 
-  def geos
-    # @top_subdivs =
-    #   Rollups::DailyGeo
-    #     .where(podcast_id: @podcast.id)
-    #     .select(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day", "SUM(count) AS count")
-    #     .group(:country_code, :subdiv_code, "DATE_TRUNC('WEEK', day) AS day")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .limit(10)
-    # @top_countries =
-    #   Rollups::DailyGeo
-    #     .where(podcast_id: @podcast.id)
-    #     .select(:country_code, "SUM(count) AS count")
-    #     .group(:country_code)
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .limit(10)
+  def countries
+    date_start = (Date.utc_today - 28.days).to_s
+    date_end = Date.utc_today.to_s
+
+    top_countries =
+      Rollups::DailyGeo
+        .where(podcast_id: @podcast.id, day: date_start..date_end)
+        .select(:country_code, "SUM(count) AS count")
+        .group(:country_code)
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .final
+        .limit(10)
+        .load_async
+
+    top_country_codes = top_countries.pluck(:country_code)
+
+    other_countries =
+      Rollups::DailyGeo
+        .where(podcast_id: @podcast.id, day: date_start..date_end)
+        .where.not(country_code: top_country_codes)
+        .select("'Other' AS country_code", "SUM(count) AS count")
+        .final
+        .load_async
+
+    @country_rollups = []
+    @country_rollups << top_countries
+    @country_rollups << other_countries
+
+    render partial: "metrics/countries_card", locals: {
+      countries: @country_rollups.flatten
+    }
   end
 
   def agents
-    # @agent_apps_query =
-    #   Rollups::DailyAgent
-    #     .where(podcast_id: @podcast.id)
-    #     .select("agent_name_id AS code", "SUM(count) AS count")
-    #     .group("agent_name_id AS code")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .load_async
-    # @agent_types_query =
-    #   Rollups::DailyAgent
-    #     .where(podcast_id: @podcast.id)
-    #     .select("agent_type_id AS code", "SUM(count) AS count")
-    #     .group("agent_type_id AS code")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .load_async
-    # @agent_os_query =
-    #   Rollups::DailyAgent
-    #     .where(podcast_id: @podcast.id)
-    #     .select("agent_os_id AS code", "SUM(count) AS count")
-    #     .group("agent_os_id AS code")
-    #     .order(Arel.sql("SUM(count) AS count DESC"))
-    #     .load_async
+    date_start = (Date.utc_today - 28.days).to_s
+    date_end = Date.utc_today.to_s
 
-    # @agent_apps = Kaminari.paginate_array(@agent_apps_query).page(params[:agent_apps]).per(10)
-    # @agent_types = Kaminari.paginate_array(@agent_types_query).page(params[:agent_types]).per(10)
-    # @agent_os = Kaminari.paginate_array(@agent_os_query).page(params[:agent_os]).per(10)
+    agent_apps =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id, day: date_start..date_end)
+        .select("agent_name_id AS code", "SUM(count) AS count")
+        .group("agent_name_id AS code")
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .final
+        .limit(10)
+        .load_async
 
-    # render partial: "agents", locals: {
-    #   agent_apps: @agent_apps,
-    #   agent_types: @agent_types,
-    #   agent_os: @agent_os
-    # }
+    top_apps_ids = agent_apps.pluck(:code)
+    other_apps =
+      Rollups::DailyAgent
+        .where(podcast_id: @podcast.id, day: date_start..date_end)
+        .where.not(agent_name_id: top_apps_ids)
+        .select("'Other' AS code", "SUM(count) AS count")
+        .final
+        .load_async
+
+    @agent_rollups = []
+    @agent_rollups << agent_apps
+    @agent_rollups << other_apps
+
+    render partial: "metrics/agent_apps_card", locals: {
+      agents: @agent_rollups.flatten
+    }
   end
 
   private
