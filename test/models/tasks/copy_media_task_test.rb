@@ -100,8 +100,31 @@ describe Tasks::CopyMediaTask do
 
       task.stub(:media_resource, uncut) do
         uncut.stub(:slice_contents, slice) do
+          assert_equal [], task.media_resource.ad_breaks
+          assert_equal nil, task.media_resource.episode.segment_count
+
           task.update_media_resource
+          assert_equal [3.000], task.media_resource.ad_breaks
+          assert_equal 2, task.media_resource.episode.segment_count
           assert slice.verify
+        end
+      end
+    end
+
+    it "will not lower segment count from tag" do
+      slice = Minitest::Mock.new
+
+      episode = build(:episode, segment_count: 3)
+      uncut = build(:uncut, episode: episode)
+
+      task.stub(:media_resource, uncut) do
+        uncut.stub(:slice_contents, slice) do
+          assert_equal [], task.media_resource.ad_breaks
+          assert_equal 3, task.media_resource.episode.segment_count
+
+          task.update_media_resource
+          assert_equal [3.000], task.media_resource.ad_breaks
+          assert_equal 3, task.media_resource.episode.segment_count
         end
       end
     end

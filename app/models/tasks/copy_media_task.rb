@@ -38,8 +38,9 @@ class Tasks::CopyMediaTask < ::Task
         media_resource.bit_rate = info[:Audio][:Bitrate].to_i / 1000
         if info[:Audio][:Tags] && media_resource.is_a?(Uncut)
           breaks = media_resource.breaks_from_tags(info[:Audio][:Tags])
+          original_count = [media_resource.episode.segment_count.to_i, 1].max
           media_resource.ad_breaks = breaks
-          media_resource.episode.segment_count = media_resource.segmentation.count
+          media_resource.episode.segment_count = [original_count, media_resource.segmentation.count].max
         end
       end
 

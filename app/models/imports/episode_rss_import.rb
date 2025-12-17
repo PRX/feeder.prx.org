@@ -48,6 +48,7 @@ class EpisodeRssImport < EpisodeImport
       if content&.size.to_i == 1 || podcast_import.id3_timings
         href = content&.first&.fetch(:original_url)
         episode.uncut = Uncut.new(href: href)
+        episode.segment_count = 1
       else
         episode.media = content
         episode.segment_count = content&.size
