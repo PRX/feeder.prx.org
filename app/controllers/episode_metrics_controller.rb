@@ -50,10 +50,35 @@ class EpisodeMetricsController < ApplicationController
     }
   end
 
-  def geos
+  def countries
+    top_countries = top_countries_rollups(@episode)
+
+    top_country_codes = top_countries.pluck(:country_code)
+
+    other_countries = other_countries_rollups(@episode, top_country_codes)
+
+    @country_rollups = []
+    @country_rollups << top_countries
+    @country_rollups << other_countries
+
+    render partial: "metrics/countries_card", locals: {
+      countries: @country_rollups.flatten
+    }
   end
 
   def agents
+    agent_apps = top_agents_rollups(@episode)
+    top_apps_ids = agent_apps.pluck(:code)
+
+    other_apps = other_agents_rollups(@episode, top_apps_ids)
+
+    @agent_rollups = []
+    @agent_rollups << agent_apps
+    @agent_rollups << other_apps
+
+    render partial: "metrics/agent_apps_card", locals: {
+      agents: @agent_rollups.flatten
+    }
   end
 
   private
