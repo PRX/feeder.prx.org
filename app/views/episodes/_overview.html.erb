@@ -62,4 +62,23 @@
   <div class="col d-flex">
     <%= render "scorecard_dashboard", daterange_downloads: daterange_downloads, alltime_downloads: alltime_downloads, episode: episode %>
   </div>
+
+  <div class="row">
+    <% if uses_multiple_feeds(episode) %>
+      <div class="col d-grid mb-4">
+        <div class="card shadow">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="h4 fw-bold mb-0">Downloads by Feed</span>
+            <span>Last 28 Days</span>
+          </div>
+          <div class="card-body p-0">
+            <%= turbo_frame_tag "feeds", src: feeds_episode_metrics_path(episode_id: episode.guid), loading: "lazy", target: "_top" do %>
+              <%= render "metrics/loading_card" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
 </div>

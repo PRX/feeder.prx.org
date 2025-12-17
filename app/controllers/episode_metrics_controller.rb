@@ -20,6 +20,36 @@ class EpisodeMetricsController < ApplicationController
     }
   end
 
+  def feeds
+    feed_slugs = @episode.feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
+
+    @downloads_by_feed = downloads_by_feed(@episode, feed_slugs)
+
+    feeds_with_downloads = []
+
+    @feeds = @downloads_by_feed.map do |rollup|
+      feed = if rollup[:feed_slug].blank?
+        @episode.podcast.default_feed
+      else
+        @episode.feeds.where(slug: rollup[:feed_slug]).first
+      end
+
+      feeds_with_downloads << feed
+
+      {
+        feed: feed,
+        downloads: rollup
+      }
+    end
+
+    @episode.feeds.each { |feed| @feeds << {feed: feed} if feeds_with_downloads.exclude?(feed) }
+
+    render partial: "metrics/feeds_card", locals: {
+      podcast: @episode.podcast,
+      feeds: @feeds
+    }
+  end
+
   def geos
   end
 

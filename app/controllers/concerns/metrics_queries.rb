@@ -27,6 +27,18 @@ module MetricsQueries
       .load_async
   end
 
+  def downloads_by_feed(model, slugs, date_start = Date.utc_today - 28.days)
+    model_id, column = model_attrs(model)
+
+    Rollups::HourlyDownload
+      .where("#{column}": model_id, feed_slug: slugs, hour: (date_start..))
+      .select(:feed_slug, "SUM(count) AS count")
+      .group(:feed_slug)
+      .order(Arel.sql("SUM(count) AS count DESC"))
+      .final
+      .load_async
+  end
+
   def model_attrs(model)
     model_id = if model.is_a?(Enumerable)
       model.pluck(:guid)

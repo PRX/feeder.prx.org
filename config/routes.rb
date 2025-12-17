@@ -42,6 +42,7 @@ Rails.application.routes.draw do
     resource :transcripts, only: [:show, :update], controller: :episode_transcripts
     resource :metrics, only: [:show], controller: :episode_metrics do
       get "downloads"
+      get "feeds"
       get "geos"
       get "agents"
     end
