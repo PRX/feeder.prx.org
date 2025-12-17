@@ -15,6 +15,13 @@ module PorterUtils
     end
   end
 
+  def self.callback_sqs
+    region = ENV["AWS_REGION"].present? ? ENV["AWS_REGION"] : "us-east-1"
+    account = ENV["AWS_ACCOUNT_ID"]
+    queue = ApplicationWorker.prefix_name("fixer_callback")
+    "https://sqs.#{region}.amazonaws.com/#{account}/#{queue}"
+  end
+
   def porter_start!(job)
     self.class.porter_sns_client.publish(topic_arn: ENV["PORTER_SNS_TOPIC"], message: {Job: job}.to_json)
   end
@@ -35,14 +42,10 @@ module PorterUtils
   end
 
   def porter_callbacks
-    region = ENV["AWS_REGION"].present? ? ENV["AWS_REGION"] : "us-east-1"
-    account = ENV["AWS_ACCOUNT_ID"]
-    queue = ApplicationWorker.prefix_name("fixer_callback")
-
     [
       {
         Type: "AWS/SQS",
-        Queue: "https://sqs.#{region}.amazonaws.com/#{account}/#{queue}"
+        Queue: PorterUtils.callback_sqs
       }
     ]
   end

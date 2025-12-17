@@ -1,0 +1,25 @@
+<% data = {controller: "unsaved disable", unsaved_changed_value: stream.changed?, unsaved_confirm_value: t(".confirm")} %>
+<% html = {autocomplete: "off"} %>
+
+<%= form_with(model: stream, url: podcast_stream_path(podcast), method: :put, html: html, data: data) do |form| %>
+  <%# first button in form must be a submit, for enter key to work %>
+  <%= form.submit class: "d-none" %>
+
+  <div class="row my-4 mx-2">
+    <div class="col-lg-8">
+      <div class="row">
+        <%= render "form_main", stream: stream, form: form %>
+        <%= render "form_settings", stream: stream, form: form %>
+      </div>
+    </div>
+    <div class="col-lg-4 d-grid align-content-start gap-3">
+      <div class="row">
+        <div class="col-12">
+          <%= render "form_status", stream: stream, form: form %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%= render "layouts/stale_record_modal", form: form, discard_path: podcast_stream_path(podcast) %>
+<% end %>
