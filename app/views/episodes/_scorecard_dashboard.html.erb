@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="row mb-4 justify-content-between">
+    <div class="col ps-0 pe-2">
+      <%= render "metrics/score_card", score: number_with_delimiter(daterange_downloads), label: "downloads", sublabel: "last 28 days" %>
+    </div>
+    <div class="col ps-2 pe-0">
+      <%= render "metrics/score_card", score: number_with_delimiter(alltime_downloads), label: "downloads", sublabel: "all-time" %>
+    </div>
+  </div>
+  <div class="row mb-4">
+    <div class="col p-0">
+      <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="h4 fw-bold mb-0">Episode Performance</span>
+          <span>Last 28 Days</span>
+        </div>
+        <div class="card-body metrics-card-body">
+          <%= turbo_frame_tag "downloads", src: downloads_episode_metrics_path(episode_id: episode.guid), loading: "lazy" do %>
+            <%= render "metrics/loading_card" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

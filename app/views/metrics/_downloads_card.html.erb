@@ -1,0 +1,9 @@
+<%= turbo_frame_tag "downloads" do %>
+  <div class="col metrics-chart"
+    data-controller="apex-downloads"
+    data-apex-downloads-id-value="<%= SecureRandom.uuid %>"
+    data-apex-downloads-downloads-value="<%= rollups.to_json %>"
+    data-apex-downloads-date-range-value="<%= date_range.to_json %>">
+    <div data-apex-downloads-target="chart"></div>
+  </div>
+<% end %>

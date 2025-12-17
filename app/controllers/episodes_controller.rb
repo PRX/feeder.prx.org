@@ -1,5 +1,6 @@
 class EpisodesController < ApplicationController
   include EmbedPlayerHelper
+  include MetricsQueries
 
   before_action :set_episode, only: %i[show overview edit update destroy]
   before_action :set_podcast
@@ -60,6 +61,10 @@ class EpisodesController < ApplicationController
 
   # GET /episodes/1/overview
   def overview
+    if Rails.env.development?
+      @alltime_downloads = alltime_downloads(@episode).sum(&:count)
+      @daterange_downloads = daterange_downloads(@episode).sum(&:count)
+    end
   end
 
   # GET /episodes/1/edit
