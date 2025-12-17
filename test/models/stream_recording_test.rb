@@ -33,16 +33,16 @@ describe StreamRecording do
 
   describe "#record_days" do
     it "validates integer days of week" do
-      stream.record_days = [1, 2, 3, 4, 5, 6, 7]
+      stream.record_days = [0, 1, 2, 3, 4, 5, 6]
       assert stream.valid?
 
-      stream.record_days = [1, 7]
+      stream.record_days = [0, 6]
       assert stream.valid?
 
-      stream.record_days = [0, 7]
+      stream.record_days = [-1, 6]
       refute stream.valid?
 
-      stream.record_days = [8]
+      stream.record_days = [7]
       refute stream.valid?
     end
 
@@ -61,10 +61,10 @@ describe StreamRecording do
       stream.record_days = [""]
       assert_nil stream.record_days
 
-      stream.record_days = 1..7
+      stream.record_days = 0..6
       assert_nil stream.record_days
 
-      stream.record_days = (1..7).to_a.shuffle
+      stream.record_days = (0..6).to_a.shuffle
       assert_nil stream.record_days
     end
   end

@@ -14,7 +14,7 @@ module StreamRecordingsHelper
   def stream_record_days_options(val)
     label = I18n.t("helpers.label.stream_recording.record_all_days")
     all = [label, "", {selected: val.blank?, data: {mandatory: true}}]
-    opts = StreamRecording::ALL_DAYS.map { |d| [I18n.t("date.day_names")[d % 7], d] }
+    opts = StreamRecording::ALL_DAYS.map { |d| [I18n.t("date.day_names")[d], d] }
     options_for_select(opts.prepend(all), val)
   end
 

@@ -1,5 +1,5 @@
 class StreamRecording < ApplicationRecord
-  ALL_DAYS = (1..7).to_a
+  ALL_DAYS = (0..6).to_a
   ALL_HOURS = (0..23).to_a
 
   enum :status, %w[enabled disabled paused].to_enum_h, prefix: true
