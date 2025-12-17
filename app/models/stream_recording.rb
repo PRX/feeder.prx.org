@@ -29,13 +29,13 @@ class StreamRecording < ApplicationRecord
     active.map do |s|
       {
         id: s.id,
-        gid: s.to_global_id.to_s,
         podcast_id: s.podcast_id,
         url: s.url,
         start_date: s.start_date,
         end_date: s.end_date,
         record_days: s.record_days,
         record_hours: s.record_hours,
+        job_id: "#{s.podcast_id}/#{s.id}/:date/:hour",
         callback: PorterUtils.callback_sqs
       }
     end
