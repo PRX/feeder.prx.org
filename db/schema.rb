@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_19_222707) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_18_154550) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -476,6 +476,29 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_19_222707) do
     t.index ["podcast_id"], name: "index_stream_recordings_on_podcast_id"
   end
 
+  create_table "stream_resources", force: :cascade do |t|
+    t.bigint "stream_recording_id"
+    t.datetime "start_at", precision: nil
+    t.datetime "end_at", precision: nil
+    t.datetime "buffer_start_at", precision: nil
+    t.datetime "buffer_end_at", precision: nil
+    t.string "guid"
+    t.string "url"
+    t.string "original_url"
+    t.string "mime_type"
+    t.integer "file_size"
+    t.integer "bit_rate"
+    t.decimal "sample_rate"
+    t.integer "channels"
+    t.decimal "duration"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "deleted_at", precision: nil
+    t.index ["end_at"], name: "index_stream_resources_on_end_at"
+    t.index ["start_at"], name: "index_stream_resources_on_start_at"
+    t.index ["stream_recording_id"], name: "index_stream_resources_on_stream_recording_id"
+  end
+
   create_table "subscribe_links", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -543,4 +566,5 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_19_222707) do
   add_foreign_key "publishing_pipeline_states", "publishing_queue_items"
   add_foreign_key "publishing_queue_items", "podcasts"
   add_foreign_key "stream_recordings", "podcasts"
+  add_foreign_key "stream_resources", "stream_recordings"
 end
