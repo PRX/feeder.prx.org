@@ -3,11 +3,11 @@ class CreateStreamResources < ActiveRecord::Migration[7.2]
     create_table :stream_resources do |t|
       t.references :stream_recording, index: true, foreign_key: true
 
-      # recorded timeframe, plus a buffer
+      # timeframe we were trying to capture, vs actually recorded
       t.timestamp :start_at, index: true
       t.timestamp :end_at, index: true
-      t.timestamp :buffer_start_at
-      t.timestamp :buffer_end_at
+      t.timestamp :actual_start_at
+      t.timestamp :actual_end_at
 
       # file locations
       t.string :guid

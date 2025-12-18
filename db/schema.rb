@@ -480,8 +480,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_18_154550) do
     t.bigint "stream_recording_id"
     t.datetime "start_at", precision: nil
     t.datetime "end_at", precision: nil
-    t.datetime "buffer_start_at", precision: nil
-    t.datetime "buffer_end_at", precision: nil
+    t.datetime "actual_start_at", precision: nil
+    t.datetime "actual_end_at", precision: nil
     t.string "guid"
     t.string "url"
     t.string "original_url"
