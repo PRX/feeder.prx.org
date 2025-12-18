@@ -485,6 +485,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_18_154550) do
     t.string "guid"
     t.string "url"
     t.string "original_url"
+    t.string "status"
     t.string "mime_type"
     t.integer "file_size"
     t.integer "bit_rate"

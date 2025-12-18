@@ -15,6 +15,7 @@ class CreateStreamResources < ActiveRecord::Migration[7.2]
       t.string :original_url
 
       # metadata
+      t.string :status
       t.string :mime_type
       t.integer :file_size
       t.integer :bit_rate
