@@ -9,6 +9,7 @@ class StreamRecording < ApplicationRecord
   serialize :record_hours, coder: JSON
 
   belongs_to :podcast, -> { with_deleted }, touch: true, optional: true
+  has_many :stream_resources, -> { order("start_at DESC") }, dependent: :destroy
 
   scope :active, ->(now = Time.now) { status_enabled.where("end_date IS NULL OR end_date > ?", now) }
   scope :recording, ->(now = Time.now) { active.where("start_date > ?", now) }
@@ -35,7 +36,6 @@ class StreamRecording < ApplicationRecord
         end_date: s.end_date,
         record_days: s.record_days,
         record_hours: s.record_hours,
-        job_id: "#{s.podcast_id}/#{s.id}/:date/:hour",
         callback: PorterUtils.callback_sqs
       }
     end
