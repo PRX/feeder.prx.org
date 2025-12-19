@@ -1,0 +1,92 @@
+require "test_helper"
+
+describe StreamResource do
+  let(:podcast) { build_stubbed(:podcast) }
+  let(:resource) { build_stubbed(:stream_resource, podcast: podcast) }
+
+  describe ".decode" do
+    let(:rec) { create(:stream_recording) }
+    let(:rec2) { create(:stream_recording) }
+
+    it "finds or builds stream resources" do
+      id = "1234/#{rec.id}/2025-12-17T15:00Z/2025-12-17T16:00Z/some-guid.mp3"
+      res = StreamResource.decode(id)
+
+      assert res.new_record?
+      assert_equal rec.id, res.stream_recording_id
+      assert_equal "2025-12-17T15:00Z".to_time, res.start_at
+      assert_equal "2025-12-17T16:00Z".to_time, res.end_at
+
+      # skip validations - we're just testing finding my stream+dates
+      res.save(validate: false)
+      assert res.persisted?
+
+      # finding again returns the same resource
+      assert_equal res, StreamResource.decode(id)
+      assert_equal res, StreamResource.decode(id.sub("some-guid.mp3", "other-guid.mp3"))
+
+      # but different recordings or dates are not new resources
+      id2 = id.sub("/#{rec.id}/", "/#{rec2.id}/")
+      assert StreamResource.decode(id2).new_record?
+      assert StreamResource.decode(id.sub("15:00Z", "15:30Z")).new_record?
+      assert StreamResource.decode(id.sub("16:00Z", "16:05Z")).new_record?
+
+      # bad data is nil
+      assert_nil StreamResource.decode(id.sub("1234/", "abcd/"))
+      assert_nil StreamResource.decode(id.sub("/#{rec.id}/", "/abcd/"))
+      assert_nil StreamResource.decode(id.sub("17T15:00Z", ""))
+      assert_nil StreamResource.decode(id.sub("17T16:00Z", ""))
+      assert_nil StreamResource.decode("1234/5678/something")
+      assert_nil StreamResource.decode("whatev")
+    end
+  end
+
+  describe "#set_defaults" do
+    it "sets unchanged defaults" do
+      res = StreamResource.new(podcast: podcast)
+      assert_equal "created", res.status
+      assert res.guid.present?
+      assert res.url.present?
+      refute res.changed?
+    end
+  end
+
+  describe "#file_name" do
+    it "parses the original url" do
+      assert_equal "audio.mp3", resource.file_name
+
+      resource.original_url = "http://some.where/the/file.name.here#and?other&stuff=1"
+      assert_equal "file.name.here", resource.file_name
+
+      resource.original_url = ""
+      assert_nil resource.file_name
+    end
+  end
+
+  describe "#published_path" do
+    it "includes the podcast prefix" do
+      assert_equal "#{podcast.id}/streams/#{resource.guid}/audio.mp3", resource.published_path
+    end
+  end
+
+  describe "#published_url" do
+    it "includes the podcast http url" do
+      assert_equal "https://f.prxu.org/#{resource.published_path}", resource.published_url
+    end
+
+    it "sets the url field" do
+      # NOTE: podcast is nil after_initialize
+      assert_nil resource.url
+
+      # but will be there before validation
+      assert resource.valid?
+      refute_nil resource.url
+      assert_equal resource.published_url, resource.url
+
+      resource.guid = "some-other-guid"
+      resource.original_url = "http://some/other.filename"
+      assert resource.valid?
+      refute_equal resource.published_url, resource.url
+    end
+  end
+end
