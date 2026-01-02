@@ -3,7 +3,7 @@ import ApexCharts from "apexcharts"
 const DEFAULT_OPTIONS = {
   chart: {
     width: "100%",
-    height: "400px",
+    height: "100%",
     zoom: { enabled: false },
     animations: {
       enabled: false,
@@ -34,12 +34,10 @@ const DATETIME_OPTIONS = {
   },
   tooltip: {
     enabled: true,
-    shared: true,
-    hideEmptySeries: false,
-    intersect: false,
-    x: {
-      format: "MMM d, h:mmtt",
-    },
+    shared: false,
+    hideEmptySeries: true,
+    intersect: true,
+    // followCursor: true,
   },
   dataLabels: {
     enabled: false,
@@ -63,15 +61,31 @@ const NUMERIC_OPTIONS = {
   },
 }
 
+const lightBlue = "#aafff5"
+const lightPink = "#e7d4ff"
+
 export const BAR_TYPE = {
   chart: {
     type: "bar",
     stacked: false,
+    animations: {
+      enabled: false,
+    },
+    sparkline: {
+      enabled: false,
+    },
   },
   options: {
     fill: {
-      type: "solid",
-      opacity: 0.8,
+      colors: [lightBlue],
+      type: "gradient",
+      opacity: 1,
+      gradient: {
+        type: "vertical",
+        shade: "light",
+        inverseColors: false,
+        gradientToColors: [lightPink],
+      },
     },
   },
 }
@@ -80,11 +94,20 @@ export const LINE_TYPE = {
   chart: {
     type: "line",
     stacked: false,
+    animations: {
+      enabled: false,
+    },
+    sparkline: {
+      enabled: false,
+    },
   },
   options: {
     stroke: {
       curve: "smooth",
-      width: 2,
+      width: 3,
+    },
+    markers: {
+      showNullDataPoints: false,
     },
   },
 }
@@ -125,13 +148,13 @@ export const SPARKLINE_TYPE = {
       enabled: false,
     },
     fill: {
-      colors: ["#F3EAFF"],
+      colors: [lightBlue],
       type: "gradient",
       gradient: {
-        type: "diagonal1",
-        gradientToColors: ["#DBFBFB"],
-        opacityFrom: 1,
-        opacityTo: 1,
+        type: "vertical",
+        shade: "light",
+        gradientToColors: [lightPink],
+        inverseColors: false,
       },
     },
     stroke: {
@@ -147,9 +170,10 @@ export function buildSparklineChart(id, series, target) {
   return new ApexCharts(target, options)
 }
 
-export function buildDateTimeChart(id, series, target, type, title = "") {
+export function buildDateTimeChart(id, series, target, type, dateRange = [], title = "") {
   const options = Object.assign({ series: series }, DEFAULT_OPTIONS, DATETIME_OPTIONS, type.options)
   Object.assign(options.chart, { id: id }, type.chart)
+  Object.assign(options.xaxis, { categories: dateRange })
   addYaxisTitle(options.yaxis, title)
   return new ApexCharts(target, options)
 }
@@ -173,11 +197,16 @@ export function buildNumericChart(id, series, target, type, title = "") {
 
 export function buildDownloadsSeries(data, dateRange) {
   if (Array.isArray(data)) {
-    return data.map((episodeRollup) => {
+    return data.map((episodeRollup, i) => {
+      let zIndex = 1
+      if (i === 0) {
+        zIndex = 2
+      }
       return {
         name: episodeRollup.episode.title,
         data: alignDownloadsOnDateRange(episodeRollup.rollups, dateRange),
         color: episodeRollup.color,
+        zIndex: zIndex,
       }
     })
   } else {
@@ -205,7 +234,7 @@ function alignDownloadsOnDateRange(downloads, range) {
     } else {
       return {
         x: date,
-        y: 0,
+        y: null,
       }
     }
   })

@@ -12,8 +12,8 @@ export default class extends Controller {
   connect() {
     const seriesData = this.downloadsValue.map((rollup) => {
       return {
-        x: rollup.hour,
-        y: rollup.count,
+        x: rollup[0],
+        y: rollup[1],
       }
     })
     const series = [
