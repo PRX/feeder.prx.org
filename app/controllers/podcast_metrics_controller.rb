@@ -9,24 +9,19 @@ class PodcastMetricsController < ApplicationController
   end
 
   def episode_sparkline
-    @episode = Episode.find_by(guid: metrics_params[:episode_id])
-    @prev_episode = Episode.find_by(guid: metrics_params[:prev_episode_id])
-
-    @episode_trend = calculate_episode_trend(@episode, @prev_episode)
-
-    @sparkline_downloads =
-      Rollups::HourlyDownload
-        .where(episode_id: @episode[:guid], hour: (publish_hour(@episode)..publish_hour(@episode) + 6.months))
-        .final
-        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
-        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
-        .load_async
+    @episode = Episode.find_by(guid: params[:episode_id])
 
     render partial: "metrics/episode_sparkline", locals: {
       episode: @episode,
-      downloads: @sparkline_downloads,
-      episode_trend: @episode_trend
+      downloads: @episode.sparkline_downloads
+    }
+  end
+
+  def episode_trend
+    @episode = Episode.find_by(guid: params[:episode_id])
+    render partial: "metrics/episode_trend", locals: {
+      episode: @episode,
+      episode_trend: @episode.episode_trend
     }
   end
 
@@ -189,29 +184,6 @@ class PodcastMetricsController < ApplicationController
   def metrics_params
     params
       .permit(:podcast_id, :episode_id, :prev_episode_id)
-  end
-
-  def calculate_episode_trend(episode, prev_episode)
-    return nil unless episode.first_rss_published_at.present? && prev_episode.present?
-    return nil if (episode.first_rss_published_at + 1.day) > Time.now
-
-    ep_dropday_sum = episode_dropday_query(episode)
-    previous_ep_dropday_sum = episode_dropday_query(prev_episode)
-
-    return nil if ep_dropday_sum <= 0 || previous_ep_dropday_sum <= 0
-
-    ((ep_dropday_sum.to_f / previous_ep_dropday_sum.to_f) - 1).round(3)
-  end
-
-  def episode_dropday_query(ep)
-    lowerbound = publish_hour(ep)
-    upperbound = lowerbound + 24.hours
-
-    Rollups::HourlyDownload
-      .where(episode_id: ep[:guid], hour: (lowerbound...upperbound))
-      .final
-      .load_async
-      .sum(:count)
   end
 
   def publish_hour(episode)
