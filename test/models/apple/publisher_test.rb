@@ -684,8 +684,8 @@ describe Apple::Publisher do
         refute podcast_delivery_file.processed_errors?
       end
 
-      it "should raise DuplicateDeliveryFileError for DUPLICATE files" do
-        assert_raises(Apple::PodcastDeliveryFile::DuplicateDeliveryFileError) do
+      it "should raise DeliveryFileError for DUPLICATE files" do
+        assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
           apple_publisher.raise_delivery_processing_errors([apple_episode])
         end
       end
@@ -694,7 +694,7 @@ describe Apple::Publisher do
         apple_episode.feeder_episode.apple_mark_as_delivered!
         refute apple_episode.feeder_episode.apple_needs_delivery?
 
-        assert_raises(Apple::PodcastDeliveryFile::DuplicateDeliveryFileError) do
+        assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
           apple_publisher.raise_delivery_processing_errors([apple_episode])
         end
 
@@ -703,7 +703,7 @@ describe Apple::Publisher do
 
       it "should log a warning for DUPLICATE files" do
         logs = capture_json_logs do
-          assert_raises(Apple::PodcastDeliveryFile::DuplicateDeliveryFileError) do
+          assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
             apple_publisher.raise_delivery_processing_errors([apple_episode])
           end
         end

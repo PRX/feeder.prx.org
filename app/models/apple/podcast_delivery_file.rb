@@ -4,8 +4,6 @@ module Apple
   class PodcastDeliveryFile < ApplicationRecord
     class DeliveryFileError < StandardError; end
 
-    class DuplicateDeliveryFileError < StandardError; end
-
     include Apple::ApiResponse
     include Apple::ApiWaiting
 

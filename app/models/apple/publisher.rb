@@ -251,7 +251,7 @@ module Apple
       end
 
       if pdfs_with_duplicates.any?
-        raise Apple::PodcastDeliveryFile::DuplicateDeliveryFileError.new(
+        raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
           "Found DUPLICATE state on #{pdfs_with_duplicates.length} podcast delivery files, episodes marked for reupload"
         )
       end
