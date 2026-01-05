@@ -646,6 +646,46 @@ describe Apple::Publisher do
       end
     end
 
+    describe "DUPLICATE processing state" do
+      let(:asset_processing_state) { "DUPLICATE" }
+
+      it "should detect the DUPLICATE state" do
+        assert podcast_delivery_file.processed_duplicate?
+        refute podcast_delivery_file.processed_errors?
+      end
+
+      it "should raise DuplicateDeliveryFileError for DUPLICATE files" do
+        assert_raises(Apple::PodcastDeliveryFile::DuplicateDeliveryFileError) do
+          apple_publisher.raise_delivery_processing_errors([apple_episode])
+        end
+      end
+
+      it "should mark the episode for reupload when DUPLICATE is detected" do
+        apple_episode.feeder_episode.apple_mark_as_delivered!
+        refute apple_episode.feeder_episode.apple_needs_delivery?
+
+        assert_raises(Apple::PodcastDeliveryFile::DuplicateDeliveryFileError) do
+          apple_publisher.raise_delivery_processing_errors([apple_episode])
+        end
+
+        assert apple_episode.feeder_episode.apple_needs_delivery?
+      end
+
+      it "should log a warning for DUPLICATE files" do
+        logs = capture_json_logs do
+          assert_raises(Apple::PodcastDeliveryFile::DuplicateDeliveryFileError) do
+            apple_publisher.raise_delivery_processing_errors([apple_episode])
+          end
+        end
+
+        log = logs.find { |l| l[:msg] == "Podcast delivery file has DUPLICATE state, marking for reupload" }
+        assert log, "Should have logged DUPLICATE warning"
+        assert_equal 40, log[:level]
+        assert_equal podcast_delivery_file.id, log[:podcast_delivery_file_id]
+        assert_equal apple_episode.feeder_episode.id, log[:episode_id]
+      end
+    end
+
     describe "#prepare_for_delivery" do
       it "should call into the apple episode class method" do
         mock = Minitest::Mock.new

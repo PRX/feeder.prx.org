@@ -220,7 +220,29 @@ module Apple
         )
       end
 
+      raise_duplicate_delivery_files(eps)
+
       true
+    end
+
+    def raise_duplicate_delivery_files(eps)
+      pdfs_with_duplicates = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_duplicate?)
+
+      pdfs_with_duplicates.each do |pdf|
+        Rails.logger.warn("Podcast delivery file has DUPLICATE state, marking for reupload",
+          {episode_id: pdf.episode.id,
+           podcast_delivery_file_id: pdf.id,
+           asset_processing_state: pdf.asset_processing_state,
+           asset_delivery_state: pdf.asset_delivery_state})
+
+        pdf.episode.apple_mark_for_reupload!
+      end
+
+      if pdfs_with_duplicates.any?
+        raise Apple::PodcastDeliveryFile::DuplicateDeliveryFileError.new(
+          "Found DUPLICATE state on #{pdfs_with_duplicates.length} podcast delivery files, episodes marked for reupload"
+        )
+      end
     end
 
     def wait_for_versioned_source_metadata(eps)
