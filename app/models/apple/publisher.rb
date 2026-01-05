@@ -214,6 +214,7 @@ module Apple
       pdfs_with_errors = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_errors?)
 
       pdfs_with_errors.each do |pdf|
+        # Uses 'error' level here because this could indicate a structural problem with the Dovetail file format
         Rails.logger.error("Podcast delivery file has VALIDATION_FAILED state, marking for reupload",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
@@ -234,6 +235,7 @@ module Apple
       pdfs_with_duplicates = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_duplicate?)
 
       pdfs_with_duplicates.each do |pdf|
+        # Somehow we uploaded the same file twice. Warn, mark for reupload, and move on.
         Rails.logger.warn("Podcast delivery file has DUPLICATE state, marking for reupload",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
