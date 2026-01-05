@@ -204,6 +204,9 @@ module Apple
     end
 
     def raise_delivery_processing_errors(eps)
+      # Both of these methods will raise if they find any problems.
+      # Since this publisher routine is always invoked from a job, raising will
+      # cause a retry.
       raise_validation_failed_delivery_files(eps)
       raise_duplicate_delivery_files(eps)
 
