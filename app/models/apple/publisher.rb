@@ -245,6 +245,8 @@ module Apple
            asset_processing_state: pdf.asset_processing_state,
            asset_delivery_state: pdf.asset_delivery_state})
 
+        # This will "increment" the filename prefix -- e.g., "2_episode.mp3" becomes "3_episode.mp3"
+        # Apple treats files with different names as different files, even if the content is identical.
         pdf.episode.apple_mark_for_reupload!
       end
 
