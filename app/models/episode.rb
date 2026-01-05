@@ -354,21 +354,15 @@ class Episode < ApplicationRecord
     return nil unless publish_hour.present?
 
     Rails.cache.fetch("#{cache_key_with_version}/sparkline_downloads", expires_in: 28.days) do
-      sparkline_query
+      Rollups::HourlyDownload
+        .where(episode_id: guid, hour: publish_hour..(publish_hour + 1.month))
+        .final
+        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
+        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
+        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
+        .load_async
+        .pluck(Arel.sql("DATE_TRUNC('DAY', hour) AS hour"), Arel.sql("SUM(count) AS count"))
     end
-  end
-
-  def sparkline_query
-    return nil unless publish_hour.present?
-
-    Rollups::HourlyDownload
-      .where(episode_id: guid, hour: publish_hour..(publish_hour + 1.month))
-      .final
-      .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
-      .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
-      .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
-      .load_async
-      .pluck(Arel.sql("DATE_TRUNC('DAY', hour) AS hour"), Arel.sql("SUM(count) AS count"))
   end
 
   def publish_hour
