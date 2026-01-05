@@ -318,10 +318,6 @@ module Apple
       end
     end
 
-    def apple_complete?
-      delivery_complete? && (processed_completed? || processed_duplicate?)
-    end
-
     def delivered?
       return false unless asset_delivery_state.present?
 
