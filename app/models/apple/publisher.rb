@@ -236,11 +236,23 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
 
-        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs)
-        raise "Timed out waiting for delivery" if waiting_timed_out
+        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs) do
+          check_for_stuck_delivery_files(eps)
+        end
+        if waiting_timed_out
+          e = Apple::DeliveryFileTimeoutError.new(eps, stage: Apple::DeliveryFileTimeoutError::STAGE_DELIVERY)
+          Rails.logger.info("Timed out waiting for delivery", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
+          raise e
+        end
 
-        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs)
-        raise "Timed out waiting for processing" if waiting_timed_out
+        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs) do
+          check_for_stuck_delivery_files(eps)
+        end
+        if waiting_timed_out
+          e = Apple::DeliveryFileTimeoutError.new(eps, stage: Apple::DeliveryFileTimeoutError::STAGE_PROCESSING)
+          Rails.logger.info("Timed out waiting for processing", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
+          raise e
+        end
 
         # Get the latest state of the podcast containers
         # which should include synced files
@@ -490,6 +502,27 @@ module Apple
           ep.apple_mark_for_reupload!
         end
         raise Apple::AssetStateTimeoutError.new(stuck)
+      end
+    end
+
+    def check_for_stuck_delivery_files(eps)
+      return if eps.empty?
+
+      # Check for stuck episodes during delivery/processing (>1 hour)
+      stuck = eps.filter { |ep|
+        duration = ep.feeder_episode.measure_asset_processing_duration
+        duration && duration > STUCK_EPISODE_TIMEOUT
+      }
+
+      if stuck.any?
+        stuck.each do |ep|
+          Rails.logger.error("Episode delivery/processing stuck for over 1 hour", {
+            episode_id: ep.feeder_id,
+            duration: ep.feeder_episode.measure_asset_processing_duration
+          })
+          ep.apple_mark_for_reupload!
+        end
+        raise Apple::DeliveryFileTimeoutError.new(stuck, stage: Apple::DeliveryFileTimeoutError::STAGE_STUCK)
       end
     end
 

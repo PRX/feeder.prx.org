@@ -1,0 +1,53 @@
+module Apple
+  class DeliveryFileTimeoutError < RuntimeError
+    attr_reader :episodes, :attempts, :asset_wait_duration, :timeout_stage
+
+    STAGE_DELIVERY = :delivery
+    STAGE_PROCESSING = :processing
+    STAGE_STUCK = :stuck
+
+    def initialize(episodes, stage:)
+      @episodes = episodes
+      @timeout_stage = stage
+      @attempts = episodes.map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }.max
+      @asset_wait_duration = episodes.map { |ep| ep.feeder_episode.measure_asset_processing_duration }.compact.max
+      super("Timeout waiting for #{stage}: Episodes: #{episode_ids}, Attempts: #{attempts}, Asset Wait Duration: #{asset_wait_duration}")
+    end
+
+    def episode_ids
+      episodes.map(&:feeder_id)
+    end
+
+    def raise_publishing_error?
+      %i[error fatal].include?(log_level)
+    end
+
+    def podcast_id
+      episodes.first&.podcast_id
+    end
+
+    def log_error!
+      Rails.logger.send(
+        log_level,
+        message,
+        {
+          podcast_id: podcast_id,
+          attempts: attempts,
+          asset_wait_duration: asset_wait_duration,
+          timeout_stage: timeout_stage
+        }
+      )
+    end
+
+    def log_level
+      case attempts
+      when 0..4
+        :warn
+      when 5
+        :error
+      else
+        :fatal
+      end
+    end
+  end
+end
