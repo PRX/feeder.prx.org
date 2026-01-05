@@ -204,25 +204,30 @@ module Apple
     end
 
     def raise_delivery_processing_errors(eps)
+      raise_validation_failed_delivery_files(eps)
+      raise_duplicate_delivery_files(eps)
+
+      true
+    end
+
+    def raise_validation_failed_delivery_files(eps)
       pdfs_with_errors = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_errors?)
 
       pdfs_with_errors.each do |pdf|
-        Rails.logger.error("Podcast delivery file has processing errors",
+        Rails.logger.error("Podcast delivery file has VALIDATION_FAILED state, marking for reupload",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
            asset_delivery_state: pdf.asset_delivery_state})
+
+        pdf.episode.apple_mark_for_reupload!
       end
 
       if pdfs_with_errors.any?
         raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found processing errors on #{pdfs_with_errors.length} podcast delivery files"
+          "Found VALIDATION_FAILED state on #{pdfs_with_errors.length} podcast delivery files, episodes marked for reupload"
         )
       end
-
-      raise_duplicate_delivery_files(eps)
-
-      true
     end
 
     def raise_duplicate_delivery_files(eps)

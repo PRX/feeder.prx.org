@@ -636,13 +636,43 @@ describe Apple::Publisher do
       assert_equal apple_publisher.raise_delivery_processing_errors([apple_episode]), true
     end
 
-    describe "non completed/complete states" do
+    describe "VALIDATION_FAILED processing state" do
       let(:asset_processing_state) { "VALIDATION_FAILED" }
-      it "should raise an error if there are processing errors" do
+
+      it "should detect the VALIDATION_FAILED state" do
         assert podcast_delivery_file.processed_errors?
+        assert podcast_delivery_file.processed_validation_failed?
+      end
+
+      it "should raise DeliveryFileError for VALIDATION_FAILED files" do
         assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
           apple_publisher.raise_delivery_processing_errors([apple_episode])
         end
+      end
+
+      it "should mark the episode for reupload when VALIDATION_FAILED is detected" do
+        apple_episode.feeder_episode.apple_mark_as_delivered!
+        refute apple_episode.feeder_episode.apple_needs_delivery?
+
+        assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
+          apple_publisher.raise_delivery_processing_errors([apple_episode])
+        end
+
+        assert apple_episode.feeder_episode.apple_needs_delivery?
+      end
+
+      it "should log an error for VALIDATION_FAILED files" do
+        logs = capture_json_logs do
+          assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
+            apple_publisher.raise_delivery_processing_errors([apple_episode])
+          end
+        end
+
+        log = logs.find { |l| l[:msg] == "Podcast delivery file has VALIDATION_FAILED state, marking for reupload" }
+        assert log, "Should have logged VALIDATION_FAILED error"
+        assert_equal 50, log[:level]
+        assert_equal podcast_delivery_file.id, log[:podcast_delivery_file_id]
+        assert_equal apple_episode.feeder_episode.id, log[:episode_id]
       end
     end
 
