@@ -42,9 +42,9 @@
         </div>
         <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column">
           <% if Rails.env.development? %>
-            <% if @episode_trend_pairs.present? %>
-              <% @episode_trend_pairs.each do |pair| %>
-                <%= render "metrics/episode_card", podcast: @podcast, episode: pair[:episode], prev_episode: pair[:prev_episode] %>
+            <% if @recently_published_episodes.present? %>
+              <% @recently_published_episodes.each do |episode| %>
+                <%= render "metrics/episode_card", podcast: @podcast, episode: episode %>
               <% end %>
             <% else %>
               <p class="text-muted text-center m-2"><%= t(".no_published") %></p>

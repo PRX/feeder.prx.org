@@ -19,9 +19,7 @@ class PodcastsController < ApplicationController
     authorize @podcast
 
     @recently_published_episodes = @podcast.episodes.published.dropdate_desc.limit(4)
-    @trend_episodes = @podcast.default_feed.episodes.published.dropdate_desc.where.not(first_rss_published_at: nil).offset(1).limit(4)
     if Rails.env.development?
-      @episode_trend_pairs = episode_trend_pairs(@recently_published_episodes, @trend_episodes)
       @alltime_downloads = alltime_downloads(@podcast).sum(&:count)
       @daterange_downloads = daterange_downloads(@podcast).sum(&:count)
     end
@@ -199,25 +197,5 @@ class PodcastsController < ApplicationController
 
   def sub_escapes(text)
     text.gsub(/[&<>]/, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;")
-  end
-
-  def episode_trend_pairs(episodes, trend_episodes)
-    paired_trend_episodes = []
-
-    episodes.map.with_index do |ep, i|
-      if ep.in_default_feed?
-        paired_trend_episodes << trend_episodes[paired_trend_episodes.length]
-
-        {
-          episode: ep,
-          prev_episode: paired_trend_episodes.last
-        }
-      else
-        {
-          episode: ep,
-          prev_episode: nil
-        }
-      end
-    end
   end
 end
