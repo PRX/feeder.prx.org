@@ -1214,56 +1214,6 @@ describe Apple::Publisher do
     let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
     let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
-    it "raises AssetStateTimeoutError for episodes stuck over 1 hour and marks them for reupload" do
-      # Track which episodes were marked for reupload
-      reupload_calls = []
-
-      # Capture episode references for closure
-      ep1 = episode1
-      ep2 = episode2
-
-      episode1.define_singleton_method(:apple_mark_for_reupload!) do
-        reupload_calls << ep1.feeder_id
-      end
-      episode2.define_singleton_method(:apple_mark_for_reupload!) do
-        reupload_calls << ep2.feeder_id
-      end
-
-      # Mock episodes to return durations over 1 hour
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 3700) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, 4000) do
-          error = assert_raises(Apple::AssetStateTimeoutError) do
-            apple_publisher.send(:check_for_stuck_episodes, [episode1, episode2])
-          end
-
-          assert_equal 2, error.episodes.length
-          # Verify both episodes were marked for reupload
-          assert_equal [episode1.feeder_id, episode2.feeder_id].sort, reupload_calls.sort
-        end
-      end
-    end
-
-    it "does not raise for episodes waiting less than 1 hour" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1800) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, 2400) do
-          # Should not raise
-          result = apple_publisher.send(:check_for_stuck_episodes, [episode1, episode2])
-          assert_nil result
-        end
-      end
-    end
-
-    it "does nothing for empty waiting list" do
-      # Should not raise or log anything
-      result = apple_publisher.send(:check_for_stuck_episodes, [])
-      assert_nil result
-    end
-  end
-
-  describe "#check_for_stuck_episodes" do
-    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
-    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
-
     it "raises AssetStateTimeoutError for episodes stuck over 1 hour" do
       # Track which episodes were marked for reupload
       reupload_calls = []
