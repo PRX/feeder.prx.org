@@ -9,9 +9,14 @@ module Integrations
       # (enforced by association: has_many :episode_delivery_statuses, -> { order(created_at: :desc) })
       statuses = episode_delivery_statuses.to_a
 
-      # Find the oldest record where upload completed but delivery hasn't
-      # This marks when asset processing started
-      upload_completed = statuses.select { |s| s.uploaded? && !s.delivered? }.last
+      # Only measure if currently processing
+      return nil unless statuses.first&.asset_processing_attempts.to_i.positive?
+
+      # Get statuses from current upload cycle (stop at any previous delivered status)
+      current_cycle = statuses.take_while { |s| !s.delivered? }
+
+      # Find when upload completed in this cycle (oldest uploaded status)
+      upload_completed = current_cycle.select(&:uploaded?).last
       return nil unless upload_completed
 
       Time.current - upload_completed.created_at

@@ -132,7 +132,7 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
 
     it "measures duration from when upload completed (uploaded: true, delivered: false)" do
       # Upload completed 4 hours ago, still processing (not delivered)
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, created_at: 4.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 4.hours.ago)
 
       assert_equal 4, episode.reload.measure_asset_processing_duration / 1.hour
     end
@@ -141,7 +141,7 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       # Multiple statuses during processing - should use the oldest one
       create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, created_at: 5.hours.ago)
       create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, created_at: 3.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, created_at: 1.hour.ago)
+      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 3, created_at: 1.hour.ago)
 
       assert_equal 5, episode.measure_asset_processing_duration / 1.hour
     end
@@ -157,14 +157,14 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       # Old processing that completed
       create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: true, created_at: 5.hours.ago)
       # New upload that's still processing
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 2.hours.ago)
 
       assert_equal 2, episode.measure_asset_processing_duration / 1.hour
     end
 
     it "ignores statuses where uploaded is false" do
       create(:apple_episode_delivery_status, episode: episode, uploaded: false, delivered: false, created_at: 5.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 2.hours.ago)
 
       assert_equal 2, episode.measure_asset_processing_duration / 1.hour
     end
