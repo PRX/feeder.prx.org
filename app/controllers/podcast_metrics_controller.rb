@@ -64,14 +64,11 @@ class PodcastMetricsController < ApplicationController
     published_seasons = @podcast.episodes.published.pluck(:season_number).uniq
 
     @season_rollups = published_seasons.map do |season|
-      episodes = @podcast.episodes.published.where(season_number: season)
-      rollup = alltime_downloads(episodes, "podcast_id")
-
       {
         season_number: season,
-        downloads: rollup.first
+        downloads: @podcast.downloads_by_season(season)
       }
-    end
+    end.sort { |a, b| b[:downloads] <=> a[:downloads] }
 
     render partial: "metrics/seasons_card", locals: {
       seasons: @season_rollups

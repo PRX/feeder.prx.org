@@ -309,4 +309,17 @@ class Podcast < ApplicationRecord
 
     feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
   end
+
+  def downloads_by_season(season_number)
+    season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
+
+    Rails.cache.fetch("#{cache_key_with_version}/downloads_by_season/#{season_number}", expires_in: 1.month) do
+      Rollups::HourlyDownload
+        .where(episode_id: season_episodes_guids)
+        .select("SUM(count) AS count")
+        .final
+        .load_async
+        .first[:count]
+    end
+  end
 end
