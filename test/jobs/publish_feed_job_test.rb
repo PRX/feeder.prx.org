@@ -229,39 +229,39 @@ describe PublishFeedJob do
         let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
         let(:episodes) { [episode1, episode2] }
 
-        it "logs message if the apple publishing times out" do
+        it "logs AssetStateTimeoutError with escalating levels based on duration" do
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
 
-          expected_level_for_timeouts = [
-            [0, 40],
-            [1, 40],
-            [2, 40],
-            [3, 40],
-            [4, 40],
-            [5, 50],
-            [6, 60]
+          # [duration_seconds, expected_log_level_int]
+          # Bunyan log levels: 30=info, 40=warn, 50=error
+          expected_level_for_durations = [
+            [1000, 30],  # info (< 30 min)
+            [1800, 40],  # warn (>= 30 min)
+            [3599, 40],  # warn (< 60 min)
+            [3600, 50]   # error (>= 60 min)
           ]
 
-          expected_level_for_timeouts.each do |(attempts, level)|
-            # simulate a episode waiting n times
-            episodes.first.apple_episode_delivery_status.update(asset_processing_attempts: attempts)
-
+          expected_level_for_durations.each do |(duration, level)|
             PublishFeedJob.stub(:s3_client, stub_client) do
-              private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new(episodes) }) do
-                podcast.stub(:feeds, [private_feed]) do
-                  lines = capture_json_logs do
-                    PublishingQueueItem.ensure_queued!(podcast)
-                    PublishingPipelineState.attempt!(podcast, perform_later: false)
-                  rescue
-                    nil
+              episode1.feeder_episode.stub(:measure_asset_processing_duration, duration) do
+                episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+                  private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new(episodes) }) do
+                    podcast.stub(:feeds, [private_feed]) do
+                      lines = capture_json_logs do
+                        PublishingQueueItem.ensure_queued!(podcast)
+                        PublishingPipelineState.attempt!(podcast, perform_later: false)
+                      rescue
+                        nil
+                      end
+
+                      log = lines.find { |l| l["msg"].include?("Timeout waiting for asset state change") }
+                      assert log.present?, "Expected log for #{duration}s duration"
+                      assert_equal level, log["level"], "Expected level #{level} for #{duration}s duration"
+
+                      assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(:id).pluck(:status)
+                    end
                   end
-
-                  log = lines.find { |l| l["msg"].include?("Timeout waiting for asset state change") }
-                  assert log.present?
-                  assert_equal level, log["level"]
-
-                  assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(:id).pluck(:status)
                 end
               end
             end

@@ -660,7 +660,7 @@ describe Apple::Publisher do
                 error = assert_raises(RuntimeError) do
                   publisher.wait_for_asset_state(eps)
                 end
-                expected_err = "Timeout waiting for asset state change: Episodes: [#{episode1.feeder_id}, #{episode2.feeder_id}], Attempts: 3, Asset Wait Duration: #{4 * 60 * 60}.0"
+                expected_err = "Timeout waiting for asset state change: Episodes: [#{episode1.feeder_id}, #{episode2.feeder_id}], Asset Wait Duration: #{4 * 60 * 60}.0"
                 assert_equal expected_err, error.message
               end
             end
@@ -671,21 +671,18 @@ describe Apple::Publisher do
         log = logs.find { |l| l[:msg] == "Timed out waiting for asset state" }
         assert log, "Should have timeout log message"
         assert_equal 30, log[:level]  # info level - this is the info log from publisher.rb
-        assert_equal 3, log[:attempts]
         assert_equal 4 * 60 * 60, log[:asset_wait_duration]
         assert_equal 2, log[:episode_count]
       end
     end
 
     it "should raise an error when wait times out" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 3)
-
       wait_for_stub = ->(_remaining, wait_timeout:, wait_interval:, &block) {
         [true, episodes]  # Just return timeout tuple, don't call block
       }
 
       Apple::Publisher.stub(:wait_for, wait_for_stub) do
-        assert_raises(RuntimeError, "Timed out waiting for asset state. 3 attempts so far") do
+        assert_raises(Apple::AssetStateTimeoutError) do
           apple_publisher.wait_for_asset_state(episodes)
         end
       end
