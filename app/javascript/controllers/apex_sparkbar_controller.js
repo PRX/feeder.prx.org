@@ -10,13 +10,7 @@ export default class extends Controller {
   static targets = ["chart"]
 
   connect() {
-    const seriesData = this.downloadsValue.map((rollup) => {
-      if (rollup) {
-        return rollup.count
-      } else {
-        return null
-      }
-    })
+    const seriesData = this.downloadsValue
     const series = [
       {
         name: "Downloads",

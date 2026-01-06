@@ -3,7 +3,7 @@
     <% seasons.map do |season| %>
       <li class="list-group-item d-flex justify-content-between">
         <span class="z-1"><%= "Season #{season[:season_number]}" %></span>
-        <span class="z-1"><%= number_with_delimiter(season[:downloads]&.count) || 0 %></span>
+        <span class="z-1"><%= number_with_delimiter(season[:downloads]) || 0 %></span>
       </li>
     <% end %>
     <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"

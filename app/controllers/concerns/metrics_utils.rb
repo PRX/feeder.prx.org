@@ -63,6 +63,10 @@ module MetricsUtils
     "#aafff5"
   end
 
+  def mid_blue
+    "#c9e9fa"
+  end
+
   def orange
     "#ff9601"
   end
@@ -80,7 +84,7 @@ module MetricsUtils
       color = if i == 0
         orange
       else
-        light_blue
+        mid_blue
       end
       {
         episode: episode,
