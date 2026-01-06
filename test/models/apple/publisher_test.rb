@@ -570,18 +570,12 @@ describe Apple::Publisher do
       end
     end
 
-    it "calls stuck check during delivery wait" do
+    it "calls stuck check before waiting" do
       episode = build(:uploaded_apple_episode, show: apple_publisher.show)
       stuck_check_called = false
 
-      # Mock wait_for_delivery to call the block and then succeed
-      wait_for_delivery_stub = ->(api, pdfs, &block) {
-        block&.call
-        [false, []]
-      }
-
-      Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_for_delivery_stub) do
-        Apple::PodcastDeliveryFile.stub(:wait_for_processing, ->(api, pdfs, &block) { [false, []] }) do
+      Apple::PodcastDeliveryFile.stub(:wait_for_delivery, ->(api, pdfs) { [false, []] }) do
+        Apple::PodcastDeliveryFile.stub(:wait_for_processing, ->(api, pdfs) { [false, []] }) do
           Apple::PodcastContainer.stub(:poll_podcast_container_state, ->(api, eps) {}) do
             apple_publisher.stub(:check_for_stuck_episodes, ->(*args) { stuck_check_called = true }) do
               apple_publisher.wait_for_upload_processing([episode])
@@ -590,7 +584,7 @@ describe Apple::Publisher do
         end
       end
 
-      assert stuck_check_called, "check_for_stuck_episodes should be called during delivery wait"
+      assert stuck_check_called, "check_for_stuck_episodes should be called before waiting"
     end
   end
 
@@ -1072,12 +1066,14 @@ describe Apple::Publisher do
 
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
-          apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
-            apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
-              Apple::Episode.stub(:probe_asset_state, probe_mock) do
-                apple_publisher.stub(:mark_as_delivered!, ->(*) {}) do
-                  apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
-                    apple_publisher.process_delivery!(episodes)
+          apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
+            apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
+              apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
+                Apple::Episode.stub(:probe_asset_state, probe_mock) do
+                  apple_publisher.stub(:mark_as_delivered!, ->(*) {}) do
+                    apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
+                      apple_publisher.process_delivery!(episodes)
+                    end
                   end
                 end
               end
