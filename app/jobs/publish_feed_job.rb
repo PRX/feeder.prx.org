@@ -49,7 +49,7 @@ class PublishFeedJob < ApplicationJob
     res = feed.publish_integration!
     PublishingPipelineState.publish_integration!(podcast)
     res
-  rescue Apple::AssetStateTimeoutError, Apple::DeliveryFileTimeoutError => e
+  rescue Apple::AssetStateTimeoutError => e
     # Apple timeout errors indicate the async publishing job is still in progress
     # We always mark the integration as errored in the pipeline state
     PublishingPipelineState.error_integration!(podcast)
