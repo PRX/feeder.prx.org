@@ -76,35 +76,6 @@ describe Apple::DeliveryFileTimeoutError do
     end
   end
 
-  describe "#raise_publishing_error?" do
-    it "returns false for info level (< 30 min)" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1000) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
-          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-          refute error.raise_publishing_error?
-        end
-      end
-    end
-
-    it "returns false for warn level (30-60 min)" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2400) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
-          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-          refute error.raise_publishing_error?
-        end
-      end
-    end
-
-    it "returns true for error level (>= 60 min)" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 3600) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
-          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-          assert error.raise_publishing_error?
-        end
-      end
-    end
-  end
-
   describe "#log_error!" do
     it "logs at the appropriate level with context" do
       episode1.feeder_episode.stub(:measure_asset_processing_duration, 2000) do

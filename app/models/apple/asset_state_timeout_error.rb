@@ -13,10 +13,6 @@ module Apple
       episodes.map(&:feeder_id)
     end
 
-    def raise_publishing_error?
-      %i[error fatal].include?(log_level)
-    end
-
     def podcast_id
       episodes.first&.podcast_id
     end
