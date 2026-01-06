@@ -1,17 +1,20 @@
 module Apple
   class DeliveryFileTimeoutError < RuntimeError
-    attr_reader :episodes, :attempts, :asset_wait_duration, :timeout_stage
+    attr_reader :episodes, :asset_wait_duration, :timeout_stage
 
     STAGE_DELIVERY = :delivery
     STAGE_PROCESSING = :processing
     STAGE_STUCK = :stuck
 
+    # Duration thresholds in seconds
+    WARN_THRESHOLD = 30.minutes.to_i
+    ERROR_THRESHOLD = 60.minutes.to_i
+
     def initialize(episodes, stage:)
       @episodes = episodes
       @timeout_stage = stage
-      @attempts = episodes.map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }.max
       @asset_wait_duration = episodes.map { |ep| ep.feeder_episode.measure_asset_processing_duration }.compact.max
-      super("Timeout waiting for #{stage}: Episodes: #{episode_ids}, Attempts: #{attempts}, Asset Wait Duration: #{asset_wait_duration}")
+      super("Timeout waiting for #{stage}: Episodes: #{episode_ids}, Asset Wait Duration: #{asset_wait_duration}")
     end
 
     def episode_ids
@@ -19,7 +22,7 @@ module Apple
     end
 
     def raise_publishing_error?
-      %i[error fatal].include?(log_level)
+      log_level == :error
     end
 
     def podcast_id
@@ -32,7 +35,6 @@ module Apple
         message,
         {
           podcast_id: podcast_id,
-          attempts: attempts,
           asset_wait_duration: asset_wait_duration,
           timeout_stage: timeout_stage
         }
@@ -40,13 +42,13 @@ module Apple
     end
 
     def log_level
-      case attempts
-      when 0..4
-        :warn
-      when 5
+      duration = asset_wait_duration || 0
+      if duration >= ERROR_THRESHOLD
         :error
+      elsif duration >= WARN_THRESHOLD
+        :warn
       else
-        :fatal
+        :info
       end
     end
   end

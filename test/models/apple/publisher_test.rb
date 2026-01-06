@@ -519,53 +519,56 @@ describe Apple::Publisher do
 
     it "raises DeliveryFileTimeoutError when delivery times out" do
       episode = build(:uploaded_apple_episode, show: apple_publisher.show)
-      episode.apple_episode_delivery_status.update!(asset_processing_attempts: 3)
 
       # Stub wait_for_delivery to return timeout
-      Apple::PodcastDeliveryFile.stub(:wait_for_delivery, ->(api, pdfs, &block) { [true, pdfs] }) do
-        error = assert_raises(Apple::DeliveryFileTimeoutError) do
-          apple_publisher.wait_for_upload_processing([episode])
-        end
+      episode.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
+        Apple::PodcastDeliveryFile.stub(:wait_for_delivery, ->(api, pdfs, &block) { [true, pdfs] }) do
+          error = assert_raises(Apple::DeliveryFileTimeoutError) do
+            apple_publisher.wait_for_upload_processing([episode])
+          end
 
-        assert_equal :delivery, error.timeout_stage
-        assert_equal [episode.feeder_id], error.episode_ids
-        assert_equal 3, error.attempts
+          assert_equal :delivery, error.timeout_stage
+          assert_equal [episode.feeder_id], error.episode_ids
+          assert_equal 2000, error.asset_wait_duration
+        end
       end
     end
 
     it "raises DeliveryFileTimeoutError when processing times out" do
       episode = build(:uploaded_apple_episode, show: apple_publisher.show)
-      episode.apple_episode_delivery_status.update!(asset_processing_attempts: 5)
 
       # Stub wait_for_delivery to succeed, wait_for_processing to timeout
-      Apple::PodcastDeliveryFile.stub(:wait_for_delivery, ->(api, pdfs, &block) { [false, []] }) do
-        Apple::PodcastDeliveryFile.stub(:wait_for_processing, ->(api, pdfs, &block) { [true, pdfs] }) do
-          error = assert_raises(Apple::DeliveryFileTimeoutError) do
-            apple_publisher.wait_for_upload_processing([episode])
-          end
+      episode.feeder_episode.stub(:measure_asset_processing_duration, 3600) do
+        Apple::PodcastDeliveryFile.stub(:wait_for_delivery, ->(api, pdfs, &block) { [false, []] }) do
+          Apple::PodcastDeliveryFile.stub(:wait_for_processing, ->(api, pdfs, &block) { [true, pdfs] }) do
+            error = assert_raises(Apple::DeliveryFileTimeoutError) do
+              apple_publisher.wait_for_upload_processing([episode])
+            end
 
-          assert_equal :processing, error.timeout_stage
-          assert_equal [episode.feeder_id], error.episode_ids
-          assert_equal 5, error.attempts
+            assert_equal :processing, error.timeout_stage
+            assert_equal [episode.feeder_id], error.episode_ids
+            assert_equal 3600, error.asset_wait_duration
+          end
         end
       end
     end
 
     it "logs timeout information when delivery times out" do
       episode = build(:uploaded_apple_episode, show: apple_publisher.show)
-      episode.apple_episode_delivery_status.update!(asset_processing_attempts: 2)
 
-      Apple::PodcastDeliveryFile.stub(:wait_for_delivery, ->(api, pdfs, &block) { [true, pdfs] }) do
-        logs = capture_json_logs do
-          assert_raises(Apple::DeliveryFileTimeoutError) do
-            apple_publisher.wait_for_upload_processing([episode])
+      episode.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
+        Apple::PodcastDeliveryFile.stub(:wait_for_delivery, ->(api, pdfs, &block) { [true, pdfs] }) do
+          logs = capture_json_logs do
+            assert_raises(Apple::DeliveryFileTimeoutError) do
+              apple_publisher.wait_for_upload_processing([episode])
+            end
           end
-        end
 
-        log = logs.find { |l| l[:msg] == "Timed out waiting for delivery" }
-        assert log.present?
-        assert_equal 2, log[:attempts]
-        assert_equal 1, log[:episode_count]
+          log = logs.find { |l| l[:msg] == "Timed out waiting for delivery" }
+          assert log.present?
+          assert_equal 2000, log[:asset_wait_duration]
+          assert_equal 1, log[:episode_count]
+        end
       end
     end
 
@@ -627,11 +630,12 @@ describe Apple::Publisher do
         eps = [episode1, episode2]
         eps.each { |e| e.feeder_episode.apple_episode_delivery_statuses.map(&:destroy) }
 
-        # Here is the log of attempts
-        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 0, created_at: 4.hour.ago)
-        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 1, created_at: 3.hour.ago)
-        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 2, created_at: 2.hour.ago)
-        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, asset_processing_attempts: 3, created_at: 1.hour.ago)
+        # Create statuses with uploaded: true, delivered: false for duration calculation
+        # and asset_processing_attempts for log level calculation
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, uploaded: true, delivered: false, asset_processing_attempts: 0, created_at: 4.hours.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 3.hours.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, uploaded: true, delivered: false, asset_processing_attempts: 2, created_at: 2.hours.ago)
+        create(:apple_episode_delivery_status, episode: episode1.feeder_episode, uploaded: true, delivered: false, asset_processing_attempts: 3, created_at: 1.hours.ago)
         eps.map(&:feeder_episode).each(&:reload)
 
         # Mark episodes as having uploaded files
@@ -666,7 +670,7 @@ describe Apple::Publisher do
         # look at the logs
         log = logs.find { |l| l[:msg] == "Timed out waiting for asset state" }
         assert log, "Should have timeout log message"
-        assert_equal 30, log[:level]
+        assert_equal 30, log[:level]  # info level - this is the info log from publisher.rb
         assert_equal 3, log[:attempts]
         assert_equal 4 * 60 * 60, log[:asset_wait_duration]
         assert_equal 2, log[:episode_count]

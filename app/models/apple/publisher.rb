@@ -241,7 +241,7 @@ module Apple
         end
         if waiting_timed_out
           e = Apple::DeliveryFileTimeoutError.new(eps, stage: Apple::DeliveryFileTimeoutError::STAGE_DELIVERY)
-          Rails.logger.info("Timed out waiting for delivery", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
+          Rails.logger.info("Timed out waiting for delivery", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
           raise e
         end
 
@@ -250,7 +250,7 @@ module Apple
         end
         if waiting_timed_out
           e = Apple::DeliveryFileTimeoutError.new(eps, stage: Apple::DeliveryFileTimeoutError::STAGE_PROCESSING)
-          Rails.logger.info("Timed out waiting for processing", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
+          Rails.logger.info("Timed out waiting for processing", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
           raise e
         end
 

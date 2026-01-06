@@ -19,13 +19,14 @@ describe Apple::DeliveryFileTimeoutError do
       assert_equal [episode1.feeder_id, episode2.feeder_id], error.episode_ids
     end
 
-    it "calculates max attempts from episodes" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 3)
-      episode2.apple_episode_delivery_status.update!(asset_processing_attempts: 5)
+    it "calculates max duration from episodes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1800) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, 3600) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: Apple::DeliveryFileTimeoutError::STAGE_PROCESSING)
 
-      error = Apple::DeliveryFileTimeoutError.new(episodes, stage: Apple::DeliveryFileTimeoutError::STAGE_PROCESSING)
-
-      assert_equal 5, error.attempts
+          assert_equal 3600, error.asset_wait_duration
+        end
+      end
     end
 
     it "captures different timeout stages" do
@@ -40,91 +41,112 @@ describe Apple::DeliveryFileTimeoutError do
   end
 
   describe "#log_level" do
-    it "returns warn for attempts 0-4" do
-      (0..4).each do |attempts|
-        episode1.apple_episode_delivery_status.update!(asset_processing_attempts: attempts)
-        episode2.apple_episode_delivery_status.update!(asset_processing_attempts: 0)
-
-        error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-        assert_equal :warn, error.log_level, "Expected warn for #{attempts} attempts"
+    it "returns info for duration < 30 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1799) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
+          assert_equal :info, error.log_level
+        end
       end
     end
 
-    it "returns error for attempt 5" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 5)
+    it "returns warn for duration >= 30 minutes and < 60 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1800) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
+          assert_equal :warn, error.log_level
+        end
+      end
 
-      error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-      assert_equal :error, error.log_level
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 3599) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
+          assert_equal :warn, error.log_level
+        end
+      end
     end
 
-    it "returns fatal for attempts > 5" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 6)
-
-      error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-      assert_equal :fatal, error.log_level
+    it "returns error for duration >= 60 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 3600) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
+          assert_equal :error, error.log_level
+        end
+      end
     end
   end
 
   describe "#raise_publishing_error?" do
-    it "returns false for warn level" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 2)
-
-      error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-      refute error.raise_publishing_error?
+    it "returns false for info level (< 30 min)" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1000) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
+          refute error.raise_publishing_error?
+        end
+      end
     end
 
-    it "returns true for error level" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 5)
-
-      error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-      assert error.raise_publishing_error?
+    it "returns false for warn level (30-60 min)" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2400) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
+          refute error.raise_publishing_error?
+        end
+      end
     end
 
-    it "returns true for fatal level" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 6)
-
-      error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-      assert error.raise_publishing_error?
+    it "returns true for error level (>= 60 min)" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 3600) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
+          assert error.raise_publishing_error?
+        end
+      end
     end
   end
 
   describe "#log_error!" do
     it "logs at the appropriate level with context" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 3)
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
 
-      error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
+          logs = capture_json_logs do
+            error.log_error!
+          end
 
-      logs = capture_json_logs do
-        error.log_error!
+          log = logs.find { |l| l["msg"].include?("Timeout waiting for delivery") }
+          assert log.present?
+          assert_equal 40, log["level"] # warn level
+          assert_equal "delivery", log["timeout_stage"]
+        end
       end
-
-      log = logs.find { |l| l["msg"].include?("Timeout waiting for delivery") }
-      assert log.present?
-      assert_equal 40, log["level"]  # warn level
-      assert_equal "delivery", log["timeout_stage"]
     end
 
-    it "escalates log level based on attempts" do
+    it "escalates log level based on duration" do
+      # [duration_seconds, expected_log_level_int]
+      # Bunyan log levels: 30=info, 40=warn, 50=error
       expected_levels = [
-        [0, 40],  # warn
-        [4, 40],  # warn
-        [5, 50],  # error
-        [6, 60]   # fatal
+        [1000, 30],  # info (< 30 min)
+        [1800, 40],  # warn (>= 30 min)
+        [3599, 40],  # warn (< 60 min)
+        [3600, 50]   # error (>= 60 min)
       ]
 
-      expected_levels.each do |(attempts, expected_level)|
-        episode1.apple_episode_delivery_status.update!(asset_processing_attempts: attempts)
-        episode2.apple_episode_delivery_status.update!(asset_processing_attempts: 0)
+      expected_levels.each do |(duration, expected_level)|
+        episode1.feeder_episode.stub(:measure_asset_processing_duration, duration) do
+          episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+            error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :processing)
 
-        error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :processing)
+            logs = capture_json_logs do
+              error.log_error!
+            end
 
-        logs = capture_json_logs do
-          error.log_error!
+            log = logs.find { |l| l["msg"].include?("Timeout waiting for processing") }
+            assert log.present?, "Expected log for #{duration}s duration"
+            assert_equal expected_level, log["level"], "Expected level #{expected_level} for #{duration}s duration"
+          end
         end
-
-        log = logs.find { |l| l["msg"].include?("Timeout waiting for processing") }
-        assert log.present?, "Expected log for #{attempts} attempts"
-        assert_equal expected_level, log["level"], "Expected level #{expected_level} for #{attempts} attempts"
       end
     end
   end
@@ -138,13 +160,15 @@ describe Apple::DeliveryFileTimeoutError do
 
   describe "#message" do
     it "includes timeout stage and episode info" do
-      episode1.apple_episode_delivery_status.update!(asset_processing_attempts: 3)
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
 
-      error = Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery)
-
-      assert_match(/Timeout waiting for delivery/, error.message)
-      assert_match(/Episodes:/, error.message)
-      assert_match(/Attempts: 3/, error.message)
+          assert_match(/Timeout waiting for delivery/, error.message)
+          assert_match(/Episodes:/, error.message)
+          assert_match(/Asset Wait Duration: 2000/, error.message)
+        end
+      end
     end
   end
 end

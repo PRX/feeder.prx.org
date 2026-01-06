@@ -344,38 +344,39 @@ describe PublishFeedJob do
           end
         end
 
-        it "logs DeliveryFileTimeoutError with escalating levels" do
+        it "logs DeliveryFileTimeoutError with escalating levels based on duration" do
           assert apple_feed.apple_config.present?
           assert apple_feed.apple_config.publish_enabled
 
-          expected_level_for_timeouts = [
-            [0, 40],
-            [1, 40],
-            [2, 40],
-            [3, 40],
-            [4, 40],
-            [5, 50],
-            [6, 60]
+          # [duration_seconds, expected_log_level_int]
+          # Bunyan log levels: 30=info, 40=warn, 50=error
+          expected_level_for_durations = [
+            [1000, 30],  # info (< 30 min)
+            [1800, 40],  # warn (>= 30 min)
+            [3599, 40],  # warn (< 60 min)
+            [3600, 50]   # error (>= 60 min)
           ]
 
-          expected_level_for_timeouts.each do |(attempts, level)|
-            episodes.first.apple_episode_delivery_status.update(asset_processing_attempts: attempts)
-
+          expected_level_for_durations.each do |(duration, level)|
             PublishFeedJob.stub(:s3_client, stub_client) do
-              private_feed.stub(:publish_integration!, -> { raise Apple::DeliveryFileTimeoutError.new(episodes, stage: :processing) }) do
-                podcast.stub(:feeds, [private_feed]) do
-                  lines = capture_json_logs do
-                    PublishingQueueItem.ensure_queued!(podcast)
-                    PublishingPipelineState.attempt!(podcast, perform_later: false)
-                  rescue
-                    nil
+              episode1.feeder_episode.stub(:measure_asset_processing_duration, duration) do
+                episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+                  private_feed.stub(:publish_integration!, -> { raise Apple::DeliveryFileTimeoutError.new(episodes, stage: :processing) }) do
+                    podcast.stub(:feeds, [private_feed]) do
+                      lines = capture_json_logs do
+                        PublishingQueueItem.ensure_queued!(podcast)
+                        PublishingPipelineState.attempt!(podcast, perform_later: false)
+                      rescue
+                        nil
+                      end
+
+                      log = lines.find { |l| l["msg"].include?("Timeout waiting for processing") }
+                      assert log.present?, "Expected log for #{duration}s duration"
+                      assert_equal level, log["level"], "Expected level #{level} for #{duration}s duration"
+
+                      assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(:id).pluck(:status)
+                    end
                   end
-
-                  log = lines.find { |l| l["msg"].include?("Timeout waiting for processing") }
-                  assert log.present?
-                  assert_equal level, log["level"]
-
-                  assert_equal ["created", "started", "error_integration", "retry"], PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.order(:id).pluck(:status)
                 end
               end
             end
@@ -389,22 +390,24 @@ describe PublishFeedJob do
           apple_feed.apple_config.update!(sync_blocks_rss: false)
           feed.reload
 
-          episodes.first.apple_episode_delivery_status.update(asset_processing_attempts: 3)
-
           PublishFeedJob.stub(:s3_client, stub_client) do
-            private_feed.stub(:publish_integration!, -> { raise Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery) }) do
-              feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
-                lines = capture_json_logs do
-                  PublishingQueueItem.ensure_queued!(podcast)
-                  PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
+            episode1.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
+              episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+                private_feed.stub(:publish_integration!, -> { raise Apple::DeliveryFileTimeoutError.new(episodes, stage: :delivery) }) do
+                  feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
+                    lines = capture_json_logs do
+                      PublishingQueueItem.ensure_queued!(podcast)
+                      PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
+                    end
+
+                    # Should log the error even though sync_blocks_rss is disabled
+                    log = lines.find { |l| l["msg"].include?("Timeout waiting for delivery") }
+                    assert log.present?, "DeliveryFileTimeoutError should be logged even when sync_blocks_rss is disabled"
+
+                    # But should still continue to RSS
+                    assert_equal ["created", "started", "error_integration", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
+                  end
                 end
-
-                # Should log the error even though sync_blocks_rss is disabled
-                log = lines.find { |l| l["msg"].include?("Timeout waiting for delivery") }
-                assert log.present?, "DeliveryFileTimeoutError should be logged even when sync_blocks_rss is disabled"
-
-                # But should still continue to RSS
-                assert_equal ["created", "started", "error_integration", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort
               end
             end
           end

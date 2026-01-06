@@ -9,15 +9,12 @@ module Integrations
       # (enforced by association: has_many :episode_delivery_statuses, -> { order(created_at: :desc) })
       statuses = episode_delivery_statuses.to_a
 
-      latest_status = statuses.shift
-      return nil unless latest_status&.asset_processing_attempts.to_i.positive?
+      # Find the oldest record where upload completed but delivery hasn't
+      # This marks when asset processing started
+      upload_completed = statuses.select { |s| s.uploaded? && !s.delivered? }.last
+      return nil unless upload_completed
 
-      # Find the most recent status where asset processing started (attempts == 0)
-      start_status = statuses.find { |status| status.asset_processing_attempts.to_i.zero? }
-      return nil unless start_status
-
-      # Measure from start to the latest status creation time
-      Time.now.utc - start_status.created_at
+      Time.current - upload_completed.created_at
     end
 
     def self.update_status(integration, episode, attrs)
