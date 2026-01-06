@@ -279,4 +279,34 @@ class Podcast < ApplicationRecord
       super
     end
   end
+
+  def feeds_downloads_query
+    slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
+    date_start = Time.now - 28.days
+
+    Rails.cache.fetch("#{cache_key_with_version}/feeds_downloads_query", expires_in: 1.hour) do
+      Rollups::HourlyDownload
+        .where(podcast_id: id, feed_slug: slugs, hour: (date_start..))
+        .select(:feed_slug, "SUM(count) AS count")
+        .group(:feed_slug)
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .final
+        .load_async
+        .pluck(:feed_slug, Arel.sql("SUM(count) AS count"))
+    end
+  end
+
+  def feed_download_rollups
+    feed_rollups = feeds.map do |feed|
+      slug = feed[:slug].nil? ? "" : feed[:slug]
+      downloads = feeds_downloads_query.to_h[slug] || 0
+
+      {
+        feed: feed,
+        downloads: downloads
+      }
+    end
+
+    feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
+  end
 end
