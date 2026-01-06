@@ -82,34 +82,8 @@ class PodcastMetricsController < ApplicationController
   end
 
   def agents
-    date_start = (Date.utc_today - 28.days).to_s
-    date_end = Date.utc_today.to_s
-
-    agent_apps =
-      Rollups::DailyAgent
-        .where(podcast_id: @podcast.id, day: date_start..date_end)
-        .select("agent_name_id AS code", "SUM(count) AS count")
-        .group("agent_name_id AS code")
-        .order(Arel.sql("SUM(count) AS count DESC"))
-        .final
-        .limit(10)
-        .load_async
-
-    top_apps_ids = agent_apps.pluck(:code)
-    other_apps =
-      Rollups::DailyAgent
-        .where(podcast_id: @podcast.id, day: date_start..date_end)
-        .where.not(agent_name_id: top_apps_ids)
-        .select("'Other' AS code", "SUM(count) AS count")
-        .final
-        .load_async
-
-    @agent_rollups = []
-    @agent_rollups << agent_apps
-    @agent_rollups << other_apps
-
     render partial: "metrics/agent_apps_card", locals: {
-      agents: @agent_rollups.flatten
+      agents: @podcast.agent_download_rollups
     }
   end
 
