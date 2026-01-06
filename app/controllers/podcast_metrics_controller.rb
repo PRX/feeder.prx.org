@@ -61,7 +61,7 @@ class PodcastMetricsController < ApplicationController
   end
 
   def seasons
-    published_seasons = @podcast.episodes.published.pluck(:season_number).uniq.compact!
+    published_seasons = @podcast.episodes.published.pluck(:season_number).uniq.compact
 
     @season_rollups = published_seasons.map do |season|
       {
