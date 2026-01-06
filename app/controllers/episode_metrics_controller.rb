@@ -21,63 +21,21 @@ class EpisodeMetricsController < ApplicationController
   end
 
   def feeds
-    feed_slugs = @episode.feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
-
-    @downloads_by_feed = downloads_by_feed(@episode, feed_slugs)
-
-    feeds_with_downloads = []
-
-    @feeds = @downloads_by_feed.map do |rollup|
-      feed = if rollup[:feed_slug].blank?
-        @episode.podcast.default_feed
-      else
-        @episode.feeds.where(slug: rollup[:feed_slug]).first
-      end
-
-      feeds_with_downloads << feed
-
-      {
-        feed: feed,
-        downloads: rollup
-      }
-    end
-
-    @episode.feeds.each { |feed| @feeds << {feed: feed} if feeds_with_downloads.exclude?(feed) }
-
     render partial: "metrics/feeds_card", locals: {
       podcast: @episode.podcast,
-      feeds: @feeds
+      feeds: @episode.feed_download_rollups
     }
   end
 
   def countries
-    top_countries = top_countries_rollups(@episode)
-
-    top_country_codes = top_countries.pluck(:country_code)
-
-    other_countries = other_countries_rollups(@episode, top_country_codes)
-
-    @country_rollups = []
-    @country_rollups << top_countries
-    @country_rollups << other_countries
-
     render partial: "metrics/countries_card", locals: {
-      countries: @country_rollups.flatten
+      countries: @episode.country_download_rollups
     }
   end
 
   def agents
-    agent_apps = top_agents_rollups(@episode)
-    top_apps_ids = agent_apps.pluck(:code)
-
-    other_apps = other_agents_rollups(@episode, top_apps_ids)
-
-    @agent_rollups = []
-    @agent_rollups << agent_apps
-    @agent_rollups << other_apps
-
     render partial: "metrics/agent_apps_card", locals: {
-      agents: @agent_rollups.flatten
+      agents: @episode.agent_download_rollups
     }
   end
 
