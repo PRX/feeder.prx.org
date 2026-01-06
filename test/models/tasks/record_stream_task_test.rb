@@ -48,4 +48,48 @@ describe Tasks::RecordStreamTask do
       assert_equal res, task.owner
     end
   end
+
+  describe "#job_id_parts" do
+    it "parses the various parts of the job id" do
+      assert_equal 1234, task.podcast_id
+      assert_equal 5678, task.stream_recording_id
+      assert_equal Time.parse("2025-12-17 15:00Z"), task.start_at
+      assert_equal Time.parse("2025-12-17 16:00Z"), task.end_at
+      assert_equal "27a8112d-b582-4d23-8d73-257e543d64a4.mp3", task.file_name
+      assert task.job_id_valid?
+    end
+
+    it "returns nil for badly formatted job_ids" do
+      task.job_id = "a/b/c/2025-99-99/"
+
+      assert_nil task.podcast_id
+      assert_nil task.stream_recording_id
+      assert_nil task.start_at
+      assert_nil task.end_at
+      assert_nil task.file_name
+      refute task.job_id_valid?
+    end
+  end
+
+  describe "#source" do
+    it "parses ffmpeg callback data" do
+      assert_equal "prx-feed-testing", task.source_bucket
+      assert_equal task.job_id, task.source_key
+      assert_equal 12345678, task.source_size
+      assert_equal 72.minutes.in_seconds * 1000, task.source_duration
+      assert_equal Time.parse("2025-12-17 14:55:21Z"), task.source_start_at
+      assert_equal Time.parse("2025-12-17 16:07:21Z"), task.source_end_at
+    end
+
+    it "returns nil if not present" do
+      task.result = nil
+
+      assert_nil task.source_bucket
+      assert_nil task.source_key
+      assert_nil task.source_size
+      assert_nil task.source_duration
+      assert_nil task.source_start_at
+      assert_nil task.source_end_at
+    end
+  end
 end

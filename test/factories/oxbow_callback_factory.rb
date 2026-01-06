@@ -39,15 +39,18 @@ FactoryBot.define do
     Time { "2025-12-17T16:02:23.826Z" }
     Timestamp { 1765987343.826 }
     FFmpeg do
-      Outputs do
-        [
-          Mode: "AWS/S3",
-          BucketName: "prx-feed-testing",
-          ObjectKey: "1234/5678/2025-12-17T15:00Z/2025-12-17T16:00Z/27a8112d-b582-4d23-8d73-257e543d64a4.mp3",
-          Duration: 4350000,
-          Size: 12345678
+      {
+        Outputs: [
+          {
+            Mode: "AWS/S3",
+            BucketName: "prx-feed-testing",
+            ObjectKey: "1234/5678/2025-12-17T15:00Z/2025-12-17T16:00Z/27a8112d-b582-4d23-8d73-257e543d64a4.mp3",
+            Duration: 4320000,
+            Size: 12345678,
+            StartEpoch: 1765983321
+          }
         ]
-      end
+      }
     end
     initialize_with { attributes.with_indifferent_access }
   end
@@ -68,11 +71,13 @@ FactoryBot.define do
     Time { "2025-12-17T16:02:23.826Z" }
     Timestamp { 1765987343.826 }
     JobResult do
-      Job { build(:oxbow_job_id) }
-      Execution { {Id: "arn:aws:states:the-execution-arn"} }
-      State { "DONE" }
-      FailedTasks { [] }
-      TaskResults { [build(:oxbow_ffmpeg_result)] }
+      {
+        Job: build(:oxbow_job_id),
+        Execution: {Id: "arn:aws:states:the-execution-arn"},
+        State: "DONE",
+        FailedTasks: [],
+        TaskResults: [build(:oxbow_ffmpeg_result)]
+      }
     end
     initialize_with { attributes.with_indifferent_access }
   end

@@ -48,10 +48,6 @@ class Tasks::RecordStreamTask < ::Task
     (job_id || "").split("/")
   end
 
-  def job_id_valid?
-    podcast_id && stream_recording_id && start_at && end_at && file_name
-  end
-
   def podcast_id
     job_id_parts[0].to_i if job_id_parts[0].to_i > 0
   end
@@ -74,6 +70,10 @@ class Tasks::RecordStreamTask < ::Task
 
   def file_name
     job_id_parts[4]
+  end
+
+  def job_id_valid?
+    podcast_id && stream_recording_id && start_at && end_at && file_name
   end
 
   # parsing data from the FFmpeg task result
