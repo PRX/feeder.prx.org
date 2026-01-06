@@ -2,14 +2,14 @@
   <ul class="list-group list-group-flush position-relative">
     <% countries.map do |country| %>
       <li class="list-group-item d-flex justify-content-between">
-        <span class="z-1"><%= country.country_label %></span>
-        <span class="z-1"><%= number_with_delimiter(country[:count]) || 0 %></span>
+        <span class="z-1"><%= country[:label] %></span>
+        <span class="z-1"><%= number_with_delimiter(country[:downloads]) || 0 %></span>
       </li>
     <% end %>
     <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"
       data-controller="apex-sparkbar"
       data-apex-sparkbar-id-value="podcast-countries-chart"
-      data-apex-sparkbar-downloads-value="<%= countries.to_json %>">
+      data-apex-sparkbar-downloads-value="<%= countries.map { |c| c[:downloads] }.to_json %>">
       <div data-apex-sparkbar-target="chart"></div>
     </div>
   </ul>

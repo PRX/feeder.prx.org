@@ -76,35 +76,8 @@ class PodcastMetricsController < ApplicationController
   end
 
   def countries
-    date_start = (Date.utc_today - 28.days).to_s
-    date_end = Date.utc_today.to_s
-
-    top_countries =
-      Rollups::DailyGeo
-        .where(podcast_id: @podcast.id, day: date_start..date_end)
-        .select(:country_code, "SUM(count) AS count")
-        .group(:country_code)
-        .order(Arel.sql("SUM(count) AS count DESC"))
-        .final
-        .limit(10)
-        .load_async
-
-    top_country_codes = top_countries.pluck(:country_code)
-
-    other_countries =
-      Rollups::DailyGeo
-        .where(podcast_id: @podcast.id, day: date_start..date_end)
-        .where.not(country_code: top_country_codes)
-        .select("'Other' AS country_code", "SUM(count) AS count")
-        .final
-        .load_async
-
-    @country_rollups = []
-    @country_rollups << top_countries
-    @country_rollups << other_countries
-
     render partial: "metrics/countries_card", locals: {
-      countries: @country_rollups.flatten
+      countries: @podcast.country_download_rollups
     }
   end
 

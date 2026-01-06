@@ -322,4 +322,46 @@ class Podcast < ApplicationRecord
         .first[:count]
     end
   end
+
+  def top_countries_downloads
+    date_start = (Date.utc_today - 28.days).to_s
+    date_end = Date.utc_today.to_s
+
+    Rails.cache.fetch("#{cache_key_with_version}/top_countries_downloads", expires_in: 1.day) do
+      Rollups::DailyGeo
+        .where(podcast_id: id, day: date_start..date_end)
+        .select(:country_code, "SUM(count) AS count")
+        .group(:country_code)
+        .order(Arel.sql("SUM(count) AS count DESC"))
+        .final
+        .limit(10)
+        .load_async
+        .pluck(:country_code, Arel.sql("SUM(count) AS count"))
+    end
+  end
+
+  def other_countries_downloads(top_countries)
+    date_start = (Date.utc_today - 28.days).to_s
+    date_end = Date.utc_today.to_s
+    top_country_codes = top_countries.map { |c| c[0] }
+
+    Rails.cache.fetch("#{cache_key_with_version}/other_countries_downloads", expires_in: 1.day) do
+      Rollups::DailyGeo
+        .where(podcast_id: id, day: date_start..date_end)
+        .where.not(country_code: top_country_codes)
+        .select("'Other' AS country_code", "SUM(count) AS count")
+        .final
+        .load_async
+        .pluck(Arel.sql("'Other' AS country_code"), Arel.sql("SUM(count) AS count"))
+    end
+  end
+
+  def country_download_rollups
+    top_countries_downloads.concat(other_countries_downloads(top_countries_downloads)).map do |country|
+      {
+        label: Rollups::DailyGeo.label_for_code(country[0]),
+        downloads: country[1]
+      }
+    end
+  end
 end
