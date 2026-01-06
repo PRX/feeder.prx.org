@@ -139,6 +139,8 @@ module Apple
 
         increment_asset_wait!(eps)
 
+        check_for_stuck_episodes(eps)
+
         wait_for_upload_processing(eps)
 
         # Wait for the audio asset to be processed by Apple
@@ -155,8 +157,6 @@ module Apple
     def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL, &finisher_block)
       Rails.logger.tagged("##{__method__}") do
         remaining_eps = filter_episodes_awaiting_asset_state(eps)
-
-        check_for_stuck_episodes(remaining_eps)
 
         (timed_out, final_waiting) = self.class.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
@@ -243,8 +243,6 @@ module Apple
     def wait_for_upload_processing(eps)
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
-
-        check_for_stuck_episodes(eps)
 
         (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs)
         if waiting_timed_out

@@ -569,23 +569,6 @@ describe Apple::Publisher do
         end
       end
     end
-
-    it "calls stuck check before waiting" do
-      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
-      stuck_check_called = false
-
-      Apple::PodcastDeliveryFile.stub(:wait_for_delivery, ->(api, pdfs) { [false, []] }) do
-        Apple::PodcastDeliveryFile.stub(:wait_for_processing, ->(api, pdfs) { [false, []] }) do
-          Apple::PodcastContainer.stub(:poll_podcast_container_state, ->(api, eps) {}) do
-            apple_publisher.stub(:check_for_stuck_episodes, ->(*args) { stuck_check_called = true }) do
-              apple_publisher.wait_for_upload_processing([episode])
-            end
-          end
-        end
-      end
-
-      assert stuck_check_called, "check_for_stuck_episodes should be called before waiting"
-    end
   end
 
   describe "#increment_asset_wait!" do
