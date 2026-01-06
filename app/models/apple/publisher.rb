@@ -156,7 +156,6 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         remaining_eps = filter_episodes_awaiting_asset_state(eps)
 
-
         (timed_out, final_waiting) = self.class.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
           wait_interval: wait_interval) do |waiting_eps|
