@@ -166,6 +166,14 @@ module Apple
             finisher_block.call(ready_episodes) if finisher_block.present?
           end
 
+          if still_waiting_episodes.any?
+            Rails.logger.info("Waiting for asset state processing", {
+              episode_count: still_waiting_episodes.length,
+              episode_ids: still_waiting_episodes.map(&:feeder_id),
+              audio_asset_states: still_waiting_episodes.map(&:audio_asset_state).uniq
+            })
+          end
+
           check_for_stuck_episodes(still_waiting_episodes)
 
           still_waiting_episodes
