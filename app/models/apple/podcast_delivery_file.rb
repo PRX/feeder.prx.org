@@ -44,32 +44,38 @@ module Apple
       end
     end
 
-    def self.wait_for_delivery_files(api, pdfs)
-      wait_for_delivery(api, pdfs)
-      wait_for_processing(api, pdfs)
+    def self.wait_for_delivery_files(api, pdfs, &stuck_check)
+      wait_for_delivery(api, pdfs, &stuck_check)
+      wait_for_processing(api, pdfs, &stuck_check)
     end
 
-    def self.wait_for_processing(api, pdfs)
+    def self.wait_for_processing(api, pdfs, &stuck_check)
       wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file processing")
         updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
 
         # Try to work around the fact that the API sometimes returns 'nil' for processing state
         # Check the podcast delivery status to see if it's complete
-        finished = updated_pdfs.group_by { |pdf| pdf.processed? || (pdf.asset_processing_state.nil? && pdf.podcast_delivery.completed?) }
-        (finished[true] || []).map(&:save!)
-        finished[false] || []
+        processed, still_waiting = updated_pdfs.partition { |pdf| pdf.processed? || (pdf.asset_processing_state.nil? && pdf.podcast_delivery.completed?) }
+        processed.each(&:save!)
+
+        stuck_check&.call
+
+        still_waiting
       end
     end
 
-    def self.wait_for_delivery(api, pdfs)
+    def self.wait_for_delivery(api, pdfs, &stuck_check)
       wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file delivery")
         updated_pdfs = get_and_update_api_response(api, pdfs)
 
-        finished = updated_pdfs.group_by(&:delivered?)
-        (finished[true] || []).map(&:save!)
-        finished[false] || []
+        delivered, still_waiting = updated_pdfs.partition(&:delivered?)
+        delivered.each(&:save!)
+
+        stuck_check&.call
+
+        still_waiting
       end
     end
 

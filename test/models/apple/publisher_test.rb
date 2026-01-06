@@ -570,21 +570,27 @@ describe Apple::Publisher do
       end
     end
 
-    it "calls stuck check before waiting" do
+    it "calls stuck check during waiting" do
       episode = build(:uploaded_apple_episode, show: apple_publisher.show)
       stuck_check_called = false
 
-      Apple::PodcastDeliveryFile.stub(:wait_for_delivery, ->(api, pdfs) { [false, []] }) do
-        Apple::PodcastDeliveryFile.stub(:wait_for_processing, ->(api, pdfs) { [false, []] }) do
+      # Stub wait_for_delivery to call the block
+      wait_for_delivery_stub = ->(api, pdfs, &block) {
+        block&.call
+        [false, []]
+      }
+
+      Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_for_delivery_stub) do
+        Apple::PodcastDeliveryFile.stub(:wait_for_processing, ->(api, pdfs, &block) { [false, []] }) do
           Apple::PodcastContainer.stub(:poll_podcast_container_state, ->(api, eps) {}) do
-            apple_publisher.stub(:check_for_stuck_episodes, ->(*args) { stuck_check_called = true }) do
+            apple_publisher.stub(:check_for_stuck_episodes, ->(*) { stuck_check_called = true }) do
               apple_publisher.wait_for_upload_processing([episode])
             end
           end
         end
       end
 
-      assert stuck_check_called, "check_for_stuck_episodes should be called before waiting"
+      assert stuck_check_called, "check_for_stuck_episodes should be called during waiting"
     end
   end
 

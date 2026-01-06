@@ -236,16 +236,14 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
 
-        check_for_stuck_episodes(eps)
-
-        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs)
+        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs) { check_for_stuck_episodes(eps) }
         if waiting_timed_out
           e = Apple::AssetStateTimeoutError.new(eps)
           Rails.logger.info("Timed out waiting for delivery", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
           raise e
         end
 
-        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs)
+        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs) { check_for_stuck_episodes(eps) }
         if waiting_timed_out
           e = Apple::AssetStateTimeoutError.new(eps)
           Rails.logger.info("Timed out waiting for processing", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
