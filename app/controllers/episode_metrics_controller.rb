@@ -8,6 +8,16 @@ class EpisodeMetricsController < ApplicationController
   def show
   end
 
+  def score_card
+    @score_type = params[:score_type]
+    @score = scorecard_downloads(@score_type)
+
+    render partial: "metrics/score_card", locals: {
+      score: @score,
+      score_type: @score_type
+    }
+  end
+
   def downloads
     @date_range = generate_date_range(Date.utc_today - 28.days, Date.utc_today, "DAY")
 
@@ -62,5 +72,13 @@ class EpisodeMetricsController < ApplicationController
         date_end: Date.utc_today,
         interval: "DAY"
       )
+  end
+
+  def scorecard_downloads(score_type)
+    if score_type == "daterange"
+      daterange_downloads(@episode).sum(&:count)
+    elsif score_type == "alltime"
+      alltime_downloads(@episode).sum(&:count)
+    end
   end
 end

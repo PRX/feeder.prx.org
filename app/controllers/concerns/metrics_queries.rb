@@ -27,66 +27,6 @@ module MetricsQueries
       .load_async
   end
 
-  def downloads_by_feed(model, slugs, date_start = Date.utc_today - 28.days)
-    model_id, column = model_attrs(model)
-
-    Rollups::HourlyDownload
-      .where("#{column}": model_id, feed_slug: slugs, hour: (date_start..))
-      .select(:feed_slug, "SUM(count) AS count")
-      .group(:feed_slug)
-      .order(Arel.sql("SUM(count) AS count DESC"))
-      .final
-      .load_async
-  end
-
-  def top_countries_rollups(model, date_start = (Date.utc_today - 28.days).to_s, date_end = Date.utc_today.to_s)
-    model_id, column = model_attrs(model)
-
-    Rollups::DailyGeo
-      .where("#{column}": model_id, day: date_start..date_end)
-      .select(:country_code, "SUM(count) AS count")
-      .group(:country_code)
-      .order(Arel.sql("SUM(count) AS count DESC"))
-      .final
-      .limit(10)
-      .load_async
-  end
-
-  def other_countries_rollups(model, top_country_codes, date_start = (Date.utc_today - 28.days).to_s, date_end = Date.utc_today.to_s)
-    model_id, column = model_attrs(model)
-
-    Rollups::DailyGeo
-      .where("#{column}": model_id, day: date_start..date_end)
-      .where.not(country_code: top_country_codes)
-      .select("'Other' AS country_code", "SUM(count) AS count")
-      .final
-      .load_async
-  end
-
-  def top_agents_rollups(model, date_start = (Date.utc_today - 28.days).to_s, date_end = Date.utc_today.to_s)
-    model_id, column = model_attrs(model)
-
-    Rollups::DailyAgent
-      .where("#{column}": model_id, day: date_start..date_end)
-      .select("agent_name_id AS code", "SUM(count) AS count")
-      .group("agent_name_id AS code")
-      .order(Arel.sql("SUM(count) AS count DESC"))
-      .final
-      .limit(10)
-      .load_async
-  end
-
-  def other_agents_rollups(model, top_agent_codes, date_start = (Date.utc_today - 28.days).to_s, date_end = Date.utc_today.to_s)
-    model_id, column = model_attrs(model)
-
-    Rollups::DailyAgent
-      .where("#{column}": model_id, day: date_start..date_end)
-      .where.not(agent_name_id: top_agent_codes)
-      .select("'Other' AS code", "SUM(count) AS count")
-      .final
-      .load_async
-  end
-
   private
 
   def model_attrs(model)

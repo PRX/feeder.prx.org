@@ -19,10 +19,6 @@ class PodcastsController < ApplicationController
     authorize @podcast
 
     @recently_published_episodes = @podcast.episodes.published.dropdate_desc.limit(4)
-    if Rails.env.development?
-      @alltime_downloads = alltime_downloads(@podcast).sum(&:count)
-      @daterange_downloads = daterange_downloads(@podcast).sum(&:count)
-    end
     @episode_count = @podcast.episodes.published.length
 
     # @recently_published is used for the prod branch

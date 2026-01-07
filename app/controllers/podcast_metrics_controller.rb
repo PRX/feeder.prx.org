@@ -25,6 +25,16 @@ class PodcastMetricsController < ApplicationController
     }
   end
 
+  def score_card
+    @score_type = params[:score_type]
+    @score = scorecard_downloads(@score_type)
+
+    render partial: "metrics/score_card", locals: {
+      score: @score,
+      score_type: @score_type
+    }
+  end
+
   def monthly_downloads
     @date_start = (Date.utc_today - 11.months).beginning_of_month
     @date_end = Date.utc_today
@@ -106,6 +116,16 @@ class PodcastMetricsController < ApplicationController
       episode.first_rss_published_at.beginning_of_hour
     else
       episode.published_at.beginning_of_hour
+    end
+  end
+
+  def scorecard_downloads(score_type)
+    if score_type == "daterange"
+      daterange_downloads(@podcast).sum(&:count)
+    elsif score_type == "alltime"
+      alltime_downloads(@podcast).sum(&:count)
+    elsif score_type == "episodes"
+      @podcast.episodes.published.length
     end
   end
 end
