@@ -16,7 +16,7 @@ module Integrations
       current_cycle = statuses.take_while { |s| !s.delivered? }
 
       # Find when upload completed in this cycle (oldest uploaded status)
-      upload_completed = current_cycle.select(&:uploaded?).last
+      upload_completed = current_cycle.reverse.find(&:uploaded?)
       return nil unless upload_completed
 
       Time.current - upload_completed.created_at
