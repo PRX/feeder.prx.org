@@ -8,9 +8,11 @@ FactoryBot.define do
     Time { "2025-12-17T14:51:16.490Z" }
     Timestamp { 1765983076.49 }
     JobReceived do
-      Job { build(:oxbow_job_id) }
-      Execution { {Id: "arn:aws:states:the-execution-arn"} }
-      State "RECEIVED"
+      {
+        Job: build(:oxbow_job_id),
+        Execution: {Id: "arn:aws:states:the-execution-arn"},
+        State: "RECEIVED"
+      }
     end
     initialize_with { attributes.with_indifferent_access }
   end
@@ -60,9 +62,11 @@ FactoryBot.define do
     Timestamp { 1765987343.21 }
     Task { build(:oxbow_ffmpeg_task) }
     TaskResult do
-      Job { build(:oxbow_job_id) }
-      Execution { {Id: "arn:aws:states:the-execution-arn"} }
-      Result build(:oxbow_ffmpeg_result)
+      {
+        Job: build(:oxbow_job_id),
+        Execution: {Id: "arn:aws:states:the-execution-arn"},
+        Result: build(:oxbow_ffmpeg_result)
+      }
     end
     initialize_with { attributes.with_indifferent_access }
   end

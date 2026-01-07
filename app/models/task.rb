@@ -28,16 +28,27 @@ class Task < ApplicationRecord
   scope :bad_audio_vbr, -> { where("result ~ '\"VariableBitrate\":true'") }
 
   def self.callback(msg)
-    Task.transaction do
-      if (job_id = porter_callback_job_id(msg))
-        status = porter_callback_status(msg)
-        time = porter_callback_time(msg)
-      end
+    job_id = porter_callback_job_id(msg)
+    task = lookup_task(job_id)
 
-      task = where(job_id: job_id).lock(true).first
-      if task && status && time && (task.logged_at.nil? || (time >= task.logged_at))
+    task&.with_lock do
+      status = porter_callback_status(msg)
+      time = porter_callback_time(msg)
+
+      if status && time && (task.logged_at.nil? || (time >= task.logged_at))
         task.update!(status: status, logged_at: time, result: msg)
       end
+    end
+  end
+
+  def self.lookup_task(job_id)
+    if job_id
+      task = find_by_job_id(job_id) || Tasks::RecordStreamTask.from_job_id(job_id)
+      unless task
+        Rails.logger.error("Unrecognized Task job id", job_id: job_id)
+        NewRelic::Agent.notice_error(StandardError.new("Unrecognized Task job id: #{job_id}"))
+      end
+      task
     end
   end
 

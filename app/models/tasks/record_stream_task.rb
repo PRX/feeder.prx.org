@@ -23,8 +23,8 @@ class Tasks::RecordStreamTask < ::Task
   def update_stream_resource
     stream_resource.status = processing? ? "recording" : status
 
-    has_new = missing_seconds.to_i > 0
-    has_existing = stream_resource.missing_seconds > 0
+    has_new = missing_seconds.present?
+    has_existing = stream_resource.missing_seconds.present?
     is_first = has_new && !has_existing
     is_larger = has_new && has_existing && missing_seconds < stream_resource.missing_seconds
 
