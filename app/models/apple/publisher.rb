@@ -8,7 +8,6 @@ module Apple
 
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
-    STUCK_EPISODE_TIMEOUT = 1.hour.freeze
 
     def self.from_apple_config(apple_config)
       api = Apple::Api.from_apple_config(apple_config)
@@ -488,7 +487,7 @@ module Apple
       # Check for stuck episodes (>1 hour)
       stuck = eps.filter { |ep|
         duration = ep.feeder_episode.measure_asset_processing_duration
-        duration && duration > STUCK_EPISODE_TIMEOUT
+        duration && duration >= Apple::STUCK_EPISODE_THRESHOLD
       }
 
       if stuck.any?

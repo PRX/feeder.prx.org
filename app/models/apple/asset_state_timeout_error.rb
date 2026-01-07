@@ -2,10 +2,6 @@ module Apple
   class AssetStateTimeoutError < RuntimeError
     attr_reader :episodes, :asset_wait_duration
 
-    # Duration thresholds in seconds
-    WARN_THRESHOLD = 30.minutes.to_i
-    ERROR_THRESHOLD = 60.minutes.to_i
-
     def initialize(episodes)
       @episodes = episodes
       @asset_wait_duration = episodes.map { |ep| ep.feeder_episode.measure_asset_processing_duration }.compact.max
@@ -34,9 +30,9 @@ module Apple
 
     def log_level
       duration = asset_wait_duration || 0
-      if duration >= ERROR_THRESHOLD
+      if duration >= Apple::STUCK_EPISODE_THRESHOLD
         :error
-      elsif duration >= WARN_THRESHOLD
+      elsif duration >= Apple::SLOW_EPISODE_THRESHOLD
         :warn
       else
         :info
