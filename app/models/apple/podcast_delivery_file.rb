@@ -44,11 +44,6 @@ module Apple
       end
     end
 
-    def self.wait_for_delivery_files(api, pdfs, &stuck_check)
-      wait_for_delivery(api, pdfs, &stuck_check)
-      wait_for_processing(api, pdfs, &stuck_check)
-    end
-
     def self.wait_for_processing(api, pdfs, &stuck_check)
       wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file processing")
