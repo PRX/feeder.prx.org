@@ -21,25 +21,26 @@ class Tasks::RecordStreamTask < ::Task
   end
 
   def update_stream_resource
-    stream_resource.status = status
+    stream_resource.status = processing? ? "recording" : status
 
-    if complete?
-      porter_callback_ffmpeg_output
+    has_new = missing_seconds.to_i > 0
+    has_existing = stream_resource.missing_seconds > 0
+    is_first = has_new && !has_existing
+    is_larger = has_new && has_existing && missing_seconds < stream_resource.missing_seconds
 
-      # TODO: i guess decide if we're going to use this file
-      # (it's larger/better than the current stream_resource audio)
-      # then reset the stream_resource original_url to this source
-
-      # TODO: decide if we captured the entire timeframe? or is this just a method?
-      # stream_resource.status = "incomplete" if stream_resource.incomplete?
+    if complete? && (is_first || is_larger)
+      stream_resource.actual_start_at = source_start_at
+      stream_resource.actual_end_at = source_end_at
+      stream_resource.url = nil
+      stream_resource.original_url = "s3://#{source_bucket}/#{source_key}"
+      stream_resource.status = "processing"
+      stream_resource.file_size = source_size
+      stream_resource.duration = source_duration / 1000.0
+      changed = true
     end
 
     stream_resource.save!
-
-    if stream_resource.status_complete?
-      # TODO: copy from the stream recorder's source S3 to our Feeder S3, and generate a waveform
-      # but ONLY IF this file is >= the previous one attached to the StreamResource
-    end
+    stream_resource.copy_media if changed
   end
 
   # parsing data from the job_id
@@ -100,5 +101,17 @@ class Tasks::RecordStreamTask < ::Task
 
   def source_end_at
     source_start_at + Rational(source_duration, 1000) if source_start_at && source_duration
+  end
+
+  def missing_seconds
+    return unless start_at && end_at
+
+    if source_start_at.nil? || source_end_at.nil?
+      end_at - start_at
+    else
+      missing_start = [source_start_at - start_at, 0].max
+      missing_end = [end_at - source_end_at, 0].max
+      missing_start + missing_end
+    end
   end
 end

@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :stream_resource do
-    start_at { "2025-12-18T13:00:00Z" }
-    end_at { "2025-12-18T14:00:00Z" }
-    actual_start_at { "2025-12-18T12:59:50Z" }
-    actual_end_at { "2025-12-18T14:00:10Z" }
+    start_at { "2025-12-17T15:00:00Z" }
+    end_at { "2025-12-17T16:00Z" }
+    actual_start_at { "2025-12-17 14:55:21Z" }
+    actual_end_at { "2025-12-17 16:07:21Z" }
 
     original_url { "s3://prx-testing/test/audio.mp3" }
 
@@ -13,6 +13,6 @@ FactoryBot.define do
     bit_rate { 128 }
     sample_rate { 44100 }
     channels { 2 }
-    duration { 3620.0 }
+    duration { 4320.0 }
   end
 end

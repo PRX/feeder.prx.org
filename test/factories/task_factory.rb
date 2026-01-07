@@ -43,7 +43,7 @@ FactoryBot.define do
     association :owner, factory: :stream_resource
     status { :complete }
     job_id { build(:oxbow_job_id)[:Id] }
-    options { {TODO: "TODO"} }
+    options { {} }
     result { build(:oxbow_job_results) }
   end
 end

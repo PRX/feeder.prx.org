@@ -49,6 +49,87 @@ describe Tasks::RecordStreamTask do
     end
   end
 
+  describe "#update_stream_resource" do
+    let(:task) { create(:record_stream_task) }
+    let(:resource) { task.stream_resource }
+
+    it "updates status before save" do
+      assert_equal task.status, "complete"
+      assert_equal resource.status, "complete"
+
+      task.update(status: "started")
+      assert_equal resource.status, "started"
+
+      # we use "recording" instead of processing for this stage
+      task.update(status: "processing")
+      assert_equal resource.status, "recording"
+
+      # but start "processing" once we've finished the recording
+      task.update(status: "complete")
+      assert_equal resource.status, "complete"
+    end
+
+    it "copies media the first time" do
+      resource.update(actual_start_at: nil, actual_end_at: nil, original_url: nil)
+      assert_equal 3600, resource.missing_seconds
+
+      mock_copy = Minitest::Mock.new
+      mock_copy.expect(:call, nil)
+
+      resource.stub(:copy_media, mock_copy) do
+        task.stub(:missing_seconds, 10) do
+          task.update_stream_resource
+
+          assert_equal "s3://#{task.source_bucket}/#{task.source_key}", resource.original_url
+          assert_equal task.source_start_at, resource.actual_start_at
+          assert_equal task.source_end_at, resource.actual_end_at
+          assert_equal "processing", resource.status
+          assert_equal task.source_size, resource.file_size
+          assert_equal task.source_duration / 1000.0, resource.duration
+
+          mock_copy.verify
+        end
+      end
+    end
+
+    it "copies media with the fewest missing_seconds" do
+      old_orig = "s3://some/previous/file.mp3"
+
+      # pretend resource is 10 seconds short
+      resource.update(actual_start_at: resource.start_at + 10.seconds, original_url: old_orig)
+      assert_equal 10, resource.missing_seconds
+
+      task.stub(:missing_seconds, 12) do
+        task.update_stream_resource
+        assert_equal old_orig, resource.original_url
+      end
+
+      task.stub(:missing_seconds, 10) do
+        task.update_stream_resource
+        assert_equal old_orig, resource.original_url
+      end
+
+      mock_copy = Minitest::Mock.new
+      mock_copy.expect(:call, nil)
+
+      # has fewer missing seconds - copy this one
+      resource.stub(:copy_media, mock_copy) do
+        task.stub(:missing_seconds, 8) do
+          task.update_stream_resource
+          refute_equal old_orig, resource.original_url
+
+          assert_equal "s3://#{task.source_bucket}/#{task.source_key}", resource.original_url
+          assert_equal task.source_start_at, resource.actual_start_at
+          assert_equal "processing", resource.status
+          assert_equal task.source_size, resource.file_size
+          assert_equal task.source_duration / 1000.0, resource.duration
+
+          mock_copy.verify
+        end
+      end
+    end
+  end
+
   describe "#job_id_parts" do
     it "parses the various parts of the job id" do
       assert_equal 1234, task.podcast_id
@@ -90,6 +171,26 @@ describe Tasks::RecordStreamTask do
       assert_nil task.source_duration
       assert_nil task.source_start_at
       assert_nil task.source_end_at
+    end
+  end
+
+  describe "#missing_seconds" do
+    it "returns the seconds we're missing for the time range" do
+      assert_equal 0, task.missing_seconds
+
+      task.result[:JobResult][:TaskResults][0][:FFmpeg][:Outputs][0][:StartEpoch] = task.start_at.to_i
+      assert_equal 0, task.missing_seconds
+
+      task.result[:JobResult][:TaskResults][0][:FFmpeg][:Outputs][0][:StartEpoch] = task.start_at.to_i + 1
+      assert_equal 1, task.missing_seconds
+
+      task.result[:JobResult][:TaskResults][0][:FFmpeg][:Outputs][0][:StartEpoch] = task.start_at.to_i - 11
+      task.result[:JobResult][:TaskResults][0][:FFmpeg][:Outputs][0][:Duration] = 59.minutes.in_seconds * 1000
+      assert_equal 71, task.missing_seconds
+
+      task.result[:JobResult][:TaskResults][0][:FFmpeg][:Outputs][0][:StartEpoch] = task.start_at.to_i + 60
+      task.result[:JobResult][:TaskResults][0][:FFmpeg][:Outputs][0][:Duration] = 51.minutes.in_seconds * 1000
+      assert_equal 9.minutes.in_seconds, task.missing_seconds
     end
   end
 end
