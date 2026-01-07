@@ -236,10 +236,10 @@ describe PublishFeedJob do
           # [duration_seconds, expected_log_level_int]
           # Bunyan log levels: 30=info, 40=warn, 50=error
           expected_level_for_durations = [
-            [1000, 30],  # info (< 30 min)
-            [1800, 40],  # warn (>= 30 min)
-            [3599, 40],  # warn (< 60 min)
-            [3600, 50]   # error (>= 60 min)
+            [1000, 30],  # info (< 20 min)
+            [1200, 40],  # warn (>= 20 min)
+            [2099, 40],  # warn (< 35 min)
+            [2100, 50]   # error (>= 35 min)
           ]
 
           expected_level_for_durations.each do |(duration, level)|

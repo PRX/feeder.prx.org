@@ -1249,9 +1249,9 @@ describe Apple::Publisher do
       end
     end
 
-    it "does not raise for episodes waiting less than 1 hour" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1800) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, 2400) do
+    it "does not raise for episodes waiting less than 35 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1000) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
           # Should not raise
           result = apple_publisher.send(:check_for_stuck_episodes, [episode1, episode2])
           assert_nil result

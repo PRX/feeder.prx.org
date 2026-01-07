@@ -40,8 +40,8 @@ describe Apple::AssetStateTimeoutError do
   end
 
   describe "#log_level" do
-    it "returns info for duration < 30 minutes" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1799) do
+    it "returns info for duration < 20 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1199) do
         episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
           assert_equal :info, error.log_level
@@ -49,15 +49,15 @@ describe Apple::AssetStateTimeoutError do
       end
     end
 
-    it "returns warn for duration >= 30 minutes and < 60 minutes" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1800) do
+    it "returns warn for duration >= 20 minutes and < 35 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1200) do
         episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
           assert_equal :warn, error.log_level
         end
       end
 
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 3599) do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2099) do
         episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
           assert_equal :warn, error.log_level
@@ -65,8 +65,8 @@ describe Apple::AssetStateTimeoutError do
       end
     end
 
-    it "returns error for duration >= 60 minutes" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 3600) do
+    it "returns error for duration >= 35 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2100) do
         episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
           assert_equal :error, error.log_level
@@ -96,7 +96,7 @@ describe Apple::AssetStateTimeoutError do
 
           log = logs.find { |l| l["msg"] == "Apple asset processing timeout" }
           assert log.present?
-          assert_equal 40, log["level"] # warn level (2000s > 1800s threshold)
+          assert_equal 40, log["level"] # warn level (2000s > 1200s threshold)
           assert_equal episode1.podcast_id, log["podcast_id"]
           assert_equal [episode1.feeder_id, episode2.feeder_id], log["episode_ids"]
           assert_equal 2000, log["asset_wait_duration"]
@@ -108,10 +108,10 @@ describe Apple::AssetStateTimeoutError do
       # [duration_seconds, expected_log_level_int]
       # Bunyan log levels: 30=info, 40=warn, 50=error
       expected_levels = [
-        [1000, 30],  # info (< 30 min)
-        [1800, 40],  # warn (>= 30 min)
-        [3599, 40],  # warn (< 60 min)
-        [3600, 50]   # error (>= 60 min)
+        [1000, 30],  # info (< 20 min)
+        [1200, 40],  # warn (>= 20 min)
+        [2099, 40],  # warn (< 35 min)
+        [2100, 50]   # error (>= 35 min)
       ]
 
       expected_levels.each do |(duration, expected_level)|
