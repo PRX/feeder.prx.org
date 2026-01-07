@@ -1220,7 +1220,7 @@ describe Apple::Publisher do
     let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
     let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
-    it "raises AssetStateTimeoutError for episodes stuck over 1 hour" do
+    it "raises AssetStateTimeoutError for episodes stuck over threshold" do
       # Track which episodes were marked for reupload
       reupload_calls = []
 
@@ -1235,9 +1235,9 @@ describe Apple::Publisher do
         reupload_calls << ep2.feeder_id
       end
 
-      # Mock episodes to return durations over 1 hour
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 3700) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, 4000) do
+      # Mock episodes to return durations over threshold (35 min = 2100s)
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2200) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, 2500) do
           error = assert_raises(Apple::AssetStateTimeoutError) do
             apple_publisher.send(:check_for_stuck_episodes, [episode1, episode2])
           end
@@ -1268,18 +1268,71 @@ describe Apple::Publisher do
     it "logs error for each stuck episode" do
       episode1.define_singleton_method(:apple_mark_for_reupload!) {}
 
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 4000) do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2500) do
         logs = capture_json_logs do
           assert_raises(Apple::AssetStateTimeoutError) do
             apple_publisher.send(:check_for_stuck_episodes, [episode1])
           end
         end
 
-        log = logs.find { |l| l[:msg] == "Episode stuck for over 1 hour" }
+        log = logs.find { |l| l[:msg] == "Episode stuck in asset processing" }
         assert log.present?
         assert_equal episode1.feeder_id, log[:episode_id]
-        assert_equal 4000, log[:duration]
+        assert_equal 2500, log[:duration]
       end
+    end
+
+    it "does not consider delivered episodes as stuck" do
+      # Episode was processing for a long time
+      episode1.feeder_episode.apple_episode_delivery_statuses.destroy_all
+
+      create(:apple_episode_delivery_status,
+        episode: episode1.feeder_episode,
+        uploaded: true,
+        delivered: false,
+        asset_processing_attempts: 5,
+        created_at: 2.hours.ago)
+
+      episode1.feeder_episode.reload
+
+      # Verify it would be considered stuck before delivery
+      assert episode1.feeder_episode.measure_asset_processing_duration >= Apple::STUCK_EPISODE_THRESHOLD
+
+      episode1.feeder_episode.apple_mark_as_delivered!
+      episode1.feeder_episode.reload
+
+      # Duration should be nil after delivery, so episode should NOT be stuck
+      assert_nil episode1.feeder_episode.measure_asset_processing_duration
+      result = apple_publisher.send(:check_for_stuck_episodes, [episode1])
+      assert_nil result
+    end
+
+    it "resets duration after marking episode for reupload" do
+      # Set up a stuck episode with real status history
+      episode1.feeder_episode.apple_episode_delivery_statuses.destroy_all
+
+      create(:apple_episode_delivery_status,
+        episode: episode1.feeder_episode,
+        uploaded: true,
+        delivered: false,
+        asset_processing_attempts: 1,
+        created_at: 1.hour.ago)
+
+      episode1.feeder_episode.reload
+
+      # Verify episode is stuck (duration over threshold)
+      initial_duration = episode1.feeder_episode.measure_asset_processing_duration
+      assert initial_duration >= Apple::STUCK_EPISODE_THRESHOLD, "Episode should be stuck initially"
+
+      # Run check_for_stuck_episodes - it will mark for reupload and raise
+      assert_raises(Apple::AssetStateTimeoutError) do
+        apple_publisher.send(:check_for_stuck_episodes, [episode1])
+      end
+
+      episode1.feeder_episode.reload
+
+      # After marking for reupload, duration should reset to nil
+      assert_nil episode1.feeder_episode.measure_asset_processing_duration
     end
   end
 end

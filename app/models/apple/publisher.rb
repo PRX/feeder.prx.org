@@ -484,7 +484,7 @@ module Apple
     def check_for_stuck_episodes(eps)
       return if eps.empty?
 
-      # Check for stuck episodes (>1 hour)
+      # Check for stuck episodes (>= STUCK_EPISODE_THRESHOLD)
       stuck = eps.filter { |ep|
         duration = ep.feeder_episode.measure_asset_processing_duration
         duration && duration >= Apple::STUCK_EPISODE_THRESHOLD
@@ -492,7 +492,7 @@ module Apple
 
       if stuck.any?
         stuck.each do |ep|
-          Rails.logger.error("Episode stuck for over 1 hour", {
+          Rails.logger.error("Episode stuck in asset processing", {
             episode_id: ep.feeder_id,
             duration: ep.feeder_episode.measure_asset_processing_duration
           })
