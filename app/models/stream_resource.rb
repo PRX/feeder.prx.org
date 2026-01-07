@@ -10,9 +10,9 @@ class StreamResource < ApplicationRecord
 
   validates :start_at, presence: true
   validates :end_at, presence: true, comparison: {greater_than: :start_at}
-  validates :actual_start_at, presence: true
-  validates :actual_end_at, presence: true, comparison: {greater_than: :actual_start_at}
-  validates :original_url, presence: true
+  validates :actual_start_at, presence: true, if: :done_recording?
+  validates :actual_end_at, presence: true, comparison: {greater_than: :actual_start_at}, if: :done_recording?
+  validates :original_url, presence: true, if: :done_recording?
 
   after_initialize :set_defaults
   before_validation :set_defaults
@@ -57,6 +57,10 @@ class StreamResource < ApplicationRecord
 
   def copy_media(force = false)
     # TODO
+  end
+
+  def done_recording?
+    %w[created started recording].exclude?(status)
   end
 
   def file_name
