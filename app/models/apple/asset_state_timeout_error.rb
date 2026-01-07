@@ -26,6 +26,7 @@ module Apple
         message,
         {
           podcast_id: podcast_id,
+          episode_ids: episode_ids,
           asset_wait_duration: asset_wait_duration
         }
       )
