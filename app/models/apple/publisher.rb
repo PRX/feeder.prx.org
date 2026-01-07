@@ -491,6 +491,9 @@ module Apple
       }
 
       if stuck.any?
+        # Create error before resetting durations
+        error = Apple::AssetStateTimeoutError.new(stuck)
+
         stuck.each do |ep|
           Rails.logger.error("Episode stuck in asset processing", {
             episode_id: ep.feeder_id,
@@ -498,7 +501,8 @@ module Apple
           })
           ep.apple_mark_for_reupload!
         end
-        raise Apple::AssetStateTimeoutError.new(stuck)
+
+        raise error
       end
     end
 

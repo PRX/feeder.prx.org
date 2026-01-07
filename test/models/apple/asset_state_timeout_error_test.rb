@@ -157,4 +157,36 @@ describe Apple::AssetStateTimeoutError do
       end
     end
   end
+
+  describe "duration captured at creation time" do
+    it "retains correct log level after episode is reset" do
+      # Set up episode with stuck duration
+      episode1.feeder_episode.apple_episode_delivery_statuses.destroy_all
+
+      create(:apple_episode_delivery_status,
+        episode: episode1.feeder_episode,
+        asset_processing_attempts: 0,
+        created_at: 1.hour.ago)
+      create(:apple_episode_delivery_status,
+        episode: episode1.feeder_episode,
+        asset_processing_attempts: 5,
+        created_at: 30.minutes.ago)
+
+      episode1.feeder_episode.reload
+
+      # Create error - captures duration at this moment
+      error = Apple::AssetStateTimeoutError.new([episode1])
+
+      # Now reset the episode (simulating what check_for_stuck_episodes does)
+      episode1.feeder_episode.apple_mark_for_reupload!
+
+      captured_duration = error.asset_wait_duration
+
+      # Verify error captured a duration over stuck threshold
+      assert captured_duration >= Apple::STUCK_EPISODE_THRESHOLD, "Duration should be over stuck threshold"
+      assert_equal :error, error.log_level
+
+      assert_match(/Asset Wait Duration: #{captured_duration.to_i}/, error.message)
+    end
+  end
 end

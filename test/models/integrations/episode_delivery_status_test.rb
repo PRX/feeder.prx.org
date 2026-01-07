@@ -125,58 +125,58 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       assert_nil episode.measure_asset_processing_duration
     end
 
-    it "returns nil when no uploaded status exists" do
-      create(:apple_episode_delivery_status, episode: episode, uploaded: false, delivered: false, asset_processing_attempts: 1, created_at: 1.hour.ago)
+    it "returns nil when the latest status has zero attempts" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
       assert_nil episode.measure_asset_processing_duration
     end
 
-    it "returns nil when not currently processing (asset_processing_attempts is 0)" do
-      # Uploaded but not yet started processing
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 0, created_at: 1.hour.ago)
-      assert_nil episode.measure_asset_processing_duration
+    it "measures duration for contiguous increments" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 5.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 4.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 2, created_at: 3.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 3, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 4, created_at: 1.hour.ago)
+
+      assert_equal 5, episode.reload.measure_asset_processing_duration / 1.hour
     end
 
-    it "measures duration from when upload completed" do
-      # Upload completed 4 hours ago, still processing (not delivered)
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 4.hours.ago)
+    it "measures duration for non-contiguous increments" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 3.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 4, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 5, created_at: 1.hour.ago)
 
-      assert_equal 4, episode.reload.measure_asset_processing_duration / 1.hour
+      assert_equal 3, episode.measure_asset_processing_duration / 1.hour
     end
 
-    it "uses the oldest uploaded status in current cycle for duration" do
-      # Previous cycle that completed
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 10.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: true, asset_processing_attempts: 0, created_at: 8.hours.ago)
-      # Current cycle - should use the oldest one (5 hours ago), not 10 hours ago
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 5.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 2, created_at: 3.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 3, created_at: 1.hour.ago)
-
-      assert_equal 5, episode.measure_asset_processing_duration / 1.hour
-    end
-
-    it "returns nil when delivery is complete" do
-      # Processing started, then completed delivery
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 3.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: true, asset_processing_attempts: 0, created_at: 1.hour.ago)
-
-      assert_nil episode.measure_asset_processing_duration
-    end
-
-    it "handles reupload scenario correctly" do
-      # Old processing that completed
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: true, asset_processing_attempts: 0, created_at: 5.hours.ago)
-      # New upload that's still processing
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 2.hours.ago)
+    it "handles reset attempts correctly" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 5.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 4.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 2, created_at: 3.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 2.hours.ago)  # reset
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 1.hour.ago)
 
       assert_equal 2, episode.measure_asset_processing_duration / 1.hour
     end
 
-    it "ignores statuses where uploaded is false" do
-      create(:apple_episode_delivery_status, episode: episode, uploaded: false, delivered: false, asset_processing_attempts: 0, created_at: 5.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false, asset_processing_attempts: 1, created_at: 2.hours.ago)
+    it "returns nil when all attempts are zero" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
 
-      assert_equal 2, episode.measure_asset_processing_duration / 1.hour
+      assert_nil episode.measure_asset_processing_duration
+    end
+
+    it "handles nil asset_processing_attempts correctly" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 1.hour.ago)
+
+      assert_nil episode.measure_asset_processing_duration
+    end
+
+    it "returns correct duration when latest attempt is zero" do
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 3.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
+
+      assert_nil episode.measure_asset_processing_duration
     end
   end
 end

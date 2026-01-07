@@ -1286,12 +1286,20 @@ describe Apple::Publisher do
       # Episode was processing for a long time
       episode1.feeder_episode.apple_episode_delivery_statuses.destroy_all
 
+      # Start of cycle (attempts: 0)
+      create(:apple_episode_delivery_status,
+        episode: episode1.feeder_episode,
+        uploaded: false,
+        delivered: false,
+        asset_processing_attempts: 0,
+        created_at: 2.hours.ago)
+      # Currently processing (attempts: 5)
       create(:apple_episode_delivery_status,
         episode: episode1.feeder_episode,
         uploaded: true,
         delivered: false,
         asset_processing_attempts: 5,
-        created_at: 2.hours.ago)
+        created_at: 1.hour.ago)
 
       episode1.feeder_episode.reload
 
@@ -1311,12 +1319,20 @@ describe Apple::Publisher do
       # Set up a stuck episode with real status history
       episode1.feeder_episode.apple_episode_delivery_statuses.destroy_all
 
+      # Start of cycle (attempts: 0)
+      create(:apple_episode_delivery_status,
+        episode: episode1.feeder_episode,
+        uploaded: false,
+        delivered: false,
+        asset_processing_attempts: 0,
+        created_at: 1.hour.ago)
+      # Currently processing (attempts: 1)
       create(:apple_episode_delivery_status,
         episode: episode1.feeder_episode,
         uploaded: true,
         delivered: false,
         asset_processing_attempts: 1,
-        created_at: 1.hour.ago)
+        created_at: 30.minutes.ago)
 
       episode1.feeder_episode.reload
 
