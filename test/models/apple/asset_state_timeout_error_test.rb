@@ -94,10 +94,11 @@ describe Apple::AssetStateTimeoutError do
             error.log_error!
           end
 
-          log = logs.find { |l| l["msg"].include?("Timeout:") }
+          log = logs.find { |l| l["msg"] == "Apple asset processing timeout" }
           assert log.present?
           assert_equal 40, log["level"] # warn level (2000s > 1800s threshold)
           assert_equal episode1.podcast_id, log["podcast_id"]
+          assert_equal [episode1.feeder_id, episode2.feeder_id], log["episode_ids"]
           assert_equal 2000, log["asset_wait_duration"]
         end
       end
@@ -122,7 +123,7 @@ describe Apple::AssetStateTimeoutError do
               error.log_error!
             end
 
-            log = logs.find { |l| l["msg"].include?("Timeout:") }
+            log = logs.find { |l| l["msg"] == "Apple asset processing timeout" }
             assert log.present?, "Expected log for #{duration}s duration"
             assert_equal expected_level, log["level"], "Expected level #{expected_level} for #{duration}s duration"
           end

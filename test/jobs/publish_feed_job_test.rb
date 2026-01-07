@@ -255,7 +255,7 @@ describe PublishFeedJob do
                         nil
                       end
 
-                      log = lines.find { |l| l["msg"].include?("Timeout:") }
+                      log = lines.find { |l| l["msg"] == "Apple asset processing timeout" }
                       assert log.present?, "Expected log for #{duration}s duration"
                       assert_equal level, log["level"], "Expected level #{level} for #{duration}s duration"
 
@@ -349,8 +349,10 @@ describe PublishFeedJob do
                     end
 
                     # Should log the error even though sync_blocks_rss is disabled
-                    log = lines.find { |l| l["msg"].include?("Timeout:") }
-                    assert log.present?, "Timeout should be logged even when sync_blocks_rss is disabled"
+                    log = lines.find { |l| l["msg"] == "Apple asset processing timeout" }
+                    assert log.present?, "AssetStateTimeoutError should be logged even when sync_blocks_rss is disabled"
+                    assert_equal [episode1.feeder_id, episode2.feeder_id], log["episode_ids"]
+                    assert_equal 2000, log["asset_wait_duration"]
 
                     # But should still continue to RSS
                     assert_equal ["created", "started", "error_integration", "published_rss", "published_rss", "published_rss", "complete"].sort, PublishingPipelineState.where(podcast: feed.podcast).latest_pipelines.pluck(:status).sort

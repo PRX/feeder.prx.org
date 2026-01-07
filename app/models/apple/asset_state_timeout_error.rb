@@ -19,7 +19,7 @@ module Apple
     def log_error!
       Rails.logger.send(
         log_level,
-        message,
+        "Apple asset processing timeout",
         {
           podcast_id: podcast_id,
           episode_ids: episode_ids,
