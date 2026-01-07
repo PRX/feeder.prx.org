@@ -574,9 +574,9 @@ describe Apple::Publisher do
       episode = build(:uploaded_apple_episode, show: apple_publisher.show)
       stuck_check_called = false
 
-      # Stub wait_for_delivery to call the block
+      # Stub wait_for_delivery to call the block with still_waiting pdfs
       wait_for_delivery_stub = ->(api, pdfs, &block) {
-        block&.call
+        block&.call(pdfs)
         [false, []]
       }
 

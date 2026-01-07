@@ -59,7 +59,7 @@ module Apple
         processed, still_waiting = updated_pdfs.partition { |pdf| pdf.processed? || (pdf.asset_processing_state.nil? && pdf.podcast_delivery.completed?) }
         processed.each(&:save!)
 
-        stuck_check&.call
+        stuck_check&.call(still_waiting)
 
         still_waiting
       end
@@ -68,12 +68,12 @@ module Apple
     def self.wait_for_delivery(api, pdfs, &stuck_check)
       wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file delivery")
-        updated_pdfs = get_and_update_api_response(api, pdfs)
+        updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
 
         delivered, still_waiting = updated_pdfs.partition(&:delivered?)
         delivered.each(&:save!)
 
-        stuck_check&.call
+        stuck_check&.call(still_waiting)
 
         still_waiting
       end
