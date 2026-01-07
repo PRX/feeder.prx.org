@@ -1,7 +1,7 @@
 class StreamResource < ApplicationRecord
   BUFFER_SECONDS = 10
 
-  enum :status, %w[started created processing complete error retrying cancelled invalid].to_enum_h, prefix: true
+  enum :status, %w[created started recording processing complete short error].to_enum_h, prefix: true
 
   belongs_to :stream_recording, -> { with_deleted }, touch: true, optional: true
   has_one :podcast, through: :stream_recording
@@ -25,8 +25,18 @@ class StreamResource < ApplicationRecord
     parts = str.split("/")
     podcast_id = parts[0].to_i
     recording_id = parts[1].to_i
-    start_at = safe_parse_time(parts[2])
-    end_at = safe_parse_time(parts[3])
+    start_at =
+      begin
+        parts[2]&.to_time
+      rescue
+        nil
+      end
+    end_at =
+      begin
+        parts[3]&.to_time
+      rescue
+        nil
+      end
     return unless podcast_id > 0 && recording_id > 0 && start_at && end_at
 
     rec = StreamRecording.find_by_id(recording_id)
@@ -45,6 +55,10 @@ class StreamResource < ApplicationRecord
     set_default(:url, published_url)
   end
 
+  def copy_media(force = false)
+    # TODO
+  end
+
   def file_name
     File.basename(URI.parse(original_url).path) if original_url.present?
   end
@@ -57,15 +71,21 @@ class StreamResource < ApplicationRecord
     "#{podcast.base_published_url}/#{stream_resource_path}" if podcast
   end
 
+  def missing_seconds
+    return unless start_at && end_at
+
+    if actual_start_at.nil? || actual_end_at.nil?
+      end_at - start_at
+    else
+      missing_start = [actual_start_at - start_at, 0].max
+      missing_end = [end_at - actual_end_at, 0].max
+      missing_start + missing_end
+    end
+  end
+
   private
 
   def stream_resource_path
     "streams/#{guid}/#{file_name}"
-  end
-
-  def safe_parse_time(str)
-    str&.to_time
-  rescue
-    nil
   end
 end

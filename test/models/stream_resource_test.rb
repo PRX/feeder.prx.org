@@ -89,4 +89,24 @@ describe StreamResource do
       refute_equal resource.published_url, resource.url
     end
   end
+
+  describe "#missing_seconds" do
+    it "returns the seconds we're missing for the time range" do
+      assert_equal 0, resource.missing_seconds
+
+      resource.actual_start_at = resource.start_at
+      assert_equal 0, resource.missing_seconds
+
+      resource.actual_start_at = resource.start_at + 1.second
+      assert_equal 1, resource.missing_seconds
+
+      resource.actual_start_at = resource.start_at - 11.seconds
+      resource.actual_end_at = resource.end_at - 71.seconds
+      assert_equal 71, resource.missing_seconds
+
+      resource.actual_start_at = resource.start_at + 1.minute
+      resource.actual_end_at = resource.end_at - 8.minutes
+      assert_equal 9.minutes, resource.missing_seconds
+    end
+  end
 end
