@@ -331,6 +331,11 @@ en:
               bad_http_response: Unable to fetch feed url
               invalid_rss: Not a valid RSS feed
               podcast_locked: Podcast is locked, importing not permitted
+        stream_recording:
+          attributes:
+            url:
+              invalid_content_type: Not an audio stream
+              unreachable: Unreachable stream url
   # form/model helpers
   helpers:
     application:
@@ -604,6 +609,32 @@ en:
         no_category: (None)
         embed_player_url: Embeddable Player URL
         embed_player_iframe: Embeddable Player IFrame
+      stream_recording:
+        create_as: Create As
+        create_as_opts:
+          clips: Clips
+          episodes: Episodes
+        end_date: Recording End Date
+        expiration: Expire Clips After
+        expirations:
+          "86400": 1 day
+          "604800": 1 week
+          "2592000": 1 month
+          "5184000": 2 months
+          "7776000": 3 months
+          "15552000": 6 months
+          "31536000": 1 year
+        record_all_days: Every Day
+        record_all_hours: Every Hour
+        record_days: Days of the Week
+        record_hours: Hours of the Day
+        start_date: Recording Start Date
+        status: Recording State
+        statuses:
+          disabled: Disabled
+          enabled: Recording
+          paused: Paused
+        url: Stream URL
       transcript:
         formats:
           text: Plain Text
@@ -1303,11 +1334,12 @@ en:
       total_downloads: Total Downloads
       view_metrics: View Metrics
     tabs:
-      metadata: Metadata
       engagement: Engagement Settings
-      player: Embeddable Player
       import: Import
+      metadata: Metadata
       planner: Plan Episodes
+      player: Embeddable Player
+      stream: Live Stream Recording
     update:
       error: Unable to save
       notice: Podcast updated
@@ -1414,6 +1446,32 @@ en:
       <<: *podcast_player_form
     form_sidebar:
       <<: *podcast_player_form
+  podcast_stream:
+    form:
+      confirm: Discard unsaved changes?
+    form_main:
+      help:
+        url: Something something what is this
+    form_settings:
+      help:
+        end_date: todo
+        record_days: todo
+        record_hours: todo
+        start_date: todo
+      hint: Define which days and hours of the stream you want to create clips or episodes from.
+      title: Recording Settings
+    form_status:
+      <<: *form_status
+      title: Stream Recording Status
+      help:
+        create_as: todo
+        expiration: todo
+        status: todo
+    show:
+      title: "%{title} - Live Stream Recording"
+    update:
+      error: Unable to save
+      notice: Live Stream Recording updated
   podcast_switcher:
     dropdown:
       all: View all my Podcasts

@@ -41,13 +41,15 @@
         <div class="col-12 mt-4">
           <p class="status-text">
             <strong><%= integration.to_s.titleize %> Status:</strong>
-            <span class="badge rounded-pill prx-badge-<%= integration_status %>">
-              <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
-            </span>
-            <br>
-            <strong><%= integration.to_s.titleize %> <%= t(".last_updated") %></strong>
-            <br>
-            <%= local_time_ago(episode_integration_updated_at(integration, episode)) %>
+            <% unless integration_status == "draft" %>
+              <span class="badge rounded-pill prx-badge-<%= integration_status %>">
+                <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
+              </span>
+              <br>
+              <strong><%= integration.to_s.titleize %> <%= t(".last_updated") %></strong>
+              <br>
+              <%= local_time_ago(episode_integration_updated_at(integration, episode)) %>
+            <% end %>
           </p>
         </div>
       <% end %>
