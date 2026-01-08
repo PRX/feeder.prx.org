@@ -29,4 +29,11 @@ class ApplicationRecord < ActiveRecord::Base
   def stale?
     !!try(:lock_version_changed?)
   end
+
+  def set_default(key, value)
+    if has_attribute?(key)
+      self[key] ||= value
+      clear_attribute_changes([key]) if new_record? && self[key] == value
+    end
+  end
 end
