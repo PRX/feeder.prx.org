@@ -24,7 +24,7 @@ pin "local-time", to: "https://ga.jspm.io/npm:local-time@2.1.0/app/assets/javasc
 pin "lodash", to: "https://ga.jspm.io/npm:lodash@4.17.21/lodash.js"
 pin "morphdom", to: "https://ga.jspm.io/npm:morphdom@2.7.0/dist/morphdom.js"
 pin "highcharts", to: "https://ga.jspm.io/npm:highcharts@11.1.0/highcharts.js"
-pin "slim-select", preload: true # @3.1.0
+pin "slim-select", preload: true # @2.6.0
 pin "apexcharts", to: "https://ga.jspm.io/npm:apexcharts@3.45.2/dist/apexcharts.common.js"
 
 # evaporate multipart uploads
