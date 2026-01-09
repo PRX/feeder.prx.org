@@ -67,4 +67,12 @@ module PorterCallback
   def porter_callback_size
     porter_callback_inspect[:Size]&.to_i
   end
+
+  def porter_callback_ffmpeg
+    porter_callback_task_result(:FFmpeg) || {}
+  end
+
+  def porter_callback_ffmpeg_output
+    porter_callback_ffmpeg.dig(:FFmpeg, :Outputs)&.first
+  end
 end
