@@ -63,23 +63,18 @@ describe StreamResource do
     end
   end
 
-  describe "#published_path" do
+  describe "#path" do
     it "includes the podcast prefix" do
-      assert_equal "#{podcast.id}/streams/#{resource.guid}/audio.mp3", resource.published_path
+      assert_equal "#{podcast.id}/streams/#{resource.guid}/audio.mp3", resource.path
     end
   end
 
   describe "#published_url" do
     it "includes the podcast http url" do
-      assert_equal "https://f.prxu.org/#{resource.published_path}", resource.published_url
+      assert_equal "https://f.prxu.org/#{resource.path}", resource.published_url
     end
 
     it "sets the url field" do
-      # NOTE: podcast is nil after_initialize
-      assert_nil resource.url
-
-      # but will be there before validation
-      assert resource.valid?
       refute_nil resource.url
       assert_equal resource.published_url, resource.url
 
@@ -87,6 +82,44 @@ describe StreamResource do
       resource.original_url = "http://some/other.filename"
       assert resource.valid?
       refute_equal resource.published_url, resource.url
+    end
+  end
+
+  describe "#href" do
+    it "returns the original url until complete/invalid" do
+      assert resource.valid?
+
+      resource.status = "recording"
+      assert_equal resource.original_url, resource.href
+
+      resource.status = "processing"
+      assert_equal resource.original_url, resource.href
+
+      resource.status = "complete"
+      assert_equal resource.url, resource.href
+
+      resource.status = "invalid"
+      assert_equal resource.url, resource.href
+    end
+  end
+
+  describe "#medium" do
+    it "hardcodes the medium" do
+      assert_equal "audio", resource.medium
+
+      resource.medium = "whatev"
+      assert_equal "audio", resource.medium
+    end
+  end
+
+  describe "#waveform_url" do
+    it "generates waveforms next to the audio file" do
+      assert resource.generate_waveform?
+      refute resource.slice?
+
+      assert_equal "#{resource.url}.json", resource.waveform_url
+      assert_equal "#{resource.path}.json", resource.waveform_path
+      assert_equal "#{resource.file_name}.json", resource.waveform_file_name
     end
   end
 
