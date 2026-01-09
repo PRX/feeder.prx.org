@@ -51,6 +51,26 @@ describe StreamResource do
     end
   end
 
+  describe "#copy_media" do
+    it "skips creating a copy_task if complete" do
+      res = build_stubbed(:stream_resource, status: "complete")
+      res.copy_task = nil
+      res.copy_media
+
+      assert_nil res.copy_task
+    end
+
+    it "skips creating a copy_task if one exists" do
+      res = build_stubbed(:stream_resource, status: "processing")
+      task = Tasks::CopyMediaTask.new
+      res.status = "processing"
+      res.copy_task = task
+      res.copy_media
+
+      assert_equal task, res.copy_task
+    end
+  end
+
   describe "#file_name" do
     it "parses the original url" do
       assert_equal "audio.mp3", resource.file_name

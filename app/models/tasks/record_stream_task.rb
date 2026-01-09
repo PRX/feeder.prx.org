@@ -21,6 +21,8 @@ class Tasks::RecordStreamTask < ::Task
   end
 
   def update_stream_resource
+    # TODO: this tends to mess things up if multiple recordings are
+    # happening at the same time
     stream_resource.status = processing? ? "recording" : status
 
     has_new = missing_seconds.present?

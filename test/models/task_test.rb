@@ -50,7 +50,7 @@ describe Task do
       end
 
       res = rec.stream_resources.first
-      assert_equal "processing", res.task.status
+      assert_equal "processing", res.record_task.status
       assert_equal "recording", res.status
       assert_equal Time.parse("2025-12-17T15:00Z"), res.start_at
       assert_equal Time.parse("2025-12-17T16:00Z"), res.end_at
@@ -64,13 +64,13 @@ describe Task do
         end
       end
 
-      assert_equal "complete", res.reload.task.status
+      assert_equal "complete", res.reload.record_task.status
       assert_equal "processing", res.status
-      assert_equal res.task.source_start_at, res.actual_start_at
-      assert_equal res.task.source_end_at, res.actual_end_at
+      assert_equal res.record_task.source_start_at, res.actual_start_at
+      assert_equal res.record_task.source_end_at, res.actual_end_at
       assert_equal 4320, res.duration
       assert_equal 12345678, res.file_size
-      assert_equal "s3://#{res.task.source_bucket}/#{res.task.source_key}", res.original_url
+      assert_equal "s3://#{res.record_task.source_bucket}/#{res.record_task.source_key}", res.original_url
       assert_equal "#{pod.base_published_url}/streams/#{res.guid}/#{res.file_name}", res.url
     end
 
