@@ -1,5 +1,6 @@
 class EpisodesController < ApplicationController
   include EmbedPlayerHelper
+  include MetricsQueries
 
   before_action :set_episode, only: %i[show overview edit update destroy]
   before_action :set_podcast

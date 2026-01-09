@@ -1,39 +1,52 @@
 class EpisodeMetricsController < ApplicationController
   include MetricsUtils
+  include MetricsQueries
 
   before_action :set_episode
-  before_action :check_clickhouse, except: %i[show]
-  before_action :set_date_range
+  # before_action :check_clickhouse, except: %i[show]
 
   def show
   end
 
-  def downloads
-    @downloads_within_date_range =
-      Rollups::HourlyDownload
-        .where(episode_id: @episode.guid, hour: (@date_start..@date_end))
-        .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-        .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-        .load_async
+  def score_card
+    @score_type = params[:score_type]
+    @score = scorecard_downloads(@score_type)
 
-    @downloads = single_rollups(@downloads_within_date_range, @episode.title)
-
-    render partial: "metrics/downloads_card", locals: {
-      url: request.fullpath,
-      form_id: "episode_downloads_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: @interval,
-      date_range: @date_range,
-      downloads: @downloads
+    render partial: "metrics/score_card", locals: {
+      score: @score,
+      score_type: @score_type
     }
   end
 
-  def geos
+  def downloads
+    @date_range = generate_date_range(Date.utc_today - 28.days, Date.utc_today, "DAY")
+
+    @downloads = daterange_downloads(@episode)
+    @rollups = single_rollups(@downloads, "Downloads")
+
+    render partial: "metrics/downloads_card", locals: {
+      rollups: @rollups,
+      date_range: @date_range
+    }
+  end
+
+  def feeds
+    render partial: "metrics/feeds_card", locals: {
+      podcast: @episode.podcast,
+      feeds: @episode.feed_download_rollups
+    }
+  end
+
+  def countries
+    render partial: "metrics/countries_card", locals: {
+      countries: @episode.country_download_rollups
+    }
   end
 
   def agents
+    render partial: "metrics/agent_apps_card", locals: {
+      agents: @episode.agent_download_rollups
+    }
   end
 
   private
@@ -59,5 +72,13 @@ class EpisodeMetricsController < ApplicationController
         date_end: Date.utc_today,
         interval: "DAY"
       )
+  end
+
+  def scorecard_downloads(score_type)
+    if score_type == "daterange"
+      daterange_downloads(@episode).sum(&:count)
+    elsif score_type == "alltime"
+      alltime_downloads(@episode).sum(&:count)
+    end
   end
 end

@@ -25,11 +25,21 @@ class PodcastMetricsController < ApplicationController
     }
   end
 
+  def score_card
+    @score_type = params[:score_type]
+    @score = scorecard_downloads(@score_type)
+
+    render partial: "metrics/score_card", locals: {
+      score: @score,
+      score_type: @score_type
+    }
+  end
+
   def monthly_downloads
     @date_start = (Date.utc_today - 11.months).beginning_of_month
     @date_end = Date.utc_today
     @date_range = generate_date_range(@date_start, @date_end.beginning_of_month, "MONTH")
-    @downloads_within_date_range = daterange_downloads(@podcast, @date_start, @date_end, "MONTH")
+    @downloads_within_date_range = @podcast.daterange_downloads(@date_start, @date_end, "MONTH")
 
     @downloads = single_rollups(@downloads_within_date_range, "Downloads")
 
@@ -43,7 +53,7 @@ class PodcastMetricsController < ApplicationController
     @episodes = @podcast.episodes.published.dropdate_desc.limit(10)
     @date_range = generate_date_range(Date.utc_today - 28.days, Date.utc_today, "DAY")
 
-    @episodes_downloads = daterange_downloads(@episodes)
+    @episodes_downloads = @podcast.recent_episodes_downloads
 
     @episode_rollups = multiple_episode_rollups(@episodes, @episodes_downloads)
 
@@ -108,6 +118,16 @@ class PodcastMetricsController < ApplicationController
       episode.first_rss_published_at.beginning_of_hour
     else
       episode.published_at.beginning_of_hour
+    end
+  end
+
+  def scorecard_downloads(score_type)
+    if score_type == "daterange"
+      @podcast.daterange_downloads.sum(&:count)
+    elsif score_type == "alltime"
+      @podcast.alltime_downloads.sum(&:count)
+    elsif score_type == "episodes"
+      @podcast.episodes.published.length
     end
   end
 end

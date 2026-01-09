@@ -18,6 +18,7 @@ class Podcast < ApplicationRecord
   include ReleaseEpisodes
   include Integrations::PodcastIntegrations
   include PodcastSubscribeLinks
+  include MetricsQueries
 
   acts_as_paranoid
 
@@ -281,35 +282,6 @@ class Podcast < ApplicationRecord
     end
   end
 
-  def feeds_downloads_query
-    slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
-    date_start = Time.now - 28.days
-
-    Rails.cache.fetch("#{cache_key_with_version}/feeds_downloads_query", expires_in: 1.hour) do
-      Rollups::HourlyDownload
-        .where(podcast_id: id, feed_slug: slugs, hour: (date_start..))
-        .select(:feed_slug, "SUM(count) AS count")
-        .group(:feed_slug)
-        .order(Arel.sql("SUM(count) AS count DESC"))
-        .final
-        .sum(:count)
-    end
-  end
-
-  def feed_download_rollups
-    feed_rollups = feeds.map do |feed|
-      slug = feed[:slug].nil? ? "" : feed[:slug]
-      downloads = feeds_downloads_query.to_h[slug] || 0
-
-      {
-        feed: feed,
-        downloads: downloads
-      }
-    end
-
-    feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
-  end
-
   def downloads_by_season(season_number, latest = false)
     season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
     expiration = latest ? 1.hour : 1.month
@@ -319,43 +291,48 @@ class Podcast < ApplicationRecord
         .where(episode_id: season_episodes_guids)
         .select("SUM(count) AS count")
         .final
-        .first[:count]
+        .sum(:count)
     end
+  end
+
+  def alltime_downloads
+    alltime_downloads_query(id, "podcast_id")
+  end
+
+  def daterange_downloads(date_start = default_time_start, date_end = default_time_end, interval = "DAY")
+    daterange_downloads_query(id, "podcast_id", date_start, date_end, interval)
+  end
+
+  def recent_episodes_downloads(date_start = default_time_start, date_end = default_time_end, interval = "DAY")
+    recent_ep_guids = episodes.published.dropdate_desc.limit(10).pluck(:guid)
+
+    daterange_downloads_query(recent_ep_guids, "episode_id", date_start, date_end, interval)
+  end
+
+  def feed_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/feed_downloads", expires_in: 1.hour) do
+      feed_downloads_query(id, "podcast_id", feeds)
+    end
+  end
+
+  def feed_download_rollups
+    sorted_feed_download_rollups(feeds, feed_downloads)
   end
 
   def top_countries_downloads
-    date_start = (Date.utc_today - 28.days).to_s
-    date_end = Date.utc_today.to_s
-
     Rails.cache.fetch("#{cache_key_with_version}/top_countries_downloads", expires_in: 1.day) do
-      Rollups::DailyGeo
-        .where(podcast_id: id, day: date_start..date_end)
-        .select(:country_code, "SUM(count) AS count")
-        .group(:country_code)
-        .order(Arel.sql("SUM(count) AS count DESC"))
-        .final
-        .limit(10)
-        .sum(:count)
+      top_countries_downloads_query(id, "podcast_id")
     end
   end
 
-  def other_countries_downloads(top_countries)
-    date_start = (Date.utc_today - 28.days).to_s
-    date_end = Date.utc_today.to_s
-    top_country_codes = top_countries.map { |c| c[0] }
-
+  def other_countries_downloads
     Rails.cache.fetch("#{cache_key_with_version}/other_countries_downloads", expires_in: 1.day) do
-      Rollups::DailyGeo
-        .where(podcast_id: id, day: date_start..date_end)
-        .where.not(country_code: top_country_codes)
-        .select("'Other' AS country_code", "SUM(count) AS count")
-        .final
-        .sum(:count)
+      other_countries_downloads_query(id, "podcast_id", top_countries_downloads)
     end
   end
 
   def country_download_rollups
-    top_countries_downloads.concat(other_countries_downloads(top_countries_downloads)).map do |country|
+    top_countries_downloads.concat(other_countries_downloads).map do |country|
       {
         label: Rollups::DailyGeo.label_for(country[0]),
         downloads: country[1]
@@ -364,38 +341,19 @@ class Podcast < ApplicationRecord
   end
 
   def top_agents_downloads
-    date_start = (Date.utc_today - 28.days).to_s
-    date_end = Date.utc_today.to_s
-
     Rails.cache.fetch("#{cache_key_with_version}/top_agents_downloads", expires_in: 1.day) do
-      Rollups::DailyAgent
-        .where(podcast_id: id, day: date_start..date_end)
-        .select("agent_name_id AS code", "SUM(count) AS count")
-        .group("agent_name_id AS code")
-        .order(Arel.sql("SUM(count) AS count DESC"))
-        .final
-        .limit(10)
-        .sum(:count)
+      top_agents_downloads_query(id, "podcast_id")
     end
   end
 
-  def other_agents_downloads(top_agents)
-    date_start = (Date.utc_today - 28.days).to_s
-    date_end = Date.utc_today.to_s
-    top_agent_codes = top_agents.map { |c| c[0] }
-
-    Rails.cache.fetch("#{cache_key_with_version}/other_countries_downloads", expires_in: 1.day) do
-      Rollups::DailyAgent
-        .where(podcast_id: id, day: date_start..date_end)
-        .where.not(agent_name_id: top_agent_codes)
-        .select("'Other' AS country_code", "SUM(count) AS count")
-        .final
-        .sum(:count)
+  def other_agents_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/other_agents_downloads", expires_in: 1.day) do
+      other_agents_downloads_query(id, "podcast_id", top_agents_downloads)
     end
   end
 
   def agent_download_rollups
-    top_agents_downloads.concat(other_agents_downloads(top_agents_downloads)).map do |agent|
+    top_agents_downloads.concat(other_agents_downloads).map do |agent|
       {
         label: Rollups::DailyAgent.label_for(agent[0]),
         downloads: agent[1]
