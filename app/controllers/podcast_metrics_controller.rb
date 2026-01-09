@@ -71,12 +71,14 @@ class PodcastMetricsController < ApplicationController
   end
 
   def seasons
-    published_seasons = @podcast.episodes.published.pluck(:season_number).uniq.compact
+    published_seasons = @podcast.episodes.published.dropdate_desc.pluck(:season_number).uniq.compact
 
-    @season_rollups = published_seasons.map do |season|
+    @season_rollups = published_seasons.map.with_index do |season, i|
+      latest = i == 0
+
       {
         season_number: season,
-        downloads: @podcast.downloads_by_season(season)
+        downloads: @podcast.downloads_by_season(season, latest)
       }
     end.sort { |a, b| b[:downloads] <=> a[:downloads] }
 

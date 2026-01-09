@@ -282,15 +282,15 @@ class Podcast < ApplicationRecord
     end
   end
 
-  def downloads_by_season(season_number)
+  def downloads_by_season(season_number, latest = false)
     season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
+    expiration = latest ? 1.hour : 1.month
 
-    Rails.cache.fetch("#{cache_key_with_version}/downloads_by_season/#{season_number}", expires_in: 1.month) do
+    Rails.cache.fetch("#{cache_key_with_version}/downloads_by_season/#{season_number}", expires_in: expiration) do
       Rollups::HourlyDownload
         .where(episode_id: season_episodes_guids)
         .select("SUM(count) AS count")
         .final
-        .load_async
         .first[:count]
     end
   end
