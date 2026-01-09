@@ -292,8 +292,7 @@ class Podcast < ApplicationRecord
         .group(:feed_slug)
         .order(Arel.sql("SUM(count) AS count DESC"))
         .final
-        .load_async
-        .pluck(:feed_slug, Arel.sql("SUM(count) AS count"))
+        .sum(:count)
     end
   end
 
@@ -311,15 +310,15 @@ class Podcast < ApplicationRecord
     feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
   end
 
-  def downloads_by_season(season_number)
+  def downloads_by_season(season_number, latest = false)
     season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
+    expiration = latest ? 1.hour : 1.month
 
-    Rails.cache.fetch("#{cache_key_with_version}/downloads_by_season/#{season_number}", expires_in: 1.month) do
+    Rails.cache.fetch("#{cache_key_with_version}/downloads_by_season/#{season_number}", expires_in: expiration) do
       Rollups::HourlyDownload
         .where(episode_id: season_episodes_guids)
         .select("SUM(count) AS count")
         .final
-        .load_async
         .first[:count]
     end
   end
@@ -336,8 +335,7 @@ class Podcast < ApplicationRecord
         .order(Arel.sql("SUM(count) AS count DESC"))
         .final
         .limit(10)
-        .load_async
-        .pluck(:country_code, Arel.sql("SUM(count) AS count"))
+        .sum(:count)
     end
   end
 
@@ -352,8 +350,7 @@ class Podcast < ApplicationRecord
         .where.not(country_code: top_country_codes)
         .select("'Other' AS country_code", "SUM(count) AS count")
         .final
-        .load_async
-        .pluck(Arel.sql("'Other' AS country_code"), Arel.sql("SUM(count) AS count"))
+        .sum(:count)
     end
   end
 
@@ -378,8 +375,7 @@ class Podcast < ApplicationRecord
         .order(Arel.sql("SUM(count) AS count DESC"))
         .final
         .limit(10)
-        .load_async
-        .pluck(Arel.sql("agent_name_id AS code"), Arel.sql("SUM(count) AS count"))
+        .sum(:count)
     end
   end
 
@@ -394,8 +390,7 @@ class Podcast < ApplicationRecord
         .where.not(agent_name_id: top_agent_codes)
         .select("'Other' AS country_code", "SUM(count) AS count")
         .final
-        .load_async
-        .pluck(Arel.sql("'Other' AS country_code"), Arel.sql("SUM(count) AS count"))
+        .sum(:count)
     end
   end
 
