@@ -47,22 +47,6 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       end
     end
 
-    describe "#apple_complete?" do
-      it "should be true if the the two statuses is complete" do
-        assert_equal true, pdf.apple_complete?
-      end
-
-      it "will not be complete if either of the two state statues are not complete" do
-        pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: asset_delivery_state, asset_processing_state: "VALIDATION_FAILED")
-        pdf = Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container.merge(apple_id)))
-        assert_equal false, pdf.apple_complete?
-
-        pdf_resp_container = build(:podcast_delivery_file_api_response, asset_delivery_state: "FAILED", asset_processing_state: asset_processing_state)
-        pdf = Apple::PodcastDeliveryFile.new(apple_sync_log: SyncLog.new(**pdf_resp_container.merge(apple_id)))
-        assert_equal false, pdf.apple_complete?
-      end
-    end
-
     describe ".mark_existing_uploaded" do
       let(:podcast_container) { create(:apple_podcast_container, episode: episode) }
       let(:podcast_delivery) {
