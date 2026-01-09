@@ -14,7 +14,7 @@ class Episode < ApplicationRecord
   include EmbedPlayerHelper
   include AppleIntegration
   include ReleaseEpisodes
-  include MetricsCaching
+  include MetricsQueries
 
   MAX_SEGMENT_COUNT = 10
   MAX_DESCRIPTION_BYTES = 4000

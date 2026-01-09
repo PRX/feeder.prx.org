@@ -1,29 +1,26 @@
 require "active_support/concern"
 
-module MetricsCaching
+module MetricsQueries
   extend ActiveSupport::Concern
 
-  def feeds_downloads_query
-    model_id, column = model_attrs
+  def feed_downloads_query(model_id, column, feeds)
     slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
     date_start = Time.now - 28.days
 
-    Rails.cache.fetch("#{cache_key_with_version}/feeds_downloads_query", expires_in: 1.hour) do
-      Rollups::HourlyDownload
-        .where("#{column}": model_id, feed_slug: slugs, hour: (date_start..))
-        .select(:feed_slug, "SUM(count) AS count")
-        .group(:feed_slug)
-        .order(Arel.sql("SUM(count) AS count DESC"))
-        .final
-        .load_async
-        .pluck(:feed_slug, Arel.sql("SUM(count) AS count"))
-    end
+    Rollups::HourlyDownload
+      .where("#{column}": model_id, feed_slug: slugs, hour: (date_start..))
+      .select(:feed_slug, "SUM(count) AS count")
+      .group(:feed_slug)
+      .order(Arel.sql("SUM(count) AS count DESC"))
+      .final
+      .load_async
+      .pluck(:feed_slug, Arel.sql("SUM(count) AS count"))
   end
 
-  def feed_download_rollups
+  def sorted_feed_download_rollups(feeds, feed_downloads)
     feed_rollups = feeds.map do |feed|
       slug = feed[:slug].nil? ? "" : feed[:slug]
-      downloads = feeds_downloads_query.to_h[slug] || 0
+      downloads = feed_downloads.to_h[slug] || 0
 
       {
         feed: feed,
@@ -123,6 +120,27 @@ module MetricsCaching
   end
 
   private
+
+  def alltime_downloads_query(model_id, column, select_override = nil)
+    selection = select_override || column
+
+    Rollups::HourlyDownload
+      .where("#{column}": model_id)
+      .select(selection, "SUM(count) AS count")
+      .group(selection)
+      .final
+      .load_async
+  end
+
+  def daterange_downloads_query(model_id, column, date_start = Date.utc_today - 28.days, date_end = Time.now, interval = "DAY")
+    Rollups::HourlyDownload
+      .where("#{column}": model_id, hour: (date_start..date_end))
+      .select(column, "DATE_TRUNC('#{interval}', hour) AS hour", "SUM(count) AS count")
+      .group(column, "DATE_TRUNC('#{interval}', hour) AS hour")
+      .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
+      .final
+      .load_async
+  end
 
   def model_attrs
     model_id = if is_a?(Podcast)

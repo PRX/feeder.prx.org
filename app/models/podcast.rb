@@ -18,7 +18,7 @@ class Podcast < ApplicationRecord
   include ReleaseEpisodes
   include Integrations::PodcastIntegrations
   include PodcastSubscribeLinks
-  include MetricsCaching
+  include MetricsQueries
 
   acts_as_paranoid
 
@@ -293,5 +293,29 @@ class Podcast < ApplicationRecord
         .final
         .first[:count]
     end
+  end
+
+  def alltime_downloads
+    alltime_downloads_query(id, "podcast_id")
+  end
+
+  def daterange_downloads(date_start = Date.utc_today - 28.days, date_end = Time.now, interval = "DAY")
+    daterange_downloads_query(id, "podcast_id", date_start, date_end, interval)
+  end
+
+  def recent_episodes_downloads(date_start = Date.utc_today - 28.days, date_end = Time.now, interval = "DAY")
+    recent_ep_guids = episodes.published.dropdate_desc.limit(10).pluck(:guid)
+
+    daterange_downloads_query(recent_ep_guids, "episode_id", date_start, date_end, interval)
+  end
+
+  def feed_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/feed_downloads", expires_in: 1.hour) do
+      feed_downloads_query(id, "podcast_id", feeds)
+    end
+  end
+
+  def feed_download_rollups
+    sorted_feed_download_rollups(feeds, feed_downloads)
   end
 end
