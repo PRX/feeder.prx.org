@@ -1,5 +1,6 @@
 class PodcastMetricsController < ApplicationController
   include MetricsUtils
+  include MetricsQueries
 
   before_action :set_podcast
   # before_action :check_clickhouse, except: %i[show]
@@ -8,81 +9,47 @@ class PodcastMetricsController < ApplicationController
   end
 
   def episode_sparkline
-    @episode = Episode.find_by(guid: metrics_params[:episode_id])
-    @prev_episode = Episode.find_by(guid: metrics_params[:prev_episode_id])
-
-    @episode_trend = calculate_episode_trend(@episode, @prev_episode)
-
-    @sparkline_downloads =
-      Rollups::HourlyDownload
-        .where(episode_id: @episode[:guid], hour: (publish_hour(@episode)..publish_hour(@episode) + 6.months))
-        .final
-        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
-        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
-        .load_async
+    @episode = Episode.find_by(guid: params[:episode_id])
 
     render partial: "metrics/episode_sparkline", locals: {
       episode: @episode,
-      downloads: @sparkline_downloads,
-      episode_trend: @episode_trend
+      downloads: @episode.sparkline_downloads
     }
   end
 
-  def downloads
-    @downloads_within_date_range =
-      Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, hour: (@date_start..@date_end))
-        .select("DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-        .group("DATE_TRUNC('#{@interval}', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-        .load_async
+  def episode_trend
+    @episode = Episode.find_by(guid: params[:episode_id])
+    render partial: "metrics/episode_trend", locals: {
+      episode: @episode,
+      episode_trend: @episode.episode_trend
+    }
+  end
 
-    @downloads = single_rollups(@downloads_within_date_range)
+  def monthly_downloads
+    @date_start = (Date.utc_today - 11.months).beginning_of_month
+    @date_end = Date.utc_today
+    @date_range = generate_date_range(@date_start, @date_end.beginning_of_month, "MONTH")
+    @downloads_within_date_range = daterange_downloads(@podcast, @date_start, @date_end, "MONTH")
 
-    render partial: "metrics/downloads_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_downloads_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: @interval,
+    @downloads = single_rollups(@downloads_within_date_range, "Downloads")
+
+    render partial: "metrics/monthly_card", locals: {
       date_range: @date_range,
       downloads: @downloads
     }
   end
 
   def episodes
-    @episodes =
-      @podcast.episodes
-        .published
-        .order(first_rss_published_at: :desc)
-        .paginate(params[:episodes], params[:per])
+    @episodes = @podcast.episodes.published.dropdate_desc.limit(10)
+    @date_range = generate_date_range(Date.utc_today - 28.days, Date.utc_today, "DAY")
 
-    @episodes_recent =
-      Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid), hour: (@date_start..@date_end))
-        .select(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour", "SUM(count) AS count")
-        .group(:episode_id, "DATE_TRUNC('#{@interval}', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('#{@interval}', hour) ASC"))
-        .load_async
-    @episodes_alltime =
-      Rollups::HourlyDownload
-        .where(podcast_id: @podcast.id, episode_id: @episodes.pluck(:guid))
-        .select(:episode_id, "SUM(count) AS count")
-        .group(:episode_id)
-        .load_async
+    @episodes_downloads = daterange_downloads(@episodes)
 
-    @episode_rollups = multiple_episode_rollups(@episodes, @episodes_recent, @episodes_alltime)
+    @episode_rollups = multiple_episode_rollups(@episodes, @episodes_downloads)
 
     render partial: "metrics/episodes_card", locals: {
-      url: request.fullpath,
-      form_id: "podcast_episodes_metrics",
-      date_start: @date_start,
-      date_end: @date_end,
-      interval: @interval,
-      date_range: @date_range,
-      episodes: @episodes,
-      episode_rollups: @episode_rollups
+      episode_rollups: @episode_rollups,
+      date_range: @date_range
     }
   end
 
@@ -217,29 +184,6 @@ class PodcastMetricsController < ApplicationController
   def metrics_params
     params
       .permit(:podcast_id, :episode_id, :prev_episode_id)
-  end
-
-  def calculate_episode_trend(episode, prev_episode)
-    return nil unless episode.first_rss_published_at.present? && prev_episode.present?
-    return nil if (episode.first_rss_published_at + 1.day) > Time.now
-
-    ep_dropday_sum = episode_dropday_query(episode)
-    previous_ep_dropday_sum = episode_dropday_query(prev_episode)
-
-    return nil if ep_dropday_sum <= 0 || previous_ep_dropday_sum <= 0
-
-    ((ep_dropday_sum.to_f / previous_ep_dropday_sum.to_f) - 1).round(3)
-  end
-
-  def episode_dropday_query(ep)
-    lowerbound = publish_hour(ep)
-    upperbound = lowerbound + 24.hours
-
-    Rollups::HourlyDownload
-      .where(episode_id: ep[:guid], hour: (lowerbound...upperbound))
-      .final
-      .load_async
-      .sum(:count)
   end
 
   def publish_hour(episode)
