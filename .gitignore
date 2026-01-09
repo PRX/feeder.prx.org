@@ -46,5 +46,8 @@ notes*
 node_modules
 package-lock.json
 
+# Ignore the vendored podagent stuff
+vendor/agents.lock.yml
+
 /app/assets/builds/*
 !/app/assets/builds/.keep
