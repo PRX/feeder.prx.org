@@ -1,0 +1,16 @@
+<%= turbo_frame_tag "feeds" do %>
+  <ul class="list-group list-group-flush position-relative">
+    <% feeds.map do |feed| %>
+      <li class="list-group-item d-flex justify-content-between">
+        <span class="z-1"><%= link_to feed[:feed].label, podcast_feed_path(podcast, feed[:feed]) %></span>
+        <span class="z-1"><%= number_with_delimiter(feed[:downloads]) %></span>
+      </li>
+    <% end %>
+    <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"
+      data-controller="apex-sparkbar"
+      data-apex-sparkbar-id-value="podcast-feeds-chart"
+      data-apex-sparkbar-downloads-value="<%= feeds.map { |feed| feed[:downloads] }.to_json %>">
+      <div data-apex-sparkbar-target="chart"></div>
+    </div>
+  </ul>
+<% end %>

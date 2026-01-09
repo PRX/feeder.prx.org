@@ -87,6 +87,13 @@ export const BAR_TYPE = {
         gradientToColors: [lightPink],
       },
     },
+    states: {
+      hover: {
+        filter: {
+          type: "none",
+        },
+      },
+    },
   },
 }
 
@@ -164,9 +171,66 @@ export const SPARKLINE_TYPE = {
   },
 }
 
+export const SPARKBAR_TYPE = {
+  chart: {
+    height: "100%",
+    sparkline: {
+      enabled: true,
+    },
+    animations: {
+      enabled: true,
+    },
+    type: "bar",
+    stacked: false,
+  },
+  options: {
+    xaxis: {
+      type: "category",
+    },
+    tooltip: {
+      enabled: false,
+    },
+    fill: {
+      colors: [lightBlue],
+      type: "gradient",
+      gradient: {
+        type: "horizontal",
+        shade: "light",
+        gradientToColors: [lightPink],
+        inverseColors: true,
+        opacityFrom: 0.9,
+        opacityTo: 0.9,
+      },
+    },
+    stroke: {
+      width: 1,
+      colors: ["#00000000"],
+    },
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        barHeight: "90%",
+      },
+    },
+    states: {
+      hover: {
+        filter: {
+          type: "none",
+        },
+      },
+    },
+  },
+}
+
 export function buildSparklineChart(id, series, target) {
   const options = Object.assign({ series: series }, DEFAULT_OPTIONS, SPARKLINE_TYPE.options)
   Object.assign(options.chart, { id: id }, SPARKLINE_TYPE.chart)
+  return new ApexCharts(target, options)
+}
+
+export function buildSparkbarChart(id, series, target) {
+  const options = Object.assign({ series: series }, DEFAULT_OPTIONS, SPARKBAR_TYPE.options)
+  Object.assign(options.chart, { id: id }, SPARKBAR_TYPE.chart)
   return new ApexCharts(target, options)
 }
 

@@ -3,13 +3,14 @@ require "active_support/concern"
 module MetricsQueries
   extend ActiveSupport::Concern
 
-  def alltime_downloads(model)
+  def alltime_downloads(model, select_override = nil)
     model_id, column = model_attrs(model)
+    selection = select_override || column
 
     Rollups::HourlyDownload
       .where("#{column}": model_id)
-      .select(column, "SUM(count) AS count")
-      .group(column)
+      .select(selection, "SUM(count) AS count")
+      .group(selection)
       .final
       .load_async
   end

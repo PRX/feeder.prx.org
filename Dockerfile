@@ -19,6 +19,9 @@ RUN bundle config set --without 'development test' \
     && rm -rf $GEM_HOME/cache/*
 
 ADD . ./
+
+RUN wget https://raw.githubusercontent.com/PRX/prx-podagent/main/db/agents.lock.yml -O vendor/agents.lock.yml -q
+
 RUN ASSET_PRECOMPILE=1 SECRET_KEY_BASE=1 bin/rails assets:precompile
 RUN chown -R nobody:nogroup /app
 USER root

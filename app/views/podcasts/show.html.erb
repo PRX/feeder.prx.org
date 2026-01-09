@@ -137,6 +137,66 @@
     <% end %>
   </div>
 
+  <% if Rails.env.development? %>
+  <div class="row">
+    <% if uses_multiple_feeds(@podcast) %>
+      <div class="col-lg-6 d-grid mb-4">
+        <div class="card shadow">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="h4 fw-bold mb-0">Downloads by Feed</span>
+            <span>Last 28 Days</span>
+          </div>
+          <div class="card-body p-0">
+            <%= turbo_frame_tag "feeds", src: feeds_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy", target: "_top" do %>
+              <%= render "metrics/loading_card" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <% if uses_seasons(@podcast) %>
+      <div class="col-lg-6 d-grid mb-4">
+        <div class="card shadow">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="h4 fw-bold mb-0">Downloads by Season</span>
+            <span>All-Time</span>
+          </div>
+          <div class="card-body p-0">
+            <%= turbo_frame_tag "seasons", src: seasons_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
+              <%= render "metrics/loading_card" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <div class="col-lg-6 d-grid mb-4">
+      <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="h4 fw-bold mb-0">Downloads by Country</span>
+          <span>Last 28 Days</span>
+        </div>
+        <div class="card-body p-0">
+          <%= turbo_frame_tag "countries", src: countries_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
+            <%= render "metrics/loading_card" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 d-grid mb-4">
+      <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="h4 fw-bold mb-0">Downloads by App</span>
+          <span>Last 28 Days</span>
+        </div>
+        <div class="card-body p-0">
+          <%= turbo_frame_tag "agent_apps", src: agents_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
+            <%= render "metrics/loading_card" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% else %>
   <div class="row">
     <div class="col-lg-6 d-grid mb-4 mb-lg-0">
       <div class="prx-dashboard-card card shadow border-0">
@@ -176,4 +236,5 @@
       </div>
     </div>
   </div>
+  <% end %>
 </div>
