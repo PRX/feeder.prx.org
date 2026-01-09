@@ -312,19 +312,14 @@ class Episode < ApplicationRecord
   end
 
   def previous_trend_episode
-    prev_ep_guid = Rails.cache.fetch("#{cache_key_with_version}/previous_trend_episode", expires_in: 30.days) do
-      if feeds.include?(podcast.default_feed) && first_rss_published_at.present?
-        podcast.default_feed.episodes.published.dropdate_desc.where("episodes.first_rss_published_at IS NOT NULL AND episodes.first_rss_published_at < ?", first_rss_published_at).first&.guid
-      end
-    end
-
-    if prev_ep_guid.present?
-      Episode.find_by(guid: prev_ep_guid)
+    if feeds.include?(podcast.default_feed) && first_rss_published_at.present?
+      podcast.default_feed.episodes.published.dropdate_desc.where("episodes.first_rss_published_at IS NOT NULL AND episodes.first_rss_published_at < ?", first_rss_published_at).first
     end
   end
 
   def dropday_sum
     return nil unless first_rss_published_at.present?
+    return nil if (first_rss_published_at + 1.day) > Time.now
 
     Rails.cache.fetch("#{cache_key_with_version}/dropday_sum", expires_in: 30.days) do
       lowerbound = first_rss_published_at.beginning_of_hour
