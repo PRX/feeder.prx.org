@@ -43,7 +43,7 @@ class Task < ApplicationRecord
 
   def self.lookup_task(job_id)
     if job_id
-      task = find_by_job_id(job_id) || Tasks::RecordStreamTask.from_job_id(job_id)
+      task = order(id: :desc).find_by_job_id(job_id) || Tasks::RecordStreamTask.from_job_id(job_id)
       unless task
         Rails.logger.error("Unrecognized Task job id", job_id: job_id)
         NewRelic::Agent.notice_error(StandardError.new("Unrecognized Task job id: #{job_id}"))
