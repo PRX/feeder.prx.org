@@ -339,4 +339,25 @@ class Podcast < ApplicationRecord
       }
     end
   end
+
+  def top_agents_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/top_agents_downloads", expires_in: 1.day) do
+      top_agents_downloads_query(id, "podcast_id")
+    end
+  end
+
+  def other_agents_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/other_agents_downloads", expires_in: 1.day) do
+      other_agents_downloads_query(id, "podcast_id", top_agents_downloads)
+    end
+  end
+
+  def agent_download_rollups
+    top_agents_downloads.concat(other_agents_downloads).map do |agent|
+      {
+        label: Rollups::DailyAgent.label_for(agent[0]),
+        downloads: agent[1]
+      }
+    end
+  end
 end

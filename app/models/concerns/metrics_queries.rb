@@ -75,48 +75,28 @@ module MetricsQueries
       .pluck(Arel.sql("'Other' AS country_code"), Arel.sql("SUM(count) AS count"))
   end
 
-  def top_agents_downloads
-    model_id, column = model_attrs
-    date_start = (Date.utc_today - 28.days).to_s
-    date_end = Date.utc_today.to_s
-
-    Rails.cache.fetch("#{cache_key_with_version}/top_agents_downloads", expires_in: 1.day) do
-      Rollups::DailyAgent
-        .where("#{column}": model_id, day: date_start..date_end)
-        .select("agent_name_id AS code", "SUM(count) AS count")
-        .group("agent_name_id AS code")
-        .order(Arel.sql("SUM(count) AS count DESC"))
-        .final
-        .limit(10)
-        .load_async
-        .pluck(Arel.sql("agent_name_id AS code"), Arel.sql("SUM(count) AS count"))
-    end
+  def top_agents_downloads_query(model_id, column, date_start = default_date_start, date_end = default_date_end)
+    Rollups::DailyAgent
+      .where("#{column}": model_id, day: date_start..date_end)
+      .select("agent_name_id AS code", "SUM(count) AS count")
+      .group("agent_name_id AS code")
+      .order(Arel.sql("SUM(count) AS count DESC"))
+      .final
+      .limit(10)
+      .load_async
+      .pluck(Arel.sql("agent_name_id AS code"), Arel.sql("SUM(count) AS count"))
   end
 
-  def other_agents_downloads(top_agents)
-    model_id, column = model_attrs
-    date_start = (Date.utc_today - 28.days).to_s
-    date_end = Date.utc_today.to_s
-    top_agent_codes = top_agents.map { |c| c[0] }
+  def other_agents_downloads_query(model_id, column, excluded_agents, date_start = default_date_start, date_end = default_date_end)
+    ex_agent_codes = excluded_agents.map { |c| c[0] }
 
-    Rails.cache.fetch("#{cache_key_with_version}/other_agents_downloads", expires_in: 1.day) do
-      Rollups::DailyAgent
-        .where("#{column}": model_id, day: date_start..date_end)
-        .where.not(agent_name_id: top_agent_codes)
-        .select("'Other' AS country_code", "SUM(count) AS count")
-        .final
-        .load_async
-        .pluck(Arel.sql("'Other' AS country_code"), Arel.sql("SUM(count) AS count"))
-    end
-  end
-
-  def agent_download_rollups
-    top_agents_downloads.concat(other_agents_downloads(top_agents_downloads)).map do |agent|
-      {
-        label: Rollups::DailyAgent.label_for(agent[0]),
-        downloads: agent[1]
-      }
-    end
+    Rollups::DailyAgent
+      .where("#{column}": model_id, day: date_start..date_end)
+      .where.not(agent_name_id: ex_agent_codes)
+      .select("'Other' AS country_code", "SUM(count) AS count")
+      .final
+      .load_async
+      .pluck(Arel.sql("'Other' AS country_code"), Arel.sql("SUM(count) AS count"))
   end
 
   def default_date_start
@@ -133,19 +113,5 @@ module MetricsQueries
 
   def default_time_end
     Time.now
-  end
-
-  private
-
-  def model_attrs
-    model_id = if is_a?(Podcast)
-      id
-    elsif is_a?(Episode)
-      guid
-    end
-
-    column = "#{self.class.to_s.downcase}_id"
-
-    [model_id, column]
   end
 end
