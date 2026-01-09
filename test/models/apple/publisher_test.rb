@@ -701,7 +701,7 @@ describe Apple::Publisher do
         assert apple_episode.feeder_episode.apple_needs_delivery?
       end
 
-      it "should log a warning for DUPLICATE files" do
+      it "should log an error for DUPLICATE files" do
         logs = capture_json_logs do
           assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
             apple_publisher.raise_delivery_processing_errors([apple_episode])
@@ -709,8 +709,8 @@ describe Apple::Publisher do
         end
 
         log = logs.find { |l| l[:msg] == "Podcast delivery file has DUPLICATE state, marking for reupload" }
-        assert log, "Should have logged DUPLICATE warning"
-        assert_equal 40, log[:level]
+        assert log, "Should have logged DUPLICATE error"
+        assert_equal 50, log[:level]
         assert_equal podcast_delivery_file.id, log[:podcast_delivery_file_id]
         assert_equal apple_episode.feeder_episode.id, log[:episode_id]
       end

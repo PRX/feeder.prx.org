@@ -204,21 +204,23 @@ module Apple
     end
 
     def raise_delivery_processing_errors(eps)
-      # Both of these methods will raise if they find any problems.
+      # Both of these calls will raise if they find any problems.
       # Since this publisher routine is always invoked from a job, raising will
       # cause a retry.
-      raise_validation_failed_delivery_files(eps)
-      raise_duplicate_delivery_files(eps)
+      raise_for_processing_state(eps, :processed_validation_failed?)
+      raise_for_processing_state(eps, :processed_duplicate?)
 
       true
     end
 
-    def raise_validation_failed_delivery_files(eps)
-      pdfs_with_errors = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_errors?)
+    def raise_for_processing_state(eps, filter_method)
+      # Derive the state name from the filter method (e.g., :processed_duplicate? -> "DUPLICATE")
+      state_name = filter_method.to_s.delete_prefix("processed_").delete_suffix("?").upcase
 
-      pdfs_with_errors.each do |pdf|
-        # Uses 'error' level here because this could indicate a structural problem with the Dovetail file format
-        Rails.logger.error("Podcast delivery file has VALIDATION_FAILED state, marking for reupload",
+      problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
+
+      problem_pdfs.each do |pdf|
+        Rails.logger.error("Podcast delivery file has #{state_name} state, marking for reupload",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
@@ -227,32 +229,9 @@ module Apple
         pdf.episode.apple_mark_for_reupload!
       end
 
-      if pdfs_with_errors.any?
+      if problem_pdfs.any?
         raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found VALIDATION_FAILED state on #{pdfs_with_errors.length} podcast delivery files, episodes marked for reupload"
-        )
-      end
-    end
-
-    def raise_duplicate_delivery_files(eps)
-      pdfs_with_duplicates = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_duplicate?)
-
-      pdfs_with_duplicates.each do |pdf|
-        # Somehow we uploaded the same file twice. Warn, mark for reupload, and move on.
-        Rails.logger.warn("Podcast delivery file has DUPLICATE state, marking for reupload",
-          {episode_id: pdf.episode.id,
-           podcast_delivery_file_id: pdf.id,
-           asset_processing_state: pdf.asset_processing_state,
-           asset_delivery_state: pdf.asset_delivery_state})
-
-        # This will "increment" the filename prefix -- e.g., "2_episode.mp3" becomes "3_episode.mp3"
-        # Apple treats files with different names as different files, even if the content is identical.
-        pdf.episode.apple_mark_for_reupload!
-      end
-
-      if pdfs_with_duplicates.any?
-        raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found DUPLICATE state on #{pdfs_with_duplicates.length} podcast delivery files, episodes marked for reupload"
+          "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked for reupload"
         )
       end
     end
