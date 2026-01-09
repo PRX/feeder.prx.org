@@ -291,7 +291,7 @@ class Podcast < ApplicationRecord
         .where(episode_id: season_episodes_guids)
         .select("SUM(count) AS count")
         .final
-        .first[:count]
+        .sum(:count)
     end
   end
 
@@ -299,11 +299,11 @@ class Podcast < ApplicationRecord
     alltime_downloads_query(id, "podcast_id")
   end
 
-  def daterange_downloads(date_start = Date.utc_today - 28.days, date_end = Time.now, interval = "DAY")
+  def daterange_downloads(date_start = default_time_start, date_end = default_time_end, interval = "DAY")
     daterange_downloads_query(id, "podcast_id", date_start, date_end, interval)
   end
 
-  def recent_episodes_downloads(date_start = Date.utc_today - 28.days, date_end = Time.now, interval = "DAY")
+  def recent_episodes_downloads(date_start = default_time_start, date_end = default_time_end, interval = "DAY")
     recent_ep_guids = episodes.published.dropdate_desc.limit(10).pluck(:guid)
 
     daterange_downloads_query(recent_ep_guids, "episode_id", date_start, date_end, interval)
@@ -317,5 +317,26 @@ class Podcast < ApplicationRecord
 
   def feed_download_rollups
     sorted_feed_download_rollups(feeds, feed_downloads)
+  end
+
+  def top_countries_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/top_countries_downloads", expires_in: 1.day) do
+      top_countries_downloads_query(id, "podcast_id")
+    end
+  end
+
+  def other_countries_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/other_countries_downloads", expires_in: 1.day) do
+      other_countries_downloads_query(id, "podcast_id", top_countries_downloads)
+    end
+  end
+
+  def country_download_rollups
+    top_countries_downloads.concat(other_countries_downloads).map do |country|
+      {
+        label: Rollups::DailyGeo.label_for(country[0]),
+        downloads: country[1]
+      }
+    end
   end
 end
