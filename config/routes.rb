@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     resource :player, only: :show, controller: :podcast_player
     resources :imports, only: [:index, :show, :create]
     resource :planner, only: [:show, :create], controller: :podcast_planner
+    resource :stream, only: [:show, :update], controller: :podcast_stream
     resources :feeds, except: [:edit] do
       get "new_apple", on: :collection
       get "new_megaphone", on: :collection
@@ -23,7 +24,11 @@ Rails.application.routes.draw do
     get "rollups_demo", to: "podcasts#rollups_demo"
     resource :metrics, only: [:show], controller: :podcast_metrics do
       get "episode_sparkline"
-      get "downloads"
+      get "episode_trend"
+      get "monthly_downloads"
+      get "feeds"
+      get "seasons"
+      get "countries"
       get "uniques"
       get "episodes"
       get "dropdays"

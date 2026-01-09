@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { buildSparklineChart, destroyChart } from "util/apex"
+import { buildSparkbarChart, destroyChart } from "util/apex"
 
 export default class extends Controller {
   static values = {
@@ -10,12 +10,7 @@ export default class extends Controller {
   static targets = ["chart"]
 
   connect() {
-    const seriesData = this.downloadsValue.map((rollup) => {
-      return {
-        x: rollup[0],
-        y: rollup[1],
-      }
-    })
+    const seriesData = this.downloadsValue
     const series = [
       {
         name: "Downloads",
@@ -23,7 +18,7 @@ export default class extends Controller {
       },
     ]
 
-    const chart = buildSparklineChart(this.idValue, series, this.chartTarget)
+    const chart = buildSparkbarChart(this.idValue, series, this.chartTarget)
 
     chart.render()
   }

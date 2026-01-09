@@ -1,0 +1,55 @@
+<div class="card shadow border-0 mb-4">
+  <div class="card-header-primary">
+    <h2 class="card-title h5"><%= t(".title") %></h2>
+  </div>
+
+  <div class="card-body pb-0">
+    <div class="form-floating input-group mb-4">
+      <%= form.select :status, stream_status_options %>
+      <%= form.label :status %>
+      <%= field_help_text t(".help.status") %>
+    </div>
+
+    <div class="form-floating input-group mb-4">
+      <%= form.select :create_as, stream_create_as_options %>
+      <%= form.label :create_as %>
+      <%= field_help_text t(".help.create_as") %>
+    </div>
+
+    <div class="form-floating input-group mb-4">
+      <%= form.select :expiration, stream_expiration_options, {include_blank: true} %>
+      <%= form.label :expiration %>
+      <%= field_help_text t(".help.expiration") %>
+    </div>
+  </div>
+
+  <%= render "layouts/stale_record_field", form: form %>
+
+  <div class="card-footer">
+    <div class="d-flex align-items-center justify-content-end">
+      <% if stream.new_record? %>
+        <p class="status-text flex-grow-1">
+          <strong><%= t(".new_hint") %></strong>
+        </p>
+
+        <% if policy(stream).create? %>
+          <%= form.submit t(".create"), class: "btn btn-primary" %>
+        <% end %>
+      <% else %>
+        <p class="status-text flex-grow-1">
+          <strong><%= t(".updated_at_hint") %></strong>
+          <br>
+          <%= local_time_ago(stream.updated_at) %>
+        </p>
+
+        <% if policy(stream).update? %>
+          <% data = {action: "unsaved#discard", unsaved_target: "discard", turbo_frame: "_top"} %>
+          <%= link_to t(".discard"), podcast_stream_path(stream.podcast_id), class: "btn btn-discard-changed d-none me-2", data: data %>
+
+          <% data = {disable_with: t(".updating")} %>
+          <%= form.submit t(".update"), class: "btn btn-primary", data: data %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>
