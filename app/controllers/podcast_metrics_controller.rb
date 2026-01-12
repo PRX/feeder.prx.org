@@ -1,6 +1,5 @@
 class PodcastMetricsController < ApplicationController
   include MetricsUtils
-  include MetricsQueries
 
   before_action :set_podcast
   # before_action :check_clickhouse, except: %i[show]

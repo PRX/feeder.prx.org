@@ -1,7 +1,6 @@
 class PodcastsController < ApplicationController
   include Prx::Api
   include SlackHelper
-  include MetricsQueries
 
   before_action :set_podcast, only: %i[show edit update destroy]
 
