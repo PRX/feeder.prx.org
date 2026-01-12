@@ -3,15 +3,12 @@ require "active_support/concern"
 module MetricsQueries
   extend ActiveSupport::Concern
 
-  def alltime_downloads_query(model_id, column, select_override = nil)
-    selection = select_override || column
-
+  def alltime_downloads_query(model_id, column)
     Rollups::HourlyDownload
       .where("#{column}": model_id)
-      .select(selection, "SUM(count) AS count")
-      .group(selection)
+      .select(column, "SUM(count) AS count")
+      .group(column)
       .final
-      .load_async
   end
 
   def daterange_downloads_query(model_id, column, date_start = default_time_start, date_end = default_time_end, interval = "DAY")
@@ -21,7 +18,6 @@ module MetricsQueries
       .group(column, "DATE_TRUNC('#{interval}', hour) AS hour")
       .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
       .final
-      .load_async
   end
 
   def feed_downloads_query(model_id, column, feeds, date_start = default_time_start, date_end = default_time_end)
@@ -29,12 +25,10 @@ module MetricsQueries
 
     Rollups::HourlyDownload
       .where("#{column}": model_id, feed_slug: slugs, hour: (date_start..date_end))
-      .select(:feed_slug, "SUM(count) AS count")
       .group(:feed_slug)
       .order(Arel.sql("SUM(count) AS count DESC"))
       .final
-      .load_async
-      .pluck(:feed_slug, Arel.sql("SUM(count) AS count"))
+      .sum(:count)
   end
 
   def sorted_feed_download_rollups(feeds, feed_downloads)
@@ -54,13 +48,11 @@ module MetricsQueries
   def top_countries_downloads_query(model_id, column, date_start = default_date_start.to_s, date_end = default_date_end.to_s)
     Rollups::DailyGeo
       .where("#{column}": model_id, day: date_start..date_end)
-      .select(:country_code, "SUM(count) AS count")
       .group(:country_code)
       .order(Arel.sql("SUM(count) AS count DESC"))
       .final
       .limit(10)
-      .load_async
-      .pluck(:country_code, Arel.sql("SUM(count) AS count"))
+      .sum(:count)
   end
 
   def other_countries_downloads_query(model_id, column, excluded_countries, date_start = default_date_start.to_s, date_end = default_date_end.to_s)
@@ -69,22 +61,18 @@ module MetricsQueries
     Rollups::DailyGeo
       .where("#{column}": model_id, day: date_start..date_end)
       .where.not(country_code: ex_country_codes)
-      .select("'Other' AS country_code", "SUM(count) AS count")
       .final
-      .load_async
-      .pluck(Arel.sql("'Other' AS country_code"), Arel.sql("SUM(count) AS count"))
+      .sum(:count)
   end
 
   def top_agents_downloads_query(model_id, column, date_start = default_date_start, date_end = default_date_end)
     Rollups::DailyAgent
       .where("#{column}": model_id, day: date_start..date_end)
-      .select("agent_name_id AS code", "SUM(count) AS count")
-      .group("agent_name_id AS code")
+      .group(:agent_name_id)
       .order(Arel.sql("SUM(count) AS count DESC"))
       .final
       .limit(10)
-      .load_async
-      .pluck(Arel.sql("agent_name_id AS code"), Arel.sql("SUM(count) AS count"))
+      .sum(:count)
   end
 
   def other_agents_downloads_query(model_id, column, excluded_agents, date_start = default_date_start, date_end = default_date_end)
@@ -93,10 +81,8 @@ module MetricsQueries
     Rollups::DailyAgent
       .where("#{column}": model_id, day: date_start..date_end)
       .where.not(agent_name_id: ex_agent_codes)
-      .select("'Other' AS country_code", "SUM(count) AS count")
       .final
-      .load_async
-      .pluck(Arel.sql("'Other' AS country_code"), Arel.sql("SUM(count) AS count"))
+      .sum(:count)
   end
 
   def default_date_start

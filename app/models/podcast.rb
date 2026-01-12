@@ -332,7 +332,8 @@ class Podcast < ApplicationRecord
   end
 
   def country_download_rollups
-    top_countries_downloads.concat(other_countries_downloads).map do |country|
+    all_countries = top_countries_downloads.merge({other: other_countries_downloads})
+    all_countries.to_a.map do |country|
       {
         label: Rollups::DailyGeo.label_for(country[0]),
         downloads: country[1]
@@ -353,7 +354,8 @@ class Podcast < ApplicationRecord
   end
 
   def agent_download_rollups
-    top_agents_downloads.concat(other_agents_downloads).map do |agent|
+    all_agents = top_agents_downloads.merge({other: other_agents_downloads})
+    all_agents.to_a.map do |agent|
       {
         label: Rollups::DailyAgent.label_for(agent[0]),
         downloads: agent[1]

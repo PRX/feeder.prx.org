@@ -329,7 +329,6 @@ class Episode < ApplicationRecord
       Rollups::HourlyDownload
         .where(episode_id: guid, hour: (lowerbound...upperbound))
         .final
-        .load_async
         .sum(:count)
     end
   end
@@ -350,13 +349,7 @@ class Episode < ApplicationRecord
     return nil unless publish_hour.present?
 
     Rails.cache.fetch("#{cache_key_with_version}/sparkline_downloads", expires_in: 28.days) do
-      Rollups::HourlyDownload
-        .where(episode_id: guid, hour: publish_hour..(publish_hour + 1.month))
-        .final
-        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
-        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
-        .load_async
+      daterange_downloads_query(guid, "episode_id", publish_hour, publish_hour + 1.month)
         .pluck(Arel.sql("DATE_TRUNC('DAY', hour) AS hour"), Arel.sql("SUM(count) AS count"))
     end
   end
@@ -400,7 +393,8 @@ class Episode < ApplicationRecord
   end
 
   def country_download_rollups
-    top_countries_downloads.concat(other_countries_downloads).map do |country|
+    all_countries = top_countries_downloads.merge({other: other_countries_downloads})
+    all_countries.to_a.map do |country|
       {
         label: Rollups::DailyGeo.label_for(country[0]),
         downloads: country[1]
@@ -421,7 +415,8 @@ class Episode < ApplicationRecord
   end
 
   def agent_download_rollups
-    top_agents_downloads.concat(other_agents_downloads).map do |agent|
+    all_agents = top_agents_downloads.merge({other: other_agents_downloads})
+    all_agents.to_a.map do |agent|
       {
         label: Rollups::DailyAgent.label_for(agent[0]),
         downloads: agent[1]
