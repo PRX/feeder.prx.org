@@ -368,4 +368,64 @@ class Episode < ApplicationRecord
       published_at.beginning_of_hour
     end
   end
+
+  def alltime_downloads
+    alltime_downloads_query(guid, "episode_id")
+  end
+
+  def daterange_downloads(date_start = default_time_start, date_end = default_time_end, interval = "DAY")
+    daterange_downloads_query(guid, "episode_id", date_start, date_end, interval)
+  end
+
+  def feed_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/feed_downloads", expires_in: 1.hour) do
+      feed_downloads_query(guid, "episode_id", feeds)
+    end
+  end
+
+  def feed_download_rollups
+    sorted_feed_download_rollups(feeds, feed_downloads)
+  end
+
+  def top_countries_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/top_countries_downloads", expires_in: 1.day) do
+      top_countries_downloads_query(guid, "episode_id")
+    end
+  end
+
+  def other_countries_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/other_countries_downloads", expires_in: 1.day) do
+      other_countries_downloads_query(guid, "episode_id", top_countries_downloads)
+    end
+  end
+
+  def country_download_rollups
+    top_countries_downloads.concat(other_countries_downloads).map do |country|
+      {
+        label: Rollups::DailyGeo.label_for(country[0]),
+        downloads: country[1]
+      }
+    end
+  end
+
+  def top_agents_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/top_agents_downloads", expires_in: 1.day) do
+      top_agents_downloads_query(guid, "episode_id")
+    end
+  end
+
+  def other_agents_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/other_agents_downloads", expires_in: 1.day) do
+      other_agents_downloads_query(guid, "episode_id", top_agents_downloads)
+    end
+  end
+
+  def agent_download_rollups
+    top_agents_downloads.concat(other_agents_downloads).map do |agent|
+      {
+        label: Rollups::DailyAgent.label_for(agent[0]),
+        downloads: agent[1]
+      }
+    end
+  end
 end

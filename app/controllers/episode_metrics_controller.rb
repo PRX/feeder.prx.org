@@ -21,7 +21,7 @@ class EpisodeMetricsController < ApplicationController
   def downloads
     @date_range = generate_date_range(Date.utc_today - 28.days, Date.utc_today, "DAY")
 
-    @downloads = daterange_downloads(@episode)
+    @downloads = @episode.daterange_downloads
     @rollups = single_rollups(@downloads, "Downloads")
 
     render partial: "metrics/downloads_card", locals: {
@@ -76,9 +76,9 @@ class EpisodeMetricsController < ApplicationController
 
   def scorecard_downloads(score_type)
     if score_type == "daterange"
-      daterange_downloads(@episode).sum(&:count)
+      @episode.daterange_downloads.sum(&:count)
     elsif score_type == "alltime"
-      alltime_downloads(@episode).sum(&:count)
+      @episode.alltime_downloads.sum(&:count)
     end
   end
 end
