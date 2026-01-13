@@ -12,7 +12,7 @@ class PodcastMetricsController < ApplicationController
 
     render partial: "metrics/episode_sparkline", locals: {
       episode: @episode,
-      downloads: @episode.sparkline_downloads
+      downloads: @episode.sparkline_downloads.to_a
     }
   end
 
@@ -77,7 +77,7 @@ class PodcastMetricsController < ApplicationController
 
       {
         season_number: season,
-        downloads: @podcast.downloads_by_season(season, latest)
+        downloads: @podcast.downloads_by_season(season, latest)[@podcast.id]
       }
     end.sort { |a, b| b[:downloads] <=> a[:downloads] }
 

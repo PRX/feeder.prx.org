@@ -289,7 +289,7 @@ class Podcast < ApplicationRecord
     Rails.cache.fetch("#{cache_key_with_version}/downloads_by_season/#{season_number}", expires_in: expiration) do
       Rollups::HourlyDownload
         .where(episode_id: season_episodes_guids)
-        .select("SUM(count) AS count")
+        .group(:podcast_id)
         .final
         .sum(:count)
     end

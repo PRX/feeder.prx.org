@@ -349,8 +349,12 @@ class Episode < ApplicationRecord
     return nil unless publish_hour.present?
 
     Rails.cache.fetch("#{cache_key_with_version}/sparkline_downloads", expires_in: 28.days) do
-      daterange_downloads_query(guid, "episode_id", publish_hour, publish_hour + 1.month)
-        .pluck(Arel.sql("DATE_TRUNC('DAY', hour) AS hour"), Arel.sql("SUM(count) AS count"))
+      Rollups::HourlyDownload
+        .where(episode_id: guid, hour: publish_hour..(publish_hour + 28.days))
+        .group("DATE_TRUNC('DAY', hour)")
+        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
+        .final
+        .sum(:count)
     end
   end
 
