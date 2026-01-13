@@ -1220,18 +1220,16 @@ en:
       discard: Discard changes
       title: Warning! Another user has updated this form.
   metrics:
-    dropdays_card:
-      table_header:
-        episodes: 10 Most Recent Episodes
-        published_at: Publish Date
-        downloads: "%{range} %{interval} Downloads"
-        all_time: All-time
     episodes_card:
       table_header:
         episodes: 10 Most Recent Episodes
         published_at: Publish Date
         downloads: Downloads
         all_time: All-time
+    error_card:
+      error_message:
+        database: Unable to connect to the data server
+        general: An error has occured, try reloading
   placements_preview:
     show:
       fetch_error: Error fetching placements - try again later

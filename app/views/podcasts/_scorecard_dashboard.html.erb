@@ -58,7 +58,7 @@
             <span>Past Year</span>
           </div>
           <div class="card-body metrics-card-body">
-            <%= turbo_frame_tag "monthly", src: monthly_downloads_podcast_metrics_path(podcast_id: podcast.id), loading: "lazy" do %>
+            <%= turbo_frame_tag "monthly_downloads", src: monthly_downloads_podcast_metrics_path(podcast_id: podcast.id), loading: "lazy" do %>
               <%= render "metrics/loading_card" %>
             <% end %>
           </div>
