@@ -21,35 +21,6 @@ class StreamResource < ApplicationRecord
 
   acts_as_paranoid
 
-  # find/build for a specific oxbow job_id
-  # <podcast_id>/<stream_recording_id>/<start_time>/<end_time>/<guid>.mp3
-  def self.decode(str)
-    parts = str.split("/")
-    podcast_id = parts[0].to_i
-    recording_id = parts[1].to_i
-    start_at =
-      begin
-        parts[2]&.to_time
-      rescue
-        nil
-      end
-    end_at =
-      begin
-        parts[3]&.to_time
-      rescue
-        nil
-      end
-    return unless podcast_id > 0 && recording_id > 0 && start_at && end_at
-
-    rec = StreamRecording.find_by_id(recording_id)
-    return unless rec
-
-    res = rec.stream_resources.find_by(start_at: start_at, end_at: end_at)
-    return res if res
-
-    rec.stream_resources.build(start_at: start_at, end_at: end_at)
-  end
-
   # NOTE: called twice, because podcast won't be there on initialize
   def set_defaults
     set_default(:status, "created")
