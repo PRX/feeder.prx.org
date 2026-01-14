@@ -7,7 +7,7 @@ module MetricsUtils
     unless clickhouse_connected?
       render partial: "metrics/error_card", locals: {
         metrics_path: parse_turbo_frame_id(params),
-        error_message: metrics_error_message(params)
+        error_message: clickhouse_error_message(params)
       }
     end
   end
@@ -20,10 +20,18 @@ module MetricsUtils
   end
 
   def metrics_error_message(params)
-    blank_type = %i[episode_sparkline episode_trend score_card]
+    blank_type = %i[episode_sparkline episode_trend]
 
     unless blank_type.include?(params[:action].to_sym)
       "general"
+    end
+  end
+
+  def clickhouse_error_message(params)
+    blank_type = %i[episode_sparkline episode_trend]
+
+    unless blank_type.include?(params[:action].to_sym)
+      "database"
     end
   end
 

@@ -101,7 +101,7 @@
           <span>Last 28 Days</span>
         </div>
         <div class="card-body p-0">
-          <%= turbo_frame_tag "agent_apps", src: agents_episode_metrics_path(episode_id: episode.guid), loading: "lazy" do %>
+          <%= turbo_frame_tag "agents", src: agents_episode_metrics_path(episode_id: episode.guid), loading: "lazy" do %>
             <%= render "metrics/loading_card" %>
           <% end %>
         </div>

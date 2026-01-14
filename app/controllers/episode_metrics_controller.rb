@@ -1,8 +1,9 @@
 class EpisodeMetricsController < ApplicationController
   include MetricsUtils
 
+  rescue_from ActiveRecord::ActiveRecordError, with: :render_metrics_error
   before_action :set_episode
-  # before_action :check_clickhouse, except: %i[show]
+  before_action :check_clickhouse, except: %i[show]
 
   def show
   end
