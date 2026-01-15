@@ -1,9 +1,3 @@
-<div class="card shadow">
-  <div class="card-body py-2">
-    <div class="">
-      <h3 class="h1 mb-0"><%= score %></h3>
-      <h6 class="text-uppercase m-0"><%= label %></h6>
-      <h6 class="text-uppercase m-0"><%= sublabel %></h6>
-    </div>
-  </div>
-</div>
+<%= turbo_frame_tag "score_card_#{score_type}" do %>
+  <h3 class="h1 mb-0"><%= number_with_delimiter(score) %></h3>
+<% end %>

@@ -1,3 +1,6 @@
-<div class="h-100 d-flex justify-content-center align-items-center">
+<% justify_dir = justify_dir.present? ? justify_dir : "center" %>
+<% align_dir = align_dir.present? ? align_dir : "center" %>
+
+<div class="h-100 d-flex justify-content-<%= justify_dir %> align-items-<%= align_dir %>">
   <div class="spinner-border text-primary" role="status"></div>
 </div>

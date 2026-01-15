@@ -14,6 +14,7 @@ class Episode < ApplicationRecord
   include EmbedPlayerHelper
   include AppleIntegration
   include ReleaseEpisodes
+  include MetricsQueries
 
   MAX_SEGMENT_COUNT = 10
   MAX_DESCRIPTION_BYTES = 4000
@@ -328,7 +329,6 @@ class Episode < ApplicationRecord
       Rollups::HourlyDownload
         .where(episode_id: guid, hour: (lowerbound...upperbound))
         .final
-        .load_async
         .sum(:count)
     end
   end
@@ -350,13 +350,11 @@ class Episode < ApplicationRecord
 
     Rails.cache.fetch("#{cache_key_with_version}/sparkline_downloads", expires_in: 28.days) do
       Rollups::HourlyDownload
-        .where(episode_id: guid, hour: publish_hour..(publish_hour + 1.month))
-        .final
-        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
-        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
+        .where(episode_id: guid, hour: publish_hour..(publish_hour + 28.days))
+        .group("DATE_TRUNC('DAY', hour)")
         .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
-        .load_async
-        .pluck(Arel.sql("DATE_TRUNC('DAY', hour) AS hour"), Arel.sql("SUM(count) AS count"))
+        .final
+        .sum(:count)
     end
   end
 
@@ -365,6 +363,68 @@ class Episode < ApplicationRecord
       first_rss_published_at.beginning_of_hour
     else
       published_at.beginning_of_hour
+    end
+  end
+
+  def alltime_downloads
+    alltime_downloads_query(guid, "episode_id")
+  end
+
+  def daterange_downloads(date_start = default_time_start, date_end = default_time_end, interval = "DAY")
+    daterange_downloads_query(guid, "episode_id", date_start, date_end, interval)
+  end
+
+  def feed_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/feed_downloads", expires_in: 1.hour) do
+      feed_downloads_query(guid, "episode_id", feeds)
+    end
+  end
+
+  def feed_download_rollups
+    sorted_feed_download_rollups(feeds, feed_downloads)
+  end
+
+  def top_countries_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/top_countries_downloads", expires_in: 1.day) do
+      top_countries_downloads_query(guid, "episode_id")
+    end
+  end
+
+  def other_countries_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/other_countries_downloads", expires_in: 1.day) do
+      other_countries_downloads_query(guid, "episode_id", top_countries_downloads)
+    end
+  end
+
+  def country_download_rollups
+    all_countries = top_countries_downloads.merge({other: other_countries_downloads})
+    all_countries.to_a.map do |country|
+      {
+        label: Rollups::DailyGeo.label_for(country[0]),
+        downloads: country[1]
+      }
+    end
+  end
+
+  def top_agents_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/top_agents_downloads", expires_in: 1.day) do
+      top_agents_downloads_query(guid, "episode_id")
+    end
+  end
+
+  def other_agents_downloads
+    Rails.cache.fetch("#{cache_key_with_version}/other_agents_downloads", expires_in: 1.day) do
+      other_agents_downloads_query(guid, "episode_id", top_agents_downloads)
+    end
+  end
+
+  def agent_download_rollups
+    all_agents = top_agents_downloads.merge({other: other_agents_downloads})
+    all_agents.to_a.map do |agent|
+      {
+        label: Rollups::DailyAgent.label_for(agent[0]),
+        downloads: agent[1]
+      }
     end
   end
 end
