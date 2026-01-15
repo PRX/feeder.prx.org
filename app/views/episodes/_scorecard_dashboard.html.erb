@@ -6,8 +6,8 @@
           <%= turbo_frame_tag "score_card_daterange", src: score_card_episode_metrics_path(episode_id: episode.guid, score_type: "daterange"), loading: "lazy" do %>
             <%= render "metrics/loading_card", justify_dir: "start" %>
           <% end %>
-          <h6 class="text-uppercase m-0"><%= t(".downloads")%></h6>
-          <h6 class="text-uppercase m-0"><%= t(".last_28")%></h6>
+          <h6 class="text-uppercase m-0"><%= t(".downloads") %></h6>
+          <h6 class="text-uppercase m-0"><%= t(".last_28") %></h6>
         </div>
       </div>
     </div>
@@ -17,8 +17,8 @@
           <%= turbo_frame_tag "score_card_alltime", src: score_card_episode_metrics_path(episode_id: episode.guid, score_type: "alltime"), loading: "lazy" do %>
             <%= render "metrics/loading_card", justify_dir: "start" %>
           <% end %>
-          <h6 class="text-uppercase m-0"><%= t(".downloads")%></h6>
-          <h6 class="text-uppercase m-0"><%= t(".alltime")%></h6>
+          <h6 class="text-uppercase m-0"><%= t(".downloads") %></h6>
+          <h6 class="text-uppercase m-0"><%= t(".alltime") %></h6>
         </div>
       </div>
     </div>
@@ -27,8 +27,8 @@
     <div class="col p-0">
       <div class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="h4 fw-bold mb-0"><%= t(".episode")%></span>
-          <span><%= t(".last_28")%></span>
+          <span class="h4 fw-bold mb-0"><%= t(".episode") %></span>
+          <span><%= t(".last_28") %></span>
         </div>
         <div class="card-body metrics-card-body">
           <%= turbo_frame_tag "downloads", src: downloads_episode_metrics_path(episode_id: episode.guid), loading: "lazy" do %>
