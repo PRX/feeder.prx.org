@@ -143,8 +143,8 @@
       <div class="col-lg-6 d-grid mb-4">
         <div class="card shadow">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <span class="h4 fw-bold mb-0">Downloads by Feed</span>
-            <span>Last 28 Days</span>
+            <span class="h4 fw-bold mb-0"><%= t(".by_feed")%></span>
+            <span><%= t(".last_28")%></span>
           </div>
           <div class="card-body p-0">
             <%= turbo_frame_tag "feeds", src: feeds_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy", target: "_top" do %>
@@ -158,8 +158,8 @@
       <div class="col-lg-6 d-grid mb-4">
         <div class="card shadow">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <span class="h4 fw-bold mb-0">Downloads by Season</span>
-            <span>All-Time</span>
+            <span class="h4 fw-bold mb-0"><%= t(".by_season")%></span>
+            <span><%= t(".alltime")%></span>
           </div>
           <div class="card-body p-0">
             <%= turbo_frame_tag "seasons", src: seasons_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
@@ -172,8 +172,8 @@
     <div class="col-lg-6 d-grid mb-4">
       <div class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="h4 fw-bold mb-0">Downloads by Country</span>
-          <span>Last 28 Days</span>
+          <span class="h4 fw-bold mb-0"><%= t(".by_country")%></span>
+          <span><%= t(".last_28")%></span>
         </div>
         <div class="card-body p-0">
           <%= turbo_frame_tag "countries", src: countries_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
@@ -185,8 +185,8 @@
     <div class="col-lg-6 d-grid mb-4">
       <div class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="h4 fw-bold mb-0">Downloads by App</span>
-          <span>Last 28 Days</span>
+          <span class="h4 fw-bold mb-0"><%= t(".by_app")%></span>
+          <span><%= t(".last_28")%></span>
         </div>
         <div class="card-body p-0">
           <%= turbo_frame_tag "agents", src: agents_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>

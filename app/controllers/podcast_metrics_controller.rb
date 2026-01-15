@@ -110,7 +110,7 @@ class PodcastMetricsController < ApplicationController
 
   def metrics_params
     params
-      .permit(:podcast_id, :episode_id, :prev_episode_id)
+      .permit(:podcast_id, :episode_id)
   end
 
   def publish_hour(episode)
