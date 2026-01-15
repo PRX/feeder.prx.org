@@ -1,8 +1,9 @@
 class PodcastMetricsController < ApplicationController
   include MetricsUtils
 
+  rescue_from ActiveRecord::ActiveRecordError, with: :render_metrics_error
   before_action :set_podcast
-  # before_action :check_clickhouse, except: %i[show]
+  before_action :check_clickhouse, except: %i[show]
 
   def show
   end
@@ -109,7 +110,7 @@ class PodcastMetricsController < ApplicationController
 
   def metrics_params
     params
-      .permit(:podcast_id, :episode_id, :prev_episode_id)
+      .permit(:podcast_id, :episode_id)
   end
 
   def publish_hour(episode)
