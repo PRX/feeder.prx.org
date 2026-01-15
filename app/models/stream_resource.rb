@@ -60,10 +60,12 @@ class StreamResource < ApplicationRecord
     (status_complete? || status_invalid?) ? url : original_url
   end
 
+  # NOTE: for compatibility with copy_media_task.rb
   def medium
     "audio"
   end
 
+  # NOTE: for compatibility with copy_media_task.rb
   def medium=(val)
     medium
   end
