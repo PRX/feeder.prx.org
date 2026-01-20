@@ -23,10 +23,10 @@ class Tasks::RecordStreamTask < ::Task
   end
 
   def with_lock(...)
-    if stream_recording&.persisted?
-      stream_recording.with_lock(...)
-    elsif stream_resource&.persisted?
+    if stream_resource&.persisted?
       stream_resource.with_lock(...)
+    elsif stream_recording&.persisted?
+      stream_recording.with_lock(...)
     else
       super
     end
