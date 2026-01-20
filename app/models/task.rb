@@ -97,7 +97,7 @@ class Task < ApplicationRecord
     owner && status_changed? && !cancelled?
   end
 
-  # after save hook, implemented by child tasks
+  # before save hook, implemented by child tasks
   def update_owner
   end
 end
