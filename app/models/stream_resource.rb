@@ -6,10 +6,8 @@ class StreamResource < ApplicationRecord
   belongs_to :stream_recording, -> { with_deleted }, touch: true, optional: true
   has_one :podcast, through: :stream_recording
   has_one :record_task, -> { order(id: :desc) }, as: :owner, class_name: "Tasks::RecordStreamTask"
-  has_one :copy_task, -> { order(id: :desc) }, as: :owner, class_name: "Tasks::CopyMediaTask"
+  has_one :copy_task, -> { order(id: :desc).where.not(status: :cancelled) }, as: :owner, class_name: "Tasks::CopyMediaTask"
   has_many :tasks, as: :owner
-  has_many :record_tasks, as: :owner, class_name: "Tasks::RecordStreamTask"
-  has_many :copy_tasks, as: :owner, class_name: "Tasks::CopyMediaTask"
 
   validates :start_at, presence: true
   validates :end_at, presence: true, comparison: {greater_than: :start_at}
@@ -30,10 +28,20 @@ class StreamResource < ApplicationRecord
   end
 
   def copy_media(force = false)
-    if force || !(status_complete? || copy_task)
+    if force || needs_copy?
       Tasks::CopyMediaTask.create! do |task|
         task.owner = self
       end.start!
+    end
+  end
+
+  def needs_copy?
+    if status_complete?
+      false
+    elsif done_recording? && copy_task
+      false
+    else
+      done_recording?
     end
   end
 
