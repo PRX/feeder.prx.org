@@ -36,63 +36,10 @@ module MetricsUtils
     range
   end
 
-  def colors
-    [
-      "#007EB2",
-      "#FF9600",
-      "#75BBE1",
-      "#FFC107",
-      "#6F42C1",
-      "#DC3545",
-      "#198754",
-      "#D63384",
-      "#20C997",
-      "#555555"
-    ]
-  end
-
-  def primary_blue
-    "#0072a3"
-  end
-
-  def light_pink
-    "#e7d4ff"
-  end
-
-  def light_blue
-    "#aafff5"
-  end
-
-  def mid_blue
-    "#c9e9fa"
-  end
-
-  def orange
-    "#ff9601"
-  end
-
   def single_rollups(downloads, label = I18n.t(".helpers.label.metrics.chart.all_episodes"))
     {
       rollups: downloads,
-      color: light_blue,
       label: label
     }
-  end
-
-  def multiple_episode_rollups(episodes, rollups)
-    episodes.map.with_index do |episode, i|
-      color = if i == 0
-        orange
-      else
-        mid_blue
-      end
-      {
-        episode: episode,
-        rollups: rollups.select do |r|
-          r["episode_id"] == episode.guid
-        end,
-        color: color
-      }
-    end
   end
 end

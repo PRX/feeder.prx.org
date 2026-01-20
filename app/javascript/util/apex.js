@@ -63,6 +63,8 @@ const NUMERIC_OPTIONS = {
 
 const lightBlue = "#aafff5"
 const lightPink = "#e7d4ff"
+const midBlue = "#c9e9fa"
+const orange = "#ff9601"
 
 export const BAR_TYPE = {
   chart: {
@@ -266,10 +268,14 @@ export function buildDownloadsSeries(data, dateRange) {
       if (i === 0) {
         zIndex = 2
       }
+      let color = midBlue
+      if (i === 0) {
+        color = orange
+      }
       return {
         name: episodeRollup.episode.title,
         data: alignDownloadsOnDateRange(episodeRollup.rollups, dateRange),
-        color: episodeRollup.color,
+        color: color,
         zIndex: zIndex,
       }
     })
@@ -278,7 +284,7 @@ export function buildDownloadsSeries(data, dateRange) {
       {
         name: data.label,
         data: alignDownloadsOnDateRange(data.rollups, dateRange),
-        color: data.color,
+        color: lightBlue,
       },
     ]
   }
@@ -287,13 +293,13 @@ export function buildDownloadsSeries(data, dateRange) {
 function alignDownloadsOnDateRange(downloads, range) {
   return range.map((date) => {
     const match = downloads.filter((r) => {
-      return r.hour === date
+      return r[0] === date
     })
 
     if (match[0]) {
       return {
         x: date,
-        y: match[0].count,
+        y: match[0][1],
       }
     } else {
       return {
