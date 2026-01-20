@@ -7,6 +7,7 @@ class StreamResource < ApplicationRecord
   has_one :podcast, through: :stream_recording
   has_one :record_task, -> { order(id: :desc) }, as: :owner, class_name: "Tasks::RecordStreamTask"
   has_one :copy_task, -> { order(id: :desc) }, as: :owner, class_name: "Tasks::CopyMediaTask"
+  has_many :tasks, as: :owner
   has_many :record_tasks, as: :owner, class_name: "Tasks::RecordStreamTask"
   has_many :copy_tasks, as: :owner, class_name: "Tasks::CopyMediaTask"
 

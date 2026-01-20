@@ -21,8 +21,12 @@ class Task < ApplicationRecord
 
   before_validation { self.status ||= :started }
 
+  scope :analyze_media, -> { where(type: "Tasks::AnalyzeMediaTask") }
   scope :copy_media, -> { where(type: "Tasks::CopyMediaTask") }
   scope :copy_image, -> { where(type: "Tasks::CopyImageTask") }
+  scope :copy_transcript, -> { where(type: "Tasks::CopyTranscript") }
+  scope :fix_media, -> { where(type: "Tasks::FixMediaTask") }
+  scope :record_stream, -> { where(type: "Tasks::RecordStreamTask") }
   scope :bad_audio_duration, -> { where("result ~ '\"DurationDiscrepancy\":([5-9]\\d[1-9]|[6-9]\\d{2}|[1-9]\d{3})'") }
   scope :bad_audio_bytes, -> { where("result ~ '\"UnidentifiedBytes\":[1-9]'") }
   scope :bad_audio_vbr, -> { where("result ~ '\"VariableBitrate\":true'") }
