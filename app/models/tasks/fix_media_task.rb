@@ -31,7 +31,7 @@ class Tasks::FixMediaTask < ::Task
     ]
   end
 
-  def update_media_resource
+  def update_owner
     media_resource.status = status
     media_resource.save!
     slice_media!
