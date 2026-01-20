@@ -42,7 +42,7 @@ class Tasks::RecordStreamTask < ::Task
     return true if stream_resource.original_url == source_url
 
     # or must be larger than the existing recording
-    return missing_seconds.to_i < stream_resource.missing_seconds.to_i
+    missing_seconds.to_i < stream_resource.missing_seconds.to_i
   end
 
   def update_owner
