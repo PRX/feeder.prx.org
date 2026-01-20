@@ -1,6 +1,4 @@
 class Tasks::FixMediaTask < ::Task
-  before_save :update_media_resource, if: ->(t) { t.status_changed? && t.media_resource }
-
   attr_accessor :media_format, :media_bitrate
 
   def media_resource

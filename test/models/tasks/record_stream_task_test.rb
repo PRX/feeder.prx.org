@@ -49,7 +49,7 @@ describe Tasks::RecordStreamTask do
     end
   end
 
-  describe "#update_stream_resource" do
+  describe "#update_owner" do
     let(:task) { create(:record_stream_task) }
     let(:resource) { task.stream_resource }
 
@@ -78,7 +78,7 @@ describe Tasks::RecordStreamTask do
 
       resource.stub(:copy_media, mock_copy) do
         task.stub(:missing_seconds, 10) do
-          task.update_stream_resource
+          task.update_owner
 
           assert_equal "s3://#{task.source_bucket}/#{task.source_key}", resource.original_url
           assert_equal task.source_start_at, resource.actual_start_at
@@ -100,12 +100,12 @@ describe Tasks::RecordStreamTask do
       assert_equal 10, resource.missing_seconds
 
       task.stub(:missing_seconds, 12) do
-        task.update_stream_resource
+        task.update_owner
         assert_equal old_orig, resource.original_url
       end
 
       task.stub(:missing_seconds, 10) do
-        task.update_stream_resource
+        task.update_owner
         assert_equal old_orig, resource.original_url
       end
 
@@ -115,7 +115,7 @@ describe Tasks::RecordStreamTask do
       # has fewer missing seconds - copy this one
       resource.stub(:copy_media, mock_copy) do
         task.stub(:missing_seconds, 8) do
-          task.update_stream_resource
+          task.update_owner
           refute_equal old_orig, resource.original_url
 
           assert_equal "s3://#{task.source_bucket}/#{task.source_key}", resource.original_url

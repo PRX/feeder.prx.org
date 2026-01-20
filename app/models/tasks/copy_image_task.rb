@@ -1,6 +1,4 @@
 class Tasks::CopyImageTask < ::Task
-  before_save :update_image, if: ->(t) { t.status_changed? && t.image }
-
   def image
     owner
   end
@@ -28,7 +26,7 @@ class Tasks::CopyImageTask < ::Task
     ]
   end
 
-  def update_image
+  def update_owner
     image.status = status
 
     if complete?
