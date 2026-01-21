@@ -5,19 +5,6 @@ module PodcastMetrics
 
   include MetricsQueries
 
-  def downloads_by_season(season_number, latest = false)
-    season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
-    expiration = latest ? 1.hour : 1.month
-
-    Rails.cache.fetch("#{cache_key_with_version}/downloads_by_season/#{season_number}", expires_in: expiration) do
-      Rollups::HourlyDownload
-        .where(episode_id: season_episodes_guids)
-        .group(:podcast_id)
-        .final
-        .sum(:count)
-    end
-  end
-
   def alltime_downloads
     Rails.cache.fetch("#{cache_key_with_version}/alltime_downloads", expires_in: 1.hour) do
       alltime_downloads_query.sum(&:count)
@@ -70,6 +57,36 @@ module PodcastMetrics
 
   def feed_download_rollups
     sorted_feed_download_rollups(feeds, feed_downloads)
+  end
+
+  def published_seasons
+    episodes.published.dropdate_desc.pluck(:season_number).uniq.compact
+  end
+
+  def latest_season
+    published_seasons.first
+  end
+
+  def season_download_rollups
+    published_seasons.map do |season|
+      {
+        season_number: season,
+        downloads: downloads_by_season(season)[id]
+      }
+    end.sort { |a, b| b[:downloads] <=> a[:downloads] }
+  end
+
+  def downloads_by_season(season_number)
+    season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
+    expiration = (season_number == latest_season) ? 1.hour : 1.month
+
+    Rails.cache.fetch("#{cache_key_with_version}/downloads_by_season/#{season_number}", expires_in: expiration) do
+      Rollups::HourlyDownload
+        .where(episode_id: season_episodes_guids)
+        .group(:podcast_id)
+        .final
+        .sum(:count)
+    end
   end
 
   def top_countries_downloads

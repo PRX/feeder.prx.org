@@ -18,6 +18,7 @@ class PodcastMetricsController < ApplicationController
 
   def episode_trend
     @episode = Episode.find_by(guid: params[:episode_id])
+
     render partial: "metrics/episode_trend", locals: {
       episode: @episode,
       episode_trend: @episode.episode_trend
@@ -56,19 +57,8 @@ class PodcastMetricsController < ApplicationController
   end
 
   def seasons
-    published_seasons = @podcast.episodes.published.dropdate_desc.pluck(:season_number).uniq.compact
-
-    @season_rollups = published_seasons.map.with_index do |season, i|
-      latest = i == 0
-
-      {
-        season_number: season,
-        downloads: @podcast.downloads_by_season(season, latest)[@podcast.id]
-      }
-    end.sort { |a, b| b[:downloads] <=> a[:downloads] }
-
     render partial: "metrics/seasons_card", locals: {
-      seasons: @season_rollups
+      seasons: @podcast.season_download_rollups
     }
   end
 
