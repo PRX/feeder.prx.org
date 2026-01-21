@@ -35,24 +35,16 @@ class PodcastMetricsController < ApplicationController
   end
 
   def monthly_downloads
-    @date_range = @podcast.generate_monthly_date_range
-
-    @downloads = single_rollups(@podcast.monthly_downloads.to_a, "Downloads")
-
     render partial: "metrics/monthly_card", locals: {
-      date_range: @date_range,
-      downloads: @downloads
+      date_range: @podcast.generate_monthly_date_range,
+      downloads: @podcast.monthly_downloads.to_a
     }
   end
 
   def episodes
-    @date_range = @podcast.generate_daily_date_range
-
-    @episode_rollups = @podcast.downloads_by_episode
-
     render partial: "metrics/episodes_card", locals: {
-      episode_rollups: @episode_rollups,
-      date_range: @date_range
+      episode_rollups: @podcast.downloads_by_episode,
+      date_range: @podcast.generate_daily_date_range
     }
   end
 

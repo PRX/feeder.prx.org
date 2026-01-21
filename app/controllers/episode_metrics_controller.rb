@@ -18,14 +18,9 @@ class EpisodeMetricsController < ApplicationController
   end
 
   def downloads
-    @date_range = @episode.generate_daily_date_range
-
-    @downloads = @episode.daily_downloads.to_a
-    @rollups = single_rollups(@downloads, "Downloads")
-
     render partial: "metrics/downloads_card", locals: {
-      rollups: @rollups,
-      date_range: @date_range
+      rollups: @episode.daily_downloads.to_a,
+      date_range: @episode.generate_daily_date_range
     }
   end
 

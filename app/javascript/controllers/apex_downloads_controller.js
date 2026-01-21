@@ -4,7 +4,7 @@ import { buildDateTimeChart, buildDownloadsSeries, BAR_TYPE, destroyChart } from
 export default class extends Controller {
   static values = {
     id: String,
-    downloads: Object,
+    downloads: Array,
     dateRange: Array,
   }
 

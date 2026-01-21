@@ -240,7 +240,6 @@ export function buildDateTimeChart(id, series, target, type, dateRange = [], tit
   const options = Object.assign({ series: series }, DEFAULT_OPTIONS, DATETIME_OPTIONS, type.options)
   Object.assign(options.chart, { id: id }, type.chart)
   Object.assign(options.xaxis, { categories: dateRange })
-  addYaxisTitle(options.yaxis, title)
   return new ApexCharts(target, options)
 }
 
@@ -257,37 +256,36 @@ export function buildNumericChart(id, series, target, type, title = "") {
   const xdataLength = series[0].data.length - 1
   Object.assign(options.xaxis, { tickAmount: xdataLength })
   Object.assign(options.chart, { id: id }, type.chart)
-  addXaxisTitle(options.xaxis, title)
   return new ApexCharts(target, options)
 }
 
 export function buildDownloadsSeries(data, dateRange) {
-  if (Array.isArray(data)) {
-    return data.map((episodeRollup, i) => {
-      let zIndex = 1
-      if (i === 0) {
-        zIndex = 2
-      }
-      let color = midBlue
-      if (i === 0) {
-        color = orange
-      }
-      return {
-        name: episodeRollup.episode.title,
-        data: alignDownloadsOnDateRange(episodeRollup.rollups, dateRange),
-        color: color,
-        zIndex: zIndex,
-      }
-    })
-  } else {
-    return [
-      {
-        name: data.label,
-        data: alignDownloadsOnDateRange(data.rollups, dateRange),
-        color: lightBlue,
-      },
-    ]
-  }
+  return [
+    {
+      name: "Downloads",
+      data: alignDownloadsOnDateRange(data, dateRange),
+      color: lightBlue,
+    },
+  ]
+}
+
+export function buildMultipleEpisodeDownloadsSeries(data, dateRange) {
+  return data.map((episodeRollup, i) => {
+    let zIndex = 1
+    if (i === 0) {
+      zIndex = 2
+    }
+    let color = midBlue
+    if (i === 0) {
+      color = orange
+    }
+    return {
+      name: episodeRollup.episode.title,
+      data: alignDownloadsOnDateRange(episodeRollup.rollups, dateRange),
+      color: color,
+      zIndex: zIndex,
+    }
+  })
 }
 
 function alignDownloadsOnDateRange(downloads, range) {
@@ -308,14 +306,6 @@ function alignDownloadsOnDateRange(downloads, range) {
       }
     }
   })
-}
-
-function addYaxisTitle(yaxis, title = "") {
-  Object.assign(yaxis, { title: { text: title } })
-}
-
-function addXaxisTitle(xaxis, title = "") {
-  Object.assign(xaxis, { title: { text: title } })
 }
 
 export function destroyChart(chartId) {
