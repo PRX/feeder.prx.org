@@ -18,7 +18,6 @@ class Podcast < ApplicationRecord
   include ReleaseEpisodes
   include Integrations::PodcastIntegrations
   include PodcastSubscribeLinks
-  include MetricsQueries
   include PodcastMetrics
 
   acts_as_paranoid

@@ -18,9 +18,9 @@ class EpisodeMetricsController < ApplicationController
   end
 
   def downloads
-    @date_range = generate_date_range(Date.utc_today - 28.days, Date.utc_today, "DAY")
+    @date_range = @episode.generate_daily_date_range
 
-    @downloads = @episode.daterange_downloads
+    @downloads = @episode.daily_downloads.to_a
     @rollups = single_rollups(@downloads, "Downloads")
 
     render partial: "metrics/downloads_card", locals: {
@@ -56,28 +56,11 @@ class EpisodeMetricsController < ApplicationController
     authorize @episode, :show?
   end
 
-  def set_date_range
-    @date_start = metrics_params[:date_start]
-    @date_end = metrics_params[:date_end]
-    @interval = metrics_params[:interval]
-    @date_range = generate_date_range(@date_start, @date_end, @interval)
-  end
-
-  def metrics_params
-    params
-      .permit(:episode_id, :date_start, :date_end, :interval)
-      .with_defaults(
-        date_start: 28.days.ago.utc_date,
-        date_end: Date.utc_today,
-        interval: "DAY"
-      )
-  end
-
   def scorecard_downloads(score_type)
     if score_type == "daterange"
-      @episode.daterange_downloads.sum(&:count)
+      @episode.daily_downloads.values.sum
     elsif score_type == "alltime"
-      @episode.alltime_downloads.sum(&:count)
+      @episode.alltime_downloads
     end
   end
 end

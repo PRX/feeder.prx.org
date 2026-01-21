@@ -101,19 +101,6 @@ class PodcastMetricsController < ApplicationController
     render_not_found(e)
   end
 
-  def metrics_params
-    params
-      .permit(:podcast_id, :episode_id, :prev_episode_id)
-  end
-
-  def publish_hour(episode)
-    if episode.first_rss_published_at.present?
-      episode.first_rss_published_at.beginning_of_hour
-    else
-      episode.published_at.beginning_of_hour
-    end
-  end
-
   def scorecard_downloads(score_type)
     if score_type == "daterange"
       @podcast.daily_downloads.values.sum
