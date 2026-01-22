@@ -51,7 +51,7 @@ module PodcastMetrics
 
   def feed_downloads
     Rails.cache.fetch("#{cache_key_with_version}/feed_downloads", expires_in: 1.hour) do
-      feed_downloads_query(id, "podcast_id", feeds)
+      feed_downloads_query(feeds: feeds)
     end
   end
 
@@ -91,13 +91,13 @@ module PodcastMetrics
 
   def top_countries_downloads
     Rails.cache.fetch("#{cache_key_with_version}/top_countries_downloads", expires_in: 1.hour) do
-      top_countries_downloads_query(id, "podcast_id")
+      top_countries_downloads_query
     end
   end
 
   def other_countries_downloads
     Rails.cache.fetch("#{cache_key_with_version}/other_countries_downloads", expires_in: 1.hour) do
-      other_countries_downloads_query(id, "podcast_id", top_countries_downloads)
+      other_countries_downloads_query(excluded_countries: top_countries_downloads)
     end
   end
 
@@ -113,13 +113,13 @@ module PodcastMetrics
 
   def top_agents_downloads
     Rails.cache.fetch("#{cache_key_with_version}/top_agents_downloads", expires_in: 1.hour) do
-      top_agents_downloads_query(id, "podcast_id")
+      top_agents_downloads_query
     end
   end
 
   def other_agents_downloads
     Rails.cache.fetch("#{cache_key_with_version}/other_agents_downloads", expires_in: 1.hour) do
-      other_agents_downloads_query(id, "podcast_id", top_agents_downloads)
+      other_agents_downloads_query(excluded_agents: top_agents_downloads)
     end
   end
 

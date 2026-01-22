@@ -29,7 +29,7 @@ module MetricsQueries
     end
   end
 
-  def feed_downloads_query(model_id, column, feeds, date_start = default_time_start, date_end = default_time_end)
+  def feed_downloads_query(feeds:, model_id: default_id, column: default_column, date_start: default_time_start, date_end: default_time_end)
     slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
 
     Rollups::HourlyDownload
@@ -54,7 +54,7 @@ module MetricsQueries
     feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
   end
 
-  def top_countries_downloads_query(model_id, column, date_start = default_date_start.to_s, date_end = default_date_end.to_s)
+  def top_countries_downloads_query(model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
     Rollups::DailyGeo
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:country_code)
@@ -64,7 +64,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_countries_downloads_query(model_id, column, excluded_countries, date_start = default_date_start.to_s, date_end = default_date_end.to_s)
+  def other_countries_downloads_query(excluded_countries:, model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
     ex_country_codes = excluded_countries.map { |c| c[0] }
 
     Rollups::DailyGeo
@@ -74,7 +74,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def top_agents_downloads_query(model_id, column, date_start = default_date_start, date_end = default_date_end)
+  def top_agents_downloads_query(model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
     Rollups::DailyAgent
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:agent_name_id)
@@ -84,7 +84,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_agents_downloads_query(model_id, column, excluded_agents, date_start = default_date_start, date_end = default_date_end)
+  def other_agents_downloads_query(excluded_agents:, model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
     ex_agent_codes = excluded_agents.map { |c| c[0] }
 
     Rollups::DailyAgent
