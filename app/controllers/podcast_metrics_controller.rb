@@ -19,6 +19,7 @@ class PodcastMetricsController < ApplicationController
 
   def episode_trend
     @episode = Episode.find_by(guid: params[:episode_id])
+
     render partial: "metrics/episode_trend", locals: {
       episode: @episode,
       episode_trend: @episode.episode_trend
@@ -36,30 +37,16 @@ class PodcastMetricsController < ApplicationController
   end
 
   def monthly_downloads
-    @date_start = (Date.utc_today - 11.months).beginning_of_month
-    @date_end = Date.utc_today
-    @date_range = generate_date_range(@date_start, @date_end.beginning_of_month, "MONTH")
-    @downloads_within_date_range = @podcast.daterange_downloads(@date_start, @date_end, "MONTH")
-
-    @downloads = single_rollups(@downloads_within_date_range, "Downloads")
-
     render partial: "metrics/monthly_card", locals: {
-      date_range: @date_range,
-      downloads: @downloads
+      date_range: @podcast.generate_monthly_date_range,
+      downloads: @podcast.monthly_downloads.to_a
     }
   end
 
   def episodes
-    @episodes = @podcast.episodes.published.dropdate_desc.limit(10)
-    @date_range = generate_date_range(Date.utc_today - 28.days, Date.utc_today, "DAY")
-
-    @episodes_downloads = @podcast.recent_episodes_downloads
-
-    @episode_rollups = multiple_episode_rollups(@episodes, @episodes_downloads)
-
     render partial: "metrics/episodes_card", locals: {
-      episode_rollups: @episode_rollups,
-      date_range: @date_range
+      episode_rollups: @podcast.downloads_by_episode,
+      date_range: @podcast.generate_daily_date_range
     }
   end
 
@@ -71,19 +58,8 @@ class PodcastMetricsController < ApplicationController
   end
 
   def seasons
-    published_seasons = @podcast.episodes.published.dropdate_desc.pluck(:season_number).uniq.compact
-
-    @season_rollups = published_seasons.map.with_index do |season, i|
-      latest = i == 0
-
-      {
-        season_number: season,
-        downloads: @podcast.downloads_by_season(season, latest)[@podcast.id]
-      }
-    end.sort { |a, b| b[:downloads] <=> a[:downloads] }
-
     render partial: "metrics/seasons_card", locals: {
-      seasons: @season_rollups
+      seasons: @podcast.season_download_rollups
     }
   end
 
@@ -108,24 +84,11 @@ class PodcastMetricsController < ApplicationController
     render_not_found(e)
   end
 
-  def metrics_params
-    params
-      .permit(:podcast_id, :episode_id)
-  end
-
-  def publish_hour(episode)
-    if episode.first_rss_published_at.present?
-      episode.first_rss_published_at.beginning_of_hour
-    else
-      episode.published_at.beginning_of_hour
-    end
-  end
-
   def scorecard_downloads(score_type)
     if score_type == "daterange"
-      @podcast.daterange_downloads.sum(&:count)
+      @podcast.daily_downloads.values.sum
     elsif score_type == "alltime"
-      @podcast.alltime_downloads.sum(&:count)
+      @podcast.alltime_downloads
     elsif score_type == "episodes"
       @podcast.episodes.published.length
     end

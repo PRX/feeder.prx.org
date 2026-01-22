@@ -18,7 +18,7 @@ class Podcast < ApplicationRecord
   include ReleaseEpisodes
   include Integrations::PodcastIntegrations
   include PodcastSubscribeLinks
-  include MetricsQueries
+  include PodcastMetrics
 
   acts_as_paranoid
 
@@ -279,87 +279,6 @@ class Podcast < ApplicationRecord
       true
     else
       super
-    end
-  end
-
-  def downloads_by_season(season_number, latest = false)
-    season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
-    expiration = latest ? 1.hour : 1.month
-
-    Rails.cache.fetch("#{cache_key_with_version}/downloads_by_season/#{season_number}", expires_in: expiration) do
-      Rollups::HourlyDownload
-        .where(episode_id: season_episodes_guids)
-        .group(:podcast_id)
-        .final
-        .sum(:count)
-    end
-  end
-
-  def alltime_downloads
-    alltime_downloads_query(id, "podcast_id")
-  end
-
-  def daterange_downloads(date_start = default_time_start, date_end = default_time_end, interval = "DAY")
-    daterange_downloads_query(id, "podcast_id", date_start, date_end, interval)
-  end
-
-  def recent_episodes_downloads(date_start = default_time_start, date_end = default_time_end, interval = "DAY")
-    recent_ep_guids = episodes.published.dropdate_desc.limit(10).pluck(:guid)
-
-    daterange_downloads_query(recent_ep_guids, "episode_id", date_start, date_end, interval)
-  end
-
-  def feed_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/feed_downloads", expires_in: 1.hour) do
-      feed_downloads_query(id, "podcast_id", feeds)
-    end
-  end
-
-  def feed_download_rollups
-    sorted_feed_download_rollups(feeds, feed_downloads)
-  end
-
-  def top_countries_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/top_countries_downloads", expires_in: 1.day) do
-      top_countries_downloads_query(id, "podcast_id")
-    end
-  end
-
-  def other_countries_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/other_countries_downloads", expires_in: 1.day) do
-      other_countries_downloads_query(id, "podcast_id", top_countries_downloads)
-    end
-  end
-
-  def country_download_rollups
-    all_countries = top_countries_downloads.merge({other: other_countries_downloads})
-    all_countries.to_a.map do |country|
-      {
-        label: Rollups::DailyGeo.label_for(country[0]),
-        downloads: country[1]
-      }
-    end
-  end
-
-  def top_agents_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/top_agents_downloads", expires_in: 1.day) do
-      top_agents_downloads_query(id, "podcast_id")
-    end
-  end
-
-  def other_agents_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/other_agents_downloads", expires_in: 1.day) do
-      other_agents_downloads_query(id, "podcast_id", top_agents_downloads)
-    end
-  end
-
-  def agent_download_rollups
-    all_agents = top_agents_downloads.merge({other: other_agents_downloads})
-    all_agents.to_a.map do |agent|
-      {
-        label: Rollups::DailyAgent.label_for(agent[0]),
-        downloads: agent[1]
-      }
     end
   end
 end

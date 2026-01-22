@@ -3,7 +3,7 @@ require "active_support/concern"
 module MetricsQueries
   extend ActiveSupport::Concern
 
-  def alltime_downloads_query(model_id, column)
+  def alltime_downloads_query(model_id: default_id, column: default_column)
     Rollups::HourlyDownload
       .where("#{column}": model_id)
       .select(column, "SUM(count) AS count")
@@ -11,16 +11,25 @@ module MetricsQueries
       .final
   end
 
-  def daterange_downloads_query(model_id, column, date_start = default_time_start, date_end = default_time_end, interval = "DAY")
-    Rollups::HourlyDownload
-      .where("#{column}": model_id, hour: (date_start..date_end))
-      .select(column, "DATE_TRUNC('#{interval}', hour) AS hour", "SUM(count) AS count")
-      .group(column, "DATE_TRUNC('#{interval}', hour) AS hour")
-      .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
-      .final
+  def daterange_downloads_query(model_id: default_id, column: default_column, date_start: default_time_start, date_end: default_time_end, interval: "DAY")
+    if model_id.is_a?(Array)
+      Rollups::HourlyDownload
+        .where("#{column}": model_id, hour: (date_start..date_end))
+        .group(column, "DATE_TRUNC('#{interval}', hour)")
+        .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
+        .final
+        .sum(:count)
+    else
+      Rollups::HourlyDownload
+        .where("#{column}": model_id, hour: (date_start..date_end))
+        .group("DATE_TRUNC('#{interval}', hour)")
+        .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
+        .final
+        .sum(:count)
+    end
   end
 
-  def feed_downloads_query(model_id, column, feeds, date_start = default_time_start, date_end = default_time_end)
+  def feed_downloads_query(feeds:, model_id: default_id, column: default_column, date_start: default_time_start, date_end: default_time_end)
     slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
 
     Rollups::HourlyDownload
@@ -45,7 +54,7 @@ module MetricsQueries
     feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
   end
 
-  def top_countries_downloads_query(model_id, column, date_start = default_date_start.to_s, date_end = default_date_end.to_s)
+  def top_countries_downloads_query(model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
     Rollups::DailyGeo
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:country_code)
@@ -55,7 +64,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_countries_downloads_query(model_id, column, excluded_countries, date_start = default_date_start.to_s, date_end = default_date_end.to_s)
+  def other_countries_downloads_query(excluded_countries:, model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
     ex_country_codes = excluded_countries.map { |c| c[0] }
 
     Rollups::DailyGeo
@@ -65,7 +74,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def top_agents_downloads_query(model_id, column, date_start = default_date_start, date_end = default_date_end)
+  def top_agents_downloads_query(model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
     Rollups::DailyAgent
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:agent_name_id)
@@ -75,7 +84,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_agents_downloads_query(model_id, column, excluded_agents, date_start = default_date_start, date_end = default_date_end)
+  def other_agents_downloads_query(excluded_agents:, model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
     ex_agent_codes = excluded_agents.map { |c| c[0] }
 
     Rollups::DailyAgent
@@ -99,5 +108,43 @@ module MetricsQueries
 
   def default_time_end
     Time.now
+  end
+
+  def default_id
+    if is_a?(Podcast)
+      id
+    elsif is_a?(Episode)
+      guid
+    end
+  end
+
+  def default_column
+    if is_a?(Podcast)
+      "podcast_id"
+    elsif is_a?(Episode)
+      "episode_id"
+    end
+  end
+
+  def generate_date_range(date_start:, date_end:, interval:)
+    start_range = date_start.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
+    end_range = date_end.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
+    range = []
+    i = 0
+
+    while start_range + i.send(:"#{interval.downcase.pluralize}") <= end_range
+      range << start_range + i.send(:"#{interval.downcase.pluralize}")
+      i += 1
+    end
+
+    range
+  end
+
+  def generate_daily_date_range(date_start: default_date_start, date_end: default_date_end)
+    generate_date_range(date_start: date_start, date_end: date_end, interval: "DAY")
+  end
+
+  def generate_monthly_date_range(date_start: (Date.utc_today - 11.months), date_end: Date.utc_today)
+    generate_date_range(date_start: date_start.beginning_of_month, date_end: date_end, interval: "MONTH")
   end
 end
