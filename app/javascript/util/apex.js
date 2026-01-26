@@ -36,25 +36,11 @@ const DATETIME_OPTIONS = {
     enabled: true,
     shared: false,
     hideEmptySeries: true,
-    intersect: true,
-    // followCursor: true,
-  },
-  dataLabels: {
-    enabled: false,
-  },
-}
-
-const NUMERIC_OPTIONS = {
-  xaxis: {
-    type: "numeric",
-    decimalsInFloat: 0,
-    tickPlacement: "on",
-  },
-  tooltip: {
-    enabled: true,
-    shared: true,
-    hideEmptySeries: true,
     intersect: false,
+    followCursor: true,
+    marker: {
+      show: true,
+    },
   },
   dataLabels: {
     enabled: false,
@@ -89,6 +75,10 @@ export const BAR_TYPE = {
         gradientToColors: [lightPink],
       },
     },
+    tooltip: {
+      shared: true,
+      intersect: false,
+    },
     states: {
       hover: {
         filter: {
@@ -118,21 +108,12 @@ export const LINE_TYPE = {
     markers: {
       showNullDataPoints: false,
     },
-  },
-}
-
-export const AREA_TYPE = {
-  chart: {
-    type: "area",
-    stacked: false,
-  },
-  options: {
-    fill: {
-      type: "solid",
-      opacity: 0.8,
-    },
-    stroke: {
-      width: 1,
+    tooltip: {
+      onDatasetHover: {
+        highlightDataSeries: true,
+      },
+      shared: true,
+      followCursor: true,
     },
   },
 }
@@ -164,6 +145,8 @@ export const SPARKLINE_TYPE = {
         shade: "light",
         gradientToColors: [lightPink],
         inverseColors: false,
+        opacityFrom: 0.9,
+        opacityTo: 0.9,
       },
     },
     stroke: {
@@ -243,22 +226,6 @@ export function buildDateTimeChart(id, series, target, type, dateRange = [], tit
   return new ApexCharts(target, options)
 }
 
-export function dynamicBarAndAreaType(dateRange) {
-  if (dateRange.length <= 200) {
-    return BAR_TYPE
-  } else {
-    return AREA_TYPE
-  }
-}
-
-export function buildNumericChart(id, series, target, type, title = "") {
-  const options = Object.assign({ series: series }, DEFAULT_OPTIONS, NUMERIC_OPTIONS, type.options)
-  const xdataLength = series[0].data.length - 1
-  Object.assign(options.xaxis, { tickAmount: xdataLength })
-  Object.assign(options.chart, { id: id }, type.chart)
-  return new ApexCharts(target, options)
-}
-
 export function buildDownloadsSeries(data, dateRange) {
   return [
     {
@@ -281,7 +248,7 @@ export function buildMultipleEpisodeDownloadsSeries(data, dateRange) {
     }
     return {
       name: episodeRollup.episode.title,
-      data: alignDownloadsOnDateRange(episodeRollup.rollups, dateRange),
+      data: episodeRollup.rollups,
       color: color,
       zIndex: zIndex,
     }
