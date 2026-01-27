@@ -111,6 +111,14 @@ class StreamResource < ApplicationRecord
     end
   end
 
+  def segmentation
+    return [] unless start_at && end_at && actual_start_at && actual_end_at
+
+    offset_start = [start_at - actual_start_at, 0].max
+    offset_end = offset_start + (end_at - start_at - missing_seconds)
+    [[offset_start, offset_end]]
+  end
+
   private
 
   def stream_resource_path

@@ -12,6 +12,19 @@
   .card-title {
     text-transform: uppercase;
   }
+
+  a {
+    line-height: 1.5em;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    .material-icons {
+      vertical-align: bottom;
+    }
+  }
 }
 
 .card-footer {

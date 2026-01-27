@@ -34,10 +34,31 @@
       }
     }
 
-    .day.current-month:hover {
-      background-color: $primary !important;
-      color: $light;
-      cursor: pointer;
+    .day.today {
+      --bs-table-bg-type: var(--bs-info);
+    }
+
+    .day.current-month {
+      position: relative;
+
+      a {
+        color: inherit;
+        font-weight: inherit;
+      }
+
+      .badge {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        padding: 0.25em 0.5em;
+      }
+
+      &:hover,
+      &:hover > a {
+        --bs-table-bg-type: var(--bs-primary);
+        color: $light;
+        cursor: pointer;
+      }
     }
   }
 }

@@ -2,6 +2,7 @@
   <div class="card shadow border-0">
     <div class="card-header card-header-light d-flex justify-content-between">
       <h5 class="card-title flex-grow-1"><%= t(".title") %></h5>
+      <%= link_to t(".hours"), podcast_stream_hours_path(stream.podcast_id) %>
     </div>
 
     <div class="card-body pb-0">

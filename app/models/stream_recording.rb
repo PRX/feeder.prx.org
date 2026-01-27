@@ -9,7 +9,7 @@ class StreamRecording < ApplicationRecord
   serialize :record_hours, coder: JSON
 
   belongs_to :podcast, -> { with_deleted }, touch: true, optional: true
-  has_many :stream_resources, -> { order("start_at DESC") }, dependent: :destroy
+  has_many :stream_resources, dependent: :destroy
 
   scope :active, ->(now = Time.now) { status_enabled.where("end_date IS NULL OR end_date > ?", now) }
   scope :recording, ->(now = Time.now) { active.where("start_date > ?", now) }

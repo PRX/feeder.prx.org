@@ -1,0 +1,15 @@
+<div class="col-12 mb-4">
+  <div class="card shadow border-0">
+    <div class="card-header card-header-primary d-flex justify-content-between">
+      <h5 class="card-title flex-grow-1"><%= resource.start_at %></h5>
+    </div>
+
+    <div class="card-body pt-4 py-0">
+      <%= render "waveform/waveform",
+            duration: resource.duration,
+            segmentation: resource.segmentation,
+            url: resource.url,
+            waveform_url: resource.waveform_url %>
+    </div>
+  </div>
+</div>

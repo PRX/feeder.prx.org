@@ -1,0 +1,37 @@
+<div class="prx-waveform-inspector d-grid gap-2" data-morph="false">
+  <div class="prx-waveform-inspector-container">
+    <div class="prx-waveform-inspector-view-container" data-waveform-inspector-target="overview"></div>
+    <div class="prx-waveform-inspector-scrollbar-wrapper">
+      <div data-waveform-inspector-target="scrollbar"></div>
+    </div>
+    <div class="prx-waveform-inspector-view-container" data-waveform-inspector-target="zoom"></div>
+  </div>
+  <div class="prx-waveform-inspector-footer d-flex justify-content-between align-items-start">
+    <div class="prx-waveform-inspector-player-controls d-flex gap-3 align-items-center">
+      <button type="button" class="btn btn-icon btn-icon-lg btn-icon-round btn-primary" data-action="click->waveform-inspector#togglePlaying">
+        <span class="material-icons playing-hide" aria-label="Play">play_arrow</span>
+        <span class="material-icons playing-show" aria-label="Pause">pause</span>
+      </button>
+      <div class="prx-input-group input-group-sm">
+        <input class="form-control" placeholder="00:00"
+          data-waveform-inspector-target="seekInput"
+          data-action="keypress.enter->waveform-inspector#seekSubmit"
+          data-bs-toggle="tooltip"
+          data-bs-title="<%= t(".seek_input") %>">
+        <button type="button" class="btn btn-icon btn-icon-borderless btn-primary" data-action="waveform-inspector#seekToInputValue">
+          <span class="material-icons">skip_next</span>
+        </button>
+      </div>
+    </div>
+    <div class="prx-waveform-inspector-zoom-controls">
+      <div class="btn-group">
+        <button type="button" class="btn btn-icon btn-primary btn-sm" data-action="waveform-inspector#zoomIn">
+          <span class="material-icons">zoom_in</span>
+        </button>
+        <button type="button" class="btn btn-icon btn-primary btn-sm" data-action="waveform-inspector#zoomOut">
+          <span class="material-icons">zoom_out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
