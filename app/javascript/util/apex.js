@@ -63,6 +63,8 @@ const NUMERIC_OPTIONS = {
 
 const lightBlue = "#aafff5"
 const lightPink = "#e7d4ff"
+const midBlue = "#c9e9fa"
+const orange = "#ff9601"
 
 export const BAR_TYPE = {
   chart: {
@@ -238,7 +240,6 @@ export function buildDateTimeChart(id, series, target, type, dateRange = [], tit
   const options = Object.assign({ series: series }, DEFAULT_OPTIONS, DATETIME_OPTIONS, type.options)
   Object.assign(options.chart, { id: id }, type.chart)
   Object.assign(options.xaxis, { categories: dateRange })
-  addYaxisTitle(options.yaxis, title)
   return new ApexCharts(target, options)
 }
 
@@ -255,45 +256,48 @@ export function buildNumericChart(id, series, target, type, title = "") {
   const xdataLength = series[0].data.length - 1
   Object.assign(options.xaxis, { tickAmount: xdataLength })
   Object.assign(options.chart, { id: id }, type.chart)
-  addXaxisTitle(options.xaxis, title)
   return new ApexCharts(target, options)
 }
 
 export function buildDownloadsSeries(data, dateRange) {
-  if (Array.isArray(data)) {
-    return data.map((episodeRollup, i) => {
-      let zIndex = 1
-      if (i === 0) {
-        zIndex = 2
-      }
-      return {
-        name: episodeRollup.episode.title,
-        data: alignDownloadsOnDateRange(episodeRollup.rollups, dateRange),
-        color: episodeRollup.color,
-        zIndex: zIndex,
-      }
-    })
-  } else {
-    return [
-      {
-        name: data.label,
-        data: alignDownloadsOnDateRange(data.rollups, dateRange),
-        color: data.color,
-      },
-    ]
-  }
+  return [
+    {
+      name: "Downloads",
+      data: alignDownloadsOnDateRange(data, dateRange),
+      color: lightBlue,
+    },
+  ]
+}
+
+export function buildMultipleEpisodeDownloadsSeries(data, dateRange) {
+  return data.map((episodeRollup, i) => {
+    let zIndex = 1
+    if (i === 0) {
+      zIndex = 2
+    }
+    let color = midBlue
+    if (i === 0) {
+      color = orange
+    }
+    return {
+      name: episodeRollup.episode.title,
+      data: alignDownloadsOnDateRange(episodeRollup.rollups, dateRange),
+      color: color,
+      zIndex: zIndex,
+    }
+  })
 }
 
 function alignDownloadsOnDateRange(downloads, range) {
   return range.map((date) => {
     const match = downloads.filter((r) => {
-      return r.hour === date
+      return r[0] === date
     })
 
     if (match[0]) {
       return {
         x: date,
-        y: match[0].count,
+        y: match[0][1],
       }
     } else {
       return {
@@ -302,14 +306,6 @@ function alignDownloadsOnDateRange(downloads, range) {
       }
     }
   })
-}
-
-function addYaxisTitle(yaxis, title = "") {
-  Object.assign(yaxis, { title: { text: title } })
-}
-
-function addXaxisTitle(xaxis, title = "") {
-  Object.assign(xaxis, { title: { text: title } })
 }
 
 export function destroyChart(chartId) {
