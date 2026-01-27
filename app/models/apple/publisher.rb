@@ -204,23 +204,36 @@ module Apple
     end
 
     def raise_delivery_processing_errors(eps)
-      pdfs_with_errors = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_errors?)
+      # Both of these calls will raise if they find any problems.
+      # Since this publisher routine is always invoked from a job, raising will
+      # cause a retry.
+      raise_for_processing_state(eps, :processed_validation_failed?)
+      raise_for_processing_state(eps, :processed_duplicate?)
 
-      pdfs_with_errors.each do |pdf|
-        Rails.logger.error("Podcast delivery file has processing errors",
+      true
+    end
+
+    def raise_for_processing_state(eps, filter_method)
+      # Derive the state name from the filter method (e.g., :processed_duplicate? -> "DUPLICATE")
+      state_name = filter_method.to_s.delete_prefix("processed_").delete_suffix("?").upcase
+
+      problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
+
+      problem_pdfs.each do |pdf|
+        Rails.logger.error("Podcast delivery file has #{state_name} state, marking for reupload",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
            asset_delivery_state: pdf.asset_delivery_state})
+
+        pdf.episode.apple_mark_for_reupload!
       end
 
-      if pdfs_with_errors.any?
+      if problem_pdfs.any?
         raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found processing errors on #{pdfs_with_errors.length} podcast delivery files"
+          "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked for reupload"
         )
       end
-
-      true
     end
 
     def wait_for_versioned_source_metadata(eps)
