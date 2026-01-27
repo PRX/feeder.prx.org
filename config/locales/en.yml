@@ -1444,6 +1444,7 @@ en:
         record_hours: todo
         start_date: todo
       hint: Define which days and hours of the stream you want to create clips or episodes from.
+      hours: View Hours
       title: Recording Settings
     form_status:
       <<: *form_status
@@ -1457,6 +1458,14 @@ en:
     update:
       error: Unable to save
       notice: Live Stream Recording updated
+  podcast_stream_hours:
+    index:
+      card_title: Recorded Hours
+      next: Next
+      previous: Prev
+      title: "%{title} - Recorded Hours"
+    show:
+      title: "%{title} - %{date} Recordings"
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
