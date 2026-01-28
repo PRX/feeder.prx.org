@@ -49,82 +49,120 @@ describe Tasks::RecordStreamTask do
     end
   end
 
-  describe "#update_stream_resource" do
+  describe "#with_lock" do
+    it "locks the stream resource" do
+      task.stream_resource.stub(:with_lock, "res-lock") do
+        assert task.stream_resource.persisted?
+        assert_equal "res-lock", task.with_lock { true }
+      end
+    end
+
+    it "locks the stream recording" do
+      recording = build_stubbed(:stream_recording)
+      task.owner = build(:stream_resource, stream_recording: recording)
+
+      recording.stub(:with_lock, "rec-lock") do
+        assert task.stream_resource.new_record?
+        assert task.stream_recording.persisted?
+        assert_equal "rec-lock", task.with_lock { true }
+      end
+    end
+
+    it "falls back to locking itself" do
+      recording = build(:stream_recording)
+      task.owner = build(:stream_resource, stream_recording: recording)
+
+      task.stub(:with_lock, "task-lock") do
+        assert task.stream_resource.new_record?
+        assert task.stream_recording.new_record?
+        assert_equal "task-lock", task.with_lock { true }
+      end
+    end
+  end
+
+  describe "#update_owner?" do
+    it "updates new recordings" do
+      task.stream_resource.original_url = nil
+      refute task.update_owner?
+
+      task.status = "processing"
+      assert task.update_owner?
+    end
+
+    it "updates the same recording url" do
+      task.stream_resource.original_url = task.source_url
+      refute task.update_owner?
+
+      task.status = "processing"
+      assert task.update_owner?
+    end
+
+    it "updates larger recordings" do
+      assert_equal 0, task.missing_seconds
+      assert_equal 0, task.stream_resource.missing_seconds
+      refute_equal task.stream_resource.original_url, task.source_url
+      refute task.update_owner?
+
+      task.status = "processing"
+      refute task.update_owner?
+
+      task.stream_resource.actual_start_at = task.stream_resource.start_at + 1
+      assert_equal 1, task.stream_resource.missing_seconds
+      assert task.update_owner?
+
+      task.stream_resource.actual_start_at = task.stream_resource.start_at - 1
+      assert_equal 0, task.stream_resource.missing_seconds
+      refute task.update_owner?
+    end
+  end
+
+  describe "#update_owner" do
     let(:task) { create(:record_stream_task) }
     let(:resource) { task.stream_resource }
 
     it "updates status before save" do
-      assert_equal task.status, "complete"
-      assert_equal resource.status, "complete"
+      task.stub(:update_owner?, true) do
+        assert_equal task.status, "complete"
+        assert_equal resource.status, "complete"
 
-      task.update(status: "started")
-      assert_equal resource.status, "started"
+        task.update(status: "started")
+        assert_equal resource.status, "started"
 
-      # we use "recording" instead of processing for this stage
-      task.update(status: "processing")
-      assert_equal resource.status, "recording"
+        # we use "recording" instead of processing for this stage
+        task.update(status: "processing")
+        assert_equal resource.status, "recording"
 
-      # but start "processing" once we've finished the recording
-      task.update(status: "complete")
-      assert_equal resource.status, "complete"
-    end
-
-    it "copies media the first time" do
-      resource.update(actual_start_at: nil, actual_end_at: nil, original_url: nil)
-      assert_equal 3600, resource.missing_seconds
-
-      mock_copy = Minitest::Mock.new
-      mock_copy.expect(:call, nil)
-
-      resource.stub(:copy_media, mock_copy) do
-        task.stub(:missing_seconds, 10) do
-          task.update_stream_resource
+        # but start "processing" once we've finished the recording
+        mock = Minitest::Mock.new
+        mock.expect(:call, nil)
+        resource.stub(:copy_media, mock) do
+          task.update(status: "complete")
 
           assert_equal "s3://#{task.source_bucket}/#{task.source_key}", resource.original_url
           assert_equal task.source_start_at, resource.actual_start_at
-          assert_equal task.source_end_at, resource.actual_end_at
           assert_equal "processing", resource.status
           assert_equal task.source_size, resource.file_size
           assert_equal task.source_duration / 1000.0, resource.duration
-
-          mock_copy.verify
+          mock.verify
         end
       end
     end
 
-    it "copies media with the fewest missing_seconds" do
-      old_orig = "s3://some/previous/file.mp3"
+    it "cancels previous copy/fix tasks" do
+      copy = create(:copy_media_task, owner: resource)
+      fix = create(:fix_media_task, owner: resource)
 
-      # pretend resource is 10 seconds short
-      resource.update(actual_start_at: resource.start_at + 10.seconds, original_url: old_orig)
-      assert_equal 10, resource.missing_seconds
+      mock = Minitest::Mock.new
+      mock.expect(:call, nil)
 
-      task.stub(:missing_seconds, 12) do
-        task.update_stream_resource
-        assert_equal old_orig, resource.original_url
-      end
+      task.stub(:update_owner?, true) do
+        resource.stub(:copy_media, mock) do
+          task.update(status: "complete")
 
-      task.stub(:missing_seconds, 10) do
-        task.update_stream_resource
-        assert_equal old_orig, resource.original_url
-      end
-
-      mock_copy = Minitest::Mock.new
-      mock_copy.expect(:call, nil)
-
-      # has fewer missing seconds - copy this one
-      resource.stub(:copy_media, mock_copy) do
-        task.stub(:missing_seconds, 8) do
-          task.update_stream_resource
-          refute_equal old_orig, resource.original_url
-
-          assert_equal "s3://#{task.source_bucket}/#{task.source_key}", resource.original_url
-          assert_equal task.source_start_at, resource.actual_start_at
-          assert_equal "processing", resource.status
-          assert_equal task.source_size, resource.file_size
-          assert_equal task.source_duration / 1000.0, resource.duration
-
-          mock_copy.verify
+          assert_equal resource.status, "processing"
+          assert_equal copy.reload.status, "cancelled"
+          assert_equal fix.reload.status, "cancelled"
+          mock.verify
         end
       end
     end

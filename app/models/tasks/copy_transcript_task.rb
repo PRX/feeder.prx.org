@@ -1,6 +1,4 @@
 class Tasks::CopyTranscriptTask < ::Task
-  before_save :update_transcript, if: ->(task) { task.status_changed? && task.transcript }
-
   def transcript
     owner
   end
@@ -28,7 +26,7 @@ class Tasks::CopyTranscriptTask < ::Task
     ]
   end
 
-  def update_transcript
+  def update_owner
     transcript.status = status
 
     if complete?

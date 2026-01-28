@@ -23,6 +23,17 @@ describe StreamResource do
       assert_nil res.copy_task
     end
 
+    it "skips copying if the recording is still in progress" do
+      res = build_stubbed(:stream_resource, status: "recording")
+      res.copy_task = nil
+      res.copy_media
+      assert_nil res.copy_task
+
+      res.status = "created"
+      res.copy_media
+      assert_nil res.copy_task
+    end
+
     it "skips creating a copy_task if one exists" do
       res = build_stubbed(:stream_resource, status: "processing")
       task = Tasks::CopyMediaTask.new
@@ -31,6 +42,24 @@ describe StreamResource do
       res.copy_media
 
       assert_equal task, res.copy_task
+    end
+
+    it "creates another copy task if the previous one is cancelled" do
+      res = create(:stream_resource, status: "processing")
+
+      Tasks::CopyMediaTask.stub_any_instance(:start!, true) do
+        res.copy_media
+        t1 = res.reload.copy_task
+        assert_equal "started", t1.status
+
+        # cancel this task, and copy_media again
+        t1.update!(status: "cancelled")
+        assert_nil res.reload.copy_task
+        res.copy_media
+        t2 = res.reload.copy_task
+        assert_equal "started", t2.status
+        refute_equal t1, t2
+      end
     end
   end
 

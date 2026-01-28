@@ -41,7 +41,7 @@ describe Tasks::CopyImageTask do
     end
   end
 
-  describe "#update_image" do
+  describe "#update_owner" do
     let(:task) { create(:copy_image_task) }
 
     it "updates status before save" do

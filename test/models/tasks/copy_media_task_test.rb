@@ -68,7 +68,7 @@ describe Tasks::CopyMediaTask do
     end
   end
 
-  describe "#update_media_resource" do
+  describe "#update_owner" do
     let(:task) { create(:copy_media_task) }
 
     it "updates status before save" do
@@ -101,9 +101,9 @@ describe Tasks::CopyMediaTask do
       task.stub(:media_resource, uncut) do
         uncut.stub(:slice_contents, slice) do
           assert_equal [], task.media_resource.ad_breaks
-          assert_equal nil, task.media_resource.episode.segment_count
+          assert_nil task.media_resource.episode.segment_count
 
-          task.update_media_resource
+          task.update_owner
           assert_equal [3.000], task.media_resource.ad_breaks
           assert_equal 2, task.media_resource.episode.segment_count
           assert slice.verify
@@ -122,7 +122,7 @@ describe Tasks::CopyMediaTask do
           assert_equal [], task.media_resource.ad_breaks
           assert_equal 3, task.media_resource.episode.segment_count
 
-          task.update_media_resource
+          task.update_owner
           assert_equal [3.000], task.media_resource.ad_breaks
           assert_equal 3, task.media_resource.episode.segment_count
         end

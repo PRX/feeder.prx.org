@@ -20,9 +20,14 @@ class Task < ApplicationRecord
   belongs_to :owner, polymorphic: true, optional: true
 
   before_validation { self.status ||= :started }
+  before_save :update_owner, if: :update_owner?
 
+  scope :analyze_media, -> { where(type: "Tasks::AnalyzeMediaTask") }
   scope :copy_media, -> { where(type: "Tasks::CopyMediaTask") }
   scope :copy_image, -> { where(type: "Tasks::CopyImageTask") }
+  scope :copy_transcript, -> { where(type: "Tasks::CopyTranscript") }
+  scope :fix_media, -> { where(type: "Tasks::FixMediaTask") }
+  scope :record_stream, -> { where(type: "Tasks::RecordStreamTask") }
   scope :bad_audio_duration, -> { where("result ~ '\"DurationDiscrepancy\":([5-9]\\d[1-9]|[6-9]\\d{2}|[1-9]\d{3})'") }
   scope :bad_audio_bytes, -> { where("result ~ '\"UnidentifiedBytes\":[1-9]'") }
   scope :bad_audio_vbr, -> { where("result ~ '\"VariableBitrate\":true'") }
@@ -32,7 +37,7 @@ class Task < ApplicationRecord
     task = lookup_task(job_id)
 
     task&.with_lock do
-      status = porter_callback_status(msg)
+      status = task.cancelled? ? "cancelled" : porter_callback_status(msg)
       time = porter_callback_time(msg)
 
       if status && time && (task.logged_at.nil? || (time >= task.logged_at))
@@ -86,5 +91,13 @@ class Task < ApplicationRecord
 
     porter_start!(options)
     save!
+  end
+
+  def update_owner?
+    owner && status_changed? && !cancelled?
+  end
+
+  # before save hook, implemented by child tasks
+  def update_owner
   end
 end

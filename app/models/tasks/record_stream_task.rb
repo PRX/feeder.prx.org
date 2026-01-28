@@ -1,8 +1,10 @@
 class Tasks::RecordStreamTask < ::Task
-  before_save :update_stream_resource, if: ->(t) { t.status_changed? && t.stream_resource }
-
   def stream_resource
     owner
+  end
+
+  def stream_recording
+    owner&.stream_recording
   end
 
   def self.from_job_id(job_id)
@@ -20,21 +22,37 @@ class Tasks::RecordStreamTask < ::Task
     end
   end
 
-  def update_stream_resource
-    # TODO: this tends to mess things up if multiple recordings are
-    # happening at the same time
+  def with_lock(...)
+    if stream_resource&.persisted?
+      stream_resource.with_lock(...)
+    elsif stream_recording&.persisted?
+      stream_recording.with_lock(...)
+    else
+      super
+    end
+  end
+
+  def update_owner?
+    return false unless super
+
+    # must be the first recording callback
+    return true if stream_resource.original_url.nil?
+
+    # or must be the recording we've already chosen
+    return true if stream_resource.original_url == source_url
+
+    # or must be larger than the existing recording
+    missing_seconds.to_i < stream_resource.missing_seconds.to_i
+  end
+
+  def update_owner
     stream_resource.status = processing? ? "recording" : status
 
-    has_new = missing_seconds.present?
-    has_existing = stream_resource.missing_seconds.present?
-    is_first = has_new && !has_existing
-    is_larger = has_new && has_existing && missing_seconds < stream_resource.missing_seconds
-
-    if complete? && (is_first || is_larger)
+    if complete?
       stream_resource.actual_start_at = source_start_at
       stream_resource.actual_end_at = source_end_at
       stream_resource.url = nil
-      stream_resource.original_url = "s3://#{source_bucket}/#{source_key}"
+      stream_resource.original_url = source_url
       stream_resource.status = "processing"
       stream_resource.file_size = source_size
       stream_resource.duration = source_duration / 1000.0
@@ -42,7 +60,13 @@ class Tasks::RecordStreamTask < ::Task
     end
 
     stream_resource.save!
-    stream_resource.copy_media if changed
+
+    # if we changed originals, cancel other running tasks (copy, fix, etc)
+    if changed
+      stream_resource.tasks.copy_media.update_all(status: :cancelled)
+      stream_resource.tasks.fix_media.update_all(status: :cancelled)
+      stream_resource.copy_media
+    end
   end
 
   # parsing data from the job_id
@@ -86,6 +110,10 @@ class Tasks::RecordStreamTask < ::Task
 
   def source_key
     porter_callback_ffmpeg_output.try(:[], :ObjectKey)
+  end
+
+  def source_url
+    "s3://#{source_bucket}/#{source_key}"
   end
 
   def source_size
