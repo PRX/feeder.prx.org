@@ -3,7 +3,7 @@ require "active_support/concern"
 module MetricsQueries
   extend ActiveSupport::Concern
 
-  def alltime_downloads_query(model_id: default_id, column: default_column)
+  def alltime_downloads_query(model_id: metrics_default_id, column: metrics_default_column)
     Rollups::HourlyDownload
       .where("#{column}": model_id)
       .select(column, "SUM(count) AS count")
@@ -11,7 +11,7 @@ module MetricsQueries
       .final
   end
 
-  def daterange_downloads_query(model_id: default_id, column: default_column, date_start: default_time_start, date_end: default_time_end, interval: "DAY")
+  def daterange_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_time_start, date_end: metrics_default_time_end, interval: "DAY")
     if model_id.is_a?(Array)
       Rollups::HourlyDownload
         .where("#{column}": model_id, hour: (date_start..date_end))
@@ -29,7 +29,7 @@ module MetricsQueries
     end
   end
 
-  def feed_downloads_query(feeds:, model_id: default_id, column: default_column, date_start: default_time_start, date_end: default_time_end)
+  def feed_downloads_query(feeds:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_time_start, date_end: metrics_default_time_end)
     slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
 
     Rollups::HourlyDownload
@@ -54,7 +54,7 @@ module MetricsQueries
     feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
   end
 
-  def top_countries_downloads_query(model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
+  def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
     Rollups::DailyGeo
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:country_code)
@@ -64,7 +64,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_countries_downloads_query(excluded_countries:, model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
+  def other_countries_downloads_query(excluded_countries:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
     ex_country_codes = excluded_countries.map { |c| c[0] }
 
     Rollups::DailyGeo
@@ -74,7 +74,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def top_agents_downloads_query(model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
+  def top_agents_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
     Rollups::DailyAgent
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:agent_name_id)
@@ -84,7 +84,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_agents_downloads_query(excluded_agents:, model_id: default_id, column: default_column, date_start: default_date_start, date_end: default_date_end)
+  def other_agents_downloads_query(excluded_agents:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
     ex_agent_codes = excluded_agents.map { |c| c[0] }
 
     Rollups::DailyAgent
@@ -94,35 +94,11 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def default_date_start
-    (Date.utc_today - 28.days)
-  end
-
-  def default_date_end
-    Date.utc_today
-  end
-
-  def default_time_start
-    Time.now - 28.days
-  end
-
-  def default_time_end
-    Time.now
-  end
-
-  def default_id
-    if is_a?(Podcast)
-      id
-    elsif is_a?(Episode)
-      guid
-    end
-  end
-
-  def default_column
-    if is_a?(Podcast)
-      "podcast_id"
-    elsif is_a?(Episode)
-      "episode_id"
+  def metrics_cache_key(version: nil)
+    if version.present?
+      "#{cache_key}/v#{version}/metrics"
+    else
+      "#{cache_key}/metrics"
     end
   end
 
@@ -140,11 +116,45 @@ module MetricsQueries
     range
   end
 
-  def generate_daily_date_range(date_start: default_date_start, date_end: default_date_end)
+  def generate_daily_date_range(date_start: metrics_default_date_start, date_end: metrics_default_date_end)
     generate_date_range(date_start: date_start, date_end: date_end, interval: "DAY")
   end
 
   def generate_monthly_date_range(date_start: (Date.utc_today - 11.months), date_end: Date.utc_today)
     generate_date_range(date_start: date_start.beginning_of_month, date_end: date_end, interval: "MONTH")
+  end
+
+  private
+
+  def metrics_default_date_start
+    (Date.utc_today - 28.days)
+  end
+
+  def metrics_default_date_end
+    Date.utc_today
+  end
+
+  def metrics_default_time_start
+    Time.now - 28.days
+  end
+
+  def metrics_default_time_end
+    Time.now
+  end
+
+  def metrics_default_id
+    if is_a?(Podcast)
+      id
+    elsif is_a?(Episode)
+      guid
+    end
+  end
+
+  def metrics_default_column
+    if is_a?(Podcast)
+      "podcast_id"
+    elsif is_a?(Episode)
+      "episode_id"
+    end
   end
 end
