@@ -11,11 +11,11 @@ module EpisodeMetrics
     end
   end
 
-  def dropday_sum
+  def dropday_sum(version: nil)
     return nil unless first_rss_published_at.present?
     return nil if (first_rss_published_at + 1.day) > Time.now
 
-    Rails.cache.fetch("#{cache_key_with_version}/dropday_sum", expires_in: 28.days) do
+    Rails.cache.fetch("#{metrics_cache_key(version: version)}/dropday_sum", expires_in: 28.days) do
       lowerbound = first_rss_published_at.beginning_of_hour
       upperbound = lowerbound + 24.hours
 
@@ -35,10 +35,11 @@ module EpisodeMetrics
     ((current_sum.to_f / previous_sum.to_f) - 1).round(3)
   end
 
-  def sparkline_downloads
+  def sparkline_downloads(version: nil)
     return nil unless publish_hour.present?
+    expiration = (publish_hour < Time.now - 28.days) ? 28.days : 1.hour
 
-    Rails.cache.fetch("#{cache_key_with_version}/sparkline_downloads", expires_in: 28.days) do
+    Rails.cache.fetch("#{metrics_cache_key(version: version)}/sparkline_downloads", expires_in: expiration) do
       daterange_downloads_query(date_start: publish_hour, date_end: publish_hour + 28.days, interval: "DAY")
     end
   end
@@ -55,17 +56,17 @@ module EpisodeMetrics
     alltime_downloads_query.sum(&:count)
   end
 
-  def daily_downloads(days: 28, date_start: nil, date_end: nil)
+  def daily_downloads(days: 28, date_start: nil, date_end: nil, version: nil)
     date_start ||= Time.now - days.days
-    date_end ||= default_time_end
+    date_end ||= Time.now
 
-    Rails.cache.fetch("#{cache_key_with_version}/daily_downloads", expires_in: 1.hour) do
+    Rails.cache.fetch("#{metrics_cache_key(version: version)}/daily_downloads", expires_in: 1.hour) do
       daterange_downloads_query(date_start: date_start, date_end: date_end, interval: "DAY")
     end
   end
 
-  def feed_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/feed_downloads", expires_in: 1.hour) do
+  def feed_downloads(version: nil)
+    Rails.cache.fetch("#{metrics_cache_key(version: version)}/feed_downloads", expires_in: 1.hour) do
       feed_downloads_query(feeds: feeds)
     end
   end
@@ -74,14 +75,14 @@ module EpisodeMetrics
     sorted_feed_download_rollups(feeds, feed_downloads)
   end
 
-  def top_countries_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/top_countries_downloads", expires_in: 1.hour) do
+  def top_countries_downloads(version: nil)
+    Rails.cache.fetch("#{metrics_cache_key(version: version)}/top_countries_downloads", expires_in: 1.hour) do
       top_countries_downloads_query
     end
   end
 
-  def other_countries_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/other_countries_downloads", expires_in: 1.hour) do
+  def other_countries_downloads(version: nil)
+    Rails.cache.fetch("#{metrics_cache_key(version: version)}/other_countries_downloads", expires_in: 1.hour) do
       other_countries_downloads_query(excluded_countries: top_countries_downloads)
     end
   end
@@ -96,14 +97,14 @@ module EpisodeMetrics
     end
   end
 
-  def top_agents_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/top_agents_downloads", expires_in: 1.hour) do
+  def top_agents_downloads(version: nil)
+    Rails.cache.fetch("#{metrics_cache_key(version: version)}/top_agents_downloads", expires_in: 1.hour) do
       top_agents_downloads_query
     end
   end
 
-  def other_agents_downloads
-    Rails.cache.fetch("#{cache_key_with_version}/other_agents_downloads", expires_in: 1.hour) do
+  def other_agents_downloads(version: nil)
+    Rails.cache.fetch("#{metrics_cache_key(version: version)}/other_agents_downloads", expires_in: 1.hour) do
       other_agents_downloads_query(excluded_agents: top_agents_downloads)
     end
   end
