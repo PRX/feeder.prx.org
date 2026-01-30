@@ -655,6 +655,20 @@ describe Apple::Publisher do
 
         assert apple_episode.feeder_episode.apple_needs_delivery?
       end
+
+      it "should log an error for VALIDATION_FAILED files" do
+        logs = capture_json_logs do
+          assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
+            apple_publisher.raise_delivery_processing_errors([apple_episode])
+          end
+        end
+
+        log = logs.find { |l| l[:msg] == "Podcast delivery file has processing errors, marking for reupload" }
+        assert log, "Should have logged processing error"
+        assert_equal 50, log[:level]
+        assert_equal podcast_delivery_file.id, log[:podcast_delivery_file_id]
+        assert_equal apple_episode.feeder_episode.id, log[:episode_id]
+      end
     end
 
     describe "DUPLICATE processing state" do
@@ -663,6 +677,27 @@ describe Apple::Publisher do
         assert podcast_delivery_file.processed_duplicate?
         refute podcast_delivery_file.processed_errors?
         assert_equal true, apple_publisher.raise_delivery_processing_errors([apple_episode])
+      end
+
+      it "should not mark the episode for reupload when DUPLICATE is detected" do
+        apple_episode.feeder_episode.apple_mark_as_delivered!
+        refute apple_episode.feeder_episode.apple_needs_delivery?
+
+        apple_publisher.raise_delivery_processing_errors([apple_episode])
+
+        refute apple_episode.feeder_episode.apple_needs_delivery?
+      end
+
+      it "should log info for DUPLICATE files" do
+        logs = capture_json_logs do
+          apple_publisher.raise_delivery_processing_errors([apple_episode])
+        end
+
+        log = logs.find { |l| l[:msg] == "Podcast delivery file has DUPLICATE state, proceeding to delivery" }
+        assert log, "Should have logged DUPLICATE info"
+        assert_equal 30, log[:level]
+        assert_equal podcast_delivery_file.id, log[:podcast_delivery_file_id]
+        assert_equal apple_episode.feeder_episode.id, log[:episode_id]
       end
     end
 
