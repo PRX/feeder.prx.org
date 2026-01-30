@@ -219,16 +219,18 @@ module Apple
       pdfs_with_errors = eps.flat_map(&:podcast_delivery_files).filter(&:processed_errors?)
 
       pdfs_with_errors.each do |pdf|
-        Rails.logger.error("Podcast delivery file has processing errors",
+        Rails.logger.error("Podcast delivery file has processing errors, marking for reupload",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
            asset_delivery_state: pdf.asset_delivery_state})
+
+        pdf.episode.apple_mark_for_reupload!
       end
 
       if pdfs_with_errors.any?
         raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found processing errors on #{pdfs_with_errors.length} podcast delivery files"
+          "Found processing errors on #{pdfs_with_errors.length} podcast delivery files, episodes marked for reupload"
         )
       end
 

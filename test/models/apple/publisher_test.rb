@@ -644,6 +644,17 @@ describe Apple::Publisher do
           apple_publisher.raise_delivery_processing_errors([apple_episode])
         end
       end
+
+      it "should mark the episode for reupload when VALIDATION_FAILED is detected" do
+        apple_episode.feeder_episode.apple_mark_as_delivered!
+        refute apple_episode.feeder_episode.apple_needs_delivery?
+
+        assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
+          apple_publisher.raise_delivery_processing_errors([apple_episode])
+        end
+
+        assert apple_episode.feeder_episode.apple_needs_delivery?
+      end
     end
 
     describe "DUPLICATE processing state" do
