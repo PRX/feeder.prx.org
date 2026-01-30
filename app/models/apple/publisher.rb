@@ -225,6 +225,9 @@ module Apple
            asset_processing_state: pdf.asset_processing_state,
            asset_delivery_state: pdf.asset_delivery_state})
 
+        # Mark for reupload so the episode is picked up in the next publish cycle.
+        # This will continue to fail if nothing changes, but gives users/admins
+        # a chance to fix the source media format that Apple rejected.
         pdf.episode.apple_mark_for_reupload!
       end
 
