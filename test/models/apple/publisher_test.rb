@@ -638,8 +638,13 @@ describe Apple::Publisher do
 
     describe "VALIDATION_FAILED processing state" do
       let(:asset_processing_state) { "VALIDATION_FAILED" }
-      it "should raise an error" do
+
+      it "should detect the VALIDATION_FAILED state" do
         assert podcast_delivery_file.processed_errors?
+        assert podcast_delivery_file.processed_validation_failed?
+      end
+
+      it "should raise DeliveryFileError for VALIDATION_FAILED files" do
         assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
           apple_publisher.raise_delivery_processing_errors([apple_episode])
         end
@@ -663,8 +668,8 @@ describe Apple::Publisher do
           end
         end
 
-        log = logs.find { |l| l[:msg] == "Podcast delivery file has processing errors, marking for reupload" }
-        assert log, "Should have logged processing error"
+        log = logs.find { |l| l[:msg] == "Podcast delivery file has VALIDATION_FAILED state, marking for reupload" }
+        assert log, "Should have logged VALIDATION_FAILED error"
         assert_equal 50, log[:level]
         assert_equal podcast_delivery_file.id, log[:podcast_delivery_file_id]
         assert_equal apple_episode.feeder_episode.id, log[:episode_id]
@@ -673,9 +678,13 @@ describe Apple::Publisher do
 
     describe "DUPLICATE processing state" do
       let(:asset_processing_state) { "DUPLICATE" }
-      it "should not raise an error and proceed with delivery" do
+
+      it "should detect the DUPLICATE state" do
         assert podcast_delivery_file.processed_duplicate?
         refute podcast_delivery_file.processed_errors?
+      end
+
+      it "should not raise and proceed with delivery" do
         assert_equal true, apple_publisher.raise_delivery_processing_errors([apple_episode])
       end
 
