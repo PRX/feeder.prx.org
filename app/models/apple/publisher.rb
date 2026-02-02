@@ -203,23 +203,48 @@ module Apple
     end
 
     def raise_delivery_processing_errors(eps)
-      pdfs_with_errors = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_errors?)
-
-      pdfs_with_errors.each do |pdf|
-        Rails.logger.error("Podcast delivery file has processing errors",
+      # Apple returns a DUPLICATE asset_processing_state when the media file in
+      # the podcast_container has already been uploaded. This is not an error -
+      # the file is already present and we can proceed to final delivery
+      # (publish_drafting!). We log it for visibility but don't raise.
+      eps.flat_map(&:podcast_delivery_files).filter(&:processed_duplicate?).each do |pdf|
+        Rails.logger.info("Podcast delivery file has DUPLICATE state, proceeding to delivery",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
            asset_delivery_state: pdf.asset_delivery_state})
       end
 
-      if pdfs_with_errors.any?
-        raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found processing errors on #{pdfs_with_errors.length} podcast delivery files"
-        )
-      end
+      # This will raise and mark for reupload if any validation failures
+      raise_for_processing_state(eps, :processed_validation_failed?)
 
       true
+    end
+
+    def raise_for_processing_state(eps, filter_method)
+      # Derive the state name from the filter method (e.g., :processed_duplicate? -> "DUPLICATE")
+      state_name = filter_method.to_s.delete_prefix("processed_").delete_suffix("?").upcase
+
+      problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
+
+      problem_pdfs.each do |pdf|
+        Rails.logger.error("Podcast delivery file has #{state_name} state, marking for reupload",
+          {episode_id: pdf.episode.id,
+           podcast_delivery_file_id: pdf.id,
+           asset_processing_state: pdf.asset_processing_state,
+           asset_delivery_state: pdf.asset_delivery_state})
+
+        # Mark for reupload so the episode is picked up in the next publish cycle.
+        # This will continue to fail if nothing changes, but gives users/admins
+        # a chance to fix the source media format that Apple rejected.
+        pdf.episode.apple_mark_for_reupload!
+      end
+
+      if problem_pdfs.any?
+        raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
+          "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked for reupload"
+        )
+      end
     end
 
     def wait_for_versioned_source_metadata(eps)

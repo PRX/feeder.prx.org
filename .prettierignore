@@ -2,6 +2,7 @@
 app/assets/builds
 build
 coverage
+tmp
 
 # Ignore vendor'd libraries
 vendor

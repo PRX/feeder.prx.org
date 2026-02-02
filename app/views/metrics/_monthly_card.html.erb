@@ -1,0 +1,9 @@
+<%= turbo_frame_tag "monthly" do %>
+  <div class="col metrics-chart"
+    data-controller="apex-monthly"
+    data-apex-monthly-id-value="<%= SecureRandom.uuid %>"
+    data-apex-monthly-downloads-value="<%= downloads.to_json %>"
+    data-apex-monthly-date-range-value="<%= date_range.to_json %>">
+    <div data-apex-monthly-target="chart"></div>
+  </div>
+<% end %>
