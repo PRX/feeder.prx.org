@@ -33,6 +33,15 @@ describe Task do
       refute task.reload.complete?
     end
 
+    it "updates cancelled tasks, but does not update owner" do
+      task.update!(job_id: porter_task[:JobResult][:Job][:Id], status: "cancelled")
+      assert task.cancelled?
+
+      Task.callback(porter_task)
+      assert task.reload.cancelled?
+      assert_equal task.logged_at, Time.parse("2012-12-21T12:34:56Z")
+    end
+
     it "decodes and creates stream recording tasks" do
       pod = create(:podcast)
       rec = create(:stream_recording, podcast: pod)
@@ -184,6 +193,21 @@ describe Task do
           assert fake.verify
         end
       end
+    end
+  end
+
+  describe "#update_owner?" do
+    it "updates owners for non-cancelled tasks" do
+      refute task.update_owner?
+
+      task.owner = build_stubbed(:media_resource)
+      refute task.update_owner?
+
+      task.status = "retrying"
+      assert task.update_owner?
+
+      task.status = "cancelled"
+      refute task.update_owner?
     end
   end
 end

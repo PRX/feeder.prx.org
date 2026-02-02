@@ -17,7 +17,7 @@ describe Tasks::AnalyzeMediaTask do
     end
   end
 
-  describe "#update_media_resource" do
+  describe "#update_owner" do
     let(:task) { create(:copy_media_task) }
 
     it "updates status before save" do

@@ -41,7 +41,7 @@ describe Tasks::CopyTranscriptTask do
     end
   end
 
-  describe "#update_transcript" do
+  describe "#update_owner" do
     let(:task) { create(:copy_transcript_task) }
 
     it "updates status before save" do
