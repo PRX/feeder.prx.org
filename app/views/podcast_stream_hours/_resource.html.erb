@@ -5,11 +5,19 @@
     </div>
 
     <div class="card-body pt-4 py-0">
-      <%= render "waveform/waveform",
-            duration: resource.duration,
-            segmentation: resource.segmentation,
-            url: resource.url,
-            waveform_url: resource.waveform_url %>
+      <% if resource.status_complete? %>
+        <%= render "waveform/waveform",
+              duration: resource.duration,
+              segmentation: resource.segmentation,
+              url: resource.url,
+              waveform_url: resource.waveform_url %>
+      <% elsif resource.status_recording? %>
+        <span class="badge text-bg-danger mb-4">Recording</span>
+      <% elsif resource.status_processing? %>
+        <span class="badge text-bg-primary mb-4">Processing</span>
+      <% else %>
+        <span class="badge text-bg-warning mb-4"><%= resource.status.capitalize %></span>
+      <% end %>
     </div>
   </div>
 </div>
