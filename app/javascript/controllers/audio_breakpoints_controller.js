@@ -282,8 +282,10 @@ export default class extends Controller {
     const newSegments = this.getSegmentsTimesArray()
 
     // Updated markers form input value.
-    this.markersInputTarget.value = newSegments.length ? JSON.stringify(newSegments) : null
-    this.markersInputTarget.dispatchEvent(new Event("change"))
+    if (this.hasMarkersInputTarget) {
+      this.markersInputTarget.value = newSegments.length ? JSON.stringify(newSegments) : null
+      this.markersInputTarget.dispatchEvent(new Event("change"))
+    }
 
     // Update waveform inspector.
     if (this.hasWaveformInspectorTarget) {

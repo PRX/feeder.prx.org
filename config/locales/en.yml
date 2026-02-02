@@ -798,7 +798,7 @@ en:
         media: Upload File
         segmenter: Mark Ad Breaks
     media:
-      complete:
+      complete_audio:
         unable: Unable to play file
       error:
         feedback: There was a problem processing your file
@@ -835,21 +835,6 @@ en:
           slice_start: Slice Start
           status: Status
         title: Audio Segments
-      segmenter:
-        label:
-          prefix: Break
-        table:
-          name: Name
-          timestamps: Timestamps
-        tooltip:
-          add_end_time: Add End Time
-          change_end_time: Edit End Time
-          change_start_time: Edit Start Time
-          confirm: Confirm Change
-          remove_end_time: Remove End Time
-          seek_input: Enter time to seek to
-          set_playhead: Set To Playhead
-        insert: Insert At Playhead
     show:
       title: "%{title} - Media Files"
     update:
@@ -1459,6 +1444,7 @@ en:
         record_hours: todo
         start_date: todo
       hint: Define which days and hours of the stream you want to create clips or episodes from.
+      hours: View Hours
       title: Recording Settings
     form_status:
       <<: *form_status
@@ -1472,6 +1458,14 @@ en:
     update:
       error: Unable to save
       notice: Live Stream Recording updated
+  podcast_stream_hours:
+    index:
+      card_title: Recorded Hours
+      next: Next
+      previous: Prev
+      title: "%{title} - Recorded Hours"
+    show:
+      title: "%{title} - %{date} Recordings"
   podcast_switcher:
     dropdown:
       all: View all my Podcasts
@@ -1484,3 +1478,20 @@ en:
     title: Not Authorized
     podcast_policy:
       create?: You are not authorized to create a podcast
+  waveform:
+    breakpoints:
+      name: Name
+      timestamps: Timestamps
+    inspector:
+      seek_input: Enter time to seek to
+    templates:
+      midroll:
+        add_end_time: Add End Time
+        change_end_time: Edit End Time
+        change_start_time: Edit Start Time
+        confirm: Confirm Change
+        insert: Insert At Playhead
+        remove_end_time: Remove End Time
+        set_playhead: Set To Playhead
+    waveform:
+      prefix: Break
