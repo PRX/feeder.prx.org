@@ -204,11 +204,20 @@ module Apple
     end
 
     def raise_delivery_processing_errors(eps)
-      # Both of these calls will raise if they find any problems.
-      # Since this publisher routine is always invoked from a job, raising will
-      # cause a retry.
+      # Apple returns a DUPLICATE asset_processing_state when the media file in
+      # the podcast_container has already been uploaded. This is not an error -
+      # the file is already present and we can proceed to final delivery
+      # (publish_drafting!). We log it for visibility but don't raise.
+      eps.flat_map(&:podcast_delivery_files).filter(&:processed_duplicate?).each do |pdf|
+        Rails.logger.info("Podcast delivery file has DUPLICATE state, proceeding to delivery",
+          {episode_id: pdf.episode.id,
+           podcast_delivery_file_id: pdf.id,
+           asset_processing_state: pdf.asset_processing_state,
+           asset_delivery_state: pdf.asset_delivery_state})
+      end
+
+      # This will raise and mark for reupload if any validation failures
       raise_for_processing_state(eps, :processed_validation_failed?)
-      raise_for_processing_state(eps, :processed_duplicate?)
 
       true
     end
@@ -226,6 +235,9 @@ module Apple
            asset_processing_state: pdf.asset_processing_state,
            asset_delivery_state: pdf.asset_delivery_state})
 
+        # Mark for reupload so the episode is picked up in the next publish cycle.
+        # This will continue to fail if nothing changes, but gives users/admins
+        # a chance to fix the source media format that Apple rejected.
         pdf.episode.apple_mark_for_reupload!
       end
 
