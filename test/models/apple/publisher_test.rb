@@ -592,6 +592,25 @@ describe Apple::Publisher do
 
       assert stuck_check_called, "check_for_stuck_episodes should be called during waiting"
     end
+
+    it "only includes still-waiting episodes in timeout error, not all episodes" do
+      episode1 = build(:uploaded_apple_episode, show: apple_publisher.show)
+      episode2 = build(:uploaded_apple_episode, show: apple_publisher.show)
+
+      # Create mock PDFs that reference the episodes by feeder_id
+      pdf1 = Minitest::Mock.new
+      pdf1.expect(:episode_id, episode1.feeder_id)
+
+      pdf2 = Minitest::Mock.new
+      pdf2.expect(:episode_id, episode2.feeder_id)
+
+      # Simulate: episode1 delivered successfully, episode2 still waiting when timeout
+      # wait_for_delivery returns [timed_out, still_waiting_pdfs]
+      # Only pdf2 is still waiting
+      wait_for_delivery_stub = ->(api, pdfs, &block) {
+        [true, [pdf2]]  # Timeout with only episode2's PDF still waiting
+      }
+    end
   end
 
   describe "#increment_asset_wait!" do

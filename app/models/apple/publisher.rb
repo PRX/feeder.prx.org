@@ -268,16 +268,18 @@ module Apple
           check_for_stuck_episodes(still_waiting_eps)
         }
 
-        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs, &stuck_check)
+        (waiting_timed_out, still_waiting_pdfs) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs, &stuck_check)
         if waiting_timed_out
-          e = Apple::AssetStateTimeoutError.new(eps)
+          still_waiting_eps = still_waiting_pdfs.map { |pdf| feeder_id_to_apple_ep[pdf.episode_id] }.compact.uniq
+          e = Apple::AssetStateTimeoutError.new(still_waiting_eps)
           Rails.logger.info("Timed out waiting for delivery", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
           raise e
         end
 
-        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs, &stuck_check)
+        (waiting_timed_out, still_waiting_pdfs) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs, &stuck_check)
         if waiting_timed_out
-          e = Apple::AssetStateTimeoutError.new(eps)
+          still_waiting_eps = still_waiting_pdfs.map { |pdf| feeder_id_to_apple_ep[pdf.episode_id] }.compact.uniq
+          e = Apple::AssetStateTimeoutError.new(still_waiting_eps)
           Rails.logger.info("Timed out waiting for processing", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
           raise e
         end
