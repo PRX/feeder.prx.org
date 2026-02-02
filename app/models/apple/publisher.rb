@@ -512,7 +512,7 @@ module Apple
       return if eps.empty?
 
       # Check for stuck episodes (>= STUCK_EPISODE_THRESHOLD)
-      stuck = eps.filter { |ep|
+      stuck = eps.select { |ep|
         duration = ep.feeder_episode.measure_asset_processing_duration
         duration && duration >= Apple::STUCK_EPISODE_THRESHOLD
       }
