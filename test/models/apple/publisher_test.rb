@@ -607,7 +607,7 @@ describe Apple::Publisher do
       # Simulate: episode1 delivered successfully, episode2 still waiting when timeout
       # wait_for_delivery returns [timed_out, still_waiting_pdfs]
       # Only pdf2 is still waiting
-      wait_for_delivery_stub = ->(api, pdfs, &block) {
+      ->(api, pdfs, &block) {
         [true, [pdf2]]  # Timeout with only episode2's PDF still waiting
       }
     end
