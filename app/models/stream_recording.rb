@@ -20,6 +20,7 @@ class StreamRecording < ApplicationRecord
   validates :record_days, inclusion: {in: ALL_DAYS}, allow_nil: true
   validates :record_hours, inclusion: {in: ALL_HOURS}, allow_nil: true
   validates :expiration, numericality: {greater_than: 0}, allow_nil: true
+  validates :timezone, inclusion: {in: ActiveSupport::TimeZone.all.map(&:name)}, allow_nil: true
 
   after_initialize :set_defaults
   after_save :write_config
