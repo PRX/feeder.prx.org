@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_18_154550) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_03_173040) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -473,6 +473,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_18_154550) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "deleted_at", precision: nil
+    t.string "timezone"
     t.index ["podcast_id"], name: "index_stream_recordings_on_podcast_id"
   end
 
