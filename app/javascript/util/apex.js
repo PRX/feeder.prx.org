@@ -1,5 +1,10 @@
 import ApexCharts from "apexcharts"
 
+const lightBlue = "#aafff5"
+const lightPink = "#e7d4ff"
+const midBlue = "#c9e9fa"
+const orange = "#ff9601"
+
 const DEFAULT_OPTIONS = {
   chart: {
     width: "100%",
@@ -15,6 +20,46 @@ const DEFAULT_OPTIONS = {
   legend: {
     show: false,
   },
+  fill: {
+    colors: [lightBlue],
+    type: "gradient",
+    gradient: {
+      type: "vertical",
+      shade: "light",
+      gradientToColors: [lightPink],
+      inverseColors: false,
+      opacityFrom: 0.9,
+      opacityTo: 0.9,
+    },
+  },
+  xaxis: {
+    type: "datetime",
+    labels: {
+      datetimeFormatter: {
+        year: "yyyy",
+        month: "MMM",
+        day: "MMM d",
+        hour: "MMM d, h:mmtt",
+      },
+    },
+  },
+  tooltip: {
+    enabled: true,
+    shared: false,
+    hideEmptySeries: true,
+    intersect: false,
+    followCursor: true,
+    marker: {
+      show: true,
+    },
+  },
+  states: {
+    hover: {
+      filter: {
+        type: "none",
+      },
+    },
+  },
 }
 
 const DATETIME_OPTIONS = {
@@ -23,7 +68,7 @@ const DATETIME_OPTIONS = {
     labels: {
       datetimeFormatter: {
         year: "yyyy",
-        month: "MMM d",
+        month: "MMM",
         day: "MMM d",
         hour: "MMM d, h:mmtt",
       },
@@ -46,11 +91,6 @@ const DATETIME_OPTIONS = {
     enabled: false,
   },
 }
-
-const lightBlue = "#aafff5"
-const lightPink = "#e7d4ff"
-const midBlue = "#c9e9fa"
-const orange = "#ff9601"
 
 export const BAR_TYPE = {
   chart: {
@@ -118,9 +158,8 @@ export const LINE_TYPE = {
   },
 }
 
-export const SPARKLINE_TYPE = {
+export const SPARKLINE_OPTIONS = {
   chart: {
-    height: "100%",
     sparkline: {
       enabled: true,
     },
@@ -128,37 +167,28 @@ export const SPARKLINE_TYPE = {
       enabled: true,
     },
     type: "area",
-    stacked: false,
   },
-  options: {
-    xaxis: {
-      type: "datetime",
-    },
-    tooltip: {
-      enabled: false,
-    },
-    fill: {
-      colors: [lightBlue],
-      type: "gradient",
-      gradient: {
-        type: "vertical",
-        shade: "light",
-        gradientToColors: [lightPink],
-        inverseColors: false,
-        opacityFrom: 0.9,
-        opacityTo: 0.9,
-      },
-    },
-    stroke: {
-      width: 1,
-      colors: ["#00000000"],
+  tooltip: {
+    enabled: false,
+  },
+  stroke: {
+    width: 1,
+    colors: ["#00000000"],
+  },
+  fill: {
+    gradient: {
+      type: "vertical",
+      shade: "light",
+      gradientToColors: [lightPink],
+      inverseColors: false,
+      opacityFrom: 0.9,
+      opacityTo: 0.9,
     },
   },
 }
 
-export const SPARKBAR_TYPE = {
+export const SPARKBAR_OPTIONS = {
   chart: {
-    height: "100%",
     sparkline: {
       enabled: true,
     },
@@ -166,57 +196,59 @@ export const SPARKBAR_TYPE = {
       enabled: true,
     },
     type: "bar",
-    stacked: false,
   },
-  options: {
-    xaxis: {
-      type: "category",
+  xaxis: {
+    type: "category",
+  },
+  tooltip: {
+    enabled: false,
+  },
+  fill: {
+    gradient: {
+      type: "horizontal",
+      shade: "light",
+      gradientToColors: [lightPink],
+      inverseColors: true,
+      opacityFrom: 0.9,
+      opacityTo: 0.9,
     },
-    tooltip: {
-      enabled: false,
-    },
-    fill: {
-      colors: [lightBlue],
-      type: "gradient",
-      gradient: {
-        type: "horizontal",
-        shade: "light",
-        gradientToColors: [lightPink],
-        inverseColors: true,
-        opacityFrom: 0.9,
-        opacityTo: 0.9,
-      },
-    },
-    stroke: {
-      width: 1,
-      colors: ["#00000000"],
-    },
-    plotOptions: {
-      bar: {
-        horizontal: true,
-        barHeight: "90%",
-      },
-    },
-    states: {
-      hover: {
-        filter: {
-          type: "none",
-        },
-      },
+  },
+  stroke: {
+    width: 1,
+    colors: ["#00000000"],
+  },
+  plotOptions: {
+    bar: {
+      horizontal: true,
+      barHeight: "90%",
     },
   },
 }
 
-export function buildSparklineChart(id, series, target) {
-  const options = Object.assign({ series: series }, DEFAULT_OPTIONS, SPARKLINE_TYPE.options)
-  Object.assign(options.chart, { id: id }, SPARKLINE_TYPE.chart)
+function buildOptions(series, options) {
+  const defaults = Object.assign({ series: series }, DEFAULT_OPTIONS)
+  for (const key in options) {
+    if (Object.hasOwn(defaults, key)) {
+      Object.assign(defaults[key], options[key])
+    } else {
+      defaults[key] = options[key]
+    }
+  }
+
+  return defaults
+}
+
+export function buildChart(id, series, target, typeOptions) {
+  const options = buildOptions(series, typeOptions)
+  Object.assign(options.chart, { id: id })
   return new ApexCharts(target, options)
+}
+export function buildSparklineChart(id, series, target) {
+  return buildChart(id, series, target, SPARKLINE_OPTIONS)
 }
 
 export function buildSparkbarChart(id, series, target) {
-  const options = Object.assign({ series: series }, DEFAULT_OPTIONS, SPARKBAR_TYPE.options)
-  Object.assign(options.chart, { id: id }, SPARKBAR_TYPE.chart)
-  return new ApexCharts(target, options)
+  return buildChart(id, series, target, SPARKBAR_OPTIONS)
 }
 
 export function buildDateTimeChart(id, series, target, type, dateRange = [], title = "") {
@@ -226,12 +258,18 @@ export function buildDateTimeChart(id, series, target, type, dateRange = [], tit
   return new ApexCharts(target, options)
 }
 
-export function buildDownloadsSeries(data, dateRange) {
+export function buildDownloadsSeries(data) {
+  const seriesData = data.map((rollup) => {
+    return {
+      x: rollup[0],
+      y: rollup[1],
+    }
+  })
   return [
     {
       name: "Downloads",
-      data: alignDownloadsOnDateRange(data, dateRange),
-      color: lightBlue,
+      data: seriesData,
+      // color: lightBlue,
     },
   ]
 }
@@ -251,26 +289,6 @@ export function buildMultipleEpisodeDownloadsSeries(data, dateRange) {
       data: episodeRollup.rollups,
       color: color,
       zIndex: zIndex,
-    }
-  })
-}
-
-function alignDownloadsOnDateRange(downloads, range) {
-  return range.map((date) => {
-    const match = downloads.filter((r) => {
-      return r[0] === date
-    })
-
-    if (match[0]) {
-      return {
-        x: date,
-        y: match[0][1],
-      }
-    } else {
-      return {
-        x: date,
-        y: null,
-      }
     }
   })
 }

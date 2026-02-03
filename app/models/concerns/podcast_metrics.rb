@@ -52,12 +52,20 @@ module PodcastMetrics
   def feed_downloads
     Rails.cache.fetch("#{metrics_cache_key}/feed_downloads", expires_in: 1.hour) do
       feed_downloads_query(feeds: feeds)
+    end.transform_keys do |k|
+      feed = if k == ""
+        feeds.where(slug: nil).first
+      else
+        feeds.where(slug: k).first
+      end
+
+      feed.label
     end
   end
 
-  def feed_download_rollups
-    sorted_feed_download_rollups(feeds, feed_downloads)
-  end
+  # def feed_download_rollups
+  #   sorted_feed_download_rollups(feeds, feed_downloads)
+  # end
 
   def published_seasons
     episodes.published.dropdate_desc.pluck(:season_number).uniq.compact
@@ -69,11 +77,8 @@ module PodcastMetrics
 
   def season_download_rollups
     published_seasons.map do |season|
-      {
-        season_number: season,
-        downloads: downloads_by_season(season_number: season)[id]
-      }
-    end.sort { |a, b| b[:downloads] <=> a[:downloads] }
+      downloads_by_season(season_number: season).to_a.flatten
+    end
   end
 
   def downloads_by_season(season_number:)
@@ -86,7 +91,7 @@ module PodcastMetrics
         .group(:podcast_id)
         .final
         .sum(:count)
-    end
+    end.transform_keys { |k| "Season #{season_number}" }
   end
 
   def top_countries_downloads
@@ -103,12 +108,8 @@ module PodcastMetrics
 
   def country_download_rollups
     all_countries = top_countries_downloads.merge({other: other_countries_downloads})
-    all_countries.to_a.map do |country|
-      {
-        label: Rollups::DailyGeo.label_for(country[0]),
-        downloads: country[1]
-      }
-    end
+
+    all_countries.transform_keys { |k| Rollups::DailyGeo.label_for(k) }
   end
 
   def top_agents_downloads
@@ -125,11 +126,7 @@ module PodcastMetrics
 
   def agent_download_rollups
     all_agents = top_agents_downloads.merge({other: other_agents_downloads})
-    all_agents.to_a.map do |agent|
-      {
-        label: Rollups::DailyAgent.label_for(agent[0]),
-        downloads: agent[1]
-      }
-    end
+
+    all_agents.transform_keys { |k| Rollups::DailyAgent.label_for(k) }
   end
 end

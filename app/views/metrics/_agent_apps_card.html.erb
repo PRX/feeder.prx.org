@@ -2,14 +2,14 @@
   <ul class="list-group list-group-flush position-relative">
     <% agents.map do |agent| %>
       <li class="list-group-item d-flex justify-content-between">
-        <span class="z-1"><%= agent[:label] %></span>
-        <span class="z-1"><%= number_with_delimiter(agent[:downloads]) || 0 %></span>
+        <span class="z-1"><%= agent[0] %></span>
+        <span class="z-1"><%= number_with_delimiter(agent[1]) || 0 %></span>
       </li>
     <% end %>
     <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"
       data-controller="apex-sparkbar"
       data-apex-sparkbar-id-value="podcast-agents-chart"
-      data-apex-sparkbar-downloads-value="<%= agents.map { |a| a[:downloads] }.to_json %>">
+      data-apex-sparkbar-downloads-value="<%= agents.to_json %>">
       <div data-apex-sparkbar-target="chart"></div>
     </div>
   </ul>

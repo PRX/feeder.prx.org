@@ -14,6 +14,7 @@ export default class extends Controller {
     const series = buildDownloadsSeries(this.downloadsValue, this.dateRangeValue)
 
     const chart = buildDateTimeChart(this.idValue, series, this.chartTarget, BAR_TYPE)
+    // debugger
 
     chart.render()
   }

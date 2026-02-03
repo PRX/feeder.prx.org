@@ -2,14 +2,14 @@
   <ul class="list-group list-group-flush position-relative">
     <% seasons.map do |season| %>
       <li class="list-group-item d-flex justify-content-between">
-        <span class="z-1"><%= "Season #{season[:season_number]}" %></span>
-        <span class="z-1"><%= number_with_delimiter(season[:downloads]) || 0 %></span>
+        <span class="z-1"><%= season[0] %></span>
+        <span class="z-1"><%= number_with_delimiter(season[1]) || 0 %></span>
       </li>
     <% end %>
     <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"
       data-controller="apex-sparkbar"
       data-apex-sparkbar-id-value="podcast-seasons-chart"
-      data-apex-sparkbar-downloads-value="<%= seasons.map { |season| season[:downloads] }.to_json %>">
+      data-apex-sparkbar-downloads-value="<%= seasons.to_json %>">
       <div data-apex-sparkbar-target="chart"></div>
     </div>
   </ul>

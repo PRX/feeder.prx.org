@@ -38,7 +38,6 @@ class PodcastMetricsController < ApplicationController
 
   def monthly_downloads
     render partial: "metrics/monthly_card", locals: {
-      date_range: @podcast.generate_monthly_date_range,
       downloads: @podcast.monthly_downloads.to_a
     }
   end
@@ -46,14 +45,13 @@ class PodcastMetricsController < ApplicationController
   def episodes
     render partial: "metrics/episodes_card", locals: {
       episode_rollups: @podcast.downloads_by_episode,
-      date_range: @podcast.generate_daily_date_range
     }
   end
 
   def feeds
     render partial: "metrics/feeds_card", locals: {
       podcast: @podcast,
-      feeds: @podcast.feed_download_rollups
+      feeds: @podcast.feed_downloads.to_a
     }
   end
 
@@ -65,13 +63,13 @@ class PodcastMetricsController < ApplicationController
 
   def countries
     render partial: "metrics/countries_card", locals: {
-      countries: @podcast.country_download_rollups
+      countries: @podcast.country_download_rollups.to_a
     }
   end
 
   def agents
     render partial: "metrics/agent_apps_card", locals: {
-      agents: @podcast.agent_download_rollups
+      agents: @podcast.agent_download_rollups.to_a
     }
   end
 

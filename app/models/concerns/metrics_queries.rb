@@ -42,19 +42,19 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def sorted_feed_download_rollups(feeds, feed_downloads)
-    feed_rollups = feeds.map do |feed|
-      slug = feed[:slug].nil? ? "" : feed[:slug]
-      downloads = feed_downloads.to_h[slug] || 0
+  # def sorted_feed_download_rollups(feeds, feed_downloads)
+  #   feed_rollups = feeds.map do |feed|
+  #     slug = feed[:slug].nil? ? "" : feed[:slug]
+  #     downloads = feed_downloads.to_h[slug] || 0
 
-      {
-        feed: feed,
-        downloads: downloads
-      }
-    end
+  #     {
+  #       feed: feed,
+  #       downloads: downloads
+  #     }
+  #   end
 
-    feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
-  end
+  #   feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
+  # end
 
   def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
     Rollups::DailyGeo
