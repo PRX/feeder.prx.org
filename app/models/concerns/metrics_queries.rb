@@ -3,6 +3,8 @@ require "active_support/concern"
 module MetricsQueries
   extend ActiveSupport::Concern
 
+  METRICS_CACHE_VERSION = 1
+
   def alltime_downloads_query(model_id: metrics_default_id, column: metrics_default_column)
     Rollups::HourlyDownload
       .where("#{column}": model_id)
@@ -94,12 +96,8 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def metrics_cache_key(version: nil)
-    if version.present?
-      "#{cache_key}/v#{version}/metrics"
-    else
-      "#{cache_key}/metrics"
-    end
+  def metrics_cache_key
+    "#{cache_key}/metrics_v#{METRICS_CACHE_VERSION}"
   end
 
   def generate_date_range(date_start:, date_end:, interval:)
