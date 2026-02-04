@@ -20,7 +20,7 @@ class StreamRecording < ApplicationRecord
   validates :record_days, inclusion: {in: ALL_DAYS}, allow_nil: true
   validates :record_hours, inclusion: {in: ALL_HOURS}, allow_nil: true
   validates :expiration, numericality: {greater_than: 0}, allow_nil: true
-  validates :timezone, inclusion: {in: ActiveSupport::TimeZone.all.map(&:name)}, allow_nil: true
+  validates :time_zone, inclusion: {in: ActiveSupport::TimeZone.all.map(&:name)}, allow_nil: true
 
   after_initialize :set_defaults
   after_save :write_config
@@ -36,8 +36,8 @@ class StreamRecording < ApplicationRecord
     attrs[:callback] = PorterUtils.callback_sqs
 
     # use canonical timezones, rather than activesupport human-readable names
-    if timezone.present?
-      attrs[:timezone] = ActiveSupport::TimeZone[timezone].tzinfo.canonical_identifier
+    if time_zone.present?
+      attrs[:time_zone] = ActiveSupport::TimeZone[time_zone].tzinfo.canonical_identifier
     end
 
     attrs

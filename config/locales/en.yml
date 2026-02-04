@@ -634,7 +634,7 @@ en:
           disabled: Disabled
           enabled: Recording
           paused: Paused
-        timezone: Time Zone
+        time_zone: Time Zone
         url: Stream URL
       transcript:
         formats:
@@ -1437,7 +1437,7 @@ en:
       confirm: Discard unsaved changes?
     form_main:
       help:
-        timezone: Something something what is this
+        time_zone: Something something what is this
         url: Something something what is this
     form_settings:
       help:

@@ -473,7 +473,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_03_173040) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "deleted_at", precision: nil
-    t.string "timezone"
+    t.string "time_zone"
     t.index ["podcast_id"], name: "index_stream_recordings_on_podcast_id"
   end
 

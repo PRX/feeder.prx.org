@@ -21,11 +21,11 @@ describe StreamRecording do
     it "returns canonical timezones" do
       assert_nil stream.config[:timezone]
 
-      stream.timezone = "Mountain Time (US & Canada)"
-      assert_equal "America/Denver", stream.config[:timezone]
+      stream.time_zone = "Mountain Time (US & Canada)"
+      assert_equal "America/Denver", stream.config[:time_zone]
 
-      stream.timezone = "Hawaii"
-      assert_equal "Pacific/Honolulu", stream.config[:timezone]
+      stream.time_zone = "Hawaii"
+      assert_equal "Pacific/Honolulu", stream.config[:time_zone]
     end
   end
 
