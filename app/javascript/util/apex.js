@@ -2,8 +2,10 @@ import ApexCharts from "apexcharts"
 
 const lightBlue = "#aafff5"
 const lightPink = "#e7d4ff"
-const midBlue = "#c9e9fa"
+// const midBlue = "#c9e9fa"
 const orange = "#ff9601"
+const episodeFromColors = [orange].concat(Array(10).fill(lightBlue))
+const episodeToColors = [orange].concat(Array(10).fill(lightPink))
 
 const DEFAULT_OPTIONS = {
   chart: {
@@ -52,6 +54,9 @@ const DEFAULT_OPTIONS = {
     marker: {
       show: true,
     },
+    x: {
+      format: "MMM d",
+    },
   },
   states: {
     hover: {
@@ -62,74 +67,50 @@ const DEFAULT_OPTIONS = {
   },
 }
 
-const DATETIME_OPTIONS = {
-  xaxis: {
-    type: "datetime",
-    labels: {
-      datetimeFormatter: {
-        year: "yyyy",
-        month: "MMM",
-        day: "MMM d",
-        hour: "MMM d, h:mmtt",
-      },
+const BAR_OPTIONS = {
+  chart: {
+    type: "bar",
+    stacked: false,
+    animations: {
+      enabled: true,
+    },
+    sparkline: {
+      enabled: false,
     },
   },
-  yaxis: {
-    show: true,
+  xaxis: {
+    type: "datetime",
+  },
+  fill: {
+    colors: [lightBlue],
+    type: "gradient",
+    opacity: 1,
+    gradient: {
+      type: "vertical",
+      shade: "light",
+      inverseColors: false,
+      gradientToColors: [lightPink],
+    },
   },
   tooltip: {
-    enabled: true,
-    shared: false,
-    hideEmptySeries: true,
+    shared: true,
     intersect: false,
+    enabled: true,
+    hideEmptySeries: true,
     followCursor: true,
     marker: {
       show: true,
     },
+  },
+  yaxis: {
+    show: true,
   },
   dataLabels: {
     enabled: false,
   },
 }
 
-export const BAR_TYPE = {
-  chart: {
-    type: "bar",
-    stacked: false,
-    animations: {
-      enabled: false,
-    },
-    sparkline: {
-      enabled: false,
-    },
-  },
-  options: {
-    fill: {
-      colors: [lightBlue],
-      type: "gradient",
-      opacity: 1,
-      gradient: {
-        type: "vertical",
-        shade: "light",
-        inverseColors: false,
-        gradientToColors: [lightPink],
-      },
-    },
-    tooltip: {
-      shared: true,
-      intersect: false,
-    },
-    states: {
-      hover: {
-        filter: {
-          type: "none",
-        },
-      },
-    },
-  },
-}
-
-export const LINE_TYPE = {
+const EPISODES_OPTIONS = {
   chart: {
     type: "line",
     stacked: false,
@@ -140,25 +121,52 @@ export const LINE_TYPE = {
       enabled: false,
     },
   },
-  options: {
-    stroke: {
-      curve: "smooth",
-      width: 3,
-    },
-    markers: {
-      showNullDataPoints: false,
-    },
+  xaxis: {
+    type: "datetime",
     tooltip: {
-      onDatasetHover: {
-        highlightDataSeries: true,
-      },
-      shared: true,
-      followCursor: true,
+      enabled: false,
     },
+  },
+  stroke: {
+    curve: "smooth",
+    width: 3,
+  },
+  markers: {
+    showNullDataPoints: false,
+  },
+  tooltip: {
+    onDatasetHover: {
+      highlightDataSeries: true,
+    },
+    shared: true,
+    followCursor: true,
+    enabled: true,
+    hideEmptySeries: true,
+    intersect: false,
+    marker: {
+      show: true,
+    },
+  },
+  fill: {
+    colors: episodeFromColors,
+    gradient: {
+      type: "vertical",
+      shade: "light",
+      gradientToColors: episodeToColors,
+      inverseColors: false,
+      opacityFrom: 0.9,
+      opacityTo: 0.9,
+    },
+  },
+  yaxis: {
+    show: true,
+  },
+  dataLabels: {
+    enabled: false,
   },
 }
 
-export const SPARKLINE_OPTIONS = {
+const SPARKLINE_OPTIONS = {
   chart: {
     sparkline: {
       enabled: true,
@@ -176,6 +184,7 @@ export const SPARKLINE_OPTIONS = {
     colors: ["#00000000"],
   },
   fill: {
+    colors: [lightBlue],
     gradient: {
       type: "vertical",
       shade: "light",
@@ -187,7 +196,7 @@ export const SPARKLINE_OPTIONS = {
   },
 }
 
-export const SPARKBAR_OPTIONS = {
+const SPARKBAR_OPTIONS = {
   chart: {
     sparkline: {
       enabled: true,
@@ -204,6 +213,7 @@ export const SPARKBAR_OPTIONS = {
     enabled: false,
   },
   fill: {
+    colors: [lightBlue],
     gradient: {
       type: "horizontal",
       shade: "light",
@@ -238,7 +248,7 @@ function buildOptions(series, options) {
   return defaults
 }
 
-export function buildChart(id, series, target, typeOptions) {
+function buildChart(id, series, target, typeOptions) {
   const options = buildOptions(series, typeOptions)
   Object.assign(options.chart, { id: id })
   return new ApexCharts(target, options)
@@ -251,11 +261,12 @@ export function buildSparkbarChart(id, series, target) {
   return buildChart(id, series, target, SPARKBAR_OPTIONS)
 }
 
-export function buildDateTimeChart(id, series, target, type, dateRange = [], title = "") {
-  const options = Object.assign({ series: series }, DEFAULT_OPTIONS, DATETIME_OPTIONS, type.options)
-  Object.assign(options.chart, { id: id }, type.chart)
-  Object.assign(options.xaxis, { categories: dateRange })
-  return new ApexCharts(target, options)
+export function buildEpisodesChart(id, series, target) {
+  return buildChart(id, series, target, EPISODES_OPTIONS)
+}
+
+export function buildBarChart(id, series, target) {
+  return buildChart(id, series, target, BAR_OPTIONS)
 }
 
 export function buildDownloadsSeries(data) {
@@ -269,18 +280,18 @@ export function buildDownloadsSeries(data) {
     {
       name: "Downloads",
       data: seriesData,
-      // color: lightBlue,
+      color: lightBlue,
     },
   ]
 }
 
-export function buildMultipleEpisodeDownloadsSeries(data, dateRange) {
+export function buildMultipleEpisodeDownloadsSeries(data) {
   return data.map((episodeRollup, i) => {
     let zIndex = 1
     if (i === 0) {
       zIndex = 2
     }
-    let color = midBlue
+    let color = lightBlue
     if (i === 0) {
       color = orange
     }

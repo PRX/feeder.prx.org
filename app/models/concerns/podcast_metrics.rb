@@ -63,10 +63,6 @@ module PodcastMetrics
     end
   end
 
-  # def feed_download_rollups
-  #   sorted_feed_download_rollups(feeds, feed_downloads)
-  # end
-
   def published_seasons
     episodes.published.dropdate_desc.pluck(:season_number).uniq.compact
   end

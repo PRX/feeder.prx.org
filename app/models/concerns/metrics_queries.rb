@@ -100,28 +100,6 @@ module MetricsQueries
     "#{cache_key}/metrics_v#{METRICS_CACHE_VERSION}"
   end
 
-  def generate_date_range(date_start:, date_end:, interval:)
-    start_range = date_start.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
-    end_range = date_end.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
-    range = []
-    i = 0
-
-    while start_range + i.send(:"#{interval.downcase.pluralize}") <= end_range
-      range << start_range + i.send(:"#{interval.downcase.pluralize}")
-      i += 1
-    end
-
-    range
-  end
-
-  def generate_daily_date_range(date_start: metrics_default_date_start, date_end: metrics_default_date_end)
-    generate_date_range(date_start: date_start, date_end: date_end, interval: "DAY")
-  end
-
-  def generate_monthly_date_range(date_start: (Date.utc_today - 11.months), date_end: Date.utc_today)
-    generate_date_range(date_start: date_start.beginning_of_month, date_end: date_end, interval: "MONTH")
-  end
-
   private
 
   def metrics_default_date_start

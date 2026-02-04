@@ -44,7 +44,7 @@ class PodcastMetricsController < ApplicationController
 
   def episodes
     render partial: "metrics/episodes_card", locals: {
-      episode_rollups: @podcast.downloads_by_episode,
+      episode_rollups: @podcast.downloads_by_episode
     }
   end
 

@@ -20,27 +20,26 @@ class EpisodeMetricsController < ApplicationController
 
   def downloads
     render partial: "metrics/downloads_card", locals: {
-      rollups: @episode.daily_downloads.to_a,
-      date_range: @episode.generate_daily_date_range
+      rollups: @episode.daily_downloads.to_a
     }
   end
 
   def feeds
     render partial: "metrics/feeds_card", locals: {
       podcast: @episode.podcast,
-      feeds: @episode.feed_download_rollups
+      feeds: @episode.feed_downloads.to_a
     }
   end
 
   def countries
     render partial: "metrics/countries_card", locals: {
-      countries: @episode.country_download_rollups
+      countries: @episode.country_download_rollups.to_a
     }
   end
 
   def agents
     render partial: "metrics/agent_apps_card", locals: {
-      agents: @episode.agent_download_rollups
+      agents: @episode.agent_download_rollups.to_a
     }
   end
 
