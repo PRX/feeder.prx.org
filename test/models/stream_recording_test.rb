@@ -17,6 +17,18 @@ describe StreamRecording do
     end
   end
 
+  describe "#config" do
+    it "returns canonical timezones" do
+      assert_nil stream.config[:timezone]
+
+      stream.timezone = "Mountain Time (US & Canada)"
+      assert_equal "America/Denver", stream.config[:timezone]
+
+      stream.timezone = "Hawaii"
+      assert_equal "Pacific/Honolulu", stream.config[:timezone]
+    end
+  end
+
   describe "#set_defaults" do
     it "sets unchanged defaults" do
       stream = StreamRecording.new

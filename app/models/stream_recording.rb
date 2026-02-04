@@ -28,18 +28,19 @@ class StreamRecording < ApplicationRecord
   acts_as_paranoid
 
   def self.config
-    active.map do |s|
-      {
-        id: s.id,
-        podcast_id: s.podcast_id,
-        url: s.url,
-        start_date: s.start_date,
-        end_date: s.end_date,
-        record_days: s.record_days,
-        record_hours: s.record_hours,
-        callback: PorterUtils.callback_sqs
-      }
+    active.map(&:config)
+  end
+
+  def config
+    attrs = slice(%i[id podcast_id url start_date end_date record_days record_hours]).compact
+    attrs[:callback] = PorterUtils.callback_sqs
+
+    # use canonical timezones, rather than activesupport human-readable names
+    if timezone.present?
+      attrs[:timezone] = ActiveSupport::TimeZone[timezone].tzinfo.canonical_identifier
     end
+
+    attrs
   end
 
   def set_defaults
