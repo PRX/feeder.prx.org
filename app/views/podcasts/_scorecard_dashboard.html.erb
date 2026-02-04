@@ -1,13 +1,37 @@
 <div class="container">
   <div class="row mb-4 justify-content-between">
     <div class="col ps-0 pe-2">
-      <%= render "metrics/score_card", score: number_with_delimiter(daterange_downloads), label: "downloads", sublabel: "last 28 days" %>
+      <div class="card shadow">
+        <div class="card-body py-2">
+          <%= turbo_frame_tag "score_card_daterange", src: score_card_podcast_metrics_path(podcast_id: podcast.id, score_type: "daterange"), loading: "lazy" do %>
+            <%= render "metrics/loading_card", justify_dir: "start" %>
+          <% end %>
+          <h6 class="text-uppercase m-0">downloads</h6>
+          <h6 class="text-uppercase m-0">last 28 days</h6>
+        </div>
+      </div>
     </div>
     <div class="col px-2">
-      <%= render "metrics/score_card", score: number_with_delimiter(alltime_downloads), label: "downloads", sublabel: "all-time" %>
+      <div class="card shadow">
+        <div class="card-body py-2">
+          <%= turbo_frame_tag "score_card_alltime", src: score_card_podcast_metrics_path(podcast_id: podcast.id, score_type: "alltime"), loading: "lazy" do %>
+            <%= render "metrics/loading_card", justify_dir: "start" %>
+          <% end %>
+          <h6 class="text-uppercase m-0">downloads</h6>
+          <h6 class="text-uppercase m-0">all-time</h6>
+        </div>
+      </div>
     </div>
     <div class="col pe-0 ps-2">
-      <%= render "metrics/score_card", score: number_with_delimiter(episode_count), label: "episodes", sublabel: "all-time" %>
+      <div class="card shadow">
+        <div class="card-body py-2">
+          <%= turbo_frame_tag "score_card_episodes", src: score_card_podcast_metrics_path(podcast_id: podcast.id, score_type: "episodes"), loading: "lazy" do %>
+            <%= render "metrics/loading_card", justify_dir: "start" %>
+          <% end %>
+          <h6 class="text-uppercase m-0">episodes</h6>
+          <h6 class="text-uppercase m-0">all-time</h6>
+        </div>
+      </div>
     </div>
   </div>
   <div class="row">

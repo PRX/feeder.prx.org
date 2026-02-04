@@ -27,6 +27,7 @@ Rails.application.routes.draw do
     resource :metrics, only: [:show], controller: :podcast_metrics do
       get "episode_sparkline"
       get "episode_trend"
+      get "score_card"
       get "monthly_downloads"
       get "feeds"
       get "seasons"
@@ -46,7 +47,9 @@ Rails.application.routes.draw do
     resource :transcripts, only: [:show, :update], controller: :episode_transcripts
     resource :metrics, only: [:show], controller: :episode_metrics do
       get "downloads"
-      get "geos"
+      get "score_card"
+      get "feeds"
+      get "countries"
       get "agents"
     end
   end

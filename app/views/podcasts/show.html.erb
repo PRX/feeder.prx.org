@@ -93,7 +93,7 @@
 
     <% if Rails.env.development? %>
       <div class="col-lg-8 d-flex">
-        <%= render "metrics/scorecard_dashboard", daterange_downloads: @daterange_downloads, alltime_downloads: @alltime_downloads, episode_count: @episode_count, podcast: @podcast %>
+        <%= render "scorecard_dashboard", podcast: @podcast %>
       </div>
     <% else %>
     <% if current_user_app?("metrics") %>

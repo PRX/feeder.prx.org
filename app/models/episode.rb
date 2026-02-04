@@ -14,6 +14,7 @@ class Episode < ApplicationRecord
   include EmbedPlayerHelper
   include AppleIntegration
   include ReleaseEpisodes
+  include EpisodeMetrics
 
   MAX_SEGMENT_COUNT = 10
   MAX_DESCRIPTION_BYTES = 4000
@@ -309,62 +310,5 @@ class Episode < ApplicationRecord
 
   def first_publish_utc_date
     first_rss_published_at.utc_date
-  end
-
-  def previous_trend_episode
-    if feeds.include?(podcast.default_feed) && first_rss_published_at.present?
-      podcast.default_feed.episodes.published.dropdate_desc.where("episodes.first_rss_published_at IS NOT NULL AND episodes.first_rss_published_at < ?", first_rss_published_at).first
-    end
-  end
-
-  def dropday_sum
-    return nil unless first_rss_published_at.present?
-    return nil if (first_rss_published_at + 1.day) > Time.now
-
-    Rails.cache.fetch("#{cache_key_with_version}/dropday_sum", expires_in: 30.days) do
-      lowerbound = first_rss_published_at.beginning_of_hour
-      upperbound = lowerbound + 24.hours
-
-      Rollups::HourlyDownload
-        .where(episode_id: guid, hour: (lowerbound...upperbound))
-        .final
-        .load_async
-        .sum(:count)
-    end
-  end
-
-  def episode_trend
-    return nil unless first_rss_published_at.present? && previous_trend_episode.present?
-    return nil if (first_rss_published_at + 1.day) > Time.now
-
-    current_sum = dropday_sum
-    previous_sum = previous_trend_episode.dropday_sum
-
-    return nil if current_sum <= 0 || previous_sum <= 0
-
-    ((current_sum.to_f / previous_sum.to_f) - 1).round(3)
-  end
-
-  def sparkline_downloads
-    return nil unless publish_hour.present?
-
-    Rails.cache.fetch("#{cache_key_with_version}/sparkline_downloads", expires_in: 28.days) do
-      Rollups::HourlyDownload
-        .where(episode_id: guid, hour: publish_hour..(publish_hour + 1.month))
-        .final
-        .select(:episode_id, "DATE_TRUNC('DAY', hour) AS hour", "SUM(count) AS count")
-        .group(:episode_id, "DATE_TRUNC('DAY', hour) AS hour")
-        .order(Arel.sql("DATE_TRUNC('DAY', hour) ASC"))
-        .load_async
-        .pluck(Arel.sql("DATE_TRUNC('DAY', hour) AS hour"), Arel.sql("SUM(count) AS count"))
-    end
-  end
-
-  def publish_hour
-    if first_rss_published_at.present?
-      first_rss_published_at.beginning_of_hour
-    else
-      published_at.beginning_of_hour
-    end
   end
 end
