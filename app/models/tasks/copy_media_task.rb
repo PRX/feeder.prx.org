@@ -1,6 +1,4 @@
 class Tasks::CopyMediaTask < ::Task
-  before_save :update_media_resource, if: ->(t) { t.status_changed? && t.media_resource }
-
   def media_resource
     owner
   end
@@ -22,7 +20,7 @@ class Tasks::CopyMediaTask < ::Task
     end
   end
 
-  def update_media_resource
+  def update_owner
     media_resource.status = status
 
     if complete?

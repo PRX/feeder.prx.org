@@ -24,11 +24,11 @@ describe Tasks::FixMediaTask do
     end
   end
 
-  describe "#update_media_resource" do
+  describe "#update_owner" do
     it "copies the task status to the media" do
       task.media_resource.stub(:save!, true) do
         task.status = "error"
-        task.update_media_resource
+        task.update_owner
         assert_equal "error", task.media_resource.status
       end
     end

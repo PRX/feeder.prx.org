@@ -1,0 +1,147 @@
+class Tasks::RecordStreamTask < ::Task
+  def stream_resource
+    owner
+  end
+
+  def stream_recording
+    owner&.stream_recording
+  end
+
+  def self.from_job_id(job_id)
+    task = build(job_id: job_id)
+
+    if task.job_id_valid?
+      rec = StreamRecording.with_deleted.find_by_id(task.stream_recording_id)
+      return unless rec
+
+      # find or build resources for this time range
+      params = {start_at: task.start_at, end_at: task.end_at}
+      res = rec.stream_resources.with_deleted.find_by(params) || rec.stream_resources.build(params)
+      task.owner = res
+      task
+    end
+  end
+
+  def with_lock(...)
+    if stream_resource&.persisted?
+      stream_resource.with_lock(...)
+    elsif stream_recording&.persisted?
+      stream_recording.with_lock(...)
+    else
+      super
+    end
+  end
+
+  def update_owner?
+    return false unless super
+
+    # must be the first recording callback
+    return true if stream_resource.original_url.nil?
+
+    # or must be the recording we've already chosen
+    return true if stream_resource.original_url == source_url
+
+    # or must be larger than the existing recording
+    missing_seconds.to_i < stream_resource.missing_seconds.to_i
+  end
+
+  def update_owner
+    stream_resource.status = processing? ? "recording" : status
+
+    if complete?
+      stream_resource.actual_start_at = source_start_at
+      stream_resource.actual_end_at = source_end_at
+      stream_resource.url = nil
+      stream_resource.original_url = source_url
+      stream_resource.status = "processing"
+      stream_resource.file_size = source_size
+      stream_resource.duration = source_duration / 1000.0
+      changed = true
+    end
+
+    stream_resource.save!
+
+    # if we changed originals, cancel other running tasks (copy, fix, etc)
+    if changed
+      stream_resource.tasks.copy_media.update_all(status: :cancelled)
+      stream_resource.tasks.fix_media.update_all(status: :cancelled)
+      stream_resource.copy_media
+    end
+  end
+
+  # parsing data from the job_id
+  # <podcast_id>/<stream_recording_id>/<start_at>/<end_at>/<guid>.<ext>
+  def job_id_parts
+    (job_id || "").split("/")
+  end
+
+  def podcast_id
+    job_id_parts[0].to_i if job_id_parts[0].to_i > 0
+  end
+
+  def stream_recording_id
+    job_id_parts[1].to_i if job_id_parts[1].to_i > 0
+  end
+
+  def start_at
+    job_id_parts[2]&.to_time
+  rescue
+    nil
+  end
+
+  def end_at
+    job_id_parts[3]&.to_time
+  rescue
+    nil
+  end
+
+  def file_name
+    job_id_parts[4]
+  end
+
+  def job_id_valid?
+    podcast_id && stream_recording_id && start_at && end_at && file_name
+  end
+
+  # parsing data from the FFmpeg task result
+  def source_bucket
+    porter_callback_ffmpeg_output.try(:[], :BucketName)
+  end
+
+  def source_key
+    porter_callback_ffmpeg_output.try(:[], :ObjectKey)
+  end
+
+  def source_url
+    "s3://#{source_bucket}/#{source_key}"
+  end
+
+  def source_size
+    porter_callback_ffmpeg_output.try(:[], :Size)
+  end
+
+  def source_duration
+    porter_callback_ffmpeg_output.try(:[], :Duration)
+  end
+
+  def source_start_at
+    start_epoch = porter_callback_ffmpeg_output.try(:[], :StartEpoch)
+    Time.at(start_epoch).utc if start_epoch
+  end
+
+  def source_end_at
+    source_start_at + Rational(source_duration, 1000) if source_start_at && source_duration
+  end
+
+  def missing_seconds
+    return unless start_at && end_at
+
+    if source_start_at.nil? || source_end_at.nil?
+      end_at - start_at
+    else
+      missing_start = [source_start_at - start_at, 0].max
+      missing_end = [end_at - source_end_at, 0].max
+      missing_start + missing_end
+    end
+  end
+end

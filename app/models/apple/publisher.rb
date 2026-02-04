@@ -8,7 +8,6 @@ module Apple
 
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
-    STUCK_EPISODE_TIMEOUT = 1.hour.freeze
 
     def self.from_apple_config(apple_config)
       api = Apple::Api.from_apple_config(apple_config)
@@ -173,7 +172,7 @@ module Apple
 
         if timed_out
           e = Apple::AssetStateTimeoutError.new(final_waiting)
-          Rails.logger.info("Timed out waiting for asset state", {attempts: e.attempts, episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
+          Rails.logger.info("Timed out waiting for asset state", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
           raise e
         end
       end
@@ -204,23 +203,48 @@ module Apple
     end
 
     def raise_delivery_processing_errors(eps)
-      pdfs_with_errors = eps.map(&:podcast_delivery_files).flatten.filter(&:processed_errors?)
-
-      pdfs_with_errors.each do |pdf|
-        Rails.logger.error("Podcast delivery file has processing errors",
+      # Apple returns a DUPLICATE asset_processing_state when the media file in
+      # the podcast_container has already been uploaded. This is not an error -
+      # the file is already present and we can proceed to final delivery
+      # (publish_drafting!). We log it for visibility but don't raise.
+      eps.flat_map(&:podcast_delivery_files).filter(&:processed_duplicate?).each do |pdf|
+        Rails.logger.info("Podcast delivery file has DUPLICATE state, proceeding to delivery",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
            asset_delivery_state: pdf.asset_delivery_state})
       end
 
-      if pdfs_with_errors.any?
-        raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found processing errors on #{pdfs_with_errors.length} podcast delivery files"
-        )
-      end
+      # This will raise and mark for reupload if any validation failures
+      raise_for_processing_state(eps, :processed_validation_failed?)
 
       true
+    end
+
+    def raise_for_processing_state(eps, filter_method)
+      # Derive the state name from the filter method (e.g., :processed_duplicate? -> "DUPLICATE")
+      state_name = filter_method.to_s.delete_prefix("processed_").delete_suffix("?").upcase
+
+      problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
+
+      problem_pdfs.each do |pdf|
+        Rails.logger.error("Podcast delivery file has #{state_name} state, marking for reupload",
+          {episode_id: pdf.episode.id,
+           podcast_delivery_file_id: pdf.id,
+           asset_processing_state: pdf.asset_processing_state,
+           asset_delivery_state: pdf.asset_delivery_state})
+
+        # Mark for reupload so the episode is picked up in the next publish cycle.
+        # This will continue to fail if nothing changes, but gives users/admins
+        # a chance to fix the source media format that Apple rejected.
+        pdf.episode.apple_mark_for_reupload!
+      end
+
+      if problem_pdfs.any?
+        raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
+          "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked for reupload"
+        )
+      end
     end
 
     def wait_for_versioned_source_metadata(eps)
@@ -236,11 +260,29 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
 
-        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs)
-        raise "Timed out waiting for delivery" if waiting_timed_out
+        # Build a lookup from feeder episode ID to Apple::Episode
+        feeder_id_to_apple_ep = eps.index_by(&:feeder_id)
 
-        (waiting_timed_out, _) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs)
-        raise "Timed out waiting for processing" if waiting_timed_out
+        stuck_check = ->(still_waiting_pdfs) {
+          still_waiting_eps = still_waiting_pdfs.map { |pdf| feeder_id_to_apple_ep[pdf.episode_id] }.compact.uniq
+          check_for_stuck_episodes(still_waiting_eps)
+        }
+
+        (waiting_timed_out, still_waiting_pdfs) = Apple::PodcastDeliveryFile.wait_for_delivery(api, pdfs, &stuck_check)
+        if waiting_timed_out
+          still_waiting_eps = still_waiting_pdfs.map { |pdf| feeder_id_to_apple_ep[pdf.episode_id] }.compact.uniq
+          e = Apple::AssetStateTimeoutError.new(still_waiting_eps)
+          Rails.logger.info("Timed out waiting for delivery", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
+          raise e
+        end
+
+        (waiting_timed_out, still_waiting_pdfs) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs, &stuck_check)
+        if waiting_timed_out
+          still_waiting_eps = still_waiting_pdfs.map { |pdf| feeder_id_to_apple_ep[pdf.episode_id] }.compact.uniq
+          e = Apple::AssetStateTimeoutError.new(still_waiting_eps)
+          Rails.logger.info("Timed out waiting for processing", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
+          raise e
+        end
 
         # Get the latest state of the podcast containers
         # which should include synced files
@@ -466,30 +508,28 @@ module Apple
 
     private
 
-    def check_for_stuck_episodes(waiting)
-      return if waiting.empty?
+    def check_for_stuck_episodes(eps)
+      return if eps.empty?
 
-      Rails.logger.info("Waiting for asset state processing", {
-        episode_count: waiting.length,
-        episode_ids: waiting.map(&:feeder_id),
-        audio_asset_states: waiting.map(&:audio_asset_state).uniq
-      })
-
-      # Check for stuck episodes (>1 hour)
-      stuck = waiting.filter { |ep|
+      # Check for stuck episodes (>= STUCK_EPISODE_THRESHOLD)
+      stuck = eps.select { |ep|
         duration = ep.feeder_episode.measure_asset_processing_duration
-        duration && duration > STUCK_EPISODE_TIMEOUT
+        duration && duration >= Apple::STUCK_EPISODE_THRESHOLD
       }
 
       if stuck.any?
+        # Create error before resetting durations
+        error = Apple::AssetStateTimeoutError.new(stuck)
+
         stuck.each do |ep|
-          Rails.logger.error("Episodes stuck for over 1 hour", {
+          Rails.logger.error("Episode stuck in asset processing", {
             episode_id: ep.feeder_id,
             duration: ep.feeder_episode.measure_asset_processing_duration
           })
           ep.apple_mark_for_reupload!
         end
-        raise Apple::AssetStateTimeoutError.new(stuck)
+
+        raise error
       end
     end
 

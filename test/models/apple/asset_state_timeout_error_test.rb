@@ -1,0 +1,192 @@
+require "test_helper"
+
+describe Apple::AssetStateTimeoutError do
+  let(:podcast) { create(:podcast) }
+  let(:public_feed) { podcast.default_feed }
+  let(:private_feed) { create(:private_feed, podcast: podcast) }
+  let(:apple_config) { create(:apple_config, feed: private_feed) }
+  let(:apple_publisher) { apple_config.build_publisher }
+  let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+  let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+  let(:episodes) { [episode1, episode2] }
+
+  describe "#initialize" do
+    it "captures episode information" do
+      error = Apple::AssetStateTimeoutError.new(episodes)
+
+      assert_equal episodes, error.episodes
+      assert_equal [episode1.feeder_id, episode2.feeder_id], error.episode_ids
+    end
+
+    it "calculates max duration from episodes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1800) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, 3600) do
+          error = Apple::AssetStateTimeoutError.new(episodes)
+
+          assert_equal 3600, error.asset_wait_duration
+        end
+      end
+    end
+
+    it "handles nil durations" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
+          error = Apple::AssetStateTimeoutError.new(episodes)
+
+          assert_equal 2000, error.asset_wait_duration
+        end
+      end
+    end
+  end
+
+  describe "#log_level" do
+    it "returns info for duration < 20 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1199) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::AssetStateTimeoutError.new(episodes)
+          assert_equal :info, error.log_level
+        end
+      end
+    end
+
+    it "returns warn for duration >= 20 minutes and < 35 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1200) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::AssetStateTimeoutError.new(episodes)
+          assert_equal :warn, error.log_level
+        end
+      end
+
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2099) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::AssetStateTimeoutError.new(episodes)
+          assert_equal :warn, error.log_level
+        end
+      end
+    end
+
+    it "returns error for duration >= 35 minutes" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2100) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::AssetStateTimeoutError.new(episodes)
+          assert_equal :error, error.log_level
+        end
+      end
+    end
+
+    it "returns info when duration is nil" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::AssetStateTimeoutError.new(episodes)
+          assert_equal :info, error.log_level
+        end
+      end
+    end
+  end
+
+  describe "#log_error!" do
+    it "logs at the appropriate level with context" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::AssetStateTimeoutError.new(episodes)
+
+          logs = capture_json_logs do
+            error.log_error!
+          end
+
+          log = logs.find { |l| l["msg"] == "Apple asset processing timeout" }
+          assert log.present?
+          assert_equal 40, log["level"] # warn level (2000s > 1200s threshold)
+          assert_equal episode1.podcast_id, log["podcast_id"]
+          assert_equal [episode1.feeder_id, episode2.feeder_id], log["episode_ids"]
+          assert_equal 2000, log["asset_wait_duration"]
+        end
+      end
+    end
+
+    it "escalates log level based on duration" do
+      # [duration_seconds, expected_log_level_int]
+      # Bunyan log levels: 30=info, 40=warn, 50=error
+      expected_levels = [
+        [1000, 30],  # info (< 20 min)
+        [1200, 40],  # warn (>= 20 min)
+        [2099, 40],  # warn (< 35 min)
+        [2100, 50]   # error (>= 35 min)
+      ]
+
+      expected_levels.each do |(duration, expected_level)|
+        episode1.feeder_episode.stub(:measure_asset_processing_duration, duration) do
+          episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+            error = Apple::AssetStateTimeoutError.new(episodes)
+
+            logs = capture_json_logs do
+              error.log_error!
+            end
+
+            log = logs.find { |l| l["msg"] == "Apple asset processing timeout" }
+            assert log.present?, "Expected log for #{duration}s duration"
+            assert_equal expected_level, log["level"], "Expected level #{expected_level} for #{duration}s duration"
+          end
+        end
+      end
+    end
+  end
+
+  describe "#podcast_id" do
+    it "returns the podcast id from the first episode" do
+      error = Apple::AssetStateTimeoutError.new(episodes)
+      assert_equal episode1.podcast_id, error.podcast_id
+    end
+
+    it "returns nil for empty episodes" do
+      error = Apple::AssetStateTimeoutError.new([])
+      assert_nil error.podcast_id
+    end
+  end
+
+  describe "#message" do
+    it "includes episode info and duration" do
+      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
+        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+          error = Apple::AssetStateTimeoutError.new(episodes)
+
+          assert_match(/Timeout:/, error.message)
+          assert_match(/Episodes:/, error.message)
+          assert_match(/Asset Wait Duration: 2000/, error.message)
+        end
+      end
+    end
+  end
+
+  describe "duration captured at creation time" do
+    it "retains correct log level after episode is reset" do
+      # Set up episode with stuck duration
+      episode1.feeder_episode.apple_episode_delivery_statuses.destroy_all
+
+      create(:apple_episode_delivery_status,
+        episode: episode1.feeder_episode,
+        asset_processing_attempts: 0,
+        created_at: 1.hour.ago)
+      create(:apple_episode_delivery_status,
+        episode: episode1.feeder_episode,
+        asset_processing_attempts: 5,
+        created_at: 30.minutes.ago)
+
+      episode1.feeder_episode.reload
+
+      # Create error - captures duration at this moment
+      error = Apple::AssetStateTimeoutError.new([episode1])
+
+      # Now reset the episode (simulating what check_for_stuck_episodes does)
+      episode1.feeder_episode.apple_mark_for_reupload!
+
+      captured_duration = error.asset_wait_duration
+
+      # Verify error captured a duration over stuck threshold
+      assert captured_duration >= Apple::STUCK_EPISODE_THRESHOLD, "Duration should be over stuck threshold"
+      assert_equal :error, error.log_level
+
+      assert_match(/Asset Wait Duration: #{captured_duration.to_i}/, error.message)
+    end
+  end
+end

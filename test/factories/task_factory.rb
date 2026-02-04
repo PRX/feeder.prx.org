@@ -38,4 +38,12 @@ FactoryBot.define do
     job_id { "1234" }
     options { {destination: "s3://test-prx-up/podcast/episode/filename.mp3"} }
   end
+
+  factory :record_stream_task, class: Tasks::RecordStreamTask do
+    association :owner, factory: :stream_resource
+    status { :complete }
+    job_id { build(:oxbow_job_id)[:Id] }
+    options { {} }
+    result { build(:oxbow_job_results) }
+  end
 end

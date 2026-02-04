@@ -1,0 +1,32 @@
+<div data-controller="audio-breakpoints waveform-inspector"
+  data-audio-breakpoints-duration-value="<%= duration %>"
+  data-audio-breakpoints-label-prefix-value="<%= t(".prefix") %>"
+  data-audio-breakpoints-ad-breaks-value="<%= defined?(ad_breaks) ? ad_breaks : 0 %>"
+  data-audio-breakpoints-ad-breaks-valid-value="<%= defined?(ad_breaks_valid) ? ad_breaks_valid : true %>"
+  data-audio-breakpoints-segments-value="<%= (defined?(segmentation) ? segmentation : []).to_json %>"
+  data-audio-breakpoints-target="waveformInspector"
+  data-waveform-inspector-playing-class="player--playing"
+  data-waveform-inspector-audio-url-value="<%= url %>"
+  data-waveform-inspector-waveform-url-value="<%= waveform_url %>"
+  data-waveform-inspector-playhead-time-value="0"
+  data-action="
+    resize@window->waveform-inspector#updateLayout
+    audio-breakpoints:markers.update->waveform-inspector#updateMarkers
+    waveform-inspector:marker.update->audio-breakpoints#updateBreakpointMarker
+    audio-breakpoint:marker.update->audio-breakpoints#updateBreakpointMarker
+    audio-breakpoint:marker.update-start-time-to-playhead->waveform-inspector#updateBreakpointMarkerStartTimeToPlayhead
+    audio-breakpoint:marker.update-end-time-to-playhead->waveform-inspector#updateBreakpointMarkerEndTimeToPlayhead
+    audio-breakpoint:play->waveform-inspector#playMarker
+    audio-breakpoint:seekTo->waveform-inspector#seekToMarker
+  ">
+
+  <% if defined?(form) %>
+    <%= form.hidden_field :segmentation, value: (defined?(segmentation) ? segmentation : []).to_json, data: {audio_breakpoints_target: "markersInput", action: "change->unsaved#change"} %>
+  <% end %>
+
+  <%= render "waveform/inspector" %>
+  <%= render "waveform/breakpoints" %>
+  <%= render "waveform/templates/preroll" %>
+  <%= render "waveform/templates/midroll" %>
+  <%= render "waveform/templates/postroll" %>
+</div>

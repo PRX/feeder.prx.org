@@ -20,24 +20,40 @@ class Task < ApplicationRecord
   belongs_to :owner, polymorphic: true, optional: true
 
   before_validation { self.status ||= :started }
+  before_save :update_owner, if: :update_owner?
 
+  scope :analyze_media, -> { where(type: "Tasks::AnalyzeMediaTask") }
   scope :copy_media, -> { where(type: "Tasks::CopyMediaTask") }
   scope :copy_image, -> { where(type: "Tasks::CopyImageTask") }
+  scope :copy_transcript, -> { where(type: "Tasks::CopyTranscript") }
+  scope :fix_media, -> { where(type: "Tasks::FixMediaTask") }
+  scope :record_stream, -> { where(type: "Tasks::RecordStreamTask") }
   scope :bad_audio_duration, -> { where("result ~ '\"DurationDiscrepancy\":([5-9]\\d[1-9]|[6-9]\\d{2}|[1-9]\d{3})'") }
   scope :bad_audio_bytes, -> { where("result ~ '\"UnidentifiedBytes\":[1-9]'") }
   scope :bad_audio_vbr, -> { where("result ~ '\"VariableBitrate\":true'") }
 
   def self.callback(msg)
-    Task.transaction do
-      if (job_id = porter_callback_job_id(msg))
-        status = porter_callback_status(msg)
-        time = porter_callback_time(msg)
-      end
+    job_id = porter_callback_job_id(msg)
+    task = lookup_task(job_id)
 
-      task = where(job_id: job_id).lock(true).first
-      if task && status && time && (task.logged_at.nil? || (time >= task.logged_at))
+    task&.with_lock do
+      status = task.cancelled? ? "cancelled" : porter_callback_status(msg)
+      time = porter_callback_time(msg)
+
+      if status && time && (task.logged_at.nil? || (time >= task.logged_at))
         task.update!(status: status, logged_at: time, result: msg)
       end
+    end
+  end
+
+  def self.lookup_task(job_id)
+    if job_id
+      task = order(id: :desc).find_by_job_id(job_id) || Tasks::RecordStreamTask.from_job_id(job_id)
+      unless task
+        Rails.logger.error("Unrecognized Task job id", job_id: job_id)
+        NewRelic::Agent.notice_error(StandardError.new("Unrecognized Task job id: #{job_id}"))
+      end
+      task
     end
   end
 
@@ -75,5 +91,13 @@ class Task < ApplicationRecord
 
     porter_start!(options)
     save!
+  end
+
+  def update_owner?
+    owner && status_changed? && !cancelled?
+  end
+
+  # before save hook, implemented by child tasks
+  def update_owner
   end
 end

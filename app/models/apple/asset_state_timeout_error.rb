@@ -1,20 +1,15 @@
 module Apple
   class AssetStateTimeoutError < RuntimeError
-    attr_reader :episodes, :attempts, :asset_wait_duration
+    attr_reader :episodes, :asset_wait_duration
 
     def initialize(episodes)
       @episodes = episodes
-      @attempts = episodes.map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }.max
       @asset_wait_duration = episodes.map { |ep| ep.feeder_episode.measure_asset_processing_duration }.compact.max
-      super("Timeout waiting for asset state change: Episodes: #{episode_ids}, Attempts: #{attempts}, Asset Wait Duration: #{asset_wait_duration}")
+      super("Timeout: Episodes: #{episode_ids}, Asset Wait Duration: #{asset_wait_duration}")
     end
 
     def episode_ids
       episodes.map(&:feeder_id)
-    end
-
-    def raise_publishing_error?
-      %i[error fatal].include?(log_level)
     end
 
     def podcast_id
@@ -24,23 +19,23 @@ module Apple
     def log_error!
       Rails.logger.send(
         log_level,
-        message,
+        "Apple asset processing timeout",
         {
           podcast_id: podcast_id,
-          attempts: attempts,
+          episode_ids: episode_ids,
           asset_wait_duration: asset_wait_duration
         }
       )
     end
 
     def log_level
-      case attempts
-      when 0..4
-        :warn
-      when 5
+      duration = asset_wait_duration || 0
+      if duration >= Apple::STUCK_EPISODE_THRESHOLD
         :error
+      elsif duration >= Apple::SLOW_EPISODE_THRESHOLD
+        :warn
       else
-        :fatal
+        :info
       end
     end
   end
