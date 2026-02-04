@@ -190,7 +190,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
       end
 
       # save previous value as a data attribute
-      if has_value_was
+      if has_value_was && !opts[:data].key?(CHANGED_DATA_VALUE_WAS)
         opts[:data][CHANGED_DATA_VALUE_WAS] = value_was.to_s.html_safe
       end
     end

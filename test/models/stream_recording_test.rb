@@ -66,6 +66,9 @@ describe StreamRecording do
 
       stream.record_days = (0..6).to_a.shuffle
       assert_nil stream.record_days
+
+      stream.record_days = ["all"]
+      assert_nil stream.record_days
     end
   end
 
@@ -103,6 +106,9 @@ describe StreamRecording do
       assert_nil stream.record_hours
 
       stream.record_hours = (0..23).to_a.shuffle
+      assert_nil stream.record_hours
+
+      stream.record_hours = ["all"]
       assert_nil stream.record_hours
     end
   end

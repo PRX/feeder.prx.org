@@ -1,9 +1,10 @@
 class StreamRecording < ApplicationRecord
   ALL_DAYS = (0..6).to_a
   ALL_HOURS = (0..23).to_a
+  ALL_PLACEHOLDER = "all"
 
   enum :status, %w[enabled disabled paused].to_enum_h, prefix: true
-  enum :create_as, %w[clips episodes].to_enum_h, prefix: true
+  enum :create_as, %w[clips].to_enum_h, prefix: true
 
   serialize :record_days, coder: JSON
   serialize :record_hours, coder: JSON
@@ -15,7 +16,6 @@ class StreamRecording < ApplicationRecord
   scope :recording, ->(now = Time.now) { active.where("start_date > ?", now) }
 
   validates :url, presence: true, http_url: true, http_head: /audio\/.+/
-  validates :start_date, presence: true, if: :status_enabled?
   validates :end_date, comparison: {greater_than: :start_date}, allow_nil: true, if: :start_date
   validates :record_days, inclusion: {in: ALL_DAYS}, allow_nil: true
   validates :record_hours, inclusion: {in: ALL_HOURS}, allow_nil: true
@@ -52,8 +52,8 @@ class StreamRecording < ApplicationRecord
   end
 
   def record_days=(val)
-    days = Array(val).reject(&:blank?).map(&:to_i).uniq.sort
-    if days.empty? || days == ALL_DAYS
+    days = (Array(val) - ["all"]).reject(&:blank?).map(&:to_i).uniq.sort
+    if days.empty? || days == ALL_DAYS || days.include?(ALL_PLACEHOLDER)
       super(nil)
     else
       super(days)
@@ -61,8 +61,8 @@ class StreamRecording < ApplicationRecord
   end
 
   def record_hours=(val)
-    hours = Array(val).reject(&:blank?).map(&:to_i).uniq.sort
-    if hours.empty? || hours == ALL_HOURS
+    hours = (Array(val) - ["all"]).reject(&:blank?).map(&:to_i).uniq.sort
+    if hours.empty? || hours == ALL_HOURS || hours.include?(ALL_PLACEHOLDER)
       super(nil)
     else
       super(hours)
