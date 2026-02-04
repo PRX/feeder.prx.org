@@ -12,9 +12,6 @@ module Apple
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
 
-    EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
-    EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
-
     # Cleans up old delivery/delivery files iff the episode is to be uploaded
     def self.prepare_for_delivery(episodes)
       episodes.map do |ep|

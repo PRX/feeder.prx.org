@@ -56,7 +56,7 @@ module Integrations
     end
 
     def mark_as_not_delivered!
-      self.class.update_status(integration, episode, delivered: false, uploaded: false)
+      self.class.update_status(integration, episode, delivered: false, uploaded: false, asset_processing_attempts: 0)
     end
   end
 end
