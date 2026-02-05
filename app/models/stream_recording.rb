@@ -50,6 +50,8 @@ class StreamRecording < ApplicationRecord
 
   def write_config
     StreamRecordingConfigJob.perform_later
+  rescue => err
+    raise err unless Rails.env.development?
   end
 
   def record_days=(val)
