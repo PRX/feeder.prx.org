@@ -1,4 +1,6 @@
 class StreamResource < ApplicationRecord
+  include StreamResourceFilters
+
   BUFFER_SECONDS = 10
 
   enum :status, %w[created started recording processing complete invalid short error].to_enum_h, prefix: true

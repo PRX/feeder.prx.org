@@ -41,7 +41,8 @@ en:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
       short: "%m/%d"
-      time_12_hour: "%-l:%M %p"
+      time_12_hour: "%-l:%M%p"
+      time_12_hour_zone: "%-l:%M%p %Z"
       day_and_date: "%A, %m/%d"
   lang_code:
     "ach": Acholi
@@ -613,7 +614,6 @@ en:
         create_as: Create As
         create_as_opts:
           clips: Clips
-          episodes: Episodes
         end_date: Recording End Date
         expiration: Expire Clips After
         expirations:
@@ -1329,6 +1329,13 @@ en:
     update:
       error: Unable to save
       notice: Podcast updated
+  podcast_clips:
+    clip:
+      title: Live Stream Recording
+    filters:
+      title: Clips
+    index:
+      title: "%{title} - Clips"
   podcast_engagement:
     form:
       <<: *form

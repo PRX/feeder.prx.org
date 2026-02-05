@@ -1,0 +1,20 @@
+<div class="card episode-card border-warning">
+  <div class="card-body">
+    <div class="episode-card-info">
+      <p class="episode-card-date">
+        <%= stream_date(clip) %>
+      </p>
+
+      <div class="episode-card-inner">
+        <h2 class="episode-card-title"><%= t(".title") %></h2>
+        <div class="d-flex mt-2 align-items-center">
+          <p class="card-text text-small me-1"><%= stream_hour(clip) %></p>
+
+          <span class="badge rounded-pill bg-info">Full Hour</span>
+        </div>
+
+        <%# link_to "Go to Episode", episode_path(episode.guid), class: "stretched-link", data: {turbo_frame: "_top"} %>
+      </div>
+    </div>
+  </div>
+</div>

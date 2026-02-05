@@ -32,6 +32,7 @@ class Podcast < ApplicationRecord
   has_many :tasks, as: :owner
   has_many :podcast_imports, dependent: :destroy
   has_many :subscribe_links, dependent: :destroy
+  has_many :stream_resources, through: :stream_recording
 
   accepts_nested_attributes_for :default_feed
   accepts_nested_attributes_for :subscribe_links, allow_destroy: true

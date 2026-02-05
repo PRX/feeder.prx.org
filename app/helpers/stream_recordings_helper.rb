@@ -40,4 +40,20 @@ module StreamRecordingsHelper
     opts = StreamRecording::ALL_HOURS.map { |h| [Time.new(2000, 1, 1, h, 0, 0).strftime("%l %p").strip, h] }
     options_for_select(opts.prepend(all), stream.record_hours)
   end
+
+  def stream_date(resource)
+    if resource.start_at
+      tz = resource.stream_recording&.time_zone
+      I18n.l(resource.start_at.in_time_zone(tz), format: :short)
+    end
+  end
+
+  def stream_hour(resource)
+    if resource.start_at && resource.end_at
+      tz = resource.stream_recording&.time_zone
+      start_at = I18n.l(resource.start_at.in_time_zone(tz), format: :time_12_hour)
+      end_at = I18n.l(resource.end_at.in_time_zone(tz), format: :time_12_hour_zone)
+      "#{start_at} - #{end_at}"
+    end
+  end
 end
