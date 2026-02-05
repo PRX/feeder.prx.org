@@ -2,7 +2,6 @@ import ApexCharts from "apexcharts"
 
 const lightBlue = "#aafff5"
 const lightPink = "#e7d4ff"
-// const midBlue = "#c9e9fa"
 const orange = "#ff9601"
 const episodeFromColors = [orange].concat(Array(10).fill(lightBlue))
 const episodeToColors = [orange].concat(Array(10).fill(lightPink))
@@ -64,6 +63,9 @@ const DEFAULT_OPTIONS = {
         type: "none",
       },
     },
+  },
+  theme: {
+    mode: "light",
   },
 }
 
@@ -138,7 +140,7 @@ const EPISODES_OPTIONS = {
     onDatasetHover: {
       highlightDataSeries: true,
     },
-    shared: true,
+    shared: false,
     followCursor: true,
     enabled: true,
     hideEmptySeries: true,
@@ -235,7 +237,20 @@ const SPARKBAR_OPTIONS = {
   },
 }
 
-function buildOptions(series, options) {
+function typeOptions(chartType) {
+  if (chartType === "sparkline") {
+    return SPARKLINE_OPTIONS
+  } else if (chartType === "sparkbar") {
+    return SPARKBAR_OPTIONS
+  } else if (chartType === "episodes") {
+    return EPISODES_OPTIONS
+  } else if (chartType === "bar") {
+    return BAR_OPTIONS
+  }
+}
+
+function buildOptions(series, chartType) {
+  const options = typeOptions(chartType)
   const defaults = Object.assign({ series: series }, DEFAULT_OPTIONS)
   for (const key in options) {
     if (Object.hasOwn(defaults, key)) {
@@ -248,28 +263,24 @@ function buildOptions(series, options) {
   return defaults
 }
 
-function buildChart(id, series, target, typeOptions) {
-  const options = buildOptions(series, typeOptions)
+function setTheme() {
+  let mode = "light"
+  if (document.documentElement.dataset.bsTheme === "dark") {
+    mode = "dark"
+  }
+
+  return mode
+}
+
+export function buildChart(id, series, target, chartType) {
+  const options = buildOptions(series, chartType)
+  const theme = { mode: setTheme() }
+  Object.assign(options.theme, theme)
   Object.assign(options.chart, { id: id })
   return new ApexCharts(target, options)
 }
-export function buildSparklineChart(id, series, target) {
-  return buildChart(id, series, target, SPARKLINE_OPTIONS)
-}
 
-export function buildSparkbarChart(id, series, target) {
-  return buildChart(id, series, target, SPARKBAR_OPTIONS)
-}
-
-export function buildEpisodesChart(id, series, target) {
-  return buildChart(id, series, target, EPISODES_OPTIONS)
-}
-
-export function buildBarChart(id, series, target) {
-  return buildChart(id, series, target, BAR_OPTIONS)
-}
-
-export function buildDownloadsSeries(data) {
+function buildDownloadsSeries(data) {
   const seriesData = data.map((rollup) => {
     return {
       x: rollup[0],
@@ -285,7 +296,7 @@ export function buildDownloadsSeries(data) {
   ]
 }
 
-export function buildMultipleEpisodeDownloadsSeries(data) {
+function buildMultipleEpisodeDownloadsSeries(data) {
   return data.map((episodeRollup, i) => {
     let zIndex = 1
     if (i === 0) {
@@ -302,6 +313,14 @@ export function buildMultipleEpisodeDownloadsSeries(data) {
       zIndex: zIndex,
     }
   })
+}
+
+export function buildSeries(type, data) {
+  if (type === "downloads") {
+    return buildDownloadsSeries(data)
+  } else if (type === "episodes") {
+    return buildMultipleEpisodeDownloadsSeries(data)
+  }
 }
 
 export function destroyChart(chartId) {

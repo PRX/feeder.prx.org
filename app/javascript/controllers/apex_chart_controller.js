@@ -1,18 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
-import { buildBarChart, buildDownloadsSeries, destroyChart } from "util/apex"
+import { buildSeries, buildChart, destroyChart } from "util/apex"
 
 export default class extends Controller {
   static values = {
     id: String,
     downloads: Array,
+    seriesType: String,
+    chartType: String,
   }
 
   static targets = ["chart"]
 
   connect() {
-    const series = buildDownloadsSeries(this.downloadsValue)
-
-    const chart = buildBarChart(this.idValue, series, this.chartTarget)
+    const series = buildSeries(this.seriesTypeValue, this.downloadsValue)
+    const chart = buildChart(this.idValue, series, this.chartTarget, this.chartTypeValue)
 
     chart.render()
   }
