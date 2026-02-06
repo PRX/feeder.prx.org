@@ -1,3 +1,20 @@
+.metrics-card-lg {
+  .metrics-card-body {
+    min-height: 275px; // set a height for loading
+  }
+}
+
+.metrics-scorecard {
+  min-height: 108px; // set a height for loading
+}
+
+.metrics-row-sparkline {
+  .metrics-card-body {
+    min-height: 275px; // set a height for loading
+  }
+}
+
+
 .metrics-card-body {
   .metrics-chart {
     height: 275px;

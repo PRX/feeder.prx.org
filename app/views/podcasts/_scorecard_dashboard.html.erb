@@ -1,7 +1,7 @@
 <div class="container">
   <div class="row mb-4 justify-content-between">
     <div class="col ps-0 pe-2">
-      <div class="card shadow">
+      <div class="card metrics-scorecard shadow">
         <div class="card-body py-2">
           <%= turbo_frame_tag "score_card_daterange", src: score_card_podcast_metrics_path(podcast_id: podcast.id, score_type: "daterange"), loading: "lazy" do %>
             <%= render "metrics/loading_card", justify_dir: "start" %>
@@ -12,7 +12,7 @@
       </div>
     </div>
     <div class="col px-2">
-      <div class="card shadow">
+      <div class="card metrics-scorecard shadow">
         <div class="card-body py-2">
           <%= turbo_frame_tag "score_card_alltime", src: score_card_podcast_metrics_path(podcast_id: podcast.id, score_type: "alltime"), loading: "lazy" do %>
             <%= render "metrics/loading_card", justify_dir: "start" %>
@@ -23,7 +23,7 @@
       </div>
     </div>
     <div class="col pe-0 ps-2">
-      <div class="card shadow">
+      <div class="card metrics-scorecard shadow">
         <div class="card-body py-2">
           <%= turbo_frame_tag "score_card_episodes", src: score_card_podcast_metrics_path(podcast_id: podcast.id, score_type: "episodes"), loading: "lazy" do %>
             <%= render "metrics/loading_card", justify_dir: "start" %>
@@ -36,7 +36,7 @@
   </div>
   <div class="row">
     <div class="col ps-0 pe-2">
-      <div class="card shadow">
+      <div class="card metrics-card-lg shadow">
         <div class="col">
           <div class="card-header d-flex justify-content-between align-items-center">
             <span class="h4 fw-bold mb-0"><%= t(".episode_downloads") %></span>
@@ -51,7 +51,7 @@
       </div>
     </div>
     <div class="col pe-0 ps-2">
-      <div class="card shadow">
+      <div class="card metrics-card-lg shadow">
         <div class="col">
           <div class="card-header d-flex justify-content-between align-items-center">
             <span class="h4 fw-bold mb-0"><%= t(".monthly") %></span>
