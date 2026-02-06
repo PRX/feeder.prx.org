@@ -1333,6 +1333,7 @@ en:
     clip:
       full_hour: Full hour
       partial_hour: Partial hour
+      recording: Recording
       title: Live Stream Recording
     filters:
       dates:

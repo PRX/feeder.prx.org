@@ -115,6 +115,10 @@ class StreamResource < ApplicationRecord
     end
   end
 
+  def recording?
+    %w[created started recording processing].include?(status)
+  end
+
   def short?
     missing_seconds > 0
   end

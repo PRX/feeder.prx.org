@@ -10,22 +10,31 @@
         <div class="d-flex mt-2 align-items-center">
           <p class="card-text text-small me-1"><%= stream_hour(clip) %></p>
 
-          <% if clip.short? %>
+          <% if clip.status_complete? && clip.short? %>
             <span class="badge rounded-pill bg-danger"><%= t(".partial_hour") %></span>
-          <% else %>
+          <% elsif clip.status_complete? %>
             <span class="badge rounded-pill bg-info"><%= t(".full_hour") %></span>
+          <% elsif clip.recording? %>
+            <span class="badge rounded-pill bg-danger"><%= t(".recording") %></span>
+          <% else %>
+            <span class="badge rounded-pill bg-danger"><%= clip.status.capitalize %></span>
           <% end %>
         </div>
       </div>
 
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-sm btn-primary"><span class="material-icons" aria-label="hidden">movie_edit</span> Edit</button>
-        <button class="btn btn-sm btn-warning"><span class="material-icons" aria-label="hidden">attach_file</span> Attach to Draft</button>
-        <button class="btn btn-sm btn-success"><span class="material-icons" aria-label="hidden">add</span> Create Episode</button>
-      </div>
+      <% if clip.recording? %>
+        <div class="d-flex align-items-center gap-2">
+          <span class="material-icons text-danger" style="font-size:40px" aria-label="hidden">circle</span>
+        </div>
+      <% end %>
 
-      <%# link_to "Go to Episode", episode_path(episode.guid), class: "stretched-link", data: {turbo_frame: "_top"} %>
-
+      <% if clip.status_complete? %>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-primary"><span class="material-icons" aria-label="hidden">movie_edit</span> Edit</button>
+          <button class="btn btn-sm btn-warning"><span class="material-icons" aria-label="hidden">attach_file</span> Attach to Draft</button>
+          <button class="btn btn-sm btn-success"><span class="material-icons" aria-label="hidden">add</span> Create Episode</button>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>
