@@ -115,6 +115,10 @@ class StreamResource < ApplicationRecord
     end
   end
 
+  def short?
+    missing_seconds > 0
+  end
+
   def segmentation
     return [] unless start_at && end_at && actual_start_at && actual_end_at
 

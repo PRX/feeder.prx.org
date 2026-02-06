@@ -1331,6 +1331,8 @@ en:
       notice: Podcast updated
   podcast_clips:
     clip:
+      full_hour: Full hour
+      partial_hour: Partial hour
       title: Live Stream Recording
     filters:
       dates:

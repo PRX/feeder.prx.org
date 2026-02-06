@@ -10,7 +10,11 @@
         <div class="d-flex mt-2 align-items-center">
           <p class="card-text text-small me-1"><%= stream_hour(clip) %></p>
 
-          <span class="badge rounded-pill bg-info">Full Hour</span>
+          <% if clip.short? %>
+            <span class="badge rounded-pill bg-danger"><%= t(".partial_hour") %></span>
+          <% else %>
+            <span class="badge rounded-pill bg-info"><%= t(".full_hour") %></span>
+          <% end %>
         </div>
       </div>
 

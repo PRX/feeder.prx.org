@@ -51,9 +51,11 @@ module StreamRecordingsHelper
   def stream_hour(resource)
     if resource.start_at && resource.end_at
       tz = resource.stream_recording&.time_zone
-      start_at = I18n.l(resource.start_at.in_time_zone(tz), format: :time_12_hour)
-      end_at = I18n.l(resource.end_at.in_time_zone(tz), format: :time_12_hour_zone)
-      "#{start_at} - #{end_at}"
+      start_at = [resource.start_at, resource.actual_start_at].compact.max
+      end_at = [resource.end_at, resource.actual_end_at].compact.min
+      start_str = I18n.l(start_at.in_time_zone(tz), format: :time_12_hour)
+      end_str = I18n.l(end_at.in_time_zone(tz), format: :time_12_hour_zone)
+      "#{start_str} - #{end_str}"
     end
   end
 end
