@@ -283,7 +283,8 @@ input[type="file"] {
   }
 
   // selection colors
-  .ss-values .ss-value {
+  .ss-values .ss-value,
+  .ss-values .ss-max {
     animation: none;
     background-color: $primary;
     margin: 2px 5px 0 0;
