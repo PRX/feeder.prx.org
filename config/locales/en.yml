@@ -1335,6 +1335,7 @@ en:
       partial_hour: Partial hour
       recording: Recording
       title: Live Stream Recording
+      unable: Unable to play file
     filters:
       dates:
         all: All Dates
