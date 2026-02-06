@@ -28,7 +28,7 @@ class StreamResource < ApplicationRecord
   def set_defaults
     set_default(:status, "created")
     set_default(:guid, SecureRandom.uuid)
-    set_default(:url, published_url) unless url.present?
+    set_default(:url, published_url) unless self[:url].present?
   end
 
   def copy_media(force = false)
