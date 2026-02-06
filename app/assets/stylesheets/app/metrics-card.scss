@@ -1,6 +1,11 @@
 .metrics-card-lg {
   .metrics-card-body {
-    min-height: 275px; // set a height for loading
+    min-height: 307px; // set a height for loading
+    width: 100%;
+
+    .prx-loading {
+      height: 275px;
+    }
   }
 }
 
@@ -14,10 +19,10 @@
   }
 }
 
-
 .metrics-card-body {
   .metrics-chart {
     height: 275px;
+    width: 100%;
   }
 
   .list-group-item {
