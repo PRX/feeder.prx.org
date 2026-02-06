@@ -1,4 +1,4 @@
-<div class="card episode-card border-info">
+<div class="card episode-card border-<%= stream_status_class(clip) %>">
   <div class="card-body episode-card-info d-align-items-center justify-content-between">
     <div class="col d-flex align-items-center">
       <p class="episode-card-date">
@@ -10,15 +10,17 @@
         <div class="d-flex mt-2 align-items-center">
           <p class="card-text text-small me-1"><%= stream_hour(clip) %></p>
 
-          <% if clip.status_complete? && clip.short? %>
-            <span class="badge rounded-pill bg-danger"><%= t(".partial_hour") %></span>
-          <% elsif clip.status_complete? %>
-            <span class="badge rounded-pill bg-info"><%= t(".full_hour") %></span>
-          <% elsif clip.recording? %>
-            <span class="badge rounded-pill bg-danger"><%= t(".recording") %></span>
-          <% else %>
-            <span class="badge rounded-pill bg-danger"><%= clip.status.capitalize %></span>
-          <% end %>
+          <span class="badge rounded-pill bg-<%= stream_status_class(clip) %>">
+            <% if clip.status_complete? && clip.short? %>
+              <%= t(".partial_hour") %>
+            <% elsif clip.status_complete? %>
+              <%= t(".full_hour") %>
+            <% elsif clip.recording? %>
+              <%= t(".recording") %>
+            <% else %>
+              <%= clip.status.capitalize %>
+            <% end %>
+          </span>
         </div>
       </div>
     </div>

@@ -41,6 +41,18 @@ module StreamRecordingsHelper
     options_for_select(opts.prepend(all), stream.record_hours)
   end
 
+  def stream_status_class(resource)
+    if resource.status_complete? && resource.short?
+      "warning"
+    elsif resource.status_complete?
+      "info"
+    elsif resource.recording?
+      "danger"
+    else
+      "primary"
+    end
+  end
+
   def stream_date(resource)
     if resource.start_at
       tz = resource.stream_recording&.time_zone || "UTC"
