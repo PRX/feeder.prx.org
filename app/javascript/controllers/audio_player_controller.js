@@ -3,27 +3,47 @@ import convertSecondsToDuration from "util/convertSecondsToDuration"
 
 export default class extends Controller {
   static targets = ["audio", "duration", "progress", "progressBar"]
+  static values = { offset: Number, duration: Number }
 
   connect() {
     this.playing = false
     this.seeking = false
+    this.playbackPercent = 0
     this.originalDuration = this.durationTarget.innerHTML
+
+    this.bindAudioLoaded = this.audioLoaded.bind(this)
+    this.bindGlobalPlayback = this.globalPlayback.bind(this)
     this.bindMouseMove = this.mouseMove.bind(this)
     this.bindMouseUp = this.mouseUp.bind(this)
+
+    this.audioTarget.addEventListener("loadeddata", this.bindAudioLoaded)
+    window.addEventListener("globalPlayback", this.bindGlobalPlayback)
   }
 
   disconnect() {
+    this.audioTarget.removeEventListener("loadeddata", this.bindAudioLoaded)
+    window.removeEventListener("globalPlayback", this.bindGlobalPlayback)
     window.removeEventListener("mousemove", this.bindMouseMove)
     window.removeEventListener("mouseup", this.bindMouseUp)
   }
 
   async play() {
-    this.playing = true
-    if (!this.audioTarget.duration) {
-      this.setProgress(0, 1) // initial render
+    if (this.playing) {
+      return
     }
+
+    this.playing = true
+    if (!this.audioTarget.currentTime) {
+      this.audioTarget.currentTime = this.offsetValue
+    }
+    this.setProgress()
     this.element.classList.add("prx-playing")
     this.element.classList.remove("prx-errored")
+
+    // pause playback of other players
+    const event = new Event("globalPlayback")
+    event.playbackTarget = this.element
+    window.dispatchEvent(event)
 
     try {
       await this.audioTarget.play()
@@ -40,6 +60,16 @@ export default class extends Controller {
     this.durationTarget.innerHTML = this.originalDuration
   }
 
+  audioLoaded() {
+    this.setPlayback()
+  }
+
+  globalPlayback(event) {
+    if (this.playing && event.playbackTarget !== this.element) {
+      this.pause()
+    }
+  }
+
   mouseDown(event) {
     this.seeking = this.progressTarget.getBoundingClientRect()
     this.element.classList.add("prx-seeking")
@@ -53,9 +83,8 @@ export default class extends Controller {
   }
 
   mouseUp(event) {
-    const percent = this.seekProgressBar(event.x)
-    this.audioTarget.currentTime = percent * this.audioTarget.duration
-
+    this.seekProgressBar(event.x)
+    this.setPlayback()
     this.element.classList.remove("prx-seeking")
     window.removeEventListener("mousemove", this.bindMouseMove)
     window.removeEventListener("mouseup", this.bindMouseUp)
@@ -63,15 +92,21 @@ export default class extends Controller {
   }
 
   audioTimeUpdate() {
-    this.setProgress(this.audioTarget.currentTime, this.audioTarget.duration)
+    this.setProgress()
+    if (this.playbackPercent >= 1) {
+      this.audioEnded()
+    }
   }
 
   audioEnded() {
     this.pause()
-    this.setProgress(0, 1)
+    this.setProgress()
   }
 
-  setProgress(currentTime, totalDuration) {
+  setProgress() {
+    const currentTime = (this.audioTarget.currentTime || 0) - this.offsetValue
+    const totalDuration = this.durationValue || this.audioTarget.duration || 1
+
     if (!this.seeking) {
       this.setProgressBar(currentTime / totalDuration)
     }
@@ -87,14 +122,22 @@ export default class extends Controller {
   }
 
   setProgressBar(percent) {
+    this.playbackPercent = percent
     this.progressBarTarget.style.width = `${percent * 100}%`
     this.progressBarTarget.ariaValueNow = `${percent * 100}`
   }
 
   seekProgressBar(x) {
     const offset = Math.min(Math.max(x - this.seeking.left, 0), this.seeking.width)
-    const percent = offset / this.seeking.width
-    this.setProgressBar(percent)
-    return percent
+    this.setProgressBar(offset / this.seeking.width)
+    this.play()
+  }
+
+  setPlayback() {
+    if (this.audioTarget.duration) {
+      const offset = this.offsetValue
+      const duration = this.durationValue || this.audioTarget.duration
+      this.audioTarget.currentTime = offset + this.playbackPercent * duration
+    }
   }
 }

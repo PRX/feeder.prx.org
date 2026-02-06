@@ -131,6 +131,14 @@ class StreamResource < ApplicationRecord
     [[offset_start, offset_end]]
   end
 
+  def offset_start
+    segmentation[0]&.first.to_f
+  end
+
+  def offset_duration
+    segmentation[0]&.last.to_f - offset_start
+  end
+
   private
 
   def stream_resource_path
