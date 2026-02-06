@@ -1,4 +1,6 @@
 class StreamResource < ApplicationRecord
+  include StreamResourceFilters
+
   BUFFER_SECONDS = 10
 
   enum :status, %w[created started recording processing complete invalid short error].to_enum_h, prefix: true
@@ -8,6 +10,8 @@ class StreamResource < ApplicationRecord
   has_one :record_task, -> { order(id: :desc) }, as: :owner, class_name: "Tasks::RecordStreamTask"
   has_one :copy_task, -> { order(id: :desc).where.not(status: :cancelled) }, as: :owner, class_name: "Tasks::CopyMediaTask"
   has_many :tasks, as: :owner
+
+  scope :short, -> { where("actual_start_at > start_at OR actual_end_at < end_at") }
 
   validates :start_at, presence: true
   validates :end_at, presence: true, comparison: {greater_than: :start_at}
@@ -24,7 +28,7 @@ class StreamResource < ApplicationRecord
   def set_defaults
     set_default(:status, "created")
     set_default(:guid, SecureRandom.uuid)
-    set_default(:url, published_url)
+    set_default(:url, published_url) unless self[:url].present?
   end
 
   def copy_media(force = false)
@@ -111,12 +115,28 @@ class StreamResource < ApplicationRecord
     end
   end
 
+  def recording?
+    %w[created started recording processing].include?(status)
+  end
+
+  def short?
+    missing_seconds > 0
+  end
+
   def segmentation
     return [] unless start_at && end_at && actual_start_at && actual_end_at
 
     offset_start = [start_at - actual_start_at, 0].max
     offset_end = offset_start + (end_at - start_at - missing_seconds)
     [[offset_start, offset_end]]
+  end
+
+  def offset_start
+    segmentation[0]&.first.to_f
+  end
+
+  def offset_duration
+    segmentation[0]&.last.to_f - offset_start
   end
 
   private

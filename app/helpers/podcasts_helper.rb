@@ -86,7 +86,7 @@ module PodcastsHelper
     parts = request.path.split("/").select(&:present?)
 
     # don't include podcast#show, or any episodes/feeds paths
-    parts[0] == "podcasts" && parts[2] && parts[2] != "episodes" && parts[2] != "feeds" && parts[2] != "metrics"
+    parts[0] == "podcasts" && parts[2] && %w[clips episodes feeds metrics].exclude?(parts[2])
   end
 
   def podcast_metadata_active?

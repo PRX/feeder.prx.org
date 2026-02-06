@@ -9,6 +9,9 @@
       <% elsif @podcast %>
         <%= active_link_to "Podcast", podcast_path(@podcast), active: :exact, class: "nav-link" %>
         <%= active_link_to "Settings", edit_podcast_path(@podcast), active: podcast_settings_active?, class: "nav-link" %>
+        <% if @podcast.stream_recording %>
+          <%= active_link_to "Clips", podcast_clips_path(@podcast), active: /\/clips/, class: "nav-link" %>
+        <% end %>
         <%= active_link_to "Episodes", podcast_episodes_path(@podcast), active: /\/episodes/, class: "nav-link" %>
         <%= active_link_to "Feeds", podcast_feeds_path(@podcast), active: /\/feeds/, class: "nav-link" %>
       <% end %>

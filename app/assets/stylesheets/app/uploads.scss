@@ -26,7 +26,7 @@
     display: none;
   }
 
-  .form-control .text-danger {
+  .prx-error {
     display: none;
   }
 
@@ -85,8 +85,29 @@
     .prx-scrub {
       display: none;
     }
-    .text-danger {
+    .prx-error {
       display: inherit;
+    }
+  }
+
+  &.prx-swanky {
+    .prx-scrub {
+      visibility: visible;
+
+      .progress {
+        height: 12px;
+        background: $gray-300;
+        border-radius: 1rem;
+      }
+
+      .progress-bar {
+        background: linear-gradient(90deg, $primary, $orange);
+        border-radius: 1rem;
+
+        &:after {
+          display: none;
+        }
+      }
     }
   }
 }
@@ -112,4 +133,10 @@
 .prx-video-player {
   width: 100%;
   height: auto;
+}
+
+@include color-mode(dark) {
+  .prx-audio-player.prx-swanky .progress {
+    background: $gray-700;
+  }
 }
