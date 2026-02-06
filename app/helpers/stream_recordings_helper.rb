@@ -43,7 +43,7 @@ module StreamRecordingsHelper
 
   def stream_date(resource)
     if resource.start_at
-      tz = resource.stream_recording&.time_zone
+      tz = resource.stream_recording&.time_zone || "UTC"
       I18n.l(resource.start_at.in_time_zone(tz), format: :short)
     end
   end

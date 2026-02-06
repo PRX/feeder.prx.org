@@ -1333,8 +1333,24 @@ en:
     clip:
       title: Live Stream Recording
     filters:
+      dates:
+        all: All Dates
+      options:
+        date: Date Options
+        per: Paging Options
+        sort: Sorting Options
+      pages:
+        10: Show 10
+        20: Show 20
+        50: Show 50
+        all: Show All
+      sorts:
+        asc: Oldest
+        desc: Newest
+        options: Sorting Options
       title: Clips
     index:
+      loading: Loading
       title: "%{title} - Clips"
   podcast_engagement:
     form:

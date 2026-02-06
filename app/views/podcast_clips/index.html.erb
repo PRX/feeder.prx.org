@@ -4,7 +4,7 @@
 
 <%= render "filters" %>
 
-<%= turbo_frame_tag "clips" do %>
+<%= turbo_frame_tag "clips-list" do %>
   <section class="container position-relative">
     <div class="col-lg-12">
       <div class="dashboard-list mb-4 shadow">
@@ -14,7 +14,7 @@
 
     <div class="my-4">
       <%= paginate @clips %>
-      <%= page_entries_info @clips %>
+      <%= page_entries_info @clips, entry_name: "clip" %>
     </div>
 
     <div class="loading-overlay prx-show-busy">

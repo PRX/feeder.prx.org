@@ -11,6 +11,8 @@ class StreamResource < ApplicationRecord
   has_one :copy_task, -> { order(id: :desc).where.not(status: :cancelled) }, as: :owner, class_name: "Tasks::CopyMediaTask"
   has_many :tasks, as: :owner
 
+  scope :short, -> { where("actual_start_at > start_at OR actual_end_at < end_at") }
+
   validates :start_at, presence: true
   validates :end_at, presence: true, comparison: {greater_than: :start_at}
   validates :actual_start_at, presence: true, if: :done_recording?
@@ -26,7 +28,7 @@ class StreamResource < ApplicationRecord
   def set_defaults
     set_default(:status, "created")
     set_default(:guid, SecureRandom.uuid)
-    set_default(:url, published_url)
+    set_default(:url, published_url) unless url.present?
   end
 
   def copy_media(force = false)

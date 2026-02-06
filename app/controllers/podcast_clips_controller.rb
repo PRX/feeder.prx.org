@@ -9,8 +9,11 @@ class PodcastClipsController < ApplicationController
     # @resource_counts = @stream.stream_resources.where(start_at: @range).group("start_at::DATE").count
     @clips =
       @podcast.stream_resources
-        .order(start_at: :desc)
+        .filter_by_alias(params[:filter])
+        .filter_by_date(@stream_recording, params[:date])
+        .sort_by_alias(params[:sort])
         .paginate(params[:page], params[:per])
+        .includes(:stream_recording)
   end
 
   def show
@@ -24,5 +27,6 @@ class PodcastClipsController < ApplicationController
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
     authorize @podcast, :show?
+    @stream_recording = @podcast.stream_recording
   end
 end
