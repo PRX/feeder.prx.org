@@ -68,11 +68,15 @@ module EpisodeMetrics
   def feed_downloads
     Rails.cache.fetch("#{metrics_cache_key}/feed_downloads", expires_in: 1.hour) do
       feed_downloads_query(feeds: feeds)
-    end
-  end
+    end.transform_keys do |k|
+      feed = if k == ""
+        feeds.where(slug: nil).first
+      else
+        feeds.where(slug: k).first
+      end
 
-  def feed_download_rollups
-    sorted_feed_download_rollups(feeds, feed_downloads)
+      feed.label
+    end
   end
 
   def top_countries_downloads
@@ -89,12 +93,8 @@ module EpisodeMetrics
 
   def country_download_rollups
     all_countries = top_countries_downloads.merge({other: other_countries_downloads})
-    all_countries.to_a.map do |country|
-      {
-        label: Rollups::DailyGeo.label_for(country[0]),
-        downloads: country[1]
-      }
-    end
+
+    all_countries.transform_keys { |k| Rollups::DailyGeo.label_for(k) }
   end
 
   def top_agents_downloads
@@ -111,11 +111,6 @@ module EpisodeMetrics
 
   def agent_download_rollups
     all_agents = top_agents_downloads.merge({other: other_agents_downloads})
-    all_agents.to_a.map do |agent|
-      {
-        label: Rollups::DailyAgent.label_for(agent[0]),
-        downloads: agent[1]
-      }
-    end
+    all_agents.transform_keys { |k| Rollups::DailyAgent.label_for(k) }
   end
 end

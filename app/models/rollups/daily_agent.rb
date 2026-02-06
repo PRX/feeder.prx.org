@@ -30,7 +30,7 @@ class Rollups::DailyAgent < ActiveRecord::Base
   end
 
   def self.unknown_code(code)
-    if code.blank? || code == 0
+    if code != :other
       "Unknown"
     else
       "Other"

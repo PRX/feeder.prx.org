@@ -40,8 +40,8 @@
             <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
           <% end %>
         </div>
-        <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column">
           <% if Rails.env.development? %>
+        <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column metrics-card-body">
             <% if @recently_published_episodes.present? %>
               <% @recently_published_episodes.each do |episode| %>
                 <%= render "metrics/episode_card", podcast: @podcast, episode: episode %>
@@ -49,7 +49,9 @@
             <% else %>
               <p class="text-muted text-center m-2"><%= t(".no_published") %></p>
             <% end %>
+            </div>
           <% else %>
+          <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column">
             <% if @recently_published.present? %>
               <% @recently_published.each do |ep| %>
                 <div class="episode-card-info inside-card flex-fill px-3 py-2">
@@ -62,8 +64,9 @@
             <% else %>
               <p class="text-muted text-center m-2"><%= t(".no_published") %></p>
             <% end %>
+          </div>
           <% end %>
-        </div>
+
       </div>
 
       <div class="card shadow border-0 flex-fill">
@@ -143,10 +146,10 @@
       <div class="col-lg-6 d-grid mb-4">
         <div class="card shadow">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <span class="h4 fw-bold mb-0">Downloads by Feed</span>
-            <span>Last 28 Days</span>
+            <span class="h4 fw-bold mb-0"><%= t(".by_feed") %></span>
+            <span><%= t(".last_28") %></span>
           </div>
-          <div class="card-body p-0">
+          <div class="card-body p-0 metrics-card-body">
             <%= turbo_frame_tag "feeds", src: feeds_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy", target: "_top" do %>
               <%= render "metrics/loading_card" %>
             <% end %>
@@ -158,10 +161,10 @@
       <div class="col-lg-6 d-grid mb-4">
         <div class="card shadow">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <span class="h4 fw-bold mb-0">Downloads by Season</span>
-            <span>All-Time</span>
+            <span class="h4 fw-bold mb-0"><%= t(".by_season") %></span>
+            <span><%= t(".alltime") %></span>
           </div>
-          <div class="card-body p-0">
+          <div class="card-body p-0 metrics-card-body">
             <%= turbo_frame_tag "seasons", src: seasons_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
               <%= render "metrics/loading_card" %>
             <% end %>
@@ -172,10 +175,10 @@
     <div class="col-lg-6 d-grid mb-4">
       <div class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="h4 fw-bold mb-0">Downloads by Country</span>
-          <span>Last 28 Days</span>
+          <span class="h4 fw-bold mb-0"><%= t(".by_country") %></span>
+          <span><%= t(".last_28") %></span>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body p-0 metrics-card-body">
           <%= turbo_frame_tag "countries", src: countries_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
             <%= render "metrics/loading_card" %>
           <% end %>
@@ -185,11 +188,11 @@
     <div class="col-lg-6 d-grid mb-4">
       <div class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="h4 fw-bold mb-0">Downloads by App</span>
-          <span>Last 28 Days</span>
+          <span class="h4 fw-bold mb-0"><%= t(".by_app") %></span>
+          <span><%= t(".last_28") %></span>
         </div>
-        <div class="card-body p-0">
-          <%= turbo_frame_tag "agent_apps", src: agents_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
+        <div class="card-body p-0 metrics-card-body">
+          <%= turbo_frame_tag "agents", src: agents_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
             <%= render "metrics/loading_card" %>
           <% end %>
         </div>

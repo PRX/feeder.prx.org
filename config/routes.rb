@@ -32,9 +32,7 @@ Rails.application.routes.draw do
       get "feeds"
       get "seasons"
       get "countries"
-      get "uniques"
       get "episodes"
-      get "dropdays"
       get "agents"
     end
   end

@@ -1,8 +1,10 @@
 <%= turbo_frame_tag "episode_sparkline_#{episode.guid}" do %>
   <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"
-    data-controller="apex-sparkline"
-    data-apex-sparkline-id-value="<%= episode.guid %>"
-    data-apex-sparkline-downloads-value="<%= downloads.to_json %>">
-    <div data-apex-sparkline-target="chart"></div>
+    data-controller="apex-chart"
+    data-apex-chart-id-value="<%= episode.guid %>-sparkline"
+    data-apex-chart-downloads-value="<%= downloads.to_json %>"
+    data-apex-chart-series-type-value="downloads"
+    data-apex-chart-chart-type-value="sparkline">
+    <div data-apex-chart-target="chart"></div>
   </div>
 <% end %>
