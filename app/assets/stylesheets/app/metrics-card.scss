@@ -1,11 +1,19 @@
 .metrics-card-body {
-  height: 275px;
-
   .metrics-chart {
-    height: 100%;
+    height: 275px;
   }
 
-  // .metrics-table {
-  //   height: 100%;
-  // }
+  .list-group-item {
+    --bs-list-group-item-padding-y: 0;
+    --bs-list-group-border-width: 0;
+  }
+
+  .episode-card-info {
+    border-bottom: 0;
+
+    .episode-card-text {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
 }
