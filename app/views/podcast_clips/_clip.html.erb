@@ -36,12 +36,12 @@
            data-controller="audio-player"
            data-audio-player-offset-value="<%= clip.offset_start %>"
            data-audio-player-duration-value="<%= clip.offset_duration %>">
-        <button type="button" class="btn prx-play m-0 px-0" data-action="audio-player#play">
-          <span class="material-icons text-primary">play_arrow</span>
+        <button type="button" class="btn prx-play m-0 p-1" data-action="audio-player#play">
+          <span class="material-icons text-primary fs-1">play_arrow</span>
         </button>
 
-        <button type="button" class="btn prx-pause m-0 px-0" data-action="audio-player#pause">
-          <span class="material-icons text-primary">pause</span>
+        <button type="button" class="btn prx-pause m-0 p-1" data-action="audio-player#pause">
+          <span class="material-icons text-primary fs-1">pause</span>
         </button>
 
         <small class="prx-error text-danger me-2"><%= t(".unable") %></small>
@@ -55,6 +55,10 @@
         <audio class="" src="<%= clip.url %>" preload="metadata" data-audio-player-target="audio" data-action="timeupdate->audio-player#audioTimeUpdate ended->audio-player#audioEnded"></audio>
 
         <small class="text-muted" data-audio-player-target="duration">(<%= clip.offset_duration.to_time_summary %>)</small>
+
+        <%= link_to clip.url, class: "btn m-0 p-1" do %>
+          <span class="material-icons text-primary fs-1">download</span>
+        <% end %>
       </div>
 
       <div class="col d-flex align-items-center justify-content-end gap-2">
