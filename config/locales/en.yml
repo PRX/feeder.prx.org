@@ -1331,10 +1331,13 @@ en:
       notice: Podcast updated
   podcast_clips:
     clip:
+      attach: Attach to Draft
+      create: Create Episode
+      edit: Edit
       full_hour: Full hour
       partial_hour: Partial hour
       recording: Recording
-      title: Live Stream Recording
+      title: Recorded Hour
       unable: Unable to play file
     filters:
       dates:
@@ -1353,9 +1356,21 @@ en:
         desc: Newest
         options: Sorting Options
       title: Clips
+    form:
+      <<: *form
+    form_header:
+      <<: *form_status
+      attach: Attach to Draft
+      create: Create Episode
+    form_waveform:
+      title: Edit your clip
     index:
       loading: Loading
       title: "%{title} - Clips"
+    show:
+      title: "Clip - %{time}"
+    tabs:
+      edit: Clip Editor
   podcast_engagement:
     form:
       <<: *form

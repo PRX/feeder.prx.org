@@ -1,5 +1,6 @@
 class PodcastClipsController < ApplicationController
   before_action :set_podcast
+  before_action :set_clip, only: %i[show]
 
   def index
     # @end_date = params[:end_date]&.to_date || (Date.utc_today.beginning_of_month + 1.month)
@@ -17,9 +18,6 @@ class PodcastClipsController < ApplicationController
   end
 
   def show
-    # @date = params[:id].to_date
-    # @range = @date...(@date + 1.day)
-    # @resources = @stream.stream_resources.where(start_at: @range).order(start_at: :asc)
   end
 
   private
@@ -28,5 +26,10 @@ class PodcastClipsController < ApplicationController
     @podcast = Podcast.find(params[:podcast_id])
     authorize @podcast, :show?
     @stream_recording = @podcast.stream_recording
+  end
+
+  def set_clip
+    @clip = @podcast.stream_resources.find(params[:id])
+    authorize @clip
   end
 end

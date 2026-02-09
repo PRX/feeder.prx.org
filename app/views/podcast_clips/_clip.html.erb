@@ -6,7 +6,14 @@
       </p>
 
       <div class="episode-card-inner">
-        <h2 class="episode-card-title"><%= t(".title") %></h2>
+        <h2 class="episode-card-title">
+          <% if clip.status_complete? && policy(clip).update? %>
+            <%= link_to t(".title"), podcast_clip_path(podcast, clip) %>
+          <% else %>
+            <%= t(".title") %>
+          <% end %>
+        </h2>
+
         <div class="d-flex mt-2 align-items-center">
           <p class="card-text text-small me-1"><%= stream_hour(clip) %></p>
 
@@ -62,9 +69,26 @@
       </div>
 
       <div class="col d-flex align-items-center justify-content-end gap-2">
-        <button class="btn btn-sm btn-primary"><span class="material-icons" aria-label="hidden">movie_edit</span> <span class="d-none d-md-block">Edit</span></button>
-        <button class="btn btn-sm btn-warning"><span class="material-icons" aria-label="hidden">attach_file</span> <span class="d-none d-md-block">Attach to Draft</span></button>
-        <button class="btn btn-sm btn-success"><span class="material-icons" aria-label="hidden">add</span> <span class="d-none d-md-block">Create Episode</span></button>
+        <% if policy(clip).update? %>
+          <%= link_to podcast_clip_path(podcast, clip), class: "btn btn-sm btn-primary" do %>
+            <span class="material-icons" aria-label="hidden">movie_edit</span>
+            <span class="d-none d-md-block"><%= t(".edit") %></span>
+          <% end %>
+        <% end %>
+
+        <% if policy(clip).attach? %>
+          <button class="btn btn-sm btn-warning">
+            <span class="material-icons" aria-label="hidden">attach_file</span>
+            <span class="d-none d-md-block"><%= t(".attach") %></span>
+          </button>
+          <%= render "attach_modal" %>
+
+          <button class="btn btn-sm btn-success">
+            <span class="material-icons" aria-label="hidden">add</span>
+            <span class="d-none d-md-block"><%= t(".create") %></span>
+          </button>
+          <%= render "create_modal" %>
+        <% end %>
       </div>
     <% end %>
   </div>

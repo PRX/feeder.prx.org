@@ -4,11 +4,11 @@
 
 <%= render "filters" %>
 
-<%= turbo_frame_tag "clips-list" do %>
+<%= turbo_frame_tag "clips-list", target: "_top" do %>
   <section class="container position-relative">
     <div class="col-lg-12">
       <div class="dashboard-list mb-4 shadow">
-        <%= render partial: "podcast_clips/clip", collection: @clips, cached: false %>
+        <%= render partial: "podcast_clips/clip", collection: @clips, locals: {podcast: @podcast}, cached: false %>
       </div>
     </div>
 
