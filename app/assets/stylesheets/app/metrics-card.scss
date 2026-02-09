@@ -6,28 +6,28 @@
     .prx-loading {
       height: 275px;
     }
+    .metrics-chart {
+      height: 275px;
+      width: 100%;
+    }
   }
 }
 
 .metrics-scorecard {
   min-height: 108px; // set a height for loading
-}
 
-.metrics-row-sparkline {
-  .metrics-card-body {
-    min-height: 275px; // set a height for loading
+  .prx-loading {
+    min-height: 42px;
   }
 }
 
-.metrics-card-body {
-  .metrics-chart {
-    height: 275px;
+.metrics-episodes-card {
+  min-height: 108px; // set a height for loading
+  width: 100%;
+
+  .episode-row {
+    min-height: 47px;
     width: 100%;
-  }
-
-  .list-group-item {
-    --bs-list-group-item-padding-y: 0;
-    --bs-list-group-border-width: 0;
   }
 
   .episode-card-info {
@@ -37,5 +37,17 @@
       font-size: 1rem;
       font-weight: 500;
     }
+  }
+}
+
+.metrics-bar-list {
+  .prx-loading {
+    padding: 1rem 0;
+    width: 100%;
+  }
+
+  .list-group-item {
+    --bs-list-group-item-padding-y: 0;
+    --bs-list-group-border-width: 0;
   }
 }

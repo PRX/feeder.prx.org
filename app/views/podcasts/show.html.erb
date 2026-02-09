@@ -32,16 +32,16 @@
 
   <div class="row my-4">
     <div class="d-flex flex-column col-lg-4 mb-4 mb-lg-0">
-      <div class="card shadow border-0 mb-4 flex-fill">
-        <div class="card-header-primary d-flex gap-4 align-items-center">
-          <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".latest_published" %></h2>
-          <%= link_to podcast_episodes_path(@podcast), class: "btn btn-light btn-sm" do %>
-            <%= t ".all_episodes" %>
-            <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
-          <% end %>
-        </div>
-          <% if Rails.env.development? %>
-        <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column metrics-card-body">
+      <% if Rails.env.development? || Rails.env.staging? %>
+        <div class="card shadow border-0 mb-4 flex-fill">
+          <div class="card-header-primary d-flex gap-4 align-items-center">
+            <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".latest_published" %></h2>
+            <%= link_to podcast_episodes_path(@podcast), class: "btn btn-light btn-sm" do %>
+              <%= t ".all_episodes" %>
+              <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
+            <% end %>
+          </div>
+          <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column metrics-episodes-card">
             <% if @recently_published_episodes.present? %>
               <% @recently_published_episodes.each do |episode| %>
                 <%= render "metrics/episode_card", podcast: @podcast, episode: episode %>
@@ -49,8 +49,41 @@
             <% else %>
               <p class="text-muted text-center m-2"><%= t(".no_published") %></p>
             <% end %>
-            </div>
-          <% else %>
+          </div>
+        </div>
+
+        <div class="card shadow border-0 flex-fill">
+          <div class="card-header-warning d-flex align-items-center">
+            <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".next_scheduled" %></h2>
+          </div>
+          <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column metrics-episodes-card">
+            <% if @next_scheduled_episodes.present? %>
+              <% @next_scheduled_episodes.each do |ep| %>
+                <div class="episode-card-info inside-card flex-fill px-3 episode-row">
+                  <p class="episode-card-date">
+                    <% if ep.published_or_released_date.present? %>
+                      <%= local_date(ep.published_or_released_date, format: :short) %>
+                    <% end %>
+                  </p>
+                  <div class="episode-card-inner inside-card">
+                    <h2 class="h5 episode-card-title"><%= link_to ep.title, episode_path(ep) %></h2>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <p class="text-muted text-center m-2"><%= t(".no_scheduled") %></p>
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+        <div class="card shadow border-0 mb-4 flex-fill">
+          <div class="card-header-primary d-flex gap-4 align-items-center">
+            <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".latest_published" %></h2>
+            <%= link_to podcast_episodes_path(@podcast), class: "btn btn-light btn-sm" do %>
+              <%= t ".all_episodes" %>
+              <span class="material-icons" aria-label="hidden">keyboard_arrow_right</span>
+            <% end %>
+          </div>
           <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column">
             <% if @recently_published.present? %>
               <% @recently_published.each do |ep| %>
@@ -65,36 +98,35 @@
               <p class="text-muted text-center m-2"><%= t(".no_published") %></p>
             <% end %>
           </div>
-          <% end %>
-
-      </div>
-
-      <div class="card shadow border-0 flex-fill">
-        <div class="card-header-warning d-flex align-items-center">
-          <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".next_scheduled" %></h2>
         </div>
-        <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column">
-          <% if @next_scheduled.present? %>
-            <% @next_scheduled.each do |ep| %>
-              <div class="episode-card-info inside-card flex-fill px-3 py-2">
-                <p class="episode-card-date">
-                  <% if ep.published_or_released_date.present? %>
-                    <%= local_date(ep.published_or_released_date, format: :short) %>
-                  <% end %>
-                </p>
-                <div class="episode-card-inner inside-card">
-                  <h2 class="h5 episode-card-title"><%= link_to ep.title, episode_path(ep) %></h2>
+
+        <div class="card shadow border-0 flex-fill">
+          <div class="card-header-warning d-flex align-items-center">
+            <h2 class="h4 episode-card-title fw-bold flex-fill mb-0"><%= t ".next_scheduled" %></h2>
+          </div>
+          <div class="card-body episode-card mb-0 h-auto border-start-0 p-0 d-flex flex-column">
+            <% if @next_scheduled.present? %>
+              <% @next_scheduled.each do |ep| %>
+                <div class="episode-card-info inside-card flex-fill px-3 py-2">
+                  <p class="episode-card-date">
+                    <% if ep.published_or_released_date.present? %>
+                      <%= local_date(ep.published_or_released_date, format: :short) %>
+                    <% end %>
+                  </p>
+                  <div class="episode-card-inner inside-card">
+                    <h2 class="h5 episode-card-title"><%= link_to ep.title, episode_path(ep) %></h2>
+                  </div>
                 </div>
-              </div>
+              <% end %>
+            <% else %>
+              <p class="text-muted text-center m-2"><%= t(".no_scheduled") %></p>
             <% end %>
-          <% else %>
-            <p class="text-muted text-center m-2"><%= t(".no_scheduled") %></p>
-          <% end %>
+          </div>
         </div>
-      </div>
+      <% end %>
     </div>
 
-    <% if Rails.env.development? %>
+    <% if Rails.env.development? || Rails.env.staging? %>
       <div class="col-lg-8 d-flex">
         <%= render "scorecard_dashboard", podcast: @podcast %>
       </div>
@@ -140,7 +172,7 @@
     <% end %>
   </div>
 
-  <% if Rails.env.development? %>
+  <% if Rails.env.development? || Rails.env.staging? %>
   <div class="row">
     <% if uses_multiple_feeds(@podcast) %>
       <div class="col-lg-6 d-grid mb-4">
@@ -149,7 +181,7 @@
             <span class="h4 fw-bold mb-0"><%= t(".by_feed") %></span>
             <span><%= t(".last_28") %></span>
           </div>
-          <div class="card-body p-0 metrics-card-body">
+          <div class="card-body p-0 metrics-bar-list">
             <%= turbo_frame_tag "feeds", src: feeds_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy", target: "_top" do %>
               <%= render "metrics/loading_card" %>
             <% end %>
@@ -164,7 +196,7 @@
             <span class="h4 fw-bold mb-0"><%= t(".by_season") %></span>
             <span><%= t(".alltime") %></span>
           </div>
-          <div class="card-body p-0 metrics-card-body">
+          <div class="card-body p-0 metrics-bar-list">
             <%= turbo_frame_tag "seasons", src: seasons_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
               <%= render "metrics/loading_card" %>
             <% end %>
@@ -178,7 +210,7 @@
           <span class="h4 fw-bold mb-0"><%= t(".by_country") %></span>
           <span><%= t(".last_28") %></span>
         </div>
-        <div class="card-body p-0 metrics-card-body">
+        <div class="card-body p-0 metrics-bar-list">
           <%= turbo_frame_tag "countries", src: countries_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
             <%= render "metrics/loading_card" %>
           <% end %>
@@ -191,7 +223,7 @@
           <span class="h4 fw-bold mb-0"><%= t(".by_app") %></span>
           <span><%= t(".last_28") %></span>
         </div>
-        <div class="card-body p-0 metrics-card-body">
+        <div class="card-body p-0 metrics-bar-list">
           <%= turbo_frame_tag "agents", src: agents_podcast_metrics_path(podcast_id: @podcast.id), loading: "lazy" do %>
             <%= render "metrics/loading_card" %>
           <% end %>

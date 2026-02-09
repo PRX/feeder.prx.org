@@ -1,4 +1,4 @@
-<div class="episode-card-info flex-fill px-3 position-relative">
+<div class="episode-card-info flex-fill px-3 position-relative episode-row">
   <p class="episode-card-date z-1 episode-card-text"><%= local_date(episode.published_at, format: :short) %></p>
   <div class="episode-card-inner">
     <h2 class="h5 episode-card-title m-0 z-1 episode-card-text"><%= link_to episode.title, episode_path(episode) %></h2>
