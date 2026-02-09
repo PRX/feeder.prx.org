@@ -5,7 +5,7 @@ module EpisodeHasFeeds
 
   included do
     has_many :episodes_feeds, dependent: :delete_all
-    has_many :feeds, through: :episodes_feeds, after_remove: :touch_on_feed_change
+    has_many :feeds, through: :episodes_feeds, after_add: :touch_on_feed_change, after_remove: :touch_on_feed_change
 
     after_initialize :set_default_feeds, if: :new_record?
     before_validation :set_default_feeds, if: :new_record?
@@ -46,6 +46,6 @@ module EpisodeHasFeeds
   end
 
   def touch_on_feed_change(_feed)
-    touch
+    touch if persisted? && !destroyed?
   end
 end
