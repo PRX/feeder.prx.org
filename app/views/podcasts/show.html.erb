@@ -60,13 +60,13 @@
             <% if @next_scheduled_episodes.present? %>
               <% @next_scheduled_episodes.each do |ep| %>
                 <div class="episode-card-info inside-card flex-fill px-3 episode-row">
-                  <p class="episode-card-date">
+                  <p class="episode-card-date episode-card-text">
                     <% if ep.published_or_released_date.present? %>
                       <%= local_date(ep.published_or_released_date, format: :short) %>
                     <% end %>
                   </p>
                   <div class="episode-card-inner inside-card">
-                    <h2 class="h5 episode-card-title"><%= link_to ep.title, episode_path(ep) %></h2>
+                    <h2 class="h5 episode-card-title episode-card-text"><%= link_to ep.title, episode_path(ep) %></h2>
                   </div>
                 </div>
               <% end %>

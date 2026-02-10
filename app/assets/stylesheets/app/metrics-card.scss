@@ -33,6 +33,10 @@
   .episode-card-info {
     border-bottom: 0;
 
+    .episode-card-date {
+      min-width: 43px;
+    }
+
     .episode-card-text {
       font-size: 1rem;
       font-weight: 500;
