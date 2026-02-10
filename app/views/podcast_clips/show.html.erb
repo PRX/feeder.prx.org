@@ -1,0 +1,5 @@
+<% content_for :title, t(".title", time: stream_date_hour(@clip)) %>
+
+<%= render "tabs" %>
+
+<%= render "form", podcast: @podcast, clip: @clip %>

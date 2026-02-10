@@ -1,0 +1,24 @@
+<h1 class="fw-bold my-0 mb-0 me-4"><%= stream_date_hour(@clip) %></h1>
+
+<button class="btn btn-sm btn-warning">
+  <span class="material-icons" aria-label="hidden">attach_file</span>
+  <span class="d-none d-md-block"><%= t(".attach") %></span>
+</button>
+<%= render "attach_modal" %>
+
+<button class="btn btn-sm btn-success">
+  <span class="material-icons" aria-label="hidden">add</span>
+  <span class="d-none d-md-block"><%= t(".create") %></span>
+</button>
+<%= render "create_modal" %>
+
+<p class="status-text flex-grow-1 text-end">
+  <strong><%= t(".updated_at_hint") %></strong>
+  <br>
+  <%= local_time_ago(clip.updated_at) %>
+</p>
+
+<% if policy(clip).update? %>
+  <% data = {disable_with: t(".updating")} %>
+  <%= form.submit t(".update"), class: "btn btn-primary", data: data %>
+<% end %>

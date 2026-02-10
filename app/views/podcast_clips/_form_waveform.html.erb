@@ -1,0 +1,16 @@
+<div class="card shadow border-0">
+  <div class="card-header card-header-warning d-flex justify-content-between">
+    <h5 class="card-title flex-grow-1"><%= t(".title") %></h5>
+  </div>
+
+  <div class="card-body pt-4 py-0">
+    <% if clip.status_complete? %>
+      <%= render "waveform/waveform",
+            duration: clip.duration,
+            form: form,
+            segmentation: clip.segmentation,
+            url: clip.url,
+            waveform_url: clip.waveform_url %>
+    <% end %>
+  </div>
+</div>

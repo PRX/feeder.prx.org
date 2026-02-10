@@ -2,11 +2,13 @@ import { Controller } from "@hotwired/stimulus"
 import lookupFriendlyTimeZone from "util/lookupFriendlyTimeZone"
 
 export default class extends Controller {
+  static values = { detect: Boolean }
+
   connect() {
     const resolvedZone = Intl.DateTimeFormat().resolvedOptions().timeZone
     const friendlyZone = lookupFriendlyTimeZone(resolvedZone)
 
-    if (friendlyZone || resolvedZone) {
+    if (this.detectValue && (friendlyZone || resolvedZone)) {
       const values = [...this.element.options].map((o) => o.value)
       const hasResolved = values.includes(resolvedZone)
       const hasFriendly = values.includes(friendlyZone)

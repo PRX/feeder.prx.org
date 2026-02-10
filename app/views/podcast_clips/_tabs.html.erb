@@ -1,0 +1,5 @@
+<% content_for :tabs do %>
+  <div class="list-group d-flex col">
+    <%= tab_link_to t(".edit"), podcast_clip_path(@podcast, @clip), active: true %>
+  </div>
+<% end %>

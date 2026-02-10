@@ -1,0 +1,17 @@
+<% data = {controller: "unsaved disable", unsaved_changed_value: clip.changed?, unsaved_confirm_value: t(".confirm")} %>
+<% html = {autocomplete: "off"} %>
+
+<%= form_with(model: clip, url: podcast_clip_path(podcast, clip), method: :put, html: html, data: data) do |form| %>
+  <%# first button in form must be a submit, for enter key to work %>
+  <%= form.submit class: "d-none" %>
+
+  <div class="row my-4 mx-2">
+    <div class="col-12 mb-4 d-flex align-items-center justify-content-end gap-2">
+      <%= render "form_header", clip: clip, form: form %>
+    </div>
+
+    <div class="col-12 mb-4">
+      <%= render "form_waveform", clip: clip, form: form %>
+    </div>
+  </div>
+<% end %>

@@ -154,4 +154,31 @@ describe StreamResource do
       assert_equal 9.minutes, resource.missing_seconds
     end
   end
+
+  describe "#segmentation" do
+    let(:res) { Resource.new }
+
+    it "calculates the actual start/end offsets" do
+      res = StreamResource.new(start_at: "2026-02-06T02:00Z", end_at: "2026-02-06T03:00Z")
+      assert_equal [], res.segmentation
+      assert_equal 0, res.offset_start
+      assert_equal 0, res.offset_duration
+
+      res.actual_start_at = "2026-02-06T01:55Z"
+      res.actual_end_at = "2026-02-06T03:05Z"
+      assert_equal [[300, 3900]], res.segmentation
+      assert_equal 300, res.offset_start
+      assert_equal 3600, res.offset_duration
+
+      res.actual_start_at = "2026-02-06T02:01Z"
+      assert_equal [[0, 3540]], res.segmentation
+      assert_equal 0, res.offset_start
+      assert_equal 3540, res.offset_duration
+
+      res.actual_end_at = "2026-02-06T02:30Z"
+      assert_equal [[0, 1740]], res.segmentation
+      assert_equal 0, res.offset_start
+      assert_equal 1740, res.offset_duration
+    end
+  end
 end
