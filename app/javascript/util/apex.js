@@ -272,12 +272,34 @@ function setTheme() {
   return mode
 }
 
+function setModeColors(options) {
+  let mode = "light"
+  if (document.documentElement.dataset.bsTheme === "dark") {
+    mode = "dark"
+  }
+
+  let background, foreColor
+  if (mode === "dark") {
+    background = "#0000"
+    foreColor = "#f6f7f8"
+  } else {
+    background = "#fff"
+    foreColor = "#373d3f"
+  }
+
+  Object.assign(options.theme, { mode: mode })
+  Object.assign(options.tooltip, { theme: mode })
+  Object.assign(options.chart, { background: background, foreColor: foreColor })
+
+  return options
+}
+
 export function buildChart(id, series, target, chartType) {
   const options = buildOptions(series, chartType)
-  const theme = { mode: setTheme() }
-  Object.assign(options.theme, theme)
   Object.assign(options.chart, { id: id })
-  return new ApexCharts(target, options)
+  const optionsWithMode = setModeColors(options)
+
+  return new ApexCharts(target, optionsWithMode)
 }
 
 function buildDownloadsSeries(data) {
