@@ -98,4 +98,42 @@ class EpisodeHasFeedsTest < ActiveSupport::TestCase
       assert_equal [f3], episode.feeds
     end
   end
+
+  describe "feed membership changes touch episode updated_at" do
+    it "bumps updated_at when adding a feed to an episode" do
+      original_updated_at = episode.updated_at
+      travel 1.minute
+
+      episode.feeds << f2
+      episode.reload
+
+      assert episode.updated_at > original_updated_at,
+        "Expected updated_at to change when adding a feed, but it stayed at #{original_updated_at}"
+    end
+
+    it "bumps updated_at when removing a feed from an episode" do
+      episode.feeds << f2
+      episode.reload
+      original_updated_at = episode.updated_at
+      travel 1.minute
+
+      episode.feeds.delete(f2)
+      episode.reload
+
+      assert episode.updated_at > original_updated_at,
+        "Expected updated_at to change when removing a feed, but it stayed at #{original_updated_at}"
+    end
+
+    it "bumps updated_at when replacing feeds via feed_slugs=" do
+      original_updated_at = episode.updated_at
+      travel 1.minute
+
+      episode.feed_slugs = ["feed2", "feed3"]
+      episode.save!
+      episode.reload
+
+      assert episode.updated_at > original_updated_at,
+        "Expected updated_at to change when replacing feeds via feed_slugs=, but it stayed at #{original_updated_at}"
+    end
+  end
 end
