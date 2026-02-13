@@ -19,10 +19,11 @@ class PodcastsController < ApplicationController
 
     @recently_published_episodes = @podcast.episodes.published.dropdate_desc.limit(4)
     @episode_count = @podcast.episodes.published.length
+    @next_scheduled_episodes = @podcast.episodes.draft_or_scheduled.dropdate_asc.limit(4)
 
     # @recently_published is used for the prod branch
     @recently_published = @recently_published_episodes[0..2]
-    @next_scheduled = @podcast.episodes.draft_or_scheduled.dropdate_asc.limit(3)
+    @next_scheduled = @next_scheduled_episodes[0..2]
 
     @metrics_jwt = prx_jwt
     @metrics_castle_root = castle_root

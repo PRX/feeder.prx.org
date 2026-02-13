@@ -42,20 +42,6 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def sorted_feed_download_rollups(feeds, feed_downloads)
-    feed_rollups = feeds.map do |feed|
-      slug = feed[:slug].nil? ? "" : feed[:slug]
-      downloads = feed_downloads.to_h[slug] || 0
-
-      {
-        feed: feed,
-        downloads: downloads
-      }
-    end
-
-    feed_rollups.sort { |a, b| b[:downloads] <=> a[:downloads] }
-  end
-
   def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
     Rollups::DailyGeo
       .where("#{column}": model_id, day: date_start..date_end)
@@ -98,28 +84,6 @@ module MetricsQueries
 
   def metrics_cache_key
     "#{cache_key}/metrics_v#{METRICS_CACHE_VERSION}"
-  end
-
-  def generate_date_range(date_start:, date_end:, interval:)
-    start_range = date_start.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
-    end_range = date_end.to_datetime.utc.send(:"beginning_of_#{interval.downcase}")
-    range = []
-    i = 0
-
-    while start_range + i.send(:"#{interval.downcase.pluralize}") <= end_range
-      range << start_range + i.send(:"#{interval.downcase.pluralize}")
-      i += 1
-    end
-
-    range
-  end
-
-  def generate_daily_date_range(date_start: metrics_default_date_start, date_end: metrics_default_date_end)
-    generate_date_range(date_start: date_start, date_end: date_end, interval: "DAY")
-  end
-
-  def generate_monthly_date_range(date_start: (Date.utc_today - 11.months), date_end: Date.utc_today)
-    generate_date_range(date_start: date_start.beginning_of_month, date_end: date_end, interval: "MONTH")
   end
 
   private
