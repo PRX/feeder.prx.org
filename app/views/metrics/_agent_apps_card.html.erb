@@ -6,7 +6,7 @@
         <span class="z-1"><%= number_with_delimiter(agent[1]) || 0 %></span>
       </li>
     <% end %>
-    <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"
+    <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0 apex-color-mode"
       data-controller="apex-chart"
       data-apex-chart-id-value="agents-chart"
       data-apex-chart-downloads-value="<%= agents.to_json %>"

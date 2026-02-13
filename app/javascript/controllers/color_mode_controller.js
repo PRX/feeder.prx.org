@@ -20,6 +20,7 @@ const show = (elements, active) => {
 
 export default class extends Controller {
   static targets = ["auto", "light", "dark", "placeholder"]
+  static outlets = ["apex-chart"]
 
   connect() {
     this.setActive()
@@ -53,5 +54,10 @@ export default class extends Controller {
     show(this.lightTargets, mode === "light")
     show(this.darkTargets, mode === "dark")
     show(this.placeholderTargets, false)
+    if (this.hasApexChartOutlet) {
+      this.apexChartOutlets.forEach((chart) => {
+        chart.reconnectChart()
+      })
+    }
   }
 }

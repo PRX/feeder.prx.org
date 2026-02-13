@@ -1,5 +1,5 @@
 <%= turbo_frame_tag "monthly_downloads" do %>
-  <div class="col metrics-chart"
+  <div class="col metrics-chart apex-color-mode"
     data-controller="apex-chart"
     data-apex-chart-id-value="monthly-downloads"
     data-apex-chart-downloads-value="<%= downloads.to_json %>"

@@ -21,4 +21,9 @@ export default class extends Controller {
   disconnect() {
     destroyChart(this.idValue)
   }
+
+  reconnectChart() {
+    this.disconnect()
+    this.connect()
+  }
 }
