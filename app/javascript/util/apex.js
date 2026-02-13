@@ -12,7 +12,7 @@ const DEFAULT_OPTIONS = {
     height: "100%",
     zoom: { enabled: false },
     animations: {
-      enabled: false,
+      enabled: true,
     },
     toolbar: {
       show: false,
@@ -22,6 +22,7 @@ const DEFAULT_OPTIONS = {
     show: false,
   },
   fill: {
+    opacity: 1,
     colors: [lightBlue],
     type: "gradient",
     gradient: {
@@ -48,7 +49,6 @@ const DEFAULT_OPTIONS = {
     enabled: true,
     shared: false,
     hideEmptySeries: true,
-    intersect: false,
     followCursor: true,
     marker: {
       show: true,
@@ -72,36 +72,13 @@ const DEFAULT_OPTIONS = {
 const BAR_OPTIONS = {
   chart: {
     type: "bar",
-    stacked: false,
-    animations: {
-      enabled: true,
-    },
-    sparkline: {
-      enabled: false,
-    },
-  },
-  xaxis: {
-    type: "datetime",
   },
   fill: {
-    colors: [lightBlue],
-    type: "gradient",
-    opacity: 1,
     gradient: {
       type: "vertical",
       shade: "light",
       inverseColors: false,
       gradientToColors: [lightPink],
-    },
-  },
-  tooltip: {
-    shared: true,
-    intersect: false,
-    enabled: true,
-    hideEmptySeries: true,
-    followCursor: true,
-    marker: {
-      show: true,
     },
   },
   yaxis: {
@@ -115,16 +92,11 @@ const BAR_OPTIONS = {
 const EPISODES_OPTIONS = {
   chart: {
     type: "line",
-    stacked: false,
     animations: {
-      enabled: false,
-    },
-    sparkline: {
       enabled: false,
     },
   },
   xaxis: {
-    type: "datetime",
     tooltip: {
       enabled: false,
     },
@@ -140,14 +112,6 @@ const EPISODES_OPTIONS = {
     onDatasetHover: {
       highlightDataSeries: true,
     },
-    shared: false,
-    followCursor: true,
-    enabled: true,
-    hideEmptySeries: true,
-    intersect: false,
-    marker: {
-      show: true,
-    },
   },
   fill: {
     colors: episodeFromColors,
@@ -156,8 +120,6 @@ const EPISODES_OPTIONS = {
       shade: "light",
       gradientToColors: episodeToColors,
       inverseColors: false,
-      opacityFrom: 0.9,
-      opacityTo: 0.9,
     },
   },
   yaxis: {
@@ -185,17 +147,6 @@ const SPARKLINE_OPTIONS = {
     width: 1,
     colors: ["#00000000"],
   },
-  fill: {
-    colors: [lightBlue],
-    gradient: {
-      type: "vertical",
-      shade: "light",
-      gradientToColors: [lightPink],
-      inverseColors: false,
-      opacityFrom: 0.9,
-      opacityTo: 0.9,
-    },
-  },
 }
 
 const SPARKBAR_OPTIONS = {
@@ -215,14 +166,11 @@ const SPARKBAR_OPTIONS = {
     enabled: false,
   },
   fill: {
-    colors: [lightBlue],
     gradient: {
       type: "horizontal",
       shade: "light",
       gradientToColors: [lightPink],
       inverseColors: true,
-      opacityFrom: 0.9,
-      opacityTo: 0.9,
     },
   },
   stroke: {
@@ -249,15 +197,12 @@ function typeOptions(chartType) {
   }
 }
 
-function buildOptions(series, chartType) {
+function buildOptions(chartType) {
   const options = typeOptions(chartType)
-  const defaults = Object.assign({ series: series }, DEFAULT_OPTIONS)
+  const defaults = { ...DEFAULT_OPTIONS }
+
   for (const key in options) {
-    if (Object.hasOwn(defaults, key)) {
-      Object.assign(defaults[key], options[key])
-    } else {
-      defaults[key] = options[key]
-    }
+    defaults[key] = { ...defaults[key], ...options[key] }
   }
 
   return defaults
@@ -273,10 +218,10 @@ function setTheme() {
 }
 
 export function buildChart(id, series, target, chartType) {
-  const options = buildOptions(series, chartType)
-  const theme = { mode: setTheme() }
-  Object.assign(options.theme, theme)
-  Object.assign(options.chart, { id: id })
+  const options = buildOptions(chartType)
+  options.chart = { ...options.chart, id: id }
+  options.series = series
+  options.theme = { ...options.theme, mode: setTheme() }
   return new ApexCharts(target, options)
 }
 
