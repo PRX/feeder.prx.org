@@ -66,17 +66,13 @@ module EpisodeMetrics
   end
 
   def feed_downloads
+    feed_labels = feeds.map do |feed|
+      [feed.slug, feed.label]
+    end.to_h
+
     Rails.cache.fetch("#{metrics_cache_key}/feed_downloads", expires_in: 1.hour) do
       feed_downloads_query(feeds: feeds)
-    end.transform_keys do |k|
-      feed = if k == ""
-        feeds.where(slug: nil).first
-      else
-        feeds.where(slug: k).first
-      end
-
-      feed.label
-    end
+    end.transform_keys { |k| feed_labels[k.presence] }
   end
 
   def top_countries_downloads
