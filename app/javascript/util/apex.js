@@ -87,6 +87,10 @@ const BAR_OPTIONS = {
   dataLabels: {
     enabled: false,
   },
+  tooltip: {
+    shared: true,
+    intersect: false,
+  },
 }
 
 const EPISODES_OPTIONS = {
@@ -171,6 +175,8 @@ const SPARKBAR_OPTIONS = {
       shade: "light",
       gradientToColors: [lightPink],
       inverseColors: true,
+      opacityFrom: 0.9,
+      opacityTo: 0.9,
     },
   },
   stroke: {
@@ -208,16 +214,9 @@ function buildOptions(chartType) {
   return defaults
 }
 
-function setTheme() {
-  let mode = "light"
-  if (document.documentElement.dataset.bsTheme === "dark") {
-    mode = "dark"
-  }
+export function buildChart(id, series, target, chartType) {
+  const options = buildOptions(chartType)
 
-  return mode
-}
-
-function setModeColors(options) {
   let mode = "light"
   if (document.documentElement.dataset.bsTheme === "dark") {
     mode = "dark"
@@ -232,18 +231,11 @@ function setModeColors(options) {
     foreColor = "#373d3f"
   }
 
-  Object.assign(options.theme, { mode: mode })
-  Object.assign(options.tooltip, { theme: mode })
-  Object.assign(options.chart, { background: background, foreColor: foreColor })
-
-  return options
-}
-
-export function buildChart(id, series, target, chartType) {
-  const options = buildOptions(chartType)
-  options.chart = { ...options.chart, id: id }
+  options.chart = { ...options.chart, id: id, background: background, foreColor: foreColor }
   options.series = series
-  options.theme = { ...options.theme, mode: setTheme() }
+  options.theme = { ...options.theme, mode: mode }
+  options.tooltip = { ...options.tooltip, theme: mode }
+
   return new ApexCharts(target, options)
 }
 
