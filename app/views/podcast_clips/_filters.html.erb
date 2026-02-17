@@ -1,0 +1,38 @@
+<div class="container mt-4 mb-2" data-controller="dynamic-form">
+  <div class="row mb-2">
+    <div class="col-12 d-flex align-items-center justify-content-between mb-4">
+      <h1 class="fw-bold my-0 mb-0 me-4 flex-grow-1"><%= t(".title") %></h1>
+
+      <div class="dropdown me-2">
+        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="<%= t(".options.sort") %>">
+          <span class="material-icons" aria-hidden="true" aria-hidden="true">sort</span>
+          <%= t(".sorts.#{StreamResourceFilters.sort_key(params[:sort])}") %>
+        </button>
+        <ul class="dropdown-menu">
+          <% StreamResourceFilters::SORTS.each do |k, v| %><li><%= search_sort_button t(".sorts.#{k}"), v %></li><% end %>
+        </ul>
+      </div>
+
+      <div class="dropdown mx-2">
+        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="<%= t(".options.per") %>">
+          <span class="material-icons" aria-hidden="true" aria-hidden="true">settings</span>
+          <%= t(".pages.#{search_per_page_key}") %>
+        </button>
+        <ul class="dropdown-menu">
+          <% search_per_page_options.each do |k, v| %><li><%= search_per_page_button t(".pages.#{k}"), v %></li><% end %>
+        </ul>
+      </div>
+
+      <div class="dropdown ms-2" data-controller="date-filter" data-date-filter-all-value="<%= t(".dates.all") %>">
+        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" aria-label="<%= t(".options.date") %>" data-date-filter-target="button">
+          <span class="material-icons" aria-hidden="true" aria-hidden="true">calendar_month</span>
+          <span data-date-filter-target="label"><%= params[:date].presence || t(".dates.all") %></span>
+        </button>
+        <input type="hidden" name="date" value="<%= params[:date] %>" data-date-filter-target="input" data-action="change->dynamic-form#change">
+      </div>
+    </div>
+  </div>
+
+  <%# clicking hidden reloads the episodes turbo-frame %>
+  <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link" data-turbo-action="replace" data-turbo-frame="clips-list"></a>
+</div>

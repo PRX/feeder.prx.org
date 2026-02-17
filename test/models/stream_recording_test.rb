@@ -17,6 +17,18 @@ describe StreamRecording do
     end
   end
 
+  describe "#config" do
+    it "returns canonical timezones" do
+      assert_nil stream.config[:timezone]
+
+      stream.time_zone = "Mountain Time (US & Canada)"
+      assert_equal "America/Denver", stream.config[:time_zone]
+
+      stream.time_zone = "Hawaii"
+      assert_equal "Pacific/Honolulu", stream.config[:time_zone]
+    end
+  end
+
   describe "#set_defaults" do
     it "sets unchanged defaults" do
       stream = StreamRecording.new
@@ -66,6 +78,9 @@ describe StreamRecording do
 
       stream.record_days = (0..6).to_a.shuffle
       assert_nil stream.record_days
+
+      stream.record_days = ["all"]
+      assert_nil stream.record_days
     end
   end
 
@@ -103,6 +118,9 @@ describe StreamRecording do
       assert_nil stream.record_hours
 
       stream.record_hours = (0..23).to_a.shuffle
+      assert_nil stream.record_hours
+
+      stream.record_hours = ["all"]
       assert_nil stream.record_hours
     end
   end

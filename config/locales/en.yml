@@ -41,7 +41,8 @@ en:
     formats:
       default: "%-m/%-d/%Y %-I:%M %p %Z"
       short: "%m/%d"
-      time_12_hour: "%-l:%M %p"
+      time_12_hour: "%-l:%M%p"
+      time_12_hour_zone: "%-l:%M%p %Z"
       day_and_date: "%A, %m/%d"
   lang_code:
     "ach": Acholi
@@ -613,7 +614,6 @@ en:
         create_as: Create As
         create_as_opts:
           clips: Clips
-          episodes: Episodes
         end_date: Recording End Date
         expiration: Expire Clips After
         expirations:
@@ -634,6 +634,7 @@ en:
           disabled: Disabled
           enabled: Recording
           paused: Paused
+        time_zone: Time Zone
         url: Stream URL
       transcript:
         formats:
@@ -1349,6 +1350,48 @@ en:
     update:
       error: Unable to save
       notice: Podcast updated
+  podcast_clips:
+    clip:
+      attach: Attach to Draft
+      create: Create Episode
+      edit: Edit
+      full_hour: Full hour
+      partial_hour: Partial hour
+      recording: Recording
+      title: Recorded Hour
+      unable: Unable to play file
+    filters:
+      dates:
+        all: All Dates
+      options:
+        date: Date Options
+        per: Paging Options
+        sort: Sorting Options
+      pages:
+        10: Show 10
+        20: Show 20
+        50: Show 50
+        all: Show All
+      sorts:
+        asc: Oldest
+        desc: Newest
+        options: Sorting Options
+      title: Clips
+    form:
+      <<: *form
+    form_header:
+      <<: *form_status
+      attach: Attach to Draft
+      create: Create Episode
+    form_waveform:
+      title: Edit your clip
+    index:
+      loading: Loading
+      title: "%{title} - Clips"
+    show:
+      title: "Clip - %{time}"
+    tabs:
+      edit: Clip Editor
   podcast_engagement:
     form:
       <<: *form
@@ -1457,6 +1500,7 @@ en:
       confirm: Discard unsaved changes?
     form_main:
       help:
+        time_zone: Something something what is this
         url: Something something what is this
     form_settings:
       help:

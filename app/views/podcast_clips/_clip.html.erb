@@ -1,0 +1,95 @@
+<div class="card episode-card border-<%= stream_status_class(clip) %>">
+  <div class="card-body episode-card-info d-align-items-center justify-content-between">
+    <div class="col d-flex align-items-center">
+      <p class="episode-card-date">
+        <%= stream_date(clip) %>
+      </p>
+
+      <div class="episode-card-inner">
+        <h2 class="episode-card-title">
+          <% if clip.status_complete? && policy(clip).update? %>
+            <%= link_to t(".title"), podcast_clip_path(podcast, clip) %>
+          <% else %>
+            <%= t(".title") %>
+          <% end %>
+        </h2>
+
+        <div class="d-flex mt-2 align-items-center">
+          <p class="card-text text-small me-1"><%= stream_hour(clip) %></p>
+
+          <span class="badge rounded-pill bg-<%= stream_status_class(clip) %>">
+            <% if clip.status_complete? && clip.short? %>
+              <%= t(".partial_hour") %>
+            <% elsif clip.status_complete? %>
+              <%= t(".full_hour") %>
+            <% elsif clip.recording? %>
+              <%= t(".recording") %>
+            <% else %>
+              <%= clip.status.capitalize %>
+            <% end %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <% if clip.recording? %>
+      <div class="col d-flex align-items-center flex-fill justify-content-end gap-2">
+        <span class="material-icons text-danger" aria-label="hidden">circle</span>
+      </div>
+    <% end %>
+
+    <% if clip.status_complete? %>
+      <div class="col prx-audio-player prx-swanky d-flex align-items-center flex-fill mx-4"
+           data-controller="audio-player"
+           data-audio-player-offset-value="<%= clip.offset_start %>"
+           data-audio-player-duration-value="<%= clip.offset_duration %>">
+        <button type="button" class="btn prx-play m-0 p-1" data-action="audio-player#play">
+          <span class="material-icons text-primary fs-1">play_arrow</span>
+        </button>
+
+        <button type="button" class="btn prx-pause m-0 p-1" data-action="audio-player#pause">
+          <span class="material-icons text-primary fs-1">pause</span>
+        </button>
+
+        <small class="prx-error text-danger me-2"><%= t(".unable") %></small>
+
+        <div class="flex-fill d-none d-md-block me-2 py-2 prx-scrub" data-action="mousedown->audio-player#mouseDown" data-audio-player-target="scrubber">
+          <div class="progress" data-audio-player-target="progress">
+            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-audio-player-target="progressBar"></div>
+          </div>
+        </div>
+
+        <audio class="" src="<%= clip.url %>" preload="metadata" data-audio-player-target="audio" data-action="timeupdate->audio-player#audioTimeUpdate ended->audio-player#audioEnded"></audio>
+
+        <small class="text-muted" data-audio-player-target="duration">(<%= clip.offset_duration.to_time_summary %>)</small>
+
+        <%= link_to clip.url, class: "btn m-0 p-1" do %>
+          <span class="material-icons text-primary fs-1">download</span>
+        <% end %>
+      </div>
+
+      <div class="col d-flex align-items-center justify-content-end gap-2">
+        <% if policy(clip).update? %>
+          <%= link_to podcast_clip_path(podcast, clip), class: "btn btn-sm btn-primary" do %>
+            <span class="material-icons" aria-label="hidden">movie_edit</span>
+            <span class="d-none d-md-block"><%= t(".edit") %></span>
+          <% end %>
+        <% end %>
+
+        <% if policy(clip).attach? %>
+          <button class="btn btn-sm btn-warning">
+            <span class="material-icons" aria-label="hidden">attach_file</span>
+            <span class="d-none d-md-block"><%= t(".attach") %></span>
+          </button>
+          <%= render "attach_modal" %>
+
+          <button class="btn btn-sm btn-success">
+            <span class="material-icons" aria-label="hidden">add</span>
+            <span class="d-none d-md-block"><%= t(".create") %></span>
+          </button>
+          <%= render "create_modal" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
