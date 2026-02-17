@@ -757,6 +757,10 @@ en:
       apple: Apple Podcasts
       spotify: Spotify
       title: "%{title} - Overview"
+      feed_label: Downloads by Feed
+      country_label: Downloads by Country
+      agents_label: Downloads by App
+      last_28: Last 28 Days
     edit:
       title: "%{title} - Edit"
     new:
@@ -775,6 +779,11 @@ en:
       error: Unable to save
       media_not_ready: Audio not ready
       notice: Episode updated
+    scorecard_dashboard:
+      downloads: Downloads
+      last_28: Last 28 Days
+      alltime: All-Time
+      episode: Episode Performance
   episode_media:
     enclosure_override:
       enclosure_override_prefix_hint: Enable to add the feed's enclosure prefix to the enclosure override url.
@@ -1205,18 +1214,16 @@ en:
       discard: Discard changes
       title: Warning! Another user has updated this form.
   metrics:
-    dropdays_card:
-      table_header:
-        episodes: 10 Most Recent Episodes
-        published_at: Publish Date
-        downloads: "%{range} %{interval} Downloads"
-        all_time: All-time
     episodes_card:
       table_header:
         episodes: 10 Most Recent Episodes
         published_at: Publish Date
         downloads: Downloads
         all_time: All-time
+    error_card:
+      error_message:
+        database: Unable to connect to the data server
+        general: An error has occured, try reloading
   placements_preview:
     show:
       fetch_error: Error fetching placements - try again later
@@ -1297,12 +1304,26 @@ en:
         desc: Z-A
         episodes: "# of Episodes"
         recent: Recent Activity
+    scorecard_dashboard:
+      downloads: Downloads
+      last_28: Last 28 Days
+      alltime: All-Time
+      episodes: Episodes
+      episode_downloads: Episode Downloads
+      monthly: Monthly Downloads
+      past_year: Past Year
     show:
       all_episodes: All Episodes
+      alltime: All-Time
+      by_app: Downloads by App
+      by_country: Downloads by Country
+      by_feed: Downloads by Feed
+      by_season: Downloads by Season
       create_episode: Create Episode
       engagement_settings: Engagement Settings
       feeds: Feeds
       import: Import
+      last_28: Last 28 Days
       last_30: Last 30 Days
       latest_published: Latest Published
       loading: Loading...

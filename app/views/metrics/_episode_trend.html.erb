@@ -1,7 +1,7 @@
 <%= turbo_frame_tag "episode_trend_#{episode.guid}" do %>
   <% trend = parse_trend(episode_trend) %>
 
-  <p class="d-flex align-items-center <%= trend[:color] if trend.present? %>">
+  <p class="episode-card-text d-flex align-items-center <%= trend[:color] if trend.present? %>">
     <span class="z-1"><%= trend[:percent] if trend.present? %></span>
     <span class="material-icons ms-1 z-1" aria-hidden="true"><%= trend[:direction] if trend.present? %></span>
   </p>
