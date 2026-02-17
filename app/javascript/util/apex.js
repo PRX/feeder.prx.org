@@ -198,8 +198,8 @@ function typeOptions(chartType) {
 }
 
 function buildOptions(chartType) {
-  const options = typeOptions(chartType)
-  const defaults = { ...DEFAULT_OPTIONS }
+  const options = JSON.parse(JSON.stringify(typeOptions(chartType)))
+  const defaults = JSON.parse(JSON.stringify(DEFAULT_OPTIONS))
 
   for (const key in options) {
     defaults[key] = { ...defaults[key], ...options[key] }

@@ -70,7 +70,7 @@ module PodcastMetrics
   def season_download_rollups
     published_seasons.map do |season|
       downloads_by_season(season_number: season).to_a.flatten
-    end
+    end.sort { |a, b| b[1] <=> a[1] }
   end
 
   def downloads_by_season(season_number:)
