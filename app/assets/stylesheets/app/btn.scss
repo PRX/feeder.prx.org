@@ -3,11 +3,13 @@ a.btn:hover {
 }
 
 @include color-mode(dark) {
-  .prx-btn-help {
-    color: $link-color-dark;
+  .card-header-light {
+    .prx-btn-help {
+      color: $link-color-dark;
 
-    &:hover {
-      color: $link-hover-color-dark;
+      &:hover {
+        color: $link-hover-color-dark;
+      }
     }
   }
 }
