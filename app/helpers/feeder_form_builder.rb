@@ -79,7 +79,16 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def time_zone_field(method, options = {})
     add_data(options, :controller, TIME_ZONE_CONTROLLER)
-    select method, IMPORTANT_ZONES, {selected: "UTC"}, options
+
+    # autodetect timezone from browser, only when blank
+    add_data(options, :time_zone_detect_value, blank?(method, options))
+    selected = value(method, options) || "UTC"
+
+    # just in case they selected a non-standard zone
+    zones = IMPORTANT_ZONES.dup
+    zones.prepend(selected) unless zones.include?(selected)
+
+    select method, zones, {selected: selected}, options
   end
 
   def select(method, choices, options = {}, html_options = {}, &block)
@@ -139,16 +148,18 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   private
 
-  def blank?(method, opts)
+  def value(method, opts)
     if opts.key?(:value)
-      opts[:value].blank?
+      opts[:value]
     elsif opts.key?(:selected)
-      opts[:selected].blank?
-    elsif object.present?
-      object.public_send(method).blank?
-    else
-      true
+      opts[:selected]
+    elsif object.present? && object.respond_to?(method)
+      object.public_send(method)
     end
+  end
+
+  def blank?(method, opts)
+    value(method, opts).blank?
   end
 
   def add_blank_class(opts)
@@ -179,7 +190,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
       end
 
       # save previous value as a data attribute
-      if has_value_was
+      if has_value_was && !opts[:data].key?(CHANGED_DATA_VALUE_WAS)
         opts[:data][CHANGED_DATA_VALUE_WAS] = value_was.to_s.html_safe
       end
     end

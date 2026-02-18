@@ -8,7 +8,7 @@
       <% if policy(@podcast).update? %>
         <%= tab_link_to t(".planner"), podcast_planner_path(@podcast) %>
       <% end %>
-      <% if Rails.env.development? || controller_name == "podcast_stream" %>
+      <% if @podcast.stream_recording %>
         <%= tab_link_to t(".stream"), podcast_stream_path(@podcast) %>
       <% end %>
     <% else %>

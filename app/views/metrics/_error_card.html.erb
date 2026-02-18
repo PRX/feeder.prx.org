@@ -1,8 +1,9 @@
-<% if card_type == "error" %>
-  <%= turbo_frame_tag metrics_path do %>
-    <div class="h-100 d-flex justify-content-center align-items-center">
-      Clickhouse not connected
+<%= turbo_frame_tag metrics_path do %>
+  <% if error_message.present? %>
+    <div class="h-100 d-flex justify-content-center align-items-center lh-sm fs-sm">
+      <div class="alert alert-warning py-0 my-0 lh-sm fs-sm" role="alert">
+        <%= t(".error_message.#{error_message}") %>
+      </div>
     </div>
   <% end %>
-<% elsif card_type == "blank" %>
 <% end %>

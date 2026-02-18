@@ -2,15 +2,17 @@
   <ul class="list-group list-group-flush position-relative">
     <% feeds.map do |feed| %>
       <li class="list-group-item d-flex justify-content-between">
-        <span class="z-1"><%= link_to feed[:feed].label, podcast_feed_path(podcast, feed[:feed]) %></span>
-        <span class="z-1"><%= number_with_delimiter(feed[:downloads]) %></span>
+        <span class="z-1"><%= feed[0] %></span>
+        <span class="z-1"><%= number_with_delimiter(feed[1]) || 0 %></span>
       </li>
     <% end %>
-    <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0"
-      data-controller="apex-sparkbar"
-      data-apex-sparkbar-id-value="podcast-feeds-chart"
-      data-apex-sparkbar-downloads-value="<%= feeds.map { |feed| feed[:downloads] }.to_json %>">
-      <div data-apex-sparkbar-target="chart"></div>
+    <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0 apex-color-mode"
+      data-controller="apex-chart"
+      data-apex-chart-id-value="feeds-chart"
+      data-apex-chart-downloads-value="<%= feeds.to_json %>"
+      data-apex-chart-series-type-value="downloads"
+      data-apex-chart-chart-type-value="sparkbar">
+      <div data-apex-chart-target="chart"></div>
     </div>
   </ul>
 <% end %>

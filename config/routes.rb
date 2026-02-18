@@ -12,9 +12,8 @@ Rails.application.routes.draw do
     resource :player, only: :show, controller: :podcast_player
     resources :imports, only: [:index, :show, :create]
     resource :planner, only: [:show, :create], controller: :podcast_planner
-    resource :stream, only: [:show, :update], controller: :podcast_stream do
-      resources :hours, only: [:index, :show], controller: :podcast_stream_hours
-    end
+    resource :stream, only: [:show, :update], controller: :podcast_stream
+    resources :clips, only: [:index, :show], controller: :podcast_clips
     resources :feeds, except: [:edit] do
       get "new_apple", on: :collection
       get "new_megaphone", on: :collection
@@ -32,9 +31,7 @@ Rails.application.routes.draw do
       get "feeds"
       get "seasons"
       get "countries"
-      get "uniques"
       get "episodes"
-      get "dropdays"
       get "agents"
     end
   end

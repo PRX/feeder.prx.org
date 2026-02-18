@@ -1,11 +1,86 @@
-.metrics-card-body {
-  height: 275px;
+.metrics-card-lg {
+  .metrics-card-body {
+    min-height: 307px; // set a height for loading
+    width: 100%;
 
-  .metrics-chart {
-    height: 100%;
+    .prx-loading {
+      height: 275px;
+    }
+    .metrics-chart {
+      height: 275px;
+      width: 100%;
+    }
+  }
+}
+
+.metrics-scorecard {
+  min-height: 108px; // set a height for loading
+
+  .prx-loading {
+    min-height: 42px;
+  }
+}
+
+.metrics-episodes-card {
+  min-height: 108px; // set a height for loading
+  width: 100%;
+
+  .episode-row {
+    min-height: 47px;
+    width: 100%;
   }
 
-  // .metrics-table {
-  //   height: 100%;
-  // }
+  .episode-card-info {
+    border-bottom: 0;
+
+    .episode-card-date {
+      min-width: 43px;
+    }
+
+    .episode-card-text {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
+}
+
+.metrics-bar-list {
+  .prx-loading {
+    padding: 1rem 0;
+    width: 100%;
+  }
+
+  .list-group-item {
+    --bs-list-group-item-padding-y: 0;
+    --bs-list-group-border-width: 0;
+  }
+}
+
+@include color-mode(dark) {
+  .metrics-bar-list {
+    .list-group-item {
+      background: #0000;
+    }
+  }
+
+  .metrics-episodes-card {
+    .episode-row {
+      p,
+      h2 {
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 1) 0%,
+          rgba(0, 0, 0, 1) 15%,
+          rgba(0, 0, 0, 1) 85%,
+          rgba(0, 0, 0, 1) 100%
+        );
+      }
+
+      .text-secondary {
+        span {
+          color: #f5f5f5;
+        }
+      }
+    }
+  }
 }

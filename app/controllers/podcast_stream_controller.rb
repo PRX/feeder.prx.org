@@ -40,6 +40,7 @@ class PodcastStreamController < ApplicationController
       :end_date,
       :create_as,
       :expiration,
+      :time_zone,
       record_days: [],
       record_hours: []
     )

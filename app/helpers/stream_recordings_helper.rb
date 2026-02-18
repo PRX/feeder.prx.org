@@ -11,17 +11,73 @@ module StreamRecordingsHelper
     I18n.t("helpers.label.stream_recording.expirations").invert.to_a
   end
 
-  def stream_record_days_options(val)
-    label = I18n.t("helpers.label.stream_recording.record_all_days")
-    all = [label, "", {selected: val.blank?, data: {mandatory: true}}]
-    opts = StreamRecording::ALL_DAYS.map { |d| [I18n.t("date.day_names")[d], d] }
-    options_for_select(opts.prepend(all), val)
+  def stream_record_days_data(stream)
+    {
+      value_was: stream.record_days_was.blank? ? [StreamRecording::ALL_PLACEHOLDER] : stream.record_days.map(&:to_s),
+      slim_select_exclusive_value: [StreamRecording::ALL_PLACEHOLDER],
+      slim_select_max_values_shown_value: 3
+    }
   end
 
-  def stream_record_hours_options(val)
+  def stream_record_hours_data(stream)
+    {
+      value_was: stream.record_hours_was.blank? ? [StreamRecording::ALL_PLACEHOLDER] : stream.record_hours.map(&:to_s),
+      slim_select_exclusive_value: [StreamRecording::ALL_PLACEHOLDER],
+      slim_select_max_values_shown_value: 5
+    }
+  end
+
+  def stream_record_days_options(stream)
+    label = I18n.t("helpers.label.stream_recording.record_all_days")
+    all = [label, StreamRecording::ALL_PLACEHOLDER, {selected: stream.record_days.blank?, data: {mandatory: true}}]
+    opts = StreamRecording::ALL_DAYS.map { |d| [I18n.t("date.day_names")[d], d] }
+    options_for_select(opts.prepend(all), stream.record_days)
+  end
+
+  def stream_record_hours_options(stream)
     label = I18n.t("helpers.label.stream_recording.record_all_hours")
-    all = [label, "", {selected: val.blank?, data: {mandatory: true}}]
+    all = [label, StreamRecording::ALL_PLACEHOLDER, {selected: stream.record_hours.blank?, data: {mandatory: true}}]
     opts = StreamRecording::ALL_HOURS.map { |h| [Time.new(2000, 1, 1, h, 0, 0).strftime("%l %p").strip, h] }
-    options_for_select(opts.prepend(all), val)
+    options_for_select(opts.prepend(all), stream.record_hours)
+  end
+
+  def stream_status_class(resource)
+    if resource.status_complete? && resource.short?
+      "warning"
+    elsif resource.status_complete?
+      "info"
+    elsif resource.recording?
+      "danger"
+    else
+      "primary"
+    end
+  end
+
+  def stream_date(resource)
+    if resource.start_at
+      tz = resource.stream_recording&.time_zone || "UTC"
+      I18n.l(resource.start_at.in_time_zone(tz), format: :short)
+    end
+  end
+
+  def stream_hour(resource)
+    if resource.start_at && resource.end_at
+      tz = resource.stream_recording&.time_zone || "UTC"
+      start_at = [resource.start_at, resource.actual_start_at].compact.max
+      end_at = [resource.end_at, resource.actual_end_at].compact.min
+      start_str = I18n.l(start_at.in_time_zone(tz), format: :time_12_hour)
+      end_str = I18n.l(end_at.in_time_zone(tz), format: :time_12_hour_zone)
+      "#{start_str} - #{end_str}"
+    end
+  end
+
+  def stream_date_hour(resource)
+    if resource.start_at
+      tz = resource.stream_recording&.time_zone || "UTC"
+      start_at = [resource.start_at, resource.actual_start_at].compact.max
+      date = I18n.l(start_at.in_time_zone(tz), format: :short)
+      hour = I18n.l(start_at.in_time_zone(tz), format: :time_12_hour_zone)
+      "#{date} #{hour}"
+    end
   end
 end

@@ -1,9 +1,10 @@
 <%= turbo_frame_tag "episodes" do %>
-  <div class="col metrics-chart"
-    data-controller="apex-episodes"
-    data-apex-episodes-id-value="<%= SecureRandom.uuid %>"
-    data-apex-episodes-rollups-value="<%= episode_rollups.to_json %>"
-    data-apex-episodes-date-range-value="<%= date_range.to_json %>">
-    <div data-apex-episodes-target="chart"></div>
+  <div class="col metrics-chart apex-color-mode"
+    data-controller="apex-chart"
+    data-apex-chart-id-value="recent-episodes-downloads"
+    data-apex-chart-downloads-value="<%= episode_rollups.to_json %>"
+    data-apex-chart-series-type-value="episodes"
+    data-apex-chart-chart-type-value="episodes">
+    <div data-apex-chart-target="chart"></div>
   </div>
 <% end %>

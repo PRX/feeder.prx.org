@@ -1,7 +1,7 @@
 <% content_for :tabs do %>
   <div class="list-group d-flex col mw-100">
     <% if @episode.persisted? %>
-      <% if Rails.env.development? && @episode.published? %>
+      <% if (Rails.env.development? || Rails.env.staging?) && @episode.published? %>
         <%= tab_link_to "Overview", episode_overview_path(@episode.guid) %>
       <% end %>
       <%= tab_link_to "Settings", edit_episode_path(@episode), class: "text-truncate", active: episode_metadata_active? %>
