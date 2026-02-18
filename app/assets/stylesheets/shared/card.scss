@@ -52,6 +52,7 @@
 
       &:hover {
         color: #{color-contrast($value)};
+        text-decoration: none;
       }
     }
   }
