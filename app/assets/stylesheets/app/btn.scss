@@ -1,3 +1,13 @@
 a.btn:hover {
   text-decoration: none;
 }
+
+@include color-mode(dark) {
+  .prx-btn-help {
+    color: $link-color-dark;
+
+    &:hover {
+      color: $link-hover-color-dark;
+    }
+  }
+}
