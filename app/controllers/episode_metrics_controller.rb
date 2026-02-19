@@ -49,6 +49,8 @@ class EpisodeMetricsController < ApplicationController
     @episode = Episode.find_by(guid: params[:episode_id])
     @podcast = @episode.podcast
     authorize @episode, :show?
+  rescue ActiveRecord::RecordNotFound => e
+    render_not_found(e)
   end
 
   def scorecard_downloads(score_type)
