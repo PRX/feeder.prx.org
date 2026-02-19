@@ -92,6 +92,11 @@
     if (role === "textbox" || role === "combobox" || role === "listbox") {
       ensureAccessibleName(el)
     }
+
+    // Ensure scrollable SlimSelect list is keyboard accessible (Axe: scrollable-region-focusable)
+    if (el.classList.contains("ss-list") && !el.hasAttribute("tabindex")) {
+      el.setAttribute("tabindex", "0")
+    }
   }
 
   function ensureAccessibleName(el) {
@@ -165,7 +170,7 @@
       const selector =
         Object.keys(fixes)
           .map((k) => "[" + k + "]")
-          .join(",") + ", [role='textbox'], [role='combobox'], [role='listbox'], [autocomplete]"
+          .join(",") + ", [role='textbox'], [role='combobox'], [role='listbox'], [autocomplete], .ss-list"
       const targets = root.querySelectorAll ? root.querySelectorAll(selector) : []
       for (const el of targets) fixElement(el)
 
@@ -192,7 +197,8 @@
         if (
           Object.keys(fixes).includes(m.attributeName) ||
           m.attributeName === "role" ||
-          m.attributeName === "autocomplete"
+          m.attributeName === "autocomplete" ||
+          m.attributeName === "class"
         ) {
           fixElement(m.target)
         }
