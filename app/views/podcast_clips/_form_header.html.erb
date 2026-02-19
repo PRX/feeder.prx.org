@@ -1,16 +1,9 @@
-<h1 class="fw-bold my-0 mb-0 me-4"><%= stream_date_hour(@clip) %></h1>
+<h1 class="fw-bold my-0 mb-0 me-4"><%= stream_date_hour(clip) %></h1>
 
-<button class="btn btn-sm btn-warning">
-  <span class="material-icons" aria-label="hidden">attach_file</span>
-  <span class="d-none d-md-block"><%= t(".attach") %></span>
-</button>
-<%= render "attach_modal" %>
-
-<button class="btn btn-sm btn-success">
-  <span class="material-icons" aria-label="hidden">add</span>
-  <span class="d-none d-md-block"><%= t(".create") %></span>
-</button>
-<%= render "create_modal" %>
+<% if policy(clip).update? %>
+  <%= render "attach_modal", podcast: podcast, clip: clip %>
+  <%= render "create_modal", podcast: podcast, clip: clip %>
+<% end %>
 
 <p class="status-text flex-grow-1 text-end">
   <strong><%= t(".updated_at_hint") %></strong>

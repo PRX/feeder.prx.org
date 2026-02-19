@@ -1,0 +1,35 @@
+<button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#attach-modal-<%= clip.id %>">
+  <span class="material-icons" aria-label="hidden">attach_file</span>
+  <span class="d-none d-md-block"><%= t(".title") %></span>
+</button>
+
+<%= content_for :modals do %>
+  <div id="attach-modal-<%= clip.id %>" class="modal" tabindex="-1" data-bs-focus="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><%= t(".title") %></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= t(".close") %>"></button>
+        </div>
+
+        <% url = attach_podcast_clip_path(podcast, clip) %>
+        <% html = {autocomplete: "off"} %>
+        <% data = {controller: "disable"} %>
+
+        <%= form_with(model: clip, url: url, method: :post, html: html, data: data) do |form| %>
+          <div class="modal-body text-center">
+            <div class="form-floating input-group">
+              <%= form.select :episode, stream_episode_options(podcast) %>
+              <%= form.label :episode, t(".episode"), required: true %>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal"><%= t(".cancel") %></button>
+            <%= form.submit t(".attach"), class: "btn btn-primary", data: {disable_with: t(".attaching")} %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
