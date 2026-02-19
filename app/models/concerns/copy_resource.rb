@@ -23,15 +23,16 @@ module CopyResource
     to_resource
   rescue => err
     Rails.logger.error("copy_resource_to error", error: err)
+    NewRelic::Agent.notice_error(err)
     to_resource.status = "error"
     to_resource
   end
 
-  private
-
   def copy_resource_s3_client
     Aws::S3::Client.new(stub_responses: Rails.env.test?)
   end
+
+  private
 
   # S3 copying will be faster
   def copy_resource_s3(from_path, to_path)
