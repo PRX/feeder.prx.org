@@ -10,7 +10,7 @@
         </div>
       </div>
       <div>
-        <%= link_to episode.enclosure_url, class: "btn btn-sm btn-success" do %>
+        <%= tag.button class: "btn btn-sm btn-success", data: {controller: "clipboard", clipboard_copy_value: episode.enclosure_url, clipboard_tooltip_value: t("helpers.application.field_copy_tooltip")} do %>
           <%= t(".audio_link") %>
           <span class="material-icons">link</span>
         <% end %>
