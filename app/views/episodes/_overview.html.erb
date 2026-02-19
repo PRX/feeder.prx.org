@@ -61,51 +61,53 @@
     </div>
   </div>
 
-  <div class="col d-flex">
-    <%= render "scorecard_dashboard", episode: episode %>
-  </div>
+  <% if show_metrics? %>
+    <div class="col d-flex">
+      <%= render "scorecard_dashboard", episode: episode %>
+    </div>
 
-  <div class="row">
-    <% if uses_multiple_feeds(episode) %>
-      <div class="col-12 d-grid mb-4">
+    <div class="row">
+      <% if uses_multiple_feeds(episode) %>
+        <div class="col-12 d-grid mb-4">
+          <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="h4 fw-bold mb-0"><%= t(".feed_label") %></span>
+              <span><%= t(".last_28") %></span>
+            </div>
+            <div class="card-body p-0 metrics-bar-list">
+              <%= turbo_frame_tag "feeds", src: feeds_episode_metrics_path(episode_id: episode.guid), loading: "lazy", target: "_top" do %>
+                <%= render "metrics/loading_card" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      <div class="col-lg-6 d-grid mb-4">
         <div class="card shadow">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <span class="h4 fw-bold mb-0"><%= t(".feed_label") %></span>
+            <span class="h4 fw-bold mb-0"><%= t(".country_label") %></span>
             <span><%= t(".last_28") %></span>
           </div>
           <div class="card-body p-0 metrics-bar-list">
-            <%= turbo_frame_tag "feeds", src: feeds_episode_metrics_path(episode_id: episode.guid), loading: "lazy", target: "_top" do %>
+            <%= turbo_frame_tag "countries", src: countries_episode_metrics_path(episode_id: episode.guid), loading: "lazy" do %>
               <%= render "metrics/loading_card" %>
             <% end %>
           </div>
         </div>
       </div>
-    <% end %>
-    <div class="col-lg-6 d-grid mb-4">
-      <div class="card shadow">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="h4 fw-bold mb-0"><%= t(".country_label") %></span>
-          <span><%= t(".last_28") %></span>
-        </div>
-        <div class="card-body p-0 metrics-bar-list">
-          <%= turbo_frame_tag "countries", src: countries_episode_metrics_path(episode_id: episode.guid), loading: "lazy" do %>
-            <%= render "metrics/loading_card" %>
-          <% end %>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-6 d-grid mb-4">
-      <div class="card shadow">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="h4 fw-bold mb-0"><%= t(".agents_label") %></span>
-          <span><%= t(".last_28") %></span>
-        </div>
-        <div class="card-body p-0 metrics-bar-list">
-          <%= turbo_frame_tag "agents", src: agents_episode_metrics_path(episode_id: episode.guid), loading: "lazy" do %>
-            <%= render "metrics/loading_card" %>
-          <% end %>
+      <div class="col-lg-6 d-grid mb-4">
+        <div class="card shadow">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="h4 fw-bold mb-0"><%= t(".agents_label") %></span>
+            <span><%= t(".last_28") %></span>
+          </div>
+          <div class="card-body p-0 metrics-bar-list">
+            <%= turbo_frame_tag "agents", src: agents_episode_metrics_path(episode_id: episode.guid), loading: "lazy" do %>
+              <%= render "metrics/loading_card" %>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  <% end %>
 </div>

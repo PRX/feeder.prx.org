@@ -1,4 +1,12 @@
 module MetricsHelper
+  def show_metrics?
+    if Rails.env.production?
+      false
+    else
+      current_user_app?("metrics") && !session[:metrics_opt_out]
+    end
+  end
+
   def parse_trend(trend)
     return if trend.blank?
 

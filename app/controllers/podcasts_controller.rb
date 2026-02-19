@@ -21,15 +21,6 @@ class PodcastsController < ApplicationController
     @episode_count = @podcast.episodes.published.length
     @next_scheduled_episodes = @podcast.episodes.draft_or_scheduled.dropdate_asc.limit(4)
 
-    # @recently_published is used for the prod branch
-    @recently_published = @recently_published_episodes[0..2]
-    @next_scheduled = @next_scheduled_episodes[0..2]
-
-    @metrics_jwt = prx_jwt
-    @metrics_castle_root = castle_root
-    @metrics_dates = 30.days.ago.utc.to_date..Time.now.utc.to_date
-    @metrics_guids, @metrics_titles = published_episodes(@metrics_dates)
-
     @feeds = @podcast.feeds.tab_order
   end
 
