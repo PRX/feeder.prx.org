@@ -135,6 +135,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
 
   def trix_editor(method, options = {})
     options[:class] = INPUT_CLASS unless options.key?(:class)
+    options[:role] ||= "textbox"
     add_blank_class(options) if blank?(method, options)
     add_blank_action(options)
     add_changed(method, options)
