@@ -38,9 +38,15 @@ export default class extends Controller {
     // Sanitize common misspelled ARIA attributes that some widgets may emit
     try {
       const sanitizeARIA = (root = document) => {
+<<<<<<< HEAD
         const fixes = { "aria-auto-complete": "aria-autocomplete", "aria-has-popup": "aria-haspopup" }
         Object.keys(fixes).forEach((wrong) => {
           const els = root.querySelectorAll("[" + wrong + "]")
+=======
+        const fixes = { 'aria-auto-complete': 'aria-autocomplete', 'aria-has-popup': 'aria-haspopup' }
+        Object.keys(fixes).forEach((wrong) => {
+          const els = root.querySelectorAll('[' + wrong + ']')
+>>>>>>> 5b0a7cc11b6644909a77ce7d006b19ae6c95d572
           els.forEach((el) => {
             const val = el.getAttribute(wrong)
             if (val !== null) {
