@@ -1,11 +1,13 @@
 <%= turbo_frame_tag "feeds" do %>
-  <ul class="list-group list-group-flush position-relative">
-    <% feeds.map do |feed| %>
-      <li class="list-group-item d-flex justify-content-between">
-        <span class="z-1"><%= feed[0] %></span>
-        <span class="z-1"><%= number_with_delimiter(feed[1]) || 0 %></span>
-      </li>
-    <% end %>
+  <div class="position-relative">
+    <ul class="list-group list-group-flush">
+      <% feeds.map do |feed| %>
+        <li class="list-group-item d-flex justify-content-between">
+          <span class="z-1"><%= feed[0] %></span>
+          <span class="z-1"><%= number_with_delimiter(feed[1]) || 0 %></span>
+        </li>
+      <% end %>
+    </ul>
     <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0 apex-color-mode"
       data-controller="apex-chart"
       data-apex-chart-id-value="feeds-chart"
@@ -14,5 +16,5 @@
       data-apex-chart-chart-type-value="sparkbar">
       <div data-apex-chart-target="chart"></div>
     </div>
-  </ul>
+  </div>
 <% end %>

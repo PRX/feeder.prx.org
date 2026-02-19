@@ -1,11 +1,13 @@
 <%= turbo_frame_tag "countries" do %>
-  <ul class="list-group list-group-flush position-relative">
-    <% countries.map do |country| %>
-      <li class="list-group-item d-flex justify-content-between">
-        <span class="z-1"><%= country[0] %></span>
-        <span class="z-1"><%= number_with_delimiter(country[1]) || 0 %></span>
-      </li>
-    <% end %>
+  <div class="position-relative">
+    <ul class="list-group list-group-flush">
+      <% countries.map do |country| %>
+        <li class="list-group-item d-flex justify-content-between">
+          <span class="z-1"><%= country[0] %></span>
+          <span class="z-1"><%= number_with_delimiter(country[1]) || 0 %></span>
+        </li>
+      <% end %>
+    </ul>
     <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 z-0 apex-color-mode"
       data-controller="apex-chart"
       data-apex-chart-id-value="countries-chart"
@@ -14,5 +16,5 @@
       data-apex-chart-chart-type-value="sparkbar">
       <div data-apex-chart-target="chart"></div>
     </div>
-  </ul>
+  </div>
 <% end %>
