@@ -16,16 +16,22 @@ class PodcastClipsController < ApplicationController
   end
 
   def attach
-    if (ep = attach_to_episode(params[:stream_resource][:episode]))
+    if (ep = attach_to_episode(clip_params[:episode]))
       redirect_to episode_media_path(ep), notice: t(".attached")
-    elsif (ep = create_new_episode(params[:stream_resource][:title], params[:stream_resource][:released_at]))
+    elsif (ep = create_new_episode(clip_params[:title], clip_params[:released_at]))
       redirect_to episode_media_path(ep), notice: t(".created")
-    else
+    elsif request.referrer&.ends_with?("/clips")
       redirect_to podcast_clips_path(@podcast), alert: t(".alert")
+    else
+      redirect_to podcast_clip_path(@podcast, @clip), alert: t(".alert")
     end
   end
 
   private
+
+  def clip_params
+    nilify(params.fetch(:stream_resource, {}).permit(%i[episode title released_at]))
+  end
 
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
