@@ -48,7 +48,8 @@ module CopyResource
   def copy_resource_http(from_url, to_path)
     resp = Faraday.get(from_url)
     if resp.success?
-      copy_resource_s3_client.put_object(bucket: ENV["FEEDER_STORAGE_BUCKET"], key: to_path, body: resp.body)
+      meta = resp.headers.slice(*%w[cache-control content-disposition content-type])
+      copy_resource_s3_client.put_object(bucket: ENV["FEEDER_STORAGE_BUCKET"], key: to_path, body: resp.body, metadata: meta)
       from_url
     else
       raise "Got #{resp.status} from #{from_url}"
