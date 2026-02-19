@@ -43,9 +43,9 @@
 
     <div class="row">
       <div class="col-12">
-      <%= label_tag :accent_color, t("helpers.label.podcast_player.accent_color") %>
+      <%= label_tag :accent_color, t("helpers.label.episode.accent_color"), for: "accent-color" %>
         <div class="input-group">
-          <%= tag.input type: "color", name: :accent_color, value: player_options[:accent_color], class: "form-control form-control-color", data: {action: "dynamic-form#change"} %>
+          <%= tag.input type: "color", id: "accent-color", name: :accent_color, value: player_options[:accent_color], class: "form-control form-control-color", data: {action: "dynamic-form#change"} %>
         </div>
 
         <div class="form-text">
