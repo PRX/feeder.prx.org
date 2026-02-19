@@ -146,7 +146,7 @@ module EmbedPlayerHelper
       frameborder: "0",
       height: height,
       width: "100%",
-      style: fixed_width ? "min-width: #{fixed_width}px; max-width: #{fixed_width}px; display: block; margin-inline: auto" : "min-width: 300px",
+      style: fixed_width ? "min-width: #{fixed_width}px; max-width: #{fixed_width}px; display: block; margin-inline: auto; color-scheme: auto;" : "min-width: 300px; color-scheme: auto;",
       src: src
     }
 
@@ -156,7 +156,7 @@ module EmbedPlayerHelper
     # card styling
     if is_card
       iframe_opts[:height] = "100%"
-      iframe_opts[:style] = "position: absolute; inset: 0;"
+      iframe_opts[:style] = "position: absolute; inset: 0; color-scheme: auto;"
       wrapper_style << if fixed_width
         " padding-top: clamp(#{300 + height}px, calc(100% + #{height}px), #{fixed_width + height}px); margin-inline: auto; max-width: #{fixed_width}px;"
       else
