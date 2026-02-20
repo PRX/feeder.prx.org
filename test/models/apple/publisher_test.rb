@@ -610,6 +610,7 @@ describe Apple::Publisher do
       ->(api, pdfs, &block) {
         [true, [pdf2]]  # Timeout with only episode2's PDF still waiting
       }
+      assert true
     end
   end
 
