@@ -11,7 +11,7 @@ class EpisodeImage < ApplicationRecord
   end
 
   def published_url
-    "#{episode.base_published_url}/#{image_path}"
+    "#{episode.base_published_url}/#{image_path}" if episode
   end
 
   def image_path
