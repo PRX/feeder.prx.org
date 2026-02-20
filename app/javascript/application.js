@@ -10,7 +10,6 @@ import LocalTime from "local-time"
 
 Rails.start()
 LocalTime.start()
-import "accessibility/sanitize_aria"
 
 // debugging turbo
 document.addEventListener("turbo:frame-missing", function (event) {

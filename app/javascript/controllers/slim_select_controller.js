@@ -20,41 +20,6 @@ export default class extends Controller {
         beforeChange: this.beforeChange.bind(this),
       },
     })
-    // Ensure ARIA roles are applied to the actual list element (fix accessibility scanners)
-    try {
-      if (this.select && this.select.render && this.select.render.content) {
-        const contentMain = this.select.render.content.main
-        const contentList = this.select.render.content.list
-        if (contentMain && contentMain.getAttribute && contentMain.getAttribute("role") === "listbox") {
-          contentMain.removeAttribute("role")
-        }
-        if (contentList && contentList.setAttribute) {
-          contentList.setAttribute("role", "listbox")
-        }
-      }
-    } catch (err) {
-      // silent fallback if structure differs
-    }
-    // Sanitize common misspelled ARIA attributes that some widgets may emit
-    try {
-      const sanitizeARIA = (root = document) => {
-        const fixes = { "aria-auto-complete": "aria-autocomplete", "aria-has-popup": "aria-haspopup" }
-        Object.keys(fixes).forEach((wrong) => {
-          const els = root.querySelectorAll("[" + wrong + "]")
-          els.forEach((el) => {
-            const val = el.getAttribute(wrong)
-            if (val !== null) {
-              el.setAttribute(fixes[wrong], val)
-              el.removeAttribute(wrong)
-            }
-          })
-        })
-      }
-      sanitizeARIA(this.element)
-      sanitizeARIA(document)
-    } catch (e) {
-      // ignore
-    }
   }
 
   disconnect() {
