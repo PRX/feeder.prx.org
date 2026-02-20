@@ -83,7 +83,7 @@ module StreamRecordingsHelper
 
   def stream_episode_options(podcast)
     @stream_episode_options ||= {}
-    @stream_episode_options[podcast.id] ||= podcast.episodes.draft_or_scheduled.dropdate_asc.map do |e|
+    @stream_episode_options[podcast.id] ||= podcast.episodes.draft.dropdate_asc.map do |e|
       [e.title, e.guid]
     end
   end
