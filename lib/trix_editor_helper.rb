@@ -22,14 +22,9 @@ module TrixEditorHelper
     css_class = Array.wrap(options.delete(:class)).join(" ")
     attributes = {
       class: "formatted_content trix-content #{css_class}".squish,
-      input: "trix_input_#{TrixEditorHelper.id += 1}"
+      input: "trix_input_#{TrixEditorHelper.id += 1}",
+      role: "textbox"
     }.merge(options)
-    # Ensure role is set to textbox if aria-label is present and role is not explicitly provided
-    if attributes.key?(:"aria-label") && !attributes.key?(:role)
-      attributes[:role] = "textbox"
-    else
-      attributes[:role] ||= "textbox"
-    end
 
     editor_tag = content_tag("trix-editor", "", attributes)
     input_tag = hidden_field_tag(name, value, options.merge(id: attributes[:input], class: "trix-hidden-field"))

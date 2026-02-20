@@ -393,6 +393,9 @@ en:
           not_found: Unknown
           not_publishable: Not Included for Publishing
           processing: Processing
+          progress_bar:
+            playback: Audio playback progress
+            upload: Upload progress
         medium: File Format
         mediums:
           audio: Audio - upload multiple audio files
@@ -1166,6 +1169,7 @@ en:
       source: Source
       status: Status
       type: Type
+    progress: Import Progress
     show:
       title: "%{title} - Import %{id}"
   layouts:

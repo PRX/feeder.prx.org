@@ -25,7 +25,7 @@
     <div class="card-body">
       <div class="form-floating">
         <%= form.fields_for :default_feed do |fields| %>
-          <%= fields.trix_editor :description %>
+          <%= fields.trix_editor :description, "aria-label": t("helpers.label.podcast.description") %>
         <% end %>
       </div>
     </div>

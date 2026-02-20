@@ -79,6 +79,10 @@ module ImageFile
     self[:url] ||= published_url
   end
 
+  def image_alt_text
+    alt_text.presence || "logo for #{podcast&.title}"
+  end
+
   def path
     URI.parse(url).path.sub(/\A\//, "") if url.present?
   end

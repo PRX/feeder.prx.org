@@ -10,7 +10,6 @@ pin "@rails/ujs", to: "@rails--ujs.js", preload: true # @7.0.4
 pin "popper", to: "popper.js", preload: true
 pin "bootstrap", to: "bootstrap.min.js", preload: true
 pin "flatpickr", preload: true # @4.6.13
-pin "accessibility/sanitize_aria", to: "accessibility/sanitize_aria.js"
 pin "bootstrap5-tags", to: "https://ga.jspm.io/npm:bootstrap5-tags@1.6.4/tags.js"
 pin "trix", to: "https://ga.jspm.io/npm:trix@2.0.5/dist/trix.esm.min.js", preload: true
 pin "konva", to: "https://ga.jspm.io/npm:konva@8.4.2/lib/index.js", preload: true
