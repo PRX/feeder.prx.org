@@ -1,4 +1,5 @@
 class StreamResource < ApplicationRecord
+  include CopyResource
   include StreamResourceFilters
 
   BUFFER_SECONDS = 10

@@ -1351,9 +1351,25 @@ en:
       error: Unable to save
       notice: Podcast updated
   podcast_clips:
+    attach:
+      alert: Something went horribly wrong
+      attached: Attached clip
+      created: Created from clip
+    attach_modal:
+      attach: Attach
+      attaching: Attaching
+      cancel: Cancel
+      close: Close
+      episode: Episode
+      title: Attach to Draft
+    create_modal:
+      cancel: Cancel
+      close: Close
+      create: Create
+      creating: Creating
+      episode_title: Episode Title
+      title: Create Episode
     clip:
-      attach: Attach to Draft
-      create: Create Episode
       edit: Edit
       full_hour: Full hour
       partial_hour: Partial hour

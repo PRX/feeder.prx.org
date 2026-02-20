@@ -77,17 +77,8 @@
         <% end %>
 
         <% if policy(clip).attach? %>
-          <button class="btn btn-sm btn-warning">
-            <span class="material-icons" aria-label="hidden">attach_file</span>
-            <span class="d-none d-md-block"><%= t(".attach") %></span>
-          </button>
-          <%= render "attach_modal" %>
-
-          <button class="btn btn-sm btn-success">
-            <span class="material-icons" aria-label="hidden">add</span>
-            <span class="d-none d-md-block"><%= t(".create") %></span>
-          </button>
-          <%= render "create_modal" %>
+          <%= render "attach_modal", podcast: podcast, clip: clip %>
+          <%= render "create_modal", podcast: podcast, clip: clip %>
         <% end %>
       </div>
     <% end %>
