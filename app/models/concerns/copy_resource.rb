@@ -41,6 +41,7 @@ module CopyResource
     copy_resource_s3_client.copy_object(bucket: bucket, key: to_path, copy_source: from_src)
     "s3://#{bucket}/#{from_path}"
   rescue Aws::S3::Errors::NoSuchKey
+    Rails.logger.warn("copy_resource_s3 no such key", bucket: bucket, path: to_path, copy_source: from_src)
     nil
   end
 
