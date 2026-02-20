@@ -22,7 +22,8 @@ module TrixEditorHelper
     css_class = Array.wrap(options.delete(:class)).join(" ")
     attributes = {
       class: "formatted_content trix-content #{css_class}".squish,
-      input: "trix_input_#{TrixEditorHelper.id += 1}"
+      input: "trix_input_#{TrixEditorHelper.id += 1}",
+      role: "textbox"
     }.merge(options)
 
     editor_tag = content_tag("trix-editor", "", attributes)

@@ -147,7 +147,8 @@ module EmbedPlayerHelper
       height: height,
       width: "100%",
       style: fixed_width ? "min-width: #{fixed_width}px; max-width: #{fixed_width}px; display: block; margin-inline: auto; color-scheme: auto;" : "min-width: 300px; color-scheme: auto;",
-      src: src
+      src: src,
+      title: "PRX Embed Player"
     }
 
     iframe_opts[:scrolling] = "no" unless options[:playlist]
