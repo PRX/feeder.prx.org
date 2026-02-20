@@ -1,0 +1,54 @@
+<div class="card collapsible_card border-0 shadow">
+  <div class="card-header card-header-light text-uppercase">
+    <a data-bs-toggle="collapse" href="#people" role="button" aria-expanded="false" aria-controls="people" class="collapsed">
+      <span>People</span>
+      <span class="material-icons expanded_icon">expand_less</span>
+      <span class="material-icons collapsed_icon">expand_more</span>
+    </a>
+  </div>
+  <div id="people" class="collapse">
+    <div class="card-body mb-0 pb-0">
+      <table class="table prx-person-table mb-0">
+        <tr class="table-secondary">
+          <td>Name</td>
+          <td>Role</td>
+          <td>Group</td>
+          <td>Link</td>
+          <td>Image</td>
+          <td>Edit</td>
+          <td>Remove</td>
+        </tr>
+      <!-- LOOP if there are people added -->
+        <tr>
+          <td>Brandon Hundt</td>
+          <td>Host</td>
+          <td>Cast</td>
+          <td>https://brandonhundt.com</td>
+          <td>
+            <img src="https://id.prx.org/pub/ac63a62099cf9b5ac48f69254c3e6bc9/user_images/52969/medium/P8140272_edited%20(1).jpg" class="prx-header-nav-avatar" alt="Brandon Hundt" />
+          </td>
+          <td>
+            <a href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#personModal">
+              <span class="material-icons">edit</span>
+            </a>
+          </td>
+          <td>
+            <a href="#" class="text-danger">
+              <span class="material-icons" aria-label="Remove this person">delete</span>
+            </a>
+          </td>
+        </tr>
+      </table>
+      <!-- end loop -->
+
+    </div>
+    <div class="card-footer border-0">
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#personModal">
+        <span class="material-icons" aria-label="hidden">add</span>
+        Add a Person
+      </button>
+    </div>
+  </div>
+</div>
+
+<%= render "form_people_modal", podcast: podcast, form: form %>

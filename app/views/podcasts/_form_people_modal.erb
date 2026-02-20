@@ -1,0 +1,89 @@
+<div class="modal" id="personModal" tabindex="-1" aria-labelledby="personModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add/Edit a Person</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <input class="form-control" type="text" name="person[name]" id="person_name">
+            <label for="person_name">Name</label>
+            <a class="input-group-text prx-input-group-text" tabindex="0" role="button" data-popover-target="trigger" data-bs-trigger="focus" data-bs-content="The name of this person"><span class="material-icons">help</span></a>
+          </div>
+        </div>
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <select class="form-select" data-value-was="true" data-controller="slim-select" name="person[role]" id="person_role" data-id="role" tabindex="-1" aria-hidden="true" style="display: none;">
+              <option selected="selected" value="host">Host</option>
+              <option value="producer">Producer</option>
+            </select>
+            <div data-id="role" id="role" tabindex="0" class="ss-main form-select" role="combobox" aria-haspopup="listbox" aria-controls="role" aria-expanded="false">
+              <div class="ss-values">
+                <div class="ss-single">Host</div>
+              </div>
+              <div class="ss-deselect ss-hide">
+                <svg viewBox="0 0 100 100"><path d="M10,10 L90,90 M10,90 L90,10"></path></svg></div><svg class="ss-arrow" viewBox="0 0 100 100"><path d="M10,30 L50,70 L90,30"></path></svg>
+              </div>
+              <label for="person_role">Role</label>
+              <a class="input-group-text prx-input-group-text" tabindex="0" role="button" data-popover-target="trigger" data-bs-trigger="focus" data-bs-content="Used to identify what role the person serves on the show or episode. This should be a reference to an official role within the Podcast Taxonomy Project list."><span class="material-icons">help</span></a>
+          </div>
+        </div>
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <select class="form-select" data-value-was="true" data-controller="slim-select" name="person[group]" id="person_group" data-id="role" tabindex="-1" aria-hidden="true" style="display: none;">
+              <option selected="selected" value="host">Host</option>
+              <option value="producer">Producer</option>
+            </select>
+            <div data-id="role" id="role" tabindex="0" class="ss-main form-select" role="combobox" aria-haspopup="listbox" aria-controls="role" aria-expanded="false">
+              <div class="ss-values">
+                <div class="ss-single">Cast</div>
+              </div>
+              <div class="ss-deselect ss-hide">
+                <svg viewBox="0 0 100 100"><path d="M10,10 L90,90 M10,90 L90,10"></path></svg></div><svg class="ss-arrow" viewBox="0 0 100 100"><path d="M10,30 L50,70 L90,30"></path></svg>
+              </div>
+              <label for="person_group">Group</label>
+              <a class="input-group-text prx-input-group-text" tabindex="0" role="button" data-popover-target="trigger" data-bs-trigger="focus" data-bs-content="This should be a reference to an official group within the Podcast Taxonomy Project list."><span class="material-icons">help</span></a>
+          </div>
+        </div>
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <input class="form-control" type="text" name="person[link]" id="person_link">
+            <label for="person_link">Link to bio</label>
+            <a class="input-group-text prx-input-group-text" target="_blank" href="https://play.prx.org/listen?uf=https%3A%2F%2Fpublicfeeds.net%2Ff%2F284%2Ffeed-rss.xml"><span class="material-icons text-primary">open_in_new</span></a>
+            <a class="input-group-text prx-input-group-text" tabindex="0" role="button" data-popover-target="trigger" data-bs-trigger="focus" data-bs-content="The url to a relevant resource of information about the person, such as a homepage or third-party profile platform."><span class="material-icons">help</span></a>
+          </div>
+        </div>
+        <div class="card shadow border-0 prx-uploads">
+          <div class="card-header-info d-flex align-items-center">
+            <h2 class="card-title h5 flex-grow-1">Image</h2>
+
+            <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#image-modal-23629" data-value-was="">
+              <span class="material-icons">info</span>
+            </button>
+
+            <a class="prx-btn-help" tabindex="0" role="button" data-popover-target="trigger" data-bs-trigger="focus" data-bs-content="Upload an image of this person"><span class="material-icons">help</span></a>
+
+            <a class="prx-btn-help" href="#">
+              <span class="material-icons">delete</span>
+            </a>
+          </div>
+
+          <div class="card-body">
+            <div class="prx-uploads-image mb-4">
+              <button type="button" class="btn m-0 p-0 border-0" data-bs-toggle="modal" data-bs-target="#image-modal-23629" data-value-was="">
+                <img alt="" src="https://f.prxu.org/284/images/b7c5d192-e8ce-40ab-8e49-211b95d2d962/dt-demo-podcast.jpg">
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
