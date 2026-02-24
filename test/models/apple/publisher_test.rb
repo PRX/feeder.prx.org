@@ -599,17 +599,25 @@ describe Apple::Publisher do
 
       # Create mock PDFs that reference the episodes by feeder_id
       pdf1 = Minitest::Mock.new
-      pdf1.expect(:episode_id, episode1.feeder_id)
-
-      pdf2 = Minitest::Mock.new
-      pdf2.expect(:episode_id, episode2.feeder_id)
+      pdf1.expect(:episode_id, episode2.feeder_id)
 
       # Simulate: episode1 delivered successfully, episode2 still waiting when timeout
       # wait_for_delivery returns [timed_out, still_waiting_pdfs]
-      # Only pdf2 is still waiting
-      ->(api, pdfs, &block) {
-        [true, [pdf2]]  # Timeout with only episode2's PDF still waiting
+      # Only pdf1 (referencing episode2) is still waiting
+      delivery_stub = ->(api, pdfs, &block) {
+        [true, [pdf1]]
       }
+
+      episode2.feeder_episode.stub(:measure_asset_processing_duration, 1000) do
+        Apple::PodcastDeliveryFile.stub(:wait_for_delivery, delivery_stub) do
+          error = assert_raises(Apple::AssetStateTimeoutError) do
+            apple_publisher.wait_for_upload_processing([episode1, episode2])
+          end
+
+          assert_equal [episode2.feeder_id], error.episode_ids
+          assert_not_includes error.episode_ids, episode1.feeder_id
+        end
+      end
     end
   end
 
