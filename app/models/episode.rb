@@ -37,6 +37,7 @@ class Episode < ApplicationRecord
 
   has_many :episode_imports
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
+  has_many :persons, as: :owner
 
   has_one :ready_image, -> { complete_or_replaced.order("created_at DESC") }, class_name: "EpisodeImage"
   has_one :transcript, -> { order("created_at DESC") }, dependent: :destroy, inverse_of: :episode
@@ -44,6 +45,7 @@ class Episode < ApplicationRecord
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
   accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
+  accepts_nested_attributes_for :persons, allow_destroy: true, reject_if: ->(p) { p[:name].blank? }
   accepts_nested_attributes_for :transcript, allow_destroy: true, reject_if: ->(t) { t[:id].blank? && t[:original_url].blank? }
 
   validates :podcast_id, :guid, presence: true
