@@ -161,6 +161,19 @@ describe Apple::Show do
       apple_show.reload
       assert_equal 0, apple_show.episodes.count
     end
+
+    it "includes draft episodes from an apple subscription feed" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      apple_feed.set_default_episodes
+      draft = create(:episode, podcast: podcast, published_at: nil)
+      apple_feed.episodes << draft
+
+      config = build(:apple_config, feed: apple_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      episode_ids = show.episodes.map { |e| e.feeder_episode.id }
+      assert_includes episode_ids, draft.id
+    end
   end
 
   describe ".connect_existing" do

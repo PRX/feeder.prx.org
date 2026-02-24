@@ -135,6 +135,12 @@ describe Feed do
     end
   end
 
+  describe "#draft_episodes" do
+    it "returns no episodes by default" do
+      assert_equal Episode.none.to_a, feed1.draft_episodes.to_a
+    end
+  end
+
   describe "#default" do
     it "returns default feeds" do
       assert feed1.default?

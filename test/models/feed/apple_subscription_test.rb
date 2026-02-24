@@ -128,6 +128,20 @@ describe Feeds::AppleSubscription do
     end
   end
 
+  describe "#draft_episodes" do
+    it "returns draft and scheduled episodes" do
+      apple_feed.save!
+      draft = create(:episode, podcast: podcast, published_at: nil)
+      scheduled = create(:episode, podcast: podcast, published_at: 1.day.from_now)
+      _published = create(:episode, podcast: podcast, published_at: 1.day.ago)
+
+      result = apple_feed.draft_episodes
+      assert_includes result, draft
+      assert_includes result, scheduled
+      refute_includes result, _published
+    end
+  end
+
   describe "#publish_to_apple?" do
     it "returns true if the feed has apple credentials" do
       apple_feed.save!

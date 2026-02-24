@@ -155,6 +155,10 @@ class Feed < ApplicationRecord
     Episode.from(episodes.published_by(by).limit(count), :episodes)
   end
 
+  def draft_episodes
+    Episode.none
+  end
+
   def feed_episode_ids
     feed_episodes.pluck(:id)
   end

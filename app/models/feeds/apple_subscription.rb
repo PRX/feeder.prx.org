@@ -132,6 +132,10 @@ class Feeds::AppleSubscription < Feed
     publish_to_apple?
   end
 
+  def draft_episodes
+    episodes.draft_or_scheduled
+  end
+
   def serve_drafts
     publish_integration?
   end
