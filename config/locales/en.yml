@@ -497,6 +497,15 @@ en:
           last_28_rolling: Daily (28-Day Window)
           calendar_week: Weekly
           calendar_month: Monthly
+      person:
+        href: Link
+        name: Name
+        organization: Organization
+        role: Role
+        roles:
+          guest: Guest
+          host: Host
+          producer: Producer
       podcast_import:
         import_existing: Import Existing Episodes
         import_metadata: Import Podcast Metadata
@@ -1268,6 +1277,28 @@ en:
         serial_order: <p>Select how your episodes should be ordered.</p> <p><strong>Episodic:</strong> episodes to be presented and recommended last-to-first; this is the default and most common order for podcasts.</p> <p><strong>Serial:</strong> Episodes presented and recommended first-to-last.</p>
         subtitle: A short description of this podcast.
         title: The name of this podcast
+    form_people:
+      add: Add a Person
+      edit: Edit
+      empty: No People
+      remove: Remove
+      title: People
+    form_people_modal:
+      add: Add
+      cancel: Cancel
+      close: Close
+      help:
+        href: The url to a relevant resource of information about the person, such as a homepage or third-party profile platform.
+        name: The name of this person.
+        organization: Organization this person belongs to, as relevant to this podcast/episode.
+        role: What role the person serves on this podcast/episode.
+      okay: Okay
+      save: Save Changes
+      title_add: Add a Person
+      title_edit: Edit Person
+    form_people_person:
+      edit: Edit this person
+      remove: Remove this person
     form_status:
       <<: *form_status
       title: Podcast Status

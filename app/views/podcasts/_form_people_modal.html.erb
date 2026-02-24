@@ -1,0 +1,58 @@
+<div class="modal" id="person-modal-<%= form.index %>" tabindex="-1" aria-labelledby="person-modal-title-<%= form.index %>" aria-hidden="true" data-action="hidden.bs.modal->person#modalClosed">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="person-modal-title-<%= form.index %>">
+          <%= person.new_record? ? t(".title_add") : t(".title_edit") %>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= t(".close") %>"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= form.text_field :name, data: {action: "person#change", person_target: "nameField"} %>
+            <%= form.label :name, required: true %>
+            <%= field_help_text t(".help.name") %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= form.select :role, person_role_options, {include_blank: true}, data: {action: "person#change"} %>
+            <%= form.label :role %>
+            <%= field_help_text t(".help.role") %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= form.text_field :organization, data: {action: "person#change"} %>
+            <%= form.label :organization %>
+            <%= field_help_text t(".help.organization") %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= form.text_field :href, data: {action: "person#change"} %>
+            <%= form.label :href %>
+            <%= field_link person.href if person.href.present? %>
+            <%= field_help_text t(".help.href") %>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <% if person.new_record? %>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal" data-action="click->person#destroy"><%= t(".cancel") %></button>
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal"><%= t(".add") %></button>
+        <% else %>
+          <%= form.hidden_field :id %>
+          <%= form.text_field :_destroy, class: "d-none", data: {person_target: "destroy"} %>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><%= t(".okay") %></button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

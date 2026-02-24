@@ -1,0 +1,54 @@
+<% nobody = podcast.persons.length == 0 %>
+
+<div class="card collapsible_card border-0 shadow" data-controller="person-add">
+  <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
+
+  <div class="card-header card-header-light text-uppercase">
+    <a data-bs-toggle="collapse" href="#people-card" role="button" aria-expanded="false" aria-controls="people-card" class="<%= "collapsed" if nobody %>">
+      <span><%= t(".title") %></span>
+      <span class="material-icons expanded_icon">expand_less</span>
+      <span class="material-icons collapsed_icon">expand_more</span>
+    </a>
+  </div>
+
+  <div id="people-card" class="<%= "collapse" if nobody %>">
+    <div class="card-body mb-0 pb-0">
+      <table class="table prx-person-table mb-0">
+        <thead>
+          <tr class="table-secondary">
+            <td><%= t("helpers.label.person.name") %></td>
+            <td><%= t("helpers.label.person.role") %></td>
+            <td><%= t("helpers.label.person.organization") %></td>
+            <td><%= t("helpers.label.person.href") %></td>
+            <td width="1" class="text-center"><%= t(".edit") %></td>
+            <td width="1" class="text-center"><%= t(".remove") %></td>
+          </tr>
+        </thead>
+
+        <tbody data-person-add-target="table">
+          <tr class="show-if-last">
+            <td class="text-center text-muted p-4" colspan="100"><%= t(".empty") %></td>
+          </tr>
+
+          <%= form.fields_for :persons do |fields| %>
+            <%= render "form_people_person", form: fields, person: fields.object, include_id: false %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-footer border-0">
+      <button type="button" class="btn btn-primary" data-action="person-add#add">
+        <span class="material-icons" ahria-label="hidden">add</span>
+        <%= t(".add") %>
+      </button>
+
+      <%# but new-persons will get copied to this template %>
+      <template data-person-add-target="template">
+        <%= form.fields_for :persons, form.object.persons.build, child_index: "__INDEX__", include_id: false do |fields| %>
+          <%= render "form_people_person", form: fields, person: fields.object %>
+        <% end %>
+      </template>
+    </div>
+  </div>
+</div>
