@@ -1,4 +1,4 @@
-<% nobody = podcast.persons.length == 0 %>
+<% nobody = form.object.persons.length == 0 %>
 
 <div class="card collapsible_card border-0 shadow" data-controller="person-add">
   <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
@@ -31,7 +31,7 @@
           </tr>
 
           <%= form.fields_for :persons do |fields| %>
-            <%= render "form_people_person", form: fields, person: fields.object, include_id: false %>
+            <%= render "people/form_people_person", form: fields, person: fields.object, include_id: false %>
           <% end %>
         </tbody>
       </table>
@@ -46,7 +46,7 @@
       <%# but new-persons will get copied to this template %>
       <template data-person-add-target="template">
         <%= form.fields_for :persons, form.object.persons.build, child_index: "__INDEX__", include_id: false do |fields| %>
-          <%= render "form_people_person", form: fields, person: fields.object %>
+          <%= render "people/form_people_person", form: fields, person: fields.object %>
         <% end %>
       </template>
     </div>

@@ -1234,6 +1234,29 @@ en:
       error_message:
         database: Unable to connect to the data server
         general: An error has occured, try reloading
+  people:
+    form_people:
+      add: Add a Person
+      edit: Edit
+      empty: No People
+      remove: Remove
+      title: People
+    form_people_modal:
+      add: Add
+      cancel: Cancel
+      close: Close
+      help:
+        href: The url to a relevant resource of information about the person, such as a homepage or third-party profile platform.
+        name: The name of this person.
+        organization: Organization this person belongs to, as relevant to this podcast/episode.
+        role: What role the person serves on this podcast/episode.
+      okay: Okay
+      save: Save Changes
+      title_add: Add a Person
+      title_edit: Edit Person
+    form_people_person:
+      edit: Edit this person
+      remove: Remove this person
   placements_preview:
     show:
       fetch_error: Error fetching placements - try again later
@@ -1277,28 +1300,6 @@ en:
         serial_order: <p>Select how your episodes should be ordered.</p> <p><strong>Episodic:</strong> episodes to be presented and recommended last-to-first; this is the default and most common order for podcasts.</p> <p><strong>Serial:</strong> Episodes presented and recommended first-to-last.</p>
         subtitle: A short description of this podcast.
         title: The name of this podcast
-    form_people:
-      add: Add a Person
-      edit: Edit
-      empty: No People
-      remove: Remove
-      title: People
-    form_people_modal:
-      add: Add
-      cancel: Cancel
-      close: Close
-      help:
-        href: The url to a relevant resource of information about the person, such as a homepage or third-party profile platform.
-        name: The name of this person.
-        organization: Organization this person belongs to, as relevant to this podcast/episode.
-        role: What role the person serves on this podcast/episode.
-      okay: Okay
-      save: Save Changes
-      title_add: Add a Person
-      title_edit: Edit Person
-    form_people_person:
-      edit: Edit this person
-      remove: Remove this person
     form_status:
       <<: *form_status
       title: Podcast Status
