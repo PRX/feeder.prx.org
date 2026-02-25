@@ -88,7 +88,8 @@
     text-decoration: line-through;
     td,
     th {
-      &.is-changed, &.is-invalid {
+      &.is-changed,
+      &.is-invalid {
         box-shadow: none;
       }
     }
