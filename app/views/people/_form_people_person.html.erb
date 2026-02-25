@@ -1,8 +1,8 @@
 <tr data-controller="person">
-  <td class="align-middle" data-person-target="name"><%= blank_dash(person.name) %></td>
-  <td class="align-middle" data-person-target="role"><%= blank_dash(person.role) { t("helpers.label.person.roles.#{person.role}") } %></td>
-  <td class="align-middle" data-person-target="organization"><%= blank_dash(person.organization) %></td>
-  <td class="align-middle" data-person-target="href"><%= blank_dash(person.href) { link_to(person.href, person.href, target: "_blank", rel: "noopener") } %></td>
+  <td class="align-middle <%= person_class(person, :name) %>" data-person-target="name"><%= blank_dash(person.name) %></td>
+  <td class="align-middle <%= person_class(person, :role) %>" data-person-target="role"><%= blank_dash(person.role) { t("helpers.label.person.roles.#{person.role}") } %></td>
+  <td class="align-middle <%= person_class(person, :organization)  %>" data-person-target="organization"><%= blank_dash(person.organization) %></td>
+  <td class="align-middle <%= person_class(person, :href) %>" data-person-target="href"><%= blank_dash(person.href) { link_to(person.href, person.href, target: "_blank", rel: "noopener") } %></td>
 
   <td class="align-middle">
     <button type="button" class="btn text-primary" data-bs-toggle="modal" data-bs-target="#person-modal-<%= form.index %>" data-person-target="edit">

@@ -37,7 +37,7 @@ class Podcast < ApplicationRecord
   has_many :stream_resources, through: :stream_recording
 
   accepts_nested_attributes_for :default_feed
-  accepts_nested_attributes_for :persons, allow_destroy: true, reject_if: ->(p) { p[:name].blank? }
+  accepts_nested_attributes_for :persons, allow_destroy: true, reject_if: :all_blank
   accepts_nested_attributes_for :subscribe_links, allow_destroy: true
 
   validates :title, presence: true

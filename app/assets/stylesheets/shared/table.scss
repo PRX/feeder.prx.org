@@ -67,7 +67,12 @@
     }
 
     &.is-changed {
-      box-shadow: inset 0px 0px 12px 1px orange;
+      box-shadow: inset 0px 0px 12px 1px $orange;
+    }
+
+    &.is-invalid {
+      color: $form-feedback-invalid-color;
+      box-shadow: inset 0px 0px 12px 1px $form-feedback-invalid-color;
     }
   }
 
@@ -83,7 +88,7 @@
     text-decoration: line-through;
     td,
     th {
-      &.is-changed {
+      &.is-changed, &.is-invalid {
         box-shadow: none;
       }
     }
