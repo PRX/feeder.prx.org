@@ -39,11 +39,10 @@
 
     <div class="card-footer border-0">
       <button type="button" class="btn btn-primary" data-action="person-add#add">
-        <span class="material-icons" ahria-label="hidden">add</span>
+        <span class="material-icons" aria-label="hidden">add</span>
         <%= t(".add") %>
       </button>
 
-      <%# but new-persons will get copied to this template %>
       <template data-person-add-target="template">
         <%= form.fields_for :persons, form.object.persons.build, child_index: "__INDEX__", include_id: false do |fields| %>
           <%= render "people/form_people_person", form: fields, person: fields.object %>
