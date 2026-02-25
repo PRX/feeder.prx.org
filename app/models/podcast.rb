@@ -94,7 +94,7 @@ class Podcast < ApplicationRecord
   end
 
   def has_apple_feed?
-    feeds.apple.exists?
+    @has_apple_feed ||= defined?(@has_apple_feed) ? @has_apple_feed : feeds.apple.exists?
   end
 
   def reload(options = nil)
