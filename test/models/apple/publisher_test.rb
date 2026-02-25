@@ -863,6 +863,11 @@ describe Apple::Publisher do
   describe "#upload_and_process!" do
     let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
+    before do
+      # Isolate upload_and_process! behavior from sync_episodes! network calls.
+      apple_publisher.define_singleton_method(:sync_episodes!) { |_eps| }
+    end
+
     it "skips upload for already uploaded episodes" do
       episode.feeder_episode.apple_mark_as_uploaded!
 
@@ -881,6 +886,26 @@ describe Apple::Publisher do
       end
 
       refute upload_called, "upload_media! should not be called for already uploaded episodes"
+    end
+
+    it "syncs metadata for draft episodes even when upload is skipped" do
+      episode.feeder_episode.update!(published_at: nil)
+      episode.feeder_episode.apple_mark_as_uploaded!
+      refute episode.apple_needs_upload?
+
+      sync_called_with = nil
+      upload_called = false
+
+      apple_publisher.stub(:sync_episodes!, ->(eps) { sync_called_with = eps }) do
+        apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+          apple_publisher.stub(:process_delivery!, ->(*) {}) do
+            apple_publisher.upload_and_process!([episode])
+          end
+        end
+      end
+
+      assert_equal [episode], sync_called_with
+      refute upload_called, "upload_media! should not be called for draft episode with unchanged media"
     end
 
     it "processes uploads for non-uploaded episodes" do

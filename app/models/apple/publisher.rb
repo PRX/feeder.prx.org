@@ -90,6 +90,10 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
+        # Always sync episode metadata first so drafts/scheduled episodes get
+        # PATCH updates even when they do not need audio upload.
+        sync_episodes!(eps)
+
         eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
@@ -112,8 +116,7 @@ module Apple
         # Soft delete any existing delivery and delivery files.
         prepare_for_delivery!(eps)
 
-        # Only create if needed.
-        sync_episodes!(eps)
+        # Create containers/files for episodes needing media upload.
         sync_podcast_containers!(eps)
 
         wait_for_versioned_source_metadata(eps)
