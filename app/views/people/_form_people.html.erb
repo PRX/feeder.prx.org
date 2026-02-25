@@ -13,21 +13,22 @@
 
   <div id="people-card" class="<%= "collapse" if nobody %>">
     <div class="card-body mb-0 pb-0">
-      <table class="table prx-person-table mb-0">
+      <div class="table-responsive">
+      <table class="table prx-person-table table-sm align-middle mb-0">
         <thead>
           <tr class="table-secondary">
-            <td><%= t("helpers.label.person.name") %></td>
-            <td><%= t("helpers.label.person.role") %></td>
-            <td><%= t("helpers.label.person.organization") %></td>
-            <td><%= t("helpers.label.person.href") %></td>
-            <td width="1" class="text-center"><%= t(".edit") %></td>
-            <td width="1" class="text-center"><%= t(".remove") %></td>
+            <th scope="col"><%= t("helpers.label.person.name") %></th>
+            <th scope="col"><%= t("helpers.label.person.role") %></th>
+            <th scope="col"><%= t("helpers.label.person.organization") %></th>
+            <th scope="col"><%= t("helpers.label.person.href") %></th>
+            <th scope="col" width="1" class="text-center"><%= t(".edit") %></th>
+            <th scope="col" width="1" class="text-center"><%= t(".remove") %></th>
           </tr>
         </thead>
 
         <tbody data-person-add-target="table">
           <tr class="show-if-last">
-            <td class="text-center text-muted p-4" colspan="100"><%= t(".empty") %></td>
+            <td class="text-center align-middle text-muted p-4" colspan="100"><%= t(".empty") %></td>
           </tr>
 
           <%= form.fields_for :persons do |fields| %>
@@ -35,10 +36,11 @@
           <% end %>
         </tbody>
       </table>
+      </div>
     </div>
 
     <div class="card-footer border-0">
-      <button type="button" class="btn btn-primary" data-action="person-add#add">
+      <button type="button" class="btn btn-primary btn-sm" data-action="person-add#add">
         <span class="material-icons" aria-label="hidden">add</span>
         <%= t(".add") %>
       </button>
