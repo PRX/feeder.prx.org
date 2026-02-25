@@ -33,7 +33,7 @@ class Transcript < ApplicationRecord
   enum :format, FORMATS, prefix: true, default: :text
 
   def published_url
-    "#{episode.base_published_url}/#{transcript_path}"
+    "#{episode.base_published_url}/#{transcript_path}" if episode
   end
 
   def transcript_path
@@ -43,6 +43,7 @@ class Transcript < ApplicationRecord
   def initialize_attributes
     self.status ||= :created
     guid
+    url
   end
 
   def guid

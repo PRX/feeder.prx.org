@@ -13,7 +13,7 @@ module FeedImageFile
   end
 
   def published_url
-    "#{feed.podcast.base_published_url}/#{feed_image_path}"
+    "#{feed.podcast.base_published_url}/#{feed_image_path}" if feed&.podcast
   end
 
   def feed_image_path
