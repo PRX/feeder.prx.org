@@ -109,6 +109,50 @@ describe Apple::Publisher do
       end
     end
 
+    it "routes mixed sets to create and update subsets" do
+      apple_publisher.stub(:poll_episodes!, []) do
+        new_ep_1 = OpenStruct.new(drafting?: false, apple_new?: true)
+        new_ep_2 = OpenStruct.new(drafting?: false, apple_new?: true)
+        draft_ep = OpenStruct.new(drafting?: true, apple_new?: false)
+        unchanged_ep = OpenStruct.new(drafting?: false, apple_new?: false)
+        eps = [new_ep_1, draft_ep, unchanged_ep, new_ep_2]
+
+        create_mock = Minitest::Mock.new
+        create_mock.expect(:call, [], [apple_publisher.api, [new_ep_1, new_ep_2]])
+
+        update_mock = Minitest::Mock.new
+        update_mock.expect(:call, [], [apple_publisher.api, [draft_ep]])
+
+        Apple::Episode.stub(:create_episodes, create_mock) do
+          Apple::Episode.stub(:update_episodes, update_mock) do
+            apple_publisher.sync_episodes!(eps)
+          end
+        end
+
+        assert create_mock.verify
+        assert update_mock.verify
+      end
+    end
+
+    it "handles empty episode sets without creating or updating episodes" do
+      apple_publisher.stub(:poll_episodes!, []) do
+        create_mock = Minitest::Mock.new
+        create_mock.expect(:call, [], [apple_publisher.api, []])
+
+        update_mock = Minitest::Mock.new
+        update_mock.expect(:call, [], [apple_publisher.api, []])
+
+        Apple::Episode.stub(:create_episodes, create_mock) do
+          Apple::Episode.stub(:update_episodes, update_mock) do
+            apple_publisher.sync_episodes!([])
+          end
+        end
+
+        assert create_mock.verify
+        assert update_mock.verify
+      end
+    end
+
     it "should update draft episodes" do
       apple_publisher.stub(:poll_episodes!, []) do
         draft_ep = OpenStruct.new(drafting?: true, apple_new?: false)
