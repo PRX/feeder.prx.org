@@ -37,7 +37,7 @@ class Episode < ApplicationRecord
 
   has_many :episode_imports
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
-  has_many :persons, as: :owner
+  has_many :persons, as: :owner, inverse_of: :owner
 
   has_one :ready_image, -> { complete_or_replaced.order("created_at DESC") }, class_name: "EpisodeImage"
   has_one :transcript, -> { order("created_at DESC") }, dependent: :destroy, inverse_of: :episode

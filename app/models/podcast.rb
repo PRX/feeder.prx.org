@@ -31,7 +31,7 @@ class Podcast < ApplicationRecord
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
   has_many :tasks, as: :owner
-  has_many :persons, as: :owner
+  has_many :persons, as: :owner, inverse_of: :owner
   has_many :podcast_imports, dependent: :destroy
   has_many :subscribe_links, dependent: :destroy
   has_many :stream_resources, through: :stream_recording

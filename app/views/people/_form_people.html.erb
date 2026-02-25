@@ -21,8 +21,10 @@
               <th scope="col"><%= t("helpers.label.person.role") %></th>
               <th scope="col"><%= t("helpers.label.person.organization") %></th>
               <th scope="col"><%= t("helpers.label.person.href") %></th>
-              <th scope="col" width="1" class="text-center"><%= t(".edit") %></th>
-              <th scope="col" width="1" class="text-center"><%= t(".remove") %></th>
+              <% if policy(form.object).update? %>
+                <th scope="col" width="1" class="text-center"><%= t(".edit") %></th>
+                <th scope="col" width="1" class="text-center"><%= t(".remove") %></th>
+              <% end %>
             </tr>
           </thead>
 
@@ -40,16 +42,20 @@
     </div>
 
     <div class="card-footer border-0">
-      <button type="button" class="btn btn-primary btn-sm" data-action="person-add#add">
-        <span class="material-icons" aria-label="hidden">add</span>
-        <%= t(".add") %>
-      </button>
+      <% new_person = form.object.persons.build %>
 
-      <template data-person-add-target="template">
-        <%= form.fields_for :persons, form.object.persons.build, child_index: "__INDEX__", include_id: false do |fields| %>
-          <%= render "people/form_people_person", form: fields, person: fields.object %>
-        <% end %>
-      </template>
+      <% if policy(new_person).create? %>
+        <button type="button" class="btn btn-primary btn-sm" data-action="person-add#add">
+          <span class="material-icons" aria-label="hidden">add</span>
+          <%= t(".add") %>
+        </button>
+
+        <template data-person-add-target="template">
+          <%= form.fields_for :persons, new_person, child_index: "__INDEX__", include_id: false do |fields| %>
+            <%= render "people/form_people_person", form: fields, person: fields.object %>
+          <% end %>
+        </template>
+      <% end %>
     </div>
   </div>
 </div>

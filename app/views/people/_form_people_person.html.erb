@@ -4,16 +4,18 @@
   <td class="align-middle <%= person_class(person, :organization) %>" data-person-target="organization"><%= blank_dash(person.organization) %></td>
   <td class="align-middle <%= person_class(person, :href) %>" data-person-target="href"><%= blank_dash(person.href) { link_to(person.href, person.href, target: "_blank", rel: "noopener") } %></td>
 
-  <td class="align-middle">
-    <button type="button" class="btn text-primary" data-bs-toggle="modal" data-bs-target="#person-modal-<%= form.index %>" data-person-target="edit">
-      <span class="material-icons" aria-label="<%= t(".edit") %>">edit</span>
-    </button>
-    <%= render "people/form_people_modal", form: form, person: person %>
-  </td>
+  <% if policy(person).update? %>
+    <td class="align-middle">
+      <button type="button" class="btn text-primary" data-bs-toggle="modal" data-bs-target="#person-modal-<%= form.index %>" data-person-target="edit">
+        <span class="material-icons" aria-label="<%= t(".edit") %>">edit</span>
+      </button>
+      <%= render "people/form_people_modal", form: form, person: person %>
+    </td>
 
-  <td class="align-middle">
-    <button type="button" class="btn text-danger" data-action="person#destroy">
-      <span class="material-icons" aria-label="<%= t(".remove") %>">delete</span>
-    </button>
-  </td>
+    <td class="align-middle">
+      <button type="button" class="btn text-danger" data-action="person#destroy">
+        <span class="material-icons" aria-label="<%= t(".remove") %>">delete</span>
+      </button>
+    </td>
+  <% end %>
 </tr>
