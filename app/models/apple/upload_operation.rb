@@ -9,7 +9,7 @@ module Apple
       @operation = operation_fragment
     end
 
-    def self.execute_upload_operations(api, episodes, media_infos_by_episode_id: {})
+    def self.execute_upload_operations(api, episodes)
       delivery_files = Apple::PodcastDeliveryFile.where(
         episode_id: episodes.map(&:feeder_id),
         upload_operations_complete: false
@@ -17,7 +17,7 @@ module Apple
 
       operation_bridge_params =
         delivery_files.map do |df|
-          df.upload_operations.map { |op| op.upload_operation_patch_parameters(media_infos_by_episode_id: media_infos_by_episode_id) }
+          df.upload_operations.map(&:upload_operation_patch_parameters)
         end.flatten
 
       res = do_upload(api, operation_bridge_params)
@@ -63,19 +63,12 @@ module Apple
       delivery_file.podcast_delivery
     end
 
-    def upload_operation_patch_parameters(media_infos_by_episode_id: {})
-      source_url =
-        if media_infos_by_episode_id.any?
-          media_infos_by_episode_id.fetch(delivery_file.episode_id).source_url
-        else
-          delivery_file.podcast_container.source_url
-        end
-
+    def upload_operation_patch_parameters
       {
         request_metadata: {
           podcast_delivery_file_id: delivery_file.id
         },
-        api_url: source_url,
+        api_url: delivery_file.podcast_container.source_url,
         api_parameters: operation
       }
     end

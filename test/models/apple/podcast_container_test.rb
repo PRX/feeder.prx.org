@@ -38,23 +38,14 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     let(:pc) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
 
     describe ".wait_for_versioned_source_metadata" do
-      it "should wait for the source metadata to be updated and return media_infos" do
-        mock_version_id = 42
-
-        media_info = Apple::MediaInfo.new(
-          episode: apple_episode,
-          source_media_version_id: mock_version_id,
-          source_size: 1000,
-          source_url: "https://cdn.example.com/audio.mp3"
-        )
-
+      it "should wait for the source metadata to be updated" do
         Apple::PodcastContainer.stub(:reset_source_file_metadata, [pc]) do
-          Apple::PodcastContainer.stub(:probe_source_file_metadata, [media_info]) do
-            apple_episode.feeder_episode.stub(:media_version_id, mock_version_id) do
-              (timed_out, media_infos) = Apple::PodcastContainer.wait_for_versioned_source_metadata(api, [apple_episode], wait_interval: 0.seconds, wait_timeout: 5.seconds)
-              assert_equal false, timed_out
-              assert_equal 1, media_infos.length
-              assert_equal apple_episode, media_infos.first.episode
+          Apple::PodcastContainer.stub(:probe_source_file_metadata, [pc]) do
+            apple_episode.stub(:needs_delivery?, false) do
+              apple_episode.stub(:has_media_version?, true) do
+                res = Apple::PodcastContainer.wait_for_versioned_source_metadata(api, [apple_episode], wait_interval: 0.seconds)
+                assert_equal [false, []], res
+              end
             end
           end
         end
@@ -62,14 +53,13 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
 
     describe "#reset_source_metadata!" do
-      it "persists filename and enclosure_url but does not clear source probe fields" do
+      it "clears out the fields" do
         assert_equal 0, pc.source_fetch_count
         pc.reset_source_metadata!(apple_episode)
-
-        # Simulate probe fields being set (e.g. via atomic write)
-        episode.apple_update_delivery_status(source_url: "www.some/foo", source_size: 123, source_media_version_id: 1)
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo", source_media_version_id: 1)
 
         assert_equal 1, pc.source_fetch_count
+        assert pc.source_filename.present?
         assert pc.source_filename.present?
         assert pc.source_url.present?
         assert pc.source_size.present?
@@ -82,10 +72,9 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         pc.reload
         assert_equal 2, pc.source_fetch_count
         assert pc.source_filename.present?
-        # Probe fields are NOT cleared by reset — they persist until overwritten atomically
-        assert pc.source_url.present?
-        assert pc.source_size.present?
-        assert pc.source_media_version_id.present?
+        refute pc.source_url.present?
+        refute pc.source_size.present?
+        refute pc.source_media_version_id.present?
 
         assert_equal "1_transistor", pc.source_filename
         assert_equal "http://something/transistor", pc.enclosure_url
@@ -94,7 +83,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       it "increments the source filename" do
         assert_equal 0, pc.source_fetch_count
         pc.reset_source_metadata!(apple_episode)
-        episode.apple_update_delivery_status(source_url: "www.some/foo", source_size: 123, source_filename: "foo", source_media_version_id: 1)
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo", source_media_version_id: 1)
 
         apple_episode.stub(:enclosure_filename, "new") do
           apple_episode.stub(:enclosure_url, "http://this-is-new") do
@@ -127,22 +116,31 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
 
     describe ".reset_source_file_metadata" do
-      it "resets metadata regardless of needs_delivery state" do
+      it "needs delivery in order to be reset" do
         pc.reset_source_metadata!(apple_episode)
-        episode.apple_update_delivery_status(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+        pc.update_source_metadata!(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+
+        apple_episode.stub(:needs_delivery?, false) do
+          Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
+        end
+
+        apple_episode.podcast_container.reload
+        refute apple_episode.podcast_container.source_url.nil?
+        refute apple_episode.podcast_container.source_size.nil?
+        refute apple_episode.podcast_container.source_filename.nil?
+        assert_equal "foo", apple_episode.podcast_container.source_filename
 
         apple_episode.stub(:enclosure_filename, "new") do
           apple_episode.stub(:enclosure_url, "http://this-is-new") do
-            apple_episode.stub(:needs_delivery?, false) do
+            apple_episode.stub(:needs_delivery?, true) do
               Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
             end
           end
         end
 
         apple_episode.podcast_container.reload
-        # Probe fields are no longer cleared by reset
-        refute apple_episode.podcast_container.source_url.nil?
-        refute apple_episode.podcast_container.source_size.nil?
+        assert apple_episode.podcast_container.source_url.nil?
+        assert apple_episode.podcast_container.source_size.nil?
         assert_equal "http://this-is-new", apple_episode.podcast_container.enclosure_url
         assert_equal "1_new", apple_episode.podcast_container.source_filename
       end
@@ -152,33 +150,19 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   describe "probing source metadata" do
     it "should filter episodes that lack a container" do
       apple_episode.stub(:podcast_container, nil) do
-        assert_equal [], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
-        assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
+        apple_episode.stub(:needs_delivery?, true) do
+          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
+          assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
+        end
       end
     end
 
-    it "should not filter episodes by needs_delivery" do
-      pc = Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row)
-      response_row = {
-        "request_metadata" => {"podcast_container_id" => pc.id},
-        "api_response" => {
-          "val" => {
-            "data" => {
-              "headers" => {"content-length" => "123"},
-              "redirect_chain_end_url" => "https://cdn.example.com/audio.mp3",
-              "episode_media_version" => "42"
-            }
-          }
-        }
-      }
-
-      apple_episode.stub(:needs_delivery?, false) do
-        assert_equal [pc], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
-
-        api.stub(:bridge_remote_and_retry!, [response_row]) do
-          media_infos = Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
-          assert_equal 1, media_infos.length
-          assert_equal apple_episode, media_infos.first.episode
+    it "should filter episodes that don't need delivery" do
+      podcast_container = Apple::PodcastContainer.new
+      apple_episode.stub(:podcast_container, podcast_container) do
+        apple_episode.stub(:needs_delivery?, false) do
+          assert_equal [], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
+          assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
         end
       end
     end

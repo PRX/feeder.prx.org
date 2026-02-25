@@ -28,7 +28,9 @@ module Integrations
       end
 
       def has_media_version?
-        delivery_status.present? && delivery_status.has_media_version?
+        return false unless delivery_status.present? && delivery_status.source_media_version_id.present?
+
+        delivery_status.source_media_version_id == feeder_episode.media_version_id
       end
 
       def needs_media_version?

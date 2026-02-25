@@ -85,15 +85,6 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       end
     end
 
-    describe "#mark_as_not_delivered!" do
-      it "preserves source_media_version_id" do
-        delivery_status.update!(source_media_version_id: 42)
-        delivery_status.mark_as_not_delivered!
-        new_status = episode.apple_episode_delivery_status
-        assert_equal 42, new_status.source_media_version_id
-      end
-    end
-
     describe "Asset waits and counting" do
       describe "#increment_asset_wait" do
         it "increments the asset_processing_attempts count" do

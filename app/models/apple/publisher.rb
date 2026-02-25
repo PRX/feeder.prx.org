@@ -109,45 +109,25 @@ module Apple
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         Rails.logger.info("Starting media upload", {episode_count: eps.length})
 
-        # Split: episodes with a fully satisfied prior upload can skip the full pipeline.
-        # All three conditions must hold for the fast path:
-        #   1. Delivery status has matching media version + all source attrs
-        #   2. Local delivery files exist and are marked as uploaded
-        #   3. Container already has audio in the asset repository
-        needs_upload, already_has_media = eps.partition { |ep|
-          !(Apple::MediaInfo.complete_from_delivery_status?(ep) &&
-            ep.podcast_delivery_files.any?(&:api_marked_as_uploaded?) &&
-            ep.podcast_container&.container_upload_satisfied?)
-        }
-
-        # Fast path: re-mark as uploaded using existing delivery status values
-        if already_has_media.any?
-          media_infos_from_status = already_has_media.map { |ep| Apple::MediaInfo.from_delivery_status(ep) }
-          mark_as_uploaded!(media_infos_from_status)
-        end
-
-        return if needs_upload.empty?
-
         # Soft delete any existing delivery and delivery files.
-        prepare_for_delivery!(needs_upload)
+        prepare_for_delivery!(eps)
 
         # Only create if needed.
-        sync_episodes!(needs_upload)
-        sync_podcast_containers!(needs_upload)
+        sync_episodes!(eps)
+        sync_podcast_containers!(eps)
 
-        media_infos = wait_for_versioned_source_metadata(needs_upload)
-        eps = media_infos.map(&:episode)
+        wait_for_versioned_source_metadata(eps)
 
         sync_podcast_deliveries!(eps)
-        sync_podcast_delivery_files!(media_infos)
+        sync_podcast_delivery_files!(eps)
 
         # Upload and mark as uploaded, then update the audio container reference.
-        execute_upload_operations!(media_infos)
+        execute_upload_operations!(eps)
         mark_delivery_files_uploaded!(eps)
         update_audio_container_reference!(eps)
 
-        # Mark the episode as uploaded (atomic write of source attrs + uploaded).
-        mark_as_uploaded!(media_infos)
+        # Mark the episode as uploaded.
+        mark_as_uploaded!(eps)
 
         # The episodes start waiting after they are uploaded.
         # Increment the wait counter.
@@ -273,10 +253,9 @@ module Apple
     def wait_for_versioned_source_metadata(eps)
       Rails.logger.tagged("##{__method__}") do
         # wait for the audio version to be created
-        (waiting_timed_out, media_infos) =
+        (waiting_timed_out, _) =
           Apple::PodcastContainer.wait_for_versioned_source_metadata(api, eps)
         raise "Timed out waiting for audio version" if waiting_timed_out
-        media_infos
       end
     end
 
@@ -409,28 +388,22 @@ module Apple
       end
     end
 
-    def sync_podcast_delivery_files!(media_infos)
-      eps = media_infos.map(&:episode)
-      media_infos_by_episode_id = media_infos.index_by { |mi| mi.episode.feeder_id }
-
+    def sync_podcast_delivery_files!(eps)
       Rails.logger.tagged("##{__method__}") do
         Rails.logger.info("Starting podcast delivery files sync")
 
         # TODO
         poll_podcast_delivery_files!(eps)
 
-        res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, eps, media_infos_by_episode_id: media_infos_by_episode_id)
+        res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, eps)
         Rails.logger.info("Created remote/local state for #{res.length} podcast delivery files.")
       end
     end
 
-    def execute_upload_operations!(media_infos)
-      eps = media_infos.map(&:episode)
-      media_infos_by_episode_id = media_infos.index_by { |mi| mi.episode.feeder_id }
-
+    def execute_upload_operations!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         Rails.logger.info("Executing upload operations", {episode_count: eps.length})
-        Apple::UploadOperation.execute_upload_operations(api, eps, media_infos_by_episode_id: media_infos_by_episode_id)
+        Apple::UploadOperation.execute_upload_operations(api, eps)
       end
     end
 
@@ -460,12 +433,11 @@ module Apple
       end
     end
 
-    def mark_as_uploaded!(media_infos)
+    def mark_as_uploaded!(eps)
       Rails.logger.tagged("##{__method__}") do
-        media_infos.each do |mi|
-          Rails.logger.info("Marking episode as uploaded (atomic)", {episode_id: mi.episode.feeder_episode.id})
-          attrs = mi.source_attributes.merge(uploaded: true)
-          mi.episode.feeder_episode.apple_update_delivery_status(attrs)
+        eps.each do |ep|
+          Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
+          ep.feeder_episode.apple_mark_as_uploaded!
         end
       end
     end

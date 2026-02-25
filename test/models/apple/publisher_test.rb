@@ -828,29 +828,17 @@ describe Apple::Publisher do
   describe "#mark_as_uploaded!" do
     let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
     let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episodes) { [episode1, episode2] }
 
-    it "atomically writes source attributes and uploaded flag" do
-      media_infos = [episode1, episode2].map do |ep|
-        Apple::MediaInfo.new(
-          episode: ep,
-          source_media_version_id: ep.feeder_episode.media_version_id,
-          source_size: 12345,
-          source_url: "https://cdn.example.com/audio.mp3"
-        )
+    it "marks episodes as uploaded" do
+      episodes.each do |ep|
+        refute ep.delivery_status.uploaded
       end
 
-      media_infos.each do |mi|
-        refute mi.episode.delivery_status.uploaded
-      end
+      apple_publisher.mark_as_uploaded!(episodes)
 
-      apple_publisher.mark_as_uploaded!(media_infos)
-
-      media_infos.each do |mi|
-        status = mi.episode.delivery_status
-        assert status.uploaded
-        assert_equal 12345, status.source_size
-        assert_equal "https://cdn.example.com/audio.mp3", status.source_url
-        assert_equal mi.episode.feeder_episode.media_version_id, status.source_media_version_id
+      episodes.each do |ep|
+        assert ep.delivery_status.uploaded
       end
     end
   end
@@ -909,21 +897,6 @@ describe Apple::Publisher do
       end
 
       mock.verify
-    end
-
-    it "skips upload when uploaded and media version has not changed" do
-      episode.feeder_episode.apple_mark_as_uploaded!
-      assert episode.has_media_version?
-
-      upload_called = false
-
-      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
-        apple_publisher.stub(:process_delivery!, ->(*) {}) do
-          apple_publisher.upload_and_process!([episode])
-        end
-      end
-
-      refute upload_called, "upload_media! should not be called when media version matches"
     end
 
     it "calls delivery for episodes needing delivery" do
