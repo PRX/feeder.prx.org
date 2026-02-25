@@ -94,7 +94,10 @@ module Apple
           upload_media!(batch)
         end
 
-        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        eps
+          .filter(&:apple_needs_delivery?)
+          .filter { |ep| ep.feeder_episode.published? }
+          .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           process_delivery!(batch)
         end
 

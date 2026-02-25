@@ -916,6 +916,52 @@ describe Apple::Publisher do
       assert delivery_mock.verify
     end
 
+    it "still uploads media for draft episodes" do
+      episode.feeder_episode.update!(published_at: nil)
+
+      upload_called_with = nil
+
+      apple_publisher.stub(:upload_media!, ->(eps) { upload_called_with = eps }) do
+        apple_publisher.stub(:process_delivery!, ->(*) {}) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      assert_equal [episode], upload_called_with, "upload_media! should be called with draft episodes"
+    end
+
+    it "skips process_delivery! for draft episodes" do
+      episode.feeder_episode.update!(published_at: nil)
+      episode.feeder_episode.apple_mark_as_uploaded!
+      episode.feeder_episode.apple_mark_as_not_delivered!
+
+      delivery_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) {}) do
+        apple_publisher.stub(:process_delivery!, ->(*) { delivery_called = true }) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      refute delivery_called, "process_delivery! should not be called for draft episodes"
+    end
+
+    it "skips process_delivery! for scheduled episodes" do
+      episode.feeder_episode.update!(published_at: 10.days.from_now)
+      episode.feeder_episode.apple_mark_as_uploaded!
+      episode.feeder_episode.apple_mark_as_not_delivered!
+
+      delivery_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) {}) do
+        apple_publisher.stub(:process_delivery!, ->(*) { delivery_called = true }) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      refute delivery_called, "process_delivery! should not be called for scheduled episodes"
+    end
+
     it "processes all uploads before any deliveries (phase separation)" do
       # Create episodes in different states
       upload_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
