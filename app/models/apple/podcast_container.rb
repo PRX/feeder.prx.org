@@ -25,7 +25,6 @@ module Apple
 
     def self.reset_source_file_metadata(episodes)
       episodes = episodes.select { |ep| ep.podcast_container.present? }
-      episodes = episodes.select { |ep| ep.needs_delivery? }
 
       episodes.map do |episode|
         container = episode.container
@@ -43,10 +42,9 @@ module Apple
 
     def self.probe_source_file_metadata(api, episodes)
       episodes = episodes.select { |ep| ep.podcast_container.present? }
-      episodes = episodes.select { |ep| ep.needs_delivery? }
 
       containers = episodes.map(&:podcast_container)
-      containers_by_id = containers.map { |c| [c.id, c] }.to_h
+      episodes_by_container_id = episodes.map { |ep| [ep.podcast_container.id, ep] }.to_h
 
       api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params))
         .map do |row|
@@ -59,32 +57,36 @@ module Apple
         raise "Missing media_version in response" if media_version.blank?
 
         podcast_container_id = row["request_metadata"]["podcast_container_id"]
+        episode = episodes_by_container_id.fetch(podcast_container_id)
 
-        container = containers_by_id.fetch(podcast_container_id)
-        container.update_source_metadata!(
+        Apple::MediaInfo.new(
+          episode: episode,
+          source_media_version_id: media_version.to_i,
           source_size: content_length.to_i,
-          source_url: cdn_url,
-          source_media_version_id: media_version.to_i
+          source_url: cdn_url
         )
-        container
       end
     end
 
     def self.wait_for_versioned_source_metadata(api, episodes, wait_interval: 10.seconds, wait_timeout: 1.minute)
-      episodes = episodes.select { |ep| ep.needs_delivery? }
       raise "Missing podcast container for episode" if episodes.map(&:podcast_container).any?(&:nil?)
 
-      wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
+      all_media_infos = []
+
+      result = wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
         containers = Apple::PodcastContainer.reset_source_file_metadata(remaining_episodes)
         Rails.logger.info("Reset container source metadata", {reset_count: containers.length})
 
-        containers = Apple::PodcastContainer.probe_source_file_metadata(api, remaining_episodes)
-        Rails.logger.info("Updated container source metadata.", {count: containers.length})
+        media_infos = Apple::PodcastContainer.probe_source_file_metadata(api, remaining_episodes)
+        Rails.logger.info("Updated container source metadata.", {count: media_infos.length})
 
-        finished = remaining_episodes.group_by(&:has_media_version?)
+        ready, not_ready = media_infos.partition(&:has_media_version?)
+        all_media_infos.concat(ready)
 
-        finished[false] || []
+        not_ready.map(&:episode)
       end
+
+      [result[0], all_media_infos]
     end
 
     def self.poll_podcast_container_state(api, episodes)
@@ -337,17 +339,10 @@ module Apple
     def reset_source_metadata!(apple_ep)
       count = source_fetch_count
       episode.apple_update_delivery_status(
-        source_url: nil,
-        source_size: nil,
-        source_media_version_id: nil,
         source_filename: filename_prefix(count) + apple_ep.enclosure_filename,
         enclosure_url: apple_ep.enclosure_url,
         source_fetch_count: count + 1
       )
-    end
-
-    def update_source_metadata!(attrs)
-      episode.apple_update_delivery_status(**attrs)
     end
   end
 end

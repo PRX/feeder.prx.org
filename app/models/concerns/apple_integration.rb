@@ -41,7 +41,11 @@ module AppleIntegration
   end
 
   def apple_needs_upload?
-    apple_episode_delivery_status.uploaded == false
+    apple_episode_delivery_status.uploaded == false || !apple_has_media_version?
+  end
+
+  def apple_has_media_version?
+    apple_episode_delivery_status.has_media_version?
   end
 
   def apple_mark_as_not_delivered!

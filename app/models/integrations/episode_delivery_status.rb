@@ -58,5 +58,13 @@ module Integrations
     def mark_as_not_delivered!
       self.class.update_status(integration, episode, delivered: false, uploaded: false, asset_processing_attempts: 0)
     end
+
+    def has_media_version?
+      source_media_version_id.present? && source_media_version_id == episode.media_version_id
+    end
+
+    def needs_media_version?
+      !has_media_version?
+    end
   end
 end
