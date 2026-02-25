@@ -14,28 +14,28 @@
   <div id="people-card" class="<%= "collapse" if nobody %>">
     <div class="card-body mb-0 pb-0">
       <div class="table-responsive">
-      <table class="table prx-person-table table-sm align-middle mb-0">
-        <thead>
-          <tr class="table-secondary">
-            <th scope="col"><%= t("helpers.label.person.name") %></th>
-            <th scope="col"><%= t("helpers.label.person.role") %></th>
-            <th scope="col"><%= t("helpers.label.person.organization") %></th>
-            <th scope="col"><%= t("helpers.label.person.href") %></th>
-            <th scope="col" width="1" class="text-center"><%= t(".edit") %></th>
-            <th scope="col" width="1" class="text-center"><%= t(".remove") %></th>
-          </tr>
-        </thead>
+        <table class="table prx-person-table table-sm align-middle mb-0">
+          <thead>
+            <tr class="table-secondary">
+              <th scope="col"><%= t("helpers.label.person.name") %></th>
+              <th scope="col"><%= t("helpers.label.person.role") %></th>
+              <th scope="col"><%= t("helpers.label.person.organization") %></th>
+              <th scope="col"><%= t("helpers.label.person.href") %></th>
+              <th scope="col" width="1" class="text-center"><%= t(".edit") %></th>
+              <th scope="col" width="1" class="text-center"><%= t(".remove") %></th>
+            </tr>
+          </thead>
 
-        <tbody data-person-add-target="table">
-          <tr class="show-if-last">
-            <td class="text-center align-middle text-muted p-4" colspan="100"><%= t(".empty") %></td>
-          </tr>
+          <tbody data-person-add-target="table">
+            <tr class="show-if-last">
+              <td class="text-center align-middle text-muted p-4" colspan="100"><%= t(".empty") %></td>
+            </tr>
 
-          <%= form.fields_for :persons do |fields| %>
-            <%= render "people/form_people_person", form: fields, person: fields.object, include_id: false %>
-          <% end %>
-        </tbody>
-      </table>
+            <%= form.fields_for :persons do |fields| %>
+              <%= render "people/form_people_person", form: fields, person: fields.object, include_id: false %>
+            <% end %>
+          </tbody>
+        </table>
       </div>
     </div>
 
