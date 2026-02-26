@@ -201,7 +201,7 @@ describe Apple::Episode do
     let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "PUBLISH") }
 
     it "should be false when drafting" do
-      ep = build(:uploaded_apple_episode)
+      ep = build(:delivered_apple_episode)
       assert_equal true, ep.synced_with_apple?
 
       ep.stub(:drafting?, true) do
