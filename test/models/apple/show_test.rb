@@ -218,6 +218,11 @@ describe Apple::Show do
       apple_feed.episodes << draft_with_media
       apple_feed.episodes << draft_without_media
 
+      # Preconditions: verify the media states that drive candidate selection
+      assert draft_with_media.enclosure_ready?(true), "draft_with_media should have complete media"
+      refute draft_without_media.enclosure_ready?(true), "draft_without_media should not have complete media"
+      refute draft_without_media.enclosure_ready?(false), "draft_without_media should have no media at all"
+
       config = build(:apple_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
