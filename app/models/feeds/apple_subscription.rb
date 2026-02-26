@@ -136,7 +136,7 @@ class Feeds::AppleSubscription < Feed
     episodes.draft_or_scheduled
   end
 
-  def integration_feed_episode?(episode)
+  def feed_episode?(episode)
     if episode.published?
       feed_episodes.where(id: episode.id).exists?
     else

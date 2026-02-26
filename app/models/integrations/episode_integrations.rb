@@ -37,7 +37,7 @@ module Integrations::EpisodeIntegrations
 
   def integration_feed_episode?(integration)
     feed = integration_feed(integration)
-    publish_to_integration?(integration) && feed&.integration_feed_episode?(self)
+    publish_to_integration?(integration) && feed&.feed_episode?(self)
   end
 
   def integration_feed(integration)
