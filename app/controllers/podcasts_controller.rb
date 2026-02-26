@@ -101,11 +101,6 @@ class PodcastsController < ApplicationController
     render_not_found(e)
   end
 
-  def published_episodes(date_range)
-    data = @podcast.episodes.published.where(published_at: date_range.first..).order(published_at: :asc).pluck(:guid, :title)
-    [data.transpose[0] || [], data.transpose[1] || []]
-  end
-
   def podcast_params
     nilify params.fetch(:podcast, {}).permit(
       :lock_version,
