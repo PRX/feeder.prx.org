@@ -136,6 +136,15 @@ class Feeds::AppleSubscription < Feed
     episodes.draft_or_scheduled
   end
 
+  def integration_feed_episode?(episode)
+    if episode.published?
+      feed_episodes.where(id: episode.id).exists?
+    else
+      episode.feed_ready? &&
+        (feed_episodes.where(id: episode.id).exists? || draft_episodes.where(id: episode.id).exists?)
+    end
+  end
+
   def serve_drafts
     publish_integration?
   end

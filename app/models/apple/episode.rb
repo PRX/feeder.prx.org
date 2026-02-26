@@ -483,6 +483,10 @@ module Apple
       audio_asset_state_error? || delivery_file_errors?
     end
 
+    def processing_status_label
+      feeder_episode.published? ? "processing" : "uploaded"
+    end
+
     def audio_asset_state_success?
       audio_asset_state == AUDIO_ASSET_SUCCESS
     end

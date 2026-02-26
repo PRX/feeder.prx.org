@@ -163,6 +163,10 @@ class Feed < ApplicationRecord
     feed_episodes.pluck(:id)
   end
 
+  def integration_feed_episode?(episode)
+    feed_episodes.where(id: episode.id).exists?
+  end
+
   def guid
     podcast&.guid
   end

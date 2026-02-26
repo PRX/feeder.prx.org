@@ -37,7 +37,7 @@ module Integrations::EpisodeIntegrations
 
   def integration_feed_episode?(integration)
     feed = integration_feed(integration)
-    publish_to_integration?(integration) && feed&.feed_episode_ids&.include?(id)
+    publish_to_integration?(integration) && feed&.integration_feed_episode?(self)
   end
 
   def integration_feed(integration)
@@ -51,6 +51,10 @@ module Integrations::EpisodeIntegrations
     else
       false
     end
+  end
+
+  def integration_processing_status(integration)
+    integration_episode(integration)&.processing_status_label || "processing"
   end
 
   def sync_log(integration)

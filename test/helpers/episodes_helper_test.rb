@@ -24,6 +24,8 @@ describe EpisodesHelper do
     describe "with apple feed" do
       let(:apple_feed) { create(:apple_feed, podcast: podcast) }
       let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
+      let(:draft_episode) { create(:episode, podcast: podcast, published_at: nil) }
+      let(:scheduled_episode) { create(:episode, podcast: podcast, published_at: 1.hour.from_now) }
 
       before { apple_feed }
 
@@ -54,6 +56,39 @@ describe EpisodesHelper do
       it "returns 'complete' when episode is delivered" do
         create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: true)
         assert_equal "complete", helper.episode_integration_status(:apple, episode)
+      end
+
+      it "returns 'new' when draft episode has no delivery status yet" do
+        assert_equal "new", helper.episode_integration_status(:apple, draft_episode)
+      end
+
+      it "returns 'incomplete' when draft episode has delivery status but not uploaded" do
+        create(:apple_episode_delivery_status, episode: draft_episode, uploaded: false, delivered: false)
+        assert_equal "incomplete", helper.episode_integration_status(:apple, draft_episode)
+      end
+
+      it "returns 'uploaded' when draft episode is uploaded but not delivered" do
+        create(:apple_episode_delivery_status, episode: draft_episode, uploaded: true, delivered: false)
+        assert_equal "uploaded", helper.episode_integration_status(:apple, draft_episode)
+      end
+
+      it "returns 'error' when draft apple episode has audio asset state error" do
+        create(:apple_episode_delivery_status, episode: draft_episode, uploaded: true, delivered: false)
+        api_response = build(:apple_episode_api_response,
+          item_guid: draft_episode.item_guid,
+          apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_FAILURE)
+        create(:apple_episode, feeder_episode: draft_episode, api_response: api_response)
+
+        assert_equal "error", helper.episode_integration_status(:apple, draft_episode)
+      end
+
+      it "returns 'new' when scheduled episode has no delivery status yet" do
+        assert_equal "new", helper.episode_integration_status(:apple, scheduled_episode)
+      end
+
+      it "returns 'uploaded' when scheduled episode is uploaded but not delivered" do
+        create(:apple_episode_delivery_status, episode: scheduled_episode, uploaded: true, delivered: false)
+        assert_equal "uploaded", helper.episode_integration_status(:apple, scheduled_episode)
       end
     end
 

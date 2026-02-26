@@ -47,9 +47,10 @@
               </li>
               <li class="list-group-item d-flex justify-content-between align-items-center">
                 <span><%= t(".apple") %></span>
-                <% unless episode_integration_status(:apple, episode) == "draft" %>
-                  <span class="badge rounded-pill prx-badge-<%= episode_integration_status(:apple, episode) %>">
-                    <%= t("helpers.label.episode.media_statuses.#{episode_integration_status(:apple, episode)}") %>
+                <% apple_status = episode_integration_status(:apple, episode) %>
+                <% unless apple_status == "draft" %>
+                  <span class="badge rounded-pill prx-badge-<%= apple_status %>">
+                    <%= t("helpers.label.episode.media_statuses.#{apple_status}") %>
                   </span>
                 <% end %>
               </li>

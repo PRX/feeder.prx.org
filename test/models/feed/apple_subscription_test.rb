@@ -142,6 +142,29 @@ describe Feeds::AppleSubscription do
     end
   end
 
+  describe "#integration_feed_episode?" do
+    it "returns true for feed-ready draft and scheduled episodes" do
+      apple_feed.save!
+      draft = create(:episode, podcast: podcast, published_at: nil)
+      scheduled = create(:episode, podcast: podcast, published_at: 1.day.from_now)
+
+      assert apple_feed.integration_feed_episode?(draft)
+      assert apple_feed.integration_feed_episode?(scheduled)
+    end
+
+    it "returns false for draft episodes that are not feed-ready" do
+      apple_feed.save!
+      not_ready = create(:episode,
+        podcast: podcast,
+        published_at: nil,
+        medium: "audio",
+        segment_count: 1,
+        contents: [build(:content, status: "created")])
+
+      refute apple_feed.integration_feed_episode?(not_ready)
+    end
+  end
+
   describe "#publish_to_apple?" do
     it "returns true if the feed has apple credentials" do
       apple_feed.save!
