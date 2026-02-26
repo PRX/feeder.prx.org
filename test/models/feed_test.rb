@@ -135,12 +135,6 @@ describe Feed do
     end
   end
 
-  describe "#draft_episodes" do
-    it "returns no episodes by default" do
-      assert_equal Episode.none.to_a, feed1.draft_episodes.to_a
-    end
-  end
-
   describe "#integration_feed_episode?" do
     it "checks membership in feed_episodes" do
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)

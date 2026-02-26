@@ -28,10 +28,7 @@ module Integrations
       # Does not include deleted episodes
       def episodes
         @episodes ||= begin
-          published_ids = Set.new(private_feed.feed_episodes.feed_ready.map(&:id))
-          draft_ids = Set.new(private_feed.draft_episodes.feed_ready.map(&:id))
-          feed_episode_ids = published_ids | draft_ids
-
+          feed_episode_ids = Set.new(private_feed.feed_episodes.feed_ready.map(&:id))
           podcast_episodes
             .filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }
         end

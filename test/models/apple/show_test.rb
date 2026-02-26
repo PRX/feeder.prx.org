@@ -162,7 +162,20 @@ describe Apple::Show do
       assert_equal 0, apple_show.episodes.count
     end
 
-    it "includes draft episodes from an apple subscription feed" do
+    it "includes draft episodes with media from an apple subscription feed" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      apple_feed.set_default_episodes
+      draft = create(:episode_with_media, podcast: podcast, published_at: nil)
+      apple_feed.episodes << draft
+
+      config = build(:apple_config, feed: apple_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      episode_ids = show.episodes.map { |e| e.feeder_episode.id }
+      assert_includes episode_ids, draft.id
+    end
+
+    it "excludes draft episodes without media from an apple subscription feed" do
       apple_feed = create(:apple_feed, podcast: podcast)
       apple_feed.set_default_episodes
       draft = create(:episode, podcast: podcast, published_at: nil)
@@ -172,7 +185,32 @@ describe Apple::Show do
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
-      assert_includes episode_ids, draft.id
+      refute_includes episode_ids, draft.id
+    end
+  end
+
+  describe "#draft_upload_candidates" do
+    it "returns draft episodes with media from an apple subscription feed" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      apple_feed.set_default_episodes
+      draft_with_media = create(:episode_with_media, podcast: podcast, published_at: nil)
+      draft_without_media = create(:episode, podcast: podcast, published_at: nil)
+      apple_feed.episodes << draft_with_media
+      apple_feed.episodes << draft_without_media
+
+      config = build(:apple_config, feed: apple_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      candidate_ids = show.draft_upload_candidates.map { |e| e.feeder_episode.id }
+      assert_includes candidate_ids, draft_with_media.id
+      refute_includes candidate_ids, draft_without_media.id
+    end
+
+    it "returns empty array for non-apple feeds" do
+      config = build(:apple_config, feed: private_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      assert_equal [], show.draft_upload_candidates
     end
   end
 

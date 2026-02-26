@@ -24,8 +24,9 @@ describe EpisodesHelper do
     describe "with apple feed" do
       let(:apple_feed) { create(:apple_feed, podcast: podcast) }
       let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
-      let(:draft_episode) { create(:episode, podcast: podcast, published_at: nil) }
-      let(:scheduled_episode) { create(:episode, podcast: podcast, published_at: 1.hour.from_now) }
+      let(:draft_episode) { create(:episode_with_media, podcast: podcast, published_at: nil) }
+      let(:scheduled_episode) { create(:episode_with_media, podcast: podcast, published_at: 1.hour.from_now) }
+      let(:scheduled_episode_without_media) { create(:episode, podcast: podcast, published_at: 1.hour.from_now) }
 
       before { apple_feed }
 
@@ -89,6 +90,10 @@ describe EpisodesHelper do
       it "returns 'uploaded' when scheduled episode is uploaded but not delivered" do
         create(:apple_episode_delivery_status, episode: scheduled_episode, uploaded: true, delivered: false)
         assert_equal "uploaded", helper.episode_integration_status(:apple, scheduled_episode)
+      end
+
+      it "returns 'not_publishable' when scheduled episode has no uploadable media" do
+        assert_equal "not_publishable", helper.episode_integration_status(:apple, scheduled_episode_without_media)
       end
     end
 

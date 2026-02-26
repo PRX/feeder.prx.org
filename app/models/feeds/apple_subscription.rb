@@ -140,7 +140,8 @@ class Feeds::AppleSubscription < Feed
     if episode.published?
       feed_episodes.where(id: episode.id).exists?
     else
-      episode.feed_ready? &&
+      # Use enclosure_ready? (not feed_ready?) to exclude medialess drafts from UI status
+      episode.enclosure_ready?(true) &&
         (feed_episodes.where(id: episode.id).exists? || draft_episodes.where(id: episode.id).exists?)
     end
   end

@@ -999,6 +999,22 @@ describe Apple::Publisher do
       assert_equal [episode], upload_called_with, "upload_media! should be called with draft episodes"
     end
 
+    it "skips upload for prepublish episodes without uploadable media" do
+      no_media_episode = build(:apple_episode,
+        show: apple_publisher.show,
+        feeder_episode: create(:episode, published_at: nil))
+
+      upload_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+        apple_publisher.stub(:process_delivery!, ->(*) {}) do
+          apple_publisher.upload_and_process!([no_media_episode])
+        end
+      end
+
+      refute upload_called, "upload_media! should not be called when enclosure is not ready"
+    end
+
     it "skips process_delivery! for draft episodes" do
       episode.feeder_episode.update!(published_at: nil)
       episode.feeder_episode.apple_mark_as_uploaded!

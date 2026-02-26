@@ -143,13 +143,20 @@ describe Feeds::AppleSubscription do
   end
 
   describe "#integration_feed_episode?" do
-    it "returns true for feed-ready draft and scheduled episodes" do
+    it "returns true for draft and scheduled episodes with uploadable media" do
       apple_feed.save!
-      draft = create(:episode, podcast: podcast, published_at: nil)
-      scheduled = create(:episode, podcast: podcast, published_at: 1.day.from_now)
+      draft = create(:episode_with_media, podcast: podcast, published_at: nil)
+      scheduled = create(:episode_with_media, podcast: podcast, published_at: 1.day.from_now)
 
       assert apple_feed.integration_feed_episode?(draft)
       assert apple_feed.integration_feed_episode?(scheduled)
+    end
+
+    it "returns false for draft episodes with no media" do
+      apple_feed.save!
+      no_media = create(:episode, podcast: podcast, published_at: nil)
+
+      refute apple_feed.integration_feed_episode?(no_media)
     end
 
     it "returns false for draft episodes that are not feed-ready" do
