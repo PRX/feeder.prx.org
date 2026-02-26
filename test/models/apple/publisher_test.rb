@@ -117,6 +117,7 @@ describe Apple::Publisher do
         unchanged_ep = OpenStruct.new(drafting?: false, apple_new?: false)
         eps = [new_ep_1, draft_ep, unchanged_ep, new_ep_2]
 
+        # apple_new? -> create, drafting? -> update, neither -> skipped
         create_mock = Minitest::Mock.new
         create_mock.expect(:call, [], [apple_publisher.api, [new_ep_1, new_ep_2]])
 
@@ -136,6 +137,7 @@ describe Apple::Publisher do
 
     it "handles empty episode sets without creating or updating episodes" do
       apple_publisher.stub(:poll_episodes!, []) do
+        # both create and update receive empty arrays
         create_mock = Minitest::Mock.new
         create_mock.expect(:call, [], [apple_publisher.api, []])
 
@@ -638,20 +640,20 @@ describe Apple::Publisher do
     end
 
     it "only includes still-waiting episodes in timeout error, not all episodes" do
+      # Both episodes are uploaded and waiting for Apple to process
       episode1 = build(:uploaded_apple_episode, show: apple_publisher.show)
       episode2 = build(:uploaded_apple_episode, show: apple_publisher.show)
 
-      # Create mock PDFs that reference the episodes by feeder_id
+      # episode1 delivers successfully, but episode2's delivery file is still pending
       pdf1 = Minitest::Mock.new
       pdf1.expect(:episode_id, episode2.feeder_id)
 
-      # Simulate: episode1 delivered successfully, episode2 still waiting when timeout
-      # wait_for_delivery returns [timed_out, still_waiting_pdfs]
-      # Only pdf1 (referencing episode2) is still waiting
+      # Simulate a timeout where only episode2's PDF is still waiting
       delivery_stub = ->(api, pdfs, &block) {
         [true, [pdf1]]
       }
 
+      # The timeout error should only blame episode2, not episode1
       episode2.feeder_episode.stub(:measure_asset_processing_duration, 1000) do
         Apple::PodcastDeliveryFile.stub(:wait_for_delivery, delivery_stub) do
           error = assert_raises(Apple::AssetStateTimeoutError) do
