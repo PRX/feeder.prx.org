@@ -376,7 +376,6 @@ describe Apple::Episode do
         assert_equal episode2.id, ready.first.feeder_id, "Expected episode2 to be ready"
       end
     end
-
   end
 
   describe "#episode_create_parameters" do
