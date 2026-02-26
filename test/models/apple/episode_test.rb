@@ -377,6 +377,20 @@ describe Apple::Episode do
       end
     end
 
+  end
+
+  describe "#episode_create_parameters" do
+    it "includes originalReleaseDate when published_at is present" do
+      params = apple_episode.episode_create_parameters
+      assert_equal episode.published_at.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
+    end
+
+    it "omits originalReleaseDate when published_at is nil" do
+      episode.update!(published_at: nil)
+      params = apple_episode.episode_create_parameters
+      refute params[:data][:attributes].key?(:originalReleaseDate)
+    end
+
     it "returns empty arrays when no episodes provided" do
       Apple::Episode.stub(:get_episodes, []) do
         (ready, waiting) = Apple::Episode.probe_asset_state(apple_api, [])
