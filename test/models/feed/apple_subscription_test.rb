@@ -133,12 +133,12 @@ describe Feeds::AppleSubscription do
       apple_feed.save!
       draft = create(:episode, podcast: podcast, published_at: nil)
       scheduled = create(:episode, podcast: podcast, published_at: 1.day.from_now)
-      _published = create(:episode, podcast: podcast, published_at: 1.day.ago)
+      published = create(:episode, podcast: podcast, published_at: 1.day.ago)
 
       result = apple_feed.draft_episodes
       assert_includes result, draft
       assert_includes result, scheduled
-      refute_includes result, _published
+      refute_includes result, published
     end
   end
 
