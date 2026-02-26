@@ -90,22 +90,17 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
-        # Always sync episode metadata first so drafts/scheduled episodes get
-        # PATCH updates even when they do not need audio upload.
-        sync_episodes!(eps)
-
-        # Defense-in-depth: Apple::Show#episodes already gates drafts on
-        # enclosure_ready?, but guard here too in case eps is supplied manually.
-        uploadable, skipped = eps.partition { |ep| ep.apple_needs_upload? && ep.feeder_episode.enclosure_ready?(true) }
-
+        eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
         skipped.each do |ep|
-          Rails.logger.warn("Skipping upload for episode",
-            {episode_id: ep.feeder_episode.id,
-             apple_needs_upload: ep.apple_needs_upload?,
-             enclosure_ready: ep.feeder_episode.enclosure_ready?(true)})
+          Rails.logger.warn("Episode needs ready enclosure. Skipping", {episode_id: ep.id})
         end
 
-        uploadable.each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        # Sync episode metadata (create/update on Apple) for eligible episodes
+        sync_episodes!(eps)
+
+        eps
+          .select(&:apple_needs_upload?)
+          .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
 
