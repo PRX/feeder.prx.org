@@ -175,6 +175,26 @@ describe Apple::Show do
       assert_includes episode_ids, draft.id
     end
 
+    it "does not duplicate an episode that is both draft and published during the same run" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      apple_feed.set_default_episodes
+
+      # Episode starts as draft with media — appears in draft_upload_candidates
+      ep = create(:episode_with_media, podcast: podcast, published_at: nil)
+      apple_feed.episodes << ep
+
+      config = build(:apple_config, feed: apple_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      # Simulate: episode gets published before episodes is called,
+      # so it now appears in both the published set AND draft_upload_candidates.
+      ep.update!(published_at: 1.hour.ago)
+
+      ids = show.episodes.map { |e| e.feeder_episode.id }
+      assert_includes ids, ep.id
+      assert_equal ids.uniq, ids, "episode should appear only once"
+    end
+
     it "excludes draft episodes without media from an apple subscription feed" do
       apple_feed = create(:apple_feed, podcast: podcast)
       apple_feed.set_default_episodes

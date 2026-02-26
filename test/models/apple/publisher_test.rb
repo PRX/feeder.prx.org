@@ -1031,6 +1031,42 @@ describe Apple::Publisher do
       refute delivery_called, "process_delivery! should not be called for draft episodes"
     end
 
+    it "uploads then delivers a draft once published_at is set across two runs" do
+      # First run: episode is a draft, gets uploaded but not delivered
+      episode.feeder_episode.update!(published_at: nil)
+      binding.pry
+      episode.feeder_episode.apple_mark_as_not_delivered!
+
+      upload_called = false
+      delivery_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+        apple_publisher.stub(:process_delivery!, ->(*) { delivery_called = true }) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      assert upload_called, "upload_media! should be called for draft on first run"
+      refute delivery_called, "process_delivery! should not be called for draft on first run"
+
+      # Second run: episode is now published and already uploaded
+      episode.feeder_episode.reload
+      episode.feeder_episode.update!(published_at: 1.hour.ago)
+      episode.feeder_episode.apple_mark_as_uploaded!
+
+      upload_called = false
+      delivery_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+        apple_publisher.stub(:process_delivery!, ->(*) { delivery_called = true }) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      refute upload_called, "upload_media! should not be called when already uploaded"
+      assert delivery_called, "process_delivery! should be called after draft is published"
+    end
+
     it "skips process_delivery! for scheduled episodes" do
       episode.feeder_episode.update!(published_at: 10.days.from_now)
       episode.feeder_episode.apple_mark_as_uploaded!
