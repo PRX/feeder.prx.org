@@ -143,6 +143,22 @@ describe Feeds::AppleSubscription do
   end
 
   describe "#integration_feed_episode?" do
+    it "returns true for published episodes in feed_episodes" do
+      apple_feed.save!
+      published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+
+      assert apple_feed.integration_feed_episode?(published)
+    end
+
+    it "returns false for published episodes not in feed_episodes" do
+      apple_feed.save!
+      published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+      # remove from the apple feed's episodes
+      apple_feed.episodes_feeds.where(episode: published).delete_all
+
+      refute apple_feed.integration_feed_episode?(published)
+    end
+
     it "returns true for draft and scheduled episodes with uploadable media" do
       apple_feed.save!
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
@@ -159,6 +175,21 @@ describe Feeds::AppleSubscription do
       refute apple_feed.integration_feed_episode?(no_media)
     end
 
+    it "returns false for draft episodes with incomplete media (enclosure not complete)" do
+      apple_feed.save!
+      processing = create(:episode,
+        podcast: podcast,
+        published_at: nil,
+        medium: "audio",
+        segment_count: 1,
+        contents: [build(:content, status: "processing")])
+
+      # enclosure_ready?(false) would be true, but enclosure_ready?(true) is false
+      assert processing.enclosure_ready?(false)
+      refute processing.enclosure_ready?(true)
+      refute apple_feed.integration_feed_episode?(processing)
+    end
+
     it "returns false for draft episodes that are not feed-ready" do
       apple_feed.save!
       not_ready = create(:episode,
@@ -169,6 +200,19 @@ describe Feeds::AppleSubscription do
         contents: [build(:content, status: "created")])
 
       refute apple_feed.integration_feed_episode?(not_ready)
+    end
+
+    it "returns false for draft episodes not assigned to this feed" do
+      apple_feed.save!
+      draft = create(:episode_with_media, podcast: podcast, published_at: nil)
+      # verify it's initially included
+      assert apple_feed.integration_feed_episode?(draft)
+
+      # remove from the apple feed
+      apple_feed.episodes_feeds.where(episode: draft).delete_all
+      apple_feed.reload
+
+      refute apple_feed.integration_feed_episode?(draft)
     end
   end
 
