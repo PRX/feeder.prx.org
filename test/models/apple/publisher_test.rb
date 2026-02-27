@@ -1047,7 +1047,10 @@ describe Apple::Publisher do
       # Second run: episode is now published and already uploaded
       episode.feeder_episode.reload
       episode.feeder_episode.update!(published_at: 1.hour.ago)
-      episode.feeder_episode.apple_mark_as_uploaded!
+      episode.feeder_episode.apple_update_delivery_status(
+        uploaded: true,
+        source_media_version_id: episode.feeder_episode.media_version_id
+      )
 
       upload_called = false
       delivery_called = false
@@ -1060,6 +1063,33 @@ describe Apple::Publisher do
 
       refute upload_called, "upload_media! should not be called when already uploaded"
       assert delivery_called, "process_delivery! should be called after draft is published"
+    end
+
+    it "re-uploads when media version changes after a previous upload" do
+      # Episode was previously uploaded and delivered with an old media version
+      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      old_version_id = episode.feeder_episode.media_version_id
+
+      refute episode.feeder_episode.apple_needs_upload?,
+        "should not need upload when source_media_version_id matches"
+
+      # Simulate media being re-processed — new media version cut
+      create(:content, episode: episode.feeder_episode, position: 2, status: "complete")
+      new_version = episode.feeder_episode.reload.cut_media_version!
+      refute_equal old_version_id, new_version.id
+
+      assert episode.feeder_episode.apple_needs_upload?,
+        "should need upload when source_media_version_id is stale"
+
+      upload_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+        apple_publisher.stub(:process_delivery!, ->(*) {}) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      assert upload_called, "upload_media! should be called to re-upload changed media"
     end
 
     it "skips process_delivery! for scheduled episodes" do
