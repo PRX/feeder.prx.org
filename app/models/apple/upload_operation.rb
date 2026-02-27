@@ -66,7 +66,8 @@ module Apple
     def upload_operation_patch_parameters
       {
         request_metadata: {
-          podcast_delivery_file_id: delivery_file.id
+          podcast_delivery_file_id: delivery_file.id,
+          episode_id: delivery_file.episode_id
         },
         api_url: delivery_file.podcast_container.source_url,
         api_parameters: operation

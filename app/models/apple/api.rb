@@ -324,7 +324,17 @@ module Apple
     def retry_bridge_api_operation(bridge_resource, row_operations_ok, row_operation_errs, attempts = 1, batch_size: DEFAULT_BATCH_SIZE)
       return [row_operations_ok, row_operation_errs] if attempts >= ERROR_RETRIES || row_operation_errs.empty?
 
-      row_operation_errs.map { |err| Rails.logger.warn("Retrying: #{err.to_json}") }
+      row_operation_errs.map do |err|
+        error_data = err.dig("api_response", "val", "data") || {}
+        Rails.logger.warn("Retrying bridge operation", {
+          request_metadata: err["request_metadata"],
+          error: error_data["status"] || error_data["body"],
+          error_context: error_data["context"],
+          attempt: attempts,
+          api_url: err["api_url"]
+        })
+        Rails.logger.debug("Retry full payload", {payload: err})
+      end
 
       # Slice off the api response and retry the row operation
       formatted_error_operations_for_retry = row_operation_errs.map do |r|

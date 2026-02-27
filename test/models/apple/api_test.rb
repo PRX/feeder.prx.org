@@ -196,6 +196,67 @@ describe Apple::Api do
     end
   end
 
+  describe "#retry_bridge_api_operation logging" do
+    let(:epipe_error) do
+      {
+        "request_metadata" => {"apple_episode_id" => "1000751796139", "feeder_id" => 65777},
+        "api_url" => "https://api.podcastsconnect.apple.com/v1/episodes/1000751796139",
+        "api_parameters" => {},
+        "api_response" => {
+          "ok" => false,
+          "err" => true,
+          "val" => {"data" => {"body" => "write EPIPE", "status" => "EPIPE", "context" => "request"}}
+        }
+      }
+    end
+
+    it "logs concise WARN with destructured fields and DEBUG with full payload" do
+      success_response = OpenStruct.new(body: [build(:bridge_row)].to_json, code: "200")
+
+      logs = capture_json_logs do
+        api.stub(:make_bridge_request, success_response) do
+          api.send(:retry_bridge_api_operation, "getEpisodes", [], [epipe_error])
+        end
+      end
+
+      warn_log = logs.find { |l| l[:msg] == "Retrying bridge operation" }
+      assert warn_log, "Expected a WARN log for retry"
+      assert_equal 40, warn_log[:level]
+      assert_equal({"apple_episode_id" => "1000751796139", "feeder_id" => 65777}, warn_log[:request_metadata])
+      assert_equal "EPIPE", warn_log[:error]
+      assert_equal "request", warn_log[:error_context]
+      assert_equal 1, warn_log[:attempt]
+      assert_equal "https://api.podcastsconnect.apple.com/v1/episodes/1000751796139", warn_log[:api_url]
+
+      debug_log = logs.find { |l| l[:msg] == "Retry full payload" }
+      assert debug_log, "Expected a DEBUG log with full payload"
+      assert_equal 20, debug_log[:level]
+      assert_equal epipe_error, debug_log[:payload]
+    end
+
+    it "handles errors with non-episode request_metadata" do
+      container_error = {
+        "request_metadata" => {"podcast_container_id" => 925},
+        "api_url" => "https://example.com/some-endpoint",
+        "api_parameters" => {},
+        "api_response" => {"ok" => false, "err" => true, "val" => {"data" => {"body" => "timeout", "context" => "request"}}}
+      }
+
+      success_response = OpenStruct.new(body: [build(:bridge_row)].to_json, code: "200")
+
+      logs = capture_json_logs do
+        api.stub(:make_bridge_request, success_response) do
+          api.send(:retry_bridge_api_operation, "someResource", [], [container_error])
+        end
+      end
+
+      warn_log = logs.find { |l| l[:msg] == "Retrying bridge operation" }
+      assert warn_log
+      assert_equal({"podcast_container_id" => 925}, warn_log[:request_metadata])
+      assert_equal "timeout", warn_log[:error]
+    end
+  end
+
   describe "#unwrap_bridge_response" do
     let(:ok_row) { {api_response: {ok: true, err: false, val: {data: {status: 200}}}}.with_indifferent_access }
     let(:not_found_row) { {api_response: {ok: false, err: true, val: {data: {status: 404}}}}.with_indifferent_access }

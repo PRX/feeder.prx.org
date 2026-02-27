@@ -46,7 +46,7 @@ module Apple
 
     def self.wait_for_processing(api, pdfs, &stuck_check)
       wait_for(pdfs) do |remaining_pdfs|
-        Rails.logger.info("Probing for file processing")
+        Rails.logger.debug("Probing for file processing")
         updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
 
         # Try to work around the fact that the API sometimes returns 'nil' for processing state
@@ -62,7 +62,7 @@ module Apple
 
     def self.wait_for_delivery(api, pdfs, &stuck_check)
       wait_for(pdfs) do |remaining_pdfs|
-        Rails.logger.info("Probing for file delivery")
+        Rails.logger.debug("Probing for file delivery")
         updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
 
         delivered, still_waiting = updated_pdfs.partition(&:delivered?)
@@ -281,7 +281,7 @@ module Apple
           [delivery_file, :create]
         end
 
-      Rails.logger.info("#{action} local podcast delivery file",
+      Rails.logger.info("#{action.to_s.capitalize}d local podcast delivery file",
         {podcast_container_id: pdf.podcast_container.id,
          action: action,
          external_id: external_id,

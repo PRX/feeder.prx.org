@@ -23,7 +23,7 @@ module Apple
     end
 
     def self.probe_asset_state(api, episodes)
-      Rails.logger.info("Probing for episode audio asset state")
+      Rails.logger.debug("Probing for episode audio asset state")
       unwrapped = get_episodes(api, episodes)
 
       remote_ep_by_id = unwrapped.map { |row| [row["request_metadata"]["feeder_id"], row] }.to_h

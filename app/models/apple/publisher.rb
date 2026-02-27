@@ -220,7 +220,7 @@ module Apple
       # the file is already present and we can proceed to final delivery
       # (publish_drafting!). We log it for visibility but don't raise.
       eps.flat_map(&:podcast_delivery_files).filter(&:processed_duplicate?).each do |pdf|
-        Rails.logger.info("Podcast delivery file has DUPLICATE state, proceeding to delivery",
+        Rails.logger.warn("Podcast delivery file has DUPLICATE state, proceeding to delivery",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
@@ -436,18 +436,20 @@ module Apple
     def mark_as_delivered!(eps)
       Rails.logger.tagged("##{__method__}") do
         eps.each do |ep|
-          Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
+          Rails.logger.debug("Marking episode as delivered", {episode_id: ep.feeder_episode.id})
           ep.feeder_episode.apple_mark_as_delivered!
         end
+        Rails.logger.info("Marked episodes as delivered", {count: eps.length})
       end
     end
 
     def mark_as_uploaded!(eps)
       Rails.logger.tagged("##{__method__}") do
         eps.each do |ep|
-          Rails.logger.info("Marking episode media as uploaded", {episode_id: ep.feeder_episode.id})
+          Rails.logger.debug("Marking episode as uploaded", {episode_id: ep.feeder_episode.id})
           ep.feeder_episode.apple_mark_as_uploaded!
         end
+        Rails.logger.info("Marked episodes as uploaded", {count: eps.length})
       end
     end
 

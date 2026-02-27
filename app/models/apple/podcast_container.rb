@@ -139,7 +139,7 @@ module Apple
           [pc, :created]
         end
 
-      Rails.logger.info("#{action} local podcast container",
+      Rails.logger.info("#{action.to_s.capitalize}d local podcast container",
         {podcast_container_id: pc.id,
          action: action,
          external_id: external_id,

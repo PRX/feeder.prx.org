@@ -184,7 +184,7 @@ module Apple
     end
 
     def update_show!(sync)
-      Rails.logger.info("Skipping update for existing show!")
+      Rails.logger.debug("Skipping show update, already exists")
       # TODO, map out the cases where we'd actually need to update a show
       # data = show_data(update_attributes, id: apple_id)
       # Rails.logger.info("Updating show", show_data: data)

@@ -136,7 +136,7 @@ module Apple
           [delivery, :created]
         end
 
-      Rails.logger.debug("#{action} local podcast delivery",
+      Rails.logger.debug("#{action.to_s.capitalize}d local podcast delivery",
         {podcast_container_id: podcast_container.id,
          action: action,
          external_id: external_id,
