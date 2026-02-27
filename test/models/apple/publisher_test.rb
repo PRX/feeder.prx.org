@@ -909,6 +909,38 @@ describe Apple::Publisher do
       assert delivery_mock.verify
     end
 
+    it "re-uploads when media version changes after a previous upload" do
+      # Episode was previously uploaded and delivered with an old media version
+      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      # Current factory sets delivered but not uploaded — mark as uploaded too
+      episode.feeder_episode.apple_update_delivery_status(
+        uploaded: true,
+        source_media_version_id: episode.feeder_episode.media_version_id
+      )
+      old_version_id = episode.feeder_episode.media_version_id
+
+      refute episode.feeder_episode.apple_needs_upload?,
+        "should not need upload when source_media_version_id matches"
+
+      # Simulate media being re-processed — new media version cut
+      create(:content, episode: episode.feeder_episode, position: 2, status: "complete")
+      new_version = episode.feeder_episode.reload.cut_media_version!
+      refute_equal old_version_id, new_version.id
+
+      assert episode.feeder_episode.apple_needs_upload?,
+        "should need upload when source_media_version_id is stale"
+
+      upload_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+        apple_publisher.stub(:process_delivery!, ->(*) {}) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      assert upload_called, "upload_media! should be called to re-upload changed media"
+    end
+
     it "processes all uploads before any deliveries (phase separation)" do
       # Create episodes in different states
       upload_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
