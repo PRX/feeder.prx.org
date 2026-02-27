@@ -6,7 +6,7 @@ module PodcastMetrics
   include MetricsQueries
 
   def alltime_downloads
-    Rails.cache.fetch("#{metrics_cache_key}/alltime_downloads", expires_in: 1.hour) do
+    metrics_cache_fetch("#{metrics_cache_key}/alltime_downloads", expires_in: 1.hour) do
       alltime_downloads_query.sum(&:count)
     end
   end
@@ -15,7 +15,7 @@ module PodcastMetrics
     date_start ||= Time.now - days.days
     date_end ||= Time.now
 
-    Rails.cache.fetch("#{metrics_cache_key}/daily_downloads", expires_in: 1.hour) do
+    metrics_cache_fetch("#{metrics_cache_key}/daily_downloads", expires_in: 1.hour) do
       daterange_downloads_query(date_start: date_start, date_end: date_end, interval: "DAY")
     end
   end
@@ -24,7 +24,7 @@ module PodcastMetrics
     date_start = date_start&.beginning_of_month || (Time.now - (months - 1).months).beginning_of_month
     date_end ||= Time.now
 
-    Rails.cache.fetch("#{metrics_cache_key}/monthly_downloads", expires_in: 1.hour) do
+    metrics_cache_fetch("#{metrics_cache_key}/monthly_downloads", expires_in: 1.hour) do
       daterange_downloads_query(date_start: date_start, date_end: date_end, interval: "MONTH").transform_keys { |k| k.to_datetime.utc }
     end
   end
@@ -54,7 +54,7 @@ module PodcastMetrics
       [feed.slug, feed.label]
     end.to_h
 
-    Rails.cache.fetch("#{metrics_cache_key}/feed_downloads", expires_in: 1.hour) do
+    metrics_cache_fetch("#{metrics_cache_key}/feed_downloads", expires_in: 1.hour) do
       feed_downloads_query(feeds: feeds)
     end.transform_keys { |k| feed_labels[k.presence] }
   end
@@ -77,7 +77,7 @@ module PodcastMetrics
     season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
     expiration = (season_number == latest_season) ? 1.hour : 1.month
 
-    Rails.cache.fetch("#{metrics_cache_key}/downloads_by_season/#{season_number}", expires_in: expiration) do
+    metrics_cache_fetch("#{metrics_cache_key}/downloads_by_season/#{season_number}", expires_in: expiration) do
       Rollups::HourlyDownload
         .where(episode_id: season_episodes_guids)
         .group(:podcast_id)
@@ -87,13 +87,13 @@ module PodcastMetrics
   end
 
   def top_countries_downloads
-    Rails.cache.fetch("#{metrics_cache_key}/top_countries_downloads", expires_in: 1.hour) do
+    metrics_cache_fetch("#{metrics_cache_key}/top_countries_downloads", expires_in: 1.hour) do
       top_countries_downloads_query
     end
   end
 
   def other_countries_downloads
-    Rails.cache.fetch("#{metrics_cache_key}/other_countries_downloads", expires_in: 1.hour) do
+    metrics_cache_fetch("#{metrics_cache_key}/other_countries_downloads", expires_in: 1.hour) do
       other_countries_downloads_query(excluded_countries: top_countries_downloads)
     end
   end
@@ -105,13 +105,13 @@ module PodcastMetrics
   end
 
   def top_agents_downloads
-    Rails.cache.fetch("#{metrics_cache_key}/top_agents_downloads", expires_in: 1.hour) do
+    metrics_cache_fetch("#{metrics_cache_key}/top_agents_downloads", expires_in: 1.hour) do
       top_agents_downloads_query
     end
   end
 
   def other_agents_downloads
-    Rails.cache.fetch("#{metrics_cache_key}/other_agents_downloads", expires_in: 1.hour) do
+    metrics_cache_fetch("#{metrics_cache_key}/other_agents_downloads", expires_in: 1.hour) do
       other_agents_downloads_query(excluded_agents: top_agents_downloads)
     end
   end

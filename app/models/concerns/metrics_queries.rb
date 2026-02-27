@@ -86,6 +86,14 @@ module MetricsQueries
     "#{cache_key}/metrics_v#{METRICS_CACHE_VERSION}"
   end
 
+  def metrics_cache_fetch(*args, &block)
+    if ENV["METRICS_CACHING_OFF"].present?
+      block.call
+    else
+      Rails.cache.fetch(*args, &block)
+    end
+  end
+
   private
 
   def metrics_default_date_start
