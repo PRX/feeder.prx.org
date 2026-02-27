@@ -23,9 +23,12 @@ module EpisodeMetrics
     end
   end
 
+  def has_episode_trend?
+    first_rss_published_at.present? && previous_trend_episode.present? && !((first_rss_published_at + 1.day) > Time.now)
+  end
+
   def episode_trend
-    return nil unless first_rss_published_at.present? && previous_trend_episode.present?
-    return nil if (first_rss_published_at + 1.day) > Time.now
+    return nil unless has_episode_trend?
 
     current_sum = dropday_sum
     previous_sum = previous_trend_episode.dropday_sum
