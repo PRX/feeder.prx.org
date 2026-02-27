@@ -384,10 +384,12 @@ describe Apple::Episode do
       assert_equal episode.published_at.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
     end
 
-    it "omits originalReleaseDate when published_at is nil" do
+    it "falls back to current time for originalReleaseDate when published_at is nil" do
       episode.update!(published_at: nil)
-      params = apple_episode.episode_create_parameters
-      refute params[:data][:attributes].key?(:originalReleaseDate)
+      freeze_time do
+        params = apple_episode.episode_create_parameters
+        assert_equal Time.now.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
+      end
     end
 
     it "returns empty arrays when no episodes provided" do

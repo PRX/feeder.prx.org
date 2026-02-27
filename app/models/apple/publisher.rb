@@ -445,7 +445,7 @@ module Apple
     def mark_as_uploaded!(eps)
       Rails.logger.tagged("##{__method__}") do
         eps.each do |ep|
-          Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
+          Rails.logger.info("Marking episode media as uploaded", {episode_id: ep.feeder_episode.id})
           ep.feeder_episode.apple_mark_as_uploaded!
         end
       end

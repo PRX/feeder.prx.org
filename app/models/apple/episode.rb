@@ -283,7 +283,7 @@ module Apple
         episodeType: feeder_episode.itunes_type.upcase,
         appleHostedAudioIsSubscriberOnly: true
       }
-      attributes[:originalReleaseDate] = feeder_episode.published_at.utc.iso8601 if feeder_episode.published_at
+      attributes[:originalReleaseDate] = (feeder_episode.published_at || Time.now.utc).iso8601
 
       {
         data:
