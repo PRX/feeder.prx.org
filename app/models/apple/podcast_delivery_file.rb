@@ -107,7 +107,7 @@ module Apple
       episodes.map(&:podcast_deliveries).flatten
     end
 
-    def self.create_podcast_delivery_files(api, episodes, media_infos_by_episode_id: {})
+    def self.create_podcast_delivery_files(api, episodes, media_infos_by_episode_id:)
       return [] if episodes.empty?
 
       podcast_deliveries = select_podcast_deliveries(episodes)
@@ -226,7 +226,7 @@ module Apple
       }
     end
 
-    def self.create_delivery_file_bridge_params(api, podcast_delivery, media_infos_by_episode_id: {})
+    def self.create_delivery_file_bridge_params(api, podcast_delivery, media_infos_by_episode_id:)
       {
         request_metadata: {
           apple_episode_id: podcast_delivery.apple_episode_id,
@@ -237,15 +237,9 @@ module Apple
       }
     end
 
-    def self.podcast_delivery_file_create_parameters(podcast_delivery, media_infos_by_episode_id: {})
+    def self.podcast_delivery_file_create_parameters(podcast_delivery, media_infos_by_episode_id:)
       podcast_container = podcast_delivery.podcast_container
-
-      source_size =
-        if media_infos_by_episode_id.any?
-          media_infos_by_episode_id.fetch(podcast_delivery.episode_id).source_size
-        else
-          podcast_container.source_size
-        end
+      source_size = media_infos_by_episode_id.fetch(podcast_delivery.episode_id).source_size
 
       {data: {
         type: "podcastDeliveryFiles",
