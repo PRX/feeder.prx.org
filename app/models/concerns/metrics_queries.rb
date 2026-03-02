@@ -23,6 +23,7 @@ module MetricsQueries
         .sum(:count)
     else
       Rollups::HourlyDownload
+        .where(podcast_id: metrics_podcast_id)
         .where("#{column}": model_id, hour: (date_start..date_end))
         .group("DATE_TRUNC('#{interval}', hour)")
         .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
@@ -35,6 +36,7 @@ module MetricsQueries
     slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
 
     Rollups::HourlyDownload
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, feed_slug: slugs, hour: (date_start..date_end))
       .group(:feed_slug)
       .order(Arel.sql("SUM(count) AS count DESC"))
@@ -44,6 +46,7 @@ module MetricsQueries
 
   def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
     Rollups::DailyGeo
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:country_code)
       .order(Arel.sql("SUM(count) AS count DESC"))
@@ -56,6 +59,7 @@ module MetricsQueries
     ex_country_codes = excluded_countries.map { |c| c[0] }
 
     Rollups::DailyGeo
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
       .where.not(country_code: ex_country_codes)
       .final
@@ -64,6 +68,7 @@ module MetricsQueries
 
   def top_agents_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
     Rollups::DailyAgent
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:agent_name_id)
       .order(Arel.sql("SUM(count) AS count DESC"))
@@ -76,6 +81,7 @@ module MetricsQueries
     ex_agent_codes = excluded_agents.map { |c| c[0] }
 
     Rollups::DailyAgent
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
       .where.not(agent_name_id: ex_agent_codes)
       .final
@@ -125,6 +131,14 @@ module MetricsQueries
       "podcast_id"
     elsif is_a?(Episode)
       "episode_id"
+    end
+  end
+
+  def metrics_podcast_id
+    if is_a?(Podcast)
+      id
+    elsif is_a?(Episode)
+      podcast.id
     end
   end
 end
