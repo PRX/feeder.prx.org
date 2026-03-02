@@ -73,7 +73,7 @@ module Apple
 
       all_media_infos = []
 
-      result = wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
+      (timed_out, _remaining) = wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
         containers = Apple::PodcastContainer.reset_source_file_metadata(remaining_episodes)
         Rails.logger.info("Reset container source metadata", {reset_count: containers.length})
 
@@ -86,7 +86,7 @@ module Apple
         not_ready.map(&:episode)
       end
 
-      [result[0], all_media_infos]
+      [timed_out, all_media_infos]
     end
 
     def self.poll_podcast_container_state(api, episodes)
