@@ -80,7 +80,6 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         end
       end
     end
-
   end
 
   describe "probing source metadata" do

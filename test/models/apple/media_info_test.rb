@@ -176,5 +176,4 @@ describe Apple::MediaInfo do
       assert_equal expected, mi.source_attributes
     end
   end
-
 end

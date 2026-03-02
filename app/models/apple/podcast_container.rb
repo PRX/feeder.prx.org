@@ -249,6 +249,5 @@ module Apple
     def enclosure_url
       episode.apple_status&.enclosure_url
     end
-
   end
 end
