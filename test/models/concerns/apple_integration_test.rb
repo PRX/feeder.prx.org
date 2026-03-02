@@ -68,6 +68,25 @@ class AppleIntegrationTest < ActiveSupport::TestCase
     end
   end
 
+  describe "#apple_mark_for_reupload!" do
+    let(:episode) { create(:episode_with_media) }
+
+    it "sets delivered/uploaded to false while preserving source_media_version_id" do
+      episode.apple_update_delivery_status(
+        delivered: true,
+        uploaded: true,
+        source_media_version_id: episode.media_version_id
+      )
+
+      episode.apple_mark_for_reupload!
+      status = episode.apple_episode_delivery_status
+
+      refute status.delivered
+      refute status.uploaded
+      assert_equal episode.media_version_id, status.source_media_version_id
+    end
+  end
+
   describe "#apple_needs_upload?" do
     let(:episode) { create(:episode_with_media) }
 

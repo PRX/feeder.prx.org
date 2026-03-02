@@ -181,6 +181,7 @@ module Apple
 
     def prepare_for_delivery!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        eps.each { |ep| ep.feeder_episode.apple_mark_for_reupload! }
         Apple::Episode.prepare_for_delivery(eps)
       end
     end
