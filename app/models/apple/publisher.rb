@@ -253,7 +253,7 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         # wait for the audio version to be created
         (waiting_timed_out, media_infos) =
-          Apple::PodcastContainer.wait_for_versioned_source_metadata(api, eps)
+          Apple::MediaInfo.wait_for_versioned_source_metadata(api, eps)
         raise "Timed out waiting for audio version" if waiting_timed_out
         media_infos
       end

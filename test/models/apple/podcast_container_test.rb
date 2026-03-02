@@ -53,7 +53,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
         api.stub(:bridge_remote_and_retry!, single_row) do
           assert_raises(RuntimeError, /Join key mismatch/) do
-            Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode, apple_episode2])
+            Apple::MediaInfo.probe_source_file_metadata(api, [apple_episode, apple_episode2])
           end
         end
       end
@@ -69,9 +69,9 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         )
 
         Apple::PodcastContainer.stub(:reset_source_file_metadata, [pc]) do
-          Apple::PodcastContainer.stub(:probe_source_file_metadata, [media_info]) do
+          Apple::MediaInfo.stub(:probe_source_file_metadata, [media_info]) do
             apple_episode.feeder_episode.stub(:media_version_id, mock_version_id) do
-              (timed_out, media_infos) = Apple::PodcastContainer.wait_for_versioned_source_metadata(api, [apple_episode], wait_interval: 0.seconds, wait_timeout: 5.seconds)
+              (timed_out, media_infos) = Apple::MediaInfo.wait_for_versioned_source_metadata(api, [apple_episode], wait_interval: 0.seconds, wait_timeout: 5.seconds)
               assert_equal false, timed_out
               assert_equal 1, media_infos.length
               assert_equal apple_episode, media_infos.first.episode
@@ -175,7 +175,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     it "should filter episodes that lack a container" do
       apple_episode.stub(:podcast_container, nil) do
         assert_equal [], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
-        assert_equal [], Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
+        assert_equal [], Apple::MediaInfo.probe_source_file_metadata(api, [apple_episode])
       end
     end
 
@@ -197,7 +197,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         assert_equal [pc], Apple::PodcastContainer.reset_source_file_metadata([apple_episode])
 
         api.stub(:bridge_remote_and_retry!, [response_row]) do
-          media_infos = Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode])
+          media_infos = Apple::MediaInfo.probe_source_file_metadata(api, [apple_episode])
           assert_equal 1, media_infos.length
           assert_equal apple_episode, media_infos.first.episode
         end
