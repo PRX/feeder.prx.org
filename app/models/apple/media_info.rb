@@ -10,6 +10,5 @@ module Apple
     def source_attributes
       {source_media_version_id: source_media_version_id, source_size: source_size, source_url: source_url}
     end
-
   end
 end
