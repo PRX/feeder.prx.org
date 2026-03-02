@@ -23,23 +23,6 @@ module Apple
     FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"
     SOURCE_URL_EXP_BUFFER = 10.minutes
 
-    def self.reset_source_file_metadata(episodes)
-      episodes = episodes.select { |ep| ep.podcast_container.present? }
-
-      episodes.map do |episode|
-        container = episode.container
-
-        Rails.logger.debug("Resetting source url for podcast container",
-          podcast_container_id: container.id,
-          source_size: container.source_size,
-          source_url: container.source_url)
-
-        # Back to DTR to pick up fresh arrangements:
-        container.reset_source_metadata!(episode)
-        container
-      end
-    end
-
     def self.poll_podcast_container_state(api, episodes)
       results = get_podcast_containers_via_episodes(api, episodes)
 
@@ -259,18 +242,6 @@ module Apple
       !skip_delivery?
     end
 
-    def filename_prefix(ct)
-      ct.zero? ? "" : "#{ct}_"
-    end
-
-    def source_url
-      episode.apple_status&.source_url
-    end
-
-    def source_size
-      episode.apple_status&.source_size
-    end
-
     def source_filename
       episode.apple_status&.source_filename
     end
@@ -279,21 +250,5 @@ module Apple
       episode.apple_status&.enclosure_url
     end
 
-    def source_fetch_count
-      episode.apple_status&.source_fetch_count || 0
-    end
-
-    def source_media_version_id
-      episode.apple_status&.source_media_version_id
-    end
-
-    def reset_source_metadata!(apple_ep)
-      count = source_fetch_count
-      episode.apple_update_delivery_status(
-        source_filename: filename_prefix(count) + apple_ep.enclosure_filename,
-        enclosure_url: apple_ep.enclosure_url,
-        source_fetch_count: count + 1
-      )
-    end
   end
 end

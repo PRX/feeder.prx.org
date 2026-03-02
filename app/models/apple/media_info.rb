@@ -51,14 +51,39 @@ module Apple
       end
     end
 
+    def self.reset_source_file_metadata(episodes)
+      episodes = episodes.select { |ep| ep.podcast_container.present? }
+
+      episodes.each do |ep|
+        container = ep.podcast_container
+        status = ep.apple_status
+
+        Rails.logger.debug("Resetting source url for podcast container",
+          podcast_container_id: container.id,
+          source_size: status&.source_size,
+          source_url: status&.source_url)
+
+        count = status&.source_fetch_count || 0
+        ep.feeder_episode.apple_update_delivery_status(
+          source_filename: filename_prefix(count) + ep.enclosure_filename,
+          enclosure_url: ep.enclosure_url,
+          source_fetch_count: count + 1
+        )
+      end
+    end
+
+    def self.filename_prefix(ct)
+      ct.zero? ? "" : "#{ct}_"
+    end
+
     def self.wait_for_versioned_source_metadata(api, episodes, wait_interval: 10.seconds, wait_timeout: 1.minute)
       raise "Missing podcast container for episode" if episodes.map(&:podcast_container).any?(&:nil?)
 
       all_media_infos = []
 
       (timed_out, _remaining) = wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
-        containers = Apple::PodcastContainer.reset_source_file_metadata(remaining_episodes)
-        Rails.logger.info("Reset container source metadata", {reset_count: containers.length})
+        reset_source_file_metadata(remaining_episodes)
+        Rails.logger.info("Reset container source metadata", {reset_count: remaining_episodes.length})
 
         media_infos = probe_source_file_metadata(api, remaining_episodes)
         Rails.logger.info("Updated container source metadata.", {count: media_infos.length})
