@@ -63,7 +63,7 @@ module Integrations
     end
 
     def needs_upload?
-      !uploaded || source_media_version_id != episode.media_version_id
+      !uploaded || !has_media_version?
     end
 
     def has_media_version?
