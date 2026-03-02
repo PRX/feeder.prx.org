@@ -46,8 +46,9 @@ module Apple
       containers = episodes.map(&:podcast_container)
       episodes_by_container_id = episodes.map { |ep| [ep.podcast_container.id, ep] }.to_h
 
-      api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params))
-        .map do |row|
+      results = api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params))
+
+      join_on("podcast_container_id", containers, results).map do |container, row|
         content_length = row.dig("api_response", "val", "data", "headers", "content-length")
         cdn_url = row.dig("api_response", "val", "data", "redirect_chain_end_url")
         media_version = row.dig("api_response", "val", "data", "episode_media_version")
@@ -56,8 +57,7 @@ module Apple
         raise "Missing cdn_url in response" if cdn_url.blank?
         raise "Missing media_version in response" if media_version.blank?
 
-        podcast_container_id = row["request_metadata"]["podcast_container_id"]
-        episode = episodes_by_container_id.fetch(podcast_container_id)
+        episode = episodes_by_container_id.fetch(container.id)
 
         Apple::MediaInfo.new(
           episode: episode,

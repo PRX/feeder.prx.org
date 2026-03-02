@@ -38,6 +38,26 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     let(:pc) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
 
     describe ".wait_for_versioned_source_metadata" do
+      it "raises when headFileSizes returns fewer rows than requested" do
+        episode2 = create(:episode, podcast: podcast)
+        apple_episode2 = build(:apple_episode, show: apple_show, feeder_episode: episode2)
+        pc2_row = {"request_metadata" => {"apple_episode_id" => "apple-ep-id-2"},
+                   "api_response" => {"val" => {"data" => {"type" => "podcastContainers", "id" => "5678"}}}}
+        Apple::PodcastContainer.upsert_podcast_container(apple_episode2, pc2_row)
+
+        # bridge returns only one row for two containers
+        single_row = [{"request_metadata" => {"podcast_container_id" => pc.id},
+                       "api_response" => {"val" => {"data" => {"headers" => {"content-length" => "1000"},
+                                                               "redirect_chain_end_url" => "https://cdn.example.com/a.mp3",
+                                                               "episode_media_version" => "99"}}}}]
+
+        api.stub(:bridge_remote_and_retry!, single_row) do
+          assert_raises(RuntimeError, /Join key mismatch/) do
+            Apple::PodcastContainer.probe_source_file_metadata(api, [apple_episode, apple_episode2])
+          end
+        end
+      end
+
       it "should wait for the source metadata to be updated and return media_infos" do
         mock_version_id = 42
 
