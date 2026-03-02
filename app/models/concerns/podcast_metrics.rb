@@ -79,6 +79,7 @@ module PodcastMetrics
 
     metrics_cache_fetch("#{metrics_cache_key}/downloads_by_season/#{season_number}", expires_in: expiration) do
       Rollups::HourlyDownload
+        .where(podcast_id: id)
         .where(episode_id: season_episodes_guids)
         .group(:podcast_id)
         .final
