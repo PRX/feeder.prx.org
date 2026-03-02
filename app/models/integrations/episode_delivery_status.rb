@@ -63,8 +63,12 @@ module Integrations
       !uploaded || source_media_version_id != episode.media_version_id
     end
 
+    def has_media_version?
+      source_media_version_id.present? && source_media_version_id == episode.media_version_id
+    end
+
     def needs_media_version?
-      source_media_version_id.blank? || source_media_version_id != episode.media_version_id
+      !has_media_version?
     end
   end
 end

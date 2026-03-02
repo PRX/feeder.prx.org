@@ -33,7 +33,7 @@ class AppleIntegrationTest < ActiveSupport::TestCase
   end
 
   describe "#apple_mark_as_delivered!" do
-    let(:episode) { create(:episode) }
+    let(:episode) { create(:episode_with_media) }
 
     it "supercedes the uploaded status" do
       episode.apple_mark_as_not_delivered!
@@ -41,6 +41,8 @@ class AppleIntegrationTest < ActiveSupport::TestCase
       assert episode.apple_needs_upload?
       assert episode.apple_needs_delivery?
 
+      # Simulate realistic post-upload state: source_media_version_id set during upload
+      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id)
       episode.apple_mark_as_delivered!
 
       refute episode.apple_needs_upload?
@@ -52,18 +54,57 @@ class AppleIntegrationTest < ActiveSupport::TestCase
     it "sets the uploaded status" do
       episode.apple_mark_as_uploaded!
       assert episode.apple_episode_delivery_status.uploaded
+    end
 
-      # Upload completion now also depends on media-version alignment.
-      episode.apple_update_delivery_status(source_media_version_id: -1)
-      assert episode.apple_needs_upload?
-
-      episode.apple_update_delivery_status(source_media_version_id: episode.media_version_id)
+    it "does not need upload when media version also matches" do
+      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id)
+      episode.apple_mark_as_uploaded!
       refute episode.apple_needs_upload?
     end
 
     it "does not interact with the delivery status" do
       episode.apple_mark_as_uploaded!
       assert episode.apple_needs_delivery?
+    end
+  end
+
+  describe "#apple_needs_upload?" do
+    let(:episode) { create(:episode_with_media) }
+
+    # Default state from factory: episode has media with a media_version_id,
+    # delivery status has uploaded: false and source_media_version_id: nil
+    before do
+      assert episode.media_version_id.present?, "episode should have a media version"
+      assert_equal false, episode.apple_episode_delivery_status.uploaded
+      assert_nil episode.apple_episode_delivery_status.source_media_version_id
+    end
+
+    it "is true when not uploaded and no source media version" do
+      assert episode.apple_needs_upload?
+    end
+
+    it "is true when not uploaded even with matching media version" do
+      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id)
+      assert episode.apple_needs_upload?
+    end
+
+    it "is true when uploaded but source media version is nil" do
+      episode.apple_mark_as_uploaded!
+      assert episode.apple_needs_upload?
+    end
+
+    it "is true when uploaded but media version has changed" do
+      episode.apple_mark_as_uploaded!
+      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id)
+      # Simulate new media version by setting a mismatched id
+      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id + 1)
+      assert episode.apple_needs_upload?
+    end
+
+    it "is false when uploaded and media version matches" do
+      episode.apple_mark_as_uploaded!
+      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id)
+      refute episode.apple_needs_upload?
     end
   end
 
