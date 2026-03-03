@@ -8,7 +8,7 @@ class Feeds::MegaphoneFeed < Feed
 
   validate :must_have_token, :audio_format_must_be_mp3
 
-  validates_presence_of :audio_format, :slug, :title, :tokens
+  validates_presence_of :audio_format, :slug, :tokens
 
   before_validation :set_tokens
 
