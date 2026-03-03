@@ -52,6 +52,12 @@ class AppleIntegrationTest < ActiveSupport::TestCase
     it "sets the uploaded status" do
       episode.apple_mark_as_uploaded!
       assert episode.apple_episode_delivery_status.uploaded
+
+      # Upload completion now also depends on media-version alignment.
+      episode.apple_update_delivery_status(source_media_version_id: -1)
+      assert episode.apple_needs_upload?
+
+      episode.apple_update_delivery_status(source_media_version_id: episode.media_version_id)
       refute episode.apple_needs_upload?
     end
 

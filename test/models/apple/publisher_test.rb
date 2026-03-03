@@ -109,6 +109,52 @@ describe Apple::Publisher do
       end
     end
 
+    it "routes mixed sets to create and update subsets" do
+      apple_publisher.stub(:poll_episodes!, []) do
+        new_ep_1 = OpenStruct.new(drafting?: false, apple_new?: true)
+        new_ep_2 = OpenStruct.new(drafting?: false, apple_new?: true)
+        draft_ep = OpenStruct.new(drafting?: true, apple_new?: false)
+        unchanged_ep = OpenStruct.new(drafting?: false, apple_new?: false)
+        eps = [new_ep_1, draft_ep, unchanged_ep, new_ep_2]
+
+        # apple_new? -> create, drafting? -> update, neither -> skipped
+        create_mock = Minitest::Mock.new
+        create_mock.expect(:call, [], [apple_publisher.api, [new_ep_1, new_ep_2]])
+
+        update_mock = Minitest::Mock.new
+        update_mock.expect(:call, [], [apple_publisher.api, [draft_ep]])
+
+        Apple::Episode.stub(:create_episodes, create_mock) do
+          Apple::Episode.stub(:update_episodes, update_mock) do
+            apple_publisher.sync_episodes!(eps)
+          end
+        end
+
+        assert create_mock.verify
+        assert update_mock.verify
+      end
+    end
+
+    it "handles empty episode sets without creating or updating episodes" do
+      apple_publisher.stub(:poll_episodes!, []) do
+        # both create and update receive empty arrays
+        create_mock = Minitest::Mock.new
+        create_mock.expect(:call, [], [apple_publisher.api, []])
+
+        update_mock = Minitest::Mock.new
+        update_mock.expect(:call, [], [apple_publisher.api, []])
+
+        Apple::Episode.stub(:create_episodes, create_mock) do
+          Apple::Episode.stub(:update_episodes, update_mock) do
+            apple_publisher.sync_episodes!([])
+          end
+        end
+
+        assert create_mock.verify
+        assert update_mock.verify
+      end
+    end
+
     it "should update draft episodes" do
       apple_publisher.stub(:poll_episodes!, []) do
         draft_ep = OpenStruct.new(drafting?: true, apple_new?: false)
@@ -272,7 +318,7 @@ describe Apple::Publisher do
             apple_episode_id: "123")
         }
 
-        let(:apple_episode) { build(:uploaded_apple_episode, show: apple_publisher.show, feeder_episode: episode, api: apple_api) }
+        let(:apple_episode) { build(:delivered_apple_episode, show: apple_publisher.show, feeder_episode: episode, api: apple_api) }
 
         it "includes the unarchived episode in the episodes to sync" do
           assert apple_episode.audio_asset_state_success?
@@ -594,23 +640,30 @@ describe Apple::Publisher do
     end
 
     it "only includes still-waiting episodes in timeout error, not all episodes" do
-      skip("test is missing assertions and mock verify")
+      # Both episodes are uploaded and waiting for Apple to process
       episode1 = build(:uploaded_apple_episode, show: apple_publisher.show)
       episode2 = build(:uploaded_apple_episode, show: apple_publisher.show)
 
-      # Create mock PDFs that reference the episodes by feeder_id
+      # episode1 delivers successfully, but episode2's delivery file is still pending
       pdf1 = Minitest::Mock.new
-      pdf1.expect(:episode_id, episode1.feeder_id)
+      pdf1.expect(:episode_id, episode2.feeder_id)
 
-      pdf2 = Minitest::Mock.new
-      pdf2.expect(:episode_id, episode2.feeder_id)
-
-      # Simulate: episode1 delivered successfully, episode2 still waiting when timeout
-      # wait_for_delivery returns [timed_out, still_waiting_pdfs]
-      # Only pdf2 is still waiting
-      ->(api, pdfs, &block) {
-        [true, [pdf2]]  # Timeout with only episode2's PDF still waiting
+      # Simulate a timeout where only episode2's PDF is still waiting
+      delivery_stub = ->(api, pdfs, &block) {
+        [true, [pdf1]]
       }
+
+      # The timeout error should only blame episode2, not episode1
+      episode2.feeder_episode.stub(:measure_asset_processing_duration, 1000) do
+        Apple::PodcastDeliveryFile.stub(:wait_for_delivery, delivery_stub) do
+          error = assert_raises(Apple::AssetStateTimeoutError) do
+            apple_publisher.wait_for_upload_processing([episode1, episode2])
+          end
+
+          assert_equal [episode2.feeder_id], error.episode_ids
+          assert_not_includes error.episode_ids, episode1.feeder_id
+        end
+      end
     end
   end
 
@@ -622,7 +675,6 @@ describe Apple::Publisher do
     it "should increment asset wait count for each episode" do
       episodes.each do |ep|
         assert_equal 0, ep.apple_episode_delivery_status.asset_processing_attempts
-        ep.feeder_episode.apple_mark_as_uploaded!
       end
 
       apple_publisher.increment_asset_wait!(episodes)
@@ -636,7 +688,7 @@ describe Apple::Publisher do
       assert 1, episode1.podcast_delivery_files.length
       assert 1, episode2.podcast_delivery_files.length
 
-      episode1.feeder_episode.apple_mark_as_uploaded!
+      episode2.feeder_episode.apple_mark_as_not_uploaded!
       apple_publisher.increment_asset_wait!(episodes)
 
       assert_equal [1, 0], [episode1, episode2].map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }
@@ -819,8 +871,8 @@ describe Apple::Publisher do
   end
 
   describe "#mark_as_uploaded!" do
-    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
-    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode1) { build(:apple_episode_ready_for_upload, show: apple_publisher.show) }
+    let(:episode2) { build(:apple_episode_ready_for_upload, show: apple_publisher.show) }
     let(:episodes) { [episode1, episode2] }
 
     it "marks episodes as uploaded" do
@@ -856,9 +908,12 @@ describe Apple::Publisher do
   describe "#upload_and_process!" do
     let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
-    it "skips upload for already uploaded episodes" do
-      episode.feeder_episode.apple_mark_as_uploaded!
+    before do
+      # Isolate upload_and_process! behavior from sync_episodes! network calls.
+      apple_publisher.define_singleton_method(:sync_episodes!) { |_eps| }
+    end
 
+    it "skips upload for already uploaded episodes" do
       # Track if upload_media! was called
       upload_called = false
       upload_mock = ->(eps) do
@@ -876,7 +931,27 @@ describe Apple::Publisher do
       refute upload_called, "upload_media! should not be called for already uploaded episodes"
     end
 
+    it "syncs metadata for draft episodes even when upload is skipped" do
+      episode.feeder_episode.update!(published_at: nil)
+      refute episode.apple_needs_upload?
+
+      sync_called_with = nil
+      upload_called = false
+
+      apple_publisher.stub(:sync_episodes!, ->(eps) { sync_called_with = eps }) do
+        apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+          apple_publisher.stub(:process_delivery!, ->(*) {}) do
+            apple_publisher.upload_and_process!([episode])
+          end
+        end
+      end
+
+      assert_equal [episode], sync_called_with
+      refute upload_called, "upload_media! should not be called for draft episode with unchanged media"
+    end
+
     it "processes uploads for non-uploaded episodes" do
+      episode = build(:apple_episode_ready_for_upload, show: apple_publisher.show)
       refute episode.delivery_status.uploaded
 
       mock = Minitest::Mock.new
@@ -893,9 +968,6 @@ describe Apple::Publisher do
     end
 
     it "calls delivery for episodes needing delivery" do
-      episode.feeder_episode.apple_mark_as_uploaded!
-      episode.feeder_episode.apple_mark_as_not_delivered!
-
       # Delivery should be called (which now includes publishing)
       delivery_mock = Minitest::Mock.new
       delivery_mock.expect(:call, nil, [[episode]])
@@ -909,20 +981,139 @@ describe Apple::Publisher do
       assert delivery_mock.verify
     end
 
+    it "still uploads media for draft episodes" do
+      episode = build(:apple_episode_ready_for_upload, show: apple_publisher.show)
+      episode.feeder_episode.update!(published_at: nil)
+      assert episode.apple_needs_upload?
+
+      upload_called_with = nil
+
+      apple_publisher.stub(:upload_media!, ->(eps) { upload_called_with = eps }) do
+        apple_publisher.stub(:process_delivery!, ->(*) {}) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      assert_equal [episode], upload_called_with, "upload_media! should be called with draft episodes"
+    end
+
+    it "skips upload for prepublish episodes without uploadable media" do
+      no_media_episode = build(:apple_episode,
+        show: apple_publisher.show,
+        feeder_episode: create(:episode, published_at: nil))
+
+      upload_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+        apple_publisher.stub(:process_delivery!, ->(*) {}) do
+          apple_publisher.upload_and_process!([no_media_episode])
+        end
+      end
+
+      refute upload_called, "upload_media! should not be called when enclosure is not ready"
+    end
+
+    it "skips process_delivery! for draft episodes" do
+      episode.feeder_episode.update!(published_at: nil)
+
+      delivery_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) {}) do
+        apple_publisher.stub(:process_delivery!, ->(*) { delivery_called = true }) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      refute delivery_called, "process_delivery! should not be called for draft episodes"
+    end
+
+    it "uploads then delivers a draft once published_at is set across two runs" do
+      # First run: episode is a draft needing upload
+      episode = build(:apple_episode_ready_for_upload, show: apple_publisher.show)
+      episode.feeder_episode.update!(published_at: nil)
+
+      upload_called = false
+      delivery_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+        apple_publisher.stub(:process_delivery!, ->(*) { delivery_called = true }) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      assert upload_called, "upload_media! should be called for draft on first run"
+      refute delivery_called, "process_delivery! should not be called for draft on first run"
+
+      # Second run: episode is now published and already uploaded
+      episode.feeder_episode.reload
+      episode.feeder_episode.update!(published_at: 1.hour.ago)
+      episode.feeder_episode.apple_update_delivery_status(
+        uploaded: true,
+        source_media_version_id: episode.feeder_episode.media_version_id
+      )
+
+      upload_called = false
+      delivery_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+        apple_publisher.stub(:process_delivery!, ->(*) { delivery_called = true }) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      refute upload_called, "upload_media! should not be called when already uploaded"
+      assert delivery_called, "process_delivery! should be called after draft is published"
+    end
+
+    it "re-uploads when media version changes after a previous upload" do
+      # Episode was previously uploaded and delivered with an old media version
+      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      old_version_id = episode.feeder_episode.media_version_id
+
+      refute episode.feeder_episode.apple_needs_upload?,
+        "should not need upload when source_media_version_id matches"
+
+      # Simulate media being re-processed — new media version cut
+      create(:content, episode: episode.feeder_episode, position: 2, status: "complete")
+      new_version = episode.feeder_episode.reload.cut_media_version!
+      refute_equal old_version_id, new_version.id
+
+      assert episode.feeder_episode.apple_needs_upload?,
+        "should need upload when source_media_version_id is stale"
+
+      upload_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+        apple_publisher.stub(:process_delivery!, ->(*) {}) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      assert upload_called, "upload_media! should be called to re-upload changed media"
+    end
+
+    it "skips process_delivery! for scheduled episodes" do
+      episode.feeder_episode.update!(published_at: 10.days.from_now)
+
+      delivery_called = false
+
+      apple_publisher.stub(:upload_media!, ->(*) {}) do
+        apple_publisher.stub(:process_delivery!, ->(*) { delivery_called = true }) do
+          apple_publisher.upload_and_process!([episode])
+        end
+      end
+
+      refute delivery_called, "process_delivery! should not be called for scheduled episodes"
+    end
+
     it "processes all uploads before any deliveries (phase separation)" do
       # Create episodes in different states
-      upload_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      upload_episode = build(:apple_episode_ready_for_upload, show: apple_publisher.show)
       delivery_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
 
-      # Force upload episode to need upload
-      upload_episode.feeder_episode.apple_mark_as_not_uploaded!
-      upload_episode.feeder_episode.apple_mark_as_not_delivered!
       assert upload_episode.apple_needs_upload?
 
-      # Force delivery episode to need delivery but not upload
-      delivery_episode.feeder_episode.apple_mark_as_not_delivered!
-      delivery_episode.feeder_episode.apple_mark_as_uploaded!
-
+      # delivery_episode starts as uploaded but not delivered (factory default)
       refute delivery_episode.feeder_episode.apple_needs_upload?
       assert delivery_episode.apple_needs_delivery?
 
@@ -960,7 +1151,7 @@ describe Apple::Publisher do
     end
 
     it "calls increment_asset_wait! immediately after upload completion" do
-      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      episode = build(:apple_episode_ready_for_upload, show: apple_publisher.show)
 
       # Track method calls to verify increment_asset_wait! is called during upload_media!
       upload_method_calls = []
