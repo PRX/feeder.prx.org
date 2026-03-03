@@ -30,34 +30,9 @@
     }
   }
 
-  .ss-multi-selected .ss-add {
-    margin-top: 12px;
-    margin-right: 8px;
-  }
-
   &.form-select.is-invalid:not([multiple]):not([size]) {
     background-repeat: no-repeat;
   }
-}
-
-.ss-single-selected,
-.ss-multi-selected {
-  padding: $input-btn-padding-y $input-btn-padding-x;
-  line-height: $line-height-base;
-  border: 0;
-  border-radius: $input-border-radius;
-  color: $input-color;
-
-  &.ss-disabled {
-    background: $input-disabled-bg;
-    border-color: $input-disabled-border-color;
-    cursor: default;
-  }
-}
-
-.ss-single-selected {
-  height: 3.5rem;
-  background: transparent;
 }
 
 .ss-arrow {
@@ -81,33 +56,6 @@
   border-radius: $input-border-radius;
   padding: $input-btn-padding-y $input-btn-padding-x;
   height: 3rem;
-}
-
-// more x-ish deselect
-.ss-single-selected .ss-deselect {
-  color: transparent;
-  position: relative;
-  transform: rotate(45deg);
-
-  &::before {
-    background: #666;
-    content: "";
-    position: absolute;
-    height: 10px;
-    width: 2px;
-    left: 4px;
-    top: 12px;
-  }
-
-  &::after {
-    background: #666;
-    content: "";
-    position: absolute;
-    height: 2px;
-    width: 10px;
-    left: 0px;
-    top: 16px;
-  }
 }
 
 // faster!
@@ -170,15 +118,6 @@ select[multiple] option {
         --ss-bg-color: #{$white};
         color: var(--ss-bg-color);
       }
-    }
-  }
-
-  .ss-single-selected .ss-deselect {
-    color: transparent;
-
-    &::before,
-    &::after {
-      background: $gray-900;
     }
   }
 }
