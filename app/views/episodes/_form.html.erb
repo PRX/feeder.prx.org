@@ -10,7 +10,12 @@
       <div class="row">
         <%= render "form_main", episode: episode, form: form %>
         <%= render "form_tags", episode: episode, form: form %>
-        <%= render "form_image", episode: episode, form: form %>
+        <div class="col-12 mb-4">
+          <%= render "form_image", episode: episode, form: form %>
+        </div>
+        <div class="col-12 mb-4">
+          <%= render "people/form_people", episode: episode, form: form %>
+        </div>
       </div>
     </div>
     <div class="col-lg-4 d-grid align-content-start gap-3">

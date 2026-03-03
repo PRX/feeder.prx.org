@@ -31,11 +31,13 @@ class Podcast < ApplicationRecord
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
   has_many :tasks, as: :owner
+  has_many :persons, as: :owner, inverse_of: :owner
   has_many :podcast_imports, dependent: :destroy
   has_many :subscribe_links, dependent: :destroy
   has_many :stream_resources, through: :stream_recording
 
   accepts_nested_attributes_for :default_feed
+  accepts_nested_attributes_for :persons, allow_destroy: true, reject_if: :all_blank
   accepts_nested_attributes_for :subscribe_links, allow_destroy: true
 
   validates :title, presence: true
@@ -92,11 +94,16 @@ class Podcast < ApplicationRecord
   end
 
   def has_apple_feed?
-    feeds.apple.exists?
+    if defined?(@has_apple_feed)
+      @has_apple_feed
+    else
+      @has_apple_feed = feeds.apple.exists?
+    end
   end
 
   def reload(options = nil)
     remove_instance_variable(:@apple_config) if defined?(@apple_config)
+    remove_instance_variable(:@has_apple_feed) if defined?(@has_apple_feed)
     super
   end
 

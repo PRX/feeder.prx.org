@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_03_173040) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_20_205546) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -340,6 +340,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_03_173040) do
     t.boolean "sync_blocks_rss", default: false, null: false
     t.string "organization_id"
     t.text "advertising_tags"
+  end
+
+  create_table "persons", force: :cascade do |t|
+    t.string "owner_type"
+    t.bigint "owner_id"
+    t.string "name"
+    t.string "role"
+    t.string "organization"
+    t.string "href"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_type", "owner_id"], name: "index_persons_on_owner"
   end
 
   create_table "podcast_imports", force: :cascade do |t|
