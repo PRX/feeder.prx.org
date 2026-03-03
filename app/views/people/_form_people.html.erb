@@ -42,7 +42,7 @@
     </div>
 
     <div class="card-footer border-0">
-      <% new_person = form.object.persons.build %>
+      <% new_person = Person.new(owner: form.object) %>
 
       <% if policy(new_person).create? %>
         <button type="button" class="btn btn-primary btn-sm" data-action="person-add#add">
