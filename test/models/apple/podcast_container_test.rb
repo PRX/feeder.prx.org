@@ -59,6 +59,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
 
       it "should wait for the source metadata to be updated and return media_infos" do
+        pc # ensure podcast container exists
         mock_version_id = 42
 
         media_info = Apple::MediaInfo.new(
