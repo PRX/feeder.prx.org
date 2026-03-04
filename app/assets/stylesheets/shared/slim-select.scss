@@ -58,15 +58,17 @@
   height: 3rem;
 }
 
-// faster!
-.ss-content {
-  // overrides Slim Select v3 component styles
+.ss-main, .ss-content {
   --ss-primary-color: #{$primary};
   --ss-bg-color: #{$white};
   --ss-font-color: #{$gray-700};
   --ss-border-color: #{$border-color};
   --ss-border-radius: #{$border-radius};
+}
 
+// overrides Slim Select v3 component styles
+.ss-content {
+  // faster!
   transition-duration: 0.1s;
 
   &.form-select {
