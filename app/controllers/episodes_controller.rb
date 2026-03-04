@@ -42,7 +42,7 @@ class EpisodesController < ApplicationController
 
   # GET /episodes/1
   def show
-    if Rails.env.development? && @episode.published?
+    if @episode.published?
       redirect_to episode_overview_path(@episode.guid)
     else
       redirect_to edit_episode_url(@episode)

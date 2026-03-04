@@ -13,7 +13,7 @@ module MetricsQueries
       .final
   end
 
-  def daterange_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_time_start, date_end: metrics_default_time_end, interval: "DAY")
+  def daterange_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil, interval: "DAY")
     if model_id.is_a?(Array)
       Rollups::HourlyDownload
         .where("#{column}": model_id, hour: (date_start..date_end))
@@ -23,6 +23,7 @@ module MetricsQueries
         .sum(:count)
     else
       Rollups::HourlyDownload
+        .where(podcast_id: metrics_podcast_id)
         .where("#{column}": model_id, hour: (date_start..date_end))
         .group("DATE_TRUNC('#{interval}', hour)")
         .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
@@ -31,10 +32,11 @@ module MetricsQueries
     end
   end
 
-  def feed_downloads_query(feeds:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_time_start, date_end: metrics_default_time_end)
+  def feed_downloads_query(feeds:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
 
     Rollups::HourlyDownload
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, feed_slug: slugs, hour: (date_start..date_end))
       .group(:feed_slug)
       .order(Arel.sql("SUM(count) AS count DESC"))
@@ -42,8 +44,9 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
+  def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     Rollups::DailyGeo
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:country_code)
       .order(Arel.sql("SUM(count) AS count DESC"))
@@ -52,18 +55,20 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_countries_downloads_query(excluded_countries:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
+  def other_countries_downloads_query(excluded_countries:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     ex_country_codes = excluded_countries.map { |c| c[0] }
 
     Rollups::DailyGeo
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
       .where.not(country_code: ex_country_codes)
       .final
       .sum(:count)
   end
 
-  def top_agents_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
+  def top_agents_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     Rollups::DailyAgent
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
       .group(:agent_name_id)
       .order(Arel.sql("SUM(count) AS count DESC"))
@@ -72,10 +77,11 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_agents_downloads_query(excluded_agents:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
+  def other_agents_downloads_query(excluded_agents:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     ex_agent_codes = excluded_agents.map { |c| c[0] }
 
     Rollups::DailyAgent
+      .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
       .where.not(agent_name_id: ex_agent_codes)
       .final
@@ -86,23 +92,19 @@ module MetricsQueries
     "#{cache_key}/metrics_v#{METRICS_CACHE_VERSION}"
   end
 
-  private
+  def metrics_cache_fetch(*args, &block)
+    if ENV["METRICS_CACHING_OFF"].present?
+      block.call
+    else
+      Rails.cache.fetch(*args, &block)
+    end
+  end
 
   def metrics_default_date_start
-    (Date.utc_today - 28.days)
+    (Date.utc_today - 27.days)
   end
 
-  def metrics_default_date_end
-    Date.utc_today
-  end
-
-  def metrics_default_time_start
-    Time.now - 28.days
-  end
-
-  def metrics_default_time_end
-    Time.now
-  end
+  private
 
   def metrics_default_id
     if is_a?(Podcast)
@@ -117,6 +119,14 @@ module MetricsQueries
       "podcast_id"
     elsif is_a?(Episode)
       "episode_id"
+    end
+  end
+
+  def metrics_podcast_id
+    if is_a?(Podcast)
+      id
+    elsif is_a?(Episode)
+      podcast.id
     end
   end
 end

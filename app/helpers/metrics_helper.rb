@@ -1,4 +1,8 @@
 module MetricsHelper
+  def show_metrics?
+    current_user_app?("metrics") && !session[:metrics_opt_out]
+  end
+
   def parse_trend(trend)
     return if trend.blank?
 

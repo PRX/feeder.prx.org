@@ -42,6 +42,8 @@ module MetricsUtils
       "episode_sparkline_#{params[:episode_id]}"
     elsif action_name == "episode_trend"
       "episode_trend_#{params[:episode_id]}"
+    elsif action_name == "monthly_downloads"
+      "downloads"
     else
       action_name
     end
