@@ -58,7 +58,8 @@
   height: 3rem;
 }
 
-.ss-main, .ss-content {
+.ss-main,
+.ss-content {
   --ss-primary-color: #{$primary};
   --ss-bg-color: #{$white};
   --ss-font-color: #{$gray-700};
