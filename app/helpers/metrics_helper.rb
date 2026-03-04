@@ -6,7 +6,7 @@ module MetricsHelper
   def parse_trend(trend)
     return if trend.blank?
 
-    if trend > 0
+    if trend >= 0
       {
         percent: "+#{(trend * 100).round(3)}%",
         color: modified_trend_color(trend, "text-success"),
