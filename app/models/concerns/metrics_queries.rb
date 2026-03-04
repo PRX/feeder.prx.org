@@ -13,7 +13,7 @@ module MetricsQueries
       .final
   end
 
-  def daterange_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_time_start, date_end: metrics_default_time_end, interval: "DAY")
+  def daterange_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil, interval: "DAY")
     if model_id.is_a?(Array)
       Rollups::HourlyDownload
         .where("#{column}": model_id, hour: (date_start..date_end))
@@ -32,7 +32,7 @@ module MetricsQueries
     end
   end
 
-  def feed_downloads_query(feeds:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_time_start, date_end: metrics_default_time_end)
+  def feed_downloads_query(feeds:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
 
     Rollups::HourlyDownload
@@ -44,7 +44,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
+  def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     Rollups::DailyGeo
       .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
@@ -55,7 +55,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_countries_downloads_query(excluded_countries:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
+  def other_countries_downloads_query(excluded_countries:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     ex_country_codes = excluded_countries.map { |c| c[0] }
 
     Rollups::DailyGeo
@@ -66,7 +66,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def top_agents_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
+  def top_agents_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     Rollups::DailyAgent
       .where(podcast_id: metrics_podcast_id)
       .where("#{column}": model_id, day: date_start..date_end)
@@ -77,7 +77,7 @@ module MetricsQueries
       .sum(:count)
   end
 
-  def other_agents_downloads_query(excluded_agents:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: metrics_default_date_end)
+  def other_agents_downloads_query(excluded_agents:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     ex_agent_codes = excluded_agents.map { |c| c[0] }
 
     Rollups::DailyAgent
@@ -100,23 +100,11 @@ module MetricsQueries
     end
   end
 
-  private
-
   def metrics_default_date_start
-    (Date.utc_today - 28.days)
+    (Date.utc_today - 27.days)
   end
 
-  def metrics_default_date_end
-    Date.utc_today
-  end
-
-  def metrics_default_time_start
-    Time.now - 28.days
-  end
-
-  def metrics_default_time_end
-    Time.now
-  end
+  private
 
   def metrics_default_id
     if is_a?(Podcast)

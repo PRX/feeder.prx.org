@@ -11,10 +11,7 @@ module PodcastMetrics
     end
   end
 
-  def daily_downloads(days: 28, date_start: nil, date_end: nil)
-    date_start ||= Time.now - days.days
-    date_end ||= Time.now
-
+  def daily_downloads(days: 28, date_start: metrics_default_date_start, date_end: nil)
     metrics_cache_fetch("#{metrics_cache_key}/daily_downloads", expires_in: 1.hour) do
       daterange_downloads_query(date_start: date_start, date_end: date_end, interval: "DAY")
     end
@@ -22,17 +19,13 @@ module PodcastMetrics
 
   def monthly_downloads(months: 12, date_start: nil, date_end: nil)
     date_start = date_start&.beginning_of_month || (Time.now - (months - 1).months).beginning_of_month
-    date_end ||= Time.now
 
     metrics_cache_fetch("#{metrics_cache_key}/monthly_downloads", expires_in: 1.hour) do
       daterange_downloads_query(date_start: date_start, date_end: date_end, interval: "MONTH").transform_keys { |k| k.to_datetime.utc }
     end
   end
 
-  def downloads_by_episode(guids: recent_published_episode_guids, date_start: nil, date_end: nil)
-    date_start ||= Time.now - 28.days
-    date_end ||= Time.now
-
+  def downloads_by_episode(guids: recent_published_episode_guids, date_start: metrics_default_date_start, date_end: nil)
     downloads = daterange_downloads_query(model_id: guids, column: "episode_id", date_start: date_start, date_end: date_end)
 
     guids.map do |guid|

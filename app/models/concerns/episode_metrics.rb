@@ -59,10 +59,7 @@ module EpisodeMetrics
     alltime_downloads_query.sum(&:count)
   end
 
-  def daily_downloads(days: 28, date_start: nil, date_end: nil)
-    date_start ||= Time.now - days.days
-    date_end ||= Time.now
-
+  def daily_downloads(days: 28, date_start: metrics_default_date_start, date_end: nil)
     metrics_cache_fetch("#{metrics_cache_key}/daily_downloads", expires_in: 1.hour) do
       daterange_downloads_query(date_start: date_start, date_end: date_end, interval: "DAY")
     end
