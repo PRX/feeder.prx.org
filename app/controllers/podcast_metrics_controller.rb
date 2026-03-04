@@ -23,7 +23,7 @@ class PodcastMetricsController < ApplicationController
 
     render partial: "metrics/episode_trend", locals: {
       episode: @episode,
-      episode_trend: @episode.episode_trend
+      episode_trend: trend
     }
   end
 
