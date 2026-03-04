@@ -16,6 +16,7 @@ module MetricsQueries
   def daterange_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil, interval: "DAY")
     if model_id.is_a?(Array)
       Rollups::HourlyDownload
+        .where(podcast_id: metrics_podcast_id)
         .where("#{column}": model_id, hour: (date_start..date_end))
         .group(column, "DATE_TRUNC('#{interval}', hour)")
         .order(Arel.sql("DATE_TRUNC('#{interval}', hour) ASC"))
