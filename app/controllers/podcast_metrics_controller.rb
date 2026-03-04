@@ -19,6 +19,7 @@ class PodcastMetricsController < ApplicationController
 
   def episode_trend
     @episode = Episode.find_by(guid: params[:episode_id])
+    trend = @episode.episode_trend if @episode.has_episode_trend?
 
     render partial: "metrics/episode_trend", locals: {
       episode: @episode,
