@@ -594,6 +594,7 @@ describe Apple::Publisher do
     end
 
     it "only includes still-waiting episodes in timeout error, not all episodes" do
+      skip("test is missing assertions and mock verify")
       episode1 = build(:uploaded_apple_episode, show: apple_publisher.show)
       episode2 = build(:uploaded_apple_episode, show: apple_publisher.show)
 

@@ -80,7 +80,7 @@ class EpisodesController < ApplicationController
       if @episode.save
         @episode.copy_media
         @episode.publish!
-        format.html { redirect_to episode_url(@episode), notice: t(".notice") }
+        format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
         flash.now[:error] = t(".media_not_ready")
         format.html { render :edit, status: :unprocessable_entity }
@@ -100,7 +100,7 @@ class EpisodesController < ApplicationController
       if @episode.save
         @episode.copy_media
         @episode.publish!
-        format.html { redirect_to episode_url(@episode), notice: t(".notice") }
+        format.html { redirect_to edit_episode_url(@episode), notice: t(".notice") }
       elsif @episode.errors.added?(:base, :media_not_ready)
         flash.now[:error] = t(".media_not_ready")
         format.html { render :edit, status: :unprocessable_entity }
@@ -189,7 +189,8 @@ class EpisodesController < ApplicationController
       :original_guid,
       categories: [],
       feed_ids: [],
-      images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
+      images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
+      persons_attributes: %i[id name role organization href _destroy]
     ).tap do |p|
       p[:released_at] = released_at_zone.parse(p[:released_at]) if p[:released_at].present?
     end)

@@ -178,6 +178,9 @@ class PodcastsController < ApplicationController
         itunes_subcategory: [],
         feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
         itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry]
+      ],
+      persons_attributes: [
+        :id, :name, :role, :organization, :href, :_destroy
       ]
     )
   end

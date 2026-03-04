@@ -500,6 +500,15 @@ en:
           last_28_rolling: Daily (28-Day Window)
           calendar_week: Weekly
           calendar_month: Monthly
+      person:
+        href: Link
+        name: Name
+        organization: Organization
+        role: Role
+        roles:
+          guest: Guest
+          host: Host
+          producer: Producer
       podcast_import:
         import_existing: Import Existing Episodes
         import_metadata: Import Podcast Metadata
@@ -1229,6 +1238,29 @@ en:
       error_message:
         database: Unable to connect to the data server
         general: An error has occured, try reloading
+  people:
+    form_people:
+      add: Add a Person
+      edit: Edit
+      empty: No People
+      remove: Remove
+      title: People
+    form_people_modal:
+      add: Add
+      cancel: Cancel
+      close: Close
+      help:
+        href: The url to a relevant resource of information about the person, such as a homepage or third-party profile platform.
+        name: The name of this person.
+        organization: Organization this person belongs to, as relevant to this podcast/episode.
+        role: What role the person serves on this podcast/episode.
+      okay: Okay
+      save: Save Changes
+      title_add: Add a Person
+      title_edit: Edit Person
+    form_people_person:
+      edit: Edit this person
+      remove: Remove this person
   placements_preview:
     show:
       fetch_error: Error fetching placements - try again later
