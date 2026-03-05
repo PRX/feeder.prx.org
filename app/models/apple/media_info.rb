@@ -82,11 +82,11 @@ module Apple
       all_media_infos = []
 
       (timed_out, _remaining) = wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
-        increment_source_fetch_count(remaining_episodes)
-        Rails.logger.info("Incremented source fetch count", {count: remaining_episodes.length})
-
         media_infos = probe_source_file_metadata(api, remaining_episodes)
         Rails.logger.info("Updated container source metadata.", {count: media_infos.length})
+
+        increment_source_fetch_count(remaining_episodes)
+        Rails.logger.info("Incremented source fetch count", {count: remaining_episodes.length})
 
         ready, not_ready = media_infos.partition(&:has_media_version?)
         all_media_infos.concat(ready)
