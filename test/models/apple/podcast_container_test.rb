@@ -69,7 +69,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
           source_url: "https://cdn.example.com/audio.mp3"
         )
 
-        Apple::MediaInfo.stub(:reset_source_file_metadata, nil) do
+        Apple::MediaInfo.stub(:increment_source_fetch_count, nil) do
           Apple::MediaInfo.stub(:probe_source_file_metadata, [media_info]) do
             apple_episode.feeder_episode.stub(:media_version_id, mock_version_id) do
               (timed_out, media_infos) = Apple::MediaInfo.wait_for_versioned_source_metadata(api, [apple_episode], wait_interval: 0.seconds, wait_timeout: 5.seconds)

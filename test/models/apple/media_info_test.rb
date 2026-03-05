@@ -67,100 +67,38 @@ describe Apple::MediaInfo do
     end
   end
 
-  describe ".reset_source_file_metadata" do
-    it "persists filename and enclosure_url but does not clear source probe fields" do
+  describe ".increment_source_fetch_count" do
+    it "increments the count" do
       pc # ensure container exists
       assert_equal 0, status&.source_fetch_count.to_i
 
-      Apple::MediaInfo.reset_source_file_metadata([apple_episode])
-
-      episode.apple_update_delivery_status(source_url: "www.some/foo", source_size: 123, source_media_version_id: 1)
-
-      assert_equal 1, status.source_fetch_count
-      assert status.source_filename.present?
-      assert status.source_url.present?
-      assert status.source_size.present?
-      assert status.source_media_version_id.present?
-
-      apple_episode.stub(:enclosure_url, "http://something/transistor") do
-        apple_episode.stub(:enclosure_filename, "transistor") do
-          Apple::MediaInfo.reset_source_file_metadata([apple_episode])
-        end
-      end
-
-      assert_equal 2, status.source_fetch_count
-      assert status.source_filename.present?
-      # Probe fields are NOT cleared by reset — they persist until overwritten atomically
-      assert status.source_url.present?
-      assert status.source_size.present?
-      assert status.source_media_version_id.present?
-
-      assert_equal "1_transistor", status.source_filename
-      assert_equal "http://something/transistor", status.enclosure_url
-    end
-
-    it "increments the source filename" do
-      pc # ensure container exists
-      assert_equal 0, status&.source_fetch_count.to_i
-      Apple::MediaInfo.reset_source_file_metadata([apple_episode])
-      episode.apple_update_delivery_status(source_url: "www.some/foo", source_size: 123, source_filename: "foo", source_media_version_id: 1)
-
-      apple_episode.stub(:enclosure_filename, "new") do
-        apple_episode.stub(:enclosure_url, "http://this-is-new") do
-          assert_equal "foo", status.source_filename
-          assert_equal 1, status.source_fetch_count
-
-          Apple::MediaInfo.reset_source_file_metadata([apple_episode])
-          assert_equal "1_new", status.source_filename
-          assert_equal 2, status.source_fetch_count
-
-          Apple::MediaInfo.reset_source_file_metadata([apple_episode])
-          assert_equal "2_new", status.source_filename
-          assert_equal 3, status.source_fetch_count
-        end
-      end
-    end
-
-    it "increments the count based on reset count" do
-      pc # ensure container exists
-      assert_equal 0, status&.source_fetch_count.to_i
-
-      Apple::MediaInfo.reset_source_file_metadata([apple_episode])
+      Apple::MediaInfo.increment_source_fetch_count([apple_episode])
       assert_equal 1, status.source_fetch_count
 
-      Apple::MediaInfo.reset_source_file_metadata([apple_episode])
+      Apple::MediaInfo.increment_source_fetch_count([apple_episode])
       assert_equal 2, status.source_fetch_count
 
-      Apple::MediaInfo.reset_source_file_metadata([apple_episode])
+      Apple::MediaInfo.increment_source_fetch_count([apple_episode])
       assert_equal 3, status.source_fetch_count
+    end
+
+    it "does not modify other fields" do
+      pc # ensure container exists
+      episode.apple_update_delivery_status(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+
+      Apple::MediaInfo.increment_source_fetch_count([apple_episode])
+
+      assert_equal 1, status.source_fetch_count
+      assert_equal "www.some/foo", status.source_url
+      assert_equal 123, status.source_size
+      assert_equal "foo", status.source_filename
     end
 
     it "filters episodes without a container" do
       apple_episode.stub(:podcast_container, nil) do
-        Apple::MediaInfo.reset_source_file_metadata([apple_episode])
-        assert_nil status&.source_filename
+        Apple::MediaInfo.increment_source_fetch_count([apple_episode])
         assert_equal 0, status&.source_fetch_count.to_i
       end
-    end
-
-    it "resets metadata regardless of needs_delivery state" do
-      pc # ensure container exists
-      Apple::MediaInfo.reset_source_file_metadata([apple_episode])
-      episode.apple_update_delivery_status(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
-
-      apple_episode.stub(:enclosure_filename, "new") do
-        apple_episode.stub(:enclosure_url, "http://this-is-new") do
-          apple_episode.stub(:needs_delivery?, false) do
-            Apple::MediaInfo.reset_source_file_metadata([apple_episode])
-          end
-        end
-      end
-
-      # Probe fields are no longer cleared by reset
-      refute status.source_url.nil?
-      refute status.source_size.nil?
-      assert_equal "http://this-is-new", status.enclosure_url
-      assert_equal "1_new", status.source_filename
     end
   end
 
@@ -170,9 +108,17 @@ describe Apple::MediaInfo do
         episode: apple_episode,
         source_media_version_id: 42,
         source_size: 1000,
-        source_url: "https://cdn.example.com/audio.mp3"
+        source_url: "https://cdn.example.com/audio.mp3",
+        source_filename: "audio.mp3",
+        enclosure_url: "https://example.com/audio.mp3"
       )
-      expected = {source_media_version_id: 42, source_size: 1000, source_url: "https://cdn.example.com/audio.mp3"}
+      expected = {
+        source_media_version_id: 42,
+        source_size: 1000,
+        source_url: "https://cdn.example.com/audio.mp3",
+        source_filename: "audio.mp3",
+        enclosure_url: "https://example.com/audio.mp3"
+      }
       assert_equal expected, mi.source_attributes
     end
   end

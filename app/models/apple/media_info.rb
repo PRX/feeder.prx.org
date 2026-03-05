@@ -5,13 +5,15 @@ module Apple
     include Apple::ApiJoin
     include Apple::ApiWaiting
 
-    attr_reader :episode, :source_media_version_id, :source_size, :source_url
+    attr_reader :episode, :source_media_version_id, :source_size, :source_url, :source_filename, :enclosure_url
 
-    def initialize(episode:, source_media_version_id: nil, source_size: nil, source_url: nil)
+    def initialize(episode:, source_media_version_id: nil, source_size: nil, source_url: nil, source_filename: nil, enclosure_url: nil)
       @episode = episode
       @source_media_version_id = source_media_version_id
       @source_size = source_size
       @source_url = source_url
+      @source_filename = source_filename
+      @enclosure_url = enclosure_url
     end
 
     def has_media_version?
@@ -19,7 +21,13 @@ module Apple
     end
 
     def source_attributes
-      {source_media_version_id: source_media_version_id, source_size: source_size, source_url: source_url}
+      {
+      source_media_version_id:,
+      source_size:,
+      source_url:,
+      source_filename:,
+      enclosure_url:
+      }
     end
 
     def self.probe_source_file_metadata(api, episodes)
@@ -41,33 +49,26 @@ module Apple
 
         episode = episodes_by_container_id.fetch(container.id)
 
+        status = episode.apple_status
+        count = status&.source_fetch_count || 0
+
         new(
           episode: episode,
           source_media_version_id: media_version.to_i,
           source_size: content_length.to_i,
-          source_url: cdn_url
+          source_url: cdn_url,
+          source_filename: filename_prefix(count) + episode.enclosure_filename,
+          enclosure_url: episode.enclosure_url
         )
       end
     end
 
-    def self.reset_source_file_metadata(episodes)
+    def self.increment_source_fetch_count(episodes)
       episodes = episodes.select { |ep| ep.podcast_container.present? }
 
       episodes.each do |ep|
-        container = ep.podcast_container
-        status = ep.apple_status
-
-        Rails.logger.debug("Resetting source url for podcast container",
-          podcast_container_id: container.id,
-          source_size: status&.source_size,
-          source_url: status&.source_url)
-
-        count = status&.source_fetch_count || 0
-        ep.feeder_episode.apple_update_delivery_status(
-          source_filename: filename_prefix(count) + ep.enclosure_filename,
-          enclosure_url: ep.enclosure_url,
-          source_fetch_count: count + 1
-        )
+        count = ep.apple_status&.source_fetch_count || 0
+        ep.feeder_episode.apple_update_delivery_status(source_fetch_count: count + 1)
       end
     end
 
@@ -81,8 +82,8 @@ module Apple
       all_media_infos = []
 
       (timed_out, _remaining) = wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
-        reset_source_file_metadata(remaining_episodes)
-        Rails.logger.info("Reset container source metadata", {reset_count: remaining_episodes.length})
+        increment_source_fetch_count(remaining_episodes)
+        Rails.logger.info("Incremented source fetch count", {count: remaining_episodes.length})
 
         media_infos = probe_source_file_metadata(api, remaining_episodes)
         Rails.logger.info("Updated container source metadata.", {count: media_infos.length})
