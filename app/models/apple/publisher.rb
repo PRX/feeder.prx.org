@@ -394,7 +394,6 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         Rails.logger.info("Starting podcast delivery files sync")
 
-        # TODO
         poll_podcast_delivery_files!(eps)
 
         res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, eps, media_infos_by_episode_id: media_infos_by_episode_id)
