@@ -15,6 +15,10 @@ module Integrations
         raise NotImplementedError, "Subclasses must implement archived?"
       end
 
+      def delivery_status(_with_default = false)
+        raise NotImplementedError, "Subclasses must implement delivery_status"
+      end
+
       def error_state?
         false
       end
