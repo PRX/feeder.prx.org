@@ -3,7 +3,6 @@
 module Apple
   class PodcastContainer < ApplicationRecord
     include Apple::ApiResponse
-    include Apple::ApiWaiting
 
     serialize :api_response, coder: JSON
 
@@ -26,7 +25,7 @@ module Apple
     def self.poll_podcast_container_state(api, episodes)
       results = get_podcast_containers_via_episodes(api, episodes)
 
-      join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
+      Apple::ApiJoin.join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         next if row.nil?
         apple_id = row.dig("api_response", "val", "data", "id")
         raise "missing apple id!" unless apple_id.present?
@@ -47,7 +46,7 @@ module Apple
         api.bridge_remote_and_retry!("createPodcastContainers",
           create_podcast_containers_bridge_params(api, episodes_to_create), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      join_on_apple_episode_id(episodes_to_create, new_containers_response).each do |ep, row|
+      Apple::ApiJoin.join_on_apple_episode_id(episodes_to_create, new_containers_response).each do |ep, row|
         upsert_podcast_container(ep, row)
       end
 
@@ -98,7 +97,7 @@ module Apple
       # Rather than mangling and persisting the enumerated view of the containers in the episodes,
       # just re-fetch the podcast containers from the non-list podcast container endpoint
       formatted_bridge_params =
-        join_on_apple_episode_id(episodes, response).map do |(episode, row)|
+        Apple::ApiJoin.join_on_apple_episode_id(episodes, response).map do |(episode, row)|
           get_urls_for_episode_podcast_containers(api, row).map do |url|
             get_podcast_containers_bridge_param(episode.apple_id, url)
           end
@@ -241,7 +240,5 @@ module Apple
     def needs_delivery?
       !skip_delivery?
     end
-
-
   end
 end

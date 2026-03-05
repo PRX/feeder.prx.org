@@ -93,7 +93,6 @@ describe Apple::MediaInfo do
       assert_equal 123, status.source_size
       assert_equal "foo", status.source_filename
     end
-
   end
 
   describe "#source_attributes" do

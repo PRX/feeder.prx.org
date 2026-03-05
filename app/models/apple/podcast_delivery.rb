@@ -43,7 +43,7 @@ module Apple
 
       results = get_podcast_deliveries_via_containers(api, podcast_containers)
 
-      res = join_many_on("podcast_container_id", podcast_containers, results, left_join: true).map do |(podcast_container, delivery_rows)|
+      res = Apple::ApiJoin.join_many_on("podcast_container_id", podcast_containers, results, left_join: true).map do |(podcast_container, delivery_rows)|
         next if delivery_rows.nil?
 
         delivery_rows.each do |delivery_row|
@@ -80,7 +80,7 @@ module Apple
         api.bridge_remote_and_retry("createPodcastDeliveries",
           create_podcast_deliveries_bridge_params(api, podcast_containers), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      join_on("podcast_container_id", podcast_containers, response).map do |podcast_container, row|
+      Apple::ApiJoin.join_on("podcast_container_id", podcast_containers, response).map do |podcast_container, row|
         upsert_podcast_delivery(podcast_container, row)
       end
 
@@ -100,7 +100,7 @@ module Apple
 
       # Rather than mangling and persisting the enumerated view of the deliveries from the containers endpoint,
       # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
-      formatted_bridge_params = join_many_on("podcast_container_id", podcast_containers, deliveries_response).map do |(pc, rows)|
+      formatted_bridge_params = Apple::ApiJoin.join_many_on("podcast_container_id", podcast_containers, deliveries_response).map do |(pc, rows)|
         rows.map do |row|
           get_urls_for_container_podcast_deliveries(api, row).map do |url|
             get_podcast_deliveries_bridge_param(pc.apple_episode_id, pc.id, url)

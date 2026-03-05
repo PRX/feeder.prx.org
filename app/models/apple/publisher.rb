@@ -1,6 +1,5 @@
 module Apple
   class Publisher < Integrations::Base::Publisher
-    include Apple::ApiWaiting
     attr_reader :public_feed,
       :private_feed,
       :api,
@@ -156,7 +155,7 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         remaining_eps = filter_episodes_awaiting_asset_state(eps)
 
-        (timed_out, final_waiting) = self.class.wait_for(remaining_eps,
+        (timed_out, final_waiting) = Apple::ApiWaiting.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
           wait_interval: wait_interval) do |waiting_eps|
           ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)

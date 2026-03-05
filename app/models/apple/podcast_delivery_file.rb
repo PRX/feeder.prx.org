@@ -5,7 +5,6 @@ module Apple
     class DeliveryFileError < StandardError; end
 
     include Apple::ApiResponse
-    include Apple::ApiWaiting
 
     acts_as_paranoid
 
@@ -45,7 +44,7 @@ module Apple
     end
 
     def self.wait_for_processing(api, pdfs, &stuck_check)
-      wait_for(pdfs) do |remaining_pdfs|
+      Apple::ApiWaiting.wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file processing")
         updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
 
@@ -61,7 +60,7 @@ module Apple
     end
 
     def self.wait_for_delivery(api, pdfs, &stuck_check)
-      wait_for(pdfs) do |remaining_pdfs|
+      Apple::ApiWaiting.wait_for(pdfs) do |remaining_pdfs|
         Rails.logger.info("Probing for file delivery")
         updated_pdfs = get_and_update_api_response(api, remaining_pdfs)
 
@@ -92,7 +91,7 @@ module Apple
 
       (episode_bridge_results, errs) = api.bridge_remote_and_retry("updateDeliveryFiles", bridge_params, batch_size: Apple::Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      join_on(PODCAST_DELIVERY_FILE_ID_ATTR, pdfs, episode_bridge_results).each do |(pdf, row)|
+      Apple::ApiJoin.join_on(PODCAST_DELIVERY_FILE_ID_ATTR, pdfs, episode_bridge_results).each do |(pdf, row)|
         external_id = row.dig("api_response", "val", "data", "id")
         pdf.update!(api_marked_as_uploaded: true)
         SyncLog.log!(integration: :apple, feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
@@ -124,7 +123,7 @@ module Apple
           podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd, media_info: media_infos_by_episode_id.fetch(pd.episode_id)) }, batch_size: Apple::Api::DEFAULT_WRITE_BATCH_SIZE)
 
       # Creating one podcast delivery file per podcast delivery
-      res = join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, result).each do |(podcast_delivery, row)|
+      res = Apple::ApiJoin.join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, result).each do |(podcast_delivery, row)|
         upsert_podcast_delivery_file(podcast_delivery, row)
       end
 
@@ -143,7 +142,7 @@ module Apple
 
       results = get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
 
-      res = join_many_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, results, left_join: true).map do |(podcast_delivery, delivery_file_rows)|
+      res = Apple::ApiJoin.join_many_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, results, left_join: true).map do |(podcast_delivery, delivery_file_rows)|
         next if delivery_file_rows.nil?
 
         delivery_file_rows.map do |delivery_file_row|
@@ -171,7 +170,7 @@ module Apple
       # Rather than mangling and persisting the enumerated view of the delivery files from the podcast delivery
       # Instead, re-fetch the podcast delivery file from the non-list podcast delivery file resource
       formatted_bridge_params =
-        join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, delivery_files_response, left_join: true).map do |(podcast_delivery, row)|
+        Apple::ApiJoin.join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, delivery_files_response, left_join: true).map do |(podcast_delivery, row)|
           next if row.nil?
 
           podcast_delivery_files_ids =

@@ -4,8 +4,6 @@ module Apple
   module ApiResponse
     extend ActiveSupport::Concern
 
-    include Apple::ApiJoin
-
     def api_response
       apple_sync_log&.api_response
     end

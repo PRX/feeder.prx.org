@@ -2,7 +2,6 @@
 
 module Apple
   class Episode < Integrations::Base::Episode
-    include Apple::ApiWaiting
     include Apple::ApiResponse
     attr_accessor :show,
       :feeder_episode,
@@ -56,7 +55,7 @@ module Apple
 
       results = api.bridge_remote_and_retry!("getEpisodes", bridge_params)
 
-      join_on("feeder_id", episodes_to_sync, results).map do |(ep, row)|
+      Apple::ApiJoin.join_on("feeder_id", episodes_to_sync, results).map do |(ep, row)|
         upsert_sync_log(ep, row)
       end
     end
@@ -67,7 +66,7 @@ module Apple
       results = api.bridge_remote_and_retry!("createEpisodes",
         episodes.map(&:create_episode_bridge_params), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      join_on("guid", episodes, results).map do |(ep, row)|
+      Apple::ApiJoin.join_on("guid", episodes, results).map do |(ep, row)|
         upsert_sync_log(ep, row)
       end
     end
@@ -117,7 +116,7 @@ module Apple
 
       upsert_sync_logs(episodes, episode_bridge_results)
 
-      join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
+      Apple::ApiJoin.join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
         ep.feeder_episode.apple_mark_as_not_delivered! if apple_mark_for_reupload
         Rails.logger.info("Removed audio container reference for episode", {episode_id: ep.feeder_id})
       end
@@ -155,7 +154,7 @@ module Apple
       episode_bridge_results = api.bridge_remote_and_retry!("publishEpisodes",
         episodes.map { |e| e.publishing_state_bridge_params(state) })
 
-      join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
+      Apple::ApiJoin.join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
         Rails.logger.info("Moving episode to #{state} state", {episode_id: ep.feeder_id, state: ep.publishing_state})
       end
 

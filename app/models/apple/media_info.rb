@@ -2,9 +2,6 @@
 
 module Apple
   class MediaInfo
-    include Apple::ApiJoin
-    include Apple::ApiWaiting
-
     attr_reader :episode, :source_media_version_id, :source_size, :source_url, :source_filename, :enclosure_url
 
     def initialize(episode:, source_media_version_id: nil, source_size: nil, source_url: nil, source_filename: nil, enclosure_url: nil)
@@ -22,11 +19,11 @@ module Apple
 
     def source_attributes
       {
-      source_media_version_id:,
-      source_size:,
-      source_url:,
-      source_filename:,
-      enclosure_url:
+        source_media_version_id:,
+        source_size:,
+        source_url:,
+        source_filename:,
+        enclosure_url:
       }
     end
 
@@ -40,7 +37,7 @@ module Apple
       results = api.bridge_remote_and_retry!("headFileSizes",
         episodes.map { |ep| ep.podcast_container.head_file_size_bridge_params(enclosure_url: ep.enclosure_url) })
 
-      join_on("podcast_container_id", containers, results).map do |container, row|
+      Apple::ApiJoin.join_on("podcast_container_id", containers, results).map do |container, row|
         content_length = row.dig("api_response", "val", "data", "headers", "content-length")
         cdn_url = row.dig("api_response", "val", "data", "redirect_chain_end_url")
         media_version = row.dig("api_response", "val", "data", "episode_media_version")
@@ -81,7 +78,7 @@ module Apple
 
       all_media_infos = []
 
-      (timed_out, _remaining) = wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
+      (timed_out, _remaining) = Apple::ApiWaiting.wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
         media_infos = probe_source_file_metadata(api, remaining_episodes)
         Rails.logger.info("Updated container source metadata.", {count: media_infos.length})
 
