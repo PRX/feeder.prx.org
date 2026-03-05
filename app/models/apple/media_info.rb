@@ -2,7 +2,7 @@
 
 module Apple
   class MediaInfo
-    include Apple::ApiResponse
+    include Apple::ApiJoin
     include Apple::ApiWaiting
 
     attr_reader :episode, :source_media_version_id, :source_size, :source_url
