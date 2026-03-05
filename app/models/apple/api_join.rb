@@ -4,13 +4,13 @@ module Apple
   module ApiJoin
     extend ActiveSupport::Concern
 
-    included do
+    class_methods do
       # assumes the apple_episode_id is present on the request metadata
-      def self.join_on_apple_episode_id(resources, results, left_join: false)
+      def join_on_apple_episode_id(resources, results, left_join: false)
         join_on("apple_episode_id", resources, results, left_join: left_join)
       end
 
-      def self.join_on(id_attribute_key, resources, results, left_join: false)
+      def join_on(id_attribute_key, resources, results, left_join: false)
         (resources_by_id, results_by_id) = one_to_one_lookup(id_attribute_key, resources, results)
 
         resource_key_set = Set.new(resources_by_id.keys)
@@ -28,7 +28,7 @@ module Apple
         end
       end
 
-      def self.join_many_on(id_attribute_key, resources, results, left_join: false)
+      def join_many_on(id_attribute_key, resources, results, left_join: false)
         (resources_by_id, results_by_id) = one_to_many_lookup(id_attribute_key, resources, results)
 
         resource_key_set = Set.new(resources_by_id.keys)
@@ -48,7 +48,7 @@ module Apple
 
       private
 
-      def self.one_to_one_lookup(id_attribute_key, resources, results)
+      def one_to_one_lookup(id_attribute_key, resources, results)
         (resources_by_id, results_by_id) = one_to_many_lookup(id_attribute_key, resources, results)
 
         if results_by_id.values.any? { |v| v.length > 1 }
@@ -58,7 +58,7 @@ module Apple
         [resources_by_id, results_by_id.transform_values(&:first)]
       end
 
-      def self.one_to_many_lookup(id_attribute_key, resources, results)
+      def one_to_many_lookup(id_attribute_key, resources, results)
         raise "Resource missing join attribute" if resources.any? { |r| !r.respond_to?(id_attribute_key) }
         raise "Result missing join attribute" if results.any? { |r| !r.dig("request_metadata", id_attribute_key).present? }
 
