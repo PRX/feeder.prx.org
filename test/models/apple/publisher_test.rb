@@ -1377,10 +1377,10 @@ describe Apple::Publisher do
       ep1 = episode1
       ep2 = episode2
 
-      episode1.define_singleton_method(:apple_mark_for_reupload!) do
+      episode1.define_singleton_method(:apple_mark_as_not_delivered!) do
         reupload_calls << ep1.feeder_id
       end
-      episode2.define_singleton_method(:apple_mark_for_reupload!) do
+      episode2.define_singleton_method(:apple_mark_as_not_delivered!) do
         reupload_calls << ep2.feeder_id
       end
 
@@ -1415,7 +1415,7 @@ describe Apple::Publisher do
     end
 
     it "logs error for each stuck episode" do
-      episode1.define_singleton_method(:apple_mark_for_reupload!) {}
+      episode1.define_singleton_method(:apple_mark_as_not_delivered!) {}
 
       episode1.feeder_episode.stub(:measure_asset_processing_duration, 2500) do
         logs = capture_json_logs do

@@ -66,9 +66,6 @@ module AppleIntegration
     apple_podcast_deliveries.reset
     apple_podcast_delivery_files.reset
     apple_podcast_container&.podcast_deliveries&.reset
-  end
-
-  def apple_mark_for_reupload!
     apple_mark_as_not_delivered!
   end
 

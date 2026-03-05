@@ -118,7 +118,7 @@ module Apple
       upsert_sync_logs(episodes, episode_bridge_results)
 
       join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        ep.feeder_episode.apple_mark_for_reupload! if apple_mark_for_reupload
+        ep.feeder_episode.apple_mark_as_not_delivered! if apple_mark_for_reupload
         Rails.logger.info("Removed audio container reference for episode", {episode_id: ep.feeder_id})
       end
 
@@ -537,8 +537,8 @@ module Apple
       feeder_episode.apple_sync_log = sl
     end
 
-    def apple_mark_for_reupload!
-      feeder_episode.apple_mark_for_reupload!
+    def apple_mark_as_not_delivered!
+      feeder_episode.apple_mark_as_not_delivered!
     end
 
     def apple_episode_delivery_status

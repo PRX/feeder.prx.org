@@ -181,7 +181,6 @@ module Apple
 
     def prepare_for_delivery!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        eps.each { |ep| ep.feeder_episode.apple_mark_for_reupload! }
         Apple::Episode.prepare_for_delivery(eps)
       end
     end
@@ -239,7 +238,7 @@ module Apple
         # Mark for reupload so the episode is picked up in the next publish cycle.
         # This will continue to fail if nothing changes, but gives users/admins
         # a chance to fix the source media format that Apple rejected.
-        pdf.episode.apple_mark_for_reupload!
+        pdf.episode.apple_mark_as_not_delivered!
       end
 
       if problem_pdfs.any?
@@ -536,7 +535,7 @@ module Apple
             episode_id: ep.feeder_id,
             duration: ep.feeder_episode.measure_asset_processing_duration
           })
-          ep.apple_mark_for_reupload!
+          ep.apple_mark_as_not_delivered!
         end
 
         raise error
