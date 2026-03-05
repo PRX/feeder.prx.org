@@ -187,4 +187,8 @@ class PodcastMegaphoneImport < PodcastImport
   def import_drafts=(val)
     self.published_only = !ActiveModel::Type::Boolean.new.cast(val)
   end
+
+  def override_enclosures=(val)
+    super(ActiveModel::Type::Boolean.new.cast(val))
+  end
 end

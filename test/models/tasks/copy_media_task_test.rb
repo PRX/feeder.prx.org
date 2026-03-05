@@ -128,6 +128,24 @@ describe Tasks::CopyMediaTask do
         end
       end
     end
+    it "will not override ad breaks if already set" do
+      slice = Minitest::Mock.new
+
+      episode = build(:episode, segment_count: 3)
+      uncut = build(:uncut, episode: episode)
+      uncut.ad_breaks = [1.0, 2.0]
+
+      task.stub(:media_resource, uncut) do
+        uncut.stub(:slice_contents, slice) do
+          assert_equal [1.0, 2.0], task.media_resource.ad_breaks
+          assert_equal 3, task.media_resource.episode.segment_count
+
+          task.update_owner
+          assert_equal [1.0, 2.0], task.media_resource.ad_breaks
+          assert_equal 3, task.media_resource.episode.segment_count
+        end
+      end
+    end
 
     it "updates audio metadata on complete" do
       task.media_resource.reset_media_attributes
