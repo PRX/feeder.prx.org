@@ -26,7 +26,9 @@ class EpisodeMediaController < ApplicationController
     @episode.assign_attributes(parsed_episode_params)
 
     # when an uncut is destroyed, also destroy sliced contents
-    @episode.contents.each(&:mark_for_destruction) if @episode.uncut&.marked_for_destruction?
+    if @episode.uncut&.marked_for_destruction? || @episode.uncut&.new_record?
+      @episode.contents.each(&:mark_for_destruction)
+    end
 
     respond_to do |format|
       if @episode.save

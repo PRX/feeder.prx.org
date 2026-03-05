@@ -341,6 +341,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_02_000000) do
     t.text "advertising_tags"
   end
 
+  create_table "persons", force: :cascade do |t|
+    t.string "owner_type"
+    t.bigint "owner_id"
+    t.string "name"
+    t.string "role"
+    t.string "organization"
+    t.string "href"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_type", "owner_id"], name: "index_persons_on_owner"
+  end
+
   create_table "podcast_imports", force: :cascade do |t|
     t.integer "podcast_id"
     t.string "url"

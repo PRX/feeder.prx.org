@@ -65,6 +65,34 @@
       text-decoration: none;
       word-break: break-word;
     }
+
+    &.is-changed {
+      box-shadow: inset 0px 0px 12px 1px $orange;
+    }
+
+    &.is-invalid {
+      color: $form-feedback-invalid-color;
+      box-shadow: inset 0px 0px 12px 1px $form-feedback-invalid-color;
+    }
+  }
+
+  tr.show-if-last {
+    display: none;
+    &:last-child {
+      display: revert;
+    }
+  }
+
+  tr.is-deleted {
+    opacity: 0.4;
+    text-decoration: line-through;
+    td,
+    th {
+      &.is-changed,
+      &.is-invalid {
+        box-shadow: none;
+      }
+    }
   }
 }
 
