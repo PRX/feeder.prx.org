@@ -31,8 +31,11 @@ module Apple
     end
 
     def self.probe_source_file_metadata(api, episodes)
+      episodes = episodes.select(&:podcast_container)
+      return [] if episodes.empty?
+
       containers = episodes.map(&:podcast_container)
-      episodes_by_container_id = episodes.map { |ep| [ep.podcast_container.id, ep] }.to_h
+      episodes_by_container_id = episodes.index_by { |ep| ep.podcast_container.id }
 
       results = api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params))
 

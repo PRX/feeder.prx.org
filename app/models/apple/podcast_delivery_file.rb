@@ -107,8 +107,11 @@ module Apple
       episodes.map(&:podcast_deliveries).flatten
     end
 
-    def self.create_podcast_delivery_files(api, episodes, media_infos_by_episode_id:)
-      return [] if episodes.empty?
+    def self.create_podcast_delivery_files(api, media_infos)
+      return [] if media_infos.empty?
+
+      media_infos_by_episode_id = media_infos.index_by { |mi| mi.episode.feeder_id }
+      episodes = media_infos.map(&:episode)
 
       podcast_deliveries = select_podcast_deliveries(episodes)
 
@@ -118,7 +121,7 @@ module Apple
 
       (result, errs) =
         api.bridge_remote_and_retry("createPodcastDeliveryFiles",
-          podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd, media_infos_by_episode_id: media_infos_by_episode_id) }, batch_size: Apple::Api::DEFAULT_WRITE_BATCH_SIZE)
+          podcast_deliveries.map { |pd| create_delivery_file_bridge_params(api, pd, media_info: media_infos_by_episode_id.fetch(pd.episode_id)) }, batch_size: Apple::Api::DEFAULT_WRITE_BATCH_SIZE)
 
       # Creating one podcast delivery file per podcast delivery
       res = join_on(PODCAST_DELIVERY_ID_ATTR, podcast_deliveries, result).each do |(podcast_delivery, row)|
@@ -226,20 +229,19 @@ module Apple
       }
     end
 
-    def self.create_delivery_file_bridge_params(api, podcast_delivery, media_infos_by_episode_id:)
+    def self.create_delivery_file_bridge_params(api, podcast_delivery, media_info:)
       {
         request_metadata: {
           apple_episode_id: podcast_delivery.apple_episode_id,
           podcast_delivery_id: podcast_delivery.id
         },
         api_url: api.join_url("podcastDeliveryFiles").to_s,
-        api_parameters: podcast_delivery_file_create_parameters(podcast_delivery, media_infos_by_episode_id: media_infos_by_episode_id)
+        api_parameters: podcast_delivery_file_create_parameters(podcast_delivery, source_size: media_info.source_size)
       }
     end
 
-    def self.podcast_delivery_file_create_parameters(podcast_delivery, media_infos_by_episode_id:)
+    def self.podcast_delivery_file_create_parameters(podcast_delivery, source_size:)
       podcast_container = podcast_delivery.podcast_container
-      source_size = media_infos_by_episode_id.fetch(podcast_delivery.episode_id).source_size
 
       {data: {
         type: "podcastDeliveryFiles",

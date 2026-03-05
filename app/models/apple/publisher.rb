@@ -389,25 +389,21 @@ module Apple
 
     def sync_podcast_delivery_files!(media_infos)
       eps = media_infos.map(&:episode)
-      media_infos_by_episode_id = media_infos.index_by { |mi| mi.episode.feeder_id }
 
       Rails.logger.tagged("##{__method__}") do
         Rails.logger.info("Starting podcast delivery files sync")
 
         poll_podcast_delivery_files!(eps)
 
-        res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, eps, media_infos_by_episode_id: media_infos_by_episode_id)
+        res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, media_infos)
         Rails.logger.info("Created remote/local state for #{res.length} podcast delivery files.")
       end
     end
 
     def execute_upload_operations!(media_infos)
-      eps = media_infos.map(&:episode)
-      media_infos_by_episode_id = media_infos.index_by { |mi| mi.episode.feeder_id }
-
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        Rails.logger.info("Executing upload operations", {episode_count: eps.length})
-        Apple::UploadOperation.execute_upload_operations(api, eps, media_infos_by_episode_id: media_infos_by_episode_id)
+        Rails.logger.info("Executing upload operations", {episode_count: media_infos.length})
+        Apple::UploadOperation.execute_upload_operations(api, media_infos)
       end
     end
 
