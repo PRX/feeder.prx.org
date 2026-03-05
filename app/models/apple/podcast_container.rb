@@ -172,7 +172,7 @@ module Apple
       api.join_url("podcastContainers?filter[vendorId]=#{episode.audio_asset_vendor_id}").to_s
     end
 
-    def head_file_size_bridge_params
+    def head_file_size_bridge_params(enclosure_url:)
       {
         request_metadata: {
           apple_episode_id: apple_episode_id,
@@ -242,12 +242,6 @@ module Apple
       !skip_delivery?
     end
 
-    def source_filename
-      episode.apple_status&.source_filename
-    end
 
-    def enclosure_url
-      episode.apple_status&.enclosure_url
-    end
   end
 end

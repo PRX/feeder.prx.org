@@ -37,7 +37,8 @@ module Apple
       containers = episodes.map(&:podcast_container)
       episodes_by_container_id = episodes.index_by { |ep| ep.podcast_container.id }
 
-      results = api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params))
+      results = api.bridge_remote_and_retry!("headFileSizes",
+        episodes.map { |ep| ep.podcast_container.head_file_size_bridge_params(enclosure_url: ep.enclosure_url) })
 
       join_on("podcast_container_id", containers, results).map do |container, row|
         content_length = row.dig("api_response", "val", "data", "headers", "content-length")

@@ -236,20 +236,18 @@ module Apple
           podcast_delivery_id: podcast_delivery.id
         },
         api_url: api.join_url("podcastDeliveryFiles").to_s,
-        api_parameters: podcast_delivery_file_create_parameters(podcast_delivery, source_size: media_info.source_size)
+        api_parameters: podcast_delivery_file_create_parameters(podcast_delivery, source_size: media_info.source_size, source_filename: media_info.source_filename)
       }
     end
 
-    def self.podcast_delivery_file_create_parameters(podcast_delivery, source_size:)
-      podcast_container = podcast_delivery.podcast_container
-
+    def self.podcast_delivery_file_create_parameters(podcast_delivery, source_size:, source_filename:)
       {data: {
         type: "podcastDeliveryFiles",
         attributes: {
           assetType: "ASSET",
           assetRole: "PodcastSourceAudio",
           fileSize: source_size,
-          fileName: podcast_container.source_filename,
+          fileName: source_filename,
           uti: "public.json"
         },
         relationships: {
