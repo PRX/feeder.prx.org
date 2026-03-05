@@ -94,12 +94,6 @@ describe Apple::MediaInfo do
       assert_equal "foo", status.source_filename
     end
 
-    it "filters episodes without a container" do
-      apple_episode.stub(:podcast_container, nil) do
-        Apple::MediaInfo.increment_source_fetch_count([apple_episode])
-        assert_equal 0, status&.source_fetch_count.to_i
-      end
-    end
   end
 
   describe "#source_attributes" do

@@ -31,8 +31,6 @@ module Apple
     end
 
     def self.probe_source_file_metadata(api, episodes)
-      episodes = episodes.select { |ep| ep.podcast_container.present? }
-
       containers = episodes.map(&:podcast_container)
       episodes_by_container_id = episodes.map { |ep| [ep.podcast_container.id, ep] }.to_h
 
@@ -64,8 +62,6 @@ module Apple
     end
 
     def self.increment_source_fetch_count(episodes)
-      episodes = episodes.select { |ep| ep.podcast_container.present? }
-
       episodes.each do |ep|
         count = ep.apple_status&.source_fetch_count || 0
         ep.feeder_episode.apple_update_delivery_status(source_fetch_count: count + 1)
