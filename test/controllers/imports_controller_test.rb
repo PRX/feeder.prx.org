@@ -54,7 +54,6 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to podcast_import_url(@podcast, last_import)
   end
 
-
   test "authorizes creating imports" do
     @podcast.update(prx_account_uri: "/api/v1/accounts/456")
     post podcast_imports_url(@podcast), params: {podcast_import: params}
