@@ -67,7 +67,7 @@ module Integrations
     end
 
     def has_media_version?
-      source_media_version_id.present? && source_media_version_id == episode.media_version_id
+      MediaVersion.current?(source_media_version_id, episode.media_version_id)
     end
 
     def needs_media_version?
