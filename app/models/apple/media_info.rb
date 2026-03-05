@@ -5,7 +5,7 @@ module Apple
     include Apple::ApiResponse
     include Apple::ApiWaiting
 
-    attr_accessor :episode, :source_media_version_id, :source_size, :source_url
+    attr_reader :episode, :source_media_version_id, :source_size, :source_url
 
     def initialize(episode:, source_media_version_id: nil, source_size: nil, source_url: nil)
       @episode = episode
