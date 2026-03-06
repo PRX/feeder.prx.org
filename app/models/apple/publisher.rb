@@ -123,7 +123,7 @@ module Apple
         mark_delivery_files_uploaded!(versioned_eps)
         update_audio_container_reference!(versioned_eps)
 
-        # Mark the episode as uploaded (atomic write of source attrs + uploaded).
+        # Mark the episode as uploaded (write source attrs + uploaded).
         mark_as_uploaded!(media_infos)
 
         # The episodes start waiting after they are uploaded.
@@ -435,8 +435,8 @@ module Apple
     def mark_as_uploaded!(media_infos)
       Rails.logger.tagged("##{__method__}") do
         media_infos.each do |mi|
-          Rails.logger.info("Marking episode as uploaded (atomic)", {episode_id: mi.episode.feeder_episode.id})
           attrs = mi.source_attributes.merge(uploaded: true)
+          Rails.logger.info("Marking episode as uploaded", {episode_id: mi.episode.feeder_episode.id}.merge(attrs))
           mi.episode.feeder_episode.apple_update_delivery_status(attrs)
         end
       end
