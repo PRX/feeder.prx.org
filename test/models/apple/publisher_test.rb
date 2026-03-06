@@ -699,7 +699,7 @@ describe Apple::Publisher do
         [true, episodes]  # Just return timeout tuple, don't call block
       }
 
-      Apple::Publisher.stub(:wait_for, wait_for_stub) do
+      Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
         assert_raises(Apple::AssetStateTimeoutError) do
           apple_publisher.wait_for_asset_state(episodes)
         end
