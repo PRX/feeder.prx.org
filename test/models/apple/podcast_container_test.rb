@@ -91,8 +91,6 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         assert_equal [], Apple::MediaInfo.probe_source_file_metadata(api, [apple_episode])
       end
     end
-
-
   end
 
   describe ".upsert_podcast_containers" do
