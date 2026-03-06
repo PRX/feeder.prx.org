@@ -822,7 +822,7 @@ describe Apple::Publisher do
     let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
     let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
-    it "atomically writes source attributes and uploaded flag" do
+    it "writes source attributes and uploaded flag" do
       media_infos = [episode1, episode2].map do |ep|
         Apple::MediaInfo.new(
           episode: ep,
