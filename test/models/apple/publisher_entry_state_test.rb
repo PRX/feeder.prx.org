@@ -522,5 +522,4 @@ describe Apple::Publisher do
       ], call_log
     end
   end
-
 end
