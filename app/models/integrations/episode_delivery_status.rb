@@ -56,7 +56,22 @@ module Integrations
     end
 
     def mark_as_not_delivered!
+      # source_media_version_id is intentionally omitted — it is preserved so
+      # we can still compare the previously uploaded media version against the
+      # current one.
       self.class.update_status(integration, episode, delivered: false, uploaded: false, asset_processing_attempts: 0)
+    end
+
+    def needs_upload?
+      !uploaded || !has_media_version?
+    end
+
+    def has_media_version?
+      MediaVersion.current?(source_media_version_id, episode.media_version_id)
+    end
+
+    def needs_media_version?
+      !has_media_version?
     end
   end
 end

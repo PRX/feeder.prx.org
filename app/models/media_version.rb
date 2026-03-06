@@ -7,4 +7,8 @@ class MediaVersion < ApplicationRecord
   scope :latest, -> { where("id IN (SELECT max(id) FROM media_versions mv WHERE mv.episode_id = media_versions.episode_id)") }
 
   validates :media_version_resources, length: {minimum: 1}
+
+  def self.current?(candidate_id, expected_id)
+    candidate_id.present? && candidate_id == expected_id
+  end
 end
