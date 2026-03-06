@@ -89,6 +89,9 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
+        # Only create if needed.
+        sync_episodes!(eps)
+
         eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
@@ -108,8 +111,6 @@ module Apple
         # Soft delete any existing delivery and delivery files.
         prepare_for_delivery!(eps)
 
-        # Only create if needed.
-        sync_episodes!(eps)
         sync_podcast_containers!(eps)
 
         media_infos = wait_for_versioned_source_metadata(eps)

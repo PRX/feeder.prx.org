@@ -87,7 +87,6 @@ class AppleIntegrationTest < ActiveSupport::TestCase
     end
   end
 
-
   describe "#increment_asset_wait" do
     let(:episode) { create(:episode) }
 

@@ -877,10 +877,12 @@ describe Apple::Publisher do
         upload_called = true
       end
 
-      apple_publisher.stub(:upload_media!, upload_mock) do
-        apple_publisher.stub(:process_delivery!, ->(*) {}) do
-          apple_publisher.stub(:verify_publishing_state!, nil) do
-            apple_publisher.upload_and_process!([episode])
+      apple_publisher.stub(:sync_episodes!, nil) do
+        apple_publisher.stub(:upload_media!, upload_mock) do
+          apple_publisher.stub(:process_delivery!, ->(*) {}) do
+            apple_publisher.stub(:verify_publishing_state!, nil) do
+              apple_publisher.upload_and_process!([episode])
+            end
           end
         end
       end
@@ -893,10 +895,12 @@ describe Apple::Publisher do
 
       mock = Minitest::Mock.new
       mock.expect(:call, nil, [[episode]])
-      apple_publisher.stub(:upload_media!, mock) do
-        apple_publisher.stub(:process_delivery!, ->(*) {}) do
-          apple_publisher.stub(:verify_publishing_state!, nil) do
-            apple_publisher.upload_and_process!([episode])
+      apple_publisher.stub(:sync_episodes!, nil) do
+        apple_publisher.stub(:upload_media!, mock) do
+          apple_publisher.stub(:process_delivery!, ->(*) {}) do
+            apple_publisher.stub(:verify_publishing_state!, nil) do
+              apple_publisher.upload_and_process!([episode])
+            end
           end
         end
       end
@@ -912,9 +916,11 @@ describe Apple::Publisher do
       delivery_mock = Minitest::Mock.new
       delivery_mock.expect(:call, nil, [[episode]])
 
-      apple_publisher.stub(:upload_media!, ->(*) {}) do
-        apple_publisher.stub(:process_delivery!, delivery_mock) do
-          apple_publisher.upload_and_process!([episode])
+      apple_publisher.stub(:sync_episodes!, nil) do
+        apple_publisher.stub(:upload_media!, ->(*) {}) do
+          apple_publisher.stub(:process_delivery!, delivery_mock) do
+            apple_publisher.upload_and_process!([episode])
+          end
         end
       end
 
@@ -933,9 +939,11 @@ describe Apple::Publisher do
 
       upload_called = false
 
-      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
-        apple_publisher.stub(:process_delivery!, ->(*) {}) do
-          apple_publisher.upload_and_process!([episode])
+      apple_publisher.stub(:sync_episodes!, nil) do
+        apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+          apple_publisher.stub(:process_delivery!, ->(*) {}) do
+            apple_publisher.upload_and_process!([episode])
+          end
         end
       end
 
@@ -965,9 +973,11 @@ describe Apple::Publisher do
 
       upload_called = false
 
-      apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
-        apple_publisher.stub(:process_delivery!, ->(*) {}) do
-          apple_publisher.upload_and_process!([episode])
+      apple_publisher.stub(:sync_episodes!, nil) do
+        apple_publisher.stub(:upload_media!, ->(*) { upload_called = true }) do
+          apple_publisher.stub(:process_delivery!, ->(*) {}) do
+            apple_publisher.upload_and_process!([episode])
+          end
         end
       end
 
@@ -1012,10 +1022,12 @@ describe Apple::Publisher do
         # publish_drafting! is called for each delivery chunk
       end
 
-      apple_publisher.stub(:upload_media!, upload_mock) do
-        apple_publisher.stub(:process_delivery!, delivery_mock) do
-          apple_publisher.stub(:publish_drafting!, publish_mock) do
-            apple_publisher.upload_and_process!(episodes)
+      apple_publisher.stub(:sync_episodes!, nil) do
+        apple_publisher.stub(:upload_media!, upload_mock) do
+          apple_publisher.stub(:process_delivery!, delivery_mock) do
+            apple_publisher.stub(:publish_drafting!, publish_mock) do
+              apple_publisher.upload_and_process!(episodes)
+            end
           end
         end
       end
@@ -1043,11 +1055,13 @@ describe Apple::Publisher do
       increment_mock = Minitest::Mock.new
       increment_mock.expect(:call, nil, [[episode]])
 
-      apple_publisher.stub(:upload_media!, upload_mock) do
-        apple_publisher.stub(:increment_asset_wait!, increment_mock) do
-          apple_publisher.stub(:process_delivery!, ->(*) {}) do
-            apple_publisher.stub(:publish_drafting!, ->(*) {}) do
-              apple_publisher.upload_and_process!([episode])
+      apple_publisher.stub(:sync_episodes!, nil) do
+        apple_publisher.stub(:upload_media!, upload_mock) do
+          apple_publisher.stub(:increment_asset_wait!, increment_mock) do
+            apple_publisher.stub(:process_delivery!, ->(*) {}) do
+              apple_publisher.stub(:publish_drafting!, ->(*) {}) do
+                apple_publisher.upload_and_process!([episode])
+              end
             end
           end
         end
