@@ -670,7 +670,7 @@ describe Apple::Publisher do
             [true, eps]  # Return timeout with remaining episodes
           }
 
-          Apple::Publisher.stub :wait_for, wait_for_stub do
+          Apple::ApiWaiting.stub :wait_for, wait_for_stub do
             # Need to stub probe_asset_state since it will be called
             Apple::Episode.stub :probe_asset_state, [[], eps] do
               # Stub check_for_stuck_episodes to prevent stuck detection from interfering
