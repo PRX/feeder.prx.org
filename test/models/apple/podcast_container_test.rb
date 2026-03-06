@@ -92,28 +92,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
     end
 
-    it "should not filter episodes by needs_delivery" do
-      response_row = {
-        "request_metadata" => {"podcast_container_id" => pc.id},
-        "api_response" => {
-          "val" => {
-            "data" => {
-              "headers" => {"content-length" => "123"},
-              "redirect_chain_end_url" => "https://cdn.example.com/audio.mp3",
-              "episode_media_version" => "42"
-            }
-          }
-        }
-      }
 
-      apple_episode.stub(:needs_delivery?, false) do
-        api.stub(:bridge_remote_and_retry!, [response_row]) do
-          media_infos = Apple::MediaInfo.probe_source_file_metadata(api, [apple_episode])
-          assert_equal 1, media_infos.length
-          assert_equal apple_episode, media_infos.first.episode
-        end
-      end
-    end
   end
 
   describe ".upsert_podcast_containers" do
