@@ -45,6 +45,21 @@ module MetricsQueries
       .sum(:count)
   end
 
+  def label_feed_results(results)
+    feed_slug_labels = feeds.map do |feed|
+      [feed.slug, feed.label]
+    end.to_h
+    feed_default_downloads = feeds.map do |feed|
+      [feed.label, 0]
+    end.to_h
+
+    results
+      .transform_keys { |k| feed_slug_labels[k.presence] }
+      .merge(feed_default_downloads) do |k, query_val, default_val|
+        query_val.present? ? query_val : default_val
+      end
+  end
+
   def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     Rollups::DailyGeo
       .where(podcast_id: metrics_podcast_id)
@@ -103,6 +118,10 @@ module MetricsQueries
 
   def metrics_default_date_start
     (Date.utc_today - 27.days)
+  end
+
+  def has_feeds_chart?
+    feeds.length > 1
   end
 
   private
