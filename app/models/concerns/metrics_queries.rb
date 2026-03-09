@@ -33,12 +33,14 @@ module MetricsQueries
     end
   end
 
-  def feed_downloads_query(feeds:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
-    slugs = feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
+  def metrics_feed_slugs
+    feeds.pluck(:slug).map { |slug| slug.nil? ? "" : slug }
+  end
 
+  def feed_downloads_query(feeds:, model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
     Rollups::HourlyDownload
       .where(podcast_id: metrics_podcast_id)
-      .where("#{column}": model_id, feed_slug: slugs, hour: (date_start..date_end))
+      .where("#{column}": model_id, feed_slug: metrics_feed_slugs, hour: (date_start..date_end))
       .group(:feed_slug)
       .order(Arel.sql("SUM(count) AS count DESC"))
       .final
@@ -46,18 +48,15 @@ module MetricsQueries
   end
 
   def label_feed_results(results)
+    metrics_feed_slugs.each do |slug|
+      results[slug] = 0 unless results[slug]
+    end
+
     feed_slug_labels = feeds.map do |feed|
       [feed.slug, feed.label]
     end.to_h
-    feed_default_downloads = feeds.map do |feed|
-      [feed.label, 0]
-    end.to_h
 
-    results
-      .transform_keys { |k| feed_slug_labels[k.presence] }
-      .merge(feed_default_downloads) do |k, query_val, default_val|
-        query_val.present? ? query_val : default_val
-      end
+    results.transform_keys { |k| feed_slug_labels[k.presence] }
   end
 
   def top_countries_downloads_query(model_id: metrics_default_id, column: metrics_default_column, date_start: metrics_default_date_start, date_end: nil)
