@@ -9,7 +9,7 @@ class FeedsController < ApplicationController
 
   # GET /feeds/1
   def show
-    @feed.assign_attributes(feed_params)
+    init_config
     authorize @feed
     @apple_show_options = get_apple_show_options(@feed)
   end
@@ -33,21 +33,26 @@ class FeedsController < ApplicationController
 
   def new_apple
     @feed = Feeds::AppleSubscription.new(podcast: @podcast, private: true)
-    @feed.build_apple_config
-    @feed.apple_config.build_key
     authorize @feed
-
-    @feed.assign_attributes(feed_params)
+    init_config
     render "new"
   end
 
   def new_megaphone
     @feed = Feeds::MegaphoneFeed.new(podcast: @podcast, private: true)
-    @feed.build_megaphone_config
     authorize @feed
-
-    @feed.assign_attributes(feed_params)
+    init_config
     render "new"
+  end
+
+  def init_config
+    @feed.assign_attributes(feed_params)
+    if @feed.is_a? Feeds::AppleSubscription
+      @feed.apple_config || @feed.build_apple_config
+      @feed.apple_config.key || @feed.apple_config.build_key
+    elsif @feed.is_a? Feeds::MegaphoneFeed
+      @feed.megaphone_config || @feed.build_megaphone_config
+    end
   end
 
   # POST /feeds
