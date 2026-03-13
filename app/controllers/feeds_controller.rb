@@ -45,16 +45,6 @@ class FeedsController < ApplicationController
     render "new"
   end
 
-  def init_config
-    @feed.assign_attributes(feed_params)
-    if @feed.is_a? Feeds::AppleSubscription
-      @feed.apple_config || @feed.build_apple_config
-      @feed.apple_config.key || @feed.apple_config.build_key
-    elsif @feed.is_a? Feeds::MegaphoneFeed
-      @feed.megaphone_config || @feed.build_megaphone_config
-    end
-  end
-
   # POST /feeds
   def create
     @feed = @podcast.feeds.new(feed_params)
@@ -113,6 +103,16 @@ class FeedsController < ApplicationController
   end
 
   private
+
+  def init_config
+    @feed.assign_attributes(feed_params)
+    if @feed.is_a? Feeds::AppleSubscription
+      @feed.build_apple_config unless @feed.apple_config
+      @feed.apple_config.build_key unless @feed.apple_config.key
+    elsif @feed.is_a? Feeds::MegaphoneFeed
+      @feed.megaphone_config || @feed.build_megaphone_config
+    end
+  end
 
   def set_podcast
     @podcast =
