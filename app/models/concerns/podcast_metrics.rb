@@ -66,18 +66,33 @@ module PodcastMetrics
     end.sort { |a, b| b[1] <=> a[1] }
   end
 
+  def season_label(season_number)
+    I18n.t(".helpers.label.metrics.downloads_by_season", season_number: season_number)
+  end
+
   def downloads_by_season(season_number:)
+    return nil unless published_seasons.include?(season_number)
+    default = {"#{season_label(season_number)}": 0}
+
     season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
+    return default if season_episodes_guids.blank?
+
     expiration = (season_number == latest_season) ? 1.hour : 1.month
 
-    metrics_cache_fetch("#{metrics_cache_key}/downloads_by_season/#{season_number}", expires_in: expiration) do
+    results = metrics_cache_fetch("#{metrics_cache_key}/downloads_by_season/#{season_number}", expires_in: expiration) do
       Rollups::HourlyDownload
         .where(podcast_id: id)
         .where(episode_id: season_episodes_guids)
         .group(:podcast_id)
         .final
         .sum(:count)
-    end.transform_keys { |k| "Season #{season_number}" }
+    end
+
+    if results.blank?
+      default
+    else
+      results.transform_keys { |k| season_label(season_number) }
+    end
   end
 
   def top_countries_downloads
