@@ -123,7 +123,7 @@
 
   <% if show_metrics? %>
     <div class="row">
-      <% if uses_multiple_feeds(@podcast) %>
+      <% if @podcast.has_feeds_chart? %>
         <div class="col-lg-6 d-grid mb-4">
           <div class="card shadow">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -138,7 +138,7 @@
           </div>
         </div>
       <% end %>
-      <% if uses_seasons(@podcast) %>
+      <% if @podcast.has_seasons_chart? %>
         <div class="col-lg-6 d-grid mb-4">
           <div class="card shadow">
             <div class="card-header d-flex justify-content-between align-items-center">

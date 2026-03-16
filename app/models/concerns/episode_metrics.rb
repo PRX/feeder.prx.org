@@ -66,13 +66,11 @@ module EpisodeMetrics
   end
 
   def feed_downloads
-    feed_labels = feeds.map do |feed|
-      [feed.slug, feed.label]
-    end.to_h
-
-    metrics_cache_fetch("#{metrics_cache_key}/feed_downloads", expires_in: 1.hour) do
+    results = metrics_cache_fetch("#{metrics_cache_key}/feed_downloads", expires_in: 1.hour) do
       feed_downloads_query(feeds: feeds)
-    end.transform_keys { |k| feed_labels[k.presence] }
+    end
+
+    label_feed_results(results)
   end
 
   def top_countries_downloads
