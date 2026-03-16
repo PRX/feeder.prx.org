@@ -56,10 +56,6 @@ module PodcastMetrics
     episodes.published.dropdate_desc.pluck(:season_number).uniq.compact
   end
 
-  def latest_season
-    published_seasons.first
-  end
-
   def season_download_rollups
     published_seasons.map do |season|
       downloads_by_season(season_number: season).to_a.flatten.presence
@@ -79,9 +75,7 @@ module PodcastMetrics
     season_episodes_guids = episodes.published.where(season_number: season_number).pluck(:guid)
     return default if season_episodes_guids.blank?
 
-    expiration = (season_number == latest_season) ? 1.hour : 1.month
-
-    results = metrics_cache_fetch("#{metrics_cache_key}/downloads_by_season/#{season_number}", expires_in: expiration) do
+    results = metrics_cache_fetch("#{metrics_cache_key}/downloads_by_season/#{season_number}", expires_in: 1.hour) do
       Rollups::HourlyDownload
         .where(podcast_id: id)
         .where(episode_id: season_episodes_guids)
