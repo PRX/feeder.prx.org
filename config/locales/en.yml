@@ -469,6 +469,7 @@ en:
         organization: Organization
         role: Role
         roles:
+          editor: Editor
           guest: Guest
           host: Host
           producer: Producer
