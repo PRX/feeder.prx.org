@@ -14,7 +14,7 @@ describe Apple::Publisher do
   let(:publisher) { apple_publisher }
 
   before do
-    stub_request(:get, "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200")
+    stub_request(:get, "https://aardvark.prx.org/countriesAndRegions?limit=200")
       .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
 
     public_feed.save!

@@ -14,7 +14,7 @@ FactoryBot.define do
 
     after(:build) do |response_container, evaluator|
       response_container["api_response"] = {"request_metadata" => {},
-       "api_url" => "https://api.podcastsconnect.apple.com/v1/podcastContainers/#{evaluator.podcast_container_id}",
+       "api_url" => "https://aardvark.prx.org/podcastContainers/#{evaluator.podcast_container_id}",
        "api_parameters" => {},
        "api_response" =>
        {"ok" => true,
@@ -31,11 +31,11 @@ FactoryBot.define do
           "relationships" =>
           {"podcastDeliveries" =>
             {"links" =>
-              {"self" => "https://api.podcastsconnect.apple.com/v1/podcastContainers/#{evaluator.podcast_container_id}/relationships/podcastDeliveries",
-               "related" => "https://api.podcastsconnect.apple.com/v1/podcastContainers/#{evaluator.podcast_container_id}/podcastDeliveries",
-               "include" => "https://api.podcastsconnect.apple.com/v1/podcastContainers/#{evaluator.podcast_container_id}?include=podcastDeliveries"}}},
-          "links" => {"self" => "https://api.podcastsconnect.apple.com/v1/podcastContainers/#{evaluator.podcast_container_id}"}},
-          "links" => {"self" => "https://api.podcastsconnect.apple.com/v1/podcastContainers/#{evaluator.podcast_container_id}"}}}}
+              {"self" => "https://aardvark.prx.org/podcastContainers/#{evaluator.podcast_container_id}/relationships/podcastDeliveries",
+               "related" => "https://aardvark.prx.org/podcastContainers/#{evaluator.podcast_container_id}/podcastDeliveries",
+               "include" => "https://aardvark.prx.org/podcastContainers/#{evaluator.podcast_container_id}?include=podcastDeliveries"}}},
+          "links" => {"self" => "https://aardvark.prx.org/podcastContainers/#{evaluator.podcast_container_id}"}},
+          "links" => {"self" => "https://aardvark.prx.org/podcastContainers/#{evaluator.podcast_container_id}"}}}}
       response_container
     end
 

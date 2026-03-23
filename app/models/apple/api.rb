@@ -2,8 +2,6 @@
 
 module Apple
   class Api
-    API_BASE = "https://api.podcastsconnect.apple.com/v1/"
-
     ERROR_RETRIES = 3
     SUCCESS_CODES = [200, 201].freeze
     DEFAULT_BATCH_SIZE = 5
@@ -26,6 +24,10 @@ module Apple
       new(provider_id: apple_provider_id,
         key_id: apple_key_id,
         key: apple_key_pem)
+    end
+
+    def self.api_base
+      ENV['APPLE_PODCASTS_CONNECT_API_URL']
     end
 
     def self.from_key(apple_key)
@@ -114,7 +116,7 @@ module Apple
     end
 
     def self.join_url(api_frag)
-      URI.join(API_BASE, api_frag)
+      URI.join(api_base, api_frag)
     end
 
     def join_url(api_frag)
