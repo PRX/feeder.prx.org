@@ -27,7 +27,7 @@ module Apple
     end
 
     def self.api_base
-      ENV['APPLE_PODCASTS_CONNECT_API_URL']
+      ENV["APPLE_PODCASTS_CONNECT_API_URL"]
     end
 
     def self.from_key(apple_key)
