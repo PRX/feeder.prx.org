@@ -34,7 +34,7 @@ module Apple
     end
 
     def self.api_aud_name
-      ENV["APPLE_PODCASTS_CONNECT_AUD_NAME"]
+      ENV["APPLE_PODCASTS_CONNECT_API_AUD_NAME"]
     end
 
     def self.from_key(apple_key)

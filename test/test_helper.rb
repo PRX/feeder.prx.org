@@ -24,6 +24,7 @@ ENV["ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY"] = "andthisisanotheronetoothank
 ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"] = "maybeyouarefeelingsaltyaboutthis"
 ENV["PODPING_AUTH_TOKEN"] = "test_token"
 ENV["APPLE_PODCASTS_CONNECT_API_URL"] = "https://aardvark.prx.org/"
+ENV["APPLE_PODCASTS_CONNECT_API_AUD_NAME"] = "aardvark"
 
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"

@@ -25,11 +25,17 @@ describe Apple::Api do
     payload = decoded.first
 
     assert_equal payload["iss"], provider_id
+    assert_equal payload["aud"], "aardvark"
     assert Time.at(payload["exp"]).utc.to_datetime > Time.now.utc + 14.minutes
 
     algo = decoded.second
 
     assert_equal algo, "typ" => "JWT", "alg" => "ES256", "kid" => key_id
+  end
+
+  it "includes the aud from the environment variable" do
+    assert_equal "aardvark", Apple::Api.api_aud_name
+    assert_equal ENV["APPLE_PODCASTS_CONNECT_API_AUD_NAME"], Apple::Api.api_aud_name
   end
 
   describe "#local_api_retry_errors" do
