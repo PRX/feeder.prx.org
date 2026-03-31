@@ -678,6 +678,9 @@ en:
       embed_player_not_ready: Episode Not Saved
       enclosure_not_ready: No Media Files Uploaded
       title: Distribution
+    form_dropdate:
+      help:
+        released_at_time: The time of day your episode will drop. To take the best advantage of your episode drops and ad delivery, we recommend setting your episodes to drop at UTC midnight.
     form_feeds:
       title: Include In Feeds
     form_main:
@@ -1470,6 +1473,7 @@ en:
       help:
         ad_breaks: Enter the number of ad breaks (midrolls) these episodes will have. Accurately entering the number of ad breaks help us to better predict ad inventory for your podcast.
         medium: Enter the file format you plan to upload for these episodes.
+        publish_time: The time of day your episode will drop. To take the best advantage of your episode drops and ad delivery, we recommend setting your episodes to drop at UTC midnight.
       label:
         feed_ids: Include Draft in Feeds
         publish_time: Publish Time
