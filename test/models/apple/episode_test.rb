@@ -384,8 +384,15 @@ describe Apple::Episode do
       assert_equal episode.published_at.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
     end
 
-    it "falls back to current time for originalReleaseDate when published_at is nil" do
-      episode.update!(published_at: nil)
+    it "falls back to released_at for originalReleaseDate when published_at is nil" do
+      future = 3.days.from_now
+      episode.update!(published_at: nil, released_at: future)
+      params = apple_episode.episode_create_parameters
+      assert_equal future.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
+    end
+
+    it "falls back to current time for originalReleaseDate when published_at and released_at are nil" do
+      episode.update!(published_at: nil, released_at: nil)
       freeze_time do
         params = apple_episode.episode_create_parameters
         assert_equal Time.now.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
