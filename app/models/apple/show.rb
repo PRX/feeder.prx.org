@@ -70,9 +70,8 @@ module Apple
       @api = api
     end
 
-    # Draft inclusion is Apple-only (not in Base::Show) because other
-    # integrations don't need drafts. Gate on enclosure_ready? to prevent
-    # medialess drafts from reaching probe_source_file_metadata.
+    # Gate on enclosure_ready? to prevent medialess drafts from
+    # reaching probe_source_file_metadata.
     def draft_upload_candidates
       return [] unless private_feed.respond_to?(:draft_episodes)
 
