@@ -13,7 +13,11 @@ LocalTime.start()
 
 // debugging turbo
 document.addEventListener("turbo:frame-missing", function (event) {
-  alert("FRAME MISSING!!!!!!!!!!!!!")
+  if (document.body.dataset.env === "production") {
+    console.error("FRAME MISSING!!!!!!!!!!!!!")
+  } else {
+    alert("FRAME MISSING!!!!!!!!!!!!!")
+  }
   // event.detail.response.text().then(
   //   text => console.log('GOT TEXT:', text),
   //   err => console.log('GOT ERR:', err)

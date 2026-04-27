@@ -1,12 +1,8 @@
 <div class="col-12 mb-3 d-flex align-items-top">
   <div class="d-flex align-items-center flex-grow-1">
-    <div class="d-flex align-items-center">
-      <span>
-        <%= subscribe_link_platform_label(form.object) %>
-      </span>
-      <div class="p-0 ms-2 d-flex align-items-center">
-        <%= image_tag("icons/#{form.object.icon}.svg", alt: "#{subscribe_link_platform_label(form.object)} Icon", class: "subscribe-icon") %>
-      </div>
+    <div class="d-flex gap-2 align-items-center">
+      <%= image_tag("icons/#{form.object.icon}.svg", alt: "#{subscribe_link_platform_label(form.object)} Icon", class: "subscribe-icon", height: 24, width: 24) %>
+      <%= subscribe_link_platform_label(form.object) %>
     </div>
   </div>
   <div class="d-flex align-items-center">

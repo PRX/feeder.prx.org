@@ -15,4 +15,5 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.acronym "ITunes"
   # inflect.acronym 'PRX'
   inflect.irregular "medium", "mediums"
+  inflect.irregular "person", "persons"
 end

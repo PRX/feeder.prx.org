@@ -83,7 +83,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
   describe ".get_urls_for_container_podcast_deliveries" do
     let(:podcast_container_deliveries_json) do
       {"request_metadata" => {"apple_episode_id" => "apple-episode-id", "podcast_container_id" => 1},
-       "api_url" => "https://api.podcastsconnect.apple.com/v1/podcastContainers/12345/relationships/podcastDeliveries",
+       "api_url" => "https://aardvark.prx.org/podcastContainers/12345/relationships/podcastDeliveries",
        "api_parameters" => {},
        "api_response" => {"ok" => true,
                           "err" => false,
@@ -94,7 +94,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     let(:apple_api) { build(:apple_api) }
 
     it "should format a new set of podcast delivery urls" do
-      assert_equal ["https://api.podcastsconnect.apple.com/v1/podcastDeliveries/1111111111111111111111111"],
+      assert_equal ["https://aardvark.prx.org/podcastDeliveries/1111111111111111111111111"],
         Apple::PodcastDelivery.get_urls_for_container_podcast_deliveries(apple_api,
           podcast_container_deliveries_json)
     end

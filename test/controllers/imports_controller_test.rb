@@ -38,8 +38,20 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
     assert_difference("PodcastImport.count") do
       post podcast_imports_url(@podcast), params: {podcast_import: params}
     end
-
     assert_redirected_to podcast_import_url(@podcast, PodcastImport.last)
+  end
+
+  test "should create megaphone import with false override_enclosures" do
+    megaphone_params = {url: feed.url, type: "PodcastMegaphoneImport", override_enclosures: "0"}
+
+    assert_difference("PodcastImport.count") do
+      post podcast_imports_url(@podcast), params: {podcast_import: megaphone_params}
+    end
+
+    last_import = PodcastImport.last
+    assert !last_import.override_enclosures
+
+    assert_redirected_to podcast_import_url(@podcast, last_import)
   end
 
   test "authorizes creating imports" do
