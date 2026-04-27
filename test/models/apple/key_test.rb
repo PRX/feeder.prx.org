@@ -47,6 +47,29 @@ describe Apple::Config do
       assert_equal c.key_pem, "hello"
     end
 
+    it "encrypts the base64 key at rest" do
+      key_pem_b64 = Base64.encode64(test_file("/fixtures/apple_podcasts_connect_keyfile.pem"))
+      key = create(:apple_key, key_pem_b64: key_pem_b64)
+
+      raw_key_pem_b64 = Apple::Key.connection.select_value(
+        "SELECT key_pem_b64 FROM apple_keys WHERE id = #{key.id}"
+      )
+
+      refute_equal key_pem_b64, raw_key_pem_b64
+      assert Apple::Key.type_for_attribute("key_pem_b64").encrypted?(raw_key_pem_b64)
+      assert_equal key_pem_b64, key.reload.key_pem_b64
+      assert_equal test_file("/fixtures/apple_podcasts_connect_keyfile.pem"), key.key_pem
+    end
+
+    it "builds an api from a key with encrypted pem data" do
+      key = create(:apple_key)
+      api = Apple::Api.from_key(key.reload)
+
+      assert_equal key.provider_id, api.provider_id
+      assert_equal key.key_id, api.key_id
+      assert_equal key.key_pem, api.key
+    end
+
     it "requires correct format of apple key" do
       k1 = build(:apple_key)
       k2 = build(:apple_key, key_pem_b64: Base64.encode64("not a valid pem"))
