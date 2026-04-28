@@ -272,22 +272,24 @@ module Apple
     def episode_create_parameters
       explicit = feeder_episode.explicit.present? && feeder_episode.explicit == "true"
 
+      attributes = {
+        guid: guid,
+        title: feeder_episode.title_safe,
+        description: feeder_episode.description_safe,
+        websiteUrl: feeder_episode.url,
+        explicit: explicit,
+        episodeNumber: feeder_episode.episode_number,
+        seasonNumber: feeder_episode.season_number,
+        episodeType: feeder_episode.itunes_type.upcase,
+        appleHostedAudioIsSubscriberOnly: true
+      }
+      attributes[:originalReleaseDate] = (feeder_episode.published_at || feeder_episode.released_at || Time.now.utc).iso8601
+
       {
         data:
         {
           type: "episodes",
-          attributes: {
-            guid: guid,
-            title: feeder_episode.title_safe,
-            originalReleaseDate: feeder_episode.published_at.utc.iso8601,
-            description: feeder_episode.description_safe,
-            websiteUrl: feeder_episode.url,
-            explicit: explicit,
-            episodeNumber: feeder_episode.episode_number,
-            seasonNumber: feeder_episode.season_number,
-            episodeType: feeder_episode.itunes_type.upcase,
-            appleHostedAudioIsSubscriberOnly: true
-          },
+          attributes: attributes,
           relationships: {
             show: {data: {type: "shows", id: show.apple_id}}
           }
@@ -481,6 +483,10 @@ module Apple
 
     def error_state?
       audio_asset_state_error? || delivery_file_errors?
+    end
+
+    def processing_status_label
+      feeder_episode.published? ? "processing" : "uploaded"
     end
 
     def audio_asset_state_success?
