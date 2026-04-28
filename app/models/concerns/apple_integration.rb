@@ -41,7 +41,7 @@ module AppleIntegration
   end
 
   def apple_needs_upload?
-    apple_episode_delivery_status.needs_upload?
+    apple_episode_delivery_status.uploaded == false
   end
 
   def apple_mark_as_not_delivered!
