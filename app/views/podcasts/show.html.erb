@@ -67,7 +67,7 @@
                 <div class="episode-card-inner inside-card flex-row justify-content-between">
                   <h2 class="h5 episode-card-title episode-card-text"><%= link_to ep.title, episode_path(ep) %></h2>
                   <% if ep.publishing_status == "scheduled" %>
-                    <span class="badge bg-success">Scheduled</span>
+                    <span class="badge bg-success"><%= t("helpers.label.episode.publishing_statuses.scheduled") %></span>
                   <% end %>
                 </div>
               </div>
