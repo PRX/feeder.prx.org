@@ -96,8 +96,14 @@ module Apple
 
       poll_episodes!(eps)
 
-      # Sometimes Apple prunes ARCHIVED media, so give a delivery reset in that
-      # case.
+      # Apple may prune media on ARCHIVED episodes. UNARCHIVE returns the
+      # episode to DRAFTING, but local delivery status may still say delivered
+      # and skip upload. Reset delivery state only for ARCHIVED candidates so
+      # the normal upload flow re-sends media.
+      #
+      # Candidates that already polled as DRAFTING were not transitioned by this
+      # method; they reached that state through an earlier create/unarchive path.
+      # Local delivery status is trusted and media does not need a forced re-upload.
       eps_to_unarchive = eps.reject(&:integration_new?).select(&:archived?)
       unarchive_draft_candidates!(eps_to_unarchive) if eps_to_unarchive.any?
     end
