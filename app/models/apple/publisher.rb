@@ -212,8 +212,7 @@ module Apple
 
     def unarchive_draft_candidates!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        Rails.logger.info("Unarchiving draft episode candidates", {episode_count: eps.length,
-                                                                    episode_ids: eps.map(&:feeder_id)})
+        Rails.logger.info("Unarchiving draft episode candidates", {episode_count: eps.length, episode_ids: eps.map(&:feeder_id)})
 
         unarchive!(eps)
         eps.each do |ep|
