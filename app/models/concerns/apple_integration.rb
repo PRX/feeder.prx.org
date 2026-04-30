@@ -48,10 +48,6 @@ module AppleIntegration
     apple_episode_delivery_status.mark_as_not_delivered!
   end
 
-  def apple_mark_as_drafting!
-    apple_update_delivery_status(delivered: false, asset_processing_attempts: 0)
-  end
-
   def apple_mark_as_delivered!
     apple_episode_delivery_status.mark_as_delivered!
   end

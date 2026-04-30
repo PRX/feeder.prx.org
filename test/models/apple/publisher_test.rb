@@ -552,13 +552,12 @@ describe Apple::Publisher do
       assert_empty unarchived_ids & draft_ids
     end
 
-    it "marks unarchived draft episodes as not delivered while preserving uploaded media state" do
+    it "marks unarchived draft episodes for redelivery" do
       create_apple_state.call(draft_episode, "ARCHIVED")
-      media_version_id = draft_episode.media_version_id
       draft_episode.apple_update_delivery_status(
         uploaded: true,
         delivered: true,
-        source_media_version_id: media_version_id,
+        source_media_version_id: draft_episode.media_version_id,
         asset_processing_attempts: 3
       )
 
@@ -572,10 +571,11 @@ describe Apple::Publisher do
       end
 
       status = draft_episode.reload.apple_episode_delivery_status
-      assert status.uploaded
+      refute status.uploaded
       refute status.delivered
-      assert_equal media_version_id, status.source_media_version_id
       assert_equal 0, status.asset_processing_attempts
+      assert draft_episode.apple_needs_upload?
+      assert draft_episode.apple_needs_delivery?
     end
   end
 

@@ -223,7 +223,7 @@ module Apple
         unarchive!(eps)
         eps.each do |ep|
           Rails.logger.info("Marking episode as drafting", {episode_id: ep.feeder_id})
-          ep.feeder_episode.apple_mark_as_drafting!
+          ep.feeder_episode.apple_mark_as_not_delivered!
         end
       end
     end
