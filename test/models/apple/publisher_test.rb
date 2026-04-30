@@ -457,7 +457,7 @@ describe Apple::Publisher do
       Apple::Show.connect_existing("123", apple_config)
     end
 
-    it "selects published local draft candidates for state polling without archiving them" do
+    it "selects published local draft candidates for draft state reconciliation without generic archive" do
       create_apple_state.call(draft_episode, "PUBLISHED")
 
       assert_equal [draft_episode.id], apple_publisher.show.draft_upload_candidates.map(&:feeder_id)
@@ -491,20 +491,48 @@ describe Apple::Publisher do
       assert_equal [draft_episode.id], unarchived_ids
     end
 
-    it "does not unarchive draft candidates when polling confirms Apple is published" do
+    it "archives and unarchives published draft candidates for redelivery" do
       create_apple_state.call(draft_episode, "ARCHIVED")
+      draft_episode.apple_update_delivery_status(
+        uploaded: true,
+        delivered: true,
+        source_media_version_id: draft_episode.media_version_id,
+        asset_processing_attempts: 3
+      )
       poll_called = false
+      archive_called = false
+      unarchive_called = false
 
       apple_publisher.stub(:poll_episodes!, ->(eps) {
         poll_called = true
         eps.each { |ep| set_apple_state.call(ep, "PUBLISHED") }
       }) do
-        apple_publisher.stub(:unarchive_draft_candidates!, ->(_eps) { flunk "published episodes should wait for Apple RSS archive" }) do
-          apple_publisher.sync_drafting_episode_states!
+        apple_publisher.stub(:archive!, ->(eps) {
+          archive_called = true
+          assert_equal [draft_episode.id], eps.map(&:feeder_id)
+          eps.each { |ep| set_apple_state.call(ep, "ARCHIVED") }
+        }) do
+          apple_publisher.stub(:unarchive!, ->(eps) {
+            unarchive_called = true
+            assert_equal [draft_episode.id], eps.map(&:feeder_id)
+            assert eps.all?(&:archived?)
+            eps.each { |ep| set_apple_state.call(ep, "DRAFTING") }
+            []
+          }) do
+            apple_publisher.sync_drafting_episode_states!
+          end
         end
       end
 
+      status = draft_episode.reload.apple_episode_delivery_status
       assert poll_called
+      assert archive_called
+      assert unarchive_called
+      refute status.uploaded
+      refute status.delivered
+      assert_equal 0, status.asset_processing_attempts
+      assert draft_episode.apple_needs_upload?
+      assert draft_episode.apple_needs_delivery?
     end
 
     it "does not unarchive draft candidates when polling confirms Apple is already drafting" do
@@ -530,16 +558,19 @@ describe Apple::Publisher do
 
       draft_ids = [published_draft.id, archived_draft.id]
       draft_unarchived_ids = []
+      redrafted_ids = []
       archived_ids = []
       unarchived_ids = []
 
       apple_publisher.show.stub(:sync!, true) do
         apple_publisher.stub(:poll_episodes!, ->(_eps) {}) do
-          apple_publisher.stub(:unarchive_draft_candidates!, ->(eps) { draft_unarchived_ids.concat(eps.map(&:feeder_id)) }) do
-            apple_publisher.stub(:archive!, ->(eps) { archived_ids.concat(eps.map(&:feeder_id)) }) do
-              apple_publisher.stub(:unarchive!, ->(eps) { unarchived_ids.concat(eps.map(&:feeder_id)) }) do
-                apple_publisher.stub(:upload_and_process!, ->(_eps) {}) do
-                  apple_publisher.publish!
+          apple_publisher.stub(:redraft_published_draft_candidates!, ->(eps) { redrafted_ids.concat(eps.map(&:feeder_id)) }) do
+            apple_publisher.stub(:unarchive_draft_candidates!, ->(eps) { draft_unarchived_ids.concat(eps.map(&:feeder_id)) }) do
+              apple_publisher.stub(:archive!, ->(eps) { archived_ids.concat(eps.map(&:feeder_id)) }) do
+                apple_publisher.stub(:unarchive!, ->(eps) { unarchived_ids.concat(eps.map(&:feeder_id)) }) do
+                  apple_publisher.stub(:upload_and_process!, ->(_eps) {}) do
+                    apple_publisher.publish!
+                  end
                 end
               end
             end
@@ -548,6 +579,7 @@ describe Apple::Publisher do
       end
 
       assert_equal [archived_draft.id], draft_unarchived_ids
+      assert_equal [published_draft.id], redrafted_ids
       assert_empty archived_ids & draft_ids
       assert_empty unarchived_ids & draft_ids
     end
