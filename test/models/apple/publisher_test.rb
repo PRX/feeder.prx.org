@@ -460,7 +460,7 @@ describe Apple::Publisher do
     it "selects published local draft candidates for state polling without archiving them" do
       create_apple_state.call(draft_episode, "PUBLISHED")
 
-      assert_equal [draft_episode.id], apple_publisher.draft_episode_state_candidates.map(&:feeder_id)
+      assert_equal [draft_episode.id], apple_publisher.show.draft_upload_candidates.map(&:feeder_id)
       assert_equal [], apple_publisher.episodes_to_archive.map(&:feeder_id)
       assert_equal [], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
     end
@@ -468,7 +468,7 @@ describe Apple::Publisher do
     it "selects archived local draft candidates for explicit unarchive without generic unarchive" do
       create_apple_state.call(draft_episode, "ARCHIVED")
 
-      assert_equal [draft_episode.id], apple_publisher.draft_episode_state_candidates.map(&:feeder_id)
+      assert_equal [draft_episode.id], apple_publisher.show.draft_upload_candidates.map(&:feeder_id)
       assert_equal [], apple_publisher.episodes_to_archive.map(&:feeder_id)
       assert_equal [], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
     end
@@ -561,7 +561,7 @@ describe Apple::Publisher do
         asset_processing_attempts: 3
       )
 
-      apple_episode = apple_publisher.draft_episode_state_candidates.first
+      apple_episode = apple_publisher.show.draft_upload_candidates.first
 
       apple_publisher.stub(:unarchive!, ->(eps) {
         assert_equal [apple_episode], eps

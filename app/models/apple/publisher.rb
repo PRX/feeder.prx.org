@@ -90,12 +90,8 @@ module Apple
       )
     end
 
-    def draft_episode_state_candidates
-      show.draft_upload_candidates
-    end
-
     def sync_drafting_episode_states!
-      eps = draft_episode_state_candidates
+      eps = show.draft_upload_candidates
       return if eps.empty?
 
       poll_episodes!(eps)
