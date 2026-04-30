@@ -96,6 +96,8 @@ module Apple
 
       poll_episodes!(eps)
 
+      # Sometimes Apple prunes ARCHIVED media, so give a delivery reset in that
+      # case.
       eps = eps.reject(&:integration_new?).select(&:archived?)
       unarchive_draft_candidates!(eps) if eps.any?
     end
