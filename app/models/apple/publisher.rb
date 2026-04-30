@@ -91,10 +91,7 @@ module Apple
     end
 
     def draft_episode_state_candidates
-      feed_episode_set = Set.new(show.feed_episodes)
-
-      show.episodes
-        .reject { |ep| feed_episode_set.include?(ep) }
+      show.draft_upload_candidates
     end
 
     def sync_drafting_episode_states!
