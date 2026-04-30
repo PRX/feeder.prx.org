@@ -25,7 +25,9 @@ module Integrations
         @podcast_episodes ||= podcast_feeder_episodes.map { |e| build_integration_episode(e) }
       end
 
-      # Does not include deleted episodes
+      # Integration wrappers for Feeder episodes currently visible in the private feed.
+      # This intentionally follows Feed#feed_episodes, including publish offsets,
+      # display limits, and feed readiness.
       def feed_episodes
         @feed_episodes ||= begin
           feed_episode_ids = Set.new(private_feed.feed_episodes.feed_ready.map(&:id))
