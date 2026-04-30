@@ -19,7 +19,7 @@ module Integrations
       end
 
       def episodes_to_unarchive
-        filter_episodes_to_unarchive(show.episodes)
+        filter_episodes_to_unarchive(show.feed_episodes)
       end
 
       def publish!

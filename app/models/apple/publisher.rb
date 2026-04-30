@@ -64,6 +64,8 @@ module Apple
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
+      sync_drafting_episode_states!
+
       # Archive deleted or unpublished episodes.
       # These episodes are no longer in the private feed.
       poll_episodes!(episodes_to_archive)
@@ -86,6 +88,23 @@ module Apple
         external_id: show.apple_id,
         api_response: {success: true}
       )
+    end
+
+    def draft_episode_state_candidates
+      feed_episode_set = Set.new(show.feed_episodes)
+
+      show.episodes
+        .reject { |ep| feed_episode_set.include?(ep) }
+    end
+
+    def sync_drafting_episode_states!
+      eps = draft_episode_state_candidates
+      return if eps.empty?
+
+      poll_episodes!(eps)
+
+      eps = eps.reject(&:integration_new?).select(&:archived?)
+      unarchive_draft_candidates!(eps) if eps.any?
     end
 
     def upload_and_process!(eps)
@@ -193,6 +212,19 @@ module Apple
     def prepare_for_delivery!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         Apple::Episode.prepare_for_delivery(eps)
+      end
+    end
+
+    def unarchive_draft_candidates!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Rails.logger.info("Unarchiving draft episode candidates", {episode_count: eps.length,
+                                                                    episode_ids: eps.map(&:feeder_id)})
+
+        unarchive!(eps)
+        eps.each do |ep|
+          Rails.logger.info("Marking episode as drafting", {episode_id: ep.feeder_id})
+          ep.feeder_episode.apple_mark_as_drafting!
+        end
       end
     end
 

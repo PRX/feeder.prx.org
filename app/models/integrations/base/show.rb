@@ -26,12 +26,16 @@ module Integrations
       end
 
       # Does not include deleted episodes
-      def episodes
-        @episodes ||= begin
+      def feed_episodes
+        @feed_episodes ||= begin
           feed_episode_ids = Set.new(private_feed.feed_episodes.feed_ready.map(&:id))
           podcast_episodes
             .filter { |e| feed_episode_ids.include?(e.feeder_episode.id) }
         end
+      end
+
+      def episodes
+        @episodes ||= feed_episodes
       end
 
       private

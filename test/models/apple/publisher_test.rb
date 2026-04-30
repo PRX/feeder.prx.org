@@ -419,6 +419,166 @@ describe Apple::Publisher do
     end
   end
 
+  describe "Draft state reconciliation" do
+    let(:podcast) { create(:podcast) }
+    let(:public_feed) { podcast.default_feed }
+    let(:apple_feed) { create(:apple_feed, podcast: podcast) }
+    let(:apple_config) { apple_feed.apple_config }
+    let(:apple_publisher) { apple_config.build_publisher }
+    let(:draft_episode) { create(:episode_with_media, podcast: podcast, published_at: nil) }
+
+    let(:create_apple_state) do
+      ->(episode, publishing_state) do
+        episode.create_apple_sync_log!(
+          external_id: "apple-episode-#{episode.id}",
+          **build(:apple_episode_api_response,
+            apple_episode_id: "apple-episode-#{episode.id}",
+            item_guid: episode.item_guid,
+            publishing_state: publishing_state,
+            apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS)
+        )
+      end
+    end
+
+    let(:set_apple_state) do
+      ->(apple_episode, publishing_state) do
+        sync_log = apple_episode.apple_sync_log
+        api_response = sync_log.api_response.deep_dup
+        api_response["api_response"]["val"]["data"]["attributes"]["publishingState"] = publishing_state
+        sync_log.update!(api_response: api_response)
+        sync_log.reload
+      end
+    end
+
+    before do
+      apple_feed
+      draft_episode
+      apple_feed.episodes << draft_episode unless apple_feed.episodes.exists?(draft_episode.id)
+      Apple::Show.connect_existing("123", apple_config)
+    end
+
+    it "selects published local draft candidates for state polling without archiving them" do
+      create_apple_state.call(draft_episode, "PUBLISHED")
+
+      assert_equal [draft_episode.id], apple_publisher.draft_episode_state_candidates.map(&:feeder_id)
+      assert_equal [], apple_publisher.episodes_to_archive.map(&:feeder_id)
+      assert_equal [], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
+    end
+
+    it "selects archived local draft candidates for explicit unarchive without generic unarchive" do
+      create_apple_state.call(draft_episode, "ARCHIVED")
+
+      assert_equal [draft_episode.id], apple_publisher.draft_episode_state_candidates.map(&:feeder_id)
+      assert_equal [], apple_publisher.episodes_to_archive.map(&:feeder_id)
+      assert_equal [], apple_publisher.episodes_to_unarchive.map(&:feeder_id)
+    end
+
+    it "polls draft candidate state before deciding whether to unarchive" do
+      create_apple_state.call(draft_episode, "DRAFTING")
+      unarchived_ids = []
+
+      poll = ->(eps) do
+        assert_equal [draft_episode.id], eps.map(&:feeder_id)
+        eps.each { |ep| set_apple_state.call(ep, "ARCHIVED") }
+      end
+
+      apple_publisher.stub(:poll_episodes!, poll) do
+        apple_publisher.stub(:unarchive_draft_candidates!, ->(eps) { unarchived_ids = eps.map(&:feeder_id) }) do
+          apple_publisher.sync_drafting_episode_states!
+        end
+      end
+
+      assert_equal [draft_episode.id], unarchived_ids
+    end
+
+    it "does not unarchive draft candidates when polling confirms Apple is published" do
+      create_apple_state.call(draft_episode, "ARCHIVED")
+      poll_called = false
+
+      apple_publisher.stub(:poll_episodes!, ->(eps) {
+        poll_called = true
+        eps.each { |ep| set_apple_state.call(ep, "PUBLISHED") }
+      }) do
+        apple_publisher.stub(:unarchive_draft_candidates!, ->(_eps) { flunk "published episodes should wait for Apple RSS archive" }) do
+          apple_publisher.sync_drafting_episode_states!
+        end
+      end
+
+      assert poll_called
+    end
+
+    it "does not unarchive draft candidates when polling confirms Apple is already drafting" do
+      create_apple_state.call(draft_episode, "DRAFTING")
+      poll_called = false
+
+      apple_publisher.stub(:poll_episodes!, ->(_eps) { poll_called = true }) do
+        apple_publisher.stub(:unarchive_draft_candidates!, ->(_eps) { flunk "already-drafting episodes should not unarchive" }) do
+          apple_publisher.sync_drafting_episode_states!
+        end
+      end
+
+      assert poll_called
+    end
+
+    it "keeps draft candidates out of generic archive and unarchive during publish" do
+      published_draft = draft_episode
+      archived_draft = create(:episode_with_media, podcast: podcast, published_at: nil)
+      apple_feed.episodes << archived_draft unless apple_feed.episodes.exists?(archived_draft.id)
+
+      create_apple_state.call(published_draft, "PUBLISHED")
+      create_apple_state.call(archived_draft, "ARCHIVED")
+
+      draft_ids = [published_draft.id, archived_draft.id]
+      draft_unarchived_ids = []
+      archived_ids = []
+      unarchived_ids = []
+
+      apple_publisher.show.stub(:sync!, true) do
+        apple_publisher.stub(:poll_episodes!, ->(_eps) {}) do
+          apple_publisher.stub(:unarchive_draft_candidates!, ->(eps) { draft_unarchived_ids.concat(eps.map(&:feeder_id)) }) do
+            apple_publisher.stub(:archive!, ->(eps) { archived_ids.concat(eps.map(&:feeder_id)) }) do
+              apple_publisher.stub(:unarchive!, ->(eps) { unarchived_ids.concat(eps.map(&:feeder_id)) }) do
+                apple_publisher.stub(:upload_and_process!, ->(_eps) {}) do
+                  apple_publisher.publish!
+                end
+              end
+            end
+          end
+        end
+      end
+
+      assert_equal [archived_draft.id], draft_unarchived_ids
+      assert_empty archived_ids & draft_ids
+      assert_empty unarchived_ids & draft_ids
+    end
+
+    it "marks unarchived draft episodes as not delivered while preserving uploaded media state" do
+      create_apple_state.call(draft_episode, "ARCHIVED")
+      media_version_id = draft_episode.media_version_id
+      draft_episode.apple_update_delivery_status(
+        uploaded: true,
+        delivered: true,
+        source_media_version_id: media_version_id,
+        asset_processing_attempts: 3
+      )
+
+      apple_episode = apple_publisher.draft_episode_state_candidates.first
+
+      apple_publisher.stub(:unarchive!, ->(eps) {
+        assert_equal [apple_episode], eps
+        []
+      }) do
+        apple_publisher.unarchive_draft_candidates!([apple_episode])
+      end
+
+      status = draft_episode.reload.apple_episode_delivery_status
+      assert status.uploaded
+      refute status.delivered
+      assert_equal media_version_id, status.source_media_version_id
+      assert_equal 0, status.asset_processing_attempts
+    end
+  end
+
   describe "#episodes_to_sync" do
     let(:episode) { create(:episode, podcast: podcast) }
 
