@@ -98,8 +98,8 @@ module Apple
 
       # Sometimes Apple prunes ARCHIVED media, so give a delivery reset in that
       # case.
-      eps = eps.reject(&:integration_new?).select(&:archived?)
-      unarchive_draft_candidates!(eps) if eps.any?
+      eps_to_unarchive = eps.reject(&:integration_new?).select(&:archived?)
+      unarchive_draft_candidates!(eps_to_unarchive) if eps_to_unarchive.any?
     end
 
     def upload_and_process!(eps)
