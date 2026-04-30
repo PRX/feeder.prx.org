@@ -217,7 +217,7 @@ module Apple
 
         unarchive!(eps)
         eps.each do |ep|
-          Rails.logger.info("Marking episode as drafting", {episode_id: ep.feeder_id})
+          Rails.logger.info("Resetting delivery state for unarchived draft candidate", {episode_id: ep.feeder_id})
           ep.feeder_episode.apple_mark_as_not_delivered!
         end
       end
