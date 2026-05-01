@@ -820,7 +820,7 @@ describe Apple::Publisher do
         "FAILURE episode must be marked even when another episode times out later"
     end
 
-    it "does not treat ready non-FAILURE episodes as asset-state failures" do
+    it "publishes ready non-FAILURE episodes" do
       episode_non_failure = uploaded_apple_episode_with_asset_state("UNSPECIFIED")
       refute episode_non_failure.feeder_episode.apple_needs_delivery?
 
@@ -829,8 +829,8 @@ describe Apple::Publisher do
         ready_eps: [episode_non_failure]
       )
 
-      assert_empty calls[:published], "only SUCCESS episodes should be published"
-      assert_empty calls[:delivered], "only SUCCESS episodes should be marked delivered"
+      assert_equal [episode_non_failure], calls[:published]
+      assert_equal [episode_non_failure], calls[:delivered]
       refute episode_non_failure.feeder_episode.apple_needs_delivery?,
         "only FAILURE episodes should be marked for reupload"
     end

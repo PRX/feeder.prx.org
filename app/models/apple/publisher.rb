@@ -145,7 +145,6 @@ module Apple
         # Wait for the audio asset to be processed by Apple
         wait_for_asset_state(eps) do |ready_eps|
           errored, ready_eps = ready_eps.partition(&:audio_asset_state_error?)
-          ready_eps = ready_eps.select(&:audio_asset_state_success?)
           error_audio_state_eps.concat(errored)
           mark_asset_state_failures_for_reupload!(errored)
 
