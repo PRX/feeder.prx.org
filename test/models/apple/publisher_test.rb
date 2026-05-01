@@ -707,6 +707,131 @@ describe Apple::Publisher do
     end
   end
 
+  describe "#raise_for_asset_state_failure!" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+
+    it "marks each failure episode for reupload and raises RetryPublishingError" do
+      reupload_calls = []
+      ep1_reupload = -> { reupload_calls << episode1.feeder_id }
+      ep2_reupload = -> { reupload_calls << episode2.feeder_id }
+
+      episode1.stub(:audio_asset_state, "FAILURE") do
+        episode1.stub(:apple_mark_for_reupload!, ep1_reupload) do
+          episode2.stub(:audio_asset_state, "FAILURE") do
+            episode2.stub(:apple_mark_for_reupload!, ep2_reupload) do
+              error = assert_raises(Apple::RetryPublishingError) do
+                apple_publisher.raise_for_asset_state_failure!([episode1, episode2])
+              end
+              assert_match(/Found FAILURE appleHostedAudioAssetState on 2 episodes/, error.message)
+            end
+          end
+        end
+      end
+
+      assert_equal [episode1.feeder_id, episode2.feeder_id].sort, reupload_calls.sort
+    end
+  end
+
+  describe "#process_delivery! asset state guard" do
+    let(:episode_success) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+    let(:episode_failure) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+
+    # Drive wait_for_asset_state's wait loop once with the supplied eps, no timeout.
+    let(:wait_for_asset_state_stub) do
+      original = apple_publisher.method(:wait_for_asset_state)
+      ->(eps, **_kwargs, &block) {
+        original.call(eps, wait_timeout: 0.seconds, wait_interval: 0.seconds, &block)
+      }
+    end
+
+    def with_common_stubs(probe_eps)
+      apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
+        apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
+          apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
+            apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
+              Apple::Episode.stub(:probe_asset_state, ->(_api, _eps) { [probe_eps, []] }) do
+                yield
+              end
+            end
+          end
+        end
+      end
+    end
+
+    it "publishes only SUCCESS episodes and does not raise when all SUCCESS" do
+      published_with = nil
+      delivered_with = nil
+
+      episode_success.stub(:audio_asset_state_success?, true) do
+        with_common_stubs([episode_success]) do
+          apple_publisher.stub(:publish_drafting!, ->(eps) { published_with = eps }) do
+            apple_publisher.stub(:mark_as_delivered!, ->(eps) { delivered_with = eps }) do
+              apple_publisher.process_delivery!([episode_success])
+            end
+          end
+        end
+      end
+
+      assert_equal [episode_success], published_with
+      assert_equal [episode_success], delivered_with
+    end
+
+    it "raises RetryPublishingError and skips publish when all FAILURE" do
+      published_called = false
+      delivered_called = false
+      reupload_called = false
+
+      episode_failure.stub(:audio_asset_state_success?, false) do
+        episode_failure.stub(:audio_asset_state, "FAILURE") do
+          episode_failure.stub(:apple_mark_for_reupload!, -> { reupload_called = true }) do
+            with_common_stubs([episode_failure]) do
+              apple_publisher.stub(:publish_drafting!, ->(eps) { published_called = true if eps.any? }) do
+                apple_publisher.stub(:mark_as_delivered!, ->(eps) { delivered_called = true if eps.any? }) do
+                  assert_raises(Apple::RetryPublishingError) do
+                    apple_publisher.process_delivery!([episode_failure])
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+
+      refute published_called, "publish_drafting! must not receive FAILURE episodes"
+      refute delivered_called, "mark_as_delivered! must not receive FAILURE episodes"
+      assert reupload_called, "FAILURE episode must be marked for reupload"
+    end
+
+    it "publishes SUCCESS episodes and raises for FAILURE in a mixed batch" do
+      published_with = nil
+      delivered_with = nil
+      reupload_called = false
+
+      episode_success.stub(:audio_asset_state_success?, true) do
+        episode_failure.stub(:audio_asset_state_success?, false) do
+          episode_failure.stub(:audio_asset_state, "FAILURE") do
+            episode_failure.stub(:apple_mark_for_reupload!, -> { reupload_called = true }) do
+              with_common_stubs([episode_success, episode_failure]) do
+                apple_publisher.stub(:publish_drafting!, ->(eps) { published_with = eps }) do
+                  apple_publisher.stub(:mark_as_delivered!, ->(eps) { delivered_with = eps }) do
+                    assert_raises(Apple::RetryPublishingError) do
+                      apple_publisher.process_delivery!([episode_success, episode_failure])
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+
+      assert_equal [episode_success], published_with, "only SUCCESS episodes should be published"
+      assert_equal [episode_success], delivered_with, "only SUCCESS episodes should be marked delivered"
+      assert reupload_called, "FAILURE episode must be marked for reupload"
+    end
+  end
+
   describe "#raise_delivery_processing_errors" do
     let(:apple_episode) { build(:apple_episode, show: apple_publisher.show) }
     let(:asset_processing_state) { "COMPLETED" }
@@ -1137,7 +1262,8 @@ describe Apple::Publisher do
         pdf = OpenStruct.new(api_marked_as_uploaded?: true)
         OpenStruct.new(
           feeder_id: i,
-          podcast_delivery_files: [pdf]
+          podcast_delivery_files: [pdf],
+          audio_asset_state_success?: true
         )
       }
 

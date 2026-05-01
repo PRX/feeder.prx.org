@@ -140,14 +140,25 @@ module Apple
 
         wait_for_upload_processing(eps)
 
-        # Wait for the audio asset to be processed by Apple
-        wait_for_asset_state(eps) do |ready_eps|
+        error_audio_state_eps = []
+
+        # Wait for the audio asset to be processed by Apple.
+        # ready_eps are partitioned into SUCCESS (ready_eps) and FAILURE
+        # (error_audio_state_eps) — these are the only two terminal states.
+        wait_for_asset_state(eps) do |finished_eps|
+          ready_eps, errored = finished_eps.partition(&:audio_asset_state_success?)
+          error_audio_state_eps.concat(errored)
+
           log_asset_wait_duration!(ready_eps)
           # Publish the ready episodes
           publish_drafting!(ready_eps)
           # Then mark them as delivered
           mark_as_delivered!(ready_eps)
         end
+
+        # If Apple returned FAILURE for any episode's audio asset state,
+        # mark them for reupload and retry the publishing routine.
+        raise_for_asset_state_failure!(error_audio_state_eps) if error_audio_state_eps.any?
       end
     end
 
@@ -245,6 +256,20 @@ module Apple
           "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked for reupload"
         )
       end
+    end
+
+    def raise_for_asset_state_failure!(failure_eps)
+      failure_eps.each do |ep|
+        Rails.logger.error("Apple hosted audio asset state FAILURE, marking for reupload",
+          {episode_id: ep.feeder_id,
+           audio_asset_state: ep.audio_asset_state})
+
+        ep.apple_mark_for_reupload!
+      end
+
+      raise Apple::RetryPublishingError.new(
+        "Found FAILURE appleHostedAudioAssetState on #{failure_eps.length} episodes, marked for reupload"
+      )
     end
 
     def wait_for_versioned_source_metadata(eps)
