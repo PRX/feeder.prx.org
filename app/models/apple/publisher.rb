@@ -142,11 +142,9 @@ module Apple
 
         error_audio_state_eps = []
 
-        # Wait for the audio asset to be processed by Apple.
-        # ready_eps are partitioned into SUCCESS (ready_eps) and FAILURE
-        # (error_audio_state_eps) — these are the only two terminal states.
-        wait_for_asset_state(eps) do |finished_eps|
-          ready_eps, errored = finished_eps.partition(&:audio_asset_state_success?)
+        # Wait for the audio asset to be processed by Apple
+        wait_for_asset_state(eps) do |ready_eps|
+          ready_eps, errored = ready_eps.partition(&:audio_asset_state_success?)
           error_audio_state_eps.concat(errored)
 
           log_asset_wait_duration!(ready_eps)
@@ -156,8 +154,6 @@ module Apple
           mark_as_delivered!(ready_eps)
         end
 
-        # If Apple returned FAILURE for any episode's audio asset state,
-        # mark them for reupload and retry the publishing routine.
         raise_for_asset_state_failure!(error_audio_state_eps) if error_audio_state_eps.any?
       end
     end
