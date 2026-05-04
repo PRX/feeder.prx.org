@@ -90,11 +90,24 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
-        eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
+        skipped.each do |ep|
+          Rails.logger.warn("Episode needs ready enclosure. Skipping", {episode_id: ep.id})
+        end
+
+        # Sync episode metadata (create/update on Apple) for eligible episodes
+        eps.each_slice(PUBLISH_CHUNK_LEN) { |batch| sync_episodes!(batch) }
+
+        eps
+          .select(&:apple_needs_upload?)
+          .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
 
-        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        eps
+          .filter(&:apple_needs_delivery?)
+          .filter { |ep| ep.feeder_episode.published? }
+          .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           process_delivery!(batch)
         end
 
@@ -109,8 +122,7 @@ module Apple
         # Soft delete any existing delivery and delivery files.
         prepare_for_delivery!(eps)
 
-        # Only create if needed.
-        sync_episodes!(eps)
+        # Create containers/files for episodes needing media upload.
         sync_podcast_containers!(eps)
 
         wait_for_versioned_source_metadata(eps)
@@ -433,7 +445,7 @@ module Apple
     def mark_as_uploaded!(eps)
       Rails.logger.tagged("##{__method__}") do
         eps.each do |ep|
-          Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
+          Rails.logger.info("Marking episode media as uploaded", {episode_id: ep.feeder_episode.id})
           ep.feeder_episode.apple_mark_as_uploaded!
         end
       end

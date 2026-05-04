@@ -161,6 +161,82 @@ describe Apple::Show do
       apple_show.reload
       assert_equal 0, apple_show.episodes.count
     end
+
+    it "includes draft episodes with media from an apple subscription feed" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      apple_feed.set_default_episodes
+      draft = create(:episode_with_media, podcast: podcast, published_at: nil)
+      apple_feed.episodes << draft
+
+      config = build(:apple_config, feed: apple_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      episode_ids = show.episodes.map { |e| e.feeder_episode.id }
+      assert_includes episode_ids, draft.id
+    end
+
+    it "does not duplicate an episode that is both draft and published during the same run" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      apple_feed.set_default_episodes
+
+      # Episode starts as draft with media — appears in draft_upload_candidates
+      ep = create(:episode_with_media, podcast: podcast, published_at: nil)
+      apple_feed.episodes << ep
+
+      config = build(:apple_config, feed: apple_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      # Simulate: episode gets published before episodes is called,
+      # so it now appears in both the published set AND draft_upload_candidates.
+      ep.update!(published_at: 1.hour.ago)
+
+      ids = show.episodes.map { |e| e.feeder_episode.id }
+      assert_includes ids, ep.id
+      assert_equal ids.uniq, ids, "episode should appear only once"
+    end
+
+    it "excludes draft episodes without media from an apple subscription feed" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      apple_feed.set_default_episodes
+      draft = create(:episode, podcast: podcast, published_at: nil)
+      apple_feed.episodes << draft
+
+      config = build(:apple_config, feed: apple_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      episode_ids = show.episodes.map { |e| e.feeder_episode.id }
+      refute_includes episode_ids, draft.id
+    end
+  end
+
+  describe "#draft_upload_candidates" do
+    it "returns draft episodes with media from an apple subscription feed" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      apple_feed.set_default_episodes
+      draft_with_media = create(:episode_with_media, podcast: podcast, published_at: nil)
+      draft_without_media = create(:episode, podcast: podcast, published_at: nil)
+      apple_feed.episodes << draft_with_media
+      apple_feed.episodes << draft_without_media
+
+      # Preconditions: verify the media states that drive candidate selection
+      assert draft_with_media.enclosure_ready?(true), "draft_with_media should have complete media"
+      refute draft_without_media.enclosure_ready?(true), "draft_without_media should not have complete media"
+      refute draft_without_media.enclosure_ready?(false), "draft_without_media should have no media at all"
+
+      config = build(:apple_config, feed: apple_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      candidate_ids = show.draft_upload_candidates.map { |e| e.feeder_episode.id }
+      assert_includes candidate_ids, draft_with_media.id
+      refute_includes candidate_ids, draft_without_media.id
+    end
+
+    it "returns empty array for non-apple feeds" do
+      config = build(:apple_config, feed: private_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      assert_equal [], show.draft_upload_candidates
+    end
   end
 
   describe ".connect_existing" do
