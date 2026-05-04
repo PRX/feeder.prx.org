@@ -15,6 +15,10 @@ module Integrations
         raise NotImplementedError, "Subclasses must implement archived?"
       end
 
+      def delivery_status(_with_default = false)
+        raise NotImplementedError, "Subclasses must implement delivery_status"
+      end
+
       def error_state?
         false
       end
@@ -28,9 +32,7 @@ module Integrations
       end
 
       def has_media_version?
-        return false unless delivery_status.present? && delivery_status.source_media_version_id.present?
-
-        delivery_status.source_media_version_id == feeder_episode.media_version_id
+        delivery_status.present? && delivery_status.has_media_version?
       end
 
       def needs_media_version?

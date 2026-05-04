@@ -35,10 +35,6 @@ class Feeds::AppleSubscription < Feed
     }
   end
 
-  def mark_as_not_delivered!(episode)
-    episode.apple_episode_delivery_status.mark_as_not_delivered!
-  end
-
   def set_defaults
     self.slug ||= DEFAULT_FEED_SLUG
     self[:label] ||= DEFAULT_LABEL
