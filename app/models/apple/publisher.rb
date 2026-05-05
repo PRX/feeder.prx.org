@@ -64,6 +64,8 @@ module Apple
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
+      sync_drafting_episode_states!
+
       # Archive deleted or unpublished episodes.
       # These episodes are no longer in the private feed.
       poll_episodes!(episodes_to_archive)
@@ -86,6 +88,31 @@ module Apple
         external_id: show.apple_id,
         api_response: {success: true}
       )
+    end
+
+    def sync_drafting_episode_states!
+      eps = show.draft_upload_candidates
+      return if eps.empty?
+
+      poll_episodes!(eps)
+
+      # ARCHIVED local drafts need UNARCHIVE. PUBLISHED local drafts need to
+      # become DRAFTING before the normal upload flow can safely update their
+      # media. Apple has no direct draft action (TODO check docs!), so force
+      # that state with ARCHIVE -> UNARCHIVE.
+      #
+      # Both paths reset delivery state after UNARCHIVE because Apple may prune
+      # media around archive transitions while local state still says delivered.
+      #
+      # Candidates that already polled as DRAFTING were not transitioned by this
+      # method; they reached that state through an earlier create/unarchive path.
+      # Local delivery status is trusted and media does not need a forced re-upload.
+      eps = eps.reject(&:integration_new?)
+      eps_to_unarchive = eps.select(&:archived?)
+      eps_to_redraft = eps.select { |ep| ep.publishing_state == "PUBLISHED" }
+
+      unarchive_draft_candidates!(eps_to_unarchive) if eps_to_unarchive.any?
+      redraft_published_draft_candidates!(eps_to_redraft) if eps_to_redraft.any?
     end
 
     def upload_and_process!(eps)
@@ -193,6 +220,35 @@ module Apple
     def prepare_for_delivery!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         Apple::Episode.prepare_for_delivery(eps)
+      end
+    end
+
+    def unarchive_draft_candidates!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Rails.logger.info("Unarchiving draft episode candidates", {episode_count: eps.length, episode_ids: eps.map(&:feeder_id)})
+
+        unarchive!(eps)
+        reset_delivery_state_for_draft_candidates!(eps)
+      end
+    end
+
+    def redraft_published_draft_candidates!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Rails.logger.info("Archiving published draft episode candidates before unarchive", {episode_count: eps.length,
+                                                                                            episode_ids: eps.map(&:feeder_id)})
+
+        archive!(eps)
+        unarchive_draft_candidates!(eps)
+      end
+    end
+
+    def reset_delivery_state_for_draft_candidates!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        eps.each do |ep|
+          Rails.logger.info("Resetting delivery state for draft candidate", {episode_id: ep.feeder_id,
+                                                                             publishing_state: ep.publishing_state})
+          ep.feeder_episode.apple_mark_as_not_delivered!
+        end
       end
     end
 
