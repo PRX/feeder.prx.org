@@ -156,7 +156,7 @@ module Apple
         episodes.map { |e| e.publishing_state_bridge_params(state) })
 
       join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        Rails.logger.info("Moving episode to #{state} state", {episode_id: ep.feeder_id, state: ep.publishing_state})
+        Rails.logger.info("Applying #{state} action to episode", {episode_id: ep.feeder_id, action: state, prior_publishing_state: ep.publishing_state})
       end
 
       # We don't get back the full episode model in the response.
