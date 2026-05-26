@@ -96,21 +96,13 @@ module Apple
 
       poll_episodes!(eps)
 
-      # ARCHIVED local drafts need UNARCHIVE. PUBLISHED local drafts need to
-      # become DRAFTING before the normal upload flow can safely update their
-      # media. Apple has no direct draft action (TODO check docs!), so force
-      # that state with ARCHIVE -> UNARCHIVE.
-      #
-      # Both paths reset delivery state after UNARCHIVE because Apple may prune
-      # media around archive transitions while local state still says delivered.
-      #
-      # Candidates that already polled as DRAFTING were not transitioned by this
-      # method; they reached that state through an earlier create/unarchive path.
-      # Local delivery status is trusted and media does not need a forced re-upload.
+      # Handles local draft + Apple ARCHIVED by unarchiving back to DRAFTING
+      # Handles local draft + Apple PUBLISHED by cycling ARCHIVE -> UNARCHIVE to reach DRAFTING
       eps = eps.reject(&:integration_new?)
       eps_to_unarchive = eps.select(&:archived?)
       eps_to_redraft = eps.select { |ep| ep.publishing_state == "PUBLISHED" }
 
+      # Both paths reset delivery state after unarchive because Apple may prune archived media assets.
       unarchive_draft_candidates!(eps_to_unarchive) if eps_to_unarchive.any?
       redraft_published_draft_candidates!(eps_to_redraft) if eps_to_redraft.any?
     end
