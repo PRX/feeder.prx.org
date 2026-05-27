@@ -733,6 +733,21 @@ describe Apple::Publisher do
       assert episode1.feeder_episode.apple_needs_delivery?
       assert episode2.feeder_episode.apple_needs_delivery?
     end
+
+    it "logs each failure episode id and guid" do
+      logs = capture_json_logs do
+        assert_raises(Apple::RetryPublishingError) do
+          apple_publisher.raise_for_asset_state_failure!([episode1, episode2])
+        end
+      end
+
+      failure_logs = logs.select { |l| l[:msg] == "Found FAILURE appleHostedAudioAssetState episode, marked for reupload" }
+      failure_log_episodes = failure_logs.map { |l| [l[:episode_id], l[:episode_guid]] }
+
+      assert_equal 2, failure_logs.length
+      assert_includes failure_log_episodes, [episode1.feeder_id, episode1.guid]
+      assert_includes failure_log_episodes, [episode2.feeder_id, episode2.guid]
+    end
   end
 
   describe "#process_delivery! asset state guard" do

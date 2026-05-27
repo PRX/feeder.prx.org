@@ -262,18 +262,26 @@ module Apple
 
     def mark_asset_state_failures_for_reupload!(failure_eps)
       failure_eps.each do |ep|
-        Rails.logger.error("Apple hosted audio asset state FAILURE, marking for reupload",
-          {episode_id: ep.feeder_id,
-           audio_asset_state: ep.audio_asset_state})
-
         ep.apple_mark_for_reupload!
       end
     end
 
     def raise_asset_state_failure_retry!(failure_eps)
+      failure_eps.each do |ep|
+        Rails.logger.error("Found FAILURE appleHostedAudioAssetState episode, marked for reupload",
+          apple_episode_log_context(ep).merge(audio_asset_state: ep.audio_asset_state))
+      end
+
       raise Apple::RetryPublishingError.new(
         "Found FAILURE appleHostedAudioAssetState on #{failure_eps.length} episodes, marked for reupload"
       )
+    end
+
+    def apple_episode_log_context(ep)
+      {
+        episode_id: ep.feeder_id,
+        episode_guid: ep.guid
+      }
     end
 
     def wait_for_versioned_source_metadata(eps)
