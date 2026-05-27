@@ -730,6 +730,7 @@ describe Apple::Publisher do
       end
 
       assert_match(/Found FAILURE appleHostedAudioAssetState on 2 episodes/, error.message)
+      assert_includes error.message, [episode1.feeder_id, episode2.feeder_id].to_s
       assert episode1.feeder_episode.apple_needs_delivery?
       assert episode2.feeder_episode.apple_needs_delivery?
     end

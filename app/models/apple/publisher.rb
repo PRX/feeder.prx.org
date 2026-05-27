@@ -273,7 +273,7 @@ module Apple
       end
 
       raise Apple::RetryPublishingError.new(
-        "Found FAILURE appleHostedAudioAssetState on #{failure_eps.length} episodes, marked for reupload"
+        "Found FAILURE appleHostedAudioAssetState on #{failure_eps.length} episodes #{failure_eps.map(&:feeder_id)}, marked for reupload"
       )
     end
 
