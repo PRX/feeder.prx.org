@@ -157,15 +157,19 @@ module Apple
 
       join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
         Rails.logger.info("Applying #{state} action to episode",
-          {episode_id: ep.feeder_id,
-           episode_guid: ep.feeder_episode.guid,
-           action: state,
-           prior_publishing_state: ep.publishing_state})
+          apple_episode_log_context(ep).merge(action: state, prior_publishing_state: ep.publishing_state))
       end
 
       # We don't get back the full episode model in the response.
       # So poll for current state
       poll_episode_state(api, show, episodes)
+    end
+
+    def self.apple_episode_log_context(ep)
+      {
+        episode_id: ep.feeder_id,
+        episode_guid: ep.guid
+      }
     end
 
     def self.upsert_sync_logs(episodes, results)
