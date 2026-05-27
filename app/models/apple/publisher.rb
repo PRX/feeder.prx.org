@@ -107,6 +107,14 @@ module Apple
       redraft_published_draft_candidates!(eps_to_redraft) if eps_to_redraft.any?
     end
 
+    def episodes_to_sync
+      filter_episodes_to_sync(episodes_with_draft_upload_candidates)
+    end
+
+    def episodes_to_archive
+      filter_episodes_to_archive(show.podcast_episodes, Set.new(episodes_with_draft_upload_candidates))
+    end
+
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
         eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
@@ -567,6 +575,15 @@ module Apple
     end
 
     private
+
+    def episodes_with_draft_upload_candidates
+      feed_eps = show.episodes
+      feed_episode_ids = Set.new(feed_eps.map(&:feeder_id))
+      # Avoid racy edge cases where a draft candidate becomes feed-visible in the same publish flow.
+      draft_eps = show.draft_upload_candidates.reject { |ep| feed_episode_ids.include?(ep.feeder_id) }
+
+      feed_eps + draft_eps
+    end
 
     def check_for_stuck_episodes(eps)
       return if eps.empty?

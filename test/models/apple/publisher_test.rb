@@ -457,6 +457,12 @@ describe Apple::Publisher do
       Apple::Show.connect_existing("123", apple_config)
     end
 
+    it "includes draft upload candidates in episodes to sync" do
+      assert_equal [], apple_publisher.show.episodes.map(&:feeder_id)
+      assert_equal [draft_episode.id], apple_publisher.show.draft_upload_candidates.map(&:feeder_id)
+      assert_equal [draft_episode.id], apple_publisher.episodes_to_sync.map(&:feeder_id)
+    end
+
     it "selects published local draft candidates for draft state reconciliation without generic archive" do
       create_apple_state.call(draft_episode, "PUBLISHED")
 

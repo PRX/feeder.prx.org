@@ -31,7 +31,6 @@ describe Apple::Show do
       apple_show.instance_variable_set(:@apple_episode_json, "foo")
       apple_show.instance_variable_set(:@podcast_feeder_episodes, "foo")
       apple_show.instance_variable_set(:@podcast_episodes, "foo")
-      apple_show.instance_variable_set(:@feed_episodes, "foo")
       apple_show.instance_variable_set(:@episodes, "foo")
       apple_show.instance_variable_set(:@episode_ids, "foo")
       apple_show.instance_variable_set(:@find_episode, "foo")
@@ -41,7 +40,6 @@ describe Apple::Show do
       assert_nil apple_show.instance_variable_get(:@apple_episode_json)
       assert_nil apple_show.instance_variable_get(:@podcast_feeder_episodes)
       assert_nil apple_show.instance_variable_get(:@podcast_episodes)
-      assert_nil apple_show.instance_variable_get(:@feed_episodes)
       assert_nil apple_show.instance_variable_get(:@episodes)
       assert_nil apple_show.instance_variable_get(:@episode_ids)
       assert_nil apple_show.instance_variable_get(:@find_episode)
@@ -164,7 +162,7 @@ describe Apple::Show do
       assert_equal 0, apple_show.episodes.count
     end
 
-    it "includes draft episodes with media from an apple subscription feed" do
+    it "keeps draft episodes out of the feed-visible episode set" do
       apple_feed = create(:apple_feed, podcast: podcast)
       apple_feed.set_default_episodes
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
@@ -174,22 +172,20 @@ describe Apple::Show do
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
-      assert_includes episode_ids, draft.id
+      refute_includes episode_ids, draft.id
+      assert_includes show.draft_upload_candidates.map { |e| e.feeder_episode.id }, draft.id
     end
 
-    it "does not duplicate an episode that is both draft and published during the same run" do
+    it "returns a feed-visible episode only once" do
       apple_feed = create(:apple_feed, podcast: podcast)
       apple_feed.set_default_episodes
 
-      # Episode starts as draft with media — appears in draft_upload_candidates
       ep = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << ep
 
       config = build(:apple_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
-      # Simulate: episode gets published before episodes is called,
-      # so it now appears in both the published set AND draft_upload_candidates.
       ep.update!(published_at: 1.hour.ago)
 
       ids = show.episodes.map { |e| e.feeder_episode.id }
