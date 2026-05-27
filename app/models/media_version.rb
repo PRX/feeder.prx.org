@@ -8,7 +8,7 @@ class MediaVersion < ApplicationRecord
 
   validates :media_version_resources, length: {minimum: 1}
 
-  def self.current?(candidate_id, expected_id)
-    candidate_id.present? && candidate_id == expected_id
+  def self.matches_current_id?(candidate_id, current_id)
+    candidate_id.present? && candidate_id == current_id
   end
 end
