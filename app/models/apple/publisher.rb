@@ -120,7 +120,7 @@ module Apple
         end
 
         sync_podcast_deliveries!(episodes_with_source_metadata)
-        sync_podcast_delivery_files!(media_infos)
+        sync_podcast_delivery_files!(episodes_with_source_metadata, media_infos)
 
         # Upload and mark as uploaded, then update the audio container reference.
         execute_upload_operations!(media_infos)
@@ -390,9 +390,7 @@ module Apple
       end
     end
 
-    def sync_podcast_delivery_files!(media_infos)
-      eps = media_infos.map(&:episode)
-
+    def sync_podcast_delivery_files!(eps, media_infos)
       Rails.logger.tagged("##{__method__}") do
         Rails.logger.info("Starting podcast delivery files sync")
 
