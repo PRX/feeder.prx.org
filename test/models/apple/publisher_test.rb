@@ -1071,6 +1071,24 @@ describe Apple::Publisher do
       assert increment_called_during_upload, "increment_asset_wait! should be called during upload_media!"
       assert increment_mock.verify
     end
+
+    it "requires source metadata for every episode in the upload batch" do
+      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      missing_metadata_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      media_info = Apple::MediaInfo.new(episode: episode)
+
+      apple_publisher.stub(:prepare_for_delivery!, nil) do
+        apple_publisher.stub(:sync_podcast_containers!, nil) do
+          apple_publisher.stub(:wait_for_versioned_source_metadata, [media_info]) do
+            error = assert_raises(RuntimeError) do
+              apple_publisher.upload_media!([episode, missing_metadata_episode])
+            end
+
+            assert_match(/Source metadata response did not match requested episodes/, error.message)
+          end
+        end
+      end
+    end
   end
 
   describe "#process_delivery!" do

@@ -114,22 +114,25 @@ module Apple
         sync_podcast_containers!(eps)
 
         media_infos = wait_for_versioned_source_metadata(eps)
-        versioned_eps = media_infos.map(&:episode)
+        episodes_with_source_metadata = media_infos.map(&:episode)
+        unless Set.new(episodes_with_source_metadata) == Set.new(eps)
+          raise "Source metadata response did not match requested episodes"
+        end
 
-        sync_podcast_deliveries!(versioned_eps)
+        sync_podcast_deliveries!(episodes_with_source_metadata)
         sync_podcast_delivery_files!(media_infos)
 
         # Upload and mark as uploaded, then update the audio container reference.
         execute_upload_operations!(media_infos)
-        mark_delivery_files_uploaded!(versioned_eps)
-        update_audio_container_reference!(versioned_eps)
+        mark_delivery_files_uploaded!(episodes_with_source_metadata)
+        update_audio_container_reference!(episodes_with_source_metadata)
 
         # Mark the episode as uploaded (write source attrs + uploaded).
         mark_as_uploaded!(media_infos)
 
         # The episodes start waiting after they are uploaded.
         # Increment the wait counter.
-        increment_asset_wait!(versioned_eps)
+        increment_asset_wait!(episodes_with_source_metadata)
       end
     end
 
