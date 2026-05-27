@@ -27,13 +27,16 @@ export default class extends Controller {
 
   // make it look like this was the original value
   setValue(val) {
-    this.element.value = val
-
     if (this.element.dataset.valueWas) {
       this.element.dataset.valueWas = val
     }
 
-    this.element.dispatchEvent(new Event("change"))
+    if (this.element.slim) {
+      this.element.slim.setSelected(val)
+    } else {
+      this.element.value = val
+      this.element.dispatchEvent(new Event("change"))
+    }
   }
 
   addOption(val) {

@@ -8,6 +8,8 @@ module Apple
     validates :key_id, presence: true, length: {minimum: 10}
     validates_presence_of :key_pem_b64
 
+    encrypts :key_pem_b64
+
     validate :provider_id_is_valid, if: :provider_id?
     validate :ec_key_format, if: :key_pem_b64?
     validate :must_have_working_key

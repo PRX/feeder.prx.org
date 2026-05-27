@@ -7,12 +7,12 @@
         "name": "AA country"
       },
       "links": {
-        "self": "https://api.podcastsconnect.apple.com/v1/countriesAndRegions/AA"
+        "self": "https://aardvark.prx.org/countriesAndRegions/AA"
       }
     }
   ],
   "links": {
-    "self": "https://api.podcastsconnect.apple.com/v1/countriesAndRegions?limit=200"
+    "self": "https://aardvark.prx.org/countriesAndRegions?limit=200"
   },
   "meta": {
     "paging": {

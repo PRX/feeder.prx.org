@@ -19,10 +19,11 @@ class PodcastMetricsController < ApplicationController
 
   def episode_trend
     @episode = Episode.find_by(guid: params[:episode_id])
+    trend = @episode.episode_trend if @episode.has_episode_trend?
 
     render partial: "metrics/episode_trend", locals: {
       episode: @episode,
-      episode_trend: @episode.episode_trend
+      episode_trend: trend
     }
   end
 
@@ -37,13 +38,13 @@ class PodcastMetricsController < ApplicationController
   end
 
   def monthly_downloads
-    render partial: "metrics/monthly_card", locals: {
-      downloads: @podcast.monthly_downloads.to_a
+    render partial: "metrics/downloads_card", locals: {
+      rollups: @podcast.monthly_downloads.to_a
     }
   end
 
   def episodes
-    render partial: "metrics/episodes_card", locals: {
+    render partial: "podcast_metrics/episodes_card", locals: {
       episode_rollups: @podcast.downloads_by_episode
     }
   end

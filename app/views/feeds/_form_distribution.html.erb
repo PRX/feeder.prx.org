@@ -32,7 +32,7 @@
       </div>
 
       <% if feed.persisted? %>
-        <div class="col-12 mb-4 <%= "d-none" unless feed.public? %>" data-feed-tokens-target="showPublic">
+        <div class="col-12 mb-4 <%= "d-none" if feed.private? || feed.url.present? %>" data-feed-tokens-target="showPublic">
           <div class="form-floating input-group">
             <%= form.text_field :published_url, value: feed.published_public_url, disabled: true %>
             <%= form.label :published_url %>

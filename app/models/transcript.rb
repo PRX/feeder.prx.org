@@ -22,6 +22,7 @@ class Transcript < ApplicationRecord
   has_many :tasks, as: :owner
 
   before_validation :initialize_attributes, on: :create
+  after_save :publish!
 
   validates :original_url, presence: true
 
@@ -96,6 +97,10 @@ class Transcript < ApplicationRecord
         task.owner = self
       end.start!
     end
+  end
+
+  def publish!
+    episode&.publish! if status_complete? && status_previously_changed?
   end
 
   def retryable?

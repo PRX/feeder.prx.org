@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
+# NOTE: This code does not connect directly to Apple, a bridge lambda is used in between to handle communication and API calls.
+# This is not an official Apple API client, and to use Apple API you will need to have your own agreement with Apple to access their APIs.
+
 module Apple
   class Api
-    API_BASE = "https://api.podcastsconnect.apple.com/v1/"
-
     ERROR_RETRIES = 3
     SUCCESS_CODES = [200, 201].freeze
     DEFAULT_BATCH_SIZE = 5
@@ -26,6 +27,14 @@ module Apple
       new(provider_id: apple_provider_id,
         key_id: apple_key_id,
         key: apple_key_pem)
+    end
+
+    def self.api_base
+      ENV["APPLE_PODCASTS_CONNECT_API_URL"]
+    end
+
+    def self.api_aud_name
+      ENV["APPLE_PODCASTS_CONNECT_API_AUD_NAME"]
     end
 
     def self.from_key(apple_key)
@@ -70,7 +79,7 @@ module Apple
 
       {iss: provider_id,
        exp: now.to_i + (60 * 15),
-       aud: "podcastsconnect-v1"}
+       aud: self.class.api_aud_name}
     end
 
     def jwt_headers
@@ -114,7 +123,7 @@ module Apple
     end
 
     def self.join_url(api_frag)
-      URI.join(API_BASE, api_frag)
+      URI.join(api_base, api_frag)
     end
 
     def join_url(api_frag)

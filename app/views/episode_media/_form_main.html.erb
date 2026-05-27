@@ -1,5 +1,5 @@
 <div class="col-12 mb-4">
-  <div class="form-floating input-group" data-controller="dynamic-form">
+  <div class="form-floating input-group" data-controller="dynamic-form" data-morph="false">
     <% action = "dynamic-form#change placement-preview#update" %>
     <% data = {action: action, placement_preview_target: "medium"} %>
     <%= form.select :medium, episode_medium_options, {}, data: data %>

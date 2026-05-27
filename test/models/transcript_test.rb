@@ -57,6 +57,27 @@ describe Transcript do
     end
   end
 
+  describe "#publish!" do
+    let(:transcript) { create(:transcript, status: "started") }
+
+    it "publishes the episode when complete and status has changed" do
+      publish = Minitest::Mock.new
+      publish.expect(:call, nil) { raise "should not have called" }
+
+      transcript.episode.stub(:publish!, publish) do
+        transcript.update(status: "processing")
+      end
+
+      publish = Minitest::Mock.new
+      publish.expect(:call, nil)
+      transcript.episode.stub(:publish!, publish) do
+        transcript.update(status: "complete")
+      end
+
+      assert publish.verify
+    end
+  end
+
   describe "rss_mime_type" do
     it "returns the mime type for the transcript format" do
       assert_equal "text/html", transcript.rss_mime_type

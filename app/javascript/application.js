@@ -13,7 +13,11 @@ LocalTime.start()
 
 // debugging turbo
 document.addEventListener("turbo:frame-missing", function (event) {
-  alert("FRAME MISSING!!!!!!!!!!!!!")
+  if (document.body.dataset.env === "production") {
+    console.error("FRAME MISSING!!!!!!!!!!!!!")
+  } else {
+    alert("FRAME MISSING!!!!!!!!!!!!!")
+  }
   // event.detail.response.text().then(
   //   text => console.log('GOT TEXT:', text),
   //   err => console.log('GOT ERR:', err)
@@ -30,6 +34,13 @@ document.addEventListener("turbo:before-cache", function () {
   const changed = document.getElementsByClassName("is-changed")
   for (const el of changed) {
     el.classList.remove("is-changed")
+  }
+})
+
+// no scrolling on number fields
+document.addEventListener("wheel", () => {
+  if (document.activeElement.type === "number") {
+    document.activeElement.blur()
   }
 })
 

@@ -1,8 +1,12 @@
 module MetricsHelper
+  def show_metrics?
+    current_user_app?("metrics") && !session[:metrics_opt_out]
+  end
+
   def parse_trend(trend)
     return if trend.blank?
 
-    if trend > 0
+    if trend >= 0
       {
         percent: "+#{(trend * 100).round(3)}%",
         color: modified_trend_color(trend, "text-success"),
@@ -30,18 +34,6 @@ module MetricsHelper
       color
     else
       "text-secondary"
-    end
-  end
-
-  def uses_multiple_feeds(model)
-    model.feeds.length > 1
-  end
-
-  def uses_seasons(model)
-    if model.is_a?(Podcast)
-      model.episodes.published.where.not(season_number: nil).length > 0
-    elsif model.is_a?(Episode)
-      model.season_number.present?
     end
   end
 end

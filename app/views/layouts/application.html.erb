@@ -16,7 +16,7 @@
     <%= render "layouts/color_mode" %>
   </head>
 
-  <body data-controller="blank-field confirm-field popover">
+  <body data-controller="blank-field confirm-field popover" data-env="<%= Rails.env.to_s %>">
     <%= render "layouts/nav" %>
     <%= render "layouts/subnav" if current_user %>
     <%= render "layouts/alerts" %>

@@ -19,7 +19,7 @@ FactoryBot.define do
       response_container["external_id"] = evaluator.podcast_delivery_file_id
       response_container["feeder_type"] = :podcast_delivery_files
       response_container["api_response"] = {"request_metadata" => {"apple_episode_id" => evaluator.apple_episode_id, "podcast_delivery_id" => evaluator.podcast_delivery_id},
-       "api_url" => "https://api.podcastsconnect.apple.com/v1/podcastDeliveryFiles/#{evaluator.podcast_delivery_file_id}",
+       "api_url" => "https://aardvark.prx.org/podcastDeliveryFiles/#{evaluator.podcast_delivery_file_id}",
        "api_parameters" => {},
        "api_response" =>
        {"ok" => true,
