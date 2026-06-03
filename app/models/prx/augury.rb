@@ -11,6 +11,13 @@ module Prx
       @enabled = @root.present?
     end
 
+    def collection(collection_id, options = {})
+      return nil unless ENV["AUGURY_HOST"].present?
+      path = "#{API_PATH}/collections/#{collection_id}"
+      expires = (options[:expiration] || expiration).to_i
+      Rails.cache.fetch(path, expires_in: expires) { get(root, path) }
+    end
+
     def placements(podcast_id, options = {})
       return nil unless ENV["AUGURY_HOST"].present?
       path = "#{API_PATH}/podcasts/#{podcast_id}/placements"
