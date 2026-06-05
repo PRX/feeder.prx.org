@@ -765,7 +765,7 @@ describe Apple::Publisher do
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
           apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
             apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
-              Apple::Publisher.stub(:wait_for, wait_for_stub) do
+              Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
                 Apple::Episode.stub(:probe_asset_state, ->(_api, _eps) { [ready_eps, waiting_eps] }) do
                   yield
                 end

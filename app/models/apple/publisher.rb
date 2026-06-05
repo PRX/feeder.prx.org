@@ -266,7 +266,7 @@ module Apple
 
     def mark_asset_state_failures_for_reupload!(failure_eps)
       failure_eps.each do |ep|
-        ep.apple_mark_for_reupload!
+        ep.apple_mark_as_not_delivered!
       end
     end
 
