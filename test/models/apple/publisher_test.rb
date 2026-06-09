@@ -1015,6 +1015,52 @@ describe Apple::Publisher do
   describe "#upload_and_process!" do
     let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
+    it "checks for stuck episodes before starting upload or delivery work" do
+      calls = []
+
+      apple_publisher.stub(:check_for_stuck_episodes, ->(eps) {
+        calls << :stuck_check
+        assert_equal [episode], eps
+      }) do
+        apple_publisher.stub(:upload_media!, ->(*) { calls << :upload }) do
+          apple_publisher.stub(:process_delivery!, ->(*) { calls << :delivery }) do
+            apple_publisher.upload_and_process!([episode])
+          end
+        end
+      end
+
+      assert_equal :stuck_check, calls.first
+    end
+
+    it "raises for already stuck episodes before upload or delivery work starts" do
+      episode.feeder_episode.apple_episode_delivery_statuses.destroy_all
+      create(:apple_episode_delivery_status,
+        episode: episode.feeder_episode,
+        uploaded: false,
+        delivered: false,
+        asset_processing_attempts: 0,
+        created_at: 1.hour.ago)
+      create(:apple_episode_delivery_status,
+        episode: episode.feeder_episode,
+        uploaded: true,
+        delivered: false,
+        asset_processing_attempts: 1,
+        created_at: 30.minutes.ago)
+      episode.feeder_episode.reload
+      calls = []
+
+      assert_raises(Apple::AssetStateTimeoutError) do
+        apple_publisher.stub(:upload_media!, ->(*) { calls << :upload }) do
+          apple_publisher.stub(:process_delivery!, ->(*) { calls << :delivery }) do
+            apple_publisher.upload_and_process!([episode])
+          end
+        end
+      end
+
+      assert_empty calls
+      assert_nil episode.feeder_episode.reload.measure_asset_processing_duration
+    end
+
     it "skips upload for already uploaded episodes" do
       episode.feeder_episode.apple_mark_as_uploaded!
 
