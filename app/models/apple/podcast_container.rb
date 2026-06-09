@@ -89,13 +89,45 @@ module Apple
 
     def self.poll_podcast_container_state(api, episodes)
       results = get_podcast_containers_via_episodes(api, episodes)
+      stale_container_episodes = []
 
-      join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
-        next if row.nil?
+      joined_rows = join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
+        if row.nil?
+          stale_container_episodes << ep if ep.podcast_container.present?
+          next
+        end
+
         apple_id = row.dig("api_response", "val", "data", "id")
         raise "missing apple id!" unless apple_id.present?
 
         upsert_podcast_container(ep, row)
+      end
+
+      if stale_container_episodes.any?
+        reset_stale_podcast_container_records!(stale_container_episodes.map(&:podcast_container))
+        raise Apple::RetryPublishingError.new(
+          "Reset #{stale_container_episodes.length} stale Apple podcast containers"
+        )
+      end
+
+      joined_rows
+    end
+
+    def self.reset_stale_podcast_container_records!(containers)
+      containers.compact.uniq(&:id).each do |container|
+        next if container.destroyed?
+
+        episode = container.episode
+
+        Rails.logger.warn("Resetting stale Apple podcast container",
+          feeder_episode_id: episode.id,
+          apple_episode_id: container.apple_episode_id,
+          podcast_container_id: container.id,
+          external_id: container.external_id)
+
+        container.destroy!
+        episode.reload
+        episode.apple_mark_as_not_delivered!
       end
     end
 
@@ -162,20 +194,26 @@ module Apple
       # Rather than mangling and persisting the enumerated view of the containers in the episodes,
       # just re-fetch the podcast containers from the non-list podcast container endpoint
       formatted_bridge_params =
-        join_on_apple_episode_id(episodes, response).map do |(episode, row)|
+        join_on_apple_episode_id(episodes, response, left_join: true).map do |(episode, row)|
+          next if row.nil?
+
           get_urls_for_episode_podcast_containers(api, row).map do |url|
             get_podcast_containers_bridge_param(episode.apple_id, url)
           end
         end
 
-      formatted_bridge_params = formatted_bridge_params.flatten
+      formatted_bridge_params = formatted_bridge_params.flatten.compact
 
-      api.bridge_remote_and_retry!("getPodcastContainers", formatted_bridge_params, batch_size: 2)
+      # Tolerate 404s for containers that no longer exist remotely; caller detects missing rows via left_join.
+      api.bridge_remote_and_retry!("getPodcastContainers", formatted_bridge_params, batch_size: 2, ignore_errors: [Apple::Api::NOT_FOUND])
     end
 
     def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)
-      containers_json = episode_podcast_containers_json["api_response"]["val"]["data"]
-      raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if containers_json.length > 1
+      containers_json = episode_podcast_containers_json["api_response"]["val"]["data"] || []
+      if containers_json.length > 1
+        apple_episode_id = episode_podcast_containers_json.dig("request_metadata", "apple_episode_id")
+        raise "Unsupported number of podcast containers for episode: #{apple_episode_id}"
+      end
 
       containers_json.map do |podcast_container_json|
         api.join_url("podcastContainers/#{podcast_container_json["id"]}").to_s

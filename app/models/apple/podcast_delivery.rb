@@ -95,8 +95,10 @@ module Apple
         get_podcast_containers_deliveries_bridge_param(pc)
       end
 
-      deliveries_response =
-        api.bridge_remote_and_retry!("getPodcastDeliveries", bridge_params, batch_size: 1)
+      (deliveries_response, errs) =
+        api.bridge_remote_and_retry("getPodcastDeliveries", bridge_params, batch_size: 1)
+
+      handle_stale_podcast_container_errors!(api, podcast_containers, errs)
 
       # Rather than mangling and persisting the enumerated view of the deliveries from the containers endpoint,
       # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
@@ -112,6 +114,45 @@ module Apple
 
       api.bridge_remote_and_retry!("getPodcastDeliveries",
         formatted_bridge_params, batch_size: 1)
+    end
+
+    def self.handle_stale_podcast_container_errors!(api, podcast_containers, errs)
+      return if errs.blank?
+
+      (not_found_errs, other_errs) = errs.partition { |err| bridge_not_found_error?(err) }
+      api.raise_bridge_api_error(other_errs) if other_errs.present?
+
+      stale_podcast_containers = podcast_containers_by_error!(api, not_found_errs, podcast_containers)
+
+      Apple::PodcastContainer.reset_stale_podcast_container_records!(stale_podcast_containers)
+      raise Apple::RetryPublishingError.new(
+        "Reset #{stale_podcast_containers.length} stale Apple podcast containers after Apple returned 404 while polling deliveries"
+      )
+    end
+
+    def self.bridge_not_found_error?(err)
+      err.dig("api_response", "val", "data", "status").to_i == Apple::Api::NOT_FOUND
+    end
+
+    def self.podcast_containers_by_error!(api, errs, podcast_containers)
+      containers_by_id = podcast_containers.index_by(&:id)
+      unmapped_errs = []
+
+      stale_podcast_containers = errs.filter_map do |err|
+        podcast_container_id = err.dig("request_metadata", "podcast_container_id")
+        podcast_container = containers_by_id[podcast_container_id.to_i]
+
+        if podcast_container.nil?
+          unmapped_errs << err
+          next
+        end
+
+        podcast_container
+      end
+
+      api.raise_bridge_api_error(unmapped_errs) if unmapped_errs.present?
+
+      stale_podcast_containers.uniq(&:id)
     end
 
     def self.upsert_podcast_delivery(podcast_container, row)
