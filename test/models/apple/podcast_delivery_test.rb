@@ -131,14 +131,25 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
       end.new(response, errs)
     end
 
-    it "resets stale local containers and raises for retry when container delivery polling returns 404" do
-      delivery = create(:apple_podcast_delivery, episode: episode, podcast_container: podcast_container)
-      delivery_file = create(:apple_podcast_delivery_file, episode: episode, podcast_delivery: delivery)
+    def create_delivered_status
       create(:apple_episode_delivery_status,
         episode: episode,
         delivered: true,
         uploaded: true,
         asset_processing_attempts: 3)
+    end
+
+    def create_delivery_state
+      delivery = create(:apple_podcast_delivery, episode: episode, podcast_container: podcast_container)
+      delivery_file = create(:apple_podcast_delivery_file, episode: episode, podcast_delivery: delivery)
+
+      create_delivered_status
+
+      [delivery, delivery_file]
+    end
+
+    it "resets stale local containers and raises for retry when container delivery polling returns 404" do
+      (delivery, delivery_file) = create_delivery_state
       not_found_err = {
         "request_metadata" => {"podcast_container_id" => podcast_container.id},
         "api_response" => {"val" => {"data" => {"status" => Apple::Api::NOT_FOUND}}}
@@ -162,13 +173,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     end
 
     it "handles the production bridge 404 payload for deleted podcast containers" do
-      delivery = create(:apple_podcast_delivery, episode: episode, podcast_container: podcast_container)
-      delivery_file = create(:apple_podcast_delivery_file, episode: episode, podcast_delivery: delivery)
-      create(:apple_episode_delivery_status,
-        episode: episode,
-        delivered: true,
-        uploaded: true,
-        asset_processing_attempts: 3)
+      (delivery, delivery_file) = create_delivery_state
       not_found_err = {
         "request_metadata" => {
           "apple_episode_id" => "apple-episode-id",
@@ -216,11 +221,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     end
 
     it "preserves 404 bridge errors that do not map to a requested local container" do
-      create(:apple_episode_delivery_status,
-        episode: episode,
-        delivered: true,
-        uploaded: true,
-        asset_processing_attempts: 3)
+      create_delivered_status
       not_found_err = {
         "request_metadata" => {"podcast_container_id" => podcast_container.id + 1},
         "api_response" => {"val" => {"data" => {"status" => Apple::Api::NOT_FOUND}}}
@@ -241,11 +242,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     end
 
     it "preserves non-404 bridge errors while polling container deliveries" do
-      create(:apple_episode_delivery_status,
-        episode: episode,
-        delivered: true,
-        uploaded: true,
-        asset_processing_attempts: 3)
+      create_delivered_status
       bridge_err = {
         "request_metadata" => {"podcast_container_id" => podcast_container.id},
         "api_response" => {"val" => {"data" => {"status" => 500}}}
