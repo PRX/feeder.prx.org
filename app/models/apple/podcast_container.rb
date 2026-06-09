@@ -89,11 +89,11 @@ module Apple
 
     def self.poll_podcast_container_state(api, episodes)
       results = get_podcast_containers_via_episodes(api, episodes)
-      stale_container_episodes = []
+      stale_podcast_containers = []
 
       joined_rows = join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         if row.nil?
-          stale_container_episodes << ep if ep.podcast_container.present?
+          stale_podcast_containers << ep.podcast_container if ep.podcast_container.present?
           next
         end
 
@@ -103,10 +103,10 @@ module Apple
         upsert_podcast_container(ep, row)
       end
 
-      if stale_container_episodes.any?
-        reset_stale_podcast_container_records!(stale_container_episodes.map(&:podcast_container))
+      if stale_podcast_containers.any?
+        reset_stale_podcast_container_records!(stale_podcast_containers)
         raise Apple::RetryPublishingError.new(
-          "Reset #{stale_container_episodes.length} stale Apple podcast containers"
+          "Reset #{stale_podcast_containers.length} stale Apple podcast containers"
         )
       end
 
@@ -193,19 +193,17 @@ module Apple
 
       # Rather than mangling and persisting the enumerated view of the containers in the episodes,
       # just re-fetch the podcast containers from the non-list podcast container endpoint
-      formatted_bridge_params =
-        join_on_apple_episode_id(episodes, response, left_join: true).map do |(episode, row)|
-          next if row.nil?
+      formatted_bridge_params = join_on_apple_episode_id(episodes, response, left_join: true).flat_map do |(episode, row)|
+        next [] if row.nil?
 
-          get_urls_for_episode_podcast_containers(api, row).map do |url|
-            get_podcast_containers_bridge_param(episode.apple_id, url)
-          end
+        get_urls_for_episode_podcast_containers(api, row).map do |url|
+          get_podcast_containers_bridge_param(episode.apple_id, url)
         end
-
-      formatted_bridge_params = formatted_bridge_params.flatten.compact
+      end
 
       # Tolerate 404s for containers that no longer exist remotely; caller detects missing rows via left_join.
-      api.bridge_remote_and_retry!("getPodcastContainers", formatted_bridge_params, batch_size: 2, ignore_errors: [Apple::Api::NOT_FOUND])
+      api.bridge_remote_and_retry!("getPodcastContainers",
+        formatted_bridge_params, batch_size: 2, ignore_errors: [Apple::Api::NOT_FOUND])
     end
 
     def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)

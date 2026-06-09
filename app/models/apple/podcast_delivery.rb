@@ -102,15 +102,13 @@ module Apple
 
       # Rather than mangling and persisting the enumerated view of the deliveries from the containers endpoint,
       # Instead, re-fetch the podcast deliveries from the non-list podcast delivery endpoint
-      formatted_bridge_params = join_many_on("podcast_container_id", podcast_containers, deliveries_response).map do |(pc, rows)|
-        rows.map do |row|
+      formatted_bridge_params = join_many_on("podcast_container_id", podcast_containers, deliveries_response).flat_map do |(pc, rows)|
+        rows.flat_map do |row|
           get_urls_for_container_podcast_deliveries(api, row).map do |url|
             get_podcast_deliveries_bridge_param(pc.apple_episode_id, pc.id, url)
           end
         end
       end
-
-      formatted_bridge_params = formatted_bridge_params.flatten
 
       api.bridge_remote_and_retry!("getPodcastDeliveries",
         formatted_bridge_params, batch_size: 1)
