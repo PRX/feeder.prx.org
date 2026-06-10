@@ -88,8 +88,8 @@ module Apple
     end
 
     def self.poll_podcast_container_state(api, episodes)
-      results = get_podcast_containers_via_episodes(api, episodes)
-      stale_podcast_containers = []
+      (results, not_found_errs) = get_podcast_containers_via_episodes(api, episodes)
+      stale_podcast_containers = stale_podcast_containers_by_error(not_found_errs, episodes)
 
       joined_rows = join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         if row.nil?
@@ -104,6 +104,7 @@ module Apple
       end
 
       if stale_podcast_containers.any?
+        stale_podcast_containers = stale_podcast_containers.uniq(&:id)
         reset_stale_podcast_container_records!(stale_podcast_containers)
         raise Apple::RetryPublishingError.new(
           "Reset #{stale_podcast_containers.length} stale Apple podcast containers"
@@ -111,6 +112,17 @@ module Apple
       end
 
       joined_rows
+    end
+
+    def self.stale_podcast_containers_by_error(errs, episodes)
+      return [] if errs.blank?
+
+      episodes_by_apple_id = episodes.index_by(&:apple_id)
+
+      errs.filter_map do |err|
+        apple_episode_id = err.dig("request_metadata", "apple_episode_id")
+        episodes_by_apple_id[apple_episode_id]&.podcast_container
+      end
     end
 
     def self.reset_stale_podcast_container_records!(containers)
@@ -201,9 +213,17 @@ module Apple
         end
       end
 
-      # Tolerate 404s for containers that no longer exist remotely; caller detects missing rows via left_join.
-      api.bridge_remote_and_retry!("getPodcastContainers",
-        formatted_bridge_params, batch_size: 2, ignore_errors: [Apple::Api::NOT_FOUND])
+      (results, errs) =
+        api.bridge_remote_and_retry("getPodcastContainers", formatted_bridge_params, batch_size: 2)
+
+      (not_found_errs, other_errs) = errs.partition { |err| bridge_not_found_error?(err) }
+      api.raise_bridge_api_error(other_errs) if other_errs.present?
+
+      [results, not_found_errs]
+    end
+
+    def self.bridge_not_found_error?(err)
+      err.dig("api_response", "val", "data", "status").to_i == Apple::Api::NOT_FOUND
     end
 
     def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)
