@@ -117,19 +117,15 @@ module Apple
     def self.handle_stale_podcast_container_errors!(api, podcast_containers, errs)
       return if errs.blank?
 
-      (not_found_errs, other_errs) = errs.partition { |err| bridge_not_found_error?(err) }
+      (not_found_errs, other_errs) = errs.partition { |err| Apple::PodcastContainer.bridge_not_found_error?(err) }
       api.raise_bridge_api_error(other_errs) if other_errs.present?
 
       stale_podcast_containers = podcast_containers_by_error!(api, not_found_errs, podcast_containers)
 
-      Apple::PodcastContainer.reset_stale_podcast_container_records!(stale_podcast_containers)
-      raise Apple::RetryPublishingError.new(
-        "Reset #{stale_podcast_containers.length} stale Apple podcast containers after Apple returned 404 while polling deliveries"
+      Apple::PodcastContainer.reset_stale_podcast_containers_and_retry!(
+        stale_podcast_containers,
+        message_suffix: "after Apple returned 404 while polling deliveries"
       )
-    end
-
-    def self.bridge_not_found_error?(err)
-      err.dig("api_response", "val", "data", "status").to_i == Apple::Api::NOT_FOUND
     end
 
     def self.podcast_containers_by_error!(api, errs, podcast_containers)

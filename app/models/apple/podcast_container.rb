@@ -104,11 +104,7 @@ module Apple
       end
 
       if stale_podcast_containers.any?
-        stale_podcast_containers = stale_podcast_containers.uniq(&:id)
-        reset_stale_podcast_container_records!(stale_podcast_containers)
-        raise Apple::RetryPublishingError.new(
-          "Reset #{stale_podcast_containers.length} stale Apple podcast containers"
-        )
+        reset_stale_podcast_containers_and_retry!(stale_podcast_containers)
       end
 
       joined_rows
@@ -125,8 +121,18 @@ module Apple
       end
     end
 
+    def self.reset_stale_podcast_containers_and_retry!(containers, message_suffix: nil)
+      stale_podcast_containers = reset_stale_podcast_container_records!(containers)
+      message = "Reset #{stale_podcast_containers.length} stale Apple podcast containers"
+      message = "#{message} #{message_suffix}" if message_suffix.present?
+
+      raise Apple::RetryPublishingError.new(message)
+    end
+
     def self.reset_stale_podcast_container_records!(containers)
-      containers.compact.uniq(&:id).each do |container|
+      stale_podcast_containers = containers.compact.uniq(&:id)
+
+      stale_podcast_containers.each do |container|
         next if container.destroyed?
 
         episode = container.episode
@@ -141,6 +147,8 @@ module Apple
         episode.reload
         episode.apple_mark_as_not_delivered!
       end
+
+      stale_podcast_containers
     end
 
     def self.create_podcast_containers(api, episodes)
