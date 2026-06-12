@@ -742,7 +742,7 @@ describe Apple::Publisher do
         end
       end
 
-      failure_logs = logs.select { |l| l[:msg] == "Found FAILURE appleHostedAudioAssetState episode, marked for reupload" }
+      failure_logs = logs.select { |l| l[:msg] == "Found FAILURE appleHostedAudioAssetState episode, marked as not delivered" }
       failure_log_episodes = failure_logs.map { |l| [l[:episode_id], l[:episode_guid]] }
 
       assert_equal 2, failure_logs.length
@@ -921,7 +921,7 @@ describe Apple::Publisher do
           end
         end
 
-        log = logs.find { |l| l[:msg] == "Podcast delivery file has VALIDATION_FAILED state, marking for reupload" }
+        log = logs.find { |l| l[:msg] == "Podcast delivery file has VALIDATION_FAILED state, marking as not delivered" }
         assert log, "Should have logged VALIDATION_FAILED error"
         assert_equal 50, log[:level]
         assert_equal podcast_delivery_file.id, log[:podcast_delivery_file_id]

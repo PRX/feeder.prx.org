@@ -150,7 +150,7 @@ module Apple
         wait_for_asset_state(eps) do |ready_eps|
           errored, ready_eps = ready_eps.partition(&:audio_asset_state_error?)
           error_audio_state_eps.concat(errored)
-          mark_asset_state_failures_for_reupload!(errored)
+          mark_asset_state_failures_as_not_delivered!(errored)
 
           log_asset_wait_duration!(ready_eps)
           # Publish the ready episodes
@@ -240,7 +240,7 @@ module Apple
       problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
 
       problem_pdfs.each do |pdf|
-        Rails.logger.error("Podcast delivery file has #{state_name} state, marking for reupload",
+        Rails.logger.error("Podcast delivery file has #{state_name} state, marking as not delivered",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
@@ -254,17 +254,17 @@ module Apple
 
       if problem_pdfs.any?
         raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked for reupload"
+          "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked as not delivered"
         )
       end
     end
 
     def raise_for_asset_state_failure!(failure_eps)
-      mark_asset_state_failures_for_reupload!(failure_eps)
+      mark_asset_state_failures_as_not_delivered!(failure_eps)
       raise_asset_state_failure_retry!(failure_eps)
     end
 
-    def mark_asset_state_failures_for_reupload!(failure_eps)
+    def mark_asset_state_failures_as_not_delivered!(failure_eps)
       failure_eps.each do |ep|
         ep.apple_mark_as_not_delivered!
       end
@@ -272,12 +272,12 @@ module Apple
 
     def raise_asset_state_failure_retry!(failure_eps)
       failure_eps.each do |ep|
-        Rails.logger.error("Found FAILURE appleHostedAudioAssetState episode, marked for reupload",
+        Rails.logger.error("Found FAILURE appleHostedAudioAssetState episode, marked as not delivered",
           apple_episode_log_context(ep).merge(audio_asset_state: ep.audio_asset_state))
       end
 
       raise Apple::RetryPublishingError.new(
-        "Found FAILURE appleHostedAudioAssetState on #{failure_eps.length} episodes #{failure_eps.map(&:feeder_id)}, marked for reupload"
+        "Found FAILURE appleHostedAudioAssetState on #{failure_eps.length} episodes #{failure_eps.map(&:feeder_id)}, marked as not delivered"
       )
     end
 
@@ -542,9 +542,9 @@ module Apple
     # Not used in any of the polling or publish routines, but useful for
     # debugging.  This removes the audio container reference from the episode,
     # but leaves the podcast container intact.
-    def remove_audio_container_reference(eps, apple_mark_for_reupload: true)
+    def remove_audio_container_reference(eps, mark_as_not_delivered: true)
       Rails.logger.tagged("##{__method__}") do
-        Apple::Episode.remove_audio_container_reference(api, show, eps, apple_mark_for_reupload: apple_mark_for_reupload)
+        Apple::Episode.remove_audio_container_reference(api, show, eps, mark_as_not_delivered: mark_as_not_delivered)
       end
     end
 

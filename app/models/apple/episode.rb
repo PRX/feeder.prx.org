@@ -105,7 +105,7 @@ module Apple
       episode_bridge_results
     end
 
-    def self.remove_audio_container_reference(api, show, episodes, apple_mark_for_reupload: true)
+    def self.remove_audio_container_reference(api, show, episodes, mark_as_not_delivered: true)
       return [] if episodes.empty?
 
       (episode_bridge_results, errs) =
@@ -117,7 +117,7 @@ module Apple
       upsert_sync_logs(episodes, episode_bridge_results)
 
       Apple::ApiJoin.join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        ep.feeder_episode.apple_mark_as_not_delivered! if apple_mark_for_reupload
+        ep.feeder_episode.apple_mark_as_not_delivered! if mark_as_not_delivered
         Rails.logger.info("Removed audio container reference for episode", {episode_id: ep.feeder_id})
       end
 
