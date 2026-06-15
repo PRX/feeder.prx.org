@@ -264,6 +264,78 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       end
       assert_equal SyncLog.apple.podcast_containers.count, 1
     end
+
+    def fake_podcast_container_api(list_response:, detail_response: [])
+      Class.new do
+        attr_reader :calls
+
+        def initialize(list_response, detail_response)
+          @list_response = list_response
+          @detail_response = detail_response
+          @calls = []
+        end
+
+        def bridge_remote_and_retry!(resource, params, batch_size:)
+          @calls << {resource: resource, params: params, batch_size: batch_size}
+          (@calls.length == 1) ? @list_response : @detail_response
+        end
+
+        def join_url(path)
+          URI.join("https://aardvark.prx.org/", path)
+        end
+      end.new(list_response, detail_response)
+    end
+
+    def create_stale_container
+      container = create(:apple_podcast_container,
+        episode: episode,
+        apple_episode_id: apple_episode_id,
+        vendor_id: apple_audio_asset_vendor_id,
+        external_id: "stale-container-id")
+      delivery = create(:apple_podcast_delivery, episode: episode, podcast_container: container)
+      delivery_file = create(:apple_podcast_delivery_file, episode: episode, podcast_delivery: delivery)
+      create(:apple_episode_delivery_status,
+        episode: episode,
+        delivered: true,
+        uploaded: true,
+        asset_processing_attempts: 3)
+
+      [container, delivery, delivery_file]
+    end
+
+    def assert_stale_container_reset(container, delivery = nil, delivery_file = nil)
+      refute Apple::PodcastContainer.exists?(container.id)
+      assert Apple::PodcastDelivery.with_deleted.find(delivery.id).deleted? if delivery
+      assert Apple::PodcastDeliveryFile.with_deleted.find(delivery_file.id).deleted? if delivery_file
+
+      status = episode.episode_delivery_status(:apple)
+      refute status.delivered?
+      refute status.uploaded?
+      assert_equal 0, status.asset_processing_attempts
+    end
+
+    it "resets stale local containers and raises for retry when Apple returns no vendorId match" do
+      (container, delivery, delivery_file) = create_stale_container
+      list_response = [{
+        "request_metadata" => {"apple_episode_id" => apple_episode_id},
+        "api_response" => {"ok" => true, "err" => false, "val" => {"data" => []}}
+      }]
+      fake_api = fake_podcast_container_api(list_response: list_response)
+
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          error = assert_raises(Apple::RetryPublishingError) do
+            Apple::PodcastContainer.poll_podcast_container_state(fake_api, [apple_episode])
+          end
+
+          assert_match(/Reset 1 stale Apple podcast containers/, error.message)
+        end
+      end
+
+      assert_equal 2, fake_api.calls.length
+      assert_equal [], fake_api.calls.second[:params]
+      assert_stale_container_reset(container, delivery, delivery_file)
+    end
   end
 
   describe "#podcast_deliveries" do

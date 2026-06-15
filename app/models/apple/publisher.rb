@@ -90,6 +90,8 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
+        check_for_stuck_episodes(eps)
+
         eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
