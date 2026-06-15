@@ -4,6 +4,11 @@ module Apple
   class PodcastContainer < ApplicationRecord
     include Apple::ApiResponse
 
+    # source_fetch_count now lives on the episode delivery status; the column on
+    # this table is dropped in a later deploy. Ignore it so this (older) code
+    # keeps emitting valid INSERTs once the column is gone.
+    self.ignored_columns += %w[source_fetch_count]
+
     serialize :api_response, coder: JSON
 
     default_scope { includes(:apple_sync_log) }
