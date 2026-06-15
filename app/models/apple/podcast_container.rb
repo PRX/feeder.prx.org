@@ -210,8 +210,7 @@ module Apple
         end
       end
 
-      results = api.bridge_remote_and_retry!("getPodcastContainers", formatted_bridge_params, batch_size: 2)
-      results
+      api.bridge_remote_and_retry!("getPodcastContainers", formatted_bridge_params, batch_size: 2)
     end
 
     def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)

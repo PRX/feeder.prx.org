@@ -277,7 +277,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
         def bridge_remote_and_retry!(resource, params, batch_size:)
           @calls << {resource: resource, params: params, batch_size: batch_size}
-          @calls.length == 1 ? @list_response : @detail_response
+          (@calls.length == 1) ? @list_response : @detail_response
         end
 
         def join_url(path)
@@ -336,7 +336,6 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       assert_equal [], fake_api.calls.second[:params]
       assert_stale_container_reset(container, delivery, delivery_file)
     end
-
   end
 
   describe "#podcast_deliveries" do
