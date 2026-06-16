@@ -202,6 +202,28 @@ describe Apple::Api do
     end
   end
 
+  describe "#response!" do
+    it "returns the wrapped api response when the http response is ok" do
+      http_response = OpenStruct.new(code: "200", body: {data: {id: "123"}}.to_json)
+
+      api_response = api.response!(http_response)
+
+      assert_equal true, api_response["api_response"]["ok"]
+      assert_equal "123", api_response["api_response"]["val"]["data"]["id"]
+    end
+
+    it "raises an api error when the http response is not ok" do
+      http_response = OpenStruct.new(code: "503", body: "<html>503 Service Unavailable</html>")
+
+      error = assert_raises(Apple::ApiError) do
+        api.response!(http_response)
+      end
+
+      assert_includes error.message, "HTTP resp code:503"
+      assert_includes error.message, "503 Service Unavailable"
+    end
+  end
+
   describe "#unwrap_bridge_response" do
     let(:ok_row) { {api_response: {ok: true, err: false, val: {data: {status: 200}}}}.with_indifferent_access }
     let(:not_found_row) { {api_response: {ok: false, err: true, val: {data: {status: 404}}}}.with_indifferent_access }
