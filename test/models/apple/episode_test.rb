@@ -255,6 +255,32 @@ describe Apple::Episode do
 
       assert mock.verify
     end
+
+    it "logs episode id and guid when applying the publish action" do
+      apple_episode_response = {
+        request_metadata: {
+          apple_episode_id: apple_episode.apple_id,
+          guid: apple_episode.guid
+        },
+        api_url: "asdf/",
+        api_parameters: "ARBITRARY"
+      }.with_indifferent_access
+
+      logs = capture_json_logs do
+        apple_api.stub(:bridge_remote_and_retry!, [apple_episode_response]) do
+          Apple::Episode.stub(:poll_episode_state, []) do
+            Apple::Episode.publish(apple_api, apple_show, [apple_episode])
+          end
+        end
+      end
+
+      log = logs.find { |l| l[:msg] == "Applying PUBLISH action to episode" }
+      assert log
+      assert_equal apple_episode.feeder_id, log[:episode_id]
+      assert_equal apple_episode.guid, log[:episode_guid]
+      assert_equal "PUBLISH", log[:action]
+      assert_equal apple_episode.publishing_state, log[:prior_publishing_state]
+    end
   end
 
   describe "#archive" do

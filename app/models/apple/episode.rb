@@ -156,12 +156,20 @@ module Apple
         episodes.map { |e| e.publishing_state_bridge_params(state) })
 
       join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        Rails.logger.info("Moving episode to #{state} state", {episode_id: ep.feeder_id, state: ep.publishing_state})
+        Rails.logger.info("Applying #{state} action to episode",
+          apple_episode_log_context(ep).merge(action: state, prior_publishing_state: ep.publishing_state))
       end
 
       # We don't get back the full episode model in the response.
       # So poll for current state
       poll_episode_state(api, show, episodes)
+    end
+
+    def self.apple_episode_log_context(ep)
+      {
+        episode_id: ep.feeder_id,
+        episode_guid: ep.guid
+      }
     end
 
     def self.upsert_sync_logs(episodes, results)

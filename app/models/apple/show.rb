@@ -85,15 +85,6 @@ module Apple
         .filter { |e| draft_ids.include?(e.feeder_episode.id) }
     end
 
-    def episodes
-      @episodes ||= begin
-        published = super
-        published_ids = Set.new(published.map { |e| e.feeder_episode.id })
-        drafts = draft_upload_candidates.reject { |e| published_ids.include?(e.feeder_episode.id) }
-        published + drafts
-      end
-    end
-
     def reload
       @apple_episode_json = nil
       @podcast_feeder_episodes = nil
