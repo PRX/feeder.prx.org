@@ -33,7 +33,7 @@ class AppleIntegrationTest < ActiveSupport::TestCase
   end
 
   describe "#apple_mark_as_delivered!" do
-    let(:episode) { create(:episode) }
+    let(:episode) { create(:episode_with_media) }
 
     it "supercedes the uploaded status" do
       episode.apple_mark_as_not_delivered!
@@ -41,6 +41,8 @@ class AppleIntegrationTest < ActiveSupport::TestCase
       assert episode.apple_needs_upload?
       assert episode.apple_needs_delivery?
 
+      # Simulate realistic post-upload state: source_media_version_id set during upload
+      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id)
       episode.apple_mark_as_delivered!
 
       refute episode.apple_needs_upload?
@@ -52,12 +54,36 @@ class AppleIntegrationTest < ActiveSupport::TestCase
     it "sets the uploaded status" do
       episode.apple_mark_as_uploaded!
       assert episode.apple_episode_delivery_status.uploaded
+    end
+
+    it "does not need upload when media version also matches" do
+      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id)
+      episode.apple_mark_as_uploaded!
       refute episode.apple_needs_upload?
     end
 
     it "does not interact with the delivery status" do
       episode.apple_mark_as_uploaded!
       assert episode.apple_needs_delivery?
+    end
+  end
+
+  describe "#apple_mark_as_not_delivered!" do
+    let(:episode) { create(:episode_with_media) }
+
+    it "sets delivered/uploaded to false while preserving source_media_version_id" do
+      episode.apple_update_delivery_status(
+        delivered: true,
+        uploaded: true,
+        source_media_version_id: episode.media_version_id
+      )
+
+      episode.apple_mark_as_not_delivered!
+      status = episode.apple_episode_delivery_status
+
+      refute status.delivered
+      refute status.uploaded
+      assert_equal episode.media_version_id, status.source_media_version_id
     end
   end
 

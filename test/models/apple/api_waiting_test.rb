@@ -2,10 +2,6 @@
 
 require "test_helper"
 
-class Test
-  include Apple::ApiWaiting
-end
-
 describe Apple::ApiWaiting do
   describe ".wait_for" do
     it "waits until there is nothing left to process" do
@@ -18,7 +14,7 @@ describe Apple::ApiWaiting do
 
       step = 0
 
-      (timed_out, remaining) = Test.wait_for(records, wait_interval: 0.seconds) do |remaining|
+      (timed_out, remaining) = Apple::ApiWaiting.wait_for(records, wait_interval: 0.seconds) do |remaining|
         rem = remaining.dup
 
         assert_equal intervals[step], rem
@@ -35,7 +31,7 @@ describe Apple::ApiWaiting do
     end
 
     it "times out" do
-      (timed_out, remaining) = Test.wait_for(["a", "b", "c"], wait_interval: 0.seconds, wait_timeout: 0.seconds) do |remaining|
+      (timed_out, remaining) = Apple::ApiWaiting.wait_for(["a", "b", "c"], wait_interval: 0.seconds, wait_timeout: 0.seconds) do |remaining|
         remaining
       end
 
@@ -47,11 +43,11 @@ describe Apple::ApiWaiting do
       current_time = Time.utc(2021, 1, 1, 0, 0, 0)
       index = 0
 
-      Test.stub(:current_time, -> {
-                                 current_time += index.minutes
-                                 index += 1
-                               }) do
-        (timed_out, remaining) = Test.wait_for(["a", "b", "c"], wait_interval: 0.seconds) do |remaining|
+      Apple::ApiWaiting.stub(:current_time, -> {
+        current_time += index.minutes
+        index += 1
+      }) do
+        (timed_out, remaining) = Apple::ApiWaiting.wait_for(["a", "b", "c"], wait_interval: 0.seconds) do |remaining|
           remaining
         end
 

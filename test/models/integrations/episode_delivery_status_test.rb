@@ -85,6 +85,15 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       end
     end
 
+    describe "#mark_as_not_delivered!" do
+      it "preserves source_media_version_id" do
+        delivery_status.update!(source_media_version_id: 42)
+        delivery_status.mark_as_not_delivered!
+        new_status = episode.apple_episode_delivery_status
+        assert_equal 42, new_status.source_media_version_id
+      end
+    end
+
     describe "Asset waits and counting" do
       describe "#increment_asset_wait" do
         it "increments the asset_processing_attempts count" do
@@ -107,6 +116,67 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
           assert_equal "http://example.com/audio.mp3", new_status.source_url
         end
       end
+    end
+  end
+
+  describe "#needs_upload?" do
+    let(:episode) { create(:episode_with_media) }
+    let(:current_version) { episode.media_version_id }
+    let(:stale_version) { current_version - 1 }
+
+    before do
+      assert current_version.present?, "episode should have a media_version_id"
+      refute_equal stale_version, current_version
+    end
+
+    it "returns true when not uploaded" do
+      status = Integrations::EpisodeDeliveryStatus.default_status(:apple, episode)
+      assert status.needs_upload?
+    end
+
+    it "returns true when uploaded but source_media_version_id does not match" do
+      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+        uploaded: true, source_media_version_id: stale_version)
+      assert status.needs_upload?
+    end
+
+    it "returns false when uploaded and source_media_version_id matches" do
+      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+        uploaded: true, source_media_version_id: current_version)
+      refute status.needs_upload?
+    end
+
+    it "returns true when media version changes after a successful upload" do
+      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+        uploaded: true, source_media_version_id: current_version)
+      refute status.needs_upload?
+
+      # Simulate media being re-processed (new media version cut)
+      create(:content, episode: episode, position: 2, status: "complete")
+      episode.reload.cut_media_version!
+
+      assert status.needs_upload?
+    end
+  end
+
+  describe "#needs_media_version?" do
+    let(:episode) { create(:episode_with_media) }
+
+    it "returns true when source_media_version_id is blank" do
+      status = Integrations::EpisodeDeliveryStatus.default_status(:apple, episode)
+      assert status.needs_media_version?
+    end
+
+    it "returns true when source_media_version_id does not match" do
+      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+        source_media_version_id: -1)
+      assert status.needs_media_version?
+    end
+
+    it "returns false when source_media_version_id matches" do
+      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+        source_media_version_id: episode.media_version_id)
+      refute status.needs_media_version?
     end
   end
 
