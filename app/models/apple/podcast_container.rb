@@ -3,7 +3,6 @@
 module Apple
   class PodcastContainer < ApplicationRecord
     include Apple::ApiResponse
-    include Apple::ApiWaiting
 
     serialize :api_response, coder: JSON
 
@@ -23,74 +22,10 @@ module Apple
     FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"
     SOURCE_URL_EXP_BUFFER = 10.minutes
 
-    def self.reset_source_file_metadata(episodes)
-      episodes = episodes.select { |ep| ep.podcast_container.present? }
-      episodes = episodes.select { |ep| ep.needs_delivery? }
-
-      episodes.map do |episode|
-        container = episode.container
-
-        Rails.logger.debug("Resetting source url for podcast container",
-          podcast_container_id: container.id,
-          source_size: container.source_size,
-          source_url: container.source_url)
-
-        # Back to DTR to pick up fresh arrangements:
-        container.reset_source_metadata!(episode)
-        container
-      end
-    end
-
-    def self.probe_source_file_metadata(api, episodes)
-      episodes = episodes.select { |ep| ep.podcast_container.present? }
-      episodes = episodes.select { |ep| ep.needs_delivery? }
-
-      containers = episodes.map(&:podcast_container)
-      containers_by_id = containers.map { |c| [c.id, c] }.to_h
-
-      api.bridge_remote_and_retry!("headFileSizes", containers.map(&:head_file_size_bridge_params))
-        .map do |row|
-        content_length = row.dig("api_response", "val", "data", "headers", "content-length")
-        cdn_url = row.dig("api_response", "val", "data", "redirect_chain_end_url")
-        media_version = row.dig("api_response", "val", "data", "episode_media_version")
-
-        raise "Missing content-length in response" if content_length.blank?
-        raise "Missing cdn_url in response" if cdn_url.blank?
-        raise "Missing media_version in response" if media_version.blank?
-
-        podcast_container_id = row["request_metadata"]["podcast_container_id"]
-
-        container = containers_by_id.fetch(podcast_container_id)
-        container.update_source_metadata!(
-          source_size: content_length.to_i,
-          source_url: cdn_url,
-          source_media_version_id: media_version.to_i
-        )
-        container
-      end
-    end
-
-    def self.wait_for_versioned_source_metadata(api, episodes, wait_interval: 10.seconds, wait_timeout: 1.minute)
-      episodes = episodes.select { |ep| ep.needs_delivery? }
-      raise "Missing podcast container for episode" if episodes.map(&:podcast_container).any?(&:nil?)
-
-      wait_for(episodes, wait_interval: wait_interval, wait_timeout: wait_timeout) do |remaining_episodes|
-        containers = Apple::PodcastContainer.reset_source_file_metadata(remaining_episodes)
-        Rails.logger.info("Reset container source metadata", {reset_count: containers.length})
-
-        containers = Apple::PodcastContainer.probe_source_file_metadata(api, remaining_episodes)
-        Rails.logger.info("Updated container source metadata.", {count: containers.length})
-
-        finished = remaining_episodes.group_by(&:has_media_version?)
-
-        finished[false] || []
-      end
-    end
-
     def self.poll_podcast_container_state(api, episodes)
       results = get_podcast_containers_via_episodes(api, episodes)
 
-      join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
+      Apple::ApiJoin.join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         next if row.nil?
         apple_id = row.dig("api_response", "val", "data", "id")
         raise "missing apple id!" unless apple_id.present?
@@ -111,7 +46,7 @@ module Apple
         api.bridge_remote_and_retry!("createPodcastContainers",
           create_podcast_containers_bridge_params(api, episodes_to_create), batch_size: Api::DEFAULT_WRITE_BATCH_SIZE)
 
-      join_on_apple_episode_id(episodes_to_create, new_containers_response).each do |ep, row|
+      Apple::ApiJoin.join_on_apple_episode_id(episodes_to_create, new_containers_response).each do |ep, row|
         upsert_podcast_container(ep, row)
       end
 
@@ -162,7 +97,7 @@ module Apple
       # Rather than mangling and persisting the enumerated view of the containers in the episodes,
       # just re-fetch the podcast containers from the non-list podcast container endpoint
       formatted_bridge_params =
-        join_on_apple_episode_id(episodes, response).map do |(episode, row)|
+        Apple::ApiJoin.join_on_apple_episode_id(episodes, response).map do |(episode, row)|
           get_urls_for_episode_podcast_containers(api, row).map do |url|
             get_podcast_containers_bridge_param(episode.apple_id, url)
           end
@@ -236,7 +171,7 @@ module Apple
       api.join_url("podcastContainers?filter[vendorId]=#{episode.audio_asset_vendor_id}").to_s
     end
 
-    def head_file_size_bridge_params
+    def head_file_size_bridge_params(enclosure_url:)
       {
         request_metadata: {
           apple_episode_id: apple_episode_id,
@@ -304,50 +239,6 @@ module Apple
 
     def needs_delivery?
       !skip_delivery?
-    end
-
-    def filename_prefix(ct)
-      ct.zero? ? "" : "#{ct}_"
-    end
-
-    def source_url
-      episode.apple_status&.source_url
-    end
-
-    def source_size
-      episode.apple_status&.source_size
-    end
-
-    def source_filename
-      episode.apple_status&.source_filename
-    end
-
-    def enclosure_url
-      episode.apple_status&.enclosure_url
-    end
-
-    def source_fetch_count
-      episode.apple_status&.source_fetch_count || 0
-    end
-
-    def source_media_version_id
-      episode.apple_status&.source_media_version_id
-    end
-
-    def reset_source_metadata!(apple_ep)
-      count = source_fetch_count
-      episode.apple_update_delivery_status(
-        source_url: nil,
-        source_size: nil,
-        source_media_version_id: nil,
-        source_filename: filename_prefix(count) + apple_ep.enclosure_filename,
-        enclosure_url: apple_ep.enclosure_url,
-        source_fetch_count: count + 1
-      )
-    end
-
-    def update_source_metadata!(attrs)
-      episode.apple_update_delivery_status(**attrs)
     end
   end
 end

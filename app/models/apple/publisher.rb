@@ -1,6 +1,5 @@
 module Apple
   class Publisher < Integrations::Base::Publisher
-    include Apple::ApiWaiting
     attr_reader :public_feed,
       :private_feed,
       :api,
@@ -152,22 +151,26 @@ module Apple
         # Create containers/files for episodes needing media upload.
         sync_podcast_containers!(eps)
 
-        wait_for_versioned_source_metadata(eps)
+        media_infos = wait_for_versioned_source_metadata(eps)
+        episodes_with_source_metadata = media_infos.map(&:episode)
+        unless Set.new(episodes_with_source_metadata) == Set.new(eps)
+          raise "Source metadata response did not match requested episodes"
+        end
 
-        sync_podcast_deliveries!(eps)
-        sync_podcast_delivery_files!(eps)
+        sync_podcast_deliveries!(episodes_with_source_metadata)
+        sync_podcast_delivery_files!(episodes_with_source_metadata, media_infos)
 
         # Upload and mark as uploaded, then update the audio container reference.
-        execute_upload_operations!(eps)
-        mark_delivery_files_uploaded!(eps)
-        update_audio_container_reference!(eps)
+        execute_upload_operations!(media_infos)
+        mark_delivery_files_uploaded!(episodes_with_source_metadata)
+        update_audio_container_reference!(episodes_with_source_metadata)
 
-        # Mark the episode as uploaded.
-        mark_as_uploaded!(eps)
+        # Mark the episode as uploaded (write source attrs + uploaded).
+        mark_as_uploaded!(media_infos)
 
         # The episodes start waiting after they are uploaded.
         # Increment the wait counter.
-        increment_asset_wait!(eps)
+        increment_asset_wait!(episodes_with_source_metadata)
       end
     end
 
@@ -179,14 +182,22 @@ module Apple
 
         wait_for_upload_processing(eps)
 
+        error_audio_state_eps = []
+
         # Wait for the audio asset to be processed by Apple
         wait_for_asset_state(eps) do |ready_eps|
+          errored, ready_eps = ready_eps.partition(&:audio_asset_state_error?)
+          error_audio_state_eps.concat(errored)
+          mark_asset_state_failures_as_not_delivered!(errored)
+
           log_asset_wait_duration!(ready_eps)
           # Publish the ready episodes
           publish_drafting!(ready_eps)
           # Then mark them as delivered
           mark_as_delivered!(ready_eps)
         end
+
+        raise_asset_state_failure_retry!(error_audio_state_eps) if error_audio_state_eps.any?
       end
     end
 
@@ -194,7 +205,7 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         remaining_eps = filter_episodes_awaiting_asset_state(eps)
 
-        (timed_out, final_waiting) = self.class.wait_for(remaining_eps,
+        (timed_out, final_waiting) = Apple::ApiWaiting.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
           wait_interval: wait_interval) do |waiting_eps|
           ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)
@@ -296,7 +307,7 @@ module Apple
       problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
 
       problem_pdfs.each do |pdf|
-        Rails.logger.error("Podcast delivery file has #{state_name} state, marking for reupload",
+        Rails.logger.error("Podcast delivery file has #{state_name} state, marking as not delivered",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
@@ -305,22 +316,52 @@ module Apple
         # Mark for reupload so the episode is picked up in the next publish cycle.
         # This will continue to fail if nothing changes, but gives users/admins
         # a chance to fix the source media format that Apple rejected.
-        pdf.episode.apple_mark_for_reupload!
+        pdf.episode.apple_mark_as_not_delivered!
       end
 
       if problem_pdfs.any?
         raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked for reupload"
+          "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked as not delivered"
         )
       end
+    end
+
+    def raise_for_asset_state_failure!(failure_eps)
+      mark_asset_state_failures_as_not_delivered!(failure_eps)
+      raise_asset_state_failure_retry!(failure_eps)
+    end
+
+    def mark_asset_state_failures_as_not_delivered!(failure_eps)
+      failure_eps.each do |ep|
+        ep.apple_mark_as_not_delivered!
+      end
+    end
+
+    def raise_asset_state_failure_retry!(failure_eps)
+      failure_eps.each do |ep|
+        Rails.logger.error("Found FAILURE appleHostedAudioAssetState episode, marked as not delivered",
+          apple_episode_log_context(ep).merge(audio_asset_state: ep.audio_asset_state))
+      end
+
+      raise Apple::RetryPublishingError.new(
+        "Found FAILURE appleHostedAudioAssetState on #{failure_eps.length} episodes #{failure_eps.map(&:feeder_id)}, marked as not delivered"
+      )
+    end
+
+    def apple_episode_log_context(ep)
+      {
+        episode_id: ep.feeder_id,
+        episode_guid: ep.guid
+      }
     end
 
     def wait_for_versioned_source_metadata(eps)
       Rails.logger.tagged("##{__method__}") do
         # wait for the audio version to be created
-        (waiting_timed_out, _) =
-          Apple::PodcastContainer.wait_for_versioned_source_metadata(api, eps)
+        (waiting_timed_out, media_infos) =
+          Apple::MediaInfo.wait_for_versioned_source_metadata(api, eps)
         raise "Timed out waiting for audio version" if waiting_timed_out
+        media_infos
       end
     end
 
@@ -453,22 +494,21 @@ module Apple
       end
     end
 
-    def sync_podcast_delivery_files!(eps)
+    def sync_podcast_delivery_files!(eps, media_infos)
       Rails.logger.tagged("##{__method__}") do
         Rails.logger.info("Starting podcast delivery files sync")
 
-        # TODO
         poll_podcast_delivery_files!(eps)
 
-        res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, eps)
+        res = Apple::PodcastDeliveryFile.create_podcast_delivery_files(api, media_infos)
         Rails.logger.info("Created remote/local state for #{res.length} podcast delivery files.")
       end
     end
 
-    def execute_upload_operations!(eps)
+    def execute_upload_operations!(media_infos)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        Rails.logger.info("Executing upload operations", {episode_count: eps.length})
-        Apple::UploadOperation.execute_upload_operations(api, eps)
+        Rails.logger.info("Executing upload operations", {episode_count: media_infos.length})
+        Apple::UploadOperation.execute_upload_operations(api, media_infos)
       end
     end
 
@@ -498,11 +538,12 @@ module Apple
       end
     end
 
-    def mark_as_uploaded!(eps)
+    def mark_as_uploaded!(media_infos)
       Rails.logger.tagged("##{__method__}") do
-        eps.each do |ep|
-          Rails.logger.info("Marking episode media as uploaded", {episode_id: ep.feeder_episode.id})
-          ep.feeder_episode.apple_mark_as_uploaded!
+        media_infos.each do |mi|
+          attrs = mi.source_attributes.merge(uploaded: true)
+          Rails.logger.info("Marking episode media as uploaded", {episode_id: mi.episode.feeder_episode.id}.merge(attrs))
+          mi.episode.feeder_episode.apple_update_delivery_status(attrs)
         end
       end
     end
@@ -568,9 +609,9 @@ module Apple
     # Not used in any of the polling or publish routines, but useful for
     # debugging.  This removes the audio container reference from the episode,
     # but leaves the podcast container intact.
-    def remove_audio_container_reference(eps, apple_mark_for_reupload: true)
+    def remove_audio_container_reference(eps, mark_as_not_delivered: true)
       Rails.logger.tagged("##{__method__}") do
-        Apple::Episode.remove_audio_container_reference(api, show, eps, apple_mark_for_reupload: apple_mark_for_reupload)
+        Apple::Episode.remove_audio_container_reference(api, show, eps, mark_as_not_delivered: mark_as_not_delivered)
       end
     end
 
@@ -603,7 +644,7 @@ module Apple
             episode_id: ep.feeder_id,
             duration: ep.feeder_episode.measure_asset_processing_duration
           })
-          ep.apple_mark_for_reupload!
+          ep.apple_mark_as_not_delivered!
         end
 
         raise error

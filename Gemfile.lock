@@ -354,6 +354,9 @@ GEM
       ast (~> 2.4.1)
       racc
     pg (1.5.4)
+    podcast_index (0.5.1)
+      activesupport
+      addressable
     popper_js (2.11.8)
     pp (0.6.3)
       prettyprint
@@ -633,6 +636,7 @@ DEPENDENCIES
   parallel
   paranoia
   pg (~> 1.1)
+  podcast_index
   propshaft
   prx_auth-rails (~> 5.1.0)
   pry

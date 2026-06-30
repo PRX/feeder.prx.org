@@ -37,6 +37,13 @@ document.addEventListener("turbo:before-cache", function () {
   }
 })
 
+// no scrolling on number fields
+document.addEventListener("wheel", () => {
+  if (document.activeElement.type === "number") {
+    document.activeElement.blur()
+  }
+})
+
 document.addEventListener("trix-file-accept", (event) => {
   event.preventDefault()
 })
