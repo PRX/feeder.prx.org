@@ -201,7 +201,7 @@ describe Apple::Episode do
     let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "PUBLISH") }
 
     it "should be false when drafting" do
-      ep = build(:uploaded_apple_episode)
+      ep = build(:delivered_apple_episode)
       assert_equal true, ep.synced_with_apple?
 
       ep.stub(:drafting?, true) do
@@ -254,6 +254,32 @@ describe Apple::Episode do
       end
 
       assert mock.verify
+    end
+
+    it "logs episode id and guid when applying the publish action" do
+      apple_episode_response = {
+        request_metadata: {
+          apple_episode_id: apple_episode.apple_id,
+          guid: apple_episode.guid
+        },
+        api_url: "asdf/",
+        api_parameters: "ARBITRARY"
+      }.with_indifferent_access
+
+      logs = capture_json_logs do
+        apple_api.stub(:bridge_remote_and_retry!, [apple_episode_response]) do
+          Apple::Episode.stub(:poll_episode_state, []) do
+            Apple::Episode.publish(apple_api, apple_show, [apple_episode])
+          end
+        end
+      end
+
+      log = logs.find { |l| l[:msg] == "Applying PUBLISH action to episode" }
+      assert log
+      assert_equal apple_episode.feeder_id, log[:episode_id]
+      assert_equal apple_episode.guid, log[:episode_guid]
+      assert_equal "PUBLISH", log[:action]
+      assert_equal apple_episode.publishing_state, log[:prior_publishing_state]
     end
   end
 
@@ -374,6 +400,28 @@ describe Apple::Episode do
 
         assert_equal 1, ready.length, "Expected one episode ready"
         assert_equal episode2.id, ready.first.feeder_id, "Expected episode2 to be ready"
+      end
+    end
+  end
+
+  describe "#episode_create_parameters" do
+    it "includes originalReleaseDate when published_at is present" do
+      params = apple_episode.episode_create_parameters
+      assert_equal episode.published_at.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
+    end
+
+    it "falls back to released_at for originalReleaseDate when published_at is nil" do
+      future = 3.days.from_now
+      episode.update!(published_at: nil, released_at: future)
+      params = apple_episode.episode_create_parameters
+      assert_equal future.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
+    end
+
+    it "falls back to current time for originalReleaseDate when published_at and released_at are nil" do
+      episode.update!(published_at: nil, released_at: nil)
+      freeze_time do
+        params = apple_episode.episode_create_parameters
+        assert_equal Time.now.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
       end
     end
 

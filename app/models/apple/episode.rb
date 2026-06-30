@@ -154,13 +154,21 @@ module Apple
       episode_bridge_results = api.bridge_remote_and_retry!("publishEpisodes",
         episodes.map { |e| e.publishing_state_bridge_params(state) })
 
-      Apple::ApiJoin.join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        Rails.logger.info("Moving episode to #{state} state", {episode_id: ep.feeder_id, state: ep.publishing_state})
+      Apple::ApiJoin.join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, _row)|
+        Rails.logger.info("Applying #{state} action to episode",
+          apple_episode_log_context(ep).merge(action: state, prior_publishing_state: ep.publishing_state))
       end
 
       # We don't get back the full episode model in the response.
       # So poll for current state
       poll_episode_state(api, show, episodes)
+    end
+
+    def self.apple_episode_log_context(ep)
+      {
+        episode_id: ep.feeder_id,
+        episode_guid: ep.guid
+      }
     end
 
     def self.upsert_sync_logs(episodes, results)
@@ -271,22 +279,24 @@ module Apple
     def episode_create_parameters
       explicit = feeder_episode.explicit.present? && feeder_episode.explicit == "true"
 
+      attributes = {
+        guid: guid,
+        title: feeder_episode.title_safe,
+        description: feeder_episode.description_safe,
+        websiteUrl: feeder_episode.url,
+        explicit: explicit,
+        episodeNumber: feeder_episode.episode_number,
+        seasonNumber: feeder_episode.season_number,
+        episodeType: feeder_episode.itunes_type.upcase,
+        appleHostedAudioIsSubscriberOnly: true
+      }
+      attributes[:originalReleaseDate] = (feeder_episode.published_at || feeder_episode.released_at || Time.now.utc).iso8601
+
       {
         data:
         {
           type: "episodes",
-          attributes: {
-            guid: guid,
-            title: feeder_episode.title_safe,
-            originalReleaseDate: feeder_episode.published_at.utc.iso8601,
-            description: feeder_episode.description_safe,
-            websiteUrl: feeder_episode.url,
-            explicit: explicit,
-            episodeNumber: feeder_episode.episode_number,
-            seasonNumber: feeder_episode.season_number,
-            episodeType: feeder_episode.itunes_type.upcase,
-            appleHostedAudioIsSubscriberOnly: true
-          },
+          attributes: attributes,
           relationships: {
             show: {data: {type: "shows", id: show.apple_id}}
           }
@@ -480,6 +490,10 @@ module Apple
 
     def error_state?
       audio_asset_state_error? || delivery_file_errors?
+    end
+
+    def processing_status_label
+      feeder_episode.published? ? "processing" : "uploaded"
     end
 
     def audio_asset_state_success?
