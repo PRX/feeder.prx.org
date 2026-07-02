@@ -99,7 +99,7 @@ module Apple
       # Handles local draft + Apple PUBLISHED by cycling ARCHIVE -> UNARCHIVE to reach DRAFTING
       eps = eps.reject(&:integration_new?)
       eps_to_unarchive = eps.select(&:archived?)
-      eps_to_redraft = eps.select { |ep| ep.publishing_state == "PUBLISHED" }
+      eps_to_redraft = eps.select(&:apple_published?)
 
       # Both paths reset delivery state after unarchive because Apple may prune archived media assets.
       unarchive_draft_candidates!(eps_to_unarchive) if eps_to_unarchive.any?

@@ -440,6 +440,10 @@ module Apple
       publishing_state == "ARCHIVED"
     end
 
+    def apple_published?
+      publishing_state == "PUBLISHED"
+    end
+
     def container_upload_complete?
       return false if missing_container?
 

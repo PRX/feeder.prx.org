@@ -55,6 +55,22 @@ describe Apple::Episode do
     end
   end
 
+  describe "#apple_published?" do
+    let(:episode) { create(:episode, podcast: podcast, published_at: nil) }
+    let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "PUBLISHED") }
+
+    it "is true when Apple's publishingState is PUBLISHED" do
+      assert apple_episode.apple_published?
+      refute apple_episode.drafting?
+      refute apple_episode.archived?
+    end
+
+    it "differs from published?, which delegates to the feeder episode" do
+      assert apple_episode.apple_published?
+      refute apple_episode.published?
+    end
+  end
+
   describe "#enclosure_url" do
     it "should add auth query param" do
       assert_match(/auth=/, apple_episode.enclosure_url)
