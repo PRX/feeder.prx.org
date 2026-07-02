@@ -417,12 +417,10 @@ describe Apple::Episode do
       assert_equal future.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
     end
 
-    it "falls back to current time for originalReleaseDate when published_at and released_at are nil" do
+    it "falls back to created_at for originalReleaseDate when published_at and released_at are nil" do
       episode.update!(published_at: nil, released_at: nil)
-      freeze_time do
-        params = apple_episode.episode_create_parameters
-        assert_equal Time.now.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
-      end
+      params = apple_episode.episode_create_parameters
+      assert_equal episode.created_at.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
     end
 
     it "returns empty arrays when no episodes provided" do
