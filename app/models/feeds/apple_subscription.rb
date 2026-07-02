@@ -128,7 +128,7 @@ class Feeds::AppleSubscription < Feed
     publish_to_apple?
   end
 
-  def draft_episodes
+  def integration_draft_episodes
     episodes.draft_or_scheduled
   end
 
@@ -137,7 +137,7 @@ class Feeds::AppleSubscription < Feed
       feed_episode?(episode)
     # Use enclosure_ready? (not feed_ready?) to exclude medialess drafts from UI status
     elsif episode.enclosure_ready?(true)
-      draft_episodes.where(id: episode.id).exists?
+      integration_draft_episodes.where(id: episode.id).exists?
     else
       false
     end

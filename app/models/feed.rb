@@ -171,7 +171,7 @@ class Feed < ApplicationRecord
 
   # Episodes an integration may act on before they are published.
   # Overridden by feeds whose integration handles drafts.
-  def draft_episodes
+  def integration_draft_episodes
     episodes.none
   end
 
