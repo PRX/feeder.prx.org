@@ -137,7 +137,7 @@ class Feeds::AppleSubscription < Feed
       feed_episodes.where(id: episode.id).exists?
     # Use enclosure_ready? (not feed_ready?) to exclude medialess drafts from UI status
     elsif episode.enclosure_ready?(true)
-      feed_episodes.where(id: episode.id).exists? || draft_episodes.where(id: episode.id).exists?
+      draft_episodes.where(id: episode.id).exists?
     else
       false
     end
