@@ -169,6 +169,12 @@ class Feed < ApplicationRecord
     feed_episode?(episode)
   end
 
+  # Episodes an integration may act on before they are published.
+  # Overridden by feeds whose integration handles drafts.
+  def draft_episodes
+    episodes.none
+  end
+
   def guid
     podcast&.guid
   end

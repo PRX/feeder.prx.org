@@ -74,7 +74,7 @@ module Apple
     # reaching probe_source_file_metadata.
     def draft_upload_candidates
       @draft_upload_candidates ||=
-        if private_feed.respond_to?(:draft_episodes)
+        begin
           draft_ids = Set.new(
             private_feed.draft_episodes
               .includes(:contents)
@@ -84,8 +84,6 @@ module Apple
 
           podcast_episodes
             .filter { |e| draft_ids.include?(e.feeder_episode.id) }
-        else
-          []
         end
     end
 
