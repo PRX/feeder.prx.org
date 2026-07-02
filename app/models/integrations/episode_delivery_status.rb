@@ -41,6 +41,18 @@ module Integrations
       self.class.update_status(integration, episode, asset_processing_attempts: (asset_processing_attempts || 0) + 1)
     end
 
+    # Writes a fresh zero-attempts row, restarting the asset wait clock used
+    # by measure_asset_processing_duration.
+    def reset_asset_wait
+      self.class.update_status(integration, episode, asset_processing_attempts: 0)
+    end
+
+    # A null count marks the wait clock as unarmed (drafts uploaded ahead of
+    # publish); delivery processing resets it to a fresh clock.
+    def clear_asset_wait
+      self.class.update_status(integration, episode, asset_processing_attempts: nil)
+    end
+
     def mark_as_uploaded!
       self.class.update_status(integration, episode, uploaded: true)
     end

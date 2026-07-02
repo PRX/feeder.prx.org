@@ -169,8 +169,12 @@ module Apple
         mark_as_uploaded!(media_infos)
 
         # The episodes start waiting after they are uploaded.
-        # Increment the wait counter.
-        increment_asset_wait!(episodes_with_source_metadata)
+        # Increment the wait counter. Drafts uploaded ahead of publish are not
+        # waiting yet: clear their counter to null so process_delivery! arms a
+        # fresh clock at publish time.
+        published_eps, draft_eps = episodes_with_source_metadata.partition { |ep| ep.feeder_episode.published? }
+        increment_asset_wait!(published_eps)
+        clear_asset_wait!(draft_eps)
       end
     end
 
@@ -178,6 +182,7 @@ module Apple
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         Rails.logger.info("Starting delivery processing", {episode_count: eps.length})
 
+        reset_asset_wait_for_prior_uploads!(eps)
         increment_asset_wait!(eps)
 
         wait_for_upload_processing(eps)
@@ -403,6 +408,25 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         eps = eps.filter { |e| e.feeder_episode.apple_status.uploaded? }
         eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
+      end
+    end
+
+    def clear_asset_wait!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps = eps.filter { |e| e.feeder_episode.apple_status.uploaded? }
+        eps.each { |ep| ep.apple_episode_delivery_status.clear_asset_wait }
+      end
+    end
+
+    # Drafts uploaded in a prior run arrive at delivery with a cleared (null)
+    # wait counter whose status rows date from upload time. Write a fresh
+    # zero-attempts row so the wait duration measures from delivery start.
+    # A zero or positive count is left alone: it marks a clock armed by an
+    # active delivery flow that may be legitimately waiting across job runs.
+    def reset_asset_wait_for_prior_uploads!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps = eps.filter { |ep| ep.apple_episode_delivery_status.asset_processing_attempts.nil? }
+        eps.each { |ep| ep.apple_episode_delivery_status.reset_asset_wait }
       end
     end
 

@@ -970,6 +970,45 @@ describe Apple::Publisher do
     end
   end
 
+  describe "#clear_asset_wait!" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+
+    it "nulls out the asset wait count" do
+      apple_publisher.increment_asset_wait!([episode1])
+      assert_equal 1, episode1.apple_episode_delivery_status.asset_processing_attempts
+
+      apple_publisher.clear_asset_wait!([episode1])
+      assert_nil episode1.apple_episode_delivery_status.asset_processing_attempts
+    end
+  end
+
+  describe "#reset_asset_wait_for_prior_uploads!" do
+    let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
+
+    it "arms a fresh clock for episodes with a cleared wait count" do
+      # a draft uploaded ahead of publish ends its run with a cleared count
+      apple_publisher.clear_asset_wait!([episode1])
+
+      travel 2.days
+      apple_publisher.reset_asset_wait_for_prior_uploads!([episode1])
+      travel 1.second
+      apple_publisher.increment_asset_wait!([episode1])
+
+      assert_operator episode1.feeder_episode.measure_asset_processing_duration, :<, 1.minute
+    end
+
+    it "leaves armed clocks alone so waits accumulate across job runs" do
+      apple_publisher.increment_asset_wait!([episode1])
+
+      travel 2.days
+      apple_publisher.reset_asset_wait_for_prior_uploads!([episode1])
+      travel 1.second
+      apple_publisher.increment_asset_wait!([episode1])
+
+      assert_operator episode1.feeder_episode.measure_asset_processing_duration, :>, 1.day
+    end
+  end
+
   describe "#raise_for_asset_state_failure!" do
     let(:episode1) { uploaded_apple_episode_with_asset_state(Apple::Episode::AUDIO_ASSET_FAILURE) }
     let(:episode2) { uploaded_apple_episode_with_asset_state(Apple::Episode::AUDIO_ASSET_FAILURE) }
@@ -1752,7 +1791,8 @@ describe Apple::Publisher do
         OpenStruct.new(
           feeder_id: i,
           podcast_delivery_files: [pdf],
-          audio_asset_state_success?: true
+          audio_asset_state_success?: true,
+          apple_episode_delivery_status: OpenStruct.new(asset_processing_attempts: 1)
         )
       }
 
