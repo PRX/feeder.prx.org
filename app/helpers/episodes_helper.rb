@@ -16,7 +16,9 @@ module EpisodesHelper
   end
 
   def episode_integration_status(integration, episode)
-    return "not_publishable" unless episode.integration_feed_episode?(integration)
+    unless episode.integration_feed_episode?(integration)
+      return episode.draft? ? "draft" : "not_publishable"
+    end
 
     status = episode.episode_delivery_status(integration, true)
 

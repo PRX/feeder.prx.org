@@ -9,10 +9,10 @@ describe EpisodesHelper do
   let(:podcast) { create(:podcast) }
 
   describe "#episode_integration_status" do
-    it "returns 'not_publishable' when draft episode is not in the integration feed" do
+    it "returns 'draft' when draft episode is not in the integration feed" do
       draft_episode = create(:episode, podcast: podcast, published_at: nil)
-      assert_equal "not_publishable", helper.episode_integration_status(:apple, draft_episode)
-      assert_equal "not_publishable", helper.episode_integration_status(:megaphone, draft_episode)
+      assert_equal "draft", helper.episode_integration_status(:apple, draft_episode)
+      assert_equal "draft", helper.episode_integration_status(:megaphone, draft_episode)
     end
 
     it "returns 'not_publishable' when episode does not publish to the integration" do
@@ -95,6 +95,11 @@ describe EpisodesHelper do
       it "returns 'not_publishable' when scheduled episode has no uploadable media" do
         assert_equal "not_publishable", helper.episode_integration_status(:apple, scheduled_episode_without_media)
       end
+
+      it "returns 'draft' when draft episode has no uploadable media" do
+        draft_episode_without_media = create(:episode, podcast: podcast, published_at: nil)
+        assert_equal "draft", helper.episode_integration_status(:apple, draft_episode_without_media)
+      end
     end
 
     describe "with megaphone feed" do
@@ -105,6 +110,11 @@ describe EpisodesHelper do
 
       it "returns 'new' when episode has no delivery status yet" do
         assert_equal "new", helper.episode_integration_status(:megaphone, episode)
+      end
+
+      it "returns 'draft' for draft episodes since megaphone does not upload drafts" do
+        draft_episode = create(:episode_with_media, podcast: podcast, published_at: nil)
+        assert_equal "draft", helper.episode_integration_status(:megaphone, draft_episode)
       end
     end
   end
