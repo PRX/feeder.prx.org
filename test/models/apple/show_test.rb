@@ -235,6 +235,22 @@ describe Apple::Show do
 
       assert_equal [], show.draft_upload_candidates
     end
+
+    it "memoizes candidates until reload" do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      apple_feed.set_default_episodes
+      draft = create(:episode_with_media, podcast: podcast, published_at: nil)
+      apple_feed.episodes << draft
+
+      config = build(:apple_config, feed: apple_feed)
+      show = Apple::Show.connect_existing("123", config)
+
+      first = show.draft_upload_candidates
+      assert_same first, show.draft_upload_candidates
+
+      show.reload
+      refute_same first, show.draft_upload_candidates
+    end
   end
 
   describe ".connect_existing" do
