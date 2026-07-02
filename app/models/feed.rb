@@ -163,6 +163,12 @@ class Feed < ApplicationRecord
     feed_episodes.where(id: episode.id).exists?
   end
 
+  # Whether an episode is eligible for this feed's integration.
+  # Subclasses may include episodes beyond the rendered RSS window.
+  def integration_episode?(episode)
+    feed_episode?(episode)
+  end
+
   def guid
     podcast&.guid
   end
