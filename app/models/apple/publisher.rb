@@ -345,19 +345,12 @@ module Apple
     def raise_asset_state_failure_retry!(failure_eps)
       failure_eps.each do |ep|
         Rails.logger.error("Found FAILURE appleHostedAudioAssetState episode, marked as not delivered",
-          apple_episode_log_context(ep).merge(audio_asset_state: ep.audio_asset_state))
+          Apple::Episode.apple_episode_log_context(ep).merge(audio_asset_state: ep.audio_asset_state))
       end
 
       raise Apple::RetryPublishingError.new(
         "Found FAILURE appleHostedAudioAssetState on #{failure_eps.length} episodes #{failure_eps.map(&:feeder_id)}, marked as not delivered"
       )
-    end
-
-    def apple_episode_log_context(ep)
-      {
-        episode_id: ep.feeder_id,
-        episode_guid: ep.guid
-      }
     end
 
     def wait_for_versioned_source_metadata(eps)
