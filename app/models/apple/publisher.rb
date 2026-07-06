@@ -122,7 +122,7 @@ module Apple
         end
 
         # Sync episode metadata (create/update on Apple) for eligible episodes
-        eps.each_slice(PUBLISH_CHUNK_LEN) { |batch| sync_episodes!(batch) }
+        sync_episodes!(eps)
 
         eps
           .select(&:apple_needs_upload?)
