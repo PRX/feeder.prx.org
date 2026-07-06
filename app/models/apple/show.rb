@@ -70,7 +70,25 @@ module Apple
       @api = api
     end
 
+    # Gate on enclosure_ready? to prevent medialess drafts from
+    # reaching probe_source_file_metadata.
+    def draft_upload_candidates
+      @draft_upload_candidates ||=
+        begin
+          draft_ids = Set.new(
+            private_feed.integration_draft_episodes
+              .includes(:contents)
+              .select { |ep| ep.enclosure_ready?(true) }
+              .map(&:id)
+          )
+
+          podcast_episodes
+            .filter { |e| draft_ids.include?(e.feeder_episode.id) }
+        end
+    end
+
     def reload
+      @draft_upload_candidates = nil
       @apple_episode_json = nil
       @podcast_feeder_episodes = nil
       @podcast_episodes = nil

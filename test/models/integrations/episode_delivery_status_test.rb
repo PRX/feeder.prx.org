@@ -116,6 +116,26 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
           assert_equal "http://example.com/audio.mp3", new_status.source_url
         end
       end
+
+      describe "#reset_asset_wait" do
+        it "creates a new status entry with a zero attempts count" do
+          incremented = delivery_status.increment_asset_wait
+          assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
+            new_status = incremented.reset_asset_wait
+            assert_equal 0, new_status.asset_processing_attempts
+          end
+        end
+      end
+
+      describe "#clear_asset_wait" do
+        it "creates a new status entry with a null attempts count" do
+          assert_equal 0, delivery_status.asset_processing_attempts
+          assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
+            new_status = delivery_status.clear_asset_wait
+            assert_nil new_status.asset_processing_attempts
+          end
+        end
+      end
     end
   end
 

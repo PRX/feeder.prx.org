@@ -135,6 +135,26 @@ describe Feed do
     end
   end
 
+  describe "#feed_episode?" do
+    it "checks membership in feed_episodes" do
+      published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+      scheduled = create(:episode, podcast: podcast, published_at: 1.hour.from_now)
+
+      assert feed1.feed_episode?(published)
+      refute feed1.feed_episode?(scheduled)
+    end
+  end
+
+  describe "#integration_episode?" do
+    it "matches feed_episode? for feeds without integrations" do
+      published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+      scheduled = create(:episode, podcast: podcast, published_at: 1.hour.from_now)
+
+      assert feed1.integration_episode?(published)
+      refute feed1.integration_episode?(scheduled)
+    end
+  end
+
   describe "#default" do
     it "returns default feeds" do
       assert feed1.default?

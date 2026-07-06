@@ -159,6 +159,22 @@ class Feed < ApplicationRecord
     feed_episodes.pluck(:id)
   end
 
+  def feed_episode?(episode)
+    feed_episodes.where(id: episode.id).exists?
+  end
+
+  # Whether an episode is eligible for this feed's integration.
+  # Subclasses may include episodes beyond the rendered RSS window.
+  def integration_episode?(episode)
+    feed_episode?(episode)
+  end
+
+  # Episodes an integration may act on before they are published.
+  # Overridden by feeds whose integration handles drafts.
+  def integration_draft_episodes
+    episodes.none
+  end
+
   def guid
     podcast&.guid
   end
