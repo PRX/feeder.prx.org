@@ -418,6 +418,15 @@ describe Apple::Episode do
         assert_equal episode2.id, ready.first.feeder_id, "Expected episode2 to be ready"
       end
     end
+
+    it "returns empty arrays when no episodes provided" do
+      Apple::Episode.stub(:get_episodes, []) do
+        (ready, waiting) = Apple::Episode.probe_asset_state(apple_api, [])
+
+        assert_equal 0, ready.length
+        assert_equal 0, waiting.length
+      end
+    end
   end
 
   describe "#episode_create_parameters" do
@@ -437,15 +446,6 @@ describe Apple::Episode do
       episode.update!(published_at: nil, released_at: nil)
       params = apple_episode.episode_create_parameters
       assert_equal episode.created_at.utc.iso8601, params[:data][:attributes][:originalReleaseDate]
-    end
-
-    it "returns empty arrays when no episodes provided" do
-      Apple::Episode.stub(:get_episodes, []) do
-        (ready, waiting) = Apple::Episode.probe_asset_state(apple_api, [])
-
-        assert_equal 0, ready.length
-        assert_equal 0, waiting.length
-      end
     end
   end
 end
