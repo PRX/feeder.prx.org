@@ -15,7 +15,7 @@ class MediaResource < ApplicationRecord
 
   before_validation :initialize_attributes, on: :create
 
-  validates :file_size, comparison: {less_than: 1.gigabyte}, allow_nil: true
+  validates :file_size, comparison: {less_than: :max_file_size}, allow_nil: true
   validates :original_url, presence: true
   validates :medium, inclusion: {in: %w[audio video]}, if: :status_complete?
 
@@ -34,6 +34,10 @@ class MediaResource < ApplicationRecord
     media.try(:position=, position)
 
     media.try(:original_url).try(:present?) ? media : nil
+  end
+
+  def max_file_size
+    1.gigabyte
   end
 
   def audio?

@@ -4,7 +4,7 @@ module EpisodeMedia
   extend ActiveSupport::Concern
 
   included do
-    enum :medium, [:audio, :uncut, :video, :hls, :override], prefix: true
+    enum :medium, [:audio, :uncut, :video, :hls_video, :override], prefix: true
 
     # NOTE: this just-in-time creates new media versions
     # TODO: convert to sql, so we don't have to load/check every episode?
@@ -22,7 +22,7 @@ module EpisodeMedia
   end
 
   def video?
-    medium_video? || medium_hls?
+    medium_video? || medium_hls_video?
   end
 
   # TODO: eventually add hls in here

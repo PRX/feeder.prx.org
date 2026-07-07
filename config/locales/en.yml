@@ -308,10 +308,14 @@ en:
             slug:
               invalid: Invalid slug
               taken: Must be unique
+        hls_video:
+          attributes:
+            file_size:
+              less_than: File too large - upload less than 10GB (HLS VIDEO)
         media_resource:
           attributes:
             file_size:
-              less_than: File too large - upload less than 1GB
+              less_than: File too large - upload less than 1GB (MEDIA RESOURCE)
             medium:
               format: "%{message}"
             original_url:
@@ -399,9 +403,10 @@ en:
         medium: File Format
         mediums:
           audio: Audio - upload multiple audio files
-          uncut: Audio - upload a single file and then segment
-          video: Video
+          hls_video: HLS Video
           override: Override - specify external media url
+          uncut: Audio - upload a single file and then segment
+          video: Raw Video
         original_guid: GUID
         released_at: Dropdate
         released_at_date: Date
@@ -494,6 +499,7 @@ en:
       media_resource:
         original_url:
           audio: Segment %{position}
+          hls_video: Video File
           uncut: Audio File
           video: Video File
       podcast:

@@ -68,6 +68,14 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       episode.medium = "video"
       assert episode.contents.first.marked_for_destruction?
       assert_equal 1, episode.segment_count
+
+      episode.segment_count = 2
+      episode.medium = "hls_video"
+      assert_equal 1, episode.segment_count
+
+      episode.segment_count = 2
+      episode.medium = "override"
+      assert_equal 1, episode.segment_count
     end
   end
 

@@ -8,9 +8,7 @@
     <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
   </div>
 </div>
-<% if episode.medium_video? || episode.medium_override? %>
-  <%= form.hidden_field :segment_count, value: 1 %>
-<% else %>
+<% if episode.ad_injection? %>
   <div class="col-12 mb-4">
     <div class="form-floating input-group" data-controller="dynamic-form">
       <% action = "dynamic-form#change placement-preview#update" %>
@@ -21,4 +19,6 @@
       <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
     </div>
   </div>
+<% else %>
+  <%= form.hidden_field :segment_count, value: 1 %>
 <% end %>

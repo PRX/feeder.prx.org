@@ -135,4 +135,12 @@ module UploadsHelper
       "danger"
     end
   end
+
+  def upload_file_size_error(media)
+    if media.is_a?(HlsVideo)
+      t("activerecord.errors.models.hls_video.attributes.file_size.less_than")
+    else
+      t("activerecord.errors.models.media_resource.attributes.file_size.less_than")
+    end
+  end
 end
