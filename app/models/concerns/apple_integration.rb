@@ -41,7 +41,7 @@ module AppleIntegration
   end
 
   def apple_needs_upload?
-    apple_episode_delivery_status.uploaded == false
+    apple_episode_delivery_status.needs_upload?
   end
 
   def apple_mark_as_not_delivered!
@@ -66,9 +66,6 @@ module AppleIntegration
     apple_podcast_deliveries.reset
     apple_podcast_delivery_files.reset
     apple_podcast_container&.podcast_deliveries&.reset
-  end
-
-  def apple_mark_for_reupload!
     apple_mark_as_not_delivered!
   end
 

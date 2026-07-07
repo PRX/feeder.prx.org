@@ -42,7 +42,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_27_173435) do
     t.datetime "updated_at", null: false
     t.string "vendor_id", null: false
     t.string "apple_episode_id", null: false
-    t.integer "source_fetch_count", default: 0, null: false
     t.index ["episode_id"], name: "index_apple_podcast_containers_on_episode_id", unique: true
     t.index ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true
   end

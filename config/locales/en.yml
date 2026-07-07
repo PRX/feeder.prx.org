@@ -1009,6 +1009,7 @@ en:
         "-21600": 6 hours early
         "-43200": 12 hours early
         "-86400": 24 hours early
+        "-259200": 3 days early
         "-604800": 1 week early
         "-6048000": 10 weeks early
         "300": 5 minutes late
@@ -1017,6 +1018,7 @@ en:
         "21600": 6 hours late
         "43200": 12 hours late
         "86400": 24 hours late
+        "259200": 3 days late
         "604800": 1 week late
         "6048000": 10 weeks late
       audio_format_options:
