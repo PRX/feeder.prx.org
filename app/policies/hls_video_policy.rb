@@ -1,0 +1,2 @@
+class HlsVideoPolicy < MediaResourcePolicy
+end

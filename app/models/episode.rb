@@ -32,6 +32,7 @@ class Episode < ApplicationRecord
   has_many :media_versions, -> { order("created_at DESC") }, dependent: :destroy
   has_many :latest_media_version, -> { latest }, class_name: "MediaVersion"
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  has_one :hls_video, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_one :external_media_resource, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
 
@@ -43,6 +44,7 @@ class Episode < ApplicationRecord
   has_one :transcript, -> { order("created_at DESC") }, dependent: :destroy, inverse_of: :episode
 
   accepts_nested_attributes_for :contents, allow_destroy: true, reject_if: ->(c) { c[:id].blank? && c[:original_url].blank? }
+  accepts_nested_attributes_for :hls_video, allow_destroy: true, reject_if: ->(h) { h[:id].blank? && h[:original_url].blank? }
   accepts_nested_attributes_for :uncut, allow_destroy: true, reject_if: ->(u) { u[:id].blank? && u[:original_url].blank? }
   accepts_nested_attributes_for :images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :persons, allow_destroy: true, reject_if: :all_blank
