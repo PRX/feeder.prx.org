@@ -46,7 +46,46 @@ describe Apple::Publisher do
     end
   end
 
-  describe "#only_episodes_with_apple_state" do
+  describe "#poll!" do
+    let(:episode) { build(:apple_episode, show: apple_publisher.show) }
+
+    it "polls podcast containers without raising on stale-container resets" do
+      captured = nil
+
+      apple_publisher.show.stub(:apple_id, "123") do
+        apple_publisher.stub(:poll_episodes!, ->(*) {}) do
+          apple_publisher.stub(:only_episodes_with_integration_state, ->(eps) { eps }) do
+            apple_publisher.stub(:poll_podcast_deliveries!, ->(*) {}) do
+              apple_publisher.stub(:poll_podcast_delivery_files!, ->(*) {}) do
+                apple_publisher.stub(:poll_podcast_containers!, ->(eps, raise_on_reset:) { captured = raise_on_reset }) do
+                  apple_publisher.poll!([episode])
+                end
+              end
+            end
+          end
+        end
+      end
+
+      assert_equal false, captured
+    end
+  end
+
+  describe "#poll_podcast_containers!" do
+    it "forwards raise_on_reset to PodcastContainer.poll_podcast_container_state" do
+      captured = nil
+
+      Apple::PodcastContainer.stub(:poll_podcast_container_state, ->(api, eps, raise_on_reset: true) {
+        captured = raise_on_reset
+        []
+      }) do
+        apple_publisher.poll_podcast_containers!([], raise_on_reset: false)
+      end
+
+      assert_equal false, captured
+    end
+  end
+
+  describe "#only_episodes_with_integration_state" do
     let(:episode) { build(:apple_episode) }
 
     it "should only return episodes that have an apple state" do

@@ -51,9 +51,11 @@ module Apple
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           poll_episodes!(eps)
 
-          eps = only_episodes_with_apple_state(eps)
+          eps = only_episodes_with_integration_state(eps)
 
-          poll_podcast_containers!(eps)
+          # There is no publishing pipeline to retry here, so reset any stale
+          # containers without raising and continue polling.
+          poll_podcast_containers!(eps, raise_on_reset: false)
           poll_podcast_deliveries!(eps)
           poll_podcast_delivery_files!(eps)
         end
@@ -372,9 +374,9 @@ module Apple
       end
     end
 
-    def poll_podcast_containers!(eps)
+    def poll_podcast_containers!(eps, raise_on_reset: true)
       Rails.logger.tagged("##{__method__}") do
-        res = Apple::PodcastContainer.poll_podcast_container_state(api, eps)
+        res = Apple::PodcastContainer.poll_podcast_container_state(api, eps, raise_on_reset: raise_on_reset)
         Rails.logger.info("Modified local state for podcast containers.", {count: res.length})
       end
     end

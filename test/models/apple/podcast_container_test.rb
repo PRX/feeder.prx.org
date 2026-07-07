@@ -336,6 +336,24 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       assert_equal [], fake_api.calls.second[:params]
       assert_stale_container_reset(container, delivery, delivery_file)
     end
+
+    it "resets stale local containers without raising when raise_on_reset is false" do
+      (container, delivery, delivery_file) = create_stale_container
+      list_response = [{
+        "request_metadata" => {"apple_episode_id" => apple_episode_id},
+        "api_response" => {"ok" => true, "err" => false, "val" => {"data" => []}}
+      }]
+      fake_api = fake_podcast_container_api(list_response: list_response)
+
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          res = Apple::PodcastContainer.poll_podcast_container_state(fake_api, [apple_episode], raise_on_reset: false)
+          assert_equal 1, res.length
+        end
+      end
+
+      assert_stale_container_reset(container, delivery, delivery_file)
+    end
   end
 
   describe "#podcast_deliveries" do

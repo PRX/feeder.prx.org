@@ -87,7 +87,7 @@ module Apple
       end
     end
 
-    def self.poll_podcast_container_state(api, episodes)
+    def self.poll_podcast_container_state(api, episodes, raise_on_reset: true)
       results = get_podcast_containers_via_episodes(api, episodes)
       stale_podcast_containers = []
 
@@ -104,7 +104,13 @@ module Apple
       end
 
       if stale_podcast_containers.any?
-        reset_stale_podcast_containers_and_retry!(stale_podcast_containers)
+        if raise_on_reset
+          reset_stale_podcast_containers_and_retry!(stale_podcast_containers)
+        else
+          # Poll-only callers (e.g. Apple::Publisher#poll!) have no publishing
+          # pipeline to retry, so repair the local state and keep going.
+          reset_stale_podcast_container_records!(stale_podcast_containers)
+        end
       end
 
       joined_rows
