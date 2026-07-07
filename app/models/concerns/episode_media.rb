@@ -4,7 +4,7 @@ module EpisodeMedia
   extend ActiveSupport::Concern
 
   included do
-    enum :medium, [:audio, :uncut, :video, :override], prefix: true
+    enum :medium, [:audio, :uncut, :video, :hls, :override], prefix: true
 
     # NOTE: this just-in-time creates new media versions
     # TODO: convert to sql, so we don't have to load/check every episode?
@@ -15,6 +15,19 @@ module EpisodeMedia
 
     after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
     after_save :create_external_media
+  end
+
+  def audio?
+    medium_audio? || medium_uncut?
+  end
+
+  def video?
+    medium_video? || medium_hls?
+  end
+
+  # TODO: eventually add hls in here
+  def ad_injection?
+    audio?
   end
 
   def validate_media_ready
@@ -58,7 +71,7 @@ module EpisodeMedia
       end
     end
 
-    self.segment_count = 1 if medium_video? || medium_override?
+    self.segment_count = 1 unless ad_injection?
   end
 
   def copy_media(force = false)
