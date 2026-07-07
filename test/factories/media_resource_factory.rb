@@ -26,11 +26,6 @@ FactoryBot.define do
       task_count { 0 }
     end
 
-    factory :hls_video, class: HlsVideo do
-      medium { "video" }
-      task_count { 0 }
-    end
-
     factory :uncut, class: Uncut do
       segmentation { [[1.23, 4.56]] }
       task_count { 0 }
