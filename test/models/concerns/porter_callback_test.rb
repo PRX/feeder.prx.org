@@ -127,4 +127,13 @@ describe PorterCallback do
     model.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = nil
     assert_equal 128, model.porter_callback_bitrate_normalized
   end
+
+  it "gets audio tags" do
+    model = TestCallback.new
+    model.result = build(:porter_job_results)
+    assert_equal [{"key" => "comment", "value" => "AIS_AD_BREAK_1=3000"}], model.porter_callback_tags
+
+    model.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Tags] = nil
+    assert_nil model.porter_callback_tags
+  end
 end

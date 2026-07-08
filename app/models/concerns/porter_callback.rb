@@ -86,6 +86,10 @@ module PorterCallback
     end
   end
 
+  def porter_callback_tags
+    porter_callback_inspect.dig(:Audio, :Tags)
+  end
+
   def porter_callback_ffmpeg
     porter_callback_task_result(:FFmpeg) || {}
   end
