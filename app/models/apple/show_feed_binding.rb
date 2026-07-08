@@ -25,7 +25,6 @@ module Apple
         backfill_config!(config, report, dry_run: dry_run)
       end
 
-      report[:changed] = report[:created] + report[:updated] + report[:linked]
       report
     end
 
@@ -180,6 +179,7 @@ module Apple
       end
 
       report[:linked] += 1 if needs_link
+      report[:changed] += 1
     end
     private_class_method :increment_backfill_counts
 
