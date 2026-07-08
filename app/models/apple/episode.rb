@@ -240,6 +240,8 @@ module Apple
     def sync_log
       logs = SyncLog.apple.episodes.where(feeder_id: feeder_episode.id, feeder_type: :episodes)
 
+      # TODO: remove once writers are cut over and no NULL-show apple episode
+      # rows remain (S10) — show-less contexts read the pre-show-scoping row
       if apple_show_id.blank?
         legacy_sync_log = feeder_episode.apple_sync_log
         return legacy_sync_log if legacy_sync_log&.apple_show_id.nil?
@@ -247,6 +249,8 @@ module Apple
         return logs.find_by(apple_show_id: nil)
       end
 
+      # TODO: drop the NULL-show fallback once writers are cut over and the
+      # AppleShowBackfill has stamped all legacy rows (S10)
       logs.find_by(apple_show_id: apple_show_id) || logs.find_by(apple_show_id: nil)
     end
 

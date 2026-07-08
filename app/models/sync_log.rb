@@ -41,6 +41,8 @@ class SyncLog < ApplicationRecord
       apple_show_id: apple_show_id
     )
 
+    # TODO: remove once writers are cut over and no NULL-show apple episode
+    # rows remain (S10) — adopts pre-show-scoping rows instead of duplicating
     if apple_show_id.present? && sync_log.new_record?
       legacy_sync_log = SyncLog.find_by(
         integration: integration,
