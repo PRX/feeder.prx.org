@@ -780,6 +780,8 @@ en:
         segment_count: Enter the number of ad breaks (midrolls) in this episode. This helps us to better predict ad inventory for your podcast.
     form_contents:
       title: Upload Files
+    form_hls_video:
+      title: Upload File
     form_status:
       <<: *form_status
       preview: Preview
