@@ -31,13 +31,31 @@ class SyncLog < ApplicationRecord
     feeder_id = attrs.delete(:feeder_id)
     external_id = attrs.delete(:external_id)
     api_response = attrs.delete(:api_response)
+    apple_show_id = attrs.delete(:apple_show_id)
 
     sync_log = SyncLog.find_or_initialize_by(
       integration: integration,
       feeder_type: feeder_type,
       feeder_id: feeder_id,
-      external_id: external_id
+      external_id: external_id,
+      apple_show_id: apple_show_id
     )
+
+    if apple_show_id.present? && sync_log.new_record?
+      legacy_sync_log = SyncLog.find_by(
+        integration: integration,
+        feeder_type: feeder_type,
+        feeder_id: feeder_id,
+        external_id: external_id,
+        apple_show_id: nil
+      )
+
+      if legacy_sync_log
+        sync_log = legacy_sync_log
+        sync_log.apple_show_id = apple_show_id
+      end
+    end
+
     sync_log.update!(api_response: api_response, updated_at: Time.now.utc)
     sync_log
   end

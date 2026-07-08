@@ -180,14 +180,12 @@ module Apple
         feeder_id: ep.feeder_episode.id,
         feeder_type: :episodes,
         external_id: apple_id,
-        api_response: res
+        api_response: res,
+        apple_show_id: ep.apple_show_id
       )
       # reload local state
-      if ep.feeder_episode.apple_sync_log.nil?
-        ep.feeder_episode.reload
-      else
-        ep.feeder_episode.apple_sync_log.reload
-      end
+      ep.sync_log&.reload || ep.feeder_episode.reload
+      ep.feeder_episode.association(:apple_sync_log).reset if ep.feeder_episode.association(:apple_sync_log).loaded?
       sl
     end
 
@@ -206,7 +204,7 @@ module Apple
     end
 
     def api_response
-      feeder_episode.apple_sync_log&.api_response
+      sync_log&.api_response
     end
 
     def guid
@@ -240,7 +238,20 @@ module Apple
     end
 
     def sync_log
-      SyncLog.apple.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
+      logs = SyncLog.apple.episodes.where(feeder_id: feeder_episode.id, feeder_type: :episodes)
+
+      if apple_show_id.blank?
+        legacy_sync_log = feeder_episode.apple_sync_log
+        return legacy_sync_log if legacy_sync_log&.apple_show_id.nil?
+
+        return logs.find_by(apple_show_id: nil)
+      end
+
+      logs.find_by(apple_show_id: apple_show_id) || logs.find_by(apple_show_id: nil)
+    end
+
+    def apple_show_id
+      show.id if show.respond_to?(:id)
     end
 
     def self.get_episode_bridge_params(api, feeder_id, apple_id)
@@ -529,7 +540,7 @@ module Apple
     end
 
     def apple_sync_log
-      feeder_episode.apple_sync_log
+      sync_log
     end
 
     def apple_sync_log=(sl)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_08_000002) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_08_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -541,7 +541,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_000002) do
     t.datetime "created_at"
     t.text "api_response"
     t.integer "integration"
-    t.index ["integration", "feeder_type", "feeder_id"], name: "index_sync_logs_on_integration_and_feeder_type_and_feeder_id", unique: true
+    t.string "apple_show_id"
+    t.index ["integration", "feeder_type", "feeder_id", "apple_show_id"], name: "idx_sync_logs_unique_with_apple_show", unique: true, where: "(apple_show_id IS NOT NULL)"
+    t.index ["integration", "feeder_type", "feeder_id"], name: "idx_sync_logs_unique_without_apple_show", unique: true, where: "(apple_show_id IS NULL)"
   end
 
   create_table "tasks", id: :serial, force: :cascade do |t|
