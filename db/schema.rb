@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_27_173435) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_08_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -22,8 +22,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_27_173435) do
     t.boolean "publish_enabled", default: false, null: false
     t.boolean "sync_blocks_rss", default: false, null: false
     t.bigint "key_id"
+    t.bigint "show_feed_binding_id"
     t.index ["feed_id"], name: "index_apple_configs_on_feed_id"
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
+    t.index ["show_feed_binding_id"], name: "index_apple_configs_on_show_feed_binding_id"
   end
 
   create_table "apple_keys", force: :cascade do |t|
@@ -70,6 +72,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_27_173435) do
     t.datetime "deleted_at", precision: nil
     t.index ["external_id"], name: "index_apple_podcast_delivery_files_on_external_id", unique: true
     t.index ["podcast_delivery_id"], name: "index_apple_podcast_delivery_files_on_podcast_delivery_id"
+  end
+
+  create_table "apple_show_feed_bindings", force: :cascade do |t|
+    t.bigint "feed_id", null: false
+    t.bigint "apple_key_id", null: false
+    t.string "apple_show_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["apple_key_id"], name: "index_apple_show_feed_bindings_on_apple_key_id"
+    t.index ["feed_id"], name: "index_apple_show_feed_bindings_on_feed_id", unique: true
   end
 
   create_table "episode_images", id: :serial, force: :cascade do |t|
@@ -564,7 +576,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_27_173435) do
     t.index ["guid"], name: "index_transcripts_on_guid", unique: true
   end
 
+  add_foreign_key "apple_configs", "apple_show_feed_bindings", column: "show_feed_binding_id"
   add_foreign_key "apple_configs", "feeds"
+  add_foreign_key "apple_show_feed_bindings", "apple_keys"
+  add_foreign_key "apple_show_feed_bindings", "feeds"
   add_foreign_key "episode_imports", "podcast_imports"
   add_foreign_key "feed_images", "feeds"
   add_foreign_key "feed_tokens", "feeds"
