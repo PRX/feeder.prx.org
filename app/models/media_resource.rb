@@ -3,7 +3,7 @@ class MediaResource < ApplicationRecord
   VIDEO_EXTENSIONS = %w[avi flv m4v mov mp4 webm wmv]
 
   has_one :task, -> { order("id desc") }, as: :owner
-  has_many :tasks, as: :owner
+  has_many :tasks, -> { order("id desc") }, as: :owner
 
   belongs_to :episode, -> { with_deleted }, touch: true, optional: true
 
@@ -104,10 +104,6 @@ class MediaResource < ApplicationRecord
     false
   end
 
-  def slice?
-    false
-  end
-
   def replace_resources!
   end
 
@@ -133,12 +129,17 @@ class MediaResource < ApplicationRecord
     original_url
   end
 
+  def needs_copy?
+    !(status_complete? || task)
+  end
+
   def copy_media(force = false)
-    if force || !(status_complete? || task)
-      Tasks::CopyMediaTask.create! do |task|
-        task.owner = self
-      end.start!
+    if force || needs_copy?
+      Tasks::CopyMediaTask.start!(self)
     end
+  end
+
+  def after_copy(copy_task)
   end
 
   def media_url
@@ -182,9 +183,5 @@ class MediaResource < ApplicationRecord
 
   def _retry=(_val)
     retry!
-  end
-
-  def fixed_task?
-    task.is_a?(Tasks::FixMediaTask)
   end
 end

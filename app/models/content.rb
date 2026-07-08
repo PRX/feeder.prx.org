@@ -21,6 +21,22 @@ class Content < MediaResource
     end
   end
 
+  def copy_media(force = false)
+    if force || needs_copy?
+      if slice?
+        Tasks::SliceMediaTask.start!(self)
+      else
+        Tasks::CopyMediaTask.start!(self)
+      end
+    end
+  end
+
+  def after_copy(copy_task)
+    if copy_task.bad_audio?
+      Tasks::FixMediaTask.start!(self, copy_task)
+    end
+  end
+
   def slice?
     segmentation.present? && (slice_start.present? || slice_end.present?)
   end
