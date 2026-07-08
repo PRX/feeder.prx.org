@@ -128,6 +128,36 @@ describe Feeds::AppleSubscription do
     end
   end
 
+  describe "#update_apple_show" do
+    it "creates and updates the show feed binding" do
+      apple_feed.save!
+
+      apple_feed.update!(apple_show_id: "show-1")
+
+      binding = default_feed.reload.apple_show_feed_binding
+      assert_equal binding, apple_feed.apple_config.reload.show_feed_binding
+      assert_equal apple_feed.apple_config.key, binding.apple_key
+      assert_equal "show-1", binding.apple_show_id
+
+      assert_no_difference "Apple::ShowFeedBinding.count" do
+        apple_feed.update!(apple_show_id: "show-2")
+      end
+
+      assert_equal "show-2", binding.reload.apple_show_id
+    end
+
+    it "removes the show feed binding when the apple show id is cleared" do
+      apple_feed.save!
+      apple_feed.update!(apple_show_id: "show-1")
+      assert default_feed.reload.apple_show_feed_binding
+
+      apple_feed.update!(apple_show_id: nil)
+
+      assert_nil default_feed.reload.apple_show_feed_binding
+      assert_nil apple_feed.apple_config.reload.show_feed_binding
+    end
+  end
+
   describe "#publish_to_apple?" do
     it "returns true if the feed has apple credentials" do
       apple_feed.save!

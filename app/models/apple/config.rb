@@ -4,6 +4,7 @@ module Apple
   class Config < ApplicationRecord
     belongs_to :feed
     belongs_to :key, class_name: "Apple::Key", optional: true, validate: true, autosave: true
+    belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: true, inverse_of: :delegated_delivery_configs
 
     validate :podcast_has_one_apple_config
     validate :not_default_feed
