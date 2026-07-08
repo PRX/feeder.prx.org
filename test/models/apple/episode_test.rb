@@ -25,6 +25,33 @@ describe Apple::Episode do
     episode.create_apple_sync_log(external_id: external_id, **apple_episode_api_response)
   end
 
+  describe ".upsert_sync_log" do
+    it "stamps the apple show id" do
+      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
+      response = build(:apple_episode_api_response)["api_response"]
+
+      sync_log = Apple::Episode.upsert_sync_log(apple_episode, response)
+
+      assert_equal "show-1", sync_log.reload.apple_show_id
+    end
+  end
+
+  describe "#sync_log" do
+    it "prefers the scoped row for the current show" do
+      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
+      scoped = SyncLog.create!(integration: :apple, feeder_type: :episodes, feeder_id: episode.id, external_id: "scoped-ep", apple_show_id: "show-1")
+
+      assert_equal scoped, apple_episode.sync_log
+    end
+
+    it "falls back to a legacy row when a scoped row does not exist" do
+      legacy = episode.apple_sync_log
+      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
+
+      assert_equal legacy, apple_episode.sync_log
+    end
+  end
+
   describe "#apple_json" do
     let(:apple_episode_list) do
       [

@@ -8,6 +8,7 @@ FactoryBot.define do
       feeder_episode { create(:episode) }
       api_response { build(:apple_episode_api_response, item_guid: feeder_episode.item_guid) }
       apple_hosted_audio_asset_container_id { "456" }
+      apple_show_id { nil }
     end
 
     # set a complete episode factory varient
@@ -45,7 +46,22 @@ FactoryBot.define do
     after(:build) do |apple_episode, evaluator|
       api_response = evaluator.api_response
       external_id = api_response["api_response"]["api_response"]["val"]["data"]["id"]
-      apple_episode.feeder_episode.create_apple_sync_log!(external_id: external_id, **api_response) unless apple_episode.feeder_episode.apple_sync_log.present?
+      sync_log_attrs = {external_id: external_id}.merge(api_response)
+
+      if evaluator.apple_show_id.present?
+        existing_sync_log = SyncLog.apple.episodes.find_by(feeder_id: apple_episode.feeder_episode.id, apple_show_id: evaluator.apple_show_id)
+        sync_log_attrs[:apple_show_id] = evaluator.apple_show_id
+
+        unless existing_sync_log.present?
+          SyncLog.create!(sync_log_attrs.merge(
+            integration: :apple,
+            feeder_type: :episodes,
+            feeder_id: apple_episode.feeder_episode.id
+          ))
+        end
+      elsif !apple_episode.feeder_episode.apple_sync_log.present?
+        apple_episode.feeder_episode.create_apple_sync_log!(sync_log_attrs)
+      end
     end
 
     initialize_with { new(show: show, feeder_episode: feeder_episode, api: api) }
