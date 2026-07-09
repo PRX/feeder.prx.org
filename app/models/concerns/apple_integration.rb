@@ -4,7 +4,7 @@ module AppleIntegration
   extend ActiveSupport::Concern
 
   included do
-    has_one :apple_sync_log, -> { episodes.apple }, foreign_key: :feeder_id, class_name: "SyncLog"
+    has_one :apple_sync_log, -> { episodes.apple }, foreign_key: :feeder_id, class_name: "Apple::SyncLog"
     has_one :apple_podcast_delivery, class_name: "Apple::PodcastDelivery"
     has_one :apple_podcast_container, class_name: "Apple::PodcastContainer"
     has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,

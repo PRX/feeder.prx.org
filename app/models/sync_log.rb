@@ -1,5 +1,12 @@
 class SyncLog < ApplicationRecord
+  self.inheritance_column = :integration
+
   enum :integration, Integrations::INTEGRATIONS
+
+  INTEGRATION_CLASSES = {
+    "apple" => "Apple::SyncLog",
+    "megaphone" => "SyncLog"
+  }.freeze
 
   # kinda like an AR polymorphic relation, but not using that
   enum :feeder_type, {
@@ -21,22 +28,13 @@ class SyncLog < ApplicationRecord
 
   serialize :api_response, coder: JSON
 
-  # TODO: Convert to AR polymorphism,
-  # this is a hack to validate Apple::Episode concerns:
-  validates :feeder_id,
-    uniqueness: {
-      scope: [:integration, :feeder_type],
-      message: "already has an Apple episode sync log"
-    },
-    if: :apple_episode_sync_log?
-  validates :apple_show_id, presence: true, if: :apple_episode_sync_log?
-
   def complete?
     updated_at.present? && external_id.present?
   end
 
-  def apple_episode_sync_log?
-    apple? && episodes?
+  def self.find_sti_class(type_name)
+    integration = base_class.type_for_attribute(inheritance_column).cast(type_name)
+    INTEGRATION_CLASSES.fetch(integration).constantize
   end
 
   def self.log!(attrs)
