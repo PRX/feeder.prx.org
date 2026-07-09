@@ -21,8 +21,22 @@ class SyncLog < ApplicationRecord
 
   serialize :api_response, coder: JSON
 
+  # TODO: Convert to AR polymorphism,
+  # this is a hack to validate Apple::Episode concerns:
+  validates :feeder_id,
+    uniqueness: {
+      scope: [:integration, :feeder_type],
+      message: "already has an Apple episode sync log"
+    },
+    if: :apple_episode_sync_log?
+  validates :apple_show_id, presence: true, if: :apple_episode_sync_log?
+
   def complete?
     updated_at.present? && external_id.present?
+  end
+
+  def apple_episode_sync_log?
+    apple? && episodes?
   end
 
   def self.log!(attrs)

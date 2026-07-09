@@ -22,7 +22,6 @@ class SyncLog
 
     def self.verify!
       null_rows = SyncLog.apple.episodes.where(apple_show_id: nil)
-      multi_row_feeder_ids = SyncLog.apple.episodes.group(:feeder_id).having("COUNT(*) > 1").count
 
       {
         remaining_null_show_episode_rows: null_rows.map do |sync_log|
@@ -31,9 +30,6 @@ class SyncLog
             feeder_id: sync_log.feeder_id,
             external_id: sync_log.external_id
           }
-        end,
-        multi_row_episode_feeder_ids: multi_row_feeder_ids.map do |feeder_id, count|
-          {feeder_id: feeder_id, count: count}
         end
       }
     end

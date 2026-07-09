@@ -118,7 +118,8 @@ describe Apple::Publisher do
     let(:external_id) { apple_episode_api_response["api_response"]["api_response"]["val"]["data"]["id"] }
 
     before do
-      episode.create_apple_sync_log(external_id: external_id, **apple_episode_api_response)
+      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
+      episode.create_apple_sync_log!(external_id: external_id, apple_show_id: "show-1", **apple_episode_api_response)
     end
 
     it "should filter episodes that are already synced to apple" do
@@ -187,7 +188,7 @@ describe Apple::Publisher do
 
     before do
       Apple::Show.connect_existing("123", apple_config)
-      episode.create_apple_sync_log(external_id: "123", **apple_episode_api_response)
+      episode.create_apple_sync_log!(external_id: "123", apple_show_id: "123", **apple_episode_api_response)
       private_feed.episodes << episode
     end
 
@@ -1048,6 +1049,10 @@ describe Apple::Publisher do
 
   describe "#update_audio_container_reference!" do
     let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show, apple_hosted_audio_asset_container_id: nil) }
+
+    before do
+      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
+    end
 
     it "updates container references for episodes" do
       assert episode.has_unlinked_container?

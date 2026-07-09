@@ -24,7 +24,7 @@ class SyncLog
       end
 
       it "skips and reports unresolvable rows" do
-        missing_episode = SyncLog.create!(integration: :apple, feeder_type: :episodes, feeder_id: -1, external_id: "missing-episode")
+        missing_episode = create_legacy_sync_log(feeder_id: -1, external_id: "missing-episode")
         missing_config = create_legacy_episode_sync_log(with_config: false)
         missing_show_id = create_legacy_episode_sync_log
 
@@ -63,18 +63,12 @@ class SyncLog
     end
 
     describe ".verify!" do
-      it "flags invariant violations after backfill" do
+      it "reports a legacy row left after backfill" do
         sync_log = create_legacy_episode_sync_log(sync_log_show_id: "show-from-sync")
-        SyncLog.create!(integration: :apple,
-          feeder_type: :episodes,
-          feeder_id: sync_log.feeder_id,
-          external_id: "scoped-episode",
-          apple_show_id: "show-from-sync")
 
         report = AppleShowBackfill.verify!
 
         assert_equal [sync_log.id], report[:remaining_null_show_episode_rows].map { |row| row[:sync_log_id] }
-        assert_equal [{feeder_id: sync_log.feeder_id, count: 2}], report[:multi_row_episode_feeder_ids]
       end
     end
 
@@ -93,10 +87,16 @@ class SyncLog
         )
       end
 
-      SyncLog.create!(integration: :apple,
-        feeder_type: :episodes,
+      create_legacy_sync_log(
         feeder_id: episode.id,
-        external_id: "episode-#{episode.id}")
+        external_id: "episode-#{episode.id}"
+      )
+    end
+
+    def create_legacy_sync_log(**attrs)
+      sync_log = SyncLog.new(integration: :apple, feeder_type: :episodes, **attrs)
+      sync_log.save!(validate: false)
+      sync_log
     end
   end
 end

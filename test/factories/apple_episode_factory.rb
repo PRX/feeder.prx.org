@@ -47,10 +47,11 @@ FactoryBot.define do
       api_response = evaluator.api_response
       external_id = api_response["api_response"]["api_response"]["val"]["data"]["id"]
       sync_log_attrs = {external_id: external_id}.merge(api_response)
+      apple_show_id = evaluator.apple_show_id.presence || apple_episode.apple_show_id.presence
 
-      if evaluator.apple_show_id.present?
-        existing_sync_log = SyncLog.apple.episodes.find_by(feeder_id: apple_episode.feeder_episode.id, apple_show_id: evaluator.apple_show_id)
-        sync_log_attrs[:apple_show_id] = evaluator.apple_show_id
+      if apple_show_id.present?
+        existing_sync_log = SyncLog.apple.episodes.find_by(feeder_id: apple_episode.feeder_episode.id)
+        sync_log_attrs[:apple_show_id] = apple_show_id
 
         unless existing_sync_log.present?
           SyncLog.create!(sync_log_attrs.merge(
@@ -60,7 +61,8 @@ FactoryBot.define do
           ))
         end
       elsif !apple_episode.feeder_episode.apple_sync_log.present?
-        apple_episode.feeder_episode.create_apple_sync_log!(sync_log_attrs)
+        sync_log = apple_episode.feeder_episode.build_apple_sync_log(sync_log_attrs)
+        sync_log.save!(validate: false)
       end
     end
 
