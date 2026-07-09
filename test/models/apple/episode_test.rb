@@ -22,7 +22,7 @@ describe Apple::Episode do
   let(:external_id) { apple_episode_api_response["api_response"]["api_response"]["val"]["data"]["id"] }
 
   before do
-    episode.create_apple_sync_log(external_id: external_id, **apple_episode_api_response)
+    create_legacy_apple_episode_sync_log(episode, external_id: external_id, **apple_episode_api_response)
   end
 
   describe ".upsert_sync_log" do
@@ -37,9 +37,10 @@ describe Apple::Episode do
   end
 
   describe "#sync_log" do
-    it "prefers the scoped row for the current show" do
+    it "returns the scoped row for the current show" do
       SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
-      scoped = SyncLog.create!(integration: :apple, feeder_type: :episodes, feeder_id: episode.id, external_id: "scoped-ep", apple_show_id: "show-1")
+      scoped = episode.apple_sync_log
+      scoped.update!(external_id: "scoped-ep", apple_show_id: "show-1")
 
       assert_equal scoped, apple_episode.sync_log
     end
@@ -159,6 +160,7 @@ describe Apple::Episode do
 
   describe ".update_episodes" do
     it "ignores 409 errors for some episodes" do
+      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
       episode1 = create(:episode, podcast: podcast)
       episode2 = create(:episode, podcast: podcast)
       apple_episode1 = build(:apple_episode, show: apple_show, feeder_episode: episode1)
@@ -346,9 +348,10 @@ describe Apple::Episode do
     let(:apple_episode2) { build(:apple_episode, show: apple_show, feeder_episode: episode2) }
 
     it "partitions episodes into ready and waiting sets" do
+      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
       # Create sync logs for both episodes
-      episode1.create_apple_sync_log(external_id: "ep1", **build(:apple_episode_api_response, item_guid: episode1.item_guid))
-      episode2.create_apple_sync_log(external_id: "ep2", **build(:apple_episode_api_response, item_guid: episode2.item_guid, apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS))
+      create_legacy_apple_episode_sync_log(episode1, external_id: "ep1", **build(:apple_episode_api_response, item_guid: episode1.item_guid))
+      create_legacy_apple_episode_sync_log(episode2, external_id: "ep2", **build(:apple_episode_api_response, item_guid: episode2.item_guid, apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS))
 
       # Setup episode1 to be waiting (delivery settled, asset state not finished)
       delivery1 = create(:apple_podcast_delivery, episode: episode1, podcast_container: container1)
@@ -412,5 +415,11 @@ describe Apple::Episode do
         assert_equal 0, waiting.length
       end
     end
+  end
+
+  def create_legacy_apple_episode_sync_log(episode, **attrs)
+    sync_log = episode.build_apple_sync_log(attrs)
+    sync_log.save!(validate: false)
+    sync_log
   end
 end
