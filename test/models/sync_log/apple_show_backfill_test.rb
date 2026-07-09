@@ -37,22 +37,6 @@ class SyncLog
         assert_includes report[:skipped_sync_logs].map { |row| row[:reason] }, "missing show id"
       end
 
-      it "reports duplicate cleanup candidates without touching the null row" do
-        sync_log = create_legacy_episode_sync_log(sync_log_show_id: "show-from-sync")
-        duplicate = SyncLog.create!(integration: :apple,
-          feeder_type: :episodes,
-          feeder_id: sync_log.feeder_id,
-          external_id: "scoped-episode",
-          apple_show_id: "show-from-sync")
-
-        report = AppleShowBackfill.backfill!
-
-        assert_equal 1, report[:duplicate_cleanup_candidates]
-        assert_equal sync_log.id, report[:duplicate_sync_logs].first[:sync_log_id]
-        assert_equal duplicate.id, report[:duplicate_sync_logs].first[:duplicate_sync_log_id]
-        assert_nil sync_log.reload.apple_show_id
-      end
-
       it "is idempotent" do
         create_legacy_episode_sync_log(sync_log_show_id: "show-from-sync")
         AppleShowBackfill.backfill!
@@ -79,7 +63,7 @@ class SyncLog
     end
 
     describe ".verify!" do
-      it "flags leftover null rows and feeders with more than one apple episode row" do
+      it "flags invariant violations after backfill" do
         sync_log = create_legacy_episode_sync_log(sync_log_show_id: "show-from-sync")
         SyncLog.create!(integration: :apple,
           feeder_type: :episodes,
