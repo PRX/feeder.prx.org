@@ -3,6 +3,34 @@
 require "test_helper"
 
 describe SyncLog do
+  describe "integration STI" do
+    it "uses the Apple subclass for new and persisted Apple rows" do
+      sync_log = SyncLog.create!(integration: :apple, feeder_type: :feeds, feeder_id: 123, external_id: "show-1")
+
+      assert_instance_of Apple::SyncLog, sync_log
+      assert_instance_of Apple::SyncLog, SyncLog.find(sync_log.id)
+      assert_equal [sync_log], Apple::SyncLog.where(id: sync_log.id)
+    end
+
+    it "uses the Megaphone subclass for new and persisted Megaphone rows" do
+      sync_log = SyncLog.create!(integration: :megaphone, feeder_type: :episodes, feeder_id: 123, external_id: "episode-1")
+
+      assert_instance_of SyncLog, sync_log
+      assert_instance_of SyncLog, SyncLog.find(sync_log.id)
+      assert_equal [sync_log], SyncLog.megaphone.where(id: sync_log.id)
+    end
+
+    it "builds Apple associations as the Apple subclass" do
+      episode = create(:episode)
+
+      sync_log = episode.build_apple_sync_log(external_id: "episode-1", apple_show_id: "show-1")
+
+      assert_instance_of Apple::SyncLog, sync_log
+      assert_predicate sync_log, :apple?
+      assert_predicate sync_log, :episodes?
+    end
+  end
+
   describe "indexes" do
     it "retains one SyncLog row per feeder during show scoping" do
       index = ActiveRecord::Base.connection.indexes(:sync_logs).find do |candidate|
