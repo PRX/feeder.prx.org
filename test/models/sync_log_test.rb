@@ -4,6 +4,17 @@ require "test_helper"
 
 describe SyncLog do
   describe "indexes" do
+    it "uses one full unique index that supports the legacy lookup prefix" do
+      index = ActiveRecord::Base.connection.indexes(:sync_logs).find do |candidate|
+        candidate.name == "idx_sync_logs_unique_by_apple_show"
+      end
+
+      assert index.unique
+      assert index.nulls_not_distinct
+      assert_nil index.where
+      assert_equal %w[integration feeder_type feeder_id apple_show_id], index.columns
+    end
+
     it "prevents duplicate unscoped sync logs" do
       SyncLog.create!(integration: :apple, feeder_type: :feeds, feeder_id: 123, external_id: 456, api_response: {foo: "bar"})
       s2 = SyncLog.new(integration: :apple, feeder_type: :feeds, feeder_id: 123, external_id: 789, api_response: {foo: "bar"})
