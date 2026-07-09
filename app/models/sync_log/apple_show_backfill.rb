@@ -3,8 +3,11 @@
 class SyncLog
   # Transitional migration service: scopes legacy Apple episode SyncLog rows to
   # their Apple show using legacy apple_configs, feeds.apple_show_id, and
-  # public-feed SyncLog rows. Run by hand in the production console (dry-run,
-  # backfill, verify). Delete once legacy NULL-show episode rows are gone.
+  # public-feed SyncLog rows. This assumes ShowFeedBinding::Backfill's episode
+  # consistency audit passed, proving each podcast kept the same Apple show for
+  # the lifetime of its legacy episode state. Run by hand in the production
+  # console (dry-run, backfill, verify). Delete once legacy NULL-show episode
+  # rows are gone.
   class AppleShowBackfill
     def self.backfill!(dry_run: false)
       report = new_backfill_report(dry_run: dry_run)
@@ -40,13 +43,10 @@ class SyncLog
         dry_run: dry_run,
         sync_logs_total: 0,
         updated: 0,
-        unchanged: 0,
         skipped: 0,
-        duplicate_cleanup_candidates: 0,
         changed: 0,
         actions: [],
-        skipped_sync_logs: [],
-        duplicate_sync_logs: []
+        skipped_sync_logs: []
       }
     end
     private_class_method :new_backfill_report
@@ -56,16 +56,6 @@ class SyncLog
       return skip_sync_log(sync_log, report, resolution[:reason]) unless resolution[:apple_show_id].present?
 
       apple_show_id = resolution[:apple_show_id]
-      duplicate = SyncLog.apple.episodes
-        .where(feeder_id: sync_log.feeder_id, apple_show_id: apple_show_id)
-        .where.not(id: sync_log.id)
-        .first
-
-      if duplicate
-        report_duplicate(sync_log, duplicate, apple_show_id, report)
-        return
-      end
-
       unless dry_run
         sync_log.update!(apple_show_id: apple_show_id)
       end
@@ -115,20 +105,5 @@ class SyncLog
       }
     end
     private_class_method :skip_sync_log
-
-    def self.report_duplicate(sync_log, duplicate, apple_show_id, report)
-      report[:duplicate_cleanup_candidates] += 1
-      row = {
-        sync_log_id: sync_log.id,
-        duplicate_sync_log_id: duplicate.id,
-        feeder_id: sync_log.feeder_id,
-        external_id: sync_log.external_id,
-        duplicate_external_id: duplicate.external_id,
-        apple_show_id: apple_show_id
-      }
-      report[:duplicate_sync_logs] << row
-      report[:actions] << row.merge(action: "duplicate_cleanup_candidate")
-    end
-    private_class_method :report_duplicate
   end
 end
