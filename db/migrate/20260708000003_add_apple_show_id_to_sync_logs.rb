@@ -10,15 +10,9 @@ class AddAppleShowIdToSyncLogs < ActiveRecord::Migration[7.2]
       name: "index_sync_logs_on_integration_and_feeder_type_and_feeder_id"
 
     add_index :sync_logs,
-      [:integration, :feeder_type, :feeder_id],
-      unique: true,
-      where: "apple_show_id IS NULL",
-      name: "idx_sync_logs_unique_without_apple_show"
-
-    add_index :sync_logs,
       [:integration, :feeder_type, :feeder_id, :apple_show_id],
       unique: true,
-      where: "apple_show_id IS NOT NULL",
-      name: "idx_sync_logs_unique_with_apple_show"
+      nulls_not_distinct: true,
+      name: "idx_sync_logs_unique_by_apple_show"
   end
 end
