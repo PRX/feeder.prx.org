@@ -88,6 +88,52 @@ module Apple
       end
     end
 
+    describe ".verify_episode_show_consistency!" do
+      it "reports zero mismatches when every legacy episode id belongs to the bound show" do
+        config = create_config_with_legacy_show_id(sync_log_show_id: "show-1")
+        ShowFeedBinding::Backfill.backfill!
+        sync_log = create_legacy_episode_sync_log(config)
+
+        report = with_remote_episode_ids(sync_log.external_id) do
+          ShowFeedBinding::Backfill.verify_episode_show_consistency!
+        end
+
+        assert_equal 1, report[:configs_total]
+        assert_equal 1, report[:episode_sync_logs_total]
+        assert_empty report[:mismatches]
+        assert_empty report[:errors]
+      end
+
+      it "reports an episode id that does not belong to the bound show" do
+        config = create_config_with_legacy_show_id(sync_log_show_id: "show-1")
+        ShowFeedBinding::Backfill.backfill!
+        sync_log = create_legacy_episode_sync_log(config)
+
+        report = with_remote_episode_ids("another-episode") do
+          ShowFeedBinding::Backfill.verify_episode_show_consistency!
+        end
+
+        assert_equal 1, report[:mismatches].length
+        assert_equal sync_log.id, report[:mismatches].first[:sync_log_id]
+        assert_equal "show-1", report[:mismatches].first[:apple_show_id]
+      end
+
+      it "reports Apple lookup failures without assigning episode state" do
+        config = create_config_with_legacy_show_id(sync_log_show_id: "show-1")
+        ShowFeedBinding::Backfill.backfill!
+        sync_log = create_legacy_episode_sync_log(config)
+        loader = ->(*) { raise "Apple unavailable" }
+
+        report = Apple::Show.stub(:apple_episode_json, loader) do
+          ShowFeedBinding::Backfill.verify_episode_show_consistency!
+        end
+
+        assert_equal 1, report[:errors].length
+        assert_match(/Apple show episode verification failed/, report[:errors].first[:reason])
+        assert_equal sync_log, SyncLog.find(sync_log.id)
+      end
+    end
+
     def create_config_with_legacy_show_id(sync_log_show_id: nil, private_show_id: nil, key: create(:apple_key))
       podcast = create(:podcast)
       private_feed = create(:private_feed, podcast: podcast, apple_show_id: private_show_id)
@@ -103,6 +149,21 @@ module Apple
       end
 
       config
+    end
+
+    def create_legacy_episode_sync_log(config)
+      episode = create(:episode, podcast: config.podcast)
+      SyncLog.create!(
+        integration: :apple,
+        feeder_type: :episodes,
+        feeder_id: episode.id,
+        external_id: "episode-#{episode.id}"
+      )
+    end
+
+    def with_remote_episode_ids(*episode_ids, &block)
+      remote_episodes = episode_ids.map { |episode_id| {"id" => episode_id.to_s} }
+      Apple::Show.stub(:apple_episode_json, remote_episodes, &block)
     end
   end
 end

@@ -72,6 +72,26 @@ module Apple
         report
       end
 
+      # Precondition for show-scoping legacy Apple episode SyncLogs: every
+      # stored Apple episode id must still belong to the podcast's bound show.
+      # Run after the binding backfill and resolve any mismatch before deploying
+      # show-scoped episode identity.
+      def self.verify_episode_show_consistency!
+        report = {
+          configs_total: 0,
+          episode_sync_logs_total: 0,
+          mismatches: [],
+          errors: []
+        }
+
+        Apple::Config.find_each do |config|
+          report[:configs_total] += 1
+          verify_config_episode_show_consistency!(config, report)
+        end
+
+        report
+      end
+
       def self.new_backfill_report(dry_run:)
         {
           dry_run: dry_run,
@@ -154,6 +174,43 @@ module Apple
         sync_log&.external_id.presence || config.private_feed&.apple_show_id.presence
       end
       private_class_method :legacy_apple_show_id
+
+      def self.verify_config_episode_show_consistency!(config, report)
+        binding = config.show_feed_binding
+        unless binding
+          report[:errors] << {config_id: config.id, reason: "missing binding"}
+          return
+        end
+
+        show = config.build_show
+        remote_episode_ids = Apple::Show
+          .apple_episode_json(show.api, binding.apple_show_id)
+          .to_h { |episode_json| [episode_json.fetch("id").to_s, true] }
+
+        episode_ids = ::Episode.with_deleted
+          .where(podcast_id: config.podcast.id)
+          .select(:id)
+
+        SyncLog.apple.episodes.where(feeder_id: episode_ids).find_each do |sync_log|
+          report[:episode_sync_logs_total] += 1
+          next if remote_episode_ids.key?(sync_log.external_id.to_s)
+
+          report[:mismatches] << {
+            config_id: config.id,
+            apple_show_id: binding.apple_show_id,
+            sync_log_id: sync_log.id,
+            feeder_id: sync_log.feeder_id,
+            external_id: sync_log.external_id
+          }
+        end
+      rescue => e
+        report[:errors] << {
+          config_id: config.id,
+          apple_show_id: binding&.apple_show_id,
+          reason: "Apple show episode verification failed: #{e.class}: #{e.message}"
+        }
+      end
+      private_class_method :verify_config_episode_show_consistency!
 
       def self.skip_config(config, report, reason)
         report[:skipped] += 1
