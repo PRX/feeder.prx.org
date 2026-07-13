@@ -29,4 +29,8 @@ class Api::Auth::PodcastsController < Api::PodcastsController
       super
     end
   end
+
+  def included(resources)
+    super.includes(:feeds)
+  end
 end
