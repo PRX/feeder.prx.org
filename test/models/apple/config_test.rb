@@ -36,7 +36,7 @@ describe Apple::DelegatedDeliveryConfig do
     assert_equal podcast, config.podcast
     assert_equal podcast.id, config.podcast_id
     assert_equal podcast.title, config.podcast_title
-    assert_equal public_feed, config.public_feed
+    assert_equal public_feed, config.legacy_public_feed
     assert_equal private_feed, config.private_feed
   end
 

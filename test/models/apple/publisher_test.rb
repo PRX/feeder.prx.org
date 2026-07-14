@@ -4,7 +4,7 @@ describe Apple::Publisher do
   let(:podcast) { create(:podcast) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:feed, podcast: podcast, private: true) }
-  let(:apple_config) { build(:apple_config) }
+  let(:apple_config) { build(:apple_config, :with_show_feed_binding) }
   let(:apple_api) { Apple::Api.from_delegated_delivery_config(apple_config) }
 
   let(:apple_publisher) do
@@ -104,7 +104,7 @@ describe Apple::Publisher do
     let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
 
-    let(:apple_config) { build(:apple_config) }
+    let(:apple_config) { build(:apple_config, :with_show_feed_binding) }
     let(:apple_api) { Apple::Api.from_delegated_delivery_config(apple_config) }
 
     let(:episode) { create(:episode, podcast: podcast) }
@@ -177,8 +177,8 @@ describe Apple::Publisher do
   describe "Archive and Unarchive flows" do
     let(:podcast) { create(:podcast) }
     let(:public_feed) { podcast.default_feed }
-    let(:private_feed) { create(:private_feed, podcast: podcast) }
-    let(:apple_config) { create(:apple_config, feed: private_feed) }
+    let(:private_feed) { create(:private_feed, podcast: podcast, apple_show_id: "123") }
+    let(:apple_config) { create(:apple_config, :with_show_feed_binding, feed: private_feed) }
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
     let(:apple_publisher) { apple_config.build_publisher }

@@ -8,10 +8,10 @@ module Apple
 
         report = ShowFeedBinding::Backfill.backfill!
 
-        binding = config.public_feed.apple_show_feed_binding
+        binding = config.reload.show_feed_binding
         assert_equal 1, report[:created]
         assert_equal 1, report[:linked]
-        assert_equal binding, config.reload.show_feed_binding
+        assert_equal binding, config.show_feed_binding
         assert_equal config.public_feed, binding.feed
         assert_equal config.key, binding.apple_key
         assert_equal "show-from-sync", binding.apple_show_id
