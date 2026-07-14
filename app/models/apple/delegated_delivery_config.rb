@@ -14,7 +14,7 @@ module Apple
     belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: true, inverse_of: :delegated_delivery_configs
 
     validate :podcast_has_one_apple_config
-    validate :delivery_feed_differs_from_public_feeds
+    validate :not_default_feed
 
     # backwards-compatible associations
     delegate :podcast, to: :feed, allow_nil: true
@@ -74,10 +74,9 @@ module Apple
       feed
     end
 
-    def delivery_feed_differs_from_public_feeds
-      public_feeds = [legacy_public_feed, show_feed_binding&.feed].compact
-      if public_feeds.include?(delivery_feed)
-        errors.add(:feed, "must differ from the public feed")
+    def not_default_feed
+      if feed&.default?
+        errors.add(:feed, "cannot use default feed")
       end
     end
 
