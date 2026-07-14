@@ -23,7 +23,17 @@ describe Apple::DelegatedDeliveryConfig do
       podcast = create(:podcast)
       c1 = build(:apple_config, feed: podcast.default_feed)
       refute c1.valid?
-      assert_equal ["cannot use default feed"], c1.errors[:feed]
+      assert_equal ["must differ from the public feed"], c1.errors[:feed]
+    end
+
+    it "cannot be the bound public feed" do
+      podcast = create(:podcast)
+      public_feed = create(:public_feed, podcast: podcast)
+      binding = build(:apple_show_feed_binding, feed: public_feed)
+      config = build(:apple_config, feed: public_feed, show_feed_binding: binding)
+
+      refute config.valid?
+      assert_equal ["must differ from the public feed"], config.errors[:feed]
     end
   end
 
