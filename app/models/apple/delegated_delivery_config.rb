@@ -89,7 +89,7 @@ module Apple
       when :legacy
         key
       when :show_feed_binding
-        show_feed_binding&.apple_key
+        show_feed_binding.apple_key
       end
     end
 
@@ -98,7 +98,7 @@ module Apple
       when :legacy
         legacy_public_feed
       when :show_feed_binding
-        show_feed_binding&.feed
+        show_feed_binding.feed
       end
     end
 
@@ -107,7 +107,7 @@ module Apple
       when :legacy
         legacy_apple_show_id
       when :show_feed_binding
-        show_feed_binding&.apple_show_id
+        show_feed_binding.apple_show_id
       end
     end
 
