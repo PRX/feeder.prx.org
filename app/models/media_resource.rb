@@ -142,9 +142,6 @@ class MediaResource < ApplicationRecord
   end
 
   def copy_media(force = false)
-    if force || needs_copy?
-      Tasks::CopyMediaTask.start!(self)
-    end
   end
 
   def after_copy(copy_task)

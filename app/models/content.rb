@@ -25,8 +25,6 @@ class Content < MediaResource
     if force || needs_copy?
       if slice?
         Tasks::SliceMediaTask.start!(self)
-      elsif episode&.medium_hls_video?
-        Tasks::TranscodeHlsTask.start!(self)
       else
         Tasks::CopyMediaTask.start!(self)
       end

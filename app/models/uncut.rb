@@ -13,6 +13,12 @@ class Uncut < MediaResource
     self.segmentation ||= DEFAULT_SEGMENTATION
   end
 
+  def copy_media(force = false)
+    if force || needs_copy?
+      Tasks::CopyMediaTask.start!(self)
+    end
+  end
+
   def after_copy(copy_task)
     # optionally set ad breaks from ID3 tags
     if copy_task.porter_callback_tags.present? && ad_breaks.blank?
@@ -29,11 +35,13 @@ class Uncut < MediaResource
     end
   end
 
+  def build_content(seg)
+    Content.new(original_url: url, segmentation: seg)
+  end
+
   def slice_contents
     if segmentation_ready?
-      episode.media = segmentation.map do |seg|
-        Content.new(original_url: url, segmentation: seg)
-      end
+      episode.media = segmentation.map { |seg| build_content(seg) }
     end
   end
 
