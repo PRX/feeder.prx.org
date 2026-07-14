@@ -37,49 +37,6 @@ module Apple
       end
     end
 
-    def self.find_or_build_apple_feed(podcast)
-      existing_feed = Feeds::AppleSubscription.find_by_podcast_id(podcast.id)
-      existing_feed.present? ? existing_feed : Feeds::AppleSubscription.new(podcast_id: podcast.id)
-    end
-
-    # TODO: this a helper for onboarding via console, retrofit when the UX catches up
-    def self.build_apple_config(podcast, key)
-      if podcast.apple_config
-        Rails.logger.error("Found existing apple config for #{podcast.title}!")
-        Rails.logger.error("Do you want to continue? (y/N)")
-        raise "Stopping build_apple_config" if $stdin.gets.chomp.downcase != "y"
-      end
-
-      new(feed: find_or_build_apple_feed(podcast), key: key)
-    end
-
-    def self.mark_as_delivered!(apple_publisher)
-      apple_publisher.episodes_to_sync.each do |episode|
-        if episode.podcast_container&.needs_delivery? == false
-          episode.feeder_episode.apple_mark_as_delivered!
-        end
-      end
-    end
-
-    def self.setup_delegated_delivery(podcast, key: nil, apple_config: nil, apple_show_id: nil)
-      ac = apple_config || build_apple_config(podcast, key)
-      ac.save!
-
-      return "No apple show id -- skip connect existing " unless apple_show_id.present?
-
-      Apple::Show.connect_existing(apple_show_id, ac)
-
-      pub = ac.build_publisher
-      # Poll all the episodes, to get a top-level view of what has remote state.
-      # Just the episode endpoint, for speed and to avoid rate-limiting.
-      pub.poll_all_episodes!
-
-      # Now poll the episodes in the feed in their entirety,  to get a view of what has been added.
-      pub.poll!
-
-      mark_as_delivered!(pub)
-    end
-
     def routing_source
       self.class.routing_source
     end
