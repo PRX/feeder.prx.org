@@ -14,11 +14,11 @@ export default class extends Controller {
       this.frameTarget.src = src
     }
 
-    // show preview button when ad_injection is supported
-    if (this.mediumTarget.value === "audio" || this.mediumTarget === "uncut") {
-      this.buttonTarget.classList.remove("d-none")
-    } else {
+    // hide preview button entirely for video/overrides (no ad injection)
+    if (this.mediumTarget.value === "video" || this.mediumTarget.value === "override") {
       this.buttonTarget.classList.add("d-none")
+    } else {
+      this.buttonTarget.classList.remove("d-none")
     }
   }
 }

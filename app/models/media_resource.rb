@@ -37,7 +37,7 @@ class MediaResource < ApplicationRecord
   end
 
   def max_file_size
-    1.gigabyte
+    episode.medium_hls_video? ? 10.gigabytes : 1.gigabyte
   end
 
   def audio?
@@ -102,6 +102,14 @@ class MediaResource < ApplicationRecord
 
   def generate_waveform?
     false
+  end
+
+  def rendition_url(file_name)
+    "#{url}/#{file_name}"
+  end
+
+  def rendition_path(file_name)
+    "#{path}/#{file_name}"
   end
 
   def replace_resources!

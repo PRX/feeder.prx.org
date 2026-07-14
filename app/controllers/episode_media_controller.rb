@@ -75,7 +75,6 @@ class EpisodeMediaController < ApplicationController
       :enclosure_override_url,
       :enclosure_override_prefix,
       contents_attributes: %i[id position original_url file_size _destroy _retry],
-      hls_video_attributes: %i[id original_url file_size _destroy _retry],
       uncut_attributes: %i[id segmentation original_url file_size _destroy _retry]
     )
   end

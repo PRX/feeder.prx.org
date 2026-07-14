@@ -24,8 +24,6 @@
         <div class="col-lg-12">
           <% if episode.medium_uncut? %>
             <%= render "form_uncut", episode: episode, form: form %>
-          <% elsif episode.medium_hls_video? %>
-            <%= render "form_hls_video", episode: episode, form: form %>
           <% elsif episode.medium_override? %>
             <%# no uploads for overrides %>
           <% else %>

@@ -5,9 +5,9 @@ class Content < MediaResource
   validate :validate_segmentation
 
   def validate_episode_medium
-    if episode&.medium_video?
+    if episode&.video?
       errors.add(:medium, :not_video, message: "must be a video file") if medium != "video"
-    elsif episode&.medium_audio? || episode&.medium_uncut?
+    elsif episode&.audio?
       errors.add(:medium, :not_audio, message: "must be an audio file") if medium != "audio"
     end
   end
@@ -25,6 +25,8 @@ class Content < MediaResource
     if force || needs_copy?
       if slice?
         Tasks::SliceMediaTask.start!(self)
+      elsif episode&.medium_hls_video?
+        Tasks::TranscodeHlsTask.start!(self)
       else
         Tasks::CopyMediaTask.start!(self)
       end
