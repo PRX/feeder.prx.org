@@ -16,12 +16,6 @@ module Apple
     validate :podcast_has_one_apple_config
     validate :not_default_feed
 
-    # backwards-compatible credential getters
-    delegate :provider_id, to: :routing_key
-    delegate :key_id, to: :routing_key
-    delegate :key_pem, to: :routing_key
-    delegate :key_pem_b64, to: :routing_key
-
     # backwards-compatible associations
     delegate :podcast, to: :feed, allow_nil: true
     delegate :id, :title, to: :podcast, prefix: true, allow_nil: true
@@ -103,26 +97,6 @@ module Apple
 
     def build_show
       Apple::Show.from_delegated_delivery_config(self)
-    end
-
-    def apple_key
-      Base64.decode64(apple_key_pem_b64)
-    end
-
-    def apple_data
-      episode_data = [
-        SyncLog.apple.where(feeder_type: "episodes", feeder_id: podcast.episodes.pluck(:id)),
-        Apple::PodcastContainer.where(episode: podcast.episodes)
-      ].flatten.compact
-
-      podcast_delivery_data = [
-        Apple::PodcastDelivery.with_deleted.where(episode: podcast.episodes),
-        Apple::PodcastDeliveryFile.with_deleted.where(episode: podcast.episodes)
-      ]
-
-      feed_data = [public_feed.apple_sync_log, private_feed.apple_sync_log].compact
-
-      [podcast_delivery_data, episode_data, feed_data]
     end
   end
 end

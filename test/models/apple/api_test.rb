@@ -123,10 +123,11 @@ describe Apple::Api do
     it "creates an api from apple credentials" do
       creds = build(:apple_config)
       api = Apple::Api.from_delegated_delivery_config(creds)
+      key = creds.routing_key
 
-      assert_equal api.provider_id, creds.provider_id
-      assert_equal api.key_id, creds.key_id
-      assert_equal api.key, creds.key_pem
+      assert_equal api.provider_id, key.provider_id
+      assert_equal api.key_id, key.key_id
+      assert_equal api.key, key.key_pem
     end
 
     it "falls back on the environment if the apple credential attributes are not set" do
