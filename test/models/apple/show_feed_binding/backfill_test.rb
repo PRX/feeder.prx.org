@@ -86,6 +86,21 @@ module Apple
         assert_equal config.id, report[:mismatches].first[:config_id]
         assert_equal "apple_show_id", report[:mismatches].first[:mismatches].first[:field]
       end
+
+      it "compares against legacy routing when binding routing is selected" do
+        config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
+        ShowFeedBinding::Backfill.backfill!
+        config.reload.show_feed_binding.update!(apple_show_id: "wrong-show")
+
+        previous = ENV["APPLE_ROUTING_SOURCE"]
+        ENV["APPLE_ROUTING_SOURCE"] = "show_feed_binding"
+        report = ShowFeedBinding::Backfill.verify_routing_equivalence!
+
+        assert_equal 1, report[:mismatches].length
+        assert_equal "apple_show_id", report[:mismatches].first[:mismatches].first[:field]
+      ensure
+        previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
+      end
     end
 
     describe ".verify_episode_show_consistency!" do

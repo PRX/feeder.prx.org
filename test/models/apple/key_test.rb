@@ -1,6 +1,6 @@
 require "test_helper"
 
-describe Apple::Config do
+describe Apple::Key do
   describe "#valid?" do
     it "requires all apple credentials to have a value or be nil" do
       v1 = build(:apple_key, provider_id: nil, key_id: "blood", key_pem_b64: "orange")

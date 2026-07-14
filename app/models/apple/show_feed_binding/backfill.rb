@@ -10,7 +10,7 @@ module Apple
       def self.backfill!(dry_run: false)
         report = new_backfill_report(dry_run: dry_run)
 
-        Apple::Config.find_each do |config|
+        Apple::DelegatedDeliveryConfig.find_each do |config|
           report[:configs_total] += 1
           backfill_config!(config, report, dry_run: dry_run)
         end
@@ -21,7 +21,7 @@ module Apple
       def self.verify_routing_equivalence!
         report = {configs_total: 0, mismatches: []}
 
-        Apple::Config.find_each do |config|
+        Apple::DelegatedDeliveryConfig.find_each do |config|
           report[:configs_total] += 1
           binding = config.show_feed_binding
 
@@ -33,9 +33,8 @@ module Apple
             next
           end
 
-          public_feed = config.public_feed
-          sync_log = SyncLog.apple.feeds.find_by(feeder_id: public_feed&.id)
-          legacy_show_id = sync_log&.external_id.presence || config.private_feed&.apple_show_id.presence
+          public_feed = config.legacy_public_feed
+          legacy_show_id = config.legacy_apple_show_id
 
           mismatch = {
             config_id: config.id,
@@ -84,7 +83,7 @@ module Apple
           errors: []
         }
 
-        Apple::Config.find_each do |config|
+        Apple::DelegatedDeliveryConfig.find_each do |config|
           report[:configs_total] += 1
           verify_config_episode_show_consistency!(config, report)
         end
@@ -110,8 +109,8 @@ module Apple
 
       def self.backfill_config!(config, report, dry_run:)
         key = config.key
-        public_feed = config.public_feed
-        legacy_show_id = legacy_apple_show_id(config, public_feed)
+        public_feed = config.legacy_public_feed
+        legacy_show_id = config.legacy_apple_show_id
 
         return skip_config(config, report, "missing key") unless key
         return skip_config(config, report, "missing public feed") unless public_feed
@@ -168,12 +167,6 @@ module Apple
         }
       end
       private_class_method :backfill_config!
-
-      def self.legacy_apple_show_id(config, public_feed)
-        sync_log = SyncLog.apple.feeds.find_by(feeder_id: public_feed&.id)
-        sync_log&.external_id.presence || config.private_feed&.apple_show_id.presence
-      end
-      private_class_method :legacy_apple_show_id
 
       def self.verify_config_episode_show_consistency!(config, report)
         binding = config.show_feed_binding

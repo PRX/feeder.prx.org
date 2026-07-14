@@ -9,7 +9,7 @@ describe Apple::Episode do
   let(:private_feed) { create(:private_feed, podcast: podcast) }
 
   let(:apple_config) { build(:apple_config) }
-  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+  let(:apple_api) { Apple::Api.from_delegated_delivery_config(apple_config) }
 
   let(:episode) { create(:episode, podcast: podcast) }
   let(:apple_show) do

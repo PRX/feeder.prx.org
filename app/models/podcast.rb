@@ -89,7 +89,7 @@ class Podcast < ApplicationRecord
     if defined?(@apple_config)
       @apple_config
     else
-      @apple_config = Apple::Config.where(feed_id: feeds.pluck(:id)).first
+      @apple_config = Apple::DelegatedDeliveryConfig.where(feed_id: feeds.pluck(:id)).first
     end
   end
 

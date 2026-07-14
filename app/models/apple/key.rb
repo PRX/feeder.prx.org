@@ -2,8 +2,10 @@
 
 module Apple
   class Key < ApplicationRecord
-    has_one :config, class_name: "Apple::Config", foreign_key: "key_id"
+    has_one :delegated_delivery_config, class_name: "Apple::DelegatedDeliveryConfig", foreign_key: "key_id"
     has_many :show_feed_bindings, class_name: "Apple::ShowFeedBinding"
+
+    alias_method :config, :delegated_delivery_config
 
     validates :provider_id, presence: true, length: {minimum: 10}
     validates :key_id, presence: true, length: {minimum: 10}
