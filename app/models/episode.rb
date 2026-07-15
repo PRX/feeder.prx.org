@@ -285,7 +285,7 @@ class Episode < ApplicationRecord
   end
 
   def head_request
-    http_head(enclosure_url, timeout: 0.1)
+    http_head(enclosure_url(prefix: false), timeout: 0.1) unless override?
   end
 
   def first_publish_utc_date
