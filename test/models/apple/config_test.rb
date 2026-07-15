@@ -1,6 +1,10 @@
 require "test_helper"
 
 describe Apple::DelegatedDeliveryConfig do
+  it "keeps Apple::Config as a compatibility alias" do
+    assert_same Apple::DelegatedDeliveryConfig, Apple::Config
+  end
+
   describe "#valid?" do
     it "is unique to a podcast" do
       podcast = create(:podcast)
