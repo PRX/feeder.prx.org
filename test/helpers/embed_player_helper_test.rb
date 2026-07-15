@@ -16,12 +16,12 @@ describe EmbedPlayerHelper do
   describe "#enclosure_with_token" do
     it "uses the base enclosure with a jwt query param" do
       url = helper.enclosure_with_token(episode)
-      assert_equal "https://#{dt_host}/#{podcast.id}/#{episode.guid}/ep.mp3?_t=abcd1234", url
+      assert_equal "https://#{dt_host}/#{podcast.id}/#{episode.guid}/audio.mp3?_t=abcd1234", url
 
       # don't include prefixes
       podcast.default_feed.enclosure_prefix = "http://dont.include/this/"
       url = helper.enclosure_with_token(episode)
-      assert_equal "https://#{dt_host}/#{podcast.id}/#{episode.guid}/ep.mp3?_t=abcd1234", url
+      assert_equal "https://#{dt_host}/#{podcast.id}/#{episode.guid}/audio.mp3?_t=abcd1234", url
     end
   end
 end
