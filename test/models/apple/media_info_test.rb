@@ -8,7 +8,7 @@ describe Apple::MediaInfo do
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
   let(:apple_config) { build(:apple_config) }
-  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+  let(:apple_api) { Apple::Api.from_delegated_delivery_config(apple_config) }
   let(:apple_show) { Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed) }
   let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 

@@ -8,21 +8,32 @@ module Apple
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
-    def self.from_apple_config(apple_config)
-      api = Apple::Api.from_apple_config(apple_config)
+    def self.from_delegated_delivery_config(config)
+      api = Apple::Api.from_delegated_delivery_config(config)
 
       new(api: api,
-        public_feed: apple_config.public_feed,
-        private_feed: apple_config.private_feed)
+        public_feed: config.public_feed,
+        private_feed: config.delivery_feed,
+        apple_show_id: binding_apple_show_id(config))
     end
 
-    def initialize(api:, public_feed:, private_feed:)
+    def self.from_apple_config(apple_config)
+      from_delegated_delivery_config(apple_config)
+    end
+
+    def self.binding_apple_show_id(config)
+      config.apple_show_id if config.routing_source == :show_feed_binding
+    end
+    private_class_method :binding_apple_show_id
+
+    def initialize(api:, public_feed:, private_feed:, apple_show_id: nil)
       @public_feed = public_feed
       @private_feed = private_feed
       @api = api
       @show = Apple::Show.new(api: api,
         public_feed: public_feed,
-        private_feed: private_feed)
+        private_feed: private_feed,
+        apple_show_id: apple_show_id)
 
       Rails.logger.info("Initialized Apple::Publisher", {public_feed_id: public_feed.id,
                                                          private_feed_id: private_feed.id,

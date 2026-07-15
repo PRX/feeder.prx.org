@@ -14,8 +14,8 @@ module Apple
       api.get_paged_collection("shows/#{show_id}/episodes")
     end
 
-    def self.connect_existing(apple_show_id, apple_config)
-      if (sl = SyncLog.apple.find_by(feeder_id: apple_config.public_feed.id, feeder_type: :feeds))
+    def self.connect_existing(apple_show_id, delegated_delivery_config)
+      if (sl = SyncLog.apple.find_by(feeder_id: delegated_delivery_config.public_feed.id, feeder_type: :feeds))
         if apple_show_id.blank?
           return sl.destroy!
         elsif sl.external_id != apple_show_id
@@ -24,17 +24,17 @@ module Apple
       else
         SyncLog.log!(
           integration: :apple,
-          feeder_id: apple_config.public_feed.id,
+          feeder_id: delegated_delivery_config.public_feed.id,
           feeder_type: :feeds,
           sync_completed_at: Time.now.utc,
           external_id: apple_show_id
         )
       end
 
-      api = Apple::Api.from_apple_config(apple_config)
+      api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
       new(api: api,
-        public_feed: apple_config.public_feed,
-        private_feed: apple_config.private_feed)
+        public_feed: delegated_delivery_config.public_feed,
+        private_feed: delegated_delivery_config.delivery_feed)
     end
 
     def self.get_show(api, show_id)
@@ -44,30 +44,36 @@ module Apple
     end
 
     def self.from_podcast(podcast)
-      apple_config = podcast.apple_config
-      api = Apple::Api.from_apple_config(apple_config)
-
-      new(api: api,
-        public_feed: apple_config.public_feed,
-        private_feed: apple_config.private_feed)
+      from_delegated_delivery_config(podcast.apple_config)
     end
 
     def inspect
       "#<Apple:Show:#{object_id} show_id=#{try(:apple_id) || "nil"}>"
     end
 
-    def self.from_apple_config(apple_config)
-      api = Apple::Api.from_apple_config(apple_config)
+    def self.from_delegated_delivery_config(config)
+      api = Apple::Api.from_delegated_delivery_config(config)
 
       new(api: api,
-        public_feed: apple_config.public_feed,
-        private_feed: apple_config.private_feed)
+        public_feed: config.public_feed,
+        private_feed: config.delivery_feed,
+        apple_show_id: binding_apple_show_id(config))
     end
 
-    def initialize(api:, public_feed:, private_feed:)
+    def self.from_apple_config(apple_config)
+      from_delegated_delivery_config(apple_config)
+    end
+
+    def self.binding_apple_show_id(config)
+      config.apple_show_id if config.routing_source == :show_feed_binding
+    end
+    private_class_method :binding_apple_show_id
+
+    def initialize(api:, public_feed:, private_feed:, apple_show_id: nil)
       @private_feed = private_feed
       @public_feed = public_feed
       @api = api
+      @configured_apple_show_id = apple_show_id
     end
 
     def reload
@@ -120,7 +126,7 @@ module Apple
     end
 
     def apple_id
-      sync_log&.external_id
+      @configured_apple_show_id.presence || sync_log&.external_id
     end
 
     def id

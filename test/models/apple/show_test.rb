@@ -4,7 +4,7 @@ require "test_helper"
 
 describe Apple::Show do
   let(:podcast) { create(:episode).podcast }
-  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+  let(:apple_api) { Apple::Api.from_delegated_delivery_config(apple_config) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
   let(:apple_config) { build(:apple_config, feed: private_feed) }
@@ -17,7 +17,7 @@ describe Apple::Show do
       .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
   end
 
-  describe ".from_apple_config" do
+  describe ".from_delegated_delivery_config" do
     it "can be created from an apple config" do
       show = apple_config.build_show
       assert show.is_a?(Apple::Show)
@@ -175,7 +175,7 @@ describe Apple::Show do
       assert_equal apple_show.private_feed, apple_config.private_feed
 
       # it can be reloaded from the db
-      apple_publisher = Apple::Publisher.from_apple_config(apple_config.reload)
+      apple_publisher = Apple::Publisher.from_delegated_delivery_config(apple_config.reload)
       assert_equal apple_publisher.show.apple_id, "some_apple_id"
     end
 

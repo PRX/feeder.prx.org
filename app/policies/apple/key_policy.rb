@@ -4,14 +4,14 @@ class Apple::KeyPolicy < ApplicationPolicy
   end
 
   def show?
-    Apple::ConfigPolicy.new(token, resource.config).show?
+    Apple::DelegatedDeliveryConfigPolicy.new(token, resource.delegated_delivery_config).show?
   end
 
   def create?
-    Apple::ConfigPolicy.new(token, resource.config).create?
+    Apple::DelegatedDeliveryConfigPolicy.new(token, resource.delegated_delivery_config).create?
   end
 
   def update?
-    Apple::ConfigPolicy.new(token, resource.config).update?
+    Apple::DelegatedDeliveryConfigPolicy.new(token, resource.delegated_delivery_config).update?
   end
 end

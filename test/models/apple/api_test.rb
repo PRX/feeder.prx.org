@@ -119,19 +119,20 @@ describe Apple::Api do
     end
   end
 
-  describe ".from_apple_config" do
+  describe ".from_delegated_delivery_config" do
     it "creates an api from apple credentials" do
       creds = build(:apple_config)
-      api = Apple::Api.from_apple_config(creds)
+      api = Apple::Api.from_delegated_delivery_config(creds)
+      key = creds.routing_key
 
-      assert_equal api.provider_id, creds.provider_id
-      assert_equal api.key_id, creds.key_id
-      assert_equal api.key, creds.key_pem
+      assert_equal api.provider_id, key.provider_id
+      assert_equal api.key_id, key.key_id
+      assert_equal api.key, key.key_pem
     end
 
     it "falls back on the environment if the apple credential attributes are not set" do
       creds = create(:apple_config, key: nil)
-      api = Apple::Api.from_apple_config(creds)
+      api = Apple::Api.from_delegated_delivery_config(creds)
       assert_equal api.key_id, "apple key id from env"
 
       assert_equal api.key_id, ENV["APPLE_KEY_ID"]

@@ -6,7 +6,7 @@ module Apple
     belongs_to :apple_key, class_name: "Apple::Key"
 
     has_many :delegated_delivery_configs,
-      class_name: "Apple::Config",
+      class_name: "Apple::DelegatedDeliveryConfig",
       foreign_key: :show_feed_binding_id,
       inverse_of: :show_feed_binding,
       dependent: :nullify
