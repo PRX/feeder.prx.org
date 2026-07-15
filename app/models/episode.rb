@@ -16,6 +16,7 @@ class Episode < ApplicationRecord
   include AppleIntegration
   include ReleaseEpisodes
   include EpisodeMetrics
+  include HttpUtil
 
   MAX_SEGMENT_COUNT = 10
   MAX_DESCRIPTION_BYTES = 4000
@@ -283,23 +284,8 @@ class Episode < ApplicationRecord
     podcast&.itunes_image || podcast&.feed_image
   end
 
-  def head_request(uri_str = enclosure_url, redirects = 0)
-    return nil if redirects >= 10
-
-    uri = URI.parse(uri_str)
-    res = Net::HTTP.start(uri.host) do |http|
-      http.max_retries = 0
-      http.read_timeout = 0.1
-      http.head(uri)
-    end
-
-    if res.is_a?(Net::HTTPRedirection)
-      head_request(res[:location], redirects + 1)
-    elsif res.is_a?(Net::HTTPSuccess)
-      res
-    end
-  rescue URI::InvalidURIError, Socket::ResolutionError, Net::ReadTimeout => e
-    Rails.logger.info(e.message)
+  def head_request
+    http_head(enclosure_url, timeout: 0.1)
   end
 
   def first_publish_utc_date
