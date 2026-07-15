@@ -5,6 +5,7 @@ require "text_sanitizer"
 
 class Episode < ApplicationRecord
   include EpisodeAdBreaks
+  include EpisodeEnclosure
   include EpisodeFilters
   include EpisodeHasFeeds
   include EpisodeMedia
@@ -231,15 +232,6 @@ class Episode < ApplicationRecord
     "#{podcast.try(:path)}/#{guid}"
   end
 
-  def enclosure_url(feed = nil)
-    EnclosureUrlBuilder.new.podcast_episode_url(podcast, self, feed)
-  end
-
-  def enclosure_filename(feed = nil)
-    uri = URI.parse(enclosure_url(feed))
-    File.basename(uri.path)
-  end
-
   def set_external_keyword
     return unless !published_at.nil? && keyword_xid.nil?
 
@@ -291,7 +283,7 @@ class Episode < ApplicationRecord
     podcast&.itunes_image || podcast&.feed_image
   end
 
-  def head_request(uri_str = enclosure_url(podcast.default_feed), redirects = 0)
+  def head_request(uri_str = enclosure_url, redirects = 0)
     return nil if redirects >= 10
 
     uri = URI.parse(uri_str)
