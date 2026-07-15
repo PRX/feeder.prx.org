@@ -3,15 +3,15 @@ require "active_support/concern"
 module EpisodeEnclosure
   extend ActiveSupport::Concern
 
-  def enclosure_url(feed: nil, prefix: true, auth: nil, prx_jwt: nil)
-    feed ||= podcast&.default_feed
+  def enclosure_url(feed: podcast&.default_feed, prefix: true, auth: nil, prx_jwt: nil)
+    return enclosure_override_url if override?
 
     # optionally include auth for private feeds
     auth =
-      if feed.public?
+      if feed&.public?
         nil
       elsif auth == true
-        feed.tokens&.first&.token
+        feed&.tokens&.first&.token
       else
         auth.presence
       end
@@ -22,7 +22,7 @@ module EpisodeEnclosure
     url_parts << (podcast_id || "podcast")
     url_parts << feed.slug if feed&.slug.present?
     url_parts << guid
-    url_parts << (media_file_name(feed).presence || "file.mp3")
+    url_parts << enclosure_file_name(feed: feed)
 
     url = url_parts.map { |p| p.to_s.chomp("/") }.join("/")
     url = "https://#{url}" unless url.starts_with?("http")
@@ -31,8 +31,31 @@ module EpisodeEnclosure
     query.present? ? "#{url}?#{query}" : url
   end
 
-  def enclosure_filename(feed: nil)
-    uri = URI.parse(enclosure_url(feed))
-    File.basename(uri.path)
+  def enclosure_content_type(feed: podcast&.default_feed)
+    if override? || medium_video?
+      media_content_type
+    else
+      feed&.mime_type || media_content_type
+    end
+  end
+
+  def enclosure_file_name(feed: podcast&.default_feed)
+    if override?
+      File.basename(enclosure_override_url || "")
+    elsif medium_video?
+      media_file_name
+    else
+      orig_fn = media_file_name
+      orig_ext = File.extname(orig_fn)
+      orig_base = File.basename(orig_fn, orig_ext)
+      ext = feed&.file_ext || orig_ext[1..] || "mp3"
+      "#{orig_base}.#{ext}"
+    end
+  end
+
+  # TODO: not accurate for Feeds with audio_formats, or really any
+  # Contents that need transcoding to match the first original
+  def enclosure_file_size(feed: podcast&.default_feed)
+    media_file_size
   end
 end
