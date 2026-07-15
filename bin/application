@@ -72,7 +72,11 @@ ApplicationRun () {
     ApplicationUpdate
   fi
 
-  $CMD $CMD_ARGS
+  if [ -n "$CMD" ] ; then
+    exec $CMD $CMD_ARGS
+  else
+    $CMD_ARGS
+  fi
 }
 
 ApplicationParseOpts $*
