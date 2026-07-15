@@ -45,7 +45,7 @@ module EpisodeEnclosure
     elsif medium_video?
       media_file_name
     else
-      orig_fn = media_file_name
+      orig_fn = media_file_name || "ep.mp3"
       orig_ext = File.extname(orig_fn)
       orig_base = File.basename(orig_fn, orig_ext)
       ext = feed&.file_ext || orig_ext[1..] || "mp3"
