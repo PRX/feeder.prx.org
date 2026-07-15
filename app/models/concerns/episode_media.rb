@@ -184,24 +184,20 @@ module EpisodeMedia
     end
   end
 
-  def media_content_type(feed = nil)
-    media_content_type = media.first.try(:mime_type)
-    feed_content_type = feed.try(:mime_type)
+  def media_file_name
+    media.first&.file_name
+  end
 
-    # if audio AND feed has a mime type, dovetail will transcode to that
+  def media_content_type
     if override?
       external_media_resource&.mime_type || "audio/mpeg"
-    elsif (media_content_type || "").starts_with?("audio")
-      feed_content_type || media_content_type
-    elsif media_content_type
-      media_content_type
     else
-      "audio/mpeg"
+      media.first&.mime_type || "audio/mpeg"
     end
   end
 
-  def video_content_type?(*args)
-    media_content_type(*args).starts_with?("video")
+  def video_content_type?
+    media_content_type.starts_with?("video")
   end
 
   def media_duration

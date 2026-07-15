@@ -436,21 +436,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
 
       assert_equal "some/thing1", ep.media_content_type
     end
-
-    it "overrides with a feed mime type" do
-      feed = build_stubbed(:feed, audio_format: nil)
-      assert_equal "audio/mpeg", ep.media_content_type(feed)
-
-      # feed overrides audio mimes
-      feed.audio_format = {f: "flac"}
-      assert_equal "audio/flac", ep.media_content_type(feed)
-
-      # but not video/other mimes
-      c1.mime_type = "video/mp4"
-      assert_equal "video/mp4", ep.media_content_type(feed)
-      c1.mime_type = "some/thing"
-      assert_equal "some/thing", ep.media_content_type(feed)
-    end
   end
 
   describe "#media_duration" do
