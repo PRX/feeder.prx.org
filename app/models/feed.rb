@@ -179,6 +179,10 @@ class Feed < ApplicationRecord
     default? && public? && include_zones.nil? && audio_format.blank?
   end
 
+  def auth_token
+    tokens.first&.token if private?
+  end
+
   def published_url(include_token = nil)
     if private?
       published_private_url(include_token)

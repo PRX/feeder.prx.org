@@ -8,6 +8,7 @@ class Api::Auth::PodcastRepresenter < Api::PodcastRepresenter
     property :label
     property :slug
     property :private
+    property :auth_token, as: :auth
   end
 
   def self_url(podcast)

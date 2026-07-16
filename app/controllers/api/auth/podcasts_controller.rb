@@ -31,6 +31,6 @@ class Api::Auth::PodcastsController < Api::PodcastsController
   end
 
   def included(resources)
-    super.includes(:feeds)
+    super.includes(feeds: :feed_tokens)
   end
 end
