@@ -4,7 +4,7 @@ module Apple
 
     def initialize(episodes)
       @episodes = episodes
-      @asset_wait_duration = episodes.map { |ep| ep.feeder_episode.measure_asset_processing_duration }.compact.max
+      @asset_wait_duration = episodes.map(&:measure_asset_processing_duration).compact.max
       super("Timeout: Episodes: #{episode_ids}, Asset Wait Duration: #{asset_wait_duration}")
     end
 

@@ -42,7 +42,7 @@ module Apple
     def self.mark_as_delivered!(apple_publisher)
       apple_publisher.episodes_to_sync.each do |episode|
         if episode.podcast_container&.needs_delivery? == false
-          episode.feeder_episode.apple_mark_as_delivered!
+          episode.apple_mark_as_delivered!
         end
       end
     end

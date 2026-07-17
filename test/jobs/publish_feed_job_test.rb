@@ -244,8 +244,8 @@ describe PublishFeedJob do
 
           expected_level_for_durations.each do |(duration, level)|
             PublishFeedJob.stub(:s3_client, stub_client) do
-              episode1.feeder_episode.stub(:measure_asset_processing_duration, duration) do
-                episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+              episode1.stub(:measure_asset_processing_duration, duration) do
+                episode2.stub(:measure_asset_processing_duration, nil) do
                   private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new(episodes) }) do
                     podcast.stub(:feeds, [private_feed]) do
                       lines = capture_json_logs do
@@ -339,8 +339,8 @@ describe PublishFeedJob do
           feed.reload
 
           PublishFeedJob.stub(:s3_client, stub_client) do
-            episode1.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
-              episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+            episode1.stub(:measure_asset_processing_duration, 2000) do
+              episode2.stub(:measure_asset_processing_duration, nil) do
                 private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new(episodes) }) do
                   feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
                     lines = capture_json_logs do

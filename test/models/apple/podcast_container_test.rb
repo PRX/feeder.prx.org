@@ -94,6 +94,22 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   end
 
   describe ".upsert_podcast_containers" do
+    it "stamps the current Apple show id" do
+      SyncLog.log!(integration: :apple,
+        feeder_type: :feeds,
+        feeder_id: public_feed.id,
+        external_id: "show-1")
+
+      pc = apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+            podcast_container_json_row)
+        end
+      end
+
+      assert_equal "show-1", pc.apple_show_id
+    end
+
     it "should create logs based on a returned row value" do
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do

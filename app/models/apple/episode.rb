@@ -15,7 +15,7 @@ module Apple
     def self.prepare_for_delivery(episodes)
       episodes.map do |ep|
         Rails.logger.info("Preparing episode #{ep.feeder_id} for delivery", {episode_id: ep.feeder_id})
-        ep.feeder_episode.apple_prepare_for_delivery!
+        ep.prepare_for_delivery!
 
         ep
       end
@@ -117,7 +117,7 @@ module Apple
       upsert_sync_logs(episodes, episode_bridge_results)
 
       Apple::ApiJoin.join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        ep.feeder_episode.apple_mark_as_not_delivered! if mark_as_not_delivered
+        ep.apple_mark_as_not_delivered! if mark_as_not_delivered
         Rails.logger.info("Removed audio container reference for episode", {episode_id: ep.feeder_id})
       end
 
@@ -504,7 +504,7 @@ module Apple
     def needs_delivery?
       return true if missing_container?
 
-      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery? || needs_media_version?
+      podcast_container&.needs_delivery? || apple_needs_delivery? || needs_media_version?
     end
 
     def has_delivery?
@@ -532,15 +532,18 @@ module Apple
     end
 
     def podcast_container
-      feeder_episode.podcast_container
+      return feeder_episode.apple_podcast_container if apple_show_id.blank?
+
+      containers = Apple::PodcastContainer.where(episode_id: feeder_id)
+      containers.find_by(apple_show_id: apple_show_id) || containers.find_by(apple_show_id: nil)
     end
 
     def podcast_deliveries
-      feeder_episode.apple_podcast_deliveries
+      podcast_container&.podcast_deliveries || Apple::PodcastDelivery.none
     end
 
     def podcast_delivery_files
-      feeder_episode.apple_podcast_delivery_files
+      podcast_container&.podcast_delivery_files || Apple::PodcastDeliveryFile.none
     end
 
     def apple_sync_log
@@ -552,15 +555,56 @@ module Apple
     end
 
     def apple_mark_as_not_delivered!
-      feeder_episode.apple_mark_as_not_delivered!
+      apple_episode_delivery_status.mark_as_not_delivered!
+    end
+
+    def apple_mark_as_delivered!
+      apple_episode_delivery_status.mark_as_delivered!
+    end
+
+    def apple_mark_as_uploaded!
+      apple_episode_delivery_status.mark_as_uploaded!
+    end
+
+    def apple_mark_as_not_uploaded!
+      apple_episode_delivery_status.mark_as_not_uploaded!
+    end
+
+    def apple_update_delivery_status(attrs)
+      feeder_episode.update_episode_delivery_status(:apple, attrs, apple_show_id: apple_show_id)
     end
 
     def apple_episode_delivery_status
-      feeder_episode.apple_episode_delivery_status
+      feeder_episode.episode_delivery_status(:apple, apple_show_id: apple_show_id) ||
+        Integrations::EpisodeDeliveryStatus.default_status(:apple, feeder_episode, apple_show_id: apple_show_id)
     end
 
     def apple_episode_delivery_statuses
-      feeder_episode.apple_episode_delivery_statuses
+      statuses = feeder_episode.episode_delivery_statuses.apple
+      return statuses if apple_show_id.blank?
+
+      scoped_statuses = statuses.where(apple_show_id: apple_show_id)
+      scoped_statuses.exists? ? scoped_statuses : statuses.where(apple_show_id: nil)
+    end
+
+    def apple_needs_delivery?
+      apple_episode_delivery_status.delivered == false
+    end
+
+    def apple_needs_upload?
+      apple_episode_delivery_status.needs_upload?
+    end
+
+    def prepare_for_delivery!
+      podcast_deliveries.each(&:destroy)
+      podcast_deliveries.reset
+      podcast_delivery_files.reset
+      podcast_container&.podcast_deliveries&.reset
+      apple_mark_as_not_delivered!
+    end
+
+    def measure_asset_processing_duration
+      Integrations::EpisodeDeliveryStatus.measure_asset_processing_duration(apple_episode_delivery_statuses)
     end
 
     alias_method :container, :podcast_container
