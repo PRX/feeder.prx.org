@@ -92,9 +92,9 @@ module Apple
     def resolve_apple_show_id(record)
       episode_id = episode_id_for(record)
       podcast_id = podcast_id_by_episode_id[episode_id]
-      return {reason: "missing episode or Apple config"} unless podcast_id
+      return {reason: "missing episode"} unless podcast_id
 
-      show_resolution_by_podcast_id.fetch(podcast_id)
+      show_resolution_by_podcast_id.fetch(podcast_id, {reason: "missing Apple show identity"})
     end
 
     def each_record
@@ -111,9 +111,17 @@ module Apple
 
     def podcast_id_by_episode_id
       @podcast_id_by_episode_id ||= ::Episode.with_deleted
-        .where(podcast_id: show_resolution_by_podcast_id.keys)
+        .where(id: target_episode_ids)
         .pluck(:id, :podcast_id)
         .to_h
+    end
+
+    def target_episode_ids
+      @target_episode_ids ||= (
+        ::SyncLog.apple.episodes.distinct.pluck(:feeder_id) +
+        Apple::PodcastContainer.distinct.pluck(:episode_id) +
+        Integrations::EpisodeDeliveryStatus.apple.distinct.pluck(:episode_id)
+      ).compact.uniq
     end
 
     def show_resolution_by_podcast_id
@@ -121,9 +129,42 @@ module Apple
         configs = Apple::Config.includes(:show_feed_binding).to_a
         podcast_id_by_feed_id = Feed.with_deleted.where(id: configs.map(&:feed_id)).pluck(:id, :podcast_id).to_h
 
-        configs
+        resolutions = configs
           .group_by { |config| podcast_id_by_feed_id.fetch(config.feed_id) }
           .transform_values { |podcast_configs| show_resolution(podcast_configs) }
+
+        legacy_show_ids_by_podcast_id.each do |podcast_id, apple_show_ids|
+          resolutions[podcast_id] ||= legacy_show_resolution(apple_show_ids)
+        end
+
+        resolutions
+      end
+    end
+
+    def legacy_show_ids_by_podcast_id
+      @legacy_show_ids_by_podcast_id ||= begin
+        feeds = Feed.with_deleted.where.not(podcast_id: nil).pluck(:id, :podcast_id, :apple_show_id)
+        podcast_id_by_feed_id = feeds.to_h { |feed_id, podcast_id, _apple_show_id| [feed_id, podcast_id] }
+        show_ids = Hash.new { |hash, podcast_id| hash[podcast_id] = [] }
+
+        feeds.each do |_feed_id, podcast_id, apple_show_id|
+          show_ids[podcast_id] << apple_show_id if apple_show_id.present?
+        end
+
+        ::SyncLog.apple.feeds.where(feeder_id: podcast_id_by_feed_id.keys).find_each do |sync_log|
+          podcast_id = podcast_id_by_feed_id[sync_log.feeder_id]
+          show_ids[podcast_id] << sync_log.external_id if podcast_id && sync_log.external_id.present?
+        end
+
+        show_ids.transform_values(&:uniq)
+      end
+    end
+
+    def legacy_show_resolution(apple_show_ids)
+      if apple_show_ids.one?
+        {apple_show_id: apple_show_ids.first}
+      else
+        {reason: "ambiguous legacy Apple show ids: #{apple_show_ids.sort.join(", ")}"}
       end
     end
 
