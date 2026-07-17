@@ -53,6 +53,55 @@ describe Apple::Episode do
     end
   end
 
+  describe "show-scoped delivery state" do
+    let(:show_one_episode) do
+      build(:apple_episode, show: apple_show, feeder_episode: episode).tap do |apple_episode|
+        apple_episode.define_singleton_method(:apple_show_id) { "show-1" }
+      end
+    end
+    let(:show_two_episode) do
+      build(:apple_episode, show: apple_show, feeder_episode: episode).tap do |apple_episode|
+        apple_episode.define_singleton_method(:apple_show_id) { "show-2" }
+      end
+    end
+
+    it "keeps delivery-status reads and writes within the current show" do
+      legacy_status = create(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: nil,
+        delivered: false)
+
+      show_one_episode.apple_update_delivery_status(delivered: true)
+      show_two_episode.apple_update_delivery_status(delivered: false, uploaded: true)
+
+      assert show_one_episode.apple_status.delivered
+      refute show_two_episode.apple_status.delivered
+      assert show_two_episode.apple_status.uploaded
+      assert_equal "show-1", show_one_episode.apple_status.apple_show_id
+      assert_equal "show-2", show_two_episode.apple_status.apple_show_id
+      assert_nil legacy_status.reload.apple_show_id
+
+      show_one_episode.apple_mark_as_not_uploaded!
+
+      refute show_one_episode.apple_status.uploaded
+      assert show_two_episode.apple_status.uploaded
+    end
+
+    it "does not read another show's container or deliveries" do
+      container = create(:apple_podcast_container,
+        episode: episode,
+        apple_show_id: "show-1")
+      delivery = create(:apple_podcast_delivery,
+        episode: episode,
+        podcast_container: container)
+
+      assert_equal container, show_one_episode.podcast_container
+      assert_equal [delivery], show_one_episode.podcast_deliveries.to_a
+      assert_nil show_two_episode.podcast_container
+      assert_empty show_two_episode.podcast_deliveries
+    end
+  end
+
   describe "#apple_json" do
     let(:apple_episode_list) do
       [

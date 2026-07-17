@@ -20,46 +20,49 @@ module Integrations
       Time.now.utc - start_status.created_at
     end
 
-    def self.update_status(integration, episode, attrs)
-      new_status = episode.episode_delivery_status(integration)&.dup || default_status(integration, episode)
-      attrs[:integration] = integration
-      new_status.assign_attributes(attrs)
+    def self.update_status(integration, episode, attrs = nil, apple_show_id: nil, **status_attrs)
+      attrs = (attrs || {}).merge(status_attrs)
+      current_status = episode.episode_delivery_status(integration, apple_show_id: apple_show_id)
+      new_status = current_status&.dup || default_status(integration, episode, apple_show_id: apple_show_id)
+      new_status.assign_attributes(attrs.merge(integration: integration, apple_show_id: apple_show_id))
       new_status.save!
       episode.episode_delivery_statuses.reset
       new_status
     end
 
-    def self.delete_status(integration, episode)
-      episode.episode_delivery_statuses.where(integration: integration).delete_all
+    def self.delete_status(integration, episode, apple_show_id: nil)
+      statuses = episode.episode_delivery_statuses.where(integration: integration)
+      statuses = statuses.where(apple_show_id: apple_show_id) if integration.to_sym == :apple && apple_show_id.present?
+      statuses.delete_all
     end
 
-    def self.default_status(integration, episode)
-      new(episode: episode, integration: integration)
+    def self.default_status(integration, episode, apple_show_id: nil)
+      new(episode: episode, integration: integration, apple_show_id: apple_show_id)
     end
 
     def increment_asset_wait
-      self.class.update_status(integration, episode, asset_processing_attempts: (asset_processing_attempts || 0) + 1)
+      update_status(asset_processing_attempts: (asset_processing_attempts || 0) + 1)
     end
 
     def mark_as_uploaded!
-      self.class.update_status(integration, episode, uploaded: true)
+      update_status(uploaded: true)
     end
 
     def mark_as_not_uploaded!
-      self.class.update_status(integration, episode, uploaded: false)
+      update_status(uploaded: false)
     end
 
     # Whether the media file has been uploaded to the Integration
     # is a subset of whether the episode has been delivered
     def mark_as_delivered!
-      self.class.update_status(integration, episode, delivered: true, uploaded: true, asset_processing_attempts: 0)
+      update_status(delivered: true, uploaded: true, asset_processing_attempts: 0)
     end
 
     def mark_as_not_delivered!
       # source_media_version_id is intentionally omitted — it is preserved so
       # we can still compare the previously uploaded media version against the
       # current one.
-      self.class.update_status(integration, episode, delivered: false, uploaded: false, asset_processing_attempts: 0)
+      update_status(delivered: false, uploaded: false, asset_processing_attempts: 0)
     end
 
     def needs_upload?
@@ -72,6 +75,12 @@ module Integrations
 
     def needs_media_version?
       !has_media_version?
+    end
+
+    private
+
+    def update_status(attrs)
+      self.class.update_status(integration, episode, attrs, apple_show_id: apple_show_id)
     end
   end
 end

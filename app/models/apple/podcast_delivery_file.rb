@@ -134,11 +134,7 @@ module Apple
 
     def self.poll_podcast_delivery_files_state(api, episodes)
       # Assume that the delivery remote/local state is synced at this point
-      podcast_deliveries =
-        episodes
-          .map(&:feeder_episode)
-          .map(&:apple_podcast_deliveries)
-          .flatten
+      podcast_deliveries = episodes.flat_map(&:podcast_deliveries)
 
       results = get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
 

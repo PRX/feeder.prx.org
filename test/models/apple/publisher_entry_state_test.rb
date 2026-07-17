@@ -66,13 +66,6 @@ module PublisherEntryStateDoubles
       @needs_delivery
     end
 
-    def feeder_episode
-      FeederEpisodeDouble.new
-    end
-  end
-
-  # Not stuck: a nil duration means the episode never entered asset processing.
-  class FeederEpisodeDouble
     def measure_asset_processing_duration
       nil
     end

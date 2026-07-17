@@ -65,7 +65,7 @@ module Apple
     def self.increment_source_fetch_count(episodes)
       episodes.each do |ep|
         count = ep.apple_status&.source_fetch_count || 0
-        ep.feeder_episode.apple_update_delivery_status(source_fetch_count: count + 1)
+        ep.apple_update_delivery_status(source_fetch_count: count + 1)
       end
     end
 

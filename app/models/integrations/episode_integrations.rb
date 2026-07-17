@@ -57,20 +57,26 @@ module Integrations::EpisodeIntegrations
     sync_logs.send(integration.intern).order(updated_at: :desc).first
   end
 
-  def episode_delivery_status(integration, with_default = false)
-    status = episode_delivery_statuses.reset.order(created_at: :desc).send(integration.intern).first
+  def episode_delivery_status(integration, with_default = false, apple_show_id: nil)
+    statuses = episode_delivery_statuses.reset.order(created_at: :desc).send(integration.intern)
+    status = if integration.to_sym == :apple && apple_show_id.present?
+      statuses.find_by(apple_show_id: apple_show_id) || statuses.find_by(apple_show_id: nil)
+    else
+      statuses.first
+    end
+
     if !status && with_default
-      Integrations::EpisodeDeliveryStatus.default_status(integration, self)
+      Integrations::EpisodeDeliveryStatus.default_status(integration, self, apple_show_id: apple_show_id)
     else
       status
     end
   end
 
-  def update_episode_delivery_status(integration, attrs)
-    Integrations::EpisodeDeliveryStatus.update_status(integration, self, attrs)
+  def update_episode_delivery_status(integration, attrs, apple_show_id: nil)
+    Integrations::EpisodeDeliveryStatus.update_status(integration, self, attrs, apple_show_id: apple_show_id)
   end
 
-  def delete_episode_delivery_status(integration)
-    Integrations::EpisodeDeliveryStatus.delete_status(integration, self)
+  def delete_episode_delivery_status(integration, apple_show_id: nil)
+    Integrations::EpisodeDeliveryStatus.delete_status(integration, self, apple_show_id: apple_show_id)
   end
 end

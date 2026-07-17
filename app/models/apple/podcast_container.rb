@@ -65,6 +65,7 @@ module Apple
         next if container.destroyed?
 
         episode = container.episode
+        apple_show_id = container.apple_show_id
 
         Rails.logger.warn("Resetting stale Apple podcast container",
           feeder_episode_id: episode.id,
@@ -75,7 +76,7 @@ module Apple
 
         container.destroy!
         episode.reload
-        episode.apple_mark_as_not_delivered!
+        episode.episode_delivery_status(:apple, true, apple_show_id: apple_show_id).mark_as_not_delivered!
       end
 
       stale_podcast_containers
@@ -104,19 +105,24 @@ module Apple
       external_id = row.dig("api_response", "val", "data", "id")
       raise "Missing external_id in response" if external_id.blank?
 
-      (pc, action) =
-        if (pc = where(apple_episode_id: episode.apple_id,
-          external_id: external_id,
-          episode_id: episode.feeder_id,
-          vendor_id: episode.audio_asset_vendor_id).first)
+      containers = where(episode_id: episode.feeder_id)
+      pc = containers.find_by(apple_show_id: episode.apple_show_id)
+      pc ||= containers.find_by(apple_show_id: nil) if episode.apple_show_id.present?
 
+      (pc, action) =
+        if pc
+          pc.update!(apple_episode_id: episode.apple_id,
+            external_id: external_id,
+            vendor_id: episode.audio_asset_vendor_id,
+            apple_show_id: episode.apple_show_id)
           pc.touch
           [pc, :updated]
         else
           pc = create!(apple_episode_id: episode.apple_id,
             external_id: external_id,
             vendor_id: episode.audio_asset_vendor_id,
-            episode_id: episode.feeder_id)
+            episode_id: episode.feeder_id,
+            apple_show_id: episode.apple_show_id)
 
           [pc, :created]
         end
