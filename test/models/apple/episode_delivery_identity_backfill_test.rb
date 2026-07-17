@@ -47,6 +47,56 @@ module Apple
         assert_equal "show-deleted", state[:delivery_status].reload.apple_show_id
       end
 
+      it "backfills a deleted podcast from its unique legacy show identity" do
+        state = create_unscoped_state(apple_show_id: "show-deleted")
+        state[:podcast].public_feed.update!(apple_show_id: "show-deleted")
+        SyncLog.log!(
+          integration: :apple,
+          feeder_type: :feeds,
+          feeder_id: state[:podcast].public_feed.id,
+          external_id: "show-deleted"
+        )
+        Apple::Config.where(feed_id: state[:podcast].feeds.with_deleted.ids).destroy_all
+        state[:podcast].destroy!
+
+        report = EpisodeDeliveryIdentityBackfill.backfill!
+
+        assert_equal 3, report[:updated]
+        assert_empty report[:skipped_rows]
+        assert_equal "show-deleted", state[:sync_log].reload.apple_show_id
+        assert_equal "show-deleted", state[:podcast_container].reload.apple_show_id
+        assert_equal "show-deleted", state[:delivery_status].reload.apple_show_id
+      end
+
+      it "reports a status-only episode without Apple show identity" do
+        episode = create(:episode)
+        delivery_status = create(:apple_episode_delivery_status, episode: episode)
+
+        report = EpisodeDeliveryIdentityBackfill.backfill!
+
+        assert_equal({episode_sync_logs: 0, podcast_containers: 0, delivery_statuses: 1}, report[:row_counts])
+        assert_equal 1, report[:skipped]
+        assert_equal [{
+          record_type: :delivery_statuses,
+          record_id: delivery_status.id,
+          episode_id: episode.id,
+          reason: "missing Apple show identity"
+        }], report[:skipped_rows]
+        assert_nil delivery_status.reload.apple_show_id
+      end
+
+      it "backfills a status-only episode when its podcast has a show binding" do
+        state = create_unscoped_state(apple_show_id: "show-status")
+        state[:sync_log].destroy!
+        state[:podcast_container].destroy!
+
+        report = EpisodeDeliveryIdentityBackfill.backfill!
+
+        assert_equal({episode_sync_logs: 0, podcast_containers: 0, delivery_statuses: 1}, report[:row_counts])
+        assert_equal 1, report[:updated]
+        assert_equal "show-status", state[:delivery_status].reload.apple_show_id
+      end
+
       it "skips and reports rows whose binding precondition is not satisfied" do
         missing_episode = create_legacy_sync_log(feeder_id: -1, external_id: "missing-episode")
         missing_config = create_unscoped_state(with_config: false)[:sync_log]
@@ -59,7 +109,8 @@ module Apple
         assert_equal 4, skipped_sync_logs.length
         assert_equal [missing_episode.id, missing_config.id, missing_binding.id, ambiguous_binding.id].sort,
           skipped_sync_logs.map { |row| row[:record_id] }.sort
-        assert_equal 2, skipped_sync_logs.count { |row| row[:reason] == "missing episode or Apple config" }
+        assert_includes skipped_sync_logs.map { |row| row[:reason] }, "missing episode"
+        assert_includes skipped_sync_logs.map { |row| row[:reason] }, "missing Apple show identity"
         assert_includes skipped_sync_logs.map { |row| row[:reason] }, "missing show feed binding"
         assert skipped_sync_logs.any? { |row| row[:reason].start_with?("ambiguous show feed bindings:") }
       end
