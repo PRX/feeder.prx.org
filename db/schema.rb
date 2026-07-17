@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_08_000003) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_08_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -44,6 +44,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_000003) do
     t.datetime "updated_at", null: false
     t.string "vendor_id", null: false
     t.string "apple_episode_id", null: false
+    t.string "apple_show_id"
+    t.index ["apple_show_id"], name: "index_apple_podcast_containers_on_apple_show_id"
     t.index ["episode_id"], name: "index_apple_podcast_containers_on_episode_id", unique: true
     t.index ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true
   end
@@ -261,6 +263,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_000003) do
     t.integer "asset_processing_attempts", default: 0, null: false
     t.boolean "uploaded", default: false
     t.integer "integration"
+    t.string "apple_show_id"
+    t.index ["apple_show_id"], name: "index_integrations_episode_delivery_statuses_on_apple_show_id"
     t.index ["episode_id", "created_at"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at", include: ["delivered", "id"]
     t.index ["episode_id"], name: "index_integrations_episode_delivery_statuses_on_episode_id"
   end
