@@ -14,8 +14,8 @@ export default class extends Controller {
       this.frameTarget.src = src
     }
 
-    // hide preview button entirely for video
-    if (this.mediumTarget.value == "video") {
+    // hide preview button entirely for video/overrides (no ad injection)
+    if (this.mediumTarget.value === "video" || this.mediumTarget.value === "override") {
       this.buttonTarget.classList.add("d-none")
     } else {
       this.buttonTarget.classList.remove("d-none")

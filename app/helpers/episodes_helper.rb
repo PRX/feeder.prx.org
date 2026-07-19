@@ -112,8 +112,15 @@ module EpisodesHelper
     I18n.t("helpers.label.media_resource.original_url.#{medium}", position: media.position)
   end
 
-  def episode_medium_options
-    Episode.mediums.keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
+  def episode_medium_options(episode = nil)
+    ordered_keys =
+      if episode&.medium_video?
+        %w[audio uncut hls_video video override]
+      else
+        %w[audio uncut hls_video override]
+      end
+
+    ordered_keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
   end
 
   def episode_media_updated_at(episode)

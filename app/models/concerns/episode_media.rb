@@ -4,7 +4,8 @@ module EpisodeMedia
   extend ActiveSupport::Concern
 
   included do
-    enum :medium, [:audio, :uncut, :video, :override], prefix: true
+    # TODO: :uncut_video
+    enum :medium, [:audio, :uncut, :video, :override, :hls_video], prefix: true
 
     # NOTE: this just-in-time creates new media versions
     # TODO: convert to sql, so we don't have to load/check every episode?
@@ -15,6 +16,15 @@ module EpisodeMedia
 
     after_save :destroy_out_of_range_contents, if: ->(e) { e.segment_count_previously_changed? }
     after_save :create_external_media
+  end
+
+  def audio?
+    medium_audio? || medium_uncut?
+  end
+
+  # TODO: medium_uncut_video?
+  def video?
+    medium_video? || medium_hls_video?
   end
 
   def validate_media_ready
@@ -38,6 +48,7 @@ module EpisodeMedia
   def medium=(new_medium)
     super
 
+    # special case switching audio <=> uncut, trying to keep files around
     if medium_changed? && medium_was.present?
       if medium_was == "uncut" && medium == "audio"
         uncut&.mark_for_destruction
@@ -54,7 +65,8 @@ module EpisodeMedia
         end
         contents.each(&:mark_for_destruction)
       else
-        contents.each(&:mark_for_destruction)
+        contents.select(&:persisted?).each(&:mark_for_destruction)
+        uncut.mark_for_destruction if uncut&.persisted?
       end
     end
 
@@ -235,9 +247,9 @@ module EpisodeMedia
   #
   # otherwise, just check that this episodes has _enough_ media to stay published.
   # and hopefully/eventually we'll finish processing it, and it will all be valid:
-  #  1) medium=audio ... must have enough files (handling segment_count=nil episodes)
-  #  2) medium=video ... same, but we enforce segment_count=1 elsewhere
-  #  3) medium=uncut ... must have a non-deleted Uncut, which we'll process/slice later
+  #  1) medium = audio/hls_video    ... must have enough files (handling segment_count=nil episodes)
+  #  2) medium = uncut/uncut_video  ... must have a non-deleted Uncut, which we'll process/slice later
+  #  3) medium = video (deprecated) ... must have 1 file (segment_count forced to 1)
   def media_ready?(must_be_complete = true)
     if !must_be_complete && medium_uncut?
       uncut.present? && !uncut.marked_for_destruction?

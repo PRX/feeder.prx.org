@@ -68,6 +68,28 @@ module PorterCallback
     porter_callback_inspect[:Size]&.to_i
   end
 
+  def porter_callback_format
+    porter_callback_inspect.dig(:Audio, :Format) || porter_callback_inspect.dig(:Video, :Format)
+  end
+
+  def porter_callback_bitrate
+    porter_callback_inspect.dig(:Audio, :Bitrate)
+  end
+
+  def porter_callback_bitrate_normalized
+    bitrate = porter_callback_bitrate.to_i / 1000
+    if bitrate > 0
+      higher_bits = AudioFormatValidator::BIT_RATES.select { |b| b >= bitrate }
+      higher_bits.first || AudioFormatValidator::BIT_RATES.last
+    else
+      128
+    end
+  end
+
+  def porter_callback_tags
+    porter_callback_inspect.dig(:Audio, :Tags)
+  end
+
   def porter_callback_ffmpeg
     porter_callback_task_result(:FFmpeg) || {}
   end

@@ -311,7 +311,7 @@ en:
         media_resource:
           attributes:
             file_size:
-              less_than: File too large - upload less than 1GB
+              less_than: "File too large - upload less than %{size}"
             medium:
               format: "%{message}"
             original_url:
@@ -398,10 +398,11 @@ en:
             upload: Upload progress
         medium: File Format
         mediums:
-          audio: Audio - upload multiple audio files
-          uncut: Audio - upload a single file and then segment
-          video: Video
+          audio: Audio - upload multiple files
+          hls_video: Video - upload multiple files
           override: Override - specify external media url
+          uncut: Audio - upload a single file and then segment
+          video: Video - raw (DEPRECATED)
         original_guid: GUID
         released_at: Dropdate
         released_at_date: Date
@@ -494,6 +495,7 @@ en:
       media_resource:
         original_url:
           audio: Segment %{position}
+          hls_video: Video Segment %{position}
           uncut: Audio File
           video: Video File
       podcast:

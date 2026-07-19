@@ -135,4 +135,9 @@ module UploadsHelper
       "danger"
     end
   end
+
+  def upload_file_size_error(media)
+    size = number_to_human_size(media.max_file_size)
+    t("activerecord.errors.models.media_resource.attributes.file_size.less_than", size: size)
+  end
 end

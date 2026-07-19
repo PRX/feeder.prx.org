@@ -5,9 +5,9 @@ class Content < MediaResource
   validate :validate_segmentation
 
   def validate_episode_medium
-    if episode&.medium_video?
+    if episode&.video?
       errors.add(:medium, :not_video, message: "must be a video file") if medium != "video"
-    elsif episode&.medium_audio? || episode&.medium_uncut?
+    elsif episode&.audio?
       errors.add(:medium, :not_audio, message: "must be an audio file") if medium != "audio"
     end
   end
@@ -18,6 +18,22 @@ class Content < MediaResource
     # can be [1.23, 4.56] or [nil, 4.56] or [1.23, nil] or [nil, nil]
     unless array_segments? && numeric_segments? && ordered_segments?
       errors.add(:segmentation, :bad_slices, message: "bad slices")
+    end
+  end
+
+  def copy_media(force = false)
+    if force || needs_copy?
+      if slice?
+        Tasks::SliceMediaTask.start!(self)
+      else
+        Tasks::CopyMediaTask.start!(self)
+      end
+    end
+  end
+
+  def after_copy(copy_task)
+    if copy_task.bad_audio?
+      Tasks::FixMediaTask.start!(self, copy_task)
     end
   end
 

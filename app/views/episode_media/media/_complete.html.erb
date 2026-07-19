@@ -1,6 +1,6 @@
 <%= form.hidden_field :id %>
 <div class="col-12 mb-4">
-  <% if episode.medium_video? %>
+  <% if episode.video? %>
     <%= render "episode_media/media/complete_video", form: form, episode: episode, media: media %>
   <% else %>
     <%= render "episode_media/media/complete_audio", form: form, episode: episode, media: media %>

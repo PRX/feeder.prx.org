@@ -3,7 +3,7 @@ class MediaResource < ApplicationRecord
   VIDEO_EXTENSIONS = %w[avi flv m4v mov mp4 webm wmv]
 
   has_one :task, -> { order("id desc") }, as: :owner
-  has_many :tasks, as: :owner
+  has_many :tasks, -> { order("id desc") }, as: :owner
 
   belongs_to :episode, -> { with_deleted }, touch: true, optional: true
 
@@ -15,7 +15,7 @@ class MediaResource < ApplicationRecord
 
   before_validation :initialize_attributes, on: :create
 
-  validates :file_size, comparison: {less_than: 1.gigabyte}, allow_nil: true
+  validates :file_size, comparison: {less_than: :max_file_size}, allow_nil: true
   validates :original_url, presence: true
   validates :medium, inclusion: {in: %w[audio video]}, if: :status_complete?
 
@@ -34,6 +34,10 @@ class MediaResource < ApplicationRecord
     media.try(:position=, position)
 
     media.try(:original_url).try(:present?) ? media : nil
+  end
+
+  def max_file_size
+    episode.medium_hls_video? ? 10.gigabytes : 1.gigabyte
   end
 
   def audio?
@@ -100,8 +104,12 @@ class MediaResource < ApplicationRecord
     false
   end
 
-  def slice?
-    false
+  def rendition_url(file_name)
+    "#{url}/#{file_name}"
+  end
+
+  def rendition_path(file_name)
+    "#{path}/#{file_name}"
   end
 
   def replace_resources!
@@ -129,12 +137,14 @@ class MediaResource < ApplicationRecord
     original_url
   end
 
+  def needs_copy?
+    !(status_complete? || task)
+  end
+
   def copy_media(force = false)
-    if force || !(status_complete? || task)
-      Tasks::CopyMediaTask.create! do |task|
-        task.owner = self
-      end.start!
-    end
+  end
+
+  def after_copy(copy_task)
   end
 
   def media_url
@@ -178,9 +188,5 @@ class MediaResource < ApplicationRecord
 
   def _retry=(_val)
     retry!
-  end
-
-  def fixed_task?
-    task.is_a?(Tasks::FixMediaTask)
   end
 end
