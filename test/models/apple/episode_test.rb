@@ -23,11 +23,11 @@ describe Apple::Episode do
 
   before do
     create_legacy_apple_episode_sync_log(episode, external_id: external_id, **apple_episode_api_response)
+    SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
   end
 
   describe ".upsert_sync_log" do
     it "stamps the apple show id" do
-      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
       response = build(:apple_episode_api_response)["api_response"]
 
       sync_log = Apple::Episode.upsert_sync_log(apple_episode, response)
@@ -38,7 +38,6 @@ describe Apple::Episode do
 
   describe "#sync_log" do
     it "returns the scoped row for the current show" do
-      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
       scoped = episode.apple_sync_log
       scoped.update!(external_id: "scoped-ep", apple_show_id: "show-1")
 
@@ -47,7 +46,6 @@ describe Apple::Episode do
 
     it "falls back to a legacy row when a scoped row does not exist" do
       legacy = episode.apple_sync_log
-      SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
 
       assert_equal legacy, apple_episode.sync_log
     end
@@ -99,6 +97,34 @@ describe Apple::Episode do
       assert_equal [delivery], show_one_episode.podcast_deliveries.to_a
       assert_nil show_two_episode.podcast_container
       assert_empty show_two_episode.podcast_deliveries
+    end
+
+    it "allows a known show to read its legacy container" do
+      legacy_container = create(:apple_podcast_container,
+        episode: episode,
+        apple_show_id: nil)
+
+      assert_equal legacy_container, show_one_episode.podcast_container
+    end
+
+    it "rejects delivery-state access without a show id" do
+      showless_episode = build(:apple_episode, show: apple_show, feeder_episode: episode)
+      showless_episode.define_singleton_method(:apple_show_id) { nil }
+      legacy_container = create(:apple_podcast_container, episode: episode, apple_show_id: nil)
+      legacy_status = create(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: nil,
+        delivered: false)
+
+      assert_raises(ArgumentError) { showless_episode.podcast_container }
+      assert_raises(ArgumentError) { showless_episode.apple_episode_delivery_status }
+      assert_raises(ArgumentError) { showless_episode.apple_episode_delivery_statuses.to_a }
+      assert_raises(ArgumentError) { showless_episode.apple_update_delivery_status(delivered: true) }
+
+      assert_equal legacy_container, Apple::PodcastContainer.find(legacy_container.id)
+      refute legacy_status.reload.delivered
+      assert_nil legacy_status.apple_show_id
+      assert_equal 1, Apple::EpisodeDeliveryStatus.where(episode_id: episode.id).count
     end
   end
 
@@ -190,7 +216,9 @@ describe Apple::Episode do
     end
 
     it "should be false if the episode has a non complete apple hosted audio asset state" do
-      apple_episode.api_response["api_response"]["val"]["data"]["attributes"]["appleHostedAudioAssetState"] = Apple::Episode::AUDIO_ASSET_FAILURE
+      sync_log = apple_episode.sync_log
+      sync_log.api_response["api_response"]["val"]["data"]["attributes"]["appleHostedAudioAssetState"] = Apple::Episode::AUDIO_ASSET_FAILURE
+      sync_log.update_column(:api_response, sync_log.api_response)
 
       delivery_file.apple_sync_log.update!(**build(:podcast_delivery_file_api_response).merge(external_id: "123"))
       apple_episode.podcast_delivery_files.reset
@@ -266,10 +294,10 @@ describe Apple::Episode do
       create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
       mid = apple_episode.feeder_episode.reload.cut_media_version!
 
-      apple_episode.feeder_episode.apple_update_delivery_status(delivered: true, source_media_version_id: mid.id)
+      apple_episode.apple_update_delivery_status(delivered: true, source_media_version_id: mid.id)
       refute apple_episode.needs_media_version?
 
-      apple_episode.feeder_episode.apple_update_delivery_status(source_media_version_id: -1)
+      apple_episode.apple_update_delivery_status(source_media_version_id: -1)
 
       assert apple_episode.needs_media_version?
     end
@@ -279,7 +307,7 @@ describe Apple::Episode do
     let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "PUBLISH") }
 
     it "should be false when drafting" do
-      ep = build(:uploaded_apple_episode)
+      ep = build(:uploaded_apple_episode, show: apple_show)
       assert_equal true, ep.synced_with_apple?
 
       ep.stub(:drafting?, true) do
@@ -288,7 +316,7 @@ describe Apple::Episode do
     end
 
     it "should be false when the podcast_container is nil" do
-      ep = build(:apple_episode)
+      ep = build(:apple_episode, show: apple_show)
       assert ep.podcast_container.nil?
 
       # it returns early via the guard

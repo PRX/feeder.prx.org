@@ -54,7 +54,7 @@ describe Apple::MediaInfo do
   let(:pc) { Apple::PodcastContainer.upsert_podcast_container(apple_episode, podcast_container_json_row) }
 
   def status
-    episode.apple_status
+    apple_episode.apple_status
   end
 
   describe ".filename_prefix" do
@@ -84,7 +84,7 @@ describe Apple::MediaInfo do
 
     it "does not modify other fields" do
       pc # ensure container exists
-      episode.apple_update_delivery_status(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
+      apple_episode.apple_update_delivery_status(source_url: "www.some/foo", source_size: 123, source_filename: "foo")
 
       Apple::MediaInfo.increment_source_fetch_count([apple_episode])
 

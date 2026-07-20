@@ -195,7 +195,10 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
           # feeder episode's apple_podcast_container attribute
 
           # Set the apple_podcast_container to a value that is not the pc1 result
-          apple_episode.feeder_episode.build_apple_podcast_container(vendor_id: "not this one!")
+          create(:apple_podcast_container,
+            episode: apple_episode.feeder_episode,
+            apple_show_id: apple_episode.apple_show_id,
+            vendor_id: "not this one!")
           assert_equal "not this one!", apple_episode.podcast_container.vendor_id
 
           Apple::PodcastContainer.upsert_podcast_container(apple_episode,
