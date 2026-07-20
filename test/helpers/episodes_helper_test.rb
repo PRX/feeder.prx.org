@@ -22,7 +22,7 @@ describe EpisodesHelper do
     end
 
     describe "with apple feed" do
-      let(:apple_feed) { create(:apple_feed, podcast: podcast) }
+      let(:apple_feed) { create(:apple_feed, podcast: podcast, apple_show_id: "show-1") }
       let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
 
       before { apple_feed }

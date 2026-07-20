@@ -129,8 +129,8 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       before do
-        episode.feeder_episode.episode_delivery_statuses.destroy_all
-        episode.feeder_episode.episode_delivery_statuses.reset
+        episode.delivery_statuses.destroy_all
+        episode.delivery_statuses.reset
       end
 
       it "needs upload (no status)" do
@@ -160,7 +160,7 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       before do
-        episode.feeder_episode.apple_update_delivery_status(
+        episode.apple_update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id,
@@ -200,12 +200,12 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       before do
-        episode.feeder_episode.apple_update_delivery_status(
+        episode.apple_update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id
         )
-        episode.feeder_episode.apple_mark_as_not_delivered!
+        episode.apple_mark_as_not_delivered!
       end
 
       it "needs upload (uploaded was reset to false)" do
@@ -241,7 +241,7 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       before do
-        episode.feeder_episode.apple_update_delivery_status(
+        episode.apple_update_delivery_status(
           uploaded: true,
           delivered: true,
           source_media_version_id: episode.feeder_episode.media_version_id
@@ -280,7 +280,7 @@ describe Apple::Publisher do
 
       before do
         # Simulate: uploaded successfully, then timed out
-        episode.feeder_episode.apple_update_delivery_status(
+        episode.apple_update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id,
@@ -316,7 +316,7 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       before do
-        episode.feeder_episode.apple_update_delivery_status(
+        episode.apple_update_delivery_status(
           uploaded: true,
           delivered: true,
           source_media_version_id: episode.feeder_episode.media_version_id
@@ -340,7 +340,7 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       it "general timeout: uploaded stays true, upload skipped" do
-        episode.feeder_episode.apple_update_delivery_status(
+        episode.apple_update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id,
@@ -356,12 +356,12 @@ describe Apple::Publisher do
       end
 
       it "stuck timeout: uploaded reset to false, full re-upload" do
-        episode.feeder_episode.apple_update_delivery_status(
+        episode.apple_update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id
         )
-        episode.feeder_episode.apple_mark_as_not_delivered!
+        episode.apple_mark_as_not_delivered!
 
         phases = track_phases(apple_publisher, [episode])
 

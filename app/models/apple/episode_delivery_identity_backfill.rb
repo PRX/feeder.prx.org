@@ -6,6 +6,7 @@ module Apple
   # Run in production as a dry run, a backfill, and then a verification. Delete
   # after the show-scoped constraints are enforced and the compatibility reads
   # are removed.
+  # TODO: remove with cutover.
   class EpisodeDeliveryIdentityBackfill
     BATCH_SIZE = 5_000
     TARGET_TYPES = %i[episode_sync_logs podcast_containers delivery_statuses].freeze
@@ -105,6 +106,7 @@ module Apple
 
     def each_unscoped_record
       target_relations.each do |record_type, relation|
+        # TODO: remove with cutover after all legacy NULL-show rows are stamped.
         relation.where(apple_show_id: nil).find_each(batch_size: BATCH_SIZE) { |record| yield record_type, record }
       end
     end
@@ -193,6 +195,7 @@ module Apple
     end
 
     def unscoped_counts
+      # TODO: remove with cutover after all legacy NULL-show rows are stamped.
       target_relations.transform_values { |relation| relation.where(apple_show_id: nil).count }
     end
 

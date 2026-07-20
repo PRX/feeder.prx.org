@@ -240,7 +240,7 @@ module Apple
     def sync_log
       logs = SyncLog.apple.episodes.where(feeder_id: feeder_episode.id, feeder_type: :episodes)
 
-      # TODO: remove once writers are cut over and no NULL-show apple episode
+      # TODO: remove with cutover once writers are cut over and no NULL-show apple episode
       # rows remain (S10) — show-less contexts read the pre-show-scoping row
       if apple_show_id.blank?
         legacy_sync_log = feeder_episode.apple_sync_log
@@ -249,7 +249,7 @@ module Apple
         return logs.find_by(apple_show_id: nil)
       end
 
-      # TODO: drop the NULL-show fallback once writers are cut over and the
+      # TODO: remove with cutover once writers are cut over and the
       # AppleShowBackfill has stamped all legacy rows (S10)
       logs.find_by(apple_show_id: apple_show_id) || logs.find_by(apple_show_id: nil)
     end
@@ -532,10 +532,10 @@ module Apple
     end
 
     def podcast_container
-      return feeder_episode.apple_podcast_container if apple_show_id.blank?
-
+      show_id = delivery_state_apple_show_id!
       containers = Apple::PodcastContainer.where(episode_id: feeder_id)
-      containers.find_by(apple_show_id: apple_show_id) || containers.find_by(apple_show_id: nil)
+      # TODO: remove with cutover after all legacy NULL-show rows are stamped.
+      containers.find_by(apple_show_id: show_id) || containers.find_by(apple_show_id: nil)
     end
 
     def podcast_deliveries
@@ -571,16 +571,16 @@ module Apple
     end
 
     def apple_update_delivery_status(attrs)
-      Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: apple_show_id)
+      Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: delivery_state_apple_show_id!)
     end
 
     def apple_episode_delivery_status
-      Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: apple_show_id)
+      Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: delivery_state_apple_show_id!)
     end
 
     def apple_episode_delivery_statuses
       Apple::EpisodeDeliveryStatus
-        .where(episode_id: feeder_id, apple_show_id: apple_show_id)
+        .where(episode_id: feeder_id, apple_show_id: delivery_state_apple_show_id!)
         .order(created_at: :desc)
     end
 
@@ -622,6 +622,12 @@ module Apple
 
     def respond_to_missing?(method_name, include_private = false)
       feeder_episode.respond_to?(method_name) || super
+    end
+
+    private
+
+    def delivery_state_apple_show_id!
+      apple_show_id.presence || raise(ArgumentError, "Apple delivery state requires an Apple show ID")
     end
   end
 end

@@ -137,6 +137,7 @@ module Apple
       transaction do
         containers = where(episode_id: episode_id)
         pc = containers.lock.find_by(apple_show_id: attributes[:apple_show_id])
+        # TODO: remove with cutover after all legacy NULL-show rows are stamped.
         pc ||= containers.lock.find_by(apple_show_id: nil) if attributes[:apple_show_id].present?
 
         if pc
