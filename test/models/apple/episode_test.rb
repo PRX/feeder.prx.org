@@ -174,8 +174,11 @@ describe Apple::Episode do
       assert_equal 1, Apple::EpisodeDeliveryStatus.where(episode_id: episode.id).count
     end
 
-    it "does not delegate unscoped Apple resources to the feeder episode" do
-      unsafe_methods = {
+    it "exposes only the explicit show-scoped API" do
+      assert_equal episode.media_version_id, show_one_episode.media_version_id
+      assert_equal episode.podcast_id, show_one_episode.podcast_id
+
+      undelegated_methods = {
         apple_prepare_for_delivery!: [],
         apple_podcast_container: [],
         apple_podcast_containers: [],
@@ -184,10 +187,11 @@ describe Apple::Episode do
         episode_delivery_status: [:apple],
         episode_delivery_statuses: [],
         sync_logs: [],
+        title: [],
         update_episode_delivery_status: [:apple, {delivered: true}]
       }
 
-      unsafe_methods.each do |method_name, arguments|
+      undelegated_methods.each do |method_name, arguments|
         refute show_one_episode.respond_to?(method_name), method_name
         assert_raises(NoMethodError, method_name) do
           show_one_episode.public_send(method_name, *arguments)

@@ -8,16 +8,10 @@ module Apple
       :api,
       :apple_episode_update_attributes
 
+    delegate :media_version_id, :podcast_id, to: :feeder_episode
+
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
-    UNSCOPED_FEEDER_METHODS = %i[
-      build_initial_delivery_status
-      delete_episode_delivery_status
-      episode_delivery_status
-      episode_delivery_statuses
-      sync_logs
-      update_episode_delivery_status
-    ].freeze
 
     # Cleans up old delivery/delivery files iff the episode is to be uploaded
     def self.prepare_for_delivery(episodes)
@@ -602,31 +596,20 @@ module Apple
     alias_method :delivery_statuses, :apple_episode_delivery_statuses
     alias_method :apple_status, :apple_episode_delivery_status
 
-    # Delegate methods to feeder_episode
-    def method_missing(method_name, *arguments, &block)
-      if unscoped_feeder_method?(method_name)
-        raise NoMethodError, "#{method_name} is not available through Apple::Episode; use the show-scoped facade"
-      end
-
-      if feeder_episode.respond_to?(method_name)
-        feeder_episode.public_send(method_name, *arguments, &block)
-      else
-        super
-      end
+    # Apple::Episode exposes only methods defined here or explicitly delegated
+    # above. Do not fall through to Integrations::Base::Episode's broad proxy.
+    def method_missing(method_name, *, **)
+      raise NoMethodError, "#{method_name} is not part of the show-scoped Apple::Episode API"
     end
 
-    def respond_to_missing?(method_name, include_private = false)
-      !unscoped_feeder_method?(method_name) && (feeder_episode.respond_to?(method_name) || super)
+    def respond_to_missing?(*, **)
+      false
     end
 
     private
 
     def scoped_apple_show_id!
       apple_show_id.presence || raise(ArgumentError, "Apple state requires an Apple show ID")
-    end
-
-    def unscoped_feeder_method?(method_name)
-      method_name.to_s.start_with?("apple_") || UNSCOPED_FEEDER_METHODS.include?(method_name.to_sym)
     end
   end
 end
