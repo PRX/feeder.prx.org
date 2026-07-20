@@ -185,7 +185,7 @@ module EpisodeMedia
   end
 
   def media_file_name
-    media.first&.file_name
+    uncut&.file_name || media.first&.file_name
   end
 
   def media_content_type

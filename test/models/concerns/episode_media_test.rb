@@ -429,6 +429,17 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     end
   end
 
+  describe "#media_file_name" do
+    it "returns the contents or uncut file name" do
+      c1.original_url = "http://site/one.mp3"
+      c2.original_url = "http://site/two.mp3"
+      assert_equal "one.mp3", ep.media_file_name
+
+      ep.build_uncut(original_url: "http://site/three.mp3")
+      assert_equal "three.mp3", ep.media_file_name
+    end
+  end
+
   describe "#media_content_type" do
     it "returns the first contents type" do
       c1.mime_type = "some/thing1"
