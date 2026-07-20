@@ -46,7 +46,7 @@ describe EpisodesHelper do
         api_response = build(:apple_episode_api_response,
           item_guid: episode.item_guid,
           apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_FAILURE)
-        create(:apple_episode, feeder_episode: episode, api_response: api_response)
+        build(:apple_episode, feeder_episode: episode, api_response: api_response)
 
         assert_equal "error", helper.episode_integration_status(:apple, episode)
       end
