@@ -596,16 +596,6 @@ module Apple
     alias_method :delivery_statuses, :apple_episode_delivery_statuses
     alias_method :apple_status, :apple_episode_delivery_status
 
-    # Apple::Episode exposes only methods defined here or explicitly delegated
-    # above. Do not fall through to Integrations::Base::Episode's broad proxy.
-    def method_missing(method_name, *, **)
-      raise NoMethodError, "#{method_name} is not part of the show-scoped Apple::Episode API"
-    end
-
-    def respond_to_missing?(*, **)
-      false
-    end
-
     private
 
     def scoped_apple_show_id!
