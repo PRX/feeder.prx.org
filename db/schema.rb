@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_17_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_20_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -46,7 +46,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_17_000001) do
     t.string "apple_episode_id", null: false
     t.string "apple_show_id"
     t.index ["apple_show_id"], name: "index_apple_podcast_containers_on_apple_show_id"
-    t.index ["episode_id"], name: "index_apple_podcast_containers_on_episode_id", unique: true
+    t.index ["episode_id", "apple_show_id"], name: "idx_apple_podcast_containers_episode_show_unique", unique: true
+    t.index ["episode_id"], name: "idx_apple_podcast_containers_legacy_episode_unique", unique: true, where: "(apple_show_id IS NULL)"
     t.index ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true
   end
 

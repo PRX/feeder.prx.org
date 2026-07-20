@@ -85,6 +85,50 @@ describe Apple::Publisher do
     end
   end
 
+  describe "#sync_podcast_containers!" do
+    it "creates a show-scoped container when another show's container exists" do
+      feeder_episode = create(:episode, podcast: podcast)
+      create(:apple_podcast_container,
+        episode: feeder_episode,
+        apple_show_id: "show-1")
+      apple_episode = build(:apple_episode,
+        show: apple_publisher.show,
+        feeder_episode: feeder_episode)
+      response = [{
+        "request_metadata" => {"apple_episode_id" => "apple-episode-2"},
+        "api_response" => {
+          "val" => {
+            "data" => {
+              "type" => "podcastContainers",
+              "id" => "container-2"
+            }
+          }
+        }
+      }]
+      create_container = lambda do |resource, _params, batch_size:|
+        assert_equal "createPodcastContainers", resource
+        assert_equal Apple::Api::DEFAULT_WRITE_BATCH_SIZE, batch_size
+        response
+      end
+
+      apple_publisher.stub(:poll_podcast_containers!, nil) do
+        apple_api.stub(:bridge_remote_and_retry!, create_container) do
+          apple_episode.stub(:apple_show_id, "show-2") do
+            apple_episode.stub(:apple_id, "apple-episode-2") do
+              apple_episode.stub(:audio_asset_vendor_id, "vendor-2") do
+                apple_publisher.sync_podcast_containers!([apple_episode])
+              end
+            end
+          end
+        end
+      end
+
+      containers = Apple::PodcastContainer.where(episode: feeder_episode).order(:apple_show_id)
+      assert_equal ["show-1", "show-2"], containers.pluck(:apple_show_id)
+      assert_equal "container-2", containers.last.external_id
+    end
+  end
+
   describe "#only_episodes_with_integration_state" do
     let(:episode) { build(:apple_episode) }
 

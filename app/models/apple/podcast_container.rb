@@ -83,9 +83,9 @@ module Apple
     end
 
     def self.create_podcast_containers(api, episodes)
-      # There is a 1:1 relationship between episodes and podcast containers w/
-      # key contraints on the episodes vendorId -- and you cannot destroy a
-      # podcast container.
+      # Apple has a 1:1 relationship between an Apple episode and its podcast
+      # container. A feeder episode can belong to multiple Apple shows, so its
+      # local containers are unique by feeder episode and Apple show.
       # We should have a local record of the podcast container, per the poll
       # method above.
       episodes_to_create = episodes.reject { |ep| ep.has_container? }
@@ -105,42 +105,61 @@ module Apple
       external_id = row.dig("api_response", "val", "data", "id")
       raise "Missing external_id in response" if external_id.blank?
 
-      containers = where(episode_id: episode.feeder_id)
-      pc = containers.find_by(apple_show_id: episode.apple_show_id)
-      pc ||= containers.find_by(apple_show_id: nil) if episode.apple_show_id.present?
-
-      (pc, action) =
-        if pc
-          pc.update!(apple_episode_id: episode.apple_id,
-            external_id: external_id,
-            vendor_id: episode.audio_asset_vendor_id,
-            apple_show_id: episode.apple_show_id)
-          pc.touch
-          [pc, :updated]
-        else
-          pc = create!(apple_episode_id: episode.apple_id,
-            external_id: external_id,
-            vendor_id: episode.audio_asset_vendor_id,
-            episode_id: episode.feeder_id,
-            apple_show_id: episode.apple_show_id)
-
-          [pc, :created]
-        end
+      attributes = {
+        apple_episode_id: episode.apple_id,
+        external_id: external_id,
+        vendor_id: episode.audio_asset_vendor_id,
+        apple_show_id: episode.apple_show_id
+      }
+      pc, action = persist_podcast_container(episode.feeder_id, attributes)
 
       Rails.logger.info("#{action} local podcast container",
         {podcast_container_id: pc.id,
          action: action,
          external_id: external_id,
-         feeder_episode_id: episode.feeder_id})
+         feeder_episode_id: episode.feeder_id,
+         apple_show_id: episode.apple_show_id})
 
-      SyncLog.log!(integration: :apple, feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
+      if pc.apple_sync_log
+        pc.apple_sync_log.update!(external_id: external_id, api_response: row, updated_at: Time.now.utc)
+      else
+        SyncLog.log!(integration: :apple, feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
+      end
 
       # reset the episode's podcast container cached value
-      pc.reload if action == :updated
+      pc.reload unless action == :created
       episode.feeder_episode.reload
 
       pc
     end
+
+    def self.persist_podcast_container(episode_id, attributes)
+      transaction do
+        containers = where(episode_id: episode_id)
+        pc = containers.lock.find_by(apple_show_id: attributes[:apple_show_id])
+        pc ||= containers.lock.find_by(apple_show_id: nil) if attributes[:apple_show_id].present?
+
+        if pc
+          action = (pc.apple_show_id.nil? && attributes[:apple_show_id].present?) ? :adopted : :updated
+          pc.update!(attributes)
+          pc.touch
+          [pc, action]
+        else
+          [create!(attributes.merge(episode_id: episode_id)), :created]
+        end
+      end
+    rescue ActiveRecord::RecordNotUnique
+      # A concurrent upsert may have created the exact show-scoped row after
+      # our lookup. The database constraint remains authoritative; only recover
+      # when that exact row now exists, otherwise preserve the original error.
+      pc = find_by(episode_id: episode_id, apple_show_id: attributes[:apple_show_id])
+      raise unless pc
+
+      pc.update!(attributes)
+      pc.touch
+      [pc, :updated]
+    end
+    private_class_method :persist_podcast_container
 
     def self.get_podcast_containers_via_episodes(api, episodes)
       # Fetch the podcast containers from the episodes side of the API

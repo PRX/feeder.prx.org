@@ -110,6 +110,63 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       assert_equal "show-1", pc.apple_show_id
     end
 
+    it "adopts a legacy container for one show and creates a container for another show" do
+      legacy_container = create(:apple_podcast_container,
+        episode: episode,
+        apple_show_id: nil)
+
+      show_one_container = apple_episode.stub(:apple_show_id, "show-1") do
+        apple_episode.stub(:apple_id, "apple-episode-1") do
+          apple_episode.stub(:audio_asset_vendor_id, "vendor-1") do
+            Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+              podcast_container_row(apple_episode_id: "apple-episode-1", external_id: "container-1"))
+          end
+        end
+      end
+
+      assert_equal legacy_container, show_one_container
+      assert_equal "show-1", show_one_container.apple_show_id
+
+      show_two_container = apple_episode.stub(:apple_show_id, "show-2") do
+        apple_episode.stub(:apple_id, "apple-episode-2") do
+          apple_episode.stub(:audio_asset_vendor_id, "vendor-2") do
+            Apple::PodcastContainer.upsert_podcast_container(apple_episode,
+              podcast_container_row(apple_episode_id: "apple-episode-2", external_id: "container-2"))
+          end
+        end
+      end
+
+      refute_equal show_one_container, show_two_container
+      assert_equal "show-2", show_two_container.apple_show_id
+      assert_equal ["show-1", "show-2"], episode.reload.apple_podcast_containers.order(:apple_show_id).pluck(:apple_show_id)
+    end
+
+    it "enforces one container per episode and Apple show" do
+      create(:apple_podcast_container, episode: episode, apple_show_id: "show-1")
+
+      assert_raises ActiveRecord::RecordNotUnique do
+        Apple::PodcastContainer.create!(
+          episode: episode,
+          apple_show_id: "show-1",
+          apple_episode_id: "duplicate-episode",
+          vendor_id: "duplicate-vendor"
+        )
+      end
+    end
+
+    it "enforces one transitional legacy container per episode" do
+      create(:apple_podcast_container, episode: episode, apple_show_id: nil)
+
+      assert_raises ActiveRecord::RecordNotUnique do
+        Apple::PodcastContainer.create!(
+          episode: episode,
+          apple_show_id: nil,
+          apple_episode_id: "duplicate-legacy-episode",
+          vendor_id: "duplicate-legacy-vendor"
+        )
+      end
+    end
+
     it "should create logs based on a returned row value" do
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
@@ -205,6 +262,43 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         end
       end
       assert_equal SyncLog.apple.podcast_containers.count, 1
+    end
+
+    it "stores a remote container without overwriting another show's container" do
+      show_one_container = create(:apple_podcast_container,
+        episode: episode,
+        apple_show_id: "show-1")
+      show_two_row = podcast_container_row(apple_episode_id: "apple-episode-2", external_id: "container-2")
+
+      Apple::PodcastContainer.stub(:get_podcast_containers_via_episodes, [show_two_row]) do
+        apple_episode.stub(:apple_show_id, "show-2") do
+          apple_episode.stub(:apple_id, "apple-episode-2") do
+            apple_episode.stub(:audio_asset_vendor_id, "vendor-2") do
+              Apple::PodcastContainer.poll_podcast_container_state(nil, [apple_episode])
+            end
+          end
+        end
+      end
+
+      show_two_container = Apple::PodcastContainer.find_by!(episode: episode, apple_show_id: "show-2")
+      assert_equal "container-2", show_two_container.external_id
+      assert_equal "show-1", show_one_container.reload.apple_show_id
+    end
+
+    it "does not reset another show's container when the current show has none" do
+      show_one_container = create(:apple_podcast_container,
+        episode: episode,
+        apple_show_id: "show-1")
+
+      Apple::PodcastContainer.stub(:get_podcast_containers_via_episodes, []) do
+        apple_episode.stub(:apple_show_id, "show-2") do
+          apple_episode.stub(:apple_id, "apple-episode-2") do
+            Apple::PodcastContainer.poll_podcast_container_state(nil, [apple_episode])
+          end
+        end
+      end
+
+      assert Apple::PodcastContainer.exists?(show_one_container.id)
     end
 
     def fake_podcast_container_api(list_response:, detail_response: [])
@@ -305,6 +399,20 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       pd = container.podcast_deliveries.build
       assert_equal Apple::PodcastDelivery, pd.class
     end
+  end
+
+  def podcast_container_row(apple_episode_id:, external_id:)
+    {
+      "request_metadata" => {"apple_episode_id" => apple_episode_id},
+      "api_response" => {
+        "val" => {
+          "data" => {
+            "type" => "podcastContainers",
+            "id" => external_id
+          }
+        }
+      }
+    }
   end
 
   describe ".get_podcast_containers_bridge_params" do
