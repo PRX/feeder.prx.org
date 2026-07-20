@@ -6,6 +6,9 @@ module AppleIntegration
   included do
     has_one :apple_sync_log, -> { episodes.apple }, foreign_key: :feeder_id, class_name: "Apple::SyncLog"
     has_one :apple_podcast_delivery, class_name: "Apple::PodcastDelivery"
+    has_many :apple_podcast_containers, class_name: "Apple::PodcastContainer"
+    # Transitional show-less callers still use the legacy singular association.
+    # Apple::Episode resolves its container from apple_podcast_containers by show.
     has_one :apple_podcast_container, class_name: "Apple::PodcastContainer"
     has_many :apple_podcast_deliveries, through: :apple_podcast_container, source: :podcast_deliveries,
       class_name: "Apple::PodcastDelivery"
