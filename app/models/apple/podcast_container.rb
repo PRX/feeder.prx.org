@@ -76,7 +76,7 @@ module Apple
 
         container.destroy!
         episode.reload
-        episode.episode_delivery_status(:apple, true, apple_show_id: apple_show_id).mark_as_not_delivered!
+        Apple::EpisodeDeliveryStatus.current_or_default(episode, apple_show_id: apple_show_id).mark_as_not_delivered!
       end
 
       stale_podcast_containers

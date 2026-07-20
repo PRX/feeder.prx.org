@@ -126,7 +126,7 @@ class AppleIntegrationTest < ActiveSupport::TestCase
 
     it "returns the new status" do
       result = episode.apple_status.increment_asset_wait
-      assert_instance_of Integrations::EpisodeDeliveryStatus, result
+      assert_instance_of Apple::EpisodeDeliveryStatus, result
       assert_equal episode.apple_episode_delivery_statuses.last, result
     end
   end

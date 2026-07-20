@@ -571,20 +571,17 @@ module Apple
     end
 
     def apple_update_delivery_status(attrs)
-      feeder_episode.update_episode_delivery_status(:apple, attrs, apple_show_id: apple_show_id)
+      Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: apple_show_id)
     end
 
     def apple_episode_delivery_status
-      feeder_episode.episode_delivery_status(:apple, apple_show_id: apple_show_id) ||
-        Integrations::EpisodeDeliveryStatus.default_status(:apple, feeder_episode, apple_show_id: apple_show_id)
+      Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: apple_show_id)
     end
 
     def apple_episode_delivery_statuses
-      statuses = feeder_episode.episode_delivery_statuses.apple
-      return statuses if apple_show_id.blank?
-
-      scoped_statuses = statuses.where(apple_show_id: apple_show_id)
-      scoped_statuses.exists? ? scoped_statuses : statuses.where(apple_show_id: nil)
+      Apple::EpisodeDeliveryStatus
+        .where(episode_id: feeder_id, apple_show_id: apple_show_id)
+        .order(created_at: :desc)
     end
 
     def apple_needs_delivery?

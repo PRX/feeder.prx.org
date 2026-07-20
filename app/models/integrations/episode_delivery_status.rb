@@ -1,8 +1,20 @@
 module Integrations
   class EpisodeDeliveryStatus < ApplicationRecord
+    self.inheritance_column = :integration
+
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
 
     enum :integration, Integrations::INTEGRATIONS
+
+    INTEGRATION_CLASSES = {
+      "apple" => "Apple::EpisodeDeliveryStatus",
+      "megaphone" => "Integrations::EpisodeDeliveryStatus"
+    }.freeze
+
+    def self.find_sti_class(type_name)
+      integration = base_class.type_for_attribute(inheritance_column).cast(type_name)
+      INTEGRATION_CLASSES.fetch(integration).constantize
+    end
 
     def self.measure_asset_processing_duration(episode_delivery_statuses)
       # Relies on episode_delivery_statuses being ordered by created_at DESC
@@ -20,24 +32,20 @@ module Integrations
       Time.now.utc - start_status.created_at
     end
 
-    def self.update_status(integration, episode, attrs = nil, apple_show_id: nil, **status_attrs)
-      attrs = (attrs || {}).merge(status_attrs)
-      current_status = episode.episode_delivery_status(integration, apple_show_id: apple_show_id)
-      new_status = current_status&.dup || default_status(integration, episode, apple_show_id: apple_show_id)
-      new_status.assign_attributes(attrs.merge(integration: integration, apple_show_id: apple_show_id))
+    def self.update_status(integration, episode, attrs)
+      new_status = episode.episode_delivery_status(integration)&.dup || default_status(integration, episode)
+      new_status.assign_attributes(attrs.merge(integration: integration))
       new_status.save!
       episode.episode_delivery_statuses.reset
       new_status
     end
 
-    def self.delete_status(integration, episode, apple_show_id: nil)
-      statuses = episode.episode_delivery_statuses.where(integration: integration)
-      statuses = statuses.where(apple_show_id: apple_show_id) if integration.to_sym == :apple && apple_show_id.present?
-      statuses.delete_all
+    def self.delete_status(integration, episode)
+      episode.episode_delivery_statuses.where(integration: integration).delete_all
     end
 
-    def self.default_status(integration, episode, apple_show_id: nil)
-      new(episode: episode, integration: integration, apple_show_id: apple_show_id)
+    def self.default_status(integration, episode)
+      new(episode: episode, integration: integration)
     end
 
     def increment_asset_wait
@@ -80,7 +88,7 @@ module Integrations
     private
 
     def update_status(attrs)
-      self.class.update_status(integration, episode, attrs, apple_show_id: apple_show_id)
+      self.class.update_status(integration, episode, attrs)
     end
   end
 end
