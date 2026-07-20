@@ -562,7 +562,7 @@ module Apple
       Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: scoped_apple_show_id!)
     end
 
-    def apple_episode_delivery_status
+    def apple_episode_delivery_status(_with_default = true)
       Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: scoped_apple_show_id!)
     end
 

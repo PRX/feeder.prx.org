@@ -20,11 +20,7 @@ module EpisodesHelper
     return "not_publishable" unless episode.integration_feed_episode?(integration)
 
     integration_episode = episode.integration_episode(integration)
-    status = if integration.to_s == "apple"
-      integration_episode&.delivery_status
-    else
-      episode.episode_delivery_status(integration, true)
-    end
+    status = integration_episode&.delivery_status(true)
 
     if !status
       "not_found"

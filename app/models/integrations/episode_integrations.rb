@@ -31,6 +31,10 @@ module Integrations::EpisodeIntegrations
     end
   end
 
+  def megaphone_episode
+    Megaphone::Episode.new.tap { |episode| episode.feeder_episode = self }
+  end
+
   def publish_to_integration?(integration)
     # see if there is an integration
     podcast.feeds.any? { |f| f.integration_type == integration && f.publish_integration? }
