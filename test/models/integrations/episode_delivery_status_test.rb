@@ -3,7 +3,7 @@ require "test_helper"
 class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
   describe Integrations::EpisodeDeliveryStatus do
     let(:episode) { create(:episode) }
-    let(:delivery_status) { create(:apple_episode_delivery_status, episode: episode) }
+    let(:delivery_status) { create(:megaphone_episode_delivery_status, episode: episode) }
 
     describe "associations" do
       it "belongs to an episode" do
@@ -14,18 +14,18 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
         episode.destroy
         assert_equal episode, delivery_status.episode
         assert_difference "Integrations::EpisodeDeliveryStatus.count", +1 do
-          episode.apple_mark_as_not_delivered!
+          delivery_status.mark_as_not_delivered!
         end
-        assert_equal episode, episode.apple_episode_delivery_statuses.first.episode
+        assert_equal episode, episode.episode_delivery_statuses.megaphone.first.episode
       end
     end
 
     describe "scopes" do
       it "orders by created_at desc by default" do
-        old_status = create(:apple_episode_delivery_status, episode: episode, created_at: 2.days.ago)
-        new_status = create(:apple_episode_delivery_status, episode: episode, created_at: 1.day.ago)
+        old_status = create(:megaphone_episode_delivery_status, episode: episode, created_at: 2.days.ago)
+        new_status = create(:megaphone_episode_delivery_status, episode: episode, created_at: 1.day.ago)
 
-        assert_equal [new_status, old_status], episode.apple_episode_delivery_statuses.to_a
+        assert_equal [new_status, old_status], episode.episode_delivery_statuses.megaphone.to_a
       end
     end
 
@@ -40,20 +40,20 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       it "creates a new status when none exists" do
         episode.episode_delivery_statuses.destroy_all
         assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
-          Integrations::EpisodeDeliveryStatus.update_status(:apple, episode, delivered: true)
+          Integrations::EpisodeDeliveryStatus.update_status(:megaphone, episode, delivered: true)
         end
       end
 
       it "creates a new status even when one already exists" do
-        _existing_status = create(:apple_episode_delivery_status, episode: episode)
+        _existing_status = create(:megaphone_episode_delivery_status, episode: episode)
         assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
-          Integrations::EpisodeDeliveryStatus.update_status(:apple, episode, delivered: false)
+          Integrations::EpisodeDeliveryStatus.update_status(:megaphone, episode, delivered: false)
         end
       end
 
       it "updates attributes of the new status" do
         new_status = Integrations::EpisodeDeliveryStatus.update_status(
-          :apple,
+          :megaphone,
           episode,
           {
             delivered: true,
@@ -69,19 +69,19 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
         assert_equal "audio.mp3", new_status.source_filename
       end
 
-      it "resets the episode's apple_episode_delivery_statuses association" do
-        episode.apple_episode_delivery_statuses.load
-        Integrations::EpisodeDeliveryStatus.update_status(:apple, episode, delivered: true)
+      it "resets the episode's delivery-status association" do
+        episode.episode_delivery_statuses.load
+        Integrations::EpisodeDeliveryStatus.update_status(:megaphone, episode, delivered: true)
         refute episode.episode_delivery_statuses.loaded?
       end
     end
 
-    describe "Episode#apple_episode_delivery_status" do
+    describe "Episode#episode_delivery_status" do
       it "returns the most recent status" do
-        _old_status = create(:apple_episode_delivery_status, episode: episode, created_at: 2.days.ago)
-        new_status = create(:apple_episode_delivery_status, episode: episode, created_at: 1.day.ago)
+        _old_status = create(:megaphone_episode_delivery_status, episode: episode, created_at: 2.days.ago)
+        new_status = create(:megaphone_episode_delivery_status, episode: episode, created_at: 1.day.ago)
 
-        assert_equal new_status, episode.apple_episode_delivery_status
+        assert_equal new_status, episode.episode_delivery_status(:megaphone)
       end
     end
 
@@ -89,7 +89,7 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       it "preserves source_media_version_id" do
         delivery_status.update!(source_media_version_id: 42)
         delivery_status.mark_as_not_delivered!
-        new_status = episode.apple_episode_delivery_status
+        new_status = episode.episode_delivery_status(:megaphone)
         assert_equal 42, new_status.source_media_version_id
       end
     end
@@ -130,24 +130,24 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
     end
 
     it "returns true when not uploaded" do
-      status = Integrations::EpisodeDeliveryStatus.default_status(:apple, episode)
+      status = Integrations::EpisodeDeliveryStatus.default_status(:megaphone, episode)
       assert status.needs_upload?
     end
 
     it "returns true when uploaded but source_media_version_id does not match" do
-      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+      status = Integrations::EpisodeDeliveryStatus.update_status(:megaphone, episode,
         uploaded: true, source_media_version_id: stale_version)
       assert status.needs_upload?
     end
 
     it "returns false when uploaded and source_media_version_id matches" do
-      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+      status = Integrations::EpisodeDeliveryStatus.update_status(:megaphone, episode,
         uploaded: true, source_media_version_id: current_version)
       refute status.needs_upload?
     end
 
     it "returns true when media version changes after a successful upload" do
-      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+      status = Integrations::EpisodeDeliveryStatus.update_status(:megaphone, episode,
         uploaded: true, source_media_version_id: current_version)
       refute status.needs_upload?
 
@@ -163,18 +163,18 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
     let(:episode) { create(:episode_with_media) }
 
     it "returns true when source_media_version_id is blank" do
-      status = Integrations::EpisodeDeliveryStatus.default_status(:apple, episode)
+      status = Integrations::EpisodeDeliveryStatus.default_status(:megaphone, episode)
       assert status.needs_media_version?
     end
 
     it "returns true when source_media_version_id does not match" do
-      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+      status = Integrations::EpisodeDeliveryStatus.update_status(:megaphone, episode,
         source_media_version_id: -1)
       assert status.needs_media_version?
     end
 
     it "returns false when source_media_version_id matches" do
-      status = Integrations::EpisodeDeliveryStatus.update_status(:apple, episode,
+      status = Integrations::EpisodeDeliveryStatus.update_status(:megaphone, episode,
         source_media_version_id: episode.media_version_id)
       refute status.needs_media_version?
     end
@@ -192,61 +192,87 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
     end
 
     it "returns nil when there are no delivery statuses" do
-      assert_nil episode.measure_asset_processing_duration
+      assert_nil measure_asset_processing_duration(episode)
     end
 
     it "returns nil when the latest status has zero attempts" do
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
-      assert_nil episode.measure_asset_processing_duration
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
+      assert_nil measure_asset_processing_duration(episode)
     end
 
     it "measures duration for contiguous increments" do
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 5.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 4.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 2, created_at: 3.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 3, created_at: 2.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 4, created_at: 1.hour.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 5.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 4.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 2, created_at: 3.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 3, created_at: 2.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 4, created_at: 1.hour.ago)
 
-      assert_equal 5, episode.reload.measure_asset_processing_duration / 1.hour
+      assert_equal 5, measure_asset_processing_duration(episode.reload) / 1.hour
     end
 
     it "measures duration for non-contiguous increments" do
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 3.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 4, created_at: 2.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 5, created_at: 1.hour.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 3.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 4, created_at: 2.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 5, created_at: 1.hour.ago)
 
-      assert_equal 3, episode.measure_asset_processing_duration / 1.hour
+      assert_equal 3, measure_asset_processing_duration(episode) / 1.hour
     end
 
     it "handles reset attempts correctly" do
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 5.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 4.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 2, created_at: 3.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 2.hours.ago)  # reset
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 1.hour.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 5.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 4.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 2, created_at: 3.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 2.hours.ago) # reset
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 1.hour.ago)
 
-      assert_equal 2, episode.measure_asset_processing_duration / 1.hour
+      assert_equal 2, measure_asset_processing_duration(episode) / 1.hour
     end
 
     it "returns nil when all attempts are zero" do
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 2.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 2.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
 
-      assert_nil episode.measure_asset_processing_duration
+      assert_nil measure_asset_processing_duration(episode)
     end
 
     it "handles nil asset_processing_attempts correctly" do
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 1.hour.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 1.hour.ago)
 
-      assert_nil episode.measure_asset_processing_duration
+      assert_nil measure_asset_processing_duration(episode)
     end
 
     it "returns correct duration when latest attempt is zero" do
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 3.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 2.hours.ago)
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 3.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 1, created_at: 2.hours.ago)
+      create(:megaphone_episode_delivery_status, episode: episode, asset_processing_attempts: 0, created_at: 1.hour.ago)
 
-      assert_nil episode.measure_asset_processing_duration
+      assert_nil measure_asset_processing_duration(episode)
     end
+  end
+
+  describe "unscoped Apple access" do
+    let(:episode) { create(:episode) }
+
+    it "rejects Apple through the Episode generic API" do
+      assert_raises(ArgumentError) { episode.episode_delivery_status(:apple) }
+      assert_raises(ArgumentError) { episode.update_episode_delivery_status(:apple, delivered: true) }
+      assert_raises(ArgumentError) { episode.delete_episode_delivery_status(:apple) }
+      assert_raises(ArgumentError) { episode.sync_log(:apple) }
+      assert_raises(ArgumentError) { Episode.unfinished(:apple).load }
+    end
+
+    it "rejects Apple through the generic status class" do
+      assert_raises(ArgumentError) { Integrations::EpisodeDeliveryStatus.default_status(:apple, episode) }
+      assert_raises(ArgumentError) { Integrations::EpisodeDeliveryStatus.update_status(:apple, episode, delivered: true) }
+      assert_raises(ArgumentError) { Integrations::EpisodeDeliveryStatus.delete_status(:apple, episode) }
+    end
+  end
+
+  private
+
+  def measure_asset_processing_duration(episode)
+    Integrations::EpisodeDeliveryStatus.measure_asset_processing_duration(
+      episode.episode_delivery_statuses.megaphone
+    )
   end
 end

@@ -134,7 +134,7 @@ describe Apple::Publisher do
       end
 
       it "needs upload (no status)" do
-        assert episode.feeder_episode.apple_needs_upload?
+        assert episode.apple_needs_upload?
       end
 
       it "needs delivery (no status)" do
@@ -169,11 +169,11 @@ describe Apple::Publisher do
       end
 
       it "does not need upload (uploaded + media version current)" do
-        refute episode.feeder_episode.apple_needs_upload?
+        refute episode.apple_needs_upload?
       end
 
       it "needs delivery (delivered=false)" do
-        assert episode.feeder_episode.apple_needs_delivery?
+        assert episode.apple_needs_delivery?
       end
 
       it "skips upload but enters delivery" do
@@ -209,15 +209,15 @@ describe Apple::Publisher do
       end
 
       it "needs upload (uploaded was reset to false)" do
-        assert episode.feeder_episode.apple_needs_upload?
+        assert episode.apple_needs_upload?
       end
 
       it "needs delivery (delivered=false)" do
-        assert episode.feeder_episode.apple_needs_delivery?
+        assert episode.apple_needs_delivery?
       end
 
       it "preserves source_media_version_id" do
-        status = episode.feeder_episode.apple_episode_delivery_status
+        status = episode.apple_episode_delivery_status
         assert status.source_media_version_id.present?,
           "source_media_version_id should be preserved by mark_as_not_delivered!"
       end
@@ -251,7 +251,7 @@ describe Apple::Publisher do
       end
 
       it "needs upload (media version mismatch)" do
-        assert episode.feeder_episode.apple_needs_upload?
+        assert episode.apple_needs_upload?
       end
 
       it "enters upload phase" do
@@ -292,11 +292,11 @@ describe Apple::Publisher do
       end
 
       it "needs upload (media version mismatch overrides uploaded=true)" do
-        assert episode.feeder_episode.apple_needs_upload?
+        assert episode.apple_needs_upload?
       end
 
       it "needs delivery (delivered=false)" do
-        assert episode.feeder_episode.apple_needs_delivery?
+        assert episode.apple_needs_delivery?
       end
 
       it "enters both upload and delivery phases" do

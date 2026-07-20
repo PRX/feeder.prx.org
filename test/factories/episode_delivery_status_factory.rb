@@ -17,6 +17,7 @@ FactoryBot.define do
     association :episode
 
     integration { Integrations::EpisodeDeliveryStatus.integrations[:apple] }
+    apple_show_id { "show-1" }
     delivered { false }
     asset_processing_attempts { 0 }
     source_url { "http://example.com/audio.mp3" }

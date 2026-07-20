@@ -70,7 +70,7 @@ module Apple
 
       it "reports a status-only episode without Apple show identity" do
         episode = create(:episode)
-        delivery_status = create(:apple_episode_delivery_status, episode: episode)
+        delivery_status = create_legacy_record(:apple_episode_delivery_status, episode: episode, apple_show_id: nil)
 
         report = EpisodeDeliveryIdentityBackfill.backfill!
 
@@ -200,8 +200,8 @@ module Apple
 
       episode = create(:episode, podcast: podcast)
       sync_log = create_legacy_sync_log(feeder_id: episode.id, external_id: "episode-#{episode.id}")
-      podcast_container = create(:apple_podcast_container, episode: episode)
-      delivery_status = create(:apple_episode_delivery_status, episode: episode)
+      podcast_container = create_legacy_record(:apple_podcast_container, episode: episode, apple_show_id: nil)
+      delivery_status = create_legacy_record(:apple_episode_delivery_status, episode: episode, apple_show_id: nil)
 
       {
         podcast: podcast,
@@ -216,6 +216,12 @@ module Apple
       sync_log = SyncLog.new(integration: :apple, feeder_type: :episodes, **attrs)
       sync_log.save!(validate: false)
       sync_log
+    end
+
+    def create_legacy_record(factory, **attrs)
+      record = build(factory, **attrs)
+      record.save!(validate: false)
+      record
     end
   end
 end

@@ -340,21 +340,22 @@ describe Episode do
 
   describe "#publish!" do
     let(:episode) { create(:episode) }
-    let(:container) { create(:apple_podcast_container, episode: episode) }
+    let(:apple_episode) { build(:apple_episode, feeder_episode: episode) }
+    let(:container) { create(:apple_podcast_container, episode: episode, apple_show_id: apple_episode.apple_show_id) }
     let(:delivery) { create(:apple_podcast_delivery, episode: episode, podcast_container: container) }
 
     before do
-      assert_equal [delivery], episode.apple_podcast_deliveries
+      assert_equal [delivery], apple_episode.podcast_deliveries
     end
 
     it "destroys any existing apple podcast deliveries" do
       refute_empty container.podcast_deliveries
-      refute_empty episode.apple_podcast_deliveries
+      refute_empty apple_episode.podcast_deliveries
       episode.publish!
-      assert episode.apple_status.present?
-      assert episode.apple_status.delivered == false
+      assert apple_episode.apple_status.present?
+      assert apple_episode.apple_status.delivered == false
 
-      assert episode.apple_needs_delivery?
+      assert apple_episode.apple_needs_delivery?
     end
 
     it "can be called for an episode without a container" do
@@ -362,9 +363,9 @@ describe Episode do
       container.destroy!
       episode.reload
 
-      assert_empty episode.apple_podcast_deliveries
+      assert_empty apple_episode.podcast_deliveries
       episode.publish!
-      assert_empty episode.apple_podcast_deliveries
+      assert_empty apple_episode.podcast_deliveries
     end
   end
 

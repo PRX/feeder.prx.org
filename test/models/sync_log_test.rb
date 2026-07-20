@@ -23,7 +23,7 @@ describe SyncLog do
     it "builds Apple associations as the Apple subclass" do
       episode = create(:episode)
 
-      sync_log = episode.build_apple_sync_log(external_id: "episode-1", apple_show_id: "show-1")
+      sync_log = episode.association(:apple_sync_log).build(external_id: "episode-1", apple_show_id: "show-1")
 
       assert_instance_of Apple::SyncLog, sync_log
       assert_predicate sync_log, :apple?

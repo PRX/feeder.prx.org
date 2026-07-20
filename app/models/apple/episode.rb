@@ -10,6 +10,14 @@ module Apple
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
+    UNSCOPED_FEEDER_METHODS = %i[
+      build_initial_delivery_status
+      delete_episode_delivery_status
+      episode_delivery_status
+      episode_delivery_statuses
+      sync_logs
+      update_episode_delivery_status
+    ].freeze
 
     # Cleans up old delivery/delivery files iff the episode is to be uploaded
     def self.prepare_for_delivery(episodes)
@@ -174,6 +182,7 @@ module Apple
     def self.upsert_sync_log(ep, res)
       apple_id = res.dig("api_response", "val", "data", "id")
       raise "Missing remote apple id" unless apple_id.present?
+      apple_show_id = ep.apple_show_id.presence || raise(ArgumentError, "Apple sync state requires an Apple show ID")
 
       sl = SyncLog.log!(
         integration: :apple,
@@ -181,7 +190,7 @@ module Apple
         feeder_type: :episodes,
         external_id: apple_id,
         api_response: res,
-        apple_show_id: ep.apple_show_id
+        apple_show_id: apple_show_id
       )
       # reload local state
       ep.sync_log&.reload || ep.feeder_episode.reload
@@ -238,20 +247,11 @@ module Apple
     end
 
     def sync_log
+      show_id = scoped_apple_show_id!
       logs = SyncLog.apple.episodes.where(feeder_id: feeder_episode.id, feeder_type: :episodes)
 
-      # TODO: remove with cutover once writers are cut over and no NULL-show apple episode
-      # rows remain (S10) — show-less contexts read the pre-show-scoping row
-      if apple_show_id.blank?
-        legacy_sync_log = feeder_episode.apple_sync_log
-        return legacy_sync_log if legacy_sync_log&.apple_show_id.nil?
-
-        return logs.find_by(apple_show_id: nil)
-      end
-
-      # TODO: remove with cutover once writers are cut over and the
-      # AppleShowBackfill has stamped all legacy rows (S10)
-      logs.find_by(apple_show_id: apple_show_id) || logs.find_by(apple_show_id: nil)
+      # TODO remove with cutover once all legacy NULL-show rows are stamped.
+      logs.find_by(apple_show_id: show_id) || logs.find_by(apple_show_id: nil)
     end
 
     def apple_show_id
@@ -532,9 +532,9 @@ module Apple
     end
 
     def podcast_container
-      show_id = delivery_state_apple_show_id!
+      show_id = scoped_apple_show_id!
       containers = Apple::PodcastContainer.where(episode_id: feeder_id)
-      # TODO: remove with cutover after all legacy NULL-show rows are stamped.
+      # TODO remove with cutover after all legacy NULL-show rows are stamped.
       containers.find_by(apple_show_id: show_id) || containers.find_by(apple_show_id: nil)
     end
 
@@ -550,37 +550,28 @@ module Apple
       sync_log
     end
 
-    def apple_sync_log=(sl)
-      feeder_episode.apple_sync_log = sl
-    end
-
     def apple_mark_as_not_delivered!
-      apple_episode_delivery_status.mark_as_not_delivered!
+      apple_update_delivery_status(delivered: false, uploaded: false, asset_processing_attempts: 0)
     end
 
     def apple_mark_as_delivered!
-      apple_episode_delivery_status.mark_as_delivered!
-    end
-
-    def apple_mark_as_uploaded!
-      apple_episode_delivery_status.mark_as_uploaded!
-    end
-
-    def apple_mark_as_not_uploaded!
-      apple_episode_delivery_status.mark_as_not_uploaded!
+      apple_update_delivery_status(delivered: true, uploaded: true, asset_processing_attempts: 0)
     end
 
     def apple_update_delivery_status(attrs)
-      Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: delivery_state_apple_show_id!)
+      Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: scoped_apple_show_id!)
     end
 
     def apple_episode_delivery_status
-      Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: delivery_state_apple_show_id!)
+      Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: scoped_apple_show_id!)
     end
 
     def apple_episode_delivery_statuses
+      show_id = scoped_apple_show_id!
+
+      # TODO remove with cutover after all legacy NULL-show rows are stamped.
       Apple::EpisodeDeliveryStatus
-        .where(episode_id: feeder_id, apple_show_id: delivery_state_apple_show_id!)
+        .where(episode_id: feeder_id, apple_show_id: [show_id, nil])
         .order(created_at: :desc)
     end
 
@@ -613,21 +604,29 @@ module Apple
 
     # Delegate methods to feeder_episode
     def method_missing(method_name, *arguments, &block)
+      if unscoped_feeder_method?(method_name)
+        raise NoMethodError, "#{method_name} is not available through Apple::Episode; use the show-scoped facade"
+      end
+
       if feeder_episode.respond_to?(method_name)
-        feeder_episode.send(method_name, *arguments, &block)
+        feeder_episode.public_send(method_name, *arguments, &block)
       else
         super
       end
     end
 
     def respond_to_missing?(method_name, include_private = false)
-      feeder_episode.respond_to?(method_name) || super
+      !unscoped_feeder_method?(method_name) && (feeder_episode.respond_to?(method_name) || super)
     end
 
     private
 
-    def delivery_state_apple_show_id!
-      apple_show_id.presence || raise(ArgumentError, "Apple delivery state requires an Apple show ID")
+    def scoped_apple_show_id!
+      apple_show_id.presence || raise(ArgumentError, "Apple state requires an Apple show ID")
+    end
+
+    def unscoped_feeder_method?(method_name)
+      method_name.to_s.start_with?("apple_") || UNSCOPED_FEEDER_METHODS.include?(method_name.to_sym)
     end
   end
 end

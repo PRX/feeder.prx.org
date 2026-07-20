@@ -25,6 +25,22 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
   let(:api) { build(:apple_api) }
 
+  it "rejects new containers without a show id" do
+    container = build(:apple_podcast_container, episode: episode, apple_show_id: nil)
+
+    refute container.valid?
+    assert_includes container.errors[:apple_show_id], "Can't be blank"
+  end
+
+  it "allows an existing legacy container to remain saveable during backfill" do
+    container = create_legacy_record(:apple_podcast_container, episode: episode, apple_show_id: nil)
+
+    container.update!(vendor_id: "updated-before-backfill")
+
+    assert_equal "updated-before-backfill", container.reload.vendor_id
+    assert_nil container.apple_show_id
+  end
+
   describe "#episode" do
     it "can assign a soft deleted episode" do
       episode.touch(:deleted_at)
@@ -111,7 +127,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
 
     it "adopts a legacy container for one show and creates a container for another show" do
-      legacy_container = create(:apple_podcast_container,
+      legacy_container = create_legacy_record(:apple_podcast_container,
         episode: episode,
         apple_show_id: nil)
 
@@ -138,7 +154,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
       refute_equal show_one_container, show_two_container
       assert_equal "show-2", show_two_container.apple_show_id
-      assert_equal ["show-1", "show-2"], episode.reload.apple_podcast_containers.order(:apple_show_id).pluck(:apple_show_id)
+      assert_equal ["show-1", "show-2"], Apple::PodcastContainer.where(episode: episode).order(:apple_show_id).pluck(:apple_show_id)
     end
 
     it "enforces one container per episode and Apple show" do
@@ -155,15 +171,16 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     end
 
     it "enforces one transitional legacy container per episode" do
-      create(:apple_podcast_container, episode: episode, apple_show_id: nil)
+      create_legacy_record(:apple_podcast_container, episode: episode, apple_show_id: nil)
 
       assert_raises ActiveRecord::RecordNotUnique do
-        Apple::PodcastContainer.create!(
+        duplicate = Apple::PodcastContainer.new(
           episode: episode,
           apple_show_id: nil,
           apple_episode_id: "duplicate-legacy-episode",
           vendor_id: "duplicate-legacy-vendor"
         )
+        duplicate.save!(validate: false)
       end
     end
 
@@ -230,7 +247,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     it "should not update the source_url and source_file_name" do
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-          status = episode.apple_status
+          status = apple_episode.apple_status
 
           # It does not touch the source_url or source_filename on create
           Apple::PodcastContainer.upsert_podcast_container(apple_episode,
@@ -347,7 +364,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       assert Apple::PodcastDelivery.with_deleted.find(delivery.id).deleted? if delivery
       assert Apple::PodcastDeliveryFile.with_deleted.find(delivery_file.id).deleted? if delivery_file
 
-      status = episode.episode_delivery_status(:apple)
+      status = apple_episode.apple_episode_delivery_status
       refute status.delivered?
       refute status.uploaded?
       assert_equal 0, status.asset_processing_attempts
@@ -393,6 +410,43 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
       assert_stale_container_reset(container, delivery, delivery_file)
     end
+
+    it "uses the known show when resetting a legacy container before backfill" do
+      legacy_container = create_legacy_record(:apple_podcast_container,
+        episode: episode,
+        apple_show_id: nil,
+        apple_episode_id: apple_episode_id,
+        vendor_id: apple_audio_asset_vendor_id,
+        external_id: "legacy-container-id")
+      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: nil,
+        delivered: true,
+        uploaded: true,
+        asset_processing_attempts: 3)
+      list_response = [{
+        "request_metadata" => {"apple_episode_id" => apple_episode_id},
+        "api_response" => {"ok" => true, "err" => false, "val" => {"data" => []}}
+      }]
+      fake_api = fake_podcast_container_api(list_response: list_response)
+
+      apple_episode.stub(:apple_id, apple_episode_id) do
+        apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+          assert_raises(Apple::RetryPublishingError) do
+            Apple::PodcastContainer.poll_podcast_container_state(fake_api, [apple_episode])
+          end
+        end
+      end
+
+      refute Apple::PodcastContainer.exists?(legacy_container.id)
+      scoped_status = Apple::EpisodeDeliveryStatus.current(episode, apple_show_id: "show-1")
+      assert_equal "show-1", scoped_status.apple_show_id
+      refute scoped_status.delivered?
+      refute scoped_status.uploaded?
+      assert_equal 0, scoped_status.asset_processing_attempts
+      assert_nil legacy_status.reload.apple_show_id
+      assert legacy_status.delivered?
+    end
   end
 
   describe "#podcast_deliveries" do
@@ -416,6 +470,12 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
         }
       }
     }
+  end
+
+  def create_legacy_record(factory, **attrs)
+    record = build(factory, **attrs)
+    record.save!(validate: false)
+    record
   end
 
   describe ".get_podcast_containers_bridge_params" do
