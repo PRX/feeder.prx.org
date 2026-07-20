@@ -230,7 +230,7 @@ module Apple
     end
 
     def enclosure_url
-      feeder_episode.enclosure_url(feed: private_feed, prefix: false, auth: true)
+      feeder_episode.enclosure_dovetail_url(feed: private_feed, prefix: false, auth: true)
     end
 
     def enclosure_filename

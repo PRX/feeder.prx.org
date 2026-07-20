@@ -3,10 +3,11 @@ require "active_support/concern"
 module EpisodeEnclosure
   extend ActiveSupport::Concern
 
-  def enclosure_url(feed: podcast&.default_feed, prefix: true, auth: nil, prx_jwt: nil)
-    return enclosure_override_url if override?
+  def enclosure_url(**opts)
+    override? ? enclosure_override_url : enclosure_dovetail_url(**opts)
+  end
 
-    # optionally include auth for private feeds
+  def enclosure_dovetail_url(feed: podcast&.default_feed, prefix: true, auth: nil, prx_jwt: nil)
     auth =
       if feed&.public?
         nil
@@ -40,9 +41,7 @@ module EpisodeEnclosure
   end
 
   def enclosure_file_name(feed: podcast&.default_feed)
-    if override?
-      File.basename(enclosure_override_url || "")
-    elsif medium_video?
+    if medium_video?
       media_file_name
     else
       orig_fn = media_file_name || "audio.mp3"

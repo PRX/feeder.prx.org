@@ -93,16 +93,10 @@ class EpisodeEnclosureTest < ActiveSupport::TestCase
       assert_equal "no-extension.flac", ep.enclosure_file_name(feed: f2)
     end
 
-    it "returns original filenames of overrides and video" do
+    it "returns original filenames of video" do
       ep.medium = "video"
       c1.original_url = "http://some.where/any.thing.here"
       assert_equal "any.thing.here", ep.enclosure_file_name
-
-      ep.medium = "override"
-      assert_equal "", ep.enclosure_file_name
-
-      ep.enclosure_override_url = "http://some.where/override.ogg"
-      assert_equal "override.ogg", ep.enclosure_file_name
     end
 
     it "forces unsupperted extensions to mp3" do
