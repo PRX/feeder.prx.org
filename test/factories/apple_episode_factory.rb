@@ -69,8 +69,12 @@ FactoryBot.define do
             feeder_id: apple_episode.feeder_episode.id
           ))
         end
-      elsif !apple_episode.feeder_episode.apple_sync_log.present?
-        sync_log = apple_episode.feeder_episode.build_apple_sync_log(sync_log_attrs)
+      elsif !SyncLog.apple.episodes.exists?(feeder_id: apple_episode.feeder_episode.id)
+        sync_log = SyncLog.new(sync_log_attrs.merge(
+          integration: :apple,
+          feeder_type: :episodes,
+          feeder_id: apple_episode.feeder_episode.id
+        ))
         sync_log.save!(validate: false)
       end
     end

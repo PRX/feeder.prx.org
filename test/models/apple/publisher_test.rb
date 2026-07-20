@@ -33,6 +33,15 @@ describe Apple::Publisher do
         apple_hosted_audio_state: asset_state))
   end
 
+  def create_episode_sync_log(episode, **attrs)
+    SyncLog.create!(
+      integration: :apple,
+      feeder_type: :episodes,
+      feeder_id: episode.id,
+      **attrs
+    )
+  end
+
   describe ".initialize" do
     it "should build a publisher with the correct feeds" do
       assert_equal apple_publisher.public_feed, public_feed
@@ -163,7 +172,7 @@ describe Apple::Publisher do
 
     before do
       SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
-      episode.create_apple_sync_log!(external_id: external_id, apple_show_id: "show-1", **apple_episode_api_response)
+      create_episode_sync_log(episode, external_id: external_id, apple_show_id: "show-1", **apple_episode_api_response)
     end
 
     it "should filter episodes that are already synced to apple" do
@@ -232,7 +241,7 @@ describe Apple::Publisher do
 
     before do
       Apple::Show.connect_existing("123", apple_config)
-      episode.create_apple_sync_log!(external_id: "123", apple_show_id: "123", **apple_episode_api_response)
+      create_episode_sync_log(episode, external_id: "123", apple_show_id: "123", **apple_episode_api_response)
       private_feed.episodes << episode
     end
 
@@ -304,7 +313,7 @@ describe Apple::Publisher do
           sync_log = apple_episode.sync_log
           res = sync_log.api_response
           res["api_response"]["val"]["data"]["attributes"]["publishingState"] = "PUBLISHED"
-          apple_episode.feeder_episode.apple_sync_log.update!(api_response: res)
+          apple_episode.sync_log.update!(api_response: res)
 
           assert_equal "PUBLISHED", apple_episode.publishing_state
 
@@ -319,7 +328,7 @@ describe Apple::Publisher do
           assert_equal [apple_episode], apple_publisher.episodes_to_archive
 
           res["api_response"]["val"]["data"]["attributes"]["publishingState"] = "ARCHIVED"
-          apple_episode.feeder_episode.apple_sync_log.update!(api_response: res)
+          apple_episode.sync_log.update!(api_response: res)
 
           assert apple_episode.archived?
           assert_equal [], apple_publisher.episodes_to_archive
@@ -720,7 +729,7 @@ describe Apple::Publisher do
     it "should increment asset wait count for each episode" do
       episodes.each do |ep|
         assert_equal 0, ep.apple_episode_delivery_status.asset_processing_attempts
-        ep.apple_mark_as_uploaded!
+        ep.apple_update_delivery_status(uploaded: true)
       end
 
       apple_publisher.increment_asset_wait!(episodes)
@@ -734,7 +743,7 @@ describe Apple::Publisher do
       assert 1, episode1.podcast_delivery_files.length
       assert 1, episode2.podcast_delivery_files.length
 
-      episode1.apple_mark_as_uploaded!
+      episode1.apple_update_delivery_status(uploaded: true)
       apple_publisher.increment_asset_wait!(episodes)
 
       assert_equal [1, 0], [episode1, episode2].map { |ep| ep.apple_episode_delivery_status.asset_processing_attempts }
@@ -1163,11 +1172,12 @@ describe Apple::Publisher do
       end
 
       assert_empty calls
-      assert_nil episode.feeder_episode.reload.measure_asset_processing_duration
+      episode.feeder_episode.reload
+      assert_nil episode.measure_asset_processing_duration
     end
 
     it "skips upload for already uploaded episodes" do
-      episode.apple_mark_as_uploaded!
+      episode.apple_update_delivery_status(uploaded: true)
 
       # Track if upload_media! was called
       upload_called = false
@@ -1207,7 +1217,7 @@ describe Apple::Publisher do
     end
 
     it "calls delivery for episodes needing delivery" do
-      episode.apple_mark_as_uploaded!
+      episode.apple_update_delivery_status(uploaded: true)
       episode.apple_mark_as_not_delivered!
 
       # Delivery should be called (which now includes publishing)
@@ -1288,13 +1298,13 @@ describe Apple::Publisher do
       delivery_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
 
       # Force upload episode to need upload
-      upload_episode.apple_mark_as_not_uploaded!
+      upload_episode.apple_update_delivery_status(uploaded: false)
       upload_episode.apple_mark_as_not_delivered!
       assert upload_episode.apple_needs_upload?
 
       # Force delivery episode to need delivery but not upload
       delivery_episode.apple_mark_as_not_delivered!
-      delivery_episode.apple_mark_as_uploaded!
+      delivery_episode.apple_update_delivery_status(uploaded: true)
 
       refute delivery_episode.apple_needs_upload?
       assert delivery_episode.apple_needs_delivery?

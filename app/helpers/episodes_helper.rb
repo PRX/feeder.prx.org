@@ -19,7 +19,12 @@ module EpisodesHelper
     return "draft" if episode.draft?
     return "not_publishable" unless episode.integration_feed_episode?(integration)
 
-    status = episode.episode_delivery_status(integration, true)
+    integration_episode = episode.integration_episode(integration)
+    status = if integration.to_s == "apple"
+      integration_episode&.delivery_status
+    else
+      episode.episode_delivery_status(integration, true)
+    end
 
     if !status
       "not_found"
@@ -27,7 +32,7 @@ module EpisodesHelper
       "new"
     elsif !status.uploaded?
       "incomplete"
-    elsif episode.integration_error_state?(integration)
+    elsif integration_episode&.error_state?
       "error"
     elsif !status.delivered?
       "processing"
@@ -37,9 +42,16 @@ module EpisodesHelper
   end
 
   def episode_integration_updated_at(integration, episode)
-    episode.sync_log(integration)&.updated_at ||
-      episode.episode_delivery_status(integration)&.created_at ||
-      episode.updated_at
+    if integration.to_s == "apple"
+      apple_episode = episode.apple_episode
+      apple_episode&.sync_log&.updated_at ||
+        apple_episode&.delivery_statuses&.first&.created_at ||
+        episode.updated_at
+    else
+      episode.sync_log(integration)&.updated_at ||
+        episode.episode_delivery_status(integration)&.created_at ||
+        episode.updated_at
+    end
   end
 
   def episode_status_class(episode)

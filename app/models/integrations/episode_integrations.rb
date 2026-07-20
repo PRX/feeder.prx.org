@@ -8,6 +8,7 @@ module Integrations::EpisodeIntegrations
     has_many :sync_logs, -> { episodes }, foreign_key: "feeder_id"
 
     scope :unfinished, ->(integration) do
+      ensure_scoped_delivery_status_integration!(integration)
       int = Integrations::EpisodeDeliveryStatus.integrations[integration]
       frag = <<~SQL
         left join lateral (
@@ -54,10 +55,12 @@ module Integrations::EpisodeIntegrations
   end
 
   def sync_log(integration)
+    ensure_scoped_delivery_status_integration!(integration)
     sync_logs.send(integration.intern).order(updated_at: :desc).first
   end
 
   def episode_delivery_status(integration, with_default = false)
+    ensure_scoped_delivery_status_integration!(integration)
     status = episode_delivery_statuses.reset.order(created_at: :desc).send(integration.intern).first
     if !status && with_default
       Integrations::EpisodeDeliveryStatus.default_status(integration, self)
@@ -67,10 +70,26 @@ module Integrations::EpisodeIntegrations
   end
 
   def update_episode_delivery_status(integration, attrs)
+    ensure_scoped_delivery_status_integration!(integration)
     Integrations::EpisodeDeliveryStatus.update_status(integration, self, attrs)
   end
 
   def delete_episode_delivery_status(integration)
+    ensure_scoped_delivery_status_integration!(integration)
     Integrations::EpisodeDeliveryStatus.delete_status(integration, self)
+  end
+
+  private
+
+  def ensure_scoped_delivery_status_integration!(integration)
+    self.class.ensure_scoped_delivery_status_integration!(integration)
+  end
+
+  class_methods do
+    def ensure_scoped_delivery_status_integration!(integration)
+      return unless integration.to_s == "apple"
+
+      raise ArgumentError, "Apple delivery state requires an Apple::Episode with a show ID"
+    end
   end
 end

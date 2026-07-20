@@ -3,6 +3,7 @@ FactoryBot.define do
     episode
     sequence(:vendor_id) { |n| n.to_s }
     sequence(:apple_episode_id) { |n| n.to_s }
+    apple_show_id { "show-1" }
 
     transient do
       sequence(:external_id) { |n| "apple_container_id_#{n}" }

@@ -77,9 +77,18 @@ describe EpisodesHelper do
     end
 
     it "returns apple_sync_log updated_at for apple integration" do
-      episode.create_apple_sync_log!(external_id: "123", apple_show_id: "show-1", api_response: {})
-      episode.apple_sync_log.update!(updated_at: 2.hours.ago)
-      assert_equal episode.apple_sync_log.updated_at, helper.episode_integration_updated_at(:apple, episode)
+      create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
+      sync_log = SyncLog.create!(
+        integration: :apple,
+        feeder_type: :episodes,
+        feeder_id: episode.id,
+        external_id: "123",
+        apple_show_id: "show-1",
+        api_response: {},
+        updated_at: 2.hours.ago
+      )
+
+      assert_equal sync_log.updated_at, helper.episode_integration_updated_at(:apple, episode)
     end
 
     it "returns sync_log updated_at for non-apple integrations" do

@@ -13,6 +13,11 @@ module Apple
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
 
+    # Existing legacy rows may be updated while the backfill is in progress,
+    # but every newly created container must already be show-scoped.
+    # TODO remove with cutover: validate every row and add the database constraint.
+    validates :apple_show_id, presence: true, on: :create
+
     alias_method :deliveries, :podcast_deliveries
     alias_method :deliveries=, :podcast_deliveries=
     alias_method :delivery_files, :podcast_delivery_files
@@ -28,7 +33,13 @@ module Apple
 
       joined_rows = Apple::ApiJoin.join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         if row.nil?
-          stale_podcast_containers << ep.podcast_container if ep.podcast_container.present?
+          if (container = ep.podcast_container)
+            # Preserve the known-show context when a legacy container is
+            # removed before the backfill has stamped it.
+            # TODO remove with cutover after all legacy NULL-show rows are stamped.
+            container.apple_show_id ||= ep.apple_show_id
+            stale_podcast_containers << container
+          end
           next
         end
 
@@ -76,7 +87,11 @@ module Apple
 
         container.destroy!
         episode.reload
-        Apple::EpisodeDeliveryStatus.current_or_default(episode, apple_show_id: apple_show_id).mark_as_not_delivered!
+        Apple::EpisodeDeliveryStatus.update_status(
+          episode,
+          {delivered: false, uploaded: false, asset_processing_attempts: 0},
+          apple_show_id: apple_show_id
+        )
       end
 
       stale_podcast_containers
@@ -102,6 +117,7 @@ module Apple
     end
 
     def self.upsert_podcast_container(episode, row)
+      apple_show_id = episode.apple_show_id.presence || raise(ArgumentError, "Apple container state requires an Apple show ID")
       external_id = row.dig("api_response", "val", "data", "id")
       raise "Missing external_id in response" if external_id.blank?
 
@@ -109,7 +125,7 @@ module Apple
         apple_episode_id: episode.apple_id,
         external_id: external_id,
         vendor_id: episode.audio_asset_vendor_id,
-        apple_show_id: episode.apple_show_id
+        apple_show_id: apple_show_id
       }
       pc, action = persist_podcast_container(episode.feeder_id, attributes)
 
@@ -137,7 +153,7 @@ module Apple
       transaction do
         containers = where(episode_id: episode_id)
         pc = containers.lock.find_by(apple_show_id: attributes[:apple_show_id])
-        # TODO: remove with cutover after all legacy NULL-show rows are stamped.
+        # TODO remove with cutover after all legacy NULL-show rows are stamped.
         pc ||= containers.lock.find_by(apple_show_id: nil) if attributes[:apple_show_id].present?
 
         if pc
