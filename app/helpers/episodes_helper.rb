@@ -38,16 +38,10 @@ module EpisodesHelper
   end
 
   def episode_integration_updated_at(integration, episode)
-    if integration.to_s == "apple"
-      apple_episode = episode.apple_episode
-      apple_episode&.sync_log&.updated_at ||
-        apple_episode&.delivery_statuses&.first&.created_at ||
-        episode.updated_at
-    else
-      episode.sync_log(integration)&.updated_at ||
-        episode.episode_delivery_status(integration)&.created_at ||
-        episode.updated_at
-    end
+    integration_episode = episode.integration_episode(integration)
+    integration_episode&.sync_log&.updated_at ||
+      integration_episode&.delivery_status&.created_at ||
+      episode.updated_at
   end
 
   def episode_status_class(episode)

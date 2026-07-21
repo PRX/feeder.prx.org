@@ -96,5 +96,18 @@ describe EpisodesHelper do
         api_response: {}, integration: :megaphone, updated_at: 3.hours.ago)
       assert_equal sync_log.updated_at, helper.episode_integration_updated_at(:megaphone, episode)
     end
+
+    it "returns delivery status created_at for apple integration" do
+      create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
+      delivery_status = create(:apple_episode_delivery_status, episode: episode, created_at: 4.hours.ago)
+
+      assert_equal delivery_status.created_at, helper.episode_integration_updated_at(:apple, episode)
+    end
+
+    it "returns delivery status created_at for non-apple integrations" do
+      delivery_status = create(:megaphone_episode_delivery_status, episode: episode, created_at: 5.hours.ago)
+
+      assert_equal delivery_status.created_at, helper.episode_integration_updated_at(:megaphone, episode)
+    end
   end
 end
