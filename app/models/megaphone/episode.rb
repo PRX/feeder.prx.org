@@ -51,7 +51,7 @@ module Megaphone
 
     def self.find_by_episode(megaphone_podcast, feeder_episode)
       episode = new_from_episode(megaphone_podcast, feeder_episode)
-      sync_log = feeder_episode.sync_log(:megaphone)
+      sync_log = episode.sync_log
       mp = episode.find_by_megaphone_id(sync_log&.external_id)
       mp ||= episode.find_by_guid(feeder_episode.guid)
       mp
@@ -182,7 +182,6 @@ module Megaphone
     end
 
     def delete_sync_log
-      sync_log = feeder_episode.sync_log(:megaphone)
       sync_log.destroy!
     end
 

@@ -188,7 +188,6 @@ module Apple
       )
       # reload local state
       ep.sync_log&.reload || ep.feeder_episode.reload
-      ep.feeder_episode.association(:apple_sync_log).reset if ep.feeder_episode.association(:apple_sync_log).loaded?
       sl
     end
 

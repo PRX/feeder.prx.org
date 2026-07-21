@@ -7,6 +7,8 @@ module Integrations::EpisodeIntegrations
     has_many :episode_delivery_statuses, -> { order(created_at: :desc) }, class_name: "Integrations::EpisodeDeliveryStatus"
     has_many :sync_logs, -> { episodes }, foreign_key: "feeder_id"
 
+    private :sync_logs, :sync_logs=, :sync_log_ids, :sync_log_ids=
+
     scope :unfinished, ->(integration) do
       ensure_scoped_delivery_status_integration!(integration)
       int = Integrations::EpisodeDeliveryStatus.integrations[integration]
@@ -50,12 +52,7 @@ module Integrations::EpisodeIntegrations
   end
 
   def integration_error_state?(integration)
-    integration_episode_method = "#{integration}_episode"
-    if respond_to?(integration_episode_method)
-      send(integration_episode_method)&.error_state? || false
-    else
-      false
-    end
+    integration_episode(integration)&.error_state? || false
   end
 
   def sync_log(integration)
