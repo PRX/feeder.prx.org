@@ -19,16 +19,6 @@ describe SyncLog do
       assert_instance_of SyncLog, SyncLog.find(sync_log.id)
       assert_equal [sync_log], SyncLog.megaphone.where(id: sync_log.id)
     end
-
-    it "builds Apple associations as the Apple subclass" do
-      episode = create(:episode)
-
-      sync_log = episode.association(:apple_sync_log).build(external_id: "episode-1", apple_show_id: "show-1")
-
-      assert_instance_of Apple::SyncLog, sync_log
-      assert_predicate sync_log, :apple?
-      assert_predicate sync_log, :episodes?
-    end
   end
 
   describe "indexes" do

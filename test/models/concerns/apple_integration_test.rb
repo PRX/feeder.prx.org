@@ -20,15 +20,30 @@ class AppleIntegrationTest < ActiveSupport::TestCase
 
       assert_equal "show-1", episode.apple_episode.apple_show_id
     end
+
+    it "resolves the show-scoped sync log through the integration facade" do
+      create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
+      sync_log = SyncLog.create!(
+        integration: :apple,
+        feeder_type: :episodes,
+        feeder_id: episode.id,
+        external_id: "episode-1",
+        apple_show_id: "show-1"
+      )
+
+      assert_equal sync_log, episode.integration_episode(:apple).sync_log
+    end
   end
 
   describe "unscoped Apple resources" do
     it "keeps raw Apple associations private" do
       refute episode.respond_to?(:apple_sync_log)
       refute episode.respond_to?(:apple_podcast_containers)
+      refute episode.respond_to?(:sync_logs)
 
       assert_raises(NoMethodError) { episode.apple_sync_log }
       assert_raises(NoMethodError) { episode.apple_podcast_containers }
+      assert_raises(NoMethodError) { episode.sync_logs }
     end
 
     it "does not expose legacy Apple state methods" do
