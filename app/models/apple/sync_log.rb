@@ -2,7 +2,7 @@ module Apple
   class SyncLog < ::SyncLog
     validates :feeder_id,
       uniqueness: {
-        scope: [:integration, :feeder_type],
+        scope: [:integration, :feeder_type, :apple_show_id],
         message: "already has an Apple episode sync log"
       },
       if: :episodes?
