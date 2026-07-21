@@ -356,6 +356,10 @@ module Megaphone
       feeder_episode&.episode_delivery_status(:megaphone, with_default)
     end
 
+    def sync_log
+      feeder_episode&.sync_log(:megaphone)
+    end
+
     def set_placement_attributes
       self.expected_adhash = ""
       self.pre_count = 0
