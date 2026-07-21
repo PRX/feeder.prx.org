@@ -17,7 +17,7 @@ describe Apple::Episode do
       public_feed: public_feed,
       private_feed: private_feed)
   end
-  let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
+  let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode, create_sync_log: false) }
   let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
   let(:external_id) { apple_episode_api_response["api_response"]["api_response"]["val"]["data"]["id"] }
 
@@ -48,6 +48,21 @@ describe Apple::Episode do
       legacy = apple_sync_log_for(episode)
 
       assert_equal legacy, apple_episode.sync_log
+    end
+
+    it "keeps sync-log reads within the current show" do
+      show_one_log = apple_sync_log_for(episode)
+      show_one_log.update!(external_id: "show-one-episode", apple_show_id: "show-1")
+      show_two_log = SyncLog.create!(
+        integration: :apple,
+        feeder_type: :episodes,
+        feeder_id: episode.id,
+        external_id: "show-two-episode",
+        apple_show_id: "show-2"
+      )
+
+      assert_equal show_one_log, apple_episode_for_show("show-1").sync_log
+      assert_equal show_two_log, apple_episode_for_show("show-2").sync_log
     end
   end
 
@@ -217,7 +232,7 @@ describe Apple::Episode do
     end
 
     it "instantiates with a nil api_response" do
-      ep = build(:apple_episode, show: apple_show, feeder_episode: episode)
+      ep = build(:apple_episode, show: apple_show, feeder_episode: episode, create_sync_log: false)
       apple_sync_log_for(ep.feeder_episode).destroy
       ep.feeder_episode.reload
 
@@ -493,8 +508,8 @@ describe Apple::Episode do
     let(:container1) { create(:apple_podcast_container, episode: episode1, apple_episode_id: "ep1") }
     let(:container2) { create(:apple_podcast_container, episode: episode2, apple_episode_id: "ep2") }
 
-    let(:apple_episode1) { build(:apple_episode, show: apple_show, feeder_episode: episode1) }
-    let(:apple_episode2) { build(:apple_episode, show: apple_show, feeder_episode: episode2) }
+    let(:apple_episode1) { build(:apple_episode, show: apple_show, feeder_episode: episode1, create_sync_log: false) }
+    let(:apple_episode2) { build(:apple_episode, show: apple_show, feeder_episode: episode2, create_sync_log: false) }
 
     it "partitions episodes into ready and waiting sets" do
       SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
@@ -578,6 +593,12 @@ describe Apple::Episode do
 
   def apple_sync_log_for(episode)
     SyncLog.apple.episodes.find_by(feeder_id: episode.id)
+  end
+
+  def apple_episode_for_show(apple_show_id)
+    Apple::Episode.new(show: apple_show, feeder_episode: episode, api: apple_api).tap do |facade|
+      facade.define_singleton_method(:apple_show_id) { apple_show_id }
+    end
   end
 
   def create_legacy_record(factory_name, **attributes)
