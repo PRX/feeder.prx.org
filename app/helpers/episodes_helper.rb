@@ -20,28 +20,36 @@ module EpisodesHelper
     return "not_publishable" unless episode.integration_feed_episode?(integration)
 
     integration_episode = episode.integration_episode(integration)
-    status = integration_episode&.delivery_status(true)
+    return "disconnected" unless integration_episode
+
+    status = integration_episode.delivery_status(true)
 
     if !status
-      "not_found"
+      "disconnected"
     elsif status.new_record?
       "new"
     elsif !status.uploaded?
       "incomplete"
-    elsif integration_episode&.error_state?
+    elsif integration_episode.error_state?
       "error"
     elsif !status.delivered?
       "processing"
     else
       "complete"
     end
+  rescue Apple::MissingShowIdentityError
+    "disconnected"
   end
 
   def episode_integration_updated_at(integration, episode)
     integration_episode = episode.integration_episode(integration)
-    integration_episode&.sync_log&.updated_at ||
-      integration_episode&.delivery_status&.created_at ||
+    return episode.updated_at unless integration_episode
+
+    integration_episode.sync_log&.updated_at ||
+      integration_episode.delivery_status&.created_at ||
       episode.updated_at
+  rescue Apple::MissingShowIdentityError
+    episode.updated_at
   end
 
   def episode_status_class(episode)

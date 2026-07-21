@@ -45,7 +45,7 @@ module Apple
     end
 
     def self.scoped_apple_show_id!(apple_show_id)
-      apple_show_id.presence || raise(ArgumentError, "Apple delivery state requires an Apple show ID")
+      apple_show_id.presence || raise(MissingShowIdentityError, "Apple delivery state requires an Apple show ID")
     end
     private_class_method :scoped_apple_show_id!
   end

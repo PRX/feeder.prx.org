@@ -117,7 +117,7 @@ module Apple
     end
 
     def self.upsert_podcast_container(episode, row)
-      apple_show_id = episode.apple_show_id.presence || raise(ArgumentError, "Apple container state requires an Apple show ID")
+      apple_show_id = episode.apple_show_id.presence || raise(MissingShowIdentityError, "Apple container state requires an Apple show ID")
       external_id = row.dig("api_response", "val", "data", "id")
       raise "Missing external_id in response" if external_id.blank?
 

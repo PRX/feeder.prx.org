@@ -90,7 +90,7 @@ module Integrations::EpisodeIntegrations
     def ensure_scoped_delivery_status_integration!(integration)
       return unless integration.to_s == "apple"
 
-      raise ArgumentError, "Apple delivery state requires an Apple::Episode with a show ID"
+      raise Apple::MissingShowIdentityError, "Apple delivery state requires an Apple::Episode with a show ID"
     end
   end
 end

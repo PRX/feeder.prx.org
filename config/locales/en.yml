@@ -385,6 +385,7 @@ en:
           bonus: Bonus
         media_statuses:
           complete: Complete
+          disconnected: Disconnected
           error: Error
           incomplete: Incomplete
           incomplete_published: Incomplete
