@@ -15,10 +15,19 @@ class PodcastClipsController < ApplicationController
   def show
   end
 
+  def update
+    if @clip.update(update_clip_params)
+      redirect_to podcast_clip_path(@podcast, @clip), notice: t(".notice")
+    else
+      flash.now[:error] = t(".error")
+      render :show, status: :unprocessable_entity
+    end
+  end
+
   def attach
-    if (ep = attach_to_episode(clip_params[:episode]))
+    if (ep = attach_to_episode(attach_clip_params[:episode]))
       redirect_to episode_media_path(ep), notice: t(".attached")
-    elsif (ep = create_new_episode(clip_params[:title], clip_params[:released_at]))
+    elsif (ep = create_new_episode(attach_clip_params[:title], attach_clip_params[:released_at]))
       redirect_to episode_media_path(ep), notice: t(".created")
     elsif request.referrer&.ends_with?("/clips")
       redirect_to podcast_clips_path(@podcast), alert: t(".alert")
@@ -29,7 +38,11 @@ class PodcastClipsController < ApplicationController
 
   private
 
-  def clip_params
+  def update_clip_params
+    nilify(params.fetch(:stream_resource, {}).permit(%i[segmentation]))
+  end
+
+  def attach_clip_params
     nilify(params.fetch(:stream_resource, {}).permit(%i[episode title released_at]))
   end
 
