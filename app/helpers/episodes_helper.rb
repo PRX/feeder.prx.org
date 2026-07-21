@@ -37,8 +37,6 @@ module EpisodesHelper
     else
       "complete"
     end
-  rescue Apple::MissingShowIdentityError
-    "disconnected"
   end
 
   def episode_integration_updated_at(integration, episode)
@@ -48,8 +46,6 @@ module EpisodesHelper
     integration_episode.sync_log&.updated_at ||
       integration_episode.delivery_status&.created_at ||
       episode.updated_at
-  rescue Apple::MissingShowIdentityError
-    episode.updated_at
   end
 
   def episode_status_class(episode)
