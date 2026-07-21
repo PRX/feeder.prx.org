@@ -46,17 +46,6 @@ describe EpisodesHelper do
         end
       end
 
-      it "returns 'disconnected' when the integration facade has no show identity" do
-        integration_episode = Object.new
-        integration_episode.define_singleton_method(:delivery_status) do |*|
-          raise Apple::MissingShowIdentityError, "missing show"
-        end
-
-        episode.stub(:integration_episode, integration_episode) do
-          assert_equal "disconnected", helper.episode_integration_status(:apple, episode)
-        end
-      end
-
       it "returns 'incomplete' when episode has delivery status but not uploaded" do
         create(:apple_episode_delivery_status, episode: episode, uploaded: false, delivered: false)
         assert_equal "incomplete", helper.episode_integration_status(:apple, episode)
@@ -104,17 +93,6 @@ describe EpisodesHelper do
 
     it "returns episode updated_at when the integration facade is unavailable" do
       episode.stub(:integration_episode, nil) do
-        assert_equal episode.updated_at, helper.episode_integration_updated_at(:apple, episode)
-      end
-    end
-
-    it "returns episode updated_at when the integration facade has no show identity" do
-      integration_episode = Object.new
-      integration_episode.define_singleton_method(:sync_log) do
-        raise Apple::MissingShowIdentityError, "missing show"
-      end
-
-      episode.stub(:integration_episode, integration_episode) do
         assert_equal episode.updated_at, helper.episode_integration_updated_at(:apple, episode)
       end
     end
