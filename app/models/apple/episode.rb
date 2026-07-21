@@ -176,7 +176,7 @@ module Apple
     def self.upsert_sync_log(ep, res)
       apple_id = res.dig("api_response", "val", "data", "id")
       raise "Missing remote apple id" unless apple_id.present?
-      apple_show_id = ep.apple_show_id.presence || raise(ArgumentError, "Apple sync state requires an Apple show ID")
+      apple_show_id = ep.apple_show_id.presence || raise(MissingShowIdentityError, "Apple sync state requires an Apple show ID")
 
       sl = SyncLog.log!(
         integration: :apple,
@@ -598,7 +598,7 @@ module Apple
     private
 
     def scoped_apple_show_id!
-      apple_show_id.presence || raise(ArgumentError, "Apple state requires an Apple show ID")
+      apple_show_id.presence || raise(MissingShowIdentityError, "Apple state requires an Apple show ID")
     end
   end
 end

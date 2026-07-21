@@ -56,7 +56,7 @@ module Integrations
     def self.reject_unscoped_apple!(integration)
       return unless integration.to_s == "apple"
 
-      raise ArgumentError, "Apple delivery state requires Apple::EpisodeDeliveryStatus and a show ID"
+      raise Apple::MissingShowIdentityError, "Apple delivery state requires Apple::EpisodeDeliveryStatus and a show ID"
     end
     private_class_method :reject_unscoped_apple!
 
