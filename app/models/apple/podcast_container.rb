@@ -136,11 +136,7 @@ module Apple
          feeder_episode_id: episode.feeder_id,
          apple_show_id: episode.apple_show_id})
 
-      if pc.apple_sync_log
-        pc.apple_sync_log.update!(external_id: external_id, api_response: row, updated_at: Time.now.utc)
-      else
-        SyncLog.log!(integration: :apple, feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
-      end
+      SyncLog.log!(integration: :apple, feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
 
       # reset the episode's podcast container cached value
       pc.reload unless action == :created
