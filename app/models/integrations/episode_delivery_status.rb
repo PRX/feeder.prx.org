@@ -32,34 +32,6 @@ module Integrations
       Time.now.utc - start_status.created_at
     end
 
-    def self.update_status(integration, episode, attrs)
-      reject_unscoped_apple!(integration)
-      new_status = episode.episode_delivery_status(integration)&.dup || default_status(integration, episode)
-      new_status.assign_attributes(attrs.merge(integration: integration))
-      new_status.save!
-      episode.episode_delivery_statuses.reset
-      new_status
-    end
-
-    def self.delete_status(integration, episode)
-      reject_unscoped_apple!(integration)
-      episode.episode_delivery_statuses.where(integration: integration).delete_all
-    end
-
-    def self.default_status(integration, episode)
-      reject_unscoped_apple!(integration)
-      new(episode: episode, integration: integration)
-    end
-
-    # Apple delivery state must be accessed through the show-scoped
-    # Apple::Episode facade, which supplies the Apple show ID.
-    def self.reject_unscoped_apple!(integration)
-      return unless integration.to_s == "apple"
-
-      raise Apple::MissingShowIdentityError, "Apple delivery state requires Apple::EpisodeDeliveryStatus and a show ID"
-    end
-    private_class_method :reject_unscoped_apple!
-
     def needs_upload?
       !uploaded || needs_media_version?
     end
