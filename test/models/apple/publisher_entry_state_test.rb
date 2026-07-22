@@ -23,8 +23,8 @@ require "test_helper"
 # * source_media_version_id preserved by mark_as_not_delivered!
 #
 # Gate logic:
-#   apple_needs_upload?   = !uploaded || !has_media_version?
-#   apple_needs_delivery? = delivered == false
+#   needs_upload?   = !uploaded || !has_media_version?
+#   needs_delivery_processing? = delivered == false
 #   (upload_media! also sets delivered=false via prepare_for_delivery!)
 #
 # Expected outcomes:
@@ -39,8 +39,8 @@ require "test_helper"
 #
 # Ejection points (where episodes exit early or error out):
 #   - episodes_to_sync filter (synced_with_apple? = true -> excluded entirely)
-#   - apple_needs_upload? gate -> skip upload_media!
-#   - apple_needs_delivery? gate -> skip process_delivery!
+#   - needs_upload? gate -> skip upload_media!
+#   - needs_delivery_processing? gate -> skip process_delivery!
 #   - wait_for_versioned_source_metadata timeout -> raise
 #   - wait_for_upload_processing timeout -> AssetStateTimeoutError
 #   - wait_for_asset_state timeout -> AssetStateTimeoutError
@@ -58,11 +58,11 @@ module PublisherEntryStateDoubles
       @needs_delivery = needs_delivery
     end
 
-    def apple_needs_upload?
+    def needs_upload?
       @needs_upload
     end
 
-    def apple_needs_delivery?
+    def needs_delivery_processing?
       @needs_delivery
     end
 
@@ -134,7 +134,7 @@ describe Apple::Publisher do
       end
 
       it "needs upload (no status)" do
-        assert episode.apple_needs_upload?
+        assert episode.needs_upload?
       end
 
       it "needs delivery (no status)" do
@@ -160,7 +160,7 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       before do
-        episode.apple_update_delivery_status(
+        episode.update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id,
@@ -169,11 +169,11 @@ describe Apple::Publisher do
       end
 
       it "does not need upload (uploaded + media version current)" do
-        refute episode.apple_needs_upload?
+        refute episode.needs_upload?
       end
 
       it "needs delivery (delivered=false)" do
-        assert episode.apple_needs_delivery?
+        assert episode.needs_delivery_processing?
       end
 
       it "skips upload but enters delivery" do
@@ -200,24 +200,24 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       before do
-        episode.apple_update_delivery_status(
+        episode.update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id
         )
-        episode.apple_mark_as_not_delivered!
+        episode.mark_as_not_delivered!
       end
 
       it "needs upload (uploaded was reset to false)" do
-        assert episode.apple_needs_upload?
+        assert episode.needs_upload?
       end
 
       it "needs delivery (delivered=false)" do
-        assert episode.apple_needs_delivery?
+        assert episode.needs_delivery_processing?
       end
 
       it "preserves source_media_version_id" do
-        status = episode.apple_episode_delivery_status
+        status = episode.delivery_status
         assert status.source_media_version_id.present?,
           "source_media_version_id should be preserved by mark_as_not_delivered!"
       end
@@ -241,7 +241,7 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       before do
-        episode.apple_update_delivery_status(
+        episode.update_delivery_status(
           uploaded: true,
           delivered: true,
           source_media_version_id: episode.feeder_episode.media_version_id
@@ -251,7 +251,7 @@ describe Apple::Publisher do
       end
 
       it "needs upload (media version mismatch)" do
-        assert episode.apple_needs_upload?
+        assert episode.needs_upload?
       end
 
       it "enters upload phase" do
@@ -280,7 +280,7 @@ describe Apple::Publisher do
 
       before do
         # Simulate: uploaded successfully, then timed out
-        episode.apple_update_delivery_status(
+        episode.update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id,
@@ -292,11 +292,11 @@ describe Apple::Publisher do
       end
 
       it "needs upload (media version mismatch overrides uploaded=true)" do
-        assert episode.apple_needs_upload?
+        assert episode.needs_upload?
       end
 
       it "needs delivery (delivered=false)" do
-        assert episode.apple_needs_delivery?
+        assert episode.needs_delivery_processing?
       end
 
       it "enters both upload and delivery phases" do
@@ -316,7 +316,7 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       before do
-        episode.apple_update_delivery_status(
+        episode.update_delivery_status(
           uploaded: true,
           delivered: true,
           source_media_version_id: episode.feeder_episode.media_version_id
@@ -340,7 +340,7 @@ describe Apple::Publisher do
       let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
       it "general timeout: uploaded stays true, upload skipped" do
-        episode.apple_update_delivery_status(
+        episode.update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id,
@@ -356,12 +356,12 @@ describe Apple::Publisher do
       end
 
       it "stuck timeout: uploaded reset to false, full re-upload" do
-        episode.apple_update_delivery_status(
+        episode.update_delivery_status(
           uploaded: true,
           delivered: false,
           source_media_version_id: episode.feeder_episode.media_version_id
         )
-        episode.apple_mark_as_not_delivered!
+        episode.mark_as_not_delivered!
 
         phases = track_phases(apple_publisher, [episode])
 

@@ -96,11 +96,11 @@ module Apple
         # Only create if needed.
         sync_episodes!(eps)
 
-        eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        eps.filter(&:needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
 
-        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        eps.filter(&:needs_delivery_processing?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
           process_delivery!(batch)
         end
 
@@ -254,7 +254,7 @@ module Apple
         # Mark for reupload so the episode is picked up in the next publish cycle.
         # This will continue to fail if nothing changes, but gives users/admins
         # a chance to fix the source media format that Apple rejected.
-        apple_episodes_by_feeder_id.fetch(pdf.episode_id).apple_mark_as_not_delivered!
+        apple_episodes_by_feeder_id.fetch(pdf.episode_id).mark_as_not_delivered!
       end
 
       if problem_pdfs.any?
@@ -271,7 +271,7 @@ module Apple
 
     def mark_asset_state_failures_as_not_delivered!(failure_eps)
       failure_eps.each do |ep|
-        ep.apple_mark_as_not_delivered!
+        ep.mark_as_not_delivered!
       end
     end
 
@@ -339,10 +339,10 @@ module Apple
 
     def increment_asset_wait!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.apple_status.uploaded? }
+        eps = eps.filter { |e| e.delivery_status.uploaded? }
         eps.each do |ep|
-          status = ep.apple_episode_delivery_status
-          ep.apple_update_delivery_status(asset_processing_attempts: status.asset_processing_attempts.to_i + 1)
+          status = ep.delivery_status
+          ep.update_delivery_status(asset_processing_attempts: status.asset_processing_attempts.to_i + 1)
         end
       end
     end
@@ -474,7 +474,7 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         eps.each do |ep|
           Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
-          ep.apple_mark_as_delivered!
+          ep.mark_as_delivered!
         end
       end
     end
@@ -484,7 +484,7 @@ module Apple
         media_infos.each do |mi|
           attrs = mi.source_attributes.merge(uploaded: true)
           Rails.logger.info("Marking episode as uploaded", {episode_id: mi.episode.feeder_episode.id}.merge(attrs))
-          mi.episode.apple_update_delivery_status(attrs)
+          mi.episode.update_delivery_status(attrs)
         end
       end
     end
@@ -576,7 +576,7 @@ module Apple
             episode_id: ep.feeder_id,
             duration: ep.measure_asset_processing_duration
           })
-          ep.apple_mark_as_not_delivered!
+          ep.mark_as_not_delivered!
         end
 
         raise error
