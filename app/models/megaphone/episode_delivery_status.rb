@@ -4,10 +4,6 @@ module Megaphone
       "megaphone"
     end
 
-    def increment_asset_wait
-      update_status(asset_processing_attempts: (asset_processing_attempts || 0) + 1)
-    end
-
     def mark_as_uploaded!
       update_status(uploaded: true)
     end

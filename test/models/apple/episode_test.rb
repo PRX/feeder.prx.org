@@ -146,6 +146,21 @@ describe Apple::Episode do
       assert show_two_episode.delivery_status.uploaded
     end
 
+    it "increments asset wait through the show-scoped episode" do
+      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: nil,
+        delivered: false,
+        uploaded: true,
+        asset_processing_attempts: 2)
+
+      new_status = show_one_episode.increment_asset_wait!
+
+      assert_equal 3, new_status.asset_processing_attempts
+      assert_equal "show-1", new_status.apple_show_id
+      assert_nil legacy_status.reload.apple_show_id
+    end
+
     it "does not read another show's container or deliveries" do
       container = create(:apple_podcast_container,
         episode: episode,
