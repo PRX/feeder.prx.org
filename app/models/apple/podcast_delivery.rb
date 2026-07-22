@@ -143,7 +143,7 @@ module Apple
          feeder_episode_id: podcast_container.episode.id,
          podcast_delivery_id: delivery.id})
 
-      SyncLog.log!(integration: :apple, feeder_id: pd.id, feeder_type: :podcast_deliveries, external_id: external_id, api_response: row)
+      SyncLog.log!(feeder_id: pd.id, feeder_type: :podcast_deliveries, external_id: external_id, api_response: row)
 
       # Flush the cache on the podcast container
       podcast_container.podcast_deliveries.reset
