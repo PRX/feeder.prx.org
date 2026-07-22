@@ -132,6 +132,18 @@ class StreamResource < ApplicationRecord
     [[offset_start, offset_end]]
   end
 
+  def segmentation=(seg)
+    seg = JSON.safe_parse(seg) if seg.is_a?(String)
+
+    # move the actual start, so start_at is this far into the clip
+    offset_start = seg.try(:dig, 0, 0).to_f
+    self.actual_start_at = start_at - offset_start if start_at
+
+    # NOTE: the UI shows an end offset, but you can't set it - we just
+    # move it based on where you put the start + file-duration
+    self.actual_end_at = actual_start_at + duration if actual_start_at && duration
+  end
+
   def offset_start
     segmentation[0]&.first.to_f
   end

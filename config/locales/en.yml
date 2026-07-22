@@ -1410,6 +1410,9 @@ en:
       title: "Clip - %{time}"
     tabs:
       edit: Clip Editor
+    update:
+      error: Unable to save
+      notice: Clip updated
   podcast_engagement:
     form:
       <<: *form

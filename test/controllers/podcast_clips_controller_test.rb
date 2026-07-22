@@ -29,6 +29,18 @@ class PodcastClipsControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  it "updates a clip" do
+    put podcast_clip_url(podcast, clip), params: {stream_resource: {segmentation: "[[123,45678]]"}}
+    assert_redirected_to podcast_clip_url(podcast, clip)
+    assert_equal [[123, 3723]], clip.reload.segmentation
+  end
+
+  it "authorizes updating" do
+    podcast.update(prx_account_uri: "/api/v1/accounts/456")
+    put podcast_clip_url(podcast, clip), params: {stream_resource: {segmentation: ""}}
+    assert_response :forbidden
+  end
+
   it "attaches to existing episodes" do
     ep = create(:episode, podcast: podcast)
     assert_nil ep.uncut

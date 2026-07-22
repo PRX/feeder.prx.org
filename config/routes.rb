@@ -13,7 +13,7 @@ Rails.application.routes.draw do
     resources :imports, only: [:index, :show, :create]
     resource :planner, only: [:show, :create], controller: :podcast_planner
     resource :stream, only: [:show, :update], controller: :podcast_stream
-    resources :clips, only: [:index, :show], controller: :podcast_clips do
+    resources :clips, only: [:index, :show, :update], controller: :podcast_clips do
       post "attach", on: :member
     end
     resources :feeds, except: [:edit] do
