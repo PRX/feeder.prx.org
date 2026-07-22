@@ -6,7 +6,7 @@ module Apple
     attr_accessor :show,
       :feeder_episode,
       :api,
-      :apple_episode_update_attributes
+      :episode_update_attributes
 
     delegate :media_version_id, :podcast_id, to: :feeder_episode
 
@@ -42,7 +42,7 @@ module Apple
       api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
 
-    # Creates the `#apple_sync_log` attributes for the given episodes
+    # Creates the `#sync_log` attributes for the given episodes
     # and returns the created `SyncLog` records
     # This indicates that there is a remote pair for the episode
     def self.poll_episode_state(api, show, episodes)
@@ -119,7 +119,7 @@ module Apple
       upsert_sync_logs(episodes, episode_bridge_results)
 
       Apple::ApiJoin.join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        ep.apple_mark_as_not_delivered! if mark_as_not_delivered
+        ep.mark_as_not_delivered! if mark_as_not_delivered
         Rails.logger.info("Removed audio container reference for episode", {episode_id: ep.feeder_id})
       end
 
@@ -198,12 +198,14 @@ module Apple
     end
 
     def synced_with_integration?
-      synced_with_apple?
+      audio_asset_state_success? && has_delivery? && !drafting?
     end
+    alias_method :synced_with_apple?, :synced_with_integration?
 
     def integration_new?
-      apple_new?
+      apple_json.blank?
     end
+    alias_method :apple_new?, :integration_new?
 
     def api_response
       sync_log&.api_response
@@ -320,7 +322,7 @@ module Apple
       create_params[:data][:attributes].delete(:guid)
 
       ep_attrs = create_params[:data][:attributes]
-      ep_attrs = ep_attrs.merge(apple_episode_update_attributes || {})
+      ep_attrs = ep_attrs.merge(episode_update_attributes || {})
 
       create_params[:data][:attributes] = ep_attrs
       create_params
@@ -418,14 +420,6 @@ module Apple
       apple_data
     end
 
-    def apple_new?
-      !apple_persisted?
-    end
-
-    def apple_persisted?
-      apple_json.present?
-    end
-
     def publishing_state
       apple_json&.dig("attributes", "publishingState")
     end
@@ -497,15 +491,11 @@ module Apple
     def needs_delivery?
       return true if missing_container?
 
-      podcast_container&.needs_delivery? || apple_needs_delivery? || needs_media_version?
+      podcast_container&.needs_delivery? || needs_delivery_processing? || needs_media_version?
     end
 
     def has_delivery?
       !needs_delivery?
-    end
-
-    def synced_with_apple?
-      audio_asset_state_success? && has_delivery? && !drafting?
     end
 
     def waiting_for_asset_state?
@@ -539,27 +529,23 @@ module Apple
       podcast_container&.podcast_delivery_files || Apple::PodcastDeliveryFile.none
     end
 
-    def apple_sync_log
-      sync_log
+    def mark_as_not_delivered!
+      update_delivery_status(delivered: false, uploaded: false, asset_processing_attempts: 0)
     end
 
-    def apple_mark_as_not_delivered!
-      apple_update_delivery_status(delivered: false, uploaded: false, asset_processing_attempts: 0)
+    def mark_as_delivered!
+      update_delivery_status(delivered: true, uploaded: true, asset_processing_attempts: 0)
     end
 
-    def apple_mark_as_delivered!
-      apple_update_delivery_status(delivered: true, uploaded: true, asset_processing_attempts: 0)
-    end
-
-    def apple_update_delivery_status(attrs)
+    def update_delivery_status(attrs)
       Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: scoped_apple_show_id!)
     end
 
-    def apple_episode_delivery_status(_with_default = true)
+    def delivery_status(_with_default = true)
       Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: scoped_apple_show_id!)
     end
 
-    def apple_episode_delivery_statuses
+    def delivery_statuses
       show_id = scoped_apple_show_id!
 
       # TODO remove with cutover after all legacy NULL-show rows are stamped.
@@ -568,12 +554,15 @@ module Apple
         .order(created_at: :desc)
     end
 
-    def apple_needs_delivery?
-      apple_episode_delivery_status.delivered == false
+    # The aggregate #needs_delivery? predicate answers whether any delivery work
+    # remains. This narrower predicate gates the Publisher#process_delivery!
+    # phase after any necessary upload has completed.
+    def needs_delivery_processing?
+      delivery_status.delivered == false
     end
 
-    def apple_needs_upload?
-      apple_episode_delivery_status.needs_upload?
+    def needs_upload?
+      delivery_status.needs_upload?
     end
 
     def prepare_for_delivery!
@@ -581,19 +570,16 @@ module Apple
       podcast_deliveries.reset
       podcast_delivery_files.reset
       podcast_container&.podcast_deliveries&.reset
-      apple_mark_as_not_delivered!
+      mark_as_not_delivered!
     end
 
     def measure_asset_processing_duration
-      Integrations::EpisodeDeliveryStatus.measure_asset_processing_duration(apple_episode_delivery_statuses)
+      Integrations::EpisodeDeliveryStatus.measure_asset_processing_duration(delivery_statuses)
     end
 
     alias_method :container, :podcast_container
     alias_method :deliveries, :podcast_deliveries
     alias_method :delivery_files, :podcast_delivery_files
-    alias_method :delivery_status, :apple_episode_delivery_status
-    alias_method :delivery_statuses, :apple_episode_delivery_statuses
-    alias_method :apple_status, :apple_episode_delivery_status
 
     private
 

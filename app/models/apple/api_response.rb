@@ -5,13 +5,13 @@ module Apple
     extend ActiveSupport::Concern
 
     def api_response
-      apple_sync_log&.api_response
+      response_sync_log&.api_response
     end
 
     def guard_for_ok_response
       return true if api_response&.dig("api_response", "ok")
 
-      sl = try(:apple_sync_log)
+      sl = response_sync_log
       Rails.logger.error("Apple api response error", apple_sync_log: sl&.as_json, this_class: self.class.name, this: try(:id))
 
       raise "incomplete api response"
@@ -39,6 +39,12 @@ module Apple
       raise "missing apple id" unless apple_data["id"].present?
 
       apple_data["id"]
+    end
+
+    private
+
+    def response_sync_log
+      respond_to?(:sync_log) ? sync_log : try(:apple_sync_log)
     end
   end
 end

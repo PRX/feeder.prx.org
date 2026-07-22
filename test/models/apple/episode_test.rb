@@ -99,10 +99,10 @@ describe Apple::Episode do
         uploaded: false,
         asset_processing_attempts: 2)
 
-      assert_equal legacy_status, show_one_episode.apple_episode_delivery_status
-      assert_includes show_one_episode.apple_episode_delivery_statuses, legacy_status
+      assert_equal legacy_status, show_one_episode.delivery_status
+      assert_includes show_one_episode.delivery_statuses, legacy_status
 
-      scoped_status = show_one_episode.apple_update_delivery_status(uploaded: true)
+      scoped_status = show_one_episode.update_delivery_status(uploaded: true)
 
       refute_equal legacy_status, scoped_status
       assert_equal "show-1", scoped_status.apple_show_id
@@ -130,20 +130,20 @@ describe Apple::Episode do
         apple_show_id: nil,
         delivered: false)
 
-      show_one_episode.apple_update_delivery_status(delivered: true)
-      show_two_episode.apple_update_delivery_status(delivered: false, uploaded: true)
+      show_one_episode.update_delivery_status(delivered: true)
+      show_two_episode.update_delivery_status(delivered: false, uploaded: true)
 
-      assert show_one_episode.apple_status.delivered
-      refute show_two_episode.apple_status.delivered
-      assert show_two_episode.apple_status.uploaded
-      assert_equal "show-1", show_one_episode.apple_status.apple_show_id
-      assert_equal "show-2", show_two_episode.apple_status.apple_show_id
+      assert show_one_episode.delivery_status.delivered
+      refute show_two_episode.delivery_status.delivered
+      assert show_two_episode.delivery_status.uploaded
+      assert_equal "show-1", show_one_episode.delivery_status.apple_show_id
+      assert_equal "show-2", show_two_episode.delivery_status.apple_show_id
       assert_nil legacy_status.reload.apple_show_id
 
-      show_one_episode.apple_update_delivery_status(uploaded: false)
+      show_one_episode.update_delivery_status(uploaded: false)
 
-      refute show_one_episode.apple_status.uploaded
-      assert show_two_episode.apple_status.uploaded
+      refute show_one_episode.delivery_status.uploaded
+      assert show_two_episode.delivery_status.uploaded
     end
 
     it "does not read another show's container or deliveries" do
@@ -179,9 +179,9 @@ describe Apple::Episode do
 
       assert_raises(ArgumentError) { showless_episode.podcast_container }
       assert_raises(ArgumentError) { showless_episode.sync_log }
-      assert_raises(ArgumentError) { showless_episode.apple_episode_delivery_status }
-      assert_raises(ArgumentError) { showless_episode.apple_episode_delivery_statuses.to_a }
-      assert_raises(ArgumentError) { showless_episode.apple_update_delivery_status(delivered: true) }
+      assert_raises(ArgumentError) { showless_episode.delivery_status }
+      assert_raises(ArgumentError) { showless_episode.delivery_statuses.to_a }
+      assert_raises(ArgumentError) { showless_episode.update_delivery_status(delivered: true) }
 
       assert_equal legacy_container, Apple::PodcastContainer.find(legacy_container.id)
       refute legacy_status.reload.delivered
@@ -381,10 +381,10 @@ describe Apple::Episode do
       create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
       mid = apple_episode.feeder_episode.reload.cut_media_version!
 
-      apple_episode.apple_update_delivery_status(delivered: true, source_media_version_id: mid.id)
+      apple_episode.update_delivery_status(delivered: true, source_media_version_id: mid.id)
       refute apple_episode.needs_media_version?
 
-      apple_episode.apple_update_delivery_status(source_media_version_id: -1)
+      apple_episode.update_delivery_status(source_media_version_id: -1)
 
       assert apple_episode.needs_media_version?
     end

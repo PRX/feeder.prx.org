@@ -48,7 +48,7 @@ module Apple
 
         episode = episodes_by_container_id.fetch(container.id)
 
-        status = episode.apple_status
+        status = episode.delivery_status
         count = status&.source_fetch_count || 0
 
         new(
@@ -64,8 +64,8 @@ module Apple
 
     def self.increment_source_fetch_count(episodes)
       episodes.each do |ep|
-        count = ep.apple_status&.source_fetch_count || 0
-        ep.apple_update_delivery_status(source_fetch_count: count + 1)
+        count = ep.delivery_status&.source_fetch_count || 0
+        ep.update_delivery_status(source_fetch_count: count + 1)
       end
     end
 

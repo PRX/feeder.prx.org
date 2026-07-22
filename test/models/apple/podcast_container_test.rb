@@ -247,7 +247,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
     it "should not update the source_url and source_file_name" do
       apple_episode.stub(:apple_id, apple_episode_id) do
         apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-          status = apple_episode.apple_status
+          status = apple_episode.delivery_status
 
           # It does not touch the source_url or source_filename on create
           Apple::PodcastContainer.upsert_podcast_container(apple_episode,
@@ -274,10 +274,8 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
 
       Apple::PodcastContainer.stub(:get_podcast_containers_via_episodes, [podcast_container_json_row]) do
         apple_episode.stub(:apple_id, apple_episode_id) do
-          apple_episode.stub(:apple_persisted?, true) do
-            apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
-              Apple::PodcastContainer.poll_podcast_container_state(nil, [apple_episode])
-            end
+          apple_episode.stub(:audio_asset_vendor_id, apple_audio_asset_vendor_id) do
+            Apple::PodcastContainer.poll_podcast_container_state(nil, [apple_episode])
           end
         end
       end
@@ -364,7 +362,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
       assert Apple::PodcastDelivery.with_deleted.find(delivery.id).deleted? if delivery
       assert Apple::PodcastDeliveryFile.with_deleted.find(delivery_file.id).deleted? if delivery_file
 
-      status = apple_episode.apple_episode_delivery_status
+      status = apple_episode.delivery_status
       refute status.delivered?
       refute status.uploaded?
       assert_equal 0, status.asset_processing_attempts

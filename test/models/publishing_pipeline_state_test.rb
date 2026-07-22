@@ -332,7 +332,7 @@ describe PublishingPipelineState do
         episode = build(:uploaded_apple_episode, show: apple_publisher.show)
 
         # it does not trigger an exception
-        episode.apple_episode_delivery_status.update(asset_processing_attempts: 1)
+        episode.delivery_status.update(asset_processing_attempts: 1)
 
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do

@@ -180,7 +180,7 @@ describe Apple::AssetStateTimeoutError do
       error = Apple::AssetStateTimeoutError.new([episode1])
 
       # Now reset the episode (simulating what check_for_stuck_episodes does)
-      episode1.apple_mark_as_not_delivered!
+      episode1.mark_as_not_delivered!
 
       captured_duration = error.asset_wait_duration
 
