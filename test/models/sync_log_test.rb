@@ -19,6 +19,20 @@ describe SyncLog do
       assert_instance_of SyncLog, SyncLog.find(sync_log.id)
       assert_equal [sync_log], SyncLog.megaphone.where(id: sync_log.id)
     end
+
+    it "owns the integration for Apple log writes" do
+      sync_log = Apple::SyncLog.log!(feeder_type: :feeds, feeder_id: 123, external_id: "show-1", api_response: {})
+
+      assert_instance_of Apple::SyncLog, sync_log
+      assert_equal "apple", sync_log.integration
+    end
+
+    it "does not allow Apple log writes to select another integration" do
+      sync_log = Apple::SyncLog.log!(integration: :megaphone, feeder_type: :feeds, feeder_id: 123, external_id: "show-1", api_response: {})
+
+      assert_instance_of Apple::SyncLog, sync_log
+      assert_equal "apple", sync_log.integration
+    end
   end
 
   describe "indexes" do

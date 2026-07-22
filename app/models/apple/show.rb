@@ -23,7 +23,6 @@ module Apple
         end
       else
         SyncLog.log!(
-          integration: :apple,
           feeder_id: apple_config.public_feed.id,
           feeder_type: :feeds,
           sync_completed_at: Time.now.utc,
@@ -141,7 +140,6 @@ module Apple
         apple_json = create_or_update_show(sync_log)
         public_feed.reload
         SyncLog.log!(
-          integration: :apple,
           feeder_id: public_feed.id,
           feeder_type: :feeds,
           external_id: apple_json.dig("api_response", "val", "data", "id"),

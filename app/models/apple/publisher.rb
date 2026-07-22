@@ -81,7 +81,6 @@ module Apple
 
       # success
       SyncLog.log!(
-        integration: :apple,
         feeder_id: public_feed.id,
         feeder_type: :feeds,
         external_id: show.apple_id,

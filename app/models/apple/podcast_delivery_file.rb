@@ -94,7 +94,7 @@ module Apple
       Apple::ApiJoin.join_on(PODCAST_DELIVERY_FILE_ID_ATTR, pdfs, episode_bridge_results).each do |(pdf, row)|
         external_id = row.dig("api_response", "val", "data", "id")
         pdf.update!(api_marked_as_uploaded: true)
-        SyncLog.log!(integration: :apple, feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
+        SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
       end
 
       api.raise_bridge_api_error(errs) if errs.present?
@@ -284,7 +284,7 @@ module Apple
          feeder_episode_id: pdf.episode.id,
          podcast_delivery_file_id: pdf.podcast_delivery.id})
 
-      SyncLog.log!(integration: :apple, feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
+      SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
 
       # Flush the cache on the podcast container
       podcast_delivery.delivery_files.reset
