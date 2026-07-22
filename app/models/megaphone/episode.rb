@@ -214,7 +214,7 @@ module Megaphone
           delivery_status(true).mark_as_delivered!
         else
           # still waiting - increment asset state
-          delivery_status(true).increment_asset_wait
+          increment_asset_wait!
         end
       else
         # this would be a weird timing thing maybe, but ...
@@ -353,6 +353,14 @@ module Megaphone
 
     def delivery_status(with_default = false)
       feeder_episode&.episode_delivery_status(:megaphone, with_default)
+    end
+
+    def increment_asset_wait!
+      status = delivery_status(true)
+      feeder_episode.update_episode_delivery_status(
+        :megaphone,
+        asset_processing_attempts: status.asset_processing_attempts.to_i + 1
+      )
     end
 
     def sync_log

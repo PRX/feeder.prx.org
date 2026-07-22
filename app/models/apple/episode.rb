@@ -536,6 +536,12 @@ module Apple
       update_delivery_status(delivered: true, uploaded: true, asset_processing_attempts: 0)
     end
 
+    def increment_asset_wait!
+      update_delivery_status(
+        asset_processing_attempts: delivery_status.asset_processing_attempts.to_i + 1
+      )
+    end
+
     def update_delivery_status(attrs)
       Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: scoped_apple_show_id!)
     end

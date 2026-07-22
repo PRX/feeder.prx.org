@@ -13,20 +13,22 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       assert_equal [status], Megaphone::EpisodeDeliveryStatus.where(id: status.id)
     end
 
-    it "keeps the instance mutators on Megaphone statuses" do
+    it "keeps Megaphone status transitions on Megaphone statuses" do
       status = build(:megaphone_episode_delivery_status, episode: episode)
 
-      assert_respond_to status, :increment_asset_wait
       assert_respond_to status, :mark_as_uploaded!
       assert_respond_to status, :mark_as_not_uploaded!
       assert_respond_to status, :mark_as_delivered!
       assert_respond_to status, :mark_as_not_delivered!
+      refute_respond_to status, :increment_asset_wait
+      refute_respond_to status, :increment_asset_wait!
     end
 
     it "does not expose the Megaphone instance mutators on Apple statuses" do
       status = build(:apple_episode_delivery_status, episode: episode)
 
       refute_respond_to status, :increment_asset_wait
+      refute_respond_to status, :increment_asset_wait!
       refute_respond_to status, :mark_as_uploaded!
       refute_respond_to status, :mark_as_not_uploaded!
       refute_respond_to status, :mark_as_delivered!
@@ -124,30 +126,6 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
         delivery_status.mark_as_not_delivered!
         new_status = episode.episode_delivery_status(:megaphone)
         assert_equal 42, new_status.source_media_version_id
-      end
-    end
-
-    describe "Asset waits and counting" do
-      describe "#increment_asset_wait" do
-        it "increments the asset_processing_attempts count" do
-          initial_count = delivery_status.asset_processing_attempts || 0
-          new_status = delivery_status.increment_asset_wait
-          assert_equal initial_count + 1, new_status.asset_processing_attempts
-        end
-
-        it "creates a new status entry" do
-          assert delivery_status.asset_processing_attempts.zero?
-          assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
-            delivery_status.increment_asset_wait
-          end
-        end
-
-        it "maintains other attributes" do
-          delivery_status.update(delivered: true, source_url: "http://example.com/audio.mp3")
-          new_status = delivery_status.increment_asset_wait
-          assert new_status.delivered
-          assert_equal "http://example.com/audio.mp3", new_status.source_url
-        end
       end
     end
   end

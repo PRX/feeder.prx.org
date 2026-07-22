@@ -197,4 +197,23 @@ describe Megaphone::Episode do
       assert_nil feeder_episode.sync_log(:megaphone)
     end
   end
+
+  describe "#increment_asset_wait!" do
+    it "appends an incremented delivery status while preserving its attributes" do
+      status = create(:megaphone_episode_delivery_status,
+        episode: feeder_episode,
+        delivered: true,
+        source_url: "http://example.com/audio.mp3",
+        asset_processing_attempts: 2)
+      episode = Megaphone::Episode.new_from_episode(podcast, feeder_episode)
+
+      assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
+        new_status = episode.increment_asset_wait!
+
+        assert_equal 3, new_status.asset_processing_attempts
+        assert new_status.delivered
+        assert_equal status.source_url, new_status.source_url
+      end
+    end
+  end
 end
