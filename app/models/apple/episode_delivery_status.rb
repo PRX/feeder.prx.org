@@ -9,13 +9,6 @@ module Apple
       "apple"
     end
 
-    undef_method :increment_asset_wait,
-      :mark_as_uploaded!,
-      :mark_as_not_uploaded!,
-      :mark_as_delivered!,
-      :mark_as_not_delivered!,
-      :update_status
-
     # A known show may temporarily read the latest legacy NULL-show row. A
     # subsequent update duplicates it into a new row stamped with this show.
     # TODO remove with cutover after all legacy NULL-show rows are stamped.

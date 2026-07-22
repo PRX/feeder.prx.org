@@ -1,6 +1,39 @@
 require "test_helper"
 
 class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
+  describe "integration STI" do
+    let(:episode) { create(:episode) }
+
+    it "uses the Megaphone subclass for new and persisted Megaphone rows" do
+      status = Integrations::EpisodeDeliveryStatus.create!(episode: episode, integration: :megaphone)
+
+      assert_instance_of Megaphone::EpisodeDeliveryStatus, status
+      assert_instance_of Megaphone::EpisodeDeliveryStatus,
+        Integrations::EpisodeDeliveryStatus.find(status.id)
+      assert_equal [status], Megaphone::EpisodeDeliveryStatus.where(id: status.id)
+    end
+
+    it "keeps the instance mutators on Megaphone statuses" do
+      status = build(:megaphone_episode_delivery_status, episode: episode)
+
+      assert_respond_to status, :increment_asset_wait
+      assert_respond_to status, :mark_as_uploaded!
+      assert_respond_to status, :mark_as_not_uploaded!
+      assert_respond_to status, :mark_as_delivered!
+      assert_respond_to status, :mark_as_not_delivered!
+    end
+
+    it "does not expose the Megaphone instance mutators on Apple statuses" do
+      status = build(:apple_episode_delivery_status, episode: episode)
+
+      refute_respond_to status, :increment_asset_wait
+      refute_respond_to status, :mark_as_uploaded!
+      refute_respond_to status, :mark_as_not_uploaded!
+      refute_respond_to status, :mark_as_delivered!
+      refute_respond_to status, :mark_as_not_delivered!
+    end
+  end
+
   describe Integrations::EpisodeDeliveryStatus do
     let(:episode) { create(:episode) }
     let(:delivery_status) { create(:megaphone_episode_delivery_status, episode: episode) }
