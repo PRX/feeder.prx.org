@@ -28,7 +28,7 @@ FactoryBot.define do
     source_fetch_count { 0 }
   end
 
-  factory :megaphone_episode_delivery_status, class: "Integrations::EpisodeDeliveryStatus" do
+  factory :megaphone_episode_delivery_status, class: "Megaphone::EpisodeDeliveryStatus" do
     association :episode
 
     integration { Integrations::EpisodeDeliveryStatus.integrations[:megaphone] }

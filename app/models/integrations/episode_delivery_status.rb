@@ -8,7 +8,7 @@ module Integrations
 
     INTEGRATION_CLASSES = {
       "apple" => "Apple::EpisodeDeliveryStatus",
-      "megaphone" => "Integrations::EpisodeDeliveryStatus"
+      "megaphone" => "Megaphone::EpisodeDeliveryStatus"
     }.freeze
 
     def self.find_sti_class(type_name)
@@ -60,31 +60,6 @@ module Integrations
     end
     private_class_method :reject_unscoped_apple!
 
-    def increment_asset_wait
-      update_status(asset_processing_attempts: (asset_processing_attempts || 0) + 1)
-    end
-
-    def mark_as_uploaded!
-      update_status(uploaded: true)
-    end
-
-    def mark_as_not_uploaded!
-      update_status(uploaded: false)
-    end
-
-    # Whether the media file has been uploaded to the Integration
-    # is a subset of whether the episode has been delivered
-    def mark_as_delivered!
-      update_status(delivered: true, uploaded: true, asset_processing_attempts: 0)
-    end
-
-    def mark_as_not_delivered!
-      # source_media_version_id is intentionally omitted — it is preserved so
-      # we can still compare the previously uploaded media version against the
-      # current one.
-      update_status(delivered: false, uploaded: false, asset_processing_attempts: 0)
-    end
-
     def needs_upload?
       !uploaded || needs_media_version?
     end
@@ -95,12 +70,6 @@ module Integrations
 
     def needs_media_version?
       !has_media_version?
-    end
-
-    private
-
-    def update_status(attrs)
-      self.class.update_status(integration, episode, attrs)
     end
   end
 end
