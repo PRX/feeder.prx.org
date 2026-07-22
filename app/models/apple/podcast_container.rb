@@ -146,31 +146,19 @@ module Apple
     end
 
     def self.persist_podcast_container(episode_id, attributes)
-      transaction do
-        containers = where(episode_id: episode_id)
-        pc = containers.lock.find_by(apple_show_id: attributes[:apple_show_id])
-        # TODO remove with cutover after all legacy NULL-show rows are stamped.
-        pc ||= containers.lock.find_by(apple_show_id: nil) if attributes[:apple_show_id].present?
+      containers = where(episode_id: episode_id)
+      pc = containers.find_by(apple_show_id: attributes[:apple_show_id])
+      # TODO remove with cutover after all legacy NULL-show rows are stamped.
+      pc ||= containers.find_by(apple_show_id: nil) if attributes[:apple_show_id].present?
 
-        if pc
-          action = (pc.apple_show_id.nil? && attributes[:apple_show_id].present?) ? :adopted : :updated
-          pc.update!(attributes)
-          pc.touch
-          [pc, action]
-        else
-          [create!(attributes.merge(episode_id: episode_id)), :created]
-        end
+      if pc
+        action = pc.apple_show_id.nil? ? :adopted : :updated
+        pc.update!(attributes)
+        pc.touch
+        [pc, action]
+      else
+        [create!(attributes.merge(episode_id: episode_id)), :created]
       end
-    rescue ActiveRecord::RecordNotUnique
-      # A concurrent upsert may have created the exact show-scoped row after
-      # our lookup. The database constraint remains authoritative; only recover
-      # when that exact row now exists, otherwise preserve the original error.
-      pc = find_by(episode_id: episode_id, apple_show_id: attributes[:apple_show_id])
-      raise unless pc
-
-      pc.update!(attributes)
-      pc.touch
-      [pc, :updated]
     end
     private_class_method :persist_podcast_container
 
