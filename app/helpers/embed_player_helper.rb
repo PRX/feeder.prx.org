@@ -94,9 +94,7 @@ module EmbedPlayerHelper
   end
 
   def enclosure_with_token(ep)
-    url = EnclosureUrlBuilder.new.base_enclosure_url(ep.podcast, ep, ep.podcast.default_feed)
-    sep = url.include?("?") ? "&" : "?"
-    url + sep + {DOVETAIL_TOKEN => prx_jwt}.to_query
+    ep.enclosure_url(prefix: false, prx_jwt: prx_jwt)
   end
 
   private

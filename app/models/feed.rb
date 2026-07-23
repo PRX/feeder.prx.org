@@ -65,10 +65,6 @@ class Feed < ApplicationRecord
   scope :apple, -> { where(type: "Feeds::AppleSubscription") }
   scope :tab_order, -> { order(Arel.sql("slug IS NULL DESC, created_at ASC")) }
 
-  def self.enclosure_template_default
-    "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
-  end
-
   def mark_as_not_delivered!(episode)
     # for default / RSS feeds, don't do anything
     # TODO: we could mark an episode needing to be published in this RSS feed file
@@ -97,7 +93,6 @@ class Feed < ApplicationRecord
 
   def set_defaults
     self.file_name ||= DEFAULT_FILE_NAME
-    self.enclosure_template ||= Feed.enclosure_template_default
   end
 
   def sanitize_text
@@ -132,7 +127,7 @@ class Feed < ApplicationRecord
   end
 
   def check_enclosure_changes
-    if persisted? && (enclosure_prefix_changed? || enclosure_template_changed?)
+    if persisted? && enclosure_prefix_changed?
       self.enclosure_updated_at = Time.now
     end
   end
@@ -235,13 +230,12 @@ class Feed < ApplicationRecord
     self[:exclude_tags] = tags.blank? ? nil : tags
   end
 
-  def enclosure_template
-    self[:enclosure_template] || Feed.enclosure_template_default
+  def file_ext
+    (audio_format || {})[:f] || "mp3"
   end
 
   def mime_type
-    f = (audio_format || {})[:f] || "mp3"
-    AUDIO_MIME_TYPES[f]
+    AUDIO_MIME_TYPES[file_ext]
   end
 
   def copy_media(force = false)
