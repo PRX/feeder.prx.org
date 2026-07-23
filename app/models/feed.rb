@@ -35,6 +35,7 @@ class Feed < ApplicationRecord
   has_many :itunes_categories, -> { order("created_at ASC") }, validate: true, autosave: true, dependent: :destroy
 
   has_one :apple_sync_log, -> { feeds.apple }, foreign_key: :feeder_id, class_name: "SyncLog"
+  has_one :apple_show_feed_binding, class_name: "Apple::ShowFeedBinding", dependent: :destroy
 
   accepts_nested_attributes_for :feed_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :itunes_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
