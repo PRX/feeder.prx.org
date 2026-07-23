@@ -31,8 +31,8 @@ module Apple
         skipped_rows: []
       }
 
-      each_unscoped_record do |record_type, record|
-        backfill_record!(record_type, record, report, dry_run: dry_run)
+      each_unscoped_batch do |record_type, relation, batch|
+        backfill_batch!(record_type, relation, batch, report, dry_run: dry_run)
       end
 
       report
@@ -71,23 +71,29 @@ module Apple
 
     private
 
-    def backfill_record!(record_type, record, report, dry_run:)
-      resolution = resolve_apple_show_id(record)
-      unless resolution[:apple_show_id].present?
-        report[:skipped] += 1
-        report[:skipped_rows] << record_details(record_type, record).merge(reason: resolution[:reason])
-        return
+    def backfill_batch!(record_type, relation, batch, report, dry_run:)
+      batch.group_by { |record| resolve_apple_show_id(record) }.each do |resolution, records|
+        apple_show_id = resolution[:apple_show_id]
+
+        if apple_show_id.blank?
+          report[:skipped] += records.length
+          records.each do |record|
+            report[:skipped_rows] << record_details(record_type, record).merge(reason: resolution[:reason])
+          end
+          next
+        end
+
+        relation.where(id: records.map(&:id)).update_all(apple_show_id: apple_show_id) unless dry_run
+
+        report[:updated] += records.length
+        report[:changed] += records.length
+        records.each do |record|
+          report[:actions] << record_details(record_type, record).merge(
+            action: dry_run ? "would_update" : "update",
+            apple_show_id: apple_show_id
+          )
+        end
       end
-
-      apple_show_id = resolution[:apple_show_id]
-      record.update_columns(apple_show_id: apple_show_id) unless dry_run
-
-      report[:updated] += 1
-      report[:changed] += 1
-      report[:actions] << record_details(record_type, record).merge(
-        action: dry_run ? "would_update" : "update",
-        apple_show_id: apple_show_id
-      )
     end
 
     def resolve_apple_show_id(record)
@@ -104,10 +110,11 @@ module Apple
       end
     end
 
-    def each_unscoped_record
+    def each_unscoped_batch
       target_relations.each do |record_type, relation|
         # TODO remove with cutover after all legacy NULL-show rows are stamped.
-        relation.where(apple_show_id: nil).find_each(batch_size: BATCH_SIZE) { |record| yield record_type, record }
+        unscoped = relation.where(apple_show_id: nil)
+        unscoped.find_in_batches(batch_size: BATCH_SIZE) { |batch| yield record_type, unscoped, batch }
       end
     end
 
