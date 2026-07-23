@@ -233,8 +233,8 @@ module Apple
       feeder_episode.enclosure_dovetail_url(feed: private_feed, prefix: false, auth: true)
     end
 
-    def enclosure_filename
-      feeder_episode.enclosure_filename(feed: private_feed)
+    def enclosure_file_name
+      feeder_episode.enclosure_file_name(feed: private_feed)
     end
 
     def sync_log
