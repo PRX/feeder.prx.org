@@ -19,7 +19,7 @@ module EpisodeEnclosure
 
     url_parts = []
     url_parts << feed.enclosure_prefix if feed&.enclosure_prefix.present? && prefix
-    url_parts << (ENV["DOVETAIL_HOST"] || "dovetail")
+    url_parts << (ENV["DOVETAIL_HOST"] || "dovetail.prxu.org")
     url_parts << (podcast_id || "podcast")
     url_parts << feed.slug if feed&.slug.present?
     url_parts << guid
