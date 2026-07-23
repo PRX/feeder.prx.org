@@ -153,12 +153,14 @@ module Apple
 
     def create_legacy_episode_sync_log(config)
       episode = create(:episode, podcast: config.podcast)
-      SyncLog.create!(
+      sync_log = SyncLog.new(
         integration: :apple,
         feeder_type: :episodes,
         feeder_id: episode.id,
         external_id: "episode-#{episode.id}"
       )
+      sync_log.save!(validate: false)
+      sync_log
     end
 
     def with_remote_episode_ids(*episode_ids, &block)

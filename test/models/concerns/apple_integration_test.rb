@@ -1,178 +1,80 @@
 require "test_helper"
 
 class AppleIntegrationTest < ActiveSupport::TestCase
-  let(:episode) { create(:episode_with_media) }
+  let(:podcast) { create(:podcast) }
+  let(:episode) { create(:episode, podcast: podcast) }
 
   describe "#apple_episode" do
-    let(:episode) { create(:episode) }
-    it "gets nil for no apple episode" do
+    it "returns nil without an Apple configuration" do
       assert_nil episode.apple_episode
     end
-  end
 
-  describe "#apple_needs_delivery?" do
-    let(:episode) { create(:episode) }
-    it "is true by default" do
-      refute episode.apple_episode_delivery_status.persisted?
-      assert episode.apple_needs_delivery?
+    it "returns nil without a show identity" do
+      create(:apple_feed, podcast: podcast)
+
+      assert_nil episode.apple_episode
     end
 
-    it "can be set to false" do
-      episode.apple_mark_as_delivered!
-      refute episode.apple_needs_delivery?
+    it "returns a show-scoped facade" do
+      create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
+
+      assert_equal "show-1", episode.apple_episode.apple_show_id
     end
 
-    it "can be set to true" do
-      episode.apple_mark_as_delivered!
-      refute episode.apple_needs_delivery?
-
-      # now set it to true
-      episode.apple_mark_as_not_delivered!
-      assert episode.apple_needs_delivery?
-    end
-  end
-
-  describe "#apple_mark_as_delivered!" do
-    let(:episode) { create(:episode_with_media) }
-
-    it "supercedes the uploaded status" do
-      episode.apple_mark_as_not_delivered!
-
-      assert episode.apple_needs_upload?
-      assert episode.apple_needs_delivery?
-
-      # Simulate realistic post-upload state: source_media_version_id set during upload
-      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id)
-      episode.apple_mark_as_delivered!
-
-      refute episode.apple_needs_upload?
-      refute episode.apple_needs_delivery?
-    end
-  end
-
-  describe "#apple_mark_as_uploaded!" do
-    it "sets the uploaded status" do
-      episode.apple_mark_as_uploaded!
-      assert episode.apple_episode_delivery_status.uploaded
-    end
-
-    it "does not need upload when media version also matches" do
-      episode.apple_episode_delivery_status.update!(source_media_version_id: episode.media_version_id)
-      episode.apple_mark_as_uploaded!
-      refute episode.apple_needs_upload?
-    end
-
-    it "does not interact with the delivery status" do
-      episode.apple_mark_as_uploaded!
-      assert episode.apple_needs_delivery?
-    end
-  end
-
-  describe "#apple_mark_as_not_delivered!" do
-    let(:episode) { create(:episode_with_media) }
-
-    it "sets delivered/uploaded to false while preserving source_media_version_id" do
-      episode.apple_update_delivery_status(
-        delivered: true,
-        uploaded: true,
-        source_media_version_id: episode.media_version_id
+    it "resolves the show-scoped sync log through the integration facade" do
+      create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
+      sync_log = SyncLog.create!(
+        integration: :apple,
+        feeder_type: :episodes,
+        feeder_id: episode.id,
+        external_id: "episode-1",
+        apple_show_id: "show-1"
       )
 
-      episode.apple_mark_as_not_delivered!
-      status = episode.apple_episode_delivery_status
-
-      refute status.delivered
-      refute status.uploaded
-      assert_equal episode.media_version_id, status.source_media_version_id
+      assert_equal sync_log, episode.integration_episode(:apple).sync_log
     end
   end
 
-  describe "#increment_asset_wait" do
-    let(:episode) { create(:episode) }
+  describe "unscoped Apple resources" do
+    it "keeps raw Apple associations private" do
+      refute episode.respond_to?(:apple_sync_log)
+      refute episode.respond_to?(:apple_podcast_containers)
+      refute episode.respond_to?(:sync_logs)
 
-    it "creates a new status with incremented asset_processing_attempts" do
-      assert_difference -> { episode.apple_episode_delivery_statuses.count }, 1 do
-        new_status = episode.apple_status.increment_asset_wait
-        assert_equal 1, new_status.asset_processing_attempts
+      assert_raises(NoMethodError) { episode.apple_sync_log }
+      assert_raises(NoMethodError) { episode.apple_podcast_containers }
+      assert_raises(NoMethodError) { episode.sync_logs }
+    end
+
+    it "does not expose legacy Apple state methods" do
+      %i[
+        apple_episode_delivery_status
+        apple_episode_delivery_statuses
+        apple_mark_as_delivered!
+        apple_prepare_for_delivery!
+        apple_update_delivery_status
+      ].each do |method_name|
+        refute episode.respond_to?(method_name), method_name
       end
-    end
-
-    it "increments existing asset_processing_attempts" do
-      create(:apple_episode_delivery_status, episode: episode, asset_processing_attempts: 2)
-      new_status = episode.apple_status.increment_asset_wait
-      assert_equal 3, new_status.asset_processing_attempts
-    end
-
-    it "maintains other attributes when incrementing" do
-      create(:apple_episode_delivery_status,
-        episode: episode,
-        delivered: true,
-        source_url: "http://example.com/audio.mp3",
-        asset_processing_attempts: 1)
-
-      new_status = episode.apple_status.increment_asset_wait
-      assert_equal 2, new_status.asset_processing_attempts
-      assert new_status.delivered
-      assert_equal "http://example.com/audio.mp3", new_status.source_url
-    end
-
-    it "creates a new status with asset_processing_attempts set to 1 if no previous status exists" do
-      episode.apple_episode_delivery_statuses.destroy_all
-      assert_difference -> { episode.apple_episode_delivery_statuses.count }, 1 do
-        new_status = episode.apple_status.increment_asset_wait
-        assert_equal 1, new_status.asset_processing_attempts
-      end
-    end
-
-    it "returns the new status" do
-      result = episode.apple_status.increment_asset_wait
-      assert_instance_of Integrations::EpisodeDeliveryStatus, result
-      assert_equal episode.apple_episode_delivery_statuses.last, result
     end
   end
 
   describe "#publish_to_apple?" do
-    let(:episode) { create(:episode) }
-
     it "returns false when podcast has no apple config" do
       refute episode.publish_to_apple?
     end
 
-    it "returns false when apple config exists but publishing disabled" do
-      create(:apple_config, feed: create(:private_feed, podcast: episode.podcast), publish_enabled: false)
+    it "returns false when publishing is disabled" do
+      create(:apple_config, feed: create(:private_feed, podcast: podcast), publish_enabled: false)
+
       refute episode.publish_to_apple?
     end
 
-    it "returns true when apple config exists and publishing enabled" do
-      assert episode.publish_to_apple? == false
-      create(:apple_config, feed: create(:private_feed, podcast: episode.podcast), publish_enabled: true)
-      episode.podcast.reload
+    it "returns true when publishing is enabled" do
+      create(:apple_config, feed: create(:private_feed, podcast: podcast), publish_enabled: true)
+      podcast.reload
+
       assert episode.publish_to_apple?
-    end
-  end
-
-  describe "#apple_prepare_for_delivery!" do
-    let(:episode) { create(:episode) }
-    let(:container) { create(:apple_podcast_container, episode: episode) }
-    let(:delivery) { create(:apple_podcast_delivery, episode: episode, podcast_container: container) }
-    let(:delivery_file) { create(:apple_podcast_delivery_file, episode: episode, podcast_delivery: delivery) }
-
-    before do
-      delivery_file # Create the delivery file
-    end
-
-    it "soft deletes existing deliveries" do
-      assert_equal 1, episode.apple_podcast_deliveries.count
-      episode.apple_prepare_for_delivery!
-      assert_equal 0, episode.apple_podcast_deliveries.count
-      assert_equal 1, episode.apple_podcast_deliveries.with_deleted.count
-    end
-
-    it "resets associations" do
-      episode.apple_prepare_for_delivery!
-      refute episode.apple_podcast_deliveries.loaded?
-      refute episode.apple_podcast_delivery_files.loaded?
-      refute episode.apple_podcast_container.podcast_deliveries.loaded?
     end
   end
 end

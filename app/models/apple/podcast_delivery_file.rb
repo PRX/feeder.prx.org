@@ -10,7 +10,7 @@ module Apple
 
     default_scope { includes(:apple_sync_log) }
 
-    has_one :apple_sync_log, -> { podcast_delivery_files.apple }, foreign_key: :feeder_id, class_name: "SyncLog", autosave: true, dependent: :delete
+    has_one :apple_sync_log, -> { podcast_delivery_files.apple }, foreign_key: :feeder_id, class_name: "Apple::SyncLog", autosave: true, dependent: :delete
     belongs_to :podcast_delivery
     has_one :podcast_container, through: :podcast_delivery
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
@@ -94,7 +94,7 @@ module Apple
       Apple::ApiJoin.join_on(PODCAST_DELIVERY_FILE_ID_ATTR, pdfs, episode_bridge_results).each do |(pdf, row)|
         external_id = row.dig("api_response", "val", "data", "id")
         pdf.update!(api_marked_as_uploaded: true)
-        SyncLog.log!(integration: :apple, feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
+        SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
       end
 
       api.raise_bridge_api_error(errs) if errs.present?
@@ -134,11 +134,7 @@ module Apple
 
     def self.poll_podcast_delivery_files_state(api, episodes)
       # Assume that the delivery remote/local state is synced at this point
-      podcast_deliveries =
-        episodes
-          .map(&:feeder_episode)
-          .map(&:apple_podcast_deliveries)
-          .flatten
+      podcast_deliveries = episodes.flat_map(&:podcast_deliveries)
 
       results = get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
 
@@ -288,7 +284,7 @@ module Apple
          feeder_episode_id: pdf.episode.id,
          podcast_delivery_file_id: pdf.podcast_delivery.id})
 
-      SyncLog.log!(integration: :apple, feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
+      SyncLog.log!(feeder_id: pdf.id, feeder_type: :podcast_delivery_files, external_id: external_id, api_response: row)
 
       # Flush the cache on the podcast container
       podcast_delivery.delivery_files.reset

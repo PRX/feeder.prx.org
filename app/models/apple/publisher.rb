@@ -81,7 +81,6 @@ module Apple
 
       # success
       SyncLog.log!(
-        integration: :apple,
         feeder_id: public_feed.id,
         feeder_type: :feeds,
         external_id: show.apple_id,
@@ -96,11 +95,11 @@ module Apple
         # Only create if needed.
         sync_episodes!(eps)
 
-        eps.filter(&:apple_needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        eps.filter(&:needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
 
-        eps.filter(&:apple_needs_delivery?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        eps.filter(&:needs_delivery_processing?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
           process_delivery!(batch)
         end
 
@@ -242,6 +241,7 @@ module Apple
       state_name = filter_method.to_s.delete_prefix("processed_").delete_suffix("?").upcase
 
       problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
+      apple_episodes_by_feeder_id = eps.index_by(&:feeder_id)
 
       problem_pdfs.each do |pdf|
         Rails.logger.error("Podcast delivery file has #{state_name} state, marking as not delivered",
@@ -253,7 +253,7 @@ module Apple
         # Mark for reupload so the episode is picked up in the next publish cycle.
         # This will continue to fail if nothing changes, but gives users/admins
         # a chance to fix the source media format that Apple rejected.
-        pdf.episode.apple_mark_as_not_delivered!
+        apple_episodes_by_feeder_id.fetch(pdf.episode_id).mark_as_not_delivered!
       end
 
       if problem_pdfs.any?
@@ -270,7 +270,7 @@ module Apple
 
     def mark_asset_state_failures_as_not_delivered!(failure_eps)
       failure_eps.each do |ep|
-        ep.apple_mark_as_not_delivered!
+        ep.mark_as_not_delivered!
       end
     end
 
@@ -338,8 +338,8 @@ module Apple
 
     def increment_asset_wait!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.feeder_episode.apple_status.uploaded? }
-        eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
+        eps = eps.filter { |e| e.delivery_status.uploaded? }
+        eps.each(&:increment_asset_wait!)
       end
     end
 
@@ -470,7 +470,7 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         eps.each do |ep|
           Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
-          ep.feeder_episode.apple_mark_as_delivered!
+          ep.mark_as_delivered!
         end
       end
     end
@@ -480,7 +480,7 @@ module Apple
         media_infos.each do |mi|
           attrs = mi.source_attributes.merge(uploaded: true)
           Rails.logger.info("Marking episode as uploaded", {episode_id: mi.episode.feeder_episode.id}.merge(attrs))
-          mi.episode.feeder_episode.apple_update_delivery_status(attrs)
+          mi.episode.update_delivery_status(attrs)
         end
       end
     end
@@ -534,7 +534,7 @@ module Apple
     def log_asset_wait_duration!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         eps.each do |ep|
-          duration = ep&.feeder_episode&.measure_asset_processing_duration
+          duration = ep.measure_asset_processing_duration
           Rails.logger.info("Episode asset processing complete", {
             episode_id: ep.feeder_id,
             asset_wait_duration: duration
@@ -559,7 +559,7 @@ module Apple
 
       # Check for stuck episodes (>= STUCK_EPISODE_THRESHOLD)
       stuck = eps.select { |ep|
-        duration = ep.feeder_episode.measure_asset_processing_duration
+        duration = ep.measure_asset_processing_duration
         duration && duration >= Apple::STUCK_EPISODE_THRESHOLD
       }
 
@@ -570,9 +570,9 @@ module Apple
         stuck.each do |ep|
           Rails.logger.error("Episode stuck in asset processing", {
             episode_id: ep.feeder_id,
-            duration: ep.feeder_episode.measure_asset_processing_duration
+            duration: ep.measure_asset_processing_duration
           })
-          ep.apple_mark_as_not_delivered!
+          ep.mark_as_not_delivered!
         end
 
         raise error

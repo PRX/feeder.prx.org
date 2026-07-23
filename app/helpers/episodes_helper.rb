@@ -19,15 +19,18 @@ module EpisodesHelper
     return "draft" if episode.draft?
     return "not_publishable" unless episode.integration_feed_episode?(integration)
 
-    status = episode.episode_delivery_status(integration, true)
+    integration_episode = episode.integration_episode(integration)
+    return "disconnected" unless integration_episode
+
+    status = integration_episode.delivery_status(true)
 
     if !status
-      "not_found"
+      "disconnected"
     elsif status.new_record?
       "new"
     elsif !status.uploaded?
       "incomplete"
-    elsif episode.integration_error_state?(integration)
+    elsif integration_episode.error_state?
       "error"
     elsif !status.delivered?
       "processing"
@@ -37,8 +40,11 @@ module EpisodesHelper
   end
 
   def episode_integration_updated_at(integration, episode)
-    episode.sync_log(integration)&.updated_at ||
-      episode.episode_delivery_status(integration)&.created_at ||
+    integration_episode = episode.integration_episode(integration)
+    return episode.updated_at unless integration_episode
+
+    integration_episode.sync_log&.updated_at ||
+      integration_episode.delivery_status&.created_at ||
       episode.updated_at
   end
 

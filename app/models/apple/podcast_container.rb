@@ -8,10 +8,15 @@ module Apple
 
     default_scope { includes(:apple_sync_log) }
 
-    has_one :apple_sync_log, -> { podcast_containers.apple }, foreign_key: :feeder_id, class_name: "SyncLog", dependent: :destroy
+    has_one :apple_sync_log, -> { podcast_containers.apple }, foreign_key: :feeder_id, class_name: "Apple::SyncLog", dependent: :destroy
     has_many :podcast_deliveries, dependent: :destroy
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
+
+    # Existing legacy rows may be updated while the backfill is in progress,
+    # but every newly created container must already be show-scoped.
+    # TODO remove with cutover: validate every row and add the database constraint.
+    validates :apple_show_id, presence: true, on: :create
 
     alias_method :deliveries, :podcast_deliveries
     alias_method :deliveries=, :podcast_deliveries=
@@ -28,7 +33,13 @@ module Apple
 
       joined_rows = Apple::ApiJoin.join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         if row.nil?
-          stale_podcast_containers << ep.podcast_container if ep.podcast_container.present?
+          if (container = ep.podcast_container)
+            # Preserve the known-show context when a legacy container is
+            # removed before the backfill has stamped it.
+            # TODO remove with cutover after all legacy NULL-show rows are stamped.
+            container.apple_show_id ||= ep.apple_show_id
+            stale_podcast_containers << container
+          end
           next
         end
 
@@ -65,6 +76,7 @@ module Apple
         next if container.destroyed?
 
         episode = container.episode
+        apple_show_id = container.apple_show_id
 
         Rails.logger.warn("Resetting stale Apple podcast container",
           feeder_episode_id: episode.id,
@@ -75,16 +87,20 @@ module Apple
 
         container.destroy!
         episode.reload
-        episode.apple_mark_as_not_delivered!
+        Apple::EpisodeDeliveryStatus.update_status(
+          episode,
+          {delivered: false, uploaded: false, asset_processing_attempts: 0},
+          apple_show_id: apple_show_id
+        )
       end
 
       stale_podcast_containers
     end
 
     def self.create_podcast_containers(api, episodes)
-      # There is a 1:1 relationship between episodes and podcast containers w/
-      # key contraints on the episodes vendorId -- and you cannot destroy a
-      # podcast container.
+      # Apple has a 1:1 relationship between an Apple episode and its podcast
+      # container. A feeder episode can belong to multiple Apple shows, so its
+      # local containers are unique by feeder episode and Apple show.
       # We should have a local record of the podcast container, per the poll
       # method above.
       episodes_to_create = episodes.reject { |ep| ep.has_container? }
@@ -101,40 +117,50 @@ module Apple
     end
 
     def self.upsert_podcast_container(episode, row)
+      apple_show_id = episode.apple_show_id.presence || raise(MissingShowIdentityError, "Apple container state requires an Apple show ID")
       external_id = row.dig("api_response", "val", "data", "id")
       raise "Missing external_id in response" if external_id.blank?
 
-      (pc, action) =
-        if (pc = where(apple_episode_id: episode.apple_id,
-          external_id: external_id,
-          episode_id: episode.feeder_id,
-          vendor_id: episode.audio_asset_vendor_id).first)
-
-          pc.touch
-          [pc, :updated]
-        else
-          pc = create!(apple_episode_id: episode.apple_id,
-            external_id: external_id,
-            vendor_id: episode.audio_asset_vendor_id,
-            episode_id: episode.feeder_id)
-
-          [pc, :created]
-        end
+      attributes = {
+        apple_episode_id: episode.apple_id,
+        external_id: external_id,
+        vendor_id: episode.audio_asset_vendor_id,
+        apple_show_id: apple_show_id
+      }
+      pc, action = persist_podcast_container(episode.feeder_id, attributes)
 
       Rails.logger.info("#{action} local podcast container",
         {podcast_container_id: pc.id,
          action: action,
          external_id: external_id,
-         feeder_episode_id: episode.feeder_id})
+         feeder_episode_id: episode.feeder_id,
+         apple_show_id: episode.apple_show_id})
 
-      SyncLog.log!(integration: :apple, feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
+      SyncLog.log!(feeder_id: pc.id, feeder_type: :podcast_containers, external_id: external_id, api_response: row)
 
       # reset the episode's podcast container cached value
-      pc.reload if action == :updated
+      pc.reload unless action == :created
       episode.feeder_episode.reload
 
       pc
     end
+
+    def self.persist_podcast_container(episode_id, attributes)
+      containers = where(episode_id: episode_id)
+      pc = containers.find_by(apple_show_id: attributes[:apple_show_id])
+      # TODO remove with cutover after all legacy NULL-show rows are stamped.
+      pc ||= containers.find_by(apple_show_id: nil) if attributes[:apple_show_id].present?
+
+      if pc
+        action = pc.apple_show_id.nil? ? :adopted : :updated
+        pc.update!(attributes)
+        pc.touch
+        [pc, action]
+      else
+        [create!(attributes.merge(episode_id: episode_id)), :created]
+      end
+    end
+    private_class_method :persist_podcast_container
 
     def self.get_podcast_containers_via_episodes(api, episodes)
       # Fetch the podcast containers from the episodes side of the API

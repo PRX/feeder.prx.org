@@ -17,6 +17,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
       pc.episode = episode
       pc.vendor_id = "123"
       pc.apple_episode_id = "123"
+      pc.apple_show_id = "show-1"
       pc.save!
       pc
     end

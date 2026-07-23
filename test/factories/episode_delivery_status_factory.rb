@@ -13,10 +13,11 @@ FactoryBot.define do
     source_fetch_count { 0 }
   end
 
-  factory :apple_episode_delivery_status, class: "Integrations::EpisodeDeliveryStatus" do
+  factory :apple_episode_delivery_status, class: "Apple::EpisodeDeliveryStatus" do
     association :episode
 
     integration { Integrations::EpisodeDeliveryStatus.integrations[:apple] }
+    apple_show_id { "show-1" }
     delivered { false }
     asset_processing_attempts { 0 }
     source_url { "http://example.com/audio.mp3" }
@@ -27,7 +28,7 @@ FactoryBot.define do
     source_fetch_count { 0 }
   end
 
-  factory :megaphone_episode_delivery_status, class: "Integrations::EpisodeDeliveryStatus" do
+  factory :megaphone_episode_delivery_status, class: "Megaphone::EpisodeDeliveryStatus" do
     association :episode
 
     integration { Integrations::EpisodeDeliveryStatus.integrations[:megaphone] }

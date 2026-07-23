@@ -106,7 +106,7 @@ describe EpisodeMegaphoneImport do
     _(episode.uncut.status).must_equal "created"
 
     # Status is null on initial import
-    _(episode.episode_delivery_status(:megaphone)).must_be_nil
+    _(episode.megaphone_episode.delivery_status).must_be_nil
 
     # mark the uncut as complete, as if copy media task processed
     episode.uncut.status = "complete"
@@ -155,8 +155,8 @@ describe EpisodeMegaphoneImport do
 
     _(episode.media_ready?).must_equal true
     episode_import.finish_sync!
-    delivery_status = episode.episode_delivery_status(:megaphone)
-    sync_log = episode.sync_log(:megaphone)
+    delivery_status = episode.megaphone_episode.delivery_status
+    sync_log = episode.megaphone_episode.sync_log
 
     _(delivery_status).wont_be_nil
     _(delivery_status.source_filename).must_match(/_#{episode.media_version_id}\.mp3/)

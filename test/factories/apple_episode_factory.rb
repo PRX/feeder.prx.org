@@ -8,6 +8,15 @@ FactoryBot.define do
       feeder_episode { create(:episode) }
       api_response { build(:apple_episode_api_response, item_guid: feeder_episode.item_guid) }
       apple_hosted_audio_asset_container_id { "456" }
+      apple_show_id { "show-1" }
+      create_sync_log { true }
+    end
+
+    after(:build) do |apple_episode, evaluator|
+      if apple_episode.apple_show_id.blank?
+        apple_show_id = evaluator.apple_show_id
+        apple_episode.define_singleton_method(:apple_show_id) { apple_show_id }
+      end
     end
 
     # set a complete episode factory varient
@@ -26,7 +35,9 @@ FactoryBot.define do
         end
       end
       after(:build) do |apple_episode, evaluator|
-        container = create(:apple_podcast_container, episode: apple_episode.feeder_episode)
+        container = create(:apple_podcast_container,
+          episode: apple_episode.feeder_episode,
+          apple_show_id: apple_episode.apple_show_id)
         delivery = create(:apple_podcast_delivery, episode: apple_episode.feeder_episode, podcast_container: container)
         _delivery_file = create(:apple_podcast_delivery_file,
           delivery: delivery,
@@ -45,7 +56,31 @@ FactoryBot.define do
     after(:build) do |apple_episode, evaluator|
       api_response = evaluator.api_response
       external_id = api_response["api_response"]["api_response"]["val"]["data"]["id"]
-      apple_episode.feeder_episode.create_apple_sync_log!(external_id: external_id, **api_response) unless apple_episode.feeder_episode.apple_sync_log.present?
+      sync_log_attrs = {external_id: external_id}.merge(api_response)
+      apple_show_id = apple_episode.apple_show_id.presence || evaluator.apple_show_id.presence
+
+      if evaluator.create_sync_log && apple_show_id.present?
+        existing_sync_log = SyncLog.apple.episodes.find_by(
+          feeder_id: apple_episode.feeder_episode.id,
+          apple_show_id: apple_show_id
+        )
+        sync_log_attrs[:apple_show_id] = apple_show_id
+
+        unless existing_sync_log.present?
+          SyncLog.create!(sync_log_attrs.merge(
+            integration: :apple,
+            feeder_type: :episodes,
+            feeder_id: apple_episode.feeder_episode.id
+          ))
+        end
+      elsif evaluator.create_sync_log && !SyncLog.apple.episodes.exists?(feeder_id: apple_episode.feeder_episode.id)
+        sync_log = SyncLog.new(sync_log_attrs.merge(
+          integration: :apple,
+          feeder_type: :episodes,
+          feeder_id: apple_episode.feeder_episode.id
+        ))
+        sync_log.save!(validate: false)
+      end
     end
 
     initialize_with { new(show: show, feeder_episode: feeder_episode, api: api) }

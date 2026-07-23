@@ -54,7 +54,7 @@ module Megaphone
     # if not uploaded, and media ready, try to set that on the next update
     # if uploaded and not delivered, check mp status, see if processing done
     def check_status_episodes!
-      episodes = private_feed.episodes.unfinished(:megaphone)
+      episodes = Megaphone::Episode.unfinished(private_feed.episodes)
       timeout_at = Time.now.utc + WAIT_TIMEOUT
 
       while episodes.size > 0 && Time.now.utc < timeout_at
@@ -88,7 +88,7 @@ module Megaphone
 
         # make sure we get the latest status on the episode
         ep.reload
-        episode_status = ep.episode_delivery_status(:megaphone)
+        episode_status = megaphone_episode.delivery_status
         if !episode_status.delivered? || !episode_status.uploaded?
           remaining << ep
         end
@@ -97,7 +97,7 @@ module Megaphone
 
     def create_and_update_episodes!
       megaphone_episodes = []
-      private_feed.episodes.unfinished(:megaphone).each do |ep|
+      Megaphone::Episode.unfinished(private_feed.episodes).each do |ep|
         # see if we can find it by guid or megaphone id
         if (megaphone_episode = Megaphone::Episode.find_by_episode(megaphone_podcast, ep))
           megaphone_episode.update!(ep)
@@ -117,7 +117,7 @@ module Megaphone
     def delete_episodes!
       megaphone_episodes = []
       podcast.episodes.with_deleted.where.not(id: private_feed.episodes).each do |ep|
-        next unless ep.episode_delivery_status(:megaphone).present?
+        next unless ep.megaphone_episode.delivery_status.present?
         if (megaphone_episode = Megaphone::Episode.find_by_episode(megaphone_podcast, ep))
           megaphone_episode.delete!
           megaphone_episodes << megaphone_episode

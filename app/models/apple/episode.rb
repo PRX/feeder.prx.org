@@ -6,7 +6,9 @@ module Apple
     attr_accessor :show,
       :feeder_episode,
       :api,
-      :apple_episode_update_attributes
+      :episode_update_attributes
+
+    delegate :media_version_id, :podcast_id, to: :feeder_episode
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
@@ -15,7 +17,7 @@ module Apple
     def self.prepare_for_delivery(episodes)
       episodes.map do |ep|
         Rails.logger.info("Preparing episode #{ep.feeder_id} for delivery", {episode_id: ep.feeder_id})
-        ep.feeder_episode.apple_prepare_for_delivery!
+        ep.prepare_for_delivery!
 
         ep
       end
@@ -40,7 +42,7 @@ module Apple
       api.bridge_remote_and_retry!("getEpisodes", episodes.map(&:get_episode_bridge_params))
     end
 
-    # Creates the `#apple_sync_log` attributes for the given episodes
+    # Creates the `#sync_log` attributes for the given episodes
     # and returns the created `SyncLog` records
     # This indicates that there is a remote pair for the episode
     def self.poll_episode_state(api, show, episodes)
@@ -117,7 +119,7 @@ module Apple
       upsert_sync_logs(episodes, episode_bridge_results)
 
       Apple::ApiJoin.join_on_apple_episode_id(episodes, episode_bridge_results).each do |(ep, row)|
-        ep.feeder_episode.apple_mark_as_not_delivered! if mark_as_not_delivered
+        ep.mark_as_not_delivered! if mark_as_not_delivered
         Rails.logger.info("Removed audio container reference for episode", {episode_id: ep.feeder_id})
       end
 
@@ -174,20 +176,17 @@ module Apple
     def self.upsert_sync_log(ep, res)
       apple_id = res.dig("api_response", "val", "data", "id")
       raise "Missing remote apple id" unless apple_id.present?
+      apple_show_id = ep.apple_show_id.presence || raise(MissingShowIdentityError, "Apple sync state requires an Apple show ID")
 
       sl = SyncLog.log!(
-        integration: :apple,
         feeder_id: ep.feeder_episode.id,
         feeder_type: :episodes,
         external_id: apple_id,
-        api_response: res
+        api_response: res,
+        apple_show_id: apple_show_id
       )
       # reload local state
-      if ep.feeder_episode.apple_sync_log.nil?
-        ep.feeder_episode.reload
-      else
-        ep.feeder_episode.apple_sync_log.reload
-      end
+      ep.sync_log&.reload || ep.feeder_episode.reload
       sl
     end
 
@@ -198,15 +197,17 @@ module Apple
     end
 
     def synced_with_integration?
-      synced_with_apple?
+      audio_asset_state_success? && has_delivery? && !drafting?
     end
+    alias_method :synced_with_apple?, :synced_with_integration?
 
     def integration_new?
-      apple_new?
+      apple_json.blank?
     end
+    alias_method :apple_new?, :integration_new?
 
     def api_response
-      feeder_episode.apple_sync_log&.api_response
+      sync_log&.api_response
     end
 
     def guid
@@ -240,7 +241,15 @@ module Apple
     end
 
     def sync_log
-      SyncLog.apple.episodes.find_by(feeder_id: feeder_episode.id, feeder_type: :episodes)
+      show_id = scoped_apple_show_id!
+      logs = SyncLog.apple.episodes.where(feeder_id: feeder_episode.id, feeder_type: :episodes)
+
+      # TODO remove with cutover once all legacy NULL-show rows are stamped.
+      logs.find_by(apple_show_id: show_id) || logs.find_by(apple_show_id: nil)
+    end
+
+    def apple_show_id
+      show.id if show.respond_to?(:id)
     end
 
     def self.get_episode_bridge_params(api, feeder_id, apple_id)
@@ -312,7 +321,7 @@ module Apple
       create_params[:data][:attributes].delete(:guid)
 
       ep_attrs = create_params[:data][:attributes]
-      ep_attrs = ep_attrs.merge(apple_episode_update_attributes || {})
+      ep_attrs = ep_attrs.merge(episode_update_attributes || {})
 
       create_params[:data][:attributes] = ep_attrs
       create_params
@@ -410,14 +419,6 @@ module Apple
       apple_data
     end
 
-    def apple_new?
-      !apple_persisted?
-    end
-
-    def apple_persisted?
-      apple_json.present?
-    end
-
     def publishing_state
       apple_json&.dig("attributes", "publishingState")
     end
@@ -489,15 +490,11 @@ module Apple
     def needs_delivery?
       return true if missing_container?
 
-      podcast_container&.needs_delivery? || feeder_episode.apple_needs_delivery? || needs_media_version?
+      podcast_container&.needs_delivery? || needs_delivery_processing? || needs_media_version?
     end
 
     def has_delivery?
       !needs_delivery?
-    end
-
-    def synced_with_apple?
-      audio_asset_state_success? && has_delivery? && !drafting?
     end
 
     def waiting_for_asset_state?
@@ -517,55 +514,82 @@ module Apple
     end
 
     def podcast_container
-      feeder_episode.podcast_container
+      show_id = scoped_apple_show_id!
+      containers = Apple::PodcastContainer.where(episode_id: feeder_id)
+      # TODO remove with cutover after all legacy NULL-show rows are stamped.
+      containers.find_by(apple_show_id: show_id) || containers.find_by(apple_show_id: nil)
     end
 
     def podcast_deliveries
-      feeder_episode.apple_podcast_deliveries
+      podcast_container&.podcast_deliveries || Apple::PodcastDelivery.none
     end
 
     def podcast_delivery_files
-      feeder_episode.apple_podcast_delivery_files
+      podcast_container&.podcast_delivery_files || Apple::PodcastDeliveryFile.none
     end
 
-    def apple_sync_log
-      feeder_episode.apple_sync_log
+    def mark_as_not_delivered!
+      update_delivery_status(delivered: false, uploaded: false, asset_processing_attempts: 0)
     end
 
-    def apple_sync_log=(sl)
-      feeder_episode.apple_sync_log = sl
+    def mark_as_delivered!
+      update_delivery_status(delivered: true, uploaded: true, asset_processing_attempts: 0)
     end
 
-    def apple_mark_as_not_delivered!
-      feeder_episode.apple_mark_as_not_delivered!
+    def increment_asset_wait!
+      update_delivery_status(
+        asset_processing_attempts: delivery_status.asset_processing_attempts.to_i + 1
+      )
     end
 
-    def apple_episode_delivery_status
-      feeder_episode.apple_episode_delivery_status
+    def update_delivery_status(attrs)
+      Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: scoped_apple_show_id!)
     end
 
-    def apple_episode_delivery_statuses
-      feeder_episode.apple_episode_delivery_statuses
+    def delivery_status(_with_default = true)
+      Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: scoped_apple_show_id!)
+    end
+
+    def delivery_statuses
+      show_id = scoped_apple_show_id!
+
+      # TODO remove with cutover after all legacy NULL-show rows are stamped.
+      Apple::EpisodeDeliveryStatus
+        .where(episode_id: feeder_id, apple_show_id: [show_id, nil])
+        .order(created_at: :desc)
+    end
+
+    # The aggregate #needs_delivery? predicate answers whether any delivery work
+    # remains. This narrower predicate gates the Publisher#process_delivery!
+    # phase after any necessary upload has completed.
+    def needs_delivery_processing?
+      delivery_status.delivered == false
+    end
+
+    def needs_upload?
+      delivery_status.needs_upload?
+    end
+
+    def prepare_for_delivery!
+      podcast_deliveries.each(&:destroy)
+      podcast_deliveries.reset
+      podcast_delivery_files.reset
+      podcast_container&.podcast_deliveries&.reset
+      mark_as_not_delivered!
+    end
+
+    def measure_asset_processing_duration
+      Integrations::EpisodeDeliveryStatus.measure_asset_processing_duration(delivery_statuses)
     end
 
     alias_method :container, :podcast_container
     alias_method :deliveries, :podcast_deliveries
     alias_method :delivery_files, :podcast_delivery_files
-    alias_method :delivery_status, :apple_episode_delivery_status
-    alias_method :delivery_statuses, :apple_episode_delivery_statuses
-    alias_method :apple_status, :apple_episode_delivery_status
 
-    # Delegate methods to feeder_episode
-    def method_missing(method_name, *arguments, &block)
-      if feeder_episode.respond_to?(method_name)
-        feeder_episode.send(method_name, *arguments, &block)
-      else
-        super
-      end
-    end
+    private
 
-    def respond_to_missing?(method_name, include_private = false)
-      feeder_episode.respond_to?(method_name) || super
+    def scoped_apple_show_id!
+      apple_show_id.presence || raise(MissingShowIdentityError, "Apple state requires an Apple show ID")
     end
   end
 end
