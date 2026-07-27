@@ -352,8 +352,8 @@ describe Episode do
       refute_empty container.podcast_deliveries
       refute_empty apple_episode.podcast_deliveries
       episode.publish!
-      assert apple_episode.delivery_status.present?
-      assert apple_episode.delivery_status.delivered == false
+      assert apple_episode.delivery_status(true).present?
+      assert apple_episode.delivery_status(true).delivered == false
 
       assert apple_episode.needs_delivery_processing?
     end

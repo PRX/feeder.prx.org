@@ -338,7 +338,7 @@ module Apple
 
     def increment_asset_wait!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.delivery_status.uploaded? }
+        eps = eps.filter { |e| e.delivery_status(true).uploaded? }
         eps.each(&:increment_asset_wait!)
       end
     end

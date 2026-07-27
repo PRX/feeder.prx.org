@@ -386,7 +386,8 @@ describe Apple::Episode do
     }
     it "should be true if the delivery status is nil or has nil attrs" do
       assert apple_episode.delivery_statuses.destroy_all
-      assert apple_episode.delivery_status.source_media_version_id.nil?
+      assert_nil apple_episode.delivery_status
+      assert apple_episode.delivery_status(true).source_media_version_id.nil?
 
       assert_equal true, apple_episode.needs_media_version?
     end

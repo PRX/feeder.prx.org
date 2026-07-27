@@ -49,7 +49,7 @@ FactoryBot.define do
         create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
         v1 = apple_episode.feeder_episode.cut_media_version!
 
-        apple_episode.delivery_status.update!(delivered: true, source_media_version_id: v1.id)
+        apple_episode.delivery_status(true).update!(delivered: true, source_media_version_id: v1.id)
       end
     end
 

@@ -536,7 +536,7 @@ module Apple
 
     def increment_asset_wait!
       update_delivery_status(
-        asset_processing_attempts: delivery_status.asset_processing_attempts.to_i + 1
+        asset_processing_attempts: delivery_status(true).asset_processing_attempts.to_i + 1
       )
     end
 
@@ -544,8 +544,12 @@ module Apple
       Apple::EpisodeDeliveryStatus.update_status(feeder_episode, attrs, apple_show_id: scoped_apple_show_id!)
     end
 
-    def delivery_status(_with_default = true)
-      Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: scoped_apple_show_id!)
+    def delivery_status(with_default = false)
+      if with_default
+        Apple::EpisodeDeliveryStatus.current_or_default(feeder_episode, apple_show_id: scoped_apple_show_id!)
+      else
+        Apple::EpisodeDeliveryStatus.current(feeder_episode, apple_show_id: scoped_apple_show_id!)
+      end
     end
 
     def delivery_statuses
@@ -561,11 +565,11 @@ module Apple
     # remains. This narrower predicate gates the Publisher#process_delivery!
     # phase after any necessary upload has completed.
     def needs_delivery_processing?
-      delivery_status.delivered == false
+      delivery_status(true).delivered == false
     end
 
     def needs_upload?
-      delivery_status.needs_upload?
+      delivery_status(true).needs_upload?
     end
 
     def prepare_for_delivery!
