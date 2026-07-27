@@ -22,16 +22,63 @@ module Apple
     FILE_ASSET_ROLE_PODCAST_AUDIO = "PodcastSourceAudio"
     SOURCE_URL_EXP_BUFFER = 10.minutes
 
-    def self.poll_podcast_container_state(api, episodes)
+    def self.poll_podcast_container_state(api, episodes, raise_on_reset: true)
       results = get_podcast_containers_via_episodes(api, episodes)
+      stale_podcast_containers = []
 
-      Apple::ApiJoin.join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
-        next if row.nil?
+      joined_rows = Apple::ApiJoin.join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
+        if row.nil?
+          stale_podcast_containers << ep.podcast_container if ep.podcast_container.present?
+          next
+        end
+
         apple_id = row.dig("api_response", "val", "data", "id")
         raise "missing apple id!" unless apple_id.present?
 
         upsert_podcast_container(ep, row)
       end
+
+      if stale_podcast_containers.any?
+        if raise_on_reset
+          reset_stale_podcast_containers_and_retry!(stale_podcast_containers)
+        else
+          # Poll-only callers (e.g. Apple::Publisher#poll!) have no publishing
+          # pipeline to retry, so repair the local state and keep going.
+          reset_stale_podcast_container_records!(stale_podcast_containers)
+        end
+      end
+
+      joined_rows
+    end
+
+    def self.reset_stale_podcast_containers_and_retry!(containers)
+      stale_podcast_containers = reset_stale_podcast_container_records!(containers)
+      raise Apple::RetryPublishingError.new(
+        "Reset #{stale_podcast_containers.length} stale Apple podcast containers"
+      )
+    end
+
+    def self.reset_stale_podcast_container_records!(containers)
+      stale_podcast_containers = containers.compact.uniq(&:id)
+
+      stale_podcast_containers.each do |container|
+        next if container.destroyed?
+
+        episode = container.episode
+
+        Rails.logger.warn("Resetting stale Apple podcast container",
+          feeder_episode_id: episode.id,
+          apple_episode_id: container.apple_episode_id,
+          podcast_container_id: container.id,
+          vendor_id: container.vendor_id,
+          external_id: container.external_id)
+
+        container.destroy!
+        episode.reload
+        episode.apple_mark_as_not_delivered!
+      end
+
+      stale_podcast_containers
     end
 
     def self.create_podcast_containers(api, episodes)
@@ -96,21 +143,23 @@ module Apple
 
       # Rather than mangling and persisting the enumerated view of the containers in the episodes,
       # just re-fetch the podcast containers from the non-list podcast container endpoint
-      formatted_bridge_params =
-        Apple::ApiJoin.join_on_apple_episode_id(episodes, response).map do |(episode, row)|
-          get_urls_for_episode_podcast_containers(api, row).map do |url|
-            get_podcast_containers_bridge_param(episode.apple_id, url)
-          end
-        end
+      formatted_bridge_params = Apple::ApiJoin.join_on_apple_episode_id(episodes, response, left_join: true).flat_map do |(episode, row)|
+        next [] if row.nil?
 
-      formatted_bridge_params = formatted_bridge_params.flatten
+        get_urls_for_episode_podcast_containers(api, row).map do |url|
+          get_podcast_containers_bridge_param(episode.apple_id, url)
+        end
+      end
 
       api.bridge_remote_and_retry!("getPodcastContainers", formatted_bridge_params, batch_size: 2)
     end
 
     def self.get_urls_for_episode_podcast_containers(api, episode_podcast_containers_json)
-      containers_json = episode_podcast_containers_json["api_response"]["val"]["data"]
-      raise "Unsupported number of podcast containers for episode: #{ep.feeder_id}" if containers_json.length > 1
+      containers_json = episode_podcast_containers_json["api_response"]["val"]["data"] || []
+      if containers_json.length > 1
+        apple_episode_id = episode_podcast_containers_json.dig("request_metadata", "apple_episode_id")
+        raise "Unsupported number of podcast containers for episode: #{apple_episode_id}"
+      end
 
       containers_json.map do |podcast_container_json|
         api.join_url("podcastContainers/#{podcast_container_json["id"]}").to_s

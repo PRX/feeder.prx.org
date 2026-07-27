@@ -144,7 +144,7 @@ module Apple
           integration: :apple,
           feeder_id: public_feed.id,
           feeder_type: :feeds,
-          external_id: apple_json["api_response"]["val"]["data"]["id"],
+          external_id: apple_json.dig("api_response", "val", "data", "id"),
           api_response: apple_json
         )
       end
@@ -155,7 +155,7 @@ module Apple
       Rails.logger.info("Creating show", show_data: data)
       resp = api.post("shows", data)
 
-      api.response(resp)
+      api.response!(resp)
     end
 
     def update_show!(sync)
@@ -168,7 +168,7 @@ module Apple
       # api.response(resp)
 
       resp = api.get("shows/#{sync.external_id}")
-      api.response(resp)
+      api.response!(resp)
     end
 
     def create_or_update_show(sync)

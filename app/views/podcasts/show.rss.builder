@@ -128,7 +128,13 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
         xml.link ep.url || ep.enclosure_url(@feed)
         xml.description { xml.cdata!(episode_description(ep, @feed)) }
         # TODO: may not reflect the content_type/file_size of replaced media
-        xml.enclosure(url: ep.enclosure_url(@feed), type: ep.media_content_type(@feed), length: ep.media_file_size) if ep.media?
+        if ep.media?
+          xml.enclosure(
+            url: ep.enclosure_url(feed: @feed),
+            type: ep.enclosure_content_type(feed: @feed),
+            length: ep.enclosure_file_size(feed: @feed)
+          )
+        end
 
         xml.itunes :title, ep.clean_title unless ep.clean_title.blank?
         xml.itunes :subtitle, ep.subtitle unless ep.subtitle.blank?
@@ -168,9 +174,9 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
           if ep.media?
             # TODO: may not reflect the file_size/content_type/ of replaced media
             xml.media(:content,
-              fileSize: ep.media_file_size,
-              type: ep.media_content_type(@feed),
-              url: ep.enclosure_url(@feed))
+              fileSize: ep.enclosure_file_size(feed: @feed),
+              type: ep.enclosure_content_type(feed: @feed),
+              url: ep.enclosure_url(feed: @feed))
           end
 
           if ep.ready_transcript

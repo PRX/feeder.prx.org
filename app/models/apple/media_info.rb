@@ -56,7 +56,7 @@ module Apple
           source_media_version_id: media_version.to_i,
           source_size: content_length.to_i,
           source_url: cdn_url,
-          source_filename: filename_prefix(count) + episode.enclosure_filename,
+          source_filename: filename_prefix(count) + episode.enclosure_file_name,
           enclosure_url: episode.enclosure_url
         )
       end

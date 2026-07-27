@@ -222,19 +222,6 @@ describe Apple::Episode do
     end
   end
 
-  describe "#enclosure_filename" do
-    let(:episode) { create(:episode_with_media, podcast: podcast) }
-
-    it "should return the filename from the enclosure url" do
-      assert_equal "audio.flac", apple_episode.enclosure_filename
-    end
-
-    it "uses the private feed enclosure" do
-      private_feed.enclosure_template = "http://foo.bar/any/where/whatev{feed_extension}"
-      assert_equal "whatev.flac", apple_episode.enclosure_filename
-    end
-  end
-
   describe "#publish" do
     it "should call poll! at the conclusion of the episode publishing" do
       mock = Minitest::Mock.new

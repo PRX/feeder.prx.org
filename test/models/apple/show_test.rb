@@ -228,6 +228,21 @@ describe Apple::Show do
       end
     end
 
+    it "raises an api error when show sync returns an http error" do
+      apple_show.sync_log.update!(api_response: {"before" => true})
+      response = OpenStruct.new(body: "<html>503 Service Unavailable</html>", code: "503")
+
+      apple_show.api.stub(:get, response) do
+        error = assert_raises(Apple::ApiError) do
+          apple_show.sync!
+        end
+
+        assert_includes error.message, "HTTP resp code:503"
+        assert_includes error.message, "503 Service Unavailable"
+        assert_equal({"before" => true}, apple_show.sync_log.reload.api_response)
+      end
+    end
+
     it "logs an incomplete sync record if the upsert fails" do
       raises_exception = ->(_arg) { raise Apple::ApiError.new("Error", OpenStruct.new(code: 200, body: "body")) }
 

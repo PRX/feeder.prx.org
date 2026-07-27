@@ -91,13 +91,6 @@ describe Feed do
       feed.update(enclosure_prefix: "http://foo.bar")
       refute_nil feed.enclosure_updated_at
     end
-
-    it "sets a timestamp when the template changes" do
-      assert_nil feed.enclosure_updated_at
-
-      feed.update(enclosure_template: "http://foo.bar")
-      refute_nil feed.enclosure_updated_at
-    end
   end
 
   describe "#set_default_episodes" do
@@ -195,12 +188,6 @@ describe Feed do
         feed1.file_name = s
         refute feed1.valid?
       end
-    end
-
-    it "has a default enclosure template" do
-      feed = Podcast.new.tap { |p| p.valid? }
-      assert_match(/^http/, Feed.enclosure_template_default)
-      assert_equal feed.enclosure_template, Feed.enclosure_template_default
     end
 
     it "has a label if it is not default" do

@@ -59,8 +59,8 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     if represented.podcast && represented.media?
       {
         href: represented.enclosure_url,
-        type: represented.media_content_type,
-        size: represented.media_file_size,
+        type: represented.enclosure_content_type,
+        size: represented.enclosure_file_size,
         duration: represented.media_duration.to_i,
         status: represented.media_status
       }

@@ -415,7 +415,7 @@ describe Episode do
       assert_requested :head, episode_3.enclosure_url
     end
 
-    it "does not follow more than 10 redirects" do
+    it "does not follow more than 5 redirects" do
       uri_1 = episode_1.enclosure_url
 
       stub_request(:head, uri_1)
@@ -423,7 +423,7 @@ describe Episode do
 
       episode_1.head_request
 
-      assert_requested :head, episode_1.enclosure_url, times: 10
+      assert_requested :head, episode_1.enclosure_url, times: 6
     end
 
     it "rescues errors after making head requests" do
@@ -441,6 +441,12 @@ describe Episode do
       assert_requested :head, episode_1.enclosure_url
       assert_requested :head, episode_2.enclosure_url
       assert_requested :head, episode_3.enclosure_url
+    end
+
+    it "doesn't request overridden enclosure urls" do
+      episode_1.enclosure_override_url = "http://not.dovetail/file.mp3"
+      episode_1.head_request
+      refute_requested :head, episode_1.enclosure_url
     end
   end
 end
