@@ -13,11 +13,7 @@ gem "clickhouse-activerecord"
 gem "next_rails"
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.6"
-if next?
-  gem "rails", "~> 8.1.3"
-else
-  gem "rails", "~> 8.0.5"
-end
+gem "rails", "~> 8.1.3"
 
 # caching
 gem "hiredis", "~> 0.6.3"
