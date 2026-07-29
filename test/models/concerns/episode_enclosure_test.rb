@@ -29,6 +29,10 @@ class EpisodeEnclosureTest < ActiveSupport::TestCase
       assert_equal "https://#{dt_host}/#{pod.id}/#{ep.guid}/one.mp3", ep.enclosure_url(prefix: false)
     end
 
+    it "overrides extensions" do
+      assert_equal "https://#{dt_host}/#{pod.id}/#{ep.guid}/one.m3u8", ep.enclosure_url(ext: "m3u8")
+    end
+
     it "includes custom feed slugs" do
       assert_equal "https://#{dt_host}/#{pod.id}/#{ep.guid}/one.mp3", ep.enclosure_url(feed: f1)
       assert_equal "https://the/prefix/#{dt_host}/#{pod.id}/feed-2/#{ep.guid}/one.flac", ep.enclosure_url(feed: f2)
@@ -61,14 +65,20 @@ class EpisodeEnclosureTest < ActiveSupport::TestCase
       assert_equal "audio/flac", ep.enclosure_content_type(feed: f3)
     end
 
-    it "returns media content_type for overrides and videos" do
-      ep.medium = "video"
+    it "returns media content_type for passthru and overrides" do
+      ep.medium = "passthru"
       c1.mime_type = "video/something"
       assert_equal "video/something", ep.enclosure_content_type
 
       ep.medium = "override"
       ep.build_external_media_resource(mime_type: "foo/bar")
       assert_equal "foo/bar", ep.enclosure_content_type
+    end
+
+    it "returns mp3 for videos" do
+      ep.medium = "video"
+      c1.mime_type = "video/something"
+      assert_equal "audio/mpeg", ep.enclosure_content_type
     end
 
     it "forces unsupported mimes to mp3" do
@@ -93,13 +103,20 @@ class EpisodeEnclosureTest < ActiveSupport::TestCase
       assert_equal "no-extension.flac", ep.enclosure_file_name(feed: f2)
     end
 
-    it "returns original filenames of video" do
-      ep.medium = "video"
+    it "returns original filenames of passthru" do
+      ep.medium = "passthru"
       c1.original_url = "http://some.where/any.thing.here"
       assert_equal "any.thing.here", ep.enclosure_file_name
     end
 
-    it "forces unsupperted extensions to mp3" do
+    it "returns mp3s for videos" do
+      ep.medium = "video"
+      c1.original_url = "http://some.where/any.thing.mp4"
+      assert_equal "any.thing.mp3", ep.enclosure_file_name
+      assert_equal "any.thing.m3u8", ep.enclosure_file_name(ext: "m3u8")
+    end
+
+    it "forces unsupported extensions to mp3" do
       c1.mime_type = "audio/ogg"
       assert_equal "one.mp3", ep.enclosure_file_name
       assert_equal "one.flac", ep.enclosure_file_name(feed: f2)
@@ -107,14 +124,39 @@ class EpisodeEnclosureTest < ActiveSupport::TestCase
   end
 
   describe "#enclosure_file_size" do
-    it "just returns the media file size for now" do
+    it "just returns the media file size" do
       assert_equal 199, ep.enclosure_file_size
+    end
+
+    it "returns mp3 file size for videos" do
+      ep.medium = "video"
+      assert_equal 1, ep.enclosure_file_size
     end
 
     it "returns override file size" do
       ep.medium = "override"
       ep.build_external_media_resource(file_size: 1234)
       assert_equal 1234, ep.enclosure_file_size
+    end
+  end
+
+  describe "#enclosure_alt_url" do
+    it "returns the enclosure with a different extension" do
+      assert_nil ep.enclosure_alt_url
+
+      ep.medium = "video"
+      assert_equal "https://#{dt_host}/#{pod.id}/#{ep.guid}/one.m3u8", ep.enclosure_alt_url
+      assert_equal "https://the/prefix/#{dt_host}/#{pod.id}/feed-2/#{ep.guid}/one.m3u8", ep.enclosure_alt_url(feed: f2)
+      assert_equal "https://#{dt_host}/#{pod.id}/feed-3/#{ep.guid}/one.m3u8?auth=tok1", ep.enclosure_alt_url(feed: f3, auth: true)
+    end
+  end
+
+  describe "#enclosure_alt_content_type" do
+    it "returns hls video mime type" do
+      assert_nil ep.enclosure_alt_content_type
+
+      ep.medium = "video"
+      assert_equal "application/x-mpegURL", ep.enclosure_alt_content_type
     end
   end
 end
