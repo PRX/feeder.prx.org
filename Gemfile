@@ -7,7 +7,7 @@ gem "bootsnap", require: false
 gem "clickhouse-activerecord"
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.6"
-gem "rails", "~> 7.1"
+gem "rails", "~> 7.2.3"
 
 # caching
 gem "hiredis", "~> 0.6.3"
