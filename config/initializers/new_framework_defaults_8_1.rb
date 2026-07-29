@@ -50,14 +50,12 @@
 # The current behavior of not raising an error has been deprecated, and this configuration option will be removed in
 # Rails 8.2.
 #++
-# DEFERRED, but it has a deadline -- the opt-out disappears in Rails 8.2.
-# The four Rollups:: models are bare ActiveRecord::Base on the ClickHouse
-# connection with no primary key and no implicit_order_column, so they have
-# nothing to fall back on and any `.first` / `.last` on one of those relations
-# starts raising. To verify: set implicit_order_column on the Rollups models,
-# then enable. Nothing in app/ calls a bare finder on them today, but the
-# analytics endpoints are thin on test coverage.
-# Rails.configuration.active_record.raise_on_missing_required_finder_order_columns = true
+# ADOPTED. All 54 models with a table resolve order columns, so none can raise.
+# The ClickHouse Rollups:: models look like exceptions -- no id, no PRIMARY KEY
+# -- but ClickHouse reports MergeTree ORDER BY as PRI, which the adapter turns
+# into a composite primary key. Verified with this on against the castlehouse
+# schema. Opt-out disappears in 8.2 anyway.
+Rails.configuration.active_record.raise_on_missing_required_finder_order_columns = true
 
 ###
 # Controls how Rails handles path relative URL redirects.
