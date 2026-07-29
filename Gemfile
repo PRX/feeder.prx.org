@@ -1,16 +1,10 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Dual-boot: Gemfile.next resolves the target Rails version, Gemfile the current one.
-def next?
-  File.basename(__FILE__) == "Gemfile.next"
-end
-
 # core
 gem "activerecord-session_store"
 gem "bootsnap", require: false
 gem "clickhouse-activerecord"
-gem "next_rails"
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.6"
 gem "rails", "~> 8.1.3"
