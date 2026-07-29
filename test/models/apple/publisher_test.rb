@@ -122,8 +122,6 @@ describe Apple::Publisher do
     end
 
     it "should filter episodes that are already synced to apple" do
-      refute apple_episode.video_content_type?
-
       apple_episode.stub(:synced_with_apple?, true) do
         assert_equal [], apple_publisher.filter_episodes_to_sync([apple_episode])
       end
@@ -133,17 +131,15 @@ describe Apple::Publisher do
       end
     end
 
-    it "should filter episodes that have a video mime" do
+    it "should filter episodes that are not audio" do
       apple_episode.stub(:synced_with_apple?, false) do
-        apple_episode.stub(:video_content_type?, true) do
-          assert_equal [], apple_publisher.filter_episodes_to_sync([apple_episode])
-        end
-      end
+        assert_equal [apple_episode], apple_publisher.filter_episodes_to_sync([apple_episode])
 
-      apple_episode.stub(:synced_with_apple?, false) do
-        apple_episode.stub(:video_content_type?, false) do
-          assert_equal [apple_episode], apple_publisher.filter_episodes_to_sync([apple_episode])
-        end
+        episode.medium = "passthru"
+        assert_equal [], apple_publisher.filter_episodes_to_sync([apple_episode])
+
+        episode.medium = "video"
+        assert_equal [], apple_publisher.filter_episodes_to_sync([apple_episode])
       end
     end
   end
