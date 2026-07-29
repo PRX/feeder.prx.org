@@ -4,8 +4,7 @@ module EpisodeMedia
   extend ActiveSupport::Concern
 
   included do
-    # TODO: :uncut_video
-    enum :medium, [:audio, :uncut, :video, :override, :hls_video], prefix: true
+    enum :medium, [:audio, :uncut, :passthru, :override, :video, :video_uncut], prefix: true
 
     # NOTE: this just-in-time creates new media versions
     # TODO: convert to sql, so we don't have to load/check every episode?
@@ -22,9 +21,8 @@ module EpisodeMedia
     medium_audio? || medium_uncut?
   end
 
-  # TODO: medium_uncut_video?
   def video?
-    medium_video? || medium_hls_video?
+    medium_video? || medium_video_uncut?
   end
 
   def validate_media_ready
@@ -70,7 +68,7 @@ module EpisodeMedia
       end
     end
 
-    self.segment_count = 1 if medium_video? || medium_override?
+    self.segment_count = 1 if medium_passthru? || medium_override?
   end
 
   def copy_media(force = false)
@@ -208,10 +206,6 @@ module EpisodeMedia
     end
   end
 
-  def video_content_type?
-    media_content_type.starts_with?("video")
-  end
-
   def media_duration
     if override?
       external_media_resource&.duration
@@ -243,9 +237,9 @@ module EpisodeMedia
   #
   # otherwise, just check that this episodes has _enough_ media to stay published.
   # and hopefully/eventually we'll finish processing it, and it will all be valid:
-  #  1) medium = audio/hls_video    ... must have enough files (handling segment_count=nil episodes)
-  #  2) medium = uncut/uncut_video  ... must have a non-deleted Uncut, which we'll process/slice later
-  #  3) medium = video (deprecated) ... must have 1 file (segment_count forced to 1)
+  #  1) medium = audio/video       ... must have enough files (handling segment_count=nil episodes)
+  #  2) medium = uncut/video_uncut ... must have a non-deleted Uncut, which we'll process/slice later
+  #  3) medium = passthru          ... must have 1 file (segment_count forced to 1)
   def media_ready?(must_be_complete = true)
     if !must_be_complete && medium_uncut?
       uncut.present? && !uncut.marked_for_destruction?
@@ -280,10 +274,6 @@ module EpisodeMedia
     else
       "incomplete"
     end
-  end
-
-  def media_url
-    media.first.try(:href)
   end
 
   def override_ready?(must_be_complete = true)

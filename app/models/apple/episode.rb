@@ -510,10 +510,6 @@ module Apple
       apple_id
     end
 
-    def video_content_type?
-      feeder_episode.video_content_type?
-    end
-
     def podcast_container
       feeder_episode.podcast_container
     end

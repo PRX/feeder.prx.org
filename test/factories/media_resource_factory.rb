@@ -26,12 +26,19 @@ FactoryBot.define do
       task_count { 0 }
     end
 
-    factory :hls_video, class: HlsVideo do
+    factory :video_content, class: VideoContent do
       medium { "video" }
+      position { 1 }
       task_count { 0 }
     end
 
     factory :uncut, class: Uncut do
+      segmentation { [[1.23, 4.56]] }
+      task_count { 0 }
+    end
+
+    factory :video_uncut, class: VideoUncut do
+      medium { "video" }
       segmentation { [[1.23, 4.56]] }
       task_count { 0 }
     end

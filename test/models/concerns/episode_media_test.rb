@@ -61,17 +61,17 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal episode.contents.first.original_url, episode.uncut.original_url
     end
 
-    it "sets segment count for videos" do
+    it "sets segment count for passthru and override" do
       episode.segment_count = 2
       refute episode.contents.first.marked_for_destruction?
 
-      episode.medium = "video"
+      episode.medium = "passthru"
       assert episode.contents.first.marked_for_destruction?
       assert_equal 1, episode.segment_count
 
       episode.segment_count = 2
-      episode.medium = "hls_video"
-      assert_equal 1, episode.segment_count
+      episode.medium = "video"
+      assert_equal 2, episode.segment_count
 
       episode.segment_count = 2
       episode.medium = "override"
@@ -542,14 +542,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
 
     it "handles empty contents" do
       assert_equal "incomplete", build_stubbed(:episode, contents: []).media_status
-    end
-  end
-
-  describe "#media_url" do
-    it "returns the first contents href" do
-      c1.stub(:href, "some-href") do
-        assert_equal "some-href", ep.media_url
-      end
     end
   end
 end

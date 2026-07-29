@@ -37,7 +37,7 @@ class MediaResource < ApplicationRecord
   end
 
   def max_file_size
-    episode.medium_hls_video? ? 10.gigabytes : 1.gigabyte
+    episode.video? ? 10.gigabytes : 1.gigabyte
   end
 
   def audio?

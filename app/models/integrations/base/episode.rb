@@ -27,10 +27,6 @@ module Integrations
         feeder_episode.categories.include?("adfree")
       end
 
-      def video_content_type?
-        feeder_episode.video_content_type?
-      end
-
       def has_media_version?
         delivery_status.present? && delivery_status.has_media_version?
       end

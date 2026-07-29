@@ -3,14 +3,18 @@ class Uncut < MediaResource
   DEFAULT_SEGMENTATION = [[nil, nil]].freeze
   include MetadataBreaks
 
-  validates :medium, inclusion: {in: %w[audio]}, if: :status_complete?
   validates :duration, numericality: {greater_than: 0}, if: :status_complete?
+  validate :validate_episode_medium, if: :status_complete?
   validate :validate_segmentation
 
   before_validation :set_defaults
 
   def set_defaults
     self.segmentation ||= DEFAULT_SEGMENTATION
+  end
+
+  def validate_episode_medium
+    errors.add(:medium, :not_audio, message: "must be an audio file") if medium != "audio"
   end
 
   def copy_media(force = false)
