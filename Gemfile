@@ -14,9 +14,9 @@ gem "next_rails"
 gem "pg", "~> 1.1"
 gem "puma", "~> 5.6"
 if next?
-  gem "rails", "~> 8.0.5"
+  gem "rails", "~> 8.1.3"
 else
-  gem "rails", "~> 7.2.3"
+  gem "rails", "~> 8.0.5"
 end
 
 # caching
