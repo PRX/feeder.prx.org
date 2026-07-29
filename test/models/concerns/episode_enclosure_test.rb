@@ -79,6 +79,9 @@ class EpisodeEnclosureTest < ActiveSupport::TestCase
       ep.medium = "video"
       c1.mime_type = "video/something"
       assert_equal "audio/mpeg", ep.enclosure_content_type
+      assert_equal "audio/mpeg", ep.enclosure_content_type(feed: f1)
+      assert_equal "audio/flac", ep.enclosure_content_type(feed: f2)
+      assert_equal "audio/flac", ep.enclosure_content_type(feed: f3)
     end
 
     it "forces unsupported mimes to mp3" do
@@ -113,7 +116,10 @@ class EpisodeEnclosureTest < ActiveSupport::TestCase
       ep.medium = "video"
       c1.original_url = "http://some.where/any.thing.mp4"
       assert_equal "any.thing.mp3", ep.enclosure_file_name
-      assert_equal "any.thing.m3u8", ep.enclosure_file_name(ext: "m3u8")
+      assert_equal "any.thing.mp3", ep.enclosure_file_name(feed: f1)
+      assert_equal "any.thing.flac", ep.enclosure_file_name(feed: f2)
+      assert_equal "any.thing.flac", ep.enclosure_file_name(feed: f3)
+      assert_equal "any.thing.m3u8", ep.enclosure_file_name(feed: f3, ext: "m3u8")
     end
 
     it "forces unsupported extensions to mp3" do

@@ -36,7 +36,7 @@ module EpisodeEnclosure
     if medium_passthru? || override?
       media_content_type
     elsif video?
-      "audio/mpeg"
+      feed&.mime_type || "audio/mpeg"
     else
       feed&.mime_type || media_content_type
     end
@@ -52,7 +52,7 @@ module EpisodeEnclosure
       if ext
         "#{orig_base}.#{ext}"
       elsif video?
-        "#{orig_base}.mp3"
+        "#{orig_base}.#{feed&.file_ext || "mp3"}"
       else
         "#{orig_base}.#{feed&.file_ext || orig_ext[1..] || "mp3"}"
       end
