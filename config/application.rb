@@ -54,6 +54,11 @@ module Feeder
 
     config.active_model.i18n_customize_full_message = true
 
+    # Nothing here attaches files or builds variants, so skip the variant
+    # processor rather than pull in image_processing to satisfy the check
+    # Rails 8.1 runs at boot.
+    config.active_storage.variant_processor = :disabled
+
     # Use redis if the env vars are present
     if ENV["REDIS_HOST"].present? && ENV["REDIS_PORT"].present?
       config.cache_store = [:redis_cache_store, {host: ENV["REDIS_HOST"], port: ENV["REDIS_PORT"], ssl: ENV["REDIS_SSL"].present?}]
