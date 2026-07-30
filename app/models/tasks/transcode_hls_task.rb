@@ -27,7 +27,7 @@ class Tasks::TranscodeHlsTask < Tasks::CopyMediaTask
       Destination: {
         Mode: "AWS/S3",
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-        ObjectKey: porter_escape(media_resource.rendition_path("audio.mp3")),
+        ObjectKey: porter_escape(media_resource.variant_path("audio.mp3")),
         ContentType: "REPLACE",
         Parameters: {
           CacheControl: "max-age=86400",
@@ -50,7 +50,7 @@ class Tasks::TranscodeHlsTask < Tasks::CopyMediaTask
     end
   end
 
-  # TODO: transcode index.m3u8 and renditions
+  # TODO: transcode index.m3u8 and variants
   def porter_apple_hls_task
   end
 end

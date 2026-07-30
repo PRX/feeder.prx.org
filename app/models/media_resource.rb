@@ -104,11 +104,14 @@ class MediaResource < ApplicationRecord
     false
   end
 
-  def rendition_url(file_name)
+  def variants
+  end
+
+  def variant_url(file_name)
     "#{url}/#{file_name}"
   end
 
-  def rendition_path(file_name)
+  def variant_path(file_name)
     "#{path}/#{file_name}"
   end
 

@@ -73,6 +73,21 @@ class Content < MediaResource
     Content.where(episode_id: episode_id, position: position).where.not(id: id).destroy_all
   end
 
+  def variants
+    if status_complete? && episode&.video?
+      {
+        audio: {
+          href: variant_url("audio.mp3"),
+          type: "audio/mpeg"
+        },
+        hls: {
+          href: variant_url("index.m3u8"),
+          type: "application/x-mpegURL"
+        }
+      }
+    end
+  end
+
   private
 
   def array_segments?
