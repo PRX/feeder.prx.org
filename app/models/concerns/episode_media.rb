@@ -18,7 +18,7 @@ module EpisodeMedia
   end
 
   def audio?
-    medium_audio? || medium_uncut?
+    medium_audio? || medium_uncut? || !medium
   end
 
   def video?
