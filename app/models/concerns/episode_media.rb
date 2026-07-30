@@ -18,7 +18,7 @@ module EpisodeMedia
   end
 
   def audio?
-    medium_audio? || medium_uncut? || !medium
+    medium_audio? || medium_uncut? || medium.blank?
   end
 
   def video?
@@ -241,7 +241,7 @@ module EpisodeMedia
   #  2) medium = uncut/video_uncut ... must have a non-deleted Uncut, which we'll process/slice later
   #  3) medium = passthru          ... must have 1 file (segment_count forced to 1)
   def media_ready?(must_be_complete = true)
-    if !must_be_complete && medium_uncut?
+    if !must_be_complete && (medium_uncut? || medium_video_uncut?)
       uncut.present? && !uncut.marked_for_destruction?
     elsif media.empty?
       false
