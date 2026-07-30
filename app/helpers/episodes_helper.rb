@@ -114,12 +114,11 @@ module EpisodesHelper
 
   def episode_medium_options(episode = nil)
     ordered_keys =
-      if episode&.medium_video?
-        %w[audio uncut hls_video video override]
+      if Rails.env.production? && !episode&.video?
+        %w[audio uncut passthru override]
       else
-        %w[audio uncut hls_video override]
+        %w[audio uncut video video_uncut passthru override]
       end
-
     ordered_keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
   end
 

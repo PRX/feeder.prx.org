@@ -39,6 +39,16 @@ module UploadsHelper
     params
   end
 
+  def upload_icon(ep = nil)
+    if ep&.audio?
+      "audio_file"
+    elsif ep&.video?
+      "video_file"
+    else
+      "attach_file"
+    end
+  end
+
   private
 
   def uploads_prefix
