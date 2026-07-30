@@ -14,7 +14,11 @@ class Uncut < MediaResource
   end
 
   def validate_episode_medium
-    errors.add(:medium, :not_audio, message: "must be an audio file") if medium != "audio"
+    if episode&.video?
+      errors.add(:medium, :not_video, message: "must be a video file") if medium != "video"
+    elsif episode&.audio?
+      errors.add(:medium, :not_audio, message: "must be an audio file") if medium != "audio"
+    end
   end
 
   def copy_media(force = false)
@@ -39,13 +43,11 @@ class Uncut < MediaResource
     end
   end
 
-  def build_content(seg)
-    Content.new(original_url: url, segmentation: seg)
-  end
-
   def slice_contents
     if segmentation_ready?
-      episode.media = segmentation.map { |seg| build_content(seg) }
+      episode.media = segmentation.map do |seg|
+        Content.new(original_url: url, segmentation: seg)
+      end
     end
   end
 

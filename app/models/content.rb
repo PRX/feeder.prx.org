@@ -23,7 +23,11 @@ class Content < MediaResource
 
   def copy_media(force = false)
     if force || needs_copy?
-      if slice?
+      if episode&.video? && slice?
+        raise "not supported yet"
+      elsif episode&.video?
+        Tasks::TranscodeHlsTask.start!(self)
+      elsif slice?
         Tasks::SliceMediaTask.start!(self)
       else
         Tasks::CopyMediaTask.start!(self)
@@ -32,7 +36,7 @@ class Content < MediaResource
   end
 
   def after_copy(copy_task)
-    if copy_task.bad_audio?
+    if episode&.audio? && copy_task.bad_audio?
       Tasks::FixMediaTask.start!(self, copy_task)
     end
   end

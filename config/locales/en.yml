@@ -399,10 +399,11 @@ en:
         medium: File Format
         mediums:
           audio: Audio - upload multiple files
-          hls_video: Video - upload multiple files
           override: Override - specify external media url
+          passthru: Video - raw file
           uncut: Audio - upload a single file and then segment
-          video: Video - raw (DEPRECATED)
+          video: Video - upload multiple files
+          video_uncut: Video - upload a single file and then segment
         original_guid: GUID
         released_at: Dropdate
         released_at_date: Date
@@ -495,9 +496,10 @@ en:
       media_resource:
         original_url:
           audio: Segment %{position}
-          hls_video: Video Segment %{position}
+          passthru: Video File
           uncut: Audio File
-          video: Video File
+          video: Video Segment %{position}
+          video_uncut: Video File
       podcast:
         author_email: Author Email
         author_name: Author Name
