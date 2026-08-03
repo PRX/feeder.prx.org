@@ -71,6 +71,17 @@ describe ImageFile do
         assert_equal i.url, url
       end
     end
+
+    it "waits for the podcast_id to exist" do
+      p = build(:podcast)
+      i = p.default_feed.itunes_images.build(original_url: "s3://some/where")
+      assert_nil i.url
+
+      # 2nd before_create :initialize_attributes should still set
+      p.save!
+      refute_nil i.url
+      assert_match /\/[0-9]+\/images\//, i.url
+    end
   end
 
   describe "#path" do
