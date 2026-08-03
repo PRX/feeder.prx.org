@@ -15,12 +15,11 @@
 # If set to `:offset`, `to_time` methods will use the UTC offset.
 # If `false`, `to_time` methods will convert to the local system UTC offset instead.
 #++
-# DEFERRED. Two direct call sites in Tasks::RecordStreamTask (parsing timestamps
-# out of job id parts), but `to_time` is also reachable through Active Support
-# internals and gem code, and this app is scheduling-heavy. To verify: confirm
+# ADOPTED: Augury is also using :zone, so this is consistent.
+# Two direct call sites in Tasks::RecordStreamTask; confirm
 # RecordStreamTask start/end parsing still lines up, then spot-check episode
 # publish times and the podcast planner across a DST boundary.
-# Rails.application.config.active_support.to_time_preserves_timezone = :zone
+Rails.application.config.active_support.to_time_preserves_timezone = :zone
 
 ###
 # When both `If-Modified-Since` and `If-None-Match` are provided by the client
