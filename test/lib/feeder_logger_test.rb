@@ -1,10 +1,6 @@
 require "test_helper"
 
 describe FeederLogger do
-  # Guards a real regression: Active Support carried a transitive dependency on
-  # the benchmark gem through Rails 8.0, and Benchmark.measure here relied on
-  # it. Rails 8.1 dropped it, so these methods raised NameError until
-  # feeder_logger.rb started requiring benchmark itself.
   it "times an info block and logs the elapsed seconds" do
     logs = capture_json_logs do
       Rails.logger.elapsed("did a thing") { :result }

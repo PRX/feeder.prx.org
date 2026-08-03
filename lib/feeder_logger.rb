@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# Active Support dropped its transitive dependency on benchmark in Rails 8.1,
-# so Benchmark is no longer loaded for us.
 require "benchmark"
 
 class FeederLogger < Ougai::Logger
