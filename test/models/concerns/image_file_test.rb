@@ -80,7 +80,7 @@ describe ImageFile do
       # 2nd before_create :initialize_attributes should still set
       p.save!
       refute_nil i.url
-      assert_match /\/[0-9]+\/images\//, i.url
+      assert_match(/\/[0-9]+\/images\//, i.url)
     end
   end
 
