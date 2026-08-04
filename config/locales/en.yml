@@ -927,6 +927,17 @@ en:
         publish_enabled: Enable automatically publishing and updating episodes in this feed to Apple?
         sync_blocks_rss: Block publishing to the default feed RSS until the Apple episode is published?
         episode_offset_seconds: How early should episodes be published to subscribers?
+    form_apple_connection:
+      title: Apple Settings
+      connected: Connected
+      not_connected: Not connected
+      status: Apple Status
+      last_checked: "Last checked: %{time}"
+      dependent_feeds: "Delegated-delivery feeds using this connection:"
+      confirm_replace: Are you sure you want to replace this Apple connection? Dependent delegated-delivery feeds will use the new connection.
+      confirm_remove: Are you sure you want to remove this Apple connection?
+      help:
+        connection: Select the Apple show and account credential for this public feed.
     form_audio_format:
       title: Audio Format
       help:
@@ -1348,6 +1359,7 @@ en:
     tabs:
       engagement: Engagement Settings
       import: Import
+      integrations: Integrations
       metadata: Metadata
       planner: Plan Episodes
       player: Embeddable Player
@@ -1355,6 +1367,20 @@ en:
     update:
       error: Unable to save
       notice: Podcast updated
+  podcast_integrations:
+    show:
+      title: "%{title} - Integrations"
+      apple_credentials:
+        title: Apple Credentials
+        description: Configure credentials used to connect public feeds to Apple Podcasts Connect.
+        guide_link: <a href="https://help.prx.org/hc/en-us/articles/26602803552155-Setting-up-Apple-Podcast-Subscriptions-with-Apple-Delegated-Delivery" target="_blank">Check out our setup guide.</a>
+        key_label: "Apple Key …%{key_id}"
+        provider_label: "Provider …%{provider_id}"
+        upload: Upload Key
+  apple_keys:
+    create:
+      notice: Apple credential uploaded
+      error: Unable to upload Apple credential
   podcast_clips:
     attach:
       alert: Something went horribly wrong

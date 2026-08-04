@@ -58,5 +58,81 @@ module Apple
         refute_includes ShowFeedBinding.active.to_a, binding
       end
     end
+
+    describe ".connect_existing" do
+      it "verifies show access before creating a binding" do
+        feed = create(:public_feed, podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/123"))
+        key = create(:apple_key, account_id: 123)
+        body = {data: {id: "show-1", type: "shows", attributes: {title: "A show"}}}.to_json
+        stub_request(:get, "https://aardvark.prx.org/shows/show-1").to_return(status: 200, body: body)
+
+        binding = ShowFeedBinding.connect_existing(feed: feed, apple_key: key, apple_show_id: "show-1")
+
+        assert_predicate binding, :persisted?
+        assert_equal key, feed.podcast.reload.apple_key
+      end
+
+      it "does not create a binding when the show is unreadable" do
+        feed = create(:public_feed, podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/123"))
+        key = create(:apple_key, account_id: 123)
+        stub_request(:get, "https://aardvark.prx.org/shows/missing").to_return(status: 404, body: "{}")
+
+        assert_no_difference "ShowFeedBinding.count" do
+          binding = ShowFeedBinding.connect_existing(feed: feed, apple_key: key, apple_show_id: "missing")
+          refute_predicate binding, :persisted?
+          assert_predicate binding.errors[:apple_show_id], :present?
+        end
+        assert_nil feed.podcast.reload.apple_key
+      end
+
+      it "rejects a key from another PRX account" do
+        feed = create(:public_feed, podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/123"))
+        key = create(:apple_key, account_id: 456)
+
+        binding = ShowFeedBinding.connect_existing(feed: feed, apple_key: key, apple_show_id: "show-1")
+
+        refute_predicate binding, :persisted?
+        assert_includes binding.errors[:apple_key], "must belong to the feed's PRX account"
+        assert_nil feed.podcast.reload.apple_key
+      end
+    end
+
+    describe ".connection_options" do
+      it "keeps the credential identity with each non-archived show" do
+        key = create(:apple_key, key_id: "credential12")
+        body = {
+          data: [
+            {id: "show-1", attributes: {title: "Shared", publishingState: "PUBLISHED"}},
+            {id: "show-2", attributes: {title: "Old", publishingState: "ARCHIVED"}}
+          ],
+          links: {}
+        }.to_json
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
+
+        options = ShowFeedBinding.connection_options([key])
+
+        assert_equal [ShowFeedBinding.connection_token(key.id, "show-1")], options.map(&:value)
+        assert_includes options.first.label, "Key …al12"
+      end
+
+      it "keeps duplicate shows returned by different credentials distinguishable" do
+        first_key = create(:apple_key, key_id: "credential12")
+        second_key = create(:apple_key, key_id: "credential34")
+        body = {
+          data: [{id: "show-1", attributes: {title: "Shared", publishingState: "PUBLISHED"}}],
+          links: {}
+        }.to_json
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
+
+        options = ShowFeedBinding.connection_options([first_key, second_key])
+
+        assert_equal 2, options.length
+        assert_equal [
+          ShowFeedBinding.connection_token(first_key.id, "show-1"),
+          ShowFeedBinding.connection_token(second_key.id, "show-1")
+        ], options.map(&:value)
+        assert_equal ["Key …al12", "Key …al34"], options.map { |option| option.label.split(" · ").last }
+      end
+    end
   end
 end

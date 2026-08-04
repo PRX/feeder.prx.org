@@ -43,6 +43,10 @@ module Apple
         key: apple_key.key_pem)
     end
 
+    def self.from_apple_key(apple_key)
+      from_key(apple_key)
+    end
+
     def self.from_delegated_delivery_config(delegated_delivery_config)
       apple_key = delegated_delivery_config.routing_key
 

@@ -1,0 +1,43 @@
+<div class="card shadow border-0 mt-3">
+  <div class="card-header card-header-light">
+    <h2 class="card-title h5"><%= t(".title") %></h2>
+  </div>
+
+  <div class="card-body">
+    <% binding = feed.apple_show_feed_binding %>
+    <% dependents = [binding&.delegated_delivery_config].compact %>
+
+    <div class="form-floating input-group mb-3">
+      <% confirm = t(".confirm_replace") if dependents.present? %>
+      <% data = {confirm_field_target: "field", confirm_with: confirm, confirm_delete: t(".confirm_remove")} if confirm %>
+      <%= form.select :apple_connection, @apple_connection_options, {include_blank: true}, data || {} %>
+      <%= form.label :apple_connection %>
+      <%= field_help_text t(".help.connection") %>
+    </div>
+
+    <div class="form-floating input-group mb-3">
+      <%= form.text_field :apple_verify_token %>
+      <%= form.label :apple_verify_token %>
+      <%= field_help_text t("feeds.form_main.help.apple_verify_token") %>
+    </div>
+
+    <% if dependents.present? %>
+      <p class="small mb-3">
+        <strong><%= t(".dependent_feeds") %></strong>
+        <%= dependents.map { |config| config.feed.label }.join(", ") %>
+      </p>
+    <% end %>
+  </div>
+
+  <div class="card-footer d-flex justify-content-between align-items-end">
+    <div>
+      <strong><%= t(".status") %></strong><br>
+      <% if binding %>
+        <span class="text-muted"><%= t(".last_checked", time: local_time_ago(binding.updated_at)) %></span>
+      <% end %>
+    </div>
+    <span class="badge <%= binding ? "bg-success" : "bg-secondary" %>">
+      <%= binding ? t(".connected") : t(".not_connected") %>
+    </span>
+  </div>
+</div>

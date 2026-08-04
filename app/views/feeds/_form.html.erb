@@ -46,6 +46,7 @@
         <% unless (apple_feed?(feed) || megaphone_feed?(feed)) %>
           <%= render "form_distribution", podcast: podcast, feed: feed, form: form %>
         <% end %>
+        <%= render "form_apple_connection", podcast: podcast, feed: feed, form: form if feed.persisted? && feed.public? %>
       </div>
     </div>
   </div>

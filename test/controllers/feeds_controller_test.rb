@@ -94,9 +94,13 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should show feed" do
     get podcast_feed_url(podcast, feed)
     assert_response :success
+    assert_select "select[name='feed[apple_connection]']", count: 1
+    assert_select "input[name='feed[apple_verify_token]']", count: 1
 
     get podcast_feed_url(podcast, private_feed)
     assert_response :success
+    assert_select "select[name='feed[apple_connection]']", count: 0
+    assert_select "input[name='feed[apple_verify_token]']", count: 1
   end
 
   test "authorize update feed" do
@@ -112,6 +116,65 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should update feed" do
     patch podcast_feed_url(podcast, feed), params: {feed: update_params}
     assert_redirected_to podcast_feed_url(podcast, feed)
+  end
+
+  test "connects a public feed to an Apple show" do
+    key = create(:apple_key, account_id: podcast.account_id)
+    body = {data: {id: "show-1", type: "shows", attributes: {title: "A show"}}}.to_json
+    stub_request(:get, "https://aardvark.prx.org/shows/show-1").to_return(status: 200, body: body)
+
+    patch podcast_feed_url(podcast, feed), params: {
+      feed: {apple_connection: Apple::ShowFeedBinding.connection_token(key.id, "show-1")}
+    }
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    assert_equal "show-1", feed.reload.apple_show_feed_binding.apple_show_id
+    assert_equal key, podcast.reload.apple_key
+  end
+
+  test "does not connect with a credential from another account" do
+    key = create(:apple_key, account_id: 456)
+
+    patch podcast_feed_url(podcast, feed), params: {
+      feed: {apple_connection: Apple::ShowFeedBinding.connection_token(key.id, "show-1")}
+    }
+
+    assert_response :unprocessable_entity
+    assert_nil feed.reload.apple_show_feed_binding
+  end
+
+  test "does not disconnect a binding used by delegated delivery" do
+    key = create(:apple_key, account_id: podcast.account_id)
+    podcast.update!(apple_key: key)
+    binding = create(:apple_show_feed_binding, feed: feed)
+    create(:apple_config, feed: private_feed, key: key, show_feed_binding: binding)
+    body = {data: [], links: {}}.to_json
+    stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: ""}}
+
+    assert_response :unprocessable_entity
+    assert_predicate binding.reload, :persisted?
+  end
+
+  test "mirrors legacy routing when replacing the default feed connection" do
+    default_feed = podcast.default_feed
+    old_key = create(:apple_key, account_id: podcast.account_id)
+    new_key = create(:apple_key, account_id: podcast.account_id)
+    podcast.update!(apple_key: old_key)
+    binding = create(:apple_show_feed_binding, feed: default_feed, apple_show_id: "old-show")
+    config = create(:apple_config, feed: private_feed, key: old_key, show_feed_binding: binding)
+    body = {data: {id: "new-show", type: "shows", attributes: {title: "New show"}}}.to_json
+    stub_request(:get, "https://aardvark.prx.org/shows/new-show").to_return(status: 200, body: body)
+
+    patch podcast_feed_url(podcast, default_feed), params: {
+      feed: {apple_connection: Apple::ShowFeedBinding.connection_token(new_key.id, "new-show")}
+    }
+
+    assert_redirected_to podcast_feed_url(podcast, default_feed)
+    assert_equal new_key, podcast.reload.apple_key
+    assert_equal new_key, config.reload.key
+    assert_equal "new-show", private_feed.reload.apple_show_id
   end
 
   test "validate update feed" do
