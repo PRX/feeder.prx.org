@@ -1,0 +1,40 @@
+<% content_for :title, t(".title", title: @podcast.title) %>
+
+<%= render "podcasts/tabs" %>
+
+<div class="row my-4 mx-2">
+  <div class="col-lg-8">
+    <div class="card shadow border-0">
+      <div class="card-header card-header-light">
+        <h2 class="card-title h5"><%= t(".apple_credentials.title") %></h2>
+      </div>
+
+      <div class="card-body">
+        <p><%= t(".apple_credentials.description") %></p>
+        <%= t(".apple_credentials.guide_link").html_safe %>
+
+        <% if @apple_keys.any? %>
+          <div class="list-group my-4">
+            <% @apple_keys.each do |key| %>
+              <div class="list-group-item">
+                <strong><%= t(".apple_credentials.key_label", key_id: key.key_id.to_s.last(4)) %></strong>
+                <span class="text-muted ms-2"><%= t(".apple_credentials.provider_label", provider_id: key.provider_id.to_s.last(4)) %></span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <% if policy(@apple_key).create? %>
+          <%= form_with(model: [@podcast, @apple_key], html: {autocomplete: "off"}, data: {controller: "apple-key"}) do |form| %>
+            <%= form.file_field :key_file, class: "mb-3 form-control", accept: ".p8,.pem", data: {action: "apple-key#convertFileToKey"}, required: true %>
+            <%= form.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
+            <%= form.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
+            <%= form.hidden_field :key_id, data: {apple_key_target: "key"} %>
+
+            <%= form.submit t(".apple_credentials.upload"), class: "btn btn-primary" %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

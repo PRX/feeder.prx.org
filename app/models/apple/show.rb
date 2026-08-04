@@ -57,6 +57,15 @@ module Apple
       api.unwrap_response(resp)
     end
 
+    def self.from_show_feed_binding(binding, apple_key: binding.feed.podcast.apple_key)
+      new(
+        api: Apple::Api.from_apple_key(apple_key),
+        public_feed: binding.feed,
+        private_feed: binding.feed,
+        apple_show_id: binding.apple_show_id
+      )
+    end
+
     def self.from_podcast(podcast)
       from_delegated_delivery_config(podcast.delegated_delivery_config)
     end

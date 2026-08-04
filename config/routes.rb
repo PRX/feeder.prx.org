@@ -8,6 +8,8 @@ Rails.application.routes.draw do
   end
 
   resources :podcasts do
+    resource :integrations, only: :show, controller: :podcast_integrations
+    resources :apple_keys, only: :create
     resource :engagement, only: [:show, :update], controller: :podcast_engagement
     resource :player, only: :show, controller: :podcast_player
     resources :imports, only: [:index, :show, :create]
