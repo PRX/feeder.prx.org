@@ -33,3 +33,11 @@ class Array
     map { |v| v.try(:with_indifferent_access) || v }
   end
 end
+
+module JSON
+  def self.safe_parse(val)
+    parse(val)
+  rescue
+    nil
+  end
+end
