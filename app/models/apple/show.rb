@@ -22,7 +22,7 @@ module Apple
           sl.update!(external_id: apple_show_id)
         end
       else
-        SyncLog.log!(
+        Apple::SyncLog.log!(
           feeder_id: apple_config.public_feed.id,
           feeder_type: :feeds,
           sync_completed_at: Time.now.utc,
@@ -139,7 +139,7 @@ module Apple
       Rails.logger.tagged("Apple::Show#sync!") do
         apple_json = create_or_update_show(sync_log)
         public_feed.reload
-        SyncLog.log!(
+        Apple::SyncLog.log!(
           feeder_id: public_feed.id,
           feeder_type: :feeds,
           external_id: apple_json.dig("api_response", "val", "data", "id"),

@@ -178,7 +178,7 @@ module Apple
       raise "Missing remote apple id" unless apple_id.present?
       apple_show_id = ep.apple_show_id.presence || raise(MissingShowIdentityError, "Apple sync state requires an Apple show ID")
 
-      sl = SyncLog.log!(
+      sl = Apple::SyncLog.log!(
         feeder_id: ep.feeder_episode.id,
         feeder_type: :episodes,
         external_id: apple_id,

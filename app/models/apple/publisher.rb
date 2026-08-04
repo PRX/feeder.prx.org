@@ -80,7 +80,7 @@ module Apple
       upload_and_process!(episodes_to_sync)
 
       # success
-      SyncLog.log!(
+      Apple::SyncLog.log!(
         feeder_id: public_feed.id,
         feeder_type: :feeds,
         external_id: show.apple_id,
