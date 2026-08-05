@@ -565,7 +565,7 @@ module Apple
     # remains. This narrower predicate gates the Publisher#process_delivery!
     # phase after any necessary upload has completed.
     def needs_delivery_processing?
-      delivery_status(true).delivered == false
+      !delivery_status(true).delivered
     end
 
     def needs_upload?
