@@ -6,6 +6,17 @@ module Apple
       refute_includes ShowFeedBinding.column_names, "apple_key_id"
     end
 
+    it "has one config" do
+      binding = create(:apple_show_feed_binding)
+      config = create(
+        :apple_config,
+        feed: create(:private_feed, podcast: binding.feed.podcast),
+        show_feed_binding: binding
+      )
+
+      assert_equal config, binding.reload.config
+    end
+
     describe "validations" do
       it "requires an apple show id" do
         binding = build(:apple_show_feed_binding, apple_show_id: nil)

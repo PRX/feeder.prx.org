@@ -11,11 +11,26 @@ module Apple
         report = new_backfill_report(dry_run: dry_run)
         configs = Apple::Config.includes(:key, feed: :podcast).to_a
         report[:configs_total] = configs.length
+        report[:binding_conflicts] = binding_conflicts_for(configs)
+        conflicting_config_ids = report[:binding_conflicts].flat_map { |conflict| conflict[:config_ids] }.uniq
 
         configs.group_by { |config| config.podcast&.id }.each_value do |podcast_configs|
-          next unless backfill_podcast_key!(podcast_configs, report, dry_run: dry_run)
+          if podcast_configs.filter_map { |config| config[:key_id] }.uniq.many?
+            backfill_podcast_key!(podcast_configs, report, dry_run: dry_run)
+            next
+          end
 
-          podcast_configs.each do |config|
+          conflicting_configs, eligible_configs = podcast_configs.partition do |config|
+            conflicting_config_ids.include?(config.id)
+          end
+          conflicting_configs.each do |config|
+            skip_config(config, report, "show feed binding claimed by multiple configs")
+          end
+
+          next if eligible_configs.empty?
+          next unless backfill_podcast_key!(eligible_configs, report, dry_run: dry_run)
+
+          eligible_configs.each do |config|
             backfill_config!(config, report, dry_run: dry_run)
           end
         end
@@ -116,6 +131,29 @@ module Apple
       end
       private_class_method :new_backfill_report
 
+      def self.binding_conflicts_for(configs)
+        configs
+          .filter_map { |config| [config.public_feed&.id, config.id] if config.public_feed }
+          .group_by(&:first)
+          .filter_map do |feed_id, claims|
+            binding = Apple::ShowFeedBinding.find_by(feed_id: feed_id)
+            assigned_config_ids = if binding
+              Apple::Config.where(show_feed_binding_id: binding.id).pluck(:id)
+            else
+              []
+            end
+            config_ids = (claims.map(&:last) + assigned_config_ids).uniq.sort
+            next unless config_ids.many?
+
+            {
+              feed_id: feed_id,
+              binding_id: binding&.id,
+              config_ids: config_ids
+            }
+          end
+      end
+      private_class_method :binding_conflicts_for
+
       def self.backfill_podcast_key!(configs, report, dry_run:)
         podcast = configs.first&.podcast
         unless podcast
@@ -145,13 +183,13 @@ module Apple
 
         changes = {
           podcast_apple_key_id: {from: podcast.apple_key_id, to: key.id},
-          config_ids: configs.select { |config| config.key_id != key.id }.map(&:id)
+          config_ids: configs.select { |config| config[:key_id] != key.id }.map(&:id)
         }
         assigns_podcast_key = changes[:podcast_apple_key_id][:from] != changes[:podcast_apple_key_id][:to]
         changes_key_route = assigns_podcast_key || changes[:config_ids].any?
 
         unless dry_run
-          configs.each { |config| config.update!(key: key) unless config.key_id == key.id }
+          configs.each { |config| config.update!(key: key) unless config[:key_id] == key.id }
           podcast.update!(apple_key: key) unless podcast.apple_key_id == key.id
         end
 

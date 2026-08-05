@@ -4,7 +4,7 @@ module Apple
   class ShowFeedBinding < ApplicationRecord
     belongs_to :feed
 
-    has_many :delegated_delivery_configs,
+    has_one :config,
       class_name: "Apple::Config",
       foreign_key: :show_feed_binding_id,
       inverse_of: :show_feed_binding,

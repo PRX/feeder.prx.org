@@ -79,6 +79,25 @@ module Apple
         assert_nil config.podcast.reload.apple_key
         assert_nil config.reload.show_feed_binding
       end
+
+      it "reports duplicate binding claims without choosing a config" do
+        config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
+        other_config = build(
+          :apple_config,
+          feed: create(:private_feed, podcast: config.podcast),
+          key: config.key
+        )
+        other_config.save!(validate: false)
+
+        report = ShowFeedBinding::Backfill.backfill!
+
+        assert_equal 1, report[:binding_conflicts].length
+        assert_equal config.public_feed.id, report[:binding_conflicts].first[:feed_id]
+        assert_equal [config.id, other_config.id].sort, report[:binding_conflicts].first[:config_ids]
+        assert_equal 2, report[:skipped]
+        assert_nil config.reload.show_feed_binding
+        assert_nil other_config.reload.show_feed_binding
+      end
     end
 
     describe ".verify_routing_equivalence!" do

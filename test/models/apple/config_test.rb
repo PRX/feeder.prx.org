@@ -2,6 +2,23 @@ require "test_helper"
 
 describe Apple::Config do
   describe "#valid?" do
+    it "allows only one config per show feed binding" do
+      binding = create(:apple_show_feed_binding)
+      create(
+        :apple_config,
+        feed: create(:private_feed, podcast: binding.feed.podcast),
+        show_feed_binding: binding
+      )
+      config = build(
+        :apple_config,
+        feed: create(:private_feed, podcast: create(:podcast)),
+        show_feed_binding: binding
+      )
+
+      refute config.valid?
+      assert_equal ["has already been taken"], config.errors[:show_feed_binding_id]
+    end
+
     it "is unique to a podcast" do
       podcast = create(:podcast)
       f1 = create(:feed, podcast: podcast)
