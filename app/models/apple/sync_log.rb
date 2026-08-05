@@ -8,12 +8,13 @@ module Apple
       if: :episodes?
     validates :apple_show_id, presence: true, if: :episodes?
 
+    def self.sti_name
+      "apple"
+    end
+
     def self.log!(attrs)
       super(attrs.merge(integration: :apple))
     end
 
-    def self.sti_name
-      "apple"
-    end
   end
 end
