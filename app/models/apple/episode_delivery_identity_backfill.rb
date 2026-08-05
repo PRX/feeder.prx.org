@@ -9,7 +9,12 @@ module Apple
   # TODO: remove with cutover.
   class EpisodeDeliveryIdentityBackfill
     BATCH_SIZE = 5_000
-    TARGET_TYPES = %i[episode_sync_logs podcast_containers delivery_statuses].freeze
+    SHOW_ID_ATTRIBUTES = {
+      episode_sync_logs: :external_show_id,
+      podcast_containers: :apple_show_id,
+      delivery_statuses: :apple_show_id
+    }.freeze
+    TARGET_TYPES = SHOW_ID_ATTRIBUTES.keys.freeze
 
     def self.backfill!(dry_run: false)
       new.backfill!(dry_run: dry_run)
@@ -47,7 +52,9 @@ module Apple
       }
 
       each_record do |record_type, record|
-        if record.apple_show_id.blank?
+        show_id = record.public_send(SHOW_ID_ATTRIBUTES.fetch(record_type))
+
+        if show_id.blank?
           report[:remaining_null_show_rows][record_type] << record_details(record_type, record)
           next
         end
@@ -58,9 +65,9 @@ module Apple
           next
         end
 
-        if record.apple_show_id != resolution[:apple_show_id]
+        if show_id != resolution[:apple_show_id]
           report[:mismatched_show_rows] << record_details(record_type, record).merge(
-            apple_show_id: record.apple_show_id,
+            apple_show_id: show_id,
             expected_apple_show_id: resolution[:apple_show_id]
           )
         end
@@ -83,7 +90,8 @@ module Apple
           next
         end
 
-        relation.where(id: records.map(&:id)).update_all(apple_show_id: apple_show_id) unless dry_run
+        show_id_attribute = SHOW_ID_ATTRIBUTES.fetch(record_type)
+        relation.where(id: records.map(&:id)).update_all(show_id_attribute => apple_show_id) unless dry_run
 
         report[:updated] += records.length
         report[:changed] += records.length
@@ -113,7 +121,7 @@ module Apple
     def each_unscoped_batch
       target_relations.each do |record_type, relation|
         # TODO remove with cutover after all legacy NULL-show rows are stamped.
-        unscoped = relation.where(apple_show_id: nil)
+        unscoped = relation.where(SHOW_ID_ATTRIBUTES.fetch(record_type) => nil)
         unscoped.find_in_batches(batch_size: BATCH_SIZE) { |batch| yield record_type, unscoped, batch }
       end
     end
@@ -203,7 +211,9 @@ module Apple
 
     def unscoped_counts
       # TODO remove with cutover after all legacy NULL-show rows are stamped.
-      target_relations.transform_values { |relation| relation.where(apple_show_id: nil).count }
+      target_relations.to_h do |record_type, relation|
+        [record_type, relation.where(SHOW_ID_ATTRIBUTES.fetch(record_type) => nil).count]
+      end
     end
 
     def empty_type_report

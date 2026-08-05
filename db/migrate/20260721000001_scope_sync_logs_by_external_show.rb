@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-class ScopeSyncLogsByAppleShow < ActiveRecord::Migration[7.2]
+class ScopeSyncLogsByExternalShow < ActiveRecord::Migration[7.2]
   OLD_INDEX = "index_sync_logs_on_integration_and_feeder_type_and_feeder_id"
-  NEW_INDEX = "idx_sync_logs_unique_by_apple_show"
+  NEW_INDEX = "idx_sync_logs_unique_by_external_show"
 
   def up
     remove_index :sync_logs, name: OLD_INDEX
     add_index :sync_logs,
-      [:integration, :feeder_type, :feeder_id, :apple_show_id],
+      [:integration, :feeder_type, :feeder_id, :external_show_id],
       unique: true,
       nulls_not_distinct: true,
       name: NEW_INDEX

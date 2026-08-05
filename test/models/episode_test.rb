@@ -397,7 +397,7 @@ describe Episode do
           feeder_type: :episodes,
           feeder_id: episode.id,
           external_id: "episode-1",
-          apple_show_id: "show-1"
+          external_show_id: "show-1"
         )
 
         assert_equal sync_log, episode.integration_episode(:apple).sync_log

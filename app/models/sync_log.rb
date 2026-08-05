@@ -43,27 +43,27 @@ class SyncLog < ApplicationRecord
     feeder_id = attrs.delete(:feeder_id)
     external_id = attrs.delete(:external_id)
     api_response = attrs.delete(:api_response)
-    apple_show_id = attrs.delete(:apple_show_id)
+    external_show_id = attrs.delete(:external_show_id)
 
     identity = {
       integration: integration,
       feeder_type: feeder_type,
       feeder_id: feeder_id,
-      apple_show_id: apple_show_id
+      external_show_id: external_show_id
     }
     sync_log = SyncLog.find_or_initialize_by(identity)
 
     # TODO remove with cutover once no legacy NULL-show Apple episode rows remain.
-    if apple_show_id.present? && sync_log.new_record?
+    if external_show_id.present? && sync_log.new_record?
       legacy_sync_log = SyncLog.find_by(
-        **identity.except(:apple_show_id),
+        **identity.except(:external_show_id),
         external_id: external_id,
-        apple_show_id: nil
+        external_show_id: nil
       )
 
       if legacy_sync_log
         sync_log = legacy_sync_log
-        sync_log.apple_show_id = apple_show_id
+        sync_log.external_show_id = external_show_id
       end
     end
 

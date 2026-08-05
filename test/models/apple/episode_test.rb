@@ -32,14 +32,14 @@ describe Apple::Episode do
 
       sync_log = Apple::Episode.upsert_sync_log(apple_episode, response)
 
-      assert_equal "show-1", sync_log.reload.apple_show_id
+      assert_equal "show-1", sync_log.reload.external_show_id
     end
   end
 
   describe "#sync_log" do
     it "returns the scoped row for the current show" do
       scoped = apple_sync_log_for(episode)
-      scoped.update!(external_id: "scoped-ep", apple_show_id: "show-1")
+      scoped.update!(external_id: "scoped-ep", external_show_id: "show-1")
 
       assert_equal scoped, apple_episode.sync_log
     end
@@ -52,13 +52,13 @@ describe Apple::Episode do
 
     it "keeps sync-log reads within the current show" do
       show_one_log = apple_sync_log_for(episode)
-      show_one_log.update!(external_id: "show-one-episode", apple_show_id: "show-1")
+      show_one_log.update!(external_id: "show-one-episode", external_show_id: "show-1")
       show_two_log = SyncLog.create!(
         integration: :apple,
         feeder_type: :episodes,
         feeder_id: episode.id,
         external_id: "show-two-episode",
-        apple_show_id: "show-2"
+        external_show_id: "show-2"
       )
 
       assert_equal show_one_log, apple_episode_for_show("show-1").sync_log

@@ -14,7 +14,7 @@ module Apple
         assert_equal({episode_sync_logs: 1, podcast_containers: 1, delivery_statuses: 1}, report[:unscoped_counts])
         assert_equal 3, report[:updated]
         assert_equal 3, report[:changed]
-        assert_equal "show-from-binding", state[:sync_log].reload.apple_show_id
+        assert_equal "show-from-binding", state[:sync_log].reload.external_show_id
         assert_equal "show-from-binding", state[:podcast_container].reload.apple_show_id
         assert_equal "show-from-binding", state[:delivery_status].reload.apple_show_id
       end
@@ -31,7 +31,7 @@ module Apple
 
         EpisodeDeliveryIdentityBackfill.backfill!
 
-        assert_equal "show-from-binding", state[:sync_log].reload.apple_show_id
+        assert_equal "show-from-binding", state[:sync_log].reload.external_show_id
         assert_equal "show-from-binding", state[:podcast_container].reload.apple_show_id
         assert_equal "show-from-binding", state[:delivery_status].reload.apple_show_id
       end
@@ -42,7 +42,7 @@ module Apple
 
         EpisodeDeliveryIdentityBackfill.backfill!
 
-        assert_equal "show-deleted", state[:sync_log].reload.apple_show_id
+        assert_equal "show-deleted", state[:sync_log].reload.external_show_id
         assert_equal "show-deleted", state[:podcast_container].reload.apple_show_id
         assert_equal "show-deleted", state[:delivery_status].reload.apple_show_id
       end
@@ -63,7 +63,7 @@ module Apple
 
         assert_equal 3, report[:updated]
         assert_empty report[:skipped_rows]
-        assert_equal "show-deleted", state[:sync_log].reload.apple_show_id
+        assert_equal "show-deleted", state[:sync_log].reload.external_show_id
         assert_equal "show-deleted", state[:podcast_container].reload.apple_show_id
         assert_equal "show-deleted", state[:delivery_status].reload.apple_show_id
       end
@@ -136,7 +136,7 @@ module Apple
 
         assert_equal 3, report[:updated]
         assert_equal ["would_update"], report[:actions].map { |action| action[:action] }.uniq
-        assert_nil state[:sync_log].reload.apple_show_id
+        assert_nil state[:sync_log].reload.external_show_id
         assert_nil state[:podcast_container].reload.apple_show_id
         assert_nil state[:delivery_status].reload.apple_show_id
       end
@@ -156,7 +156,7 @@ module Apple
         null_state = create_unscoped_state(apple_show_id: "show-null")
         mismatched_state = create_unscoped_state(apple_show_id: "show-expected")
         mismatched_state[:podcast_container].update_columns(apple_show_id: "show-wrong")
-        missing_episode = create_legacy_sync_log(feeder_id: -1, external_id: "missing-episode", apple_show_id: "show-orphan")
+        missing_episode = create_legacy_sync_log(feeder_id: -1, external_id: "missing-episode", external_show_id: "show-orphan")
 
         report = EpisodeDeliveryIdentityBackfill.verify!
 

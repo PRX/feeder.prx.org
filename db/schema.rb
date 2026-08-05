@@ -545,8 +545,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_000001) do
     t.datetime "created_at"
     t.text "api_response"
     t.integer "integration"
-    t.string "apple_show_id"
-    t.index ["integration", "feeder_type", "feeder_id", "apple_show_id"], name: "idx_sync_logs_unique_by_apple_show", unique: true, nulls_not_distinct: true
+    t.string "external_show_id"
+    t.index ["integration", "feeder_type", "feeder_id", "external_show_id"], name: "idx_sync_logs_unique_by_external_show", unique: true, nulls_not_distinct: true
   end
 
   create_table "tasks", id: :serial, force: :cascade do |t|

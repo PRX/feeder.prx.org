@@ -172,7 +172,7 @@ describe Apple::Publisher do
 
     before do
       SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
-      create_episode_sync_log(episode, external_id: external_id, apple_show_id: "show-1", **apple_episode_api_response)
+      create_episode_sync_log(episode, external_id: external_id, external_show_id: "show-1", **apple_episode_api_response)
     end
 
     it "should filter episodes that are already synced to apple" do
@@ -241,7 +241,7 @@ describe Apple::Publisher do
 
     before do
       Apple::Show.connect_existing("123", apple_config)
-      create_episode_sync_log(episode, external_id: "123", apple_show_id: "123", **apple_episode_api_response)
+      create_episode_sync_log(episode, external_id: "123", external_show_id: "123", **apple_episode_api_response)
       private_feed.episodes << episode
     end
 

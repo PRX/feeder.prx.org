@@ -176,14 +176,14 @@ module Apple
     def self.upsert_sync_log(ep, res)
       apple_id = res.dig("api_response", "val", "data", "id")
       raise "Missing remote apple id" unless apple_id.present?
-      apple_show_id = ep.apple_show_id.presence || raise(MissingShowIdentityError, "Apple sync state requires an Apple show ID")
+      external_show_id = ep.apple_show_id.presence || raise(MissingShowIdentityError, "Apple sync state requires an Apple show ID")
 
       sl = Apple::SyncLog.log!(
         feeder_id: ep.feeder_episode.id,
         feeder_type: :episodes,
         external_id: apple_id,
         api_response: res,
-        apple_show_id: apple_show_id
+        external_show_id: external_show_id
       )
       # reload local state
       ep.sync_log&.reload || ep.feeder_episode.reload
@@ -243,7 +243,7 @@ module Apple
       logs = SyncLog.apple.episodes.where(feeder_id: feeder_episode.id, feeder_type: :episodes)
 
       # TODO remove with cutover once all legacy NULL-show rows are stamped.
-      logs.find_by(apple_show_id: show_id) || logs.find_by(apple_show_id: nil)
+      logs.find_by(external_show_id: show_id) || logs.find_by(external_show_id: nil)
     end
 
     def apple_show_id

@@ -104,7 +104,7 @@ describe EpisodesHelper do
         feeder_type: :episodes,
         feeder_id: episode.id,
         external_id: "123",
-        apple_show_id: "show-1",
+        external_show_id: "show-1",
         api_response: {},
         updated_at: 2.hours.ago
       )

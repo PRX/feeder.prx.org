@@ -62,9 +62,9 @@ FactoryBot.define do
       if evaluator.create_sync_log && apple_show_id.present?
         existing_sync_log = SyncLog.apple.episodes.find_by(
           feeder_id: apple_episode.feeder_episode.id,
-          apple_show_id: apple_show_id
+          external_show_id: apple_show_id
         )
-        sync_log_attrs[:apple_show_id] = apple_show_id
+        sync_log_attrs[:external_show_id] = apple_show_id
 
         unless existing_sync_log.present?
           SyncLog.create!(sync_log_attrs.merge(
