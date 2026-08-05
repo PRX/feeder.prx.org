@@ -102,6 +102,18 @@ module Apple
         assert_equal config.id, report[:mismatches].first[:config_id]
         assert_equal "apple_show_id", report[:mismatches].first[:mismatches].first[:field]
       end
+
+      it "reports a podcast key mismatch" do
+        config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
+        ShowFeedBinding::Backfill.backfill!
+        config.podcast.update!(apple_key: create(:apple_key))
+
+        report = ShowFeedBinding::Backfill.verify_routing_equivalence!
+
+        assert_equal 1, report[:mismatches].length
+        assert_equal config.id, report[:mismatches].first[:config_id]
+        assert_equal "podcast.apple_key_id", report[:mismatches].first[:mismatches].first[:field]
+      end
     end
 
     describe ".verify_episode_show_consistency!" do
