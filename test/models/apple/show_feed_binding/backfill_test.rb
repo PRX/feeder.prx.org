@@ -13,7 +13,7 @@ module Apple
         assert_equal 1, report[:linked]
         assert_equal binding, config.reload.show_feed_binding
         assert_equal config.public_feed, binding.feed
-        assert_equal config.key, binding.apple_key
+        assert_equal config.key, config.podcast.apple_key
         assert_equal "show-from-sync", binding.apple_show_id
       end
 
@@ -61,6 +61,22 @@ module Apple
           assert_equal 1, report[:linked]
           assert_equal "would_create", report[:actions].first[:action]
         end
+        assert_nil config.reload.show_feed_binding
+        assert_nil config.podcast.reload.apple_key
+      end
+
+      it "reports conflicting podcast key candidates without choosing one" do
+        config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
+        other_feed = create(:private_feed, podcast: config.podcast)
+        other_config = build(:apple_config, feed: other_feed, key: create(:apple_key))
+        other_config.save!(validate: false)
+        config.podcast.update_column(:apple_key_id, nil)
+
+        report = ShowFeedBinding::Backfill.backfill!
+
+        assert_equal 1, report[:key_conflicts].length
+        assert_equal [config.id, other_config.id].sort, report[:key_conflicts].first[:config_ids].sort
+        assert_nil config.podcast.reload.apple_key
         assert_nil config.reload.show_feed_binding
       end
     end
@@ -138,6 +154,7 @@ module Apple
       podcast = create(:podcast)
       private_feed = create(:private_feed, podcast: podcast, apple_show_id: private_show_id)
       config = create(:apple_config, feed: private_feed, key: key)
+      podcast.update_column(:apple_key_id, nil)
 
       if sync_log_show_id
         SyncLog.log!(

@@ -2,17 +2,22 @@
 
 module Apple
   class ShowFeedBinding
-    # Transitional migration service: extracts Apple show/key/feed routing out
-    # of legacy apple_configs, feeds.apple_show_id, and public-feed SyncLog
-    # rows into Apple::ShowFeedBinding. Run by hand in the production console
-    # (dry-run, backfill, verify). Delete once legacy routing columns are gone.
+    # Transitional migration service: selects each podcast's legacy Apple key
+    # and extracts show/feed routing into Apple::ShowFeedBinding. Run by hand in
+    # the production console (dry-run, backfill, verify). Delete once legacy
+    # routing columns are gone.
     class Backfill
       def self.backfill!(dry_run: false)
         report = new_backfill_report(dry_run: dry_run)
+        configs = Apple::Config.includes(:key, feed: :podcast).to_a
+        report[:configs_total] = configs.length
 
-        Apple::Config.find_each do |config|
-          report[:configs_total] += 1
-          backfill_config!(config, report, dry_run: dry_run)
+        configs.group_by { |config| config.podcast&.id }.each_value do |podcast_configs|
+          next unless backfill_podcast_key!(podcast_configs, report, dry_run: dry_run)
+
+          podcast_configs.each do |config|
+            backfill_config!(config, report, dry_run: dry_run)
+          end
         end
 
         report
@@ -42,11 +47,11 @@ module Apple
             mismatches: []
           }
 
-          if config[:key_id] != binding.apple_key_id
+          if config[:key_id] != config.podcast&.apple_key_id
             mismatch[:mismatches] << {
-              field: "apple_key_id",
+              field: "podcast.apple_key_id",
               legacy: config[:key_id],
-              binding: binding.apple_key_id
+              podcast: config.podcast&.apple_key_id
             }
           end
 
@@ -103,17 +108,76 @@ module Apple
           skipped: 0,
           changed: 0,
           actions: [],
-          skipped_configs: []
+          skipped_configs: [],
+          podcast_keys_assigned: 0,
+          key_actions: [],
+          key_conflicts: []
         }
       end
       private_class_method :new_backfill_report
 
+      def self.backfill_podcast_key!(configs, report, dry_run:)
+        podcast = configs.first&.podcast
+        unless podcast
+          configs.each { |config| skip_config(config, report, "missing podcast") }
+          return
+        end
+
+        keys = configs.filter_map(&:key)
+        if keys.empty?
+          configs.each { |config| skip_config(config, report, "missing key") }
+          return
+        end
+
+        key_ids = keys.map(&:id).uniq
+        if key_ids.many?
+          conflict = {
+            podcast_id: podcast.id,
+            config_ids: configs.map(&:id),
+            key_ids: key_ids.sort
+          }
+          report[:key_conflicts] << conflict
+          configs.each { |config| skip_config(config, report, "conflicting keys") }
+          return
+        end
+
+        key = keys.first
+
+        changes = {
+          podcast_apple_key_id: {from: podcast.apple_key_id, to: key.id},
+          config_ids: configs.select { |config| config.key_id != key.id }.map(&:id)
+        }
+        assigns_podcast_key = changes[:podcast_apple_key_id][:from] != changes[:podcast_apple_key_id][:to]
+        changes_key_route = assigns_podcast_key || changes[:config_ids].any?
+
+        unless dry_run
+          configs.each { |config| config.update!(key: key) unless config.key_id == key.id }
+          podcast.update!(apple_key: key) unless podcast.apple_key_id == key.id
+        end
+
+        report[:podcast_keys_assigned] += 1 if assigns_podcast_key
+        action = if !changes_key_route
+          "unchanged"
+        elsif dry_run
+          "would_assign"
+        else
+          "assign"
+        end
+        report[:key_actions] << {
+          podcast_id: podcast.id,
+          action: action,
+          key_id: key.id,
+          changes: changes
+        }
+
+        key
+      end
+      private_class_method :backfill_podcast_key!
+
       def self.backfill_config!(config, report, dry_run:)
-        key = config.key
         public_feed = config.public_feed
         legacy_show_id = legacy_apple_show_id(config, public_feed)
 
-        return skip_config(config, report, "missing key") unless key
         return skip_config(config, report, "missing public feed") unless public_feed
         return skip_config(config, report, "missing show id") unless legacy_show_id.present?
 
@@ -125,12 +189,10 @@ module Apple
         if binding_was_new
           changes[:create] = {
             feed_id: public_feed.id,
-            apple_key_id: key.id,
             apple_show_id: legacy_show_id
           }
-        else
-          changes[:apple_key_id] = {from: binding.apple_key_id, to: key.id} if binding.apple_key_id != key.id
-          changes[:apple_show_id] = {from: binding.apple_show_id, to: legacy_show_id} if binding.apple_show_id != legacy_show_id
+        elsif binding.apple_show_id != legacy_show_id
+          changes[:apple_show_id] = {from: binding.apple_show_id, to: legacy_show_id}
         end
 
         if needs_link
@@ -149,7 +211,6 @@ module Apple
         action = "link" if changes.keys == [:show_feed_binding_id]
 
         unless dry_run
-          binding.apple_key = key
           binding.apple_show_id = legacy_show_id
           binding.save!
 

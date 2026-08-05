@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_14_185049) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_05_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
@@ -76,11 +76,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_14_185049) do
 
   create_table "apple_show_feed_bindings", force: :cascade do |t|
     t.bigint "feed_id", null: false
-    t.bigint "apple_key_id", null: false
     t.string "apple_show_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["apple_key_id"], name: "index_apple_show_feed_bindings_on_apple_key_id"
     t.index ["feed_id"], name: "index_apple_show_feed_bindings_on_feed_id", unique: true
   end
 
@@ -412,6 +410,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_14_185049) do
     t.string "categories", array: true
     t.datetime "locked_until", precision: nil
     t.string "guid"
+    t.bigint "apple_key_id"
+    t.index ["apple_key_id"], name: "index_podcasts_on_apple_key_id"
     t.index ["categories"], name: "index_podcasts_on_categories", using: :gin
     t.index ["guid"], name: "index_podcasts_on_guid"
     t.index ["path"], name: "index_podcasts_on_path", unique: true
@@ -577,7 +577,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_14_185049) do
 
   add_foreign_key "apple_configs", "apple_show_feed_bindings", column: "show_feed_binding_id"
   add_foreign_key "apple_configs", "feeds"
-  add_foreign_key "apple_show_feed_bindings", "apple_keys"
   add_foreign_key "apple_show_feed_bindings", "feeds"
   add_foreign_key "episode_imports", "podcast_imports"
   add_foreign_key "feed_images", "feeds"
@@ -589,6 +588,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_14_185049) do
   add_foreign_key "media_version_resources", "media_versions"
   add_foreign_key "media_versions", "episodes"
   add_foreign_key "podcast_imports", "podcasts"
+  add_foreign_key "podcasts", "apple_keys"
   add_foreign_key "publishing_pipeline_states", "podcasts"
   add_foreign_key "publishing_pipeline_states", "publishing_queue_items"
   add_foreign_key "publishing_queue_items", "podcasts"

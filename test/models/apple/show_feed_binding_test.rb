@@ -2,6 +2,10 @@ require "test_helper"
 
 module Apple
   describe ShowFeedBinding do
+    it "does not store an Apple key" do
+      refute_includes ShowFeedBinding.column_names, "apple_key_id"
+    end
+
     describe "validations" do
       it "requires an apple show id" do
         binding = build(:apple_show_feed_binding, apple_show_id: nil)

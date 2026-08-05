@@ -23,6 +23,8 @@ module Apple
 
     accepts_nested_attributes_for :key
 
+    after_save :sync_podcast_apple_key
+
     def self.find_or_build_apple_feed(podcast)
       existing_feed = Feeds::AppleSubscription.find_by_podcast_id(podcast.id)
       existing_feed.present? ? existing_feed : Feeds::AppleSubscription.new(podcast_id: podcast.id)
@@ -70,6 +72,12 @@ module Apple
       if feed&.default?
         errors.add(:feed, "cannot use default feed")
       end
+    end
+
+    def sync_podcast_apple_key
+      return unless key && podcast
+
+      podcast.update!(apple_key: key) unless podcast.apple_key_id == key.id
     end
 
     def podcast_has_one_apple_config

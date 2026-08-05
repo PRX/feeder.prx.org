@@ -3,7 +3,6 @@
 module Apple
   class ShowFeedBinding < ApplicationRecord
     belongs_to :feed
-    belongs_to :apple_key, class_name: "Apple::Key"
 
     has_many :delegated_delivery_configs,
       class_name: "Apple::Config",

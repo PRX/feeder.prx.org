@@ -136,7 +136,7 @@ describe Feeds::AppleSubscription do
 
       binding = default_feed.reload.apple_show_feed_binding
       assert_equal binding, apple_feed.apple_config.reload.show_feed_binding
-      assert_equal apple_feed.apple_config.key, binding.apple_key
+      assert_equal apple_feed.apple_config.key, podcast.reload.apple_key
       assert_equal "show-1", binding.apple_show_id
 
       assert_no_difference "Apple::ShowFeedBinding.count" do
