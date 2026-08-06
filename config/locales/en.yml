@@ -1370,17 +1370,52 @@ en:
   podcast_integrations:
     show:
       title: "%{title} - Integrations"
+      podcast_credential:
+        title: Apple Podcasts Connect
+        description: Choose the Apple credential this podcast and its public feeds use.
+        label: Apple credential for this podcast
+        help: Public feeds in this podcast use this credential to connect to their Apple shows.
+        none: No credential selected
+        empty: Add an account credential below before connecting this podcast to Apple.
+        save: Save Credential
+        unsaved_confirm: You have an unsaved Apple credential selection.
+        confirm_change:
+          one: This podcast has one connected Apple show. Changing credentials will affect that connection.
+          other: This podcast has %{count} connected Apple shows. Changing credentials will affect those connections.
+        confirm_remove:
+          one: This podcast has one connected Apple show and cannot remove its credential without disconnecting that show.
+          other: This podcast has %{count} connected Apple shows and cannot remove its credential without disconnecting those shows.
       apple_credentials:
-        title: Apple Credentials
-        description: Configure credentials used to connect public feeds to Apple Podcasts Connect.
+        title: Account Credentials
+        description: Credentials belong to PRX account %{account_name} (%{account_id}) and are available to every podcast in that account.
         guide_link: <a href="https://help.prx.org/hc/en-us/articles/26602803552155-Setting-up-Apple-Podcast-Subscriptions-with-Apple-Delegated-Delivery" target="_blank">Check out our setup guide.</a>
         key_label: "Apple Key …%{key_id}"
         provider_label: "Provider …%{provider_id}"
-        upload: Upload Key
+        usage:
+          zero: Not used by any podcasts
+          one: Used by one podcast
+          other: Used by %{count} podcasts
+        selected: Used by this podcast
+        remove: Remove
+        remove_confirm: Remove this unused Apple credential from the PRX account?
+        add_title: Add an account credential
+        upload_help: Upload the key file downloaded from Apple Podcasts Connect without renaming it.
+        upload: Add Credential
+    update:
+      notice: Apple credential updated
+      error: Unable to update Apple credential
+      unavailable: is not available to this PRX account
+      required: cannot be removed while this podcast has connected Apple shows
+      inaccessible: "cannot access the connected Apple shows: %{show_ids}"
+      verification_failed: could not be verified with Apple Podcasts Connect
   apple_keys:
     create:
       notice: Apple credential uploaded
       error: Unable to upload Apple credential
+    destroy:
+      notice: Apple credential removed
+      error: Unable to remove Apple credential
+      in_use: Apple credentials cannot be removed while podcasts use them
   podcast_clips:
     attach:
       alert: Something went horribly wrong
