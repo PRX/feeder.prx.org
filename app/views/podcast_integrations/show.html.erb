@@ -18,18 +18,18 @@
 
         <% if @apple_keys.any? %>
           <% form_data = {
-            controller: "unsaved",
-            unsaved_changed_value: false,
-            unsaved_confirm_value: t(".podcast_credential.unsaved_confirm")
-          } %>
+               controller: "unsaved",
+               unsaved_changed_value: false,
+               unsaved_confirm_value: t(".podcast_credential.unsaved_confirm")
+             } %>
           <%= form_with(model: @podcast, url: podcast_integrations_path(@podcast), method: :patch, data: form_data) do |form| %>
             <% select_data = {} %>
             <% if @connected_apple_show_ids.any? %>
               <% select_data = {
-                confirm_field_target: "field",
-                confirm_with: t(".podcast_credential.confirm_change", count: @connected_apple_show_ids.size),
-                confirm_delete: t(".podcast_credential.confirm_remove", count: @connected_apple_show_ids.size)
-              } %>
+                   confirm_field_target: "field",
+                   confirm_with: t(".podcast_credential.confirm_change", count: @connected_apple_show_ids.size),
+                   confirm_delete: t(".podcast_credential.confirm_remove", count: @connected_apple_show_ids.size)
+                 } %>
             <% end %>
 
             <div class="form-floating input-group mb-3">
