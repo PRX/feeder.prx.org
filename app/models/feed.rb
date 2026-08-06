@@ -41,7 +41,7 @@ class Feed < ApplicationRecord
     if defined?(@apple_connection)
       @apple_connection
     else
-      apple_show_feed_binding&.connection_token
+      apple_show_feed_binding&.apple_show_id
     end
   end
 
