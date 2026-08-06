@@ -19,6 +19,10 @@ module Integrations
         raise NotImplementedError, "Subclasses must implement delivery_status"
       end
 
+      def update_delivery_status(_attrs)
+        raise NotImplementedError, "Subclasses must implement update_delivery_status"
+      end
+
       def sync_log
         raise NotImplementedError, "Subclasses must implement sync_log"
       end

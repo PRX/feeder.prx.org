@@ -238,4 +238,15 @@ describe Megaphone::Episode do
       end
     end
   end
+
+  describe "#update_delivery_status" do
+    it "updates status through the integration episode facade" do
+      episode = feeder_episode.megaphone_episode
+
+      status = episode.update_delivery_status(uploaded: true)
+
+      assert status.uploaded
+      assert_equal status, episode.delivery_status
+    end
+  end
 end

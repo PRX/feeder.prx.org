@@ -332,7 +332,7 @@ module Megaphone
             uploaded: true,
             delivered: false
           )
-          Megaphone::EpisodeDeliveryStatus.update_status(feeder_episode, attrs)
+          update_delivery_status(attrs)
         # if versions don't match, and we didn't upload, it isn't uploaded or delivered
         else
           delivery_status(true).mark_as_not_delivered!
@@ -375,10 +375,13 @@ module Megaphone
       end
     end
 
+    def update_delivery_status(attrs)
+      Megaphone::EpisodeDeliveryStatus.update_status(feeder_episode, attrs)
+    end
+
     def increment_asset_wait!
       status = delivery_status(true)
-      Megaphone::EpisodeDeliveryStatus.update_status(
-        feeder_episode,
+      update_delivery_status(
         asset_processing_attempts: status.asset_processing_attempts.to_i + 1
       )
     end
