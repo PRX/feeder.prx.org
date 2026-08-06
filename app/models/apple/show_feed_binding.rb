@@ -21,20 +21,21 @@ module Apple
 
     scope :active, -> { joins(:feed).where(feeds: {deleted_at: nil}) }
 
-    def self.connect_existing(feed:, apple_key:, apple_show_id:)
+    def self.connect_existing(feed:, apple_show_id:)
       binding = find_or_initialize_by(feed: feed)
       binding.apple_show_id = apple_show_id
       binding.valid?
-      unless feed.podcast && apple_key&.account_id == feed.podcast.account_id
+
+      apple_key = feed.podcast&.apple_key
+      if apple_key.nil?
+        binding.errors.add(:apple_key, "must be selected for the feed's podcast")
+      elsif apple_key.account_id != feed.podcast.account_id
         binding.errors.add(:apple_key, "must belong to the feed's PRX account")
       end
       return binding if binding.errors.any?
 
-      Apple::Show.from_show_feed_binding(binding, apple_key: apple_key).get_show
-      transaction do
-        feed.podcast.update!(apple_key: apple_key)
-        binding.save!
-      end
+      Apple::Show.from_show_feed_binding(binding).get_show
+      binding.save!
       binding
     rescue => error
       Rails.logger.error("Unable to connect Apple show feed binding", feed_id: feed.id, apple_show_id: apple_show_id, error: error)
@@ -43,40 +44,24 @@ module Apple
       binding
     end
 
-    def self.connection_options(keys)
-      keys.flat_map do |key|
-        api = Apple::Api.from_apple_key(key)
-        shows = Apple::Show.apple_shows_json(api) || []
+    def self.connection_options(apple_key)
+      return [] unless apple_key
 
-        shows.filter_map do |show|
-          next if show.dig("attributes", "publishingState") == "ARCHIVED"
+      api = Apple::Api.from_apple_key(apple_key)
+      shows = Apple::Show.apple_shows_json(api) || []
 
-          show_id = show["id"]
-          next if show_id.blank?
+      shows.filter_map do |show|
+        next if show.dig("attributes", "publishingState") == "ARCHIVED"
 
-          title = show.dig("attributes", "title").presence || show_id
-          key_label = key.key_id.to_s.last(4)
-          ConnectionOption.new("#{title} — #{show_id} · Key …#{key_label}", connection_token(key.id, show_id))
-        end
-      rescue => error
-        Rails.logger.error("Unable to list Apple shows", apple_key_id: key.id, error: error)
-        []
+        show_id = show["id"]
+        next if show_id.blank?
+
+        title = show.dig("attributes", "title").presence || show_id
+        ConnectionOption.new("#{title} — #{show_id}", show_id.to_s)
       end
-    end
-
-    def self.connection_token(apple_key_id, apple_show_id)
-      "#{apple_key_id}:#{apple_show_id}"
-    end
-
-    def self.parse_connection_token(token)
-      apple_key_id, apple_show_id = token.to_s.split(":", 2)
-      return if apple_key_id.blank? || apple_show_id.blank?
-
-      [apple_key_id, apple_show_id]
-    end
-
-    def connection_token
-      self.class.connection_token(feed&.podcast&.apple_key_id, apple_show_id)
+    rescue => error
+      Rails.logger.error("Unable to list Apple shows", apple_key_id: apple_key&.id, error: error)
+      []
     end
 
     def feed_must_be_public

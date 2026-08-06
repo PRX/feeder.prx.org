@@ -195,12 +195,10 @@ class FeedsController < ApplicationController
     @apple_connection_options = []
     return unless @feed.persisted? && @feed.public?
 
-    keys = policy_scope(Apple::Key).for_account(@podcast.account_id).order(:created_at)
-    options = Apple::ShowFeedBinding.connection_options(keys)
+    options = Apple::ShowFeedBinding.connection_options(@podcast.apple_key)
 
-    if (binding = @feed.apple_show_feed_binding) && options.none? { |option| option.value == binding.connection_token }
-      label = "#{binding.apple_show_id} · Key …#{binding.feed.podcast.apple_key.key_id.to_s.last(4)}"
-      options.prepend(Apple::ShowFeedBinding::ConnectionOption.new(label, binding.connection_token))
+    if (binding = @feed.apple_show_feed_binding) && options.none? { |option| option.value == binding.apple_show_id.to_s }
+      options.prepend(Apple::ShowFeedBinding::ConnectionOption.new(binding.apple_show_id.to_s, binding.apple_show_id.to_s))
     end
 
     @apple_connection_options = options.map { |option| [option.label, option.value] }
@@ -225,23 +223,15 @@ class FeedsController < ApplicationController
 
     current_binding = @feed.apple_show_feed_binding
     selection = @feed.apple_connection
-    return true if selection == current_binding&.connection_token
+    return true if selection.to_s == current_binding&.apple_show_id.to_s
 
     if selection.blank?
       return disconnect_apple_binding(current_binding)
     end
 
-    parsed = Apple::ShowFeedBinding.parse_connection_token(selection)
-    return apple_connection_error("is invalid") unless parsed
-
-    apple_key_id, apple_show_id = parsed
-    apple_key = policy_scope(Apple::Key).for_account(@podcast.account_id).find_by(id: apple_key_id)
-    return apple_connection_error("uses an unavailable credential") unless apple_key
-
     binding = Apple::ShowFeedBinding.connect_existing(
       feed: @feed,
-      apple_key: apple_key,
-      apple_show_id: apple_show_id
+      apple_show_id: selection
     )
 
     if binding.persisted? && binding.errors.empty?
