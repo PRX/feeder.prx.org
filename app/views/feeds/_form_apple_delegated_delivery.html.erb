@@ -1,0 +1,67 @@
+<% config = feed.delegated_delivery_config %>
+<% configured = config&.persisted? %>
+<% selectable = @apple_delegated_delivery_options.present? %>
+
+<div class="card shadow border-0 mt-3">
+  <div class="card-header card-header-light">
+    <h2 class="card-title h5"><%= t(".title") %></h2>
+  </div>
+
+  <div class="card-body">
+    <p><%= t(".description") %></p>
+
+    <% unless selectable %>
+      <div class="alert alert-info" role="status"><%= t(".no_connections") %></div>
+    <% end %>
+
+    <%= form.fields_for :delegated_delivery_config do |config_form| %>
+      <%= config_form.hidden_field :id if configured %>
+
+      <div class="form-floating input-group mb-3">
+        <% select_options = configured ? {} : {include_blank: t(".select_connection")} %>
+        <%= config_form.select :show_feed_binding_id,
+          @apple_delegated_delivery_options,
+          select_options,
+          disabled: !selectable,
+          required: selectable %>
+        <%= config_form.label :show_feed_binding_id, t(".connection") %>
+        <%= field_help_text t(".help.connection") %>
+      </div>
+
+      <div class="form-check mb-2">
+        <%= config_form.check_box :publish_enabled, disabled: !selectable %>
+        <div class="d-flex align-items-center">
+          <%= config_form.label :publish_enabled %>
+          <%= help_text t(".help.publish_enabled") %>
+        </div>
+      </div>
+
+      <div class="form-check mb-2">
+        <%= config_form.check_box :sync_blocks_rss, disabled: !selectable %>
+        <div class="d-flex align-items-center">
+          <%= config_form.label :sync_blocks_rss %>
+          <%= help_text t(".help.sync_blocks_rss") %>
+        </div>
+      </div>
+
+      <% if configured %>
+        <div class="form-check mt-3">
+          <%= config_form.check_box :_destroy %>
+          <%= config_form.label :_destroy, t(".remove") %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="card-footer d-flex justify-content-between align-items-end">
+    <div>
+      <strong><%= t(".status") %></strong><br>
+      <% if configured %>
+        <span class="text-muted"><%= t(".last_checked", time: local_time_ago(config.updated_at)) %></span>
+      <% end %>
+    </div>
+    <span class="badge <%= configured ? "bg-success" : "bg-secondary" %>">
+      <%= configured ? t(".configured") : t(".not_configured") %>
+    </span>
+  </div>
+</div>
