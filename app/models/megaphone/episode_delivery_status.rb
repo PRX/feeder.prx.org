@@ -28,24 +28,6 @@ module Megaphone
       episode.episode_delivery_statuses.megaphone.delete_all
     end
 
-    def self.unfinished(episodes)
-      integration = integrations.fetch("megaphone")
-      latest_status = <<~SQL
-        left join lateral (
-          select "integrations_episode_delivery_statuses".*
-          from "integrations_episode_delivery_statuses"
-          where "episodes"."id" = "integrations_episode_delivery_statuses"."episode_id"
-            and "integrations_episode_delivery_statuses"."integration" = #{integration}
-          order by "integrations_episode_delivery_statuses"."created_at" desc
-          limit 1
-        ) eds on true
-      SQL
-
-      episodes
-        .joins(latest_status)
-        .where('(eds."episode_id" is null) or ((eds."delivered" = false or eds."uploaded" = false) and eds."integration" = ?)', integration)
-    end
-
     def mark_as_uploaded!
       update_status(uploaded: true)
     end

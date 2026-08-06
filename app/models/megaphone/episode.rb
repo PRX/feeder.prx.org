@@ -50,7 +50,21 @@ module Megaphone
     end
 
     def self.unfinished(feeder_episodes)
-      Megaphone::EpisodeDeliveryStatus.unfinished(feeder_episodes)
+      integration = Megaphone::EpisodeDeliveryStatus.integrations.fetch("megaphone")
+      latest_status = <<~SQL
+        left join lateral (
+          select "integrations_episode_delivery_statuses".*
+          from "integrations_episode_delivery_statuses"
+          where "episodes"."id" = "integrations_episode_delivery_statuses"."episode_id"
+            and "integrations_episode_delivery_statuses"."integration" = #{integration}
+          order by "integrations_episode_delivery_statuses"."created_at" desc
+          limit 1
+        ) eds on true
+      SQL
+
+      feeder_episodes
+        .joins(latest_status)
+        .where('(eds."episode_id" is null) or ((eds."delivered" = false or eds."uploaded" = false) and eds."integration" = ?)', integration)
     end
 
     def self.find_by_episode(megaphone_podcast, feeder_episode)
@@ -175,7 +189,7 @@ module Megaphone
     def delete!
       self.api_response = api.delete("podcasts/#{podcast.id}/episodes/#{id}")
       delete_sync_log
-      delete_delivery_status
+      Megaphone::EpisodeDeliveryStatus.delete_status(feeder_episode)
       self
     rescue Faraday::ClientError => ce
       self.api_response = ce.response
@@ -187,10 +201,6 @@ module Megaphone
 
     def delete_sync_log
       sync_log.destroy!
-    end
-
-    def delete_delivery_status
-      Megaphone::EpisodeDeliveryStatus.delete_status(feeder_episode)
     end
 
     # call this when we need to update the audio on mp
@@ -312,7 +322,7 @@ module Megaphone
     def refresh_delivery_status!
       # if there is not audio yet, we're all done
       if !feeder_episode.complete_media?
-        mark_as_delivered!
+        delivery_status(true).mark_as_delivered!
       # if the audio doesn't match, either it was just uploaded, or needs it
       elsif !has_media_version?
         # if there's audio and we just uploaded it successfully, set attr, then check status
@@ -322,15 +332,15 @@ module Megaphone
             uploaded: true,
             delivered: false
           )
-          update_delivery_status(attrs)
+          Megaphone::EpisodeDeliveryStatus.update_status(feeder_episode, attrs)
         # if versions don't match, and we didn't upload, it isn't uploaded or delivered
         else
-          mark_as_not_delivered!
+          delivery_status(true).mark_as_not_delivered!
         end
       else
         # media is complete and has the right version, that's uploaded!
         # next pass through check_audio! should mark it delivered if mp matches and is complete
-        mark_as_uploaded!
+        delivery_status(true).mark_as_uploaded!
       end
       feeder_episode.episode_delivery_statuses.reset
     end
@@ -365,25 +375,10 @@ module Megaphone
       end
     end
 
-    def update_delivery_status(attrs)
-      Megaphone::EpisodeDeliveryStatus.update_status(feeder_episode, attrs)
-    end
-
-    def mark_as_uploaded!
-      delivery_status(true).mark_as_uploaded!
-    end
-
-    def mark_as_delivered!
-      delivery_status(true).mark_as_delivered!
-    end
-
-    def mark_as_not_delivered!
-      delivery_status(true).mark_as_not_delivered!
-    end
-
     def increment_asset_wait!
       status = delivery_status(true)
-      update_delivery_status(
+      Megaphone::EpisodeDeliveryStatus.update_status(
+        feeder_episode,
         asset_processing_attempts: status.asset_processing_attempts.to_i + 1
       )
     end

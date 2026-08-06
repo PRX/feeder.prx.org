@@ -77,7 +77,7 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def mark_as_not_delivered!(episode)
-    episode.megaphone_episode.mark_as_not_delivered!
+    Megaphone::EpisodeDeliveryStatus.current_or_default(episode).mark_as_not_delivered!
   end
 
   def advertising_tag_options

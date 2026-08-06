@@ -215,7 +215,7 @@ class EpisodeMegaphoneImport < EpisodeImport
       delivered: true
     }
 
-    delivery_status = megaphone_episode.update_delivery_status(delivery_status_attrs)
+    delivery_status = Megaphone::EpisodeDeliveryStatus.update_status(episode, delivery_status_attrs)
     self.synced_at = delivery_status.created_at
     save!
   end

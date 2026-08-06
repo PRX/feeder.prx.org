@@ -1,6 +1,28 @@
 require "test_helper"
 
 describe Megaphone::Episode do
+  describe ".unfinished" do
+    let(:episode) { create(:episode) }
+
+    it "uses the latest Megaphone status when a newer Apple status exists" do
+      create(:megaphone_episode_delivery_status,
+        episode: episode,
+        delivered: false,
+        uploaded: false,
+        created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: "show-1",
+        delivered: true,
+        uploaded: true,
+        created_at: 1.hour.ago)
+
+      episodes = Megaphone::Episode.unfinished(Episode.where(id: episode.id))
+
+      assert_equal [episode], episodes
+    end
+  end
+
   let(:feeder_podcast) { create(:podcast) }
   let(:feed) { create(:megaphone_feed, podcast: feeder_podcast) }
   let(:feeder_episode) { create(:episode, podcast: feeder_podcast, segment_count: 2) }

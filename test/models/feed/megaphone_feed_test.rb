@@ -17,13 +17,13 @@ describe Feeds::MegaphoneFeed do
     assert_includes mf.errors[:audio_format], "must be mp3"
   end
 
-  it "marks delivery state through the Megaphone episode facade" do
+  it "marks the Megaphone delivery status as not delivered" do
     episode = create(:episode, podcast: podcast)
     create(:megaphone_episode_delivery_status, episode: episode, delivered: true, uploaded: true)
 
     megaphone_feed.mark_as_not_delivered!(episode)
 
-    status = episode.megaphone_episode.delivery_status
+    status = Megaphone::EpisodeDeliveryStatus.current(episode)
     refute status.delivered?
     refute status.uploaded?
   end

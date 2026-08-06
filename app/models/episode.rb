@@ -125,6 +125,10 @@ class Episode < ApplicationRecord
     !!podcast.apple_config&.publish_to_apple?
   end
 
+  def megaphone_episode
+    Megaphone::Episode.new.tap { |episode| episode.feeder_episode = self }
+  end
+
   def apple_episode
     return nil if !persisted? || !publish_to_apple?
 

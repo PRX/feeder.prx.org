@@ -131,26 +131,6 @@ class Integrations::EpisodeDeliveryStatusTest < ActiveSupport::TestCase
       end
     end
 
-    describe "Megaphone::EpisodeDeliveryStatus.unfinished" do
-      it "uses the latest Megaphone status when a newer Apple status exists" do
-        create(:megaphone_episode_delivery_status,
-          episode: episode,
-          delivered: false,
-          uploaded: false,
-          created_at: 2.hours.ago)
-        create(:apple_episode_delivery_status,
-          episode: episode,
-          apple_show_id: "show-1",
-          delivered: true,
-          uploaded: true,
-          created_at: 1.hour.ago)
-
-        episodes = Megaphone::EpisodeDeliveryStatus.unfinished(Episode.where(id: episode.id))
-
-        assert_equal [episode], episodes
-      end
-    end
-
     describe "#mark_as_not_delivered!" do
       it "preserves source_media_version_id" do
         delivery_status.update!(source_media_version_id: 42)
