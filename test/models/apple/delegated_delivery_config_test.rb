@@ -40,21 +40,27 @@ describe Apple::DelegatedDeliveryConfig do
       assert_equal ["must belong to the same podcast as feed"], config.errors[:show_feed_binding]
     end
 
-    it "is unique to a podcast" do
+    it "allows multiple configs per podcast" do
       podcast = create(:podcast)
-      f1 = create(:feed, podcast: podcast)
-      c1 = create(:delegated_delivery_config, feed: f1)
-      assert c1.valid?
+      key = create(:apple_key, account_id: podcast.account_id)
+      podcast.update!(apple_key: key)
+      first_binding = create(:apple_show_feed_binding, feed: podcast.default_feed)
+      second_binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
 
-      f2 = create(:feed, podcast: podcast)
-      c2 = build(:delegated_delivery_config, feed: f2)
-      refute c2.valid?
-      assert_equal ["podcast already has a delegated delivery config"], c2.errors[:feed]
+      first = create(
+        :delegated_delivery_config,
+        feed: create(:private_feed, podcast: podcast),
+        key: key,
+        show_feed_binding: first_binding
+      )
+      second = create(
+        :delegated_delivery_config,
+        feed: create(:private_feed, podcast: podcast),
+        key: key,
+        show_feed_binding: second_binding
+      )
 
-      # can't have 2 on same feed either
-      c3 = build(:delegated_delivery_config, feed: f1)
-      refute c3.valid?
-      assert_equal ["podcast already has a delegated delivery config"], c2.errors[:feed]
+      assert_equal [first, second], Apple::DelegatedDeliveryConfig.where(id: [first.id, second.id]).order(:id).to_a
     end
 
     it "cannot be the default feed" do
