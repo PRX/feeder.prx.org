@@ -13,10 +13,7 @@ module Apple
     has_many :podcast_delivery_files, through: :podcast_deliveries
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
 
-    # Existing legacy rows may be updated while the backfill is in progress,
-    # but every newly created container must already be show-scoped.
-    # TODO remove with cutover: validate every row and add the database constraint.
-    validates :apple_show_id, presence: true, on: :create
+    validates :apple_show_id, presence: true
 
     alias_method :deliveries, :podcast_deliveries
     alias_method :deliveries=, :podcast_deliveries=
@@ -34,10 +31,6 @@ module Apple
       joined_rows = Apple::ApiJoin.join_on_apple_episode_id(episodes, results, left_join: true).each do |(ep, row)|
         if row.nil?
           if (container = ep.podcast_container)
-            # Preserve the known-show context when a legacy container is
-            # removed before the backfill has stamped it.
-            # TODO remove with cutover after all legacy NULL-show rows are stamped.
-            container.apple_show_id ||= ep.apple_show_id
             stale_podcast_containers << container
           end
           next
@@ -148,14 +141,10 @@ module Apple
     def self.persist_podcast_container(episode_id, attributes)
       containers = where(episode_id: episode_id)
       pc = containers.find_by(apple_show_id: attributes[:apple_show_id])
-      # TODO remove with cutover after all legacy NULL-show rows are stamped.
-      pc ||= containers.find_by(apple_show_id: nil) if attributes[:apple_show_id].present?
-
       if pc
-        action = pc.apple_show_id.nil? ? :adopted : :updated
         pc.update!(attributes)
         pc.touch
-        [pc, action]
+        [pc, :updated]
       else
         [create!(attributes.merge(episode_id: episode_id)), :created]
       end
