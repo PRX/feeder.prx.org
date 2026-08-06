@@ -4,6 +4,10 @@
   </div>
 
   <div class="card-body">
+    <% if @apple_show_lookup_failed %>
+      <div class="alert alert-danger" role="alert"><%= t(".show_lookup_failed") %></div>
+    <% end %>
+
     <% binding = feed.apple_show_feed_binding %>
     <% dependents = [binding&.delegated_delivery_config].compact %>
 

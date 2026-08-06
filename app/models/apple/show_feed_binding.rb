@@ -61,6 +61,7 @@ module Apple
       end
     rescue => error
       Rails.logger.error("Unable to list Apple shows", apple_key_id: apple_key&.id, error: error)
+      yield error if block_given?
       []
     end
 
