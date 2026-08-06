@@ -58,6 +58,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to podcast_feed_url(podcast, Feed.last)
     assert_equal podcast.account_id, Feed.last.delegated_delivery_config.key.account_id
     assert_equal Feed.last.delegated_delivery_config.key, podcast.reload.apple_key
+    assert_nil Feed.last.delegated_delivery_config.show_feed_binding_id
   end
 
   test "renders and updates delegated delivery settings" do
