@@ -73,7 +73,10 @@ class EpisodeHasFeedsTest < ActiveSupport::TestCase
   describe "#set_default_feeds" do
     it "sets default feeds on new episodes" do
       # saved episodes get default+apple feeds
-      f3.update(type: "Feeds::AppleSubscription")
+      key = create(:apple_key, account_id: podcast.account_id)
+      podcast.update!(apple_key: key)
+      binding = create(:apple_show_feed_binding, feed: f1)
+      create(:delegated_delivery_config, feed: f3, show_feed_binding: binding, publish_enabled: true)
       assert_equal [f1.id, f3.id], episode.feeds.map(&:id).sort
 
       # new episodes initialized with defaults
