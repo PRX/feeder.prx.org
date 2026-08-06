@@ -266,25 +266,29 @@ describe Apple::Show do
     end
 
     it "should take in the apple show id an apple credentials object" do
-      delegated_delivery_config.save!
-      apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
+      with_legacy_routing do
+        delegated_delivery_config.save!
+        apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
 
-      assert_equal apple_show.apple_id, "some_apple_id"
-      assert_equal apple_show.public_feed, delegated_delivery_config.public_feed
-      assert_equal apple_show.private_feed, delegated_delivery_config.private_feed
+        assert_equal apple_show.apple_id, "some_apple_id"
+        assert_equal apple_show.public_feed, delegated_delivery_config.public_feed
+        assert_equal apple_show.private_feed, delegated_delivery_config.private_feed
 
-      # it can be reloaded from the db
-      apple_publisher = Apple::Publisher.from_delegated_delivery_config(delegated_delivery_config.reload)
-      assert_equal apple_publisher.show.apple_id, "some_apple_id"
+        # it can be reloaded from the db
+        apple_publisher = Apple::Publisher.from_delegated_delivery_config(delegated_delivery_config.reload)
+        assert_equal apple_publisher.show.apple_id, "some_apple_id"
+      end
     end
 
     it "should take in a new apple show id" do
-      delegated_delivery_config.save!
-      apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
-      assert_equal apple_show.apple_id, "some_apple_id"
-      apple_show = Apple::Show.connect_existing("another_apple_id", delegated_delivery_config)
-      apple_show.public_feed.reload
-      assert_equal apple_show.apple_id, "another_apple_id"
+      with_legacy_routing do
+        delegated_delivery_config.save!
+        apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
+        assert_equal apple_show.apple_id, "some_apple_id"
+        apple_show = Apple::Show.connect_existing("another_apple_id", delegated_delivery_config)
+        apple_show.public_feed.reload
+        assert_equal apple_show.apple_id, "another_apple_id"
+      end
     end
   end
 
@@ -509,6 +513,14 @@ describe Apple::Show do
   def with_show_feed_binding_routing
     previous = ENV["APPLE_ROUTING_SOURCE"]
     ENV["APPLE_ROUTING_SOURCE"] = "show_feed_binding"
+    yield
+  ensure
+    previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
+  end
+
+  def with_legacy_routing
+    previous = ENV["APPLE_ROUTING_SOURCE"]
+    ENV["APPLE_ROUTING_SOURCE"] = "legacy"
     yield
   ensure
     previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
