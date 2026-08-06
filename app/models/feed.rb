@@ -190,15 +190,22 @@ class Feed < ApplicationRecord
   end
 
   # Whether an episode is eligible for this feed's integration.
-  # Subclasses may include episodes beyond the rendered RSS window.
+  # Apple can upload drafts beyond the rendered RSS window.
   def integration_episode?(episode)
-    feed_episode?(episode)
+    if integration_type != :apple || episode.published_by?(episode_offset_seconds.to_i)
+      feed_episode?(episode)
+    elsif episode.enclosure_ready?(true)
+      integration_draft_episodes.where(id: episode.id).exists?
+    else
+      false
+    end
   end
 
   # Episodes an integration may act on before they are published.
-  # Overridden by feeds whose integration handles drafts.
   def integration_draft_episodes
-    episodes.none
+    return episodes.none unless integration_type == :apple
+
+    episodes.where("episodes.published_at IS NULL OR episodes.published_at > ?", Time.now - episode_offset_seconds.to_i)
   end
 
   def guid

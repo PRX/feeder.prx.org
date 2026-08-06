@@ -56,9 +56,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     apple_feed = create(:apple_feed, podcast: podcast)
     config = apple_feed.delegated_delivery_config
 
-    Feeds::AppleSubscription.stub_any_instance(:apple_show_options, []) do
-      get podcast_feed_url(podcast, apple_feed)
-    end
+    get podcast_feed_url(podcast, apple_feed)
 
     assert_response :success
     assert_select 'input[type="checkbox"][name="feed[delegated_delivery_config_attributes][publish_enabled]"]'
