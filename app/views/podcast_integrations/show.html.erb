@@ -69,7 +69,10 @@
                 </div>
                 <% if key == @podcast.apple_key %>
                   <span class="badge bg-primary"><%= t(".apple_credentials.selected") %></span>
-                <% elsif key.podcasts.empty? && key.delegated_delivery_config.nil? && policy(key).destroy? %>
+                <% elsif key.podcasts.any? %>
+                  <% podcast_links = safe_join(key.podcasts.map { |other_podcast| link_to other_podcast.title, podcast_path(other_podcast), class: "text-white" }, ", ") %>
+                  <span class="badge bg-secondary"><%= t(".apple_credentials.used_by_other_html", podcast_titles: podcast_links) %></span>
+                <% elsif key.delegated_delivery_config.nil? && policy(key).destroy? %>
                   <%= button_to t(".apple_credentials.remove"), podcast_apple_key_path(@podcast, key), method: :delete, class: "btn btn-sm btn-outline-danger", form: {data: {turbo_confirm: t(".apple_credentials.remove_confirm")}} %>
                 <% end %>
               </div>
