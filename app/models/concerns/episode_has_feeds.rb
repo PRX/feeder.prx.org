@@ -23,7 +23,7 @@ module EpisodeHasFeeds
 
   def set_default_feeds
     if feeds.blank?
-      self.feeds = (podcast&.feeds || []).select { |feed| feed.default? || feed.integration_type }
+      self.feeds = (podcast&.feeds || []).select { |feed| feed.default? || feed.publish_integration? }
     end
   end
 

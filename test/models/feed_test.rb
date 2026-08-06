@@ -356,8 +356,7 @@ describe Feed do
   end
 
   describe "#publish_to_apple?" do
-    it "returns false if the feed is not an Apple Subscription feed" do
-      refute_equal feed2.type, "Feeds::AppleSubscription"
+    it "returns false if the feed has no delegated-delivery config" do
       refute feed2.publish_to_apple?
     end
   end

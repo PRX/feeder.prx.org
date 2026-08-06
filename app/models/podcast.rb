@@ -32,6 +32,7 @@ class Podcast < ApplicationRecord
 
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
+  has_many :delegated_delivery_configs, through: :feeds, source: :delegated_delivery_config
   has_many :tasks, as: :owner
   has_many :persons, as: :owner, inverse_of: :owner
   has_many :podcast_imports, dependent: :destroy
@@ -89,25 +90,11 @@ class Podcast < ApplicationRecord
     super || build_default_feed(podcast: self, private: false)
   end
 
-  def delegated_delivery_config
-    if defined?(@delegated_delivery_config)
-      @delegated_delivery_config
-    else
-      @delegated_delivery_config = Apple::DelegatedDeliveryConfig.where(feed_id: feeds.pluck(:id)).first
-    end
-  end
-
   def has_apple_feed?
-    if defined?(@has_apple_feed)
-      @has_apple_feed
-    else
-      @has_apple_feed = feeds.apple.exists?
-    end
+    delegated_delivery_configs.exists?
   end
 
   def reload(options = nil)
-    remove_instance_variable(:@delegated_delivery_config) if defined?(@delegated_delivery_config)
-    remove_instance_variable(:@has_apple_feed) if defined?(@has_apple_feed)
     super
   end
 
