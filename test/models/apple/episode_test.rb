@@ -22,7 +22,7 @@ describe Apple::Episode do
   let(:external_id) { apple_episode_api_response["api_response"]["api_response"]["val"]["data"]["id"] }
 
   before do
-    create_legacy_apple_episode_sync_log(episode, external_id: external_id, **apple_episode_api_response)
+    create_apple_episode_sync_log(episode, external_id: external_id, **apple_episode_api_response)
     SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
   end
 
@@ -44,10 +44,11 @@ describe Apple::Episode do
       assert_equal scoped, apple_episode.sync_log
     end
 
-    it "falls back to a legacy row when a scoped row does not exist" do
-      legacy = apple_sync_log_for(episode)
+    it "does not read another show when a scoped row does not exist" do
+      other = apple_sync_log_for(episode)
+      other.update!(external_show_id: "show-2")
 
-      assert_equal legacy, apple_episode.sync_log
+      assert_nil apple_episode.sync_log
     end
 
     it "keeps sync-log reads within the current show" do
@@ -91,43 +92,44 @@ describe Apple::Episode do
       assert_raises(NoMethodError) { status.send(:update_status, delivered: true) }
     end
 
-    it "lets a known show read legacy status and stamps the next write" do
-      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+    it "ignores another show when starting a show's history" do
+      other_status = create(:apple_episode_delivery_status,
         episode: episode,
-        apple_show_id: nil,
+        apple_show_id: "show-2",
         delivered: false,
         uploaded: false,
         asset_processing_attempts: 2)
 
-      assert_equal legacy_status, show_one_episode.delivery_status
-      assert_includes show_one_episode.delivery_statuses, legacy_status
+      assert_nil show_one_episode.delivery_status
+      assert_empty show_one_episode.delivery_statuses
 
       scoped_status = show_one_episode.update_delivery_status(uploaded: true)
 
-      refute_equal legacy_status, scoped_status
+      refute_equal other_status, scoped_status
       assert_equal "show-1", scoped_status.apple_show_id
       assert scoped_status.uploaded
-      assert_equal 2, scoped_status.asset_processing_attempts
-      assert_nil legacy_status.reload.apple_show_id
-      refute legacy_status.uploaded
+      assert_equal 0, scoped_status.asset_processing_attempts
+      assert_equal [scoped_status], show_one_episode.delivery_statuses.to_a
+      assert_equal "show-2", other_status.reload.apple_show_id
+      refute other_status.uploaded
     end
 
-    it "allows an existing legacy status to remain saveable during backfill" do
-      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+    it "rejects updating an existing status without a show id" do
+      other_status = create(:apple_episode_delivery_status,
         episode: episode,
-        apple_show_id: nil,
+        apple_show_id: "show-2",
         delivered: false)
 
-      legacy_status.update!(source_fetch_count: 1)
+      refute other_status.update(apple_show_id: nil, source_fetch_count: 1)
 
-      assert_equal 1, legacy_status.reload.source_fetch_count
-      assert_nil legacy_status.apple_show_id
+      assert_includes other_status.errors[:apple_show_id], "Can't be blank"
+      assert_equal "show-2", other_status.reload.apple_show_id
     end
 
     it "keeps delivery-status reads and writes within the current show" do
-      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+      other_status = create(:apple_episode_delivery_status,
         episode: episode,
-        apple_show_id: nil,
+        apple_show_id: "show-2",
         delivered: false)
 
       show_one_episode.update_delivery_status(delivered: true)
@@ -138,7 +140,7 @@ describe Apple::Episode do
       assert show_two_episode.delivery_status.uploaded
       assert_equal "show-1", show_one_episode.delivery_status.apple_show_id
       assert_equal "show-2", show_two_episode.delivery_status.apple_show_id
-      assert_nil legacy_status.reload.apple_show_id
+      assert_equal "show-2", other_status.reload.apple_show_id
 
       show_one_episode.update_delivery_status(uploaded: false)
 
@@ -147,9 +149,9 @@ describe Apple::Episode do
     end
 
     it "increments asset wait through the show-scoped episode" do
-      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+      original_status = create(:apple_episode_delivery_status,
         episode: episode,
-        apple_show_id: nil,
+        apple_show_id: "show-1",
         delivered: false,
         uploaded: true,
         asset_processing_attempts: 2)
@@ -158,7 +160,7 @@ describe Apple::Episode do
 
       assert_equal 3, new_status.asset_processing_attempts
       assert_equal "show-1", new_status.apple_show_id
-      assert_nil legacy_status.reload.apple_show_id
+      assert_equal 2, original_status.reload.asset_processing_attempts
     end
 
     it "does not read another show's container or deliveries" do
@@ -175,21 +177,19 @@ describe Apple::Episode do
       assert_empty show_two_episode.podcast_deliveries
     end
 
-    it "allows a known show to read its legacy container" do
-      legacy_container = create_legacy_record(:apple_podcast_container,
-        episode: episode,
-        apple_show_id: nil)
-
-      assert_equal legacy_container, show_one_episode.podcast_container
+    it "returns no container or deliveries before a show has a container" do
+      assert_nil show_one_episode.podcast_container
+      assert_empty show_one_episode.podcast_deliveries
+      assert_empty show_one_episode.podcast_delivery_files
     end
 
     it "rejects delivery-state access without a show id" do
       showless_episode = build(:apple_episode, show: apple_show, feeder_episode: episode)
       showless_episode.define_singleton_method(:apple_show_id) { nil }
-      legacy_container = create_legacy_record(:apple_podcast_container, episode: episode, apple_show_id: nil)
-      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+      other_container = create(:apple_podcast_container, episode: episode, apple_show_id: "show-2")
+      other_status = create(:apple_episode_delivery_status,
         episode: episode,
-        apple_show_id: nil,
+        apple_show_id: "show-2",
         delivered: false)
 
       assert_raises(ArgumentError) { showless_episode.podcast_container }
@@ -198,9 +198,9 @@ describe Apple::Episode do
       assert_raises(ArgumentError) { showless_episode.delivery_statuses.to_a }
       assert_raises(ArgumentError) { showless_episode.update_delivery_status(delivered: true) }
 
-      assert_equal legacy_container, Apple::PodcastContainer.find(legacy_container.id)
-      refute legacy_status.reload.delivered
-      assert_nil legacy_status.apple_show_id
+      assert_equal other_container, Apple::PodcastContainer.find(other_container.id)
+      refute other_status.reload.delivered
+      assert_equal "show-2", other_status.apple_show_id
       assert_equal 1, Apple::EpisodeDeliveryStatus.where(episode_id: episode.id).count
     end
 
@@ -592,8 +592,8 @@ describe Apple::Episode do
     it "partitions episodes into ready and waiting sets" do
       SyncLog.log!(integration: :apple, feeder_type: :feeds, feeder_id: public_feed.id, external_id: "show-1")
       # Create sync logs for both episodes
-      create_legacy_apple_episode_sync_log(episode1, external_id: "ep1", **build(:apple_episode_api_response, item_guid: episode1.item_guid))
-      create_legacy_apple_episode_sync_log(episode2, external_id: "ep2", **build(:apple_episode_api_response, item_guid: episode2.item_guid, apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS))
+      create_apple_episode_sync_log(episode1, external_id: "ep1", **build(:apple_episode_api_response, item_guid: episode1.item_guid))
+      create_apple_episode_sync_log(episode2, external_id: "ep2", **build(:apple_episode_api_response, item_guid: episode2.item_guid, apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_SUCCESS))
 
       # Setup episode1 to be waiting (delivery settled, asset state not finished)
       delivery1 = create(:apple_podcast_delivery, episode: episode1, podcast_container: container1)
@@ -679,14 +679,13 @@ describe Apple::Episode do
     end
   end
 
-  def create_legacy_apple_episode_sync_log(episode, **attrs)
-    sync_log = SyncLog.new(attrs.merge(
+  def create_apple_episode_sync_log(episode, **attrs)
+    SyncLog.create!(attrs.merge(
       integration: :apple,
       feeder_type: :episodes,
-      feeder_id: episode.id
+      feeder_id: episode.id,
+      external_show_id: "show-1"
     ))
-    sync_log.save!(validate: false)
-    sync_log
   end
 
   def apple_sync_log_for(episode)
@@ -697,11 +696,5 @@ describe Apple::Episode do
     Apple::Episode.new(show: apple_show, feeder_episode: episode, api: apple_api).tap do |facade|
       facade.define_singleton_method(:apple_show_id) { apple_show_id }
     end
-  end
-
-  def create_legacy_record(factory_name, **attributes)
-    record = build(factory_name, **attributes)
-    record.save!(validate: false)
-    record
   end
 end
