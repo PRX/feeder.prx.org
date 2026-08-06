@@ -163,7 +163,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     key = create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: key)
     binding = create(:apple_show_feed_binding, feed: feed)
-    create(:apple_config, feed: private_feed, key: key, show_feed_binding: binding)
+    create(:delegated_delivery_config, feed: private_feed, key: key, show_feed_binding: binding)
     body = {data: [], links: {}}.to_json
     stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
 
@@ -178,7 +178,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     key = create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: key)
     binding = create(:apple_show_feed_binding, feed: default_feed, apple_show_id: "old-show")
-    config = create(:apple_config, feed: private_feed, key: key, show_feed_binding: binding)
+    config = create(:delegated_delivery_config, feed: private_feed, key: key, show_feed_binding: binding)
     body = {data: {id: "new-show", type: "shows", attributes: {title: "New show"}}}.to_json
     stub_request(:get, "https://aardvark.prx.org/shows/new-show").to_return(status: 200, body: body)
 

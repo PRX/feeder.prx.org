@@ -66,10 +66,6 @@ module Apple
       )
     end
 
-    def self.from_podcast(podcast)
-      from_delegated_delivery_config(podcast.delegated_delivery_config)
-    end
-
     def inspect
       "#<Apple:Show:#{object_id} show_id=#{try(:apple_id) || "nil"}>"
     end

@@ -36,6 +36,12 @@ class Feed < ApplicationRecord
 
   has_one :apple_sync_log, -> { feeds.apple }, foreign_key: :feeder_id, class_name: "Apple::SyncLog"
   has_one :apple_show_feed_binding, class_name: "Apple::ShowFeedBinding", dependent: :destroy
+  has_one :delegated_delivery_config,
+    class_name: "Apple::DelegatedDeliveryConfig",
+    dependent: :destroy,
+    autosave: true,
+    validate: true,
+    inverse_of: :feed
 
   def apple_connection
     if defined?(@apple_connection)
@@ -49,8 +55,18 @@ class Feed < ApplicationRecord
 
   accepts_nested_attributes_for :feed_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :itunes_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
+  accepts_nested_attributes_for :delegated_delivery_config,
+    allow_destroy: true,
+    reject_if: ->(attributes) { attributes["id"].blank? && attributes["show_feed_binding_id"].blank? }
 
   acts_as_paranoid
+
+  def paranoia_destroy_attributes
+    {
+      deleted_at: current_time_from_proper_timezone,
+      slug: "#{slug}-#{Time.now.to_i}"
+    }
+  end
 
   validates :slug, uniqueness: {scope: :podcast_id}, if: :podcast_id?
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
@@ -73,7 +89,6 @@ class Feed < ApplicationRecord
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
-  scope :apple, -> { where(type: "Feeds::AppleSubscription") }
   scope :tab_order, -> { order(Arel.sql("slug IS NULL DESC, created_at ASC")) }
 
   def mark_as_not_delivered!(episode)
@@ -84,18 +99,23 @@ class Feed < ApplicationRecord
   end
 
   def integration_type
-    nil
+    :apple if delegated_delivery_config
   end
 
   def publish_integration?
-    false
+    publish_to_apple?
   end
 
   def serve_drafts
-    false
+    publish_integration?
   end
 
   def publish_integration!
+    delegated_delivery_config.build_publisher.publish! if publish_integration?
+  end
+
+  def config
+    delegated_delivery_config
   end
 
   def sync_log(integration)
@@ -115,7 +135,7 @@ class Feed < ApplicationRecord
   def label
     if default?
       I18n.t("helpers.label.feed.labels.default")
-    elsif integration_type
+    elsif type.present? && integration_type
       I18n.t("helpers.label.feed.labels.#{integration_type}")
     else
       super
@@ -244,7 +264,7 @@ class Feed < ApplicationRecord
   end
 
   def publish_to_apple?
-    false
+    valid? && persisted? && !!delegated_delivery_config&.publish_to_apple?
   end
 
   def include_tags=(tags)
