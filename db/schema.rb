@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_05_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_06_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -23,9 +23,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000002) do
     t.bigint "show_feed_binding_id"
     t.boolean "sync_blocks_rss", default: false, null: false
     t.datetime "updated_at", null: false
-    t.index ["feed_id"], name: "index_apple_configs_on_feed_id"
+    t.index ["feed_id"], name: "index_apple_configs_on_feed_id", unique: true
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
-    t.index ["show_feed_binding_id"], name: "index_apple_configs_on_show_feed_binding_id"
+    t.index ["show_feed_binding_id"], name: "index_apple_configs_on_show_feed_binding_id", unique: true
   end
 
   create_table "apple_keys", force: :cascade do |t|
