@@ -11,8 +11,8 @@ class FeedsController < ApplicationController
   def show
     init_config
     authorize @feed
-    @apple_show_options = get_apple_show_options(@feed)
     load_apple_connection_options
+    load_apple_delegated_delivery_options
   end
 
   # GET /feeds/new
@@ -22,21 +22,6 @@ class FeedsController < ApplicationController
 
     @feed.assign_attributes(feed_params)
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
-  end
-
-  def get_apple_show_options(feed)
-    if feed.integration_type == :apple && feed.delegated_delivery_config&.key
-      feed.apple_show_options
-    else
-      []
-    end
-  end
-
-  def new_apple
-    @feed = Feeds::AppleSubscription.new(podcast: @podcast, private: true)
-    authorize @feed
-    init_config
-    render "new"
   end
 
   def new_megaphone
@@ -81,12 +66,14 @@ class FeedsController < ApplicationController
         format.html do
           flash.now[:error] = t(".failure", model: "Feed")
           load_apple_connection_options
+          load_apple_delegated_delivery_options
           render :show, status: :unprocessable_entity
         end
       end
     end
   rescue ActiveRecord::StaleObjectError
     load_apple_connection_options
+    load_apple_delegated_delivery_options
     render :show, status: :conflict
   end
 
@@ -109,12 +96,10 @@ class FeedsController < ApplicationController
 
   def init_config
     @feed.assign_attributes(feed_params)
-    if @feed.is_a? Feeds::AppleSubscription
-      @feed.build_delegated_delivery_config unless @feed.delegated_delivery_config
-      @feed.delegated_delivery_config.build_key unless @feed.delegated_delivery_config.key
-      @feed.delegated_delivery_config.key.account_id ||= @podcast.account_id
-    elsif @feed.is_a? Feeds::MegaphoneFeed
+    if @feed.is_a? Feeds::MegaphoneFeed
       @feed.megaphone_config || @feed.build_megaphone_config
+    elsif @feed.persisted?
+      @feed.build_delegated_delivery_config unless @feed.delegated_delivery_config
     end
   end
 
@@ -182,7 +167,7 @@ class FeedsController < ApplicationController
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
-      delegated_delivery_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, {key_attributes: %i[id provider_id key_id key_pem_b64]}],
+      delegated_delivery_config_attributes: %i[id show_feed_binding_id publish_enabled sync_blocks_rss _destroy],
       megaphone_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, :token, :network_id, :network_name, :organization_id, advertising_tags: []]
     )
   end
@@ -202,6 +187,21 @@ class FeedsController < ApplicationController
     end
 
     @apple_connection_options = options.map { |option| [option.label, option.value] }
+  end
+
+  def load_apple_delegated_delivery_options
+    @apple_delegated_delivery_options = []
+    return unless @feed.persisted? && !@feed.is_a?(Feeds::MegaphoneFeed)
+
+    current_config = @feed.delegated_delivery_config
+    bindings = @podcast.feeds.includes(apple_show_feed_binding: :delegated_delivery_config).filter_map(&:apple_show_feed_binding)
+    available = bindings.select do |binding|
+      binding.delegated_delivery_config.nil? || binding.delegated_delivery_config == current_config
+    end
+
+    @apple_delegated_delivery_options = available.map do |binding|
+      ["#{binding.feed.label} — #{binding.apple_show_id}", binding.id]
+    end
   end
 
   def save_feed_and_apple_connection
