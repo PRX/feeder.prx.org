@@ -30,11 +30,16 @@ module Apple
     before_validation :assign_key_account
 
     def self.routing_source
-      source = ENV.fetch("APPLE_ROUTING_SOURCE", "legacy")
+      source = ENV.fetch("APPLE_ROUTING_SOURCE", "show_feed_binding")
       ROUTING_SOURCES.fetch(source) do
         raise ArgumentError,
           "Unsupported APPLE_ROUTING_SOURCE=#{source.inspect}; expected one of #{ROUTING_SOURCES.keys.join(", ")}"
       end
+    end
+
+    def self.sync_legacy_key_for!(podcast)
+      where(feed_id: Feed.with_deleted.where(podcast_id: podcast.id).select(:id))
+        .update_all(key_id: podcast.apple_key_id, updated_at: Time.current)
     end
 
     def routing_source
