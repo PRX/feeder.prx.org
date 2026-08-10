@@ -53,6 +53,26 @@ class Feeds::AppleSubscription < Feed
   def update_apple_show
     if previous_changes[:apple_show_id]
       Apple::Show.connect_existing(apple_show_id, apple_config)
+      update_apple_show_feed_binding
+    end
+  end
+
+  def update_apple_show_feed_binding
+    config = apple_config
+    return unless config
+
+    public_feed = config.public_feed
+    return unless public_feed
+
+    if apple_show_id.blank?
+      public_feed.apple_show_feed_binding&.destroy!
+    elsif config.key
+      key = public_feed.podcast.apple_key || config.key
+      public_feed.podcast.update!(apple_key: key) unless public_feed.podcast.apple_key_id == key.id
+      binding = Apple::ShowFeedBinding.find_or_initialize_by(feed: public_feed)
+      binding.apple_show_id = apple_show_id
+      binding.save!
+      config.update!(show_feed_binding: binding) if config.show_feed_binding_id != binding.id
     end
   end
 

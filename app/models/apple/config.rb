@@ -4,9 +4,12 @@ module Apple
   class Config < ApplicationRecord
     belongs_to :feed
     belongs_to :key, class_name: "Apple::Key", optional: true, validate: true, autosave: true
+    belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: true, inverse_of: :config
 
+    validates :show_feed_binding_id, uniqueness: true, allow_nil: true
     validate :podcast_has_one_apple_config
     validate :not_default_feed
+    validate :show_feed_binding_matches_podcast
 
     # backwards-compatible "key" getters
     delegate :provider_id, to: :key
@@ -76,6 +79,13 @@ module Apple
       if Apple::Config.where(feed_id: all_feeds).where.not(id: id).any?
         errors.add(:feed, "podcast already has an apple config")
       end
+    end
+
+    def show_feed_binding_matches_podcast
+      return unless feed && show_feed_binding&.feed
+      return if feed.podcast_id == show_feed_binding.feed.podcast_id
+
+      errors.add(:show_feed_binding, "must belong to the same podcast as feed")
     end
 
     def publish_to_apple?

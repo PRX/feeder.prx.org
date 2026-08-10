@@ -28,6 +28,8 @@ class Podcast < ApplicationRecord
   alias_method :public_feed, :default_feed
   has_one :stream_recording, validate: true, autosave: true
 
+  belongs_to :apple_key, class_name: "Apple::Key", optional: true, inverse_of: :podcasts
+
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
   has_many :tasks, as: :owner
