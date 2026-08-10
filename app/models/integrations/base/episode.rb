@@ -19,6 +19,14 @@ module Integrations
         raise NotImplementedError, "Subclasses must implement delivery_status"
       end
 
+      def update_delivery_status(_attrs)
+        raise NotImplementedError, "Subclasses must implement update_delivery_status"
+      end
+
+      def sync_log
+        raise NotImplementedError, "Subclasses must implement sync_log"
+      end
+
       def error_state?
         false
       end
@@ -37,19 +45,6 @@ module Integrations
 
       def needs_media_version?
         !has_media_version?
-      end
-
-      # Delegate methods to feeder_episode
-      def method_missing(method_name, *arguments, &block)
-        if feeder_episode.respond_to?(method_name)
-          feeder_episode.send(method_name, *arguments, &block)
-        else
-          super
-        end
-      end
-
-      def respond_to_missing?(method_name, include_private = false)
-        feeder_episode.respond_to?(method_name) || super
       end
     end
   end

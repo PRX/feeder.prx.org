@@ -208,7 +208,7 @@ describe Apple::Show do
 
         sync = apple_show.sync!
 
-        assert_equal sync.class, SyncLog
+        assert_instance_of Apple::SyncLog, sync
 
         assert_equal "123", sync.external_id
         assert_equal "123", apple_show.apple_id

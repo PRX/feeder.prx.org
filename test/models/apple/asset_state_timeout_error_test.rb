@@ -19,8 +19,8 @@ describe Apple::AssetStateTimeoutError do
     end
 
     it "calculates max duration from episodes" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1800) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, 3600) do
+      episode1.stub(:measure_asset_processing_duration, 1800) do
+        episode2.stub(:measure_asset_processing_duration, 3600) do
           error = Apple::AssetStateTimeoutError.new(episodes)
 
           assert_equal 3600, error.asset_wait_duration
@@ -29,8 +29,8 @@ describe Apple::AssetStateTimeoutError do
     end
 
     it "handles nil durations" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, nil) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
+      episode1.stub(:measure_asset_processing_duration, nil) do
+        episode2.stub(:measure_asset_processing_duration, 2000) do
           error = Apple::AssetStateTimeoutError.new(episodes)
 
           assert_equal 2000, error.asset_wait_duration
@@ -41,8 +41,8 @@ describe Apple::AssetStateTimeoutError do
 
   describe "#log_level" do
     it "returns info for duration < 20 minutes" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1199) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+      episode1.stub(:measure_asset_processing_duration, 1199) do
+        episode2.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
           assert_equal :info, error.log_level
         end
@@ -50,15 +50,15 @@ describe Apple::AssetStateTimeoutError do
     end
 
     it "returns warn for duration >= 20 minutes and < 35 minutes" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 1200) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+      episode1.stub(:measure_asset_processing_duration, 1200) do
+        episode2.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
           assert_equal :warn, error.log_level
         end
       end
 
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2099) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+      episode1.stub(:measure_asset_processing_duration, 2099) do
+        episode2.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
           assert_equal :warn, error.log_level
         end
@@ -66,8 +66,8 @@ describe Apple::AssetStateTimeoutError do
     end
 
     it "returns error for duration >= 35 minutes" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2100) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+      episode1.stub(:measure_asset_processing_duration, 2100) do
+        episode2.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
           assert_equal :error, error.log_level
         end
@@ -75,8 +75,8 @@ describe Apple::AssetStateTimeoutError do
     end
 
     it "returns info when duration is nil" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, nil) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+      episode1.stub(:measure_asset_processing_duration, nil) do
+        episode2.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
           assert_equal :info, error.log_level
         end
@@ -86,8 +86,8 @@ describe Apple::AssetStateTimeoutError do
 
   describe "#log_error!" do
     it "logs at the appropriate level with context" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+      episode1.stub(:measure_asset_processing_duration, 2000) do
+        episode2.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
 
           logs = capture_json_logs do
@@ -115,8 +115,8 @@ describe Apple::AssetStateTimeoutError do
       ]
 
       expected_levels.each do |(duration, expected_level)|
-        episode1.feeder_episode.stub(:measure_asset_processing_duration, duration) do
-          episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+        episode1.stub(:measure_asset_processing_duration, duration) do
+          episode2.stub(:measure_asset_processing_duration, nil) do
             error = Apple::AssetStateTimeoutError.new(episodes)
 
             logs = capture_json_logs do
@@ -146,8 +146,8 @@ describe Apple::AssetStateTimeoutError do
 
   describe "#message" do
     it "includes episode info and duration" do
-      episode1.feeder_episode.stub(:measure_asset_processing_duration, 2000) do
-        episode2.feeder_episode.stub(:measure_asset_processing_duration, nil) do
+      episode1.stub(:measure_asset_processing_duration, 2000) do
+        episode2.stub(:measure_asset_processing_duration, nil) do
           error = Apple::AssetStateTimeoutError.new(episodes)
 
           assert_match(/Timeout:/, error.message)
@@ -161,14 +161,16 @@ describe Apple::AssetStateTimeoutError do
   describe "duration captured at creation time" do
     it "retains correct log level after episode is reset" do
       # Set up episode with stuck duration
-      episode1.feeder_episode.apple_episode_delivery_statuses.destroy_all
+      episode1.delivery_statuses.destroy_all
 
       create(:apple_episode_delivery_status,
         episode: episode1.feeder_episode,
+        apple_show_id: episode1.apple_show_id,
         asset_processing_attempts: 0,
         created_at: 1.hour.ago)
       create(:apple_episode_delivery_status,
         episode: episode1.feeder_episode,
+        apple_show_id: episode1.apple_show_id,
         asset_processing_attempts: 5,
         created_at: 30.minutes.ago)
 
@@ -178,7 +180,7 @@ describe Apple::AssetStateTimeoutError do
       error = Apple::AssetStateTimeoutError.new([episode1])
 
       # Now reset the episode (simulating what check_for_stuck_episodes does)
-      episode1.feeder_episode.apple_mark_as_not_delivered!
+      episode1.mark_as_not_delivered!
 
       captured_duration = error.asset_wait_duration
 
