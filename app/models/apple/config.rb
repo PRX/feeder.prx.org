@@ -10,6 +10,7 @@ module Apple
     validate :podcast_has_one_apple_config
     validate :not_default_feed
     validate :show_feed_binding_matches_podcast
+    validate :key_belongs_to_podcast_account
 
     # backwards-compatible "key" getters
     delegate :provider_id, to: :key
@@ -88,6 +89,13 @@ module Apple
       return if feed.podcast_id == show_feed_binding.feed.podcast_id
 
       errors.add(:show_feed_binding, "must belong to the same podcast as feed")
+    end
+
+    def key_belongs_to_podcast_account
+      return unless key && podcast
+      return if key.account_id == podcast.account_id
+
+      errors.add(:key, "must belong to the podcast's PRX account")
     end
 
     def assign_key_account
