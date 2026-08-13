@@ -3,15 +3,19 @@ require "test_helper"
 describe Apple::Config do
   describe "#valid?" do
     it "allows only one config per show feed binding" do
-      binding = create(:apple_show_feed_binding)
+      podcast = create(:podcast)
+      binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+      key = create(:apple_key, account_id: podcast.account_id)
       create(
         :apple_config,
-        feed: create(:private_feed, podcast: binding.feed.podcast),
+        feed: create(:private_feed, podcast: podcast),
+        key: key,
         show_feed_binding: binding
       )
       config = build(
         :apple_config,
-        feed: create(:private_feed, podcast: binding.feed.podcast),
+        feed: create(:private_feed, podcast: podcast),
+        key: key,
         show_feed_binding: binding
       )
 
@@ -54,6 +58,15 @@ describe Apple::Config do
       refute c1.valid?
       assert_equal ["cannot use default feed"], c1.errors[:feed]
     end
+  end
+
+  it "assigns a new key to the podcast account" do
+    podcast = build(:podcast, prx_account_uri: "/api/v1/accounts/456")
+    config = build(:apple_config, feed: build(:private_feed, podcast: podcast))
+
+    config.valid?
+
+    assert_equal 456, config.key.account_id
   end
 
   it "delegates associations" do

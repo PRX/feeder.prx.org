@@ -25,6 +25,8 @@ module Apple
 
     accepts_nested_attributes_for :key
 
+    before_validation :assign_key_account
+
     def self.find_or_build_apple_feed(podcast)
       existing_feed = Feeds::AppleSubscription.find_by_podcast_id(podcast.id)
       existing_feed.present? ? existing_feed : Feeds::AppleSubscription.new(podcast_id: podcast.id)
@@ -86,6 +88,10 @@ module Apple
       return if feed.podcast_id == show_feed_binding.feed.podcast_id
 
       errors.add(:show_feed_binding, "must belong to the same podcast as feed")
+    end
+
+    def assign_key_account
+      key.account_id = podcast&.account_id if key&.new_record?
     end
 
     def publish_to_apple?
