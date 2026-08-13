@@ -58,6 +58,15 @@ describe Apple::Config do
       refute c1.valid?
       assert_equal ["cannot use default feed"], c1.errors[:feed]
     end
+
+    it "requires a persisted key to belong to the podcast account" do
+      podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/456")
+      key = create(:apple_key, account_id: 123)
+      config = build(:apple_config, feed: create(:private_feed, podcast: podcast), key: key)
+
+      refute config.valid?
+      assert_equal ["must belong to the podcast's PRX account"], config.errors[:key]
+    end
   end
 
   it "assigns a new key to the podcast account" do
