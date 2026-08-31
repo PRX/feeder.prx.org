@@ -10,7 +10,8 @@ module EmbedPlayerHelper
   EMBED_PLAYER_CARD = "ca"
   EMBED_PLAYER_TITLE = "tt"
   EMBED_PLAYER_SUBTITLE = "ts"
-  EMBED_PLAYER_IMAGE = "ui"
+  EMBED_PLAYER_PODCAST_IMAGE = "ui"
+  EMBED_PLAYER_EPISODE_IMAGE = "ue"
   EMBED_PLAYER_RSS_URL = "us"
   EMBED_PLAYER_AUDIO_URL = "ua"
   EMBED_PLAYER_AUDIO_URL_PREVIEW = "uap"
@@ -20,6 +21,7 @@ module EmbedPlayerHelper
   EMBED_PLAYER_CATEGORY = "ct"
   EMBED_PLAYER_THEME = "th"
   EMBED_PLAYER_ACCENT_COLOR = "ac"
+  EMBED_PLAYER_MEDIA_TYPE = "mt"
 
   DEFAULT_OPTIONS = {
     embed_player_type: "standard",
@@ -27,6 +29,7 @@ module EmbedPlayerHelper
     accent_color: "#ff9600"
   }
 
+  WIDTH_MIN = 300
   HEIGHT_BASE = 200
   HEIGHT_PLAYLIST_HEADER = 57
   HEIGHT_PLAYLIST_ROW = 61
@@ -52,7 +55,8 @@ module EmbedPlayerHelper
     if preview && embed_episode_maybe_not_in_feed?(ep)
       params[EMBED_PLAYER_TITLE] = ep.title
       params[EMBED_PLAYER_SUBTITLE] = ep.podcast.title
-      params[EMBED_PLAYER_IMAGE] = ep.ready_image&.url || ep.podcast.ready_image&.url
+      params[EMBED_PLAYER_PODCAST_IMAGE] = ep.podcast.ready_image&.url
+      params[EMBED_PLAYER_EPISODE_IMAGE] = ep.ready_image&.url
       params[EMBED_PLAYER_RSS_URL] = ep.podcast_feed_url
       params[EMBED_PLAYER_AUDIO_URL] = ep.enclosure_url
       params[EMBED_PLAYER_AUDIO_URL_PREVIEW] = enclosure_with_token(ep)
@@ -79,7 +83,7 @@ module EmbedPlayerHelper
   end
 
   def embed_player_type_options(selected)
-    opts = %w[standard card].map { |v| [t("helpers.label.episode.embed_player_types.#{v}"), v] }
+    opts = %w[standard card video].map { |v| [t("helpers.label.episode.embed_player_types.#{v}"), v] }
     options_for_select(opts, selected)
   end
 
@@ -107,12 +111,13 @@ module EmbedPlayerHelper
     # shared params
     params = {}
     params[EMBED_PLAYER_CARD] = "1" if opts[:embed_player_type] == "card"
+    params[EMBED_PLAYER_MEDIA_TYPE] = "video" if opts[:embed_player_type] == "video"
     params[EMBED_PLAYER_THEME] = opts[:embed_player_theme] if opts[:embed_player_theme].present?
     params[EMBED_PLAYER_ACCENT_COLOR] = opts[:accent_color].sub("#", "") if opts[:accent_color].present?
 
     # playlist params
     if opts[:playlist]
-      params[EMBED_PLAYER_PLAYLIST] = (opts[:episode_number].to_i > 1) ? opts[:episode_number] : "all"
+      params[EMBED_PLAYER_PLAYLIST] = (opts[:episode_number].to_i >= 1) ? opts[:episode_number] : "all"
       params[EMBED_PLAYER_SEASON] = opts[:season] if opts[:season].to_i > 0
       params[EMBED_PLAYER_CATEGORY] = opts[:category] if opts[:category].to_s.strip.present?
     end
@@ -126,16 +131,26 @@ module EmbedPlayerHelper
 
   def embed_player_iframe(options, src = "")
     is_card = options[:embed_player_type] == "card"
-    fixed_width = options[:max_width].to_i if options[:max_width].to_i >= 300
+    is_video = options[:embed_player_type] == "video"
+    show_playlist = options[:playlist] if !options[:episode_number].present? || options[:episode_number].to_i > 1
+    fixed_width = options[:max_width].to_i if options[:max_width].to_i >= WIDTH_MIN
+    player_height =
+      if is_video
+        0
+      else
+        HEIGHT_BASE
+      end
 
     # calculate height for playlists
     height =
-      if options[:episode_number].to_i.between?(1, 5)
-        HEIGHT_BASE + HEIGHT_PLAYLIST_HEADER + HEIGHT_PLAYLIST_ROW * options[:episode_number].to_i
-      elsif options[:playlist]
-        (HEIGHT_BASE + HEIGHT_PLAYLIST_HEADER + HEIGHT_PLAYLIST_ROW * 5.5).round
+      if show_playlist
+        if options[:episode_number].to_i.between?(2, 5)
+          player_height + HEIGHT_PLAYLIST_HEADER + HEIGHT_PLAYLIST_ROW * options[:episode_number].to_i
+        else
+          (player_height + HEIGHT_PLAYLIST_HEADER + HEIGHT_PLAYLIST_ROW * 5.5).round
+        end
       else
-        HEIGHT_BASE
+        player_height
       end
 
     # defaults
@@ -144,27 +159,38 @@ module EmbedPlayerHelper
       frameborder: "0",
       height: height,
       width: "100%",
-      style: fixed_width ? "min-width: #{fixed_width}px; max-width: #{fixed_width}px; display: block; margin-inline: auto; color-scheme: auto;" : "min-width: 300px; color-scheme: auto;",
+      style: fixed_width ? "min-width: #{WIDTH_MIN}px; max-width: #{fixed_width}px; display: block; margin-inline: auto; color-scheme: auto;" : "min-width: #{WIDTH_MIN}px; color-scheme: auto;",
       src: src,
-      title: "PRX Embed Player"
+      title: "PRX Embed Player",
+      scrolling: "no"
     }
 
-    iframe_opts[:scrolling] = "no" unless options[:playlist]
-    wrapper_style = "position: relative; height: 0; width: 100%; min-width: 300px;"
+    wrapper_style = "position: relative; height: 0; width: 100%; min-width: #{WIDTH_MIN}px;"
+
+    # video styling
+    if is_video
+      iframe_opts[:height] = "100%"
+      iframe_opts[:style] = "position: absolute; inset: 0; color-scheme: auto;"
+      wrapper_style << if fixed_width
+        " padding-top: clamp(#{(WIDTH_MIN * 0.5625).round + height}px, calc(56.25% + #{height}px), #{(fixed_width * 0.5625).round + height}px); margin-inline: auto; max-width: #{fixed_width}px;"
+      else
+        " padding-top: calc(56.25% + #{height}px);"
+      end
+    end
 
     # card styling
     if is_card
       iframe_opts[:height] = "100%"
       iframe_opts[:style] = "position: absolute; inset: 0; color-scheme: auto;"
       wrapper_style << if fixed_width
-        " padding-top: clamp(#{300 + height}px, calc(100% + #{height}px), #{fixed_width + height}px); margin-inline: auto; max-width: #{fixed_width}px;"
+        " padding-top: clamp(#{WIDTH_MIN + height}px, calc(100% + #{height}px), #{fixed_width + height}px); margin-inline: auto; max-width: #{fixed_width}px;"
       else
         " padding-top: calc(100% + #{height}px);"
       end
     end
 
     # only cards get the wrapper div
-    if is_card
+    if is_card || is_video
       tag.div style: wrapper_style do
         tag.iframe(**iframe_opts)
       end
