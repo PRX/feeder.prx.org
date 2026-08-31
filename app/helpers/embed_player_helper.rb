@@ -130,7 +130,7 @@ module EmbedPlayerHelper
   def embed_player_iframe(options, src = "")
     is_card = options[:embed_player_type] == "card"
     is_video = options[:embed_player_type] == "video"
-    show_playlist = options[:playlist] if !options[:episode_number].present? || options[:episode_number].to_i > 1;
+    show_playlist = options[:playlist] if !options[:episode_number].present? || options[:episode_number].to_i > 1
     fixed_width = options[:max_width].to_i if options[:max_width].to_i >= WIDTH_MIN
     player_height =
       if is_video
@@ -139,13 +139,12 @@ module EmbedPlayerHelper
         HEIGHT_BASE
       end
 
-
     # calculate height for playlists
     height =
       if show_playlist
         if options[:episode_number].to_i.between?(2, 5)
           player_height + HEIGHT_PLAYLIST_HEADER + HEIGHT_PLAYLIST_ROW * options[:episode_number].to_i
-        else show_playlist
+        else
           (player_height + HEIGHT_PLAYLIST_HEADER + HEIGHT_PLAYLIST_ROW * 5.5).round
         end
       else
