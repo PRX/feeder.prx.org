@@ -10,7 +10,8 @@ module EmbedPlayerHelper
   EMBED_PLAYER_CARD = "ca"
   EMBED_PLAYER_TITLE = "tt"
   EMBED_PLAYER_SUBTITLE = "ts"
-  EMBED_PLAYER_IMAGE = "ui"
+  EMBED_PLAYER_PODCAST_IMAGE = "ui"
+  EMBED_PLAYER_EPISODE_IMAGE = "ue"
   EMBED_PLAYER_RSS_URL = "us"
   EMBED_PLAYER_AUDIO_URL = "ua"
   EMBED_PLAYER_AUDIO_URL_PREVIEW = "uap"
@@ -54,7 +55,8 @@ module EmbedPlayerHelper
     if preview && embed_episode_maybe_not_in_feed?(ep)
       params[EMBED_PLAYER_TITLE] = ep.title
       params[EMBED_PLAYER_SUBTITLE] = ep.podcast.title
-      params[EMBED_PLAYER_IMAGE] = ep.ready_image&.url || ep.podcast.ready_image&.url
+      params[EMBED_PLAYER_PODCAST_IMAGE] = ep.podcast.ready_image&.url
+      params[EMBED_PLAYER_EPISODE_IMAGE] = ep.ready_image&.url
       params[EMBED_PLAYER_RSS_URL] = ep.podcast_feed_url
       params[EMBED_PLAYER_AUDIO_URL] = ep.enclosure_url
       params[EMBED_PLAYER_AUDIO_URL_PREVIEW] = enclosure_with_token(ep)
