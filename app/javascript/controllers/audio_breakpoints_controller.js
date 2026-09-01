@@ -35,7 +35,7 @@ export default class extends Controller {
 
     endTimeInput?.setAttribute("placeholder", convertSecondsToDuration(this.durationValue))
 
-    this.maxTime = this.durationValue - 0.01
+    this.maxTime = this.durationValue - 0.05
   }
 
   /**
@@ -146,8 +146,8 @@ export default class extends Controller {
     const isSegment = !!newBreakpointMarker.endTime
 
     if (isSegment) {
-      const previousBreakpointMarker = this.breakpointMarkers[breakpointMarkerIndex - 1]
-      const nextBreakpointMarker = this.breakpointMarkers[breakpointMarkerIndex + 1]
+      const previousBreakpointMarker = [...this.breakpointMarkers].slice(0,breakpointMarkerIndex).findLast((m) => !!m.startTime)
+      const nextBreakpointMarker = [...this.breakpointMarkers].slice(breakpointMarkerIndex + 1).find((m) => !!m.startTime)
 
       // Prevent marker from starting before previous marker's end time.
       if (previousBreakpointMarker) {
@@ -203,9 +203,10 @@ export default class extends Controller {
     const newStartTime = convertToSeconds(startTime)
     const newEndTime = convertToSeconds(endTime)
     const hasEndTime = newEndTime != null
+    const changedDate = new Date();
     let newBreakpointMarker = {
       ...breakpointMarker,
-      changed: new Date().getMilliseconds(),
+      changed: changedDate.getTime(),
       startTime: hasEndTime ? Math.min(newStartTime, newEndTime) : newStartTime,
       endTime: hasEndTime ? Math.max(newStartTime, newEndTime) : undefined,
     }

@@ -26,12 +26,15 @@ export default class extends Controller {
     this.audioElement = new Audio()
     this.audioElement.preload = "metadata"
     this.audioElement.src = this.audioUrlValue
+    this.playheadColor = "rgba(256, 193, 7, 1)"
 
     this.peaksOptions = {
       ...(this.hasZoomTarget && {
+        zoomLevels: [441, 512, 1024, 2048, 4096, 8192],
         zoomview: {
           container: this.zoomTarget,
           fontSize: 12,
+          playheadColor: this.playheadColor,
 
           pointOptions: {
             labelTextColor: "#fff",
@@ -45,6 +48,8 @@ export default class extends Controller {
           highlightBorderRadius: 0,
           highlightColor: "#8cd2f4",
           highlightOpacity: 0.3,
+          playheadColor: this.playheadColor,
+
           segmentOptions: {
             overlayOpacity: 1,
             overlayOffset: 0,
@@ -181,6 +186,12 @@ export default class extends Controller {
           labelText,
           startTime,
           endTime,
+
+          ...(id === "preRoll" && { startTime: 0 } ),
+
+          ...(id === "postRoll" && {
+            endTime: Math.ceil(endTime)
+          })
         })
       } else {
         points.push({
@@ -193,8 +204,8 @@ export default class extends Controller {
         // Add a placeholder segment for this point.
         const placeholderSegment = {
           id: `placeholder.segments.${id}`,
-          startTime: id === "preRoll" ? 0 : startTime,
-          endTime: id === "postRoll" ? Math.ceil(this.peaks.player.getDuration()) : startTime,
+          startTime,
+          endTime: startTime,
         }
         segments.push(placeholderSegment)
       }
@@ -202,12 +213,6 @@ export default class extends Controller {
 
     this.peaks?.points.add(points)
     this.peaks?.segments.add(segments)
-
-    this.peaks?.segments.add({
-      startTime: 0,
-      endTime: 0.0001,
-      color: "#f00",
-    })
   }
 
   markersValueChanged() {
