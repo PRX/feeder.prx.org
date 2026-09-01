@@ -187,11 +187,11 @@ export default class extends Controller {
           startTime,
           endTime,
 
-          ...(id === "preRoll" && { startTime: 0 } ),
+          ...(id === "preRoll" && { startTime: 0 }),
 
           ...(id === "postRoll" && {
-            endTime: Math.ceil(endTime)
-          })
+            endTime: Math.ceil(endTime),
+          }),
         })
       } else {
         points.push({
