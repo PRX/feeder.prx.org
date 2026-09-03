@@ -157,8 +157,15 @@ export default class extends Controller {
       // Initialize markers.
       if (self.markersValue) {
         self.initMarkers()
+        self.updateSeekInput()
+        this.seekTo(this.playerStartTime)
       }
     })
+  }
+
+  updateSeekInput() {
+    this.playerStartTime = this.markersValue.at(0).endTime
+    this.seekInputTarget.placeholder = convertSecondsToDuration(this.playerStartTime)
   }
 
   clearMarkers() {
@@ -219,6 +226,7 @@ export default class extends Controller {
     if (this.markersValue?.length) {
       this.clearMarkers()
       this.initMarkers()
+      this.updateSeekInput()
     }
   }
 
@@ -239,6 +247,8 @@ export default class extends Controller {
   }
 
   seekSubmit(event) {
+    event.preventDefault()
+
     const { target } = event
     const { value } = target
 
@@ -248,7 +258,7 @@ export default class extends Controller {
   }
 
   seekToInputValue() {
-    this.seekTo(this.seekInputTarget.value)
+    this.seekTo(this.seekInputTarget.value.trim() || this.playerStartTime)
     this.seekInputTarget.value = ""
   }
 

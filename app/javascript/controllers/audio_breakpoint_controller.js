@@ -100,14 +100,26 @@ export default class extends Controller {
     })
   }
 
-  changeStartTime() {
+  changeStartTime(event) {
+    event.preventDefault()
+
     const { value } = this.startTimeTarget
-    this.updateStartTime(value)
+    const newValue = value.trim()
+
+    if (!newValue) return
+
+    this.updateStartTime(newValue)
   }
 
-  changeEndTime() {
+  changeEndTime(event) {
+    event.preventDefault()
+
     const { value } = this.endTimeTarget
-    this.updateEndTime(value)
+    const newValue = value.trim()
+
+    if (!newValue) return
+
+    this.updateEndTime(newValue)
   }
 
   addEndTime() {
