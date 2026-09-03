@@ -288,7 +288,18 @@ export default class extends Controller {
 
     // Updated markers form input value.
     if (this.hasMarkersInputTarget) {
-      this.markersInputTarget.value = newSegments.length ? JSON.stringify(newSegments) : null
+      this.markersInputTarget.value = newSegments.length ? JSON.stringify(newSegments, (_k, v) => {
+
+        if (Number.isInteger(v)) {
+          // Convert integer to to match Ruby `to_json` number format: 123.0
+          // This converts the number to a string and number will be wrapped in quotes when stringified: "123.0".
+          return v.toFixed(1);
+        }
+
+        return v;
+      })
+      // Remove quotes from integers converted to fixed strings.
+      .replace(/"(-?\d+\.\d+)"/g, "$1") : null
       this.markersInputTarget.dispatchEvent(new Event("change"))
     }
 
