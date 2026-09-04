@@ -17,6 +17,10 @@ export default class extends Controller {
 
   static classes = ["playing"]
 
+  minZoomExp = 9
+
+  zoomExp = this.minZoomExp
+
   updateLayout = _.debounce(() => {
     this.peaks?.views.getView("zoomview")?.fitToContainer()
     this.peaks?.views.getView("overview")?.fitToContainer()
@@ -30,7 +34,6 @@ export default class extends Controller {
 
     this.peaksOptions = {
       ...(this.hasZoomTarget && {
-        zoomLevels: [441, 512, 1024, 2048, 4096, 8192],
         zoomview: {
           container: this.zoomTarget,
           fontSize: 12,
@@ -112,10 +115,13 @@ export default class extends Controller {
       }
 
       const zoomView = peaksInstance.views.getView("zoomview")
-      const overviewView = peaksInstance.views.getView("overview")
+      const duration = peaksInstance.player.getDuration()
+
+      self.maxScale = zoomView._getScale(duration)
 
       zoomView.setMinSegmentDragWidth(1)
       zoomView.setAmplitudeScale(2)
+      zoomView.setZoom({ scale: Math.pow(2, self.zoomExp) })
 
       // Prevent segments from overlapping other segments.
       // We will also add some placeholder segments to prevent overlapping points.
@@ -151,8 +157,9 @@ export default class extends Controller {
         self.dispatch("marker.update", { detail: { id, startTime, endTime } })
       })
 
-      // Store peaks instance for later use.
+      // Store peaks instances for later use.
       self.peaks = peaksInstance
+      self.zoomView = zoomView
 
       // Initialize markers.
       if (self.markersValue) {
@@ -283,11 +290,23 @@ export default class extends Controller {
   }
 
   zoomIn() {
-    this.peaks.zoom.zoomIn()
+    this.zoomExp = Math.max(this.minZoomExp, this.zoomExp - 1)
+
+    const scale = Math.pow(2, this.zoomExp)
+
+    this.zoomView.setZoom({ scale })
   }
 
   zoomOut() {
-    this.peaks.zoom.zoomOut()
+    const zoomExp = this.zoomExp + 1
+
+    const scale = Math.min(Math.pow(2, zoomExp), this.maxScale)
+
+    if (scale < this.maxScale) {
+      this.zoomExp = zoomExp
+    }
+
+    this.zoomView.setZoom({ scale })
   }
 
   getMarker(id) {
