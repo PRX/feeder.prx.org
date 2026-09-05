@@ -18,6 +18,7 @@
   <div class="form-floating input-group">
     <%= form.select :publish_time, time_options, {selected: "12:00:00"} %>
     <%= form.label :publish_time, t(".label.publish_time"), required: true %>
+    <%= field_help_text t(".help.publish_time") %>
   </div>
 </div>
 
