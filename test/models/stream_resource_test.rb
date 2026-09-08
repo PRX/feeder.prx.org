@@ -181,4 +181,36 @@ describe StreamResource do
       assert_equal 1740, res.offset_duration
     end
   end
+
+  describe "#segmentation=" do
+    let(:res) { StreamResource.new(start_at: "2026-02-06T02:00Z", end_at: "2026-02-06T03:00Z", duration: 70.minutes) }
+
+    it "sets the start offset, and calculates the end" do
+      res.segmentation = nil
+      assert_equal [[0, 3600]], res.segmentation
+
+      res.segmentation = [[99, "ignored"]]
+      assert_equal [[99, 3699]], res.segmentation
+
+      res.segmentation = [[600, "ignored"]]
+      assert_equal [[600, 4200]], res.segmentation
+      assert_equal 0, res.missing_seconds
+
+      # eventually we start missing seconds
+      res.segmentation = [[601, "ignored"]]
+      assert_equal [[601, 4200]], res.segmentation
+      assert_equal 1, res.missing_seconds
+    end
+
+    it "json decodes" do
+      res.segmentation = ""
+      assert_equal [[0, 3600]], res.segmentation
+
+      res.segmentation = "[[10, 3610]]"
+      assert_equal [[10, 3610]], res.segmentation
+
+      res.segmentation = "[not json"
+      assert_equal [[0, 3600]], res.segmentation
+    end
+  end
 end

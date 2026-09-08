@@ -17,6 +17,10 @@ export default class extends Controller {
 
   static classes = ["playing"]
 
+  minZoomExp = 9
+
+  zoomExp = this.minZoomExp
+
   updateLayout = _.debounce(() => {
     this.peaks?.views.getView("zoomview")?.fitToContainer()
     this.peaks?.views.getView("overview")?.fitToContainer()
@@ -26,12 +30,14 @@ export default class extends Controller {
     this.audioElement = new Audio()
     this.audioElement.preload = "metadata"
     this.audioElement.src = this.audioUrlValue
+    this.playheadColor = "rgba(256, 193, 7, 1)"
 
     this.peaksOptions = {
       ...(this.hasZoomTarget && {
         zoomview: {
           container: this.zoomTarget,
           fontSize: 12,
+          playheadColor: this.playheadColor,
 
           pointOptions: {
             labelTextColor: "#fff",
@@ -45,6 +51,8 @@ export default class extends Controller {
           highlightBorderRadius: 0,
           highlightColor: "#8cd2f4",
           highlightOpacity: 0.3,
+          playheadColor: this.playheadColor,
+
           segmentOptions: {
             overlayOpacity: 1,
             overlayOffset: 0,
@@ -107,10 +115,13 @@ export default class extends Controller {
       }
 
       const zoomView = peaksInstance.views.getView("zoomview")
-      const overviewView = peaksInstance.views.getView("overview")
+      const duration = peaksInstance.player.getDuration()
+
+      self.maxScale = zoomView._getScale(duration)
 
       zoomView.setMinSegmentDragWidth(1)
       zoomView.setAmplitudeScale(2)
+      zoomView.setZoom({ scale: Math.pow(2, self.zoomExp) })
 
       // Prevent segments from overlapping other segments.
       // We will also add some placeholder segments to prevent overlapping points.
@@ -146,14 +157,22 @@ export default class extends Controller {
         self.dispatch("marker.update", { detail: { id, startTime, endTime } })
       })
 
-      // Store peaks instance for later use.
+      // Store peaks instances for later use.
       self.peaks = peaksInstance
+      self.zoomView = zoomView
 
       // Initialize markers.
       if (self.markersValue) {
         self.initMarkers()
+        self.updateSeekInput()
+        this.seekTo(this.playerStartTime)
       }
     })
+  }
+
+  updateSeekInput() {
+    this.playerStartTime = this.markersValue.at(0).endTime
+    this.seekInputTarget.placeholder = convertSecondsToDuration(this.playerStartTime)
   }
 
   clearMarkers() {
@@ -181,6 +200,12 @@ export default class extends Controller {
           labelText,
           startTime,
           endTime,
+
+          ...(id === "preRoll" && { startTime: 0 }),
+
+          ...(id === "postRoll" && {
+            endTime: Math.ceil(endTime),
+          }),
         })
       } else {
         points.push({
@@ -193,8 +218,8 @@ export default class extends Controller {
         // Add a placeholder segment for this point.
         const placeholderSegment = {
           id: `placeholder.segments.${id}`,
-          startTime: id === "preRoll" ? 0 : startTime,
-          endTime: id === "postRoll" ? Math.ceil(this.peaks.player.getDuration()) : startTime,
+          startTime,
+          endTime: startTime,
         }
         segments.push(placeholderSegment)
       }
@@ -202,18 +227,13 @@ export default class extends Controller {
 
     this.peaks?.points.add(points)
     this.peaks?.segments.add(segments)
-
-    this.peaks?.segments.add({
-      startTime: 0,
-      endTime: 0.0001,
-      color: "#f00",
-    })
   }
 
   markersValueChanged() {
     if (this.markersValue?.length) {
       this.clearMarkers()
       this.initMarkers()
+      this.updateSeekInput()
     }
   }
 
@@ -234,6 +254,8 @@ export default class extends Controller {
   }
 
   seekSubmit(event) {
+    event.preventDefault()
+
     const { target } = event
     const { value } = target
 
@@ -243,7 +265,7 @@ export default class extends Controller {
   }
 
   seekToInputValue() {
-    this.seekTo(this.seekInputTarget.value)
+    this.seekTo(this.seekInputTarget.value.trim() || this.playerStartTime)
     this.seekInputTarget.value = ""
   }
 
@@ -268,11 +290,23 @@ export default class extends Controller {
   }
 
   zoomIn() {
-    this.peaks.zoom.zoomIn()
+    this.zoomExp = Math.max(this.minZoomExp, this.zoomExp - 1)
+
+    const scale = Math.pow(2, this.zoomExp)
+
+    this.zoomView.setZoom({ scale })
   }
 
   zoomOut() {
-    this.peaks.zoom.zoomOut()
+    const zoomExp = this.zoomExp + 1
+
+    const scale = Math.min(Math.pow(2, zoomExp), this.maxScale)
+
+    if (scale < this.maxScale) {
+      this.zoomExp = zoomExp
+    }
+
+    this.zoomView.setZoom({ scale })
   }
 
   getMarker(id) {

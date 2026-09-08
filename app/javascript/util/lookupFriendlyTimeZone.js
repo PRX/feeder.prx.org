@@ -32,6 +32,7 @@ const MAPPING = {
   "America/North_Dakota/New_Salem": "Central Time (US & Canada)",
   "America/Ojinaga": "Mountain Time (US & Canada)",
   "America/Pangnirtung": "Eastern Time (US & Canada)",
+  "America/Phoenix": "Arizona",
   "America/Port-au-Prince": "Eastern Time (US & Canada)",
   "America/Rainy_River": "Central Time (US & Canada)",
   "America/Rankin_Inlet": "Central Time (US & Canada)",

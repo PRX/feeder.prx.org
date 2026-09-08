@@ -1,8 +1,20 @@
 module Integrations
   class EpisodeDeliveryStatus < ApplicationRecord
+    self.inheritance_column = :integration
+
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
 
     enum :integration, Integrations::INTEGRATIONS
+
+    INTEGRATION_CLASSES = {
+      "apple" => "Apple::EpisodeDeliveryStatus",
+      "megaphone" => "Megaphone::EpisodeDeliveryStatus"
+    }.freeze
+
+    def self.find_sti_class(type_name)
+      integration = base_class.type_for_attribute(inheritance_column).cast(type_name)
+      INTEGRATION_CLASSES.fetch(integration).constantize
+    end
 
     def self.measure_asset_processing_duration(episode_delivery_statuses)
       # Relies on episode_delivery_statuses being ordered by created_at DESC
@@ -18,48 +30,6 @@ module Integrations
 
       # Measure from start to the latest status creation time
       Time.now.utc - start_status.created_at
-    end
-
-    def self.update_status(integration, episode, attrs)
-      new_status = episode.episode_delivery_status(integration)&.dup || default_status(integration, episode)
-      attrs[:integration] = integration
-      new_status.assign_attributes(attrs)
-      new_status.save!
-      episode.episode_delivery_statuses.reset
-      new_status
-    end
-
-    def self.delete_status(integration, episode)
-      episode.episode_delivery_statuses.where(integration: integration).delete_all
-    end
-
-    def self.default_status(integration, episode)
-      new(episode: episode, integration: integration)
-    end
-
-    def increment_asset_wait
-      self.class.update_status(integration, episode, asset_processing_attempts: (asset_processing_attempts || 0) + 1)
-    end
-
-    def mark_as_uploaded!
-      self.class.update_status(integration, episode, uploaded: true)
-    end
-
-    def mark_as_not_uploaded!
-      self.class.update_status(integration, episode, uploaded: false)
-    end
-
-    # Whether the media file has been uploaded to the Integration
-    # is a subset of whether the episode has been delivered
-    def mark_as_delivered!
-      self.class.update_status(integration, episode, delivered: true, uploaded: true, asset_processing_attempts: 0)
-    end
-
-    def mark_as_not_delivered!
-      # source_media_version_id is intentionally omitted — it is preserved so
-      # we can still compare the previously uploaded media version against the
-      # current one.
-      self.class.update_status(integration, episode, delivered: false, uploaded: false, asset_processing_attempts: 0)
     end
 
     def needs_upload?

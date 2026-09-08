@@ -49,9 +49,27 @@ module Megaphone
       episode.list(published_only)
     end
 
+    def self.unfinished(feeder_episodes)
+      integration = Megaphone::EpisodeDeliveryStatus.integrations.fetch("megaphone")
+      latest_status = <<~SQL
+        left join lateral (
+          select "integrations_episode_delivery_statuses".*
+          from "integrations_episode_delivery_statuses"
+          where "episodes"."id" = "integrations_episode_delivery_statuses"."episode_id"
+            and "integrations_episode_delivery_statuses"."integration" = #{integration}
+          order by "integrations_episode_delivery_statuses"."created_at" desc
+          limit 1
+        ) eds on true
+      SQL
+
+      feeder_episodes
+        .joins(latest_status)
+        .where('(eds."episode_id" is null) or ((eds."delivered" = false or eds."uploaded" = false) and eds."integration" = ?)', integration)
+    end
+
     def self.find_by_episode(megaphone_podcast, feeder_episode)
       episode = new_from_episode(megaphone_podcast, feeder_episode)
-      sync_log = feeder_episode.sync_log(:megaphone)
+      sync_log = episode.sync_log
       mp = episode.find_by_megaphone_id(sync_log&.external_id)
       mp ||= episode.find_by_guid(feeder_episode.guid)
       mp
@@ -135,7 +153,7 @@ module Megaphone
       self.api_response = api.post("podcasts/#{podcast.id}/episodes", body)
       handle_response(api_response)
       update_sync_log
-      update_delivery_status
+      refresh_delivery_status!
       set_enclosure
       self
     rescue Faraday::ClientError => ce
@@ -157,7 +175,7 @@ module Megaphone
       self.api_response = api.put("podcasts/#{podcast.id}/episodes/#{id}", body)
       handle_response(api_response)
       update_sync_log
-      update_delivery_status
+      refresh_delivery_status!
       set_enclosure
       self
     rescue Faraday::ClientError => ce
@@ -171,7 +189,7 @@ module Megaphone
     def delete!
       self.api_response = api.delete("podcasts/#{podcast.id}/episodes/#{id}")
       delete_sync_log
-      delete_delivery_status
+      Megaphone::EpisodeDeliveryStatus.delete_status(feeder_episode)
       self
     rescue Faraday::ClientError => ce
       self.api_response = ce.response
@@ -182,12 +200,7 @@ module Megaphone
     end
 
     def delete_sync_log
-      sync_log = feeder_episode.sync_log(:megaphone)
       sync_log.destroy!
-    end
-
-    def delete_delivery_status
-      feeder_episode.delete_episode_delivery_status(:megaphone)
     end
 
     # call this when we need to update the audio on mp
@@ -215,7 +228,7 @@ module Megaphone
           delivery_status(true).mark_as_delivered!
         else
           # still waiting - increment asset state
-          delivery_status(true).increment_asset_wait
+          increment_asset_wait!
         end
       else
         # this would be a weird timing thing maybe, but ...
@@ -284,7 +297,7 @@ module Megaphone
       body = cuepoints.map { |cp| cp.as_json_for_create }
       self.api_response = api.put_base("episodes/#{id}/cuepoints_batch", body)
       update_sync_log
-      update_delivery_status
+      refresh_delivery_status!
       self
     end
 
@@ -305,8 +318,8 @@ module Megaphone
       end
     end
 
-    # update delivery status after a create or update
-    def update_delivery_status
+    # Update delivery status after a create or update.
+    def refresh_delivery_status!
       # if there is not audio yet, we're all done
       if !feeder_episode.complete_media?
         delivery_status(true).mark_as_delivered!
@@ -319,7 +332,7 @@ module Megaphone
             uploaded: true,
             delivered: false
           )
-          feeder_episode.update_episode_delivery_status(:megaphone, attrs)
+          update_delivery_status(attrs)
         # if versions don't match, and we didn't upload, it isn't uploaded or delivered
         else
           delivery_status(true).mark_as_not_delivered!
@@ -353,7 +366,28 @@ module Megaphone
     end
 
     def delivery_status(with_default = false)
-      feeder_episode&.episode_delivery_status(:megaphone, with_default)
+      return unless feeder_episode
+
+      if with_default
+        Megaphone::EpisodeDeliveryStatus.current_or_default(feeder_episode)
+      else
+        Megaphone::EpisodeDeliveryStatus.current(feeder_episode)
+      end
+    end
+
+    def update_delivery_status(attrs)
+      Megaphone::EpisodeDeliveryStatus.update_status(feeder_episode, attrs)
+    end
+
+    def increment_asset_wait!
+      status = delivery_status(true)
+      update_delivery_status(
+        asset_processing_attempts: status.asset_processing_attempts.to_i + 1
+      )
+    end
+
+    def sync_log
+      SyncLog.megaphone.episodes.where(feeder_id: feeder_episode&.id).order(updated_at: :desc).first
     end
 
     def set_placement_attributes
