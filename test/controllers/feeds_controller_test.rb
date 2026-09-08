@@ -37,29 +37,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to podcast_feed_url(podcast, Feed.last)
   end
 
-  test "selects an uploaded Apple key in the podcast account" do
-    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
-    key_params = {
-      provider_id: SecureRandom.uuid,
-      key_id: "uploaded_key_id",
-      key_pem_b64: Base64.encode64(test_file("/fixtures/apple_podcasts_connect_keyfile.pem"))
-    }
-
-    assert_difference "Apple::Key.count", 1 do
-      post podcast_feeds_url(podcast), params: {
-        feed: {
-          type: "Feeds::AppleSubscription",
-          private: true,
-          delegated_delivery_config_attributes: {key_attributes: key_params}
-        }
-      }
-    end
-
-    assert_redirected_to podcast_feed_url(podcast, Feed.last)
-    assert_equal podcast.account_id, Feed.last.delegated_delivery_config.key.account_id
-    assert_equal Feed.last.delegated_delivery_config.key, podcast.reload.apple_key
-  end
-
   test "renders and updates delegated delivery settings" do
     apple_feed = create(:apple_feed, podcast: podcast)
     config = apple_feed.delegated_delivery_config

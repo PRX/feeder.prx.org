@@ -88,7 +88,7 @@ describe Apple::DelegatedDeliveryConfig do
     it "requires a persisted key to belong to the podcast account" do
       podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/456")
       key = create(:apple_key, account_id: 123)
-      config = build(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), key: key)
+      config = Apple::DelegatedDeliveryConfig.new(feed: create(:private_feed, podcast: podcast), key: key)
 
       refute config.valid?
       assert_equal ["must belong to the podcast's PRX account"], config.errors[:key]
