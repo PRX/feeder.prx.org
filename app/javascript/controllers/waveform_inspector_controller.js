@@ -17,10 +17,6 @@ export default class extends Controller {
 
   static classes = ["playing"]
 
-  minZoomExp = 9
-
-  zoomExp = this.minZoomExp
-
   updateLayout = _.debounce(() => {
     this.peaks?.views.getView("zoomview")?.fitToContainer()
     this.peaks?.views.getView("overview")?.fitToContainer()
@@ -32,12 +28,16 @@ export default class extends Controller {
     this.audioElement.src = this.audioUrlValue
     this.playheadColor = "rgba(256, 193, 7, 1)"
 
+    this.zoomTarget.addEventListener("wheel", this.handleWheel(this))
+
     this.peaksOptions = {
       ...(this.hasZoomTarget && {
         zoomview: {
           container: this.zoomTarget,
           fontSize: 12,
           playheadColor: this.playheadColor,
+
+          wheelMode: "scroll",
 
           pointOptions: {
             labelTextColor: "#fff",
@@ -117,11 +117,18 @@ export default class extends Controller {
       const zoomView = peaksInstance.views.getView("zoomview")
       const duration = peaksInstance.player.getDuration()
 
+      // Initialize zoom ranges.
+      // Zoom levels must be powers of 2 to insure markers and playhead are rendered consistently.
+      // Zoom scale must be greater than the original waveform scale to avoid Peak.js from throwing an error.
+      self.minScale = zoomView._originalWaveformData.scale
       self.maxScale = zoomView._getScale(duration)
+      self.minZoomExp = Math.round(Math.log2(self.minScale))
+      self.maxZoomExp = Math.round(Math.log2(self.maxScale)) + 1 // Allow max to go 1 level above so the scale can be capped at maxScale.
+      self.zoomExp = self.minZoomExp
+      zoomView.setZoom({ scale: Math.pow(2, self.zoomExp) })
 
       zoomView.setMinSegmentDragWidth(1)
       zoomView.setAmplitudeScale(2)
-      zoomView.setZoom({ scale: Math.pow(2, self.zoomExp) })
 
       // Prevent segments from overlapping other segments.
       // We will also add some placeholder segments to prevent overlapping points.
@@ -168,6 +175,27 @@ export default class extends Controller {
         this.seekTo(this.playerStartTime)
       }
     })
+  }
+
+  handleWheel(self) {
+    return (evt) => {
+      // Zoom in/out when scrolling up/down with alt key pressed.
+      if (evt.altKey && evt.wheelDeltaX === 0) {
+        if (evt.wheelDeltaY > 0) {
+          self.zoomOut()
+        } else if (evt.wheelDeltaY < 0) {
+          self.zoomIn()
+        }
+      }
+    }
+  }
+
+  handleZoomIn() {
+    this.zoomIn()
+  }
+
+  handleZoomOut() {
+    this.zoomOut()
   }
 
   updateSeekInput() {
@@ -290,7 +318,7 @@ export default class extends Controller {
   }
 
   zoomIn() {
-    this.zoomExp = Math.max(this.minZoomExp, this.zoomExp - 1)
+    this.zoomExp = Math.max(this.zoomExp - 1, this.minZoomExp)
 
     const scale = Math.pow(2, this.zoomExp)
 
@@ -298,7 +326,7 @@ export default class extends Controller {
   }
 
   zoomOut() {
-    const zoomExp = this.zoomExp + 1
+    const zoomExp = Math.min(this.zoomExp + 1, this.maxZoomExp)
 
     const scale = Math.min(Math.pow(2, zoomExp), this.maxScale)
 
