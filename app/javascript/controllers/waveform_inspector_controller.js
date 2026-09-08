@@ -326,13 +326,9 @@ export default class extends Controller {
   }
 
   zoomOut() {
-    const zoomExp = Math.min(this.zoomExp + 1, this.maxZoomExp)
+    this.zoomExp = Math.min(this.zoomExp + 1, this.maxZoomExp)
 
-    const scale = Math.min(Math.pow(2, zoomExp), this.maxScale)
-
-    if (scale < this.maxScale) {
-      this.zoomExp = zoomExp
-    }
+    const scale = Math.min(Math.pow(2, this.zoomExp), this.maxScale)
 
     this.zoomView.setZoom({ scale })
   }
