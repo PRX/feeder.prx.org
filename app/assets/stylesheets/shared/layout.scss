@@ -16,7 +16,7 @@ body {
 
 .prx-main {
   position: relative;
-  display: block;
+  display: grid;
 }
 
 .prx-tab-content {
@@ -91,7 +91,7 @@ h1 {
   }
 
   .prx-blank-lines {
-    background-color: $navy;
+    background-color: $gray-800;
   }
 
   .prx-border-thick {
