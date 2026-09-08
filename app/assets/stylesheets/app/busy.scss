@@ -1,3 +1,4 @@
+// Diverged from Shared Styles
 .prx-show-busy {
   display: none !important;
 }
@@ -6,13 +7,13 @@
 }
 turbo-frame[busy] {
   .prx-show-busy {
-    display: revert !important;
+    display: initial !important;
   }
   .prx-hide-busy {
     display: none !important;
   }
   .prx-visible-busy {
-    visibility: revert !important;
+    visibility: initial !important;
   }
   .prx-invisible-busy {
     visibility: hidden !important;
