@@ -24,12 +24,18 @@
 
     .ss-value-delete,
     .ss-value-delete svg {
+      width: 16px;
+      height: 16px;
       border-left: none;
     }
   }
 
   &.form-select.is-invalid:not([multiple]):not([size]) {
     background-repeat: no-repeat;
+  }
+
+  .ss-deselect {
+    width: 26px;
   }
 }
 
@@ -91,10 +97,6 @@
 
 // maybe a bad idea ... but hide options on multiselects, so things don't
 // flicker as simpleselect is init-ing them
-select[data-controller~="slim-select"][multiple] {
-  overflow: hidden;
-}
-
 select[multiple] option {
   visibility: hidden;
 }
