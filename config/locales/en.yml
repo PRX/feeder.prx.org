@@ -362,7 +362,7 @@ en:
         embed_player_types:
           standard: Standard
           card: Responsive Card
-          fixed_card: Fixed Width Card
+          video: Video
         embed_player_theme: Embed Player Theme
         embed_player_themes:
           dark: Dark (Default)
@@ -385,6 +385,7 @@ en:
           bonus: Bonus
         media_statuses:
           complete: Complete
+          disconnected: Disconnected
           error: Error
           incomplete: Incomplete
           incomplete_published: Incomplete
@@ -1414,6 +1415,9 @@ en:
       title: "Clip - %{time}"
     tabs:
       edit: Clip Editor
+    update:
+      error: Unable to save
+      notice: Clip updated
   podcast_engagement:
     form:
       <<: *form

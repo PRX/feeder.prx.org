@@ -42,6 +42,13 @@ describe Apple::Config do
   end
 
   describe "apple_key" do
+    it "can be selected by multiple podcasts" do
+      key = create(:apple_key)
+      podcasts = create_list(:podcast, 2, apple_key: key)
+
+      assert_equal podcasts.sort, key.reload.podcasts.sort
+    end
+
     it "base64 decodes the apple key" do
       c = Apple::Key.new(key_pem_b64: Base64.encode64("hello"))
       assert_equal c.key_pem, "hello"

@@ -28,6 +28,8 @@ class Podcast < ApplicationRecord
   alias_method :public_feed, :default_feed
   has_one :stream_recording, validate: true, autosave: true
 
+  belongs_to :apple_key, class_name: "Apple::Key", optional: true, inverse_of: :podcasts
+
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
   has_many :tasks, as: :owner
@@ -44,7 +46,7 @@ class Podcast < ApplicationRecord
   validates :link, http_url: true
   validates :donation_url, http_url: true
   validates :payment_pointer, format: /\A\$[A-Za-z0-9\-.]+\/?[^\s]*\z/, allow_blank: true
-  validates :path, :prx_uri, :source_url, uniqueness: true, allow_nil: true
+  validates :path, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
 
   # these keep changing - so just translate to the current accepted values

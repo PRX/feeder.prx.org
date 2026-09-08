@@ -13,7 +13,6 @@ class Episode < ApplicationRecord
   include PublishingStatus
   include TextSanitizer
   include EmbedPlayerHelper
-  include AppleIntegration
   include ReleaseEpisodes
   include EpisodeMetrics
   include HttpUtil
@@ -40,6 +39,12 @@ class Episode < ApplicationRecord
   has_many :episode_imports
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
   has_many :persons, as: :owner, inverse_of: :owner
+  has_many :apple_podcast_containers, class_name: "Apple::PodcastContainer"
+
+  private :apple_podcast_containers,
+    :apple_podcast_containers=,
+    :apple_podcast_container_ids,
+    :apple_podcast_container_ids=
 
   has_one :ready_image, -> { complete_or_replaced.order("created_at DESC") }, class_name: "EpisodeImage"
   has_one :transcript, -> { order("created_at DESC") }, dependent: :destroy, inverse_of: :episode
@@ -114,6 +119,24 @@ class Episode < ApplicationRecord
 
   def publish_updated
     podcast&.publish_updated
+  end
+
+  def publish_to_apple?
+    !!podcast.apple_config&.publish_to_apple?
+  end
+
+  def megaphone_episode
+    Megaphone::Episode.new.tap { |episode| episode.feeder_episode = self }
+  end
+
+  def apple_episode
+    return nil if !persisted? || !publish_to_apple?
+
+    if (show = podcast.apple_config&.build_publisher&.show)
+      return nil unless show.apple_id.present?
+
+      Apple::Episode.new(api: show.api, show: show, feeder_episode: self)
+    end
   end
 
   def published?

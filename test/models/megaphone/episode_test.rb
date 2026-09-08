@@ -1,6 +1,28 @@
 require "test_helper"
 
 describe Megaphone::Episode do
+  describe ".unfinished" do
+    let(:episode) { create(:episode) }
+
+    it "uses the latest Megaphone status when a newer Apple status exists" do
+      create(:megaphone_episode_delivery_status,
+        episode: episode,
+        delivered: false,
+        uploaded: false,
+        created_at: 2.hours.ago)
+      create(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: "show-1",
+        delivered: true,
+        uploaded: true,
+        created_at: 1.hour.ago)
+
+      episodes = Megaphone::Episode.unfinished(Episode.where(id: episode.id))
+
+      assert_equal [episode], episodes
+    end
+  end
+
   let(:feeder_podcast) { create(:podcast) }
   let(:feed) { create(:megaphone_feed, podcast: feeder_podcast) }
   let(:feeder_episode) { create(:episode, podcast: feeder_podcast, segment_count: 2) }
@@ -46,15 +68,15 @@ describe Megaphone::Episode do
 
     it "can create a draft with no audio and mark delivered" do
       refute feeder_episode.complete_media?
-      assert_nil feeder_episode.episode_delivery_status(:megaphone)
-      assert_nil feeder_episode.sync_log(:megaphone)
+      assert_nil feeder_episode.megaphone_episode.delivery_status
+      assert_nil feeder_episode.megaphone_episode.sync_log
 
       episode = Megaphone::Episode.new_from_episode(podcast, feeder_episode)
       episode.create!
 
       assert_nil episode.background_audio_file_url
-      assert feeder_episode.sync_log(:megaphone).external_id
-      assert feeder_episode.episode_delivery_status(:megaphone)
+      assert episode.sync_log.external_id
+      assert episode.delivery_status
     end
     it "can set cuepoints for adfree" do
       feeder_episode.categories = ["foobar", "adfree"]
@@ -80,8 +102,8 @@ describe Megaphone::Episode do
         })
 
       assert media_episode.complete_media?
-      assert_nil media_episode.episode_delivery_status(:megaphone)
-      assert_nil media_episode.sync_log(:megaphone)
+      assert_nil media_episode.megaphone_episode.delivery_status
+      assert_nil media_episode.megaphone_episode.sync_log
 
       episode = Megaphone::Episode.new_from_episode(podcast, media_episode)
 
@@ -96,8 +118,8 @@ describe Megaphone::Episode do
       assert_equal 1, episode.post_count
       assert_equal 1, episode.get_cuepoints.size
       assert_equal arrangement_url, episode.background_audio_file_url
-      assert media_episode.sync_log(:megaphone).external_id
-      status = media_episode.episode_delivery_status(:megaphone)
+      assert episode.sync_log.external_id
+      status = episode.delivery_status
       assert status
       # we saved the background audio url to mp, so it is uploaded
       assert status.uploaded
@@ -106,7 +128,7 @@ describe Megaphone::Episode do
       assert_equal status.source_media_version_id, media_episode.media_version_id
 
       # but we still need to see if it has been fully processed
-      refute media_episode.episode_delivery_status(:megaphone).delivered
+      refute episode.delivery_status.delivered
 
       # now let's check to see if it is ready on megaphone! (it's not)
       audio_processing_json = <<~JSON
@@ -121,7 +143,7 @@ describe Megaphone::Episode do
         .to_return(status: 200, body: audio_processing_json, headers: {})
 
       episode.check_audio!
-      refute media_episode.episode_delivery_status(:megaphone).delivered
+      refute episode.delivery_status.delivered
 
       # let's check again to see if it is ready on megaphone! (it is)
       audio_ready_json = <<~JSON
@@ -142,7 +164,7 @@ describe Megaphone::Episode do
         .to_return(status: 200, body: cp_json, headers: {})
 
       episode.check_audio!
-      assert media_episode.episode_delivery_status(:megaphone).delivered
+      assert episode.delivery_status.delivered
     end
 
     it "can create a published episodes with the wrong media version from DTR" do
@@ -158,8 +180,8 @@ describe Megaphone::Episode do
         })
 
       assert media_episode.complete_media?
-      assert_nil media_episode.episode_delivery_status(:megaphone)
-      assert_nil media_episode.sync_log(:megaphone)
+      assert_nil media_episode.megaphone_episode.delivery_status
+      assert_nil media_episode.megaphone_episode.sync_log
 
       episode = Megaphone::Episode.new_from_episode(podcast, media_episode)
 
@@ -170,12 +192,12 @@ describe Megaphone::Episode do
       episode.create!
 
       assert_nil episode.background_audio_file_url
-      assert media_episode.sync_log(:megaphone).external_id
-      assert media_episode.episode_delivery_status(:megaphone)
+      assert episode.sync_log.external_id
+      assert episode.delivery_status
       # we did not save the background audio url to mp, so it is not uploaded
-      refute media_episode.episode_delivery_status(:megaphone).uploaded
+      refute episode.delivery_status.uploaded
       # and likewise not delivered, as we still need to check and wait on DTR
-      refute media_episode.episode_delivery_status(:megaphone).delivered
+      refute episode.delivery_status.delivered
     end
   end
 
@@ -193,8 +215,38 @@ describe Megaphone::Episode do
       episode.create!
 
       episode.delete!
-      assert_nil feeder_episode.episode_delivery_status(:megaphone)
-      assert_nil feeder_episode.sync_log(:megaphone)
+      assert_nil feeder_episode.megaphone_episode.delivery_status
+      assert_nil feeder_episode.megaphone_episode.sync_log
+    end
+  end
+
+  describe "#increment_asset_wait!" do
+    it "appends an incremented delivery status while preserving its attributes" do
+      status = create(:megaphone_episode_delivery_status,
+        episode: feeder_episode,
+        delivered: true,
+        source_url: "http://example.com/audio.mp3",
+        asset_processing_attempts: 2)
+      episode = Megaphone::Episode.new_from_episode(podcast, feeder_episode)
+
+      assert_difference "Integrations::EpisodeDeliveryStatus.count", 1 do
+        new_status = episode.increment_asset_wait!
+
+        assert_equal 3, new_status.asset_processing_attempts
+        assert new_status.delivered
+        assert_equal status.source_url, new_status.source_url
+      end
+    end
+  end
+
+  describe "#update_delivery_status" do
+    it "updates status through the integration episode facade" do
+      episode = feeder_episode.megaphone_episode
+
+      status = episode.update_delivery_status(uploaded: true)
+
+      assert status.uploaded
+      assert_equal status, episode.delivery_status
     end
   end
 end

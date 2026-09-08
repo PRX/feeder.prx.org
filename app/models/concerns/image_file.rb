@@ -11,6 +11,7 @@ module ImageFile
     acts_as_paranoid
 
     before_validation :initialize_attributes, on: :create
+    before_create :initialize_attributes
 
     validates :original_url, presence: true
 

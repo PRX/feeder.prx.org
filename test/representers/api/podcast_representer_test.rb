@@ -7,7 +7,6 @@ describe Api::PodcastRepresenter do
 
   it "includes basic properties" do
     assert_equal json["path"], podcast.path
-    assert_match(/\/api\/v1\/series\//, json["prxUri"])
   end
 
   it "includes itunes categories" do
