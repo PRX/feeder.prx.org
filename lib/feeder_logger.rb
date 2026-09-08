@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "benchmark"
+
 class FeederLogger < Ougai::Logger
   include ActiveSupport::LoggerThreadSafeLevel
   include ActiveSupport::LoggerSilence
