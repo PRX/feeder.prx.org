@@ -67,6 +67,9 @@ class Tasks::RecordStreamTask < ::Task
       stream_resource.tasks.fix_media.update_all(status: :cancelled)
       stream_resource.copy_media
     end
+  rescue => err
+    Rails.logger.error("RecordStreamTask update_owner error", error: err)
+    NewRelic::Agent.notice_error(err)
   end
 
   # parsing data from the job_id
