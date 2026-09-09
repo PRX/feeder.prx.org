@@ -181,6 +181,8 @@ export default class extends Controller {
     return (evt) => {
       // Zoom in/out when scrolling up/down with alt key pressed.
       if (evt.altKey && evt.wheelDeltaX === 0) {
+        evt.preventDefault()
+
         if (evt.wheelDeltaY > 0) {
           self.zoomOut()
         } else if (evt.wheelDeltaY < 0) {
