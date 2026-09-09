@@ -6,6 +6,8 @@
   <div class="card-body pt-4 py-0">
     <% if clip.status_complete? %>
       <%= render "waveform/waveform",
+            label_pre_roll: t(".label_pre_roll"),
+            label_post_roll: t(".label_post_roll"),
             duration: clip.duration,
             form: form,
             segmentation: clip.segmentation,
