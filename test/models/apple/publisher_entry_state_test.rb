@@ -82,6 +82,10 @@ module PublisherEntryStateDoubles
       @needs_delivery
     end
 
+    def offset_published?
+      feeder_episode.published?
+    end
+
     def measure_asset_processing_duration
       nil
     end

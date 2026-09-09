@@ -276,6 +276,39 @@ describe Apple::Episode do
     end
   end
 
+  describe "#offset_published?" do
+    it "uses the public release time when the offset is unset" do
+      private_feed.episode_offset_seconds = nil
+      episode.update!(published_at: 1.hour.from_now)
+      refute apple_episode.offset_published?
+
+      episode.update!(published_at: 1.hour.ago)
+      assert apple_episode.offset_published?
+    end
+
+    it "becomes published at the feed offset boundary" do
+      travel_to Time.current.change(usec: 0) do
+        private_feed.episode_offset_seconds = -1.day.to_i
+        episode.update!(published_at: 1.day.from_now + 1.second)
+        refute apple_episode.offset_published?
+        assert_equal "uploaded", apple_episode.processing_status_label
+
+        travel 1.second
+        refute episode.published?
+        assert apple_episode.offset_published?
+        assert_equal "processing", apple_episode.processing_status_label
+      end
+    end
+
+    it "keeps undated drafts unpublished even with an early release offset" do
+      private_feed.episode_offset_seconds = -1.day.to_i
+      episode.update!(published_at: nil)
+
+      refute apple_episode.offset_published?
+      assert_equal "uploaded", apple_episode.processing_status_label
+    end
+  end
+
   describe "#enclosure_url" do
     it "should add auth query param" do
       assert_match(/auth=/, apple_episode.enclosure_url)

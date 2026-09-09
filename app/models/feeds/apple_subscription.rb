@@ -149,11 +149,11 @@ class Feeds::AppleSubscription < Feed
   end
 
   def integration_draft_episodes
-    episodes.draft_or_scheduled
+    episodes.where("episodes.published_at IS NULL OR episodes.published_at > ?", Time.now - episode_offset_seconds.to_i)
   end
 
   def integration_episode?(episode)
-    if episode.published?
+    if episode.published_by?(episode_offset_seconds.to_i)
       feed_episode?(episode)
     # Use enclosure_ready? (not feed_ready?) to exclude medialess drafts from UI status
     elsif episode.enclosure_ready?(true)

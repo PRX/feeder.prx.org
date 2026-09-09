@@ -107,6 +107,19 @@ describe EpisodesHelper do
         assert_equal "uploaded", helper.episode_integration_status(:apple, scheduled_episode)
       end
 
+      it "shows uploaded during a delayed release and processing when the delay expires" do
+        freeze_time do
+          apple_feed.update!(episode_offset_seconds: 1.day.to_i)
+          draft_episode.update!(published_at: 1.hour.ago)
+          create(:apple_episode_delivery_status, episode: draft_episode, uploaded: true, delivered: false)
+
+          assert_equal "uploaded", helper.episode_integration_status(:apple, draft_episode)
+
+          travel 23.hours
+          assert_equal "processing", helper.episode_integration_status(:apple, draft_episode)
+        end
+      end
+
       it "returns 'not_publishable' when scheduled episode has no uploadable media" do
         assert_equal "not_publishable", helper.episode_integration_status(:apple, scheduled_episode_without_media)
       end

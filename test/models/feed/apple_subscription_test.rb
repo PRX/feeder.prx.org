@@ -129,6 +129,22 @@ describe Feeds::AppleSubscription do
   end
 
   describe "#integration_draft_episodes" do
+    [-1.day.to_i, 0, 1.day.to_i].each do |offset|
+      it "partitions episodes at the release boundary with offset #{offset}" do
+        freeze_time do
+          apple_feed.update!(episode_offset_seconds: offset, display_episodes_count: nil)
+          cutoff = Time.current - offset
+          released = create(:episode, podcast: podcast, published_at: cutoff - 1.second)
+          boundary = create(:episode, podcast: podcast, published_at: cutoff)
+          upcoming = create(:episode, podcast: podcast, published_at: cutoff + 1.second)
+          draft = create(:episode, podcast: podcast, published_at: nil)
+
+          assert_equal [boundary.id, released.id].sort, apple_feed.feed_episode_ids.sort
+          assert_equal [upcoming.id, draft.id].sort, apple_feed.integration_draft_episodes.pluck(:id).sort
+        end
+      end
+    end
+
     it "returns draft and scheduled episodes" do
       apple_feed.save!
       draft = create(:episode, podcast: podcast, published_at: nil)
@@ -143,6 +159,17 @@ describe Feeds::AppleSubscription do
   end
 
   describe "#integration_episode?" do
+    it "keeps early releases beyond the feed limit out of both episode sets" do
+      apple_feed.update!(episode_offset_seconds: -1.day.to_i, display_episodes_count: 1)
+      excluded = create(:episode_with_media, podcast: podcast, published_at: 1.hour.from_now)
+      included = create(:episode_with_media, podcast: podcast, published_at: 2.hours.from_now)
+
+      assert_equal [included.id], apple_feed.feed_episode_ids
+      assert_empty apple_feed.integration_draft_episodes
+      refute apple_feed.integration_episode?(excluded)
+      assert apple_feed.integration_episode?(included)
+    end
+
     it "returns true for published episodes in feed_episodes" do
       apple_feed.save!
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)

@@ -91,7 +91,7 @@ module Apple
     end
 
     def sync_drafting_episode_states!
-      eps = show.draft_upload_candidates
+      eps = show.draft_upload_candidates.reject(&:offset_published?)
       return if eps.empty?
 
       poll_episodes!(eps)
@@ -135,7 +135,7 @@ module Apple
 
         eps
           .filter(&:needs_delivery_processing?)
-          .filter { |ep| ep.feeder_episode.published? }
+          .filter(&:offset_published?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           process_delivery!(batch)
         end
@@ -175,7 +175,7 @@ module Apple
         # Increment the wait counter. Drafts uploaded ahead of publish are not
         # waiting yet: clear their counter to null so process_delivery! arms a
         # fresh clock at publish time.
-        published_eps, draft_eps = episodes_with_source_metadata.partition { |ep| ep.feeder_episode.published? }
+        published_eps, draft_eps = episodes_with_source_metadata.partition(&:offset_published?)
         increment_asset_wait!(published_eps)
         clear_asset_wait!(draft_eps)
       end

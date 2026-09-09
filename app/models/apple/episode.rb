@@ -443,6 +443,10 @@ module Apple
       publishing_state == "PUBLISHED"
     end
 
+    def offset_published?
+      feeder_episode.published_by?(show.private_feed.episode_offset_seconds.to_i)
+    end
+
     def container_upload_complete?
       return false if missing_container?
 
@@ -496,7 +500,7 @@ module Apple
     end
 
     def processing_status_label
-      feeder_episode.published? ? "processing" : "uploaded"
+      offset_published? ? "processing" : "uploaded"
     end
 
     def audio_asset_state_success?

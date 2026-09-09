@@ -569,6 +569,81 @@ describe Apple::Publisher do
       assert_equal [draft_episode.id], apple_publisher.episodes_to_sync.map(&:feeder_id)
     end
 
+    it "keeps published early releases out of draft reconciliation" do
+      apple_feed.update!(episode_offset_seconds: -1.day.to_i)
+      draft_episode.update!(published_at: 12.hours.from_now)
+      create_apple_state.call(draft_episode, "PUBLISHED")
+
+      assert_includes apple_publisher.show.episodes.map(&:feeder_id), draft_episode.id
+      refute_includes apple_publisher.show.draft_upload_candidates.map(&:feeder_id), draft_episode.id
+
+      apple_publisher.stub(:poll_episodes!, nil) do
+        apple_publisher.stub(:redraft_published_draft_candidates!, ->(*) { flunk "early release must stay published" }) do
+          apple_publisher.sync_drafting_episode_states!
+        end
+      end
+    end
+
+    it "preserves a prior upload during a delayed release and delivers it at the boundary" do
+      freeze_time do
+        apple_feed.update!(episode_offset_seconds: 1.day.to_i)
+        draft_episode.update!(published_at: 1.hour.ago)
+        create_apple_state.call(draft_episode, "DRAFTING")
+        uploaded_episode = apple_publisher.show.draft_upload_candidates.first
+        container = create(:apple_podcast_container, episode: draft_episode, apple_show_id: uploaded_episode.apple_show_id)
+        delivery = create(:apple_podcast_delivery, episode: draft_episode, podcast_container: container)
+        create(:apple_podcast_delivery_file, episode: draft_episode, delivery: delivery, api_marked_as_uploaded: true)
+        uploaded_episode.update_delivery_status(uploaded: true, delivered: false,
+          source_media_version_id: draft_episode.media_version_id, asset_processing_attempts: nil)
+        delivered_ids = []
+
+        assert_empty apple_publisher.show.episodes
+        assert_equal [draft_episode.id], apple_publisher.show.draft_upload_candidates.map(&:feeder_id)
+
+        apple_publisher.show.stub(:sync!, nil) do
+          apple_publisher.stub(:poll_episodes!, nil) do
+            apple_publisher.stub(:sync_episodes!, nil) do
+              apple_publisher.stub(:archive!, ->(eps) { assert_empty eps }) do
+                apple_publisher.stub(:unarchive!, ->(eps) { assert_empty eps }) do
+                  apple_publisher.stub(:upload_media!, ->(*) { flunk "prior upload must be preserved" }) do
+                    apple_publisher.stub(:process_delivery!, ->(eps) {
+                      assert eps.all? { |ep| ep.podcast_delivery_files.any? }
+                      delivered_ids.concat(eps.map(&:feeder_id))
+                    }) do
+                      apple_publisher.publish!
+                      assert_empty delivered_ids
+
+                      travel 23.hours
+                      apple_publisher.show.reload
+                      assert_empty apple_publisher.show.draft_upload_candidates
+                      assert_equal [draft_episode.id], apple_publisher.show.episodes.map(&:feeder_id)
+                      apple_publisher.publish!
+                      assert_equal [draft_episode.id], delivered_ids
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    it "redrafts an Apple release rescheduled beyond the early release window" do
+      apple_feed.update!(episode_offset_seconds: -1.day.to_i)
+      draft_episode.update!(published_at: 2.days.from_now)
+      create_apple_state.call(draft_episode, "PUBLISHED")
+      redrafted = []
+
+      apple_publisher.stub(:poll_episodes!, nil) do
+        apple_publisher.stub(:redraft_published_draft_candidates!, ->(eps) { redrafted.concat(eps) }) do
+          apple_publisher.sync_drafting_episode_states!
+        end
+      end
+
+      assert_equal [draft_episode.id], redrafted.map(&:feeder_id)
+    end
+
     it "selects published local draft candidates for draft state reconciliation without generic archive" do
       create_apple_state.call(draft_episode, "PUBLISHED")
 
@@ -1705,6 +1780,26 @@ describe Apple::Publisher do
       assert upload_called, "upload_media! should be called to re-upload changed media"
     end
 
+    it "delivers a prior upload when the early release window opens" do
+      private_feed.update!(episode_offset_seconds: -1.day.to_i)
+      episode.feeder_episode.update!(published_at: 36.hours.from_now)
+      episode.update_delivery_status(asset_processing_attempts: nil)
+      delivered = []
+
+      apple_publisher.stub(:upload_media!, ->(*) { flunk "unchanged media should not upload again" }) do
+        apple_publisher.stub(:process_delivery!, ->(eps) { delivered.concat(eps) }) do
+          apple_publisher.upload_and_process!([episode])
+          assert_empty delivered
+
+          travel 13.hours do
+            refute episode.feeder_episode.published?
+            apple_publisher.upload_and_process!([episode])
+            assert_equal [episode], delivered
+          end
+        end
+      end
+    end
+
     it "skips process_delivery! for scheduled episodes" do
       episode.feeder_episode.update!(published_at: 10.days.from_now)
 
@@ -1817,6 +1912,37 @@ describe Apple::Publisher do
           end
         end
       end
+    end
+  end
+
+  describe "#upload_media! with an early release offset" do
+    it "starts the wait clock only for episodes whose subscription release is due" do
+      private_feed.update!(episode_offset_seconds: -1.day.to_i)
+      early_release, future_release, draft = Array.new(3) do
+        build(:apple_episode_ready_for_upload, show: apple_publisher.show)
+      end
+      early_release.feeder_episode.update!(published_at: 12.hours.from_now)
+      future_release.feeder_episode.update!(published_at: 2.days.from_now)
+      draft.feeder_episode.update!(published_at: nil)
+      eps = [early_release, future_release, draft]
+      media_infos = eps.map do |ep|
+        Apple::MediaInfo.new(episode: ep, source_media_version_id: ep.media_version_id)
+      end
+
+      # Exercise local delivery status updates while replacing the remote upload operations.
+      %i[sync_podcast_containers! sync_podcast_deliveries! sync_podcast_delivery_files!
+        execute_upload_operations! mark_delivery_files_uploaded! update_audio_container_reference!].each do |method|
+        apple_publisher.define_singleton_method(method) { |*| }
+      end
+
+      apple_publisher.stub(:wait_for_versioned_source_metadata, media_infos) do
+        apple_publisher.upload_media!(eps)
+      end
+
+      assert eps.all? { |ep| ep.delivery_status.uploaded? }
+      assert_equal 1, early_release.delivery_status.asset_processing_attempts
+      assert_nil future_release.delivery_status.asset_processing_attempts
+      assert_nil draft.delivery_status.asset_processing_attempts
     end
   end
 
