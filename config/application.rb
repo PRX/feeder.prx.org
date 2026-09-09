@@ -54,6 +54,16 @@ module Feeder
 
     config.active_model.i18n_customize_full_message = true
 
+    # Nothing here attaches files or builds variants, so skip the variant
+    # processor rather than pull in image_processing to satisfy the check
+    # Rails 8.1 runs at boot.
+    config.active_storage.variant_processor = :disabled
+
+    # Rails 8.0 framework default, adopted ahead of load_defaults. Has to live
+    # here rather than in config/initializers/new_framework_defaults_8_0.rb --
+    # the Action Dispatch railtie reads it before app initializers run.
+    config.action_dispatch.strict_freshness = true
+
     # Use redis if the env vars are present
     if ENV["REDIS_HOST"].present? && ENV["REDIS_PORT"].present?
       config.cache_store = [:redis_cache_store, {host: ENV["REDIS_HOST"], port: ENV["REDIS_PORT"], ssl: ENV["REDIS_SSL"].present?}]

@@ -48,7 +48,7 @@ module Apple
 
         episode = episodes_by_container_id.fetch(container.id)
 
-        status = episode.apple_status
+        status = episode.delivery_status
         count = status&.source_fetch_count || 0
 
         new(
@@ -56,7 +56,7 @@ module Apple
           source_media_version_id: media_version.to_i,
           source_size: content_length.to_i,
           source_url: cdn_url,
-          source_filename: filename_prefix(count) + episode.enclosure_filename,
+          source_filename: filename_prefix(count) + episode.enclosure_file_name,
           enclosure_url: episode.enclosure_url
         )
       end
@@ -64,8 +64,8 @@ module Apple
 
     def self.increment_source_fetch_count(episodes)
       episodes.each do |ep|
-        count = ep.apple_status&.source_fetch_count || 0
-        ep.feeder_episode.apple_update_delivery_status(source_fetch_count: count + 1)
+        count = ep.delivery_status&.source_fetch_count || 0
+        ep.update_delivery_status(source_fetch_count: count + 1)
       end
     end
 

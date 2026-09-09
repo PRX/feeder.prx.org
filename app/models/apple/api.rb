@@ -223,6 +223,12 @@ module Apple
       resp
     end
 
+    def response!(resp)
+      response(resp).tap do |wrapped_response|
+        handle_api_error(resp) if wrapped_response.dig("api_response", "err")
+      end
+    end
+
     def handle_api_error(resp)
       raise Apple::ApiError.new("Apple API Error", resp)
     end

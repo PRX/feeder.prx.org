@@ -340,21 +340,22 @@ describe Episode do
 
   describe "#publish!" do
     let(:episode) { create(:episode) }
-    let(:container) { create(:apple_podcast_container, episode: episode) }
+    let(:apple_episode) { build(:apple_episode, feeder_episode: episode) }
+    let(:container) { create(:apple_podcast_container, episode: episode, apple_show_id: apple_episode.apple_show_id) }
     let(:delivery) { create(:apple_podcast_delivery, episode: episode, podcast_container: container) }
 
     before do
-      assert_equal [delivery], episode.apple_podcast_deliveries
+      assert_equal [delivery], apple_episode.podcast_deliveries
     end
 
     it "destroys any existing apple podcast deliveries" do
       refute_empty container.podcast_deliveries
-      refute_empty episode.apple_podcast_deliveries
+      refute_empty apple_episode.podcast_deliveries
       episode.publish!
-      assert episode.apple_status.present?
-      assert episode.apple_status.delivered == false
+      assert apple_episode.delivery_status(true).present?
+      assert apple_episode.delivery_status(true).delivered == false
 
-      assert episode.apple_needs_delivery?
+      assert apple_episode.needs_delivery_processing?
     end
 
     it "can be called for an episode without a container" do
@@ -362,9 +363,88 @@ describe Episode do
       container.destroy!
       episode.reload
 
-      assert_empty episode.apple_podcast_deliveries
+      assert_empty apple_episode.podcast_deliveries
       episode.publish!
-      assert_empty episode.apple_podcast_deliveries
+      assert_empty apple_episode.podcast_deliveries
+    end
+  end
+
+  describe "Apple integration" do
+    let(:podcast) { create(:podcast) }
+    let(:episode) { create(:episode, podcast: podcast) }
+
+    describe "#apple_episode" do
+      it "returns nil without an Apple configuration" do
+        assert_nil episode.apple_episode
+      end
+
+      it "returns nil without a show identity" do
+        create(:apple_feed, podcast: podcast)
+
+        assert_nil episode.apple_episode
+      end
+
+      it "returns a show-scoped facade" do
+        create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
+
+        assert_equal "show-1", episode.apple_episode.apple_show_id
+      end
+
+      it "resolves the show-scoped sync log through the integration facade" do
+        create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
+        sync_log = SyncLog.create!(
+          integration: :apple,
+          feeder_type: :episodes,
+          feeder_id: episode.id,
+          external_id: "episode-1",
+          external_show_id: "show-1"
+        )
+
+        assert_equal sync_log, episode.integration_episode(:apple).sync_log
+      end
+    end
+
+    describe "unscoped Apple resources" do
+      it "keeps raw Apple associations private" do
+        refute episode.respond_to?(:apple_sync_log)
+        refute episode.respond_to?(:apple_podcast_containers)
+        refute episode.respond_to?(:sync_logs)
+
+        assert_raises(NoMethodError) { episode.apple_sync_log }
+        assert_raises(NoMethodError) { episode.apple_podcast_containers }
+        assert_raises(NoMethodError) { episode.sync_logs }
+      end
+
+      it "does not expose legacy Apple state methods" do
+        %i[
+          apple_episode_delivery_status
+          apple_episode_delivery_statuses
+          apple_mark_as_delivered!
+          apple_prepare_for_delivery!
+          apple_update_delivery_status
+        ].each do |method_name|
+          refute episode.respond_to?(method_name), method_name
+        end
+      end
+    end
+
+    describe "#publish_to_apple?" do
+      it "returns false when podcast has no apple config" do
+        refute episode.publish_to_apple?
+      end
+
+      it "returns false when publishing is disabled" do
+        create(:apple_config, feed: create(:private_feed, podcast: podcast), publish_enabled: false)
+
+        refute episode.publish_to_apple?
+      end
+
+      it "returns true when publishing is enabled" do
+        create(:apple_config, feed: create(:private_feed, podcast: podcast), publish_enabled: true)
+        podcast.reload
+
+        assert episode.publish_to_apple?
+      end
     end
   end
 
@@ -415,7 +495,7 @@ describe Episode do
       assert_requested :head, episode_3.enclosure_url
     end
 
-    it "does not follow more than 10 redirects" do
+    it "does not follow more than 5 redirects" do
       uri_1 = episode_1.enclosure_url
 
       stub_request(:head, uri_1)
@@ -423,7 +503,7 @@ describe Episode do
 
       episode_1.head_request
 
-      assert_requested :head, episode_1.enclosure_url, times: 10
+      assert_requested :head, episode_1.enclosure_url, times: 6
     end
 
     it "rescues errors after making head requests" do
@@ -441,6 +521,12 @@ describe Episode do
       assert_requested :head, episode_1.enclosure_url
       assert_requested :head, episode_2.enclosure_url
       assert_requested :head, episode_3.enclosure_url
+    end
+
+    it "doesn't request overridden enclosure urls" do
+      episode_1.enclosure_override_url = "http://not.dovetail/file.mp3"
+      episode_1.head_request
+      refute_requested :head, episode_1.enclosure_url
     end
   end
 end

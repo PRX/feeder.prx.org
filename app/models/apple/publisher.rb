@@ -50,9 +50,11 @@ module Apple
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           poll_episodes!(eps)
 
-          eps = only_episodes_with_apple_state(eps)
+          eps = only_episodes_with_integration_state(eps)
 
-          poll_podcast_containers!(eps)
+          # There is no publishing pipeline to retry here, so reset any stale
+          # containers without raising and continue polling.
+          poll_podcast_containers!(eps, raise_on_reset: false)
           poll_podcast_deliveries!(eps)
           poll_podcast_delivery_files!(eps)
         end
@@ -80,8 +82,7 @@ module Apple
       upload_and_process!(episodes_to_sync)
 
       # success
-      SyncLog.log!(
-        integration: :apple,
+      Apple::SyncLog.log!(
         feeder_id: public_feed.id,
         feeder_type: :feeds,
         external_id: show.apple_id,
@@ -116,6 +117,8 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
+        check_for_stuck_episodes(eps)
+
         eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
         skipped.each do |ep|
           Rails.logger.warn("Episode needs ready enclosure. Skipping", {episode_id: ep.id})
@@ -125,13 +128,13 @@ module Apple
         sync_episodes!(eps)
 
         eps
-          .select(&:apple_needs_upload?)
+          .select(&:needs_upload?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
 
         eps
-          .filter(&:apple_needs_delivery?)
+          .filter(&:needs_delivery_processing?)
           .filter { |ep| ep.feeder_episode.published? }
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           process_delivery!(batch)
@@ -263,7 +266,7 @@ module Apple
         eps.each do |ep|
           Rails.logger.info("Resetting delivery state for draft candidate", {episode_id: ep.feeder_id,
                                                                              publishing_state: ep.publishing_state})
-          ep.feeder_episode.apple_mark_as_not_delivered!
+          ep.mark_as_not_delivered!
         end
       end
     end
@@ -310,6 +313,7 @@ module Apple
       state_name = filter_method.to_s.delete_prefix("processed_").delete_suffix("?").upcase
 
       problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
+      apple_episodes_by_feeder_id = eps.index_by(&:feeder_id)
 
       problem_pdfs.each do |pdf|
         Rails.logger.error("Podcast delivery file has #{state_name} state, marking as not delivered",
@@ -321,7 +325,7 @@ module Apple
         # Mark for reupload so the episode is picked up in the next publish cycle.
         # This will continue to fail if nothing changes, but gives users/admins
         # a chance to fix the source media format that Apple rejected.
-        pdf.episode.apple_mark_as_not_delivered!
+        apple_episodes_by_feeder_id.fetch(pdf.episode_id).mark_as_not_delivered!
       end
 
       if problem_pdfs.any?
@@ -338,7 +342,7 @@ module Apple
 
     def mark_asset_state_failures_as_not_delivered!(failure_eps)
       failure_eps.each do |ep|
-        ep.apple_mark_as_not_delivered!
+        ep.mark_as_not_delivered!
       end
     end
 
@@ -399,15 +403,15 @@ module Apple
 
     def increment_asset_wait!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.feeder_episode.apple_status.uploaded? }
-        eps.each { |ep| ep.apple_episode_delivery_status.increment_asset_wait }
+        eps = eps.filter { |e| e.delivery_status(true).uploaded? }
+        eps.each(&:increment_asset_wait!)
       end
     end
 
     def clear_asset_wait!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.feeder_episode.apple_status.uploaded? }
-        eps.each { |ep| ep.apple_episode_delivery_status.clear_asset_wait }
+        eps = eps.filter { |e| e.delivery_status(true).uploaded? }
+        eps.each { |ep| ep.update_delivery_status(asset_processing_attempts: nil) }
       end
     end
 
@@ -418,8 +422,8 @@ module Apple
     # active delivery flow that may be legitimately waiting across job runs.
     def reset_asset_wait_for_prior_uploads!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |ep| ep.apple_episode_delivery_status.asset_processing_attempts.nil? }
-        eps.each { |ep| ep.apple_episode_delivery_status.reset_asset_wait }
+        eps = eps.filter { |ep| ep.delivery_status(true).asset_processing_attempts.nil? }
+        eps.each { |ep| ep.update_delivery_status(asset_processing_attempts: 0) }
       end
     end
 
@@ -459,9 +463,9 @@ module Apple
       end
     end
 
-    def poll_podcast_containers!(eps)
+    def poll_podcast_containers!(eps, raise_on_reset: true)
       Rails.logger.tagged("##{__method__}") do
-        res = Apple::PodcastContainer.poll_podcast_container_state(api, eps)
+        res = Apple::PodcastContainer.poll_podcast_container_state(api, eps, raise_on_reset: raise_on_reset)
         Rails.logger.info("Modified local state for podcast containers.", {count: res.length})
       end
     end
@@ -550,7 +554,7 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         eps.each do |ep|
           Rails.logger.info("Marking episode as no longer needing delivery", {episode_id: ep.feeder_episode.id})
-          ep.feeder_episode.apple_mark_as_delivered!
+          ep.mark_as_delivered!
         end
       end
     end
@@ -559,8 +563,8 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         media_infos.each do |mi|
           attrs = mi.source_attributes.merge(uploaded: true)
-          Rails.logger.info("Marking episode media as uploaded", {episode_id: mi.episode.feeder_episode.id}.merge(attrs))
-          mi.episode.feeder_episode.apple_update_delivery_status(attrs)
+          Rails.logger.info("Marking episode as uploaded", {episode_id: mi.episode.feeder_episode.id}.merge(attrs))
+          mi.episode.update_delivery_status(attrs)
         end
       end
     end
@@ -614,7 +618,7 @@ module Apple
     def log_asset_wait_duration!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         eps.each do |ep|
-          duration = ep&.feeder_episode&.measure_asset_processing_duration
+          duration = ep.measure_asset_processing_duration
           Rails.logger.info("Episode asset processing complete", {
             episode_id: ep.feeder_id,
             asset_wait_duration: duration
@@ -648,7 +652,7 @@ module Apple
 
       # Check for stuck episodes (>= STUCK_EPISODE_THRESHOLD)
       stuck = eps.select { |ep|
-        duration = ep.feeder_episode.measure_asset_processing_duration
+        duration = ep.measure_asset_processing_duration
         duration && duration >= Apple::STUCK_EPISODE_THRESHOLD
       }
 
@@ -659,9 +663,9 @@ module Apple
         stuck.each do |ep|
           Rails.logger.error("Episode stuck in asset processing", {
             episode_id: ep.feeder_id,
-            duration: ep.feeder_episode.measure_asset_processing_duration
+            duration: ep.measure_asset_processing_duration
           })
-          ep.apple_mark_as_not_delivered!
+          ep.mark_as_not_delivered!
         end
 
         raise error

@@ -21,6 +21,7 @@ class FeederFormBuilder < ActionView::Helpers::FormBuilder
     "Hawaii",
     "Alaska",
     "Pacific Time (US & Canada)",
+    "Arizona",
     "Mountain Time (US & Canada)",
     "Central Time (US & Canada)",
     "Eastern Time (US & Canada)",

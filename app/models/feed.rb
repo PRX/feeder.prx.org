@@ -34,7 +34,8 @@ class Feed < ApplicationRecord
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_categories, -> { order("created_at ASC") }, validate: true, autosave: true, dependent: :destroy
 
-  has_one :apple_sync_log, -> { feeds.apple }, foreign_key: :feeder_id, class_name: "SyncLog"
+  has_one :apple_sync_log, -> { feeds.apple }, foreign_key: :feeder_id, class_name: "Apple::SyncLog"
+  has_one :apple_show_feed_binding, class_name: "Apple::ShowFeedBinding", dependent: :destroy
 
   accepts_nested_attributes_for :feed_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :itunes_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
@@ -65,10 +66,6 @@ class Feed < ApplicationRecord
   scope :apple, -> { where(type: "Feeds::AppleSubscription") }
   scope :tab_order, -> { order(Arel.sql("slug IS NULL DESC, created_at ASC")) }
 
-  def self.enclosure_template_default
-    "https://#{ENV["DOVETAIL_HOST"]}{/podcast_id,feed_slug,guid,original_basename}{feed_extension}"
-  end
-
   def mark_as_not_delivered!(episode)
     # for default / RSS feeds, don't do anything
     # TODO: we could mark an episode needing to be published in this RSS feed file
@@ -97,7 +94,6 @@ class Feed < ApplicationRecord
 
   def set_defaults
     self.file_name ||= DEFAULT_FILE_NAME
-    self.enclosure_template ||= Feed.enclosure_template_default
   end
 
   def sanitize_text
@@ -132,7 +128,7 @@ class Feed < ApplicationRecord
   end
 
   def check_enclosure_changes
-    if persisted? && (enclosure_prefix_changed? || enclosure_template_changed?)
+    if persisted? && enclosure_prefix_changed?
       self.enclosure_updated_at = Time.now
     end
   end
@@ -195,6 +191,10 @@ class Feed < ApplicationRecord
     default? && public? && include_zones.nil? && audio_format.blank?
   end
 
+  def auth_token
+    tokens.first&.token if private?
+  end
+
   def published_url(include_token = nil)
     if private?
       published_private_url(include_token)
@@ -247,13 +247,12 @@ class Feed < ApplicationRecord
     self[:exclude_tags] = tags.blank? ? nil : tags
   end
 
-  def enclosure_template
-    self[:enclosure_template] || Feed.enclosure_template_default
+  def file_ext
+    (audio_format || {})[:f] || "mp3"
   end
 
   def mime_type
-    f = (audio_format || {})[:f] || "mp3"
-    AUDIO_MIME_TYPES[f]
+    AUDIO_MIME_TYPES[file_ext]
   end
 
   def copy_media(force = false)

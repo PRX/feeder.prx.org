@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 const DEFAULT_KEY = "/"
-const FORM_ELEMENTS = ["INPUT", "TEXTAREA", "SELECT"]
+const FORM_ELEMENTS = ["INPUT", "TEXTAREA", "SELECT", "TRIX-EDITOR"]
 
 export default class extends Controller {
   static values = { key: String }

@@ -298,7 +298,7 @@ describe Apple::Show do
 
         sync = apple_show.sync!
 
-        assert_equal sync.class, SyncLog
+        assert_instance_of Apple::SyncLog, sync
 
         assert_equal "123", sync.external_id
         assert_equal "123", apple_show.apple_id
@@ -315,6 +315,21 @@ describe Apple::Show do
         assert_equal "123", sync.external_id
         assert_equal "123", apple_show.apple_id
         assert_equal "bar", apple_show.apple_attributes["foo"]
+      end
+    end
+
+    it "raises an api error when show sync returns an http error" do
+      apple_show.sync_log.update!(api_response: {"before" => true})
+      response = OpenStruct.new(body: "<html>503 Service Unavailable</html>", code: "503")
+
+      apple_show.api.stub(:get, response) do
+        error = assert_raises(Apple::ApiError) do
+          apple_show.sync!
+        end
+
+        assert_includes error.message, "HTTP resp code:503"
+        assert_includes error.message, "503 Service Unavailable"
+        assert_equal({"before" => true}, apple_show.sync_log.reload.api_response)
       end
     end
 

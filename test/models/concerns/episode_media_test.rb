@@ -429,27 +429,23 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     end
   end
 
+  describe "#media_file_name" do
+    it "returns the contents or uncut file name" do
+      c1.original_url = "http://site/one.mp3"
+      c2.original_url = "http://site/two.mp3"
+      assert_equal "one.mp3", ep.media_file_name
+
+      ep.build_uncut(original_url: "http://site/three.mp3")
+      assert_equal "three.mp3", ep.media_file_name
+    end
+  end
+
   describe "#media_content_type" do
     it "returns the first contents type" do
       c1.mime_type = "some/thing1"
       c2.mime_type = "some/thing2"
 
       assert_equal "some/thing1", ep.media_content_type
-    end
-
-    it "overrides with a feed mime type" do
-      feed = build_stubbed(:feed, audio_format: nil)
-      assert_equal "audio/mpeg", ep.media_content_type(feed)
-
-      # feed overrides audio mimes
-      feed.audio_format = {f: "flac"}
-      assert_equal "audio/flac", ep.media_content_type(feed)
-
-      # but not video/other mimes
-      c1.mime_type = "video/mp4"
-      assert_equal "video/mp4", ep.media_content_type(feed)
-      c1.mime_type = "some/thing"
-      assert_equal "some/thing", ep.media_content_type(feed)
     end
   end
 

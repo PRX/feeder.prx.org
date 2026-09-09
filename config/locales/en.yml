@@ -362,7 +362,7 @@ en:
         embed_player_types:
           standard: Standard
           card: Responsive Card
-          fixed_card: Fixed Width Card
+          video: Video
         embed_player_theme: Embed Player Theme
         embed_player_themes:
           dark: Dark (Default)
@@ -386,6 +386,7 @@ en:
         media_statuses:
           complete: Complete
           draft: Draft
+          disconnected: Disconnected
           error: Error
           incomplete: Incomplete
           incomplete_published: Incomplete
@@ -1011,6 +1012,7 @@ en:
         "-21600": 6 hours early
         "-43200": 12 hours early
         "-86400": 24 hours early
+        "-259200": 3 days early
         "-604800": 1 week early
         "-6048000": 10 weeks early
         "300": 5 minutes late
@@ -1019,6 +1021,7 @@ en:
         "21600": 6 hours late
         "43200": 12 hours late
         "86400": 24 hours late
+        "259200": 3 days late
         "604800": 1 week late
         "6048000": 10 weeks late
       audio_format_options:
@@ -1410,6 +1413,9 @@ en:
       title: "Clip - %{time}"
     tabs:
       edit: Clip Editor
+    update:
+      error: Unable to save
+      notice: Clip updated
   podcast_engagement:
     form:
       <<: *form
