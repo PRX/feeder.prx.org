@@ -166,6 +166,37 @@ describe Tasks::RecordStreamTask do
         end
       end
     end
+
+    it "handles recording errors" do
+      new_res = StreamResource.new(start_at: "2026-09-09T10:00:00Z", end_at: "2026-09-09T11:00:00Z")
+      task.owner = new_res
+      task.update(status: "error")
+
+      assert new_res.persisted?
+      assert_equal new_res.status, "error"
+      assert_nil new_res.actual_start_at
+      assert_nil new_res.actual_end_at
+    end
+
+    it "logs validation errors" do
+      mock_log = Minitest::Mock.new.expect(:call, nil) { true }
+      mock_notice = Minitest::Mock.new.expect(:call, nil) { true }
+
+      Rails.logger.stub(:error, mock_log) do
+        NewRelic::Agent.stub(:notice_error, mock_notice) do
+          new_res = StreamResource.new(start_at: "2026-09-09T10:00:00Z", end_at: nil)
+          task.owner = new_res
+          task.update(status: "error")
+
+          assert_equal "error", task.status
+          refute task.changed?
+          refute new_res.persisted?
+        end
+      end
+
+      mock_log.verify
+      mock_notice.verify
+    end
   end
 
   describe "#job_id_parts" do
