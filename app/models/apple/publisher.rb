@@ -121,6 +121,8 @@ module Apple
         clear_asset_wait!(eps.reject(&:offset_published?))
         check_for_stuck_episodes(eps)
 
+        # Applies to drafts and published episodes alike. Skipped episodes are
+        # retried on the next run: media completion re-enqueues the pipeline.
         eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
         skipped.each do |ep|
           Rails.logger.warn("Episode needs ready enclosure. Skipping", {episode_id: ep.id})
