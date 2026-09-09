@@ -132,7 +132,7 @@ module Apple
         sync_episodes!(eps)
 
         eps
-          .select(&:needs_upload?)
+          .filter(&:needs_upload?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
