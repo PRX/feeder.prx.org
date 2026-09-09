@@ -19,8 +19,8 @@ FactoryBot.define do
       end
     end
 
-    # set a complete episode factory varient
-    factory :uploaded_apple_episode do
+    # Episode with full delivery infrastructure but not yet uploaded
+    factory :apple_episode_ready_for_upload do
       feeder_episode do
         create(:episode)
       end
@@ -47,9 +47,22 @@ FactoryBot.define do
 
         create(:content, episode: apple_episode.feeder_episode, position: 1, status: "complete")
         create(:content, episode: apple_episode.feeder_episode, position: 2, status: "complete")
-        v1 = apple_episode.feeder_episode.cut_media_version!
+        apple_episode.feeder_episode.cut_media_version!
+      end
 
-        apple_episode.delivery_status(true).update!(delivered: true, source_media_version_id: v1.id)
+      # Media uploaded, awaiting delivery
+      factory :uploaded_apple_episode do
+        after(:build) do |apple_episode, _evaluator|
+          v1 = apple_episode.feeder_episode.media_versions.first
+          apple_episode.delivery_status(true).update!(uploaded: true, source_media_version_id: v1.id)
+        end
+
+        # Fully delivered
+        factory :delivered_apple_episode do
+          after(:build) do |apple_episode, _evaluator|
+            apple_episode.delivery_status.update!(delivered: true)
+          end
+        end
       end
     end
 

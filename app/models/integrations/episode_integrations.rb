@@ -21,7 +21,7 @@ module Integrations::EpisodeIntegrations
 
   def integration_feed_episode?(integration)
     feed = integration_feed(integration)
-    publish_to_integration?(integration) && feed&.feed_episode_ids&.include?(id)
+    publish_to_integration?(integration) && feed&.integration_episode?(self)
   end
 
   def integration_feed(integration)

@@ -49,13 +49,29 @@ require "test_helper"
 
 # Lightweight test doubles for structural routing tests (no AR overhead).
 module PublisherEntryStateDoubles
-  class EpisodeDouble
-    attr_reader :name
+  class FeederEpisodeDouble
+    def initialize(enclosure_ready: true, published: true)
+      @enclosure_ready = enclosure_ready
+      @published = published
+    end
 
-    def initialize(name:, needs_upload: false, needs_delivery: false)
+    def enclosure_ready?(_build_media = false)
+      @enclosure_ready
+    end
+
+    def published?
+      @published
+    end
+  end
+
+  class EpisodeDouble
+    attr_reader :name, :feeder_episode
+
+    def initialize(name:, needs_upload: false, needs_delivery: false, enclosure_ready: true, published: true)
       @name = name
       @needs_upload = needs_upload
       @needs_delivery = needs_delivery
+      @feeder_episode = FeederEpisodeDouble.new(enclosure_ready: enclosure_ready, published: published)
     end
 
     def needs_upload?
@@ -64,6 +80,10 @@ module PublisherEntryStateDoubles
 
     def needs_delivery_processing?
       @needs_delivery
+    end
+
+    def offset_published?
+      feeder_episode.published?
     end
 
     def measure_asset_processing_duration
@@ -107,7 +127,9 @@ describe Apple::Publisher do
       PublisherEntryStateDoubles::EpisodeDouble.new(
         name: row.fetch(:name),
         needs_upload: row.fetch(:needs_upload),
-        needs_delivery: row.fetch(:needs_delivery)
+        needs_delivery: row.fetch(:needs_delivery),
+        enclosure_ready: row.fetch(:enclosure_ready, true),
+        published: row.fetch(:published, true)
       )
     end
   end

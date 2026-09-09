@@ -31,6 +31,10 @@ module Integrations
         false
       end
 
+      def processing_status_label
+        "processing"
+      end
+
       def ad_free?
         feeder_episode.categories.include?("adfree")
       end
