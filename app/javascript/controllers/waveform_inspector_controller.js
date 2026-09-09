@@ -28,8 +28,6 @@ export default class extends Controller {
     this.audioElement.src = this.audioUrlValue
     this.playheadColor = "rgba(256, 193, 7, 1)"
 
-    this.zoomTarget.addEventListener("wheel", this.handleWheel(this))
-
     this.peaksOptions = {
       ...(this.hasZoomTarget && {
         zoomview: {
