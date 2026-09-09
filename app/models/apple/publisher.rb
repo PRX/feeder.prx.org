@@ -117,6 +117,8 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
+        # Rescheduling an existing upload pauses its wait until release is due again.
+        clear_asset_wait!(eps.reject(&:offset_published?))
         check_for_stuck_episodes(eps)
 
         eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
@@ -253,8 +255,12 @@ module Apple
 
     def redraft_published_draft_candidates!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        Rails.logger.info("Archiving published draft episode candidates before unarchive", {episode_count: eps.length,
-                                                                                            episode_ids: eps.map(&:feeder_id)})
+        Rails.logger.warn("Archiving live Apple episodes whose release is no longer due; removing them from subscribers until republished", {
+          episode_count: eps.length,
+          episode_ids: eps.map(&:feeder_id),
+          private_feed_id: private_feed.id,
+          episode_offset_seconds: private_feed.episode_offset_seconds.to_i
+        })
 
         archive!(eps)
         unarchive_draft_candidates!(eps)
@@ -410,7 +416,10 @@ module Apple
 
     def clear_asset_wait!(eps)
       Rails.logger.tagged("##{__method__}") do
-        eps = eps.filter { |e| e.delivery_status(true).uploaded? }
+        eps = eps.filter do |ep|
+          status = ep.delivery_status(true)
+          status.uploaded? && !status.asset_processing_attempts.nil?
+        end
         eps.each { |ep| ep.update_delivery_status(asset_processing_attempts: nil) }
       end
     end

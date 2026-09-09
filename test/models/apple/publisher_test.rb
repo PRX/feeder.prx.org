@@ -1150,6 +1150,18 @@ describe Apple::Publisher do
       apple_publisher.clear_asset_wait!([episode1])
       assert_nil episode1.delivery_status(true).asset_processing_attempts
     end
+
+    it "does not write another status when the asset wait count is already nil" do
+      apple_publisher.clear_asset_wait!([episode1])
+      status = episode1.delivery_status
+      assert_nil status.asset_processing_attempts
+
+      assert_no_difference -> { episode1.delivery_statuses.count } do
+        2.times { apple_publisher.clear_asset_wait!([episode1]) }
+      end
+
+      assert_equal status, episode1.delivery_status
+    end
   end
 
   describe "#reset_asset_wait_for_prior_uploads!" do
@@ -1567,6 +1579,69 @@ describe Apple::Publisher do
       assert_empty calls
       episode.feeder_episode.reload
       assert_nil episode.measure_asset_processing_duration
+    end
+
+    it "preserves a rescheduled upload and starts a fresh wait when its release becomes due" do
+      feeder_episode = create(:episode)
+      episode = build(:uploaded_apple_episode,
+        show: apple_publisher.show,
+        feeder_episode: feeder_episode,
+        api_response: build(:apple_episode_api_response,
+          item_guid: feeder_episode.item_guid,
+          publishing_state: "DRAFTING"))
+      source_version_id = episode.delivery_status.source_media_version_id
+      apple_publisher.increment_asset_wait!([episode])
+
+      travel 1.hour
+      assert_operator episode.measure_asset_processing_duration, :>=, Apple::STUCK_EPISODE_THRESHOLD
+
+      private_feed.update!(episode_offset_seconds: -1.day.to_i)
+      feeder_episode.update!(published_at: 36.hours.from_now)
+      refute episode.offset_published?
+      assert episode.drafting?
+
+      published = []
+      wait_for_upload = ->(eps) {
+        assert_equal [episode], eps
+        assert_operator episode.measure_asset_processing_duration, :<, 1.minute
+      }
+      ready_assets = ->(eps, &finish) {
+        travel 1.second
+        finish.call(eps)
+      }
+
+      apple_publisher.stub(:upload_media!, ->(*) { flunk "rescheduling must preserve the existing upload" }) do
+        apple_publisher.stub(:wait_for_upload_processing, wait_for_upload) do
+          apple_publisher.stub(:wait_for_asset_state, ready_assets) do
+            apple_publisher.stub(:publish_drafting!, ->(eps) { published.concat(eps) }) do
+              apple_publisher.upload_and_process!([episode])
+
+              assert_empty published
+              assert episode.delivery_status.uploaded?
+              refute episode.delivery_status.delivered?
+              assert_nil episode.delivery_status.asset_processing_attempts
+              assert_nil episode.measure_asset_processing_duration
+              assert_equal source_version_id, episode.delivery_status.source_media_version_id
+
+              travel 12.hours + 1.second
+              refute feeder_episode.published?
+              assert episode.offset_published?
+              reset_wait = apple_publisher.method(:reset_asset_wait_for_prior_uploads!)
+              apple_publisher.stub(:reset_asset_wait_for_prior_uploads!, ->(eps) {
+                reset_wait.call(eps)
+                # Keep status timestamps distinct while the test clock is frozen.
+                travel 1.second
+              }) do
+                apple_publisher.upload_and_process!([episode])
+              end
+
+              assert_equal [episode], published
+              assert episode.delivery_status.delivered?
+              assert_equal source_version_id, episode.delivery_status.source_media_version_id
+            end
+          end
+        end
+      end
     end
 
     it "skips upload for already uploaded episodes" do
