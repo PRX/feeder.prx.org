@@ -1406,6 +1406,8 @@ en:
       create: Create Episode
     form_waveform:
       title: Edit your clip
+      label_pre_roll: Start Clip
+      label_post_roll: End Clip
     index:
       loading: Loading
       title: "%{title} - Clips"
@@ -1584,3 +1586,5 @@ en:
         set_playhead: Set To Playhead
     waveform:
       prefix: Break
+      label_pre_roll: Preroll
+      label_post_roll: Postroll
