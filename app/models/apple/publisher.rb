@@ -125,7 +125,7 @@ module Apple
         # retried on the next run: media completion re-enqueues the pipeline.
         eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
         skipped.each do |ep|
-          Rails.logger.warn("Episode needs ready enclosure. Skipping", {episode_id: ep.id})
+          Rails.logger.warn("Episode needs ready enclosure. Skipping", {episode_id: ep.feeder_id})
         end
 
         # Sync episode metadata (create/update on Apple) for eligible episodes
