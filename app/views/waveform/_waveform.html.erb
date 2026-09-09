@@ -1,6 +1,8 @@
 <div data-controller="audio-breakpoints waveform-inspector"
   data-audio-breakpoints-duration-value="<%= duration %>"
   data-audio-breakpoints-label-prefix-value="<%= t(".prefix") %>"
+  data-audio-breakpoints-label-pre-roll-value="<%= defined?(label_pre_roll) ? label_pre_roll : t(".label_pre_roll") %>"
+  data-audio-breakpoints-label-post-roll-value="<%= defined?(label_post_roll) ? label_post_roll : t(".label_post_roll") %>"
   data-audio-breakpoints-ad-breaks-value="<%= defined?(ad_breaks) ? ad_breaks : 0 %>"
   data-audio-breakpoints-ad-breaks-valid-value="<%= defined?(ad_breaks_valid) ? ad_breaks_valid : true %>"
   data-audio-breakpoints-segments-value="<%= (defined?(segmentation) ? segmentation : []).to_json %>"
