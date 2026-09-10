@@ -917,7 +917,7 @@ en:
       title: Ad Zones to Include
       help:
         ad_zones: Control the types of ads that should be stitched into episodes in this feed.
-    form_apple_config:
+    form_delegated_delivery_config:
       title: Apple Subscriptions
       description: Configure your credentials to publish episodes through Apple's Podcast Connect API
       guide_link: <a href="https://help.prx.org/hc/en-us/articles/26602803552155-Setting-up-Apple-Podcast-Subscriptions-with-Apple-Delegated-Delivery" target="_blank">Check out our guide to step you through the setup.</a>

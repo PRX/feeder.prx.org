@@ -112,13 +112,13 @@ describe Feeds::AppleSubscription do
     end
   end
 
-  describe "#apple_configs" do
+  describe "#delegated_delivery_config" do
     it "has apple credentials" do
-      assert apple_feed.apple_config.present?
-      assert apple_feed.apple_config.valid?
+      assert apple_feed.delegated_delivery_config.present?
+      assert apple_feed.delegated_delivery_config.valid?
 
       apple_feed.save!
-      assert_equal default_feed, apple_feed.apple_config.public_feed
+      assert_equal default_feed, apple_feed.delegated_delivery_config.public_feed
     end
 
     it "can return a list of possible apple shows" do
@@ -250,8 +250,8 @@ describe Feeds::AppleSubscription do
       apple_feed.update!(apple_show_id: "show-1")
 
       binding = default_feed.reload.apple_show_feed_binding
-      assert_equal binding, apple_feed.apple_config.reload.show_feed_binding
-      assert_equal apple_feed.apple_config.key, podcast.reload.apple_key
+      assert_equal binding, apple_feed.delegated_delivery_config.reload.show_feed_binding
+      assert_equal apple_feed.delegated_delivery_config.key, podcast.reload.apple_key
       assert_equal "show-1", binding.apple_show_id
 
       assert_no_difference "Apple::ShowFeedBinding.count" do
@@ -269,7 +269,7 @@ describe Feeds::AppleSubscription do
       apple_feed.update!(apple_show_id: nil)
 
       assert_nil default_feed.reload.apple_show_feed_binding
-      assert_nil apple_feed.apple_config.reload.show_feed_binding
+      assert_nil apple_feed.delegated_delivery_config.reload.show_feed_binding
     end
   end
 
@@ -282,7 +282,7 @@ describe Feeds::AppleSubscription do
     end
 
     it "returns false if the creds are not marked publish_enabled?" do
-      apple_feed.apple_config.publish_enabled = false
+      apple_feed.delegated_delivery_config.publish_enabled = false
       apple_feed.save!
       refute apple_feed.publish_to_apple?
     end

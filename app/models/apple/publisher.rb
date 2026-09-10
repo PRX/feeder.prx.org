@@ -8,12 +8,12 @@ module Apple
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
-    def self.from_apple_config(apple_config)
-      api = Apple::Api.from_apple_config(apple_config)
+    def self.from_delegated_delivery_config(delegated_delivery_config)
+      api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
 
       new(api: api,
-        public_feed: apple_config.public_feed,
-        private_feed: apple_config.private_feed)
+        public_feed: delegated_delivery_config.public_feed,
+        private_feed: delegated_delivery_config.private_feed)
     end
 
     def initialize(api:, public_feed:, private_feed:)

@@ -434,13 +434,13 @@ describe Episode do
       end
 
       it "returns false when publishing is disabled" do
-        create(:apple_config, feed: create(:private_feed, podcast: podcast), publish_enabled: false)
+        create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), publish_enabled: false)
 
         refute episode.publish_to_apple?
       end
 
       it "returns true when publishing is enabled" do
-        create(:apple_config, feed: create(:private_feed, podcast: podcast), publish_enabled: true)
+        create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), publish_enabled: true)
         podcast.reload
 
         assert episode.publish_to_apple?

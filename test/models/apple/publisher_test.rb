@@ -4,8 +4,8 @@ describe Apple::Publisher do
   let(:podcast) { create(:podcast) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:feed, podcast: podcast, private: true) }
-  let(:apple_config) { build(:apple_config) }
-  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+  let(:delegated_delivery_config) { build(:delegated_delivery_config) }
+  let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
 
   let(:apple_publisher) do
     Apple::Publisher.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
@@ -157,8 +157,8 @@ describe Apple::Publisher do
     let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
 
-    let(:apple_config) { build(:apple_config) }
-    let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+    let(:delegated_delivery_config) { build(:delegated_delivery_config) }
+    let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
 
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_show) do
@@ -278,15 +278,15 @@ describe Apple::Publisher do
     let(:podcast) { create(:podcast) }
     let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
-    let(:apple_config) { create(:apple_config, feed: private_feed) }
+    let(:delegated_delivery_config) { create(:delegated_delivery_config, feed: private_feed) }
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
-    let(:apple_publisher) { apple_config.build_publisher }
+    let(:apple_publisher) { delegated_delivery_config.build_publisher }
     let(:apple_api) { apple_publisher.api }
     let(:apple_episode) { Apple::Episode.new(show: apple_publisher.show, feeder_episode: episode, api: apple_api) }
 
     before do
-      Apple::Show.connect_existing("123", apple_config)
+      Apple::Show.connect_existing("123", delegated_delivery_config)
       create_episode_sync_log(episode, external_id: "123", external_show_id: "123", **apple_episode_api_response)
       private_feed.episodes << episode
     end
@@ -529,8 +529,8 @@ describe Apple::Publisher do
     let(:podcast) { create(:podcast) }
     let(:public_feed) { podcast.default_feed }
     let(:apple_feed) { create(:apple_feed, podcast: podcast) }
-    let(:apple_config) { apple_feed.apple_config }
-    let(:apple_publisher) { apple_config.build_publisher }
+    let(:delegated_delivery_config) { apple_feed.delegated_delivery_config }
+    let(:apple_publisher) { delegated_delivery_config.build_publisher }
     let(:draft_episode) { create(:episode_with_media, podcast: podcast, published_at: nil) }
 
     let(:create_apple_state) do
@@ -560,7 +560,7 @@ describe Apple::Publisher do
       apple_feed
       draft_episode
       apple_feed.episodes << draft_episode unless apple_feed.episodes.exists?(draft_episode.id)
-      Apple::Show.connect_existing("123", apple_config)
+      Apple::Show.connect_existing("123", delegated_delivery_config)
     end
 
     it "includes draft upload candidates in episodes to sync" do

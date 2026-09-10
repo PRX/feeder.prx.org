@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
 module Apple
-  class Config < ApplicationRecord
+  class DelegatedDeliveryConfig < ApplicationRecord
+    self.table_name = "apple_configs"
+
     belongs_to :feed
     belongs_to :key, class_name: "Apple::Key", optional: true, validate: true, autosave: true
-    belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: true, inverse_of: :config
+    belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: true, inverse_of: :delegated_delivery_config
 
     validates :show_feed_binding_id, uniqueness: true, allow_nil: true
-    validate :podcast_has_one_apple_config
+    validate :podcast_has_one_delegated_delivery_config
     validate :not_default_feed
     validate :show_feed_binding_matches_podcast
     validate :key_belongs_to_podcast_account
@@ -34,14 +36,14 @@ module Apple
     end
 
     # TODO: this a helper for onboarding via console, retrofit when the UX catches up
-    def self.build_apple_config(podcast, key)
-      if podcast.apple_config
-        Rails.logger.error("Found existing apple config for #{podcast.title}!")
+    def self.build_delegated_delivery_config(podcast, key)
+      if podcast.delegated_delivery_config
+        Rails.logger.error("Found existing delegated delivery config for #{podcast.title}!")
         Rails.logger.error("Do you want to continue? (y/N)")
-        raise "Stopping build_apple_config" if $stdin.gets.chomp.downcase != "y"
+        raise "Stopping build_delegated_delivery_config" if $stdin.gets.chomp.downcase != "y"
       end
 
-      Apple::Config.new(feed: find_or_build_apple_feed(podcast), key: key)
+      Apple::DelegatedDeliveryConfig.new(feed: find_or_build_apple_feed(podcast), key: key)
     end
 
     def self.mark_as_delivered!(apple_publisher)
@@ -52,8 +54,8 @@ module Apple
       end
     end
 
-    def self.setup_delegated_delivery(podcast, key: nil, apple_config: nil, apple_show_id: nil)
-      ac = apple_config || build_apple_config(podcast, key)
+    def self.setup_delegated_delivery(podcast, key: nil, delegated_delivery_config: nil, apple_show_id: nil)
+      ac = delegated_delivery_config || build_delegated_delivery_config(podcast, key)
       ac.save!
 
       return "No apple show id -- skip connect existing " unless apple_show_id.present?
@@ -77,10 +79,10 @@ module Apple
       end
     end
 
-    def podcast_has_one_apple_config
+    def podcast_has_one_delegated_delivery_config
       all_feeds = Feed.where(podcast_id: feed.podcast_id).pluck(:id)
-      if Apple::Config.where(feed_id: all_feeds).where.not(id: id).any?
-        errors.add(:feed, "podcast already has an apple config")
+      if Apple::DelegatedDeliveryConfig.where(feed_id: all_feeds).where.not(id: id).any?
+        errors.add(:feed, "podcast already has a delegated delivery config")
       end
     end
 
@@ -107,11 +109,11 @@ module Apple
     end
 
     def build_publisher
-      Apple::Publisher.from_apple_config(self)
+      Apple::Publisher.from_delegated_delivery_config(self)
     end
 
     def build_show
-      Apple::Show.from_apple_config(self)
+      Apple::Show.from_delegated_delivery_config(self)
     end
 
     def apple_key
