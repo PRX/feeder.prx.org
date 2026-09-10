@@ -16,9 +16,9 @@ class StreamResource < ApplicationRecord
 
   validates :start_at, presence: true
   validates :end_at, presence: true, comparison: {greater_than: :start_at}
-  validates :actual_start_at, presence: true, if: :done_recording?
-  validates :actual_end_at, presence: true, comparison: {greater_than: :actual_start_at}, if: :done_recording?
-  validates :original_url, presence: true, if: :done_recording?
+  validates :actual_start_at, presence: true, if: :has_recording?
+  validates :actual_end_at, presence: true, comparison: {greater_than: :actual_start_at}, if: :has_recording?
+  validates :original_url, presence: true, if: :has_recording?
 
   after_initialize :set_defaults
   before_validation :set_defaults
@@ -43,15 +43,15 @@ class StreamResource < ApplicationRecord
   def needs_copy?
     if status_complete?
       false
-    elsif done_recording? && copy_task
+    elsif has_recording? && copy_task
       false
     else
-      done_recording?
+      has_recording?
     end
   end
 
-  def done_recording?
-    %w[created started recording].exclude?(status)
+  def has_recording?
+    %w[created started recording error].exclude?(status)
   end
 
   def file_name

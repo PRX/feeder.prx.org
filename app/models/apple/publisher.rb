@@ -65,6 +65,8 @@ module Apple
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
+      sync_drafting_episode_states!
+
       # Archive deleted or unpublished episodes.
       # These episodes are no longer in the private feed.
       poll_episodes!(episodes_to_archive)
@@ -88,18 +90,57 @@ module Apple
       )
     end
 
+    def sync_drafting_episode_states!
+      eps = show.draft_upload_candidates.reject(&:offset_published?)
+      return if eps.empty?
+
+      poll_episodes!(eps)
+
+      # Handles local draft + Apple ARCHIVED by unarchiving back to DRAFTING
+      # Handles local draft + Apple PUBLISHED by cycling ARCHIVE -> UNARCHIVE to reach DRAFTING
+      eps = eps.reject(&:integration_new?)
+      eps_to_unarchive = eps.select(&:archived?)
+      eps_to_redraft = eps.select(&:apple_published?)
+
+      # Both paths reset delivery state after unarchive because Apple may prune archived media assets.
+      unarchive_draft_candidates!(eps_to_unarchive) if eps_to_unarchive.any?
+      redraft_published_draft_candidates!(eps_to_redraft) if eps_to_redraft.any?
+    end
+
+    def episodes_to_sync
+      filter_episodes_to_sync(episodes_with_draft_upload_candidates)
+    end
+
+    def episodes_to_archive
+      filter_episodes_to_archive(show.podcast_episodes, Set.new(episodes_with_draft_upload_candidates))
+    end
+
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
+        # Rescheduling an existing upload pauses its wait until release is due again.
+        clear_asset_wait!(eps.reject(&:offset_published?))
         check_for_stuck_episodes(eps)
 
-        # Only create if needed.
+        # Applies to drafts and published episodes alike. Skipped episodes are
+        # retried on the next run: media completion re-enqueues the pipeline.
+        eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
+        skipped.each do |ep|
+          Rails.logger.warn("Episode needs ready enclosure. Skipping", {episode_id: ep.feeder_id})
+        end
+
+        # Sync episode metadata (create/update on Apple) for eligible episodes
         sync_episodes!(eps)
 
-        eps.filter(&:needs_upload?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        eps
+          .filter(&:needs_upload?)
+          .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           upload_media!(batch)
         end
 
-        eps.filter(&:needs_delivery_processing?).each_slice(PUBLISH_CHUNK_LEN) do |batch|
+        eps
+          .filter(&:needs_delivery_processing?)
+          .filter(&:offset_published?)
+          .each_slice(PUBLISH_CHUNK_LEN) do |batch|
           process_delivery!(batch)
         end
 
@@ -114,6 +155,7 @@ module Apple
         # Soft delete any existing delivery and delivery files.
         prepare_for_delivery!(eps)
 
+        # Create containers/files for episodes needing media upload.
         sync_podcast_containers!(eps)
 
         media_infos = wait_for_versioned_source_metadata(eps)
@@ -134,8 +176,12 @@ module Apple
         mark_as_uploaded!(media_infos)
 
         # The episodes start waiting after they are uploaded.
-        # Increment the wait counter.
-        increment_asset_wait!(episodes_with_source_metadata)
+        # Increment the wait counter. Drafts uploaded ahead of publish are not
+        # waiting yet: clear their counter to null so process_delivery! arms a
+        # fresh clock at publish time.
+        published_eps, draft_eps = episodes_with_source_metadata.partition(&:offset_published?)
+        increment_asset_wait!(published_eps)
+        clear_asset_wait!(draft_eps)
       end
     end
 
@@ -143,6 +189,7 @@ module Apple
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         Rails.logger.info("Starting delivery processing", {episode_count: eps.length})
 
+        reset_asset_wait_for_prior_uploads!(eps)
         increment_asset_wait!(eps)
 
         wait_for_upload_processing(eps)
@@ -196,6 +243,39 @@ module Apple
     def prepare_for_delivery!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         Apple::Episode.prepare_for_delivery(eps)
+      end
+    end
+
+    def unarchive_draft_candidates!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Rails.logger.info("Unarchiving draft episode candidates", {episode_count: eps.length, episode_ids: eps.map(&:feeder_id)})
+
+        unarchive!(eps)
+        reset_delivery_state_for_draft_candidates!(eps)
+      end
+    end
+
+    def redraft_published_draft_candidates!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        Rails.logger.warn("Archiving live Apple episodes whose release is no longer due; removing them from subscribers until republished", {
+          episode_count: eps.length,
+          episode_ids: eps.map(&:feeder_id),
+          private_feed_id: private_feed.id,
+          episode_offset_seconds: private_feed.episode_offset_seconds.to_i
+        })
+
+        archive!(eps)
+        unarchive_draft_candidates!(eps)
+      end
+    end
+
+    def reset_delivery_state_for_draft_candidates!(eps)
+      Rails.logger.tagged("Apple::Publisher##{__method__}") do
+        eps.each do |ep|
+          Rails.logger.info("Resetting delivery state for draft candidate", {episode_id: ep.feeder_id,
+                                                                             publishing_state: ep.publishing_state})
+          ep.mark_as_not_delivered!
+        end
       end
     end
 
@@ -277,19 +357,12 @@ module Apple
     def raise_asset_state_failure_retry!(failure_eps)
       failure_eps.each do |ep|
         Rails.logger.error("Found FAILURE appleHostedAudioAssetState episode, marked as not delivered",
-          apple_episode_log_context(ep).merge(audio_asset_state: ep.audio_asset_state))
+          Apple::Episode.apple_episode_log_context(ep).merge(audio_asset_state: ep.audio_asset_state))
       end
 
       raise Apple::RetryPublishingError.new(
         "Found FAILURE appleHostedAudioAssetState on #{failure_eps.length} episodes #{failure_eps.map(&:feeder_id)}, marked as not delivered"
       )
-    end
-
-    def apple_episode_log_context(ep)
-      {
-        episode_id: ep.feeder_id,
-        episode_guid: ep.guid
-      }
     end
 
     def wait_for_versioned_source_metadata(eps)
@@ -340,6 +413,28 @@ module Apple
       Rails.logger.tagged("##{__method__}") do
         eps = eps.filter { |e| e.delivery_status(true).uploaded? }
         eps.each(&:increment_asset_wait!)
+      end
+    end
+
+    def clear_asset_wait!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps = eps.filter do |ep|
+          status = ep.delivery_status(true)
+          status.uploaded? && !status.asset_processing_attempts.nil?
+        end
+        eps.each { |ep| ep.update_delivery_status(asset_processing_attempts: nil) }
+      end
+    end
+
+    # Drafts uploaded in a prior run arrive at delivery with a cleared (null)
+    # wait counter whose status rows date from upload time. Write a fresh
+    # zero-attempts row so the wait duration measures from delivery start.
+    # A zero or positive count is left alone: it marks a clock armed by an
+    # active delivery flow that may be legitimately waiting across job runs.
+    def reset_asset_wait_for_prior_uploads!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        eps = eps.filter { |ep| ep.delivery_status(true).asset_processing_attempts.nil? }
+        eps.each { |ep| ep.update_delivery_status(asset_processing_attempts: 0) }
       end
     end
 
@@ -553,6 +648,15 @@ module Apple
     end
 
     private
+
+    def episodes_with_draft_upload_candidates
+      feed_eps = show.episodes
+      feed_episode_ids = Set.new(feed_eps.map(&:feeder_id))
+      # Avoid racy edge cases where a draft candidate becomes feed-visible in the same publish flow.
+      draft_eps = show.draft_upload_candidates.reject { |ep| feed_episode_ids.include?(ep.feeder_id) }
+
+      feed_eps + draft_eps
+    end
 
     def check_for_stuck_episodes(eps)
       return if eps.empty?

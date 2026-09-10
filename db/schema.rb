@@ -258,7 +258,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_000001) do
     t.text "enclosure_url"
     t.integer "source_fetch_count", default: 0
     t.bigint "source_media_version_id"
-    t.integer "asset_processing_attempts", default: 0, null: false
+    t.integer "asset_processing_attempts", default: 0
     t.boolean "uploaded", default: false
     t.integer "integration"
     t.string "apple_show_id"

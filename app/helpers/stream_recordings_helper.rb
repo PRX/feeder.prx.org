@@ -46,7 +46,7 @@ module StreamRecordingsHelper
       "warning"
     elsif resource.status_complete?
       "info"
-    elsif resource.recording?
+    elsif resource.recording? || resource.status_error?
       "danger"
     else
       "primary"

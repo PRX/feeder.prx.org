@@ -41,10 +41,10 @@
         <div class="col-12 mt-4">
           <p class="status-text">
             <strong><%= integration.to_s.titleize %> Status:</strong>
-            <% unless integration_status == "draft" %>
-              <span class="badge rounded-pill prx-badge-<%= integration_status %>">
-                <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
-              </span>
+            <span class="badge rounded-pill prx-badge-<%= integration_status %>">
+              <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
+            </span>
+            <% unless %w[draft not_publishable].include?(integration_status) %>
               <br>
               <strong><%= integration.to_s.titleize %> <%= t(".last_updated") %></strong>
               <br>

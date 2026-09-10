@@ -177,15 +177,15 @@ export default class extends Controller {
     })
   }
 
-  handleWheel(self) {
-    return (evt) => {
-      // Zoom in/out when scrolling up/down with alt key pressed.
-      if (evt.altKey && evt.wheelDeltaX === 0) {
-        if (evt.wheelDeltaY > 0) {
-          self.zoomOut()
-        } else if (evt.wheelDeltaY < 0) {
-          self.zoomIn()
-        }
+  handleWheel(evt) {
+    // Zoom in/out when scrolling up/down with alt key pressed.
+    if (evt.altKey && evt.wheelDeltaX === 0) {
+      evt.preventDefault()
+
+      if (evt.wheelDeltaY > 0) {
+        this.zoomOut()
+      } else if (evt.wheelDeltaY < 0) {
+        this.zoomIn()
       }
     }
   }
