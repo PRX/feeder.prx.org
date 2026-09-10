@@ -179,82 +179,81 @@ export default class extends Controller {
 
   handleKeydown(evt) {
     const interactiveElements = ["A", "BUTTON", "INPUT", "TEXTAREA", "SELECT", "TRIX-EDITOR"]
-    const hasModifier =
-      evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey
+    const hasModifier = evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey
 
-    if (interactiveElements.includes(evt.target.tagName) || hasModifier) return;
+    if (interactiveElements.includes(evt.target.tagName) || hasModifier) return
 
     evt.preventDefault()
 
     const { paused } = this.audioElement
 
-    switch(evt.code) {
-      case 'Space':
+    switch (evt.code) {
+      case "Space":
         this.togglePlaying()
-        break;
-      case 'KeyK':
+        break
+      case "KeyK":
         this.togglePlaying()
-        break;
-      case 'KeyJ':
+        break
+      case "KeyJ":
         this.seekBy(-5)
-        break;
-      case 'KeyL':
+        break
+      case "KeyL":
         this.seekBy(30)
-        break;
-      case 'ArrowLeft':
+        break
+      case "ArrowLeft":
         this.seekBy(-5)
-        break;
-      case 'ArrowRight':
+        break
+      case "ArrowRight":
         this.seekBy(5)
-        break;
-      case 'Comma':
+        break
+      case "Comma":
         if (paused) {
           this.seekBy(-1 / 30)
         }
-        break;
-      case 'Period':
+        break
+      case "Period":
         if (paused) {
           this.seekBy(1 / 30)
         }
-        break;
-      case 'Home':
+        break
+      case "Home":
         this.seekTo(this.playerStartTime || 0)
-        break;
-      case 'End':
+        break
+      case "End":
         this.seekToRelative(1)
-        break;
-      case 'Digit1':
+        break
+      case "Digit1":
         this.seekToRelative(0.1)
-        break;
-      case 'Digit2':
+        break
+      case "Digit2":
         this.seekToRelative(0.2)
-        break;
-      case 'Digit3':
+        break
+      case "Digit3":
         this.seekToRelative(0.3)
-        break;
-      case 'Digit4':
+        break
+      case "Digit4":
         this.seekToRelative(0.4)
-        break;
-      case 'Digit5':
+        break
+      case "Digit5":
         this.seekToRelative(0.5)
-        break;
-      case 'Digit6':
+        break
+      case "Digit6":
         this.seekToRelative(0.6)
-        break;
-      case 'Digit7':
+        break
+      case "Digit7":
         this.seekToRelative(0.7)
-        break;
-      case 'Digit8':
+        break
+      case "Digit8":
         this.seekToRelative(0.8)
-        break;
-      case 'Digit9':
+        break
+      case "Digit9":
         this.seekToRelative(0.9)
-        break;
-      case 'Digit0':
+        break
+      case "Digit0":
         this.seekTo(0)
-        break;
+        break
       default:
-        break;
+        break
     }
   }
 
