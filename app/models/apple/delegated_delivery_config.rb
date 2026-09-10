@@ -76,10 +76,6 @@ module Apple
       legacy_public_feed&.apple_sync_log&.external_id.presence || private_feed&.apple_show_id.presence
     end
 
-    def delivery_feed
-      feed
-    end
-
     def not_default_feed
       if feed&.default?
         errors.add(:feed, "cannot use default feed")

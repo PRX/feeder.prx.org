@@ -105,12 +105,12 @@ describe Apple::DelegatedDeliveryConfig do
         assert_equal legacy[:key], config.routing_key
         assert_equal legacy[:public_feed], config.public_feed
         assert_equal legacy[:show_id], config.apple_show_id
-        assert_equal legacy[:delivery_feed], config.delivery_feed
+        assert_equal legacy[:private_feed], config.private_feed
 
         publisher = config.build_publisher
         assert_equal legacy[:key].key_id, publisher.api.key_id
         assert_equal legacy[:public_feed], publisher.public_feed
-        assert_equal legacy[:delivery_feed], publisher.private_feed
+        assert_equal legacy[:private_feed], publisher.private_feed
         assert_equal legacy[:show_id], publisher.show.apple_id
       end
     end
@@ -123,12 +123,12 @@ describe Apple::DelegatedDeliveryConfig do
         assert_equal config.podcast.apple_key, config.routing_key
         assert_equal binding.feed, config.public_feed
         assert_equal binding.apple_show_id, config.apple_show_id
-        assert_equal legacy[:delivery_feed], config.delivery_feed
+        assert_equal legacy[:private_feed], config.private_feed
 
         publisher = config.build_publisher
         assert_equal config.podcast.apple_key.key_id, publisher.api.key_id
         assert_equal binding.feed, publisher.public_feed
-        assert_equal legacy[:delivery_feed], publisher.private_feed
+        assert_equal legacy[:private_feed], publisher.private_feed
         assert_equal binding.apple_show_id, publisher.show.apple_id
       end
     end
@@ -170,7 +170,7 @@ describe Apple::DelegatedDeliveryConfig do
   def build_routing_config
     podcast = create(:podcast)
     public_feed = podcast.public_feed
-    delivery_feed = create(:private_feed, podcast: podcast, apple_show_id: "legacy-feed-show")
+    private_feed = create(:private_feed, podcast: podcast, apple_show_id: "legacy-feed-show")
     legacy_key = create(:apple_key, account_id: podcast.account_id)
     routing_key = create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: routing_key)
@@ -182,7 +182,7 @@ describe Apple::DelegatedDeliveryConfig do
     )
     config = create(
       :delegated_delivery_config,
-      feed: delivery_feed,
+      feed: private_feed,
       key: legacy_key,
       show_feed_binding: binding
     )
@@ -196,7 +196,7 @@ describe Apple::DelegatedDeliveryConfig do
     legacy = {
       key: legacy_key,
       public_feed: public_feed,
-      delivery_feed: delivery_feed,
+      private_feed: private_feed,
       show_id: "legacy-sync-show"
     }
 

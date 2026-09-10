@@ -48,7 +48,7 @@ module Apple
       api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
       new(api: api,
         public_feed: public_feed,
-        private_feed: delegated_delivery_config.delivery_feed)
+        private_feed: delegated_delivery_config.private_feed)
     end
 
     def self.get_show(api, show_id)
@@ -65,13 +65,13 @@ module Apple
       "#<Apple:Show:#{object_id} show_id=#{try(:apple_id) || "nil"}>"
     end
 
-    def self.from_delegated_delivery_config(config)
-      api = Apple::Api.from_delegated_delivery_config(config)
+    def self.from_delegated_delivery_config(delegated_delivery_config)
+      api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
 
       new(api: api,
-        public_feed: config.public_feed,
-        private_feed: config.delivery_feed,
-        delegated_delivery_config: config)
+        public_feed: delegated_delivery_config.public_feed,
+        private_feed: delegated_delivery_config.private_feed,
+        delegated_delivery_config: delegated_delivery_config)
     end
 
     def initialize(api:, public_feed:, private_feed:, delegated_delivery_config: nil)
