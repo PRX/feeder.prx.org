@@ -200,12 +200,6 @@ export default class extends Controller {
       case "KeyL":
         this.seekBy(30)
         break
-      case "ArrowLeft":
-        this.seekBy(-5)
-        break
-      case "ArrowRight":
-        this.seekBy(5)
-        break
       case "Comma":
         if (paused) {
           this.seekBy(-1 / 30)
