@@ -28,6 +28,8 @@ export default class extends Controller {
     this.audioElement.src = this.audioUrlValue
     this.playheadColor = "rgba(256, 193, 7, 1)"
 
+    this.zoomTarget.addEventListener("wheel", this.handleWheel(this))
+
     this.peaksOptions = {
       ...(this.hasZoomTarget && {
         zoomview: {
@@ -120,8 +122,8 @@ export default class extends Controller {
       // Zoom scale must be greater than the original waveform scale to avoid Peak.js from throwing an error.
       self.minScale = zoomView._originalWaveformData.scale
       self.maxScale = zoomView._getScale(duration)
-      self.minZoomExp = Math.round(Math.log2(self.minScale))
-      self.maxZoomExp = Math.round(Math.log2(self.maxScale)) + 1 // Allow max to go 1 level above so the scale can be capped at maxScale.
+      self.minZoomExp = Math.ceil(Math.log2(self.minScale))
+      self.maxZoomExp = Math.ceil(Math.log2(self.maxScale))
       self.zoomExp = self.minZoomExp
       zoomView.setZoom({ scale: Math.pow(2, self.zoomExp) })
 
@@ -173,6 +175,80 @@ export default class extends Controller {
         this.seekTo(this.playerStartTime)
       }
     })
+  }
+
+  handleKeydown(evt) {
+    const interactiveElements = ["A", "BUTTON", "INPUT", "TEXTAREA", "SELECT", "TRIX-EDITOR"]
+    const hasModifier = evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey
+
+    if (interactiveElements.includes(evt.target.tagName) || hasModifier) return
+
+    evt.preventDefault()
+
+    const { paused } = this.audioElement
+
+    switch (evt.code) {
+      case "Space":
+        this.togglePlaying()
+        break
+      case "KeyK":
+        this.togglePlaying()
+        break
+      case "KeyJ":
+        this.seekBy(-5)
+        break
+      case "KeyL":
+        this.seekBy(30)
+        break
+      case "Comma":
+        if (paused) {
+          this.seekBy(-1 / 30)
+        }
+        break
+      case "Period":
+        if (paused) {
+          this.seekBy(1 / 30)
+        }
+        break
+      case "Home":
+        this.seekTo(this.playerStartTime || 0)
+        break
+      case "End":
+        this.seekToRelative(1)
+        break
+      case "Digit1":
+        this.seekToRelative(0.1)
+        break
+      case "Digit2":
+        this.seekToRelative(0.2)
+        break
+      case "Digit3":
+        this.seekToRelative(0.3)
+        break
+      case "Digit4":
+        this.seekToRelative(0.4)
+        break
+      case "Digit5":
+        this.seekToRelative(0.5)
+        break
+      case "Digit6":
+        this.seekToRelative(0.6)
+        break
+      case "Digit7":
+        this.seekToRelative(0.7)
+        break
+      case "Digit8":
+        this.seekToRelative(0.8)
+        break
+      case "Digit9":
+        this.seekToRelative(0.9)
+        break
+      case "Digit0":
+        this.seekTo(0)
+        break
+      default:
+        break
+    }
   }
 
   handleWheel(evt) {
@@ -277,6 +353,16 @@ export default class extends Controller {
     if (seconds || seconds === 0) {
       this.peaks.player.seek(seconds)
     }
+  }
+
+  seekBy(seconds) {
+    const { currentTime } = this.audioElement
+    this.seekTo(currentTime + seconds)
+  }
+
+  seekToRelative(ratio) {
+    const { duration } = this.audioElement
+    this.seekTo(duration * ratio)
   }
 
   seekSubmit(event) {
