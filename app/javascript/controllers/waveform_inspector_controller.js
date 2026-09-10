@@ -218,7 +218,7 @@ export default class extends Controller {
         }
         break;
       case 'Home':
-        this.seekTo(0)
+        this.seekTo(this.playerStartTime || 0)
         break;
       case 'End':
         this.seekToRelative(1)
