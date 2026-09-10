@@ -193,7 +193,7 @@ export default class extends Controller {
         this.togglePlaying()
         break;
       case 'KeyK':
-        this.togglePlayPause()
+        this.togglePlaying()
         break;
       case 'KeyJ':
         this.seekBy(-5)
