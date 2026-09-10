@@ -14,32 +14,7 @@ class AddAccountIdToAppleKeys < ActiveRecord::Migration[7.2]
 
     # Split each existing row independently, even when credentials are identical.
     original_key_row_ids.each do |original_key_row_id|
-      references_by_account = references_by_key.fetch(original_key_row_id)
-        .group_by { |reference| reference.fetch(:account_id) }
-      account_ids = references_by_account.keys.sort
-
-      # The first account keeps the original row; consume the rest to create copies.
-      retained_account_id = account_ids.shift
-      execute <<~SQL.squish
-        UPDATE apple_keys
-        SET account_id = #{retained_account_id}
-        WHERE id = #{original_key_row_id}
-      SQL
-
-      while (account_id = account_ids.shift)
-        copied_key_row_id = select_value(<<~SQL.squish).to_i
-          INSERT INTO apple_keys (provider_id, key_id, key_pem_b64, created_at, updated_at, account_id)
-          SELECT provider_id, key_id, key_pem_b64, created_at, updated_at, #{account_id}
-          FROM apple_keys
-          WHERE id = #{original_key_row_id}
-          RETURNING id
-        SQL
-
-        # This account_id could span multiple delegated delivery configs
-        config_ids = references_by_account.fetch(account_id).map { |reference| reference.fetch(:config_id).to_i }
-
-        repoint_configs(config_ids, copied_key_row_id, account_id)
-      end
+      split_key_by_account(original_key_row_id, references_by_key.fetch(original_key_row_id))
     end
 
     change_column_null :apple_keys, :account_id, false
@@ -51,6 +26,34 @@ class AddAccountIdToAppleKeys < ActiveRecord::Migration[7.2]
   end
 
   private
+
+  def split_key_by_account(original_key_row_id, references)
+    references_by_account = references.group_by { |reference| reference.fetch(:account_id) }
+    account_ids = references_by_account.keys.sort
+
+    # The first account keeps the original row; consume the rest to create copies.
+    retained_account_id = account_ids.shift
+    execute <<~SQL.squish
+      UPDATE apple_keys
+      SET account_id = #{retained_account_id}
+      WHERE id = #{original_key_row_id}
+    SQL
+
+    while (account_id = account_ids.shift)
+      copied_key_row_id = select_value(<<~SQL.squish).to_i
+        INSERT INTO apple_keys (provider_id, key_id, key_pem_b64, created_at, updated_at, account_id)
+        SELECT provider_id, key_id, key_pem_b64, created_at, updated_at, #{account_id}
+        FROM apple_keys
+        WHERE id = #{original_key_row_id}
+        RETURNING id
+      SQL
+
+      # This account_id could span multiple delegated delivery configs
+      config_ids = references_by_account.fetch(account_id).map { |reference| reference.fetch(:config_id).to_i }
+
+      repoint_configs(config_ids, copied_key_row_id, account_id)
+    end
+  end
 
   def apple_key_references
     select_all(<<~SQL.squish).map do |row|
