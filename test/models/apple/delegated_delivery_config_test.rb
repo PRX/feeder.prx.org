@@ -92,7 +92,122 @@ describe Apple::DelegatedDeliveryConfig do
     assert_equal podcast, config.podcast
     assert_equal podcast.id, config.podcast_id
     assert_equal podcast.title, config.podcast_title
-    assert_equal public_feed, config.public_feed
+    assert_equal public_feed, config.legacy_public_feed
     assert_equal private_feed, config.private_feed
+  end
+
+  describe "Apple routing" do
+    it "uses legacy routing by default" do
+      config, legacy, _binding = build_routing_config
+
+      with_apple_routing_source(nil) do
+        assert_equal :legacy, config.routing_source
+        assert_equal legacy[:key], config.routing_key
+        assert_equal legacy[:public_feed], config.public_feed
+        assert_equal legacy[:show_id], config.apple_show_id
+        assert_equal legacy[:delivery_feed], config.delivery_feed
+
+        publisher = config.build_publisher
+        assert_equal legacy[:key].key_id, publisher.api.key_id
+        assert_equal legacy[:public_feed], publisher.public_feed
+        assert_equal legacy[:delivery_feed], publisher.private_feed
+        assert_equal legacy[:show_id], publisher.show.apple_id
+      end
+    end
+
+    it "uses show-feed-binding routing when selected" do
+      config, legacy, binding = build_routing_config
+
+      with_apple_routing_source("show_feed_binding") do
+        assert_equal :show_feed_binding, config.routing_source
+        assert_equal config.podcast.apple_key, config.routing_key
+        assert_equal binding.feed, config.public_feed
+        assert_equal binding.apple_show_id, config.apple_show_id
+        assert_equal legacy[:delivery_feed], config.delivery_feed
+
+        publisher = config.build_publisher
+        assert_equal config.podcast.apple_key.key_id, publisher.api.key_id
+        assert_equal binding.feed, publisher.public_feed
+        assert_equal legacy[:delivery_feed], publisher.private_feed
+        assert_equal binding.apple_show_id, publisher.show.apple_id
+      end
+    end
+
+    it "resolves legacy show identity from the current sync log" do
+      config, legacy, _binding = build_routing_config
+      config.legacy_public_feed.apple_sync_log.destroy!
+      config.legacy_public_feed.reload
+
+      with_apple_routing_source("legacy") do
+        publisher = config.build_publisher
+
+        assert_equal "legacy-feed-show", config.apple_show_id
+        assert_nil publisher.show.apple_id
+
+        SyncLog.log!(
+          integration: :apple,
+          feeder_type: :feeds,
+          feeder_id: legacy[:public_feed].id,
+          external_id: "new-sync-show"
+        )
+        publisher.public_feed.reload
+
+        assert_equal "new-sync-show", publisher.show.apple_id
+      end
+    end
+
+    it "rejects an unsupported routing source" do
+      config = build(:delegated_delivery_config)
+
+      error = assert_raises(ArgumentError) do
+        with_apple_routing_source("surprise") { config.routing_source }
+      end
+
+      assert_match(/Unsupported APPLE_ROUTING_SOURCE="surprise"/, error.message)
+    end
+  end
+
+  def build_routing_config
+    podcast = create(:podcast)
+    public_feed = podcast.public_feed
+    delivery_feed = create(:private_feed, podcast: podcast, apple_show_id: "legacy-feed-show")
+    legacy_key = create(:apple_key, account_id: podcast.account_id)
+    routing_key = create(:apple_key, account_id: podcast.account_id)
+    podcast.update!(apple_key: routing_key)
+    binding_feed = create(:public_feed, podcast: podcast)
+    binding = create(
+      :apple_show_feed_binding,
+      feed: binding_feed,
+      apple_show_id: "binding-show"
+    )
+    config = create(
+      :delegated_delivery_config,
+      feed: delivery_feed,
+      key: legacy_key,
+      show_feed_binding: binding
+    )
+    SyncLog.log!(
+      integration: :apple,
+      feeder_type: :feeds,
+      feeder_id: public_feed.id,
+      external_id: "legacy-sync-show"
+    )
+
+    legacy = {
+      key: legacy_key,
+      public_feed: public_feed,
+      delivery_feed: delivery_feed,
+      show_id: "legacy-sync-show"
+    }
+
+    [config, legacy, binding]
+  end
+
+  def with_apple_routing_source(source)
+    previous = ENV["APPLE_ROUTING_SOURCE"]
+    source ? ENV["APPLE_ROUTING_SOURCE"] = source : ENV.delete("APPLE_ROUTING_SOURCE")
+    yield
+  ensure
+    previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
   end
 end
