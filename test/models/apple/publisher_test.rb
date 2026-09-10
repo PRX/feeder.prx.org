@@ -4,11 +4,12 @@ describe Apple::Publisher do
   let(:podcast) { create(:podcast) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:feed, podcast: podcast, private: true) }
-  let(:delegated_delivery_config) { build(:delegated_delivery_config) }
+  let(:delegated_delivery_config) { build(:delegated_delivery_config, :with_show_feed_binding) }
   let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
 
   let(:apple_publisher) do
-    Apple::Publisher.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
+    show = Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
+    Apple::Publisher.new(show: show)
   end
 
   let(:publisher) { apple_publisher }
@@ -157,7 +158,7 @@ describe Apple::Publisher do
     let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
 
-    let(:delegated_delivery_config) { build(:delegated_delivery_config) }
+    let(:delegated_delivery_config) { build(:delegated_delivery_config, :with_show_feed_binding) }
     let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
 
     let(:episode) { create(:episode, podcast: podcast) }
@@ -277,8 +278,8 @@ describe Apple::Publisher do
   describe "Archive and Unarchive flows" do
     let(:podcast) { create(:podcast) }
     let(:public_feed) { podcast.default_feed }
-    let(:private_feed) { create(:private_feed, podcast: podcast) }
-    let(:delegated_delivery_config) { create(:delegated_delivery_config, feed: private_feed) }
+    let(:private_feed) { create(:private_feed, podcast: podcast, apple_show_id: "123") }
+    let(:delegated_delivery_config) { create(:delegated_delivery_config, :with_show_feed_binding, feed: private_feed) }
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
     let(:apple_publisher) { delegated_delivery_config.build_publisher }

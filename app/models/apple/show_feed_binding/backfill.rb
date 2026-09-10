@@ -53,9 +53,8 @@ module Apple
             next
           end
 
-          public_feed = config.public_feed
-          sync_log = SyncLog.apple.feeds.find_by(feeder_id: public_feed&.id)
-          legacy_show_id = sync_log&.external_id.presence || config.private_feed&.apple_show_id.presence
+          public_feed = config.legacy_public_feed
+          legacy_show_id = config.legacy_apple_show_id
 
           mismatch = {
             config_id: config.id,
@@ -133,7 +132,7 @@ module Apple
 
       def self.binding_conflicts_for(configs)
         configs
-          .filter_map { |config| [config.public_feed&.id, config.id] if config.public_feed }
+          .filter_map { |config| [config.legacy_public_feed&.id, config.id] if config.legacy_public_feed }
           .group_by(&:first)
           .filter_map do |feed_id, claims|
             binding = Apple::ShowFeedBinding.find_by(feed_id: feed_id)
@@ -213,8 +212,8 @@ module Apple
       private_class_method :backfill_podcast_key!
 
       def self.backfill_config!(config, report, dry_run:)
-        public_feed = config.public_feed
-        legacy_show_id = legacy_apple_show_id(config, public_feed)
+        public_feed = config.legacy_public_feed
+        legacy_show_id = config.legacy_apple_show_id
 
         return skip_config(config, report, "missing public feed") unless public_feed
         return skip_config(config, report, "missing show id") unless legacy_show_id.present?
@@ -267,12 +266,6 @@ module Apple
         }
       end
       private_class_method :backfill_config!
-
-      def self.legacy_apple_show_id(config, public_feed)
-        sync_log = SyncLog.apple.feeds.find_by(feeder_id: public_feed&.id)
-        sync_log&.external_id.presence || config.private_feed&.apple_show_id.presence
-      end
-      private_class_method :legacy_apple_show_id
 
       def self.verify_config_episode_show_consistency!(config, report)
         binding = config.show_feed_binding

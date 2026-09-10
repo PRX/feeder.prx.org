@@ -1,28 +1,16 @@
 module Apple
   class Publisher < Integrations::Base::Publisher
-    attr_reader :public_feed,
-      :private_feed,
-      :api,
-      :show
+    delegate :public_feed, :private_feed, :api, to: :show
 
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
-    def self.from_delegated_delivery_config(delegated_delivery_config)
-      api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
-
-      new(api: api,
-        public_feed: delegated_delivery_config.public_feed,
-        private_feed: delegated_delivery_config.private_feed)
+    def self.from_delegated_delivery_config(config)
+      new(show: Apple::Show.from_delegated_delivery_config(config))
     end
 
-    def initialize(api:, public_feed:, private_feed:)
-      @public_feed = public_feed
-      @private_feed = private_feed
-      @api = api
-      @show = Apple::Show.new(api: api,
-        public_feed: public_feed,
-        private_feed: private_feed)
+    def initialize(show:)
+      super
 
       Rails.logger.info("Initialized Apple::Publisher", {public_feed_id: public_feed.id,
                                                          private_feed_id: private_feed.id,

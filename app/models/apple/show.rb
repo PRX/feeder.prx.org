@@ -15,15 +15,30 @@ module Apple
     end
 
     def self.connect_existing(apple_show_id, delegated_delivery_config)
-      if (sl = SyncLog.apple.find_by(feeder_id: delegated_delivery_config.public_feed.id, feeder_type: :feeds))
+      public_feed = delegated_delivery_config.public_feed
+
+      # TODO: remove guard against transitional data
+      unless public_feed.present?
+        Rails.logger.warn(
+          "Apple::DelegatedDeliveryConfig#public_feed is empty; using legacy public feed",
+          delegated_delivery_config_id: delegated_delivery_config.id,
+          podcast_id: delegated_delivery_config.podcast_id
+        )
+        public_feed = delegated_delivery_config.legacy_public_feed
+      end
+
+      raise "Missing Apple public feed" unless public_feed
+
+      if (sl = SyncLog.apple.find_by(feeder_id: public_feed.id, feeder_type: :feeds))
         if apple_show_id.blank?
           return sl.destroy!
         elsif sl.external_id != apple_show_id
           sl.update!(external_id: apple_show_id)
         end
       else
-        Apple::SyncLog.log!(
-          feeder_id: delegated_delivery_config.public_feed.id,
+        SyncLog.log!(
+          integration: :apple,
+          feeder_id: public_feed.id,
           feeder_type: :feeds,
           sync_completed_at: Time.now.utc,
           external_id: apple_show_id
@@ -32,8 +47,8 @@ module Apple
 
       api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
       new(api: api,
-        public_feed: delegated_delivery_config.public_feed,
-        private_feed: delegated_delivery_config.private_feed)
+        public_feed: public_feed,
+        private_feed: delegated_delivery_config.delivery_feed)
     end
 
     def self.get_show(api, show_id)
@@ -43,30 +58,27 @@ module Apple
     end
 
     def self.from_podcast(podcast)
-      delegated_delivery_config = podcast.delegated_delivery_config
-      api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
-
-      new(api: api,
-        public_feed: delegated_delivery_config.public_feed,
-        private_feed: delegated_delivery_config.private_feed)
+      from_delegated_delivery_config(podcast.delegated_delivery_config)
     end
 
     def inspect
       "#<Apple:Show:#{object_id} show_id=#{try(:apple_id) || "nil"}>"
     end
 
-    def self.from_delegated_delivery_config(delegated_delivery_config)
-      api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
+    def self.from_delegated_delivery_config(config)
+      api = Apple::Api.from_delegated_delivery_config(config)
 
       new(api: api,
-        public_feed: delegated_delivery_config.public_feed,
-        private_feed: delegated_delivery_config.private_feed)
+        public_feed: config.public_feed,
+        private_feed: config.delivery_feed,
+        delegated_delivery_config: config)
     end
 
-    def initialize(api:, public_feed:, private_feed:)
+    def initialize(api:, public_feed:, private_feed:, delegated_delivery_config: nil)
       @private_feed = private_feed
       @public_feed = public_feed
       @api = api
+      @delegated_delivery_config = delegated_delivery_config
     end
 
     # Gate on enclosure_ready? to prevent medialess drafts from
@@ -137,6 +149,17 @@ module Apple
     end
 
     def apple_id
+      if @delegated_delivery_config&.routing_source == :show_feed_binding
+        bound_show_id = @delegated_delivery_config.apple_show_id
+        return bound_show_id if bound_show_id.present?
+
+        Rails.logger.error("Apple binding routing requested a show ID but none was present; falling back to sync log",
+          {delegated_delivery_config_id: @delegated_delivery_config.id,
+           podcast_id: @delegated_delivery_config.podcast_id,
+           routing_source: :show_feed_binding,
+           show_feed_binding_id: @delegated_delivery_config.show_feed_binding_id})
+      end
+
       sync_log&.external_id
     end
 
@@ -155,14 +178,16 @@ module Apple
     def sync!
       Rails.logger.info("Syncing feed with Apple show", {apple_id: apple_id, public_feed_id: public_feed.id, private_feed_id: private_feed.id})
       Rails.logger.tagged("Apple::Show#sync!") do
-        apple_json = create_or_update_show(sync_log)
+        apple_json = fetch_or_create_show
+        remote_apple_id = apple_json.dig("api_response", "val", "data", "id")
+        raise "Missing remote Apple show id" unless remote_apple_id.present?
+        if apple_id.present? && remote_apple_id.to_s != apple_id.to_s
+          raise "Apple show id mismatch: configured=#{apple_id.inspect}, response=#{remote_apple_id.inspect}"
+        end
+
+        sync = log_sync!(remote_apple_id, apple_json)
         public_feed.reload
-        Apple::SyncLog.log!(
-          feeder_id: public_feed.id,
-          feeder_type: :feeds,
-          external_id: apple_json.dig("api_response", "val", "data", "id"),
-          api_response: apple_json
-        )
+        sync
       end
     end
 
@@ -174,24 +199,31 @@ module Apple
       api.response!(resp)
     end
 
-    def update_show!(sync)
-      Rails.logger.info("Skipping update for existing show!")
-      # TODO, map out the cases where we'd actually need to update a show
-      # data = show_data(update_attributes, id: apple_id)
-      # Rails.logger.info("Updating show", show_data: data)
-      # resp = api.patch("shows/#{sync.external_id}", data)
-      #
-      # api.response(resp)
+    def fetch_or_create_show
+      if apple_id.present?
+        fetch_show
+      else
+        create_show!
+      end
+    end
 
-      resp = api.get("shows/#{sync.external_id}")
+    def fetch_show
+      resp = api.get("shows/#{apple_id}")
       api.response!(resp)
     end
 
-    def create_or_update_show(sync)
-      if sync.present?
-        update_show!(sync)
+    def log_sync!(remote_apple_id, apple_json)
+      if (log = sync_log)
+        log.update!(external_id: remote_apple_id, api_response: apple_json, updated_at: Time.now.utc)
+        log
       else
-        create_show!
+        SyncLog.log!(
+          integration: :apple,
+          feeder_id: public_feed.id,
+          feeder_type: :feeds,
+          external_id: remote_apple_id,
+          api_response: apple_json
+        )
       end
     end
 

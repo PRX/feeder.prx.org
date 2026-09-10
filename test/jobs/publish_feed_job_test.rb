@@ -194,17 +194,17 @@ describe PublishFeedJob do
       end
     end
 
-    it "does not schedule publishing to apple if the apple config prevents it" do
+    it "does not schedule publishing to apple if the delegated delivery config prevents it" do
       apple_feed.delegated_delivery_config.update!(publish_enabled: false)
       assert_nil job.publish_integration(podcast, apple_feed)
     end
 
-    it "does not schedule publishing to apple if the apple config is disabled" do
+    it "does not schedule publishing to apple if the delegated delivery config is disabled" do
       apple_feed.delegated_delivery_config.update!(publish_enabled: false)
       assert_nil job.publish_integration(podcast, apple_feed)
     end
 
-    describe "when the apple config is present" do
+    describe "when the delegated delivery config is present" do
       it "does not schedule publishing to apple if the config is marked as not publishable" do
         apple_feed.delegated_delivery_config.update!(publish_enabled: false)
 
