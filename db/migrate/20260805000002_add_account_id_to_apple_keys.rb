@@ -18,6 +18,7 @@ class AddAccountIdToAppleKeys < ActiveRecord::Migration[7.2]
     end
 
     change_column_null :apple_keys, :account_id, false
+    verify_key_ids_unchanged!(references_by_key)
   end
 
   def down
@@ -59,8 +60,10 @@ class AddAccountIdToAppleKeys < ActiveRecord::Migration[7.2]
     select_all(<<~SQL.squish).map do |row|
       SELECT apple_configs.id AS config_id,
              apple_configs.key_id AS original_key_row_id,
+             apple_keys.key_id AS key_id,
              substring(podcasts.prx_account_uri FROM '(?:^|/)([0-9]+)/?$')::bigint AS account_id
       FROM apple_configs
+      JOIN apple_keys ON apple_keys.id = apple_configs.key_id
       JOIN feeds ON feeds.id = apple_configs.feed_id
       JOIN podcasts ON podcasts.id = feeds.podcast_id
       WHERE apple_configs.key_id IS NOT NULL
@@ -70,6 +73,20 @@ class AddAccountIdToAppleKeys < ActiveRecord::Migration[7.2]
         raise ActiveRecord::MigrationError, "Invalid PRX account URI for apple_configs #{reference.fetch(:config_id)}"
       end
       reference
+    end
+  end
+
+  def verify_key_ids_unchanged!(references_by_key)
+    original_references_by_config = references_by_key.values.flatten.index_by { |reference| reference.fetch(:config_id) }
+    current_references_by_config = apple_key_references.index_by { |reference| reference.fetch(:config_id) }
+
+    mismatched_config_ids = original_references_by_config.filter_map do |config_id, original_reference|
+      current_reference = current_references_by_config[config_id]
+      config_id unless current_reference && current_reference.fetch(:key_id) == original_reference.fetch(:key_id)
+    end
+
+    if mismatched_config_ids.any?
+      raise ActiveRecord::MigrationError, "Apple key IDs changed for apple_configs: #{mismatched_config_ids.join(", ")}"
     end
   end
 
