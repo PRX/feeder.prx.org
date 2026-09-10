@@ -5,8 +5,8 @@ module Apple
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
-    def self.from_delegated_delivery_config(config)
-      new(show: Apple::Show.from_delegated_delivery_config(config))
+    def self.from_delegated_delivery_config(delegated_delivery_config)
+      new(show: Apple::Show.from_delegated_delivery_config(delegated_delivery_config))
     end
 
     def initialize(show:)
