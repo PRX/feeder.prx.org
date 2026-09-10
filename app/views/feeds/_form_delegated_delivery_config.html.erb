@@ -8,7 +8,7 @@
         <p><%= t(".description") %></p>
         <%= t(".guide_link").html_safe %>
       </div>
-      <%= form.fields_for :apple_config do |config_form| %>
+      <%= form.fields_for :delegated_delivery_config do |config_form| %>
         <%= config_form.fields_for :key do |key_fields| %>
           <% unless config_form.object.persisted? %>
             <%= key_fields.file_field :key_file, class: "mb-4 form-control", accept: ".p8, .pem", data: {action: "apple-key#convertFileToKey"}, required: true %>
@@ -47,7 +47,7 @@
           </div>
         <% end %>
       <% end %>
-      <% if form.object.apple_config&.persisted? %>
+      <% if form.object.delegated_delivery_config&.persisted? %>
         <div class="col-12 mt-4">
           <div class="form-floating">
             <%= form.select :apple_show_id, @apple_show_options, {include_blank: true} %>

@@ -48,7 +48,7 @@ FactoryBot.define do
       tokens { [FeedToken.new(label: "apple-private")] }
 
       after(:build) do |feed, _evaluator|
-        feed.apple_config = build(:apple_config)
+        feed.delegated_delivery_config = build(:delegated_delivery_config)
       end
     end
 

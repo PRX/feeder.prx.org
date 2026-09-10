@@ -9,7 +9,7 @@ module Apple
     class Backfill
       def self.backfill!(dry_run: false)
         report = new_backfill_report(dry_run: dry_run)
-        configs = Apple::Config.includes(:key, feed: :podcast).to_a
+        configs = Apple::DelegatedDeliveryConfig.includes(:key, feed: :podcast).to_a
         report[:configs_total] = configs.length
         report[:binding_conflicts] = binding_conflicts_for(configs)
         conflicting_config_ids = report[:binding_conflicts].flat_map { |conflict| conflict[:config_ids] }.uniq
@@ -41,7 +41,7 @@ module Apple
       def self.verify_routing_equivalence!
         report = {configs_total: 0, mismatches: []}
 
-        Apple::Config.find_each do |config|
+        Apple::DelegatedDeliveryConfig.find_each do |config|
           report[:configs_total] += 1
           binding = config.show_feed_binding
 
@@ -104,7 +104,7 @@ module Apple
           errors: []
         }
 
-        Apple::Config.find_each do |config|
+        Apple::DelegatedDeliveryConfig.find_each do |config|
           report[:configs_total] += 1
           verify_config_episode_show_consistency!(config, report)
         end
@@ -138,7 +138,7 @@ module Apple
           .filter_map do |feed_id, claims|
             binding = Apple::ShowFeedBinding.find_by(feed_id: feed_id)
             assigned_config_ids = if binding
-              Apple::Config.where(show_feed_binding_id: binding.id).pluck(:id)
+              Apple::DelegatedDeliveryConfig.where(show_feed_binding_id: binding.id).pluck(:id)
             else
               []
             end

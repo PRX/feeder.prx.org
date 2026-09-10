@@ -4,11 +4,14 @@ module Apple
   class ShowFeedBinding < ApplicationRecord
     belongs_to :feed
 
-    has_one :config,
-      class_name: "Apple::Config",
+    has_one :delegated_delivery_config,
+      class_name: "Apple::DelegatedDeliveryConfig",
       foreign_key: :show_feed_binding_id,
       inverse_of: :show_feed_binding,
       dependent: :nullify
+
+    alias_method :config, :delegated_delivery_config
+    alias_method :config=, :delegated_delivery_config=
 
     validates :apple_show_id, presence: true
     validates :feed_id, uniqueness: true

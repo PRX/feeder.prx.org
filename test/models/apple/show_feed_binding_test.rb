@@ -11,7 +11,7 @@ module Apple
       binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
       key = create(:apple_key, account_id: podcast.account_id)
       config = create(
-        :apple_config,
+        :delegated_delivery_config,
         feed: create(:private_feed, podcast: podcast),
         key: key,
         show_feed_binding: binding

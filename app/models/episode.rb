@@ -122,7 +122,7 @@ class Episode < ApplicationRecord
   end
 
   def publish_to_apple?
-    !!podcast.apple_config&.publish_to_apple?
+    !!podcast.delegated_delivery_config&.publish_to_apple?
   end
 
   def megaphone_episode
@@ -132,7 +132,7 @@ class Episode < ApplicationRecord
   def apple_episode
     return nil if !persisted? || !publish_to_apple?
 
-    if (show = podcast.apple_config&.build_publisher&.show)
+    if (show = podcast.delegated_delivery_config&.build_publisher&.show)
       return nil unless show.apple_id.present?
 
       Apple::Episode.new(api: show.api, show: show, feeder_episode: self)

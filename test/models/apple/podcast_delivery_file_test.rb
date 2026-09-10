@@ -58,8 +58,8 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       let(:public_feed) { podcast.default_feed }
       let(:private_feed) { create(:feed, podcast: podcast, private: true, tokens: [FeedToken.new]) }
 
-      let(:apple_config) { build(:apple_config) }
-      let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+      let(:delegated_delivery_config) { build(:delegated_delivery_config) }
+      let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
 
       let(:episode) { create(:episode, podcast: podcast) }
       let(:apple_show) do

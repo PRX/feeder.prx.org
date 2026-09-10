@@ -16,16 +16,16 @@ class Feeds::AppleSubscription < Feed
 
   after_save_commit :update_apple_show
 
-  has_one :apple_config, class_name: "::Apple::Config", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
+  has_one :delegated_delivery_config, class_name: "::Apple::DelegatedDeliveryConfig", dependent: :destroy, autosave: true, validate: true, inverse_of: :feed
 
-  accepts_nested_attributes_for :apple_config, allow_destroy: true, reject_if: :all_blank
+  accepts_nested_attributes_for :delegated_delivery_config, allow_destroy: true, reject_if: :all_blank
 
   validate :unchanged_defaults
   validate :only_apple_feed
   validate :must_be_private
   validate :must_have_token
 
-  alias_method :config, :apple_config
+  alias_method :config, :delegated_delivery_config
 
   # for soft delete, need a unique slug to be able to make another
   def paranoia_destroy_attributes
@@ -52,13 +52,13 @@ class Feeds::AppleSubscription < Feed
 
   def update_apple_show
     if previous_changes[:apple_show_id]
-      Apple::Show.connect_existing(apple_show_id, apple_config)
+      Apple::Show.connect_existing(apple_show_id, delegated_delivery_config)
       update_apple_show_feed_binding
     end
   end
 
   def update_apple_show_feed_binding
-    config = apple_config
+    config = delegated_delivery_config
     return unless config
 
     public_feed = config.public_feed
@@ -78,7 +78,7 @@ class Feeds::AppleSubscription < Feed
 
   def apple_show_options
     used_ids = Feed.apple.distinct.where("id != ?", id).pluck(:apple_show_id).compact
-    api = Apple::Api.from_apple_config(apple_config)
+    api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
     shows_json = Apple::Show.apple_shows_json(api) || []
     shows_json
       .filter { |sj| sj["attributes"]["publishingState"] != "ARCHIVED" }
@@ -140,7 +140,7 @@ class Feeds::AppleSubscription < Feed
 
   def publish_integration!
     if publish_integration?
-      apple_config.build_publisher.publish!
+      delegated_delivery_config.build_publisher.publish!
     end
   end
 
@@ -168,7 +168,7 @@ class Feeds::AppleSubscription < Feed
   end
 
   def publish_to_apple?
-    !!apple_config&.publish_to_apple?
+    !!delegated_delivery_config&.publish_to_apple?
   end
 
   def default_feed_audio_format
