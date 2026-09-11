@@ -289,7 +289,6 @@ describe Apple::Publisher do
     before do
       Apple::Show.connect_existing("123", delegated_delivery_config)
       create_episode_sync_log(episode, external_id: "123", external_show_id: "123", **apple_episode_api_response)
-      private_feed.episodes << episode
     end
 
     describe "#episodes_to_archive" do

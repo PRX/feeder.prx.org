@@ -8,6 +8,8 @@ Rails.application.routes.draw do
   end
 
   resources :podcasts do
+    resource :integrations, only: [:show, :update], controller: :podcast_integrations
+    resources :apple_keys, only: [:create, :destroy]
     resource :engagement, only: [:show, :update], controller: :podcast_engagement
     resource :player, only: :show, controller: :podcast_player
     resources :imports, only: [:index, :show, :create]
@@ -17,7 +19,6 @@ Rails.application.routes.draw do
       post "attach", on: :member
     end
     resources :feeds, except: [:edit] do
-      get "new_apple", on: :collection
       get "new_megaphone", on: :collection
     end
     resources :episodes, only: [:index, :create, :new] do

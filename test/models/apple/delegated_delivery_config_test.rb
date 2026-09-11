@@ -28,18 +28,6 @@ describe Apple::DelegatedDeliveryConfig do
       assert_equal ["has already been taken"], config.errors[:show_feed_binding_id]
     end
 
-    it "requires the show feed binding to belong to the same podcast" do
-      binding = create(:apple_show_feed_binding)
-      config = build(
-        :delegated_delivery_config,
-        feed: create(:private_feed, podcast: create(:podcast)),
-        show_feed_binding: binding
-      )
-
-      refute config.valid?
-      assert_equal ["must belong to the same podcast as feed"], config.errors[:show_feed_binding]
-    end
-
     it "allows multiple configs per podcast" do
       podcast = create(:podcast)
       key = create(:apple_key, account_id: podcast.account_id)
@@ -63,17 +51,44 @@ describe Apple::DelegatedDeliveryConfig do
       assert_equal [first, second], Apple::DelegatedDeliveryConfig.where(id: [first.id, second.id]).order(:id).to_a
     end
 
-    it "cannot be the default feed" do
+    it "allows the default feed to use its own binding" do
       podcast = create(:podcast)
-      c1 = build(:delegated_delivery_config, feed: podcast.default_feed)
-      refute c1.valid?
-      assert_equal ["cannot use default feed"], c1.errors[:feed]
+      key = create(:apple_key, account_id: podcast.account_id)
+      podcast.update!(apple_key: key)
+      binding = create(:apple_show_feed_binding, feed: podcast.default_feed)
+
+      config = build(:delegated_delivery_config, feed: podcast.default_feed, show_feed_binding: binding)
+
+      assert config.valid?
+    end
+
+    it "allows only one config per configured feed" do
+      podcast = create(:podcast)
+      first_binding = create(:apple_show_feed_binding, feed: podcast.default_feed)
+      second_binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+      delivery_feed = create(:private_feed, podcast: podcast)
+      create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: first_binding)
+
+      duplicate = build(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: second_binding)
+
+      refute duplicate.valid?
+      assert_equal ["has already been taken"], duplicate.errors[:feed_id]
+    end
+
+    it "requires the binding and configured feed to belong to the same podcast" do
+      delivery_feed = create(:private_feed, podcast: create(:podcast))
+      other_binding = create(:apple_show_feed_binding, feed: create(:podcast).default_feed)
+
+      config = build(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: other_binding)
+
+      refute config.valid?
+      assert_equal ["must belong to the configured feed's podcast"], config.errors[:show_feed_binding]
     end
 
     it "requires a persisted key to belong to the podcast account" do
       podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/456")
       key = create(:apple_key, account_id: 123)
-      config = build(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), key: key)
+      config = Apple::DelegatedDeliveryConfig.new(feed: create(:private_feed, podcast: podcast), key: key)
 
       refute config.valid?
       assert_equal ["must belong to the podcast's PRX account"], config.errors[:key]
