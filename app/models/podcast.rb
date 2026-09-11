@@ -48,6 +48,7 @@ class Podcast < ApplicationRecord
   validates :payment_pointer, format: /\A\$[A-Za-z0-9\-.]+\/?[^\s]*\z/, allow_blank: true
   validates :path, :source_url, uniqueness: true, allow_nil: true
   validates :restrictions, media_restrictions: true
+  validate :apple_key_belongs_to_account
 
   # these keep changing - so just translate to the current accepted values
   VALID_EXPLICITS = %w[false true]
@@ -142,6 +143,12 @@ class Podcast < ApplicationRecord
       account_id(prx_account_uri_was)
     else
       account_id
+    end
+  end
+
+  def apple_key_belongs_to_account
+    if apple_key && apple_key.account_id != account_id
+      errors.add(:apple_key, "must belong to the podcast's PRX account")
     end
   end
 

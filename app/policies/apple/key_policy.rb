@@ -4,14 +4,20 @@ class Apple::KeyPolicy < ApplicationPolicy
   end
 
   def show?
-    Apple::ConfigPolicy.new(token, resource.config).show?
+    authorized?(:read_private)
   end
 
   def create?
-    Apple::ConfigPolicy.new(token, resource.config).create?
+    authorized?(:podcast_edit)
   end
 
   def update?
-    Apple::ConfigPolicy.new(token, resource.config).update?
+    authorized?(:podcast_edit)
+  end
+
+  class Scope < Scope
+    def resolve
+      scope.where(account_id: token.authorized_account_ids(:read_private))
+    end
   end
 end

@@ -125,7 +125,8 @@ module Apple
       it "reports a podcast key mismatch" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         ShowFeedBinding::Backfill.backfill!
-        config.podcast.update!(apple_key: create(:apple_key))
+        replacement_key = create(:apple_key, account_id: config.podcast.account_id)
+        config.podcast.update!(apple_key: replacement_key)
 
         report = ShowFeedBinding::Backfill.verify_routing_equivalence!
 
@@ -182,7 +183,8 @@ module Apple
     end
 
     def create_config_with_legacy_show_id(sync_log_show_id: nil, private_show_id: nil, key: create(:apple_key))
-      podcast = create(:podcast)
+      podcast_attributes = key ? {prx_account_uri: "/api/v1/accounts/#{key.account_id}"} : {}
+      podcast = create(:podcast, **podcast_attributes)
       private_feed = create(:private_feed, podcast: podcast, apple_show_id: private_show_id)
       config = create(:apple_config, feed: private_feed, key: key)
       podcast.update_column(:apple_key_id, nil)

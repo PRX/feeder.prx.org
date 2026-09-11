@@ -146,4 +146,12 @@ module ImageFile
   def _retry=(_val)
     retry!
   end
+
+  private
+
+  def _assign_attributes(attributes)
+    attributes = attributes.stringify_keys
+    # Changing the source resets metadata, so assign it before explicit metadata.
+    super(attributes.slice("original_url").merge(attributes))
+  end
 end

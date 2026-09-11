@@ -44,9 +44,16 @@ describe Apple::Config do
   describe "apple_key" do
     it "can be selected by multiple podcasts" do
       key = create(:apple_key)
-      podcasts = create_list(:podcast, 2, apple_key: key)
+      podcasts = create_list(:podcast, 2, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
 
       assert_equal podcasts.sort, key.reload.podcasts.sort
+    end
+
+    it "belongs to an account" do
+      key = build(:apple_key, account_id: nil)
+
+      refute key.valid?
+      assert_includes key.errors[:account_id], "Can't be blank"
     end
 
     it "base64 decodes the apple key" do

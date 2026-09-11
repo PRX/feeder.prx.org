@@ -7,6 +7,14 @@ describe Podcast do
     assert_respond_to podcast, :episodes
   end
 
+  it "only selects an Apple credential from its PRX account" do
+    podcast = build(:podcast, prx_account_uri: "/api/v1/accounts/123")
+    podcast.apple_key = build(:apple_key, account_id: 456)
+
+    refute podcast.valid?
+    assert_includes podcast.errors[:apple_key], "must belong to the podcast's PRX account"
+  end
+
   it "has a default feed" do
     podcast = Podcast.new.tap(&:valid?)
     assert podcast.default_feed.present?
