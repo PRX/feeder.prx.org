@@ -136,6 +136,12 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
           )
         end
 
+        if ep.video?
+          xml.podcast :alternateEnclosure, type: ep.enclosure_alt_content_type do
+            xml.podcast :source, uri: ep.enclosure_alt_url
+          end
+        end
+
         xml.itunes :title, ep.clean_title unless ep.clean_title.blank?
         xml.itunes :subtitle, ep.subtitle unless ep.subtitle.blank?
         # NOTE: you'll only get a tag if this was explicitly set (pun intended)

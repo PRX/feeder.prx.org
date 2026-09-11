@@ -6,6 +6,60 @@ describe Content do
   let(:c2) { build(:content, position: 2) }
   let(:c3) { build(:content, position: 3) }
 
+  describe "#copy_media" do
+    it "starts a copy media task" do
+      refute c1.slice?
+
+      mock = Minitest::Mock.new
+      mock.expect :call, "ret-val" do |owner|
+        assert_equal c1, owner
+      end
+
+      Tasks::CopyMediaTask.stub(:start!, mock) do
+        assert_equal "ret-val", c1.copy_media(true)
+        mock.verify
+      end
+    end
+
+    it "starts a slice media task" do
+      c1.segmentation = [1, 2]
+      assert c1.slice?
+
+      mock = Minitest::Mock.new
+      mock.expect :call, "ret-val" do |owner|
+        assert_equal c1, owner
+      end
+
+      Tasks::SliceMediaTask.stub(:start!, mock) do
+        assert_equal "ret-val", c1.copy_media(true)
+        mock.verify
+      end
+    end
+  end
+
+  describe "#after_copy" do
+    let(:copy_task) { build_stubbed(:copy_media_task) }
+
+    it "fixes bad audio files" do
+      refute copy_task.bad_audio?
+      assert_nil c1.after_copy(copy_task)
+
+      copy_task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:DurationDiscrepancy] = 1000
+      assert copy_task.bad_audio?
+
+      mock = Minitest::Mock.new
+      mock.expect :call, "ret-val" do |owner, task|
+        assert_equal c1, owner
+        assert_equal copy_task, task
+      end
+
+      Tasks::FixMediaTask.stub(:start!, mock) do
+        assert_equal "ret-val", c1.after_copy(copy_task)
+        mock.verify
+      end
+    end
+  end
+
   describe "#validate_episode_medium" do
     it "does not run on incomplete contents" do
       episode.medium = "audio"
@@ -80,7 +134,7 @@ describe Content do
     end
   end
 
-  describe "#slice?" do
+  describe "#segmentation?" do
     it "checks for nil start and end" do
       c1.segmentation = nil
       refute c1.slice?

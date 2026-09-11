@@ -32,6 +32,10 @@ class Task < ApplicationRecord
   scope :bad_audio_bytes, -> { where("result ~ '\"UnidentifiedBytes\":[1-9]'") }
   scope :bad_audio_vbr, -> { where("result ~ '\"VariableBitrate\":true'") }
 
+  def self.start!(owner)
+    create! { |t| t.owner = owner }.start!
+  end
+
   def self.callback(msg)
     job_id = porter_callback_job_id(msg)
     task = lookup_task(job_id)

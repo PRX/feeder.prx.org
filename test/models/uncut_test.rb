@@ -3,6 +3,54 @@ require "test_helper"
 describe Uncut do
   let(:uncut) { build_stubbed(:uncut) }
 
+  describe "#after_copy" do
+    let(:copy_task) { build_stubbed(:copy_media_task) }
+
+    it "sets ad breaks from id3 tags" do
+      uncut.segmentation = nil
+      uncut.after_copy(copy_task)
+      assert_equal [[nil, 3.0], [3.0, nil]], uncut.segmentation
+
+      copy_task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Tags][0][:value] = "AIS_AD_BREAK_1=4000"
+      uncut.after_copy(copy_task)
+      assert_equal [[nil, 3.0], [3.0, nil]], uncut.segmentation
+    end
+
+    it "fixes bad audio files" do
+      refute copy_task.bad_audio?
+      assert_nil uncut.after_copy(copy_task)
+
+      copy_task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:DurationDiscrepancy] = 1000
+      assert copy_task.bad_audio?
+
+      mock = Minitest::Mock.new
+      mock.expect :call, "ret-val" do |owner, task|
+        assert_equal uncut, owner
+        assert_equal copy_task, task
+      end
+
+      Tasks::FixMediaTask.stub(:start!, mock) do
+        assert_equal "ret-val", uncut.after_copy(copy_task)
+        mock.verify
+      end
+    end
+
+    it "kicks off slicing contents" do
+      uncut.status = "complete"
+      assert uncut.segmentation_ready?
+      assert_empty uncut.episode.contents
+
+      Content.stub_any_instance(:copy_media, true) do
+        uncut.episode.stub(:save!, true) do
+          uncut.after_copy(copy_task)
+          assert_equal 2, uncut.episode.contents.length
+          assert_equal [nil, 3.0], uncut.episode.contents[0].segmentation
+          assert_equal [3.0, nil], uncut.episode.contents[1].segmentation
+        end
+      end
+    end
+  end
+
   describe "#cut_contents" do
     let(:episode) { create(:episode, medium: "uncut", segment_count: 3) }
     let(:segs) { [[nil, 1], [2, 3], [3, nil]] }

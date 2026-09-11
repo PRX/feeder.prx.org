@@ -3,14 +3,44 @@ class Uncut < MediaResource
   DEFAULT_SEGMENTATION = [[nil, nil]].freeze
   include MetadataBreaks
 
-  validates :medium, inclusion: {in: %w[audio]}, if: :status_complete?
   validates :duration, numericality: {greater_than: 0}, if: :status_complete?
+  validate :validate_episode_medium, if: :status_complete?
   validate :validate_segmentation
 
   before_validation :set_defaults
 
   def set_defaults
     self.segmentation ||= DEFAULT_SEGMENTATION
+  end
+
+  def validate_episode_medium
+    if episode&.video?
+      errors.add(:medium, :not_video, message: "must be a video file") if medium != "video"
+    elsif episode&.audio?
+      errors.add(:medium, :not_audio, message: "must be an audio file") if medium != "audio"
+    end
+  end
+
+  def copy_media(force = false)
+    if force || needs_copy?
+      Tasks::CopyMediaTask.start!(self)
+    end
+  end
+
+  def after_copy(copy_task)
+    # optionally set ad breaks from ID3 tags
+    if copy_task.porter_callback_tags.present? && ad_breaks.blank?
+      self.ad_breaks = breaks_from_tags(copy_task.porter_callback_tags)
+      episode.segment_count = [episode.segment_count.to_i, segmentation.count, 1].max
+    end
+
+    # fix bad files before slicing
+    if copy_task.bad_audio?
+      Tasks::FixMediaTask.start!(self, copy_task)
+    elsif segmentation_ready?
+      slice_contents!
+      episode.contents.each(&:copy_media)
+    end
   end
 
   def slice_contents

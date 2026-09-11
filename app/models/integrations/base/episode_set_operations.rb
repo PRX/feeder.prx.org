@@ -29,7 +29,7 @@ module Integrations
         # or if the episode is a video
         eps
           .reject(&:synced_with_integration?)
-          .reject(&:video_content_type?)
+          .select(&:audio?)
       end
 
       def filter_episodes_to_archive(eps, eps_in_feed)

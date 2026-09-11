@@ -100,4 +100,40 @@ describe PorterCallback do
     model.result = build(:porter_job_results)
     assert_equal 32980032, model.porter_callback_size
   end
+
+  it "parses audio formats and bitrates" do
+    model = TestCallback.new
+    assert_nil model.porter_callback_format
+    assert_nil model.porter_callback_bitrate
+
+    model.result = build(:porter_job_results)
+    assert_equal "mp3", model.porter_callback_format
+    assert_equal "192000", model.porter_callback_bitrate
+  end
+
+  it "normalizes bitrates" do
+    model = TestCallback.new
+    model.result = build(:porter_job_results)
+    assert_equal 192, model.porter_callback_bitrate_normalized
+
+    model.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = 195678
+    assert_equal 224, model.porter_callback_bitrate_normalized
+
+    # 320 is the max
+    model.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = 999999
+    assert_equal 320, model.porter_callback_bitrate_normalized
+
+    # 128 is the default
+    model.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = nil
+    assert_equal 128, model.porter_callback_bitrate_normalized
+  end
+
+  it "gets audio tags" do
+    model = TestCallback.new
+    model.result = build(:porter_job_results)
+    assert_equal [{"key" => "comment", "value" => "AIS_AD_BREAK_1=3000"}], model.porter_callback_tags
+
+    model.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Tags] = nil
+    assert_nil model.porter_callback_tags
+  end
 end

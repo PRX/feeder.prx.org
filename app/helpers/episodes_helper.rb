@@ -119,8 +119,14 @@ module EpisodesHelper
     I18n.t("helpers.label.media_resource.original_url.#{medium}", position: media.position)
   end
 
-  def episode_medium_options
-    Episode.mediums.keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
+  def episode_medium_options(episode = nil)
+    ordered_keys =
+      if Rails.env.production? && !episode&.video?
+        %w[audio uncut passthru override]
+      else
+        %w[audio uncut video video_uncut passthru override]
+      end
+    ordered_keys.map { |k| [I18n.t("helpers.label.episode.mediums.#{k}"), k] }
   end
 
   def episode_media_updated_at(episode)
