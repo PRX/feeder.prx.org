@@ -43,13 +43,35 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
         feed: {
           type: "Feeds::AppleSubscription",
           private: true,
-          apple_config_attributes: {key_attributes: key_params}
+          delegated_delivery_config_attributes: {key_attributes: key_params}
         }
       }
     end
 
     assert_redirected_to podcast_feed_url(podcast, Feed.last)
-    assert_equal podcast.account_id, Feed.last.apple_config.key.account_id
+    assert_equal podcast.account_id, Feed.last.delegated_delivery_config.key.account_id
+  end
+
+  test "renders and updates delegated delivery settings" do
+    apple_feed = create(:apple_feed, podcast: podcast)
+    config = apple_feed.delegated_delivery_config
+
+    Feeds::AppleSubscription.stub_any_instance(:apple_show_options, []) do
+      get podcast_feed_url(podcast, apple_feed)
+    end
+
+    assert_response :success
+    assert_select 'input[type="checkbox"][name="feed[delegated_delivery_config_attributes][publish_enabled]"]'
+
+    patch podcast_feed_url(podcast, apple_feed), params: {
+      feed: {
+        delegated_delivery_config_attributes: {id: config.id, publish_enabled: "0", sync_blocks_rss: "0"}
+      }
+    }
+
+    assert_redirected_to podcast_feed_url(podcast, apple_feed)
+    refute config.reload.publish_enabled
+    refute config.sync_blocks_rss
   end
 
   test "authorizes creating feeds" do

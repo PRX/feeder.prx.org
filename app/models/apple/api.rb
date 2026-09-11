@@ -43,17 +43,17 @@ module Apple
         key: apple_key.key_pem)
     end
 
-    def self.from_apple_config(apple_config)
-      if apple_config.key.blank?
+    def self.from_delegated_delivery_config(delegated_delivery_config)
+      if delegated_delivery_config.key.blank?
         Rails.logger.info("No Apple API keys in config object, falling back to environment default keys",
-          {apple_config_id: apple_config.id,
-           podcast_id: apple_config.podcast_id,
-           podcast_title: apple_config.podcast_title})
+          {delegated_delivery_config_id: delegated_delivery_config.id,
+           podcast_id: delegated_delivery_config.podcast_id,
+           podcast_title: delegated_delivery_config.podcast_title})
         from_env
       else
-        new(provider_id: apple_config.key.provider_id,
-          key_id: apple_config.key.key_id,
-          key: apple_config.key.key_pem)
+        new(provider_id: delegated_delivery_config.key.provider_id,
+          key_id: delegated_delivery_config.key.key_id,
+          key: delegated_delivery_config.key.key_pem)
       end
     end
 

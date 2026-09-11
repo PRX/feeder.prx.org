@@ -1,4 +1,4 @@
-class Apple::ConfigPolicy < ApplicationPolicy
+class Apple::DelegatedDeliveryConfigPolicy < ApplicationPolicy
   def new?
     create?
   end

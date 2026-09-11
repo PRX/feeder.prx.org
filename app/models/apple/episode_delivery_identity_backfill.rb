@@ -143,7 +143,7 @@ module Apple
 
     def show_resolution_by_podcast_id
       @show_resolution_by_podcast_id ||= begin
-        configs = Apple::Config.includes(:show_feed_binding).to_a
+        configs = Apple::DelegatedDeliveryConfig.includes(:show_feed_binding).to_a
         podcast_id_by_feed_id = Feed.with_deleted.where(id: configs.map(&:feed_id)).pluck(:id, :podcast_id).to_h
 
         resolutions = configs
