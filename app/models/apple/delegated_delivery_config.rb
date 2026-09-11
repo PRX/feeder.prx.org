@@ -15,7 +15,6 @@ module Apple
     belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: true, inverse_of: :delegated_delivery_config
 
     validates :show_feed_binding_id, uniqueness: true, allow_nil: true
-    validate :podcast_has_one_delegated_delivery_config
     validate :not_default_feed
     validate :show_feed_binding_matches_podcast
     validate :key_belongs_to_podcast_account
@@ -30,11 +29,16 @@ module Apple
     before_validation :assign_key_account
 
     def self.routing_source
-      source = ENV.fetch("APPLE_ROUTING_SOURCE", "legacy")
+      source = ENV.fetch("APPLE_ROUTING_SOURCE", "show_feed_binding")
       ROUTING_SOURCES.fetch(source) do
         raise ArgumentError,
           "Unsupported APPLE_ROUTING_SOURCE=#{source.inspect}; expected one of #{ROUTING_SOURCES.keys.join(", ")}"
       end
+    end
+
+    def self.sync_legacy_key_for!(podcast)
+      where(feed_id: Feed.with_deleted.where(podcast_id: podcast.id).select(:id))
+        .update_all(key_id: podcast.apple_key_id, updated_at: Time.current)
     end
 
     def routing_source
@@ -79,13 +83,6 @@ module Apple
     def not_default_feed
       if feed&.default?
         errors.add(:feed, "cannot use default feed")
-      end
-    end
-
-    def podcast_has_one_delegated_delivery_config
-      all_feeds = Feed.where(podcast_id: feed.podcast_id).pluck(:id)
-      if Apple::DelegatedDeliveryConfig.where(feed_id: all_feeds).where.not(id: id).any?
-        errors.add(:feed, "podcast already has a delegated delivery config")
       end
     end
 
