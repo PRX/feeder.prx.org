@@ -26,6 +26,42 @@ describe ImageFile do
     end
   end
 
+  describe "#assign_attributes" do
+    %i[feed_image itunes_image episode_image].each do |factory|
+      it "preserves #{factory} metadata when rebuilding alphabetized attributes" do
+        source = build(factory)
+        attributes = source.attributes.compact.sort.to_h.freeze
+
+        copy = source.class.new(attributes)
+
+        %w[original_url format height width size status].each do |attribute|
+          assert_equal source[attribute], copy[attribute]
+        end
+        assert copy.valid?, copy.errors.full_messages.join(", ")
+      end
+    end
+
+    it "assigns a new source before explicitly supplied metadata" do
+      image.assign_attributes(format: "jpeg", height: 1500, width: 1500, size: 12345, status: "complete", original_url: url)
+
+      assert_equal url, image.original_url
+      assert_equal "jpeg", image.format
+      assert_equal 1500, image.height
+      assert_equal 1500, image.width
+      assert_equal 12345, image.size
+      assert image.status_complete?
+    end
+
+    it "resets old metadata when only the source changes" do
+      image.assign_attributes(original_url: url)
+
+      %w[format height width size].each do |attribute|
+        assert_nil image[attribute]
+      end
+      assert image.status_created?
+    end
+  end
+
   describe "#copy_media" do
     it "creates a task" do
       task = Tasks::CopyImageTask.new
