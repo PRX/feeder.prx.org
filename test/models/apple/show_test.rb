@@ -256,6 +256,15 @@ describe Apple::Show do
   describe ".connect_existing" do
     let(:delegated_delivery_config) { create(:delegated_delivery_config, feed: private_feed) }
 
+    it "uses the legacy public feed to connect an unbound config under binding routing" do
+      with_show_feed_binding_routing do
+        apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
+
+        assert_equal public_feed, apple_show.public_feed
+        assert_equal "some_apple_id", public_feed.reload.apple_sync_log.external_id
+      end
+    end
+
     it "should take in the apple show id an apple credentials object" do
       delegated_delivery_config.save!
       apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
@@ -318,6 +327,70 @@ describe Apple::Show do
       end
     end
 
+    it "syncs the bound show when no public-feed sync log exists" do
+      config, binding = create_bound_config("bound-show")
+      response = OpenStruct.new(body: {"data" => {"id" => "bound-show", "attributes" => {"foo" => "bar"}}}.to_json, code: "200")
+
+      with_show_feed_binding_routing do
+        show = config.build_show
+        get_show = lambda do |path|
+          assert_equal "shows/bound-show", path
+          response
+        end
+
+        assert_nil show.sync_log
+        show.api.stub(:get, get_show) do
+          sync = show.sync!
+
+          assert_equal "bound-show", sync.external_id
+          assert_equal binding.apple_show_id, show.apple_id
+          assert_equal "bar", show.apple_attributes["foo"]
+        end
+      end
+    end
+
+    it "syncs the bound show and replaces a stale public-feed sync id" do
+      config, binding = create_bound_config("bound-show")
+      stale_log = SyncLog.log!(
+        integration: :apple,
+        feeder_type: :feeds,
+        feeder_id: binding.feed_id,
+        external_id: "stale-show"
+      )
+      response = OpenStruct.new(body: {"data" => {"id" => "bound-show", "attributes" => {}}}.to_json, code: "200")
+
+      with_show_feed_binding_routing do
+        show = config.build_show
+        get_show = lambda do |path|
+          assert_equal "shows/bound-show", path
+          response
+        end
+
+        show.api.stub(:get, get_show) do
+          sync = show.sync!
+
+          assert_equal stale_log.id, sync.id
+          assert_equal "bound-show", sync.external_id
+        end
+      end
+    end
+
+    it "rejects a response for a different show than the binding" do
+      config, binding = create_bound_config("bound-show")
+      response = OpenStruct.new(body: {"data" => {"id" => "different-show", "attributes" => {}}}.to_json, code: "200")
+
+      with_show_feed_binding_routing do
+        show = config.build_show
+
+        show.api.stub(:get, response) do
+          error = assert_raises(RuntimeError) { show.sync! }
+
+          assert_match(/Apple show id mismatch/, error.message)
+          assert_nil binding.feed.reload.apple_sync_log
+        end
+      end
+    end
+
     it "raises an api error when show sync returns an http error" do
       apple_show.sync_log.update!(api_response: {"before" => true})
       response = OpenStruct.new(body: "<html>503 Service Unavailable</html>", code: "503")
@@ -334,12 +407,12 @@ describe Apple::Show do
     end
 
     it "logs an incomplete sync record if the upsert fails" do
-      raises_exception = ->(_arg) { raise Apple::ApiError.new("Error", OpenStruct.new(code: 200, body: "body")) }
+      raises_exception = -> { raise Apple::ApiError.new("Error", OpenStruct.new(code: 200, body: "body")) }
 
       apple_show.sync_log.destroy
       apple_show.public_feed.reload
 
-      apple_show.stub(:create_or_update_show, raises_exception) do
+      apple_show.stub(:fetch_or_create_show, raises_exception) do
         assert_raises(Apple::ApiError) do
           apple_show.sync!
         end
@@ -413,5 +486,31 @@ describe Apple::Show do
         assert_equal apple_show.guid_to_apple_json("foo"), {"attributes" => {"guid" => "foo", "data" => "frob"}}
       end
     end
+  end
+
+  def create_bound_config(show_id)
+    key = create(:apple_key, account_id: public_feed.podcast.account_id)
+    public_feed.podcast.update!(apple_key: key)
+    binding = create(
+      :apple_show_feed_binding,
+      feed: public_feed,
+      apple_show_id: show_id
+    )
+    config = create(
+      :delegated_delivery_config,
+      feed: private_feed,
+      key: key,
+      show_feed_binding: binding
+    )
+
+    [config, binding]
+  end
+
+  def with_show_feed_binding_routing
+    previous = ENV["APPLE_ROUTING_SOURCE"]
+    ENV["APPLE_ROUTING_SOURCE"] = "show_feed_binding"
+    yield
+  ensure
+    previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
   end
 end

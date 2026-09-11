@@ -342,7 +342,7 @@ en:
     application:
       field_copy_tooltip: Copied!
     label:
-      apple/config:
+      apple/delegated_delivery_config:
         publish_enabled: Enable publishing to Apple Podcasts Connect
         sync_blocks_rss: Episodes must publish to Apple before the public feed
       megaphone/config:

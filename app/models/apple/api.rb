@@ -44,16 +44,16 @@ module Apple
     end
 
     def self.from_delegated_delivery_config(delegated_delivery_config)
-      if delegated_delivery_config.key.blank?
+      apple_key = delegated_delivery_config.routing_key
+
+      if apple_key.blank?
         Rails.logger.info("No Apple API keys in config object, falling back to environment default keys",
           {delegated_delivery_config_id: delegated_delivery_config.id,
            podcast_id: delegated_delivery_config.podcast_id,
            podcast_title: delegated_delivery_config.podcast_title})
         from_env
       else
-        new(provider_id: delegated_delivery_config.key.provider_id,
-          key_id: delegated_delivery_config.key.key_id,
-          key: delegated_delivery_config.key.key_pem)
+        from_key(apple_key)
       end
     end
 
