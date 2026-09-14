@@ -46,4 +46,12 @@ FactoryBot.define do
     options { {} }
     result { build(:oxbow_job_results) }
   end
+
+  factory :slice_media_task, class: Tasks::SliceMediaTask do
+    association :owner, factory: :content
+    status { :complete }
+    job_id { "1234" }
+    options { {destination: "s3://test-prx-up/podcast/episode/filename.mp3"} }
+    result { build(:porter_job_results) }
+  end
 end

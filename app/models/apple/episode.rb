@@ -529,8 +529,8 @@ module Apple
       apple_id
     end
 
-    def video_content_type?
-      feeder_episode.video_content_type?
+    def audio?
+      feeder_episode&.audio?
     end
 
     def podcast_container

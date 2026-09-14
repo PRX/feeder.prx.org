@@ -39,6 +39,16 @@ module UploadsHelper
     params
   end
 
+  def upload_icon(ep = nil)
+    if ep&.audio?
+      "audio_file"
+    elsif ep&.video?
+      "video_file"
+    else
+      "attach_file"
+    end
+  end
+
   private
 
   def uploads_prefix
@@ -134,5 +144,10 @@ module UploadsHelper
     else
       "danger"
     end
+  end
+
+  def upload_file_size_error(media)
+    size = number_to_human_size(media.max_file_size)
+    t("activerecord.errors.models.media_resource.attributes.file_size.less_than", size: size)
   end
 end

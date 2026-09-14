@@ -26,7 +26,23 @@ FactoryBot.define do
       task_count { 0 }
     end
 
+    factory :video_content, class: Content do
+      mime_type { "video/mp4" }
+      medium { "video" }
+      original_url { "s3://prx-testing/test/video.mp4" }
+      position { 1 }
+      task_count { 0 }
+    end
+
     factory :uncut, class: Uncut do
+      segmentation { [[1.23, 4.56]] }
+      task_count { 0 }
+    end
+
+    factory :video_uncut, class: Uncut do
+      mime_type { "video/mp4" }
+      medium { "video" }
+      original_url { "s3://prx-testing/test/video.mp4" }
       segmentation { [[1.23, 4.56]] }
       task_count { 0 }
     end
