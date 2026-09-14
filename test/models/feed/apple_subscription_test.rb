@@ -129,6 +129,29 @@ describe Feeds::AppleSubscription do
   end
 
   describe "#apple_show_options" do
+    ["legacy", "show_feed_binding"].each do |source|
+      it "uses replacement credentials after recreating the subscription under #{source} routing" do
+        with_apple_routing_source(source) do
+          apple_feed.save!
+          old_key = apple_feed.delegated_delivery_config.key
+          apple_feed.destroy!
+          assert_equal old_key, podcast.reload.apple_key
+
+          replacement = Feeds::AppleSubscription.new(podcast: podcast)
+          key = build(:apple_key, key_id: "replacement-key")
+          replacement.build_delegated_delivery_config(key: key)
+          replacement.save!
+
+          assert_equal key, podcast.reload.apple_key
+          assert_show_options_use_key(replacement, key)
+
+          replacement.update!(apple_show_id: "replacement-show")
+          publisher = replacement.reload.delegated_delivery_config.build_publisher
+          assert_equal key.key_id, publisher.api.key_id
+        end
+      end
+    end
+
     let(:unbound_feed) do
       feed = Feeds::AppleSubscription.new(podcast: podcast)
       feed.build_delegated_delivery_config(key: build(:apple_key))
@@ -285,6 +308,30 @@ describe Feeds::AppleSubscription do
   end
 
   describe "#update_apple_show" do
+    ["legacy", "show_feed_binding"].each do |source|
+      it "syncs the newly selected show without reloading the feed under #{source} routing" do
+        with_apple_routing_source(source) do
+          apple_feed.save!
+          config = apple_feed.delegated_delivery_config
+          binding_id = config.show_feed_binding.id
+
+          apple_feed.update!(apple_show_id: "replacement-show")
+          show = config.build_show
+          assert_equal binding_id, config.show_feed_binding.id
+          assert_equal "replacement-show", show.apple_id
+
+          response = OpenStruct.new(body: {data: {id: "replacement-show"}}.to_json, code: "200")
+          fetch = lambda do |path|
+            assert_equal "shows/replacement-show", path
+            response
+          end
+          show.api.stub(:get, fetch) { show.sync! }
+
+          assert_equal "replacement-show", default_feed.reload.apple_sync_log.external_id
+        end
+      end
+    end
+
     it "bootstraps a missing binding when binding routing is selected" do
       apple_feed.delegated_delivery_config.show_feed_binding = nil
       podcast.apple_key = nil

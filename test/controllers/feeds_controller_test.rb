@@ -31,7 +31,8 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to podcast_feed_url(podcast, Feed.last)
   end
 
-  test "creates a legacy Apple key in the podcast account" do
+  test "selects an uploaded Apple key in the podcast account" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
     key_params = {
       provider_id: SecureRandom.uuid,
       key_id: "uploaded_key_id",
@@ -50,6 +51,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to podcast_feed_url(podcast, Feed.last)
     assert_equal podcast.account_id, Feed.last.delegated_delivery_config.key.account_id
+    assert_equal Feed.last.delegated_delivery_config.key, podcast.reload.apple_key
   end
 
   test "renders and updates delegated delivery settings" do

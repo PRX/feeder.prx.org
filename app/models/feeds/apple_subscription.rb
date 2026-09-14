@@ -20,6 +20,8 @@ class Feeds::AppleSubscription < Feed
 
   accepts_nested_attributes_for :delegated_delivery_config, allow_destroy: true, reject_if: :all_blank
 
+  before_save :select_uploaded_apple_key
+
   validate :unchanged_defaults
   validate :only_apple_feed
   validate :must_be_private
@@ -51,7 +53,7 @@ class Feeds::AppleSubscription < Feed
   end
 
   def update_apple_show
-    return unless previous_changes[:apple_show_id]
+    return if deleted? || !previous_changes[:apple_show_id]
 
     if apple_show_id.present?
       update_apple_show_feed_binding
@@ -60,6 +62,11 @@ class Feeds::AppleSubscription < Feed
       Apple::Show.connect_existing(apple_show_id, delegated_delivery_config)
       update_apple_show_feed_binding
     end
+  end
+
+  def select_uploaded_apple_key
+    key = delegated_delivery_config&.key
+    podcast.update!(apple_key: key) if key&.new_record?
   end
 
   def update_apple_show_feed_binding
@@ -77,7 +84,8 @@ class Feeds::AppleSubscription < Feed
       binding = Apple::ShowFeedBinding.find_or_initialize_by(feed: public_feed)
       binding.apple_show_id = apple_show_id
       binding.save!
-      config.update!(show_feed_binding: binding) if config.show_feed_binding_id != binding.id
+      config.show_feed_binding = binding
+      config.save! if config.show_feed_binding_id_changed?
     end
   end
 
