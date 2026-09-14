@@ -50,7 +50,13 @@
       <% if form.object.delegated_delivery_config&.persisted? %>
         <div class="col-12 mt-4">
           <div class="form-floating">
-            <%= form.select :apple_show_id, @apple_show_options, {include_blank: true} %>
+            <%# Temporary until the Apple form is refactored: read the saved show through routing,
+                but submit to the legacy feed column so its callback updates both routes.
+                Preserve submitted values on validation errors, even a blank that leaves the column unchanged. %>
+            <% selected_show_id = params.fetch(:feed, {}).fetch(:apple_show_id) {
+                 form.object.delegated_delivery_config.apple_show_id
+               } %>
+            <%= form.select :apple_show_id, @apple_show_options, {selected: selected_show_id, prompt: true, disabled: ""}, {required: true} %>
             <%= form.label :apple_show_id, "Apple Show ID" %>
           </div>
         </div>

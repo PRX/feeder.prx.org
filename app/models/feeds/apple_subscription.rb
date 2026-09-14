@@ -26,6 +26,7 @@ class Feeds::AppleSubscription < Feed
   validate :only_apple_feed
   validate :must_be_private
   validate :must_have_token
+  validates :apple_show_id, presence: true, on: :apple_show_selection
 
   alias_method :config, :delegated_delivery_config
 
