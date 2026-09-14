@@ -4,11 +4,11 @@ require "test_helper"
 
 describe Apple::Show do
   let(:podcast) { create(:episode).podcast }
-  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+  let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
-  let(:apple_config) { build(:apple_config, feed: private_feed) }
-  let(:apple_show) { Apple::Show.connect_existing("123", apple_config) }
+  let(:delegated_delivery_config) { build(:delegated_delivery_config, feed: private_feed) }
+  let(:apple_show) { Apple::Show.connect_existing("123", delegated_delivery_config) }
 
   before do
     private_feed.set_default_episodes
@@ -17,9 +17,9 @@ describe Apple::Show do
       .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
   end
 
-  describe ".from_apple_config" do
-    it "can be created from an apple config" do
-      show = apple_config.build_show
+  describe ".from_delegated_delivery_config" do
+    it "can be created from a delegated delivery config" do
+      show = delegated_delivery_config.build_show
       assert show.is_a?(Apple::Show)
       assert_equal show.public_feed, public_feed
       assert_equal show.private_feed, private_feed
@@ -129,7 +129,7 @@ describe Apple::Show do
 
   describe "#episodes" do
     before do
-      Apple::Show.connect_existing("123", apple_config)
+      Apple::Show.connect_existing("123", delegated_delivery_config)
     end
 
     it "returns an array of Apple::Episode" do
@@ -168,7 +168,7 @@ describe Apple::Show do
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
@@ -183,7 +183,7 @@ describe Apple::Show do
       ep = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << ep
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       ep.update!(published_at: 1.hour.ago)
@@ -199,7 +199,7 @@ describe Apple::Show do
       draft = create(:episode, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
@@ -221,7 +221,7 @@ describe Apple::Show do
       refute draft_without_media.enclosure_ready?(true), "draft_without_media should not have complete media"
       refute draft_without_media.enclosure_ready?(false), "draft_without_media should have no media at all"
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       candidate_ids = show.draft_upload_candidates.map { |e| e.feeder_episode.id }
@@ -230,7 +230,7 @@ describe Apple::Show do
     end
 
     it "returns empty array for non-apple feeds" do
-      config = build(:apple_config, feed: private_feed)
+      config = build(:delegated_delivery_config, feed: private_feed)
       show = Apple::Show.connect_existing("123", config)
 
       assert_equal [], show.draft_upload_candidates
@@ -242,7 +242,7 @@ describe Apple::Show do
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       first = show.draft_upload_candidates
@@ -254,26 +254,26 @@ describe Apple::Show do
   end
 
   describe ".connect_existing" do
-    let(:apple_config) { create(:apple_config, feed: private_feed) }
+    let(:delegated_delivery_config) { create(:delegated_delivery_config, feed: private_feed) }
 
     it "should take in the apple show id an apple credentials object" do
-      apple_config.save!
-      apple_show = Apple::Show.connect_existing("some_apple_id", apple_config)
+      delegated_delivery_config.save!
+      apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
 
       assert_equal apple_show.apple_id, "some_apple_id"
-      assert_equal apple_show.public_feed, apple_config.public_feed
-      assert_equal apple_show.private_feed, apple_config.private_feed
+      assert_equal apple_show.public_feed, delegated_delivery_config.public_feed
+      assert_equal apple_show.private_feed, delegated_delivery_config.private_feed
 
       # it can be reloaded from the db
-      apple_publisher = Apple::Publisher.from_apple_config(apple_config.reload)
+      apple_publisher = Apple::Publisher.from_delegated_delivery_config(delegated_delivery_config.reload)
       assert_equal apple_publisher.show.apple_id, "some_apple_id"
     end
 
     it "should take in a new apple show id" do
-      apple_config.save!
-      apple_show = Apple::Show.connect_existing("some_apple_id", apple_config)
+      delegated_delivery_config.save!
+      apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
       assert_equal apple_show.apple_id, "some_apple_id"
-      apple_show = Apple::Show.connect_existing("another_apple_id", apple_config)
+      apple_show = Apple::Show.connect_existing("another_apple_id", delegated_delivery_config)
       apple_show.public_feed.reload
       assert_equal apple_show.apple_id, "another_apple_id"
     end

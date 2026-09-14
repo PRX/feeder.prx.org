@@ -88,11 +88,11 @@ class Podcast < ApplicationRecord
     super || build_default_feed(podcast: self, private: false)
   end
 
-  def apple_config
-    if defined?(@apple_config)
-      @apple_config
+  def delegated_delivery_config
+    if defined?(@delegated_delivery_config)
+      @delegated_delivery_config
     else
-      @apple_config = Apple::Config.where(feed_id: feeds.pluck(:id)).first
+      @delegated_delivery_config = Apple::DelegatedDeliveryConfig.where(feed_id: feeds.pluck(:id)).first
     end
   end
 
@@ -105,7 +105,7 @@ class Podcast < ApplicationRecord
   end
 
   def reload(options = nil)
-    remove_instance_variable(:@apple_config) if defined?(@apple_config)
+    remove_instance_variable(:@delegated_delivery_config) if defined?(@delegated_delivery_config)
     remove_instance_variable(:@has_apple_feed) if defined?(@has_apple_feed)
     super
   end

@@ -325,8 +325,8 @@ describe PublishingPipelineState do
       let(:public_feed) { podcast.default_feed }
       let(:private_feed) { create(:apple_feed, podcast: podcast) }
       let(:apple_feed) { private_feed }
-      let(:apple_config) { private_feed.apple_config }
-      let(:apple_publisher) { apple_config.build_publisher }
+      let(:delegated_delivery_config) { private_feed.delegated_delivery_config }
+      let(:apple_publisher) { delegated_delivery_config.build_publisher }
 
       it 'sets the status to "retry"' do
         episode = build(:uploaded_apple_episode, show: apple_publisher.show)

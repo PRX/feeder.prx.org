@@ -24,7 +24,7 @@ class FeedsController < ApplicationController
   end
 
   def get_apple_show_options(feed)
-    if feed.integration_type == :apple && feed.apple_config&.key
+    if feed.integration_type == :apple && feed.delegated_delivery_config&.key
       feed.apple_show_options
     else
       []
@@ -107,8 +107,8 @@ class FeedsController < ApplicationController
   def init_config
     @feed.assign_attributes(feed_params)
     if @feed.is_a? Feeds::AppleSubscription
-      @feed.build_apple_config unless @feed.apple_config
-      @feed.apple_config.build_key unless @feed.apple_config.key
+      @feed.build_delegated_delivery_config unless @feed.delegated_delivery_config
+      @feed.delegated_delivery_config.build_key unless @feed.delegated_delivery_config.key
     elsif @feed.is_a? Feeds::MegaphoneFeed
       @feed.megaphone_config || @feed.build_megaphone_config
     end
@@ -177,7 +177,7 @@ class FeedsController < ApplicationController
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
-      apple_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, {key_attributes: %i[id provider_id key_id key_pem_b64]}],
+      delegated_delivery_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, {key_attributes: %i[id provider_id key_id key_pem_b64]}],
       megaphone_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, :token, :network_id, :network_name, :organization_id, advertising_tags: []]
     )
   end

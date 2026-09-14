@@ -68,7 +68,7 @@ module Apple
       it "reports conflicting podcast key candidates without choosing one" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         other_feed = create(:private_feed, podcast: config.podcast)
-        other_config = build(:apple_config, feed: other_feed, key: create(:apple_key))
+        other_config = build(:delegated_delivery_config, feed: other_feed, key: create(:apple_key))
         other_config.save!(validate: false)
         config.podcast.update_column(:apple_key_id, nil)
 
@@ -83,7 +83,7 @@ module Apple
       it "reports duplicate binding claims without choosing a config" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         other_config = build(
-          :apple_config,
+          :delegated_delivery_config,
           feed: create(:private_feed, podcast: config.podcast),
           key: config.key
         )
@@ -186,7 +186,7 @@ module Apple
       podcast_attributes = key ? {prx_account_uri: "/api/v1/accounts/#{key.account_id}"} : {}
       podcast = create(:podcast, **podcast_attributes)
       private_feed = create(:private_feed, podcast: podcast, apple_show_id: private_show_id)
-      config = create(:apple_config, feed: private_feed, key: key)
+      config = create(:delegated_delivery_config, feed: private_feed, key: key)
       podcast.update_column(:apple_key_id, nil)
 
       if sync_log_show_id
