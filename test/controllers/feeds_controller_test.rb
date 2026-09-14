@@ -31,6 +31,27 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to podcast_feed_url(podcast, Feed.last)
   end
 
+  test "creates a legacy Apple key in the podcast account" do
+    key_params = {
+      provider_id: SecureRandom.uuid,
+      key_id: "uploaded_key_id",
+      key_pem_b64: Base64.encode64(test_file("/fixtures/apple_podcasts_connect_keyfile.pem"))
+    }
+
+    assert_difference "Apple::Key.count", 1 do
+      post podcast_feeds_url(podcast), params: {
+        feed: {
+          type: "Feeds::AppleSubscription",
+          private: true,
+          apple_config_attributes: {key_attributes: key_params}
+        }
+      }
+    end
+
+    assert_redirected_to podcast_feed_url(podcast, Feed.last)
+    assert_equal podcast.account_id, Feed.last.apple_config.key.account_id
+  end
+
   test "authorizes creating feeds" do
     podcast.update(prx_account_uri: "/api/v1/accounts/456")
     post podcast_feeds_url(podcast), params: {feed: create_params}

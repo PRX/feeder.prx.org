@@ -5,6 +5,7 @@ module Apple
     has_one :config, class_name: "Apple::Config", foreign_key: "key_id"
     has_many :podcasts, inverse_of: :apple_key
 
+    validates :account_id, presence: true
     validates :provider_id, presence: true, length: {minimum: 10}
     validates :key_id, presence: true, length: {minimum: 10}
     validates_presence_of :key_pem_b64
@@ -14,6 +15,8 @@ module Apple
     validate :provider_id_is_valid, if: :provider_id?
     validate :ec_key_format, if: :key_pem_b64?
     validate :must_have_working_key
+
+    scope :for_account, ->(account_id) { where(account_id: account_id) }
 
     def must_have_working_key
       return if Rails.env.test? || !changed?
