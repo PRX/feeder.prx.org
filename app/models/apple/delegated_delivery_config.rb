@@ -82,7 +82,7 @@ module Apple
     def podcast_has_one_delegated_delivery_config
       all_feeds = Feed.where(podcast_id: feed.podcast_id).pluck(:id)
       if Apple::DelegatedDeliveryConfig.where(feed_id: all_feeds).where.not(id: id).any?
-        errors.add(:feed, "podcast already has a delegated delivery config")
+        errors.add(:feed, "podcast already has an Apple delegated delivery config")
       end
     end
 

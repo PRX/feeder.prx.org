@@ -49,12 +49,12 @@ describe Apple::DelegatedDeliveryConfig do
       f2 = create(:feed, podcast: podcast)
       c2 = build(:delegated_delivery_config, feed: f2)
       refute c2.valid?
-      assert_equal ["podcast already has a delegated delivery config"], c2.errors[:feed]
+      assert_equal ["podcast already has an Apple delegated delivery config"], c2.errors[:feed]
 
       # can't have 2 on same feed either
       c3 = build(:delegated_delivery_config, feed: f1)
       refute c3.valid?
-      assert_equal ["podcast already has a delegated delivery config"], c2.errors[:feed]
+      assert_equal ["podcast already has an Apple delegated delivery config"], c2.errors[:feed]
     end
 
     it "cannot be the default feed" do
