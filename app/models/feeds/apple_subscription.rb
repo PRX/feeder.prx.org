@@ -20,6 +20,8 @@ class Feeds::AppleSubscription < Feed
 
   accepts_nested_attributes_for :delegated_delivery_config, allow_destroy: true, reject_if: :all_blank
 
+  before_save :select_uploaded_apple_key
+
   validate :unchanged_defaults
   validate :only_apple_feed
   validate :must_be_private
@@ -51,17 +53,27 @@ class Feeds::AppleSubscription < Feed
   end
 
   def update_apple_show
-    if previous_changes[:apple_show_id]
+    return if deleted? || !previous_changes[:apple_show_id]
+
+    if apple_show_id.present?
+      update_apple_show_feed_binding
+      Apple::Show.connect_existing(apple_show_id, delegated_delivery_config)
+    else
       Apple::Show.connect_existing(apple_show_id, delegated_delivery_config)
       update_apple_show_feed_binding
     end
+  end
+
+  def select_uploaded_apple_key
+    key = delegated_delivery_config&.key
+    podcast.update!(apple_key: key) if key&.new_record?
   end
 
   def update_apple_show_feed_binding
     config = delegated_delivery_config
     return unless config
 
-    public_feed = config.public_feed
+    public_feed = config.public_feed || config.legacy_public_feed
     return unless public_feed
 
     if apple_show_id.blank?
@@ -72,13 +84,19 @@ class Feeds::AppleSubscription < Feed
       binding = Apple::ShowFeedBinding.find_or_initialize_by(feed: public_feed)
       binding.apple_show_id = apple_show_id
       binding.save!
-      config.update!(show_feed_binding: binding) if config.show_feed_binding_id != binding.id
+      config.show_feed_binding = binding
+      config.save! if config.show_feed_binding_id_changed?
     end
   end
 
   def apple_show_options
     used_ids = Feed.apple.distinct.where("id != ?", id).pluck(:apple_show_id).compact
-    api = Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
+    api = if delegated_delivery_config.routing_source == :show_feed_binding && !delegated_delivery_config.show_feed_binding
+      # Show selection precedes the binding that supplies publishing credentials.
+      Apple::Api.from_key(podcast.apple_key || delegated_delivery_config.key)
+    else
+      Apple::Api.from_delegated_delivery_config(delegated_delivery_config)
+    end
     shows_json = Apple::Show.apple_shows_json(api) || []
     shows_json
       .filter { |sj| sj["attributes"]["publishingState"] != "ARCHIVED" }
