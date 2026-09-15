@@ -339,6 +339,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     podcast.update!(apple_key: key)
     binding = create(:apple_show_feed_binding, feed: default_feed, apple_show_id: "old-show")
     config = create(:delegated_delivery_config, feed: private_feed, key: key, show_feed_binding: binding)
+    sync_log = Apple::SyncLog.log!(feeder_id: default_feed.id, feeder_type: :feeds, external_id: "old-show")
     body = {data: {id: "new-show", type: "shows", attributes: {title: "New show"}}}.to_json
     stub_request(:get, "https://aardvark.prx.org/shows/new-show").to_return(status: 200, body: body)
 
@@ -350,6 +351,50 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_equal key, podcast.reload.apple_key
     assert_equal key, config.reload.key
     assert_equal "new-show", private_feed.reload.apple_show_id
+    assert_equal "new-show", sync_log.reload.external_id
+    Apple::DelegatedDeliveryConfig.stub(:routing_source, :legacy) do
+      assert_equal "new-show", config.reload.apple_show_id
+      assert_equal "new-show", config.build_show.apple_id
+    end
+  end
+
+  test "mirrors a default feed connection before delegated delivery is configured" do
+    default_feed = podcast.default_feed
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+    body = {data: {id: "new-show", type: "shows", attributes: {title: "New show"}}}.to_json
+    stub_request(:get, "https://aardvark.prx.org/shows/new-show").to_return(status: 200, body: body)
+
+    patch podcast_feed_url(podcast, default_feed), params: {feed: {apple_connection: "new-show"}}
+
+    assert_redirected_to podcast_feed_url(podcast, default_feed)
+    assert_equal "new-show", default_feed.reload.apple_sync_log.external_id
+    assert_nil default_feed.delegated_delivery_config
+  end
+
+  test "rolls back the connection and sync log when legacy mirroring fails" do
+    default_feed = podcast.default_feed
+    key = create(:apple_key, account_id: podcast.account_id)
+    podcast.update!(apple_key: key)
+    binding = create(:apple_show_feed_binding, feed: default_feed, apple_show_id: "old-show")
+    create(:delegated_delivery_config, feed: private_feed, key: key, show_feed_binding: binding)
+    sync_log = Apple::SyncLog.log!(feeder_id: default_feed.id, feeder_type: :feeds, external_id: "old-show")
+    original_title = default_feed.title
+    body = {data: {id: "new-show", type: "shows", attributes: {title: "New show"}}}.to_json
+    stub_request(:get, "https://aardvark.prx.org/shows/new-show").to_return(status: 200, body: body)
+
+    failure = ActiveRecord::RecordInvalid.new(private_feed)
+    Feed.stub_any_instance(:update!, ->(*) { raise failure }) do
+      assert_raises ActiveRecord::RecordInvalid do
+        patch podcast_feed_url(podcast, default_feed), params: {
+          feed: {apple_connection: "new-show", title: "Changed title"}
+        }
+      end
+    end
+
+    assert_equal original_title, default_feed.reload.title
+    assert_equal "old-show", binding.reload.apple_show_id
+    assert_equal "old-show", private_feed.reload.apple_show_id
+    assert_equal "old-show", sync_log.reload.external_id
   end
 
   test "validate update feed" do
