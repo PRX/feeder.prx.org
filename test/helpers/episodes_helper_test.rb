@@ -34,6 +34,44 @@ describe EpisodesHelper do
         assert_equal "new", helper.episode_integration_status(:apple, episode)
       end
 
+      describe "with a second paused Apple feed" do
+        let(:paused_feed) { create(:private_feed, podcast: podcast) }
+        let(:paused_config) do
+          public_feed = create(:public_feed, podcast: podcast)
+          binding = create(:apple_show_feed_binding, feed: public_feed)
+          create(:delegated_delivery_config, feed: paused_feed, key: podcast.apple_key,
+            show_feed_binding: binding, publish_enabled: false)
+        end
+
+        before { paused_config }
+
+        it "shows delivery status from the active feed" do
+          create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1", uploaded: true, delivered: true)
+
+          assert_equal apple_feed, episode.integration_feed(:apple)
+          assert_equal "complete", helper.episode_integration_status(:apple, episode)
+        end
+
+        it "shows upload status for drafts in the active feed" do
+          create(:apple_episode_delivery_status, episode: draft_episode, apple_show_id: "show-1", uploaded: true, delivered: false)
+
+          assert_equal "uploaded", helper.episode_integration_status(:apple, draft_episode)
+        end
+
+        it "does not publish episodes belonging only to the paused feed" do
+          episode.feeds = [paused_feed]
+
+          assert_equal "not_publishable", helper.episode_integration_status(:apple, episode)
+        end
+
+        it "does not choose a show when both feeds publish" do
+          paused_config.update!(publish_enabled: true)
+
+          assert_nil episode.integration_feed(:apple)
+          assert_nil episode.apple_episode
+        end
+      end
+
       it "returns 'disconnected' when the integration facade is unavailable" do
         episode.stub(:integration_episode, nil) do
           assert_equal "disconnected", helper.episode_integration_status(:apple, episode)
