@@ -92,11 +92,13 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
         assert_response :success
         assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+        assert_select 'select[name="feed[apple_show_id]"] option[selected][value="show-1"]', text: "show-1"
 
         patch podcast_feed_url(podcast, apple_feed), params: {feed: {apple_show_id: "", display_episodes_count: 0}}
 
         assert_response :unprocessable_entity
         assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+        assert_select 'select[name="feed[apple_show_id]"] option[selected][value="show-1"]', count: 0
       end
     end
 
@@ -110,6 +112,22 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
         assert_response :success
         assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+        assert_select 'select[name="feed[apple_show_id]"] option[selected][value="show-1"]', text: "show-1"
+      end
+    end
+
+    test "leaves the show unselected when lookup fails without a configured show with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        apple_feed = Feeds::AppleSubscription.new(podcast: podcast)
+        apple_feed.build_delegated_delivery_config(key: build(:apple_key))
+        apple_feed.save!
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 401, body: "Invalid credentials")
+
+        get podcast_feed_url(podcast, apple_feed)
+
+        assert_response :success
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+        assert_select 'select[name="feed[apple_show_id]"] option:not([value=""])', count: 0
       end
     end
 

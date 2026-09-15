@@ -32,7 +32,10 @@ class FeedsController < ApplicationController
   rescue => err
     logger.error(err)
     @apple_show_lookup_failed = true
-    []
+    # Offer the currently selected show as the default option
+    # e.g. When api lookups fail or the key is bad
+    current_show_id = feed.delegated_delivery_config&.apple_show_id
+    current_show_id.present? ? [[current_show_id, current_show_id]] : []
   end
 
   def new_apple
