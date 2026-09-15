@@ -199,8 +199,27 @@ label[required="true"] {
     line-height: $line-height-base;
   }
 
-  // manually applied "blank" class (when the placeholder trick won't work)
-  > .form-control-blank:not(:focus) ~ label {
+  // manually applied "blank" class (when the placeholder trick won't work).
+  // Skip SlimSelect elements; dropdowns use the visible div.ss-main state below.
+  > .form-control-blank:not(:focus):not(.ss-main):not(select[data-controller~="slim-select"]) ~ label {
+    opacity: 1;
+    transform: none;
+  }
+
+  // Before SlimSelect initializes, keep blank selects in the same label state
+  // they will have once div.ss-main is rendered.
+  &:not(:has(> div.ss-main)) > select[data-controller~="slim-select"].form-control-blank:not(:focus) ~ label,
+  &:not(:has(> div.ss-main))
+    > select[data-controller~="slim-select"][multiple]:not(:has(option:checked)):not(:focus)
+    ~ label {
+    opacity: 1;
+    transform: none;
+  }
+
+  // Drop the floating label when SlimSelect is showing the placeholder
+  // (no .ss-single / .ss-value / .ss-max). Otherwise the Bootstrap default
+  // keeps the label floated.
+  > div.ss-main.form-select:not(:has(.ss-single)):not(:has(.ss-value)):not(:has(.ss-max)) ~ label {
     opacity: 1;
     transform: none;
   }
