@@ -11,6 +11,27 @@ describe Feed, "Apple delegated delivery" do
     podcast.update!(apple_key: key)
   end
 
+  it "rolls back feed edits when a requested connection is inaccessible" do
+    public_feed = binding.feed
+    original_title = public_feed.title
+    public_feed.assign_attributes(title: "Changed", apple_connection: "missing")
+    stub_request(:get, "https://aardvark.prx.org/shows/missing").to_return(status: 404, body: "{}")
+
+    refute public_feed.save_with_apple_connection
+    assert_predicate public_feed.errors[:apple_connection], :present?
+    assert_equal original_title, public_feed.reload.title
+    assert_equal "show-1", binding.reload.apple_show_id
+  end
+
+  it "saves ordinary metadata without verifying the unchanged Apple connection" do
+    public_feed = binding.feed
+    public_feed.title = "Changed"
+
+    assert public_feed.save_with_apple_connection
+    assert_equal "Changed", public_feed.reload.title
+    assert_not_requested :get, "https://aardvark.prx.org/shows/show-1"
+  end
+
   it "attaches delegated delivery to a normal feed" do
     config = create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding)
 

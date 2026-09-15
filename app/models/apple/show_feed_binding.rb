@@ -18,30 +18,65 @@ module Apple
     validates :apple_show_id, presence: true, uniqueness: true
     validates :feed_id, uniqueness: true
     validate :feed_must_be_public
+    before_destroy :protect_delegated_delivery, prepend: true
 
     scope :active, -> { joins(:feed).where(feeds: {deleted_at: nil}) }
 
+    def self.available_for_delivery(delivery_feed)
+      active.left_outer_joins(:delegated_delivery_config)
+        .where(feeds: {podcast_id: delivery_feed.podcast_id, private: false})
+        .where(apple_configs: {feed_id: [nil, delivery_feed.id]})
+        .includes(:feed)
+    end
+
     def self.connect_existing(feed:, apple_show_id:)
-      binding = find_or_initialize_by(feed: feed)
-      binding.apple_show_id = apple_show_id
-      binding.valid?
+      find_or_initialize_by(feed: feed).connect_existing(apple_show_id)
+    end
+
+    def connect_existing(apple_show_id)
+      self.apple_show_id = apple_show_id
+      valid?
 
       apple_key = feed.podcast&.apple_key
       if apple_key.nil?
-        binding.errors.add(:apple_key, "must be selected for the feed's podcast")
+        errors.add(:apple_key, "must be selected for the feed's podcast")
       elsif apple_key.account_id != feed.podcast.account_id
-        binding.errors.add(:apple_key, "must belong to the feed's PRX account")
+        errors.add(:apple_key, "must belong to the feed's PRX account")
       end
-      return binding if binding.errors.any?
+      return self if errors.any?
 
-      Apple::Show.from_show_feed_binding(binding).get_show
-      binding.save!
-      binding
+      return self unless verify_show_access
+
+      transaction do
+        save!
+        mirror_legacy_routing if feed.default?
+      end
+      self
+    end
+
+    private def verify_show_access
+      Apple::Show.from_show_feed_binding(self).get_show
+      true
     rescue => error
-      Rails.logger.error("Unable to connect Apple show feed binding", feed_id: feed.id, apple_show_id: apple_show_id, error: error)
-      binding ||= new(feed: feed, apple_show_id: apple_show_id)
-      binding.errors.add(:apple_show_id, "could not be read with the selected Apple credential")
-      binding
+      Rails.logger.error("Unable to connect Apple show feed binding", feed_id: feed_id, apple_show_id: apple_show_id, error: error)
+      errors.add(:apple_show_id, "could not be read with the selected Apple credential")
+      false
+    end
+
+    private def mirror_legacy_routing
+      Apple::SyncLog.log!(feeder_id: feed_id, feeder_type: :feeds, external_id: apple_show_id)
+      return unless delegated_delivery_config
+
+      delegated_delivery_config.update!(key: feed.podcast.apple_key)
+      delegated_delivery_config.private_feed.update!(apple_show_id: apple_show_id)
+    end
+
+    private def protect_delegated_delivery
+      return if destroyed_by_association
+      return unless delegated_delivery_config
+
+      errors.add(:base, "cannot be removed while delegated-delivery feeds use it")
+      throw :abort
     end
 
     def self.connection_options(apple_key)

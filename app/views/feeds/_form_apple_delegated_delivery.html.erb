@@ -1,6 +1,7 @@
-<% config = feed.delegated_delivery_config %>
+<% config = @delegated_delivery_config %>
 <% configured = config&.persisted? %>
-<% selectable = @apple_delegated_delivery_options.present? %>
+<% options = apple_delivery_options(@apple_delivery_bindings) %>
+<% selectable = options.present? %>
 
 <div class="card shadow border-0 mt-3">
   <div class="card-header card-header-light">
@@ -14,13 +15,13 @@
       <div class="alert alert-info" role="status"><%= t(".no_connections") %></div>
     <% end %>
 
-    <%= form.fields_for :delegated_delivery_config do |config_form| %>
+    <%= form.fields_for :delegated_delivery_config, config do |config_form| %>
       <%= config_form.hidden_field :id if configured %>
 
       <div class="form-floating input-group mb-3">
         <% select_options = configured ? {} : {include_blank: t(".select_connection")} %>
         <%= config_form.select :show_feed_binding_id,
-          @apple_delegated_delivery_options,
+          options,
           select_options,
           disabled: !selectable,
           required: configured && selectable %>

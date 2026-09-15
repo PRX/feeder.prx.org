@@ -1,4 +1,8 @@
 module FeedsHelper
+  def apple_delivery_options(bindings)
+    bindings.map { |binding| ["#{binding.feed.label} — #{binding.apple_show_id}", binding.id] }
+  end
+
   def episode_offset_options
     I18n.t("feeds.helper.episode_offset_options").invert.to_a
   end

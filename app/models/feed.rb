@@ -53,6 +53,40 @@ class Feed < ApplicationRecord
 
   attr_writer :apple_connection
 
+  def apple_connection_was
+    apple_show_feed_binding&.apple_show_id
+  end
+
+  def apple_connection_changed?
+    apple_connection.to_s != apple_connection_was.to_s
+  end
+
+  def save_with_apple_connection
+    saved = false
+    transaction do
+      if save && save_apple_connection
+        saved = true
+      else
+        raise ActiveRecord::Rollback
+      end
+    end
+    saved
+  end
+
+  private def save_apple_connection
+    return true unless public? && apple_connection_changed?
+
+    binding = if apple_connection.blank?
+      apple_show_feed_binding.tap(&:destroy)
+    else
+      Apple::ShowFeedBinding.connect_existing(feed: self, apple_show_id: apple_connection)
+    end
+
+    binding.errors.full_messages.each { |message| errors.add(:apple_connection, message) }
+    association(:apple_show_feed_binding).reset if binding.errors.empty?
+    binding.errors.empty?
+  end
+
   accepts_nested_attributes_for :feed_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :itunes_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :delegated_delivery_config,
