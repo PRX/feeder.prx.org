@@ -84,6 +84,14 @@ describe Apple::Key do
       assert_equal key.key_pem, api.key
     end
 
+    it "reports shows that the key cannot access" do
+      key = create(:apple_key)
+      body = {data: [{id: "show-1", attributes: {title: "A show"}}], links: {}}.to_json
+      stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
+
+      assert_equal ["show-2"], key.inaccessible_show_ids(["show-1", "show-2"])
+    end
+
     it "requires correct format of apple key" do
       k1 = build(:apple_key)
       k2 = build(:apple_key, key_pem_b64: Base64.encode64("not a valid pem"))

@@ -71,9 +71,29 @@ class EpisodeHasFeedsTest < ActiveSupport::TestCase
   end
 
   describe "#set_default_feeds" do
+    [:apple_feed, :megaphone_feed].each do |factory|
+      it "keeps new episodes in a paused #{factory}" do
+        integration_feed = create(factory, podcast: podcast)
+        integration_feed.config.update!(publish_enabled: false)
+        refute integration_feed.publish_integration?
+
+        created_during_pause = create(:episode, podcast: podcast.reload)
+
+        assert_equal [f1.id, integration_feed.id].sort, created_during_pause.reload.feed_ids.sort
+
+        integration_feed.config.update!(publish_enabled: true)
+
+        assert integration_feed.publish_integration?
+        assert integration_feed.reload.integration_episode?(created_during_pause)
+      end
+    end
+
     it "sets default feeds on new episodes" do
       # saved episodes get default+apple feeds
-      f3.update(type: "Feeds::AppleSubscription")
+      key = create(:apple_key, account_id: podcast.account_id)
+      podcast.update!(apple_key: key)
+      binding = create(:apple_show_feed_binding, feed: f1)
+      create(:delegated_delivery_config, feed: f3, show_feed_binding: binding, publish_enabled: true)
       assert_equal [f1.id, f3.id], episode.feeds.map(&:id).sort
 
       # new episodes initialized with defaults

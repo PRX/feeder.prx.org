@@ -1,0 +1,103 @@
+<% content_for :title, t(".title", title: @podcast.title) %>
+
+<%= render "podcasts/tabs" %>
+
+<div class="row my-4 mx-2">
+  <div class="col-lg-8">
+    <div class="card shadow border-0">
+      <div class="card-header card-header-light">
+        <h2 class="card-title h5"><%= t(".podcast_credential.title") %></h2>
+      </div>
+
+      <div class="card-body">
+        <p><%= t(".podcast_credential.description") %></p>
+
+        <% if @podcast.errors[:apple_key].any? %>
+          <div class="alert alert-danger" role="alert"><%= @podcast.errors[:apple_key].to_sentence %></div>
+        <% end %>
+
+        <% if @apple_keys.any? %>
+          <% form_data = {
+               controller: "unsaved",
+               unsaved_changed_value: false,
+               unsaved_confirm_value: t(".podcast_credential.unsaved_confirm")
+             } %>
+          <%= form_with(model: @podcast, url: podcast_integrations_path(@podcast), method: :patch, data: form_data) do |form| %>
+            <% select_data = {} %>
+            <% if @connected_apple_show_ids.any? %>
+              <% select_data = {
+                   confirm_field_target: "field",
+                   confirm_with: t(".podcast_credential.confirm_change", count: @connected_apple_show_ids.size),
+                   confirm_delete: t(".podcast_credential.confirm_remove", count: @connected_apple_show_ids.size)
+                 } %>
+            <% end %>
+
+            <div class="form-floating input-group mb-3">
+              <% options = @apple_keys.map { |key| ["#{t(".apple_credentials.key_label", key_id: key.key_id.to_s.last(4))} · #{t(".apple_credentials.provider_label", provider_id: key.provider_id.to_s.last(4))}", key.id] } %>
+              <%= form.select :apple_key_id, options, {include_blank: t(".podcast_credential.none")}, data: select_data %>
+              <%= form.label :apple_key_id, t(".podcast_credential.label") %>
+              <%= field_help_text t(".podcast_credential.help") %>
+            </div>
+
+            <% if policy(@podcast).update? %>
+              <%= form.submit t(".podcast_credential.save"), class: "btn btn-primary" %>
+            <% end %>
+          <% end %>
+        <% else %>
+          <div class="alert alert-info mb-0" role="status"><%= t(".podcast_credential.empty") %></div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card shadow border-0 mt-4">
+      <div class="card-header card-header-light">
+        <h2 class="card-title h5"><%= t(".apple_credentials.title") %></h2>
+      </div>
+
+      <div class="card-body">
+        <p><%= t(".apple_credentials.description", account_name: account_name_for(@podcast.account_id), account_id: @podcast.account_id) %></p>
+        <%= t(".apple_credentials.guide_link").html_safe %>
+
+        <% if @apple_keys.any? %>
+          <div class="list-group my-4">
+            <% @apple_keys.each do |key| %>
+              <div class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                <div>
+                  <strong><%= t(".apple_credentials.key_label", key_id: key.key_id.to_s.last(4)) %></strong>
+                  <span class="text-muted ms-2"><%= t(".apple_credentials.provider_label", provider_id: key.provider_id.to_s.last(4)) %></span>
+                  <div class="small text-muted mt-1"><%= t(".apple_credentials.usage", count: key.podcasts.size) %></div>
+                </div>
+                <% if key == @podcast.apple_key %>
+                  <span class="badge bg-primary"><%= t(".apple_credentials.selected") %></span>
+                <% elsif key.podcasts.any? %>
+                  <% podcast_links = safe_join(key.podcasts.map { |other_podcast| link_to other_podcast.title, podcast_path(other_podcast), class: "text-white" }, ", ") %>
+                  <span class="badge bg-secondary"><%= t(".apple_credentials.used_by_other_html", podcast_titles: podcast_links) %></span>
+                <% elsif key.delegated_delivery_config.nil? && policy(key).destroy? %>
+                  <%= button_to t(".apple_credentials.remove"), podcast_apple_key_path(@podcast, key), method: :delete, class: "btn btn-sm btn-outline-danger", form: {data: {turbo_confirm: t(".apple_credentials.remove_confirm")}} %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <% if policy(@apple_key).create? %>
+          <h3 class="h6 mt-4"><%= t(".apple_credentials.add_title") %></h3>
+          <p class="small text-muted"><%= t(".apple_credentials.upload_help") %></p>
+
+          <% if @apple_key.errors.any? %>
+            <div class="alert alert-danger" role="alert"><%= @apple_key.errors.full_messages.to_sentence %></div>
+          <% end %>
+
+          <%= form_with(model: [@podcast, @apple_key], html: {autocomplete: "off"}, data: {controller: "apple-key"}) do |form| %>
+            <%= form.file_field :key_file, class: "mb-3 form-control", accept: ".p8,.pem", data: {action: "apple-key#convertFileToKey"}, required: true %>
+            <%= form.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
+            <%= form.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
+            <%= form.hidden_field :key_id, data: {apple_key_target: "key"} %>
+
+            <%= form.submit t(".apple_credentials.upload"), class: "btn btn-secondary" %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

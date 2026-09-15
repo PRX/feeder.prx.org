@@ -20,6 +20,14 @@ module Apple
 
     scope :for_account, ->(account_id) { where(account_id: account_id) }
 
+    def inaccessible_show_ids(show_ids)
+      accessible_show_ids = Apple::Show
+        .apple_shows_json(Apple::Api.from_apple_key(self))
+        .filter_map { |show| show["id"].presence }
+
+      show_ids - accessible_show_ids
+    end
+
     def must_have_working_key
       return if Rails.env.test? || !changed?
       api = Apple::Api.from_key(self)

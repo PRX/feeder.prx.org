@@ -1,0 +1,44 @@
+<div class="card shadow border-0 mt-3">
+  <div class="card-header card-header-light">
+    <h2 class="card-title h5"><%= t(".title") %></h2>
+  </div>
+
+  <div class="card-body">
+    <% binding = feed.apple_show_feed_binding %>
+    <% dependents = [binding&.delegated_delivery_config].compact %>
+
+    <% if feed.errors[:apple_connection].any? %>
+      <div class="alert alert-danger" role="alert"><%= feed.errors[:apple_connection].to_sentence %></div>
+    <% end %>
+
+    <%= turbo_frame_tag dom_id(feed, :apple_connection),
+      src: podcast_feed_apple_connection_path(podcast, feed, selection: feed.apple_connection.to_s), loading: "lazy" do %>
+      <%= render "apple_connection_field", feed: feed, form: form, options: [], loading: true, lookup_failed: false %>
+    <% end %>
+
+    <div class="form-floating input-group mb-3">
+      <%= form.text_field :apple_verify_token %>
+      <%= form.label :apple_verify_token %>
+      <%= field_help_text t("feeds.form_main.help.apple_verify_token") %>
+    </div>
+
+    <% if dependents.present? %>
+      <p class="small mb-3">
+        <strong><%= t(".dependent_feeds") %></strong>
+        <%= dependents.map { |config| config.feed.label }.join(", ") %>
+      </p>
+    <% end %>
+  </div>
+
+  <div class="card-footer d-flex justify-content-between align-items-end">
+    <div>
+      <strong><%= t(".status") %></strong><br>
+      <% if binding %>
+        <span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(binding.updated_at)) %></span>
+      <% end %>
+    </div>
+    <span class="badge <%= binding ? "bg-success" : "bg-secondary" %>">
+      <%= binding ? t(".connected") : t(".not_connected") %>
+    </span>
+  </div>
+</div>

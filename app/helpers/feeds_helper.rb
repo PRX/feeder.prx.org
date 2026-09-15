@@ -1,4 +1,16 @@
 module FeedsHelper
+  def apple_connection_options(feed, options)
+    choices = options.map { |option| [option.label, option.value.to_s] }
+    [feed.apple_connection_was, feed.apple_connection].compact_blank.uniq.each do |show_id|
+      choices.prepend([show_id, show_id]) unless choices.any? { |_, value| value == show_id }
+    end
+    choices
+  end
+
+  def apple_delivery_options(bindings)
+    bindings.map { |binding| ["#{binding.feed.label} — #{binding.apple_show_id}", binding.id] }
+  end
+
   def episode_offset_options
     I18n.t("feeds.helper.episode_offset_options").invert.to_a
   end
@@ -71,10 +83,6 @@ module FeedsHelper
     else
       podcast_feed_path feed.podcast, feed, uploads_retry_params(form)
     end
-  end
-
-  def apple_feed?(feed)
-    feed.type == "Feeds::AppleSubscription"
   end
 
   def megaphone_feed?(feed)

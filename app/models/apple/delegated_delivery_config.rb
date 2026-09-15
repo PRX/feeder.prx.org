@@ -14,10 +14,13 @@ module Apple
     # Nullable only during routing migration; this is required at cutover.
     belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: true, inverse_of: :delegated_delivery_config
 
+    validates :feed_id, uniqueness: true
     validates :show_feed_binding_id, uniqueness: true, allow_nil: true
-    validate :not_default_feed
-    validate :show_feed_binding_matches_podcast
     validate :key_belongs_to_podcast_account
+    validate :show_feed_binding_belongs_to_podcast
+
+    before_save :mirror_podcast_key_for_rollback
+    after_save :mirror_default_feed_show_for_rollback
 
     # backwards-compatible associations
     delegate :podcast, to: :feed, allow_nil: true
@@ -80,17 +83,8 @@ module Apple
       legacy_public_feed&.apple_sync_log&.external_id.presence || private_feed&.apple_show_id.presence
     end
 
-    def not_default_feed
-      if feed&.default?
-        errors.add(:feed, "cannot use default feed")
-      end
-    end
-
-    def show_feed_binding_matches_podcast
-      return unless feed && show_feed_binding&.feed
-      return if feed.podcast_id == show_feed_binding.feed.podcast_id
-
-      errors.add(:show_feed_binding, "must belong to the same podcast as feed")
+    def delivery_feed
+      feed
     end
 
     def key_belongs_to_podcast_account
@@ -114,6 +108,27 @@ module Apple
 
     def build_show
       Apple::Show.from_delegated_delivery_config(self)
+    end
+
+    private
+
+    def show_feed_binding_belongs_to_podcast
+      return unless feed && show_feed_binding
+      return if feed.podcast_id == show_feed_binding.feed&.podcast_id
+
+      errors.add(:show_feed_binding, "must belong to the configured feed's podcast")
+    end
+
+    def mirror_podcast_key_for_rollback
+      podcast_key = feed&.podcast&.apple_key
+      self.key = podcast_key if podcast_key
+    end
+
+    def mirror_default_feed_show_for_rollback
+      return unless show_feed_binding&.feed&.default?
+      return if feed.apple_show_id == show_feed_binding.apple_show_id
+
+      feed.update_column(:apple_show_id, show_feed_binding.apple_show_id)
     end
   end
 end
