@@ -60,6 +60,46 @@ module Apple
     end
 
     describe ".connect_existing" do
+      it "rejects another connection to a show already used for delivery" do
+        config = create(:delegated_delivery_config)
+        existing = config.show_feed_binding
+        feed = create(:public_feed, podcast: config.podcast)
+
+        assert_no_difference "ShowFeedBinding.count" do
+          binding = ShowFeedBinding.connect_existing(feed: feed, apple_show_id: existing.apple_show_id)
+
+          refute_predicate binding, :persisted?
+          assert_includes binding.errors[:apple_show_id], "has already been taken"
+        end
+      end
+
+      it "preserves the original connection when its replacement is already connected" do
+        key = create(:apple_key, account_id: 123)
+        podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: key)
+        original = create(:apple_show_feed_binding, feed: podcast.default_feed)
+        other = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        original_show_id = original.apple_show_id
+
+        binding = ShowFeedBinding.connect_existing(feed: original.feed, apple_show_id: other.apple_show_id)
+
+        assert_includes binding.errors[:apple_show_id], "has already been taken"
+        assert_equal original_show_id, original.reload.apple_show_id
+        assert_predicate original, :valid?
+      end
+
+      it "enforces unique show connections even when validation is bypassed" do
+        existing = create(:apple_show_feed_binding)
+        feed = create(:public_feed, podcast: create(:podcast))
+
+        assert_raises ActiveRecord::RecordNotUnique do
+          ShowFeedBinding.transaction(requires_new: true) do
+            ShowFeedBinding.insert_all!([
+              {feed_id: feed.id, apple_show_id: existing.apple_show_id}
+            ])
+          end
+        end
+      end
+
       it "verifies show access before creating a binding" do
         key = create(:apple_key, account_id: 123)
         podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: key)
