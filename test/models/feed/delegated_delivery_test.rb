@@ -20,6 +20,55 @@ describe Feed, "Apple delegated delivery" do
     assert_equal "Members", delivery_feed.label
   end
 
+  it "requires connected feeds to stay public even without delegated delivery" do
+    public_feed = binding.feed
+
+    refute public_feed.update(private: true)
+    assert_includes public_feed.errors[:private], "cannot be enabled while connected to an Apple show"
+    refute public_feed.reload.private?
+    assert_equal binding, public_feed.apple_show_feed_binding
+  end
+
+  it "allows a disconnected feed to become private" do
+    public_feed = create(:public_feed, podcast: podcast)
+    connection = create(:apple_show_feed_binding, feed: public_feed)
+    connection.destroy!
+
+    assert public_feed.reload.update(private: true)
+  end
+
+  it "preserves the feed and its associations when delivery prevents deletion" do
+    public_feed = create(:public_feed, podcast: podcast)
+    connection = create(:apple_show_feed_binding, feed: public_feed)
+    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    episode = create(:episode, podcast: podcast)
+    public_feed.episodes << episode
+
+    refute public_feed.destroy
+    assert_includes public_feed.errors[:base], "Cannot delete a feed while delegated delivery uses its Apple connection"
+    assert_nil public_feed.reload.deleted_at
+    assert_equal connection, config.reload.show_feed_binding
+    assert_includes public_feed.episodes, episode
+  end
+
+  it "allows deletion after dependent delivery is removed" do
+    public_feed = create(:public_feed, podcast: podcast)
+    connection = create(:apple_show_feed_binding, feed: public_feed)
+    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    config.destroy!
+
+    assert public_feed.reload.destroy
+    refute Apple::ShowFeedBinding.exists?(connection.id)
+  end
+
+  it "allows deleting the whole podcast with connected delivery feeds" do
+    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: binding)
+
+    assert podcast.destroy
+    refute Apple::DelegatedDeliveryConfig.exists?(config.id)
+    refute Apple::ShowFeedBinding.exists?(binding.id)
+  end
+
   it "publishes through the feed-scoped config" do
     create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding, publish_enabled: true)
 

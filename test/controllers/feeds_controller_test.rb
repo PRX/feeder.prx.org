@@ -333,6 +333,32 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_predicate binding.reload, :persisted?
   end
 
+  test "does not make a connected public feed private" do
+    connected_apple_feed
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {private: "1"}}
+
+    assert_response :unprocessable_entity
+    refute feed.reload.private?
+    assert_equal "show-1", feed.apple_show_feed_binding.apple_show_id
+  end
+
+  test "renders the connection and error when delegated delivery prevents deletion" do
+    connected_apple_feed
+    binding = feed.apple_show_feed_binding
+    config = create(:delegated_delivery_config, feed: private_feed, key: podcast.apple_key, show_feed_binding: binding)
+
+    Apple::ShowFeedBinding.stub(:connection_options, []) do
+      delete podcast_feed_url(podcast, feed)
+    end
+
+    assert_response :unprocessable_entity
+    assert_includes response.body, "Cannot delete a feed while delegated delivery uses its Apple connection"
+    assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]'
+    assert_nil feed.reload.deleted_at
+    assert_equal binding, config.reload.show_feed_binding
+  end
+
   test "mirrors legacy routing when replacing the default feed connection" do
     default_feed = podcast.default_feed
     key = create(:apple_key, account_id: podcast.account_id)

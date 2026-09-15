@@ -85,7 +85,10 @@ class FeedsController < ApplicationController
         format.html { redirect_to podcast_feed_path(@podcast, @podcast.default_feed), notice: t(".success", model: "Feed") }
       else
         format.html do
-          flash.now[:notice] = t(".failure", model: "Feed")
+          flash.now[:error] = @feed.errors.full_messages.to_sentence
+          init_config
+          load_apple_connection_options
+          load_apple_delegated_delivery_options
           render :show, status: :unprocessable_entity
         end
       end
