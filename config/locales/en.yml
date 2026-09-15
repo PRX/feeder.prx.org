@@ -422,6 +422,7 @@ en:
         title: Title
         url: Episode URL
       feed:
+        apple_connection: Apple show connection
         apple_verify_token: Apple Podcasts Verify Token
         audio_type: Format
         audio_bitrate: Bitrate
