@@ -94,7 +94,7 @@ module Apple
           binding = ShowFeedBinding.connect_existing(feed: feed, apple_show_id: existing.apple_show_id)
 
           refute_predicate binding, :persisted?
-          assert_includes binding.errors[:apple_show_id], "has already been taken"
+          assert_includes binding.errors[:apple_show_id], "is already connected to another feed"
         end
       end
 
@@ -107,7 +107,7 @@ module Apple
 
         binding = ShowFeedBinding.connect_existing(feed: original.feed, apple_show_id: other.apple_show_id)
 
-        assert_includes binding.errors[:apple_show_id], "has already been taken"
+        assert_includes binding.errors[:apple_show_id], "is already connected to another feed"
         assert_equal original_show_id, original.reload.apple_show_id
         assert_predicate original, :valid?
       end

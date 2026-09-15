@@ -286,7 +286,35 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_entity
+    assert_select '.card-body > .alert-danger[role="alert"]', text: /must be selected for the feed's podcast/
     assert_nil feed.reload.apple_show_feed_binding
+  end
+
+  test "keeps connection errors outside the frame that reloads the dropdown" do
+    connected_apple_feed
+    stub_request(:get, "https://aardvark.prx.org/shows/show-2").to_return(status: 403, body: "{}")
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "show-2"}}
+
+    assert_response :unprocessable_entity
+    assert_select '.card-body > .alert-danger[role="alert"]', text: /could not be read with the selected Apple credential/ do |alerts|
+      assert_empty alerts.first.ancestors("turbo-frame")
+      assert_nil alerts.first["data-controller"]
+    end
+    assert_select "turbo-frame#apple_connection_feed_#{feed.id}[src]"
+    assert_equal "show-1", feed.reload.apple_show_feed_binding.apple_show_id
+  end
+
+  test "explains when an Apple show is already connected without repeating field names" do
+    connected_apple_feed
+    other_feed = create(:public_feed, podcast: podcast)
+    create(:apple_show_feed_binding, feed: other_feed, apple_show_id: "show-2")
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "show-2"}}
+
+    assert_response :unprocessable_entity
+    assert_select '.card-body > .alert-danger[role="alert"]', text: "Apple show is already connected to another feed"
+    assert_equal "show-1", feed.reload.apple_show_feed_binding.apple_show_id
   end
 
   test "does not disconnect a binding used by delegated delivery" do
