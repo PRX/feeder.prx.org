@@ -9,10 +9,9 @@ class FeedsController < ApplicationController
 
   # GET /feeds/1
   def show
-    init_config
+    @feed.assign_attributes(feed_params)
     authorize @feed
-    load_apple_connection_options
-    load_apple_delegated_delivery_options
+    prepare_feed_form
   end
 
   # GET /feeds/new
@@ -27,7 +26,8 @@ class FeedsController < ApplicationController
   def new_megaphone
     @feed = Feeds::MegaphoneFeed.new(podcast: @podcast, private: true)
     authorize @feed
-    init_config
+    @feed.assign_attributes(feed_params)
+    prepare_feed_form
     render "new"
   end
 
@@ -58,22 +58,20 @@ class FeedsController < ApplicationController
     authorize @feed
 
     respond_to do |format|
-      if save_feed_and_apple_connection
+      if @feed.save_with_apple_connection
         @feed.copy_media
         @feed.podcast&.publish!
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
       else
         format.html do
           flash.now[:error] = t(".failure", model: "Feed")
-          load_apple_connection_options
-          load_apple_delegated_delivery_options
+          prepare_feed_form
           render :show, status: :unprocessable_entity
         end
       end
     end
   rescue ActiveRecord::StaleObjectError
-    load_apple_connection_options
-    load_apple_delegated_delivery_options
+    prepare_feed_form
     render :show, status: :conflict
   end
 
@@ -86,9 +84,7 @@ class FeedsController < ApplicationController
       else
         format.html do
           flash.now[:error] = @feed.errors.full_messages.to_sentence
-          init_config
-          load_apple_connection_options
-          load_apple_delegated_delivery_options
+          prepare_feed_form
           render :show, status: :unprocessable_entity
         end
       end
@@ -97,12 +93,13 @@ class FeedsController < ApplicationController
 
   private
 
-  def init_config
-    @feed.assign_attributes(feed_params)
+  def prepare_feed_form
     if @feed.is_a? Feeds::MegaphoneFeed
       @feed.megaphone_config || @feed.build_megaphone_config
     elsif @feed.persisted?
-      @feed.build_delegated_delivery_config unless @feed.delegated_delivery_config
+      @delegated_delivery_config = @feed.delegated_delivery_config || Apple::DelegatedDeliveryConfig.new
+      @apple_delivery_bindings = Apple::ShowFeedBinding.available_for_delivery(@feed)
+      load_apple_connection_options
     end
   end
 
@@ -192,89 +189,5 @@ class FeedsController < ApplicationController
     end
 
     @apple_connection_options = options.map { |option| [option.label, option.value] }
-  end
-
-  def load_apple_delegated_delivery_options
-    @apple_delegated_delivery_options = []
-    return unless @feed.persisted? && !@feed.is_a?(Feeds::MegaphoneFeed)
-
-    current_config = @feed.delegated_delivery_config
-    bindings = @podcast.feeds.includes(apple_show_feed_binding: :delegated_delivery_config).filter_map(&:apple_show_feed_binding)
-    available = bindings.select do |binding|
-      binding.delegated_delivery_config.nil? || binding.delegated_delivery_config == current_config
-    end
-
-    @apple_delegated_delivery_options = available.map do |binding|
-      ["#{binding.feed.label} — #{binding.apple_show_id}", binding.id]
-    end
-  end
-
-  def save_feed_and_apple_connection
-    saved = false
-
-    Feed.transaction do
-      if @feed.save && save_apple_connection
-        saved = true
-      else
-        raise ActiveRecord::Rollback
-      end
-    end
-
-    saved
-  end
-
-  def save_apple_connection
-    return true unless @feed.persisted? && @feed.public?
-
-    current_binding = @feed.apple_show_feed_binding
-    selection = @feed.apple_connection
-    return true if selection.to_s == current_binding&.apple_show_id.to_s
-
-    if selection.blank?
-      return disconnect_apple_binding(current_binding)
-    end
-
-    binding = Apple::ShowFeedBinding.connect_existing(
-      feed: @feed,
-      apple_show_id: selection
-    )
-
-    if binding.persisted? && binding.errors.empty?
-      mirror_legacy_apple_routing(binding) if @feed.default?
-      true
-    else
-      binding.errors.full_messages.each { |message| @feed.errors.add(:apple_connection, message) }
-      false
-    end
-  end
-
-  def disconnect_apple_binding(binding)
-    return true unless binding
-
-    if binding.delegated_delivery_config
-      apple_connection_error("cannot be removed while delegated-delivery feeds use it")
-    else
-      binding.destroy!
-      true
-    end
-  end
-
-  def mirror_legacy_apple_routing(binding)
-    Apple::SyncLog.log!(
-      feeder_id: binding.feed_id,
-      feeder_type: :feeds,
-      external_id: binding.apple_show_id
-    )
-
-    config = binding.delegated_delivery_config
-    return unless config
-
-    config.update!(key: binding.feed.podcast.apple_key)
-    config.private_feed.update!(apple_show_id: binding.apple_show_id)
-  end
-
-  def apple_connection_error(message)
-    @feed.errors.add(:apple_connection, message)
-    false
   end
 end

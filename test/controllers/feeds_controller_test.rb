@@ -168,6 +168,17 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]']", count: 1
   end
 
+  test "prepares optional delivery fields without attaching a configuration" do
+    Feed.stub_any_instance(:build_delegated_delivery_config, ->(*) { flunk "Form setup attached a delivery config" }) do
+      get podcast_feed_url(podcast, private_feed)
+    end
+
+    assert_response :success
+    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"]'
+    assert_nil private_feed.reload.delegated_delivery_config
+    assert_nil private_feed.integration_type
+  end
+
   test "attaches delegated delivery to a normal feed" do
     key = create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: key)

@@ -59,6 +59,31 @@ module Apple
       end
     end
 
+    it "refuses direct disconnection while delegated delivery uses the binding" do
+      config = create(:delegated_delivery_config)
+      binding = config.show_feed_binding
+
+      refute binding.destroy
+      assert_includes binding.errors[:base], "cannot be removed while delegated-delivery feeds use it"
+      assert_equal binding, config.reload.show_feed_binding
+      assert_predicate binding.reload, :persisted?
+    end
+
+    it "mirrors default feed routing when connected outside a controller" do
+      podcast = create(:podcast)
+      config = create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast))
+      binding = config.reload.show_feed_binding
+      body = {data: {id: "replacement", type: "shows"}}.to_json
+      stub_request(:get, "https://aardvark.prx.org/shows/replacement").to_return(status: 200, body: body)
+
+      binding.connect_existing("replacement")
+
+      assert_empty binding.errors
+      assert_equal "replacement", binding.reload.apple_show_id
+      assert_equal "replacement", binding.feed.reload.apple_sync_log.external_id
+      assert_equal "replacement", config.feed.reload.apple_show_id
+    end
+
     describe ".connect_existing" do
       it "rejects another connection to a show already used for delivery" do
         config = create(:delegated_delivery_config)
