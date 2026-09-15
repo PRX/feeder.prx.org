@@ -25,7 +25,7 @@ module Integrations::EpisodeIntegrations
   end
 
   def integration_feed(integration)
-    feeds = podcast.feeds.select { |feed| feed.integration_type == integration }
+    feeds = podcast.feeds.select { |feed| feed.integration_type == integration && feed.publish_integration? }
     feeds.one? ? feeds.first : nil
   end
 
