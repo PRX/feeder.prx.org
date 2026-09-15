@@ -343,6 +343,21 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "show-1", feed.apple_show_feed_binding.apple_show_id
   end
 
+  test "requires confirmation when replacing a connection used by delegated delivery" do
+    connected_apple_feed
+    create(:delegated_delivery_config, feed: private_feed, key: podcast.apple_key, show_feed_binding: feed.apple_show_feed_binding)
+
+    Apple::ShowFeedBinding.stub(:connection_options, []) do
+      get podcast_feed_url(podcast, feed)
+    end
+
+    assert_response :success
+    assert_select 'select[name="feed[apple_connection]"][data-confirm-field-target="field"]' do |fields|
+      assert_equal I18n.t("feeds.form_apple_connection.confirm_replace"), fields.first["data-confirm-with"]
+      assert_equal I18n.t("feeds.form_apple_connection.confirm_remove"), fields.first["data-confirm-delete"]
+    end
+  end
+
   test "renders the connection and error when delegated delivery prevents deletion" do
     connected_apple_feed
     binding = feed.apple_show_feed_binding
