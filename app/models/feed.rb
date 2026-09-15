@@ -82,10 +82,26 @@ class Feed < ApplicationRecord
   validates :display_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :display_full_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :description, bytesize: {maximum: Episode::MAX_DESCRIPTION_BYTES}
+  validate :apple_connection_requires_public_feed
 
   after_initialize :set_defaults
   before_validation :sanitize_text
   before_save :set_public_feeds_url, :check_enclosure_changes
+  before_destroy :protect_apple_delivery_connection, prepend: true
+
+  private def apple_connection_requires_public_feed
+    if private? && apple_show_feed_binding
+      errors.add(:private, "cannot be enabled while connected to an Apple show")
+    end
+  end
+
+  private def protect_apple_delivery_connection
+    return if destroyed_by_association
+    return unless apple_show_feed_binding&.delegated_delivery_config
+
+    errors.add(:base, "Cannot delete a feed while delegated delivery uses its Apple connection")
+    throw :abort
+  end
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
