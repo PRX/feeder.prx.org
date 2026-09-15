@@ -103,9 +103,6 @@ class Feeds::AppleSubscription < Feed
       .filter { |sj| sj["attributes"]["publishingState"] != "ARCHIVED" }
       .filter { |sj| !used_ids.include?(sj["id"]) }
       .map { |sj| ["#{sj["id"]} (#{sj["attributes"]["title"]})", sj["id"]] }
-  rescue => err
-    logger.error(err)
-    []
   end
 
   def guess_audio_format

@@ -83,6 +83,48 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   end
 
   %w[legacy show_feed_binding].each do |routing_source|
+    test "warns when Apple rejects the show lookup with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        apple_feed = backfilled_apple_feed
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 401, body: "Invalid credentials")
+
+        get podcast_feed_url(podcast, apple_feed)
+
+        assert_response :success
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+
+        patch podcast_feed_url(podcast, apple_feed), params: {feed: {apple_show_id: "", display_episodes_count: 0}}
+
+        assert_response :unprocessable_entity
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+      end
+    end
+
+    test "warns when Apple credentials cannot be decrypted with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        apple_feed = backfilled_apple_feed
+        failure = -> { raise ActiveRecord::Encryption::Errors::Decryption }
+        Apple::Key.stub_any_instance(:key_pem, failure) do
+          get podcast_feed_url(podcast, apple_feed)
+        end
+
+        assert_response :success
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+      end
+    end
+
+    test "does not warn when Apple returns no shows with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        apple_feed = backfilled_apple_feed
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: {data: [], links: {}}.to_json)
+
+        get podcast_feed_url(podcast, apple_feed)
+
+        assert_response :success
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed"), count: 0
+      end
+    end
+
     test "selects the configured Apple show with #{routing_source} routing" do
       with_apple_routing_source(routing_source) do
         options = [["Configured show", "show-1"], ["Other show", "show-2"]]

@@ -49,6 +49,11 @@
       <% end %>
       <% if form.object.delegated_delivery_config&.persisted? %>
         <div class="col-12 mt-4">
+          <% if @apple_show_lookup_failed %>
+            <div class="alert alert-danger" role="alert">
+              <%= t(".show_lookup_failed") %>
+            </div>
+          <% end %>
           <div class="form-floating">
             <%# Temporary until the Apple form is refactored: read the saved show through routing,
                 but submit to the legacy feed column so its callback updates both routes.

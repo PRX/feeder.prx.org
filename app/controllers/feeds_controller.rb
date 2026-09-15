@@ -29,6 +29,10 @@ class FeedsController < ApplicationController
     else
       []
     end
+  rescue => err
+    logger.error(err)
+    @apple_show_lookup_failed = true
+    []
   end
 
   def new_apple
