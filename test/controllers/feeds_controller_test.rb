@@ -45,6 +45,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'input[type="checkbox"][name="feed[delegated_delivery_config_attributes][publish_enabled]"]'
+    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"][required]'
 
     patch podcast_feed_url(podcast, apple_feed), params: {
       feed: {
@@ -190,6 +191,34 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_predicate config, :publish_enabled?
     assert_predicate config, :sync_blocks_rss?
     assert_equal key, config.key
+  end
+
+  test "allows metadata edits without selecting optional delegated delivery" do
+    key = create(:apple_key, account_id: podcast.account_id)
+    podcast.update!(apple_key: key)
+    binding = create(:apple_show_feed_binding, feed: feed)
+
+    get podcast_feed_url(podcast, private_feed)
+
+    assert_response :success
+    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"]' do
+      assert_select "option[value='#{binding.id}']"
+      assert_select 'option[value=""]'
+    end
+    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"][required]', count: 0
+
+    assert_no_difference "Apple::DelegatedDeliveryConfig.count" do
+      patch podcast_feed_url(podcast, private_feed), params: {
+        feed: {
+          title: "Updated title",
+          delegated_delivery_config_attributes: {show_feed_binding_id: "", publish_enabled: "0", sync_blocks_rss: "0"}
+        }
+      }
+    end
+
+    assert_redirected_to podcast_feed_url(podcast, private_feed)
+    assert_equal "Updated title", private_feed.reload.title
+    assert_nil private_feed.delegated_delivery_config
   end
 
   test "allows a public feed to delegate through its own connection" do

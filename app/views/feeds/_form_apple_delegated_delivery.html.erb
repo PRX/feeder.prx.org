@@ -23,7 +23,7 @@
           @apple_delegated_delivery_options,
           select_options,
           disabled: !selectable,
-          required: selectable %>
+          required: configured && selectable %>
         <%= config_form.label :show_feed_binding_id, t(".connection") %>
         <%= field_help_text t(".help.connection") %>
       </div>
