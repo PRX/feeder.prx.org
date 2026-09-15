@@ -257,6 +257,12 @@ class FeedsController < ApplicationController
   end
 
   def mirror_legacy_apple_routing(binding)
+    Apple::SyncLog.log!(
+      feeder_id: binding.feed_id,
+      feeder_type: :feeds,
+      external_id: binding.apple_show_id
+    )
+
     config = binding.delegated_delivery_config
     return unless config
 
