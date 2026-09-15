@@ -24,11 +24,18 @@ class FeedsController < ApplicationController
   end
 
   def get_apple_show_options(feed)
-    if feed.integration_type == :apple && feed.delegated_delivery_config&.key
+    if feed.integration_type == :apple && feed.delegated_delivery_config
       feed.apple_show_options
     else
       []
     end
+  rescue => err
+    logger.error(err)
+    @apple_show_lookup_failed = true
+    # Offer the currently selected show as the default option
+    # e.g. When api lookups fail or the key is bad
+    current_show_id = feed.delegated_delivery_config&.apple_show_id
+    current_show_id.present? ? [[current_show_id, current_show_id]] : []
   end
 
   def new_apple
@@ -70,15 +77,17 @@ class FeedsController < ApplicationController
   def update
     @feed.assign_attributes(feed_params)
     authorize @feed
+    validation_context = [:update, :apple_show_selection] if feed_params.key?(:apple_show_id)
 
     respond_to do |format|
-      if @feed.save
+      if @feed.save(context: validation_context)
         @feed.copy_media
         @feed.podcast&.publish!
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
       else
         format.html do
           flash.now[:error] = t(".failure", model: "Feed")
+          @apple_show_options = get_apple_show_options(@feed)
           render :show, status: :unprocessable_entity
         end
       end

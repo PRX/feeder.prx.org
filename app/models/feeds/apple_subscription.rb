@@ -26,6 +26,7 @@ class Feeds::AppleSubscription < Feed
   validate :only_apple_feed
   validate :must_be_private
   validate :must_have_token
+  validates :apple_show_id, presence: true, on: :apple_show_selection
 
   alias_method :config, :delegated_delivery_config
 
@@ -102,9 +103,6 @@ class Feeds::AppleSubscription < Feed
       .filter { |sj| sj["attributes"]["publishingState"] != "ARCHIVED" }
       .filter { |sj| !used_ids.include?(sj["id"]) }
       .map { |sj| ["#{sj["id"]} (#{sj["attributes"]["title"]})", sj["id"]] }
-  rescue => err
-    logger.error(err)
-    []
   end
 
   def guess_audio_format

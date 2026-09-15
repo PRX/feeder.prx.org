@@ -8,6 +8,12 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   let(:update_params) { {url: "https://prx.org/a_public_url", display_episodes_count: 5} }
   let(:create_params) { {podcast: podcast, slug: "new_feed", label: "new label", private: false} }
 
+  let(:backfilled_apple_feed) do
+    create(:apple_feed, podcast: podcast, apple_show_id: "show-1").tap do |apple_feed|
+      apple_feed.update_column(:apple_show_id, nil)
+    end
+  end
+
   setup_current_user { build(:user, account_id: 123) }
 
   test "should get new" do
@@ -76,6 +82,147 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     refute config.sync_blocks_rss
   end
 
+  %w[legacy show_feed_binding].each do |routing_source|
+    test "warns when Apple rejects the show lookup with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        apple_feed = backfilled_apple_feed
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 401, body: "Invalid credentials")
+
+        get podcast_feed_url(podcast, apple_feed)
+
+        assert_response :success
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+        assert_select 'select[name="feed[apple_show_id]"] option[selected][value="show-1"]', text: "show-1"
+
+        patch podcast_feed_url(podcast, apple_feed), params: {feed: {apple_show_id: "", display_episodes_count: 0}}
+
+        assert_response :unprocessable_entity
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+        assert_select 'select[name="feed[apple_show_id]"] option[selected][value="show-1"]', count: 0
+      end
+    end
+
+    test "warns when Apple credentials cannot be decrypted with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        apple_feed = backfilled_apple_feed
+        failure = -> { raise ActiveRecord::Encryption::Errors::Decryption }
+        Apple::Key.stub_any_instance(:key_pem, failure) do
+          get podcast_feed_url(podcast, apple_feed)
+        end
+
+        assert_response :success
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+        assert_select 'select[name="feed[apple_show_id]"] option[selected][value="show-1"]', text: "show-1"
+      end
+    end
+
+    test "leaves the show unselected when lookup fails without a configured show with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        apple_feed = Feeds::AppleSubscription.new(podcast: podcast)
+        apple_feed.build_delegated_delivery_config(key: build(:apple_key))
+        apple_feed.save!
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 401, body: "Invalid credentials")
+
+        get podcast_feed_url(podcast, apple_feed)
+
+        assert_response :success
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed")
+        assert_select 'select[name="feed[apple_show_id]"] option:not([value=""])', count: 0
+      end
+    end
+
+    test "does not warn when Apple returns no shows with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        apple_feed = backfilled_apple_feed
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: {data: [], links: {}}.to_json)
+
+        get podcast_feed_url(podcast, apple_feed)
+
+        assert_response :success
+        assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_delegated_delivery_config.show_lookup_failed"), count: 0
+      end
+    end
+
+    test "selects the configured Apple show with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        options = [["Configured show", "show-1"], ["Other show", "show-2"]]
+        Feeds::AppleSubscription.stub_any_instance(:apple_show_options, options) do
+          get podcast_feed_url(podcast, backfilled_apple_feed)
+        end
+
+        assert_response :success
+        assert_select 'select[name="feed[apple_show_id]"] option[selected]', count: 1 do
+          assert_select '[value="show-1"]'
+        end
+      end
+    end
+
+    test "requires a show selection when options are empty with #{routing_source} routing" do
+      with_apple_routing_source(routing_source) do
+        apple_feed = backfilled_apple_feed
+
+        Feeds::AppleSubscription.stub_any_instance(:apple_show_options, []) do
+          get podcast_feed_url(podcast, apple_feed)
+        end
+
+        assert_response :success
+        assert_select 'select[name="feed[apple_show_id]"][required]' do
+          assert_select "option", count: 0
+        end
+
+        Feeds::AppleSubscription.stub_any_instance(:apple_show_options, []) do
+          patch podcast_feed_url(podcast, apple_feed), params: {feed: {apple_show_id: ""}}
+        end
+
+        assert_response :unprocessable_entity
+        assert_equal "show-1", apple_feed.delegated_delivery_config.reload.show_feed_binding.apple_show_id
+        assert_equal "show-1", podcast.default_feed.reload.apple_sync_log.external_id
+      end
+    end
+
+    %w[show-1 show-2].each do |selection|
+      test "propagates selection #{selection} to both routes with #{routing_source} routing" do
+        with_apple_routing_source(routing_source) do
+          apple_feed = backfilled_apple_feed
+
+          patch podcast_feed_url(podcast, apple_feed), params: {feed: {apple_show_id: selection}}
+
+          assert_redirected_to podcast_feed_url(podcast, apple_feed)
+          assert_equal selection, apple_feed.reload.apple_show_id
+          assert_equal selection, apple_feed.delegated_delivery_config.show_feed_binding.apple_show_id
+          assert_equal selection, podcast.default_feed.reload.apple_sync_log.external_id
+        end
+      end
+    end
+
+    ["show-2", ""].each do |selection|
+      test "preserves submitted show #{selection.inspect} on validation failure with #{routing_source} routing" do
+        with_apple_routing_source(routing_source) do
+          apple_feed = backfilled_apple_feed
+          options = [["Configured show", "show-1"], ["Other show", "show-2"]]
+
+          Feeds::AppleSubscription.stub_any_instance(:apple_show_options, options) do
+            patch podcast_feed_url(podcast, apple_feed), params: {
+              feed: {apple_show_id: selection, display_episodes_count: 0}
+            }
+          end
+
+          assert_response :unprocessable_entity
+          assert_select 'select[name="feed[apple_show_id]"]' do
+            assert_select 'option[value="show-2"]'
+            if selection.present?
+              assert_select "option[selected][value='#{selection}']"
+            else
+              assert_select 'option[selected][value="show-1"]', count: 0
+              assert_select 'option[selected][value="show-2"]', count: 0
+            end
+          end
+          assert_equal "show-1", apple_feed.delegated_delivery_config.reload.apple_show_id
+        end
+      end
+    end
+  end
+
   test "authorizes creating feeds" do
     podcast.update(prx_account_uri: "/api/v1/accounts/456")
     post podcast_feeds_url(podcast), params: {feed: create_params}
@@ -142,5 +289,13 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     podcast.update(prx_account_uri: "/api/v1/accounts/456")
     get podcast_feed_url(podcast, feed)
     assert_response :forbidden
+  end
+
+  private def with_apple_routing_source(source)
+    previous = ENV["APPLE_ROUTING_SOURCE"]
+    ENV["APPLE_ROUTING_SOURCE"] = source
+    yield
+  ensure
+    previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
   end
 end
