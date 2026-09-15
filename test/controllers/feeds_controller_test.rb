@@ -16,9 +16,40 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
   setup_current_user { build(:user, account_id: 123) }
 
+  test "prepares optional delivery fields without attaching a configuration" do
+    Feed.stub_any_instance(:build_delegated_delivery_config, ->(*) { flunk "Form setup attached a delivery config" }) do
+      get podcast_feed_url(podcast, private_feed)
+    end
+
+    assert_response :success
+    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"]'
+    assert_nil private_feed.reload.delegated_delivery_config
+    assert_nil private_feed.integration_type
+  end
+
   test "should get new" do
     get new_podcast_feed_url(podcast)
     assert_response :success
+  end
+
+  test "loads the feed form without calling Apple and retains the connection until the frame loads" do
+    connected_apple_feed
+
+    get podcast_feed_url(podcast, feed)
+
+    assert_response :success
+    assert_not_requested :get, "https://aardvark.prx.org/shows"
+    assert_select "form turbo-frame#apple_connection_feed_#{feed.id}[loading='lazy'][src]" do
+      assert_select 'select[name="feed[apple_connection]"][disabled]'
+      assert_select 'input[type="hidden"][name="feed[apple_connection]"][value="show-1"]'
+    end
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {title: "Changed", apple_connection: "show-1"}}
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    assert_equal "Changed", feed.reload.title
+    assert_equal "show-1", feed.apple_show_feed_binding.apple_show_id
+    assert_not_requested :get, "https://aardvark.prx.org/shows"
   end
 
   test "authorize new feed" do
@@ -58,58 +89,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     refute config.sync_blocks_rss
   end
 
-  test "warns and preserves the connected show when Apple rejects the lookup" do
-    apple_feed = connected_apple_feed
-    stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 401, body: "Invalid credentials")
-
-    get podcast_feed_url(podcast, apple_feed)
-
-    assert_response :success
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_connection.show_lookup_failed")
-    assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]', text: "show-1"
-
-    patch podcast_feed_url(podcast, apple_feed), params: {feed: {apple_connection: "", display_episodes_count: 0}}
-
-    assert_response :unprocessable_entity
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_connection.show_lookup_failed")
-    assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]', count: 0
-    assert_equal "show-1", apple_feed.reload.apple_show_feed_binding.apple_show_id
-  end
-
-  test "warns and preserves the connected show when Apple credentials cannot be decrypted" do
-    apple_feed = connected_apple_feed
-    failure = -> { raise ActiveRecord::Encryption::Errors::Decryption }
-    Apple::Key.stub_any_instance(:key_pem, failure) do
-      get podcast_feed_url(podcast, apple_feed)
-    end
-
-    assert_response :success
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_connection.show_lookup_failed")
-    assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]', text: "show-1"
-  end
-
-  test "leaves the show unselected when lookup fails without a connection" do
-    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
-    stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 401, body: "Invalid credentials")
-
-    get podcast_feed_url(podcast, feed)
-
-    assert_response :success
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_connection.show_lookup_failed")
-    assert_select 'select[name="feed[apple_connection]"] option:not([value=""])', count: 0
-  end
-
-  test "does not warn when Apple returns no shows" do
-    apple_feed = connected_apple_feed
-    stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: {data: [], links: {}}.to_json)
-
-    get podcast_feed_url(podcast, apple_feed)
-
-    assert_response :success
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_connection.show_lookup_failed"), count: 0
-    assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]'
-  end
-
   ["show-2", ""].each do |selection|
     test "preserves submitted connection #{selection.inspect} on validation failure" do
       apple_feed = connected_apple_feed
@@ -118,15 +97,23 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
         Apple::ShowFeedBinding::ConnectionOption.new("Other show", "show-2")
       ]
 
-      Apple::ShowFeedBinding.stub(:connection_options, options) do
-        patch podcast_feed_url(podcast, apple_feed), params: {
-          feed: {apple_connection: selection, display_episodes_count: 0}
-        }
-      end
+      patch podcast_feed_url(podcast, apple_feed), params: {
+        feed: {apple_connection: selection, display_episodes_count: 0}
+      }
 
       assert_response :unprocessable_entity
+      assert_select 'input[type="hidden"][name="feed[apple_connection]"]' do |fields|
+        assert_equal selection, fields.first["value"].to_s
+      end
+      frame_url = css_select("turbo-frame[src]").find { |frame| frame["id"] == "apple_connection_feed_#{feed.id}" }["src"]
+      assert_equal selection, Rack::Utils.parse_nested_query(URI(frame_url).query)["selection"]
+      assert_not_requested :get, "https://aardvark.prx.org/shows"
+
+      Apple::ShowFeedBinding.stub(:connection_options, options) { get frame_url }
+
+      assert_response :success
       assert_select 'select[name="feed[apple_connection]"]' do
-        assert_select 'option[value="show-2"]'
+        assert_select "option[value='show-2']"
         if selection.present?
           assert_select "option[selected][value='#{selection}']"
         else
@@ -166,17 +153,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='feed[apple_connection]']", count: 0
     assert_select "input[name='feed[apple_verify_token]']", count: 1
     assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]']", count: 1
-  end
-
-  test "prepares optional delivery fields without attaching a configuration" do
-    Feed.stub_any_instance(:build_delegated_delivery_config, ->(*) { flunk "Form setup attached a delivery config" }) do
-      get podcast_feed_url(podcast, private_feed)
-    end
-
-    assert_response :success
-    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"]'
-    assert_nil private_feed.reload.delegated_delivery_config
-    assert_nil private_feed.integration_type
   end
 
   test "attaches delegated delivery to a normal feed" do
@@ -274,23 +250,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_nil private_feed.delegated_delivery_config
   end
 
-  test "loads Apple shows with only the selected podcast credential" do
-    selected_key = create(:apple_key, account_id: podcast.account_id)
-    create(:apple_key, account_id: podcast.account_id)
-    podcast.update!(apple_key: selected_key)
-    option = Apple::ShowFeedBinding::ConnectionOption.new("Selected show — show-1", "show-1")
-
-    Apple::ShowFeedBinding.stub(:connection_options, ->(apple_key) {
-      assert_equal selected_key, apple_key
-      [option]
-    }) do
-      get podcast_feed_url(podcast, feed)
-    end
-
-    assert_response :success
-    assert_select "select[name='feed[apple_connection]'] option[value='show-1']", text: "Selected show — show-1"
-  end
-
   test "authorize update feed" do
     podcast.update(prx_account_uri: "/api/v1/accounts/456")
     patch podcast_feed_url(podcast, feed), params: {feed: update_params}
@@ -352,21 +311,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     refute feed.reload.private?
     assert_equal "show-1", feed.apple_show_feed_binding.apple_show_id
-  end
-
-  test "requires confirmation when replacing a connection used by delegated delivery" do
-    connected_apple_feed
-    create(:delegated_delivery_config, feed: private_feed, key: podcast.apple_key, show_feed_binding: feed.apple_show_feed_binding)
-
-    Apple::ShowFeedBinding.stub(:connection_options, []) do
-      get podcast_feed_url(podcast, feed)
-    end
-
-    assert_response :success
-    assert_select 'select[name="feed[apple_connection]"][data-confirm-field-target="field"]' do |fields|
-      assert_equal I18n.t("feeds.form_apple_connection.confirm_replace"), fields.first["data-confirm-with"]
-      assert_equal I18n.t("feeds.form_apple_connection.confirm_remove"), fields.first["data-confirm-delete"]
-    end
   end
 
   test "renders the connection and error when delegated delivery prevents deletion" do

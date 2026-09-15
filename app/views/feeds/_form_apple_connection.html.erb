@@ -4,20 +4,13 @@
   </div>
 
   <div class="card-body">
-    <% if @apple_show_lookup_failed %>
-      <div class="alert alert-danger" role="alert"><%= t(".show_lookup_failed") %></div>
-    <% end %>
-
     <% binding = feed.apple_show_feed_binding %>
     <% dependents = [binding&.delegated_delivery_config].compact %>
 
-    <div class="form-floating input-group mb-3">
-      <% confirm = t(".confirm_replace") if dependents.present? %>
-      <% data = {confirm_field_target: "field", confirm_with: confirm, confirm_delete: t(".confirm_remove")} if confirm %>
-      <%= form.select :apple_connection, @apple_connection_options, {include_blank: true}, data: data || {} %>
-      <%= form.label :apple_connection %>
-      <%= field_help_text t(".help.connection") %>
-    </div>
+    <%= turbo_frame_tag dom_id(feed, :apple_connection),
+      src: podcast_feed_apple_connection_path(podcast, feed, selection: feed.apple_connection.to_s), loading: "lazy" do %>
+      <%= render "apple_connection_field", feed: feed, form: form, options: [], loading: true, lookup_failed: false %>
+    <% end %>
 
     <div class="form-floating input-group mb-3">
       <%= form.text_field :apple_verify_token %>
