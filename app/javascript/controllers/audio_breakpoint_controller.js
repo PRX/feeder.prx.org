@@ -16,8 +16,30 @@ export default class extends Controller {
   }
 
   connect() {
-    if (this.startTimeValue) {
+    if (this.hasStartTimeValue) {
       this.element.classList.add(...this.completedClasses)
+    }
+
+    if (this.hasStartTimeTarget) {
+      this.startTimeTarget.placeholder = convertSecondsToDuration(this.initialMarkerValue.startTime)
+      this.startTimeTarget.dataset.action = [
+        this.startTimeTarget.dataset.action,
+        "keypress.enter->audio-breakpoint#changeStartTime",
+        "change->audio-breakpoint#changeStartTime",
+      ]
+        .filter((v) => v)
+        .join(" ")
+    }
+
+    if (this.hasEndTimeTarget) {
+      this.endTimeTarget.placeholder = convertSecondsToDuration(this.initialMarkerValue.endTime)
+      this.endTimeTarget.dataset.action = [
+        this.endTimeTarget.dataset.action,
+        "keypress.enter->audio-breakpoint#changeEndTime",
+        "change->audio-breakpoint#changeEndTime",
+      ]
+        .filter((v) => v)
+        .join(" ")
     }
   }
 
@@ -42,9 +64,9 @@ export default class extends Controller {
     }
 
     if (this.hasStartTimeValue) {
-      this.startTimeTarget.placeholder = convertSecondsToDuration(this.startTimeValue)
+      this.startTimeTarget.value = convertSecondsToDuration(this.startTimeValue)
     } else if (this.idValue === "postRoll") {
-      this.startTimeTarget.placeholder = convertSecondsToDuration(this.initialMarkerValue.endTime)
+      this.startTimeTarget.value = convertSecondsToDuration(this.initialMarkerValue.endTime)
     }
   }
 
@@ -66,8 +88,8 @@ export default class extends Controller {
       this.endTimeTarget.parentNode.classList.add("js-is-changed")
     }
 
-    if (this.hasEndTimeValue) {
-      this.endTimeTarget.placeholder = convertSecondsToDuration(this.endTimeValue)
+    if (this.endTimeValue != null) {
+      this.endTimeTarget.value = convertSecondsToDuration(this.endTimeValue)
     }
   }
 
@@ -106,9 +128,7 @@ export default class extends Controller {
     const { value } = this.startTimeTarget
     const newValue = value.trim()
 
-    if (!newValue) return
-
-    this.updateStartTime(newValue)
+    this.updateStartTime(newValue || this.initialMarkerValue.startTime)
   }
 
   changeEndTime(event) {
@@ -117,9 +137,7 @@ export default class extends Controller {
     const { value } = this.endTimeTarget
     const newValue = value.trim()
 
-    if (!newValue) return
-
-    this.updateEndTime(newValue)
+    this.updateEndTime(newValue || this.initialMarkerValue.endTime)
   }
 
   addEndTime() {

@@ -14,12 +14,8 @@
       <div class="has-start-time-show prx-input-group input-group-sm">
         <input class="form-control" placeholder="00:00"
           data-audio-breakpoint-target="startTime"
-          data-action="keypress.enter->audio-breakpoint#changeStartTime"
           data-bs-toggle="tooltip"
           data-bs-title="<%= t(".change_start_time") %>">
-        <button type="button" class="prx-input-confirm btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".confirm") %>" data-action="audio-breakpoint#changeStartTime">
-          <span class="material-icons">done</span>
-        </button>
         <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".set_playhead") %>" data-action="audio-breakpoint#updateStartTimeToPlayhead">
           <span class="material-icons">my_location</span>
         </button>
@@ -31,12 +27,8 @@
       <div class="has-end-time-show prx-input-group input-group-sm">
         <input class="form-control" placeholder="00:00"
           data-audio-breakpoint-target="endTime"
-          data-action="keypress.enter->audio-breakpoint#changeEndTime"
           data-bs-toggle="tooltip"
           data-bs-title="<%= t(".change_end_time") %>">
-        <button type="button" class="prx-input-confirm btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".confirm") %>" data-action="audio-breakpoint#changeEndTime">
-          <span class="material-icons">done</span>
-        </button>
         <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="<%= t(".set_playhead") %>" data-action="audio-breakpoint#updateEndTimeToPlayhead">
           <span class="material-icons">my_location</span>
         </button>

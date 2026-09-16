@@ -55,11 +55,11 @@
     }
   }
 
-  & > :is(.form-control:placeholder-shown) ~ .prx-input-confirm {
+  & > .form-control:is(:focus-visible, :placeholder-shown):not([data-temp-value]) ~ .prx-input-confirm {
     display: none;
   }
 
-  & > :is(.form-control:not(:placeholder-shown)) ~ .prx-input-confirm-hidden {
+  & > .form-control:not(:placeholder-shown):where([data-temp-value]) ~ .prx-input-confirm-hidden {
     display: none;
   }
 }
@@ -78,11 +78,11 @@
 }
 
 @include color-mode(dark) {
-  .prx-input-group {
+  :where(.prx-input-group) {
     border-color: $border-color-dark;
   }
 
-  a.input-group-text {
+  a:where(.input-group-text) {
     color: $link-color-dark;
 
     &:hover {
@@ -378,7 +378,7 @@ input[type="number"]::-webkit-outer-spin-button {
       border-color: $red;
     }
 
-    &[disabled="disabled"] {
+    &[disabled] {
       background-color: $gray-800;
       border-color: $border-color-dark;
       color: $gray-500;
