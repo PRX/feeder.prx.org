@@ -374,7 +374,7 @@ export default class extends Controller {
         control.dataset.audioBreakpointStartTimeValue = startTime
       }
 
-      if (marker.id === "postRoll" || endTime != null && endTime > this.minTime && endTime < this.maxTime) {
+      if (marker.id === "postRoll" || (endTime != null && endTime > this.minTime && endTime < this.maxTime)) {
         control.dataset.audioBreakpointEndTimeValue = endTime
       }
 

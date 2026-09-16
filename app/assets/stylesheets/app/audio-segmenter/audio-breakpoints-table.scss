@@ -91,7 +91,7 @@
     display: flex;
   }
 
-  [data-audio-breakpoint-end-time-value]:not([data-audio-breakpoint-id=preRoll]) .has-end-time-show {
+  [data-audio-breakpoint-end-time-value]:not([data-audio-breakpoint-id="preRoll"]) .has-end-time-show {
     display: flex;
   }
 
