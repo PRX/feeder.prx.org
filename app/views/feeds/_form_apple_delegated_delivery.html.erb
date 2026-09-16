@@ -58,7 +58,7 @@
     <div>
       <strong><%= t(".status") %></strong><br>
       <% if configured %>
-        <span class="text-muted"><%= t(".last_checked", time: local_time_ago(config.updated_at)) %></span>
+        <span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(config.updated_at)) %></span>
       <% end %>
     </div>
     <span class="badge <%= configured ? "bg-success" : "bg-secondary" %>">

@@ -34,7 +34,7 @@
     <div>
       <strong><%= t(".status") %></strong><br>
       <% if binding %>
-        <span class="text-muted"><%= t(".last_checked", time: local_time_ago(binding.updated_at)) %></span>
+        <span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(binding.updated_at)) %></span>
       <% end %>
     </div>
     <span class="badge <%= binding ? "bg-success" : "bg-secondary" %>">

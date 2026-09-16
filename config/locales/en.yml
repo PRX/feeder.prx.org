@@ -928,7 +928,7 @@ en:
       status: Apple Status
       configured: Configured
       not_configured: Not configured
-      last_checked: "Last checked: %{time}"
+      last_checked_html: "Last checked: %{time}"
       help:
         connection: Select the public feed Apple crawls for this delegated-delivery feed.
         publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
@@ -940,7 +940,7 @@ en:
       connected: Connected
       not_connected: Not connected
       status: Apple Status
-      last_checked: "Last checked: %{time}"
+      last_checked_html: "Last checked: %{time}"
       dependent_feeds: "Delegated-delivery feeds using this connection:"
       confirm_replace: Are you sure you want to replace this Apple connection? Dependent delegated-delivery feeds will use the new connection.
       confirm_remove: Are you sure you want to remove this Apple connection?

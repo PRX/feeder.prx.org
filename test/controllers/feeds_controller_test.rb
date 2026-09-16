@@ -47,6 +47,9 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, feed)
 
     assert_response :success
+    assert_select ".card-title", text: I18n.t("feeds.form_apple_connection.title"), count: 1 do |titles|
+      assert_select titles.first.ancestors(".card").first, '.card-footer time[data-local="time-ago"]', count: 1
+    end
     assert_not_requested :get, "https://aardvark.prx.org/shows"
     assert_select "form turbo-frame#apple_connection_feed_#{feed.id}[loading='lazy'][src]" do
       assert_select 'select[name="feed[apple_connection]"][disabled]'
@@ -84,6 +87,9 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, apple_feed)
 
     assert_response :success
+    assert_select ".card-title", text: I18n.t("feeds.form_apple_delegated_delivery.title"), count: 1 do |titles|
+      assert_select titles.first.ancestors(".card").first, '.card-footer time[data-local="time-ago"]', count: 1
+    end
     assert_select 'input[type="checkbox"][name="feed[delegated_delivery_config_attributes][publish_enabled]"]'
     assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"][required]'
 
