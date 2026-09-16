@@ -11,7 +11,6 @@ class FeedsController < ApplicationController
   def show
     @feed.assign_attributes(feed_params)
     authorize @feed
-    prepare_feed_form
   end
 
   # GET /feeds/new
@@ -27,7 +26,6 @@ class FeedsController < ApplicationController
     @feed = Feeds::MegaphoneFeed.new(podcast: @podcast, private: true)
     authorize @feed
     @feed.assign_attributes(feed_params)
-    prepare_feed_form
     render "new"
   end
 
@@ -65,13 +63,11 @@ class FeedsController < ApplicationController
       else
         format.html do
           flash.now[:error] = t(".failure", model: "Feed")
-          prepare_feed_form
           render :show, status: :unprocessable_entity
         end
       end
     end
   rescue ActiveRecord::StaleObjectError
-    prepare_feed_form
     render :show, status: :conflict
   end
 
@@ -84,7 +80,6 @@ class FeedsController < ApplicationController
       else
         format.html do
           flash.now[:error] = @feed.errors.full_messages.to_sentence
-          prepare_feed_form
           render :show, status: :unprocessable_entity
         end
       end
@@ -92,16 +87,6 @@ class FeedsController < ApplicationController
   end
 
   private
-
-  def prepare_feed_form
-    if @feed.is_a? Feeds::MegaphoneFeed
-      @feed.megaphone_config || @feed.build_megaphone_config
-    elsif @feed.persisted?
-      @delegated_delivery_config = @feed.delegated_delivery_config || Apple::DelegatedDeliveryConfig.new
-      @apple_delivery_bindings = Apple::ShowFeedBinding.available_for_delivery(@feed)
-      load_apple_connection_options
-    end
-  end
 
   def set_podcast
     @podcast =
@@ -174,20 +159,5 @@ class FeedsController < ApplicationController
 
   def exclude_default_episodes?
     params[:feed][:exclude_default_episodes] == "1"
-  end
-
-  def load_apple_connection_options
-    @apple_connection_options = []
-    return unless @feed.persisted? && @feed.public?
-
-    options = Apple::ShowFeedBinding.connection_options(@podcast.apple_key) do
-      @apple_show_lookup_failed = true
-    end
-
-    if (binding = @feed.apple_show_feed_binding) && options.none? { |option| option.value == binding.apple_show_id.to_s }
-      options.prepend(Apple::ShowFeedBinding::ConnectionOption.new(binding.apple_show_id.to_s, binding.apple_show_id.to_s))
-    end
-
-    @apple_connection_options = options.map { |option| [option.label, option.value] }
   end
 end

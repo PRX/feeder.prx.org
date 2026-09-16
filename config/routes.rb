@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     end
     resources :feeds, except: [:edit] do
       get "new_megaphone", on: :collection
+      resource :apple_connection, only: :show, controller: :feed_apple_connections
     end
     resources :episodes, only: [:index, :create, :new] do
       get "export", on: :collection

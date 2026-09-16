@@ -933,6 +933,7 @@ en:
         publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
         sync_blocks_rss: Require Apple publishing to succeed before public RSS publishing continues.
     form_apple_connection:
+      loading: Loading Apple shows…
       show_lookup_failed: Failed to load shows from Apple Podcasts Connect.
       title: Apple Settings
       connected: Connected

@@ -1,6 +1,6 @@
-<% config = @delegated_delivery_config %>
-<% configured = config&.persisted? %>
-<% options = apple_delivery_options(@apple_delivery_bindings) %>
+<% config = feed.delegated_delivery_config || Apple::DelegatedDeliveryConfig.new %>
+<% configured = config.persisted? %>
+<% options = apple_delivery_options(Apple::ShowFeedBinding.available_for_delivery(feed)) %>
 <% selectable = options.present? %>
 
 <div class="card shadow border-0 mt-3">

@@ -15,7 +15,7 @@ module Apple
     alias_method :config, :delegated_delivery_config
     alias_method :config=, :delegated_delivery_config=
 
-    validates :apple_show_id, presence: true, uniqueness: true
+    validates :apple_show_id, presence: true, uniqueness: {message: "is already connected to another feed"}
     validates :feed_id, uniqueness: true
     validate :feed_must_be_public
     before_destroy :protect_delegated_delivery, prepend: true
