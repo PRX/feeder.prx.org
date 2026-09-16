@@ -6,14 +6,10 @@
     </td>
     <td>
       <div class="prx-input-group input-group-sm">
-        <input class="form-control" placeholder="00:00"
+        <input class="form-control" placeholder="00:00.00"
           data-audio-breakpoint-target="startTime"
-          data-action="keypress.enter->audio-breakpoint#changeStartTime"
           data-bs-toggle="tooltip"
           data-bs-title="Edit Start Time">
-        <button type="button" class="prx-input-confirm btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Confirm Change" data-action="audio-breakpoint#changeStartTime">
-          <span class="material-icons">done</span>
-        </button>
         <button type="button" class="prx-input-confirm-hidden btn btn-icon btn-icon-borderless btn-primary" data-bs-toggle="tooltip" data-bs-title="Set To Playhead" data-action="audio-breakpoint#updateStartTimeToPlayhead">
           <span class="material-icons">my_location</span>
         </button>
@@ -23,7 +19,7 @@
       </div>
       <span class="material-icons rotate-90">expand</span>
       <div class="prx-input-group input-group-sm">
-        <input class="form-control" placeholder="00:00" disabled
+        <input class="form-control" placeholder="00:00.00" disabled
           data-audio-breakpoint-target="endTime"
           data-bs-toggle="tooltip"
           data-bs-title="End Time">

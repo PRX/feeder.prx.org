@@ -374,15 +374,8 @@ export default class extends Controller {
         control.dataset.audioBreakpointStartTimeValue = startTime
       }
 
-      if (endTime != null && endTime > this.minTime && endTime < this.maxTime) {
+      if (marker.id === "postRoll" || (endTime != null && endTime > this.minTime && endTime < this.maxTime)) {
         control.dataset.audioBreakpointEndTimeValue = endTime
-      }
-
-      if (marker.id === "postRoll") {
-        control.dataset.audioBreakpointEndTimeValue = endTime
-        control
-          .querySelector('[data-audio-breakpoint-target="startTime"]')
-          .setAttribute("placeholder", convertSecondsToDuration(this.durationValue))
       }
 
       controls.push(control)

@@ -54,14 +54,6 @@
       @include font-size(2rem);
     }
   }
-
-  & > :is(.form-control:placeholder-shown) ~ .prx-input-confirm {
-    display: none;
-  }
-
-  & > :is(.form-control:not(:placeholder-shown)) ~ .prx-input-confirm-hidden {
-    display: none;
-  }
 }
 
 .input-group {
@@ -78,11 +70,11 @@
 }
 
 @include color-mode(dark) {
-  .prx-input-group {
+  :where(.prx-input-group) {
     border-color: $border-color-dark;
   }
 
-  a.input-group-text {
+  a:where(.input-group-text) {
     color: $link-color-dark;
 
     &:hover {
@@ -397,7 +389,7 @@ input[type="number"]::-webkit-outer-spin-button {
       border-color: $red;
     }
 
-    &[disabled="disabled"] {
+    &[disabled] {
       background-color: $gray-800;
       border-color: $border-color-dark;
       color: $gray-500;
