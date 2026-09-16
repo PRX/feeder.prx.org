@@ -54,14 +54,6 @@
       @include font-size(2rem);
     }
   }
-
-  & > .form-control:is(:focus-visible, :placeholder-shown):not([data-temp-value]) ~ .prx-input-confirm {
-    display: none;
-  }
-
-  & > .form-control:not(:placeholder-shown):where([data-temp-value]) ~ .prx-input-confirm-hidden {
-    display: none;
-  }
 }
 
 .input-group {

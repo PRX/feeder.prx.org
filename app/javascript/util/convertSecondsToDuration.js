@@ -7,7 +7,7 @@ import convertToSeconds from "util/convertToSeconds"
  */
 export default function convertSecondsToDuration(inputSeconds) {
   // Default to zero seconds representation.
-  let duration = "00:00"
+  let duration = "00:00.00"
 
   // Treat unsupported types as zero seconds input.
   if (["number", "string"].indexOf(typeof inputSeconds) === -1) return duration
