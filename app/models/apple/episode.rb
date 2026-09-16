@@ -507,6 +507,8 @@ module Apple
       apple_id
     end
 
+    # TODO: we do transcode an mp3 audio version of hls-video episodes, but i'm unsure
+    # if those should be included or excluded here
     def audio?
       feeder_episode&.audio?
     end

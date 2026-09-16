@@ -23,8 +23,24 @@ class Uncut < MediaResource
 
   def copy_media(force = false)
     if force || needs_copy?
-      Tasks::CopyMediaTask.start!(self)
+      if episode&.video?
+        Tasks::CopyVideoTask.start!(self)
+      else
+        Tasks::CopyMediaTask.start!(self)
+      end
     end
+  end
+
+  def transcode_hls(force = false)
+    if video? && (force || needs_transcode_hls?)
+      # TODO??????????????????
+      # Tasks::TranscodeHlsTask.start!(self)
+    end
+  end
+
+  # TODO
+  def needs_transcode_hls?
+    false
   end
 
   def after_copy(copy_task)
@@ -40,6 +56,7 @@ class Uncut < MediaResource
     elsif segmentation_ready?
       slice_contents!
       episode.contents.each(&:copy_media)
+      transcode_hls if video?
     end
   end
 
@@ -152,6 +169,22 @@ class Uncut < MediaResource
       !within_tolerance
     end
   end
+
+  # TODO????
+  # def variants
+  #   if status_complete? && episode&.video?
+  #     {
+  #       audio: {
+  #         href: variant_url("audio.mp3"),
+  #         type: "audio/mpeg"
+  #       },
+  #       hls: {
+  #         href: variant_url("index.m3u8"),
+  #         type: "application/x-mpegURL"
+  #       }
+  #     }
+  #   end
+  # end
 
   private
 

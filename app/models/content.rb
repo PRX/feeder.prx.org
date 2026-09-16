@@ -4,10 +4,9 @@ class Content < MediaResource
   validate :validate_episode_medium, if: :status_complete?
   validate :validate_segmentation
 
+  # NOTE: the Contents for an Uncut video will be transcoded to MP3s
   def validate_episode_medium
-    if episode&.video?
-      errors.add(:medium, :not_video, message: "must be a video file") if medium != "video"
-    elsif episode&.audio?
+    if episode&.audio? || episode&.video?
       errors.add(:medium, :not_audio, message: "must be an audio file") if medium != "audio"
     end
   end
@@ -23,11 +22,7 @@ class Content < MediaResource
 
   def copy_media(force = false)
     if force || needs_copy?
-      if episode&.video? && slice?
-        raise "not supported yet"
-      elsif episode&.video?
-        Tasks::TranscodeHlsTask.start!(self)
-      elsif slice?
+      if slice?
         Tasks::SliceMediaTask.start!(self)
       else
         Tasks::CopyMediaTask.start!(self)
@@ -71,21 +66,6 @@ class Content < MediaResource
 
   def replace_resources!
     Content.where(episode_id: episode_id, position: position).where.not(id: id).destroy_all
-  end
-
-  def variants
-    if status_complete? && episode&.video?
-      {
-        audio: {
-          href: variant_url("audio.mp3"),
-          type: "audio/mpeg"
-        },
-        hls: {
-          href: variant_url("index.m3u8"),
-          type: "application/x-mpegURL"
-        }
-      }
-    end
   end
 
   private

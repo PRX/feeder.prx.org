@@ -4,7 +4,7 @@ module EpisodeMedia
   extend ActiveSupport::Concern
 
   included do
-    enum :medium, [:audio, :uncut, :passthru, :override, :video, :video_uncut], prefix: true
+    enum :medium, [:audio, :uncut, :passthru, :override, :video], prefix: true
 
     # NOTE: this just-in-time creates new media versions
     # TODO: convert to sql, so we don't have to load/check every episode?
@@ -22,7 +22,7 @@ module EpisodeMedia
   end
 
   def video?
-    medium_video? || medium_video_uncut?
+    medium_video?
   end
 
   def validate_media_ready
@@ -237,11 +237,11 @@ module EpisodeMedia
   #
   # otherwise, just check that this episodes has _enough_ media to stay published.
   # and hopefully/eventually we'll finish processing it, and it will all be valid:
-  #  1) medium = audio/video       ... must have enough files (handling segment_count=nil episodes)
-  #  2) medium = uncut/video_uncut ... must have a non-deleted Uncut, which we'll process/slice later
-  #  3) medium = passthru          ... must have 1 file (segment_count forced to 1)
+  #  1) medium = audio       ... must have enough files (handling segment_count=nil episodes)
+  #  2) medium = uncut/video ... must have a non-deleted Uncut, which we'll process/slice later
+  #  3) medium = passthru    ... must have 1 file (segment_count forced to 1)
   def media_ready?(must_be_complete = true)
-    if !must_be_complete && (medium_uncut? || medium_video_uncut?)
+    if !must_be_complete && (medium_uncut? || medium_video?)
       uncut.present? && !uncut.marked_for_destruction?
     elsif media.empty?
       false

@@ -41,9 +41,12 @@ module PorterCallback
     end
   end
 
+  def porter_callback_task_results
+    self.class.porter_callback_parsed(result).try(:[], :TaskResults) || []
+  end
+
   def porter_callback_task_result(task)
-    parsed = self.class.porter_callback_parsed(result).try(:[], :TaskResults) || []
-    parsed.find { |t| t[:Task].to_s == task.to_s }
+    porter_callback_task_results.find { |t| t[:Task].to_s == task.to_s }
   end
 
   def porter_callback_inspect

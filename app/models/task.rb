@@ -45,7 +45,10 @@ class Task < ApplicationRecord
       time = porter_callback_time(msg)
 
       if status && time && (task.logged_at.nil? || (time >= task.logged_at))
-        task.update!(status: status, logged_at: time, result: msg)
+        task.status = status
+        task.logged_at = time
+        task.result = msg
+        task.save!
       end
     end
   end
@@ -86,13 +89,7 @@ class Task < ApplicationRecord
 
   def start!
     self.status = "started"
-    self.options = {
-      Id: job_id,
-      Source: porter_source,
-      Tasks: porter_tasks,
-      Callbacks: porter_callbacks
-    }
-
+    self.options = porter_options
     porter_start!(options)
     save!
   end
