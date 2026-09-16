@@ -6,13 +6,13 @@
 }
 turbo-frame[busy] {
   .prx-show-busy {
-    display: initial !important;
+    display: revert !important;
   }
   .prx-hide-busy {
     display: none !important;
   }
   .prx-visible-busy {
-    visibility: initial !important;
+    visibility: revert !important;
   }
   .prx-invisible-busy {
     visibility: hidden !important;

@@ -17,14 +17,13 @@
     align-items: center;
     text-transform: uppercase;
 
-    &:not(.dropdown-toggle) {
-      --prx-nav-link-active-border-color: #{transparent};
+    --prx-nav-link-active-border-color: #{transparent};
 
-      border-block-end: 3px solid var(--prx-nav-link-active-border-color);
+    padding-bottom: calc(var(--#{$prefix}nav-link-padding-y) - 3px);
+    border-block-end: 3px solid var(--prx-nav-link-active-border-color);
 
-      &.active {
-        --prx-nav-link-active-border-color: #{$orange};
-      }
+    &.active {
+      --prx-nav-link-active-border-color: #{$orange};
     }
   }
 }

@@ -112,19 +112,83 @@ describe Feeds::AppleSubscription do
     end
   end
 
-  describe "#apple_configs" do
+  describe "#delegated_delivery_config" do
     it "has apple credentials" do
-      assert apple_feed.apple_config.present?
-      assert apple_feed.apple_config.valid?
+      assert apple_feed.delegated_delivery_config.present?
+      assert apple_feed.delegated_delivery_config.valid?
 
       apple_feed.save!
-      assert_equal default_feed, apple_feed.apple_config.public_feed
+      assert_equal default_feed, apple_feed.delegated_delivery_config.public_feed
     end
 
     it "can return a list of possible apple shows" do
       body = {data: [{id: "1", attributes: {title: "t1"}}, {id: "2", attributes: {title: "t2"}}], links: {}}.to_json
       stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
       assert_equal apple_feed.apple_show_options, [["1 (t1)", "1"], ["2 (t2)", "2"]]
+    end
+  end
+
+  describe "#apple_show_options" do
+    ["legacy", "show_feed_binding"].each do |source|
+      it "uses replacement credentials after recreating the subscription under #{source} routing" do
+        with_apple_routing_source(source) do
+          apple_feed.save!
+          old_key = apple_feed.delegated_delivery_config.key
+          apple_feed.destroy!
+          assert_equal old_key, podcast.reload.apple_key
+
+          replacement = Feeds::AppleSubscription.new(podcast: podcast)
+          key = build(:apple_key, key_id: "replacement-key")
+          replacement.build_delegated_delivery_config(key: key)
+          replacement.save!
+
+          assert_equal key, podcast.reload.apple_key
+          assert_show_options_use_key(replacement, key)
+
+          replacement.update!(apple_show_id: "replacement-show")
+          publisher = replacement.reload.delegated_delivery_config.build_publisher
+          assert_equal key.key_id, publisher.api.key_id
+        end
+      end
+    end
+
+    let(:unbound_feed) do
+      feed = Feeds::AppleSubscription.new(podcast: podcast)
+      feed.build_delegated_delivery_config(key: build(:apple_key))
+      feed.save!
+      feed
+    end
+
+    ["legacy", "show_feed_binding"].each do |source|
+      it "uses the uploaded key before connecting a show under #{source} routing" do
+        feed = unbound_feed
+        assert_nil feed.delegated_delivery_config.show_feed_binding
+
+        with_apple_routing_source(source) do
+          assert_show_options_use_key(feed, feed.delegated_delivery_config.key)
+        end
+      end
+    end
+
+    it "uses the selected podcast key before connecting a show under binding routing" do
+      feed = unbound_feed
+      key = create(:apple_key, account_id: podcast.account_id, key_id: "podcast_key_id")
+      podcast.update!(apple_key: key)
+
+      with_apple_routing_source("show_feed_binding") do
+        assert_show_options_use_key(feed, key)
+      end
+    end
+
+    it "uses the bound podcast key instead of the legacy config key" do
+      apple_feed.save!
+      key = create(:apple_key, account_id: podcast.account_id, key_id: "podcast_key_id")
+      podcast.update!(apple_key: key)
+      apple_feed.reload
+
+      with_apple_routing_source("show_feed_binding") do
+        assert_show_options_use_key(apple_feed, key)
+      end
     end
   end
 
@@ -244,14 +308,57 @@ describe Feeds::AppleSubscription do
   end
 
   describe "#update_apple_show" do
+    ["legacy", "show_feed_binding"].each do |source|
+      it "syncs the newly selected show without reloading the feed under #{source} routing" do
+        with_apple_routing_source(source) do
+          apple_feed.save!
+          config = apple_feed.delegated_delivery_config
+          binding_id = config.show_feed_binding.id
+
+          apple_feed.update!(apple_show_id: "replacement-show")
+          show = config.build_show
+          assert_equal binding_id, config.show_feed_binding.id
+          assert_equal "replacement-show", show.apple_id
+
+          response = OpenStruct.new(body: {data: {id: "replacement-show"}}.to_json, code: "200")
+          fetch = lambda do |path|
+            assert_equal "shows/replacement-show", path
+            response
+          end
+          show.api.stub(:get, fetch) { show.sync! }
+
+          assert_equal "replacement-show", default_feed.reload.apple_sync_log.external_id
+        end
+      end
+    end
+
+    it "bootstraps a missing binding when binding routing is selected" do
+      apple_feed.delegated_delivery_config.show_feed_binding = nil
+      podcast.apple_key = nil
+      apple_feed.apple_show_id = "show-1"
+
+      with_apple_routing_source("show_feed_binding") do
+        apple_feed.save!
+      end
+
+      config = apple_feed.delegated_delivery_config.reload
+      binding = config.show_feed_binding
+
+      assert binding
+      assert_equal default_feed, binding.feed
+      assert_equal "show-1", binding.apple_show_id
+      assert_equal config.key, podcast.reload.apple_key
+      assert_equal "show-1", binding.feed.reload.apple_sync_log.external_id
+    end
+
     it "creates and updates the show feed binding" do
       apple_feed.save!
 
       apple_feed.update!(apple_show_id: "show-1")
 
       binding = default_feed.reload.apple_show_feed_binding
-      assert_equal binding, apple_feed.apple_config.reload.show_feed_binding
-      assert_equal apple_feed.apple_config.key, podcast.reload.apple_key
+      assert_equal binding, apple_feed.delegated_delivery_config.reload.show_feed_binding
+      assert_equal apple_feed.delegated_delivery_config.key, podcast.reload.apple_key
       assert_equal "show-1", binding.apple_show_id
 
       assert_no_difference "Apple::ShowFeedBinding.count" do
@@ -269,7 +376,7 @@ describe Feeds::AppleSubscription do
       apple_feed.update!(apple_show_id: nil)
 
       assert_nil default_feed.reload.apple_show_feed_binding
-      assert_nil apple_feed.apple_config.reload.show_feed_binding
+      assert_nil apple_feed.delegated_delivery_config.reload.show_feed_binding
     end
   end
 
@@ -282,7 +389,7 @@ describe Feeds::AppleSubscription do
     end
 
     it "returns false if the creds are not marked publish_enabled?" do
-      apple_feed.apple_config.publish_enabled = false
+      apple_feed.delegated_delivery_config.publish_enabled = false
       apple_feed.save!
       refute apple_feed.publish_to_apple?
     end
@@ -291,5 +398,25 @@ describe Feeds::AppleSubscription do
       refute_equal default_feed.type, "Feeds::AppleSubscription"
       refute default_feed.publish_to_apple?
     end
+  end
+
+  def assert_show_options_use_key(feed, key)
+    shows = lambda do |api|
+      assert_equal key.key_id, api.key_id
+      assert_equal key.provider_id, api.provider_id
+      [{"id" => "show-1", "attributes" => {"title" => "My show"}}]
+    end
+
+    Apple::Show.stub(:apple_shows_json, shows) do
+      assert_equal [["show-1 (My show)", "show-1"]], feed.apple_show_options
+    end
+  end
+
+  def with_apple_routing_source(source)
+    previous = ENV["APPLE_ROUTING_SOURCE"]
+    ENV["APPLE_ROUTING_SOURCE"] = source
+    yield
+  ensure
+    previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
   end
 end

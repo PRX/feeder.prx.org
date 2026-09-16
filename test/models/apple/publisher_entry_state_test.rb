@@ -96,10 +96,11 @@ describe Apple::Publisher do
   let(:podcast) { create(:podcast) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:apple_feed, podcast: podcast) }
-  let(:apple_config) { private_feed.apple_config }
-  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+  let(:delegated_delivery_config) { private_feed.delegated_delivery_config }
+  let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
   let(:apple_publisher) do
-    Apple::Publisher.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
+    show = Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
+    Apple::Publisher.new(show: show)
   end
 
   # Helper: track which phases were called and in what order (AR-based tests)

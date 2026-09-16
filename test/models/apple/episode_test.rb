@@ -8,8 +8,8 @@ describe Apple::Episode do
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
 
-  let(:apple_config) { build(:apple_config) }
-  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+  let(:delegated_delivery_config) { build(:delegated_delivery_config) }
+  let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
 
   let(:episode) { create(:episode, podcast: podcast) }
   let(:apple_show) do

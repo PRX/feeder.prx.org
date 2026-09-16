@@ -8,10 +8,10 @@ module Apple
 
         report = ShowFeedBinding::Backfill.backfill!
 
-        binding = config.public_feed.apple_show_feed_binding
+        binding = config.reload.show_feed_binding
         assert_equal 1, report[:created]
         assert_equal 1, report[:linked]
-        assert_equal binding, config.reload.show_feed_binding
+        assert_equal binding, config.show_feed_binding
         assert_equal config.public_feed, binding.feed
         assert_equal config.key, config.podcast.apple_key
         assert_equal "show-from-sync", binding.apple_show_id
@@ -68,7 +68,7 @@ module Apple
       it "reports conflicting podcast key candidates without choosing one" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         other_feed = create(:private_feed, podcast: config.podcast)
-        other_config = build(:apple_config, feed: other_feed, key: create(:apple_key))
+        other_config = build(:delegated_delivery_config, feed: other_feed, key: create(:apple_key))
         other_config.save!(validate: false)
         config.podcast.update_column(:apple_key_id, nil)
 
@@ -83,7 +83,7 @@ module Apple
       it "reports duplicate binding claims without choosing a config" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         other_config = build(
-          :apple_config,
+          :delegated_delivery_config,
           feed: create(:private_feed, podcast: config.podcast),
           key: config.key
         )
@@ -133,6 +133,21 @@ module Apple
         assert_equal 1, report[:mismatches].length
         assert_equal config.id, report[:mismatches].first[:config_id]
         assert_equal "podcast.apple_key_id", report[:mismatches].first[:mismatches].first[:field]
+      end
+
+      it "compares against legacy routing when binding routing is selected" do
+        config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
+        ShowFeedBinding::Backfill.backfill!
+        config.reload.show_feed_binding.update!(apple_show_id: "wrong-show")
+
+        previous = ENV["APPLE_ROUTING_SOURCE"]
+        ENV["APPLE_ROUTING_SOURCE"] = "show_feed_binding"
+        report = ShowFeedBinding::Backfill.verify_routing_equivalence!
+
+        assert_equal 1, report[:mismatches].length
+        assert_equal "apple_show_id", report[:mismatches].first[:mismatches].first[:field]
+      ensure
+        previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
       end
     end
 
@@ -186,7 +201,7 @@ module Apple
       podcast_attributes = key ? {prx_account_uri: "/api/v1/accounts/#{key.account_id}"} : {}
       podcast = create(:podcast, **podcast_attributes)
       private_feed = create(:private_feed, podcast: podcast, apple_show_id: private_show_id)
-      config = create(:apple_config, feed: private_feed, key: key)
+      config = create(:delegated_delivery_config, feed: private_feed, key: key)
       podcast.update_column(:apple_key_id, nil)
 
       if sync_log_show_id

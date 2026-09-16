@@ -379,7 +379,14 @@ describe Episode do
       end
 
       it "returns nil without a show identity" do
-        create(:apple_feed, podcast: podcast)
+        apple_feed = create(:apple_feed, podcast: podcast)
+        config = apple_feed.delegated_delivery_config
+        binding = config.show_feed_binding
+        binding.feed.apple_sync_log&.destroy!
+        config.update!(show_feed_binding: nil)
+        binding.destroy!
+        apple_feed.update_column(:apple_show_id, nil)
+        podcast.reload
 
         assert_nil episode.apple_episode
       end
@@ -429,18 +436,18 @@ describe Episode do
     end
 
     describe "#publish_to_apple?" do
-      it "returns false when podcast has no apple config" do
+      it "returns false when podcast has no delegated delivery config" do
         refute episode.publish_to_apple?
       end
 
       it "returns false when publishing is disabled" do
-        create(:apple_config, feed: create(:private_feed, podcast: podcast), publish_enabled: false)
+        create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), publish_enabled: false)
 
         refute episode.publish_to_apple?
       end
 
       it "returns true when publishing is enabled" do
-        create(:apple_config, feed: create(:private_feed, podcast: podcast), publish_enabled: true)
+        create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), publish_enabled: true)
         podcast.reload
 
         assert episode.publish_to_apple?

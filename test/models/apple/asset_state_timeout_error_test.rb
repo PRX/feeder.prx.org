@@ -4,8 +4,8 @@ describe Apple::AssetStateTimeoutError do
   let(:podcast) { create(:podcast) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
-  let(:apple_config) { create(:apple_config, feed: private_feed) }
-  let(:apple_publisher) { apple_config.build_publisher }
+  let(:delegated_delivery_config) { create(:delegated_delivery_config, feed: private_feed) }
+  let(:apple_publisher) { delegated_delivery_config.build_publisher }
   let(:episode1) { build(:uploaded_apple_episode, show: apple_publisher.show) }
   let(:episode2) { build(:uploaded_apple_episode, show: apple_publisher.show) }
   let(:episodes) { [episode1, episode2] }

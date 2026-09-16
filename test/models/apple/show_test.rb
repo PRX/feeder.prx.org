@@ -4,11 +4,11 @@ require "test_helper"
 
 describe Apple::Show do
   let(:podcast) { create(:episode).podcast }
-  let(:apple_api) { Apple::Api.from_apple_config(apple_config) }
+  let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
-  let(:apple_config) { build(:apple_config, feed: private_feed) }
-  let(:apple_show) { Apple::Show.connect_existing("123", apple_config) }
+  let(:delegated_delivery_config) { build(:delegated_delivery_config, feed: private_feed) }
+  let(:apple_show) { Apple::Show.connect_existing("123", delegated_delivery_config) }
 
   before do
     private_feed.set_default_episodes
@@ -17,9 +17,9 @@ describe Apple::Show do
       .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
   end
 
-  describe ".from_apple_config" do
-    it "can be created from an apple config" do
-      show = apple_config.build_show
+  describe ".from_delegated_delivery_config" do
+    it "can be created from a delegated delivery config" do
+      show = delegated_delivery_config.build_show
       assert show.is_a?(Apple::Show)
       assert_equal show.public_feed, public_feed
       assert_equal show.private_feed, private_feed
@@ -129,7 +129,7 @@ describe Apple::Show do
 
   describe "#episodes" do
     before do
-      Apple::Show.connect_existing("123", apple_config)
+      Apple::Show.connect_existing("123", delegated_delivery_config)
     end
 
     it "returns an array of Apple::Episode" do
@@ -168,7 +168,7 @@ describe Apple::Show do
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
@@ -183,7 +183,7 @@ describe Apple::Show do
       ep = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << ep
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       ep.update!(published_at: 1.hour.ago)
@@ -199,7 +199,7 @@ describe Apple::Show do
       draft = create(:episode, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
@@ -221,7 +221,7 @@ describe Apple::Show do
       refute draft_without_media.enclosure_ready?(true), "draft_without_media should not have complete media"
       refute draft_without_media.enclosure_ready?(false), "draft_without_media should have no media at all"
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       candidate_ids = show.draft_upload_candidates.map { |e| e.feeder_episode.id }
@@ -230,7 +230,7 @@ describe Apple::Show do
     end
 
     it "returns empty array for non-apple feeds" do
-      config = build(:apple_config, feed: private_feed)
+      config = build(:delegated_delivery_config, feed: private_feed)
       show = Apple::Show.connect_existing("123", config)
 
       assert_equal [], show.draft_upload_candidates
@@ -242,7 +242,7 @@ describe Apple::Show do
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:apple_config, feed: apple_feed)
+      config = build(:delegated_delivery_config, feed: apple_feed)
       show = Apple::Show.connect_existing("123", config)
 
       first = show.draft_upload_candidates
@@ -254,26 +254,35 @@ describe Apple::Show do
   end
 
   describe ".connect_existing" do
-    let(:apple_config) { create(:apple_config, feed: private_feed) }
+    let(:delegated_delivery_config) { create(:delegated_delivery_config, feed: private_feed) }
+
+    it "uses the legacy public feed to connect an unbound config under binding routing" do
+      with_show_feed_binding_routing do
+        apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
+
+        assert_equal public_feed, apple_show.public_feed
+        assert_equal "some_apple_id", public_feed.reload.apple_sync_log.external_id
+      end
+    end
 
     it "should take in the apple show id an apple credentials object" do
-      apple_config.save!
-      apple_show = Apple::Show.connect_existing("some_apple_id", apple_config)
+      delegated_delivery_config.save!
+      apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
 
       assert_equal apple_show.apple_id, "some_apple_id"
-      assert_equal apple_show.public_feed, apple_config.public_feed
-      assert_equal apple_show.private_feed, apple_config.private_feed
+      assert_equal apple_show.public_feed, delegated_delivery_config.public_feed
+      assert_equal apple_show.private_feed, delegated_delivery_config.private_feed
 
       # it can be reloaded from the db
-      apple_publisher = Apple::Publisher.from_apple_config(apple_config.reload)
+      apple_publisher = Apple::Publisher.from_delegated_delivery_config(delegated_delivery_config.reload)
       assert_equal apple_publisher.show.apple_id, "some_apple_id"
     end
 
     it "should take in a new apple show id" do
-      apple_config.save!
-      apple_show = Apple::Show.connect_existing("some_apple_id", apple_config)
+      delegated_delivery_config.save!
+      apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
       assert_equal apple_show.apple_id, "some_apple_id"
-      apple_show = Apple::Show.connect_existing("another_apple_id", apple_config)
+      apple_show = Apple::Show.connect_existing("another_apple_id", delegated_delivery_config)
       apple_show.public_feed.reload
       assert_equal apple_show.apple_id, "another_apple_id"
     end
@@ -318,6 +327,70 @@ describe Apple::Show do
       end
     end
 
+    it "syncs the bound show when no public-feed sync log exists" do
+      config, binding = create_bound_config("bound-show")
+      response = OpenStruct.new(body: {"data" => {"id" => "bound-show", "attributes" => {"foo" => "bar"}}}.to_json, code: "200")
+
+      with_show_feed_binding_routing do
+        show = config.build_show
+        get_show = lambda do |path|
+          assert_equal "shows/bound-show", path
+          response
+        end
+
+        assert_nil show.sync_log
+        show.api.stub(:get, get_show) do
+          sync = show.sync!
+
+          assert_equal "bound-show", sync.external_id
+          assert_equal binding.apple_show_id, show.apple_id
+          assert_equal "bar", show.apple_attributes["foo"]
+        end
+      end
+    end
+
+    it "syncs the bound show and replaces a stale public-feed sync id" do
+      config, binding = create_bound_config("bound-show")
+      stale_log = SyncLog.log!(
+        integration: :apple,
+        feeder_type: :feeds,
+        feeder_id: binding.feed_id,
+        external_id: "stale-show"
+      )
+      response = OpenStruct.new(body: {"data" => {"id" => "bound-show", "attributes" => {}}}.to_json, code: "200")
+
+      with_show_feed_binding_routing do
+        show = config.build_show
+        get_show = lambda do |path|
+          assert_equal "shows/bound-show", path
+          response
+        end
+
+        show.api.stub(:get, get_show) do
+          sync = show.sync!
+
+          assert_equal stale_log.id, sync.id
+          assert_equal "bound-show", sync.external_id
+        end
+      end
+    end
+
+    it "rejects a response for a different show than the binding" do
+      config, binding = create_bound_config("bound-show")
+      response = OpenStruct.new(body: {"data" => {"id" => "different-show", "attributes" => {}}}.to_json, code: "200")
+
+      with_show_feed_binding_routing do
+        show = config.build_show
+
+        show.api.stub(:get, response) do
+          error = assert_raises(RuntimeError) { show.sync! }
+
+          assert_match(/Apple show id mismatch/, error.message)
+          assert_nil binding.feed.reload.apple_sync_log
+        end
+      end
+    end
+
     it "raises an api error when show sync returns an http error" do
       apple_show.sync_log.update!(api_response: {"before" => true})
       response = OpenStruct.new(body: "<html>503 Service Unavailable</html>", code: "503")
@@ -334,12 +407,12 @@ describe Apple::Show do
     end
 
     it "logs an incomplete sync record if the upsert fails" do
-      raises_exception = ->(_arg) { raise Apple::ApiError.new("Error", OpenStruct.new(code: 200, body: "body")) }
+      raises_exception = -> { raise Apple::ApiError.new("Error", OpenStruct.new(code: 200, body: "body")) }
 
       apple_show.sync_log.destroy
       apple_show.public_feed.reload
 
-      apple_show.stub(:create_or_update_show, raises_exception) do
+      apple_show.stub(:fetch_or_create_show, raises_exception) do
         assert_raises(Apple::ApiError) do
           apple_show.sync!
         end
@@ -413,5 +486,31 @@ describe Apple::Show do
         assert_equal apple_show.guid_to_apple_json("foo"), {"attributes" => {"guid" => "foo", "data" => "frob"}}
       end
     end
+  end
+
+  def create_bound_config(show_id)
+    key = create(:apple_key, account_id: public_feed.podcast.account_id)
+    public_feed.podcast.update!(apple_key: key)
+    binding = create(
+      :apple_show_feed_binding,
+      feed: public_feed,
+      apple_show_id: show_id
+    )
+    config = create(
+      :delegated_delivery_config,
+      feed: private_feed,
+      key: key,
+      show_feed_binding: binding
+    )
+
+    [config, binding]
+  end
+
+  def with_show_feed_binding_routing
+    previous = ENV["APPLE_ROUTING_SOURCE"]
+    ENV["APPLE_ROUTING_SOURCE"] = "show_feed_binding"
+    yield
+  ensure
+    previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
   end
 end
