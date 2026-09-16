@@ -7,6 +7,22 @@ describe Apple::DelegatedDeliveryConfig do
   end
 
   describe "#valid?" do
+    it "requires a binding even when publishing is disabled" do
+      config = build(:delegated_delivery_config, :legacy_routing, publish_enabled: false)
+
+      refute config.valid?
+      assert config.errors.of_kind?(:show_feed_binding, :blank)
+    end
+
+    it "rejects clearing an existing binding" do
+      config = create(:delegated_delivery_config)
+      binding = config.show_feed_binding
+
+      refute config.update(show_feed_binding: nil)
+      assert config.errors.of_kind?(:show_feed_binding, :blank)
+      assert_equal binding, config.reload.show_feed_binding
+    end
+
     it "allows only one config per show feed binding" do
       podcast = create(:podcast)
       binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))

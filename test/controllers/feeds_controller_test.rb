@@ -283,6 +283,57 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_nil private_feed.delegated_delivery_config
   end
 
+  test "rejects clearing a delegated delivery binding through the feed form" do
+    apple_feed = create(:apple_feed, podcast: podcast)
+    config = apple_feed.delegated_delivery_config
+    binding = config.show_feed_binding
+
+    patch podcast_feed_url(podcast, apple_feed), params: {
+      feed: {delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: ""}}
+    }
+
+    assert_response :unprocessable_entity
+    assert_equal binding, config.reload.show_feed_binding
+  end
+
+  test "repairs an unfinished legacy setup through the feed form" do
+    apple_feed = create(:apple_feed, podcast: podcast)
+    config = apple_feed.delegated_delivery_config
+    binding = config.show_feed_binding
+    config.update_column(:show_feed_binding_id, nil)
+
+    get podcast_feed_url(podcast, apple_feed)
+    assert_response :success
+
+    patch podcast_feed_url(podcast, apple_feed), params: {
+      feed: {delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: binding.id}}
+    }
+
+    assert_redirected_to podcast_feed_url(podcast, apple_feed)
+    assert_equal binding, config.reload.show_feed_binding
+  end
+
+  test "removes an unfinished legacy setup without a connection" do
+    apple_feed = create(:apple_feed, podcast: podcast)
+    config = apple_feed.delegated_delivery_config
+    binding = config.show_feed_binding
+    config.update_column(:show_feed_binding_id, nil)
+    binding.reload.destroy!
+
+    get podcast_feed_url(podcast, apple_feed)
+    assert_response :success
+
+    assert_difference("Apple::DelegatedDeliveryConfig.count", -1) do
+      patch podcast_feed_url(podcast, apple_feed), params: {
+        feed: {delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: "", _destroy: "1"}}
+      }
+    end
+
+    assert_redirected_to podcast_feed_url(podcast, apple_feed)
+    assert_predicate apple_feed.reload, :persisted?
+    assert_nil apple_feed.delegated_delivery_config
+  end
+
   test "authorize update feed" do
     podcast.update(prx_account_uri: "/api/v1/accounts/456")
     patch podcast_feed_url(podcast, feed), params: {feed: update_params}
