@@ -38,7 +38,7 @@ describe EpisodesHelper do
         let(:paused_feed) { create(:private_feed, podcast: podcast) }
         let(:paused_config) do
           public_feed = create(:public_feed, podcast: podcast)
-          binding = create(:apple_show_feed_binding, feed: public_feed)
+          binding = create(:apple_show_feed_binding, feed: public_feed, apple_show_id: "show-paused")
           create(:delegated_delivery_config, feed: paused_feed, key: podcast.apple_key,
             show_feed_binding: binding, publish_enabled: false)
         end
@@ -69,6 +69,39 @@ describe EpisodesHelper do
 
           assert_nil episode.integration_feed(:apple)
           assert_nil episode.apple_episode
+        end
+      end
+
+      describe "with a second enabled Apple feed" do
+        let(:other_feed) { create(:private_feed, podcast: podcast) }
+        let(:other_config) do
+          public_feed = create(:public_feed, podcast: podcast)
+          binding = create(:apple_show_feed_binding, feed: public_feed, apple_show_id: "show-2")
+          create(:delegated_delivery_config, feed: other_feed, key: podcast.apple_key,
+            show_feed_binding: binding, publish_enabled: true)
+        end
+
+        before { other_config }
+
+        it "shows the delivery status of the only feed the episode belongs to" do
+          episode.feeds = [apple_feed]
+          create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1", uploaded: true, delivered: true)
+
+          assert_equal apple_feed, episode.integration_feed(:apple)
+          assert_equal "complete", helper.episode_integration_status(:apple, episode)
+        end
+
+        it "shows the delivery status of the second feed when the episode belongs only to it" do
+          episode.feeds = [other_feed]
+          create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-2", uploaded: true, delivered: false)
+
+          assert_equal other_feed, episode.integration_feed(:apple)
+          assert_equal "processing", helper.episode_integration_status(:apple, episode)
+        end
+
+        it "does not choose a show when the episode belongs to both feeds" do
+          assert_equal [apple_feed, other_feed].sort_by(&:id), episode.integration_feeds(:apple).sort_by(&:id)
+          assert_nil episode.integration_feed(:apple)
         end
       end
 

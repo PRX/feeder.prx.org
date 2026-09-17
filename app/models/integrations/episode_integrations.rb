@@ -20,12 +20,19 @@ module Integrations::EpisodeIntegrations
   end
 
   def integration_feed_episode?(integration)
-    feed = integration_feed(integration)
-    publish_to_integration?(integration) && feed&.integration_episode?(self)
+    integration_feeds(integration).any?
+  end
+
+  # Enabled integration feeds this episode is actually delivered through. A
+  # podcast can have several, so membership is resolved per episode.
+  def integration_feeds(integration)
+    podcast.feeds.select do |feed|
+      feed.integration_type == integration && feed.publish_integration? && feed.integration_episode?(self)
+    end
   end
 
   def integration_feed(integration)
-    feeds = podcast.feeds.select { |feed| feed.integration_type == integration && feed.publish_integration? }
+    feeds = integration_feeds(integration)
     feeds.one? ? feeds.first : nil
   end
 

@@ -132,8 +132,7 @@ class Episode < ApplicationRecord
   def apple_episode(config: nil)
     return nil unless persisted?
 
-    publishing_configs = podcast.delegated_delivery_configs.select(&:publish_to_apple?)
-    config ||= publishing_configs.one? ? publishing_configs.first : nil
+    config ||= integration_feed(:apple)&.config
     return nil unless config&.publish_to_apple?
 
     if (show = config.build_publisher&.show)
