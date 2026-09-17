@@ -16,18 +16,18 @@
       <%= render "apple_connection_field", feed: feed, form: form, options: [], loading: true, lookup_failed: false %>
     <% end %>
 
-    <div class="form-floating input-group mb-3">
-      <%= form.text_field :apple_verify_token %>
-      <%= form.label :apple_verify_token %>
-      <%= field_help_text t("feeds.form_main.help.apple_verify_token") %>
-    </div>
-
     <% if dependents.present? %>
       <p class="small mb-3">
         <strong><%= t(".dependent_feeds") %></strong>
         <%= dependents.map { |config| config.feed.label }.join(", ") %>
       </p>
     <% end %>
+
+    <div class="form-floating input-group mb-3">
+      <%= form.text_field :apple_verify_token %>
+      <%= form.label :apple_verify_token %>
+      <%= field_help_text t("feeds.form_main.help.apple_verify_token") %>
+    </div>
   </div>
 
   <div class="card-footer d-flex justify-content-between align-items-end">
