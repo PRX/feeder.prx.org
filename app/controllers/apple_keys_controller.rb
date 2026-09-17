@@ -25,7 +25,7 @@ class AppleKeysController < ApplicationController
   def destroy
     authorize @apple_key
 
-    if @apple_key.podcasts.exists? || @apple_key.delegated_delivery_config
+    if @apple_key.podcasts.exists?
       redirect_to podcast_integrations_path(@podcast), alert: t(".in_use")
     elsif @apple_key.destroy
       redirect_to podcast_integrations_path(@podcast), notice: t(".notice")
