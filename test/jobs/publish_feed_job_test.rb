@@ -166,6 +166,105 @@ describe PublishFeedJob do
     end
   end
 
+  describe "publishing to two Apple feeds" do
+    let(:podcast) { create(:podcast) }
+    let(:key) { create(:apple_key, account_id: podcast.account_id) }
+    let(:delivery_feeds) do
+      podcast.update!(apple_key: key)
+      2.times.map do
+        public_feed = create(:public_feed, podcast: podcast)
+        binding = create(:apple_show_feed_binding, feed: public_feed)
+        delivery_feed = create(:private_feed, podcast: podcast)
+        create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: binding)
+        delivery_feed.reload
+      end
+    end
+    let(:calls) { [] }
+
+    def publish_both_feeds(errors = {})
+      actions = delivery_feeds.map do |feed|
+        -> {
+          calls << [:integration, feed.id]
+          Rails.logger.info("Publishing test episode")
+          raise errors[feed.id] if errors[feed.id]
+        }
+      end
+      capture_json_logs do
+        podcast.stub(:feeds, delivery_feeds) do
+          delivery_feeds[0].stub(:publish_integration!, actions[0]) do
+            delivery_feeds[1].stub(:publish_integration!, actions[1]) do
+              job.stub(:publish_rss, ->(_, feed) { calls << [:rss, feed.id] }) do
+                queue_item = PublishingPipelineState.start_pipeline!(podcast)
+                job.perform(podcast, queue_item)
+              end
+            end
+          end
+        end
+      end
+    end
+
+    it "publishes both feeds before RSS and identifies each publisher's logs" do
+      logs = publish_both_feeds
+
+      assert_equal delivery_feeds.map { |feed| [:integration, feed.id] } +
+        delivery_feeds.map { |feed| [:rss, feed.id] }, calls
+      assert PublishingPipelineState.complete?(podcast)
+      starts = logs.select { |line| line["msg"] == "Starting integration feed publish" }
+      finishes = logs.select { |line| line["msg"] == "Completed integration feed publish" }
+      nested = logs.select { |line| line["msg"] == "Publishing test episode" }
+      assert_equal delivery_feeds.map(&:id), starts.map { |line| line["feed_id"] }
+      assert_equal delivery_feeds.map(&:id), finishes.map { |line| line["feed_id"] }
+      delivery_feeds.each_with_index do |feed, index|
+        assert_equal "apple", starts[index]["integration"]
+        assert_includes nested[index]["tags"], "integration:apple"
+        assert_includes nested[index]["tags"], "feed:#{feed.id}"
+        refute_includes nested[index]["tags"], "feed:#{delivery_feeds[1 - index].id}"
+      end
+      completion = logs.find { |line| line["to_state"] == "complete" }
+      refute completion["tags"].any? { |tag| tag.start_with?("feed:", "integration:") }
+    end
+
+    it "stops before the second feed and RSS on a blocking timeout" do
+      first = delivery_feeds.first
+      logs = publish_both_feeds(first.id => Apple::AssetStateTimeoutError.new([]))
+
+      assert_equal [[:integration, first.id]], calls
+      assert_equal "retry", PublishingPipelineState.most_recent_state(podcast).status
+      timeout = logs.find { |line| line["msg"] == "Apple asset processing timeout" }
+      assert_includes timeout["tags"], "feed:#{first.id}"
+      refute logs.any? { |line| line["msg"] == "Completed integration feed publish" }
+    end
+
+    it "continues to the second feed and RSS after a nonblocking failure" do
+      first = delivery_feeds.first
+      first.config.update!(sync_blocks_rss: false)
+      logs = publish_both_feeds(first.id => StandardError.new("Delivery failed"))
+
+      assert_equal delivery_feeds.map { |feed| [:integration, feed.id] } +
+        delivery_feeds.map { |feed| [:rss, feed.id] }, calls
+      assert PublishingPipelineState.complete?(podcast)
+      failure = logs.find { |line| line["msg"] == "Integration feed publish failed" }
+      assert_equal first.id, failure["feed_id"]
+      assert_equal "apple", failure["integration"]
+      assert_includes failure["tags"], "feed:#{first.id}"
+      finishes = logs.select { |line| line["msg"] == "Completed integration feed publish" }
+      assert_equal [delivery_feeds.last.id], finishes.map { |line| line["feed_id"] }
+    end
+
+    it "invokes both feeds again after the second feed requires a retry" do
+      second = delivery_feeds.last
+      publish_both_feeds(second.id => Apple::AssetStateTimeoutError.new([]))
+      assert_equal delivery_feeds.map { |feed| [:integration, feed.id] }, calls
+      assert_equal "retry", PublishingPipelineState.most_recent_state(podcast).status
+
+      calls.clear
+      publish_both_feeds
+      assert_equal delivery_feeds.map { |feed| [:integration, feed.id] } +
+        delivery_feeds.map { |feed| [:rss, feed.id] }, calls
+      assert PublishingPipelineState.complete?(podcast)
+    end
+  end
+
   describe "publishing to apple" do
     let(:podcast) { create(:podcast) }
     let(:public_feed) { podcast.default_feed }
