@@ -945,7 +945,7 @@ en:
       confirm_replace: Are you sure you want to replace this Apple connection? Dependent delegated-delivery feeds will use the new connection.
       confirm_remove: Are you sure you want to remove this Apple connection?
       help:
-        connection: Select the Apple show and account credential for this public feed.
+        connection: Select the Apple show to connect to this feed. This will allow you to setup Apple's Delegated Delivery on private feeds.
     form_audio_format:
       title: Audio Format
       help:
