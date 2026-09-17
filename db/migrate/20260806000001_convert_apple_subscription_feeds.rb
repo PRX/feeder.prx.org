@@ -10,10 +10,7 @@ class ConvertAppleSubscriptionFeeds < ActiveRecord::Migration[7.2]
   end
 
   def down
-    execute <<~SQL.squish
-      UPDATE feeds
-      SET type = 'Feeds::AppleSubscription', updated_at = CURRENT_TIMESTAMP
-      WHERE id IN (SELECT feed_id FROM apple_configs)
-    SQL
+    raise ActiveRecord::IrreversibleMigration,
+      "The original Apple subscription feed types were not preserved"
   end
 end
