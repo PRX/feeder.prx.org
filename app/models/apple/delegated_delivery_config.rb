@@ -12,7 +12,7 @@ module Apple
     belongs_to :feed
     belongs_to :key, class_name: "Apple::Key", optional: true, validate: true, autosave: true
     # Legacy setup saves credentials before selecting a show. Require a binding
-    # once the replacement connection flow is in place.
+    # once the new UI replacement connection flow is in place.
     belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: true, inverse_of: :delegated_delivery_config
 
     validates :show_feed_binding_id, uniqueness: true, allow_nil: true
