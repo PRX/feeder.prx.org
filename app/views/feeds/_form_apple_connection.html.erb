@@ -5,7 +5,6 @@
 
   <div class="card-body">
     <% binding = feed.apple_show_feed_binding %>
-    <% dependents = [binding&.delegated_delivery_config].compact %>
 
     <% if feed.errors[:apple_connection].any? %>
       <div class="alert alert-danger" role="alert"><%= feed.errors[:apple_connection].to_sentence %></div>
@@ -14,13 +13,6 @@
     <%= turbo_frame_tag dom_id(feed, :apple_connection),
       src: podcast_feed_apple_connection_path(podcast, feed, selection: feed.apple_connection.to_s), loading: "lazy" do %>
       <%= render "apple_connection_field", feed: feed, form: form, options: [], loading: true, lookup_failed: false %>
-    <% end %>
-
-    <% if dependents.present? %>
-      <p class="small mb-3">
-        <strong><%= t(".dependent_feeds") %></strong>
-        <%= dependents.map { |config| config.feed.label }.join(", ") %>
-      </p>
     <% end %>
 
     <div class="form-floating input-group mb-3">

@@ -934,14 +934,12 @@ en:
         publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
         sync_blocks_rss: Require Apple publishing to succeed before public RSS publishing continues.
     form_apple_connection:
-      loading: Loading Apple shows…
       show_lookup_failed: Failed to load shows from Apple Podcasts Connect.
       title: Apple Settings
       connected: Connected
       not_connected: Not connected
       status: Apple Status
       last_checked_html: "Last checked: %{time}"
-      dependent_feeds: "Delegated-delivery feeds using this connection:"
       confirm_replace: Are you sure you want to replace this Apple connection? Dependent delegated-delivery feeds will use the new connection.
       confirm_remove: Are you sure you want to remove this Apple connection?
       help:
