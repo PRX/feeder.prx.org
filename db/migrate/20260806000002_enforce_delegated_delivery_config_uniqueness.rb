@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class EnforceDelegatedDeliveryConfigUniqueness < ActiveRecord::Migration[7.2]
-  disable_ddl_transaction!
-
   FEED_INDEX = "index_apple_configs_on_feed_id"
   BINDING_INDEX = "index_apple_configs_on_show_feed_binding_id"
 
@@ -37,7 +35,7 @@ class EnforceDelegatedDeliveryConfigUniqueness < ActiveRecord::Migration[7.2]
   end
 
   def replace_index(column, name, unique:)
-    remove_index :apple_configs, name: name, algorithm: :concurrently, if_exists: true
-    add_index :apple_configs, column, name: name, unique: unique, algorithm: :concurrently
+    remove_index :apple_configs, name: name, if_exists: true
+    add_index :apple_configs, column, name: name, unique: unique
   end
 end
