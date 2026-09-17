@@ -251,6 +251,15 @@ class Feed < ApplicationRecord
     end
   end
 
+  # The integration's facade for an episode. Apple state is scoped to a
+  # show, so the facade is built from this feed's connection.
+  def integration_episode(episode)
+    return unless integration_type == :apple
+
+    show = delegated_delivery_config.build_show
+    show.build_integration_episode(episode) if show.apple_id.present?
+  end
+
   # Episodes an integration may act on before they are published.
   def integration_draft_episodes
     return episodes.none unless integration_type == :apple

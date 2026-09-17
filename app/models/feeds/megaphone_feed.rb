@@ -43,6 +43,10 @@ class Feeds::MegaphoneFeed < Feed
     :megaphone
   end
 
+  def integration_episode(episode)
+    episode.megaphone_episode
+  end
+
   def set_defaults
     self.slug ||= "prx-#{SecureRandom.uuid}"
     self.label ||= DEFAULT_LABEL

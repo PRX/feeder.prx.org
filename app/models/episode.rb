@@ -129,17 +129,12 @@ class Episode < ApplicationRecord
     Megaphone::Episode.new.tap { |episode| episode.feeder_episode = self }
   end
 
-  def apple_episode(config: nil)
+  # The Apple facade for this episode's only eligible delivery feed. Callers
+  # that hold a feed should build from it instead.
+  def apple_episode
     return nil unless persisted?
 
-    config ||= integration_feed(:apple)&.config
-    return nil unless config&.publish_to_apple?
-
-    if (show = config.build_publisher&.show)
-      return nil unless show.apple_id.present?
-
-      Apple::Episode.new(api: show.api, show: show, feeder_episode: self)
-    end
+    integration_feed(:apple)&.integration_episode(self)
   end
 
   def published?

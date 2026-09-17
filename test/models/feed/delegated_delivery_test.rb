@@ -170,6 +170,25 @@ describe Feed, "Apple delegated delivery" do
     end
   end
 
+  describe "#integration_episode" do
+    it "builds the Apple facade scoped to this feed's show" do
+      apple_feed.save!
+      episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+
+      facade = apple_feed.integration_episode(episode)
+
+      assert_instance_of Apple::Episode, facade
+      assert_equal apple_feed.config.apple_show_id, facade.apple_show_id
+      assert_equal episode, facade.feeder_episode
+    end
+
+    it "returns nil for feeds without an integration" do
+      episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+
+      assert_nil podcast.default_feed.integration_episode(episode)
+    end
+  end
+
   describe "#integration_episode?" do
     it "keeps early releases beyond the feed limit out of both episode sets" do
       apple_feed.update!(episode_offset_seconds: -1.day.to_i, display_episodes_count: 1)

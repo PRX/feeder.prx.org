@@ -15,38 +15,29 @@ module EpisodesHelper
     end
   end
 
-  def episode_integration_status(integration, episode)
-    unless episode.integration_feed_episode?(integration)
-      return episode.draft? ? "draft" : "not_publishable"
-    end
-
-    integration_episode = episode.integration_episode(integration)
-    return "disconnected" unless integration_episode
-
-    status = integration_episode.delivery_status(true)
-
-    if !status
-      "disconnected"
-    elsif status.new_record?
-      "new"
-    elsif !status.uploaded?
-      "incomplete"
-    elsif integration_episode.error_state?
-      "error"
-    elsif !status.delivered?
-      integration_episode.processing_status_label
-    else
-      "complete"
-    end
+  # Delivery status of the episode in each feed delivering it through the
+  # integration, keyed by feed. Empty when no feed does.
+  def episode_integration_statuses(integration, episode)
+    episode.integration_feeds(integration).index_with { |feed| feed_integration_status(episode, feed) }
   end
 
-  def episode_integration_updated_at(integration, episode)
-    integration_episode = episode.integration_episode(integration)
+  # Status for an episode no feed of the integration delivers.
+  def episode_integration_placeholder_status(episode)
+    episode.draft? ? "draft" : "not_publishable"
+  end
+
+  def episode_integration_updated_at(episode, feed)
+    integration_episode = feed.integration_episode(episode)
     return episode.updated_at unless integration_episode
 
     integration_episode.sync_log&.updated_at ||
       integration_episode.delivery_status&.created_at ||
       episode.updated_at
+  end
+
+  # Name the feed only when the episode is delivered through several.
+  def episode_integration_label(name, feed, statuses)
+    statuses.many? ? "#{name} (#{feed.label})" : name
   end
 
   def episode_status_class(episode)
@@ -141,5 +132,28 @@ module EpisodesHelper
 
   def episode_transcript_options
     Transcript.formats.keys.map { |k| [I18n.t("helpers.label.transcript.formats.#{k}"), k] }
+  end
+
+  private
+
+  def feed_integration_status(episode, feed)
+    integration_episode = feed.integration_episode(episode)
+    return "disconnected" unless integration_episode
+
+    status = integration_episode.delivery_status(true)
+
+    if !status
+      "disconnected"
+    elsif status.new_record?
+      "new"
+    elsif !status.uploaded?
+      "incomplete"
+    elsif integration_episode.error_state?
+      "error"
+    elsif !status.delivered?
+      integration_episode.processing_status_label
+    else
+      "complete"
+    end
   end
 end
