@@ -1,5 +1,11 @@
 <div class="col-12 mt-4">
-  <h3 class="status-text fw-bold mb-2"><%= label %></h3>
+  <h3 class="status-text fw-bold mb-2">
+    <% if local_assigns[:feed] %>
+      <%= link_to label, podcast_feed_path(feed.podcast, feed) %>
+    <% else %>
+      <%= label %>
+    <% end %>
+  </h3>
   <p class="status-text">
     <strong>Status:</strong>
     <span class="badge rounded-pill prx-badge-<%= status %>">

@@ -35,9 +35,8 @@ module EpisodesHelper
       episode.updated_at
   end
 
-  # Name the feed only when the episode is delivered through several.
-  def episode_integration_label(name, feed, statuses)
-    statuses.many? ? "#{name} (#{feed.label})" : name
+  def episode_integration_label(name, feed)
+    "#{name} (#{feed.label})"
   end
 
   def episode_status_class(episode)

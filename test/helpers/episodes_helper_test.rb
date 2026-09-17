@@ -126,11 +126,8 @@ describe EpisodesHelper do
           assert_equal second.created_at, helper.episode_integration_updated_at(episode, other_feed)
         end
 
-        it "names the feed only when the episode has several" do
-          statuses = helper.episode_integration_statuses(:apple, episode)
-
-          assert_equal "Apple (#{apple_feed.label})", helper.episode_integration_label("Apple", apple_feed, statuses)
-          assert_equal "Apple", helper.episode_integration_label("Apple", apple_feed, statuses.slice(apple_feed))
+        it "names the feed regardless of how many feeds the episode has" do
+          assert_equal "Apple (#{apple_feed.label})", helper.episode_integration_label("Apple", apple_feed)
         end
       end
 

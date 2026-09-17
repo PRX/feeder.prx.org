@@ -57,7 +57,7 @@
               <% else %>
                 <% apple_statuses.each do |feed, apple_status| %>
                   <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><%= episode_integration_label(t(".apple"), feed, apple_statuses) %></span>
+                    <span><%= episode_integration_label(t(".apple"), feed) %></span>
                     <span class="badge rounded-pill prx-badge-<%= apple_status %>">
                       <%= t("helpers.label.episode.media_statuses.#{apple_status}") %>
                     </span>
