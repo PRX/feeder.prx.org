@@ -919,11 +919,11 @@ en:
       help:
         ad_zones: Control the types of ads that should be stitched into episodes in this feed.
     form_apple_delegated_delivery:
-      title: Delegated Delivery
+      title: Apple Delegated Delivery
       description: Send this feed's audio to an Apple show connected through one of this podcast's public feeds.
       connection: Public Feed Connection
       select_connection: Select a connected public feed
-      no_connections: Select a podcast credential and connect an available public feed before enabling delegated delivery.
+      no_connections: No public feed on this podcast has an available Apple show connection. Connect one in a public feed's Apple Settings before enabling delegated delivery.
       remove: Remove delegated delivery from this feed
       status: Apple Status
       configured: Configured
