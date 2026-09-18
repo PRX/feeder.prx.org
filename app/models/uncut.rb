@@ -21,6 +21,14 @@ class Uncut < MediaResource
     end
   end
 
+  def preview_href
+    if video? && status_complete?
+      variant_url("preview.mp3")
+    else
+      super
+    end
+  end
+
   def copy_media(force = false)
     if force || needs_copy?
       if episode&.video?
@@ -31,18 +39,6 @@ class Uncut < MediaResource
     end
   end
 
-  def transcode_hls(force = false)
-    if video? && (force || needs_transcode_hls?)
-      # TODO??????????????????
-      # Tasks::TranscodeHlsTask.start!(self)
-    end
-  end
-
-  # TODO
-  def needs_transcode_hls?
-    false
-  end
-
   def after_copy(copy_task)
     # optionally set ad breaks from ID3 tags
     if copy_task.porter_callback_tags.present? && ad_breaks.blank?
@@ -51,12 +47,11 @@ class Uncut < MediaResource
     end
 
     # fix bad files before slicing
-    if copy_task.bad_audio?
+    if audio? && copy_task.bad_audio?
       Tasks::FixMediaTask.start!(self, copy_task)
     elsif segmentation_ready?
       slice_contents!
       episode.contents.each(&:copy_media)
-      transcode_hls if video?
     end
   end
 
@@ -169,22 +164,6 @@ class Uncut < MediaResource
       !within_tolerance
     end
   end
-
-  # TODO????
-  # def variants
-  #   if status_complete? && episode&.video?
-  #     {
-  #       audio: {
-  #         href: variant_url("audio.mp3"),
-  #         type: "audio/mpeg"
-  #       },
-  #       hls: {
-  #         href: variant_url("index.m3u8"),
-  #         type: "application/x-mpegURL"
-  #       }
-  #     }
-  #   end
-  # end
 
   private
 

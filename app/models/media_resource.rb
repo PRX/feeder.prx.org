@@ -131,6 +131,10 @@ class MediaResource < ApplicationRecord
     original_url
   end
 
+  def preview_href
+    href
+  end
+
   def file_name
     if original_url.present?
       uri = URI.parse(original_url)
