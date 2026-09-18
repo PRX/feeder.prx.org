@@ -378,13 +378,14 @@ describe Episode do
         assert_nil episode.apple_episode
       end
 
-      it "returns nil without a show identity" do
+      it "returns nil for a legacy configuration without a show identity" do
         apple_feed = create(:apple_feed, podcast: podcast)
         config = apple_feed.delegated_delivery_config
         binding = config.show_feed_binding
         binding.feed.apple_sync_log&.destroy!
-        config.update!(show_feed_binding: nil)
-        binding.destroy!
+        # Incomplete legacy configurations predate the required binding validation.
+        config.update_column(:show_feed_binding_id, nil)
+        binding.reload.destroy!
         apple_feed.update_column(:apple_show_id, nil)
         podcast.reload
 
