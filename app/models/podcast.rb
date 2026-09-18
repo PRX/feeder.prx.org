@@ -32,6 +32,7 @@ class Podcast < ApplicationRecord
 
   has_many :episodes, -> { order("published_at desc") }, dependent: :destroy
   has_many :feeds, dependent: :destroy
+  has_many :delegated_delivery_configs, through: :feeds, source: :delegated_delivery_config
   has_many :tasks, as: :owner
   has_many :persons, as: :owner, inverse_of: :owner
   has_many :podcast_imports, dependent: :destroy
@@ -65,6 +66,7 @@ class Podcast < ApplicationRecord
 
   before_validation :set_defaults, :sanitize_text
   after_update :sync_legacy_apple_key, if: :saved_change_to_apple_key_id?
+  before_destroy :clear_apple_key, if: :apple_key_id?
   after_commit :set_guid!, if: -> { guid.blank? }
 
   scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") if text.present? }
@@ -89,26 +91,8 @@ class Podcast < ApplicationRecord
     super || build_default_feed(podcast: self, private: false)
   end
 
-  def delegated_delivery_config
-    if defined?(@delegated_delivery_config)
-      @delegated_delivery_config
-    else
-      @delegated_delivery_config = Apple::DelegatedDeliveryConfig.where(feed_id: feeds.pluck(:id)).first
-    end
-  end
-
   def has_apple_feed?
-    if defined?(@has_apple_feed)
-      @has_apple_feed
-    else
-      @has_apple_feed = feeds.apple.exists?
-    end
-  end
-
-  def reload(options = nil)
-    remove_instance_variable(:@delegated_delivery_config) if defined?(@delegated_delivery_config)
-    remove_instance_variable(:@has_apple_feed) if defined?(@has_apple_feed)
-    super
+    delegated_delivery_configs.exists?
   end
 
   def explicit=(value)
@@ -149,6 +133,12 @@ class Podcast < ApplicationRecord
 
   private def sync_legacy_apple_key
     Apple::DelegatedDeliveryConfig.sync_legacy_key_for!(self)
+  end
+
+  private def clear_apple_key
+    self.apple_key = nil
+    update_column(:apple_key_id, nil)
+    sync_legacy_apple_key
   end
 
   def apple_key_belongs_to_account

@@ -37,21 +37,16 @@
 
     <% [:apple, :megaphone].each do |integration| %>
       <% if episode.persisted? && episode.publish_to_integration?(integration) %>
-        <% integration_status = episode_integration_status(integration, episode) %>
-        <div class="col-12 mt-4">
-          <p class="status-text">
-            <strong><%= integration.to_s.titleize %> Status:</strong>
-            <span class="badge rounded-pill prx-badge-<%= integration_status %>">
-              <%= t("helpers.label.episode.media_statuses.#{integration_status}") %>
-            </span>
-            <% unless %w[draft not_publishable].include?(integration_status) %>
-              <br>
-              <strong><%= integration.to_s.titleize %> <%= t(".last_updated") %></strong>
-              <br>
-              <%= local_time_ago(episode_integration_updated_at(integration, episode)) %>
-            <% end %>
-          </p>
-        </div>
+        <% name = integration.to_s.titleize %>
+        <% statuses = episode_integration_statuses(episode, integration) %>
+        <% if statuses.empty? %>
+          <%= render "integration_status", label: name, status: episode_integration_placeholder_status(episode) %>
+        <% else %>
+          <% statuses.each do |feed, status| %>
+            <% label = episode_integration_label(name, feed) %>
+            <%= render "integration_status", label: label, feed: feed, status: status, updated_at: episode_integration_updated_at(episode, integration, feed) %>
+          <% end %>
+        <% end %>
       <% end %>
     <% end %>
   </div>

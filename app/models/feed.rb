@@ -4,6 +4,7 @@ class Feed < ApplicationRecord
   include FeedAudioFormat
   include FeedAdZone
   include FeedITunesCategory
+  include FeedApple
 
   DEFAULT_FILE_NAME = "feed-rss.xml".freeze
 
@@ -34,13 +35,17 @@ class Feed < ApplicationRecord
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_categories, -> { order("created_at ASC") }, validate: true, autosave: true, dependent: :destroy
 
-  has_one :apple_sync_log, -> { feeds.apple }, foreign_key: :feeder_id, class_name: "Apple::SyncLog"
-  has_one :apple_show_feed_binding, class_name: "Apple::ShowFeedBinding", dependent: :destroy
-
   accepts_nested_attributes_for :feed_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :itunes_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
 
   acts_as_paranoid
+
+  def paranoia_destroy_attributes
+    {
+      deleted_at: current_time_from_proper_timezone,
+      slug: "#{slug}-#{Time.now.to_i}"
+    }
+  end
 
   validates :slug, uniqueness: {scope: :podcast_id}, if: :podcast_id?
   validates_format_of :slug, allow_nil: true, with: /\A[0-9a-zA-Z_-]+\z/
@@ -63,7 +68,6 @@ class Feed < ApplicationRecord
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
-  scope :apple, -> { where(type: "Feeds::AppleSubscription") }
   scope :tab_order, -> { order(Arel.sql("slug IS NULL DESC, created_at ASC")) }
 
   def mark_as_not_delivered!(episode)
@@ -73,19 +77,8 @@ class Feed < ApplicationRecord
     #   a la "where's my episode?" publish tracking
   end
 
-  def integration_type
-    nil
-  end
-
-  def publish_integration?
-    false
-  end
-
   def serve_drafts
-    false
-  end
-
-  def publish_integration!
+    integration_types.any? { |integration| publish_integration?(integration) }
   end
 
   def sync_log(integration)
@@ -105,8 +98,6 @@ class Feed < ApplicationRecord
   def label
     if default?
       I18n.t("helpers.label.feed.labels.default")
-    elsif integration_type
-      I18n.t("helpers.label.feed.labels.#{integration_type}")
     else
       super
     end
@@ -157,18 +148,6 @@ class Feed < ApplicationRecord
 
   def feed_episode?(episode)
     feed_episodes.where(id: episode.id).exists?
-  end
-
-  # Whether an episode is eligible for this feed's integration.
-  # Subclasses may include episodes beyond the rendered RSS window.
-  def integration_episode?(episode)
-    feed_episode?(episode)
-  end
-
-  # Episodes an integration may act on before they are published.
-  # Overridden by feeds whose integration handles drafts.
-  def integration_draft_episodes
-    episodes.none
   end
 
   def guid
@@ -231,10 +210,6 @@ class Feed < ApplicationRecord
 
   def path
     "#{podcast&.path}/#{path_suffix}"
-  end
-
-  def publish_to_apple?
-    false
   end
 
   def include_tags=(tags)
