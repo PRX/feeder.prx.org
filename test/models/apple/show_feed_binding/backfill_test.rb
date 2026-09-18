@@ -207,7 +207,9 @@ module Apple
       podcast_attributes = key ? {prx_account_uri: "/api/v1/accounts/#{key.account_id}"} : {}
       podcast = create(:podcast, **podcast_attributes)
       private_feed = create(:private_feed, podcast: podcast, apple_show_id: private_show_id)
-      config = create(:delegated_delivery_config, :legacy_routing, feed: private_feed, key: key)
+      config = build(:delegated_delivery_config, :legacy_routing, feed: private_feed, key: key)
+      # Reproduce an unfinished setup saved before bindings were required.
+      config.save!(validate: false)
       podcast.update_column(:apple_key_id, nil)
 
       if sync_log_show_id

@@ -7,28 +7,26 @@ module Integrations::EpisodeIntegrations
     has_many :episode_delivery_statuses, -> { order(created_at: :desc) }, class_name: "Integrations::EpisodeDeliveryStatus"
   end
 
-  def integration_episode(integration)
-    integration_episode_method = "#{integration}_episode"
-    if respond_to?(integration_episode_method)
-      send(integration_episode_method)
-    end
-  end
-
   def publish_to_integration?(integration)
-    # see if there is an integration
-    podcast.feeds.any? { |f| f.integration_type == integration && f.publish_integration? }
+    podcast.publish_to_integration?(integration)
   end
 
   def integration_feed_episode?(integration)
-    feed = integration_feed(integration)
-    publish_to_integration?(integration) && feed&.integration_episode?(self)
+    integration_feeds(integration).any?
+  end
+
+  # Enabled integration feeds this episode is actually delivered through. A
+  # podcast can have several, so membership is resolved per episode.
+  def integration_feeds(integration)
+    podcast.feeds.select do |feed|
+      feed.integration_types.include?(integration) &&
+        feed.publish_integration?(integration) &&
+        feed.integration_episode?(self, integration)
+    end
   end
 
   def integration_feed(integration)
-    podcast.feeds.find { |f| f.integration_type == integration }
-  end
-
-  def integration_error_state?(integration)
-    integration_episode(integration)&.error_state? || false
+    feeds = integration_feeds(integration)
+    feeds.one? ? feeds.first : nil
   end
 end

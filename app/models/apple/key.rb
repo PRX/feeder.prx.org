@@ -2,10 +2,7 @@
 
 module Apple
   class Key < ApplicationRecord
-    has_one :delegated_delivery_config, class_name: "Apple::DelegatedDeliveryConfig", foreign_key: "key_id"
     has_many :podcasts, inverse_of: :apple_key
-
-    alias_method :config, :delegated_delivery_config
 
     validates :account_id, presence: true
     validates :provider_id, presence: true, length: {minimum: 10}

@@ -186,7 +186,11 @@ module Apple
     def create_unscoped_state(apple_show_id: "show-1", with_config: true, with_binding: true, ambiguous_binding: false)
       podcast = create(:podcast)
       private_feed = create(:private_feed, podcast: podcast)
-      config = create(:delegated_delivery_config, :legacy_routing, feed: private_feed) if with_config
+      if with_config
+        config = build(:delegated_delivery_config, :legacy_routing, feed: private_feed)
+        # Reproduce an unfinished setup saved before bindings were required.
+        config.save!(validate: false)
+      end
 
       if config && with_binding
         binding = create(:apple_show_feed_binding, feed: podcast.public_feed, apple_show_id: apple_show_id)
