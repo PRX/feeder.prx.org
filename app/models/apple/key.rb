@@ -17,6 +17,12 @@ module Apple
 
     scope :for_account, ->(account_id) { where(account_id: account_id) }
 
+    # Soft-deleted podcasts still reference the key, so removing it would
+    # violate the podcasts.apple_key_id foreign key.
+    def in_use?
+      podcasts.with_deleted.exists?
+    end
+
     def inaccessible_show_ids(show_ids)
       accessible_show_ids = Apple::Show
         .apple_shows_json(Apple::Api.from_apple_key(self))

@@ -49,6 +49,17 @@ describe Apple::Key do
       assert_equal podcasts.sort, key.reload.podcasts.sort
     end
 
+    it "is in use while any podcast references it, including soft-deleted ones" do
+      key = create(:apple_key)
+      refute key.in_use?
+
+      podcast = create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
+      assert key.in_use?
+
+      podcast.destroy!
+      assert key.reload.in_use?
+    end
+
     it "belongs to an account" do
       key = build(:apple_key, account_id: nil)
 

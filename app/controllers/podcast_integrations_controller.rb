@@ -43,7 +43,7 @@ class PodcastIntegrationsController < ApplicationController
   def destroy_apple_key
     authorize @apple_key, :destroy?
 
-    if @apple_key.podcasts.with_deleted.exists?
+    if @apple_key.in_use?
       redirect_to podcast_integrations_path(@podcast), alert: t(".in_use")
     elsif @apple_key.destroy
       redirect_to podcast_integrations_path(@podcast), notice: t(".notice")
