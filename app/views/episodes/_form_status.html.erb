@@ -38,7 +38,7 @@
     <% [:apple, :megaphone].each do |integration| %>
       <% if episode.persisted? && episode.publish_to_integration?(integration) %>
         <% name = integration.to_s.titleize %>
-        <% statuses = episode_integration_statuses(integration, episode) %>
+        <% statuses = episode_integration_statuses(episode, integration) %>
         <% if statuses.empty? %>
           <%= render "integration_status", label: name, status: episode_integration_placeholder_status(episode) %>
         <% else %>

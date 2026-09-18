@@ -17,7 +17,7 @@ module EpisodesHelper
 
   # Delivery status of the episode in each feed delivering it through the
   # integration, keyed by feed. Empty when no feed does.
-  def episode_integration_statuses(integration, episode)
+  def episode_integration_statuses(episode, integration)
     episode.integration_feeds(integration).index_with { |feed| feed_integration_status(episode, feed) }
   end
 
