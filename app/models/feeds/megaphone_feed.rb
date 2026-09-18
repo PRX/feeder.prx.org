@@ -39,11 +39,15 @@ class Feeds::MegaphoneFeed < Feed
     Feed.model_name
   end
 
-  def integration_type
-    :megaphone
+  def default_episode_feed?
+    true
   end
 
-  def integration_episode(episode)
+  def label
+    default? ? super : I18n.t("helpers.label.feed.labels.megaphone")
+  end
+
+  def megaphone_episode(episode)
     episode.megaphone_episode
   end
 
@@ -63,15 +67,11 @@ class Feeds::MegaphoneFeed < Feed
   end
 
   def serve_drafts
-    publish_integration?
+    super || publish_to_megaphone?
   end
 
-  def publish_integration?
-    publish_to_megaphone?
-  end
-
-  def publish_integration!
-    if publish_integration?
+  def publish_to_megaphone!
+    if publish_to_megaphone?
       ::Megaphone::Publisher.new(self).publish!
     end
   end

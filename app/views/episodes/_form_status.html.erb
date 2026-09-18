@@ -44,7 +44,7 @@
         <% else %>
           <% statuses.each do |feed, status| %>
             <% label = episode_integration_label(name, feed) %>
-            <%= render "integration_status", label: label, feed: feed, status: status, updated_at: episode_integration_updated_at(episode, feed) %>
+            <%= render "integration_status", label: label, feed: feed, status: status, updated_at: episode_integration_updated_at(episode, integration, feed) %>
           <% end %>
         <% end %>
       <% end %>

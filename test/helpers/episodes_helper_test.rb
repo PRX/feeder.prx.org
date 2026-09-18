@@ -120,8 +120,8 @@ describe EpisodesHelper do
           first = create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1", created_at: 4.hours.ago)
           second = create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-2", created_at: 2.hours.ago)
 
-          assert_equal first.created_at, helper.episode_integration_updated_at(episode, apple_feed)
-          assert_equal second.created_at, helper.episode_integration_updated_at(episode, other_feed)
+          assert_equal first.created_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
+          assert_equal second.created_at, helper.episode_integration_updated_at(episode, :apple, other_feed)
         end
 
         it "names the feed regardless of how many feeds the episode has" do
@@ -132,7 +132,7 @@ describe EpisodesHelper do
       it "returns 'disconnected' when the integration facade is unavailable" do
         feed = episode.integration_feeds(:apple).first
 
-        feed.stub(:integration_episode, nil) do
+        feed.stub(:apple_episode, nil) do
           assert_equal({feed => "disconnected"}, helper.episode_integration_statuses(episode, :apple))
         end
       end
@@ -142,7 +142,7 @@ describe EpisodesHelper do
         integration_episode.define_singleton_method(:delivery_status) { |*| nil }
         feed = episode.integration_feeds(:apple).first
 
-        feed.stub(:integration_episode, integration_episode) do
+        feed.stub(:apple_episode, integration_episode) do
           assert_equal({feed => "disconnected"}, helper.episode_integration_statuses(episode, :apple))
         end
       end
@@ -231,6 +231,21 @@ describe EpisodesHelper do
       end
     end
 
+    it "shows separate statuses and timestamps for Apple and Megaphone on the same feed" do
+      mixed_feed = create(:megaphone_feed, podcast: podcast)
+      config = create(:delegated_delivery_config, feed: mixed_feed)
+      episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+      apple_status = create(:apple_episode_delivery_status, episode: episode,
+        apple_show_id: config.apple_show_id, uploaded: true, delivered: true, created_at: 2.hours.ago)
+      megaphone_status = create(:megaphone_episode_delivery_status, episode: episode,
+        uploaded: false, delivered: false, created_at: 1.hour.ago)
+
+      assert_equal({mixed_feed => "complete"}, helper.episode_integration_statuses(episode, :apple))
+      assert_equal({mixed_feed => "incomplete"}, helper.episode_integration_statuses(episode, :megaphone))
+      assert_equal apple_status.created_at, helper.episode_integration_updated_at(episode, :apple, mixed_feed)
+      assert_equal megaphone_status.created_at, helper.episode_integration_updated_at(episode, :megaphone, mixed_feed)
+    end
+
     describe "with megaphone feed" do
       let(:megaphone_feed) { create(:megaphone_feed, podcast: podcast) }
       let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
@@ -238,7 +253,7 @@ describe EpisodesHelper do
       before { megaphone_feed }
 
       it "builds the megaphone facade from the feed" do
-        facade = megaphone_feed.integration_episode(episode)
+        facade = megaphone_feed.megaphone_episode(episode)
 
         assert_instance_of Megaphone::Episode, facade
         assert_equal episode, facade.feeder_episode
@@ -263,12 +278,12 @@ describe EpisodesHelper do
     let(:megaphone_feed) { create(:megaphone_feed, podcast: podcast) }
 
     it "returns episode updated_at when no sync logs or delivery status exist" do
-      assert_equal episode.updated_at, helper.episode_integration_updated_at(episode, megaphone_feed)
+      assert_equal episode.updated_at, helper.episode_integration_updated_at(episode, :megaphone, megaphone_feed)
     end
 
     it "returns episode updated_at when the integration facade is unavailable" do
-      apple_feed.stub(:integration_episode, nil) do
-        assert_equal episode.updated_at, helper.episode_integration_updated_at(episode, apple_feed)
+      apple_feed.stub(:apple_episode, nil) do
+        assert_equal episode.updated_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
       end
     end
 
@@ -283,26 +298,26 @@ describe EpisodesHelper do
         updated_at: 2.hours.ago
       )
 
-      assert_equal sync_log.updated_at, helper.episode_integration_updated_at(episode, apple_feed)
+      assert_equal sync_log.updated_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
     end
 
     it "returns sync_log updated_at for non-apple integrations" do
       sync_log = SyncLog.create!(feeder_id: episode.id, feeder_type: :episodes, external_id: "456",
         api_response: {}, integration: :megaphone, updated_at: 3.hours.ago)
 
-      assert_equal sync_log.updated_at, helper.episode_integration_updated_at(episode, megaphone_feed)
+      assert_equal sync_log.updated_at, helper.episode_integration_updated_at(episode, :megaphone, megaphone_feed)
     end
 
     it "returns delivery status created_at for apple integration" do
       delivery_status = create(:apple_episode_delivery_status, episode: episode, created_at: 4.hours.ago)
 
-      assert_equal delivery_status.created_at, helper.episode_integration_updated_at(episode, apple_feed)
+      assert_equal delivery_status.created_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
     end
 
     it "returns delivery status created_at for non-apple integrations" do
       delivery_status = create(:megaphone_episode_delivery_status, episode: episode, created_at: 5.hours.ago)
 
-      assert_equal delivery_status.created_at, helper.episode_integration_updated_at(episode, megaphone_feed)
+      assert_equal delivery_status.created_at, helper.episode_integration_updated_at(episode, :megaphone, megaphone_feed)
     end
   end
 end

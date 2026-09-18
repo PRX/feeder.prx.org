@@ -37,7 +37,7 @@ describe Feed, "Apple delegated delivery" do
 
     assert_nil delivery_feed.type
     assert_equal config, delivery_feed.reload.delegated_delivery_config
-    assert_equal :apple, delivery_feed.integration_type
+    assert delivery_feed.publish_to_apple?
     assert_equal "Members", delivery_feed.label
   end
 
@@ -94,14 +94,14 @@ describe Feed, "Apple delegated delivery" do
     create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding, publish_enabled: true)
 
     assert delivery_feed.reload.publish_to_apple?
-    assert delivery_feed.publish_integration?
+    assert delivery_feed.publish_to_apple?
   end
 
   it "does not publish when delegated delivery is disabled" do
     create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding, publish_enabled: false)
 
     refute delivery_feed.reload.publish_to_apple?
-    refute delivery_feed.publish_integration?
+    refute delivery_feed.publish_to_apple?
   end
 
   it "allows a public feed to delegate through its own binding" do
@@ -129,18 +129,18 @@ describe Feed, "Apple delegated delivery" do
     create(:delegated_delivery_config, feed: podcast.default_feed, show_feed_binding: binding)
     draft = create(:episode_with_media, podcast: podcast, published_at: nil)
 
-    assert_includes podcast.default_feed.integration_draft_episodes, draft
-    assert podcast.default_feed.integration_episode?(draft)
+    assert_includes podcast.default_feed.apple_draft_episodes, draft
+    assert podcast.default_feed.apple_episode?(draft)
     refute podcast.default_feed.feed_episode?(draft)
   end
 
   it "excludes drafts from feeds without Apple delegated delivery" do
     draft = create(:episode_with_media, podcast: podcast, published_at: nil)
 
-    assert_empty podcast.default_feed.integration_draft_episodes
-    refute podcast.default_feed.integration_episode?(draft)
+    assert_empty podcast.default_feed.apple_draft_episodes
+    refute podcast.default_feed.apple_episode?(draft)
   end
-  describe "#integration_draft_episodes" do
+  describe "#apple_draft_episodes" do
     [-1.day.to_i, 0, 1.day.to_i].each do |offset|
       it "partitions episodes at the release boundary with offset #{offset}" do
         freeze_time do
@@ -152,7 +152,7 @@ describe Feed, "Apple delegated delivery" do
           draft = create(:episode, podcast: podcast, published_at: nil)
 
           assert_equal [boundary.id, released.id].sort, apple_feed.feed_episode_ids.sort
-          assert_equal [upcoming.id, draft.id].sort, apple_feed.integration_draft_episodes.pluck(:id).sort
+          assert_equal [upcoming.id, draft.id].sort, apple_feed.apple_draft_episodes.pluck(:id).sort
         end
       end
     end
@@ -163,14 +163,61 @@ describe Feed, "Apple delegated delivery" do
       scheduled = create(:episode, podcast: podcast, published_at: 1.day.from_now)
       published = create(:episode, podcast: podcast, published_at: 1.day.ago)
 
-      result = apple_feed.integration_draft_episodes
+      result = apple_feed.apple_draft_episodes
       assert_includes result, draft
       assert_includes result, scheduled
       refute_includes result, published
     end
   end
 
-  describe "#integration_episode" do
+  describe "Apple delivery on a Megaphone feed" do
+    let(:mixed_feed) { create(:megaphone_feed, podcast: podcast) }
+
+    before do
+      create(:delegated_delivery_config, feed: mixed_feed, show_feed_binding: binding)
+      mixed_feed.reload
+    end
+
+    it "builds each facade without confusing their configurations" do
+      episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+
+      assert_instance_of Apple::Episode, mixed_feed.apple_episode(episode)
+      assert_equal binding.apple_show_id, mixed_feed.apple_episode(episode).apple_show_id
+      assert_instance_of Megaphone::Episode, mixed_feed.megaphone_episode(episode)
+      assert_equal [mixed_feed], episode.integration_feeds(:apple)
+      assert_equal [mixed_feed], episode.integration_feeds(:megaphone)
+    end
+
+    it "keeps Apple draft eligibility separate from Megaphone's RSS window" do
+      draft = create(:episode_with_media, podcast: podcast, published_at: nil)
+
+      assert_includes mixed_feed.apple_draft_episodes, draft
+      assert_equal [mixed_feed], draft.integration_feeds(:apple)
+      assert_empty draft.integration_feeds(:megaphone)
+    end
+
+    it "keeps Apple enabled when Megaphone is paused" do
+      mixed_feed.megaphone_config.update!(publish_enabled: false)
+
+      assert mixed_feed.publish_to_apple?
+      refute mixed_feed.publish_to_megaphone?
+      assert mixed_feed.serve_drafts
+      assert podcast.publish_to_integration?(:apple)
+      refute podcast.publish_to_integration?(:megaphone)
+    end
+
+    it "keeps Megaphone enabled when Apple is paused" do
+      mixed_feed.delegated_delivery_config.update!(publish_enabled: false)
+
+      refute mixed_feed.publish_to_apple?
+      assert mixed_feed.publish_to_megaphone?
+      assert mixed_feed.serve_drafts
+      refute podcast.publish_to_integration?(:apple)
+      assert podcast.publish_to_integration?(:megaphone)
+    end
+  end
+
+  describe "#apple_episode" do
     it "resolves the show-scoped sync log through the integration facade" do
       episode = create(:episode, podcast: podcast)
       apple_feed = create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
@@ -182,44 +229,44 @@ describe Feed, "Apple delegated delivery" do
         external_show_id: "show-1"
       )
 
-      assert_equal sync_log, apple_feed.integration_episode(episode).sync_log
+      assert_equal sync_log, apple_feed.apple_episode(episode).sync_log
     end
 
     it "builds the Apple facade scoped to this feed's show" do
       apple_feed.save!
       episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
 
-      facade = apple_feed.integration_episode(episode)
+      facade = apple_feed.apple_episode(episode)
 
       assert_instance_of Apple::Episode, facade
-      assert_equal apple_feed.config.apple_show_id, facade.apple_show_id
+      assert_equal apple_feed.delegated_delivery_config.apple_show_id, facade.apple_show_id
       assert_equal episode, facade.feeder_episode
     end
 
     it "returns nil for feeds without an integration" do
       episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
 
-      assert_nil podcast.default_feed.integration_episode(episode)
+      assert_nil podcast.default_feed.apple_episode(episode)
     end
   end
 
-  describe "#integration_episode?" do
+  describe "#apple_episode?" do
     it "keeps early releases beyond the feed limit out of both episode sets" do
       apple_feed.update!(episode_offset_seconds: -1.day.to_i, display_episodes_count: 1)
       excluded = create(:episode_with_media, podcast: podcast, published_at: 1.hour.from_now)
       included = create(:episode_with_media, podcast: podcast, published_at: 2.hours.from_now)
 
       assert_equal [included.id], apple_feed.feed_episode_ids
-      assert_empty apple_feed.integration_draft_episodes
-      refute apple_feed.integration_episode?(excluded)
-      assert apple_feed.integration_episode?(included)
+      assert_empty apple_feed.apple_draft_episodes
+      refute apple_feed.apple_episode?(excluded)
+      assert apple_feed.apple_episode?(included)
     end
 
     it "returns true for published episodes in feed_episodes" do
       apple_feed.save!
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
 
-      assert apple_feed.integration_episode?(published)
+      assert apple_feed.apple_episode?(published)
     end
 
     it "returns false for published episodes not in feed_episodes" do
@@ -228,7 +275,7 @@ describe Feed, "Apple delegated delivery" do
       # remove from the apple feed's episodes
       apple_feed.episodes_feeds.where(episode: published).delete_all
 
-      refute apple_feed.integration_episode?(published)
+      refute apple_feed.apple_episode?(published)
     end
 
     it "returns true for draft and scheduled episodes with uploadable media" do
@@ -236,15 +283,15 @@ describe Feed, "Apple delegated delivery" do
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       scheduled = create(:episode_with_media, podcast: podcast, published_at: 1.day.from_now)
 
-      assert apple_feed.integration_episode?(draft)
-      assert apple_feed.integration_episode?(scheduled)
+      assert apple_feed.apple_episode?(draft)
+      assert apple_feed.apple_episode?(scheduled)
     end
 
     it "returns false for draft episodes with no media" do
       apple_feed.save!
       no_media = create(:episode, podcast: podcast, published_at: nil)
 
-      refute apple_feed.integration_episode?(no_media)
+      refute apple_feed.apple_episode?(no_media)
     end
 
     it "returns false for draft episodes with incomplete media (enclosure not complete)" do
@@ -259,7 +306,7 @@ describe Feed, "Apple delegated delivery" do
       # enclosure_ready?(false) would be true, but enclosure_ready?(true) is false
       assert processing.enclosure_ready?(false)
       refute processing.enclosure_ready?(true)
-      refute apple_feed.integration_episode?(processing)
+      refute apple_feed.apple_episode?(processing)
     end
 
     it "returns false for draft episodes that are not feed-ready" do
@@ -271,20 +318,20 @@ describe Feed, "Apple delegated delivery" do
         segment_count: 1,
         contents: [build(:content, status: "created")])
 
-      refute apple_feed.integration_episode?(not_ready)
+      refute apple_feed.apple_episode?(not_ready)
     end
 
     it "returns false for draft episodes not assigned to this feed" do
       apple_feed.save!
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       # verify it's initially included
-      assert apple_feed.integration_episode?(draft)
+      assert apple_feed.apple_episode?(draft)
 
       # remove from the apple feed
       apple_feed.episodes_feeds.where(episode: draft).delete_all
       apple_feed.reload
 
-      refute apple_feed.integration_episode?(draft)
+      refute apple_feed.apple_episode?(draft)
     end
   end
 end

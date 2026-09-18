@@ -138,13 +138,13 @@ describe Feed do
     end
   end
 
-  describe "#integration_episode?" do
-    it "matches feed_episode? for feeds without integrations" do
+  describe "#apple_episode?" do
+    it "excludes feeds without Apple delivery" do
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
       scheduled = create(:episode, podcast: podcast, published_at: 1.hour.from_now)
 
-      assert feed1.integration_episode?(published)
-      refute feed1.integration_episode?(scheduled)
+      refute feed1.apple_episode?(published)
+      refute feed1.apple_episode?(scheduled)
     end
   end
 

@@ -74,17 +74,19 @@ class EpisodeHasFeedsTest < ActiveSupport::TestCase
     [:apple_feed, :megaphone_feed].each do |factory|
       it "keeps new episodes in a paused #{factory}" do
         integration_feed = create(factory, podcast: podcast)
-        integration_feed.config.update!(publish_enabled: false)
-        refute integration_feed.publish_integration?
+        integration = (factory == :apple_feed) ? :apple : :megaphone
+        config = (integration == :apple) ? integration_feed.delegated_delivery_config : integration_feed.megaphone_config
+        config.update!(publish_enabled: false)
+        refute podcast.publish_to_integration?(integration)
 
         created_during_pause = create(:episode, podcast: podcast.reload)
 
         assert_equal [f1.id, integration_feed.id].sort, created_during_pause.reload.feed_ids.sort
 
-        integration_feed.config.update!(publish_enabled: true)
+        config.update!(publish_enabled: true)
 
-        assert integration_feed.publish_integration?
-        assert integration_feed.reload.integration_episode?(created_during_pause)
+        assert podcast.reload.publish_to_integration?(integration)
+        assert_includes created_during_pause.reload.integration_feeds(integration), integration_feed
       end
     end
 

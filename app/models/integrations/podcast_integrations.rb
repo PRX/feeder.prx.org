@@ -3,11 +3,14 @@ require "active_support/concern"
 module Integrations::PodcastIntegrations
   extend ActiveSupport::Concern
 
-  # included do
-  # end
-
   def publish_to_integration?(integration)
-    # see if there is an integration
-    feeds.any? { |f| f.integration_type == integration && f.publish_integration? }
+    case integration
+    when :apple
+      feeds.any?(&:publish_to_apple?)
+    when :megaphone
+      feeds.any? { |feed| feed.is_a?(Feeds::MegaphoneFeed) && feed.publish_to_megaphone? }
+    else
+      false
+    end
   end
 end

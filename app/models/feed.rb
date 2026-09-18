@@ -4,6 +4,7 @@ class Feed < ApplicationRecord
   include FeedAudioFormat
   include FeedAdZone
   include FeedITunesCategory
+  include FeedApple
 
   DEFAULT_FILE_NAME = "feed-rss.xml".freeze
 
@@ -34,64 +35,8 @@ class Feed < ApplicationRecord
   has_many :itunes_images, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :feed
   has_many :itunes_categories, -> { order("created_at ASC") }, validate: true, autosave: true, dependent: :destroy
 
-  has_one :apple_sync_log, -> { feeds.apple }, foreign_key: :feeder_id, class_name: "Apple::SyncLog"
-  has_one :apple_show_feed_binding, class_name: "Apple::ShowFeedBinding", dependent: :destroy
-  has_one :delegated_delivery_config,
-    class_name: "Apple::DelegatedDeliveryConfig",
-    dependent: :destroy,
-    autosave: true,
-    validate: true,
-    inverse_of: :feed
-
-  def apple_connection
-    if defined?(@apple_connection)
-      @apple_connection
-    else
-      apple_show_feed_binding&.apple_show_id
-    end
-  end
-
-  attr_writer :apple_connection
-
-  def apple_connection_was
-    apple_show_feed_binding&.apple_show_id
-  end
-
-  def apple_connection_changed?
-    apple_connection.to_s != apple_connection_was.to_s
-  end
-
-  def save_with_apple_connection
-    saved = false
-    transaction do
-      if save && save_apple_connection
-        saved = true
-      else
-        raise ActiveRecord::Rollback
-      end
-    end
-    saved
-  end
-
-  private def save_apple_connection
-    return true unless public? && apple_connection_changed?
-
-    binding = if apple_connection.blank?
-      apple_show_feed_binding.tap(&:destroy)
-    else
-      Apple::ShowFeedBinding.connect_existing(feed: self, apple_show_id: apple_connection)
-    end
-
-    binding.errors.full_messages.each { |message| errors.add(:apple_connection, message) }
-    association(:apple_show_feed_binding).reset if binding.errors.empty?
-    binding.errors.empty?
-  end
-
   accepts_nested_attributes_for :feed_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
   accepts_nested_attributes_for :itunes_images, allow_destroy: true, reject_if: ->(i) { i[:id].blank? && i[:original_url].blank? }
-  accepts_nested_attributes_for :delegated_delivery_config,
-    allow_destroy: true,
-    reject_if: ->(attributes) { attributes["id"].blank? && attributes["show_feed_binding_id"].blank? }
 
   acts_as_paranoid
 
@@ -116,26 +61,10 @@ class Feed < ApplicationRecord
   validates :display_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :display_full_episodes_count, numericality: {only_integer: true, greater_than: 0}, allow_nil: true
   validates :description, bytesize: {maximum: Episode::MAX_DESCRIPTION_BYTES}
-  validate :apple_connection_requires_public_feed
 
   after_initialize :set_defaults
   before_validation :sanitize_text
   before_save :set_public_feeds_url, :check_enclosure_changes
-  before_destroy :protect_apple_delivery_connection, prepend: true
-
-  private def apple_connection_requires_public_feed
-    if private? && apple_show_feed_binding
-      errors.add(:private, "cannot be enabled while connected to an Apple show")
-    end
-  end
-
-  private def protect_apple_delivery_connection
-    return if destroyed_by_association
-    return unless apple_show_feed_binding&.delegated_delivery_config
-
-    errors.add(:base, "Cannot delete a feed while delegated delivery uses its Apple connection")
-    throw :abort
-  end
 
   scope :default, -> { where(slug: nil) }
   scope :custom, -> { where.not(slug: nil) }
@@ -148,24 +77,19 @@ class Feed < ApplicationRecord
     #   a la "where's my episode?" publish tracking
   end
 
-  def integration_type
-    :apple if delegated_delivery_config
-  end
-
-  def publish_integration?
-    publish_to_apple?
+  def default_episode_feed?
+    default? || delegated_delivery_config.present?
   end
 
   def serve_drafts
-    publish_integration?
+    publish_to_apple?
   end
 
-  def publish_integration!
-    delegated_delivery_config.build_publisher.publish! if publish_integration?
-  end
-
-  def config
-    delegated_delivery_config
+  def integration_episode(episode, integration)
+    case integration
+    when :apple then apple_episode(episode)
+    when :megaphone then megaphone_episode(episode) if is_a?(Feeds::MegaphoneFeed)
+    end
   end
 
   def sync_log(integration)
@@ -185,8 +109,6 @@ class Feed < ApplicationRecord
   def label
     if default?
       I18n.t("helpers.label.feed.labels.default")
-    elsif type.present? && integration_type
-      I18n.t("helpers.label.feed.labels.#{integration_type}")
     else
       super
     end
@@ -237,34 +159,6 @@ class Feed < ApplicationRecord
 
   def feed_episode?(episode)
     feed_episodes.where(id: episode.id).exists?
-  end
-
-  # Whether an episode is eligible for this feed's integration.
-  # Apple can upload drafts beyond the rendered RSS window.
-  def integration_episode?(episode)
-    if integration_type != :apple || episode.published_by?(episode_offset_seconds.to_i)
-      feed_episode?(episode)
-    elsif episode.enclosure_ready?(true)
-      integration_draft_episodes.where(id: episode.id).exists?
-    else
-      false
-    end
-  end
-
-  # The integration's facade for an episode. Apple state is scoped to a
-  # show, so the facade is built from this feed's connection.
-  def integration_episode(episode)
-    return unless integration_type == :apple
-
-    show = delegated_delivery_config.build_show
-    show.build_integration_episode(episode) if show.apple_id.present?
-  end
-
-  # Episodes an integration may act on before they are published.
-  def integration_draft_episodes
-    return episodes.none unless integration_type == :apple
-
-    episodes.where("episodes.published_at IS NULL OR episodes.published_at > ?", Time.now - episode_offset_seconds.to_i)
   end
 
   def guid
@@ -327,10 +221,6 @@ class Feed < ApplicationRecord
 
   def path
     "#{podcast&.path}/#{path_suffix}"
-  end
-
-  def publish_to_apple?
-    valid? && persisted? && !!delegated_delivery_config&.publish_to_apple?
   end
 
   def include_tags=(tags)

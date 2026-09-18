@@ -24,14 +24,17 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.start!(podcast)
 
     # Publish each integration for each feed (e.g. apple, megaphone)
-    podcast.feeds.each { |feed| publish_integration(podcast, feed) }
+    podcast.feeds.each do |feed|
+      publish_apple(podcast, feed)
+      publish_megaphone(podcast, feed)
+    end
 
     # After integrations, publish RSS, if appropriate
     podcast.feeds.each { |feed| publish_rss(podcast, feed) }
 
     PublishingPipelineState.complete!(podcast)
   # Top-level error handling, capping the entire pipeline's error status
-  # All of the intermediate errors are handled in the publish_integration and publish_rss
+  # Intermediate errors are handled by with_integration_publishing and publish_rss
   rescue Apple::RetryPublishingError
     # Terminal state: retry
     PublishingPipelineState.retry!(podcast)
@@ -44,14 +47,29 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
-  def publish_integration(podcast, feed)
-    return unless feed.publish_integration?
-    context = {feed_id: feed.id, integration: feed.integration_type}
-    tags = ["integration:#{feed.integration_type}", "feed:#{feed.id}"]
+  def publish_apple(podcast, feed)
+    return unless feed.publish_to_apple?
+
+    with_integration_publishing(podcast, feed, :apple, config: feed.delegated_delivery_config) do
+      feed.publish_to_apple!
+    end
+  end
+
+  def publish_megaphone(podcast, feed)
+    return unless feed.is_a?(Feeds::MegaphoneFeed) && feed.publish_to_megaphone?
+
+    with_integration_publishing(podcast, feed, :megaphone, config: feed.megaphone_config) do
+      feed.publish_to_megaphone!
+    end
+  end
+
+  def with_integration_publishing(podcast, feed, integration, config:)
+    context = {feed_id: feed.id, integration: integration}
+    tags = ["integration:#{integration}", "feed:#{feed.id}"]
 
     Rails.logger.tagged(*tags) do
       Rails.logger.info("Starting integration feed publish", context)
-      res = feed.publish_integration!
+      res = yield
       PublishingPipelineState.publish_integration!(podcast)
       Rails.logger.info("Completed integration feed publish", context)
       res
@@ -63,7 +81,7 @@ class PublishFeedJob < ApplicationJob
       # Log at the error's specified level (INFO, WARN, or ERROR)
       e.log_error!
 
-      if feed.config.sync_blocks_rss
+      if config.sync_blocks_rss
         # When sync_blocks_rss is enabled, Apple publishing must succeed before RSS
         raise Apple::RetryPublishingError.new(e.message)
       else
@@ -78,7 +96,7 @@ class PublishFeedJob < ApplicationJob
 
       # Re-raise the error if sync_blocks_rss is enabled, blocking RSS publishing
       # Otherwise, swallow the error and allow RSS publishing to proceed
-      raise e if feed.config.sync_blocks_rss
+      raise e if config.sync_blocks_rss
     end
   end
 

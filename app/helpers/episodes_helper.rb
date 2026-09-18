@@ -18,7 +18,7 @@ module EpisodesHelper
   # Delivery status of the episode in each feed delivering it through the
   # integration, keyed by feed. Empty when no feed does.
   def episode_integration_statuses(episode, integration)
-    episode.integration_feeds(integration).index_with { |feed| feed_integration_status(episode, feed) }
+    episode.integration_feeds(integration).index_with { |feed| feed_integration_status(episode, integration, feed) }
   end
 
   # Status for an episode no feed of the integration delivers.
@@ -26,8 +26,8 @@ module EpisodesHelper
     episode.draft? ? "draft" : "not_publishable"
   end
 
-  def episode_integration_updated_at(episode, feed)
-    integration_episode = feed.integration_episode(episode)
+  def episode_integration_updated_at(episode, integration, feed)
+    integration_episode = feed.integration_episode(episode, integration)
     return episode.updated_at unless integration_episode
 
     integration_episode.sync_log&.updated_at ||
@@ -135,8 +135,8 @@ module EpisodesHelper
 
   private
 
-  def feed_integration_status(episode, feed)
-    integration_episode = feed.integration_episode(episode)
+  def feed_integration_status(episode, integration, feed)
+    integration_episode = feed.integration_episode(episode, integration)
     return "disconnected" unless integration_episode
 
     status = integration_episode.delivery_status(true)

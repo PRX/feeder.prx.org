@@ -8,8 +8,7 @@ module Integrations::EpisodeIntegrations
   end
 
   def publish_to_integration?(integration)
-    # see if there is an integration
-    podcast.feeds.any? { |f| f.integration_type == integration && f.publish_integration? }
+    podcast.publish_to_integration?(integration)
   end
 
   def integration_feed_episode?(integration)
@@ -20,7 +19,14 @@ module Integrations::EpisodeIntegrations
   # podcast can have several, so membership is resolved per episode.
   def integration_feeds(integration)
     podcast.feeds.select do |feed|
-      feed.integration_type == integration && feed.publish_integration? && feed.integration_episode?(self)
+      case integration
+      when :apple
+        feed.publish_to_apple? && feed.apple_episode?(self)
+      when :megaphone
+        feed.is_a?(Feeds::MegaphoneFeed) && feed.publish_to_megaphone? && feed.feed_episode?(self)
+      else
+        false
+      end
     end
   end
 
