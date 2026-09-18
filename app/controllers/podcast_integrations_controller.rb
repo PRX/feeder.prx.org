@@ -1,3 +1,7 @@
+# Apple is the only integration today, so this controller hosts the whole
+# integrations tab, including Apple credential management.
+# TODO: when a second integration is added, split each integration into its own
+# controller.
 class PodcastIntegrationsController < ApplicationController
   before_action :set_podcast
   before_action :set_apple_key, only: :destroy_apple_key
