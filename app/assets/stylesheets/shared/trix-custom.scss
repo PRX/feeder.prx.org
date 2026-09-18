@@ -28,6 +28,15 @@ trix-editor.trix-content[contenteditable="false"] {
 
 .form-floating > trix-toolbar {
   width: 100%;
+
+  .trix-button-group {
+    @include border-radius($btn-border-radius);
+    overflow: hidden;
+  }
+
+  .trix-button {
+    border-bottom: none;
+  }
 }
 
 .form-floating > trix-editor ~ label {
