@@ -209,6 +209,7 @@ class PodcastIntegrationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "form[action='#{podcast_apple_key_path(podcast, key)}']", count: 0
+    assert_select "body", text: /Used by a deleted podcast/
   end
 
   test "rejects credential uploads by a read only user" do

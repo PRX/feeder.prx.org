@@ -1403,6 +1403,7 @@ en:
           other: Used by %{count} podcasts
         selected: Used by this podcast
         used_by_other_html: "Used by %{podcast_titles}"
+        used_by_deleted: Used by a deleted podcast
         remove: Remove
         remove_confirm: Remove this unused Apple credential from the PRX account?
         add_title: Add an account credential
