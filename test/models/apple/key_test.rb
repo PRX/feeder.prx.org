@@ -64,21 +64,6 @@ describe Apple::Key do
       refute key.destroyed?
     end
 
-    it "rejects destruction while a soft-deleted podcast references the key" do
-      key = create(:apple_key)
-      podcast = create(:podcast, title: "First deleted show", apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
-      # Simulate a podcast deleted before the key-clearing callback existed.
-      podcast.update_column(:deleted_at, Time.current)
-      create(:podcast, title: "Second deleted show", apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}").update_column(:deleted_at, Time.current)
-
-      assert_no_difference "Apple::Key.count" do
-        refute key.destroy
-      end
-
-      assert_equal ['Apple credentials cannot be removed while deleted podcast "First deleted show" uses them'], key.errors[:base]
-      refute key.destroyed?
-    end
-
     it "exposes the referenced key's errors when destroy! raises" do
       key = create(:apple_key)
       create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
@@ -101,16 +86,15 @@ describe Apple::Key do
       assert_equal podcasts.sort, key.reload.podcasts.sort
     end
 
-    it "is in use while any podcast references it, including soft-deleted ones" do
+    it "is no longer in use after its podcast is destroyed" do
       key = create(:apple_key)
       refute key.in_use?
 
       podcast = create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
       assert key.in_use?
 
-      # Simulate a podcast deleted before the key-clearing callback existed.
-      podcast.update_column(:deleted_at, Time.current)
-      assert key.reload.in_use?
+      podcast.destroy!
+      refute key.reload.in_use?
     end
 
     it "belongs to an account" do

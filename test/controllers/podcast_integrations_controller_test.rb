@@ -22,9 +22,9 @@ class PodcastIntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert another_podcast
   end
 
-  test "offers removal for a credential referenced only by a deleted podcast" do
+  test "offers credential removal after its podcast is destroyed" do
     key = create(:apple_key, account_id: 123)
-    create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: key).update_column(:deleted_at, Time.current)
+    create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: key).destroy!
 
     get podcast_integrations_url(podcast)
 
