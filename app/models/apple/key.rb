@@ -27,7 +27,7 @@ module Apple
 
     def inaccessible_show_ids(show_ids)
       accessible_show_ids = Apple::Show
-        .apple_shows_json(Apple::Api.from_apple_key(self))
+        .apple_shows_json(Apple::Api.from_key(self))
         .filter_map { |show| show["id"].presence }
 
       show_ids - accessible_show_ids

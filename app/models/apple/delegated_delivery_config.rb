@@ -83,10 +83,6 @@ module Apple
       legacy_public_feed&.apple_sync_log&.external_id.presence || private_feed&.apple_show_id.presence
     end
 
-    def delivery_feed
-      feed
-    end
-
     def key_belongs_to_podcast_account
       return unless key && podcast
       return if key.account_id == podcast.account_id

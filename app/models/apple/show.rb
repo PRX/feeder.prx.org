@@ -57,15 +57,6 @@ module Apple
       api.unwrap_response(resp)
     end
 
-    def self.from_show_feed_binding(binding)
-      new(
-        api: Apple::Api.from_apple_key(binding.feed.podcast.apple_key),
-        public_feed: binding.feed,
-        private_feed: binding.feed,
-        show_feed_binding: binding
-      )
-    end
-
     def inspect
       "#<Apple:Show:#{object_id} show_id=#{try(:apple_id) || "nil"}>"
     end
@@ -79,12 +70,11 @@ module Apple
         delegated_delivery_config: delegated_delivery_config)
     end
 
-    def initialize(api:, public_feed:, private_feed:, delegated_delivery_config: nil, show_feed_binding: nil)
+    def initialize(api:, public_feed:, private_feed:, delegated_delivery_config: nil)
       @private_feed = private_feed
       @public_feed = public_feed
       @api = api
       @delegated_delivery_config = delegated_delivery_config
-      @show_feed_binding = show_feed_binding
     end
 
     # Gate on enclosure_ready? to prevent medialess drafts from
@@ -155,8 +145,6 @@ module Apple
     end
 
     def apple_id
-      return @show_feed_binding.apple_show_id if @show_feed_binding
-
       if @delegated_delivery_config&.routing_source == :show_feed_binding
         bound_show_id = @delegated_delivery_config.apple_show_id
         return bound_show_id if bound_show_id.present?

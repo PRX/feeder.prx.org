@@ -55,7 +55,7 @@ module Apple
     end
 
     private def verify_show_access
-      Apple::Show.from_show_feed_binding(self).get_show
+      Apple::Show.get_show(Apple::Api.from_key(feed.podcast.apple_key), apple_show_id)
       true
     rescue => error
       Rails.logger.error("Unable to connect Apple show feed binding", feed_id: feed_id, apple_show_id: apple_show_id, error: error)
@@ -82,7 +82,7 @@ module Apple
     def self.connection_options(apple_key)
       return [] unless apple_key
 
-      api = Apple::Api.from_apple_key(apple_key)
+      api = Apple::Api.from_key(apple_key)
       shows = Apple::Show.apple_shows_json(api) || []
 
       shows.filter_map do |show|

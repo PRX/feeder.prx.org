@@ -95,10 +95,6 @@ class Podcast < ApplicationRecord
     delegated_delivery_configs.exists?
   end
 
-  def reload(options = nil)
-    super
-  end
-
   def explicit=(value)
     super(Podcast::EXPLICIT_ALIASES.fetch(value, value))
   end
