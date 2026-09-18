@@ -41,12 +41,60 @@ describe Apple::Key do
     end
   end
 
+  describe "#destroy" do
+    it "destroys an unused key" do
+      key = create(:apple_key)
+
+      assert_difference "Apple::Key.count", -1 do
+        assert key.destroy
+      end
+
+      assert key.destroyed?
+    end
+
+    it "rejects destruction while a podcast references the key" do
+      key = create(:apple_key)
+      create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
+
+      assert_no_difference "Apple::Key.count" do
+        refute key.destroy
+      end
+
+      assert_equal ["Apple credentials cannot be removed while podcasts use them"], key.errors[:base]
+      refute key.destroyed?
+    end
+
+    it "exposes the referenced key's errors when destroy! raises" do
+      key = create(:apple_key)
+      create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
+
+      error = assert_raises ActiveRecord::RecordNotDestroyed do
+        key.destroy!
+      end
+
+      assert_same key, error.record
+      assert_equal ["Apple credentials cannot be removed while podcasts use them"], error.record.errors[:base]
+      assert Apple::Key.exists?(key.id)
+    end
+  end
+
   describe "apple_key" do
     it "can be selected by multiple podcasts" do
       key = create(:apple_key)
       podcasts = create_list(:podcast, 2, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
 
       assert_equal podcasts.sort, key.reload.podcasts.sort
+    end
+
+    it "is no longer in use after its podcast is destroyed" do
+      key = create(:apple_key)
+      refute key.in_use?
+
+      podcast = create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
+      assert key.in_use?
+
+      podcast.destroy!
+      refute key.reload.in_use?
     end
 
     it "belongs to an account" do
@@ -82,6 +130,14 @@ describe Apple::Key do
       assert_equal key.provider_id, api.provider_id
       assert_equal key.key_id, api.key_id
       assert_equal key.key_pem, api.key
+    end
+
+    it "reports shows that the key cannot access" do
+      key = create(:apple_key)
+      body = {data: [{id: "show-1", attributes: {title: "A show"}}], links: {}}.to_json
+      stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
+
+      assert_equal ["show-2"], key.inaccessible_show_ids(["show-1", "show-2"])
     end
 
     it "requires correct format of apple key" do

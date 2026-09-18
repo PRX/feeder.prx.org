@@ -15,6 +15,20 @@ describe Podcast do
     assert_includes podcast.errors[:apple_key], "must belong to the podcast's PRX account"
   end
 
+  it "clears its Apple credential when destroyed so the key can be removed" do
+    key = create(:apple_key, account_id: podcast.account_id)
+    podcast.update!(apple_key: key)
+    feed = create(:public_feed, podcast: podcast)
+    binding = create(:apple_show_feed_binding, feed: feed)
+    create(:delegated_delivery_config, feed: feed, show_feed_binding: binding, key: key)
+
+    podcast.destroy!
+
+    assert podcast.reload.deleted?
+    assert_nil podcast.apple_key
+    assert key.reload.destroy
+  end
+
   it "has a default feed" do
     podcast = Podcast.new.tap(&:valid?)
     assert podcast.default_feed.present?
