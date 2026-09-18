@@ -41,6 +41,56 @@ describe Apple::Key do
     end
   end
 
+  describe "#destroy" do
+    it "destroys an unused key" do
+      key = create(:apple_key)
+
+      assert_difference "Apple::Key.count", -1 do
+        assert key.destroy
+      end
+
+      assert key.destroyed?
+    end
+
+    it "rejects destruction while a podcast references the key" do
+      key = create(:apple_key)
+      create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
+
+      assert_no_difference "Apple::Key.count" do
+        refute key.destroy
+      end
+
+      assert_equal ["Apple credentials cannot be removed while podcasts use them"], key.errors[:base]
+      refute key.destroyed?
+    end
+
+    it "rejects destruction while a soft-deleted podcast references the key" do
+      key = create(:apple_key)
+      podcast = create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
+      podcast.destroy!
+
+      assert_no_difference "Apple::Key.count" do
+        refute key.destroy
+      end
+
+      assert_equal ["Apple credentials cannot be removed while podcasts use them"], key.errors[:base]
+      refute key.destroyed?
+    end
+
+    it "exposes the referenced key's errors when destroy! raises" do
+      key = create(:apple_key)
+      create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
+
+      error = assert_raises ActiveRecord::RecordNotDestroyed do
+        key.destroy!
+      end
+
+      assert_same key, error.record
+      assert_equal ["Apple credentials cannot be removed while podcasts use them"], error.record.errors[:base]
+      assert Apple::Key.exists?(key.id)
+    end
+  end
+
   describe "apple_key" do
     it "can be selected by multiple podcasts" do
       key = create(:apple_key)

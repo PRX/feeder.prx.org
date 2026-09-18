@@ -171,6 +171,19 @@ class PodcastIntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Apple credential removed", flash[:notice]
   end
 
+  test "uses a generic alert when credential removal fails without model errors" do
+    key = create(:apple_key, account_id: 123)
+
+    Apple::Key.stub_any_instance(:destroy, false) do
+      assert_no_difference "Apple::Key.count" do
+        delete podcast_apple_key_url(podcast, key)
+      end
+    end
+
+    assert_redirected_to podcast_integrations_url(podcast)
+    assert_equal "Unable to remove Apple credential", flash[:alert]
+  end
+
   test "does not remove a credential selected by a podcast" do
     key = create(:apple_key, account_id: 123)
     podcast.update!(apple_key: key)

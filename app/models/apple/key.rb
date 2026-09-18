@@ -15,6 +15,8 @@ module Apple
     validate :ec_key_format, if: :key_pem_b64?
     validate :must_have_working_key
 
+    before_destroy :protect_referenced_key
+
     scope :for_account, ->(account_id) { where(account_id: account_id) }
 
     # Soft-deleted podcasts still reference the key, so removing it would
@@ -61,6 +63,16 @@ module Apple
       true
     rescue
       false
+    end
+
+    private def protect_referenced_key
+      return unless in_use?
+
+      errors.add(
+        :base,
+        "Apple credentials cannot be removed while podcasts use them"
+      )
+      throw :abort
     end
   end
 end

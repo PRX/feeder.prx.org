@@ -1422,7 +1422,6 @@ en:
     destroy_apple_key:
       notice: Apple credential removed
       error: Unable to remove Apple credential
-      in_use: Apple credentials cannot be removed while podcasts use them
   podcast_clips:
     attach:
       alert: Something went horribly wrong
