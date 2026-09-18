@@ -8,6 +8,7 @@ describe Feeds::MegaphoneFeed do
   it "sets the audio format to the default" do
     mf = Feeds::MegaphoneFeed.new(podcast: podcast)
     assert_equal mf.audio_format, Feeds::MegaphoneFeed::DEFAULT_AUDIO_FORMAT
+    assert_equal [:megaphone], mf.integration_types
   end
 
   it "validates audio format must be mp3" do

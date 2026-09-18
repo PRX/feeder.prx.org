@@ -168,7 +168,7 @@ describe Apple::Show do
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
@@ -183,7 +183,7 @@ describe Apple::Show do
       ep = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << ep
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       ep.update!(published_at: 1.hour.ago)
@@ -199,7 +199,7 @@ describe Apple::Show do
       draft = create(:episode, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
@@ -208,6 +208,15 @@ describe Apple::Show do
   end
 
   describe "#draft_upload_candidates" do
+    it "excludes drafts from public delivery feeds" do
+      binding = create(:apple_show_feed_binding, feed: public_feed)
+      config = create(:delegated_delivery_config, feed: public_feed, show_feed_binding: binding)
+      create(:episode_with_media, podcast: podcast, published_at: nil)
+      create(:episode_with_media, podcast: podcast, published_at: 1.day.from_now)
+
+      assert_empty config.build_show.draft_upload_candidates
+    end
+
     it "returns draft episodes with media from an apple subscription feed" do
       apple_feed = create(:apple_feed, podcast: podcast)
       apple_feed.set_default_episodes
@@ -221,7 +230,7 @@ describe Apple::Show do
       refute draft_without_media.enclosure_ready?(true), "draft_without_media should not have complete media"
       refute draft_without_media.enclosure_ready?(false), "draft_without_media should have no media at all"
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       candidate_ids = show.draft_upload_candidates.map { |e| e.feeder_episode.id }
@@ -242,7 +251,7 @@ describe Apple::Show do
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       first = show.draft_upload_candidates
