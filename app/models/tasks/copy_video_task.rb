@@ -29,20 +29,26 @@ class Tasks::CopyVideoTask < Tasks::CopyMediaTask
     end
   end
 
-  def result=(msg)
+  def handle_callback(new_status, time, msg)
     prev_results = porter_callback_task_results
+    msg_results = Task.porter_callback_task_results(msg)
+    all_results = (prev_results + msg_results).uniq
     super
 
-    # HACKY: keep previous job results, when the waveform job runs
-    key = self.class.porter_callback_key(result)
-    merged_results = (prev_results + porter_callback_task_results).uniq
-    result[key][:TaskResults] = merged_results if key && merged_results.any?
+    # HACKY: keep all results, regardless of callback order
+    key = Task.porter_callback_key(result)
+    result[key][:TaskResults] = all_results if key && all_results.any?
 
-    # HACKY: keep in processing until waveform finishes
-    self.status = "processing" if complete? && !porter_callback_task_result(:Waveform)
+    # HACKY: keep in processing until both jobs finish
+    if new_status == "complete"
+      self.status =
+        if %i[Inspect Waveform].all? { |k| porter_callback_task_result(k) }
+          "complete"
+        else
+          "processing"
+        end
+    end
   end
-
-  private
 
   def porter_mp3_task
     {
@@ -63,6 +69,8 @@ class Tasks::CopyVideoTask < Tasks::CopyMediaTask
       }
     }
   end
+
+  private
 
   # NOTE: need to specify something, to force converting to CBR
   def mp3_bitrate

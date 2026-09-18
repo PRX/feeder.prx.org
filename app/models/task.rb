@@ -43,11 +43,8 @@ class Task < ApplicationRecord
     task&.with_lock do
       status = task.cancelled? ? "cancelled" : porter_callback_status(msg)
       time = porter_callback_time(msg)
-
-      if status && time && (task.logged_at.nil? || (time >= task.logged_at))
-        task.status = status
-        task.logged_at = time
-        task.result = msg
+      if status && time
+        task.handle_callback(status, time, msg)
         task.save!
       end
     end
@@ -100,5 +97,13 @@ class Task < ApplicationRecord
 
   # before save hook, implemented by child tasks
   def update_owner
+  end
+
+  def handle_callback(new_status, time, msg)
+    if logged_at.nil? || time >= logged_at
+      self.status = new_status
+      self.logged_at = time
+      self.result = msg
+    end
   end
 end

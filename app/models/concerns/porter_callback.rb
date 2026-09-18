@@ -26,10 +26,6 @@ module PorterCallback
       Time.parse(logged_at) if logged_at
     end
 
-    def porter_callback_results(msg)
-      porter_callback_parsed(msg).try(:[], :Result)
-    end
-
     def porter_callback_parsed(msg)
       msg[porter_callback_key(msg)].with_indifferent_access if porter_callback_key(msg)
     end
@@ -39,10 +35,14 @@ module PorterCallback
         %w[JobReceived TaskResult JobResult].include?(key.to_s)
       end
     end
+
+    def porter_callback_task_results(msg)
+      porter_callback_parsed(msg).try(:[], :TaskResults) || []
+    end
   end
 
   def porter_callback_task_results
-    self.class.porter_callback_parsed(result).try(:[], :TaskResults) || []
+    self.class.porter_callback_task_results(result)
   end
 
   def porter_callback_task_result(task)

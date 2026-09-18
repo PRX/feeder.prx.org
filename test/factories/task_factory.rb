@@ -6,8 +6,8 @@ FactoryBot.define do
     options { {destination: "s3://test-prx-up/podcast/episode/filename.mp3"} }
     result { build(:porter_job_results) }
 
-    factory :copy_uncut_task do
-      association :owner, factory: :uncut
+    factory :copy_video_task, class: Tasks::CopyVideoTask do
+      association :owner, factory: :uncut_video
     end
   end
 
