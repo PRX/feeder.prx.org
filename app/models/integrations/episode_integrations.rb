@@ -7,13 +7,6 @@ module Integrations::EpisodeIntegrations
     has_many :episode_delivery_statuses, -> { order(created_at: :desc) }, class_name: "Integrations::EpisodeDeliveryStatus"
   end
 
-  def integration_episode(integration)
-    integration_episode_method = "#{integration}_episode"
-    if respond_to?(integration_episode_method)
-      send(integration_episode_method)
-    end
-  end
-
   def publish_to_integration?(integration)
     # see if there is an integration
     podcast.feeds.any? { |f| f.integration_type == integration && f.publish_integration? }
@@ -34,9 +27,5 @@ module Integrations::EpisodeIntegrations
   def integration_feed(integration)
     feeds = integration_feeds(integration)
     feeds.one? ? feeds.first : nil
-  end
-
-  def integration_error_state?(integration)
-    integration_episode(integration)&.error_state? || false
   end
 end

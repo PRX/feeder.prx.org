@@ -171,6 +171,20 @@ describe Feed, "Apple delegated delivery" do
   end
 
   describe "#integration_episode" do
+    it "resolves the show-scoped sync log through the integration facade" do
+      episode = create(:episode, podcast: podcast)
+      apple_feed = create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
+      sync_log = SyncLog.create!(
+        integration: :apple,
+        feeder_type: :episodes,
+        feeder_id: episode.id,
+        external_id: "episode-1",
+        external_show_id: "show-1"
+      )
+
+      assert_equal sync_log, apple_feed.integration_episode(episode).sync_log
+    end
+
     it "builds the Apple facade scoped to this feed's show" do
       apple_feed.save!
       episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)

@@ -373,11 +373,7 @@ describe Episode do
     let(:podcast) { create(:podcast) }
     let(:episode) { create(:episode, podcast: podcast) }
 
-    describe "#apple_episode" do
-      it "returns nil without an Apple configuration" do
-        assert_nil episode.apple_episode
-      end
-
+    describe "#integration_feed" do
       it "returns nil for a legacy configuration without a show identity" do
         apple_feed = create(:apple_feed, podcast: podcast)
         config = apple_feed.delegated_delivery_config
@@ -389,26 +385,7 @@ describe Episode do
         apple_feed.update_column(:apple_show_id, nil)
         podcast.reload
 
-        assert_nil episode.apple_episode
-      end
-
-      it "returns a show-scoped facade" do
-        create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
-
-        assert_equal "show-1", episode.apple_episode.apple_show_id
-      end
-
-      it "resolves the show-scoped sync log through the integration facade" do
-        create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
-        sync_log = SyncLog.create!(
-          integration: :apple,
-          feeder_type: :episodes,
-          feeder_id: episode.id,
-          external_id: "episode-1",
-          external_show_id: "show-1"
-        )
-
-        assert_equal sync_log, episode.integration_episode(:apple).sync_log
+        assert_nil episode.integration_feed(:apple)
       end
     end
 

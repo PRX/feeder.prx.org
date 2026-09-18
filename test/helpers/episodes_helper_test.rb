@@ -76,7 +76,6 @@ describe EpisodesHelper do
           paused_config.update!(publish_enabled: true)
 
           assert_nil episode.integration_feed(:apple)
-          assert_nil episode.apple_episode
         end
       end
 
@@ -108,7 +107,6 @@ describe EpisodesHelper do
         it "does not choose a show when the episode belongs to both feeds" do
           assert_equal [apple_feed, other_feed].sort_by(&:id), episode.integration_feeds(:apple).sort_by(&:id)
           assert_nil episode.integration_feed(:apple)
-          assert_nil episode.apple_episode
         end
 
         it "returns each feed's delivery status when the episode belongs to both" do
