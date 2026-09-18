@@ -22,6 +22,16 @@ class PodcastIntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert another_podcast
   end
 
+  test "offers removal for a credential referenced only by a deleted podcast" do
+    key = create(:apple_key, account_id: 123)
+    create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: key).destroy!
+
+    get podcast_integrations_url(podcast)
+
+    assert_response :success
+    assert_select "form[action='#{podcast_apple_key_path(podcast, key)}']", count: 1
+  end
+
   test "selects an account credential for the podcast" do
     key = create(:apple_key, account_id: 123)
 

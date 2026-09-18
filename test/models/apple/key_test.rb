@@ -66,14 +66,15 @@ describe Apple::Key do
 
     it "rejects destruction while a soft-deleted podcast references the key" do
       key = create(:apple_key)
-      podcast = create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
+      podcast = create(:podcast, title: "First deleted show", apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
       podcast.destroy!
+      create(:podcast, title: "Second deleted show", apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}").destroy!
 
       assert_no_difference "Apple::Key.count" do
         refute key.destroy
       end
 
-      assert_equal ["Apple credentials cannot be removed while podcasts use them"], key.errors[:base]
+      assert_equal ['Apple credentials cannot be removed while deleted podcast "First deleted show" uses them'], key.errors[:base]
       refute key.destroyed?
     end
 

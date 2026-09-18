@@ -68,10 +68,13 @@ module Apple
     private def protect_referenced_key
       return unless in_use?
 
-      errors.add(
-        :base,
+      deleted_podcast = podcasts.only_deleted.first
+      message = if deleted_podcast
+        "Apple credentials cannot be removed while deleted podcast \"#{deleted_podcast.title}\" uses them"
+      else
         "Apple credentials cannot be removed while podcasts use them"
-      )
+      end
+      errors.add(:base, message)
       throw :abort
     end
   end

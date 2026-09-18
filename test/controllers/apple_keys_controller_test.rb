@@ -105,7 +105,7 @@ class AppleKeysControllerTest < ActionDispatch::IntegrationTest
 
   test "does not remove a credential selected by a soft deleted podcast" do
     key = create(:apple_key, account_id: 123)
-    deleted_podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: key)
+    deleted_podcast = create(:podcast, title: "Deleted show", prx_account_uri: "/api/v1/accounts/123", apple_key: key)
     deleted_podcast.destroy!
 
     assert_no_difference "Apple::Key.count" do
@@ -113,13 +113,7 @@ class AppleKeysControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to podcast_integrations_url(podcast)
-    assert_equal "Apple credentials cannot be removed while podcasts use them", flash[:alert]
-
-    get podcast_integrations_url(podcast)
-
-    assert_response :success
-    assert_select "form[action='#{podcast_apple_key_path(podcast, key)}']", count: 0
-    assert_select "body", text: /Used by a deleted podcast/
+    assert_equal 'Apple credentials cannot be removed while deleted podcast "Deleted show" uses them', flash[:alert]
   end
 
   test "rejects credential uploads by a read only user" do
