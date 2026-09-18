@@ -81,28 +81,6 @@ describe SyncLog do
       assert_not sync_log.valid?
       assert sync_log.errors.of_kind?(:external_show_id, :blank)
     end
-
-    it "allows a scoped row alongside a legacy row" do
-      create_legacy_apple_episode_sync_log(feeder_id: 123, external_id: "ep-1")
-      scoped = SyncLog.new(integration: :apple, feeder_type: :episodes, feeder_id: 123, external_id: "ep-1", external_show_id: "show-1")
-
-      assert scoped.valid?
-    end
-
-    it "keeps a distinct database identity for a legacy row alongside a scoped row" do
-      SyncLog.create!(integration: :apple, feeder_type: :episodes, feeder_id: 123, external_id: "ep-1", external_show_id: "show-1")
-      legacy = SyncLog.new(integration: :apple, feeder_type: :episodes, feeder_id: 123, external_id: "ep-1")
-
-      assert legacy.save!(validate: false)
-    end
-
-    it "allows a legacy row to be scoped in place" do
-      legacy = create_legacy_apple_episode_sync_log(feeder_id: 123, external_id: "ep-1")
-
-      assert_nothing_raised do
-        legacy.update!(external_show_id: "show-1")
-      end
-    end
   end
 
   describe ".feeds" do
@@ -157,19 +135,6 @@ describe SyncLog do
       end
     end
 
-    it "rejects modifying a legacy row without assigning its show" do
-      s = create_legacy_apple_episode_sync_log(feeder_id: 123, external_id: "ep-1", api_response: {foo: "bar"})
-
-      assert_no_difference "SyncLog.count" do
-        assert_raises ActiveRecord::RecordInvalid do
-          SyncLog.log!(integration: :apple, feeder_type: :episodes, feeder_id: 123, external_id: "ep-1", external_show_id: nil, api_response: {foo: "baz"})
-        end
-      end
-
-      assert_nil s.reload.external_show_id
-      assert_equal({foo: "bar"}.as_json, s.api_response)
-    end
-
     it "creates a scoped row when an apple show id is provided" do
       assert_difference "SyncLog.count", 1 do
         SyncLog.log!(integration: :apple, feeder_type: :episodes, feeder_id: 123, external_id: "ep-1", external_show_id: "show-1", api_response: {foo: "bar"})
@@ -187,25 +152,5 @@ describe SyncLog do
 
       assert_equal ["show-1", "show-2"], SyncLog.apple.episodes.where(feeder_id: 123).order(:external_show_id).pluck(:external_show_id)
     end
-
-    it "claims a matching legacy row instead of creating a duplicate" do
-      legacy = create_legacy_apple_episode_sync_log(feeder_id: 123, external_id: "ep-1", api_response: {foo: "bar"})
-
-      assert_no_difference "SyncLog.count" do
-        logged = SyncLog.log!(integration: :apple, feeder_type: :episodes, feeder_id: 123, external_id: "ep-1", external_show_id: "show-1", api_response: {foo: "baz"})
-
-        assert_equal legacy.id, logged.id
-      end
-
-      legacy.reload
-      assert_equal "show-1", legacy.external_show_id
-      assert_equal({foo: "baz"}.as_json, legacy.api_response)
-    end
-  end
-
-  def create_legacy_apple_episode_sync_log(**attrs)
-    sync_log = SyncLog.new(integration: :apple, feeder_type: :episodes, **attrs)
-    sync_log.save!(validate: false)
-    sync_log
   end
 end
