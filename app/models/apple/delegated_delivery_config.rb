@@ -4,6 +4,8 @@ module Apple
   class DelegatedDeliveryConfig < ApplicationRecord
     self.table_name = "apple_configs"
 
+    DEFAULT_TOKEN_LABEL = "Apple Subscriptions"
+
     ROUTING_SOURCES = {
       "legacy" => :legacy,
       "show_feed_binding" => :show_feed_binding
@@ -11,15 +13,16 @@ module Apple
 
     belongs_to :feed
     belongs_to :key, class_name: "Apple::Key", optional: true, validate: true, autosave: true
-    # Legacy setup saves credentials before selecting a show. Require a binding
-    # once the new UI replacement connection flow is in place.
-    belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: true, inverse_of: :delegated_delivery_config
+    belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: false, inverse_of: :delegated_delivery_config
 
+    validates :feed_id, uniqueness: true
     validates :show_feed_binding_id, uniqueness: true, allow_nil: true
-    validate :podcast_has_one_delegated_delivery_config
-    validate :not_default_feed
-    validate :show_feed_binding_matches_podcast
     validate :key_belongs_to_podcast_account
+    validate :show_feed_binding_belongs_to_podcast
+
+    before_save :mirror_podcast_key_for_rollback
+    after_create :ensure_private_feed_token
+    after_save :mirror_default_feed_show_for_rollback
 
     # backwards-compatible associations
     delegate :podcast, to: :feed, allow_nil: true
@@ -83,26 +86,6 @@ module Apple
       legacy_public_feed&.apple_sync_log&.external_id.presence || private_feed&.apple_show_id.presence
     end
 
-    def not_default_feed
-      if feed&.default?
-        errors.add(:feed, "cannot use default feed")
-      end
-    end
-
-    def podcast_has_one_delegated_delivery_config
-      all_feeds = Feed.where(podcast_id: feed.podcast_id).pluck(:id)
-      if Apple::DelegatedDeliveryConfig.where(feed_id: all_feeds).where.not(id: id).any?
-        errors.add(:feed, "podcast already has an Apple delegated delivery config")
-      end
-    end
-
-    def show_feed_binding_matches_podcast
-      return unless feed && show_feed_binding&.feed
-      return if feed.podcast_id == show_feed_binding.feed.podcast_id
-
-      errors.add(:show_feed_binding, "must belong to the same podcast as feed")
-    end
-
     def key_belongs_to_podcast_account
       return unless key && podcast
       return if key.account_id == podcast.account_id
@@ -124,6 +107,34 @@ module Apple
 
     def build_show
       Apple::Show.from_delegated_delivery_config(self)
+    end
+
+    private
+
+    def ensure_private_feed_token
+      return unless feed.private?
+      return if feed.tokens.any? { |token| !token.marked_for_destruction? && !token.destroyed? }
+
+      feed.tokens.create!(label: DEFAULT_TOKEN_LABEL)
+    end
+
+    def show_feed_binding_belongs_to_podcast
+      return unless feed && show_feed_binding
+      return if feed.podcast_id == show_feed_binding.feed&.podcast_id
+
+      errors.add(:show_feed_binding, "must belong to the configured feed's podcast")
+    end
+
+    def mirror_podcast_key_for_rollback
+      podcast_key = feed&.podcast&.apple_key
+      self.key = podcast_key if podcast_key
+    end
+
+    def mirror_default_feed_show_for_rollback
+      return unless show_feed_binding&.feed&.default?
+      return if feed.apple_show_id == show_feed_binding.apple_show_id
+
+      feed.update_column(:apple_show_id, show_feed_binding.apple_show_id)
     end
   end
 end

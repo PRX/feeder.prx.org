@@ -18,14 +18,14 @@ describe Podcast do
   it "clears its Apple credential when destroyed so the key can be removed" do
     key = create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: key)
-    feed = create(:public_feed, podcast: podcast)
-    binding = create(:apple_show_feed_binding, feed: feed)
-    create(:delegated_delivery_config, feed: feed, show_feed_binding: binding, key: key)
+    binding = create(:apple_show_feed_binding, feed: podcast.default_feed)
+    config = create(:delegated_delivery_config, feed: podcast.default_feed, show_feed_binding: binding, key: key)
 
     podcast.destroy!
 
     assert podcast.reload.deleted?
     assert_nil podcast.apple_key
+    refute Apple::DelegatedDeliveryConfig.exists?(config.id)
     assert key.reload.destroy
   end
 

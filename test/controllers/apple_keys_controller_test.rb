@@ -15,18 +15,12 @@ class AppleKeysControllerTest < ActionDispatch::IntegrationTest
 
   test "creates an Apple credential in the podcast account" do
     assert_difference "Apple::Key.count", 1 do
-      post podcast_apple_keys_url(podcast), params: {apple_key: key_params}
+      post podcast_apple_keys_url(podcast), params: {apple_key: key_params.merge(account_id: 456)}
     end
 
     assert_equal 123, Apple::Key.last.account_id
     assert_redirected_to podcast_integrations_url(podcast)
     assert_equal "Apple credential uploaded", flash[:notice]
-  end
-
-  test "does not accept a submitted account id" do
-    post podcast_apple_keys_url(podcast), params: {apple_key: key_params.merge(account_id: 456)}
-
-    assert_equal 123, Apple::Key.last.account_id
   end
 
   test "rejects writes from another account" do
