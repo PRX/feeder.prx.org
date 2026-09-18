@@ -18,7 +18,23 @@ module Apple
     validate :ec_key_format, if: :key_pem_b64?
     validate :must_have_working_key
 
+    before_destroy :protect_referenced_key
+
     scope :for_account, ->(account_id) { where(account_id: account_id) }
+
+    # Soft-deleted podcasts still reference the key, so removing it would
+    # violate the podcasts.apple_key_id foreign key.
+    def in_use?
+      podcasts.with_deleted.exists?
+    end
+
+    def inaccessible_show_ids(show_ids)
+      accessible_show_ids = Apple::Show
+        .apple_shows_json(Apple::Api.from_key(self))
+        .filter_map { |show| show["id"].presence }
+
+      show_ids - accessible_show_ids
+    end
 
     def must_have_working_key
       return if Rails.env.test? || !changed?
@@ -50,6 +66,13 @@ module Apple
       true
     rescue
       false
+    end
+
+    private def protect_referenced_key
+      return unless in_use?
+
+      errors.add(:base, "Apple credentials cannot be removed while podcasts use them")
+      throw :abort
     end
   end
 end
